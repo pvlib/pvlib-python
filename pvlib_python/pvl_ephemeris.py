@@ -17,7 +17,6 @@ def pvl_ephemeris(**kwargs):
 
     
 
-
     Latitude=var.Location.latitude
     Longitude=- 1 * var.Location.longitude
     Year=var.DataFrame.index.year
@@ -28,16 +27,7 @@ def pvl_ephemeris(**kwargs):
     Second=var.DataFrame.index.second
     TZone=- 1 * var.Location.TZ
  
-    # if isscalar(p.Results.pressure):
-    #     pressure=p.Results.pressure * ones(Year.shape)
-    # else:
-    #     pressure=p.Results.pressure[:]
-    # if isscalar(p.Results.temperature):
-    #     temperature=p.Results.temperature * ones(Year.shape)
-    # else:
-    #     temperature=p.Results.temperature[:]
-    # if not  (pressure.size == temperature.size) and (pressure.size == DataFrame.index.Year.size) and ((pressure.size == Latitude.size) or isscalar(Latitude)):
-    #     error('An error has occurred in ' + mfilename + '. One of the input' + ' variables is not of correct size.')
+
     DayOfYear=var.DataFrame.index.dayofyear
     DecHours=Hour + Minute / 60 + Second / 3600
     Abber=20 / 3600
@@ -98,12 +88,7 @@ def pvl_ephemeris(**kwargs):
         else:
             Refract.append(0)
 
-   
-    # Refract=np.zeros(max(size(SunEl)),1) +
-    #          (and_(SunEl > 5,SunEl <= 85).dot((58.1 / TanEl - 0.07 / (TanEl ** 3) + 8.6e-05 / (TanEl ** 5)))) + 
-    #          (and_(SunEl > - 0.575,SunEl <= 5).dot((SunEl.dot((- 518.2 + SunEl.dot((103.4 + SunEl.dot((- 12.79 + SunEl.dot(0.711))))))) + 1735))) + 
-    #          (and_(SunEl > - 1,SunEl <= - 0.575).dot(((- 20.774 / TanEl))))
-    #pdb.set_trace() 
+
     Refract=np.array(Refract)*((283 / (273 + var.temperature)))*(var.pressure) / 101325 / 3600
 
     SunZen=90-SunEl

@@ -52,14 +52,14 @@ class Parse():		#parse complex logic
 				# Check if the value is an np.array
 				if not isinstance(kwargs[arg],np.ndarray):
 		 			kwargs[arg]=np.array(kwargs[arg])
-		 			print('WARNING: Numeric variable '+ arg +' not input as a numpy array. Recasting as array')
+		 			#print('WARNING: Numeric variable '+ arg +' not input as a numpy array. Recasting as array')
 				kwargs[arg].astype(float)
 		except:
 			raise Exception('Error: Non-numeric value in numeric input field: '+arg)
 
 		#Check any string inputs. 
 		#pdb.set_trace()
-		print 'DEVWARNING: Fix string index dependancy'
+		#print 'DEVWARNING: Fix string index dependancy'
 		for arg in kwargs:
 			if 'str' in Expect[arg]:
 				if (not('open' in Expect[arg]) or not( 'o' in Expect[arg])) and not(kwargs[arg] in Expect[arg][1]):

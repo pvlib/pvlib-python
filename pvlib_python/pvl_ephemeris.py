@@ -6,11 +6,12 @@ from scipy.io import loadmat,savemat
 import os
 import pdb
 import pvl_tools
+import pandas as pd
 def pvl_ephemeris(**kwargs):
 
     Expect={'pressure': ('default','default=101325','array','num','x>=0'),
             'temperature': ('default','default=12','array', 'num', 'x>=-273.15'),
-            'DataFrame':'df',
+            'Time':'',
             'Location':''
             }
     var=pvl_tools.Parse(kwargs,Expect)
@@ -19,16 +20,16 @@ def pvl_ephemeris(**kwargs):
 
     Latitude=var.Location.latitude
     Longitude=- 1 * var.Location.longitude
-    Year=var.DataFrame.index.year
-    Month=var.DataFrame.index.month
-    Day=var.DataFrame.index.day
-    Hour=var.DataFrame.index.hour
-    Minute=var.DataFrame.index.minute
-    Second=var.DataFrame.index.second
+    Year=var.Time.year
+    Month=var.Time.month
+    Day=var.Time.day
+    Hour=var.Time.hour
+    Minute=var.Time.minute
+    Second=var.Time.second
     TZone=- 1 * var.Location.TZ
  
 
-    DayOfYear=var.DataFrame.index.dayofyear
+    DayOfYear=var.Time.dayofyear
     DecHours=Hour + Minute / 60 + Second / 3600
     Abber=20 / 3600
     LatR=np.radians(Latitude)
@@ -95,11 +96,12 @@ def pvl_ephemeris(**kwargs):
     SunZen[SunZen >= 90 ] = 0 
 
     ApparentSunEl=SunEl + Refract
-    var.DataFrame['SunAz']=SunAz-180  #Changed RA Feb 18,2014 to match Duffe
-    var.DataFrame['SunEl']=SunEl
-    var.DataFrame['SunZen']=SunZen
-    var.DataFrame['ApparentSunEl']=ApparentSunEl
-    var.DataFrame['SolarTime']=SolarTime
 
-    return var.DataFrame
+    DFOut=pd.DataFrame(SunEl,index=var.Time)
+    DFOut['SunAz']=SunAz-180  #Changed RA Feb 18,2014 to match Duffe
+    DFOut['SunZen']=SunZen
+    DFOut['ApparentSunEl']=ApparentSunEl
+    DFOut['SolarTime']=SolarTime
+
+    return DFOut
     

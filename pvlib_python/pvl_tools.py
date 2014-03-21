@@ -79,6 +79,7 @@ class Parse():		#parse complex logic
 					#Remove any potential of running system commands through eval
 					if np.shape(re.findall(regsyst,string))[0]>0:		
 						raise Exception("DANGER: System Command entered as constraint ' "+ string+ "' ")	
+					
 					#Set default value for a variable if defined
 					elif np.shape(re.findall(regdefault,string))[0]>0:
 						
@@ -89,13 +90,28 @@ class Parse():		#parse complex logic
 								kwargs[arg]=np.array(float(string[8:])) #numeric defualt
 							except:
 								kwargs[arg]=(string[8:]) #string default
+
 					#Excecute proper logical operations if syntax matches regex
+
 					elif np.shape(re.findall(reg,string))[0]>0:
+
 						lambdastring='lambda x:'+re.findall(reg,string)[0]
+
 						#check df elements
 						if ('matelement' in Expect[arg]):
 							if not(eval(lambdastring)(df[arg]).any()):
 								raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')	
+						elif ('optional' in Expect[arg]):
+							#pdb.set_trace()
+							try: #check if the optional value exists 
+								kwargs[arg]
+							except:
+								print 'Optional value "'+arg+'" not input'""
+								continue
+							if not(eval(lambdastring)(kwargs[arg])): #check its logical constraint
+								raise Exception('Error: Optional input "'+arg+'" fails on logical test "'+ re.findall(reg,string)[0]+'"')	
+							
+
 						#check all other contraints
 						elif not(eval(lambdastring)(kwargs[arg]).all()):
 							raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')

@@ -7,7 +7,7 @@ import pvl_tools
 def pvl_globalinplane(**kwargs):
     Expect={'DataFrame':'df',
         'SurfTilt':('num','x>=0'),
-        'SurfAz':('num','x>=-180','x<=180'),
+        'SurfAz':('num','x>=0'),
         'AOI':('matelement','num','array','x>=0'),
         'DNI':('matelement','num','array','x>=0'),
         'In_Plane_SkyDiffuse':('matelement','num','array','x>=0'),
@@ -16,7 +16,7 @@ def pvl_globalinplane(**kwargs):
 
     var=pvl_tools.Parse(kwargs,Expect)
 
-    Eb = var.DataFrame.DNI*np.cos(np.radians(var.DataFrame.AOI)) #Implies that AOI is relative to normal CHECK
+    Eb = var.DataFrame.DNI*np.cos(np.radians(var.DataFrame.AOI))
 
     E = Eb + var.DataFrame.In_Plane_SkyDiffuse + var.DataFrame.GR
     Ediff = var.DataFrame.In_Plane_SkyDiffuse + var.DataFrame.GR
@@ -26,3 +26,5 @@ def pvl_globalinplane(**kwargs):
     var.DataFrame['Ediff']=Ediff
     
     return var.DataFrame
+
+System=system.pvl_systemdef(TMYmeta=meta, SurfTilt=40, SurfAz=180, Albedo=0.2,SeriesModules=12, ParallelModules=3)

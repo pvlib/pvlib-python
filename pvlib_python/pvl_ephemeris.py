@@ -95,7 +95,7 @@ def pvl_ephemeris(**kwargs):
     SunZen[SunZen >= 90 ] = 0 
 
     ApparentSunEl=SunEl + Refract
-    var.DataFrame['SunAz']=SunAz
+    var.DataFrame['SunAz']=SunAz-180  #Changed RA Feb 18,2014 to match Duffe
     var.DataFrame['SunEl']=SunEl
     var.DataFrame['SunZen']=SunZen
     var.DataFrame['ApparentSunEl']=ApparentSunEl

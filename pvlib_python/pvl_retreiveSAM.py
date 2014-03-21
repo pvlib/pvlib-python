@@ -13,11 +13,11 @@ def pvl_retreiveSAM(**kwargs):
 	
 
 	if var.name=='CECMod':
-		url='https://sam.nrel.gov/sites/sam.nrel.gov/files/content/component_libraries/sam-database-cec-modules.csv'
+		url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-modules-2014-1-14.csv'
 	elif var.name=='SandiaMod':
-		url='https://sam.nrel.gov/sites/sam.nrel.gov/files/content/component_libraries/sam-database-sandia-modules.csv'
+		url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2014-1-14.csv'
 	elif var.name=='SandiaInverter':
-		url='https://sam.nrel.gov/sites/sam.nrel.gov/files/content/component_libraries/sam-database-sandia-inverters.csv'
+		url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
 
 	return read_url_to_pandas(url)
 		

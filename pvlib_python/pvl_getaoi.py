@@ -6,12 +6,12 @@ import pvl_tools
 def pvl_getaoi(**kwargs):
 	Expect={'DataFrame':'df',
 			'SurfTilt':('num','x>=0'),
-			'SurfAz':('num','x>=0'),
+			'SurfAz':('num','x>=-180','x<=180'),
 			'SunZen':('matelement','num','array','x>=0'),
 			'SunAz':('matelement','num','array','x>=0')
 	}
 	var=pvl_tools.Parse(kwargs,Expect)
-	AOI=np.degrees(np.arccos(np.cos(np.radians(var.DataFrame.SunZen))*(np.cos(np.radians(var.SurfTilt))) + np.sin(np.radians(var.SurfTilt))*(np.sin(np.radians(var.DataFrame.SunZen)))*(np.cos(np.radians(var.DataFrame.SunAz) - np.radians(var.SurfAz)))))
+	AOI=np.degrees(np.arccos(np.cos(np.radians(var.DataFrame.SunZen))*(np.cos(np.radians(var.SurfTilt))) + np.sin(np.radians(var.SurfTilt))*(np.sin(np.radians(var.DataFrame.SunZen)))*(np.cos(np.radians(var.DataFrame.SunAz) - np.radians(var.SurfAz))))) #Duffie and Beckmann 1.6.3
 	
 	var.DataFrame['AOI']=AOI
 

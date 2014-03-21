@@ -9,7 +9,7 @@ import pvl_tools
 def pvl_perez(**kwargs):
     Expect={'DataFrame':'df',
         'SurfTilt':('num','x>=0'),
-        'SurfAz':('num','x>=0'),
+        'SurfAz':('num','x>=-180'),
         'DHI':('matelement','num','array','x>=0'),
         'DNI':('matelement','num','array','x>=0'),
         'HExtra':('matelement','num','array','x>=0'),

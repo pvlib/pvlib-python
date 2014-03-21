@@ -25,6 +25,8 @@ def pvl_sapm(**kwargs):
     F1 = Np.polyval(AMcoeff,var.DataFrame.AM)
     F2 = Np.polyval(AOIcoeff,var.DataFrame.AOI)
     var.DataFrame['Ee'] = F1*((var.DataFrame.Eb*F2+var.Module['FD']*var.DataFrame.Ediff)/E0)
+    #var.DataFrame['Ee']=F1*((var.DataFrame.Eb+var.DataFrame.Ediff)/E0)
+    #print "Ee modifed, revert for main function"
     var.DataFrame.Ee.fillna(0)
     var.DataFrame.Ee[var.DataFrame.Ee < 0]=0
     

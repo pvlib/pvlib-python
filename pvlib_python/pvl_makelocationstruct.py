@@ -8,6 +8,7 @@ def pvl_makelocationstruct(**kwargs):
     Expect={'latitude':('num','x>=-90','x<=90'),
             'longitude': ('num','x<=180','x>=-180'),
             'altitude':('num','default','default=100'),
+            'TZ':('num')
             }
     Location=pvt.Parse(kwargs,Expect)
     

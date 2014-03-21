@@ -202,7 +202,7 @@ def test_pandas_df():
 		}
 
 	var=pvl_tools.Parse(kwargs,Expect)
-	assert(var.DataFrame>1)	
+	assert(any(var.DataFrame>1))	
 
 def test_pandas_double_df():
 	dates = pd.date_range('20130101',periods=6)

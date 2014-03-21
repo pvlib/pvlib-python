@@ -16,7 +16,6 @@ def pvl_ephemeris(**kwargs):
             }
     var=pvl_tools.Parse(kwargs,Expect)
 
-    
 
     Latitude=var.Location.latitude
     Longitude=- 1 * var.Location.longitude
@@ -92,12 +91,13 @@ def pvl_ephemeris(**kwargs):
 
     Refract=np.array(Refract)*((283 / (273 + var.temperature)))*(var.pressure) / 101325 / 3600
 
+
     SunZen=90-SunEl
     SunZen[SunZen >= 90 ] = 0 
 
     ApparentSunEl=SunEl + Refract
 
-    DFOut=pd.DataFrame(SunEl,index=var.Time)
+    DFOut=pd.DataFrame({'SunEl':SunEl}, index=var.Time)
     DFOut['SunAz']=SunAz-180  #Changed RA Feb 18,2014 to match Duffe
     DFOut['SunZen']=SunZen
     DFOut['ApparentSunEl']=ApparentSunEl

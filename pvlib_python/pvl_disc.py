@@ -6,10 +6,11 @@ import pandas as pd
 import pdb
 
 def pvl_disc(**kwargs):
-    Expect={'GHI': ('matelement','array','num','x>=0'),
-            'SunZen': ('matelement','array','num','x<=180','x>=0'),
+    Expect={'GHI': ('array','num','x>=0'),
+            'SunZen': ('array','num','x<=180','x>=0'),
+            'Time':''
             #'pressure':('matelement','array','num','default','default=101325','x>=0'),
-            'DataFrame':'df'}
+            }
 
     var=pvt.Parse(kwargs,Expect)
 
@@ -32,19 +33,19 @@ def pvl_disc(**kwargs):
     # Kt=np.zeros(max(GHI.shape),1)
 
     #create a temporary dataframe to house masked values, initially filled with NaN
-    temp=pd.DataFrame(index=var.DataFrame.index,columns=['A','B','C'])
+    temp=pd.DataFrame(index=var.Time,columns=['A','B','C'])
 
 
     var.pressure=101325
-    doy=var.DataFrame.index.dayofyear
+    doy=var.Time.dayofyear
     DayAngle=2.0 * np.pi*((doy - 1)) / 365
     re=1.00011 + 0.034221*(np.cos(DayAngle)) + (0.00128)*(np.sin(DayAngle)) + 0.000719*(np.cos(2.0 * DayAngle)) + (7.7e-05)*(np.sin(2.0 * DayAngle))
     I0=re*(1370)
-    I0h=I0*(np.cos(np.radians(var.DataFrame.SunZen)))
-    Ztemp=var.DataFrame.SunZen
-    Ztemp[var.DataFrame.SunZen > 87]=87
+    I0h=I0*(np.cos(np.radians(var.SunZen)))
+    Ztemp=var.SunZen
+    Ztemp[var.SunZen > 87]=87
     AM=1.0 / (np.cos(np.radians(Ztemp)) + 0.15*(((93.885 - Ztemp) ** (- 1.253))))*(var.pressure) / 101325
-    Kt=var.DataFrame.GHI / (I0h)
+    Kt=var.GHI / (I0h)
     Kt[Kt < 0]=0
     temp.A[Kt > 0.6]=- 5.743 + 21.77*(Kt[Kt > 0.6]) - 27.49*(Kt[Kt > 0.6] ** 2) + 11.56*(Kt[Kt > 0.6] ** 3)
     temp.B[Kt > 0.6]=41.4 - 118.5*(Kt[Kt > 0.6]) + 66.05*(Kt[Kt > 0.6] ** 2) + 31.9*(Kt[Kt > 0.6] ** 3)
@@ -59,11 +60,14 @@ def pvl_disc(**kwargs):
     Kn=Knc - delKn
     DNI=(Kn)*(I0)
 
-    # DNI[var.DataFrame.SunZen > 87]=0
-    # DNI[var.DataFrame.GHI < 1]=0
+    # DNI[var.SunZen > 87]=0
+    # DNI[var.GHI < 1]=0
     # DNI[DNI < 0]=0
-    var.DataFrame['DNI_gen_DISC']=DNI
-    var.DataFrame['Kt_gen_DISC']=Kt
-    var.DataFrame['AM']=AM
-    var.DataFrame['Ztemp']=Ztemp
-    return var.DataFrame
+
+    DFOut=pd.DataFrame({'DNI_gen_DISC':DNI})
+
+    DFOut['Kt_gen_DISC']=Kt
+    DFOut['AM']=AM
+    DFOut['Ztemp']=Ztemp
+    
+    return DFOut

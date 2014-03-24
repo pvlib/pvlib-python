@@ -7,27 +7,25 @@ import pdb
 import pvl_tools
     
 def pvl_perez(**kwargs):
-    Expect={'DataFrame':'df',
-        'SurfTilt':('num','x>=0'),
-        'SurfAz':('num','x>=-180'),
-        'DHI':('matelement','num','array','x>=0'),
-        'DNI':('matelement','num','array','x>=0'),
-        'HExtra':('matelement','num','array','x>=0'),
-        'SunZen':('matelement','num','array','x>=0'),
-        'SunAz':('matelement','num','array','x>=0'),
-        'AM':('matelement','num','array','x>=0'),
+    Expect={'SurfTilt':('num','x>=0'),
+        'SurfAz':('x>=-180'),
+        'DHI':('x>=0'),
+        'DNI':('x>=0'),
+        'HExtra':('x>=0'),
+        'SunZen':('x>=0'),
+        'SunAz':('x>=-180'),
+        'AM':('x>=0'),
         'modelt': ('default','default=allsitescomposite1990')}
 
     var=pvl_tools.Parse(kwargs,Expect)
 
     kappa = 1.041 #for SunZen in radians
-    z = var.DataFrame.SunZen*np.pi/180# # convert to radians
+    z = var.SunZen*np.pi/180# # convert to radians
     
-    Dhfilter = var.DataFrame.DHI > 0
-   
-    e = ((var.DataFrame.DHI[Dhfilter] + var.DataFrame.DNI[Dhfilter])/var.DataFrame.DHI[Dhfilter]+kappa*z[Dhfilter]**3)/(1+kappa*z[Dhfilter]**3).reindex_like(var.DataFrame.SunZen)
+    Dhfilter = var.DHI > 0
+    e = ((var.DHI[Dhfilter] + var.DNI[Dhfilter])/var.DHI[Dhfilter]+kappa*z[Dhfilter]**3)/(1+kappa*z[Dhfilter]**3).reindex_like(var.SunZen)
     #pdb.set_trace()
-    ebin = pd.Series(np.zeros(var.DataFrame.DHI.shape[0]),index=var.DataFrame.index)
+    ebin = pd.Series(np.zeros(var.DHI.shape[0]),index=e.index)
     
     # Select which bin e falls into
     ebin[(e<1.065)]= 1
@@ -45,14 +43,14 @@ def pvl_perez(**kwargs):
     ebin=ebin.dropna().astype(int)
 
     # This is added because in cases where the sun is below the horizon
-    # (var.DataFrame.SunZen > 90) but there is still diffuse horizontal light (var.DataFrame.DHI>0), it is
-    # possible that the airmass (var.DataFrame.AM) could be NaN, which messes up later
-    # calculations. Instead, if the sun is down, and there is still var.DataFrame.DHI, we set
+    # (var.SunZen > 90) but there is still diffuse horizontal light (var.DHI>0), it is
+    # possible that the airmass (var.AM) could be NaN, which messes up later
+    # calculations. Instead, if the sun is down, and there is still var.DHI, we set
     # the airmass to the airmass value on the horizon (approximately 37-38).
-    #var.DataFrame.AM(var.DataFrame.SunZen >=90 & var.DataFrame.DHI >0) = 37;
+    #var.AM(var.SunZen >=90 & var.DHI >0) = 37;
     
-    var.DataFrame.HExtra[var.DataFrame.HExtra==0]=.00000001 #very hacky, fix this
-    delt = var.DataFrame.DHI*var.DataFrame.AM/var.DataFrame.HExtra
+    var.HExtra[var.HExtra==0]=.00000001 #very hacky, fix this
+    delt = var.DHI*var.AM/var.HExtra
     
     #
     
@@ -68,22 +66,22 @@ def pvl_perez(**kwargs):
     F2[F2<0]=0
     F2=F2.astype(float)
     
-    A = cosd(var.SurfTilt)*cosd(var.DataFrame.SunZen) + sind(var.SurfTilt)*sind(var.DataFrame.SunZen)*cosd(var.DataFrame.SunAz-var.SurfAz); #removed +180 from azimuth modifier: Rob Andrews October 19th 2012
+    A = cosd(var.SurfTilt)*cosd(var.SunZen) + sind(var.SurfTilt)*sind(var.SunZen)*cosd(var.SunAz-var.SurfAz); #removed +180 from azimuth modifier: Rob Andrews October 19th 2012
     A[A < 0] = 0
     
-    B = cosd(var.DataFrame.SunZen);
+    B = cosd(var.SunZen);
     B[B < cosd(85)] = cosd(85)
     
     
     #Calculate Diffuse POA from sky dome
     
-    #SkyDiffuse = pd.Series(np.zeros(var.DataFrame.DHI.shape[0]),index=data.index)
+    #SkyDiffuse = pd.Series(np.zeros(var.DHI.shape[0]),index=data.index)
     
-    SkyDiffuse = var.DataFrame.DHI[ebinfilter]*( 0.5* (1-F1[ebinfilter])*(1+cosd(var.SurfTilt))+F1[ebinfilter] * A[ebinfilter]/ B[ebinfilter] + F2[ebinfilter]* sind(var.SurfTilt))
+    SkyDiffuse = var.DHI[ebinfilter]*( 0.5* (1-F1[ebinfilter])*(1+cosd(var.SurfTilt))+F1[ebinfilter] * A[ebinfilter]/ B[ebinfilter] + F2[ebinfilter]* sind(var.SurfTilt))
     SkyDiffuse[SkyDiffuse <= 0]= 0
 
-    var.DataFrame['In_Plane_SkyDiffuse']=SkyDiffuse
-    return var.DataFrame
+    
+    return pd.DataFrame({'In_Plane_SkyDiffuse':SkyDiffuse})
 
 def GetPerezCoefficients(perezmodelt):
         

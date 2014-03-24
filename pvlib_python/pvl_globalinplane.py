@@ -5,24 +5,24 @@ import pandas as pd
 import pvl_tools
 
 def pvl_globalinplane(**kwargs):
-    Expect={'DataFrame':'df',
-        'SurfTilt':('num','x>=0'),
+    Expect={'SurfTilt':('num','x>=0'),
         'SurfAz':('num','x>=-180','x<=180'),
-        'AOI':('matelement','num','array','x>=0'),
-        'DNI':('matelement','num','array','x>=0'),
-        'In_Plane_SkyDiffuse':('matelement','num','array','x>=0'),
-        'GR':('matelement','num','array','x>=0'),
+        'AOI':('x>=0'),
+        'DNI':('x>=0'),
+        'In_Plane_SkyDiffuse':('x>=0'),
+        'GR':('x>=0'),
         }
 
     var=pvl_tools.Parse(kwargs,Expect)
 
-    Eb = var.DataFrame.DNI*np.cos(np.radians(var.DataFrame.AOI)) #Implies that AOI is relative to normal CHECK
+    Eb = var.DNI*np.cos(np.radians(var.AOI)) #Implies that AOI is relative to normal CHECK
 
-    E = Eb + var.DataFrame.In_Plane_SkyDiffuse + var.DataFrame.GR
-    Ediff = var.DataFrame.In_Plane_SkyDiffuse + var.DataFrame.GR
+    E = Eb + var.In_Plane_SkyDiffuse + var.GR
+    Ediff = var.In_Plane_SkyDiffuse + var.GR
 
-    var.DataFrame['E']=E
-    var.DataFrame['Eb']=Eb
-    var.DataFrame['Ediff']=Ediff
+
     
-    return var.DataFrame
+    return pd.DataFrame({'E':E,
+                        'Eb':Eb,
+                        'Ediff':Ediff})
+

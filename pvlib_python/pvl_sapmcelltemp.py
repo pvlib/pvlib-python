@@ -5,13 +5,12 @@ import pandas as pd
 import pvl_tools
 
 def pvl_sapmcelltemp(**kwargs):
-    Expect={'DataFrame':'df',
-            'a':('optional','num'),
+    Expect={'a':('optional','num'),
             'b':('optional','num'),
             'deltaT':('optional','num'), 
-            'E':('matelement','num','array','x>=0'),
-            'Wspd':('matelement','num','array','x>=0'),
-            'DryBulb':('matelement','num','array','x>=0'),
+            'E':('x>=0'),
+            'Wspd':('x>=0'),
+            'DryBulb':('x>=0'),
             'modelt': ('default','default=Open_rack_cell_glassback')
             }
     
@@ -35,12 +34,8 @@ def pvl_sapmcelltemp(**kwargs):
 
     E0=1000 # Reference irradiance
 
-    Tmodule=var.DataFrame.E*((np.exp(a + b*var.DataFrame.Wspd))) + var.DataFrame.DryBulb
+    Tmodule=var.E*((np.exp(a + b*var.Wspd))) + var.DryBulb
 
-    Tcell=Tmodule + var.DataFrame.E / E0*(deltaT)
-
-
-    var.DataFrame['Tcell']=Tcell
-    var.DataFrame['Tmodule']=Tmodule
+    Tcell=Tmodule + var.E / E0*(deltaT)
     
-    return var.DataFrame
+    return pd.DataFrame({'Tcell':Tcell,'Tmodule':Tmodule})

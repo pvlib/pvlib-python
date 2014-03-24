@@ -8,10 +8,9 @@ import pvl_tools
 import pdb
 
 def pvl_snlinverter(**kwargs):
-    Expect={'DataFrame':'df',
-        'Inverter':(''),
-        'Vmp':('matelement','num'),
-        'Pmp':('matelement','num')}
+    Expect={'Inverter':(''),
+        'Vmp':'',
+        'Pmp':''}
 
     var=pvl_tools.Parse(kwargs,Expect)
     
@@ -26,11 +25,11 @@ def pvl_snlinverter(**kwargs):
     Pnt=var.Inverter['Pnt']
     
 
-    A=Pdco*((1 + C1*((var.DataFrame.Vmp - Vdco))))
-    B=Pso*((1 + C2*((var.DataFrame.Vmp - Vdco))))
-    C=C0*((1 + C3*((var.DataFrame.Vmp - Vdco))))
-    ACPower=((Paco / (A - B)) - C*((A - B)))*((var.DataFrame.Pmp - B)) + C*((var.DataFrame.Pmp - B) ** 2)
+    A=Pdco*((1 + C1*((var.Vmp - Vdco))))
+    B=Pso*((1 + C2*((var.Vmp - Vdco))))
+    C=C0*((1 + C3*((var.Vmp - Vdco))))
+    ACPower=((Paco / (A - B)) - C*((A - B)))*((var.Pmp - B)) + C*((var.Pmp - B) ** 2)
     ACPower[ACPower > Paco]=Paco
     ACPower[ACPower < Pso]=- 1.0 * abs(Pnt)
-    var.DataFrame['ACPower']=ACPower    
-    return var.DataFrame
+    
+    return ACPower

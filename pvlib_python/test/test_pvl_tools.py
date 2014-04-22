@@ -314,6 +314,9 @@ def test_optional_value_optional_provided_logical_constraint():
 	var=pvl_tools.Parse(kwargs,Expect)
 	assert(1)	
 
+def test_logical_constriant_non_vector():
+	print "fix this"
+	assert (False)
 def main():
 	unittest.main()
 

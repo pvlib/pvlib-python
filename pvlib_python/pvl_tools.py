@@ -14,11 +14,18 @@ class Parse():		#parse complex logic
  		self.__dict__.update(self.parse(dct,Expect))
 
 	def parse(self,kwargs,Expect):
-		#pdb.set_trace()
+
+		#unpack any kwargs into a flat dict
+
+		if 'kwargs' in kwargs:
+			kwargs.update(kwargs['kwargs'])
+			del kwargs['kwargs']
+
 		#Check all inputs are defined
 		try:
 			for arg in kwargs:
-				Expect[arg]
+
+					Expect[arg]
 		except:
 			raise Exception('WARNING: Unknown variable " '+arg+' " ')
 
@@ -92,7 +99,6 @@ class Parse():		#parse complex logic
 								kwargs[arg]=(string[8:]) #string default
 
 					#Excecute proper logical operations if syntax matches regex
-
 					elif np.shape(re.findall(reg,string))[0]>0:
 
 						lambdastring='lambda x:'+re.findall(reg,string)[0]
@@ -110,8 +116,6 @@ class Parse():		#parse complex logic
 								continue
 							if not(eval(lambdastring)(kwargs[arg])): #check its logical constraint
 								raise Exception('Error: Optional input "'+arg+'" fails on logical test "'+ re.findall(reg,string)[0]+'"')	
-							
-
 						#check all other contraints
 						elif not(eval(lambdastring)(kwargs[arg]).all()):
 							raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')

@@ -1,0 +1,53 @@
+
+from nose.tools import *
+import numpy as np
+import pandas as pd 
+from .. import pvl_singlediode
+from .. import pvl_ephemeris
+from .. import pvl_extraradiation
+from .. import pvl_relativeairmass
+from .. import pvl_getaoi
+from .. import pvl_calcparams_desoto
+from .. import pvl_readtmy3
+from .. import pvl_retreiveSAM
+
+def test_proper_vector():
+	meta.SurfTilt=30
+	meta.SurfAz=0
+	meta.Albedo=0.2
+
+	import pvl_calcparams_desoto as calc
+	import pvl_readtmy3 as tmy3
+	TMY, meta=tmy3.pvl_readtmy3(FileName='703165TY.csv')
+	import pvl_retreiveSAM
+	moduledb=pvl_retreiveSAM.pvl_retreiveSAM(name='CECMod')
+	module=moduledb.Canadian_Solar_CS5P_220M
+	
+
+	import pvl_ephemeris as eph
+	DFOut=eph.pvl_ephemeris(Time=TMY.index,Location=meta)
+
+	TMY['SunEl']=DFOut['SunEl']
+	TMY['SunAz']=DFOut['SunAz']
+	TMY['SunZen']=DFOut['SunZen']
+	TMY['ApparentSunEl']=DFOut['ApparentSunEl']
+	TMY['SolarTime']=DFOut['SolarTime']
+
+	import pvl_extraradiation as ext
+	TMY['HExtra']=ext.pvl_extraradiation(doy=TMY.index.dayofyear)
+
+	import pvl_relativeairmass as AM
+	TMY['AM']=AM.pvl_relativeairmass(z=TMY.SunZen)
+
+	import pvl_getaoi as aoi
+	TMY['AOI']=aoi.pvl_getaoi(SunAz=TMY.SunAz,SunZen=TMY.SunZen,SurfTilt=meta.SurfTilt,SurfAz=meta.SurfAz)
+
+	
+	IL,I0,Rs,Rsh,nNsVth=calc.pvl_calcparams_desoto(S=TMY.GHI,Tcell=TMY.DryBulb,alpha_isc=.003,ModuleParameters=module, EgRef=1.121, dEgdT= -0.0002677)
+            
+
+def main():
+    unittest.main()
+
+if __name__ == '__main__':
+    main()

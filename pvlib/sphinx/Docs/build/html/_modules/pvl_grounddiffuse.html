@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_grounddiffuse &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pvl_grounddiffuse</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pvl_tools</span> 
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="k">def</span> <span class="nf">pvl_grounddiffuse</span><span class="p">(</span><span class="n">SurfTilt</span><span class="p">,</span><span class="n">GHI</span><span class="p">,</span><span class="n">Albedo</span><span class="p">):</span>
+<div class="viewcode-block" id="pvl_grounddiffuse"><a class="viewcode-back" href="../stubs/pvl_grounddiffuse.pvl_grounddiffuse.html#pvl_grounddiffuse.pvl_grounddiffuse">[docs]</a>  <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">  Estimate diffuse irradiance from ground reflections given irradiance, albedo, and surface tilt </span>
+
+<span class="sd">  Function to determine the portion of irradiance on a tilted surface due</span>
+<span class="sd">  to ground reflections. Any of the inputs may be DataFrames or scalars.</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+<span class="sd">  SurfTilt : float or DataFrame </span>
+<span class="sd">            Surface tilt angles in decimal degrees. </span>
+<span class="sd">           SurfTilt must be &gt;=0 and &lt;=180. The tilt angle is defined as</span>
+<span class="sd">           degrees from horizontal (e.g. surface facing up = 0, surface facing</span>
+<span class="sd">           horizon = 90).</span>
+
+<span class="sd">  GHI : float or DataFrame </span>
+<span class="sd">          Global horizontal irradiance in W/m^2.  </span>
+<span class="sd">          GHI must be &gt;=0.</span>
+
+<span class="sd">  Albedo : float or DataFrame </span>
+<span class="sd">          Ground reflectance, typically 0.1-0.4 for</span>
+<span class="sd">          surfaces on Earth (land), may increase over snow, ice, etc. May also </span>
+<span class="sd">          be known as the reflection coefficient. Must be &gt;=0 and &lt;=1.</span>
+
+<span class="sd">  Returns</span>
+<span class="sd">  -------</span>
+
+<span class="sd">  GR : float or DataFrame  </span>
+<span class="sd">          Ground reflected irradiances in W/m^2. </span>
+<span class="sd">  </span>
+
+<span class="sd">  References</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  [1] Loutzenhiser P.G. et. al. &quot;Empirical validation of models to compute</span>
+<span class="sd">  solar irradiance on inclined surfaces for building energy simulation&quot;</span>
+<span class="sd">  2007, Solar Energy vol. 81. pp. 254-267</span>
+
+<span class="sd">  See Also</span>
+<span class="sd">  --------</span>
+
+<span class="sd">  pvl_disc</span>
+<span class="sd">  pvl_perez</span>
+<span class="sd">  pvl_reindl1990</span>
+<span class="sd">  pvl_klucher1979</span>
+<span class="sd">  pvl_haydavies1980</span>
+<span class="sd">  pvl_isotropicsky</span>
+<span class="sd">  pvl_kingdiffuse</span>
+
+<span class="sd">  &#39;&#39;&#39;</span>
+
+  <span class="n">Vars</span><span class="o">=</span><span class="nb">locals</span><span class="p">()</span>
+  <span class="n">Expect</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;SurfTilt&#39;</span><span class="p">:(</span><span class="s">&#39;num&#39;</span><span class="p">),</span>
+          <span class="s">&#39;GHI&#39;</span><span class="p">:(</span><span class="s">&#39;x&gt;=0&#39;</span><span class="p">),</span>
+          <span class="s">&#39;Albedo&#39;</span><span class="p">:(</span><span class="s">&#39;num&#39;</span><span class="p">,</span><span class="s">&#39;array&#39;</span><span class="p">,</span><span class="s">&#39;x&gt;=0&#39;</span><span class="p">,</span><span class="s">&#39;x&lt;=1&#39;</span><span class="p">),</span>
+          <span class="p">}</span>
+
+  <span class="n">var</span><span class="o">=</span><span class="n">pvl_tools</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">Vars</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span>
+
+  <span class="n">GR</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">GHI</span><span class="o">*</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">Albedo</span><span class="p">)</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">SurfTilt</span><span class="p">)))</span><span class="o">*</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+
+
+  <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s">&#39;GR&#39;</span><span class="p">:</span><span class="n">GR</span><span class="p">})</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

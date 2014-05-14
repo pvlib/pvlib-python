@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_readtmy3 &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pvl_readtmy3</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">Tkinter</span> 
+<span class="kn">import</span> <span class="nn">pvl_tools</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+<span class="kn">import</span> <span class="nn">dateutil</span>
+<span class="kn">import</span> <span class="nn">csv</span> 
+<span class="kn">from</span> <span class="nn">tkFileDialog</span> <span class="kn">import</span> <span class="n">askopenfilename</span>
+
+<span class="k">def</span> <span class="nf">pvl_readtmy3</span><span class="p">(</span><span class="n">FileName</span><span class="p">):</span>
+
+<div class="viewcode-block" id="pvl_readtmy3"><a class="viewcode-back" href="../stubs/pvl_readtmy3.pvl_readtmy3.html#pvl_readtmy3.pvl_readtmy3">[docs]</a>  <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">  Read a TMY3 file in to a pandas dataframe</span>
+
+<span class="sd">  Read a TMY3 file and make a pandas dataframe of the data. Note that values</span>
+<span class="sd">  contained in the struct are unchanged from the TMY3 file (i.e. units </span>
+<span class="sd">  are retained). In the case of any discrepencies between this</span>
+<span class="sd">  documentation and the TMY3 User&#39;s Manual ([1]), the TMY3 User&#39;s Manual</span>
+<span class="sd">  takes precedence.</span>
+
+<span class="sd">  If a FileName is not provided, the user will be prompted to browse to</span>
+<span class="sd">  an appropriate TMY3 file.</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  FileName : string </span>
+<span class="sd">            An optional argument which allows the user to select which</span>
+<span class="sd">            TMY3 format file should be read. A file path may also be necessary if</span>
+<span class="sd">            the desired TMY3 file is not in the MATLAB working path.</span>
+
+<span class="sd">  Returns</span>
+<span class="sd">  -------</span>
+
+<span class="sd">  TMYDATA : DataFrame</span>
+<span class="sd">     </span>
+<span class="sd">            A pandas dataframe, is provided with the components in the table below. Note</span>
+<span class="sd">            that for more detailed descriptions of each component, please consult</span>
+<span class="sd">            the TMY3 User&#39;s Manual ([1]), especially tables 1-1 through 1-6. </span>
+
+<span class="sd">  meta : struct</span>
+<span class="sd">      struct of meta data is created, which contains all </span>
+<span class="sd">      site metadata available in the file</span>
+
+<span class="sd">  Notes</span>
+<span class="sd">  -----</span>
+
+<span class="sd">  ===============   ======  ===================  </span>
+<span class="sd">  meta field        format  description</span>
+<span class="sd">  ===============   ======  ===================  </span>
+<span class="sd">  meta.altitude     Float   site elevation</span>
+<span class="sd">  meta.latitude     Float   site latitudeitude</span>
+<span class="sd">  meta.longitude    Float   site longitudeitude</span>
+<span class="sd">  meta.Name         String  site name</span>
+<span class="sd">  meta.State        String  state</span>
+<span class="sd">  meta.TZ           Float   timezone</span>
+<span class="sd">  meta.USAF         Int     USAF identifier</span>
+<span class="sd">  ===============   ======  ===================  </span>
+
+<span class="sd">  =============================       ======================================================================================================================================================</span>
+<span class="sd">  TMYData field                       description</span>
+<span class="sd">  =============================       ======================================================================================================================================================</span>
+<span class="sd">  TMYData.Index                       A pandas datetime index. NOTE, the index is currently timezone unaware, and times are set to local standard time (daylight savings is not indcluded)</span>
+<span class="sd">  TMYData.ETR                         Extraterrestrial horizontal radiation recv&#39;d during 60 minutes prior to timestamp, Wh/m^2</span>
+<span class="sd">  TMYData.ETRN                        Extraterrestrial normal radiation recv&#39;d during 60 minutes prior to timestamp, Wh/m^2</span>
+<span class="sd">  TMYData.GHI                         Direct and diffuse horizontal radiation recv&#39;d during 60 minutes prior to timestamp, Wh/m^2</span>
+<span class="sd">  TMYData.GHISource                   See [1], Table 1-4</span>
+<span class="sd">  TMYData.GHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]</span>
+<span class="sd">  TMYData.DNI                         Amount of direct normal radiation (modeled) recv&#39;d during 60 mintues prior to timestamp, Wh/m^2</span>
+<span class="sd">  TMYData.DNISource                   See [1], Table 1-4</span>
+<span class="sd">  TMYData.DNIUncertainty              Uncertainty based on random and bias error estimates                        see [2]</span>
+<span class="sd">  TMYData.DHI                         Amount of diffuse horizontal radiation recv&#39;d during 60 minutes prior to timestamp, Wh/m^2</span>
+<span class="sd">  TMYData.DHISource                   See [1], Table 1-4</span>
+<span class="sd">  TMYData.DHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]</span>
+<span class="sd">  TMYData.GHillum                     Avg. total horizontal illuminance recv&#39;d during the 60 minutes prior to timestamp, lx</span>
+<span class="sd">  TMYData.GHillumSource               See [1], Table 1-4</span>
+<span class="sd">  TMYData.GHillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]</span>
+<span class="sd">  TMYData.DNillum                     Avg. direct normal illuminance recv&#39;d during the 60 minutes prior to timestamp, lx</span>
+<span class="sd">  TMYData.DNillumSource               See [1], Table 1-4</span>
+<span class="sd">  TMYData.DNillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]</span>
+<span class="sd">  TMYData.DHillum                     Avg. horizontal diffuse illuminance recv&#39;d during the 60 minutes prior to timestamp, lx</span>
+<span class="sd">  TMYData.DHillumSource               See [1], Table 1-4</span>
+<span class="sd">  TMYData.DHillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]</span>
+<span class="sd">  TMYData.Zenithlum                   Avg. luminance at the sky&#39;s zenith during the 60 minutes prior to timestamp, cd/m^2</span>
+<span class="sd">  TMYData.ZenithlumSource             See [1], Table 1-4</span>
+<span class="sd">  TMYData.ZenithlumUncertainty        Uncertainty based on random and bias error estimates                        see [1] section 2.10</span>
+<span class="sd">  TMYData.TotCld                      Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky</span>
+<span class="sd">  TMYData.TotCldSource                See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.TotCldUnertainty            See [1], Table 1-6</span>
+<span class="sd">  TMYData.OpqCld                      Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky</span>
+<span class="sd">  TMYData.OpqCldSource                See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.OpqCldUncertainty           See [1], Table 1-6</span>
+<span class="sd">  TMYData.DryBulb                     Dry bulb temperature at the time indicated, deg C</span>
+<span class="sd">  TMYData.DryBulbSource               See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.DryBulbUncertainty          See [1], Table 1-6</span>
+<span class="sd">  TMYData.DewPoint                    Dew-point temperature at the time indicated, deg C</span>
+<span class="sd">  TMYData.DewPointSource              See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.DewPointUncertainty         See [1], Table 1-6</span>
+<span class="sd">  TMYData.RHum                        Relatitudeive humidity at the time indicated, percent</span>
+<span class="sd">  TMYData.RHumSource                  See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.RHumUncertainty             See [1], Table 1-6</span>
+<span class="sd">  TMYData.Pressure                    Station pressure at the time indicated, 1 mbar</span>
+<span class="sd">  TMYData.PressureSource              See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.PressureUncertainty         See [1], Table 1-6</span>
+<span class="sd">  TMYData.Wdir                        Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm) </span>
+<span class="sd">  TMYData.WdirSource                  See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.WdirUncertainty             See [1], Table 1-6</span>
+<span class="sd">  TMYData.Wspd                        Wind speed at the time indicated, meter/second</span>
+<span class="sd">  TMYData.WspdSource                  See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.WspdUncertainty             See [1], Table 1-6</span>
+<span class="sd">  TMYData.Hvis                        Distance to discernable remote objects at time indicated (7777=unlimited), meter</span>
+<span class="sd">  TMYData.HvisSource                  See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.HvisUncertainty             See [1], Table 1-6</span>
+<span class="sd">  TMYData.CeilHgt                     Height of cloud base above local terrain (7777=unlimited), meter</span>
+<span class="sd">  TMYData.CeilHgtSource               See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.CeilHgtUncertainty          See [1], Table 1-6</span>
+<span class="sd">  TMYData.Pwat                        Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm</span>
+<span class="sd">  TMYData.PwatSource                  See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.PwatUncertainty             See [1], Table 1-6</span>
+<span class="sd">  TMYData.AOD                         The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless</span>
+<span class="sd">  TMYData.AODSource                   See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.AODUncertainty              See [1], Table 1-6</span>
+<span class="sd">  TMYData.Alb                         The ratio of reflected solar irradiance to global horizontal irradiance, unitless</span>
+<span class="sd">  TMYData.AlbSource                   See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.AlbUncertainty              See [1], Table 1-6</span>
+<span class="sd">  TMYData.Lprecipdepth                The amount of liquid precipitation observed at indicated time for the period indicated in the liquid precipitation quantity field, millimeter</span>
+<span class="sd">  TMYData.Lprecipquantity             The period of accumulatitudeion for the liquid precipitation depth field, hour</span>
+<span class="sd">  TMYData.LprecipSource               See [1], Table 1-5, 8760x1 cell array of strings</span>
+<span class="sd">  TMYData.LprecipUncertainty          See [1], Table 1-6</span>
+<span class="sd">  =============================       ======================================================================================================================================================  </span>
+<span class="sd">  </span>
+<span class="sd">  References</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  [1] Wilcox, S and Marion, W. &quot;Users Manual for TMY3 Data Sets&quot;.</span>
+<span class="sd">  NREL/TP-581-43156, Revised May 2008.</span>
+
+<span class="sd">  [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005 </span>
+<span class="sd">  Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.</span>
+
+<span class="sd">  See also</span>
+<span class="sd">  ---------</span>
+
+<span class="sd">  pvl_makelocationstruct</span>
+<span class="sd">  pvl_readtmy2</span>
+
+<span class="sd">  &#39;&#39;&#39;</span>
+
+  <span class="n">Vars</span><span class="o">=</span><span class="nb">locals</span><span class="p">()</span>
+  <span class="n">Expect</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;FileName&#39;</span><span class="p">:(</span><span class="s">&#39;open&#39;</span><span class="p">)}</span> 				<span class="c">#Set file expectation</span>
+
+
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Vars</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span> 					<span class="c">#If no filename is input</span>
+  		<span class="n">Tkinter</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span><span class="o">.</span><span class="n">withdraw</span><span class="p">()</span> 				 <span class="c">#Start interactive file input</span>
+  		<span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;FileName&#39;</span><span class="p">:</span> <span class="n">askopenfilename</span><span class="p">()}</span> 	<span class="c">#read in file name</span>
+  		<span class="n">var</span><span class="o">=</span><span class="n">pvl_tools</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span> 		<span class="c">#Parse filename </span>
+  <span class="k">else</span><span class="p">:</span>
+  		<span class="n">var</span><span class="o">=</span><span class="n">pvl_tools</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">Vars</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span>		<span class="c">#Parse filename</span>
+
+  <span class="n">head</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;USAF&#39;</span><span class="p">,</span><span class="s">&#39;Name&#39;</span><span class="p">,</span><span class="s">&#39;State&#39;</span><span class="p">,</span><span class="s">&#39;TZ&#39;</span><span class="p">,</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span><span class="s">&#39;altitude&#39;</span><span class="p">]</span>
+  <span class="n">headerfile</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">FileName</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+  <span class="n">meta</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">head</span><span class="p">,</span><span class="n">headerfile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">)))</span> <span class="c">#Read in file metadata</span>
+  <span class="n">meta</span><span class="p">[</span><span class="s">&#39;altitude&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s">&#39;altitude&#39;</span><span class="p">])</span>
+  <span class="n">meta</span><span class="p">[</span><span class="s">&#39;latitude&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s">&#39;latitude&#39;</span><span class="p">])</span>
+  <span class="n">meta</span><span class="p">[</span><span class="s">&#39;longitude&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s">&#39;longitude&#39;</span><span class="p">])</span>
+  <span class="n">meta</span><span class="p">[</span><span class="s">&#39;TZ&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s">&#39;TZ&#39;</span><span class="p">])</span>
+  <span class="n">meta</span><span class="p">[</span><span class="s">&#39;USAF&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s">&#39;USAF&#39;</span><span class="p">])</span>
+  <span class="n">meta</span><span class="o">=</span><span class="n">pvl_tools</span><span class="o">.</span><span class="n">repack</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span> <span class="c">#repack dict as a struct</span>
+
+  <span class="n">TMYData</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">FileName</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+  	<span class="n">parse_dates</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;datetime&#39;</span><span class="p">:[</span><span class="s">&#39;Date (MM/DD/YYYY)&#39;</span><span class="p">,</span><span class="s">&#39;Time (HH:MM)&#39;</span><span class="p">]},</span>
+  	<span class="n">date_parser</span><span class="o">=</span><span class="n">parsedate</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s">&#39;datetime&#39;</span><span class="p">)</span>
+
+  <span class="n">TMYData</span><span class="o">=</span><span class="n">recolumn</span><span class="p">(</span><span class="n">TMYData</span><span class="p">)</span>												<span class="c">#rename to standard column names</span>
+
+  <span class="c">#retreive Timezone for pandas NOTE: TMY3 is currently given in local standard time. Pandas and pytz can only handle DST timezones, and so to keep consistency, the time index will be input as TZ unaware for the moment</span>
+  <span class="n">TZ</span><span class="o">=</span><span class="n">parsetz</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">TZ</span><span class="p">))</span>
+  <span class="c">#pdb.set_trace()</span>
+  <span class="c">#TMYData.index=TMYData.index.tz_localize(TZ)</span>
+
+
+  <span class="k">return</span> <span class="n">TMYData</span><span class="p">,</span><span class="n">meta</span>
+
+
+<span class="k">def</span> <span class="nf">parsedate</span><span class="p">(</span><span class="n">ymd</span><span class="p">,</span><span class="n">hour</span><span class="p">):</span>
+  <span class="n">date</span><span class="o">=</span><span class="n">ymd</span><span class="o">+</span><span class="s">&#39; &#39;</span><span class="o">+</span><span class="n">hour</span></div>
+  <span class="n">date</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">freq</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="n">periods</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">date</span><span class="p">))</span>
+  <span class="c">#print ymd+hour</span>
+  <span class="c">#yr=&#39;2001&#39;											#Move all data to 2001 datum</span>
+  <span class="c">#hour[hour==&#39;24:00&#39;]=&#39;0:00&#39;							#Set to pandas 24hr clock</span>
+  <span class="c">#ymd=[l[:-4]+yr+&#39; &#39; for l in ymd]					#remove year from TMY data</span>
+  <span class="c">#date=ymd+hour</span>
+  <span class="c">#date=pd.to_datetime(date)							#convert to pandas datetime</span>
+  <span class="c">#date[date.hour==0]=date[date.hour==0]+pd.tseries.offsets.DateOffset(day=1)</span>
+  <span class="k">return</span> <span class="n">date</span>
+
+<span class="k">def</span> <span class="nf">parsetz</span><span class="p">(</span><span class="n">UTC</span><span class="p">):</span>
+	<span class="c">#currently not used, need to make these daylight savings unaware</span>
+	<span class="n">TZinfo</span><span class="o">=</span><span class="p">{</span><span class="o">-</span><span class="mi">5</span><span class="p">:</span><span class="s">&#39;EST&#39;</span><span class="p">,</span>
+			<span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="s">&#39;CST&#39;</span><span class="p">,</span>
+			<span class="o">-</span><span class="mi">7</span><span class="p">:</span><span class="s">&#39;MST&#39;</span><span class="p">,</span>
+			<span class="o">-</span><span class="mi">8</span><span class="p">:</span><span class="s">&#39;PST&#39;</span><span class="p">,</span>
+			<span class="o">-</span><span class="mi">9</span><span class="p">:</span><span class="s">&#39;AKST&#39;</span><span class="p">,</span>
+			<span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="s">&#39;HAST&#39;</span><span class="p">}</span>
+	<span class="k">return</span> <span class="n">TZinfo</span><span class="p">[</span><span class="n">UTC</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">recolumn</span><span class="p">(</span><span class="n">TMY3</span><span class="p">):</span>
+	<span class="n">TMY3</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;ETR&#39;</span><span class="p">,</span><span class="s">&#39;ETRN&#39;</span><span class="p">,</span><span class="s">&#39;GHI&#39;</span><span class="p">,</span><span class="s">&#39;GHISource&#39;</span><span class="p">,</span><span class="s">&#39;GHIUncertainty&#39;</span><span class="p">,</span>
+	<span class="s">&#39;DNI&#39;</span><span class="p">,</span><span class="s">&#39;DNISource&#39;</span><span class="p">,</span><span class="s">&#39;DNIUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;DHI&#39;</span><span class="p">,</span><span class="s">&#39;DHISource&#39;</span><span class="p">,</span><span class="s">&#39;DHIUncertainty&#39;</span><span class="p">,</span>
+	<span class="s">&#39;GHillum&#39;</span><span class="p">,</span><span class="s">&#39;GHillumSource&#39;</span><span class="p">,</span><span class="s">&#39;GHillumUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;DNillum&#39;</span><span class="p">,</span><span class="s">&#39;DNillumSource&#39;</span><span class="p">,</span>
+	<span class="s">&#39;DNillumUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;DHillum&#39;</span><span class="p">,</span><span class="s">&#39;DHillumSource&#39;</span><span class="p">,</span><span class="s">&#39;DHillumUncertainty&#39;</span><span class="p">,</span>
+	<span class="s">&#39;Zenithlum&#39;</span><span class="p">,</span><span class="s">&#39;ZenithlumSource&#39;</span><span class="p">,</span><span class="s">&#39;ZenithlumUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;TotCld&#39;</span><span class="p">,</span><span class="s">&#39;TotCldSource&#39;</span><span class="p">,</span>
+	<span class="s">&#39;TotCldUnertainty&#39;</span><span class="p">,</span><span class="s">&#39;OpqCld&#39;</span><span class="p">,</span><span class="s">&#39;OpqCldSource&#39;</span><span class="p">,</span><span class="s">&#39;OpqCldUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;DryBulb&#39;</span><span class="p">,</span>
+	<span class="s">&#39;DryBulbSource&#39;</span><span class="p">,</span><span class="s">&#39;DryBulbUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;DewPoint&#39;</span><span class="p">,</span><span class="s">&#39;DewPointSource&#39;</span><span class="p">,</span>
+	<span class="s">&#39;DewPointUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;RHum&#39;</span><span class="p">,</span><span class="s">&#39;RHumSource&#39;</span><span class="p">,</span><span class="s">&#39;RHumUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;Pressure&#39;</span><span class="p">,</span>
+	<span class="s">&#39;PressureSource&#39;</span><span class="p">,</span><span class="s">&#39;PressureUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;Wdir&#39;</span><span class="p">,</span><span class="s">&#39;WdirSource&#39;</span><span class="p">,</span><span class="s">&#39;WdirUncertainty&#39;</span><span class="p">,</span>
+	<span class="s">&#39;Wspd&#39;</span><span class="p">,</span><span class="s">&#39;WspdSource&#39;</span><span class="p">,</span><span class="s">&#39;WspdUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;Hvis&#39;</span><span class="p">,</span><span class="s">&#39;HvisSource&#39;</span><span class="p">,</span><span class="s">&#39;HvisUncertainty&#39;</span><span class="p">,</span>
+	<span class="s">&#39;CeilHgt&#39;</span><span class="p">,</span><span class="s">&#39;CeilHgtSource&#39;</span><span class="p">,</span><span class="s">&#39;CeilHgtUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;Pwat&#39;</span><span class="p">,</span><span class="s">&#39;PwatSource&#39;</span><span class="p">,</span>
+	<span class="s">&#39;PwatUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;AOD&#39;</span><span class="p">,</span><span class="s">&#39;AODSource&#39;</span><span class="p">,</span><span class="s">&#39;AODUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;Alb&#39;</span><span class="p">,</span><span class="s">&#39;AlbSource&#39;</span><span class="p">,</span>
+	<span class="s">&#39;AlbUncertainty&#39;</span><span class="p">,</span><span class="s">&#39;Lprecipdepth&#39;</span><span class="p">,</span><span class="s">&#39;Lprecipquantity&#39;</span><span class="p">,</span><span class="s">&#39;LprecipSource&#39;</span><span class="p">,</span>
+	<span class="s">&#39;LprecipUncertainty&#39;</span><span class="p">)</span> 
+
+	<span class="k">return</span> <span class="n">TMY3</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

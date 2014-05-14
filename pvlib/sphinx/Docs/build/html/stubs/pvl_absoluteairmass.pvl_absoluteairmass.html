@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_absoluteairmass.pvl_absoluteairmass &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvl_clearsky_ineichen.pvl_clearsky_ineichen" href="pvl_clearsky_ineichen.pvl_clearsky_ineichen.html" />
+    <link rel="prev" title="pvl_relativeairmass.pvl_relativeairmass" href="pvl_relativeairmass.pvl_relativeairmass.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvl_clearsky_ineichen.pvl_clearsky_ineichen.html" title="pvl_clearsky_ineichen.pvl_clearsky_ineichen"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvl_relativeairmass.pvl_relativeairmass.html" title="pvl_relativeairmass.pvl_relativeairmass"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvl_relativeairmass.pvl_relativeairmass.html"
+                        title="previous chapter">pvl_relativeairmass.pvl_relativeairmass</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvl_clearsky_ineichen.pvl_clearsky_ineichen.html"
+                        title="next chapter">pvl_clearsky_ineichen.pvl_clearsky_ineichen</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvl_absoluteairmass.pvl_absoluteairmass.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvl-absoluteairmass-pvl-absoluteairmass">
+<h1>pvl_absoluteairmass.pvl_absoluteairmass<a class="headerlink" href="#pvl-absoluteairmass-pvl-absoluteairmass" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvl_absoluteairmass.pvl_absoluteairmass">
+<tt class="descclassname">pvl_absoluteairmass.</tt><tt class="descname">pvl_absoluteairmass</tt><big>(</big><em>AMrelative</em>, <em>Pressure</em><big>)</big><a class="reference internal" href="../_modules/pvl_absoluteairmass.html#pvl_absoluteairmass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pvl_absoluteairmass.pvl_absoluteairmass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine absolute (pressure corrected) airmass from relative airmass and pressure</p>
+<p>Gives the airmass for locations not at sea-level (i.e. not at standard
+pressure). The input argument &#8220;AMrelative&#8221; is the relative airmass. The
+input argument &#8220;pressure&#8221; is the pressure (in Pascals) at the location
+of interest and must be greater than 0. The calculation for
+absolute airmass is:
+absolute airmass = (relative airmass)*pressure/101325</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>AMrelative</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>The airmass at sea-level which can be calculated using the 
+PV_LIB function pvl_relativeairmass.</p>
+</div></blockquote>
+<p><strong>pressure</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>a scalar or vector of values providing the site pressure in
+Pascal. If pressure is a vector it must be of the same size as all
+other vector inputs. pressure must be &gt;=0. Pressure may be measured
+or an average pressure may be calculated from site altitude.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>AMa</strong> : float or DataFrame</p>
+<blockquote class="last">
+<div><p>Absolute (pressure corrected) airmass</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_relativeairmass</span></tt></p>
+</div>
+<p class="rubric">References</p>
+<p>[1] C. Gueymard, &#8220;Critical analysis and performance assessment of 
+clear sky solar irradiance models using theoretical and measured data,&#8221;
+Solar Energy, vol. 51, pp. 121-138, 1993.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvl_clearsky_ineichen.pvl_clearsky_ineichen.html" title="pvl_clearsky_ineichen.pvl_clearsky_ineichen"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvl_relativeairmass.pvl_relativeairmass.html" title="pvl_relativeairmass.pvl_relativeairmass"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

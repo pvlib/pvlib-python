@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_retreiveSAM.pvl_retreiveSAM &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvl_sapm.pvl_sapm" href="pvl_sapm.pvl_sapm.html" />
+    <link rel="prev" title="pvl_calcparams_desoto.pvl_calcparams_desoto" href="pvl_calcparams_desoto.pvl_calcparams_desoto.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvl_sapm.pvl_sapm.html" title="pvl_sapm.pvl_sapm"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvl_calcparams_desoto.pvl_calcparams_desoto.html" title="pvl_calcparams_desoto.pvl_calcparams_desoto"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvl_calcparams_desoto.pvl_calcparams_desoto.html"
+                        title="previous chapter">pvl_calcparams_desoto.pvl_calcparams_desoto</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvl_sapm.pvl_sapm.html"
+                        title="next chapter">pvl_sapm.pvl_sapm</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvl_retreiveSAM.pvl_retreiveSAM.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvl-retreivesam-pvl-retreivesam">
+<h1>pvl_retreiveSAM.pvl_retreiveSAM<a class="headerlink" href="#pvl-retreivesam-pvl-retreivesam" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvl_retreiveSAM.pvl_retreiveSAM">
+<tt class="descclassname">pvl_retreiveSAM.</tt><tt class="descname">pvl_retreiveSAM</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../_modules/pvl_retreiveSAM.html#pvl_retreiveSAM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pvl_retreiveSAM.pvl_retreiveSAM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retreive lastest module and inverter info from SAM website</p>
+<p>PVL_RETREIVESAM Retreive lastest module and inverter info from SAM website.
+This function will retreive either:</p>
+<blockquote>
+<div><ul class="simple">
+<li>CEC module database</li>
+<li>Sandia Module database</li>
+<li>Sandia Inverter database</li>
+</ul>
+</div></blockquote>
+<p>and export it as a pandas dataframe</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name: String</strong> :</p>
+<blockquote>
+<div><p>Name can be one of:</p>
+<ul class="simple">
+<li>&#8216;CECMod&#8217;- returns the CEC module database</li>
+<li>&#8216;SandiaInverter- returns the Sandia Inverter database</li>
+<li>&#8216;SandiaMod&#8217;- returns the Sandia Module database</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>df: DataFrame</strong> :</p>
+<blockquote class="last">
+<div><p>A DataFrame containing all the elements of the desired database. 
+Each column representa a module or inverter, and a specific dataset
+can be retreived by the command</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">module_or_inverter_name</span>
+</pre></div>
+</div>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">Invdb</span><span class="o">=</span><span class="n">SAM</span><span class="o">.</span><span class="n">pvl_retreiveSAM</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;SandiaInverter&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inverter</span><span class="o">=</span><span class="n">Invdb</span><span class="o">.</span><span class="n">AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inverter</span>    
+<span class="go">Vac           277.000000</span>
+<span class="go">Paco         6000.000000</span>
+<span class="go">Pdco         6165.670000</span>
+<span class="go">Vdco          361.123000</span>
+<span class="go">Pso            36.792300</span>
+<span class="go">C0             -0.000002</span>
+<span class="go">C1             -0.000047</span>
+<span class="go">C2             -0.001861</span>
+<span class="go">C3              0.000721</span>
+<span class="go">Pnt             0.070000</span>
+<span class="go">Vdcmax        600.000000</span>
+<span class="go">Idcmax         32.000000</span>
+<span class="go">Mppt_low      200.000000</span>
+<span class="go">Mppt_high     500.000000</span>
+<span class="go">Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvl_sapm.pvl_sapm.html" title="pvl_sapm.pvl_sapm"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvl_calcparams_desoto.pvl_calcparams_desoto.html" title="pvl_calcparams_desoto.pvl_calcparams_desoto"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

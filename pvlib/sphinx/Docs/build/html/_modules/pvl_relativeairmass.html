@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_relativeairmass &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pvl_relativeairmass</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pvl_tools</span> <span class="kn">as</span> <span class="nn">pvt</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="nb">reload</span><span class="p">(</span><span class="n">pvt</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">pvl_relativeairmass</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s">&#39;kastenyoung1989&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="pvl_relativeairmass"><a class="viewcode-back" href="../stubs/pvl_relativeairmass.pvl_relativeairmass.html#pvl_relativeairmass.pvl_relativeairmass">[docs]</a>  <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">  Gives the relative (not pressure-corrected) airmass</span>
+
+<span class="sd">    Gives the airmass at sea-level when given a sun zenith angle, z (in </span>
+<span class="sd">    degrees). </span>
+<span class="sd">    The &quot;model&quot; variable allows selection of different airmass models</span>
+<span class="sd">    (described below). &quot;model&quot; must be a valid string. If &quot;model&quot; is not </span>
+<span class="sd">    included or is not valid, the default model is &#39;kastenyoung1989&#39;.</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  z : float or DataFrame </span>
+
+<span class="sd">      Zenith angle of the sun.  Note that some models use the apparent (refraction corrected)</span>
+<span class="sd">      zenith angle, and some models use the true (not refraction-corrected)</span>
+<span class="sd">      zenith angle. See model descriptions to determine which type of zenith</span>
+<span class="sd">      angle is required.</span>
+<span class="sd">      </span>
+<span class="sd">  model : String </span>
+<span class="sd">      Avaiable models include the following:</span>
+
+<span class="sd">         * &#39;simple&#39; - secant(apparent zenith angle) - Note that this gives -inf at zenith=90</span>
+<span class="sd">         * &#39;kasten1966&#39; - See reference [1] - requires apparent sun zenith</span>
+<span class="sd">         * &#39;youngirvine1967&#39; - See reference [2] - requires true sun zenith</span>
+<span class="sd">         * &#39;kastenyoung1989&#39; - See reference [3] - requires apparent sun zenith</span>
+<span class="sd">         * &#39;gueymard1993&#39; - See reference [4] - requires apparent sun zenith</span>
+<span class="sd">         * &#39;young1994&#39; - See reference [5] - requries true sun zenith</span>
+<span class="sd">         * &#39;pickering2002&#39; - See reference [6] - requires apparent sun zenith</span>
+
+<span class="sd">  Returns</span>
+<span class="sd">  -------</span>
+<span class="sd">    AM : float or DataFrame </span>
+<span class="sd">            Relative airmass at sea level.  Will return NaN values for all zenith </span>
+<span class="sd">            angles greater than 90 degrees.</span>
+
+<span class="sd">  References</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  [1] Fritz Kasten. &quot;A New Table and Approximation Formula for the</span>
+<span class="sd">  Relative Optical Air Mass&quot;. Technical Report 136, Hanover, N.H.: U.S.</span>
+<span class="sd">  Army Material Command, CRREL.</span>
+
+<span class="sd">  [2] A. T. Young and W. M. Irvine, &quot;Multicolor Photoelectric Photometry</span>
+<span class="sd">  of the Brighter Planets,&quot; The Astronomical Journal, vol. 72, </span>
+<span class="sd">  pp. 945-950, 1967.</span>
+
+<span class="sd">  [3] Fritz Kasten and Andrew Young. &quot;Revised optical air mass tables and</span>
+<span class="sd">  approximation formula&quot;. Applied Optics 28:4735-4738</span>
+
+<span class="sd">  [4] C. Gueymard, &quot;Critical analysis and performance assessment of </span>
+<span class="sd">  clear sky solar irradiance models using theoretical and measured data,&quot;</span>
+<span class="sd">  Solar Energy, vol. 51, pp. 121-138, 1993.</span>
+
+<span class="sd">  [5] A. T. Young, &quot;AIR-MASS AND REFRACTION,&quot; Applied Optics, vol. 33, </span>
+<span class="sd">  pp. 1108-1110, Feb 1994.</span>
+
+<span class="sd">  [6] Keith A. Pickering. &quot;The Ancient Star Catalog&quot;. DIO 12:1, 20,</span>
+
+<span class="sd">  See Also</span>
+<span class="sd">  --------</span>
+<span class="sd">  pvl_absoluteairmass</span>
+<span class="sd">  pvl_ephemeris</span>
+
+<span class="sd">  &#39;&#39;&#39;</span>
+  <span class="n">Vars</span><span class="o">=</span><span class="nb">locals</span><span class="p">()</span>
+  <span class="n">Expect</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;z&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;array&#39;</span><span class="p">,</span><span class="s">&#39;num&#39;</span><span class="p">,</span><span class="s">&#39;x&lt;=90&#39;</span><span class="p">,</span><span class="s">&#39;x&gt;=0&#39;</span><span class="p">),</span>
+      <span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;default&#39;</span><span class="p">,</span><span class="s">&#39;default=kastenyoung1989&#39;</span><span class="p">)}</span>
+  <span class="n">var</span><span class="o">=</span><span class="n">pvt</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">Vars</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="s">&#39;kastenyoung1989&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">var</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+      <span class="n">AM</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.50572</span><span class="o">*</span><span class="p">(((</span><span class="mf">6.07995</span> <span class="o">+</span> <span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">**</span> <span class="o">-</span> <span class="mf">1.6364</span><span class="p">)))</span>
+  <span class="k">else</span><span class="p">:</span>
+      <span class="k">if</span> <span class="p">(</span><span class="s">&#39;kasten1966&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">var</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+          <span class="n">AM</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.15</span><span class="o">*</span><span class="p">((</span><span class="mf">93.885</span> <span class="o">-</span> <span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="o">**</span> <span class="o">-</span> <span class="mf">1.253</span><span class="p">))</span>
+      <span class="k">else</span><span class="p">:</span>
+          <span class="k">if</span> <span class="p">(</span><span class="s">&#39;simple&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">var</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+              <span class="n">AM</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sec</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span>
+          <span class="k">else</span><span class="p">:</span>
+              <span class="k">if</span> <span class="p">(</span><span class="s">&#39;pickering2002&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">var</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                  <span class="n">AM</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">var</span><span class="o">.</span><span class="n">z</span> <span class="o">+</span> <span class="mf">244.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">165</span> <span class="o">+</span> <span class="mf">47.0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="o">**</span> <span class="mf">1.1</span><span class="p">))))</span>
+              <span class="k">else</span><span class="p">:</span>
+                  <span class="k">if</span> <span class="p">(</span><span class="s">&#39;youngirvine1967&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">var</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                      <span class="n">AM</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">0.0012</span><span class="o">*</span><span class="p">((((</span><span class="n">np</span><span class="o">.</span><span class="n">sec</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))))</span>
+                  <span class="k">else</span><span class="p">:</span>
+                      <span class="k">if</span> <span class="p">(</span><span class="s">&#39;young1994&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">var</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                          <span class="n">AM</span><span class="o">=</span><span class="p">(</span><span class="mf">1.002432</span><span class="o">*</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">)))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.148386</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">)))</span> <span class="o">+</span> <span class="mf">0.0096467</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">+</span> <span class="mf">0.149864</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.0102963</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">)))</span> <span class="o">+</span> <span class="mf">0.000303978</span><span class="p">)</span>
+                      <span class="k">else</span><span class="p">:</span>
+                          <span class="k">if</span> <span class="p">(</span><span class="s">&#39;gueymard1993&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">var</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                              <span class="n">AM</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.00176759</span><span class="o">*</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">)</span><span class="o">*</span><span class="p">((</span><span class="mf">94.37515</span> <span class="o">-</span> <span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="o">**</span> <span class="o">-</span> <span class="mf">1.21563</span><span class="p">))</span>
+                          <span class="k">else</span><span class="p">:</span>
+                              <span class="k">print</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">model</span> <span class="o">+</span> <span class="s">&quot; is not a valid model type for relative airmass. The &#39;kastenyoung1989&#39; model was used.&quot;</span><span class="p">)</span>
+                              <span class="n">AM</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.50572</span><span class="o">*</span><span class="p">(((</span><span class="mf">6.07995</span> <span class="o">+</span> <span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">var</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">**</span> <span class="o">-</span> <span class="mf">1.6364</span><span class="p">)))</span>
+  <span class="k">return</span> <span class="n">AM</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

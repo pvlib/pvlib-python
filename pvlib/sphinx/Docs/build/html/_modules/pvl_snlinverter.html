@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_snlinverter &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pvl_snlinverter</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span> 
+<span class="kn">import</span> <span class="nn">pdb</span>
+<span class="kn">import</span> <span class="nn">pvl_tools</span>
+
+<span class="k">def</span> <span class="nf">pvl_snlinverter</span><span class="p">(</span><span class="n">Inverter</span><span class="p">,</span><span class="n">Vmp</span><span class="p">,</span><span class="n">Pmp</span><span class="p">):</span>
+<div class="viewcode-block" id="pvl_snlinverter"><a class="viewcode-back" href="../stubs/pvl_snlinverter.pvl_snlinverter.html#pvl_snlinverter.pvl_snlinverter">[docs]</a>  <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">  Converts DC power and voltage to AC power using Sandia&#39;s Grid-Connected PV Inverter model</span>
+
+<span class="sd">  Determine the AC power output of an inverter given the DC voltage, DC</span>
+<span class="sd">  power, and appropriate Sandia Grid-Connected Photovoltaic Inverter</span>
+<span class="sd">  Model parameters. The output, ACPower, is clipped at the maximum power</span>
+<span class="sd">  output, and gives a negative power during low-input power conditions,</span>
+<span class="sd">  but does NOT account for maximum power point tracking voltage windows</span>
+<span class="sd">  nor maximum current or voltage limits on the inverter. </span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  Inverter : DataFrame</span>
+
+<span class="sd">           A DataFrame defining the inverter to be used, giving the</span>
+<span class="sd">           inverter performance parameters according to the Sandia</span>
+<span class="sd">           Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1]. A set of</span>
+<span class="sd">           inverter performance parameters are provided with PV_LIB, or may be</span>
+<span class="sd">           generated from a System Advisor Model (SAM) [2] library using pvl_retreivesam. </span>
+<span class="sd">           </span>
+<span class="sd">            Required DataFrame components are:</span>
+
+<span class="sd">           =============   ==============================================================================================================================================================================================</span>
+<span class="sd">           Field            DataFrame</span>
+<span class="sd">           =============   ==============================================================================================================================================================================================</span>
+<span class="sd">           Inverter.Pac0   AC-power output from inverter based on input power and voltage, (W) </span>
+<span class="sd">           Inverter.Pdc0   DC-power input to inverter, typically assumed to be equal to the PV array maximum power, (W)</span>
+<span class="sd">           Inverter.Vdc0   DC-voltage level at which the AC-power rating is achieved at the reference operating condition, (V)</span>
+<span class="sd">           Inverter.Ps0    DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels, (W)</span>
+<span class="sd">           Inverter.C0     Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship, (1/W)</span>
+<span class="sd">           Inverter.C1     Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero, (1/V)</span>
+<span class="sd">           Inverter.C2     empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero, (1/V)</span>
+<span class="sd">           Inverter.C3     empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero, (1/V)</span>
+<span class="sd">           Inverter.Pnt    ac-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage, (W)</span>
+<span class="sd">           =============   ==============================================================================================================================================================================================</span>
+<span class="sd">  </span>
+<span class="sd">  Vdc : float or DataFrame</span>
+<span class="sd">          DC voltages, in volts, which are provided as input to the inverter. Vdc must be &gt;= 0.</span>
+<span class="sd">  Pdc : float or DataFrame</span>
+
+<span class="sd">          A scalar or DataFrame of DC powers, in watts, which are provided</span>
+<span class="sd">           as input to the inverter. Pdc must be &gt;= 0.</span>
+
+<span class="sd">  Returns</span>
+<span class="sd">  -------</span>
+
+<span class="sd">  ACPower : float or DataFrame</span>
+
+<span class="sd">           Mdeled AC power output given the input </span>
+<span class="sd">           DC voltage, Vdc, and input DC power, Pdc. When ACPower would be </span>
+<span class="sd">           greater than Pac0, it is set to Pac0 to represent inverter </span>
+<span class="sd">           &quot;clipping&quot;. When ACPower would be less than Ps0 (startup power</span>
+<span class="sd">           required), then ACPower is set to -1*abs(Pnt) to represent nightly </span>
+<span class="sd">           power losses. ACPower is not adjusted for maximum power point</span>
+<span class="sd">           tracking (MPPT) voltage windows or maximum current limits of the</span>
+<span class="sd">           inverter.</span>
+
+<span class="sd">  References</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  [1] (SAND2007-5036, &quot;Performance Model for Grid-Connected Photovoltaic </span>
+<span class="sd">  Inverters by D. King, S. Gonzalez, G. Galbraith, W. Boyson)</span>
+
+<span class="sd">  [2] System Advisor Model web page. https://sam.nrel.gov.</span>
+
+<span class="sd">  See also</span>
+<span class="sd">  --------</span>
+
+<span class="sd">  pvl_sapm</span>
+<span class="sd">  pvl_samlibrary</span>
+<span class="sd">  pvl_singlediode</span>
+
+<span class="sd">  &#39;&#39;&#39;</span>
+
+  <span class="n">Vars</span><span class="o">=</span><span class="nb">locals</span><span class="p">()</span>
+  <span class="n">Expect</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;Inverter&#39;</span><span class="p">:(</span><span class="s">&#39;&#39;</span><span class="p">),</span>
+      <span class="s">&#39;Vmp&#39;</span><span class="p">:</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+      <span class="s">&#39;Pmp&#39;</span><span class="p">:</span><span class="s">&#39;&#39;</span><span class="p">}</span>
+
+  <span class="n">var</span><span class="o">=</span><span class="n">pvl_tools</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">Vars</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span>
+
+  <span class="n">Paco</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;Paco&#39;</span><span class="p">]</span>
+  <span class="n">Pdco</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;Pdco&#39;</span><span class="p">]</span>
+  <span class="n">Vdco</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;Vdco&#39;</span><span class="p">]</span>
+  <span class="n">Pso</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;Pso&#39;</span><span class="p">]</span>
+  <span class="n">C0</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;C0&#39;</span><span class="p">]</span>
+  <span class="n">C1</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;C1&#39;</span><span class="p">]</span>
+  <span class="n">C2</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;C2&#39;</span><span class="p">]</span>
+  <span class="n">C3</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;C3&#39;</span><span class="p">]</span>
+  <span class="n">Pnt</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">Inverter</span><span class="p">[</span><span class="s">&#39;Pnt&#39;</span><span class="p">]</span>
+
+
+  <span class="n">A</span><span class="o">=</span><span class="n">Pdco</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">C1</span><span class="o">*</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">Vmp</span> <span class="o">-</span> <span class="n">Vdco</span><span class="p">))))</span>
+  <span class="n">B</span><span class="o">=</span><span class="n">Pso</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">C2</span><span class="o">*</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">Vmp</span> <span class="o">-</span> <span class="n">Vdco</span><span class="p">))))</span>
+  <span class="n">C</span><span class="o">=</span><span class="n">C0</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">C3</span><span class="o">*</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">Vmp</span> <span class="o">-</span> <span class="n">Vdco</span><span class="p">))))</span>
+  <span class="n">ACPower</span><span class="o">=</span><span class="p">((</span><span class="n">Paco</span> <span class="o">/</span> <span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="n">B</span><span class="p">))</span> <span class="o">-</span> <span class="n">C</span><span class="o">*</span><span class="p">((</span><span class="n">A</span> <span class="o">-</span> <span class="n">B</span><span class="p">)))</span><span class="o">*</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">Pmp</span> <span class="o">-</span> <span class="n">B</span><span class="p">))</span> <span class="o">+</span> <span class="n">C</span><span class="o">*</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">Pmp</span> <span class="o">-</span> <span class="n">B</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+  <span class="n">ACPower</span><span class="p">[</span><span class="n">ACPower</span> <span class="o">&gt;</span> <span class="n">Paco</span><span class="p">]</span><span class="o">=</span><span class="n">Paco</span>
+  <span class="n">ACPower</span><span class="p">[</span><span class="n">ACPower</span> <span class="o">&lt;</span> <span class="n">Pso</span><span class="p">]</span><span class="o">=-</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Pnt</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="n">ACPower</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

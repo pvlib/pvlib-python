@@ -1,0 +1,420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_readtmy3.pvl_readtmy3 &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvl_physicaliam.pvl_physicaliam" href="pvl_physicaliam.pvl_physicaliam.html" />
+    <link rel="prev" title="pvl_readtmy2.pvl_readtmy2" href="pvl_readtmy2.pvl_readtmy2.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvl_physicaliam.pvl_physicaliam.html" title="pvl_physicaliam.pvl_physicaliam"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvl_readtmy2.pvl_readtmy2.html" title="pvl_readtmy2.pvl_readtmy2"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvl_readtmy2.pvl_readtmy2.html"
+                        title="previous chapter">pvl_readtmy2.pvl_readtmy2</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvl_physicaliam.pvl_physicaliam.html"
+                        title="next chapter">pvl_physicaliam.pvl_physicaliam</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvl_readtmy3.pvl_readtmy3.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvl-readtmy3-pvl-readtmy3">
+<h1>pvl_readtmy3.pvl_readtmy3<a class="headerlink" href="#pvl-readtmy3-pvl-readtmy3" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvl_readtmy3.pvl_readtmy3">
+<tt class="descclassname">pvl_readtmy3.</tt><tt class="descname">pvl_readtmy3</tt><big>(</big><em>FileName</em><big>)</big><a class="reference internal" href="../_modules/pvl_readtmy3.html#pvl_readtmy3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pvl_readtmy3.pvl_readtmy3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a TMY3 file in to a pandas dataframe</p>
+<p>Read a TMY3 file and make a pandas dataframe of the data. Note that values
+contained in the struct are unchanged from the TMY3 file (i.e. units 
+are retained). In the case of any discrepencies between this
+documentation and the TMY3 User&#8217;s Manual ([1]), the TMY3 User&#8217;s Manual
+takes precedence.</p>
+<p>If a FileName is not provided, the user will be prompted to browse to
+an appropriate TMY3 file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>FileName</strong> : string</p>
+<blockquote>
+<div><p>An optional argument which allows the user to select which
+TMY3 format file should be read. A file path may also be necessary if
+the desired TMY3 file is not in the MATLAB working path.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>TMYDATA</strong> : DataFrame</p>
+<blockquote>
+<div><p>A pandas dataframe, is provided with the components in the table below. Note
+that for more detailed descriptions of each component, please consult
+the TMY3 User&#8217;s Manual ([1]), especially tables 1-1 through 1-6.</p>
+</div></blockquote>
+<p><strong>meta</strong> : struct</p>
+<blockquote class="last">
+<div><p>struct of meta data is created, which contains all 
+site metadata available in the file</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_makelocationstruct</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">pvl_readtmy2</span></tt></p>
+</div>
+<p class="rubric">Notes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="15%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">meta field</th>
+<th class="head">format</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>meta.altitude</td>
+<td>Float</td>
+<td>site elevation</td>
+</tr>
+<tr class="row-odd"><td>meta.latitude</td>
+<td>Float</td>
+<td>site latitudeitude</td>
+</tr>
+<tr class="row-even"><td>meta.longitude</td>
+<td>Float</td>
+<td>site longitudeitude</td>
+</tr>
+<tr class="row-odd"><td>meta.Name</td>
+<td>String</td>
+<td>site name</td>
+</tr>
+<tr class="row-even"><td>meta.State</td>
+<td>String</td>
+<td>state</td>
+</tr>
+<tr class="row-odd"><td>meta.TZ</td>
+<td>Float</td>
+<td>timezone</td>
+</tr>
+<tr class="row-even"><td>meta.USAF</td>
+<td>Int</td>
+<td>USAF identifier</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="84%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">TMYData field</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>TMYData.Index</td>
+<td>A pandas datetime index. NOTE, the index is currently timezone unaware, and times are set to local standard time (daylight savings is not indcluded)</td>
+</tr>
+<tr class="row-odd"><td>TMYData.ETR</td>
+<td>Extraterrestrial horizontal radiation recv&#8217;d during 60 minutes prior to timestamp, Wh/m^2</td>
+</tr>
+<tr class="row-even"><td>TMYData.ETRN</td>
+<td>Extraterrestrial normal radiation recv&#8217;d during 60 minutes prior to timestamp, Wh/m^2</td>
+</tr>
+<tr class="row-odd"><td>TMYData.GHI</td>
+<td>Direct and diffuse horizontal radiation recv&#8217;d during 60 minutes prior to timestamp, Wh/m^2</td>
+</tr>
+<tr class="row-even"><td>TMYData.GHISource</td>
+<td>See [1], Table 1-4</td>
+</tr>
+<tr class="row-odd"><td>TMYData.GHIUncertainty</td>
+<td>Uncertainty based on random and bias error estimates                        see [2]</td>
+</tr>
+<tr class="row-even"><td>TMYData.DNI</td>
+<td>Amount of direct normal radiation (modeled) recv&#8217;d during 60 mintues prior to timestamp, Wh/m^2</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DNISource</td>
+<td>See [1], Table 1-4</td>
+</tr>
+<tr class="row-even"><td>TMYData.DNIUncertainty</td>
+<td>Uncertainty based on random and bias error estimates                        see [2]</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DHI</td>
+<td>Amount of diffuse horizontal radiation recv&#8217;d during 60 minutes prior to timestamp, Wh/m^2</td>
+</tr>
+<tr class="row-even"><td>TMYData.DHISource</td>
+<td>See [1], Table 1-4</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DHIUncertainty</td>
+<td>Uncertainty based on random and bias error estimates                        see [2]</td>
+</tr>
+<tr class="row-even"><td>TMYData.GHillum</td>
+<td>Avg. total horizontal illuminance recv&#8217;d during the 60 minutes prior to timestamp, lx</td>
+</tr>
+<tr class="row-odd"><td>TMYData.GHillumSource</td>
+<td>See [1], Table 1-4</td>
+</tr>
+<tr class="row-even"><td>TMYData.GHillumUncertainty</td>
+<td>Uncertainty based on random and bias error estimates                        see [2]</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DNillum</td>
+<td>Avg. direct normal illuminance recv&#8217;d during the 60 minutes prior to timestamp, lx</td>
+</tr>
+<tr class="row-even"><td>TMYData.DNillumSource</td>
+<td>See [1], Table 1-4</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DNillumUncertainty</td>
+<td>Uncertainty based on random and bias error estimates                        see [2]</td>
+</tr>
+<tr class="row-even"><td>TMYData.DHillum</td>
+<td>Avg. horizontal diffuse illuminance recv&#8217;d during the 60 minutes prior to timestamp, lx</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DHillumSource</td>
+<td>See [1], Table 1-4</td>
+</tr>
+<tr class="row-even"><td>TMYData.DHillumUncertainty</td>
+<td>Uncertainty based on random and bias error estimates                        see [2]</td>
+</tr>
+<tr class="row-odd"><td>TMYData.Zenithlum</td>
+<td>Avg. luminance at the sky&#8217;s zenith during the 60 minutes prior to timestamp, cd/m^2</td>
+</tr>
+<tr class="row-even"><td>TMYData.ZenithlumSource</td>
+<td>See [1], Table 1-4</td>
+</tr>
+<tr class="row-odd"><td>TMYData.ZenithlumUncertainty</td>
+<td>Uncertainty based on random and bias error estimates                        see [1] section 2.10</td>
+</tr>
+<tr class="row-even"><td>TMYData.TotCld</td>
+<td>Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky</td>
+</tr>
+<tr class="row-odd"><td>TMYData.TotCldSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-even"><td>TMYData.TotCldUnertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-odd"><td>TMYData.OpqCld</td>
+<td>Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky</td>
+</tr>
+<tr class="row-even"><td>TMYData.OpqCldSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-odd"><td>TMYData.OpqCldUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-even"><td>TMYData.DryBulb</td>
+<td>Dry bulb temperature at the time indicated, deg C</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DryBulbSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-even"><td>TMYData.DryBulbUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DewPoint</td>
+<td>Dew-point temperature at the time indicated, deg C</td>
+</tr>
+<tr class="row-even"><td>TMYData.DewPointSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-odd"><td>TMYData.DewPointUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-even"><td>TMYData.RHum</td>
+<td>Relatitudeive humidity at the time indicated, percent</td>
+</tr>
+<tr class="row-odd"><td>TMYData.RHumSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-even"><td>TMYData.RHumUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-odd"><td>TMYData.Pressure</td>
+<td>Station pressure at the time indicated, 1 mbar</td>
+</tr>
+<tr class="row-even"><td>TMYData.PressureSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-odd"><td>TMYData.PressureUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-even"><td>TMYData.Wdir</td>
+<td>Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm)</td>
+</tr>
+<tr class="row-odd"><td>TMYData.WdirSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-even"><td>TMYData.WdirUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-odd"><td>TMYData.Wspd</td>
+<td>Wind speed at the time indicated, meter/second</td>
+</tr>
+<tr class="row-even"><td>TMYData.WspdSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-odd"><td>TMYData.WspdUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-even"><td>TMYData.Hvis</td>
+<td>Distance to discernable remote objects at time indicated (7777=unlimited), meter</td>
+</tr>
+<tr class="row-odd"><td>TMYData.HvisSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-even"><td>TMYData.HvisUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-odd"><td>TMYData.CeilHgt</td>
+<td>Height of cloud base above local terrain (7777=unlimited), meter</td>
+</tr>
+<tr class="row-even"><td>TMYData.CeilHgtSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-odd"><td>TMYData.CeilHgtUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-even"><td>TMYData.Pwat</td>
+<td>Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm</td>
+</tr>
+<tr class="row-odd"><td>TMYData.PwatSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-even"><td>TMYData.PwatUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-odd"><td>TMYData.AOD</td>
+<td>The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless</td>
+</tr>
+<tr class="row-even"><td>TMYData.AODSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-odd"><td>TMYData.AODUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-even"><td>TMYData.Alb</td>
+<td>The ratio of reflected solar irradiance to global horizontal irradiance, unitless</td>
+</tr>
+<tr class="row-odd"><td>TMYData.AlbSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-even"><td>TMYData.AlbUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+<tr class="row-odd"><td>TMYData.Lprecipdepth</td>
+<td>The amount of liquid precipitation observed at indicated time for the period indicated in the liquid precipitation quantity field, millimeter</td>
+</tr>
+<tr class="row-even"><td>TMYData.Lprecipquantity</td>
+<td>The period of accumulatitudeion for the liquid precipitation depth field, hour</td>
+</tr>
+<tr class="row-odd"><td>TMYData.LprecipSource</td>
+<td>See [1], Table 1-5, 8760x1 cell array of strings</td>
+</tr>
+<tr class="row-even"><td>TMYData.LprecipUncertainty</td>
+<td>See [1], Table 1-6</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>[1] Wilcox, S and Marion, W. &#8220;Users Manual for TMY3 Data Sets&#8221;.
+NREL/TP-581-43156, Revised May 2008.</p>
+<p>[2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005 
+Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvl_physicaliam.pvl_physicaliam.html" title="pvl_physicaliam.pvl_physicaliam"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvl_readtmy2.pvl_readtmy2.html" title="pvl_readtmy2.pvl_readtmy2"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

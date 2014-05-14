@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_absoluteairmass &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pvl_absoluteairmass</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pvl_tools</span> <span class="kn">as</span> <span class="nn">pvt</span>
+
+<span class="k">def</span> <span class="nf">pvl_absoluteairmass</span><span class="p">(</span><span class="n">AMrelative</span><span class="p">,</span><span class="n">Pressure</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Determine absolute (pressure corrected) airmass from relative airmass and pressure</span>
+<div class="viewcode-block" id="pvl_absoluteairmass"><a class="viewcode-back" href="../stubs/pvl_absoluteairmass.pvl_absoluteairmass.html#pvl_absoluteairmass.pvl_absoluteairmass">[docs]</a>
+<span class="sd">	Gives the airmass for locations not at sea-level (i.e. not at standard</span>
+<span class="sd">	pressure). The input argument &quot;AMrelative&quot; is the relative airmass. The</span>
+<span class="sd">	input argument &quot;pressure&quot; is the pressure (in Pascals) at the location</span>
+<span class="sd">	of interest and must be greater than 0. The calculation for</span>
+<span class="sd">	absolute airmass is:</span>
+<span class="sd">	absolute airmass = (relative airmass)*pressure/101325</span>
+
+<span class="sd">	Parameters</span>
+<span class="sd">	----------</span>
+
+<span class="sd">	AMrelative : float or DataFrame</span>
+<span class="sd">	</span>
+<span class="sd">				The airmass at sea-level which can be calculated using the </span>
+<span class="sd">				PV_LIB function pvl_relativeairmass. </span>
+<span class="sd">	</span>
+<span class="sd">	pressure : float or DataFrame</span>
+
+<span class="sd">				a scalar or vector of values providing the site pressure in</span>
+<span class="sd">				Pascal. If pressure is a vector it must be of the same size as all</span>
+<span class="sd">				other vector inputs. pressure must be &gt;=0. Pressure may be measured</span>
+<span class="sd">				or an average pressure may be calculated from site altitude.</span>
+
+<span class="sd">	Returns</span>
+<span class="sd">	-------</span>
+
+<span class="sd">	AMa : float or DataFrame</span>
+
+<span class="sd">				Absolute (pressure corrected) airmass</span>
+
+<span class="sd">	References</span>
+<span class="sd">	----------</span>
+
+<span class="sd">	[1] C. Gueymard, &quot;Critical analysis and performance assessment of </span>
+<span class="sd">	clear sky solar irradiance models using theoretical and measured data,&quot;</span>
+<span class="sd">	Solar Energy, vol. 51, pp. 121-138, 1993.</span>
+
+<span class="sd">	See also </span>
+<span class="sd">	---------</span>
+<span class="sd">	pvl_relativeairmass </span>
+
+<span class="sd">	&#39;&#39;&#39;</span>
+	
+	<span class="n">Vars</span><span class="o">=</span><span class="nb">locals</span><span class="p">()</span>
+	<span class="n">Expect</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;AMrelative&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;array&#39;</span><span class="p">,</span><span class="s">&#39;num&#39;</span><span class="p">),</span>
+			<span class="s">&#39;Pressure&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;array&#39;</span><span class="p">,</span> <span class="s">&#39;num&#39;</span><span class="p">,</span> <span class="s">&#39;x&gt;0&#39;</span><span class="p">)}</span>
+
+	<span class="n">var</span><span class="o">=</span><span class="n">pvt</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">Vars</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span>
+	
+	<span class="n">AMa</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">AMrelative</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">Pressure</span><span class="p">)</span> <span class="o">/</span> <span class="mi">101325</span>
+	
+	<span class="k">return</span> <span class="n">AMa</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

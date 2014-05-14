@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_sapmcelltemp &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pvl_sapmcelltemp</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pvl_tools</span>
+
+<span class="k">def</span> <span class="nf">pvl_sapmcelltemp</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">Wspd</span><span class="p">,</span> <span class="n">Tamb</span><span class="p">,</span><span class="n">modelt</span><span class="o">=</span><span class="s">&#39;Open_rack_cell_glassback&#39;</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+  <span class="sd">&#39;&#39;&#39;</span>
+<div class="viewcode-block" id="pvl_sapmcelltemp"><a class="viewcode-back" href="../stubs/pvl_sapmcelltemp.pvl_sapmcelltemp.html#pvl_sapmcelltemp.pvl_sapmcelltemp">[docs]</a><span class="sd">  Estimate cell temperature from irradiance, windspeed, ambient temperature, and module parameters (SAPM)</span>
+
+<span class="sd">  Estimate cell and module temperatures per the Sandia PV Array</span>
+<span class="sd">  Performance model (SAPM, SAND2004-3535), when given the incident</span>
+<span class="sd">  irradiance, wind speed, ambient temperature, and SAPM module</span>
+<span class="sd">  parameters.</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  E : float or DataFrame</span>
+<span class="sd">          Total incident irradiance in W/m^2. Must be &gt;=0.</span>
+
+
+<span class="sd">  windspeed : float or DataFrame</span>
+<span class="sd">          Wind speed in m/s at a height of 10 meters. Must be &gt;=0</span>
+
+<span class="sd">  Tamb : float or DataFrame</span>
+<span class="sd">          Ambient dry bulb temperature in degrees C. Must be &gt;= -273.15.</span>
+
+
+<span class="sd">  Other Parameters</span>
+<span class="sd">  ----------------</span>
+
+<span class="sd">  modelt :  string</span>
+
+<span class="sd">  Model to be used for parameters, can be:</span>
+
+<span class="sd">          * &#39;Open_rack_cell_glassback&#39; (DEFAULT)</span>
+<span class="sd">          * &#39;Roof_mount_cell_glassback&#39;</span>
+<span class="sd">          * &#39;Open_rack_cell_polymerback&#39;</span>
+<span class="sd">          * &#39;Insulated_back_polumerback&#39;</span>
+<span class="sd">          * &#39;Open_rack_Polymer_thinfilm_steel&#39;</span>
+<span class="sd">          * &#39;22X_Concentrator_tracker&#39;</span>
+
+<span class="sd">  a : float (optional)</span>
+<span class="sd">          SAPM module parameter for establishing the upper limit for module </span>
+<span class="sd">          temperature at low wind speeds and high solar irradiance (see SAPM</span>
+<span class="sd">          eqn. 11). Must be a scalar.If not input, this value will be taken from the chosen</span>
+<span class="sd">          model</span>
+<span class="sd">  b : float (optional)</span>
+
+<span class="sd">          SAPM module parameter for establishing the rate at which the module</span>
+<span class="sd">          temperature drops as wind speed increases (see SAPM eqn. 11). Must be</span>
+<span class="sd">          a scalar.If not input, this value will be taken from the chosen</span>
+<span class="sd">          model</span>
+
+<span class="sd">  deltaT : float (optional) </span>
+
+<span class="sd">          SAPM module parameter giving the temperature difference</span>
+<span class="sd">          between the cell and module back surface at the reference irradiance,</span>
+<span class="sd">          E0. Must be a numeric scalar &gt;=0. If not input, this value will be taken from the chosen</span>
+<span class="sd">          model</span>
+
+<span class="sd">  Returns</span>
+<span class="sd">  --------</span>
+<span class="sd">  Tcell : float or DataFrame</span>
+<span class="sd">          Cell temperatures in degrees C.</span>
+<span class="sd">  </span>
+<span class="sd">  Tmodule : float or DataFrame</span>
+<span class="sd">          Module back temperature in degrees C.</span>
+
+<span class="sd">  References</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  [1] King, D. et al, 2004, &quot;Sandia Photovoltaic Array Performance Model&quot;, SAND Report</span>
+<span class="sd">  3535, Sandia National Laboratories, Albuquerque, NM</span>
+
+<span class="sd">  See Also </span>
+<span class="sd">  --------</span>
+
+<span class="sd">  pvl_sapm</span>
+<span class="sd">  &#39;&#39;&#39;</span>
+  <span class="n">Vars</span><span class="o">=</span><span class="nb">locals</span><span class="p">()</span>
+  <span class="n">Expect</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:(</span><span class="s">&#39;optional&#39;</span><span class="p">,</span><span class="s">&#39;num&#39;</span><span class="p">),</span>
+          <span class="s">&#39;b&#39;</span><span class="p">:(</span><span class="s">&#39;optional&#39;</span><span class="p">,</span><span class="s">&#39;num&#39;</span><span class="p">),</span>
+          <span class="s">&#39;deltaT&#39;</span><span class="p">:(</span><span class="s">&#39;optional&#39;</span><span class="p">,</span><span class="s">&#39;num&#39;</span><span class="p">),</span> 
+          <span class="s">&#39;E&#39;</span><span class="p">:(</span><span class="s">&#39;x&gt;=0&#39;</span><span class="p">),</span>
+          <span class="s">&#39;Wspd&#39;</span><span class="p">:(</span><span class="s">&#39;x&gt;=0&#39;</span><span class="p">),</span>
+          <span class="s">&#39;Tamb&#39;</span><span class="p">:(</span><span class="s">&#39;x&gt;=0&#39;</span><span class="p">),</span>
+          <span class="s">&#39;modelt&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;default&#39;</span><span class="p">,</span><span class="s">&#39;default=Open_rack_cell_glassback&#39;</span><span class="p">)</span>
+          <span class="p">}</span>
+
+  <span class="n">var</span><span class="o">=</span><span class="n">pvl_tools</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">Vars</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span>
+
+  <span class="n">TempModel</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;Open_rack_cell_glassback&#39;</span><span class="p">:[</span><span class="o">-</span><span class="mf">3.47</span><span class="p">,</span> <span class="o">-.</span><span class="mo">05</span><span class="mi">94</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+              <span class="s">&#39;Roof_mount_cell_glassback&#39;</span><span class="p">:[</span><span class="o">-</span><span class="mf">2.98</span><span class="p">,</span> <span class="o">-.</span><span class="mo">0471</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+              <span class="s">&#39;Open_rack_cell_polymerback&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">3.56</span><span class="p">,</span> <span class="o">-.</span><span class="mo">0750</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+              <span class="s">&#39;Insulated_back_polumerback&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">2.81</span><span class="p">,</span> <span class="o">-.</span><span class="mo">0455</span><span class="p">,</span> <span class="mi">0</span> <span class="p">],</span>
+              <span class="s">&#39;Open_rack_Polymer_thinfilm_steel&#39;</span><span class="p">:[</span><span class="o">-</span><span class="mf">3.58</span><span class="p">,</span> <span class="o">-.</span><span class="mi">113</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+              <span class="s">&#39;22X_Concentrator_tracker&#39;</span><span class="p">:[</span><span class="o">-</span><span class="mf">3.23</span><span class="p">,</span> <span class="o">-.</span><span class="mi">130</span><span class="p">,</span> <span class="mi">13</span><span class="p">]</span>
+          <span class="p">}</span>
+  <span class="k">try</span><span class="p">:</span> 
+      <span class="n">a</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">a</span>
+      <span class="n">b</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">b</span>
+      <span class="n">deltaT</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">deltaT</span>
+  <span class="k">except</span><span class="p">:</span>
+      <span class="n">a</span><span class="o">=</span><span class="n">TempModel</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">modelt</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+      <span class="n">b</span><span class="o">=</span><span class="n">TempModel</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">modelt</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+      <span class="n">deltaT</span><span class="o">=</span><span class="n">TempModel</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">modelt</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+
+  <span class="n">E0</span><span class="o">=</span><span class="mi">1000</span> <span class="c"># Reference irradiance</span>
+
+  <span class="n">Tmodule</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">E</span><span class="o">*</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="o">*</span><span class="n">var</span><span class="o">.</span><span class="n">Wspd</span><span class="p">)))</span> <span class="o">+</span> <span class="n">var</span><span class="o">.</span><span class="n">Tamb</span>
+
+  <span class="n">Tcell</span><span class="o">=</span><span class="n">Tmodule</span> <span class="o">+</span> <span class="n">var</span><span class="o">.</span><span class="n">E</span> <span class="o">/</span> <span class="n">E0</span><span class="o">*</span><span class="p">(</span><span class="n">deltaT</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="n">Tcell</span><span class="p">,</span> <span class="n">Tmodule</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

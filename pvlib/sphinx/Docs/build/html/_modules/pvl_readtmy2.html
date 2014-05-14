@@ -1,0 +1,349 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_readtmy2 &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pvl_readtmy2</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">Tkinter</span> 
+<span class="kn">import</span> <span class="nn">pvl_tools</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+<span class="kn">from</span> <span class="nn">tkFileDialog</span> <span class="kn">import</span> <span class="n">askopenfilename</span>
+
+<span class="k">def</span> <span class="nf">pvl_readtmy2</span><span class="p">(</span><span class="n">FileName</span><span class="p">):</span>
+<div class="viewcode-block" id="pvl_readtmy2"><a class="viewcode-back" href="../stubs/pvl_readtmy2.pvl_readtmy2.html#pvl_readtmy2.pvl_readtmy2">[docs]</a>  <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">  Read a TMY2 file in to a DataFrame</span>
+
+<span class="sd">  </span>
+<span class="sd">  Note that valuescontained in the DataFrame are unchanged from the TMY2 </span>
+<span class="sd">  file (i.e. units  are retained). Time/Date and Location data imported from the </span>
+<span class="sd">  TMY2 file have been modified to a &quot;friendlier&quot; form conforming to modern</span>
+<span class="sd">  conventions (e.g. N latitude is postive, E longitude is positive, the</span>
+<span class="sd">  &quot;24th&quot; hour of any day is technically the &quot;0th&quot; hour of the next day).</span>
+<span class="sd">  In the case of any discrepencies between this documentation and the </span>
+<span class="sd">  TMY2 User&#39;s Manual ([1]), the TMY2 User&#39;s Manual takes precedence.</span>
+
+<span class="sd">  If a FileName is not provided, the user will be prompted to browse to</span>
+<span class="sd">  an appropriate TMY2 file.</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+<span class="sd">  FileName : string</span>
+
+<span class="sd">          an optional argument which allows the user to select which</span>
+<span class="sd">          TMY2 format file should be read. A file path may also be necessary if</span>
+<span class="sd">          the desired TMY2 file is not in the working path. If FileName</span>
+<span class="sd">          is not provided, the user will be prompted to browse to an</span>
+<span class="sd">          appropriate TMY2 file.</span>
+
+<span class="sd">  Returns</span>
+<span class="sd">  -------</span>
+<span class="sd">  </span>
+<span class="sd">  TMYData : DataFrame </span>
+
+<span class="sd">          A dataframe, is provided with the following components.  Note</span>
+<span class="sd">          that for more detailed descriptions of each component, please consult</span>
+<span class="sd">          the TMY2 User&#39;s Manual ([1]), especially tables 3-1 through 3-6, and </span>
+<span class="sd">          Appendix B. </span>
+
+<span class="sd">  meta : struct</span>
+
+<span class="sd">         A struct containing the metadata from the TMY2 file.</span>
+
+<span class="sd">  Notes</span>
+<span class="sd">  -----</span>
+<span class="sd">  </span>
+<span class="sd">  The structures have the following fields</span>
+
+<span class="sd">  ============================     ============================================================ </span>
+<span class="sd">  meta Field</span>
+<span class="sd">  ============================     ============================================================</span>
+<span class="sd">  meta.SiteID                      Site identifier code (WBAN number), scalar unsigned integer</span>
+<span class="sd">  meta.StationName                 Station name, 1x1 cell string</span>
+<span class="sd">  meta.StationState                Station state 2 letter designator, 1x1 cell string</span>
+<span class="sd">  meta.SiteTimeZone                Hours from Greenwich, scalar double</span>
+<span class="sd">  meta.latitude                    Latitude in decimal degrees, scalar double</span>
+<span class="sd">  meta.longitude                   Longitude in decimal degrees, scalar double</span>
+<span class="sd">  meta.SiteElevation               Site elevation in meters, scalar double</span>
+<span class="sd">  ============================     ============================================================</span>
+
+<span class="sd">  ============================   ==========================================================================================================================================================================</span>
+<span class="sd">  TMYData Field                       Meaning</span>
+<span class="sd">  ============================   ==========================================================================================================================================================================</span>
+<span class="sd">  index                           Pandas timeseries object containing timestamps</span>
+<span class="sd">  year                              </span>
+<span class="sd">  month                            </span>
+<span class="sd">  day                   </span>
+<span class="sd">  hour</span>
+<span class="sd">  ETR                             Extraterrestrial horizontal radiation recv&#39;d during 60 minutes prior to timestamp, Wh/m^2</span>
+<span class="sd">  ETRN                            Extraterrestrial normal radiation recv&#39;d during 60 minutes prior to timestamp, Wh/m^2</span>
+<span class="sd">  GHI                             Direct and diffuse horizontal radiation recv&#39;d during 60 minutes prior to timestamp, Wh/m^2</span>
+<span class="sd">  GHISource                       See [1], Table 3-3</span>
+<span class="sd">  GHIUncertainty                  See [1], Table 3-4</span>
+<span class="sd">  DNI                             Amount of direct normal radiation (modeled) recv&#39;d during 60 mintues prior to timestamp, Wh/m^2</span>
+<span class="sd">  DNISource                       See [1], Table 3-3</span>
+<span class="sd">  DNIUncertainty                  See [1], Table 3-4</span>
+<span class="sd">  DHI                             Amount of diffuse horizontal radiation recv&#39;d during 60 minutes prior to timestamp, Wh/m^2</span>
+<span class="sd">  DHISource                       See [1], Table 3-3</span>
+<span class="sd">  DHIUncertainty                  See [1], Table 3-4</span>
+<span class="sd">  GHillum                         Avg. total horizontal illuminance recv&#39;d during the 60 minutes prior to timestamp, units of 100 lux (e.g. value of 50 = 5000 lux)</span>
+<span class="sd">  GHillumSource                   See [1], Table 3-3</span>
+<span class="sd">  GHillumUncertainty              See [1], Table 3-4</span>
+<span class="sd">  DNillum                         Avg. direct normal illuminance recv&#39;d during the 60 minutes prior to timestamp, units of 100 lux</span>
+<span class="sd">  DNillumSource                   See [1], Table 3-3</span>
+<span class="sd">  DNillumUncertainty              See [1], Table 3-4</span>
+<span class="sd">  DHillum                         Avg. horizontal diffuse illuminance recv&#39;d during the 60 minutes prior to timestamp, units of 100 lux</span>
+<span class="sd">  DHillumSource                   See [1], Table 3-3</span>
+<span class="sd">  DHillumUncertainty              See [1], Table 3-4</span>
+<span class="sd">  Zenithlum                       Avg. luminance at the sky&#39;s zenith during the 60 minutes prior to timestamp, units of 10 Cd/m^2 (e.g. value of 700 = 7,000 Cd/m^2)</span>
+<span class="sd">  ZenithlumSource                 See [1], Table 3-3</span>
+<span class="sd">  ZenithlumUncertainty            See [1], Table 3-4</span>
+<span class="sd">  TotCld                          Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky</span>
+<span class="sd">  TotCldSource                    See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  TotCldUnertainty                See [1], Table 3-6</span>
+<span class="sd">  OpqCld                          Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky</span>
+<span class="sd">  OpqCldSource                    See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  OpqCldUncertainty               See [1], Table 3-6</span>
+<span class="sd">  DryBulb                         Dry bulb temperature at the time indicated, in tenths of degree C (e.g. 352 = 35.2 C).</span>
+<span class="sd">  DryBulbSource                   See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  DryBulbUncertainty              See [1], Table 3-6</span>
+<span class="sd">  DewPoint                        Dew-point temperature at the time indicated, in tenths of degree C (e.g. 76 = 7.6 C).</span>
+<span class="sd">  DewPointSource                  See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  DewPointUncertainty             See [1], Table 3-6</span>
+<span class="sd">  RHum                            Relative humidity at the time indicated, percent</span>
+<span class="sd">  RHumSource                      See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  RHumUncertainty                 See [1], Table 3-6</span>
+<span class="sd">  Pressure                        Station pressure at the time indicated, 1 mbar</span>
+<span class="sd">  PressureSource                  See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  PressureUncertainty             See [1], Table 3-6</span>
+<span class="sd">  Wdir                            Wind direction at time indicated, degrees from east of north (360 = 0 = north; 90 = East; 0 = undefined,calm) </span>
+<span class="sd">  WdirSource                      See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  WdirUncertainty                 See [1], Table 3-6</span>
+<span class="sd">  Wspd                            Wind speed at the time indicated, in tenths of meters/second (e.g. 212 = 21.2 m/s)</span>
+<span class="sd">  WspdSource                      See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  WspdUncertainty                 See [1], Table 3-6</span>
+<span class="sd">  Hvis                            Distance to discernable remote objects at time indicated (7777=unlimited, 9999=missing data), in tenths of kilometers (e.g. 341 = 34.1 km).</span>
+<span class="sd">  HvisSource                      See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  HvisUncertainty                 See [1], Table 3-6</span>
+<span class="sd">  CeilHgt                         Height of cloud base above local terrain (7777=unlimited, 88888=cirroform, 99999=missing data), in meters</span>
+<span class="sd">  CeilHgtSource                   See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  CeilHgtUncertainty              See [1], Table 3-6</span>
+<span class="sd">  Pwat                            Total precipitable water contained in a column of unit cross section from Earth to top of atmosphere, in millimeters</span>
+<span class="sd">  PwatSource                      See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  PwatUncertainty                 See [1], Table 3-6</span>
+<span class="sd">  AOD                             The broadband aerosol optical depth (broadband turbidity) in thousandths on the day indicated (e.g. 114 = 0.114)</span>
+<span class="sd">  AODSource                       See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  AODUncertainty                  See [1], Table 3-6</span>
+<span class="sd">  SnowDepth                       Snow depth in centimeters on the day indicated, (999 = missing data).</span>
+<span class="sd">  SnowDepthSource                 See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  SnowDepthUncertainty            See [1], Table 3-6</span>
+<span class="sd">  LastSnowfall                    Number of days since last snowfall (maximum value of 88, where 88 = 88 or greater days; 99 = missing data)</span>
+<span class="sd">  LastSnowfallSource              See [1], Table 3-5, 8760x1 cell array of strings</span>
+<span class="sd">  LastSnowfallUncertainty         See [1], Table 3-6</span>
+<span class="sd">  PresentWeather                  See [1], Appendix B, an 8760x1 cell array of strings. Each string contains 10 numeric values. The string can be parsed to determine each of 10 observed weather metrics.</span>
+<span class="sd">  ============================   ==========================================================================================================================================================================</span>
+
+<span class="sd">  References</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  [1] Marion, W and Urban, K. &quot;Wilcox, S and Marion, W. &quot;User&#39;s Manual</span>
+<span class="sd">  for TMY2s&quot;. NREL 1995.</span>
+
+<span class="sd">  See also</span>
+<span class="sd">  --------</span>
+<span class="sd">  </span>
+<span class="sd">  pvl_makelocationstruct </span>
+<span class="sd">  pvl_maketimestruct  </span>
+<span class="sd">  pvl_readtmy3</span>
+
+<span class="sd">  &#39;&#39;&#39;</span>
+  <span class="n">Vars</span><span class="o">=</span><span class="nb">locals</span><span class="p">()</span>
+  <span class="n">Expect</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;FileName&#39;</span><span class="p">:(</span><span class="s">&#39;open&#39;</span><span class="p">)}</span>
+  <span class="n">var</span><span class="o">=</span><span class="p">[]</span>
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Vars</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+  	<span class="n">Tkinter</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span><span class="o">.</span><span class="n">withdraw</span><span class="p">()</span> 
+  	<span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;FileName&#39;</span><span class="p">:</span> <span class="n">askopenfilename</span><span class="p">()}</span> 
+  	<span class="n">var</span><span class="o">=</span><span class="n">pvl_tools</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+  	<span class="n">var</span><span class="o">=</span><span class="n">pvl_tools</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">Vars</span><span class="p">,</span><span class="n">Expect</span><span class="p">)</span>
+
+  <span class="n">string</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d</span><span class="s">&#39;</span>
+  <span class="n">columns</span><span class="o">=</span><span class="s">&#39;year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint&#39;</span>
+  <span class="n">hdr_columns</span><span class="o">=</span><span class="s">&#39;WBAN,City,State,TimeZone,Latitude,Longitude,Elevation&#39;</span>
+
+  <span class="n">TMY2</span><span class="p">,</span><span class="n">TMY2_meta</span><span class="o">=</span><span class="n">readTMY</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">columns</span><span class="p">,</span><span class="n">hdr_columns</span><span class="p">,</span><span class="n">var</span><span class="o">.</span><span class="n">FileName</span><span class="p">)</span>	
+
+  <span class="k">return</span> <span class="n">TMY2</span><span class="p">,</span><span class="n">TMY2_meta</span>
+
+<span class="k">def</span> <span class="nf">parsemeta</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span><span class="n">line</span><span class="p">):</span></div>
+  <span class="sd">&quot;&quot;&quot;Retreives metadata from the top line of the tmy2 file</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  Columns : string</span>
+<span class="sd">          String of column headings in the header</span>
+
+<span class="sd">  line : string</span>
+<span class="sd">          Header string containing DataFrame</span>
+
+<span class="sd">  Returns</span>
+<span class="sd">  -------</span>
+
+<span class="sd">  meta : Dict of metadata contained in the header string</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">rawmeta</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">)</span> <span class="c">#Remove sduplicated spaces, and read in each element</span>
+  <span class="n">meta</span><span class="o">=</span><span class="n">rawmeta</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="c">#take the first string entries</span>
+  <span class="n">longitude</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">rawmeta</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span><span class="o">+</span><span class="nb">float</span><span class="p">(</span><span class="n">rawmeta</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span><span class="o">/</span><span class="mi">60</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">rawmeta</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">==</span><span class="s">&#39;N&#39;</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="c">#Convert to decimal notation with S negative</span>
+  <span class="n">latitude</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">rawmeta</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span><span class="o">+</span><span class="nb">float</span><span class="p">(</span><span class="n">rawmeta</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span><span class="o">/</span><span class="mi">60</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">rawmeta</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="o">==</span><span class="s">&#39;E&#39;</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c">#Convert to decimal notation with W negative</span>
+  <span class="n">meta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">longitude</span><span class="p">)</span>
+  <span class="n">meta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">latitude</span><span class="p">)</span>
+  <span class="n">meta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">rawmeta</span><span class="p">[</span><span class="mi">10</span><span class="p">]))</span>	
+  <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">columns</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">),</span><span class="n">meta</span><span class="p">))</span> <span class="c">#Creates a dictionary of metadata</span>
+
+<span class="k">def</span> <span class="nf">readTMY</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">columns</span><span class="p">,</span><span class="n">hdr_columns</span><span class="p">,</span><span class="n">fname</span><span class="p">):</span>
+	<span class="n">head</span><span class="o">=</span><span class="mi">1</span>
+	<span class="n">date</span><span class="o">=</span><span class="p">[]</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+		<span class="n">fline</span><span class="o">=</span><span class="mi">0</span>
+		<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">infile</span><span class="p">:</span>
+			<span class="c">#Skip the header</span>
+			<span class="k">if</span> <span class="n">head</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+				<span class="n">meta</span><span class="o">=</span><span class="n">parsemeta</span><span class="p">(</span><span class="n">hdr_columns</span><span class="p">,</span><span class="n">line</span><span class="p">)</span>
+				<span class="n">head</span><span class="o">-=</span><span class="mi">1</span>
+				<span class="k">continue</span>
+			<span class="c">#Reset the cursor and array for each line    </span>
+			<span class="n">cursor</span><span class="o">=</span><span class="mi">1</span>
+			<span class="n">part</span><span class="o">=</span><span class="p">[]</span>
+			<span class="k">for</span> <span class="n">marker</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;%&#39;</span><span class="p">):</span>
+				<span class="c">#Skip the first line of markers</span>
+				<span class="k">if</span> <span class="n">marker</span><span class="o">==</span><span class="s">&#39;&#39;</span><span class="p">:</span>
+					<span class="k">continue</span>
+				
+				<span class="c">#Read the next increment from the marker list    </span>
+				<span class="n">increment</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s">&#39;\d+&#39;</span><span class="p">,</span><span class="n">marker</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+				<span class="c">#Extract the value from the line in the file</span>
+				<span class="n">val</span><span class="o">=</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="n">cursor</span><span class="p">:</span><span class="n">cursor</span><span class="o">+</span><span class="n">increment</span><span class="p">])</span>
+				<span class="c">#increment the cursor by the length of the read value</span>
+				<span class="n">cursor</span><span class="o">=</span><span class="n">cursor</span><span class="o">+</span><span class="n">increment</span>
+			 
+
+				<span class="c"># Determine the datatype from the marker string</span>
+				<span class="k">if</span> <span class="n">marker</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s">&#39;d&#39;</span><span class="p">:</span>
+					<span class="k">try</span><span class="p">:</span>
+						<span class="n">val</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+					<span class="k">except</span><span class="p">:</span>
+						<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;WARNING: In&#39;</span><span class="o">+</span><span class="n">__name__</span><span class="o">+</span><span class="s">&#39; Read value is not an integer&quot; &#39;</span><span class="o">+</span><span class="n">val</span><span class="o">+</span><span class="s">&#39; &quot; &#39;</span><span class="p">)</span>
+				<span class="k">elif</span> <span class="n">marker</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s">&#39;s&#39;</span><span class="p">:</span>
+					<span class="k">try</span><span class="p">:</span>
+						<span class="n">val</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+					<span class="k">except</span><span class="p">:</span>
+						<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;WARNING: In&#39;</span><span class="o">+</span><span class="n">__name__</span><span class="o">+</span><span class="s">&#39; Read value is not a string&quot; &#39;</span><span class="o">+</span><span class="n">val</span><span class="o">+</span><span class="s">&#39; &quot; &#39;</span><span class="p">)</span>
+				<span class="k">else</span><span class="p">:</span> 
+					<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;WARNING: In&#39;</span><span class="o">+</span><span class="n">__name__</span><span class="o">+</span><span class="s">&#39;Improper column DataFrameure &quot; %&#39;</span><span class="o">+</span><span class="n">marker</span><span class="o">+</span><span class="s">&#39; &quot; &#39;</span><span class="p">)</span>
+					
+				<span class="n">part</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+				
+			<span class="k">if</span> <span class="n">fline</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+				<span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="n">part</span><span class="p">]</span>
+				<span class="n">year</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1900</span>
+				<span class="n">fline</span><span class="o">=</span><span class="mi">1</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+				
+			<span class="c">#Create datetime objects from read data</span>
+			<span class="n">date</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">),</span><span class="n">month</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">day</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span><span class="n">hour</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+	
+	<span class="n">TMYData</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="n">date</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">))</span>
+
+	<span class="k">return</span> <span class="n">TMYData</span><span class="p">,</span><span class="n">meta</span>
+			
+			
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

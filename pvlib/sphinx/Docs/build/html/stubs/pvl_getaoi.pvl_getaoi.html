@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_getaoi.pvl_getaoi &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvl_disc.pvl_disc" href="pvl_disc.pvl_disc.html" />
+    <link rel="prev" title="pvl_pres2alt.pvl_pres2alt" href="pvl_pres2alt.pvl_pres2alt.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvl_disc.pvl_disc.html" title="pvl_disc.pvl_disc"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvl_pres2alt.pvl_pres2alt.html" title="pvl_pres2alt.pvl_pres2alt"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvl_pres2alt.pvl_pres2alt.html"
+                        title="previous chapter">pvl_pres2alt.pvl_pres2alt</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvl_disc.pvl_disc.html"
+                        title="next chapter">pvl_disc.pvl_disc</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvl_getaoi.pvl_getaoi.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvl-getaoi-pvl-getaoi">
+<h1>pvl_getaoi.pvl_getaoi<a class="headerlink" href="#pvl-getaoi-pvl-getaoi" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvl_getaoi.pvl_getaoi">
+<tt class="descclassname">pvl_getaoi.</tt><tt class="descname">pvl_getaoi</tt><big>(</big><em>SurfTilt</em>, <em>SurfAz</em>, <em>SunZen</em>, <em>SunAz</em><big>)</big><a class="reference internal" href="../_modules/pvl_getaoi.html#pvl_getaoi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pvl_getaoi.pvl_getaoi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine angle of incidence from surface tilt/azimuth and apparent sun zenith/azimuth</p>
+<p>The surface is defined by its tilt angle from horizontal and its azimuth pointing angle. 
+The sun position is defined by the apparent (refraction corrected)sun zenith angle and the sun 
+azimuth angle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>SurfTilt</strong> :  scalar or DataFrame of surface tilt angles in decimal degrees</p>
+<blockquote>
+<div><p>If SurfTilt is a DataFrame it must be of the same size as all other DataFrame
+inputs. SurfTilt must be &gt;=0 and &lt;=180. The tilt angle is defined as
+degrees from horizontal (e.g. surface facing up = 0, surface facing
+horizon = 90)</p>
+</div></blockquote>
+<p><strong>SurfAz</strong> :  scalar or DataFrame of the surface azimuth angles in decimal degrees</p>
+<blockquote>
+<div><p>If SurfAz is a DataFrame it must be of the same size as all other DataFrame
+inputs. SurfAz must be &gt;=0 and &lt;=360. The Azimuth convention is defined
+as degrees east of north (e.g. North = 0, East = 90, West = 270).</p>
+</div></blockquote>
+<p><strong>SunZen</strong> : scalar or DataFrame of apparent (refraction-corrected) zenith angles in decimal degrees.</p>
+<blockquote>
+<div><p>If SunZen is a DataFrame it must be of the same size as all other DataFrame 
+inputs. SunZen must be &gt;=0 and &lt;=180.</p>
+</div></blockquote>
+<p><strong>SunAz</strong> : scalar or DataFrame of sun azimuth angles in decimal degrees</p>
+<blockquote>
+<div><p>If SunAz is a DataFrame it must be of the same size as all other DataFrame
+inputs. SunAz must be &gt;=0 and &lt;=360. The Azimuth convention is defined
+as degrees east of north (e.g. North = 0, East = 90, West = 270).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>AOI</strong> : DataFrame</p>
+<blockquote class="last">
+<div><p>The angle, in decimal degrees, between the surface normal DataFrame and the sun beam DataFrame.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">PVL_EPHEMERIS</span></tt></p>
+</div>
+<p class="rubric">References</p>
+<p>D.L. King, J.A. Kratochvil, W.E. Boyson. &#8220;Spectral and
+Angle-of-Incidence Effects on Photovoltaic Modules and Solar Irradiance
+Sensors&#8221;. 26th IEEE Photovoltaic Specialists Conference. Sept. 1997.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvl_disc.pvl_disc.html" title="pvl_disc.pvl_disc"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvl_pres2alt.pvl_pres2alt.html" title="pvl_pres2alt.pvl_pres2alt"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

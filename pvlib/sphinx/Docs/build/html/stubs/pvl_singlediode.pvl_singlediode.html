@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvl_singlediode.pvl_singlediode &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvl_snlinverter.pvl_snlinverter" href="pvl_snlinverter.pvl_snlinverter.html" />
+    <link rel="prev" title="pvl_sapmcelltemp.pvl_sapmcelltemp" href="pvl_sapmcelltemp.pvl_sapmcelltemp.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvl_snlinverter.pvl_snlinverter.html" title="pvl_snlinverter.pvl_snlinverter"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvl_sapmcelltemp.pvl_sapmcelltemp.html" title="pvl_sapmcelltemp.pvl_sapmcelltemp"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvl_sapmcelltemp.pvl_sapmcelltemp.html"
+                        title="previous chapter">pvl_sapmcelltemp.pvl_sapmcelltemp</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvl_snlinverter.pvl_snlinverter.html"
+                        title="next chapter">pvl_snlinverter.pvl_snlinverter</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvl_singlediode.pvl_singlediode.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvl-singlediode-pvl-singlediode">
+<h1>pvl_singlediode.pvl_singlediode<a class="headerlink" href="#pvl-singlediode-pvl-singlediode" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvl_singlediode.pvl_singlediode">
+<tt class="descclassname">pvl_singlediode.</tt><tt class="descname">pvl_singlediode</tt><big>(</big><em>Module</em>, <em>IL</em>, <em>I0</em>, <em>Rs</em>, <em>Rsh</em>, <em>nNsVth</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pvl_singlediode.html#pvl_singlediode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pvl_singlediode.pvl_singlediode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve the single-diode model to obtain a photovoltaic IV curve</p>
+<p>pvl_singlediode solves the single diode equation [1]:
+I = IL - I0*[exp((V+I*Rs)/(nNsVth))-1] - (V + I*Rs)/Rsh
+for I and V when given IL, I0, Rs, Rsh, and nNsVth (nNsVth = n*Ns*Vth) which
+are described later. pvl_singlediode returns a struct which contains
+the 5 points on the I-V curve specified in SAND2004-3535 [3]. 
+If all IL, I0, Rs, Rsh, and nNsVth are scalar, a single curve
+will be returned, if any are DataFrames (of the same length), multiple IV
+curves will be calculated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>These imput parameters can be calculated using PVL_CALCPARAMS_DESOTO from</strong> :</p>
+<p><strong>meterological data.</strong> :</p>
+<p><strong>IL</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Light-generated current (photocurrent) in amperes under desired IV
+curve conditions.</p>
+</div></blockquote>
+<p><strong>I0</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Diode saturation current in amperes under desired IV curve
+conditions.</p>
+</div></blockquote>
+<p><strong>Rs</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Series resistance in ohms under desired IV curve conditions.</p>
+</div></blockquote>
+<p><strong>Rsh</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Shunt resistance in ohms under desired IV curve conditions. May
+be a scalar or DataFrame, but DataFrames must be of same length as all
+other input DataFrames.</p>
+</div></blockquote>
+<p><strong>nNsVth</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>the product of three components. 1) The usual diode ideal 
+factor (n), 2) the number of cells in series (Ns), and 3) the cell 
+thermal voltage under the desired IV curve conditions (Vth).
+The thermal voltage of the cell (in volts) may be calculated as 
+k*Tcell/q, where k is Boltzmann&#8217;s constant (J/K), Tcell is the
+temperature of the p-n junction in Kelvin, and q is the elementary 
+charge of an electron (coulombs).</p>
+</div></blockquote>
+<p><strong>Other Parameters</strong> :</p>
+<p><strong>&#8212;&#8212;&#8212;&#8212;&#8212;-</strong> :</p>
+<p><strong>NumPoints</strong> : integer</p>
+<blockquote>
+<div><p>Number of points in the desired IV curve (optional). Must be a finite 
+scalar value. Non-integer values will be rounded to the next highest
+integer (ceil). If ceil(NumPoints) is &lt; 2, no IV curves will be produced
+(i.e. Result.V and Result.I will not be generated). The default
+value is 0, resulting in no calculation of IV points other than
+those specified in [3].</p>
+</div></blockquote>
+<p><strong>Returns</strong> :</p>
+<p><strong>Result</strong> : DataFrame</p>
+<blockquote class="last">
+<div><p>A DataFrame with the following fields. All fields have the
+same number of rows as the largest input DataFrame:</p>
+<ul class="simple">
+<li>Result.Isc -  short circuit current in amperes.</li>
+<li>Result.Voc -  open circuit voltage in volts.</li>
+<li>Result.Imp -  current at maximum power point in amperes.</li>
+<li>Result.Vmp -  voltage at maximum power point in volts.</li>
+<li>Result.Pmp -  power at maximum power point in watts.</li>
+<li>Result.Ix -  current, in amperes, at V = 0.5*Voc.</li>
+<li>Result.Ixx -  current, in amperes, at V = 0.5*(Voc+Vmp).</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_sapm</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">pvl_calcparams_desoto</span></tt></p>
+</div>
+<p class="rubric">Notes</p>
+<p>The solution employed to solve the implicit diode equation utilizes
+the Lambert W function to obtain an explicit function of V=f(i) and
+I=f(V) as shown in [2].</p>
+<p class="rubric">References</p>
+<p>[1] S.R. Wenham, M.A. Green, M.E. Watt, &#8220;Applied Photovoltaics&#8221; 
+ISBN 0 86758 909 4</p>
+<p>[2] A. Jain, A. Kapoor, &#8220;Exact analytical solutions of the parameters of 
+real solar cells using Lambert W-function&#8221;, Solar Energy Materials 
+and Solar Cells, 81 (2004) 269-277.</p>
+<p>[3] D. King et al, &#8220;Sandia Photovoltaic Array Performance Model&#8221;,
+SAND2004-3535, Sandia National Laboratories, Albuquerque, NM</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvl_snlinverter.pvl_snlinverter.html" title="pvl_snlinverter.pvl_snlinverter"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvl_sapmcelltemp.pvl_sapmcelltemp.html" title="pvl_sapmcelltemp.pvl_sapmcelltemp"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

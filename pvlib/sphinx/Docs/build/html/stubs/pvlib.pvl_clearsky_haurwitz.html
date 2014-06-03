@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvlib.pvl_clearsky_haurwitz &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvlib.pvl_perez" href="pvlib.pvl_perez.html" />
+    <link rel="prev" title="pvlib.pvl_clearsky_ineichen" href="pvlib.pvl_clearsky_ineichen.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_perez.html" title="pvlib.pvl_perez"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_clearsky_ineichen.html" title="pvlib.pvl_clearsky_ineichen"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvlib.pvl_clearsky_ineichen.html"
+                        title="previous chapter">pvlib.pvl_clearsky_ineichen</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvlib.pvl_perez.html"
+                        title="next chapter">pvlib.pvl_perez</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvlib.pvl_clearsky_haurwitz.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvlib-pvl-clearsky-haurwitz">
+<h1>pvlib.pvl_clearsky_haurwitz<a class="headerlink" href="#pvlib-pvl-clearsky-haurwitz" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvlib.pvl_clearsky_haurwitz">
+<tt class="descclassname">pvlib.</tt><tt class="descname">pvl_clearsky_haurwitz</tt><big>(</big><em>ApparentZenith</em><big>)</big><a class="headerlink" href="#pvlib.pvl_clearsky_haurwitz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine clear sky GHI from Haurwitz model</p>
+<p>Implements the Haurwitz clear sky model for global horizontal
+irradiance (GHI) as presented in [1, 2]. A report on clear
+sky models found the Haurwitz model to have the best performance of
+models which require only zenith angle [3].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ApparentZenith</strong> : DataFrame</p>
+<blockquote>
+<div><blockquote>
+<div><p>The apparent (refraction corrected) sun zenith angle</p>
+</div></blockquote>
+<p>in degrees.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ClearSkyGHI</strong> : DataFrame</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>the modeled global horizonal irradiance in W/m^2 provided</dt>
+<dd><p class="first">by the Haurwitz clear-sky model.</p>
+<blockquote class="last">
+<div><p>Initial implementation of this algorithm by Matthew Reno.</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_maketimestruct</span></tt>, <a class="reference internal" href="pvlib.pvl_makelocationstruct.html#pvlib.pvl_makelocationstruct" title="pvlib.pvl_makelocationstruct"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_makelocationstruct</span></tt></a>, <a class="reference internal" href="pvlib.pvl_ephemeris.html#pvlib.pvl_ephemeris" title="pvlib.pvl_ephemeris"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_ephemeris</span></tt></a>, <a class="reference internal" href="pvlib.pvl_spa.html#pvlib.pvl_spa" title="pvlib.pvl_spa"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_spa</span></tt></a>, <tt class="xref py py-obj docutils literal"><span class="pre">pvl_ineichen</span></tt></p>
+</div>
+<p class="rubric">References</p>
+<dl class="docutils">
+<dt>[1] B. Haurwitz, &#8220;Insolation in Relation to Cloudiness and Cloud </dt>
+<dd>Density,&#8221; Journal of Meteorology, vol. 2, pp. 154-166, 1945.</dd>
+<dt>[2] B. Haurwitz, &#8220;Insolation in Relation to Cloud Type,&#8221; Journal of </dt>
+<dd>Meteorology, vol. 3, pp. 123-124, 1946.</dd>
+<dt>[3] M. Reno, C. Hansen, and J. Stein, &#8220;Global Horizontal Irradiance Clear</dt>
+<dd>Sky Models: Implementation and Analysis&#8221;, Sandia National
+Laboratories, SAND2012-2389, 2012.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_perez.html" title="pvlib.pvl_perez"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_clearsky_ineichen.html" title="pvlib.pvl_clearsky_ineichen"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvlib.pvl_spa &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvlib.pvl_extraradiation" href="pvlib.pvl_extraradiation.html" />
+    <link rel="prev" title="pvlib.pvl_ephemeris" href="pvlib.pvl_ephemeris.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_extraradiation.html" title="pvlib.pvl_extraradiation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_ephemeris.html" title="pvlib.pvl_ephemeris"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvlib.pvl_ephemeris.html"
+                        title="previous chapter">pvlib.pvl_ephemeris</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvlib.pvl_extraradiation.html"
+                        title="next chapter">pvlib.pvl_extraradiation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvlib.pvl_spa.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvlib-pvl-spa">
+<h1>pvlib.pvl_spa<a class="headerlink" href="#pvlib-pvl-spa" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvlib.pvl_spa">
+<tt class="descclassname">pvlib.</tt><tt class="descname">pvl_spa</tt><big>(</big><em>Time</em>, <em>Location</em><big>)</big><a class="headerlink" href="#pvlib.pvl_spa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the solar position using the PySolar package</p>
+<p>The PySolar Package is developed by Brandon Stafford, and is
+found here: <a class="reference external" href="https://github.com/pingswept/pysolar/tree/master">https://github.com/pingswept/pysolar/tree/master</a></p>
+<p>This function will map the standard time and location structures
+onto the Pysolar function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>Time: Dataframe.index</strong> :</p>
+<blockquote>
+<div><p>A pandas datatime object</p>
+</div></blockquote>
+<p><strong>Location: struct</strong> :</p>
+<blockquote>
+<div><p>Standard location structure, containting:</p>
+<dl class="docutils">
+<dt><em>Location.latitude</em> - vector or scalar latitude in decimal degrees (positive is</dt>
+<dd><p class="first last">northern hemisphere)</p>
+</dd>
+<dt><em>Location.longitude</em> - vector or scalar longitude in decimal degrees (positive is </dt>
+<dd><p class="first last">east of prime meridian)</p>
+</dd>
+<dt><em>Location.altitude</em> - an optional component of the Location struct, not</dt>
+<dd><p class="first last">used in the ephemeris code directly, but it may be used to calculate
+standard site pressure (see pvl_alt2pres function)</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>SunAz</strong> : DataFrame</p>
+<blockquote>
+<div><p>Azimuth of the sun in decimal degrees from North. 0 = North to 270 = West</p>
+</div></blockquote>
+<p><strong>SunEl</strong> : DataFrame</p>
+<blockquote class="last">
+<div><p>Actual elevation (not accounting for refraction)of the sun 
+in decimal degrees, 0 = on horizon. The complement of the True Zenith
+Angle.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>PySolar Documentation: <a class="reference external" href="https://github.com/pingswept/pysolar/tree/master">https://github.com/pingswept/pysolar/tree/master</a></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_extraradiation.html" title="pvlib.pvl_extraradiation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_ephemeris.html" title="pvlib.pvl_ephemeris"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

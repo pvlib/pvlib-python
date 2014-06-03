@@ -74,8 +74,7 @@ def pvl_globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
 
   var=pvl_tools.Parse(Vars,Expect)
 
-  Eb = var.DNI*np.cos(np.radians(var.AOI)) #Implies that AOI is relative to normal CHECK
-
+  Eb = var.DNI*np.cos(np.radians(var.AOI)) 
   E = Eb + var.In_Plane_SkyDiffuse + var.GR
   Ediff = var.In_Plane_SkyDiffuse + var.GR
 

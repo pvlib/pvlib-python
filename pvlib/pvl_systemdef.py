@@ -98,5 +98,5 @@ def pvl_systemdef(TMYmeta,SurfTilt, SurfAz,Albedo,SeriesModules,ParallelModules)
 			'name':var.TMYmeta.Name,
 			'altitude':var.TMYmeta.altitude}
 
-	return system
+	return pvl_tools.repack(system)
 

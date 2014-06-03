@@ -5,10 +5,10 @@
 
 Welcome to PV LIB's documentation!
 ==================================
+.. only:: html
+	.. toctree::
 
-.. toctree::
-
-	Test Script 1
+		Test Script 1
 
 
 Irradiance and atmosperhic functions
@@ -16,65 +16,65 @@ Irradiance and atmosperhic functions
 .. autosummary::
 	:toctree: stubs
 
-	pvl_alt2pres.pvl_alt2pres
-	pvl_pres2alt.pvl_pres2alt
-	pvl_getaoi.pvl_getaoi
-	pvl_disc.pvl_disc
-	pvl_ephemeris.pvl_ephemeris
-	pvl_spa.pvl_spa
-	pvl_extraradiation.pvl_extraradiation
-	pvl_globalinplane.pvl_globalinplane
-	pvl_grounddiffuse.pvl_grounddiffuse
-	pvl_makelocationstruct.pvl_makelocationstruct
-	pvl_relativeairmass.pvl_relativeairmass
-	pvl_absoluteairmass.pvl_absoluteairmass
-	pvl_clearsky_ineichen.pvl_clearsky_ineichen
-	pvl_clearsky_haurwitz.pvl_clearsky_haurwitz
+	pvlib.pvl_alt2pres
+	pvlib.pvl_pres2alt
+	pvlib.pvl_getaoi
+	pvlib.pvl_disc
+	pvlib.pvl_ephemeris
+	pvlib.pvl_spa
+	pvlib.pvl_extraradiation
+	pvlib.pvl_globalinplane
+	pvlib.pvl_grounddiffuse
+	pvlib.pvl_makelocationstruct
+	pvlib.pvl_relativeairmass
+	pvlib.pvl_absoluteairmass
+	pvlib.pvl_clearsky_ineichen
+	pvlib.pvl_clearsky_haurwitz
 
 Irradiance Translation Functions
 ================================
 .. autosummary::
 	:toctree: stubs
 
-	pvl_perez.pvl_perez
-	pvl_haydavies1980.pvl_haydavies1980
-	pvl_isotropicsky.pvl_isotropicsky
-	pvl_kingdiffuse.pvl_kingdiffuse
-	pvl_klucher1979.pvl_klucher1979
-	pvl_reindl1990.pvl_reindl1990
+	pvlib.pvl_perez
+	pvlib.pvl_haydavies1980
+	pvlib.pvl_isotropicsky
+	pvlib.pvl_kingdiffuse
+	pvlib.pvl_klucher1979
+	pvlib.pvl_reindl1990
 	
 Data Handling
 ==============
 .. autosummary::
 	:toctree: stubs
 
-	pvl_readtmy2.pvl_readtmy2
-	pvl_readtmy3.pvl_readtmy3
+	pvlib.pvl_readtmy2
+	pvlib.pvl_readtmy3
 
 System Modelling functions
 ==========================
 .. autosummary::
 	:toctree: stubs
 
-	pvl_physicaliam.pvl_physicaliam
-	pvl_ashraeiam.pvl_ashraeiam
-	pvl_calcparams_desoto.pvl_calcparams_desoto
-	pvl_retreiveSAM.pvl_retreiveSAM
-	pvl_sapm.pvl_sapm
-	pvl_sapmcelltemp.pvl_sapmcelltemp
-	pvl_singlediode.pvl_singlediode
-	pvl_snlinverter.pvl_snlinverter
-	pvl_systemdef.pvl_systemdef
+	pvlib.pvl_physicaliam
+	pvlib.pvl_ashraeiam
+	pvlib.pvl_calcparams_desoto
+	pvlib.pvl_retreiveSAM
+	pvlib.pvl_sapm
+	pvlib.pvl_sapmcelltemp
+	pvlib.pvl_singlediode
+	pvlib.pvl_snlinverter
+	pvlib.pvl_systemdef
 
 PVLIB functions
 ===============
 .. autosummary::
 	:toctree: stubs
 
-	pvl_tools.Parse
-	pvl_tools.repack
-	pvl_tools.cosd
-	pvl_tools.sind
+	pvlib.pvl_tools.Parse
+	pvlib.pvl_tools.repack
+	pvlib.pvl_tools.cosd
+	pvlib.pvl_tools.sind
 
 
 Indices and tables

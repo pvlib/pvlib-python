@@ -12,7 +12,7 @@ Collection of functions for determining diffuse irradiance from the sky on a til
 import numpy as np
 import pandas as pd
 import pvl_tools
-    
+import pdb    
 def pvl_perez(SurfTilt, SurfAz, DHI, DNI, HExtra, SunZen, SunAz, AM,modelt='allsitescomposite1990'):
   ''' 
   Determine diffuse irradiance from the sky on a tilted surface using one of the Perez models
@@ -150,8 +150,12 @@ def pvl_perez(SurfTilt, SurfAz, DHI, DNI, HExtra, SunZen, SunAz, AM,modelt='alls
   z = var.SunZen*np.pi/180# # convert to radians
 
   Dhfilter = var.DHI > 0
+  
+  
   e = ((var.DHI[Dhfilter] + var.DNI[Dhfilter])/var.DHI[Dhfilter]+kappa*z[Dhfilter]**3)/(1+kappa*z[Dhfilter]**3).reindex_like(var.SunZen)
-  #pdb.set_trace()
+ 
+
+
   ebin = pd.Series(np.zeros(var.DHI.shape[0]),index=e.index)
 
   # Select which bin e falls into

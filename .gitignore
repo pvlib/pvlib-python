@@ -50,3 +50,7 @@ coverage.xml
 
 # HDF tables
 *.h5
+
+
+#Datafiles
+.csv

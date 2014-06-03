@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvlib.pvl_systemdef &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvlib.pvl_tools.Parse" href="pvlib.pvl_tools.Parse.html" />
+    <link rel="prev" title="pvlib.pvl_snlinverter" href="pvlib.pvl_snlinverter.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_tools.Parse.html" title="pvlib.pvl_tools.Parse"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_snlinverter.html" title="pvlib.pvl_snlinverter"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvlib.pvl_snlinverter.html"
+                        title="previous chapter">pvlib.pvl_snlinverter</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvlib.pvl_tools.Parse.html"
+                        title="next chapter">pvlib.pvl_tools.Parse</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvlib.pvl_systemdef.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvlib-pvl-systemdef">
+<h1>pvlib.pvl_systemdef<a class="headerlink" href="#pvlib-pvl-systemdef" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvlib.pvl_systemdef">
+<tt class="descclassname">pvlib.</tt><tt class="descname">pvl_systemdef</tt><big>(</big><em>TMYmeta</em>, <em>SurfTilt</em>, <em>SurfAz</em>, <em>Albedo</em>, <em>SeriesModules</em>, <em>ParallelModules</em><big>)</big><a class="headerlink" href="#pvlib.pvl_systemdef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a dict of system paramters used throughout a simulation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>TMYmeta</strong> : struct or dict</p>
+<blockquote>
+<div><blockquote>
+<div><p>meta file generated from a TMY file using pvl_readtmy2 or pvl_readtmy3.
+It should contain at least the following fields:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="15%" />
+<col width="49%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">meta field</th>
+<th class="head">format</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>meta.altitude</td>
+<td>Float</td>
+<td>site elevation</td>
+</tr>
+<tr class="row-odd"><td>meta.latitude</td>
+<td>Float</td>
+<td>site latitude</td>
+</tr>
+<tr class="row-even"><td>meta.longitude</td>
+<td>Float</td>
+<td>site longitude</td>
+</tr>
+<tr class="row-odd"><td>meta.Name</td>
+<td>String</td>
+<td>site name</td>
+</tr>
+<tr class="row-even"><td>meta.State</td>
+<td>String</td>
+<td>state</td>
+</tr>
+<tr class="row-odd"><td>meta.TZ</td>
+<td>Float</td>
+<td>timezone</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<dl class="docutils">
+<dt>SurfTilt <span class="classifier-delimiter">:</span> <span class="classifier">float or DataFrame</span></dt>
+<dd><p class="first last">Surface tilt angles in decimal degrees.
+SurfTilt must be &gt;=0 and &lt;=180. The tilt angle is defined as
+degrees from horizontal (e.g. surface facing up = 0, surface facing
+horizon = 90)</p>
+</dd>
+<dt>SurfAz <span class="classifier-delimiter">:</span> <span class="classifier">float or DataFrame</span></dt>
+<dd><p class="first last">Surface azimuth angles in decimal degrees.
+SurfAz must be &gt;=0 and &lt;=360. The Azimuth convention is defined
+as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).</p>
+</dd>
+<dt>Albedo <span class="classifier-delimiter">:</span> <span class="classifier">float or DataFrame </span></dt>
+<dd><p class="first last">Ground reflectance, typically 0.1-0.4 for
+surfaces on Earth (land), may increase over snow, ice, etc. May also 
+be known as the reflection coefficient. Must be &gt;=0 and &lt;=1.</p>
+</dd>
+<dt>SeriesModules <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Number of modules connected in series in a string.</p>
+</dd>
+<dt>ParallelModules <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of strings connected in parallel.</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>Result</strong> : dict</p>
+<blockquote class="last">
+<div><p>A dict with the following fields.</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;SurfTilt&#8217;</li>
+<li>&#8216;SurfAz&#8217;</li>
+<li>&#8216;Albedo&#8217;</li>
+<li>&#8216;SeriesModules&#8217;</li>
+<li>&#8216;ParallelModules&#8217;</li>
+<li>&#8216;Lat&#8217;</li>
+<li>&#8216;Long&#8217;</li>
+<li>&#8216;TZ&#8217;</li>
+<li>&#8216;name&#8217;</li>
+<li>&#8216;altitude&#8217;</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pvlib.pvl_readtmy3.html#pvlib.pvl_readtmy3" title="pvlib.pvl_readtmy3"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_readtmy3</span></tt></a>, <a class="reference internal" href="pvlib.pvl_readtmy2.html#pvlib.pvl_readtmy2" title="pvlib.pvl_readtmy2"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_readtmy2</span></tt></a></p>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_tools.Parse.html" title="pvlib.pvl_tools.Parse"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_snlinverter.html" title="pvlib.pvl_snlinverter"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

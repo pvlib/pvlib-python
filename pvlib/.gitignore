@@ -1,0 +1,8 @@
+#Ignore datafiles
+*.csv
+*.h5
+
+#Ignore notebooks
+*.ipynb
+
+

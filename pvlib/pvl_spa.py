@@ -53,19 +53,20 @@ def pvl_spa(Time,Location):
 
     PySolar Documentation: https://github.com/pingswept/pysolar/tree/master
     '''
-    pdb.set_trace()
+    #pdb.set_trace()
     try: 
-        Timeshifted=Time.tz_convert('UTC')
+        Timeshifted=Time.tz_convert('UTC') #This will work with a timezone aware dataset
     except:
-        Timeshifted=Time.shift(abs(Location.TZ),freq='H')
+        Timeshifted=Time.shift(abs(Location.TZ),freq='H') #This will work with a timezone unaware dataset
 
     SunAz=map(lambda x: Pysolar.GetAzimuth(Location.latitude,Location.longitude,x),Timeshifted)#.tz_convert('UTC'))
     SunEl=map(lambda x: Pysolar.GetAltitude(Location.latitude,Location.longitude,x),Timeshifted)#.tz_convert('UTC'))
+    
     SunEl[SunEl<0]=0
     Zen=90-np.array(SunEl)
 
-    SunAz=(SunAz+360)*-1
-    SunAz[SunAz<-180]=SunAz+360
+    SunAz=(np.array(SunAz)+360)*-1
+    SunAz[SunAz<-180]=SunAz[SunAz<-180]+360
 
     DFOut=pd.DataFrame({'SunAz':SunAz,'SunEl':SunEl,'SunZen':Zen},index=Time)
 

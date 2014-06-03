@@ -4,5 +4,5 @@
 
 #Ignore notebooks
 *.ipynb
-
+!Test_Scripts_1.ipynb
 

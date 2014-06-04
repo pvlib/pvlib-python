@@ -156,10 +156,9 @@ def pvl_readtmy3(FileName):
       try:
         import Tkinter 
         from tkFileDialog import askopenfilename
-
-    		Tkinter.Tk().withdraw() 				 #Start interactive file input
-    		kwargs={'FileName': askopenfilename()} 	#read in file name
-    		var=pvl_tools.Parse(kwargs,Expect) 		#Parse filename 
+        Tkinter.Tk().withdraw() 				 #Start interactive file input
+        kwargs={'FileName': askopenfilename()} 	#read in file name
+        var=pvl_tools.Parse(kwargs,Expect) 		#Parse filename 
       except:
         raise Exception('Tkinter not supported on this system. Try installing X-Quartz and reloading')
   else:

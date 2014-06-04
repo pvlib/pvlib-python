@@ -5,8 +5,7 @@ import numpy as np
 import pvl_tools
 import urllib, urllib2
 import StringIO
-import Tkinter 
-from tkFileDialog import askopenfilename
+
 
 
 def pvl_retreiveSAM(name,FileLoc='none'):
@@ -91,8 +90,13 @@ def pvl_retreiveSAM(name,FileLoc='none'):
 	if FileLoc=='none':
 		return read_url_to_pandas(url)
 	elif FileLoc=='select':
-		Tkinter.Tk().withdraw() 				 #Start interactive file input
-		return read_relative_to_pandas(askopenfilename())								
+		try:
+			import Tkinter 
+			from tkFileDialog import askopenfilename
+			Tkinter.Tk().withdraw() 				 #Start interactive file input
+			return read_relative_to_pandas(askopenfilename())								
+		except:
+			raise Exception ('Python not configured for TKinter. Try installing XQuartz and rerunning')
 	else: 
 		return read_relative_to_pandas(FileLoc)
 		

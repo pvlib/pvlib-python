@@ -4,12 +4,10 @@ import pandas as pd
 import numpy as np
 import re
 import datetime
-import Tkinter 
 import pvl_tools
 import pdb
 import dateutil
 import csv 
-from tkFileDialog import askopenfilename
 
 def pvl_readtmy3(FileName):
 
@@ -155,9 +153,15 @@ def pvl_readtmy3(FileName):
 
 
   if len(Vars)==0: 					#If no filename is input
-  		Tkinter.Tk().withdraw() 				 #Start interactive file input
-  		kwargs={'FileName': askopenfilename()} 	#read in file name
-  		var=pvl_tools.Parse(kwargs,Expect) 		#Parse filename 
+      try:
+        import Tkinter 
+        from tkFileDialog import askopenfilename
+
+    		Tkinter.Tk().withdraw() 				 #Start interactive file input
+    		kwargs={'FileName': askopenfilename()} 	#read in file name
+    		var=pvl_tools.Parse(kwargs,Expect) 		#Parse filename 
+      except:
+        raise Exception('Tkinter not supported on this system. Try installing X-Quartz and reloading')
   else:
   		var=pvl_tools.Parse(Vars,Expect)		#Parse filename
 

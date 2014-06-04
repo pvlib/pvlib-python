@@ -3,10 +3,8 @@ import pandas as pd
 import numpy as np
 import re
 import datetime
-import Tkinter 
 import pvl_tools
 import pdb
-from tkFileDialog import askopenfilename
 
 def pvl_readtmy2(FileName):
   '''
@@ -159,9 +157,14 @@ def pvl_readtmy2(FileName):
   Expect={'FileName':('open')}
   var=[]
   if len(Vars)==0:
-  	Tkinter.Tk().withdraw() 
-  	kwargs={'FileName': askopenfilename()} 
-  	var=pvl_tools.Parse(kwargs,Expect)
+    try:
+      import Tkinter 
+      from tkFileDialog import askopenfilename
+    	Tkinter.Tk().withdraw() 
+    	kwargs={'FileName': askopenfilename()} 
+    	var=pvl_tools.Parse(kwargs,Expect)
+    except:
+      raise Exception('TKinter not supported on this system. Try installing Xquartz and re-running')
   else:
   	var=pvl_tools.Parse(Vars,Expect)
 

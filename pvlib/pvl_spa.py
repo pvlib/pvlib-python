@@ -7,7 +7,7 @@ import pandas as pd
 
 
 
-def pvl_spa(Time,Location):
+def pvl_spa(time, location):
     '''
     Calculate the solar position using the PySolar package
 
@@ -38,39 +38,43 @@ def pvl_spa(Time,Location):
 
     Returns
     -------
-
-    SunAz : DataFrame 
+    
+    DataFrame with the following columns:
+    
+    azimuth: 
         Azimuth of the sun in decimal degrees from North. 0 = North to 270 = West
   
-    SunEl : DataFrame
-        Actual elevation (not accounting for refraction)of the sun 
+    elevation:
+        Actual elevation (not accounting for refraction) of the sun 
         in decimal degrees, 0 = on horizon. The complement of the True Zenith
         Angle.
-    
+        
+    zenith: 90 - elevation.
 
     References
     ----------
 
     PySolar Documentation: https://github.com/pingswept/pysolar/tree/master
     '''
+    
     #pdb.set_trace()
     try: 
-        Timeshifted=Time.tz_convert('UTC') #This will work with a timezone aware dataset
+        timeshifted = time.tz_convert('UTC') #This will work with a timezone aware dataset
     except:
-        Timeshifted=Time.shift(abs(Location.TZ),freq='H') #This will work with a timezone unaware dataset
+        timeshifted = time.shift(abs(location.TZ), freq='H') #This will work with a timezone unaware dataset
 
-    SunAz=map(lambda x: Pysolar.GetAzimuth(Location.latitude,Location.longitude,x),Timeshifted)#.tz_convert('UTC'))
-    SunEl=map(lambda x: Pysolar.GetAltitude(Location.latitude,Location.longitude,x),Timeshifted)#.tz_convert('UTC'))
+    sun_az = map(lambda x: Pysolar.GetAzimuth(location.latitude, location.longitude, x), timeshifted)#.tz_convert('UTC'))
+    sun_el = map(lambda x: Pysolar.GetAltitude(location.latitude, location.longitude, x), timeshifted)#.tz_convert('UTC'))
     
-    SunEl[SunEl<0]=0
-    Zen=90-np.array(SunEl)
+    sun_el[sun_el < 0] = 0
+    zen = 90 - np.array(sun_el)
 
-    SunAz=(np.array(SunAz)+360)*-1
-    SunAz[SunAz<-180]=SunAz[SunAz<-180]+360
+    sun_az  = (np.array(sun_az) + 360) * -1
+    sun_az[sun_az < -180] = sun_az[sun_az < -180] + 360
 
-    DFOut=pd.DataFrame({'SunAz':SunAz,'SunEl':SunEl,'SunZen':Zen},index=Time)
+    df_out = pd.DataFrame({'azimuth':sun_az, 'elevation':sun_el, 'zenith':zen}, index=time)
 
-    return DFOut['SunAz'],DFOut['SunEl'],DFOut['SunZen']
+    return df_out
 
 
 

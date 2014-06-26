@@ -59,16 +59,23 @@ def pvl_spa(time, location):
     
     #pdb.set_trace()
     try: 
-        timeshifted = time.tz_convert('UTC') #This will work with a timezone aware dataset
-    except:
-        timeshifted = time.shift(abs(location.TZ), freq='H') #This will work with a timezone unaware dataset
+        # This will work with a timezone aware dataset
+        timeshifted = time.tz_convert('UTC') 
+    except TypeError:
+        # This will work with a timezone unaware dataset
+        # Replaced shift method since it throws away data
+        # and it didn't know the difference between plus and minus offsets
+        ns_offset = location.TZ*3600*1e9
+        timeshifted = pd.DatetimeIndex(time.values.astype(int) - ns_offset).tz_localize('UTC')
 
     sun_az = map(lambda x: Pysolar.GetAzimuth(location.latitude, location.longitude, x), timeshifted)#.tz_convert('UTC'))
     sun_el = map(lambda x: Pysolar.GetAltitude(location.latitude, location.longitude, x), timeshifted)#.tz_convert('UTC'))
     
-    sun_el[sun_el < 0] = 0
+    #sun_el[sun_el < 0] = 0 # Will H: is there a reason this is here?
     zen = 90 - np.array(sun_el)
-
+    
+    # Pysolar sets azimuth=0 when facing south. This is inconsistent with
+    # most SPA conventions, including ours. So, we fix it below.
     sun_az  = (np.array(sun_az) + 360) * -1
     sun_az[sun_az < -180] = sun_az[sun_az < -180] + 360
 

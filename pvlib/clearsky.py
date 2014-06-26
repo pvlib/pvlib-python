@@ -1,3 +1,7 @@
+"""
+Contains several methods to calculate clear sky GHI, DNI, and DHI.
+"""
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 

@@ -1,3 +1,7 @@
+"""
+Contains methods to calculate the relative and absolute airmass.
+"""
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 

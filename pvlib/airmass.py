@@ -100,6 +100,8 @@ def relativeairmass(z, model='kastenyoung1989'):
     else:
         pvl_logger.warning("{} is not a valid model type for relative airmass. The 'kastenyoung1989' model was used.".format(model))
         AM = 1.0 / (np.cos(np.radians(z)) + 0.50572*(((6.07995 + (90 - z)) ** - 1.6364)))
+    
+    AM[AM < 0] = 0
         
     return AM
 

@@ -19,54 +19,49 @@ import pvl_ephemeris
 
 
 
-def get_solarposition(time, location, method='pvlib', pressure=101325, 
+def get_solarposition(time, location, method='pyephem', pressure=101325, 
                       temperature=12):
     """
     Calculate the solar position using a variety of methods.
-    'pvlib' uses the pvlib ephemeris code. Not recommended as of June 2014.
-    'pyephem' uses the PyEphem package.
-    'pysolar' uses the Pysolar package.
+    * 'pvlib' uses the pvlib ephemeris code. Not recommended as of June 2014.
+    * 'pyephem' uses the PyEphem package. Default.
+    * 'pysolar' uses the Pysolar package.
     
-    The returned DataFrame will be in UTC time if you use 'pyephem' or 'pysolar'.
+    The returned DataFrame will be localized to location.tz.
     
     :param time: pandas.DatetimeIndex. 
-    :param location: namedtuple with latitude, longitude, and TZ.
+    :param location: namedtuple with latitude, longitude, and tz.
     :param method: string. 'pvlib', 'pyephem', 'pysolar'
     :param pressure: int or float. Pascals.
     :param temperature: int or float. Degrees C.
     
     :returns: pandas.DataFrame with columns 'elevation', 'zenith', 'azimuth'.
               Additional columns including 'solar_time', 'apparent_elevation',
-              and 'apparent_zenith' are available with the 'pvlib'  option.
+              and 'apparent_zenith' are available with the 'pvlib' and 'pyephem' options.
     """
     
     method = method.lower()
     
-    if method == 'pvlib':
-        return _pvlib(time, location, pressure, temperature)
-    
-    # convert to UTC times, if necessary.
-    # this crappy code works around the fact that the location
-    # namedtuple specifies the TZ as an offset from UTC.
-    # We should eventually specify the TZ as a pytz/pandas-compatible string
-    # and assume local tz if a tz unaware dataset is provided.
-    try: 
-        # This will work with a timezone aware dataset
-        timeshifted = time.tz_convert('UTC') 
+    try:
+        time_utc = time.tz_convert('UTC')
     except TypeError:
-        # This will work with a timezone unaware dataset
-        # Replaced shift method since it throws away data
-        # and it didn't know the difference between plus and minus offsets
-        ns_offset = location.TZ*3600*1e9
-        timeshifted = pd.DatetimeIndex(time.values.astype(int) - ns_offset).tz_localize('UTC')
+        time_utc = time.tz_localize(location.tz).tz_convert('UTC')
     
-    if method == 'pyephem':
-        return _ephem(timeshifted, location, pressure, temperature)
+    if method == 'pvlib':
+        # pvl_ephemeris needs local time, not utc time.
+        ephem_df = _pvlib(time, location, pressure, temperature)
+    elif method == 'pyephem':
+        ephem_df = _ephem(time_utc, location, pressure, temperature)
     elif method == 'pysolar':
-        return _pysolar(timeshifted, location)
+        ephem_df = _pysolar(time_utc, location)
     else:
         raise ValueError('Invalid method')
-        
+    
+    try:
+        return ephem_df.tz_convert(location.tz)
+    except TypeError:
+        return ephem_df.tz_localize(location.tz)
+
 
 
 def _pvlib(time, location, pressure, temperature):
@@ -74,9 +69,6 @@ def _pvlib(time, location, pressure, temperature):
     Calculate the solar position using PVLIB's ephemeris code.
     """
     # Will H: I suggest putting the ephemeris code inline here once it's fixed.
-    
-    # We've already corrected the TZ offset above, so don't make 
-    # pvl_ephemeris do the correction too.
     
     pvl_logger.debug('using pvlib internal ephemeris code to calculate solar position')
     
@@ -98,13 +90,14 @@ def _ephem(time, location, pressure, temperature):
     obs.lat = str(location.latitude)
     obs.lon = str(location.longitude)
     obs.elevation = location.altitude
-    obs.pressure = pressure / 100.
+    obs.pressure = pressure / 100. # convert to mBar
     obs.temp = temperature
     
     # the PyEphem sun
     sun = ephem.Sun()
     
     # make and fill lists of the sun's altitude and azimuth
+    # this is the pressure and temperature corrected apparent alt/az.
     alts = []
     azis = []
     for thetime in sun_coords.index:
@@ -116,7 +109,7 @@ def _ephem(time, location, pressure, temperature):
     sun_coords['apparent_elevation'] = alts
     sun_coords['apparent_azimuth'] = azis
     
-    # redo it for p=0
+    # redo it for p=0 to get no atmosphere alt/az
     obs.pressure = 0
     alts = []
     azis = []
@@ -133,8 +126,6 @@ def _ephem(time, location, pressure, temperature):
     sun_coords = np.rad2deg(sun_coords)
     sun_coords['apparent_zenith'] = 90 - sun_coords['apparent_elevation']
     sun_coords['zenith'] = 90 - sun_coords['elevation']
-    
-    #sun_coords = sun_coords.tz_convert(time.tzinfo)
     
     return sun_coords
     

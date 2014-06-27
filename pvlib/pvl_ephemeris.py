@@ -3,6 +3,7 @@ pvl_logger = logging.getLogger('pvlib')
 
 import pdb
 
+import pytz
 import numpy as np
 import pandas as pd
 
@@ -10,7 +11,7 @@ import pvl_tools
 
 
 
-def pvl_ephemeris(Time, Location, pressure=101325, temperature=12):
+def pvl_ephemeris(time, location, pressure=101325, temperature=12):
     ''' 
     Calculates the position of the sun given time, location, and optionally pressure and temperature
 
@@ -76,16 +77,10 @@ def pvl_ephemeris(Time, Location, pressure=101325, temperature=12):
     pvl_spa
 
     '''
-    Vars=locals()
-    Expect={'pressure': ('default','default=101325','array','num','x>=0'),
-          'temperature': ('default','default=12','array', 'num', 'x>=-273.15'),
-          'Time':'',
-          'Location':''
-          }
-    var=pvl_tools.Parse(Vars,Expect)
+    
+    pvl_logger.debug('location={}, temperature={}, pressure={}'.format(location, temperature, pressure))
 
-
-    Latitude=var.Location.latitude
+    Latitude = location.latitude
     ''' the inversion of longitude is due to the fact that this code was
     originally written for the convention that positive longitude were for
     locations west of the prime meridian. However, the correct convention (as
@@ -94,24 +89,30 @@ def pvl_ephemeris(Time, Location, pressure=101325, temperature=12):
     correct convention (e.g. Albuquerque is at -106 longitude), but it needs
     to be inverted for use in the code.
     '''
-    Latitude=var.Location.latitude
-    Longitude=1 * var.Location.longitude
-    Year=var.Time.year
-    Month=var.Time.month
-    Day=var.Time.day
-    Hour=var.Time.hour
-    Minute=var.Time.minute
-    Second=var.Time.second
-    DayOfYear=var.Time.dayofyear
+    Latitude = location.latitude
+    Longitude=1 * location.longitude
+    Year = time.year
+    Month = time.month
+    Day = time.day
+    Hour = time.hour
+    Minute = time.minute
+    Second = time.second
+    DayOfYear = time.dayofyear
 
-    DecHours=Hour + Minute / float(60) + Second / float(3600)
+    DecHours = Hour + Minute / float(60) + Second / float(3600)
 
     Abber=20 / float(3600)
     LatR=np.radians(Latitude)
-
-
+    
+    # this code is needed to handle the new location.tz format string
+    try:
+        utc_offset = pytz.timezone(location.tz).utcoffset(time[0]).total_seconds() / 3600.
+    except ValueError:
+        utc_offset = time.tzinfo.utcoffset(time[0]).total_seconds() / 3600.
+    pvl_logger.debug('utc_offset={}'.format(utc_offset))
+    
     UnivDate=DayOfYear 
-    UnivHr=DecHours+var.Location.TZ-.5
+    UnivHr = DecHours + utc_offset - .5 # Will H: surprised to see the 0.5 here, but moving on...
     #+60/float(60)/2
 
     Yr=Year - 1900
@@ -171,7 +172,7 @@ def pvl_ephemeris(Time, Location, pressure=101325, temperature=12):
             Refract.append(0)
 
 
-    Refract=np.array(Refract)*((283 / float(273 + var.temperature)))*(var.pressure) / float(101325) / float(3600)
+    Refract=np.array(Refract)*((283 / float(273 + temperature)))*(pressure) / float(101325) / float(3600)
 
 
     SunZen = 90 - SunEl
@@ -179,7 +180,7 @@ def pvl_ephemeris(Time, Location, pressure=101325, temperature=12):
 
     ApparentSunEl = SunEl + Refract
 
-    DFOut = pd.DataFrame({'elevation':SunEl}, index=var.Time)
+    DFOut = pd.DataFrame({'elevation':SunEl}, index=time)
     DFOut['azimuth'] = SunAz-180  #Changed RA Feb 18,2014 to match Duffe
     DFOut['zenith'] = SunZen
     DFOut['apparent_elevation'] = ApparentSunEl

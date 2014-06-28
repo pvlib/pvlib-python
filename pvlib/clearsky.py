@@ -17,9 +17,11 @@ import pvl_extraradiation
 import pvl_alt2pres
 import airmass
 import pvl_ephemeris
+import solarposition
 
 
-def ineichen(time, location, linke_turbidity=-999, 
+def ineichen(time, location, linke_turbidity=None, 
+             solarposition_method='pyephem',
              airmass_model='kastenyoung1989'):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model
@@ -125,19 +127,22 @@ def ineichen(time, location, linke_turbidity=-999,
 
     '''
     
-    
     I0 = pvl_extraradiation.pvl_extraradiation(time.dayofyear)
     
-    ephem_data = pvl_ephemeris.pvl_ephemeris(time, location,
-                                             pvl_alt2pres.pvl_alt2pres(location.altitude)
-                                             )
+    ephem_data = solarposition.get_solarposition(time, location, 
+                                                 method=solarposition_method)
     
-    ApparentZenith = ephem_data['apparent_zenith']
+    time = ephem_data.index # fixes issue with time possibly not being tz-aware
+    
+    try:
+        ApparentZenith = ephem_data['apparent_zenith']
+    except KeyError:
+        ApparentZenith = ephem_data['zenith']
+        pvl_logger.warning('could not find apparent_zenith. using zenith')
     #ApparentZenith[ApparentZenith >= 90] = 90 # can cause problems in edge cases
-    
-    
 
-    if linke_turbidity == -999:
+
+    if linke_turbidity is None:
         # The .mat file 'LinkeTurbidities.mat' contains a single 2160 x 4320 x 12
         # matrix of type uint8 called 'LinkeTurbidity'. The rows represent global
         # latitudes from 90 to -90 degrees; the columns represent global longitudes

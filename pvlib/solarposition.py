@@ -206,7 +206,7 @@ def _pysolar(time, location):
 
 
 
-# only a skeleton for now 
+
 def test_get_solarposition():
     times = pd.date_range(start=datetime.datetime(2014,6,24), end=datetime.datetime(2014,6,26), freq='1Min')
     
@@ -217,12 +217,19 @@ def test_get_solarposition():
     ephem_data = get_solarposition(times, tus)
     
     ephem_data = get_solarposition(times, tus, method='pvlib')
-    ephem_data = get_solarposition(times, tus, method='pyephem')
-    ephem_data = get_solarposition(times, tus, method='pysolar')
-    
     ephem_data = get_solarposition(times_localized, tus, method='pvlib')
-    ephem_data = get_solarposition(times_localized, tus, method='pyephem')
-    ephem_data = get_solarposition(times_localized, tus, method='pysolar')
+    
+    try:
+        ephem_data = get_solarposition(times, tus, method='pyephem')
+        ephem_data = get_solarposition(times_localized, tus, method='pyephem')
+    except NameError:
+        pvl_logger.error('PyEphem not found. could not run test.')
+
+    try:        
+        ephem_data = get_solarposition(times, tus, method='pysolar')
+        ephem_data = get_solarposition(times_localized, tus, method='pysolar')
+    except NameError:
+        pvl_logger.error('Pysolar not found. could not run test.')
     
     try:
         get_solarposition(times, tus, method='invalid')

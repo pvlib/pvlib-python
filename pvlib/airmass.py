@@ -81,27 +81,29 @@ def relativeairmass(z, model='kastenyoung1989'):
     
     # removed angle check. be responsible. 
     
+    zenith_rad = np.radians(z)
+    
     model = model.lower()
     
     if 'kastenyoung1989' == model:
-        AM = 1.0 / (np.cos(np.radians(z)) + 0.50572*(((6.07995 + (90 - z)) ** - 1.6364)))
+        AM = 1.0 / (np.cos(zenith_rad) + 0.50572*(((6.07995 + (90 - z)) ** - 1.6364)))
     elif 'kasten1966' == model:
-        AM = 1.0 / (np.cos(np.radians(z)) + 0.15*((93.885 - z) ** - 1.253))
+        AM = 1.0 / (np.cos(zenith_rad) + 0.15*((93.885 - z) ** - 1.253))
     elif 'simple' == model:
-        AM = np.sec(np.radians(z))
+        AM = 1.0 / np.cos(zenith_rad)
     elif 'pickering2002' == model:
         AM = 1.0 / (np.sin(np.radians(90 - z + 244.0 / (165 + 47.0 * (90 - z) ** 1.1))))
     elif 'youngirvine1967' == model:
-        AM = 1.0 / np.cos(np.radians(z))*((1 - 0.0012*((((np.sec(np.radians(z)) ** 2) - 1)))))
+        AM = (1.0 / np.cos(zenith_rad)) * (1 - 0.0012*( (1.0 / np.cos(zenith_rad)) ** 2) - 1)
     elif 'young1994' == model:
-        AM = (1.002432*((np.cos(np.radians(z))) ** 2) + 0.148386*(np.cos(np.radians(z))) + 0.0096467) / (np.cos(np.radians(z)) ** 3 + 0.149864*(np.cos(np.radians(z)) ** 2) + 0.0102963*(np.cos(np.radians(z))) + 0.000303978)
+        AM = (1.002432*((np.cos(zenith_rad)) ** 2) + 0.148386*(np.cos(zenith_rad)) + 0.0096467) / (np.cos(zenith_rad) ** 3 + 0.149864*(np.cos(zenith_rad) ** 2) + 0.0102963*(np.cos(zenith_rad)) + 0.000303978)
     elif 'gueymard1993' == model:
-        AM = 1.0 / (np.cos(np.radians(z)) + 0.00176759*(z)*((94.37515 - z) ** - 1.21563))
+        AM = 1.0 / (np.cos(zenith_rad) + 0.00176759*(z)*((94.37515 - z) ** - 1.21563))
     else:
         pvl_logger.warning("{} is not a valid model type for relative airmass. The 'kastenyoung1989' model was used.".format(model))
-        AM = 1.0 / (np.cos(np.radians(z)) + 0.50572*(((6.07995 + (90 - z)) ** - 1.6364)))
+        AM = 1.0 / (np.cos(zenith_rad) + 0.50572*(((6.07995 + (90 - z)) ** - 1.6364)))
     
-    AM[AM < 0] = 0
+    AM[AM < 0] = np.nan
         
     return AM
 

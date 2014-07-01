@@ -1,3 +1,7 @@
+"""
+Calculate the solar position using a variety of methods/packages.
+"""
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 

@@ -141,7 +141,7 @@ def ineichen(time, location, linke_turbidity=None,
         pvl_logger.warning('could not find apparent_zenith. using zenith')
     #ApparentZenith[ApparentZenith >= 90] = 90 # can cause problems in edge cases
 
-
+    
     if linke_turbidity is None:
         # The .mat file 'LinkeTurbidities.mat' contains a single 2160 x 4320 x 12
         # matrix of type uint8 called 'LinkeTurbidity'. The rows represent global
@@ -152,6 +152,8 @@ def ineichen(time, location, linke_turbidity=None,
         # following: LT = LinkeTurbidity(LatitudeIndex, LongitudeIndex, month).  Note that the numbers within the matrix are 20 * Linke
         # Turbidity, so divide the number from the file by 20 to get the
         # turbidity.
+        
+        # consider putting this code at module level
         this_path = os.path.dirname(os.path.abspath(__file__))
         pvl_logger.debug('this_path={}'.format(this_path))
         mat = scipy.io.loadmat(this_path+'/LinkeTurbidities.mat')

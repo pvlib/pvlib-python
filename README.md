@@ -10,6 +10,7 @@ Key differences
 ============
 This refactoring is still a work in progress, but some of the major differences so far include:
 
+* Remove pvl_ from module names.
 * Replace Location "struct" with namedtuple.
 * Return one DataFrame instead of a tuple of DataFrames.
 * Specify time zones using a string from the standard IANA Time Zone Database naming conventions instead of an integer GMT offset. 

@@ -12,15 +12,17 @@ This refactoring is still a work in progress, but some of the major differences 
 
 * Replace Location "struct" with namedtuple.
 * Return one DataFrame instead of a tuple of DataFrames.
-* Specify time zones using the standard IANA Time Zone Database naming conventions instead of an integer GMT offset. 
+* Specify time zones using a string from the standard IANA Time Zone Database naming conventions instead of an integer GMT offset. 
 * Add PyEphem option to solar position calculations. 
-* Consolidation of similar modules. For example, functions from pvl\_clearsky\_ineichen.py and pvl\_clearsky\_haurwitz.py have been consolidated into clearsky.py. Similar consolidations have occured for airmass and solar position modules. POA modules are probably next.
+* Consolidation of similar modules. For example, functions from ```pvl_clearsky_ineichen.py``` and ```pvl_clearsky_haurwitz.py``` have been consolidated into ```clearsky.py```. Similar consolidations have occured for airmass and solar position modules. POA modules are probably next.
 * Removing Vars=Locals(); Expect...; var=pvl_tools.Parse(Vars,Expect); pattern. 
-* Removing unnecssary and sometimes undesired behavior such as setting zenith=90 instead of allowing it to be negative.
-* \_\_init\_\_.py imports have been removed.
-* Added logging calls
+* Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90.
+* ```__init__.py``` imports have been removed.
+* Adding logging calls.
 * Code in reviewed modules is mostly PEP8 compliant.
 * Changing function names so that do not conflict with module names.
+* Not bothering with boilerplate unit test code such as ```unittest.main()```. 
+* Removing most wildcard imports.
 
 
 Quick Start
@@ -63,3 +65,13 @@ Until the code is tested more thoroughly, you might find it useful to add:
 import logging
 logging.getLogger('pvlib').setLevel(logging.DEBUG)
 ```
+
+
+Testing
+============
+Testing can be accomplished by running nosetests on the pvlib directory (or pvlib/tests):
+```
+nosetests -v pvlib
+```
+Unit test code should be placed in the ```pvlib/test``` directory. Each module should have its own test module. 
+

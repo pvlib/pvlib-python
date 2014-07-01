@@ -15,11 +15,11 @@ import pvlib.solarposition as solarposition
 # setup times and location to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24), 
                       end=datetime.datetime(2014,6,26), freq='1Min')
-times_localized = times.tz_localize(tus.tz)
 
 Location = namedtuple('Location', ['latitude', 'longitude', 'altitude', 'tz'])
 tus = Location(32.2, -111, 700, 'US/Arizona')
 
+times_localized = times.tz_localize(tus.tz)
 
 def test_get_solarposition_basic():    
     ephem_data = solarposition.get_solarposition(times, tus)

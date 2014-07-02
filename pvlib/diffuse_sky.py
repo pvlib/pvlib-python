@@ -172,13 +172,11 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
 
     '''
 
-    # Will H: why?
-    GHI[GHI < DHI]=DHI
-    GHI[GHI < 1e-06]=1e-06
+    pvl_logger.debug('diffuse_sky.klucher()')
 
     # zenith angle with respect to panel normal.
     cos_tt = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
-
+    
     F = 1 - ((DHI / GHI) ** 2)
 
     term1 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))

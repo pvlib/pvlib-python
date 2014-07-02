@@ -54,6 +54,7 @@ def get_diffuse_ground(surf_tilt, ghi, albedo=.25, surface_type=None):
                   'urban', 'grass', 'fresh grass', 'snow', 'fresh snow',
                   'asphalt', 'concrete', 'aluminum', 'copper', 
                   'fresh steel', 'dirty steel'.
+                  Overrides albedo.
 
     Returns
     -------
@@ -90,7 +91,12 @@ def get_diffuse_ground(surf_tilt, ghi, albedo=.25, surface_type=None):
         pvl_logger.info('{} mapped to albedo={}'.format(surface_type, albedo))
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surf_tilt))) * 0.5
-
-    return pd.DataFrame({'ground':diffuse_irrad})
+    
+    try:
+        diffuse_irrad.name = 'diffuse_ground'
+    except AttributeError:
+        pass
+    
+    return diffuse_irrad
     
     

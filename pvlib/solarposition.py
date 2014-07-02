@@ -37,7 +37,7 @@ def get_solarposition(time, location, method='pyephem', pressure=101325,
     The returned DataFrame will be localized to location.tz.
     
     :param time: pandas.DatetimeIndex. 
-    :param location: namedtuple with latitude, longitude, and tz.
+    :param location: pvlib Location object.
     :param method: string. 'pvlib', 'pyephem', 'pysolar'
     :param pressure: int or float. Pascals.
     :param temperature: int or float. Degrees C.

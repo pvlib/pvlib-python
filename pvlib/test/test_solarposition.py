@@ -2,13 +2,13 @@ import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import datetime
-from collections import namedtuple
 
 import numpy as np
 import pandas as pd
 
 from nose.tools import raises
 
+from pvlib.location import Location
 import pvlib.solarposition as solarposition
 
 
@@ -16,8 +16,7 @@ import pvlib.solarposition as solarposition
 times = pd.date_range(start=datetime.datetime(2014,6,24), 
                       end=datetime.datetime(2014,6,26), freq='1Min')
 
-Location = namedtuple('Location', ['latitude', 'longitude', 'altitude', 'tz'])
-tus = Location(32.2, -111, 700, 'US/Arizona')
+tus = Location(32.2, -111, 'US/Arizona', 700)
 
 times_localized = times.tz_localize(tus.tz)
 

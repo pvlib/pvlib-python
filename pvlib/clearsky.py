@@ -39,15 +39,7 @@ def ineichen(time, location, linke_turbidity=None,
     time : Dataframe.index
             A timezone aware pandas dataframe index. 
 
-
-    location : namedtuple
-
-            *location.latitude* - vector or scalar latitude in decimal degrees (positive is
-                                  northern hemisphere)
-            *location.longitude* - vector or scalar longitude in decimal degrees (positive is 
-                                  east of prime meridian)
-            *location.altitude* - altitude in meters.
-            *location.TZ*     - Time Zone offset from UTC 
+    location : pvlib Location object
 
     Other Parameters 
     ----------------
@@ -282,8 +274,10 @@ def haurwitz(ApparentZenith):
     clearsky_GHI = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
 
     clearsky_GHI[clearsky_GHI < 0] = 0
-
-    return clearsky_GHI
+    
+    df_out = pd.DataFrame({'GHI':clearsky_GHI})
+    
+    return df_out
 	    
     
 

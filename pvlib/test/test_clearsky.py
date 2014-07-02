@@ -2,13 +2,13 @@ import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import datetime
-from collections import namedtuple
 
 import numpy as np
 import pandas as pd
 
 from nose.tools import raises
 
+from pvlib.location import Location
 import pvlib.clearsky
 import pvlib.solarposition
 
@@ -16,8 +16,7 @@ import pvlib.solarposition
 times = pd.date_range(start=datetime.datetime(2014,6,24), 
                       end=datetime.datetime(2014,6,26), freq='1Min')
 
-Location = namedtuple('Location', ['latitude', 'longitude', 'altitude', 'tz'])
-tus = Location(32.2, -111, 700, 'US/Arizona')
+tus = Location(32.2, -111, 'US/Arizona', 700)
 
 times_localized = times.tz_localize(tus.tz)
 
@@ -42,9 +41,16 @@ def test_ineichen_airmass():
     pvlib.clearsky.ineichen(times, tus, linke_turbidity=3,
                             airmass_model='simple')
 
-
+def test_ineichen_keys():
+    clearsky_data = pvlib.clearsky.ineichen(times, tus, linke_turbidity=3)
+    assert 'GHI' in clearsky_data.columns
+    assert 'DNI' in clearsky_data.columns
+    assert 'DHI' in clearsky_data.columns
 
 # test the haurwitz clear sky implementation
 def test_haurwitz():
     pvlib.clearsky.haurwitz(ephem_data['zenith'])
 
+def test_haurwitz_keys():
+    clearsky_data = pvlib.clearsky.haurwitz(ephem_data['zenith'])
+    assert 'GHI' in clearsky_data.columns

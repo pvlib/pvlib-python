@@ -12,6 +12,8 @@ import pandas as pd
 SURFACE_ALBEDOS = {'urban':0.18,
                    'grass':0.20,
                    'fresh grass':0.26,
+                   'soil':0.17,
+                   'sand':0.40,
                    'snow':0.65,
                    'fresh snow':0.75,
                    'asphalt':0.12,
@@ -71,7 +73,11 @@ def get_diffuse_ground(surf_tilt, ghi, albedo=.25, surface_type=None):
     
     [2] albedos from: 
     http://pvpmc.org/modeling-steps/incident-irradiance/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/albedo/
-
+    
+    and
+    
+    http://en.wikipedia.org/wiki/Albedo
+    
     See Also
     --------
 
@@ -81,7 +87,10 @@ def get_diffuse_ground(surf_tilt, ghi, albedo=.25, surface_type=None):
     
     if surface_type is not None:
         albedo = SURFACE_ALBEDOS[surface_type]
+        pvl_logger.info('{} mapped to albedo={}'.format(surface_type, albedo))
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surf_tilt))) * 0.5
 
     return pd.DataFrame({'ground':diffuse_irrad})
+    
+    

@@ -9,9 +9,24 @@ import numpy as np
 import pandas as pd
 
 
-def grounddiffuse(surf_tilt, ghi, albedo):
+SURFACE_ALBEDOS = {'urban':0.18,
+                   'grass':0.20,
+                   'fresh grass':0.26,
+                   'snow':0.65,
+                   'fresh snow':0.75,
+                   'asphalt':0.12,
+                   'concrete':0.30,
+                   'aluminum':0.85,
+                   'copper':0.74,
+                   'fresh steel':0.35,
+                   'dirty steel':0.08,
+                    }
+
+
+def get_diffuse_ground(surf_tilt, ghi, albedo=.25, surface_type=None):
     ''' 
-    Estimate diffuse irradiance from ground reflections given irradiance, albedo, and surface tilt 
+    Estimate diffuse irradiance from ground reflections given 
+    irradiance, albedo, and surface tilt 
 
     Function to determine the portion of irradiance on a tilted surface due
     to ground reflections. Any of the inputs may be DataFrames or scalars.
@@ -26,17 +41,22 @@ def grounddiffuse(surf_tilt, ghi, albedo):
 
     ghi : float or DataFrame 
           Global horizontal irradiance in W/m^2.  
-          GHI must be >=0.
 
     albedo : float or DataFrame 
           Ground reflectance, typically 0.1-0.4 for
           surfaces on Earth (land), may increase over snow, ice, etc. May also 
           be known as the reflection coefficient. Must be >=0 and <=1.
+          Will be overridden if surface_type is supplied.
+          
+    surface_type: None or string in 
+                  'urban', 'grass', 'fresh grass', 'snow', 'fresh snow',
+                  'asphalt', 'concrete', 'aluminum', 'copper', 
+                  'fresh steel', 'dirty steel'.
 
     Returns
     -------
 
-    GR : float or DataFrame  
+    float or DataFrame  
           Ground reflected irradiances in W/m^2. 
 
 
@@ -45,20 +65,22 @@ def grounddiffuse(surf_tilt, ghi, albedo):
 
     [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
     solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267
+    2007, Solar Energy vol. 81. pp. 254-267. 
+    
+    The calculation is the last term of equations 3, 4, 7, 8, 10, 11, and 12.
+    
+    [2] albedos from: 
+    http://pvpmc.org/modeling-steps/incident-irradiance/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/albedo/
 
     See Also
     --------
 
-    pvl_disc
-    pvl_perez
-    pvl_reindl1990
-    pvl_klucher1979
-    pvl_haydavies1980
-    pvl_isotropicsky
-    pvl_kingdiffuse
+    pvlib.diffuse_sky
 
     '''
+    
+    if surface_type is not None:
+        albedo = SURFACE_ALBEDOS[surface_type]
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surf_tilt))) * 0.5
 

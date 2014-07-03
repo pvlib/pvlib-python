@@ -88,7 +88,8 @@ def get_diffuse_ground(surf_tilt, ghi, albedo=.25, surface_type=None):
     
     if surface_type is not None:
         albedo = SURFACE_ALBEDOS[surface_type]
-        pvl_logger.info('{} mapped to albedo={}'.format(surface_type, albedo))
+        pvl_logger.info('surface_type={} mapped to albedo={}'
+                        .format(surface_type, albedo))
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surf_tilt))) * 0.5
     

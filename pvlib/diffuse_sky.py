@@ -433,7 +433,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     
 
 
-def king(surf_tilt,DHI,GHI,sun_zen):
+def king(surf_tilt, DHI, GHI, sun_zen):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using the King model
 
@@ -447,27 +447,26 @@ def king(surf_tilt,DHI,GHI,sun_zen):
     Parameters
     ----------
 
-    surf_tilt : float or DataFrame
+    surf_tilt : float or Series
           Surface tilt angles in decimal degrees.
-          surf_tilt must be >=0 and <=180. The tilt angle is defined as
+          The tilt angle is defined as
           degrees from horizontal (e.g. surface facing up = 0, surface facing
           horizon = 90)
-    DHI : float or DataFrame
+          
+    DHI : float or Series
           diffuse horizontal irradiance in W/m^2. 
-          DHI must be >=0.
-    GHI : float or DataFrame
+          
+    GHI : float or Series
           global horizontal irradiance in W/m^2. 
-          DHI must be >=0.
 
-    sun_zen : float or DataFrame
+    sun_zen : float or Series
           apparent (refraction-corrected) zenith
           angles in decimal degrees. 
-          sun_zen must be >=0 and <=180.
 
     Returns
     --------
 
-    SkyDiffuse : float or DataFrame
+    SkyDiffuse : float or Series
 
             the diffuse component of the solar radiation  on an
             arbitrarily tilted surface as given by a model developed by David L.
@@ -486,18 +485,13 @@ def king(surf_tilt,DHI,GHI,sun_zen):
     pvl_reindl1990
 
     '''
-    Vars=locals()
-    Expect={'surf_tilt':('num','x>=0'),
-          'sun_zen':('x>=-180'),
-          'DHI':('x>=0'),
-          'GHI':('x>=0')
-          }
+    
+    pvl_logger.debug('diffuse_sky.king()')
 
-    var=pvl_tools.Parse(Vars,Expect)
-
-    SkyDiffuse=DHI*((1 + pvl_tools.cosd(surf_tilt))) / 2 + GHI*((0.012 * sun_zen - 0.04))*((1 - pvl_tools.cosd(surf_tilt))) / 2
-
-    return SkyDiffuse
+    sky_diffuse = DHI * ((1 + pvl_tools.cosd(surf_tilt))) / 2 + GHI*((0.012 * sun_zen - 0.04))*((1 - pvl_tools.cosd(surf_tilt))) / 2
+    sky_diffuse[sky_diffuse < 0] = 0
+    
+    return sky_diffuse
 
 
 

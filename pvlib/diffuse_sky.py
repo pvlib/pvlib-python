@@ -32,13 +32,13 @@ def isotropic(surf_tilt, DHI):
     Parameters
     ----------
 
-    surf_tilt : float or DataFrame
+    surf_tilt : float or Series
             Surface tilt angle in decimal degrees. 
             surf_tilt must be >=0 and <=180. The tilt angle is defined as
             degrees from horizontal (e.g. surface facing up = 0, surface facing
             horizon = 90)
 
-    DHI : float or DataFrame
+    DHI : float or Series
             Diffuse horizontal irradiance in W/m^2.
             DHI must be >=0.
 
@@ -110,31 +110,31 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     Parameters
     ----------
 
-    surf_tilt : float or DataFrame
+    surf_tilt : float or Series
             Surface tilt angles in decimal degrees.
             surf_tilt must be >=0 and <=180. The tilt angle is defined as
             degrees from horizontal (e.g. surface facing up = 0, surface facing
             horizon = 90)
 
-    surf_az : float or DataFrame
+    surf_az : float or Series
             Surface azimuth angles in decimal degrees.
             surf_az must be >=0 and <=360. The Azimuth convention is defined
             as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    DHI : float or DataFrame
+    DHI : float or Series
             diffuse horizontal irradiance in W/m^2. 
             DHI must be >=0.
 
-    GHI : float or DataFrame
+    GHI : float or Series
             Global  irradiance in W/m^2. 
             DNI must be >=0.
 
-    sun_zen : float or DataFrame
+    sun_zen : float or Series
             apparent (refraction-corrected) zenith
             angles in decimal degrees. 
             sun_zen must be >=0 and <=180.
 
-    sun_az : float or DataFrame
+    sun_az : float or Series
             Sun azimuth angles in decimal degrees.
             sun_az must be >=0 and <=360. The Azimuth convention is defined
             as degrees east of north (e.g. North = 0, East = 90, West = 270).
@@ -175,7 +175,8 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     pvl_logger.debug('diffuse_sky.klucher()')
 
     # zenith angle with respect to panel normal.
-    cos_tt = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
+    cos_tt = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    #cos_tt = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
     
     F = 1 - ((DHI / GHI) ** 2)
     try:
@@ -194,11 +195,15 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
 
 
 
-def haydavies1980(surf_tilt,surf_az,DHI,DNI,HExtra,sun_zen,sun_az):
+def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
 
     '''
-    Determine diffuse irradiance from the sky on a tilted surface using Hay & Davies' 1980 model
+    Determine diffuse irradiance from the sky on a 
+    tilted surface using Hay & Davies' 1980 model
 
+    .. math::
+
+       I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) )
 
     Hay and Davies' 1980 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a
@@ -210,43 +215,39 @@ def haydavies1980(surf_tilt,surf_az,DHI,DNI,HExtra,sun_zen,sun_az):
     Parameters
     ----------
 
-    surf_tilt : float or DataFrame
+    surf_tilt : float or Series
           Surface tilt angles in decimal degrees.
-          surf_tilt must be >=0 and <=180. The tilt angle is defined as
+          The tilt angle is defined as
           degrees from horizontal (e.g. surface facing up = 0, surface facing
           horizon = 90)
 
-    surf_az : float or DataFrame
+    surf_az : float or Series
           Surface azimuth angles in decimal degrees.
-          surf_az must be >=0 and <=360. The Azimuth convention is defined
+          The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    DHI : float or DataFrame
+    DHI : float or Series
           diffuse horizontal irradiance in W/m^2. 
-          DHI must be >=0.
 
-    DNI : float or DataFrame
+    DNI : float or Series
           direct normal irradiance in W/m^2. 
-          DNI must be >=0.
 
-    HExtra : float or DataFrame
+    DNI_ET : float or Series
           extraterrestrial normal irradiance in W/m^2. 
-           HExtra must be >=0.
 
-    sun_zen : float or DataFrame
+    sun_zen : float or Series
           apparent (refraction-corrected) zenith
           angles in decimal degrees. 
-          sun_zen must be >=0 and <=180.
 
-    sun_az : float or DataFrame
+    sun_az : float or Series
           Sun azimuth angles in decimal degrees.
-          sun_az must be >=0 and <=360. The Azimuth convention is defined
+          The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
     Returns
     --------
 
-    SkyDiffuse : float or DataFrame
+    SkyDiffuse : float or Series
 
           the diffuse component of the solar radiation  on an
           arbitrarily tilted surface defined by the Perez model as given in
@@ -277,17 +278,29 @@ def haydavies1980(surf_tilt,surf_az,DHI,DNI,HExtra,sun_zen,sun_az):
     pvl_spa
 
     '''
+    
+    pvl_logger.debug('diffuse_sky.haydavies()')
+    
+    cos_tt = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    
+    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    
+    # ratio of titled and horizontal beam irradiance
+    # Will H: is this to avoid / 0? Shouldn't it be element-wise?
+    #Rb = np.max(cos_tt, 0) / np.max(pvl_tools.cosd(sun_zen), 0.01745) 
+    Rb = cos_tt / cos_sun_zen
+    
+    # Anisotropy Index
+    AI = DNI / DNI_ET
 
-    COSTT=pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
+    # these are actually the () and [] sub-terms of the second term of eqn 7
+    term1 = 1 - AI
+    term2 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
 
-    RB=np.max(COSTT,0) / np.max(pvl_tools.cosd(sun_zen),0.01745)
-
-    AI=DNI / HExtra
-
-    SkyDiffuse=DHI*((AI*(RB) + (1 - AI)*(0.5)*((1 + pvl_tools.cosd(surf_tilt)))))
-
-
-    return SkyDiffuse
+    sky_diffuse = DHI * ( AI*Rb + term1 * term2 )
+    sky_diffuse[sky_diffuse < 0] = 0
+    
+    return sky_diffuse
 
 
 
@@ -310,34 +323,34 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     Parameters
     ----------
 
-    surf_tilt : DataFrame
+    surf_tilt : float or Series.
           Surface tilt angles in decimal degrees.
           The tilt angle is defined as
           degrees from horizontal (e.g. surface facing up = 0, surface facing
           horizon = 90)
 
-    surf_az : DataFrame
+    surf_az : float or Series.
           Surface azimuth angles in decimal degrees.
           The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    DHI : DataFrame
+    DHI : float or Series.
           diffuse horizontal irradiance in W/m^2. 
 
-    DNI : DataFrame
+    DNI : float or Series.
           direct normal irradiance in W/m^2. 
 
-    GHI: DataFrame
+    GHI: float or Series.
           Global irradiance in W/m^2. 
 
-    DNI_ET : DataFrame
+    DNI_ET : float or Series.
           extraterrestrial normal irradiance in W/m^2. 
 
-    sun_zen : DataFrame
+    sun_zen : float or Series.
           apparent (refraction-corrected) zenith
           angles in decimal degrees. 
 
-    sun_az : DataFrame
+    sun_az : float or Series.
           Sun azimuth angles in decimal degrees. 
           The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, East = 90, West = 270).
@@ -345,7 +358,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     Returns
     -------
 
-    SkyDiffuse : DataFrame
+    SkyDiffuse : float or Series.
 
            the diffuse component of the solar radiation  on an
            arbitrarily tilted surface defined by the Reindl model as given in
@@ -390,8 +403,11 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
 
     '''          
     
+    pvl_logger.debug('diffuse_sky.reindl()')
+    
+    cos_tt = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    
     cos_sun_zen = pvl_tools.cosd(sun_zen)
-    cos_tt = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
     
     # ratio of titled and horizontal beam irradiance
     # Will H: is this to avoid / 0? Shouldn't it be element-wise?
@@ -854,3 +870,21 @@ def GetPerezCoefficients(perezmodelt):
     F2coeffs = array.T[3:7].T
 
     return F1coeffs ,F2coeffs
+    
+    
+    
+def zenith_projection(surf_tilt, surf_az, sun_zen, sun_az):
+    """
+    Calculates the dot product of the solar angle and the surface normal.
+    Input all angles in degrees.
+    
+    :param surf_tilt: float or Series. Panel tilt from horizontal.
+    :param surf_az: float or Series. Panel azimuth from north.
+    :param sun_zen: float or Series. Solar zenith angle.
+    :param sun_az: float or Series. Solar azimuth angle.
+    
+    :returns: float or Series. Dot product of panel normal and solar angle.
+    """
+    
+    return pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
+    

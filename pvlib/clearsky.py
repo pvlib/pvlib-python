@@ -214,6 +214,7 @@ def ineichen(time, location, linke_turbidity=None,
     
     df_out = pd.DataFrame({'GHI':clearsky_GHI, 'DNI':clearsky_DNI, 
                            'DHI':clearsky_DHI})
+    df_out.fillna(0, inplace=True)
     #df_out['BncI'] = BncI
     #df_out['BncI_2'] = BncI
     

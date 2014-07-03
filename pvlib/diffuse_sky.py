@@ -92,7 +92,7 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
 
     .. math::
 
-       I_{d} = DHI \frac{1 + \cos\beta}{2} (1 + F' \sin^3(\beta/2)) (1 + F' \cos^2\theta\sin^3\theta_z
+       I_{d} = DHI \frac{1 + \cos\beta}{2} (1 + F' \sin^3(\beta/2)) (1 + F' \cos^2\theta\sin^3\theta_z)
    
     where
 
@@ -178,6 +178,7 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     cos_tt = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
     
     F = 1 - ((DHI / GHI) ** 2)
+    F.fillna(0, inplace=True)
 
     term1 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
     term2 = 1 + F * (pvl_tools.sind(surf_tilt / 2) ** 3)

@@ -181,7 +181,7 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
 
     term1 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
     term2 = 1 + F * (pvl_tools.sind(surf_tilt / 2) ** 3)
-    term3 = 1 + F * (cos_tt ** 2) * (pvl_tools.sind(SunZen) ** 3)
+    term3 = 1 + F * (cos_tt ** 2) * (pvl_tools.sind(sun_zen) ** 3)
 
     sky_diffuse = DHI * term1 * term2 * term3
 

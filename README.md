@@ -11,12 +11,12 @@ Key differences
 This refactoring is still a work in progress, but some of the major differences so far include:
 
 * Remove pvl_ from module names.
-* Replace Location "struct" with namedtuple.
+* Locations are now referred to as objects, not structs.
 * Return one DataFrame instead of a tuple of DataFrames.
-* Specify time zones using a string from the standard IANA Time Zone Database naming conventions instead of an integer GMT offset. 
+* Specify time zones using a string from the standard IANA Time Zone Database naming conventions or using a pytz.timezone instead of an integer GMT offset. 
 * Add PyEphem option to solar position calculations. 
-* Consolidation of similar modules. For example, functions from ```pvl_clearsky_ineichen.py``` and ```pvl_clearsky_haurwitz.py``` have been consolidated into ```clearsky.py```. Similar consolidations have occured for airmass and solar position modules. POA modules are probably next.
-* Removing Vars=Locals(); Expect...; var=pvl_tools.Parse(Vars,Expect); pattern. 
+* Consolidation of similar modules. For example, functions from ```pvl_clearsky_ineichen.py``` and ```pvl_clearsky_haurwitz.py``` have been consolidated into ```clearsky.py```. Similar consolidations have occured for airmass, solar position, and diffuse irradiance modules.
+* Removing Vars=Locals(); Expect...; var=pvl_tools.Parse(Vars,Expect); pattern. Very few tests of input validitity remain. 
 * Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90.
 * ```__init__.py``` imports have been removed.
 * Adding logging calls.
@@ -24,6 +24,7 @@ This refactoring is still a work in progress, but some of the major differences 
 * Changing function names so that do not conflict with module names.
 * Not bothering with boilerplate unit test code such as ```unittest.main()```. 
 * Removing most wildcard imports.
+* Improved documentation here and there.
 
 
 Quick Start

@@ -496,7 +496,8 @@ def king(surf_tilt, DHI, GHI, sun_zen):
 
 
 
-def perez(surf_tilt, surf_az, DHI, DNI, HExtra, sun_zen, sun_az, AM,modelt='allsitescomposite1990'):
+def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM, 
+          modelt='allsitescomposite1990'):
     ''' 
     Determine diffuse irradiance from the sky on a tilted surface using one of the Perez models
 
@@ -512,40 +513,40 @@ def perez(surf_tilt, surf_az, DHI, DNI, HExtra, sun_zen, sun_az, AM,modelt='alls
     Parameters
     ----------
 
-    surf_tilt : float or DataFrame
+    surf_tilt : float or Series
           Surface tilt angles in decimal degrees.
           surf_tilt must be >=0 and <=180. The tilt angle is defined as
           degrees from horizontal (e.g. surface facing up = 0, surface facing
           horizon = 90)
 
-    surf_az : float or DataFrame
+    surf_az : float or Series
           Surface azimuth angles in decimal degrees.
           surf_az must be >=0 and <=360. The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    DHI : float or DataFrame
+    DHI : float or Series
           diffuse horizontal irradiance in W/m^2. 
           DHI must be >=0.
 
-    DNI : float or DataFrame
+    DNI : float or Series
           direct normal irradiance in W/m^2. 
           DNI must be >=0.
 
-    HExtra : float or DataFrame
+    DNI_ET : float or Series
           extraterrestrial normal irradiance in W/m^2. 
-           HExtra must be >=0.
+           DNI_ET must be >=0.
 
-    sun_zen : float or DataFrame
+    sun_zen : float or Series
           apparent (refraction-corrected) zenith
           angles in decimal degrees. 
           sun_zen must be >=0 and <=180.
 
-    sun_az : float or DataFrame
+    sun_az : float or Series
           Sun azimuth angles in decimal degrees.
           sun_az must be >=0 and <=360. The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
-    AM : float or DataFrame
+    AM : float or Series
           relative (not pressure-corrected) airmass 
           values. If AM is a DataFrame it must be of the same size as all other 
           DataFrame inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
@@ -577,7 +578,7 @@ def perez(surf_tilt, surf_az, DHI, DNI, HExtra, sun_zen, sun_az, AM,modelt='alls
     Returns
     --------
 
-    SkyDiffuse : float or DataFrame
+    float or Series
 
           the diffuse component of the solar radiation  on an
           arbitrarily tilted surface defined by the Perez model as given in
@@ -616,45 +617,42 @@ def perez(surf_tilt, surf_az, DHI, DNI, HExtra, sun_zen, sun_az, AM,modelt='alls
     pvl_relativeairmass
 
     '''
-    Vars=locals()
-    Expect={'surf_tilt':('num','x>=0'),
-      'surf_az':('x>=-180'),
-      'DHI':('x>=0'),
-      'DNI':('x>=0'),
-      'HExtra':('x>=0'),
-      'sun_zen':('x>=0'),
-      'sun_az':('x>=-180'),
-      'AM':('x>=0'),
-      'modelt': ('default','default=allsitescomposite1990')}
 
-    var=pvl_tools.Parse(Vars,Expect)
+    pvl_logger.debug('diffuse_sky.perez()')
 
     kappa = 1.041 #for sun_zen in radians
-    z = var.sun_zen*np.pi/180# # convert to radians
+    z = np.radians(sun_zen) # convert to radians
 
-    Dhfilter = var.DHI > 0
+    #Dhfilter = DHI > 0
 
+    # epsilon is the sky's "clearness"
+    eps = ( (DHI + DNI)/DHI + kappa*(z**3) ) / ( 1 + kappa*(z**3) )
+    
+    
+    #e = ((var.DHI[Dhfilter] + var.DNI[Dhfilter])/var.DHI[Dhfilter]+kappa*z[Dhfilter]**3)/(1+kappa*z[Dhfilter]**3).reindex_like(var.sun_zen)
+    
+    #ebin = pd.Series(np.zeros(var.DHI.shape[0]),index=e.index)
 
-    e = ((var.DHI[Dhfilter] + var.DNI[Dhfilter])/var.DHI[Dhfilter]+kappa*z[Dhfilter]**3)/(1+kappa*z[Dhfilter]**3).reindex_like(var.sun_zen)
+    # Perez et al define clearness bins according to the following rules.
+    # 1 = overcast ... 8 = clear 
+    # (these names really only make sense for small zenith angles, but...)
+    # these values will eventually be used as indicies for coeffecient look ups
+    ebin = eps.copy()
+    ebin[(eps<1.065)] = 1
+    ebin[(eps>=1.065) & (eps<1.23)] = 2
+    ebin[(eps>=1.23) & (eps<1.5)] = 3
+    ebin[(eps>=1.5) & (eps<1.95)] = 4
+    ebin[(eps>=1.95) & (eps<2.8)] = 5
+    ebin[(eps>=2.8) & (eps<4.5)] = 6
+    ebin[(eps>=4.5) & (eps<6.2)] = 7
+    ebin[eps>=6.2] = 8
 
+    #ebinfilter=ebin>0
+    ebin = ebin - 1 #correct for 0 indexing in coeffecient lookup
+    #ebin[ebinfilter==False]=np.NaN
 
-
-    ebin = pd.Series(np.zeros(var.DHI.shape[0]),index=e.index)
-
-    # Select which bin e falls into
-    ebin[(e<1.065)]= 1
-    ebin[(e>=1.065) & (e<1.23)]= 2
-    ebin[(e>=1.23) & (e<1.5)]= 3
-    ebin[(e>=1.5) & (e<1.95)]= 4
-    ebin[(e>=1.95) & (e<2.8)]= 5
-    ebin[(e>=2.8) & (e<4.5)]= 6
-    ebin[(e>=4.5) & (e<6.2)]= 7
-    ebin[e>=6.2] = 8
-
-    ebinfilter=ebin>0
-    ebin=ebin-1 #correct for 0 indexing
-    ebin[ebinfilter==False]=np.NaN
-    ebin=ebin.dropna().astype(int)
+    # remove night time values
+    ebin = ebin.dropna().astype(int)
 
     # This is added because in cases where the sun is below the horizon
     # (var.sun_zen > 90) but there is still diffuse horizontal light (var.DHI>0), it is
@@ -663,43 +661,48 @@ def perez(surf_tilt, surf_az, DHI, DNI, HExtra, sun_zen, sun_az, AM,modelt='alls
     # the airmass to the airmass value on the horizon (approximately 37-38).
     #var.AM(var.sun_zen >=90 & var.DHI >0) = 37;
 
-    var.HExtra[var.HExtra==0]=.00000001 #very hacky, fix this
-    delt = var.DHI*var.AM/var.HExtra
-
-    #
+    #var.DNI_ET[var.DNI_ET==0] = .00000001 #very hacky, fix this
+    
+    # delta is the sky's "brightness"
+    delta = DHI * AM / DNI_ET
+    
+    # keep only valid times
+    delta = delta[ebin.index]
+    z = z[ebin.index]
 
     # The various possible sets of Perez coefficients are contained
     # in a subfunction to clean up the code.
-    F1c,F2c = GetPerezCoefficients(var.modelt)
+    F1c, F2c = _get_perez_coefficients(modelt)
 
-    F1= F1c[ebin,0] + F1c[ebin,1]*delt[ebinfilter] + F1c[ebin,2]*z[ebinfilter]
-    F1[F1<0]=0;
-    F1=F1.astype(float)
+    #F1 = F1c[ebin,0] + F1c[ebin,1]*delta[ebinfilter] + F1c[ebin,2]*z[ebinfilter]
+    F1 = F1c[ebin,0] + F1c[ebin,1]*delta + F1c[ebin,2]*z
+    F1[F1 < 0] = 0;
+    F1 = F1.astype(float)
 
-    F2= F2c[ebin,0] + F2c[ebin,1]*delt[ebinfilter] + F2c[ebin,2]*z[ebinfilter]
-    F2[F2<0]=0
-    F2=F2.astype(float)
+    #F2= F2c[ebin,0] + F2c[ebin,1]*delta[ebinfilter] + F2c[ebin,2]*z[ebinfilter]
+    F2 = F2c[ebin,0] + F2c[ebin,1]*delta + F2c[ebin,2]*z
+    F2[F2 < 0] = 0
+    F2 = F2.astype(float)
 
-    A = pvl_tools.cosd(var.surf_tilt)*pvl_tools.cosd(var.sun_zen) + pvl_tools.sind(var.surf_tilt)*pvl_tools.sind(var.sun_zen)*pvl_tools.cosd(var.sun_az-var.surf_az); #removed +180 from azimuth modifier: Rob Andrews October 19th 2012
-    A[A < 0] = 0
+    A = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az-surf_az); #removed +180 from azimuth modifier: Rob Andrews October 19th 2012
+    #A[A < 0] = 0
 
-    B = pvl_tools.cosd(var.sun_zen);
-    B[B < pvl_tools.cosd(85)] = pvl_tools.cosd(85)
+    B = pvl_tools.cosd(sun_zen);
+    #B[B < pvl_tools.cosd(85)] = pvl_tools.cosd(85)
 
 
     #Calculate Diffuse POA from sky dome
 
     #SkyDiffuse = pd.Series(np.zeros(var.DHI.shape[0]),index=data.index)
 
-    SkyDiffuse = var.DHI[ebinfilter]*( 0.5* (1-F1[ebinfilter])*(1+pvl_tools.cosd(var.surf_tilt))+F1[ebinfilter] * A[ebinfilter]/ B[ebinfilter] + F2[ebinfilter]* pvl_tools.sind(var.surf_tilt))
-    SkyDiffuse[SkyDiffuse <= 0]= 0
+    sky_diffuse = DHI[ebin.index]*( 0.5* (1-F1)*(1+pvl_tools.cosd(surf_tilt))+F1 * A[ebin.index]/ B[ebin.index] + F2*pvl_tools.sind(surf_tilt))
+    sky_diffuse[sky_diffuse < 0] = 0
+
+    return sky_diffuse
 
 
-    return pd.DataFrame({'In_Plane_SkyDiffuse':SkyDiffuse})
 
-
-
-def GetPerezCoefficients(perezmodelt):
+def _get_perez_coefficients(perezmodelt):
     ''' 
     Find coefficients for the Perez model 
 
@@ -858,12 +861,12 @@ def GetPerezCoefficients(perezmodelt):
               }
   
 
-    array=np.array(coeffdict[perezmodelt])
+    array = np.array(coeffdict[perezmodelt])
 
     F1coeffs = array.T[0:3].T
     F2coeffs = array.T[3:7].T
 
-    return F1coeffs ,F2coeffs
+    return F1coeffs, F2coeffs
     
     
     

@@ -5,13 +5,13 @@ import pandas as pd
 from .. import pvl_extraradiation
 
 def test_proper():
-	etr=pvl_extraradiation.pvl_extraradiation(doy=5)
+	etr=pvl_extraradiation(doy=5)
 	assert(etr>0)
 
 	#include physical checks
 @raises(Exception)
 def test_fail():
-	etr=pvl_extraradiation.pvl_extraradiation(doy=600)
+	etr=pvl_extraradiation(doy=600)
 	assert(etr>0)
 
 def main():

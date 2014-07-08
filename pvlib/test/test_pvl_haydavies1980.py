@@ -2,28 +2,28 @@ from nose.tools import *
 import numpy as np
 import pandas as pd 
 from .. import pvl_tools
-from .. import pvl_readtmy3 as tmy3
-from .. import pvl_ephemeris as eph
-from .. import pvl_extraradiation as ext
-from .. import pvl_relativeairmass as AM
-from .. import pvl_haydavies1980 as hd
+from .. import pvl_readtmy3 
+from .. import pvl_ephemeris 
+from .. import pvl_extraradiation 
+from .. import pvl_relativeairmass 
+from .. import pvl_haydavies1980 
 import os
 def test():
 	
-	TMY, meta=tmy3.pvl_readtmy3(FileName=os.path.abspath('')+'/723650TY.csv')
-	meta.SurfTilt=30
+	TMY, meta=pvl_readtmy3(FileName=os.path.abspath('')+'/723650TY.csv')
+	
+	meta['SurfTilt']=30
+	meta['SurfAz']=0
+	meta['Albedo']=0.2 
 
-	meta.SurfAz=0
-	meta.Albedo=0.2 
+	TMY['SunAz'], TMY['SunEl'], TMY['ApparentSunEl'], TMY['SolarTime'], TMY['SunZen']=pvl_ephemeris(Time=TMY.index,Location=meta)
 
-	TMY['SunAz'], TMY['SunEl'], TMY['ApparentSunEl'], TMY['SolarTime'], TMY['SunZen']=eph.pvl_ephemeris(Time=TMY.index,Location=meta)
+	TMY['HExtra']=pvl_extraradiation(doy=TMY.index.dayofyear)
 
-	TMY['HExtra']=ext.pvl_extraradiation(doy=TMY.index.dayofyear)
+	TMY['AM']=pvl_relativeairmass(z=TMY.SunZen)
 
-	TMY['AM']=AM.pvl_relativeairmass(z=TMY.SunZen)
-
-	TMY['In_Plane_SkyDiffuse']=hd.pvl_haydavies1980(SurfTilt=meta.SurfTilt,
-	                                        SurfAz=meta.SurfAz,
+	TMY['In_Plane_SkyDiffuse']=pvl_haydavies1980(SurfTilt=meta['SurfTilt'],
+	                                        SurfAz=meta['SurfAz'],
 	                                        DHI=TMY.DHI,
 	                                        DNI=TMY.DNI,
 	                                        HExtra=TMY.HExtra,
@@ -40,7 +40,7 @@ def test_scalar():
 
 
 
-	diff=hd.pvl_haydavies1980(SurfTilt=SurfTilt,
+	diff=pvl_haydavies1980(SurfTilt=SurfTilt,
 	                                        SurfAz=SurfAz,
 	                                        DHI=500,
 	                                        DNI=400,

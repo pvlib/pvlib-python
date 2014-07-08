@@ -8,8 +8,6 @@ def test_proper():
 	assert(1)
 	
 
-
-
 def main():
     unittest.main()
 

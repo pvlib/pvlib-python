@@ -1,21 +1,19 @@
 import numpy as np
 from scipy.io import loadmat,savemat
 import os
+import sys
 from pvl_tools import * #load all of pvl_tools into namespace
-import Pysolar 
 import pandas as pd
 
 
 
 def pvl_spa(Time,Location):
     '''
-    Calculate the solar position using the PySolar package
+    Calculate the solar position using the C implementation of the NREL 
+    SPA code 
 
-    The PySolar Package is developed by Brandon Stafford, and is
-    found here: https://github.com/pingswept/pysolar/tree/master
-
-    This function will map the standard time and location structures
-    onto the Pysolar function
+    The source files for this code are located in './spa_c_files/', along with
+    a README file which describes how the C code is wrapped in Python. 
 
     Parameters
     ----------
@@ -51,26 +49,39 @@ def pvl_spa(Time,Location):
     References
     ----------
 
-    PySolar Documentation: https://github.com/pingswept/pysolar/tree/master
+    NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    
     '''
-    #pdb.set_trace()
+    
+    sys.path.append(os.path.abspath('spa_c_files/'))
+    
+    import spa_py #import the Cython version of the C compiled NREL SPA algorithm
+
     try: 
         Timeshifted=Time.tz_convert('UTC') #This will work with a timezone aware dataset
     except:
-        Timeshifted=Time.shift(abs(Location.TZ),freq='H') #This will work with a timezone unaware dataset
+        Timeshifted=Time.shift(abs(Location['TZ']),freq='H') #This will work with a timezone unaware dataset
 
-    SunAz=map(lambda x: Pysolar.GetAzimuth(Location.latitude,Location.longitude,x),Timeshifted)#.tz_convert('UTC'))
-    SunEl=map(lambda x: Pysolar.GetAltitude(Location.latitude,Location.longitude,x),Timeshifted)#.tz_convert('UTC'))
+    spa_out=[]
     
-    SunEl[SunEl<0]=0
-    Zen=90-np.array(SunEl)
+    for date in Timeshifted:
+        spa_out.append(spa_py.spa_calc(year=date.year,
+                        month=date.month,
+                        day=date.day,
+                        hour=date.hour,
+                        minute=date.minute,
+                        second=date.second,
+                        timezone=0, #timezone corrections handled above
+                        latitude=Location['latitude'],
+                        longitude=Location['longitude'],
+                        elevation=Location['altitude']))
+    
+    DFOut=pd.DataFrame(spa_out,index=Time)
+    
+    DFOut['SunEl']=90-DFOut.zenith
+    
 
-    SunAz=(np.array(SunAz)+360)*-1
-    SunAz[SunAz<-180]=SunAz[SunAz<-180]+360
-
-    DFOut=pd.DataFrame({'SunAz':SunAz,'SunEl':SunEl,'SunZen':Zen},index=Time)
-
-    return DFOut['SunAz'],DFOut['SunEl'],DFOut['SunZen']
+    return DFOut['azimuth180'],DFOut['SunEl'],DFOut['zenith']
 
 
 

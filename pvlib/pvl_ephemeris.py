@@ -76,7 +76,7 @@ def pvl_ephemeris(Time,Location,pressure=101325,temperature=12):
   var=pvl_tools.Parse(Vars,Expect)
 
 
-  Latitude=var.Location.latitude
+  Latitude=var.Location['latitude']
   ''' the inversion of longitude is due to the fact that this code was
   originally written for the convention that positive longitude were for
   locations west of the prime meridian. However, the correct convention (as
@@ -85,8 +85,8 @@ def pvl_ephemeris(Time,Location,pressure=101325,temperature=12):
   correct convention (e.g. Albuquerque is at -106 longitude), but it needs
   to be inverted for use in the code.
   '''
-  Latitude=var.Location.latitude
-  Longitude=1 * var.Location.longitude
+  Latitude=var.Location['latitude']
+  Longitude=1 * var.Location['longitude']
   Year=var.Time.year
   Month=var.Time.month
   Day=var.Time.day
@@ -102,7 +102,7 @@ def pvl_ephemeris(Time,Location,pressure=101325,temperature=12):
 
 
   UnivDate=DayOfYear 
-  UnivHr=DecHours+var.Location.TZ-.5
+  UnivHr=DecHours+var.Location['TZ']#-.5
   #+60/float(60)/2
   
   Yr=Year - 1900

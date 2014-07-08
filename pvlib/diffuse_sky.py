@@ -623,16 +623,9 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     kappa = 1.041 #for sun_zen in radians
     z = np.radians(sun_zen) # convert to radians
 
-    #Dhfilter = DHI > 0
-
     # epsilon is the sky's "clearness"
     eps = ( (DHI + DNI)/DHI + kappa*(z**3) ) / ( 1 + kappa*(z**3) )
     
-    
-    #e = ((var.DHI[Dhfilter] + var.DNI[Dhfilter])/var.DHI[Dhfilter]+kappa*z[Dhfilter]**3)/(1+kappa*z[Dhfilter]**3).reindex_like(var.sun_zen)
-    
-    #ebin = pd.Series(np.zeros(var.DHI.shape[0]),index=e.index)
-
     # Perez et al define clearness bins according to the following rules.
     # 1 = overcast ... 8 = clear 
     # (these names really only make sense for small zenith angles, but...)
@@ -647,9 +640,7 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     ebin[(eps>=4.5) & (eps<6.2)] = 7
     ebin[eps>=6.2] = 8
 
-    #ebinfilter=ebin>0
     ebin = ebin - 1 #correct for 0 indexing in coeffecient lookup
-    #ebin[ebinfilter==False]=np.NaN
 
     # remove night time values
     ebin = ebin.dropna().astype(int)
@@ -674,28 +665,28 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     # in a subfunction to clean up the code.
     F1c, F2c = _get_perez_coefficients(modelt)
 
-    #F1 = F1c[ebin,0] + F1c[ebin,1]*delta[ebinfilter] + F1c[ebin,2]*z[ebinfilter]
     F1 = F1c[ebin,0] + F1c[ebin,1]*delta + F1c[ebin,2]*z
     F1[F1 < 0] = 0;
     F1 = F1.astype(float)
 
-    #F2= F2c[ebin,0] + F2c[ebin,1]*delta[ebinfilter] + F2c[ebin,2]*z[ebinfilter]
     F2 = F2c[ebin,0] + F2c[ebin,1]*delta + F2c[ebin,2]*z
     F2[F2 < 0] = 0
     F2 = F2.astype(float)
 
-    A = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az-surf_az); #removed +180 from azimuth modifier: Rob Andrews October 19th 2012
-    #A[A < 0] = 0
+    A = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    A[A < 0] = 0
 
     B = pvl_tools.cosd(sun_zen);
-    #B[B < pvl_tools.cosd(85)] = pvl_tools.cosd(85)
+    B[B < pvl_tools.cosd(85)] = pvl_tools.cosd(85)
 
 
     #Calculate Diffuse POA from sky dome
-
-    #SkyDiffuse = pd.Series(np.zeros(var.DHI.shape[0]),index=data.index)
-
-    sky_diffuse = DHI[ebin.index]*( 0.5* (1-F1)*(1+pvl_tools.cosd(surf_tilt))+F1 * A[ebin.index]/ B[ebin.index] + F2*pvl_tools.sind(surf_tilt))
+    
+    term1 = 0.5 * (1 - F1) * (1 + pvl_tools.cosd(surf_tilt))
+    term2 = F1 * A[ebin.index] / B[ebin.index]
+    term3 = F2*pvl_tools.sind(surf_tilt)
+    
+    sky_diffuse = DHI[ebin.index] * (term1 + term2 + term3)
     sky_diffuse[sky_diffuse < 0] = 0
 
     return sky_diffuse

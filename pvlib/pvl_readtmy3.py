@@ -172,7 +172,7 @@ def pvl_readtmy3(FileName):
   meta['longitude']=float(meta['longitude'])
   meta['TZ']=float(meta['TZ'])
   meta['USAF']=int(meta['USAF'])
-  meta=pvl_tools.repack(meta) #repack dict as a struct
+  #meta=pvl_tools.repack(meta) #repack dict as a struct
 
   TMYData=pd.read_csv(var.FileName,header=1,
   	parse_dates={'datetime':['Date (MM/DD/YYYY)','Time (HH:MM)']},
@@ -181,7 +181,7 @@ def pvl_readtmy3(FileName):
   TMYData=recolumn(TMYData)												#rename to standard column names
 
   #retreive Timezone for pandas NOTE: TMY3 is currently given in local standard time. Pandas and pytz can only handle DST timezones, and so to keep consistency, the time index will be input as TZ unaware for the moment
-  TZ=parsetz(float(meta.TZ))
+  TZ=parsetz(float(meta['TZ']))
   #pdb.set_trace()
   #TMYData.index=TMYData.index.tz_localize(TZ)
 

@@ -11,6 +11,7 @@ from pvlib.location import Location
 import pvlib.clearsky
 import pvlib.solarposition
 import pvlib.diffuse_sky
+import pvlib.pvl_extraradiation
 
 # setup times and location to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24), 
@@ -24,6 +25,7 @@ ephem_data = pvlib.solarposition.get_solarposition(times, tus, method='pyephem')
 
 irrad_data = pvlib.clearsky.ineichen(times, tus, solarposition_method='pyephem')
 
+dni_et = pvlib.pvl_extraradiation.pvl_extraradiation(times.dayofyear)
 
 # the test functions
 
@@ -41,3 +43,27 @@ def test_klucher_series():
                               ephem_data['apparent_zenith'],
                               ephem_data['apparent_azimuth']) 
     
+def test_haydavies():
+    pvlib.diffuse_sky.haydavies(40, 180, irrad_data['DHI'], irrad_data['DNI'],
+                                dni_et,
+                                ephem_data['apparent_zenith'],
+                                ephem_data['apparent_azimuth']) 
+                                
+def test_reindl():
+    pvlib.diffuse_sky.reindl(40, 180, irrad_data['DHI'], irrad_data['DNI'],
+                             irrad_data['GHI'], dni_et,
+                             ephem_data['apparent_zenith'],
+                             ephem_data['apparent_azimuth'])         
+                             
+def test_king():
+    pvlib.diffuse_sky.king(40, irrad_data['DHI'], irrad_data['GHI'],
+                           ephem_data['apparent_zenith'])                              
+                             
+def test_perez():
+    AM = pvlib.airmass.relativeairmass(ephem_data['apparent_zenith'])
+    pvlib.diffuse_sky.perez(40, 180, irrad_data['DHI'], irrad_data['DNI'],
+                            dni_et,
+                            ephem_data['apparent_zenith'],
+                            ephem_data['apparent_azimuth'],
+                            AM) 
+                        

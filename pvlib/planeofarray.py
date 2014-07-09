@@ -17,7 +17,7 @@ import pvlib.diffuse_ground
 
 
 
-def zenith_projection(surf_tilt, surf_az, sun_zen, sun_az):
+def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
     """
     Calculates the dot product of the solar vector and the surface normal.
     
@@ -34,12 +34,39 @@ def zenith_projection(surf_tilt, surf_az, sun_zen, sun_az):
     projection = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
     
     try:
-        projection.name = 'zenith_projection'
+        projection.name = 'aoi_projection'
     except AttributeError:
         pass
     
     return projection
 
+
+
+def aoi(surf_tilt, surf_az, sun_zen, sun_az):
+    """
+    Calculates the angle of incidence of the solar vector on a surface.
+    This is the angle between the solar vector and the surface normal.
+    
+    Input all angles in degrees.
+    
+    :param surf_tilt: float or Series. Panel tilt from horizontal.
+    :param surf_az: float or Series. Panel azimuth from north.
+    :param sun_zen: float or Series. Solar zenith angle.
+    :param sun_az: float or Series. Solar azimuth angle.
+    
+    :returns: float or Series. Angle of incidence in degrees.
+    """
+    
+    projection = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    aoi_value = np.rad2deg(np.arccos(projection))
+    
+    try:
+        aoi_value.name = 'aoi'
+    except AttributeError:
+        pass
+    
+    return aoi_value
+    
 
 
 def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
@@ -58,7 +85,7 @@ def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
               horizontal plane irradiance
     """
     
-    cos_poa_zen = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_poa_zen = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     cos_sun_zen = pvl_tools.cosd(sun_zen)
     
@@ -78,7 +105,7 @@ def beam_component(surf_tilt, surf_az, sun_zen, sun_az, DNI):
     """
     Calculates the beam component of the plane of array irradiance.
     """
-    beam = DNI * zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    beam = DNI * aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     beam[beam < 0] = 0
     
     return beam
@@ -168,9 +195,8 @@ def total_irrad(surf_tilt, surf_az,
 
     .. math::
 
-       I_{iso} = I_{h,b}R_b + I_{h,d} \frac{1 + \cos\beta}{2} + I_{h}\rho\frac{1 - \cos\beta}{2}
-
-
+       I_{tot} = I_{beam} + I_{sky} + I_{ground}
+    
     Parameters
     ----------
 

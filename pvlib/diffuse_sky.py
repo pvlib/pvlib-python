@@ -177,7 +177,7 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     pvl_logger.debug('diffuse_sky.klucher()')
 
     # zenith angle with respect to panel normal.
-    cos_tt = pvlib.planeofarray.zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     F = 1 - ((DHI / GHI) ** 2)
     try:
@@ -282,7 +282,7 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     
     pvl_logger.debug('diffuse_sky.haydavies()')
     
-    cos_tt = pvlib.planeofarray.zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     cos_sun_zen = pvl_tools.cosd(sun_zen)
     
@@ -406,7 +406,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     
     pvl_logger.debug('diffuse_sky.reindl()')
     
-    cos_tt = pvlib.planeofarray.zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     cos_sun_zen = pvl_tools.cosd(sun_zen)
     
@@ -674,7 +674,7 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     F2[F2 < 0] = 0
     F2 = F2.astype(float)
 
-    A = pvlib.planeofarray.zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    A = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     A[A < 0] = 0
 
     B = pvl_tools.cosd(sun_zen);

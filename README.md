@@ -16,6 +16,7 @@ This refactoring is still a work in progress, but some of the major differences 
 * Specify time zones using a string from the standard IANA Time Zone Database naming conventions or using a pytz.timezone instead of an integer GMT offset. 
 * Add PyEphem option to solar position calculations. 
 * Consolidation of similar modules. For example, functions from ```pvl_clearsky_ineichen.py``` and ```pvl_clearsky_haurwitz.py``` have been consolidated into ```clearsky.py```. Similar consolidations have occured for airmass, solar position, and diffuse irradiance modules.
+* Created ``planeofarray.py`` module with AOI, projection, and irradiance sum and calculation functions
 * Removing Vars=Locals(); Expect...; var=pvl_tools.Parse(Vars,Expect); pattern. Very few tests of input validitity remain. 
 * Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90.
 * ```__init__.py``` imports have been removed.

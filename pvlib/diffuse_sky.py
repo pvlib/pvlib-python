@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 
 import pvlib.pvl_tools as pvl_tools
+import pvlib.planeofarray
+
 
 
 def isotropic(surf_tilt, DHI):
@@ -175,8 +177,7 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     pvl_logger.debug('diffuse_sky.klucher()')
 
     # zenith angle with respect to panel normal.
-    cos_tt = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
-    #cos_tt = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
+    cos_tt = pvlib.planeofarray.zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     F = 1 - ((DHI / GHI) ** 2)
     try:
@@ -281,7 +282,7 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     
     pvl_logger.debug('diffuse_sky.haydavies()')
     
-    cos_tt = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = pvlib.planeofarray.zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     cos_sun_zen = pvl_tools.cosd(sun_zen)
     
@@ -405,7 +406,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     
     pvl_logger.debug('diffuse_sky.reindl()')
     
-    cos_tt = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = pvlib.planeofarray.zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     cos_sun_zen = pvl_tools.cosd(sun_zen)
     
@@ -673,7 +674,7 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     F2[F2 < 0] = 0
     F2 = F2.astype(float)
 
-    A = zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    A = pvlib.planeofarray.zenith_projection(surf_tilt, surf_az, sun_zen, sun_az)
     A[A < 0] = 0
 
     B = pvl_tools.cosd(sun_zen);
@@ -861,18 +862,4 @@ def _get_perez_coefficients(perezmodelt):
     
     
     
-def zenith_projection(surf_tilt, surf_az, sun_zen, sun_az):
-    """
-    Calculates the dot product of the solar angle and the surface normal.
-    Input all angles in degrees.
-    
-    :param surf_tilt: float or Series. Panel tilt from horizontal.
-    :param surf_az: float or Series. Panel azimuth from north.
-    :param sun_zen: float or Series. Solar zenith angle.
-    :param sun_az: float or Series. Solar azimuth angle.
-    
-    :returns: float or Series. Dot product of panel normal and solar angle.
-    """
-    
-    return pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
-    
+

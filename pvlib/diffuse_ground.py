@@ -85,6 +85,7 @@ def get_diffuse_ground(surf_tilt, ghi, albedo=.25, surface_type=None):
     pvlib.diffuse_sky
 
     '''
+    pvl_logger.debug('diffuse_ground.get_diffuse_ground()')
     
     if surface_type is not None:
         albedo = SURFACE_ALBEDOS[surface_type]

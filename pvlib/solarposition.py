@@ -6,7 +6,6 @@ import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import datetime
-from collections import namedtuple
 
 import numpy as np
 import pandas as pd

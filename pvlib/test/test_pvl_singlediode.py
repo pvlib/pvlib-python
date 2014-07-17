@@ -20,7 +20,7 @@ def test_proper_vector():
 	SurfAz=0
 	Albedo=0.2
 
-	TMY, meta=pvl_readtmy3(FileName=os.path.abspath('')+'/723650TY.csv')
+	TMY, meta=pvl_readtmy3(FileName='703165TY.csv')
 
 	#Canadian_Solar_CS5P_220P
 	module={'A_c': 1.639,

@@ -10,7 +10,7 @@ from .. import pvl_reindl1990
 import os
 def test():
 	
-	TMY, meta=pvl_readtmy3(FileName=os.path.abspath('')+'/723650TY.csv')
+	TMY, meta=pvl_readtmy3(FileName='703165TY.csv')
 	
 	meta['SurfTilt']=30
 	meta['SurfAz']=0

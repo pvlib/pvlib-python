@@ -6,9 +6,10 @@
 Welcome to PV LIB's documentation!
 ==================================
 .. only:: html
-	.. toctree::
+	
+    .. toctree::
 
-		Test Script 1
+		Test_Script_1
 
 
 Irradiance and atmosperhic functions

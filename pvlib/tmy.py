@@ -170,18 +170,14 @@ def readtmy3(filename=None):
     meta['longitude'] = float(meta['longitude'])
     meta['TZ'] = float(meta['TZ'])
     meta['USAF'] = int(meta['USAF'])
-    #meta = pvl_tools.repack(meta) #repack dict as a struct
 
     TMYData = pd.read_csv(filename, header=1,
                           parse_dates={'datetime':['Date (MM/DD/YYYY)','Time (HH:MM)']},
                           date_parser=parsedate, index_col='datetime')
 
-    TMYData = recolumn(TMYData)												#rename to standard column names
+    TMYData = recolumn(TMYData) #rename to standard column names
 
-    #retreive Timezone for pandas NOTE: TMY3 is currently given in local standard time. Pandas and pytz can only handle DST timezones, and so to keep consistency, the time index will be input as TZ unaware for the moment
-    TZ = parsetz(float(meta['TZ']))
-    #pdb.set_trace()
-    #TMYData.index = TMYData.index.tz_localize(TZ)
+    TMYData = TMYData.tz_localize(int(meta['TZ']*3600))
 
     return TMYData, meta
 
@@ -190,22 +186,19 @@ def readtmy3(filename=None):
 def interactive_load():
     import Tkinter 
     from tkFileDialog import askopenfilename
-    Tkinter.Tk().withdraw() 				 #Start interactive file input
+    Tkinter.Tk().withdraw() #Start interactive file input
     return askopenfilename() 
 
 
 
 def parsedate(ymd, hour):
-    date = ymd + ' ' + hour
-    date = pd.date_range(date[0], freq='H', periods=len(date))
-    #print ymd+hour
-    #yr = '2001'											#Move all data to 2001 datum
-    #hour[hour =  = '24:00'] = '0:00'							#Set to pandas 24hr clock
-    #ymd = [l[:-4]+yr+' ' for l in ymd]					#remove year from TMY data
-    #date = ymd+hour
-    #date = pd.to_datetime(date)							#convert to pandas datetime
-    #date[date.hour =  = 0] = date[date.hour =  = 0]+pd.tseries.offsets.DateOffset(day = 1)
-    return date
+    # stupidly complicated due to TMY3's usage of hour 24
+    # and dateutil's inability to handle that. 
+    offset_hour = int(hour[:2]) - 1
+    offset_datetime = '{} {}:00'.format(ymd, offset_hour)
+    offset_date = dateutil.parser.parse(offset_datetime)
+    true_date = offset_date + dateutil.relativedelta.relativedelta(hours=1)
+    return true_date
 
 
 
@@ -437,7 +430,12 @@ def parsemeta(columns,line):
     meta.append(longitude)
     meta.append(latitude)
     meta.append(float(rawmeta[10]))	
-    return dict(zip(columns.split(','),meta)) #Creates a dictionary of metadata
+    
+    meta_dict = dict(zip(columns.split(','),meta)) #Creates a dictionary of metadata
+    meta_dict['TimeZone'] = float(meta_dict['TimeZone'])
+    pvl_logger.debug('meta: {}'.format(meta_dict))
+    
+    return meta_dict
 
 
 
@@ -495,7 +493,7 @@ def readTMY(string, columns, hdr_columns, fname):
             #Create datetime objects from read data
             date.append(datetime.datetime(year=int(year),month=int(part[1]),day=int(part[2]),hour=int(part[3])-1))
 
-    TMYData = pd.DataFrame(axes, index=date, columns=columns.split(','))
+    TMYData = pd.DataFrame(axes, index=date, columns=columns.split(',')).tz_localize(int(meta['TimeZone']*3600))
 
     return TMYData, meta
         

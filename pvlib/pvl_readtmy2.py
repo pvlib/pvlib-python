@@ -171,7 +171,7 @@ def pvl_readtmy2(FileName):
 
   string='%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'
   columns='year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'
-  hdr_columns='WBAN,City,State,TimeZone,Latitude,Longitude,Elevation'
+  hdr_columns='WBAN,City,State,TZ,latitude,longitude,altitude'
 
   TMY2,TMY2_meta=readTMY(string,columns,hdr_columns,var.FileName)	
 
@@ -196,7 +196,8 @@ def parsemeta(columns,line):
 
   """
   rawmeta=" ".join(line.split()).split(" ") #Remove sduplicated spaces, and read in each element
-  meta=rawmeta[:4] #take the first string entries
+  meta=rawmeta[:3] #take the first string entries
+  meta.append(int(rawmeta[3]))
   longitude=(float(rawmeta[5])+float(rawmeta[6])/60)*(2*(rawmeta[4]=='N')-1)#Convert to decimal notation with S negative
   latitude=(float(rawmeta[8])+float(rawmeta[9])/60)*(2*(rawmeta[7]=='E')-1) #Convert to decimal notation with W negative
   meta.append(longitude)

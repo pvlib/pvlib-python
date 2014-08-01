@@ -8,8 +8,8 @@ import pandas as pd
 
 from nose.tools import raises
 
-from pvlib.location import Location
-import pvlib.solarposition as solarposition
+from ..location import Location
+from .. import solarposition
 
 
 # setup times and location to be tested.
@@ -33,13 +33,6 @@ def test_get_solarposition_pyephem():
         ephem_data = solarposition.get_solarposition(times_localized, tus, method='pyephem')
     except NameError:
         pvl_logger.error('PyEphem not found. could not run test.')
-
-def test_get_solarposition_pysolar(): 
-    try:        
-        ephem_data = solarposition.get_solarposition(times, tus, method='pysolar')
-        ephem_data = solarposition.get_solarposition(times_localized, tus, method='pysolar')
-    except NameError:
-        pvl_logger.error('Pysolar not found. could not run test.')
     
 @raises(ValueError)
 def test_get_solarposition_invalid(): 

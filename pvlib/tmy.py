@@ -28,13 +28,13 @@ def readtmy3(filename=None):
     documentation and the TMY3 User's Manual ([1]), the TMY3 User's Manual
     takes precedence.
 
-    If a FileName is not provided, the user will be prompted to browse to
+    If a filename is not provided, the user will be prompted to browse to
     an appropriate TMY3 file.
 
     Parameters
     ----------
 
-    FileName : string 
+    filename : string 
     An optional argument which allows the user to select which
     TMY3 format file should be read. A file path may also be necessary if
     the desired TMY3 file is not in the MATLAB working path.
@@ -254,16 +254,16 @@ def readtmy2(filename):
     In the case of any discrepencies between this documentation and the 
     TMY2 User's Manual ([1]), the TMY2 User's Manual takes precedence.
 
-    If a FileName is not provided, the user will be prompted to browse to
+    If a filename is not provided, the user will be prompted to browse to
     an appropriate TMY2 file.
 
     Parameters
     ----------
-    FileName : string
+    filename : string
 
           an optional argument which allows the user to select which
           TMY2 format file should be read. A file path may also be necessary if
-          the desired TMY2 file is not in the working path. If FileName
+          the desired TMY2 file is not in the working path. If filename
           is not provided, the user will be prompted to browse to an
           appropriate TMY2 file.
 

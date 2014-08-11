@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to PV LIB’s documentation! &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="#" />
+    <link rel="next" title="Test Script 1" href="Test_Script_1.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Test_Script_1.html" title="Test Script 1"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to PV LIB&#8217;s documentation!</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#irradiance-and-atmosperhic-functions">Irradiance and atmosperhic functions</a></li>
+<li><a class="reference internal" href="#irradiance-translation-functions">Irradiance Translation Functions</a></li>
+<li><a class="reference internal" href="#data-handling">Data Handling</a></li>
+<li><a class="reference internal" href="#system-modelling-functions">System Modelling functions</a></li>
+<li><a class="reference internal" href="#pvlib-functions">PVLIB functions</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Test_Script_1.html"
+                        title="next chapter">Test Script 1</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-pv-lib-s-documentation">
+<h1>Welcome to PV LIB&#8217;s documentation!<a class="headerlink" href="#welcome-to-pv-lib-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Test_Script_1.html">Test Script 1</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="irradiance-and-atmosperhic-functions">
+<h1>Irradiance and atmosperhic functions<a class="headerlink" href="#irradiance-and-atmosperhic-functions" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_alt2pres.html#pvlib.pvl_alt2pres" title="pvlib.pvl_alt2pres"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_alt2pres</span></tt></a>(altitude)</td>
+<td>Determine site pressure from altitude</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_pres2alt.html#pvlib.pvl_pres2alt" title="pvlib.pvl_pres2alt"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_pres2alt</span></tt></a>(pressure)</td>
+<td>Determine altitude from site pressure</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_getaoi.html#pvlib.pvl_getaoi" title="pvlib.pvl_getaoi"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_getaoi</span></tt></a>(SurfTilt,&nbsp;SurfAz,&nbsp;SunZen,&nbsp;SunAz)</td>
+<td>Determine angle of incidence from surface tilt/azimuth and apparent sun zenith/azimuth</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_disc.html#pvlib.pvl_disc" title="pvlib.pvl_disc"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_disc</span></tt></a>(GHI,&nbsp;SunZen,&nbsp;Time[,&nbsp;pressure])</td>
+<td>Estimate Direct Normal Irradiance from Global Horizontal Irradiance using the DISC model</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_ephemeris.html#pvlib.pvl_ephemeris" title="pvlib.pvl_ephemeris"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_ephemeris</span></tt></a>(Time,&nbsp;Location[,&nbsp;...])</td>
+<td>Calculates the position of the sun given time, location, and optionally pressure and temperature</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_spa.html#pvlib.pvl_spa" title="pvlib.pvl_spa"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_spa</span></tt></a>(Time,&nbsp;Location)</td>
+<td>Calculate the solar position using the C implementation of the NREL</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_extraradiation.html#pvlib.pvl_extraradiation" title="pvlib.pvl_extraradiation"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_extraradiation</span></tt></a>(doy)</td>
+<td>Determine extraterrestrial radiation from day of year</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_globalinplane.html#pvlib.pvl_globalinplane" title="pvlib.pvl_globalinplane"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_globalinplane</span></tt></a>(SurfTilt,&nbsp;SurfAz,&nbsp;...)</td>
+<td>Determine the three components on in-plane irradiance</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_grounddiffuse.html#pvlib.pvl_grounddiffuse" title="pvlib.pvl_grounddiffuse"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_grounddiffuse</span></tt></a>(SurfTilt,&nbsp;GHI,&nbsp;Albedo)</td>
+<td>Estimate diffuse irradiance from ground reflections given irradiance, albedo, and surface tilt</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_makelocationstruct.html#pvlib.pvl_makelocationstruct" title="pvlib.pvl_makelocationstruct"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_makelocationstruct</span></tt></a>(latitude,&nbsp;...)</td>
+<td>Create a struct to define a site location</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_relativeairmass.html#pvlib.pvl_relativeairmass" title="pvlib.pvl_relativeairmass"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_relativeairmass</span></tt></a>(z[,&nbsp;model])</td>
+<td>Gives the relative (not pressure-corrected) airmass</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_absoluteairmass.html#pvlib.pvl_absoluteairmass" title="pvlib.pvl_absoluteairmass"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_absoluteairmass</span></tt></a>(AMrelative,&nbsp;Pressure)</td>
+<td>Determine absolute (pressure corrected) airmass from relative airmass and pressure</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_clearsky_ineichen.html#pvlib.pvl_clearsky_ineichen" title="pvlib.pvl_clearsky_ineichen"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_clearsky_ineichen</span></tt></a>(Time,&nbsp;Location)</td>
+<td>Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_clearsky_haurwitz.html#pvlib.pvl_clearsky_haurwitz" title="pvlib.pvl_clearsky_haurwitz"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_clearsky_haurwitz</span></tt></a>(ApparentZenith)</td>
+<td>Determine clear sky GHI from Haurwitz model</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="irradiance-translation-functions">
+<h1>Irradiance Translation Functions<a class="headerlink" href="#irradiance-translation-functions" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_perez.html#pvlib.pvl_perez" title="pvlib.pvl_perez"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_perez</span></tt></a>(SurfTilt,&nbsp;SurfAz,&nbsp;DHI,&nbsp;DNI,&nbsp;...)</td>
+<td>Determine diffuse irradiance from the sky on a tilted surface using one of the Perez models</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_haydavies1980.html#pvlib.pvl_haydavies1980" title="pvlib.pvl_haydavies1980"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_haydavies1980</span></tt></a>(SurfTilt,&nbsp;SurfAz,&nbsp;...)</td>
+<td>Determine diffuse irradiance from the sky on a tilted surface using Hay &amp; Davies&#8217; 1980 model</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_isotropicsky.html#pvlib.pvl_isotropicsky" title="pvlib.pvl_isotropicsky"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_isotropicsky</span></tt></a>(SurfTilt,&nbsp;DHI)</td>
+<td>Determine diffuse irradiance from the sky on a tilted surface using isotropic sky model</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_kingdiffuse.html#pvlib.pvl_kingdiffuse" title="pvlib.pvl_kingdiffuse"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_kingdiffuse</span></tt></a>(SurfTilt,&nbsp;DHI,&nbsp;GHI,&nbsp;SunZen)</td>
+<td>Determine diffuse irradiance from the sky on a tilted surface using the King model</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_klucher1979.html#pvlib.pvl_klucher1979" title="pvlib.pvl_klucher1979"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_klucher1979</span></tt></a>(SurfTilt,&nbsp;SurfAz,&nbsp;DHI,&nbsp;...)</td>
+<td>Determine diffuse irradiance from the sky on a tilted surface using Klucher&#8217;s 1979 model</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_reindl1990.html#pvlib.pvl_reindl1990" title="pvlib.pvl_reindl1990"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_reindl1990</span></tt></a>(SurfTilt,&nbsp;SurfAz,&nbsp;DHI,&nbsp;...)</td>
+<td>Determine diffuse irradiance from the sky on a tilted surface using Reindl&#8217;s 1990 model</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="data-handling">
+<h1>Data Handling<a class="headerlink" href="#data-handling" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.tmy.readtmy2.html#pvlib.tmy.readtmy2" title="pvlib.tmy.readtmy2"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.tmy.readtmy2</span></tt></a>(filename)</td>
+<td>Read a TMY2 file in to a DataFrame</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.tmy.readtmy3.html#pvlib.tmy.readtmy3" title="pvlib.tmy.readtmy3"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.tmy.readtmy3</span></tt></a>([filename])</td>
+<td>Read a TMY3 file in to a pandas dataframe</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="system-modelling-functions">
+<h1>System Modelling functions<a class="headerlink" href="#system-modelling-functions" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_physicaliam.html#pvlib.pvl_physicaliam" title="pvlib.pvl_physicaliam"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_physicaliam</span></tt></a>(K,&nbsp;L,&nbsp;n,&nbsp;theta)</td>
+<td>Determine the incidence angle modifier using refractive</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_ashraeiam.html#pvlib.pvl_ashraeiam" title="pvlib.pvl_ashraeiam"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_ashraeiam</span></tt></a>(b,&nbsp;theta)</td>
+<td>Determine the incidence angle modifier using the ASHRAE transmission model.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_calcparams_desoto.html#pvlib.pvl_calcparams_desoto" title="pvlib.pvl_calcparams_desoto"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_calcparams_desoto</span></tt></a>(S,&nbsp;Tcell,&nbsp;...[,&nbsp;...])</td>
+<td>Applies the temperature and irradiance corrections to inputs for pvl_singlediode</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_retreiveSAM.html#pvlib.pvl_retreiveSAM" title="pvlib.pvl_retreiveSAM"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_retreiveSAM</span></tt></a>(name[,&nbsp;FileLoc])</td>
+<td>Retreive lastest module and inverter info from SAM website</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_sapm.html#pvlib.pvl_sapm" title="pvlib.pvl_sapm"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_sapm</span></tt></a>(Module,&nbsp;Eb,&nbsp;Ediff,&nbsp;Tcell,&nbsp;AM,&nbsp;AOI)</td>
+<td>Performs Sandia PV Array Performance Model to get 5 points on IV curve given SAPM module parameters, Ee, and cell temperature</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_sapmcelltemp.html#pvlib.pvl_sapmcelltemp" title="pvlib.pvl_sapmcelltemp"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_sapmcelltemp</span></tt></a>(E,&nbsp;Wspd,&nbsp;Tamb[,&nbsp;modelt])</td>
+<td>Estimate cell temperature from irradiance, windspeed, ambient temperature, and module parameters (SAPM)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_singlediode.html#pvlib.pvl_singlediode" title="pvlib.pvl_singlediode"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_singlediode</span></tt></a>(Module,&nbsp;IL,&nbsp;I0,&nbsp;Rs,&nbsp;...)</td>
+<td>Solve the single-diode model to obtain a photovoltaic IV curve</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_snlinverter.html#pvlib.pvl_snlinverter" title="pvlib.pvl_snlinverter"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_snlinverter</span></tt></a>(Inverter,&nbsp;Vmp,&nbsp;Pmp)</td>
+<td>Converts DC power and voltage to AC power using Sandia&#8217;s Grid-Connected PV Inverter model</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_systemdef.html#pvlib.pvl_systemdef" title="pvlib.pvl_systemdef"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_systemdef</span></tt></a>(TMYmeta,&nbsp;SurfTilt,&nbsp;...)</td>
+<td>Generates a dict of system paramters used throughout a simulation</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="pvlib-functions">
+<h1>PVLIB functions<a class="headerlink" href="#pvlib-functions" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_tools.Parse.html#pvlib.pvl_tools.Parse" title="pvlib.pvl_tools.Parse"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_tools.Parse</span></tt></a>(dct,&nbsp;Expect)</td>
+<td>Parses inputs to pvlib_python functions.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_tools.repack.html#pvlib.pvl_tools.repack" title="pvlib.pvl_tools.repack"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_tools.repack</span></tt></a>(dct)</td>
+<td>Converts a dict to a struct</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="stubs/pvlib.pvl_tools.cosd.html#pvlib.pvl_tools.cosd" title="pvlib.pvl_tools.cosd"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_tools.cosd</span></tt></a>(angle)</td>
+<td>Cosine with angle input in degrees</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="stubs/pvlib.pvl_tools.sind.html#pvlib.pvl_tools.sind" title="pvlib.pvl_tools.sind"><tt class="xref py py-obj docutils literal"><span class="pre">pvlib.pvl_tools.sind</span></tt></a>(angle)</td>
+<td>Sine with angle input in degrees</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="Test_Script_1.html" title="Test Script 1"
+             >next</a> |</li>
+        <li><a href="#">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

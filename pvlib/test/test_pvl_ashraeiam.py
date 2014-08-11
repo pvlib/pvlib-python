@@ -4,7 +4,7 @@ import pandas as pd
 from .. import pvl_ashraeiam
 
 def test_proper():
-	IAM=pvl_ashraeiam.pvl_ashraeiam(.05,pd.DataFrame(range(90)))	
+	IAM=pvl_ashraeiam(.05,pd.DataFrame(range(90)))	
 	assert(np.size(IAM)==90)
 	
 

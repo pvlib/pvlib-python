@@ -5,7 +5,7 @@ import pytz
 from nose.tools import raises
 from pytz.exceptions import UnknownTimeZoneError
 
-from pvlib.location import Location
+from ..location import Location
 
 aztz = pytz.timezone('US/Arizona')
 

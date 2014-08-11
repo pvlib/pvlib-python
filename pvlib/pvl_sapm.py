@@ -20,7 +20,7 @@ def pvl_sapm(Module,Eb,Ediff,Tcell,AM,AOI):
           A DataFrame defining the SAPM performance parameters (see
           pvl_retreivesam)
 
-  Ee : float of DataFrame
+  Eb : float of DataFrame
 
           The effective irradiance incident upon the module (suns). Any Ee<0
           are set to 0.

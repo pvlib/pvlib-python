@@ -10,11 +10,11 @@ import pvl_ephemeris
 import pandas as pd
 import pdb
 
+
 def pvl_clearsky_ineichen(Time,Location,LinkeTurbidity=-999):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model
 
-     
     Implements the Ineichen and Perez clear sky model for global horizontal
     irradiance (GHI), direct normal irradiance (DNI), and calculates
     the clear-sky diffuse horizontal (DHI) component as the difference
@@ -24,43 +24,51 @@ def pvl_clearsky_ineichen(Time,Location,LinkeTurbidity=-999):
     provided by SoDa [4, 5].
 
     Parameters
-    -----------
-    Time : Dataframe.index
-            A timezone aware pandas dataframe index. 
+    ----------
 
+    Time : Dataframe.index
+
+        A timezone aware pandas dataframe index.
 
     Location : struct
 
-            *Location.latitude* - vector or scalar latitude in decimal degrees (positive is
-                                  northern hemisphere)
-            *Location.longitude* - vector or scalar longitude in decimal degrees (positive is 
-                                  east of prime meridian)
-            *Location.altitude* - an optional component of the Location struct, not
-                                  used in the ephemeris code directly, but it may be used to calculate
-                                  standard site pressure (see pvl_alt2pres function)
-            *location.TZ*     - Time Zone offset from UTC 
+        Location.latitude
+            vector or scalar latitude in decimal degrees (positive is
+            northern hemisphere)
 
-    Other Parameters 
+        Location.longitude
+            vector or scalar longitude in decimal degrees (positive is
+            east of prime meridian)
+
+        Location.altitude
+            an optional component of the Location struct, not
+            used in the ephemeris code directly, but it may be used to calculate
+            standard site pressure (see pvl_alt2pres function)
+
+        location.TZ
+            Time Zone offset from UTC
+
+    Other Parameters
     ----------------
 
     LinkeTurbidityInput : Optional, float or DataFrame
 
-                    An optional input to provide your own Linke
-                    turbidity. If this input is omitted, the default Linke turbidity
-                    maps will be used. LinkeTurbidityInput may be a float or 
-                    dataframe of Linke turbidities. If dataframe is provided, the same
-                    turbidity will be used for all time/location sets. If a dataframe is
-                    provided, it must be of the same size as any time/location dataframes
-                    and each element of the dataframe corresponds to any time and location
-                    elements.
+      An optional input to provide your own Linke
+      turbidity. If this input is omitted, the default Linke turbidity
+      maps will be used. LinkeTurbidityInput may be a float or
+      dataframe of Linke turbidities. If dataframe is provided, the same
+      turbidity will be used for all time/location sets. If a dataframe is
+      provided, it must be of the same size as any time/location dataframes
+      and each element of the dataframe corresponds to any time and location
+      elements.
 
     Returns
-    --------
+    -------
 
     ClearSkyGHI : Dataframe
 
-         the modeled global horizonal irradiance in W/m^2 provided
-          by the Ineichen clear-sky model.
+        the modeled global horizonal irradiance in W/m^2 provided
+        by the Ineichen clear-sky model.
 
     ClearSkyDNI : Dataframe
 
@@ -69,50 +77,50 @@ def pvl_clearsky_ineichen(Time,Location,LinkeTurbidity=-999):
 
     ClearSkyDHI : Dataframe
 
-        the calculated diffuse horizonal irradiance in W/m^2 
+        the calculated diffuse horizonal irradiance in W/m^2
         provided by the Ineichen clear-sky model.
 
     Notes
     -----
 
-        This implementation of the Ineichen model requires a number of other
-        PV_LIB functions including pvl_ephemeris, pvl_date2doy,
-        pvl_extraradiation, pvl_absoluteairmass, pvl_relativeairmass, and
-        pvl_alt2pres. It also requires the file "LinkeTurbidities.mat" to be
-        in the working directory. If you are using pvl_ineichen
-        in a loop, it may be faster to load LinkeTurbidities.mat outside of
-        the loop and feed it into pvl_ineichen as a variable, rather than
-        having pvl_ineichen open the file each time it is called (or utilize
-        column vectors of time/location instead of a loop).
+    This implementation of the Ineichen model requires a number of other
+    PV_LIB functions including pvl_ephemeris, pvl_date2doy,
+    pvl_extraradiation, pvl_absoluteairmass, pvl_relativeairmass, and
+    pvl_alt2pres. It also requires the file "LinkeTurbidities.mat" to be
+    in the working directory. If you are using pvl_ineichen
+    in a loop, it may be faster to load LinkeTurbidities.mat outside of
+    the loop and feed it into pvl_ineichen as a variable, rather than
+    having pvl_ineichen open the file each time it is called (or utilize
+    column vectors of time/location instead of a loop).
 
-        Initial implementation of this algorithm by Matthew Reno.
+    Initial implementation of this algorithm by Matthew Reno.
 
     References
     ----------
 
-     [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
-         the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157, 2002.
+    [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
+        the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157, 2002.
 
-     [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
-         Irradiances: Description and Validation", Solar Energy, vol 73, pp.
-         307-317, 2002.
+    [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
+        Irradiances: Description and Validation", Solar Energy, vol 73, pp.
+        307-317, 2002.
 
-     [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-         Sky Models: Implementation and Analysis", Sandia National
-         Laboratories, SAND2012-2389, 2012.
+    [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
+        Sky Models: Implementation and Analysis", Sandia National
+        Laboratories, SAND2012-2389, 2012.
 
-     [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
-         July 17, 2012).
+    [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
+        July 17, 2012).
 
-     [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
-         ISES Solar World Congress, June 2003. Goteborg, Sweden.
+    [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
+        ISES Solar World Congress, June 2003. Goteborg, Sweden.
 
 
     See Also
     --------
 
-    pvl_maketimestruct    
-    pvl_makelocationstruct   
+    pvl_maketimestruct
+    pvl_makelocationstruct
     pvl_ephemeris
     pvl_haurwitz
 
@@ -123,15 +131,15 @@ def pvl_clearsky_ineichen(Time,Location,LinkeTurbidity=-999):
             'Location':(''),
             'LinkeTurbidity':('optional')}
     var=pvl_tools.Parse(Vars,Expect)
-            
+
     I0=pvl_extraradiation.pvl_extraradiation(var.Time.dayofyear)
-    
+
     __,__,ApparentSunElevation,__,__=pvl_ephemeris.pvl_ephemeris(var.Time,var.Location,pvl_alt2pres.pvl_alt2pres(var.Location.altitude)) # nargout=4
-    
+
     ApparentZenith=90 - ApparentSunElevation
     ApparentZenith[ApparentZenith>=90]=90
-    
-    
+
+
 
     if LinkeTurbidity==-999:
 
@@ -155,7 +163,7 @@ def pvl_clearsky_ineichen(Time,Location,LinkeTurbidity=-999):
         LT=LT.apply(ApplyMonth,axis=1)
         TL=LT / float(20)
     else:
-    
+
         TL=var.LinkeTurbidity
 
     # Get the absolute airmass assuming standard local pressure (per
@@ -195,12 +203,13 @@ def pvl_clearsky_ineichen(Time,Location,LinkeTurbidity=-999):
     BncI=b*(I0)*(np.exp(- 0.09*(AMabsolute)*((TL - 1))))
 
     ClearSkyDNI=np.min(BncI,ClearSkyGHI*((1 - (0.1 - 0.2*(np.exp(- TL))) / (0.1 + 0.882 / fh1))) / pvl_tools.cosd(ApparentZenith))
-    
+
     #ClearSkyDNI=ClearSkyGHI*((1 - (0.1 - 0.2*(np.exp(- TL))) / (0.1 + 0.882 / fh1))) / pvl_tools.cosd(ApparentZenith)
-    
+
     ClearSkyDHI=ClearSkyGHI - ClearSkyDNI*(pvl_tools.cosd(ApparentZenith))
 
     return ClearSkyGHI,ClearSkyDNI,ClearSkyDHI,BncI
+
 
 def LinearlyScale(inputmatrix,inputmin,inputmax,outputmin,outputmax):
     inputrange=inputmax - inputmin

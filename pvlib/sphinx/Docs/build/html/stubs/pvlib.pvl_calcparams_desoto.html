@@ -86,13 +86,12 @@
 <dt id="pvlib.pvl_calcparams_desoto">
 <tt class="descclassname">pvlib.</tt><tt class="descname">pvl_calcparams_desoto</tt><big>(</big><em>S</em>, <em>Tcell</em>, <em>alpha_isc</em>, <em>ModuleParameters</em>, <em>EgRef</em>, <em>dEgdT</em>, <em>M=1</em>, <em>Sref=1000</em>, <em>Tref=25</em><big>)</big><a class="headerlink" href="#pvlib.pvl_calcparams_desoto" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies the temperature and irradiance corrections to inputs for pvl_singlediode</p>
-<blockquote>
-<div>Applies the temperature and irradiance corrections to the IL, I0, 
+<p>Applies the temperature and irradiance corrections to the IL, I0,
 Rs, Rsh, and a parameters at reference conditions (IL_ref, I0_ref,
 etc.) according to the De Soto et. al description given in [1]. The
 results of this correction procedure may be used in a single diode
 model to determine IV curves at irradiance = S, cell temperature =
-Tcell.</div></blockquote>
+Tcell.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -113,10 +112,10 @@ Tcell must be &gt;= -273.15.</p>
 </div></blockquote>
 <p><strong>ModuleParameters</strong> : struct</p>
 <blockquote>
-<div><p>parameters describing PV module performance at reference conditions according 
-to DeSoto&#8217;s paper. Parameters may be generated or found by lookup. For ease of use, 
-PVL_RETREIVESAM can automatically generate a struct based on the most recent SAM CEC module 
-database. The ModuleParameters struct must contain (at least) the 
+<div><p>parameters describing PV module performance at reference conditions according
+to DeSoto&#8217;s paper. Parameters may be generated or found by lookup. For ease of use,
+PVL_RETREIVESAM can automatically generate a struct based on the most recent SAM CEC module
+database. The ModuleParameters struct must contain (at least) the
 following 5 fields:</p>
 <blockquote>
 <div><dl class="docutils">
@@ -125,11 +124,11 @@ following 5 fields:</p>
 usual diode ideality factor (n), number of cells in series (Ns),
 and cell temperature (Tcell) per equation (2) in [1].</p>
 </dd>
-<dt><em>ModuleParameters.IL_ref</em> - Light-generated current (or photocurrent) </dt>
-<dd><p class="first last">in amperes at reference conditions. This value is referred to 
+<dt><em>ModuleParameters.IL_ref</em> - Light-generated current (or photocurrent)</dt>
+<dd><p class="first last">in amperes at reference conditions. This value is referred to
 as Iph in some literature.</p>
 </dd>
-<dt><em>ModuleParameters.I0_ref</em> - diode reverse saturation current in amperes, </dt>
+<dt><em>ModuleParameters.I0_ref</em> - diode reverse saturation current in amperes,</dt>
 <dd><p class="first last">under reference conditions.</p>
 </dd>
 </dl>
@@ -152,28 +151,28 @@ may be useful if dEgdT is a function of temperature).</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>IL</strong> : float or DataFrame</p>
 <blockquote>
-<div><blockquote>
-<div><p>Light-generated current in amperes at irradiance=S and 
+<div><p>Light-generated current in amperes at irradiance=S and
 cell temperature=Tcell.</p>
 </div></blockquote>
-<dl class="docutils">
-<dt>I0 <span class="classifier-delimiter">:</span> <span class="classifier">float or DataFrame </span></dt>
-<dd><p class="first last">Diode saturation curent in amperes at irradiance S and cell temperature Tcell.</p>
-</dd>
-<dt>Rs <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd><p class="first last">Series resistance in ohms at irradiance S and cell temperature Tcell.</p>
-</dd>
-<dt>Rsh <span class="classifier-delimiter">:</span> <span class="classifier">float or DataFrame </span></dt>
-<dd><p class="first last">Shunt resistance in ohms at irradiance S and cell temperature Tcell.</p>
-</dd>
-<dt>nNsVth <span class="classifier-delimiter">:</span> <span class="classifier">float or DataFrame </span></dt>
-<dd><p class="first last">Modified diode ideality factor at irradiance S and cell temperature
-Tcell. Note that in source [1] nNsVth = a (equation 2). nNsVth is the 
-product of the usual diode ideality factor (n), the number of 
-series-connected cells in the module (Ns), and the thermal voltage 
+<p><strong>I0</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Diode saturation curent in amperes at irradiance S and cell temperature Tcell.</p>
+</div></blockquote>
+<p><strong>Rs</strong> : float</p>
+<blockquote>
+<div><p>Series resistance in ohms at irradiance S and cell temperature Tcell.</p>
+</div></blockquote>
+<p><strong>Rsh</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Shunt resistance in ohms at irradiance S and cell temperature Tcell.</p>
+</div></blockquote>
+<p><strong>nNsVth</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Modified diode ideality factor at irradiance S and cell temperature
+Tcell. Note that in source [1] nNsVth = a (equation 2). nNsVth is the
+product of the usual diode ideality factor (n), the number of
+series-connected cells in the module (Ns), and the thermal voltage
 of a cell in the module (Vth) at a cell temperature of Tcell.</p>
-</dd>
-</dl>
 </div></blockquote>
 </td>
 </tr>
@@ -212,9 +211,9 @@ as a function absolute airmass (AMa) may be:</p>
 <p>If the reference parameters in the ModuleParameters struct are read
 from a database or library of parameters (e.g. System Advisor Model),
 it is important to use the same EgRef and dEgdT values that
-were used to generate the reference parameters, regardless of the 
-actual bandgap characteristics of the semiconductor. For example, in 
-the case of the System Advisor Model library, created as described in 
+were used to generate the reference parameters, regardless of the
+actual bandgap characteristics of the semiconductor. For example, in
+the case of the System Advisor Model library, created as described in
 [3], EgRef and dEgdT for all modules were 1.121 and -0.0002677,
 respectively.</p>
 <p>This table of reference bandgap energies (EgRef), bandgap energy

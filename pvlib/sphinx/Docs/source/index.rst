@@ -6,9 +6,10 @@
 Welcome to PV LIB's documentation!
 ==================================
 .. only:: html
-	.. toctree::
+	
+    .. toctree::
 
-		Test Script 1
+		Test_Script_1
 
 
 Irradiance and atmosperhic functions
@@ -48,8 +49,8 @@ Data Handling
 .. autosummary::
 	:toctree: stubs
 
-	pvlib.pvl_readtmy2
-	pvlib.pvl_readtmy3
+	pvlib.tmy.readtmy2
+	pvlib.tmy.readtmy3
 
 System Modelling functions
 ==========================

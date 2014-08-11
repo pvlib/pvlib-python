@@ -1,11 +1,12 @@
 
 ## import pvlib library
 
-# In[1]:
+# In[24]:
 
 import sys
 import os
 sys.path.append(os.path.abspath('../')) #append the parent directory to the system path
+sys.path.append(os.path.abspath('../pvlib')) #append the parent directory to the system path
 import pvlib
 import pandas as pd 
 
@@ -14,62 +15,62 @@ import pandas as pd
 
 ### Use Sandia standard data 
 
-# In[2]:
+# In[26]:
 
 
 fname='723650TY.csv' #Use absolute path if the file is not in the local directory
-TMY, meta=pvlib.pvl_readtmy3(FileName=fname)
+TMY, meta=pvlib.tmy.readtmy3(filename=fname)
 
 
-# In[3]:
+# In[6]:
 
-meta.SurfTilt=30
-meta.SurfAz=0
-meta.Albedo=0.2
-
-
-# In[4]:
-
-print meta.State
-print meta.longitude
+meta['longitude']=-79.2
+meta['latitude']=43.42
+meta['TZ']=-5
+meta['SurfTilt']=30
+meta['SurfAz']=0
+meta['Albedo']=0.2
 
 
-# Out[4]:
+# In[7]:
+
+print meta['State']
+print meta['longitude']
+
+
+# Out[7]:
 
 #     NM
-#     -106.62
+#     -79.2
 # 
 
 ### Define date range of interest for graphing
 
-# In[5]:
+# In[8]:
 
 month=3
 day=26
 hour=0
-periods=128
+periods=24
 freq='H'
 rng=pd.date_range(datetime.datetime(year=min(TMY.index.year),month=month,day=day,hour=hour),periods=periods,freq=freq)
 rng                
 
 
-# Out[5]:
+# Out[8]:
 
 #     <class 'pandas.tseries.index.DatetimeIndex'>
-#     [1981-03-26 00:00:00, ..., 1981-03-31 07:00:00]
-#     Length: 128, Freq: H, Timezone: None
+#     [1981-03-26 00:00:00, ..., 1981-03-26 23:00:00]
+#     Length: 24, Freq: H, Timezone: None
 
 ## Get solar angles
 
-# In[5]:
+# In[9]:
 
-
-
-
-# In[6]:
-
+import pvl_ephemeris
+reload(pvl_ephemeris)
 #Using Ephemeris Calculations
-TMY['SunAz'],TMY['SunEl'],TMY['ApparentSunEl'],TMY['SolarTime'], TMY['SunZen']=pvlib.pvl_ephemeris(Time=TMY.index,Location=meta)
+TMY['SunAz'],TMY['SunEl'],TMY['ApparentSunEl'],TMY['SolarTime'], TMY['SunZen']=pvl_ephemeris.pvl_ephemeris(Time=TMY.index,Location=meta)
 #Using NRELS SPA Calculations
 import pvl_spa
 reload (pvl_spa)
@@ -77,7 +78,7 @@ TMY['SunAz_spa'],TMY['SunEl_spa'],TMY['SunZen_spa']=pvl_spa.pvl_spa(Time=TMY.ind
 
 
 
-# In[7]:
+# In[10]:
 
 clf()
 plot(TMY.index,TMY.SunAz)
@@ -87,45 +88,13 @@ plot(TMY.index,TMY.SunEl_spa,label='spa')
 legend()
 
 
-# Out[7]:
+# Out[10]:
 
-#     <matplotlib.legend.Legend at 0x10bcf6990>
-
-# In[8]:
-
-plot(TMY.index[rng],TMY.SunAz[rng],label='Azimuth_eph')
-plot(TMY.index[rng],TMY.SunEl[rng],label='Zenith_eph')
-plot(TMY.index[rng],TMY.SunAz_spa[rng],label='Azimuth_spa')
-plot(TMY.index[rng],TMY.SunEl_spa[rng],label='Azimuth_eph')
-
-
-# Out[8]:
-
-
-    ---------------------------------------------------------------------------
-    IndexError                                Traceback (most recent call last)
-
-    <ipython-input-8-32d3a1d22aa9> in <module>()
-    ----> 1 plot(TMY.index[rng],TMY.SunAz[rng],label='Azimuth_eph')
-          2 plot(TMY.index[rng],TMY.SunEl[rng],label='Zenith_eph')
-          3 plot(TMY.index[rng],TMY.SunAz_spa[rng],label='Azimuth_spa')
-          4 plot(TMY.index[rng],TMY.SunEl_spa[rng],label='Azimuth_eph')
-
-
-    /usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/pandas/tseries/index.pyc in __getitem__(self, key)
-       1358                     new_offset = self.offset
-       1359 
-    -> 1360             result = arr_idx[key]
-       1361             if result.ndim > 1:
-       1362                 return result
-
-
-    IndexError: arrays used as indices must be of integer (or boolean) type
-
+#     <matplotlib.legend.Legend at 0x107e16ad0>
 
 ## Calculate Extraterrestrial Irradiaion and AirMass
 
-# In[9]:
+# In[11]:
 
 
 TMY['HExtra']=pvlib.pvl_extraradiation(doy=TMY.index.dayofyear)
@@ -135,7 +104,7 @@ TMY['AM']=pvlib.pvl_relativeairmass(z=TMY.SunZen)
 
 ## Generate Clear Sky and DNI
 
-# In[10]:
+# In[12]:
 
 
 DFOut=pvlib.pvl_disc(Time=TMY.index,GHI=TMY.GHI, SunZen=TMY.SunZen)
@@ -148,11 +117,11 @@ TMY['Ztemp']=DFOut['Ztemp']
 
 ## Plane Transformation
 
-# In[11]:
+# In[13]:
 
 
-TMY['In_Plane_SkyDiffuse']=pvlib.pvl_perez(SurfTilt=meta.SurfTilt,
-                                            SurfAz=meta.SurfAz,
+TMY['In_Plane_SkyDiffuse']=pvlib.pvl_perez(SurfTilt=meta['SurfTilt'],
+                                            SurfAz=meta['SurfAz'],
                                             DHI=TMY.DHI,
                                             DNI=TMY.DNI,
                                             HExtra=TMY.HExtra,
@@ -163,37 +132,37 @@ TMY['In_Plane_SkyDiffuse']=pvlib.pvl_perez(SurfTilt=meta.SurfTilt,
 
 ## Ground Diffuse reflection
 
-# In[12]:
+# In[14]:
 
 
-TMY['GR']=pvlib.pvl_grounddiffuse(GHI=TMY.GHI,Albedo=meta.Albedo,SurfTilt=meta.SurfTilt)
+TMY['GR']=pvlib.pvl_grounddiffuse(GHI=TMY.GHI,Albedo=meta['Albedo'],SurfTilt=meta['SurfTilt'])
 
 
 ## Get AOI
 
-# In[13]:
+# In[15]:
 
 
-TMY['AOI']=pvlib.pvl_getaoi(SunAz=TMY.SunAz,SunZen=TMY.SunZen,SurfTilt=meta.SurfTilt,SurfAz=meta.SurfAz)
+TMY['AOI']=pvlib.pvl_getaoi(SunAz=TMY.SunAz,SunZen=TMY.SunZen,SurfTilt=meta['SurfTilt'],SurfAz=meta['SurfAz'])
 
 
 ## Calculate Global in-plane
 
-# In[14]:
+# In[16]:
 
 
 TMY['E'],TMY['Eb'],TMY['EDiff']=pvlib.pvl_globalinplane(AOI=TMY.AOI,
                                 DNI=TMY.DNI,
                                 In_Plane_SkyDiffuse=TMY.In_Plane_SkyDiffuse,
                                 GR=TMY.GR,
-                                SurfTilt=meta.SurfTilt,
-                                SurfAz=meta.SurfAz)
+                                SurfTilt=meta['SurfTilt'],
+                                SurfAz=meta['SurfAz'])
 
 
 
 ## Calculate Cell Temperature
 
-# In[15]:
+# In[17]:
 
 
 TMY['Tcell'],TMY['Tmodule']=pvlib.pvl_sapmcelltemp(E=TMY.E,
@@ -206,7 +175,7 @@ TMY['Tcell'],TMY['Tmodule']=pvlib.pvl_sapmcelltemp(E=TMY.E,
 
 ## Import module coefficients
 
-# In[16]:
+# In[18]:
 
 
 moddb=pvlib.pvl_retreiveSAM(name='SandiaMod')
@@ -214,7 +183,7 @@ module=moddb.Canadian_Solar_CS5P_220M___2009_
 module
 
 
-# Out[16]:
+# Out[18]:
 
 #     Vintage                                                   2009
 #     Area                                                     1.701
@@ -262,14 +231,14 @@ module
 
 ##  import inverter coefficients
 
-# In[17]:
+# In[19]:
 
 Invdb=pvlib.pvl_retreiveSAM(name='SandiaInverter')
 inverter=Invdb.Advanced_Energy__Solaron_333_3159000_105_480V__CEC_2008_
 inverter
 
 
-# Out[17]:
+# Out[19]:
 
 #     Vac          4.800000e+02
 #     Paco         3.330000e+05
@@ -289,7 +258,7 @@ inverter
 
 ## Sandia Model
 
-# In[18]:
+# In[20]:
 
 
 DFOut=pvlib.pvl_sapm(Eb=TMY['Eb'],
@@ -309,7 +278,7 @@ TMY['Ixx']=DFOut['Ixx']
 
 ## Single Diode Model
 
-# In[19]:
+# In[21]:
 
 
 moddb=pvlib.pvl_retreiveSAM(name='CECMod')
@@ -341,7 +310,7 @@ TMY['sd_Ixx']=DFOut['Ixx']
 
 ## Inverter Model
 
-# In[20]:
+# In[22]:
 
 
 TMY['ACPower']=pvlib.pvl_snlinverter(Vmp=TMY.Vmp,Pmp=TMY.Pmp,Inverter=inverter)

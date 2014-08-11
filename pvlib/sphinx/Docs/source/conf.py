@@ -26,8 +26,21 @@ sys.path.append(os.path.abspath('exts'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc','sphinx.ext.doctest','sphinx.ext.intersphinx','sphinx.ext.todo','sphinx.ext.pngmath','sphinx.ext.ifconfig','sphinx.ext.viewcode','numpydoc','sphinx.ext.inheritance_diagram','sphinx.ext.autosummary','sphinx.ext.extlinks','IPython.sphinxext.ipython_console_highlighting',
-              'IPython.sphinxext.ipython_directive','notebook_sphinxext','notebookcell_sphinxext']
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.doctest',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.todo',
+              'sphinx.ext.pngmath',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.viewcode',
+              'numpydoc',
+              'sphinx.ext.inheritance_diagram',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.extlinks',
+              'IPython.sphinxext.ipython_console_highlighting',
+              'IPython.sphinxext.ipython_directive',
+              'notebook_sphinxext',
+              'notebookcell_sphinxext']
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -67,7 +80,7 @@ release = '1.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['_index_default.rst']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -89,7 +102,7 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
-autosummary_generate=True
+autosummary_generate = True
 
 # -- Options for HTML output ---------------------------------------------------
 

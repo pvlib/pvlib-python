@@ -7,11 +7,11 @@ import sys
 import os 
 
 from .. import pvl_spa
-from .. import pvl_readtmy3
+from .. import tmy
 from .. import pvl_makelocationstruct
 
 def test_inputs():
-	TMY,meta=pvl_readtmy3(FileName='703165TY.csv')
+	TMY,meta=tmy.readtmy3(filename='703165TY.csv')
 
 
 	DFout=pvl_spa(Time=TMY.index,Location=meta)

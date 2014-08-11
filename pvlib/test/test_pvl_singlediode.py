@@ -11,8 +11,8 @@ from .. import pvl_extraradiation
 from .. import pvl_relativeairmass 
 from .. import pvl_getaoi 
 from .. import pvl_calcparams_desoto 
-from .. import pvl_readtmy3 
 from .. import pvl_tools
+from .. import tmy
 
 def test_proper_vector():
 
@@ -20,7 +20,7 @@ def test_proper_vector():
 	SurfAz=0
 	Albedo=0.2
 
-	TMY, meta=pvl_readtmy3(FileName='703165TY.csv')
+	TMY, meta=tmy.readtmy3(filename='703165TY.csv')
 
 	#Canadian_Solar_CS5P_220P
 	module={'A_c': 1.639,

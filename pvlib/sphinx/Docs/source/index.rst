@@ -49,8 +49,8 @@ Data Handling
 .. autosummary::
 	:toctree: stubs
 
-	pvlib.pvl_readtmy2
-	pvlib.pvl_readtmy3
+	pvlib.tmy.readtmy2
+	pvlib.tmy.readtmy3
 
 System Modelling functions
 ==========================

@@ -23,7 +23,7 @@ Drafts/
 *.egg
 
 # generated documentation
-#pvlib/sphinx/Docs/build/
+# pvlib/sphinx/Docs/build/
 
 # Installer logs
 pip-log.txt

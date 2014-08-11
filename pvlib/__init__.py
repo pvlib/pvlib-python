@@ -37,8 +37,7 @@ Data Handling
 ==============
 '''
 
-from pvl_readtmy2 import pvl_readtmy2
-from pvl_readtmy3 import pvl_readtmy3
+import tmy 
 '''
 System Modelling functions
 ==========================
@@ -54,5 +53,5 @@ from pvl_singlediode import pvl_singlediode
 from pvl_snlinverter import pvl_snlinverter
 from pvl_systemdef import pvl_systemdef
 
-import tmy 
+
 

@@ -1,11 +1,13 @@
 
 import pvl_tools
+from location import Location
 
 '''
-Irradiance and atmosperhic functions
+Irradiance and atmospheric functions
 ====================================
 '''
 
+import solarposition
 from pvl_alt2pres import pvl_alt2pres
 from pvl_pres2alt import pvl_pres2alt
 from pvl_getaoi import pvl_getaoi
@@ -20,6 +22,8 @@ from pvl_relativeairmass import pvl_relativeairmass
 from pvl_absoluteairmass import pvl_absoluteairmass
 from pvl_clearsky_ineichen import pvl_clearsky_ineichen
 from pvl_clearsky_haurwitz import pvl_clearsky_haurwitz
+
+
 '''
 Irradiance Translation Functions
 ================================
@@ -32,12 +36,15 @@ from pvl_kingdiffuse import pvl_kingdiffuse
 from pvl_klucher1979 import pvl_klucher1979
 from pvl_reindl1990 import pvl_reindl1990
 
-'''	
+
+'''
 Data Handling
 ==============
 '''
 
 import tmy 
+
+
 '''
 System Modelling functions
 ==========================

@@ -9,82 +9,107 @@ import datetime
 
 import numpy as np
 import pandas as pd
-
-# optional imports.
+    
+try:
+    from .spa_c_files.spa_py import spa_calc
+except ImportError as e:
+    pvl_logger.exception('Could not import built-in SPA calculator. You may need to recompile the SPA code.')
 
 try:    
     import ephem
 except ImportError as e:
     pvl_logger.warning('PyEphem not found.')
 
-from . import pvl_ephemeris
+
+
+def spa(time, location, raw_spa_output=False):
+    '''
+    Calculate the solar position using the C implementation of the NREL 
+    SPA code 
+
+    The source files for this code are located in './spa_c_files/', along with
+    a README file which describes how the C code is wrapped in Python. 
+
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+    location : pvlib.Location object
+    raw_spa_output : bool
+        If true, returns the raw SPA output.
+
+    Returns
+    -------
+    DataFrame
+        The DataFrame will have the following columns:
+        elevation, 
+        azimuth,
+        zenith.
+    
+
+    References
+    ----------
+
+    NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    
+    '''
+    
+    pvl_logger.debug('using built-in spa code to calculate solar position')
+    
+    time_utc = _localize_to_utc(time, location)
+        
+    spa_out = []
+    
+    for date in time_utc:
+        spa_out.append(spa_calc(year=date.year,
+                        month=date.month,
+                        day=date.day,
+                        hour=date.hour,
+                        minute=date.minute,
+                        second=date.second,
+                        timezone=0, #timezone corrections handled above
+                        latitude=location.latitude,
+                        longitude=location.longitude,
+                        elevation=location.altitude))
+    
+    spa_df = pd.DataFrame(spa_out, index=time_utc).tz_convert(location.tz)
+    
+    if raw_spa_output:
+        return spa_df
+    else:    
+        dfout = spa_df[['zenith', 'azimuth']]
+        dfout['elevation'] = 90 - dfout.zenith
+    
+        return dfout
 
 
 
-def get_solarposition(time, location, method='pyephem', pressure=101325, 
-                      temperature=12):
-    """
-    Calculate the solar position using a variety of methods.
-    * 'pvlib' uses the pvlib ephemeris code. Not recommended as of June 2014.
-    * 'pyephem' uses the PyEphem package. Default.
-    
-    The returned DataFrame will be localized to location.tz.
-    
-    :param time: pandas.DatetimeIndex. 
-    :param location: pvlib Location object.
-    :param method: string. 'pvlib', 'pyephem'
-    :param pressure: int or float. Pascals.
-    :param temperature: int or float. Degrees C.
-    
-    :returns: pandas.DataFrame with columns 'elevation', 'zenith', 'azimuth'.
-              Additional columns including 'solar_time', 'apparent_elevation',
-              and 'apparent_zenith' are available with the 'pvlib' and 'pyephem' options.
-    """
-    
-    method = method.lower()
-    
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time.tz_localize(location.tz).tz_convert('UTC')
-    
-    if method == 'pvlib':
-        # pvl_ephemeris needs local time, not utc time.
-        ephem_df = _pvlib(time, location, pressure, temperature)
-    elif method == 'pyephem':
-        ephem_df = _ephem(time_utc, location, pressure, temperature)
-    elif method == 'pysolar':
-        ephem_df = _pysolar(time_utc, location)
-    else:
-        raise ValueError('Invalid method')
-    
-    try:
-        return ephem_df.tz_convert(location.tz)
-    except TypeError:
-        return ephem_df.tz_localize(location.tz)
-
-
-
-def _pvlib(time, location, pressure, temperature):
-    """
-    Calculate the solar position using PVLIB's ephemeris code.
-    """
-    # Will H: I suggest putting the ephemeris code inline here once it's fixed.
-    
-    pvl_logger.debug('using pvlib internal ephemeris code to calculate solar position')
-    
-    return pvl_ephemeris.pvl_ephemeris(time, location, pressure, temperature)
-
-
-
-def _ephem(time, location, pressure, temperature):
+def pyephem(time, location, pressure=101325, temperature=12):
     """
     Calculate the solar position using the PyEphem package.
+    
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+    location : pvlib.Location object
+    pressure : int or float, optional
+        air pressure in Pascals.
+    temperature : int or float, optional
+        air temperature in degrees C.
+    
+    Returns
+    -------
+    DataFrame
+        The DataFrame will have the following columns:
+        apparent_elevation, elevation, 
+        apparent_azimuth, azimuth,
+        apparent_zenith, zenith.
     """
     
     pvl_logger.debug('using PyEphem to calculate solar position')
     
-    sun_coords = pd.DataFrame(index=time)
+    time_utc = _localize_to_utc(time, location)
+    
+    sun_coords = pd.DataFrame(index=time_utc)
     
     # initialize a PyEphem observer
     obs = ephem.Observer()
@@ -128,5 +153,34 @@ def _ephem(time, location, pressure, temperature):
     sun_coords['apparent_zenith'] = 90 - sun_coords['apparent_elevation']
     sun_coords['zenith'] = 90 - sun_coords['elevation']
     
-    return sun_coords
+    try:
+        return sun_coords.tz_convert(location.tz)
+    except TypeError:
+        return sun_coords.tz_localize(location.tz)
+        
+        
+        
+def _localize_to_utc(time, location):
+    """
+    Calculate the solar position using the PyEphem package.
+    
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+    location : pvlib.Location object
+    
+    Returns
+    -------
+    pandas.DatetimeIndex
+        localized to UTC.
+    """
+    
+    try:
+        time_utc = time.tz_convert('UTC')
+        pvl_logger.debug('tz_convert to UTC')
+    except TypeError:
+        time_utc = time.tz_localize(location.tz).tz_convert('UTC')
+        pvl_logger.debug('tz_localize to {} and then tz_convert to UTC'.format(location.tz))
+        
+    return time_utc
     

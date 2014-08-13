@@ -104,28 +104,30 @@ provided by SoDa [4, 5].</p>
 <p><strong>Location</strong> : struct</p>
 <blockquote>
 <div><dl class="docutils">
-<dt><em>Location.latitude</em> - vector or scalar latitude in decimal degrees (positive is</dt>
-<dd><p class="first last">northern hemisphere)</p>
+<dt>Location.latitude</dt>
+<dd><p class="first last">vector or scalar latitude in decimal degrees (positive is
+northern hemisphere)</p>
 </dd>
-<dt><em>Location.longitude</em> - vector or scalar longitude in decimal degrees (positive is </dt>
-<dd><p class="first last">east of prime meridian)</p>
+<dt>Location.longitude</dt>
+<dd><p class="first last">vector or scalar longitude in decimal degrees (positive is
+east of prime meridian)</p>
 </dd>
-<dt><em>Location.altitude</em> - an optional component of the Location struct, not</dt>
-<dd><p class="first last">used in the ephemeris code directly, but it may be used to calculate
+<dt>Location.altitude</dt>
+<dd><p class="first last">an optional component of the Location struct, not
+used in the ephemeris code directly, but it may be used to calculate
 standard site pressure (see pvl_alt2pres function)</p>
 </dd>
+<dt>location.TZ</dt>
+<dd><p class="first last">Time Zone offset from UTC</p>
+</dd>
 </dl>
-<p><em>location.TZ</em>     - Time Zone offset from UTC</p>
 </div></blockquote>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ClearSkyGHI</strong> : Dataframe</p>
 <blockquote>
-<div><dl class="docutils">
-<dt>the modeled global horizonal irradiance in W/m^2 provided</dt>
-<dd><p class="first last">by the Ineichen clear-sky model.</p>
-</dd>
-</dl>
+<div><p>the modeled global horizonal irradiance in W/m^2 provided
+by the Ineichen clear-sky model.</p>
 </div></blockquote>
 <p><strong>ClearSkyDNI</strong> : Dataframe</p>
 <blockquote>
@@ -134,7 +136,7 @@ by the Ineichen clear-sky model.</p>
 </div></blockquote>
 <p><strong>ClearSkyDHI</strong> : Dataframe</p>
 <blockquote>
-<div><p>the calculated diffuse horizonal irradiance in W/m^2 
+<div><p>the calculated diffuse horizonal irradiance in W/m^2
 provided by the Ineichen clear-sky model.</p>
 </div></blockquote>
 </td>
@@ -144,7 +146,7 @@ provided by the Ineichen clear-sky model.</p>
 <blockquote class="last">
 <div><p>An optional input to provide your own Linke
 turbidity. If this input is omitted, the default Linke turbidity
-maps will be used. LinkeTurbidityInput may be a float or 
+maps will be used. LinkeTurbidityInput may be a float or
 dataframe of Linke turbidities. If dataframe is provided, the same
 turbidity will be used for all time/location sets. If a dataframe is
 provided, it must be of the same size as any time/location dataframes
@@ -170,6 +172,21 @@ the loop and feed it into pvl_ineichen as a variable, rather than
 having pvl_ineichen open the file each time it is called (or utilize
 column vectors of time/location instead of a loop).</p>
 <p>Initial implementation of this algorithm by Matthew Reno.</p>
+<p class="rubric">References</p>
+<dl class="docutils">
+<dt>[1] P. Ineichen and R. Perez, &#8220;A New airmass independent formulation for</dt>
+<dd>the Linke turbidity coefficient&#8221;, Solar Energy, vol 73, pp. 151-157, 2002.</dd>
+<dt>[2] R. Perez et. al., &#8220;A New Operational Model for Satellite-Derived</dt>
+<dd>Irradiances: Description and Validation&#8221;, Solar Energy, vol 73, pp.
+307-317, 2002.</dd>
+<dt>[3] M. Reno, C. Hansen, and J. Stein, &#8220;Global Horizontal Irradiance Clear</dt>
+<dd>Sky Models: Implementation and Analysis&#8221;, Sandia National
+Laboratories, SAND2012-2389, 2012.</dd>
+<dt>[4] <a class="reference external" href="http://www.soda-is.com/eng/services/climat_free_eng.php#c5">http://www.soda-is.com/eng/services/climat_free_eng.php#c5</a> (obtained</dt>
+<dd>July 17, 2012).</dd>
+<dt>[5] J. Remund, et. al., &#8220;Worldwide Linke Turbidity Information&#8221;, Proc.</dt>
+<dd>ISES Solar World Congress, June 2003. Goteborg, Sweden.</dd>
+</dl>
 </dd></dl>
 
 </div>

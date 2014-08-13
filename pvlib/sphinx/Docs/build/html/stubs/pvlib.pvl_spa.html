@@ -85,11 +85,10 @@
 <dl class="function">
 <dt id="pvlib.pvl_spa">
 <tt class="descclassname">pvlib.</tt><tt class="descname">pvl_spa</tt><big>(</big><em>Time</em>, <em>Location</em><big>)</big><a class="headerlink" href="#pvlib.pvl_spa" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the solar position using the PySolar package</p>
-<p>The PySolar Package is developed by Brandon Stafford, and is
-found here: <a class="reference external" href="https://github.com/pingswept/pysolar/tree/master">https://github.com/pingswept/pysolar/tree/master</a></p>
-<p>This function will map the standard time and location structures
-onto the Pysolar function</p>
+<dd><p>Calculate the solar position using the C implementation of the NREL 
+SPA code</p>
+<p>The source files for this code are located in &#8216;./spa_c_files/&#8217;, along with
+a README file which describes how the C code is wrapped in Python.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -131,7 +130,7 @@ Angle.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>PySolar Documentation: <a class="reference external" href="https://github.com/pingswept/pysolar/tree/master">https://github.com/pingswept/pysolar/tree/master</a></p>
+<p>NREL SPA code: <a class="reference external" href="http://rredc.nrel.gov/solar/codesandalgorithms/spa/">http://rredc.nrel.gov/solar/codesandalgorithms/spa/</a></p>
 </dd></dl>
 
 </div>

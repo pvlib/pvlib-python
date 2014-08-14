@@ -2,27 +2,28 @@
 Contains several methods to calculate clear sky GHI, DNI, and DHI.
 """
 
+from __future__ import division
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import os
-import pdb
 
 import numpy as np
-import scipy.io
 import pandas as pd
+import scipy.io
 
-import pvl_tools
-import pvl_extraradiation
-import pvl_alt2pres
-import airmass
-import pvl_ephemeris
-import solarposition
+from . import pvl_tools
+from . import pvl_extraradiation
+from . import pvl_alt2pres
+from . import airmass
+from . import solarposition
+
 
 
 def ineichen(time, location, linke_turbidity=None, 
-             solarposition_method='pyephem',
-             airmass_model='kastenyoung1989'):
+             solarposition_method='pyephem', zenith_data=None,
+             airmass_model='young1994', airmass_data=None):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model
 
@@ -36,24 +37,24 @@ def ineichen(time, location, linke_turbidity=None,
 
     Parameters
     -----------
-    time : Dataframe.index
-            A timezone aware pandas dataframe index. 
-
-    location : pvlib Location object
-
-    Other Parameters 
-    ----------------
-
-    linke_turbidity : Optional, float or DataFrame
-
-                    An optional input to provide your own Linke
-                    turbidity. If this input is omitted, the default Linke turbidity
-                    maps will be used. linke_turbidity may be a float or 
-                    dataframe of Linke turbidities. If dataframe is provided, the same
-                    turbidity will be used for all time/location sets. If a dataframe is
-                    provided, it must be of the same size as any time/location dataframes
-                    and each element of the dataframe corresponds to any time and location
-                    elements.
+    time : pandas.DatetimeIndex
+    
+    location : pvlib.Location
+    
+    linke_turbidity : None or float
+    
+    solarposition_method : string
+        See pvlib.solarposition.get_solarposition()
+    
+    zenith_data : None or pandas.Series
+        If None, ephemeris data will be calculated using ``solarposition_method``.
+    
+    airmass_model : string
+        See pvlib.airmass.relativeairmass().
+    
+    airmass_data : None or pandas.Series
+        If None, absolute air mass data will be calculated using 
+        ``airmass_model`` and location.alitude.
 
     Returns
     --------
@@ -75,62 +76,49 @@ def ineichen(time, location, linke_turbidity=None,
 
     Notes
     -----
+    If you are using this function
+    in a loop, it may be faster to load LinkeTurbidities.mat outside of
+    the loop and feed it in as a variable, rather than
+    having the function open the file each time it is called.
 
-        This implementation of the Ineichen model requires a number of other
-        PV_LIB functions including pvl_ephemeris, pvl_date2doy,
-        pvl_extraradiation, pvl_absoluteairmass, pvl_relativeairmass, and
-        pvl_alt2pres. It also requires the file "LinkeTurbidities.mat" to be
-        in the working directory. If you are using pvl_ineichen
-        in a loop, it may be faster to load LinkeTurbidities.mat outside of
-        the loop and feed it into pvl_ineichen as a variable, rather than
-        having pvl_ineichen open the file each time it is called (or utilize
-        column vectors of time/location instead of a loop).
-
-        Initial implementation of this algorithm by Matthew Reno.
 
     References
     ----------
 
-     [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
-         the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157, 2002.
+    [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
+        the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157, 2002.
 
-     [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
-         Irradiances: Description and Validation", Solar Energy, vol 73, pp.
-         307-317, 2002.
+    [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
+        Irradiances: Description and Validation", Solar Energy, vol 73, pp.
+        307-317, 2002.
 
-     [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-         Sky Models: Implementation and Analysis", Sandia National
-         Laboratories, SAND2012-2389, 2012.
+    [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
+        Sky Models: Implementation and Analysis", Sandia National
+        Laboratories, SAND2012-2389, 2012.
 
-     [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
-         July 17, 2012).
+    [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
+        July 17, 2012).
 
-     [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
-         ISES Solar World Congress, June 2003. Goteborg, Sweden.
-
-
-    See Also
-    --------
-
-    pvl_maketimestruct    
-    pvl_makelocationstruct   
-    pvl_ephemeris
-    pvl_haurwitz
-
+    [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
+        ISES Solar World Congress, June 2003. Goteborg, Sweden.
     '''
+    # Initial implementation of this algorithm by Matthew Reno.
+    # Ported to python by Rob Andrews
+    # Added functionality by Will Holmgren
     
     I0 = pvl_extraradiation.pvl_extraradiation(time.dayofyear)
     
-    ephem_data = solarposition.get_solarposition(time, location, 
-                                                 method=solarposition_method)
-    
-    time = ephem_data.index # fixes issue with time possibly not being tz-aware
-    
-    try:
-        ApparentZenith = ephem_data['apparent_zenith']
-    except KeyError:
-        ApparentZenith = ephem_data['zenith']
-        pvl_logger.warning('could not find apparent_zenith. using zenith')
+    if zenith_data is None:
+        ephem_data = solarposition.get_solarposition(time, location, 
+                                                     method=solarposition_method)
+        time = ephem_data.index # fixes issue with time possibly not being tz-aware    
+        try:
+            ApparentZenith = ephem_data['apparent_zenith']
+        except KeyError:
+            ApparentZenith = ephem_data['zenith']
+            pvl_logger.warning('could not find apparent_zenith. using zenith')
+    else:
+        ApparentZenith = zenith_data
     #ApparentZenith[ApparentZenith >= 90] = 90 # can cause problems in edge cases
 
     
@@ -150,8 +138,8 @@ def ineichen(time, location, linke_turbidity=None,
         pvl_logger.debug('this_path={}'.format(this_path))
         mat = scipy.io.loadmat(this_path+'/LinkeTurbidities.mat')
         linke_turbidity = mat['LinkeTurbidity']
-        LatitudeIndex = np.round_(LinearlyScale(location.latitude,90,- 90,1,2160))
-        LongitudeIndex = np.round_(LinearlyScale(location.longitude,- 180,180,1,4320))
+        LatitudeIndex = np.round_(_linearly_scale(location.latitude,90,- 90,1,2160))
+        LongitudeIndex = np.round_(_linearly_scale(location.longitude,- 180,180,1,4320))
         g = linke_turbidity[LatitudeIndex][LongitudeIndex]
         ApplyMonth = lambda x:g[x[0]-1]
         LT = pd.DataFrame(time.month)
@@ -164,11 +152,14 @@ def ineichen(time, location, linke_turbidity=None,
 
     # Get the absolute airmass assuming standard local pressure (per
     # pvl_alt2pres) using Kasten and Young's 1989 formula for airmass.
-
-    AMabsolute = airmass.absoluteairmass(AMrelative=airmass.relativeairmass(ApparentZenith, airmass_model),
-                                         pressure=pvl_alt2pres.pvl_alt2pres(location.altitude))
     
-    fh1 = np.exp(-location.altitude/8000.) # Will H: added . for float division!
+    if airmass_data is None:
+        AMabsolute = airmass.absoluteairmass(AMrelative=airmass.relativeairmass(ApparentZenith, airmass_model),
+                                             pressure=pvl_alt2pres.pvl_alt2pres(location.altitude))
+    else:
+        AMabsolute = airmass_data
+        
+    fh1 = np.exp(-location.altitude/8000.)
     fh2 = np.exp(-location.altitude/1250.)
     cg1 = 5.09e-05 * location.altitude + 0.868
     cg2 = 3.92e-05 * location.altitude + 0.0387
@@ -282,7 +273,7 @@ def haurwitz(ApparentZenith):
 	    
     
 
-def LinearlyScale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
+def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
     """ used by linke turbidity lookup function """
     
     inputrange = inputmax - inputmin

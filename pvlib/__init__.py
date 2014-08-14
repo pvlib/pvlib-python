@@ -8,6 +8,9 @@ Irradiance and atmospheric functions
 '''
 
 import solarposition
+import airmass
+import clearsky
+
 from pvl_alt2pres import pvl_alt2pres
 from pvl_pres2alt import pvl_pres2alt
 from pvl_getaoi import pvl_getaoi

@@ -180,11 +180,24 @@ class Parse():		#parse complex logic
                             except:
                                 pvl_logger.warning('Optional value "'+arg+'" not input'"")
                                 continue
-                            if not(eval(lambdastring)(kwargs[arg][~np.isnan(kwargs[arg])])): #check its logical constraint
-                                raise Exception('Error: Optional input "'+arg+'" fails on logical test "'+ re.findall(reg,string)[0]+'"')	
+                            try:    
+                                if not(eval(lambdastring)(kwargs[arg][~np.isnan(kwargs[arg])]).all()): #ignore NAN entries
+                                    raise Exception('Error: optional input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+                            except:
+                                if not(eval(lambdastring)(kwargs[arg])):
+                                    raise Exception('Error: optional input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+                            
+
                         #check all other contraints
-                        elif not(eval(lambdastring)(kwargs[arg][~np.isnan(kwargs[arg])]).all()): #ignore NAN entries
-                            raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+
+                        else:
+                            try:    
+                                if not(eval(lambdastring)(kwargs[arg][~np.isnan(kwargs[arg])]).all()): #ignore NAN entries
+                                    raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+                            except:
+                                if not(eval(lambdastring)(kwargs[arg])): 
+                                    raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+
                     #Check if any string logicals are bypassed due to poor formatting
                         
                     elif np.shape(re.findall(reglogical,string))[0]>0:		

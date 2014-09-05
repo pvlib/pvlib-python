@@ -23,7 +23,8 @@ from . import solarposition
 
 def ineichen(time, location, linke_turbidity=None, 
              solarposition_method='pyephem', zenith_data=None,
-             airmass_model='young1994', airmass_data=None):
+             airmass_model='young1994', airmass_data=None,
+             interp_turbidity=True):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model
 
@@ -129,8 +130,9 @@ def ineichen(time, location, linke_turbidity=None,
         # from -180 to 180; and the depth (third dimension) represents months of
         # the year from January (1) to December (12). To determine the Linke
         # turbidity for a position on the Earth's surface for a given month do the
-        # following: LT = LinkeTurbidity(LatitudeIndex, LongitudeIndex, month).  Note that the numbers within the matrix are 20 * Linke
-        # Turbidity, so divide the number from the file by 20 to get the
+        # following: LT = LinkeTurbidity(LatitudeIndex, LongitudeIndex, month).  
+        # Note that the numbers within the matrix are 20 * Linke Turbidity, 
+        # so divide the number from the file by 20 to get the
         # turbidity.
         
         # consider putting this code at module level
@@ -141,12 +143,18 @@ def ineichen(time, location, linke_turbidity=None,
         LatitudeIndex = np.round_(_linearly_scale(location.latitude,90,- 90,1,2160))
         LongitudeIndex = np.round_(_linearly_scale(location.longitude,- 180,180,1,4320))
         g = linke_turbidity[LatitudeIndex][LongitudeIndex]
-        ApplyMonth = lambda x:g[x[0]-1]
-        LT = pd.DataFrame(time.month)
-        LT.index = time
-        LT = LT.apply(ApplyMonth,axis=1)
-        TL = LT / float(20)
-        pvl_logger.info('using TL={}'.format(TL))
+        if interp_turbidity:
+            pvl_logger.info('interpolating turbidity to the day')
+            g2 = np.concatenate([[g[-1]], g, [g[0]]]) # wrap ends around
+            days = np.linspace(-15, 380, num=14) # map day of year onto month (approximate)
+            LT = pd.Series(np.interp(time.dayofyear, days, g2), index=time)
+        else:
+            pvl_logger.info('using monthly turbidity')
+            ApplyMonth = lambda x:g[x[0]-1]
+            LT = pd.DataFrame(time.month, index=time)
+            LT = LT.apply(ApplyMonth, axis=1)
+        TL = LT / 20.
+        pvl_logger.info('using TL=\n{}'.format(TL))
     else:
         TL = linke_turbidity
 

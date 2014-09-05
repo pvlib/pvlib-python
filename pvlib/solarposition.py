@@ -2,6 +2,8 @@
 Calculate the solar position using a variety of methods/packages.
 """
 
+from __future__ import division
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
@@ -19,6 +21,37 @@ try:
     import ephem
 except ImportError as e:
     pvl_logger.warning('PyEphem not found.')
+
+
+
+def get_solarposition(time, location, method='pyephem', pressure=101325, 
+                      temperature=12):
+    """
+    A convenience wrapper for the solar position calculators.
+    
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+    location : pvlib.Location object
+    method : string
+        'pyephem' uses the PyEphem package. Default.
+        'spa' uses the pvlib ephemeris code.
+    pressure : float
+        Pascals.
+    temperature : float 
+        Degrees C.
+    """
+    
+    method = method.lower()
+    
+    if method == 'spa':
+        ephem_df = spa(time, location)
+    elif method == 'pyephem':
+        ephem_df = pyephem(time, location, pressure, temperature)
+    else:
+        raise ValueError('Invalid solar position method')
+        
+    return ephem_df
 
 
 

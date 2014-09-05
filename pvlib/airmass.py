@@ -2,10 +2,16 @@
 Contains methods to calculate the relative and absolute airmass.
 """
 
+from __future__ import division
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import numpy as np
+
+AIRMASS_MODELS = ['kastenyoung1989', 'kasten1966', 'simple', 
+                  'pickering2002', 'youngirvine1967', 'young1994',
+                  'gueymard1993']
 
 
 def relativeairmass(z, model='kastenyoung1989'):
@@ -22,28 +28,28 @@ def relativeairmass(z, model='kastenyoung1989'):
     ----------
 
     z : float or DataFrame 
-
-      Zenith angle of the sun.  Note that some models use the apparent (refraction corrected)
-      zenith angle, and some models use the true (not refraction-corrected)
-      zenith angle. See model descriptions to determine which type of zenith
-      angle is required.
+        Zenith angle of the sun in degrees.  
+        Note that some models use the apparent (refraction corrected)
+        zenith angle, and some models use the true (not refraction-corrected)
+        zenith angle. See model descriptions to determine which type of zenith
+        angle is required. Apparent zenith angles must be calculated at sea level.
   
     model : String 
-      Avaiable models include the following:
-
-         * 'simple' - secant(apparent zenith angle) - Note that this gives -inf at zenith=90
-         * 'kasten1966' - See reference [1] - requires apparent sun zenith
-         * 'youngirvine1967' - See reference [2] - requires true sun zenith
-         * 'kastenyoung1989' - See reference [3] - requires apparent sun zenith
-         * 'gueymard1993' - See reference [4] - requires apparent sun zenith
-         * 'young1994' - See reference [5] - requries true sun zenith
-         * 'pickering2002' - See reference [6] - requires apparent sun zenith
+        Available models include the following:
+        
+        * 'simple' - secant(apparent zenith angle) - Note that this gives -inf at zenith=90
+        * 'kasten1966' - See reference [1] - requires apparent sun zenith
+        * 'youngirvine1967' - See reference [2] - requires true sun zenith
+        * 'kastenyoung1989' - See reference [3] - requires apparent sun zenith
+        * 'gueymard1993' - See reference [4] - requires apparent sun zenith
+        * 'young1994' - See reference [5] - requries true sun zenith
+        * 'pickering2002' - See reference [6] - requires apparent sun zenith
 
     Returns
     -------
     AM : float or DataFrame 
-            Relative airmass at sea level.  Will return NaN values for all zenith 
-            angles greater than 90 degrees.
+        Relative airmass at sea level.  Will return NaN values for any 
+        zenith angle greater than 90 degrees.
 
     References
     ----------
@@ -71,15 +77,7 @@ def relativeairmass(z, model='kastenyoung1989'):
     [7] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein,
     "Global Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
     Sandia Report, (2012).
-
-    See Also
-    --------
-    pvl_absoluteairmass
-    pvl_ephemeris
-
     '''
-    
-    # removed angle check. be responsible. 
     
     zenith_rad = np.radians(z)
     
@@ -103,7 +101,10 @@ def relativeairmass(z, model='kastenyoung1989'):
         pvl_logger.warning("{} is not a valid model type for relative airmass. The 'kastenyoung1989' model was used.".format(model))
         AM = 1.0 / (np.cos(zenith_rad) + 0.50572*(((6.07995 + (90 - z)) ** - 1.6364)))
     
-    AM[AM < 0] = np.nan
+    try:
+        AM[z > 90] = np.nan
+    except TypeError:
+        AM = np.nan if z > 90 else AM
         
     return AM
 
@@ -124,24 +125,17 @@ def absoluteairmass(AMrelative, pressure=101325.):
 	Parameters
 	----------
 
-	AMrelative : float or DataFrame
-	
-				The airmass at sea-level which can be calculated using the 
-				PV_LIB function pvl_relativeairmass. 
+	AMrelative : float or DataFrame	
+        The airmass at sea-level. 
 	
 	pressure : float or DataFrame
-
-				a scalar or vector of values providing the site pressure in
-				Pascal. If pressure is a vector it must be of the same size as all
-				other vector inputs. pressure must be >=0. Pressure may be measured
-				or an average pressure may be calculated from site altitude.
+        The site pressure in Pascal. 
 
 	Returns
 	-------
 
 	AMa : float or DataFrame
-
-				Absolute (pressure corrected) airmass
+        Absolute (pressure corrected) airmass
 
 	References
 	----------

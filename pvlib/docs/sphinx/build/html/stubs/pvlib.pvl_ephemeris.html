@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvlib.pvl_ephemeris &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvlib.pvl_spa" href="pvlib.pvl_spa.html" />
+    <link rel="prev" title="pvlib.pvl_disc" href="pvlib.pvl_disc.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_spa.html" title="pvlib.pvl_spa"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_disc.html" title="pvlib.pvl_disc"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvlib.pvl_disc.html"
+                        title="previous chapter">pvlib.pvl_disc</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvlib.pvl_spa.html"
+                        title="next chapter">pvlib.pvl_spa</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvlib.pvl_ephemeris.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvlib-pvl-ephemeris">
+<h1>pvlib.pvl_ephemeris<a class="headerlink" href="#pvlib-pvl-ephemeris" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvlib.pvl_ephemeris">
+<tt class="descclassname">pvlib.</tt><tt class="descname">pvl_ephemeris</tt><big>(</big><em>Time</em>, <em>Location</em>, <em>pressure=101325</em>, <em>temperature=12</em><big>)</big><a class="headerlink" href="#pvlib.pvl_ephemeris" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the position of the sun given time, location, and optionally pressure and temperature</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>Time</strong> :  <a class="reference external" href="http://pandas.pydata.org/pandas-docs/version/0.13.1/generated/pandas.Index.html">pandas.Index</a></p>
+<p><strong>Location: struct</strong> :</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><em>Location.latitude</em> - vector or scalar latitude in decimal degrees (positive is</dt>
+<dd><p class="first last">northern hemisphere)</p>
+</dd>
+<dt><em>Location.longitude</em> - vector or scalar longitude in decimal degrees (positive is </dt>
+<dd><p class="first last">east of prime meridian)</p>
+</dd>
+<dt><em>Location.altitude</em> - an optional component of the Location struct, not</dt>
+<dd><p class="first last">used in the ephemeris code directly, but it may be used to calculate
+standard site pressure (see pvl_alt2pres function)</p>
+</dd>
+</dl>
+<p><em>location.TZ</em>     - Time Zone offset from UTC</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>SunAz</strong> : float of DataFrame</p>
+<blockquote>
+<div><p>Azimuth of the sun in decimal degrees from North. 0 = North to 270 = West</p>
+</div></blockquote>
+<p><strong>SunEl</strong> : float of DataFrame</p>
+<blockquote>
+<div><p>Actual elevation (not accounting for refraction)of the sun 
+in decimal degrees, 0 = on horizon. The complement of the True Zenith
+Angle.</p>
+</div></blockquote>
+<p><strong>ApparentSunEl</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Apparent sun elevation accounting for atmospheric 
+refraction. This is the complement of the Apparent Zenith Angle.</p>
+</div></blockquote>
+<p><strong>SolarTime</strong> : fload or DataFrame</p>
+<blockquote>
+<div><p>Solar time in decimal hours (solar noon is 12.00).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Other Parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>pressure</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Ambient pressure (Pascals)</p>
+</div></blockquote>
+<p><strong>tempreature: float or DataFrame</strong> :</p>
+<blockquote class="last">
+<div><p>Ambient temperature (C)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pvlib.pvl_makelocationstruct.html#pvlib.pvl_makelocationstruct" title="pvlib.pvl_makelocationstruct"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_makelocationstruct</span></tt></a>, <a class="reference internal" href="pvlib.pvl_alt2pres.html#pvlib.pvl_alt2pres" title="pvlib.pvl_alt2pres"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_alt2pres</span></tt></a>, <a class="reference internal" href="pvlib.pvl_getaoi.html#pvlib.pvl_getaoi" title="pvlib.pvl_getaoi"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_getaoi</span></tt></a>, <a class="reference internal" href="pvlib.pvl_spa.html#pvlib.pvl_spa" title="pvlib.pvl_spa"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_spa</span></tt></a></p>
+</div>
+<p class="rubric">References</p>
+<p>Grover Hughes&#8217; class and related class materials on Engineering 
+Astronomy at Sandia National Laboratories, 1985.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_spa.html" title="pvlib.pvl_spa"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_disc.html" title="pvlib.pvl_disc"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

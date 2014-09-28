@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pvlib.pvl_perez &mdash; PV LIB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PV LIB 1.0 documentation" href="../index.html" />
+    <link rel="next" title="pvlib.pvl_haydavies1980" href="pvlib.pvl_haydavies1980.html" />
+    <link rel="prev" title="pvlib.pvl_clearsky_haurwitz" href="pvlib.pvl_clearsky_haurwitz.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_haydavies1980.html" title="pvlib.pvl_haydavies1980"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_clearsky_haurwitz.html" title="pvlib.pvl_clearsky_haurwitz"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pvlib.pvl_clearsky_haurwitz.html"
+                        title="previous chapter">pvlib.pvl_clearsky_haurwitz</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pvlib.pvl_haydavies1980.html"
+                        title="next chapter">pvlib.pvl_haydavies1980</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/stubs/pvlib.pvl_perez.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pvlib-pvl-perez">
+<h1>pvlib.pvl_perez<a class="headerlink" href="#pvlib-pvl-perez" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pvlib.pvl_perez">
+<tt class="descclassname">pvlib.</tt><tt class="descname">pvl_perez</tt><big>(</big><em>SurfTilt</em>, <em>SurfAz</em>, <em>DHI</em>, <em>DNI</em>, <em>HExtra</em>, <em>SunZen</em>, <em>SunAz</em>, <em>AM</em>, <em>modelt='allsitescomposite1990'</em><big>)</big><a class="headerlink" href="#pvlib.pvl_perez" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine diffuse irradiance from the sky on a tilted surface using one of the Perez models</p>
+<p>Perez models determine the diffuse irradiance from the sky (ground
+reflected irradiance is not included in this algorithm) on a tilted
+surface using the surface tilt angle, surface azimuth angle, diffuse
+horizontal irradiance, direct normal irradiance, extraterrestrial
+irradiance, sun zenith angle, sun azimuth angle, and relative (not
+pressure-corrected) airmass. Optionally a selector may be used to use
+any of Perez&#8217;s model coefficient sets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>SurfTilt</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Surface tilt angles in decimal degrees.
+SurfTilt must be &gt;=0 and &lt;=180. The tilt angle is defined as
+degrees from horizontal (e.g. surface facing up = 0, surface facing
+horizon = 90)</p>
+</div></blockquote>
+<p><strong>SurfAz</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Surface azimuth angles in decimal degrees.
+SurfAz must be &gt;=0 and &lt;=360. The Azimuth convention is defined
+as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).</p>
+</div></blockquote>
+<p><strong>DHI</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>diffuse horizontal irradiance in W/m^2. 
+DHI must be &gt;=0.</p>
+</div></blockquote>
+<p><strong>DNI</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>direct normal irradiance in W/m^2. 
+DNI must be &gt;=0.</p>
+</div></blockquote>
+<p><strong>HExtra</strong> : float or DataFrame</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>extraterrestrial normal irradiance in W/m^2. </dt>
+<dd><p class="first last">HExtra must be &gt;=0.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>SunZen</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>apparent (refraction-corrected) zenith
+angles in decimal degrees. 
+SunZen must be &gt;=0 and &lt;=180.</p>
+</div></blockquote>
+<p><strong>SunAz</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>Sun azimuth angles in decimal degrees.
+SunAz must be &gt;=0 and &lt;=360. The Azimuth convention is defined
+as degrees east of north (e.g. North = 0, East = 90, West = 270).</p>
+</div></blockquote>
+<p><strong>AM</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>relative (not pressure-corrected) airmass 
+values. If AM is a DataFrame it must be of the same size as all other 
+DataFrame inputs. AM must be &gt;=0 (careful using the 1/sec(z) model of AM
+generation)</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>SkyDiffuse</strong> : float or DataFrame</p>
+<blockquote>
+<div><p>the diffuse component of the solar radiation  on an
+arbitrarily tilted surface defined by the Perez model as given in
+reference [3].
+SkyDiffuse is the diffuse component ONLY and does not include the ground
+reflected irradiance or the irradiance due to the beam.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Other Parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>model</strong> : string (optional, default=&#8217;allsitescomposite1990&#8217;)</p>
+<blockquote class="last">
+<div><p>a character string which selects the desired set of Perez
+coefficients. If model is not provided as an input, the default,
+&#8216;1990&#8217; will be used.
+All possible model selections are:</p>
+<ul class="simple">
+<li>&#8216;1990&#8217;</li>
+<li>&#8216;allsitescomposite1990&#8217; (same as &#8216;1990&#8217;)</li>
+<li>&#8216;allsitescomposite1988&#8217;</li>
+<li>&#8216;sandiacomposite1988&#8217;</li>
+<li>&#8216;usacomposite1988&#8217;</li>
+<li>&#8216;france1988&#8217;</li>
+<li>&#8216;phoenix1988&#8217;</li>
+<li>&#8216;elmonte1988&#8217;</li>
+<li>&#8216;osage1988&#8217;</li>
+<li>&#8216;albuquerque1988&#8217;</li>
+<li>&#8216;capecanaveral1988&#8217;</li>
+<li>&#8216;albany1988&#8217;</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pvlib.pvl_ephemeris.html#pvlib.pvl_ephemeris" title="pvlib.pvl_ephemeris"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_ephemeris</span></tt></a>, <a class="reference internal" href="pvlib.pvl_extraradiation.html#pvlib.pvl_extraradiation" title="pvlib.pvl_extraradiation"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_extraradiation</span></tt></a>, <a class="reference internal" href="pvlib.pvl_isotropicsky.html#pvlib.pvl_isotropicsky" title="pvlib.pvl_isotropicsky"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_isotropicsky</span></tt></a>, <a class="reference internal" href="pvlib.pvl_haydavies1980.html#pvlib.pvl_haydavies1980" title="pvlib.pvl_haydavies1980"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_haydavies1980</span></tt></a>, <a class="reference internal" href="pvlib.pvl_reindl1990.html#pvlib.pvl_reindl1990" title="pvlib.pvl_reindl1990"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_reindl1990</span></tt></a>, <a class="reference internal" href="pvlib.pvl_klucher1979.html#pvlib.pvl_klucher1979" title="pvlib.pvl_klucher1979"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_klucher1979</span></tt></a>, <a class="reference internal" href="pvlib.pvl_kingdiffuse.html#pvlib.pvl_kingdiffuse" title="pvlib.pvl_kingdiffuse"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_kingdiffuse</span></tt></a>, <a class="reference internal" href="pvlib.pvl_relativeairmass.html#pvlib.pvl_relativeairmass" title="pvlib.pvl_relativeairmass"><tt class="xref py py-obj docutils literal"><span class="pre">pvl_relativeairmass</span></tt></a></p>
+</div>
+<p class="rubric">References</p>
+<p>[1] Loutzenhiser P.G. et. al. &#8220;Empirical validation of models to compute
+solar irradiance on inclined surfaces for building energy simulation&#8221;
+2007, Solar Energy vol. 81. pp. 254-267</p>
+<p>[2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D., 1987. A new
+simplified version of the Perez diffuse irradiance model for tilted
+surfaces. Solar Energy 39(3), 221-232.</p>
+<p>[3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R., 1990.
+Modeling daylight availability and irradiance components from direct
+and global irradiance. Solar Energy 44 (5), 271-289.</p>
+<p>[4] Perez, R. et. al 1988. &#8220;The Development and Verification of the
+Perez Diffuse Radiation Model&#8221;. SAND88-7030</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pvlib.pvl_haydavies1980.html" title="pvlib.pvl_haydavies1980"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pvlib.pvl_clearsky_haurwitz.html" title="pvlib.pvl_clearsky_haurwitz"
+             >previous</a> |</li>
+        <li><a href="../index.html">PV LIB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Sandia National Labs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

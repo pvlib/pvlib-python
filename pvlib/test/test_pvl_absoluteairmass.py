@@ -1,28 +1,28 @@
 
 import unittest
-from .. import pvl_absoluteairmass 
+from ..clearsky import absoluteairmass 
 from nose.tools import *
 import numpy as np
 
 
 
 def test_nan():
- 	pvl_absoluteairmass(AMrelative=np.nan,Pressure=1)
+ 	absoluteairmass(AMrelative=np.nan,Pressure=1)
 
 
 def test_non_array():
-	pvl_absoluteairmass(AMrelative=1,Pressure=1)
+	absoluteairmass(AMrelative=1,Pressure=1)
 
 @raises(Exception)
 def test_numeric():
-	pvl_absoluteairmass(AMrelative='g',Pressure=1)
+	absoluteairmass(AMrelative='g',Pressure=1)
 
 @raises(Exception)
 def test_numeric_2():
-	pvl_absoluteairmass(AMrelative=1,Pressure='g')
+	absoluteairmass(AMrelative=1,Pressure='g')
 
 def test_logical_2():
-	pvl_absoluteairmass(AMrelative=-1,Pressure=1)
+	absoluteairmass(AMrelative=-1,Pressure=1)
   
     	
 

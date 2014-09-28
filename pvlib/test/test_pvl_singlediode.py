@@ -5,12 +5,10 @@ import pandas as pd
 import sys
 import os
 sys.path.append(os.path.abspath('../'))
-from .. import pvl_singlediode 
-from .. import pvl_ephemeris 
-from .. import pvl_extraradiation 
-from .. import pvl_relativeairmass 
-from .. import pvl_getaoi 
-from .. import pvl_calcparams_desoto 
+from ..pvsystem import singlediode, getaoi ,calcparams_desoto 
+from ..irradiance import  extraradiation  
+from ..atmosphere import relativeairmass 
+from ..solarposition import ephemeris
 from .. import pvl_tools
 from .. import tmy
 
@@ -20,7 +18,7 @@ def test_proper_vector():
 	SurfAz=0
 	Albedo=0.2
 
-	TMY, meta=tmy.readtmy3(filename='703165TY.csv')
+	TMY, meta=tmy.readtmy3(filename='data/703165TY.csv')
 
 	#Canadian_Solar_CS5P_220P
 	module={'A_c': 1.639,
@@ -43,16 +41,16 @@ def test_proper_vector():
 
 	module=pvl_tools.repack(module)
 
-	TMY['SunAz'], TMY['SunEl'], TMY['ApparentSunEl'], TMY['SolarTime'], TMY['SunZen']=pvl_ephemeris(Time=TMY.index,Location=meta)
+	TMY['SunAz'], TMY['SunEl'], TMY['ApparentSunEl'], TMY['SolarTime'], TMY['SunZen']=ephemeris(Time=TMY.index,Location=meta)
 
-	TMY['HExtra']=pvl_extraradiation(doy=TMY.index.dayofyear)
+	TMY['HExtra']=extraradiation(doy=TMY.index.dayofyear)
 
-	TMY['AM']=pvl_relativeairmass(z=TMY.SunZen)
+	TMY['AM']=relativeairmass(z=TMY.SunZen)
 
-	TMY['AOI']=pvl_getaoi(SunAz=TMY.SunAz,SunZen=TMY.SunZen,SurfTilt=SurfTilt,SurfAz=SurfAz)
+	TMY['AOI']=getaoi(SunAz=TMY.SunAz,SunZen=TMY.SunZen,SurfTilt=SurfTilt,SurfAz=SurfAz)
 
-	IL,I0,Rs,Rsh,nNsVth=pvl_calcparams_desoto(S=TMY.GHI,Tcell=TMY.DryBulb,alpha_isc=.003,ModuleParameters=module, EgRef=1.121, dEgdT= -0.0002677)
-	pmp=pvl_singlediode(Module=module,IL=IL,I0=I0,Rs=Rs,Rsh=Rsh,nNsVth=nNsVth)
+	IL,I0,Rs,Rsh,nNsVth=calcparams_desoto(S=TMY.GHI,Tcell=TMY.DryBulb,alpha_isc=.003,ModuleParameters=module, EgRef=1.121, dEgdT= -0.0002677)
+	pmp=singlediode(Module=module,IL=IL,I0=I0,Rs=Rs,Rsh=Rsh,nNsVth=nNsVth)
 	assert(True==True)
 
 def test_proper_scalar():
@@ -85,7 +83,7 @@ def test_proper_scalar():
 	I0=module.I_o_ref
 	nNsVth=module.A_ref
 
-	pmp=pvl_singlediode(Module=module,IL=IL,I0=I0,Rs=Rs,Rsh=Rsh,nNsVth=nNsVth)
+	pmp=singlediode(Module=module,IL=IL,I0=I0,Rs=Rs,Rsh=Rsh,nNsVth=nNsVth)
 	assert(True==True)
 
 def test_multiple_I_V_Points():

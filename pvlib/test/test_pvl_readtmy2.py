@@ -6,11 +6,11 @@ import pandas as pd
 from .. import tmy
 
 def test_proper():
-	fname='12839.tm2'
+	fname='data/12839.tm2'
 	TMY2,TMY2meta=tmy.readtmy2(filename=fname)
 	assert(max(TMY2.RHum<=100))
 
-	fname='12839.tm2'
+	fname='data/12839.tm2'
 	TMY2,TMY2meta=tmy.readtmy2(filename=fname)
 	assert(max(TMY2.RHum<=100))
 	assert(TMY2meta['latitude']>0)

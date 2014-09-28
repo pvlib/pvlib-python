@@ -6,14 +6,13 @@ import sys
 import os
 
 
-from .. import pvl_ephemeris
+from ..solarposition import ephemeris
 from .. import tmy
-from .. import pvl_makelocationstruct
 
 def test_inputs():
-	TMY,meta=tmy.readtmy3(filename='703165TY.csv')
+	TMY,meta=tmy.readtmy3(filename='data/703165TY.csv')
 
-	DFout=pvl_ephemeris(Time=TMY.index,Location=meta)
+	DFout=ephemeris(Time=TMY.index,Location=meta)
 	assert(1)
 def main():
     unittest.main()

@@ -6,15 +6,15 @@ from datetime import datetime
 import sys 
 import os 
 
-from .. import pvl_spa
+from ..solarposition import spa
 from .. import tmy
-from .. import pvl_makelocationstruct
+from ..pvsystem import makelocationstruct
 
 def test_inputs():
-	TMY,meta=tmy.readtmy3(filename='703165TY.csv')
+	TMY,meta=tmy.readtmy3(filename='data/703165TY.csv')
 
 
-	DFout=pvl_spa(Time=TMY.index,Location=meta)
+	DFout=spa(Time=TMY.index,Location=meta)
 	assert(1)
 
 def test_physical():
@@ -26,7 +26,7 @@ def test_physical():
               'altitude':1830,
               'TZ':-7}
 	
-	g=pvl_spa(Time=date, Location=location)
+	g=spa(Time=date, Location=location)
 
 	assert( (((g[0]>14.3) & (g[0]<14.4)) & ((g[1]>39) & (g[1]<40)) & ((g[2]>50.1) & (g[2]<50.2) )).any) #Physical constraints from spatester.c
 	

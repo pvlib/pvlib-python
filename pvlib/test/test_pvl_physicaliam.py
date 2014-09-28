@@ -1,10 +1,10 @@
 from nose.tools import *
 import numpy as np
 import pandas as pd 
-from .. import pvl_physicaliam
+from ..pvsystem import physicaliam
 
 def test_proper():
-	IAM=pvl_physicaliam(.05,.5,.2,pd.DataFrame(range(90)))	
+	IAM=physicaliam(.05,.5,.2,pd.DataFrame(range(90)))	
 	assert(np.size(IAM)==90)
 	
 

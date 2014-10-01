@@ -2,6 +2,10 @@
 Calculate the solar position using a variety of methods/packages.
 """
 
+# Contributors:
+# Rob Andrews (@Calama-Consulting), Calama Consulting, 2014 
+# Will Holmgren (@wholmgren), University of Arizona, 2014 
+
 from __future__ import division
 
 import logging

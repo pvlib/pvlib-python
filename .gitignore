@@ -22,6 +22,9 @@ Drafts/
 .installed.cfg
 *.egg
 
+# spa_c_files builds
+pvlib/spa_c_files/build*
+
 # generated documentation
 # pvlib/sphinx/Docs/build/
 

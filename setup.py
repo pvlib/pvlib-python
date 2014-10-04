@@ -52,23 +52,22 @@ setuptools_kwargs = {
 # set up pvlib packages to be installed and extensions to be compiled
 PACKAGES = ['pvlib', 
             'pvlib.spa_c_files']
-# consider adding a data package
 
 extensions = []
 
-spa_ext = Extension("pvlib/spa_c_files/spa_py", 
-                    ["pvlib/spa_c_files/spa_py.pyx", 'pvlib/spa_c_files/spa.c'])
+spa_ext = Extension('pvlib/spa_c_files/spa_py', 
+                    ['pvlib/spa_c_files/spa.c'])
 extensions.append(spa_ext)
 
  
 setup(name=DISTNAME,
       version=VERSION,
       packages=PACKAGES,
-      ext_modules=extensions
+      ext_modules=extensions,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,
       author=AUTHOR,
-      maintainer_email=AUTHOR_EMAIL,
+      maintainer_email=MAINTAINER_EMAIL,
       license=LICENSE,
       url=URL,
       **setuptools_kwargs)

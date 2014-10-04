@@ -56,7 +56,7 @@ PACKAGES = ['pvlib',
 extensions = []
 
 spa_ext = Extension('pvlib/spa_c_files/spa_py', 
-                    ['pvlib/spa_c_files/spa_py.c'])
+                    ['pvlib/spa_c_files/spa.c', 'pvlib/spa_c_files/spa_py.c'])
 extensions.append(spa_ext)
 
  

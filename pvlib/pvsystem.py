@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import pvl_tools
 import scipy 
+import urllib2
 from scipy.special import lambertw
 
 
@@ -855,8 +856,8 @@ def sapm(Module,Eb,Ediff,Tcell,AM,AOI):
   AMcoeff=[var.Module['A4'],var.Module['A3'],var.Module['A2'],var.Module['A1'],var.Module['A0']]
   AOIcoeff=[var.Module['B5'],var.Module['B4'],var.Module['B3'],var.Module['B2'],var.Module['B1'],var.Module['B0']]
 
-  F1 = Np.polyval(AMcoeff,var.AM)
-  F2 = Np.polyval(AOIcoeff,var.AOI)
+  F1 = np.polyval(AMcoeff,var.AM)
+  F2 = np.polyval(AOIcoeff,var.AOI)
   var.Ee= F1*((var.Eb*F2+var.Module['FD']*var.Ediff)/E0)
   #var['Ee']=F1*((var.Eb+var.Ediff)/E0)
   #print "Ee modifed, revert for main function"
@@ -872,9 +873,9 @@ def sapm(Module,Eb,Ediff,Tcell,AM,AOI):
   DFOut['Imp']=var.Module.ix['Impo']*((var.Module.ix['C0']*(var.Ee) + var.Module.ix['C1'] * (var.Ee ** 2)))*((1 + var.Module.ix['Aimp']*((var.Tcell - T0))))
   Bvoco=var.Module.ix['Bvoco'] + var.Module.ix['Mbvoc']*((1 - var.Ee))
   delta=var.Module.ix['N']*(k)*((var.Tcell + 273.15)) / q
-  DFOut['Voc']=(var.Module.ix['Voco'] + var.Module.ix['#Series']*(delta)*(Np.log(var.Ee)) + Bvoco*((var.Tcell - T0)))
+  DFOut['Voc']=(var.Module.ix['Voco'] + var.Module.ix['#Series']*(delta)*(np.log(var.Ee)) + Bvoco*((var.Tcell - T0)))
   Bvmpo=var.Module.ix['Bvmpo'] + var.Module.ix['Mbvmp']*((1 - var.Ee))
-  DFOut['Vmp']=(var.Module.ix['Vmpo'] + var.Module.ix['C2']*(var.Module.ix['#Series'])*(delta)*(Np.log(var.Ee)) + var.Module.ix['C3']*(var.Module.ix['#Series'])*((delta*(Np.log(var.Ee))) ** 2) + Bvmpo*((var.Tcell - T0)))
+  DFOut['Vmp']=(var.Module.ix['Vmpo'] + var.Module.ix['C2']*(var.Module.ix['#Series'])*(delta)*(np.log(var.Ee)) + var.Module.ix['C3']*(var.Module.ix['#Series'])*((delta*(np.log(var.Ee))) ** 2) + Bvmpo*((var.Tcell - T0)))
   DFOut['Vmp'][DFOut['Vmp']<0]=0
   DFOut['Pmp']=DFOut.Imp*DFOut.Vmp
   DFOut['Ix']=var.Module.ix['IXO'] * (var.Module.ix['C4']*(var.Ee) + var.Module.ix['C5']*((var.Ee) ** 2))*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
@@ -992,7 +993,8 @@ def sapmcelltemp(E, Wspd, Tamb,modelt='Open_rack_cell_glassback',**kwargs):
 
   Tcell=Tmodule + var.E / E0*(deltaT)
 
-  return Tcell, Tmodule
+  return pd.DataFrame({'Tcell':Tcell,'Tmodule':Tmodule})
+
 def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
     '''
     Solve the single-diode model to obtain a photovoltaic IV curve

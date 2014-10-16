@@ -29,7 +29,7 @@ except ImportError as e:
 
 
 
-def get_solarposition(time, location, method='pyephem', pressure=101325, 
+def get_solarposition(time, location, method='spa', pressure=101325, 
                       temperature=12):
     """
     A convenience wrapper for the solar position calculators.

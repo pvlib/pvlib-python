@@ -166,7 +166,8 @@ class Parse():		#parse complex logic
 
                     #Excecute proper logical operations if syntax matches regex
                     elif np.shape(re.findall(reg,string))[0]>0:
-
+                        eflag=False 
+                        
                         lambdastring='lambda x:'+re.findall(reg,string)[0]
 
                         #check df elements
@@ -182,21 +183,28 @@ class Parse():		#parse complex logic
                                 continue
                             try:    
                                 if not(eval(lambdastring)(kwargs[arg][~np.isnan(kwargs[arg])]).all()): #ignore NAN entries
-                                    raise Exception('Error: optional input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+                                    eflag=True
+                                    
                             except:
                                 if not(eval(lambdastring)(kwargs[arg])):
-                                    raise Exception('Error: optional input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+                                    eflag=True
+                                    
                             
 
                         #check all other contraints
-
+                        
                         else:
                             try:    
                                 if not(eval(lambdastring)(kwargs[arg][~np.isnan(kwargs[arg])]).all()): #ignore NAN entries
-                                    raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+                                    eflag=True
+                                    
                             except:
                                 if not(eval(lambdastring)(kwargs[arg])): 
-                                    raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
+                                    eflag=True
+                                    
+
+                        if eflag==True:
+                            raise Exception('Error: Numeric input "'+arg+' " fails on logical test " '+ re.findall(reg,string)[0]+'"')
 
                     #Check if any string logicals are bypassed due to poor formatting
                         

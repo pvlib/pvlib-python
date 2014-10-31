@@ -6,10 +6,6 @@ import os
 
 test_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
-import pytz
-from nose.tools import raises
-from pytz.exceptions import UnknownTimeZoneError
-
 from .. import tmy
 
 

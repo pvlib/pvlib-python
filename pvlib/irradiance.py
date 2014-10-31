@@ -3,6 +3,7 @@
 import numpy as np
 import pvl_tools 
 import pandas as pd 
+import pdb
 
 def extraradiation(doy):
   '''
@@ -123,8 +124,7 @@ def globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
   Ediff = var.In_Plane_SkyDiffuse + var.GR
 
 
-
-  return E, Eb, Ediff
+  return pd.DataFrame({'E':E,'Eb':Eb,'Ediff':Ediff})
 
 
 

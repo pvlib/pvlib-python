@@ -1,176 +1,120 @@
-
-
-import numpy as np
-import pvl_tools 
-import pandas as pd 
 import pdb
 
+import numpy as np
+import pandas as pd
+
+from . import pvl_tools
+ 
+
+SURFACE_ALBEDOS = {'urban':0.18,
+                   'grass':0.20,
+                   'fresh grass':0.26,
+                   'soil':0.17,
+                   'sand':0.40,
+                   'snow':0.65,
+                   'fresh snow':0.75,
+                   'asphalt':0.12,
+                   'concrete':0.30,
+                   'aluminum':0.85,
+                   'copper':0.74,
+                   'fresh steel':0.35,
+                   'dirty steel':0.08,
+                    }
+
+
+
 def extraradiation(doy):
-  '''
-  Determine extraterrestrial radiation from day of year
+    '''
+    Determine extraterrestrial radiation from day of year
 
-  Parameters
-  ----------
+    Parameters
+    ----------
 
-  doy : int or pandas.index.dayofyear
+    doy : int or pandas.index.dayofyear
         Day of the year
 
-  Returns
-  -------
+    Returns
+    -------
 
-  Ea : float or DataFrame
+    Ea : float or DataFrame
 
         the extraterrestrial radiation present in watts per square meter
         on a surface which is normal to the sun. Ea is of the same size as the
         input doy.
 
+    References
+    ----------
+    <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs. SR1 and SR2
 
-  References
-  ----------
-  <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs. SR1 and SR2
+    SR1       Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes in Meteorology and Climatology.
 
-  SR1       Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes in Meteorology and Climatology.
-  
-  SR2       Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+    SR2       Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
 
-  See Also 
-  --------
-  pvl_disc
+    See Also 
+    --------
+    pvl_disc
 
-  '''
-  Vars=locals()
-  Expect={'doy': ('array','num','x>=1','x<367')}
+    '''
 
-  var=pvl_tools.Parse(Vars,Expect)
-
-  B=2 * np.pi * var.doy / 365
-  Rfact2=1.00011 + 0.034221*(np.cos(B)) + 0.00128*(np.sin(B)) + 0.000719*(np.cos(2 * B)) + 7.7e-05*(np.sin(2 * B))
-  Ea=1367 * Rfact2
-  return Ea
-
+    B = 2 * np.pi * doy / 365
+    Rfact2 = 1.00011 + 0.034221*(np.cos(B)) + 0.00128*(np.sin(B)) + 0.000719*(np.cos(2 * B)) + 7.7e-05*(np.sin(2 * B))
+    Ea = 1367 * Rfact2
+    return Ea
+    
+    
+    
 def globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
-  '''
-  Determine the three components on in-plane irradiance
+    '''
+    Determine the three components on in-plane irradiance
 
-  Combines in-plane irradaince compoents from the chosen diffuse translation, ground 
-  reflection and beam irradiance algorithms into the total in-plane irradiance.    
+    Combines in-plane irradaince compoents from the chosen diffuse translation, ground 
+    reflection and beam irradiance algorithms into the total in-plane irradiance.    
 
-  Parameters
-  ----------
+    Parameters
+    ----------
 
-  SurfTilt : float or DataFrame
+    SurfTilt : float or DataFrame
           surface tilt angles in decimal degrees.
           SurfTilt must be >=0 and <=180. The tilt angle is defined as
           degrees from horizontal (e.g. surface facing up = 0, surface facing
           horizon = 90)
 
-  SurfAz : float or DataFrame
+    SurfAz : float or DataFrame
           Surface azimuth angles in decimal degrees.
           SurfAz must be >=0 and <=360. The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, south=180, East = 90, West = 270).
 
-  AOI : float or DataFrame
+    AOI : float or DataFrame
           Angle of incedence of solar rays with respect
           to the module surface, from :py:mod:`pvl_getaoi`. AOI must be >=0 and <=180.
 
-  DNI : float or DataFrame
+    DNI : float or DataFrame
           Direct normal irradiance (W/m^2), as measured 
           from a TMY file or calculated with a clearsky model. 
-  
-  In_Plane_SkyDiffuse :  float or DataFrame
+
+    In_Plane_SkyDiffuse :  float or DataFrame
           Diffuse irradiance (W/m^2) in the plane of the modules, as
           calculated by a diffuse irradiance translation function
 
-  GR : float or DataFrame
+    GR : float or DataFrame
           a scalar or DataFrame of ground reflected irradiance (W/m^2), as calculated
           by a albedo model (eg. :py:mod:`pvl_grounddiffuse`)
-
-  Returns
-  -------
-
-  E : float or DataFrame
-          Total in-plane irradiance (W/m^2)
-  Eb : float or DataFrame 
-          Total in-plane beam irradiance (W/m^2)
-  Ediff : float or DataFrame
-          Total in-plane diffuse irradiance (W/m^2)
-
-  See also
-  --------
-
-  pvl_grounddiffuse
-  pvl_getaoi
-  pvl_perez
-  pvl_reindl1990
-  pvl_klucher1979
-  pvl_haydavies1980
-  pvl_isotropicsky
-  pvl_kingdiffuse
-
-  '''
-  Vars=locals()
-  Expect={'SurfTilt':('num','x>=0'),
-      'SurfAz':('num','x>=-180','x<=180'),
-      'AOI':('x>=0'),
-      'DNI':('x>=0'),
-      'In_Plane_SkyDiffuse':('x>=0'),
-      'GR':('x>=0'),
-      }
-
-  var=pvl_tools.Parse(Vars,Expect)
-
-  Eb = var.DNI*np.cos(np.radians(var.AOI)) 
-  E = Eb + var.In_Plane_SkyDiffuse + var.GR
-  Ediff = var.In_Plane_SkyDiffuse + var.GR
-
-
-  return pd.DataFrame({'E':E,'Eb':Eb,'Ediff':Ediff})
-
-
-
-def grounddiffuse(SurfTilt,GHI,Albedo):
-    '''
-    Estimate diffuse irradiance from ground reflections given irradiance, albedo, and surface tilt 
-
-    Function to determine the portion of irradiance on a tilted surface due
-    to ground reflections. Any of the inputs may be DataFrames or scalars.
-
-    Parameters
-    ----------
-
-    SurfTilt : float or DataFrame 
-             Surface tilt angles in decimal degrees. 
-             SurfTilt must be >=0 and <=180. The tilt angle is defined as
-             degrees from horizontal (e.g. surface facing up = 0, surface facing
-             horizon = 90).
-
-    GHI : float or DataFrame 
-            Global horizontal irradiance in W/m^2.  
-            GHI must be >=0.
-
-    Albedo : float or DataFrame 
-            Ground reflectance, typically 0.1-0.4 for
-            surfaces on Earth (land), may increase over snow, ice, etc. May also 
-            be known as the reflection coefficient. Must be >=0 and <=1.
 
     Returns
     -------
 
-    GR : float or DataFrame  
-            Ground reflected irradiances in W/m^2. 
+    E : float or DataFrame
+          Total in-plane irradiance (W/m^2)
+    Eb : float or DataFrame 
+          Total in-plane beam irradiance (W/m^2)
+    Ediff : float or DataFrame
+          Total in-plane diffuse irradiance (W/m^2)
 
-
-    References
-    ----------
-
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-        solar irradiance on inclined surfaces for building energy simulation"
-        2007, Solar Energy vol. 81. pp. 254-267
-
-    See Also
+    See also
     --------
 
-    pvl_disc
+    pvl_grounddiffuse
+    pvl_getaoi
     pvl_perez
     pvl_reindl1990
     pvl_klucher1979
@@ -179,266 +123,183 @@ def grounddiffuse(SurfTilt,GHI,Albedo):
     pvl_kingdiffuse
 
     '''
-
     Vars=locals()
-    Expect={'SurfTilt':('num'),
-            'GHI':('x>=0'),
-            'Albedo':('num','array','x>=0','x<=1'),
-            }
+    Expect={'SurfTilt':('num','x>=0'),
+      'SurfAz':('num','x>=-180','x<=180'),
+      'AOI':('x>=0'),
+      'DNI':('x>=0'),
+      'In_Plane_SkyDiffuse':('x>=0'),
+      'GR':('x>=0'),
+      }
 
     var=pvl_tools.Parse(Vars,Expect)
 
-    GR=var.GHI*(var.Albedo)*((1 - np.cos(np.radians(var.SurfTilt)))*(0.5))
+    Eb = var.DNI*np.cos(np.radians(var.AOI)) 
+    E = Eb + var.In_Plane_SkyDiffuse + var.GR
+    Ediff = var.In_Plane_SkyDiffuse + var.GR
 
 
-    return pd.DataFrame({'GR':GR})
+    return pd.DataFrame({'E':E,'Eb':Eb,'Ediff':Ediff})
 
-def haydavies1980(SurfTilt,SurfAz,DHI,DNI,HExtra,SunZen,SunAz):
 
-    '''
-    Determine diffuse irradiance from the sky on a tilted surface using Hay & Davies' 1980 model
 
+def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
+    ''' 
+    Estimate diffuse irradiance from ground reflections given 
+    irradiance, albedo, and surface tilt 
+
+    Function to determine the portion of irradiance on a tilted surface due
+    to ground reflections. Any of the inputs may be DataFrames or scalars.
+
+    Parameters
+    ----------
+    surf_tilt : float or DataFrame 
+        Surface tilt angles in decimal degrees. 
+        SurfTilt must be >=0 and <=180. The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90).
+
+    ghi : float or DataFrame 
+        Global horizontal irradiance in W/m^2.  
+
+    albedo : float or DataFrame 
+        Ground reflectance, typically 0.1-0.4 for
+        surfaces on Earth (land), may increase over snow, ice, etc. May also 
+        be known as the reflection coefficient. Must be >=0 and <=1.
+        Will be overridden if surface_type is supplied.
+          
+    surface_type: None or string in 
+                  'urban', 'grass', 'fresh grass', 'snow', 'fresh snow',
+                  'asphalt', 'concrete', 'aluminum', 'copper', 
+                  'fresh steel', 'dirty steel'.
+                  Overrides albedo.
+
+    Returns
+    -------
+
+    float or DataFrame  
+          Ground reflected irradiances in W/m^2. 
+
+
+    References
+    ----------
+
+    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+    solar irradiance on inclined surfaces for building energy simulation"
+    2007, Solar Energy vol. 81. pp. 254-267. 
     
-    Hay and Davies' 1980 model determines the diffuse irradiance from the sky
-    (ground reflected irradiance is not included in this algorithm) on a
-    tilted surface using the surface tilt angle, surface azimuth angle,
-    diffuse horizontal irradiance, direct normal irradiance, 
-    extraterrestrial irradiance, sun zenith angle, and sun azimuth angle.
+    The calculation is the last term of equations 3, 4, 7, 8, 10, 11, and 12.
+    
+    [2] albedos from: 
+    http://pvpmc.org/modeling-steps/incident-irradiance/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/albedo/
+    
+    and
+    
+    http://en.wikipedia.org/wiki/Albedo
+    '''
+    pvl_logger.debug('diffuse_ground.get_diffuse_ground()')
+    
+    if surface_type is not None:
+        albedo = SURFACE_ALBEDOS[surface_type]
+        pvl_logger.info('surface_type={} mapped to albedo={}'
+                        .format(surface_type, albedo))
 
+    diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surf_tilt))) * 0.5
+    
+    try:
+        diffuse_irrad.name = 'diffuse_ground'
+    except AttributeError:
+        pass
+    
+    return diffuse_irrad
+    
+    
+
+def isotropic(surf_tilt, DHI):
+    '''
+    Determine diffuse irradiance from the sky on a 
+    tilted surface using the isotropic sky model.
+
+    .. math::
+
+       I_{d} = DHI \frac{1 + \cos\beta}{2}
+
+    Hottel and Woertz's model treats the sky as a uniform source of diffuse
+    irradiance. Thus the diffuse irradiance from the sky (ground reflected
+    irradiance is not included in this algorithm) on a tilted surface can
+    be found from the diffuse horizontal irradiance and the tilt angle of
+    the surface.
 
     Parameters
     ----------
 
-    SurfTilt : float or DataFrame
-          Surface tilt angles in decimal degrees.
-          SurfTilt must be >=0 and <=180. The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
+    surf_tilt : float or Series
+            Surface tilt angle in decimal degrees. 
+            surf_tilt must be >=0 and <=180. The tilt angle is defined as
+            degrees from horizontal (e.g. surface facing up = 0, surface facing
+            horizon = 90)
 
-    SurfAz : float or DataFrame
-          Surface azimuth angles in decimal degrees.
-          SurfAz must be >=0 and <=360. The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+    DHI : float or Series
+            Diffuse horizontal irradiance in W/m^2.
+            DHI must be >=0.
 
-    DHI : float or DataFrame
-          diffuse horizontal irradiance in W/m^2. 
-          DHI must be >=0.
-
-    DNI : float or DataFrame
-          direct normal irradiance in W/m^2. 
-          DNI must be >=0.
-
-    HExtra : float or DataFrame
-          extraterrestrial normal irradiance in W/m^2. 
-           HExtra must be >=0.
-
-    SunZen : float or DataFrame
-          apparent (refraction-corrected) zenith
-          angles in decimal degrees. 
-          SunZen must be >=0 and <=180.
-
-    SunAz : float or DataFrame
-          Sun azimuth angles in decimal degrees.
-          SunAz must be >=0 and <=360. The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
     Returns
-    --------
+    -------   
 
-    SkyDiffuse : float or DataFrame
+    float or Series
 
-          the diffuse component of the solar radiation  on an
-          arbitrarily tilted surface defined by the Perez model as given in
-          reference [3].
-          SkyDiffuse is the diffuse component ONLY and does not include the ground
-          reflected irradiance or the irradiance due to the beam.
+            The diffuse component of the solar radiation  on an
+            arbitrarily tilted surface defined by the isotropic sky model as
+            given in Loutzenhiser et. al (2007) equation 3.
+            SkyDiffuse is the diffuse component ONLY and does not include the ground
+            reflected irradiance or the irradiance due to the beam.
+            SkyDiffuse is a column vector vector with a number of elements equal to
+            the input vector(s).
+
 
     References
-    -----------
+    ----------
+
     [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
     solar irradiance on inclined surfaces for building energy simulation"
     2007, Solar Energy vol. 81. pp. 254-267
-    
-    [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar radiation incident
-    on an inclined surface. In: Hay, J.E., Won, T.K. (Eds.), Proc. of First
-    Canadian Solar Radiation Data Workshop, 59. Ministry of Supply
-    and Services, Canada.
 
-    See Also
+    [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar heat
+    collector. Trans. ASME 64, 91.
+
+    See also    
     --------
-    pvl_ephemeris   
-    pvl_extraradiation   
-    pvl_isotropicsky
-    pvl_reindl1990   
-    pvl_perez 
-    pvl_klucher1979   
+
+    pvl_reindl1990  
+    pvl_haydavies1980  
+    pvl_perez  
+    pvl_klucher1979
     pvl_kingdiffuse
-    pvl_spa
-
     '''
 
-    Vars=locals()
-    Expect={'SurfTilt':('num','x>=0'),
-              'SurfAz':('x>=-180'),
-              'DHI':('x>=0'),
-              'DNI':('x>=0'),
-              'HExtra':('x>=0'),
-              'SunZen':('x>=0'),
-              'SunAz':('x>=-180'),
-              }
-    var=pvl_tools.Parse(Vars,Expect)
+    pvl_logger.debug('diffuse_sky.isotropic()')
 
-    COSTT=pvl_tools.cosd(SurfTilt)*pvl_tools.cosd(SunZen) + pvl_tools.sind(SurfTilt)*pvl_tools.sind(SunZen)*pvl_tools.cosd(SunAz - SurfAz)
+    sky_diffuse = DHI * (1 + pvl_tools.cosd(surf_tilt)) * 0.5
 
-    RB=np.max(COSTT,0) / np.max(pvl_tools.cosd(SunZen),0.01745)
-
-    AI=DNI / HExtra
-
-    SkyDiffuse=DHI*((AI*(RB) + (1 - AI)*(0.5)*((1 + pvl_tools.cosd(SurfTilt)))))
+    return sky_diffuse
 
 
-    return SkyDiffuse
 
-
-def isotropicsky(SurfTilt,DHI):
-  '''
-  Determine diffuse irradiance from the sky on a tilted surface using isotropic sky model
-
-  Hottel and Woertz's model treats the sky as a uniform source of diffuse
-  irradiance. Thus the diffuse irradiance from the sky (ground reflected
-  irradiance is not included in this algorithm) on a tilted surface can
-  be found from the diffuse horizontal irradiance and the tilt angle of
-  the surface.
-
-  Parameters
-  ----------
-
-  SurfTilt : float or DataFrame
-      Surface tilt angles in decimal degrees. 
-      SurfTilt must be >=0 and <=180. The tilt angle is defined as
-      degrees from horizontal (e.g. surface facing up = 0, surface facing
-      horizon = 90)
-  
-  DHI : float or DataFrame
-      Diffuse horizontal irradiance in W/m^2.
-      DHI must be >=0.
-
-
-  Returns
-  -------   
-
-  SkyDiffuse : float of DataFrame
-
-      The diffuse component of the solar radiation  on an
-      arbitrarily tilted surface defined by the isotropic sky model as
-      given in Loutzenhiser et. al (2007) equation 3.
-      SkyDiffuse is the diffuse component ONLY and does not include the ground
-      reflected irradiance or the irradiance due to the beam.
-      SkyDiffuse is a column vector vector with a number of elements equal to
-      the input vector(s).
-
-
-  References
-  ----------
-
-  [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-  solar irradiance on inclined surfaces for building energy simulation"
-  2007, Solar Energy vol. 81. pp. 254-267
-  
-  [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar heat
-  collector. Trans. ASME 64, 91.
-
-  See also    
-  --------
-
-  pvl_reindl1990  
-  pvl_haydavies1980  
-  pvl_perez  
-  pvl_klucher1979
-  pvl_kingdiffuse
-  '''
-
-  Vars=locals()
-  Expect={'SurfTilt':'x <= 180 & x >= 0 ',
-      'DHI':'x>=0'
-      }
-  var=pvl_tools.Parse(Vars,Expect)
-
-  SkyDiffuse=DHI * (1 + pvl_tools.cosd(SurfTilt)) * 0.5
-
-  return SkyDiffuse
-
-
-def kingdiffuse(SurfTilt,DHI,GHI,SunZen):
-  '''
-  Determine diffuse irradiance from the sky on a tilted surface using the King model
-
-  King's model determines the diffuse irradiance from the sky
-  (ground reflected irradiance is not included in this algorithm) on a
-  tilted surface using the surface tilt angle, diffuse horizontal
-  irradiance, global horizontal irradiance, and sun zenith angle. Note
-  that this model is not well documented and has not been published in
-  any fashion (as of January 2012).
-
-  Parameters
-  ----------
-
-  SurfTilt : float or DataFrame
-        Surface tilt angles in decimal degrees.
-        SurfTilt must be >=0 and <=180. The tilt angle is defined as
-        degrees from horizontal (e.g. surface facing up = 0, surface facing
-        horizon = 90)
-  DHI : float or DataFrame
-        diffuse horizontal irradiance in W/m^2. 
-        DHI must be >=0.
-  GHI : float or DataFrame
-        global horizontal irradiance in W/m^2. 
-        DHI must be >=0.
-
-  SunZen : float or DataFrame
-        apparent (refraction-corrected) zenith
-        angles in decimal degrees. 
-        SunZen must be >=0 and <=180.
-
-  Returns
-  --------
-
-  SkyDiffuse : float or DataFrame
-
-      the diffuse component of the solar radiation  on an
-      arbitrarily tilted surface as given by a model developed by David L.
-      King at Sandia National Laboratories. 
-
-
-  See Also
-  --------
-
-  pvl_ephemeris   
-  pvl_extraradiation   
-  pvl_isotropicsky
-  pvl_haydavies1980   
-  pvl_perez 
-  pvl_klucher1979   
-  pvl_reindl1990
-
-  '''
-  Vars=locals()
-  Expect={'SurfTilt':('num','x>=0'),
-        'SunZen':('x>=-180'),
-        'DHI':('x>=0'),
-        'GHI':('x>=0')
-        }
-
-  var=pvl_tools.Parse(Vars,Expect)
-
-  SkyDiffuse=DHI*((1 + pvl_tools.cosd(SurfTilt))) / 2 + GHI*((0.012 * SunZen - 0.04))*((1 - pvl_tools.cosd(SurfTilt))) / 2
-
-  return SkyDiffuse
-
-def klucher1979(SurfTilt,SurfAz,DHI,GHI,SunZen,SunAz):
+def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     '''
-    Determine diffuse irradiance from the sky on a tilted surface using Klucher's 1979 model
+    Determine diffuse irradiance from the sky on a tilted surface 
+    using Klucher's 1979 model
 
+    .. math::
+
+       I_{d} = DHI \frac{1 + \cos\beta}{2} (1 + F' \sin^3(\beta/2)) (1 + F' \cos^2\theta\sin^3\theta_z)
+   
+    where
+
+    .. math::
+   
+       F' = 1 - (I_{d0} / GHI)
 
     Klucher's 1979 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a
@@ -450,40 +311,40 @@ def klucher1979(SurfTilt,SurfAz,DHI,GHI,SunZen,SunAz):
     Parameters
     ----------
 
-    SurfTilt : float or DataFrame
+    surf_tilt : float or Series
             Surface tilt angles in decimal degrees.
-            SurfTilt must be >=0 and <=180. The tilt angle is defined as
+            surf_tilt must be >=0 and <=180. The tilt angle is defined as
             degrees from horizontal (e.g. surface facing up = 0, surface facing
             horizon = 90)
 
-    SurfAz : float or DataFrame
+    surf_az : float or Series
             Surface azimuth angles in decimal degrees.
-            SurfAz must be >=0 and <=360. The Azimuth convention is defined
+            surf_az must be >=0 and <=360. The Azimuth convention is defined
             as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    DHI : float or DataFrame
+    DHI : float or Series
             diffuse horizontal irradiance in W/m^2. 
             DHI must be >=0.
 
-    GHI : float or DataFrame
+    GHI : float or Series
             Global  irradiance in W/m^2. 
             DNI must be >=0.
 
-    SunZen : float or DataFrame
+    sun_zen : float or Series
             apparent (refraction-corrected) zenith
             angles in decimal degrees. 
-            SunZen must be >=0 and <=180.
+            sun_zen must be >=0 and <=180.
 
-    SunAz : float or DataFrame
+    sun_az : float or Series
             Sun azimuth angles in decimal degrees.
-            SunAz must be >=0 and <=360. The Azimuth convention is defined
+            sun_az must be >=0 and <=360. The Azimuth convention is defined
             as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
     Returns
     -------
-    SkyDiffuse : float or DataFrame
+    float or Series
 
-                the diffuse component of the solar radiation  on an
+                the diffuse component of the solar radiation on an
                 arbitrarily tilted surface defined by the Klucher model as given in
                 Loutzenhiser et. al (2007) equation 4.
                 SkyDiffuse is the diffuse component ONLY and does not include the ground
@@ -511,88 +372,390 @@ def klucher1979(SurfTilt,SurfAz,DHI,GHI,SunZen,SunAz):
     pvl_kingdiffuse
 
     '''
-    Vars=locals()
-    Expect={'SurfTilt':('num','x>=0'),
-            'SurfAz':('x>=-180'),
-            'DHI':('x>=0'),
-            'GHI':('x>=0'),
-            'SunZen':('x>=0'),
-            'SunAz':('x>=-180')
-            }
 
-    var=pvl_tools.Parse(Vars,Expect)
+    pvl_logger.debug('diffuse_sky.klucher()')
 
-    GHI[GHI < DHI]=DHI
-    GHI[GHI < 1e-06]=1e-06
+    # zenith angle with respect to panel normal.
+    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    
+    F = 1 - ((DHI / GHI) ** 2)
+    try:
+        # fails with single point input
+        F.fillna(0, inplace=True)
+    except AttributeError:
+        F = 0
 
-    COSTT=pvl_tools.cosd(SurfTilt)*pvl_tools.cosd(SunZen) + pvl_tools.sind(SurfTilt)*pvl_tools.sind(SunZen)*pvl_tools.cosd(SunAz - SurfAz)
+    term1 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
+    term2 = 1 + F * (pvl_tools.sind(0.5*surf_tilt) ** 3)
+    term3 = 1 + F * (cos_tt ** 2) * (pvl_tools.sind(sun_zen) ** 3)
 
-    F=1 - ((DHI / GHI) ** 2)
+    sky_diffuse = DHI * term1 * term2 * term3
 
-    SkyDiffuse=DHI*((0.5*((1 + pvl_tools.cosd(SurfTilt)))))*((1 + F*(((pvl_tools.sind(SurfTilt / 2)) ** 3))))*((1 + F*(((COSTT) ** 2))*(((pvl_tools.sind(SunZen)) ** 3))))
-
-    return SkyDiffuse
-
-
-def perez(SurfTilt, SurfAz, DHI, DNI, HExtra, SunZen, SunAz, AM,modelt='allsitescomposite1990'):
-  ''' 
-  Determine diffuse irradiance from the sky on a tilted surface using one of the Perez models
-
-  Perez models determine the diffuse irradiance from the sky (ground
-  reflected irradiance is not included in this algorithm) on a tilted
-  surface using the surface tilt angle, surface azimuth angle, diffuse
-  horizontal irradiance, direct normal irradiance, extraterrestrial
-  irradiance, sun zenith angle, sun azimuth angle, and relative (not
-  pressure-corrected) airmass. Optionally a selector may be used to use
-  any of Perez's model coefficient sets.
+    return sky_diffuse
 
 
-  Parameters
-  ----------
-  
-  SurfTilt : float or DataFrame
+
+def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
+
+    '''
+    Determine diffuse irradiance from the sky on a 
+    tilted surface using Hay & Davies' 1980 model
+
+    .. math::
+
+       I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) )
+
+    Hay and Davies' 1980 model determines the diffuse irradiance from the sky
+    (ground reflected irradiance is not included in this algorithm) on a
+    tilted surface using the surface tilt angle, surface azimuth angle,
+    diffuse horizontal irradiance, direct normal irradiance, 
+    extraterrestrial irradiance, sun zenith angle, and sun azimuth angle.
+
+
+    Parameters
+    ----------
+
+    surf_tilt : float or Series
           Surface tilt angles in decimal degrees.
-          SurfTilt must be >=0 and <=180. The tilt angle is defined as
+          The tilt angle is defined as
           degrees from horizontal (e.g. surface facing up = 0, surface facing
           horizon = 90)
 
-  SurfAz : float or DataFrame
+    surf_az : float or Series
           Surface azimuth angles in decimal degrees.
-          SurfAz must be >=0 and <=360. The Azimuth convention is defined
+          The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-  DHI : float or DataFrame
+    DHI : float or Series
+          diffuse horizontal irradiance in W/m^2. 
+
+    DNI : float or Series
+          direct normal irradiance in W/m^2. 
+
+    DNI_ET : float or Series
+          extraterrestrial normal irradiance in W/m^2. 
+
+    sun_zen : float or Series
+          apparent (refraction-corrected) zenith
+          angles in decimal degrees. 
+
+    sun_az : float or Series
+          Sun azimuth angles in decimal degrees.
+          The Azimuth convention is defined
+          as degrees east of north (e.g. North = 0, East = 90, West = 270).
+
+    Returns
+    --------
+
+    SkyDiffuse : float or Series
+
+          the diffuse component of the solar radiation  on an
+          arbitrarily tilted surface defined by the Perez model as given in
+          reference [3].
+          SkyDiffuse is the diffuse component ONLY and does not include the ground
+          reflected irradiance or the irradiance due to the beam.
+
+    References
+    -----------
+    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+    solar irradiance on inclined surfaces for building energy simulation"
+    2007, Solar Energy vol. 81. pp. 254-267
+
+    [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar radiation incident
+    on an inclined surface. In: Hay, J.E., Won, T.K. (Eds.), Proc. of First
+    Canadian Solar Radiation Data Workshop, 59. Ministry of Supply
+    and Services, Canada.
+
+    See Also
+    --------
+    pvl_ephemeris   
+    pvl_extraradiation   
+    pvl_isotropicsky
+    pvl_reindl1990   
+    pvl_perez 
+    pvl_klucher1979   
+    pvl_kingdiffuse
+    pvl_spa
+
+    '''
+    
+    pvl_logger.debug('diffuse_sky.haydavies()')
+    
+    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    
+    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    
+    # ratio of titled and horizontal beam irradiance
+    # Will H: is this to avoid / 0? Shouldn't it be element-wise?
+    #Rb = np.max(cos_tt, 0) / np.max(pvl_tools.cosd(sun_zen), 0.01745) 
+    Rb = cos_tt / cos_sun_zen
+    
+    # Anisotropy Index
+    AI = DNI / DNI_ET
+
+    # these are actually the () and [] sub-terms of the second term of eqn 7
+    term1 = 1 - AI
+    term2 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
+
+    sky_diffuse = DHI * ( AI*Rb + term1 * term2 )
+    sky_diffuse[sky_diffuse < 0] = 0
+    
+    return sky_diffuse
+
+
+
+def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
+    '''
+    Determine diffuse irradiance from the sky on a 
+    tilted surface using Reindl's 1990 model
+
+    .. math::
+
+       I_{d} = DHI (A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) (1 + \sqrt{\frac{I_{hb}}{I_h}} \sin^3(\beta/2)) )
+
+    Reindl's 1990 model determines the diffuse irradiance from the sky
+    (ground reflected irradiance is not included in this algorithm) on a
+    tilted surface using the surface tilt angle, surface azimuth angle,
+    diffuse horizontal irradiance, direct normal irradiance, global
+    horizontal irradiance, extraterrestrial irradiance, sun zenith angle,
+    and sun azimuth angle.
+
+    Parameters
+    ----------
+
+    surf_tilt : float or Series.
+          Surface tilt angles in decimal degrees.
+          The tilt angle is defined as
+          degrees from horizontal (e.g. surface facing up = 0, surface facing
+          horizon = 90)
+
+    surf_az : float or Series.
+          Surface azimuth angles in decimal degrees.
+          The Azimuth convention is defined
+          as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    DHI : float or Series.
+          diffuse horizontal irradiance in W/m^2. 
+
+    DNI : float or Series.
+          direct normal irradiance in W/m^2. 
+
+    GHI: float or Series.
+          Global irradiance in W/m^2. 
+
+    DNI_ET : float or Series.
+          extraterrestrial normal irradiance in W/m^2. 
+
+    sun_zen : float or Series.
+          apparent (refraction-corrected) zenith
+          angles in decimal degrees. 
+
+    sun_az : float or Series.
+          Sun azimuth angles in decimal degrees. 
+          The Azimuth convention is defined
+          as degrees east of north (e.g. North = 0, East = 90, West = 270).
+
+    Returns
+    -------
+
+    SkyDiffuse : float or Series.
+
+           the diffuse component of the solar radiation  on an
+           arbitrarily tilted surface defined by the Reindl model as given in
+           Loutzenhiser et. al (2007) equation 8.
+           SkyDiffuse is the diffuse component ONLY and does not include the ground
+           reflected irradiance or the irradiance due to the beam.
+           SkyDiffuse is a column vector vector with a number of elements equal to
+           the input vector(s).
+
+
+    Notes
+    -----
+
+     The POAskydiffuse calculation is generated from the Loutzenhiser et al.
+     (2007) paper, equation 8. Note that I have removed the beam and ground
+     reflectance portion of the equation and this generates ONLY the diffuse
+     radiation from the sky and circumsolar, so the form of the equation
+     varies slightly from equation 8.
+
+    References
+    ----------
+
+    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+    solar irradiance on inclined surfaces for building energy simulation"
+    2007, Solar Energy vol. 81. pp. 254-267
+
+    [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse fraction
+    correlations. Solar Energy 45(1), 1-7.
+
+    [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of hourly
+    tilted surface radiation models. Solar Energy 45(1), 9-17.
+
+    See Also 
+    ---------
+    pvl_ephemeris   
+    pvl_extraradiation   
+    pvl_isotropicsky
+    pvl_haydavies1980   
+    pvl_perez 
+    pvl_klucher1979   
+    pvl_kingdiffuse
+
+    '''          
+    
+    pvl_logger.debug('diffuse_sky.reindl()')
+    
+    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    
+    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    
+    # ratio of titled and horizontal beam irradiance
+    # Will H: is this to avoid / 0? Shouldn't it be element-wise?
+    #Rb = np.max(cos_tt, 0) / np.max(pvl_tools.cosd(sun_zen), 0.01745) 
+    Rb = cos_tt / cos_sun_zen
+    
+    # Anisotropy Index
+    AI = DNI / DNI_ET
+    
+    # DNI projected onto horizontal
+    HB = DNI * cos_sun_zen   
+    HB[HB < 0] = 0
+
+    # these are actually the () and [] sub-terms of the second term of eqn 8
+    term1 = 1 - AI
+    term2 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
+    term3 = 1 + np.sqrt(HB / GHI) * (pvl_tools.sind(0.5*surf_tilt) ** 3)
+
+    sky_diffuse = DHI * ( AI*Rb + term1 * term2 * term3 )
+    sky_diffuse[sky_diffuse < 0] = 0
+    
+    return sky_diffuse
+    
+
+
+def king(surf_tilt, DHI, GHI, sun_zen):
+    '''
+    Determine diffuse irradiance from the sky on a tilted surface using the King model
+
+    King's model determines the diffuse irradiance from the sky
+    (ground reflected irradiance is not included in this algorithm) on a
+    tilted surface using the surface tilt angle, diffuse horizontal
+    irradiance, global horizontal irradiance, and sun zenith angle. Note
+    that this model is not well documented and has not been published in
+    any fashion (as of January 2012).
+
+    Parameters
+    ----------
+
+    surf_tilt : float or Series
+          Surface tilt angles in decimal degrees.
+          The tilt angle is defined as
+          degrees from horizontal (e.g. surface facing up = 0, surface facing
+          horizon = 90)
+          
+    DHI : float or Series
+          diffuse horizontal irradiance in W/m^2. 
+          
+    GHI : float or Series
+          global horizontal irradiance in W/m^2. 
+
+    sun_zen : float or Series
+          apparent (refraction-corrected) zenith
+          angles in decimal degrees. 
+
+    Returns
+    --------
+
+    SkyDiffuse : float or Series
+
+            the diffuse component of the solar radiation  on an
+            arbitrarily tilted surface as given by a model developed by David L.
+            King at Sandia National Laboratories. 
+
+
+    See Also
+    --------
+
+    pvl_ephemeris   
+    pvl_extraradiation   
+    pvl_isotropicsky
+    pvl_haydavies1980   
+    pvl_perez 
+    pvl_klucher1979   
+    pvl_reindl1990
+
+    '''
+    
+    pvl_logger.debug('diffuse_sky.king()')
+
+    sky_diffuse = DHI * ((1 + pvl_tools.cosd(surf_tilt))) / 2 + GHI*((0.012 * sun_zen - 0.04))*((1 - pvl_tools.cosd(surf_tilt))) / 2
+    sky_diffuse[sky_diffuse < 0] = 0
+    
+    return sky_diffuse
+
+
+
+
+def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM, 
+          modelt='allsitescomposite1990'):
+    ''' 
+    Determine diffuse irradiance from the sky on a tilted surface using one of the Perez models
+
+    Perez models determine the diffuse irradiance from the sky (ground
+    reflected irradiance is not included in this algorithm) on a tilted
+    surface using the surface tilt angle, surface azimuth angle, diffuse
+    horizontal irradiance, direct normal irradiance, extraterrestrial
+    irradiance, sun zenith angle, sun azimuth angle, and relative (not
+    pressure-corrected) airmass. Optionally a selector may be used to use
+    any of Perez's model coefficient sets.
+
+
+    Parameters
+    ----------
+
+    surf_tilt : float or Series
+          Surface tilt angles in decimal degrees.
+          surf_tilt must be >=0 and <=180. The tilt angle is defined as
+          degrees from horizontal (e.g. surface facing up = 0, surface facing
+          horizon = 90)
+
+    surf_az : float or Series
+          Surface azimuth angles in decimal degrees.
+          surf_az must be >=0 and <=360. The Azimuth convention is defined
+          as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    DHI : float or Series
           diffuse horizontal irradiance in W/m^2. 
           DHI must be >=0.
 
-  DNI : float or DataFrame
+    DNI : float or Series
           direct normal irradiance in W/m^2. 
           DNI must be >=0.
 
-  HExtra : float or DataFrame
+    DNI_ET : float or Series
           extraterrestrial normal irradiance in W/m^2. 
-           HExtra must be >=0.
-  
-  SunZen : float or DataFrame
+           DNI_ET must be >=0.
+
+    sun_zen : float or Series
           apparent (refraction-corrected) zenith
           angles in decimal degrees. 
-          SunZen must be >=0 and <=180.
+          sun_zen must be >=0 and <=180.
 
-  SunAz : float or DataFrame
+    sun_az : float or Series
           Sun azimuth angles in decimal degrees.
-          SunAz must be >=0 and <=360. The Azimuth convention is defined
+          sun_az must be >=0 and <=360. The Azimuth convention is defined
           as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
-  AM : float or DataFrame
+    AM : float or Series
           relative (not pressure-corrected) airmass 
           values. If AM is a DataFrame it must be of the same size as all other 
           DataFrame inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
           generation)
 
-  Other Parameters
-  ----------------
+    Other Parameters
+    ----------------
 
-  model : string (optional, default='allsitescomposite1990')
+    model : string (optional, default='allsitescomposite1990')
 
           a character string which selects the desired set of Perez
           coefficients. If model is not provided as an input, the default,
@@ -612,143 +775,138 @@ def perez(SurfTilt, SurfAz, DHI, DNI, HExtra, SunZen, SunAz, AM,modelt='allsites
           * 'capecanaveral1988'
           * 'albany1988'
 
-  Returns
-  --------
+    Returns
+    --------
 
-  SkyDiffuse : float or DataFrame
+    float or Series
 
           the diffuse component of the solar radiation  on an
           arbitrarily tilted surface defined by the Perez model as given in
           reference [3].
           SkyDiffuse is the diffuse component ONLY and does not include the ground
           reflected irradiance or the irradiance due to the beam.
-      
-
-  References
-  ----------
-
-  [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-  solar irradiance on inclined surfaces for building energy simulation"
-  2007, Solar Energy vol. 81. pp. 254-267
-
-  [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D., 1987. A new
-  simplified version of the Perez diffuse irradiance model for tilted
-  surfaces. Solar Energy 39(3), 221-232.
-
-  [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R., 1990.
-  Modeling daylight availability and irradiance components from direct
-  and global irradiance. Solar Energy 44 (5), 271-289. 
-
-  [4] Perez, R. et. al 1988. "The Development and Verification of the
-  Perez Diffuse Radiation Model". SAND88-7030
-
-  See also
-  --------
-  pvl_ephemeris
-  pvl_extraradiation
-  pvl_isotropicsky
-  pvl_haydavies1980
-  pvl_reindl1990
-  pvl_klucher1979
-  pvl_kingdiffuse
-  pvl_relativeairmass
-
-  '''
-  Vars=locals()
-  Expect={'SurfTilt':('num','x>=0'),
-      'SurfAz':('x>=-180'),
-      'DHI':('x>=0'),
-      'DNI':('x>=0'),
-      'HExtra':('x>=0'),
-      'SunZen':('x>=0'),
-      'SunAz':('x>=-180'),
-      'AM':('x>=0'),
-      'modelt': ('default','default=allsitescomposite1990')}
-
-  var=pvl_tools.Parse(Vars,Expect)
-
-  kappa = 1.041 #for SunZen in radians
-  z = var.SunZen*np.pi/180# # convert to radians
-
-  Dhfilter = var.DHI > 0
-  
-  
-  e = ((var.DHI[Dhfilter] + var.DNI[Dhfilter])/var.DHI[Dhfilter]+kappa*z[Dhfilter]**3)/(1+kappa*z[Dhfilter]**3).reindex_like(var.SunZen)
- 
 
 
-  ebin = pd.Series(np.zeros(var.DHI.shape[0]),index=e.index)
+    References
+    ----------
 
-  # Select which bin e falls into
-  ebin[(e<1.065)]= 1
-  ebin[(e>=1.065) & (e<1.23)]= 2
-  ebin[(e>=1.23) & (e<1.5)]= 3
-  ebin[(e>=1.5) & (e<1.95)]= 4
-  ebin[(e>=1.95) & (e<2.8)]= 5
-  ebin[(e>=2.8) & (e<4.5)]= 6
-  ebin[(e>=4.5) & (e<6.2)]= 7
-  ebin[e>=6.2] = 8
+    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+    solar irradiance on inclined surfaces for building energy simulation"
+    2007, Solar Energy vol. 81. pp. 254-267
 
-  ebinfilter=ebin>0
-  ebin=ebin-1 #correct for 0 indexing
-  ebin[ebinfilter==False]=np.NaN
-  ebin=ebin.dropna().astype(int)
+    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D., 1987. A new
+    simplified version of the Perez diffuse irradiance model for tilted
+    surfaces. Solar Energy 39(3), 221-232.
 
-  # This is added because in cases where the sun is below the horizon
-  # (var.SunZen > 90) but there is still diffuse horizontal light (var.DHI>0), it is
-  # possible that the airmass (var.AM) could be NaN, which messes up later
-  # calculations. Instead, if the sun is down, and there is still var.DHI, we set
-  # the airmass to the airmass value on the horizon (approximately 37-38).
-  #var.AM(var.SunZen >=90 & var.DHI >0) = 37;
+    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R., 1990.
+    Modeling daylight availability and irradiance components from direct
+    and global irradiance. Solar Energy 44 (5), 271-289. 
 
-  var.HExtra[var.HExtra==0]=.00000001 #very hacky, fix this
-  delt = var.DHI*var.AM/var.HExtra
+    [4] Perez, R. et. al 1988. "The Development and Verification of the
+    Perez Diffuse Radiation Model". SAND88-7030
 
-  #
+    See also
+    --------
+    pvl_ephemeris
+    pvl_extraradiation
+    pvl_isotropicsky
+    pvl_haydavies1980
+    pvl_reindl1990
+    pvl_klucher1979
+    pvl_kingdiffuse
+    pvl_relativeairmass
 
-  # The various possible sets of Perez coefficients are contained
-  # in a subfunction to clean up the code.
-  F1c,F2c = GetPerezCoefficients(var.modelt)
+    '''
 
-  F1= F1c[ebin,0] + F1c[ebin,1]*delt[ebinfilter] + F1c[ebin,2]*z[ebinfilter]
-  F1[F1<0]=0;
-  F1=F1.astype(float)
+    pvl_logger.debug('diffuse_sky.perez()')
 
-  F2= F2c[ebin,0] + F2c[ebin,1]*delt[ebinfilter] + F2c[ebin,2]*z[ebinfilter]
-  F2[F2<0]=0
-  F2=F2.astype(float)
+    kappa = 1.041 #for sun_zen in radians
+    z = np.radians(sun_zen) # convert to radians
 
-  A = pvl_tools.cosd(var.SurfTilt)*pvl_tools.cosd(var.SunZen) + pvl_tools.sind(var.SurfTilt)*pvl_tools.sind(var.SunZen)*pvl_tools.cosd(var.SunAz-var.SurfAz); #removed +180 from azimuth modifier: Rob Andrews October 19th 2012
-  A[A < 0] = 0
+    # epsilon is the sky's "clearness"
+    eps = ( (DHI + DNI)/DHI + kappa*(z**3) ) / ( 1 + kappa*(z**3) )
+    
+    # Perez et al define clearness bins according to the following rules.
+    # 1 = overcast ... 8 = clear 
+    # (these names really only make sense for small zenith angles, but...)
+    # these values will eventually be used as indicies for coeffecient look ups
+    ebin = eps.copy()
+    ebin[(eps<1.065)] = 1
+    ebin[(eps>=1.065) & (eps<1.23)] = 2
+    ebin[(eps>=1.23) & (eps<1.5)] = 3
+    ebin[(eps>=1.5) & (eps<1.95)] = 4
+    ebin[(eps>=1.95) & (eps<2.8)] = 5
+    ebin[(eps>=2.8) & (eps<4.5)] = 6
+    ebin[(eps>=4.5) & (eps<6.2)] = 7
+    ebin[eps>=6.2] = 8
 
-  B = pvl_tools.cosd(var.SunZen);
-  B[B < pvl_tools.cosd(85)] = pvl_tools.cosd(85)
+    ebin = ebin - 1 #correct for 0 indexing in coeffecient lookup
+
+    # remove night time values
+    ebin = ebin.dropna().astype(int)
+
+    # This is added because in cases where the sun is below the horizon
+    # (var.sun_zen > 90) but there is still diffuse horizontal light (var.DHI>0), it is
+    # possible that the airmass (var.AM) could be NaN, which messes up later
+    # calculations. Instead, if the sun is down, and there is still var.DHI, we set
+    # the airmass to the airmass value on the horizon (approximately 37-38).
+    #var.AM(var.sun_zen >=90 & var.DHI >0) = 37;
+
+    #var.DNI_ET[var.DNI_ET==0] = .00000001 #very hacky, fix this
+    
+    # delta is the sky's "brightness"
+    delta = DHI * AM / DNI_ET
+    
+    # keep only valid times
+    delta = delta[ebin.index]
+    z = z[ebin.index]
+
+    # The various possible sets of Perez coefficients are contained
+    # in a subfunction to clean up the code.
+    F1c, F2c = _get_perez_coefficients(modelt)
+
+    F1 = F1c[ebin,0] + F1c[ebin,1]*delta + F1c[ebin,2]*z
+    F1[F1 < 0] = 0;
+    F1 = F1.astype(float)
+
+    F2 = F2c[ebin,0] + F2c[ebin,1]*delta + F2c[ebin,2]*z
+    F2[F2 < 0] = 0
+    F2 = F2.astype(float)
+
+    A = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    A[A < 0] = 0
+
+    B = pvl_tools.cosd(sun_zen);
+    B[B < pvl_tools.cosd(85)] = pvl_tools.cosd(85)
 
 
-  #Calculate Diffuse POA from sky dome
+    #Calculate Diffuse POA from sky dome
+    
+    term1 = 0.5 * (1 - F1) * (1 + pvl_tools.cosd(surf_tilt))
+    term2 = F1 * A[ebin.index] / B[ebin.index]
+    term3 = F2*pvl_tools.sind(surf_tilt)
+    
+    sky_diffuse = DHI[ebin.index] * (term1 + term2 + term3)
+    sky_diffuse[sky_diffuse < 0] = 0
 
-  #SkyDiffuse = pd.Series(np.zeros(var.DHI.shape[0]),index=data.index)
-
-  SkyDiffuse = var.DHI[ebinfilter]*( 0.5* (1-F1[ebinfilter])*(1+pvl_tools.cosd(var.SurfTilt))+F1[ebinfilter] * A[ebinfilter]/ B[ebinfilter] + F2[ebinfilter]* pvl_tools.sind(var.SurfTilt))
-  SkyDiffuse[SkyDiffuse <= 0]= 0
+    return sky_diffuse
 
 
-  return pd.DataFrame({'In_Plane_SkyDiffuse':SkyDiffuse})
 
-def GetPerezCoefficients(perezmodelt):
-  ''' 
-  Find coefficients for the Perez model 
+def _get_perez_coefficients(perezmodelt):
+    ''' 
+    Find coefficients for the Perez model 
 
-  Parameters
-  ----------
+    Parameters
+    ----------
 
-  perezmodelt : string (optional, default='allsitescomposite1990')
+    perezmodelt : string (optional, default='allsitescomposite1990')
 
           a character string which selects the desired set of Perez
           coefficients. If model is not provided as an input, the default,
           '1990' will be used.
-  
-  All possible model selections are: 
+
+    All possible model selections are: 
 
           * '1990'
           * 'allsitescomposite1990' (same as '1990')
@@ -763,34 +921,34 @@ def GetPerezCoefficients(perezmodelt):
           * 'capecanaveral1988'
           * 'albany1988'
 
-  Returns
-  --------
+    Returns
+    --------
 
           F1coeffs : array
           F1 coefficients for the Perez model
           F2coeffs : array
           F2 coefficients for the Perez model        
 
-  References
-  ----------
+    References
+    ----------
 
-  [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-  solar irradiance on inclined surfaces for building energy simulation"
-  2007, Solar Energy vol. 81. pp. 254-267
+    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+    solar irradiance on inclined surfaces for building energy simulation"
+    2007, Solar Energy vol. 81. pp. 254-267
 
-  [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D., 1987. A new
-  simplified version of the Perez diffuse irradiance model for tilted
-  surfaces. Solar Energy 39(3), 221-232.
+    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D., 1987. A new
+    simplified version of the Perez diffuse irradiance model for tilted
+    surfaces. Solar Energy 39(3), 221-232.
 
-  [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R., 1990.
-  Modeling daylight availability and irradiance components from direct
-  and global irradiance. Solar Energy 44 (5), 271-289. 
+    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R., 1990.
+    Modeling daylight availability and irradiance components from direct
+    and global irradiance. Solar Energy 44 (5), 271-289. 
 
-  [4] Perez, R. et. al 1988. "The Development and Verification of the
-  Perez Diffuse Radiation Model". SAND88-7030
+    [4] Perez, R. et. al 1988. "The Development and Verification of the
+    Perez Diffuse Radiation Model". SAND88-7030
 
-  '''
-  coeffdict= {'allsitescomposite1990':
+    '''
+    coeffdict= {'allsitescomposite1990':
             [[-0.0080,    0.5880,   -0.0620,   -0.0600,    0.0720,   -0.0220],
              [ 0.1300,    0.6830,   -0.1510,   -0.0190,    0.0660,   -0.0290],
              [ 0.3300,    0.4870,   -0.2210,    0.0550,   -0.0640,   -0.0260],
@@ -808,7 +966,7 @@ def GetPerezCoefficients(perezmodelt):
              [ 1.0980,   -1.2900,   -0.3930,    0.2690,   -0.8320,    0.0750],
              [ 0.9730,   -1.1350,   -0.3780,    0.1240,   -0.2580,    0.1490],
              [ 0.6890,   -0.4120,   -0.2730,    0.1990,   -1.6750,    0.2370]],
-          
+  
               'sandiacomposite1988':
              [[-0.1960,    1.0840,   -0.0060,   -0.1140,    0.1800,   -0.0190],
               [0.2360,    0.5190,   -0.1800,   -0.0110,    0.0200,   -0.0380],
@@ -828,7 +986,7 @@ def GetPerezCoefficients(perezmodelt):
              [ 0.9740,   -1.5070,   -0.3700,    0.1540,   -0.5680,    0.1090],
              [ 0.7440,   -1.8170,   -0.2560,    0.2460,   -2.6180,    0.2300]],
               'france1988':
-          
+  
              [[0.0130,    0.7640,   -0.1000,   -0.0580,    0.1270,   -0.0230],
               [0.0950,    0.9200,   -0.1520,         0,    0.0510,   -0.0200],
               [0.4640,    0.4210,   -0.2800,    0.0640,   -0.0510,   -0.0020],
@@ -892,144 +1050,14 @@ def GetPerezCoefficients(perezmodelt):
               [1.4340,   -3.9940,   -0.4920 ,  0.4530,  -2.3760 ,   0.1170],
               [1.0070,   -2.2920,   -0.4820 ,  0.3900,  -3.3680 ,   0.2290]],
               }
-          
-     
-  array=np.array(coeffdict[perezmodelt])
+  
 
-  F1coeffs = array.T[0:3].T
-  F2coeffs = array.T[3:7].T
+    array = np.array(coeffdict[perezmodelt])
 
-  return F1coeffs ,F2coeffs
+    F1coeffs = array.T[0:3].T
+    F2coeffs = array.T[3:7].T
 
-
-def reindl1990(SurfTilt,SurfAz,DHI,DNI,GHI,HExtra,SunZen,SunAz):
-  '''
-  Determine diffuse irradiance from the sky on a tilted surface using Reindl's 1990 model
-
-
-  Reindl's 1990 model determines the diffuse irradiance from the sky
-  (ground reflected irradiance is not included in this algorithm) on a
-  tilted surface using the surface tilt angle, surface azimuth angle,
-  diffuse horizontal irradiance, direct normal irradiance, global
-  horizontal irradiance, extraterrestrial irradiance, sun zenith angle,
-  and sun azimuth angle.
-
-  Parameters
-  ----------
+    return F1coeffs, F2coeffs
     
-  SurfTilt : DataFrame
-          Surface tilt angles in decimal degrees.
-          SurfTilt must be >=0 and <=180. The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
-
-  SurfAz : DataFrame
-          Surface azimuth angles in decimal degrees.
-          SurfAz must be >=0 and <=360. The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
-
-  DHI : DataFrame
-          diffuse horizontal irradiance in W/m^2. 
-          DHI must be >=0.
-
-  DNI : DataFrame
-          direct normal irradiance in W/m^2. 
-          DNI must be >=0.
-
-  GHI: DataFrame
-          Global irradiance in W/m^2. 
-          GHI must be >=0.
-
-  HExtra : DataFrame
-          extraterrestrial normal irradiance in W/m^2. 
-           HExtra must be >=0.
-
-  SunZen : DataFrame
-          apparent (refraction-corrected) zenith
-          angles in decimal degrees. 
-          SunZen must be >=0 and <=180.
-
-  SunAz : DataFrame
-          Sun azimuth angles in decimal degrees.
-          SunAz must be >=0 and <=360. The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, East = 90, West = 270).
-
-  Returns
-  -------
-
-  SkyDiffuse : DataFrame
-
-           the diffuse component of the solar radiation  on an
-           arbitrarily tilted surface defined by the Reindl model as given in
-           Loutzenhiser et. al (2007) equation 8.
-           SkyDiffuse is the diffuse component ONLY and does not include the ground
-           reflected irradiance or the irradiance due to the beam.
-           SkyDiffuse is a column vector vector with a number of elements equal to
-           the input vector(s).
-
-
-  Notes
-  -----
-  
-     The POAskydiffuse calculation is generated from the Loutzenhiser et al.
-     (2007) paper, equation 8. Note that I have removed the beam and ground
-     reflectance portion of the equation and this generates ONLY the diffuse
-     radiation from the sky and circumsolar, so the form of the equation
-     varies slightly from equation 8.
-  
-  References
-  ----------
-
-  [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-  solar irradiance on inclined surfaces for building energy simulation"
-  2007, Solar Energy vol. 81. pp. 254-267
-
-  [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse fraction
-  correlations. Solar Energy 45(1), 1-7.
-
-  [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of hourly
-  tilted surface radiation models. Solar Energy 45(1), 9-17.
-
-  See Also 
-  ---------
-  pvl_ephemeris   
-  pvl_extraradiation   
-  pvl_isotropicsky
-  pvl_haydavies1980   
-  pvl_perez 
-  pvl_klucher1979   
-  pvl_kingdiffuse
-
-  '''          
-  Vars=locals()
-  Expect={'SurfTilt':('num','x>=0'),
-      'SurfAz':('num','x>=-180'),
-      'DHI':('num','x>=0'),
-      'DNI':('num','x>=0'),
-      'GHI':('num','x>=0'),
-      'HExtra':('num','x>=0'),
-      'SunZen':('num','x>=0'),
-      'SunAz':('num','x>=-180'),
-        }
-
-  var=pvl_tools.Parse(Vars,Expect)
-
-
-  small=1e-06
-
-  COSTT=pvl_tools.cosd(SurfTilt)*pvl_tools.cosd(SunZen) + pvl_tools.sind(SurfTilt)*pvl_tools.sind(SunZen)*pvl_tools.cosd(SunAz - SurfAz)
-  RB=np.max(COSTT,0) / np.max(pvl_tools.cosd(SunZen),0.01745)
-  AI=DNI / HExtra
-  GHI[GHI < small]=small
-  HB=DNI*(pvl_tools.cosd(SunZen))
-  HB[HB < 0]=0
-  GHI[GHI < 0]=0
-  F=np.sqrt(HB / GHI)
-  SCUBE=(pvl_tools.sind(SurfTilt*(0.5))) ** 3
-
-
-  SkyDiffuse=DHI*((AI*(RB) + (1 - AI)*(0.5)*((1 + pvl_tools.cosd(SurfTilt)))*((1 + F*(SCUBE)))))
-
-  return SkyDiffuse
-
+    
 

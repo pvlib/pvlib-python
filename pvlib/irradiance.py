@@ -1,3 +1,6 @@
+import logging
+pvl_logger = logging.getLogger('pvlib')
+
 import pdb
 
 import numpy as np
@@ -60,6 +63,173 @@ def extraradiation(doy):
     Rfact2 = 1.00011 + 0.034221*(np.cos(B)) + 0.00128*(np.sin(B)) + 0.000719*(np.cos(2 * B)) + 7.7e-05*(np.sin(2 * B))
     Ea = 1367 * Rfact2
     return Ea
+    
+    
+    
+def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
+    """
+    Calculates the dot product of the solar vector and the surface normal.
+    
+    Input all angles in degrees.
+    
+    :param surf_tilt: float or Series. Panel tilt from horizontal.
+    :param surf_az: float or Series. Panel azimuth from north.
+    :param sun_zen: float or Series. Solar zenith angle.
+    :param sun_az: float or Series. Solar azimuth angle.
+    
+    :returns: float or Series. Dot product of panel normal and solar angle.
+    """
+    
+    projection = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
+    
+    try:
+        projection.name = 'aoi_projection'
+    except AttributeError:
+        pass
+    
+    return projection
+
+
+
+def aoi(surf_tilt, surf_az, sun_zen, sun_az):
+    """
+    Calculates the angle of incidence of the solar vector on a surface.
+    This is the angle between the solar vector and the surface normal.
+    
+    Input all angles in degrees.
+    
+    :param surf_tilt: float or Series. Panel tilt from horizontal.
+    :param surf_az: float or Series. Panel azimuth from north.
+    :param sun_zen: float or Series. Solar zenith angle.
+    :param sun_az: float or Series. Solar azimuth angle.
+    
+    :returns: float or Series. Angle of incidence in degrees.
+    """
+    
+    projection = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    aoi_value = np.rad2deg(np.arccos(projection))
+    
+    try:
+        aoi_value.name = 'aoi'
+    except AttributeError:
+        pass
+    
+    return aoi_value
+    
+
+
+def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
+    """
+    Calculates the ratio of the beam components of the
+    plane of array irradiance and the horizontal irradiance. 
+    
+    Input all angles in degrees.
+    
+    :param surf_tilt: float or Series. Panel tilt from horizontal.
+    :param surf_az: float or Series. Panel azimuth from north.
+    :param sun_zen: float or Series. Solar zenith angle.
+    :param sun_az: float or Series. Solar azimuth angle.
+    
+    :returns: float or Series. Ratio of the plane of array irradiance to the
+              horizontal plane irradiance
+    """
+    
+    cos_poa_zen = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    
+    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    
+    # ratio of titled and horizontal beam irradiance
+    ratio = cos_poa_zen / cos_sun_zen
+    
+    try:
+        ratio.name = 'poa_ratio'
+    except AttributeError:
+        pass
+    
+    return ratio
+    
+    
+    
+def beam_component(surf_tilt, surf_az, sun_zen, sun_az, DNI):
+    """
+    Calculates the beam component of the plane of array irradiance.
+    """
+    beam = DNI * aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    beam[beam < 0] = 0
+    
+    return beam
+    
+    
+    
+def total_irrad(surf_tilt, surf_az, 
+                sun_zen, sun_az,
+                DNI, GHI, DHI, DNI_ET=None, AM=None,
+                albedo=.25, surface_type=None,
+                model='isotropic',
+                model_perez='allsitescomposite1990'):
+    '''
+    Determine diffuse irradiance from the sky on a 
+    tilted surface.
+
+    .. math::
+
+       I_{tot} = I_{beam} + I_{sky} + I_{ground}
+    
+    Parameters
+    ----------
+
+
+
+    Returns
+    -------   
+
+    DataFrame with columns 'total', 'beam', 'sky', 'ground'.
+
+
+    References
+    ----------
+
+    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+    solar irradiance on inclined surfaces for building energy simulation"
+    2007, Solar Energy vol. 81. pp. 254-267
+
+
+    See also    
+    --------
+
+    '''
+
+    pvl_logger.debug('planeofarray.total_irrad()')
+    
+    beam = beam_component(surf_tilt, surf_az, sun_zen, sun_az, DNI)
+    
+    model = model.lower()
+    if model == 'isotropic':
+        sky = isotropic(surf_tilt, DHI)
+    elif model == 'klutcher':
+        sky = klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az)
+    elif model == 'haydavies':
+        sky = haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az)
+    elif model == 'reindl':
+        sky = reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az)
+    elif model == 'king':
+        sky = king(surf_tilt, DHI, GHI, sun_zen)
+    elif model == 'perez':
+        sky = perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM, 
+                                      modelt=model_perez)
+    else:
+        raise ValueError('invalid model selection {}'.format(model))
+    
+    ground = grounddiffuse(surf_tilt, GHI, albedo, surface_type)
+    
+    total = beam + sky + ground                                                
+    
+    all_irrad = pd.DataFrame({'total':total, 
+                              'beam':beam, 
+                              'sky':sky, 
+                              'ground':ground})
+    
+    return all_irrad
     
     
     
@@ -376,7 +546,7 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     pvl_logger.debug('diffuse_sky.klucher()')
 
     # zenith angle with respect to panel normal.
-    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     F = 1 - ((DHI / GHI) ** 2)
     try:
@@ -481,13 +651,11 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     
     pvl_logger.debug('diffuse_sky.haydavies()')
     
-    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     cos_sun_zen = pvl_tools.cosd(sun_zen)
     
     # ratio of titled and horizontal beam irradiance
-    # Will H: is this to avoid / 0? Shouldn't it be element-wise?
-    #Rb = np.max(cos_tt, 0) / np.max(pvl_tools.cosd(sun_zen), 0.01745) 
     Rb = cos_tt / cos_sun_zen
     
     # Anisotropy Index
@@ -605,13 +773,11 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     
     pvl_logger.debug('diffuse_sky.reindl()')
     
-    cos_tt = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
     cos_sun_zen = pvl_tools.cosd(sun_zen)
     
     # ratio of titled and horizontal beam irradiance
-    # Will H: is this to avoid / 0? Shouldn't it be element-wise?
-    #Rb = np.max(cos_tt, 0) / np.max(pvl_tools.cosd(sun_zen), 0.01745) 
     Rb = cos_tt / cos_sun_zen
     
     # Anisotropy Index
@@ -873,7 +1039,7 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     F2[F2 < 0] = 0
     F2 = F2.astype(float)
 
-    A = pvlib.planeofarray.aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    A = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     A[A < 0] = 0
 
     B = pvl_tools.cosd(sun_zen);

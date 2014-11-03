@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from nose.tools import raises
+from nose.tools import assert_almost_equals
 
 from ..location import Location
 from .. import solarposition
@@ -41,3 +42,13 @@ def test_absoluteairmass():
     relative_am = atmosphere.relativeairmass(ephem_data['zenith'], 'simple')
     atmosphere.absoluteairmass(relative_am)
     atmosphere.absoluteairmass(relative_am, pressure=100000)
+    
+    
+
+def test_absoluteairmass_numeric():
+    atmosphere.absoluteairmass(2)
+    
+    
+def test_absoluteairmass_nan():
+    np.testing.assert_equal(np.nan, atmosphere.absoluteairmass(np.nan))
+    

@@ -30,7 +30,11 @@ dni_et = irradiance.extraradiation(times.dayofyear)
 ghi = irrad_data['GHI']
 
 
-# the test functions
+# the test functions. these are almost all functional tests.
+# need to add physical tests.
+
+def test_extraradiation():
+    irradiance.extraradiation(300)
 
 def test_grounddiffuse_simple_float():
     irradiance.grounddiffuse(40, 900)

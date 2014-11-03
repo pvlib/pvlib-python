@@ -25,6 +25,13 @@ times_localized = times.tz_localize(tus.tz)
 ephem_data = solarposition.get_solarposition(times, tus)
 
 
+# need to add physical tests instead of just functional tests
+
+def test_pres2alt():
+    atmosphere.pres2alt(100000)
+    
+def test_alt2press():
+    atmosphere.pres2alt(1000)
 
 # two functions combined will generate unique unit tests for each model
 def test_airmasses():

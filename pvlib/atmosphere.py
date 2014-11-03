@@ -20,13 +20,13 @@ def pres2alt(pressure):
 
     Parameters
     ----------
-    Pressure : scalar, vector or DataFrame
-            Atomspheric pressure (Pascals)
+    Pressure : scalar or Series
+        Atomspheric pressure (Pascals)
 
     Returns
     -------
-    altitude: scalar, vector or DataFrame
-          Altitude in meters above sea level 
+    altitude: scalar or Series
+        Altitude in meters above sea level 
 
     Notes
     ------
@@ -51,8 +51,8 @@ def pres2alt(pressure):
 
     '''
 
-    Alt = 44331.5 - 4946.62 * pressure ** (0.190263)
-    return Alt
+    alt = 44331.5 - 4946.62 * pressure ** (0.190263)
+    return alt
 
 
 
@@ -62,13 +62,13 @@ def alt2pres(altitude):
 
     Parameters
     ----------
-    Altitude: scalar, vector or DataFrame
-          Altitude in meters above sea level 
+    Altitude: scalar or Series
+        Altitude in meters above sea level 
 
     Returns
     -------
-    Pressure : scalar, vector or DataFrame
-            Atomspheric pressure (Pascals)
+    Pressure : scalar or Series
+        Atomspheric pressure (Pascals)
 
     Notes
     ------
@@ -92,9 +92,10 @@ def alt2pres(altitude):
     State Aerospace Society, Version 1.03, 12/22/2004.
     '''
 
-    Press = 100 * ((44331.514 - altitude) / 11880.516) ** (1 / 0.1902632)
+    press = 100 * ((44331.514 - altitude) / 11880.516) ** (1 / 0.1902632)
 
-    return Press
+    return press
+
 
 
 def absoluteairmass(AMrelative, pressure=101325.):

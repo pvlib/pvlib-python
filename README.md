@@ -9,10 +9,17 @@ We make some contributions to the PVLIB\_Python develop branch, and we pull some
 
 We use this library to generate solar power forecasts for TEP, APS, and SVERI utilities, and to perform grid integration and variability studies for SVERI utilities. For more information, see [https://forecasting.uaren.org](https://forecasting.uaren.org) and [https://sveri.uaren.org](https://sveri.uaren.org).
 
-The primary drawback to using this library over the official library is that, well, it's not the official Sandia library. If you use this library you need to attribute both UA and Sandia. Another drawback is that the structure of this library will look a lot different to people coming from the MATLAB world, which is either a good thing or a bad thing depending on your perspective. 
+The primary drawback to using this library over the official library is that, well, it's not the official Sandia library. Another drawback is that the structure of this library will look a lot different to people coming from the MATLAB world, which is either a good thing or a bad thing depending on your perspective. Keep the following in mind as you consider using or developing pythonic-PVLIB:
+
+* We hope to keep the projects as similar as possible to make it easier for people to experiment with pythonic-PVLIB. 
+* The Sandia repo should be the default repo for the user community.
+* Developers should strongly consider working on the official Sandia repo rather than, or in addition to, pythonic-PVLIB.
+* Reread the above point (...waiting...) before the following (...waiting again...): community contributions in the form of PRs, issues, wikis, docs, tutorials, thoughts, etc are all welcomed and we will try hard to address them in a timely manner.
+* All code contributions must be documented, PEP8 compliant, and python 3 compatible.
+* We're not promising to maintain this repo for any length of time. 
 
 
-Key differences
+Code differences
 ===============
 Here are some of the major differences between our fork and PVLIB\_Python. Note that some of these differences have been resolved in the PVLIB\_Python [develop branch](https://github.com/Sandia-Labs/PVLIB_Python/tree/develop).
 
@@ -21,8 +28,8 @@ Here are some of the major differences between our fork and PVLIB\_Python. Note 
 * Return one DataFrame instead of a tuple of DataFrames.
 * Specify time zones using a string from the standard IANA Time Zone Database naming conventions or using a pytz.timezone instead of an integer GMT offset. 
 * Add PyEphem option to solar position calculations. 
-* Consolidation of similar modules. For example, functions from ``pvl_clearsky_ineichen.py`` and ``pvl_clearsky_haurwitz.py``` have been consolidated into ``clearsky.py``. Similar consolidations have occured for airmass, solar position, and diffuse irradiance modules.
-* Created ``planeofarray.py`` module with AOI, projection, and irradiance sum and calculation functions
+* Consolidation of similar modules. For example, functions from ``pvl_clearsky_ineichen.py`` and ``pvl_clearsky_haurwitz.py`` have been consolidated into ``clearsky.py``. Similar consolidations have occured for airmass, solar position, and diffuse irradiance modules.
+* ``irradiance.py`` has more AOI, projection, and irradiance sum and calculation functions
 * Removing Vars=Locals(); Expect...; var=pvl\_tools.Parse(Vars,Expect); pattern. Very few tests of input validitity remain. Garbage in, garbage out.
 * Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90.
 * ```__init__.py``` imports have been removed.
@@ -30,10 +37,11 @@ Here are some of the major differences between our fork and PVLIB\_Python. Note 
 * Code in reviewed modules is mostly PEP8 compliant.
 * Code in reviewed modules is mostly python 3 compatible.
 * Changing function and module names so that they do not conflict.
-* Not bothering with boilerplate unit test code such as ```unittest.main()```. 
+* Not bothering with boilerplate unit test code such as ``unittest.main()``. 
 * No wildcard imports.
 * Improved documentation here and there.
 * TMY data is not forced to 1987.
+* Azimuth is defined such that North=0.
 
 Pythonic code is easier to use, easier to maintain, and faster to develop. Adhering to PEP8 guidelines allows other python developers read code more quickly and accurately. 
 

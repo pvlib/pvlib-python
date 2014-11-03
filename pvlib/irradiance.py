@@ -26,6 +26,8 @@ SURFACE_ALBEDOS = {'urban':0.18,
 
 
 
+# would be nice if this took pandas index as well. Use try:except of isinstance.
+# could also use pyephem (if available)
 def extraradiation(doy):
     '''
     Determine extraterrestrial radiation from day of year
@@ -72,12 +74,21 @@ def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
     
     Input all angles in degrees.
     
-    :param surf_tilt: float or Series. Panel tilt from horizontal.
-    :param surf_az: float or Series. Panel azimuth from north.
-    :param sun_zen: float or Series. Solar zenith angle.
-    :param sun_az: float or Series. Solar azimuth angle.
+    Parameters
+    ==========
     
-    :returns: float or Series. Dot product of panel normal and solar angle.
+    surf_tilt : float or Series. 
+        Panel tilt from horizontal.
+    surf_az : float or Series. 
+        Panel azimuth from north.
+    sun_zen : float or Series. 
+        Solar zenith angle.
+    sun_az : float or Series. 
+        Solar azimuth angle.
+        
+    Returns
+    =======
+    float or Series. Dot product of panel normal and solar angle.
     """
     
     projection = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
@@ -98,12 +109,21 @@ def aoi(surf_tilt, surf_az, sun_zen, sun_az):
     
     Input all angles in degrees.
     
-    :param surf_tilt: float or Series. Panel tilt from horizontal.
-    :param surf_az: float or Series. Panel azimuth from north.
-    :param sun_zen: float or Series. Solar zenith angle.
-    :param sun_az: float or Series. Solar azimuth angle.
+    Parameters
+    ==========
     
-    :returns: float or Series. Angle of incidence in degrees.
+    surf_tilt : float or Series. 
+        Panel tilt from horizontal.
+    surf_az : float or Series. 
+        Panel azimuth from north.
+    sun_zen : float or Series. 
+        Solar zenith angle.
+    sun_az : float or Series. 
+        Solar azimuth angle.
+    
+    Returns
+    =======
+    float or Series. Angle of incidence in degrees.
     """
     
     projection = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
@@ -125,13 +145,22 @@ def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
     
     Input all angles in degrees.
     
-    :param surf_tilt: float or Series. Panel tilt from horizontal.
-    :param surf_az: float or Series. Panel azimuth from north.
-    :param sun_zen: float or Series. Solar zenith angle.
-    :param sun_az: float or Series. Solar azimuth angle.
+    Parameters
+    ==========
     
-    :returns: float or Series. Ratio of the plane of array irradiance to the
-              horizontal plane irradiance
+    surf_tilt : float or Series. 
+        Panel tilt from horizontal.
+    surf_az : float or Series. 
+        Panel azimuth from north.
+    sun_zen : float or Series. 
+        Solar zenith angle.
+    sun_az : float or Series. 
+        Solar azimuth angle.
+    
+    Returns
+    =======
+    float or Series. Ratio of the plane of array irradiance to the
+    horizontal plane irradiance
     """
     
     cos_poa_zen = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
@@ -160,7 +189,8 @@ def beam_component(surf_tilt, surf_az, sun_zen, sun_az, DNI):
     return beam
     
     
-    
+
+# how to best structure this function? wholmgren 2014-11-03
 def total_irrad(surf_tilt, surf_az, 
                 sun_zen, sun_az,
                 DNI, GHI, DHI, DNI_ET=None, AM=None,
@@ -233,6 +263,7 @@ def total_irrad(surf_tilt, surf_az,
     
     
     
+# keep this or not? wholmgren, 2014-11-03
 def globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
     '''
     Determine the three components on in-plane irradiance

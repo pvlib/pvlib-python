@@ -11,14 +11,15 @@ try:
 except ImportError:
     raise RuntimeError('setuptools is required')
 
-DESCRIPTION = 'Python port of the PVLIB package'
-LONG_DESCRIPTION = open('README.txt').read()
+DESCRIPTION = 'Pythonic port of the python port of the PVLIB package'
+LONG_DESCRIPTION = open('README.md').read()
 
+# consider changing name to pythonic-pvlib
 DISTNAME = 'pvlib'
 LICENSE = 'The BSD 3-Clause License'
-AUTHOR = 'Dan Riley, Clifford Hanson, Rob Andrews, github contributors'
-MAINTAINER_EMAIL = 'Rob.Andrews@calamaconsulting.ca'
-URL = 'https://github.com/Sandia-Labs/PVLIB_Python'
+AUTHOR = 'Dan Riley, Clifford Hanson, Rob Andrews, Will Holmgren, github contributors'
+MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
+URL = 'https://github.com/UARENForecasting/pythonic-PVLIB'
 
 MAJOR = 0
 MINOR = 2

@@ -24,15 +24,15 @@ Code differences
 Here are some of the major differences between our fork and PVLIB\_Python. Note that some of these differences have been resolved in the PVLIB\_Python [develop branch](https://github.com/Sandia-Labs/PVLIB_Python/tree/develop).
 
 * Remove pvl_ from module names.
-* Locations are now referred to as objects, not structs.
+* Locations are now ``pvlib.location.Location`` objects, not structs.
 * Return one DataFrame instead of a tuple of DataFrames.
-* Specify time zones using a string from the standard IANA Time Zone Database naming conventions or using a pytz.timezone instead of an integer GMT offset. 
+* Specify time zones using a string from the standard IANA Time Zone Database naming conventions or using a pytz.timezone instead of an integer GMT offset. We may add dateutils support in the future.
 * Add PyEphem option to solar position calculations. 
 * Consolidation of similar modules. For example, functions from ``pvl_clearsky_ineichen.py`` and ``pvl_clearsky_haurwitz.py`` have been consolidated into ``clearsky.py``. Similar consolidations have occured for airmass, solar position, and diffuse irradiance modules.
 * ``irradiance.py`` has more AOI, projection, and irradiance sum and calculation functions
 * Removing Vars=Locals(); Expect...; var=pvl\_tools.Parse(Vars,Expect); pattern. Very few tests of input validitity remain. Garbage in, garbage out.
-* Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90.
-* ```__init__.py``` imports have been removed.
+* Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90 or airmass=0.
+* ``__init__.py`` imports have been removed.
 * Adding logging calls, removing print calls.
 * Code in reviewed modules is mostly PEP8 compliant.
 * Code in reviewed modules is mostly python 3 compatible.
@@ -42,6 +42,8 @@ Here are some of the major differences between our fork and PVLIB\_Python. Note 
 * Improved documentation here and there.
 * TMY data is not forced to 1987.
 * Azimuth is defined such that North=0.
+* Documentation source code and tutorials live in ``/`` rather than ``/pvlib/docs``.
+* Added ``/pvlib/data`` for lookup tables, test, and tutorial data.
 
 Pythonic code is easier to use, easier to maintain, and faster to develop. Adhering to PEP8 guidelines allows other python developers read code more quickly and accurately. 
 
@@ -96,5 +98,5 @@ Testing can be accomplished by running nosetests on the pvlib directory (or pvli
 ```
 nosetests -v pvlib
 ```
-Unit test code should be placed in the ```pvlib/test``` directory. Each module should have its own test module. 
+Unit test code should be placed in the ``pvlib/test`` directory. Each module should have its own test module. 
 

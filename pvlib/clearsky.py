@@ -137,7 +137,7 @@ def ineichen(time, location, linke_turbidity=None,
         # consider putting this code at module level
         this_path = os.path.dirname(os.path.abspath(__file__))
         pvl_logger.debug('this_path={}'.format(this_path))
-        mat = scipy.io.loadmat(this_path+'/LinkeTurbidities.mat')
+        mat = scipy.io.loadmat(os.path.join(this_path, 'data', 'LinkeTurbidities.mat'))
         linke_turbidity = mat['LinkeTurbidity']
         LatitudeIndex = np.round_(_linearly_scale(location.latitude,90,- 90,1,2160))
         LongitudeIndex = np.round_(_linearly_scale(location.longitude,- 180,180,1,4320))

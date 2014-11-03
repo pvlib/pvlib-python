@@ -44,6 +44,7 @@ Here are some of the major differences between our fork and PVLIB\_Python. Note 
 * Azimuth is defined such that North=0.
 * Documentation source code and tutorials live in ``/`` rather than ``/pvlib/docs``.
 * Added ``/pvlib/data`` for lookup tables, test, and tutorial data.
+* Tests are cleaner and more thorough. They are still no where near complete.
 
 Pythonic code is easier to use, easier to maintain, and faster to develop. Adhering to PEP8 guidelines allows other python developers read code more quickly and accurately. 
 

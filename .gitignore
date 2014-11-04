@@ -17,6 +17,7 @@ parts/
 sdist/
 var/
 Drafts/
+build/
 
 *.egg-info/
 .installed.cfg

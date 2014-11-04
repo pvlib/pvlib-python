@@ -1,3 +1,5 @@
+from __future__ import division
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
@@ -5,6 +7,11 @@ import pdb
 
 import numpy as np
 import pandas as pd
+
+try:    
+    import ephem
+except ImportError as e:
+    pvl_logger.warning('PyEphem not found.')
 
 from . import pvl_tools
  
@@ -28,24 +35,38 @@ SURFACE_ALBEDOS = {'urban':0.18,
 
 # would be nice if this took pandas index as well. Use try:except of isinstance.
 # could also use pyephem (if available)
-def extraradiation(doy):
+def extraradiation(doy, solar_constant=1366.1, method='spencer'):
     '''
-    Determine extraterrestrial radiation from day of year
+    Determine extraterrestrial radiation from day of year.
+    
+    The calculation method appears to be based on Spencer 1971.
+    The primary references here cannot be easily obtained.
+    
+    If you really care about this parameter, consider using NREL's SOLPOS or 
+    pyephem's earth_distance() function.
 
     Parameters
     ----------
 
     doy : int or pandas.index.dayofyear
         Day of the year
+        
+    solar_constant : float
+        The solar constant.
+        
+    method : string
+        The method by which the ET radiation should be calculated.
+        Options include 'pyephem', 'spencer', 'asce'.
 
     Returns
     -------
 
-    Ea : float or DataFrame
+    Ea : float or Series
 
-        the extraterrestrial radiation present in watts per square meter
+        The extraterrestrial radiation present in watts per square meter
         on a surface which is normal to the sun. Ea is of the same size as the
         input doy.
+
 
     References
     ----------
@@ -55,16 +76,59 @@ def extraradiation(doy):
 
     SR2       Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
 
+    There is a minus sign discrepancy with equation 12 of 
+    M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
+    Sky Models: Implementation and Analysis", Sandia National
+    Laboratories, SAND2012-2389, 2012. 
+    
     See Also 
     --------
     pvl_disc
 
     '''
-
-    B = 2 * np.pi * doy / 365
-    Rfact2 = 1.00011 + 0.034221*(np.cos(B)) + 0.00128*(np.sin(B)) + 0.000719*(np.cos(2 * B)) + 7.7e-05*(np.sin(2 * B))
-    Ea = 1367 * Rfact2
+    
+    method = method.lower()
+    
+    B = ( 2*np.pi / 365 ) * doy
+    
+    if method == 'asce':
+        pvl_logger.debug('Calculating ET rad using ASCE method')
+        RoverR0sqrd = 1 + 0.033*np.cos(B)
+    elif method == 'spencer':
+        pvl_logger.debug('Calculating ET rad using Spencer method')
+        RoverR0sqrd = (1.00011 + 0.034221*np.cos(B) + 0.00128*np.sin(B) + 
+                       0.000719*np.cos(2*B) + 7.7e-05*np.sin(2*B))
+    
+    Ea = solar_constant * RoverR0sqrd
+    
     return Ea
+    
+    
+    
+def extraradiation_ephem(time, solar_constant=1366.1):
+    """
+    Use PyEphem to calculate the extraterrestrial radiation.
+    
+    Parameters
+    ==========
+    time : pd.DatetimeIndex
+    
+    Returns
+    =======
+    pd.Series
+    """
+    
+    pvl_logger.debug('Calculating ET rad using PyEphem')
+    
+    sun = ephem.Sun()
+    RoverR0sqrd = []
+    for thetime in time:
+        sun.compute(ephem.Date(thetime))
+        RoverR0sqrd.append(sun.earth_distance**(-2))
+        
+    Ea = solar_constant * pd.Series(RoverR0sqrd, index=time)
+    
+    return Ea 
     
     
     

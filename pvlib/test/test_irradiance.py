@@ -7,6 +7,7 @@ import pandas as pd
 
 from nose.tools import raises
 
+
 from ..location import Location
 from .. import clearsky
 from .. import solarposition
@@ -35,6 +36,9 @@ ghi = irrad_data['GHI']
 
 def test_extraradiation():
     irradiance.extraradiation(300)
+    
+def test_extraradiation_ephem():
+    irradiance.extraradiation_ephem(times)
 
 def test_grounddiffuse_simple_float():
     irradiance.grounddiffuse(40, 900)

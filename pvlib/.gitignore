@@ -1,8 +1,0 @@
-#Ignore datafiles
-*.csv
-*.h5
-
-#Ignore notebooks
-*.ipynb
-!Test_Scripts_1.ipynb
-!TS_2_Irradiance_functions.ipynb

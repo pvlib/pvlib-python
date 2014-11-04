@@ -1,7 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.ipynb
 
 # C extensions
 *.so
@@ -17,6 +16,8 @@ parts/
 sdist/
 var/
 Drafts/
+*/build/
+build/
 
 *.egg-info/
 .installed.cfg
@@ -59,7 +60,12 @@ coverage.xml
 
 
 #Datafiles
-.csv
+*.csv
 
 # vi
 *.swp
+
+#Ignore notebooks
+*.ipynb
+!Test_Scripts_1.ipynb
+!TS_2_Irradiance_functions.ipynb

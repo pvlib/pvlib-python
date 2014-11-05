@@ -76,6 +76,28 @@ def test_pyephem_physical_dst():
 def test_pyephem_localization():  
     assert_frame_equal(solarposition.pyephem(times, tus), solarposition.pyephem(times_localized, tus))
 
-        
+
+def test_calc_time():
+    import pytz
+    import math
+    # validation from USNO solar position calculator online
+
+    epoch = datetime.datetime(1970,1,1)
+    epoch_dt = pytz.utc.localize(epoch)
+    
+    loc = tus
+    loc.pressure = 0
+    actual_time = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, 8, 30))
+    lb = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, 6))
+    ub = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, 10))
+    alt = solarposition.calc_time(lb, ub, loc, 'alt', math.radians(24.7))
+    az = solarposition.calc_time(lb, ub, loc, 'az', math.radians(116.3))
+    actual_timestamp = (actual_time - epoch_dt).total_seconds()
+    
+    assert_almost_equals((alt.replace(second=0, microsecond=0) - 
+                          epoch_dt).total_seconds(), actual_timestamp)
+    assert_almost_equals((az.replace(second=0, microsecond=0) - 
+                          epoch_dt).total_seconds(), actual_timestamp)
+    
         
 # add tests for daylight savings time?

@@ -4,6 +4,7 @@ __pycache__/
 
 # emacs temp files
 *~
+#*#
 
 # C extensions
 *.so
@@ -68,6 +69,6 @@ coverage.xml
 # vi
 *.swp
 
-#Ignore notebooks
+#Ignore some notebooks
 *.ipynb
 !docs/tutorials/*.ipynb

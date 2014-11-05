@@ -74,7 +74,7 @@ import pvlib.solarposition
 import pvlib.clearsky
 
 # make a location
-tus = Location(32.2, -111, 700, 'MST')
+tus = Location(32.2, -111, 'MST', 700)
 
 # make a pandas DatetimeIndex for some day
 times = pd.date_range(start=datetime.datetime(2014,6,24), end=datetime.datetime(2014,6,25), freq='1Min')

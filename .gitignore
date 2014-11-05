@@ -16,7 +16,10 @@ parts/
 sdist/
 var/
 Drafts/
+<<<<<<< HEAD
 */build/
+=======
+>>>>>>> 159b2e2a6b776f4d0fbc209b221d7fcfd914cc3c
 build/
 
 *.egg-info/
@@ -67,5 +70,4 @@ coverage.xml
 
 #Ignore notebooks
 *.ipynb
-!Test_Scripts_1.ipynb
-!TS_2_Irradiance_functions.ipynb
+!docs/tutorials/*.ipynb

@@ -401,6 +401,4 @@ def disc(GHI, SunZen, Time, pressure=101325):
     DFOut['AM']=AM
     DFOut['Ztemp']=Ztemp
 
-    return DFOut, temp, I0, Knc, delKn
-  
-
+    return DFOut

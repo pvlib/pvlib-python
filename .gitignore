@@ -1,7 +1,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.ipynb
+
+# emacs temp files
+*~
 
 # C extensions
 *.so
@@ -17,6 +19,7 @@ parts/
 sdist/
 var/
 Drafts/
+*/build/
 build/
 
 *.egg-info/
@@ -60,7 +63,11 @@ coverage.xml
 
 
 #Datafiles
-.csv
+*.csv
 
 # vi
 *.swp
+
+#Ignore notebooks
+*.ipynb
+!docs/tutorials/*.ipynb

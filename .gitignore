@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# emacs temp files
+*~
+
 # C extensions
 *.so
 
@@ -16,10 +19,7 @@ parts/
 sdist/
 var/
 Drafts/
-<<<<<<< HEAD
 */build/
-=======
->>>>>>> 159b2e2a6b776f4d0fbc209b221d7fcfd914cc3c
 build/
 
 *.egg-info/

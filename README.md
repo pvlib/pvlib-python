@@ -56,7 +56,7 @@ Hopefully you're using [virtualenv](http://virtualenv.readthedocs.org/en/latest/
 pip install .
 ```
 
-Add ``-e`` to install in [develop mode](http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs). Note, this mode may not properly link ``spa_py`` so a warning is issued by ``pvlib.solarposition`` when trying to import it.
+Add ``-e`` to install in [develop mode](http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs).
 
 ```
 # built-in imports

@@ -4,7 +4,7 @@ import pandas as pd
 from ..pvsystem import ashraeiam
 
 def test_proper():
-	IAM=ashraeiam(.05,pd.DataFrame(range(90)))	
+	IAM=ashraeiam(.05,pd.DataFrame(list(range(90)))	)
 	assert(np.size(IAM)==90)
 	
 

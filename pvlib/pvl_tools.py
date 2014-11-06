@@ -8,6 +8,7 @@ import datetime as dt
 import pdb
 import ast
 import re
+from six import string_types
 
 import numpy as np 
 import pytz
@@ -150,7 +151,7 @@ class Parse():		#parse complex logic
         for arg in Expect:
             for string in Expect[arg]:
             
-                if isinstance(string,basestring): ##Python 2.x dependancy
+                if isinstance(string, string_types):
                     #Remove any potential of running system commands through eval
                     if np.shape(re.findall(regsyst,string))[0]>0:		
                         raise Exception("DANGER: System Command entered as constraint ' "+ string+ "' ")	

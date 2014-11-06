@@ -1,11 +1,13 @@
+import os
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
 
 import numpy as np
 import pandas as pd
-import os
-import pvl_tools
-import scipy 
-import urllib2
-from scipy.special import lambertw
+
+from . import  pvl_tools
 
 
 def makelocationstruct(latitude,longitude,TZ,altitude=100,Name='Usr_input',State='Usr_input'):
@@ -743,7 +745,7 @@ def retreiveSAM(name,FileLoc='none'):
         
 def read_url_to_pandas(url):
 
-    data = urllib2.urlopen(url)
+    data = urlopen(url)
     df=pd.read_csv(data,index_col=0)
     parsedindex=[]
     for index in df.index:
@@ -765,235 +767,234 @@ def read_relative_to_pandas(FileLoc):
     return df
 
 def sapm(Module,Eb,Ediff,Tcell,AM,AOI):
-  '''
-  Performs Sandia PV Array Performance Model to get 5 points on IV curve given SAPM module parameters, Ee, and cell temperature
+    '''
+    Performs Sandia PV Array Performance Model to get 5 points on IV curve given SAPM module parameters, Ee, and cell temperature
 
-  The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
-  module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
-  SAND2004-3535. Assumes a reference cell temperature of 25 C.
-  
-  parameters
-  ----------
+    The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
+    module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
+    SAND2004-3535. Assumes a reference cell temperature of 25 C.
 
-  Module : DataFrame
+    parameters
+    ----------
 
-          A DataFrame defining the SAPM performance parameters (see
-          pvl_retreivesam)
+    Module : DataFrame
 
-  Eb : float of DataFrame
+            A DataFrame defining the SAPM performance parameters (see
+            pvl_retreivesam)
 
-          The effective irradiance incident upon the module (suns). Any Ee<0
-          are set to 0.
-  
-  celltemp : float of DataFrame
-          
-          The cell temperature (degrees C)
+    Eb : float of DataFrame
 
-  Returns
-  -------
-  Result - DataFrame
+            The effective irradiance incident upon the module (suns). Any Ee<0
+            are set to 0.
 
-          A DataFrame with:
+    celltemp : float of DataFrame
 
-          * Result.Isc
-          * Result.Imp
-          * Result.Ix
-          * Result.Ixx
-          * Result.Voc
-          * Result.Vmp
-          * Result.Pmp
+            The cell temperature (degrees C)
 
-  Notes
-  -----
+    Returns
+    -------
+    Result - DataFrame
 
-  The particular coefficients from SAPM which are required in Module
-  are:
-  
-  ================   ======================================================================================================================
-  Module field        Description
-  ================   ======================================================================================================================
-  Module.c           1x8 vector with the C coefficients Module.c(1) = C0
-  Module.Isc0        Short circuit current at reference condition (amps)
-  Module.Imp0        Maximum power current at reference condition (amps)
-  Module.AlphaIsc    Short circuit current temperature coefficient at reference condition (1/C)
-  Module.AlphaImp    Maximum power current temperature coefficient at reference condition (1/C)
-  Module.BetaVoc     Open circuit voltage temperature coefficient at reference condition (V/C)
-  Module.mBetaVoc    Coefficient providing the irradiance dependence for the BetaVoc temperature coefficient at reference irradiance (V/C)
-  Module.BetaVmp     Maximum power voltage temperature coefficient at reference condition
-  Module.mBetaVmp    Coefficient providing the irradiance dependence for the BetaVmp temperature coefficient at reference irradiance (V/C)
-  Module.n           Empirically determined "diode factor" (dimensionless)
-  Module.Ns          Number of cells in series in a module's cell string(s)
-  ================   ======================================================================================================================
-  
-  References
-  ----------
+            A DataFrame with:
 
-  [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
-  3535, Sandia National Laboratories, Albuquerque, NM
+            * Result.Isc
+            * Result.Imp
+            * Result.Ix
+            * Result.Ixx
+            * Result.Voc
+            * Result.Vmp
+            * Result.Pmp
 
-  See Also
-  --------
+    Notes
+    -----
 
-  pvl_retreivesam
-  pvl_sapmcelltemp 
-  
-  '''
-  Vars=locals()
-  Expect={'Module':(''),
-          'Eb':('x>0'),
-          'Ediff':('x>0'),
-          'Tcell':('x>0'),
-          'AM':('x>0'),
-          'AOI':('x>0')
-  }
-  var=pvl_tools.Parse(Vars,Expect)
+    The particular coefficients from SAPM which are required in Module
+    are:
 
-  T0=25
-  q=1.60218e-19
-  k=1.38066e-23
-  E0=1000
+    ================   ======================================================================================================================
+    Module field        Description
+    ================   ======================================================================================================================
+    Module.c           1x8 vector with the C coefficients Module.c(1) = C0
+    Module.Isc0        Short circuit current at reference condition (amps)
+    Module.Imp0        Maximum power current at reference condition (amps)
+    Module.AlphaIsc    Short circuit current temperature coefficient at reference condition (1/C)
+    Module.AlphaImp    Maximum power current temperature coefficient at reference condition (1/C)
+    Module.BetaVoc     Open circuit voltage temperature coefficient at reference condition (V/C)
+    Module.mBetaVoc    Coefficient providing the irradiance dependence for the BetaVoc temperature coefficient at reference irradiance (V/C)
+    Module.BetaVmp     Maximum power voltage temperature coefficient at reference condition
+    Module.mBetaVmp    Coefficient providing the irradiance dependence for the BetaVmp temperature coefficient at reference irradiance (V/C)
+    Module.n           Empirically determined "diode factor" (dimensionless)
+    Module.Ns          Number of cells in series in a module's cell string(s)
+    ================   ======================================================================================================================
 
-  AMcoeff=[var.Module['A4'],var.Module['A3'],var.Module['A2'],var.Module['A1'],var.Module['A0']]
-  AOIcoeff=[var.Module['B5'],var.Module['B4'],var.Module['B3'],var.Module['B2'],var.Module['B1'],var.Module['B0']]
+    References
+    ----------
 
-  F1 = np.polyval(AMcoeff,var.AM)
-  F2 = np.polyval(AOIcoeff,var.AOI)
-  var.Ee= F1*((var.Eb*F2+var.Module['FD']*var.Ediff)/E0)
-  #var['Ee']=F1*((var.Eb+var.Ediff)/E0)
-  #print "Ee modifed, revert for main function"
-  var.Ee.fillna(0)
-  var.Ee[var.Ee < 0]=0
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
+    3535, Sandia National Laboratories, Albuquerque, NM
 
-  Filt=var.Ee[var.Ee >= 0.001]
+    See Also
+    --------
 
-  Isc=var.Module.ix['Isco']*(var.Ee)*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
+    pvl_retreivesam
+    pvl_sapmcelltemp 
 
-  DFOut=pd.DataFrame({'Isc':Isc})
+    '''
+    Vars=locals()
+    Expect={'Module':(''),
+            'Eb':('x>0'),
+            'Ediff':('x>0'),
+            'Tcell':('x>0'),
+            'AM':('x>0'),
+            'AOI':('x>0')
+            }
+    var=pvl_tools.Parse(Vars,Expect)
 
-  DFOut['Imp']=var.Module.ix['Impo']*((var.Module.ix['C0']*(var.Ee) + var.Module.ix['C1'] * (var.Ee ** 2)))*((1 + var.Module.ix['Aimp']*((var.Tcell - T0))))
-  Bvoco=var.Module.ix['Bvoco'] + var.Module.ix['Mbvoc']*((1 - var.Ee))
-  delta=var.Module.ix['N']*(k)*((var.Tcell + 273.15)) / q
-  DFOut['Voc']=(var.Module.ix['Voco'] + var.Module.ix['#Series']*(delta)*(np.log(var.Ee)) + Bvoco*((var.Tcell - T0)))
-  Bvmpo=var.Module.ix['Bvmpo'] + var.Module.ix['Mbvmp']*((1 - var.Ee))
-  DFOut['Vmp']=(var.Module.ix['Vmpo'] + var.Module.ix['C2']*(var.Module.ix['#Series'])*(delta)*(np.log(var.Ee)) + var.Module.ix['C3']*(var.Module.ix['#Series'])*((delta*(np.log(var.Ee))) ** 2) + Bvmpo*((var.Tcell - T0)))
-  DFOut['Vmp'][DFOut['Vmp']<0]=0
-  DFOut['Pmp']=DFOut.Imp*DFOut.Vmp
-  DFOut['Ix']=var.Module.ix['IXO'] * (var.Module.ix['C4']*(var.Ee) + var.Module.ix['C5']*((var.Ee) ** 2))*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
-  DFOut['Ixx']=var.Module.ix['IXXO'] * (var.Module.ix['C6']*(var.Ee) + var.Module.ix['C7']*((var.Ee) ** 2))*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
+    T0=25
+    q=1.60218e-19
+    k=1.38066e-23
+    E0=1000
 
-  return  DFOut
+    AMcoeff=[var.Module['A4'],var.Module['A3'],var.Module['A2'],var.Module['A1'],var.Module['A0']]
+    AOIcoeff=[var.Module['B5'],var.Module['B4'],var.Module['B3'],var.Module['B2'],var.Module['B1'],var.Module['B0']]
+
+    F1 = np.polyval(AMcoeff,var.AM)
+    F2 = np.polyval(AOIcoeff,var.AOI)
+    var.Ee= F1*((var.Eb*F2+var.Module['FD']*var.Ediff)/E0)
+    #var['Ee']=F1*((var.Eb+var.Ediff)/E0)
+    #print "Ee modifed, revert for main function"
+    var.Ee.fillna(0)
+    var.Ee[var.Ee < 0]=0
+
+    Filt=var.Ee[var.Ee >= 0.001]
+
+    Isc=var.Module.ix['Isco']*(var.Ee)*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
+
+    DFOut=pd.DataFrame({'Isc':Isc})
+
+    DFOut['Imp']=var.Module.ix['Impo']*((var.Module.ix['C0']*(var.Ee) + var.Module.ix['C1'] * (var.Ee ** 2)))*((1 + var.Module.ix['Aimp']*((var.Tcell - T0))))
+    Bvoco=var.Module.ix['Bvoco'] + var.Module.ix['Mbvoc']*((1 - var.Ee))
+    delta=var.Module.ix['N']*(k)*((var.Tcell + 273.15)) / q
+    DFOut['Voc']=(var.Module.ix['Voco'] + var.Module.ix['#Series']*(delta)*(np.log(var.Ee)) + Bvoco*((var.Tcell - T0)))
+    Bvmpo=var.Module.ix['Bvmpo'] + var.Module.ix['Mbvmp']*((1 - var.Ee))
+    DFOut['Vmp']=(var.Module.ix['Vmpo'] + var.Module.ix['C2']*(var.Module.ix['#Series'])*(delta)*(np.log(var.Ee)) + var.Module.ix['C3']*(var.Module.ix['#Series'])*((delta*(np.log(var.Ee))) ** 2) + Bvmpo*((var.Tcell - T0)))
+    DFOut['Vmp'][DFOut['Vmp']<0]=0
+    DFOut['Pmp']=DFOut.Imp*DFOut.Vmp
+    DFOut['Ix']=var.Module.ix['IXO'] * (var.Module.ix['C4']*(var.Ee) + var.Module.ix['C5']*((var.Ee) ** 2))*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
+    DFOut['Ixx']=var.Module.ix['IXXO'] * (var.Module.ix['C6']*(var.Ee) + var.Module.ix['C7']*((var.Ee) ** 2))*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
+
+    return  DFOut
 
 
 def sapmcelltemp(E, Wspd, Tamb,modelt='Open_rack_cell_glassback',**kwargs):
-  '''
-  Estimate cell temperature from irradiance, windspeed, ambient temperature, and module parameters (SAPM)
+    '''
+    Estimate cell temperature from irradiance, windspeed, ambient temperature, and module parameters (SAPM)
 
-  Estimate cell and module temperatures per the Sandia PV Array
-  Performance model (SAPM, SAND2004-3535), when given the incident
-  irradiance, wind speed, ambient temperature, and SAPM module
-  parameters.
+    Estimate cell and module temperatures per the Sandia PV Array
+    Performance model (SAPM, SAND2004-3535), when given the incident
+    irradiance, wind speed, ambient temperature, and SAPM module
+    parameters.
 
-  Parameters
-  ----------
+    Parameters
+    ----------
 
-  E : float or DataFrame
-          Total incident irradiance in W/m^2. Must be >=0.
-
-
-  windspeed : float or DataFrame
-          Wind speed in m/s at a height of 10 meters. Must be >=0
-
-  Tamb : float or DataFrame
-          Ambient dry bulb temperature in degrees C. Must be >= -273.15.
+    E : float or DataFrame
+            Total incident irradiance in W/m^2. Must be >=0.
 
 
-  Other Parameters
-  ----------------
+    windspeed : float or DataFrame
+            Wind speed in m/s at a height of 10 meters. Must be >=0
 
-  modelt :  string
+    Tamb : float or DataFrame
+            Ambient dry bulb temperature in degrees C. Must be >= -273.15.
 
-  Model to be used for parameters, can be:
 
-          * 'Open_rack_cell_glassback' (DEFAULT)
-          * 'Roof_mount_cell_glassback'
-          * 'Open_rack_cell_polymerback'
-          * 'Insulated_back_polumerback'
-          * 'Open_rack_Polymer_thinfilm_steel'
-          * '22X_Concentrator_tracker'
+    Other Parameters
+    ----------------
 
-  a : float (optional)
-          SAPM module parameter for establishing the upper limit for module 
-          temperature at low wind speeds and high solar irradiance (see SAPM
-          eqn. 11). Must be a scalar.If not input, this value will be taken from the chosen
-          model
-  b : float (optional)
+    modelt :  string
 
-          SAPM module parameter for establishing the rate at which the module
-          temperature drops as wind speed increases (see SAPM eqn. 11). Must be
-          a scalar.If not input, this value will be taken from the chosen
-          model
+    Model to be used for parameters, can be:
 
-  deltaT : float (optional) 
+            * 'Open_rack_cell_glassback' (DEFAULT)
+            * 'Roof_mount_cell_glassback'
+            * 'Open_rack_cell_polymerback'
+            * 'Insulated_back_polumerback'
+            * 'Open_rack_Polymer_thinfilm_steel'
+            * '22X_Concentrator_tracker'
 
-          SAPM module parameter giving the temperature difference
-          between the cell and module back surface at the reference irradiance,
-          E0. Must be a numeric scalar >=0. If not input, this value will be taken from the chosen
-          model
+    a : float (optional)
+            SAPM module parameter for establishing the upper limit for module 
+            temperature at low wind speeds and high solar irradiance (see SAPM
+            eqn. 11). Must be a scalar.If not input, this value will be taken from the chosen
+            model
+    b : float (optional)
 
-  Returns
-  --------
-  Tcell : float or DataFrame
-          Cell temperatures in degrees C.
-  
-  Tmodule : float or DataFrame
-          Module back temperature in degrees C.
+            SAPM module parameter for establishing the rate at which the module
+            temperature drops as wind speed increases (see SAPM eqn. 11). Must be
+            a scalar.If not input, this value will be taken from the chosen
+            model
 
-  References
-  ----------
+    deltaT : float (optional) 
 
-  [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
-  3535, Sandia National Laboratories, Albuquerque, NM
+            SAPM module parameter giving the temperature difference
+            between the cell and module back surface at the reference irradiance,
+            E0. Must be a numeric scalar >=0. If not input, this value will be taken from the chosen
+            model
 
-  See Also 
-  --------
+    Returns
+    --------
+    Tcell : float or DataFrame
+            Cell temperatures in degrees C.
 
-  pvl_sapm
-  '''
-  Vars=locals()
-  Expect={'a':('optional','num'),
-          'b':('optional','num'),
-          'deltaT':('optional','num'), 
-          'E':('x>=0'),
-          'Wspd':('x>=0'),
-          'Tamb':('x>=0'),
-          'modelt': ('default','default=Open_rack_cell_glassback')
-          }
+    Tmodule : float or DataFrame
+            Module back temperature in degrees C.
 
-  var=pvl_tools.Parse(Vars,Expect)
+    References
+    ----------
 
-  TempModel={'Open_rack_cell_glassback':[-3.47, -.0594, 3],
-              'Roof_mount_cell_glassback':[-2.98, -.0471, 1],
-              'Open_rack_cell_polymerback': [-3.56, -.0750, 3],
-              'Insulated_back_polumerback': [-2.81, -.0455, 0 ],
-              'Open_rack_Polymer_thinfilm_steel':[-3.58, -.113, 3],
-              '22X_Concentrator_tracker':[-3.23, -.130, 13]
-          }
-  try: 
-      a=var.a
-      b=var.b
-      deltaT=var.deltaT
-  except:
-      a=TempModel[var.modelt][0]
-      b=TempModel[var.modelt][1]
-      deltaT=TempModel[var.modelt][2]
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
+    3535, Sandia National Laboratories, Albuquerque, NM
 
-  E0=1000 # Reference irradiance
+    See Also 
+    --------
 
-  Tmodule=var.E*((np.exp(a + b*var.Wspd))) + var.Tamb
+    pvl_sapm
+    '''
+    Vars=locals()
+    Expect={'a':('optional','num'),
+            'b':('optional','num'),
+            'deltaT':('optional','num'), 
+            'E':('x>=0'),
+            'Wspd':('x>=0'),
+            'Tamb':('x>=0'),
+            'modelt': ('default','default=Open_rack_cell_glassback')
+            }
 
-  Tcell=Tmodule + var.E / E0*(deltaT)
+    var=pvl_tools.Parse(Vars,Expect)
 
-  return pd.DataFrame({'Tcell':Tcell,'Tmodule':Tmodule})
+    TempModel={'Open_rack_cell_glassback':[-3.47, -.0594, 3],
+                'Roof_mount_cell_glassback':[-2.98, -.0471, 1],
+                'Open_rack_cell_polymerback': [-3.56, -.0750, 3],
+                'Insulated_back_polumerback': [-2.81, -.0455, 0 ],
+                'Open_rack_Polymer_thinfilm_steel':[-3.58, -.113, 3],
+                '22X_Concentrator_tracker':[-3.23, -.130, 13]
+            }
+    try: 
+        a=var.a
+        b=var.b
+        deltaT=var.deltaT
+    except:
+        a=TempModel[var.modelt][0]
+        b=TempModel[var.modelt][1]
+        deltaT=TempModel[var.modelt][2]
+
+    E0=1000 # Reference irradiance
+    Tmodule=var.E*((np.exp(a + b*var.Wspd))) + var.Tamb
+
+    Tcell=Tmodule + var.E / E0*(deltaT)
+
+    return pd.DataFrame({'Tcell':Tcell,'Tmodule':Tmodule})
 
 def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
     '''
@@ -1206,7 +1207,7 @@ def golden_sect_DataFrame(df,VL,VH,func):
 
     df['VH']=VH
     df['VL']=VL
-
+      
     err=df['VH']-df['VL']
     errflag=True
     iterations=0
@@ -1260,7 +1261,11 @@ def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
     # Rsh, nVth, V, I0, IL can all be DataFrames
     # Rs can be a DataFrame, but should be a scalar
     '''
-
+    try:
+        from scipy.special import lambertw
+    except ImportError:
+        raise ImportError('The I_from_V function requires scipy')
+    
     argW = Rs*I0*Rsh*np.exp(Rsh*(Rs*(IL+I0)+V)/(nNsVth*(Rs+Rsh)))/(nNsVth*(Rs + Rsh))
     inputterm =lambertw(argW)
 

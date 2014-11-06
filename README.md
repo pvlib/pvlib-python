@@ -1,6 +1,9 @@
 PVLIB_Python
 ============
 
+![TravisCI](https://travis-ci.org/UARENForecasting/PVLIB_Python.svg)
+[![Coverage Status](https://img.shields.io/coveralls/UARENForecasting/PVLIB_Python.svg)](https://coveralls.io/r/UARENForecasting/PVLIB_Python)
+
 This repo is a fork of the [Sandia PVLIB_Python](https://github.com/Sandia-Labs/PVLIB_Python) project.
 
 It provides a set of sometimes-well-documented and usually correct functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. 

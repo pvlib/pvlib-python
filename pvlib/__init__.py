@@ -1,12 +1,11 @@
 
 import logging
 logging.basicConfig()
-
+from . import pvl_tools
 from . import atmosphere
 from . import clearsky
 from . import irradiance
 from . import location
-from . import pvl_tools
 from . import solarposition
 from . import tmy
 

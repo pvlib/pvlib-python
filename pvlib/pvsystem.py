@@ -7,7 +7,7 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from pvlib import  pvl_tools
+from pvlib import tools
 
 
 
@@ -256,15 +256,15 @@ def physicaliam(K,L,n,theta):
         print('Input incident angles <0 or >=90 detected For input angles with absolute value greater than 90, the ' + 'modifier is set to 0. For input angles between -90 and 0, the ' + 'angle is changed to its absolute value and evaluated.')
         theta[(theta < 0) | (theta >= 90)]=abs((theta < 0) | (theta >= 90))
 
-    thetar_deg=pvl_tools.asind(1.0 / n*(pvl_tools.sind(theta)))
+    thetar_deg=tools.asind(1.0 / n*(tools.sind(theta)))
 
-    tau=np.exp(- 1.0 * (K*(L) / pvl_tools.cosd(thetar_deg)))*((1 - 0.5*((((pvl_tools.sind(thetar_deg - theta)) ** 2) / ((pvl_tools.sind(thetar_deg + theta)) ** 2) + ((pvl_tools.tand(thetar_deg - theta)) ** 2) / ((pvl_tools.tand(thetar_deg + theta)) ** 2)))))
+    tau=np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg)))*((1 - 0.5*((((tools.sind(thetar_deg - theta)) ** 2) / ((tools.sind(thetar_deg + theta)) ** 2) + ((tools.tand(thetar_deg - theta)) ** 2) / ((tools.tand(thetar_deg + theta)) ** 2)))))
     
     zeroang=1e-06
     
-    thetar_deg0=pvl_tools.asind(1.0 / n*(pvl_tools.sind(zeroang)))
+    thetar_deg0=tools.asind(1.0 / n*(tools.sind(zeroang)))
     
-    tau0=np.exp(- 1.0 * (K*(L) / pvl_tools.cosd(thetar_deg0)))*((1 - 0.5*((((pvl_tools.sind(thetar_deg0 - zeroang)) ** 2) / ((pvl_tools.sind(thetar_deg0 + zeroang)) ** 2) + ((pvl_tools.tand(thetar_deg0 - zeroang)) ** 2) / ((pvl_tools.tand(thetar_deg0 + zeroang)) ** 2)))))
+    tau0=np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg0)))*((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) / ((tools.sind(thetar_deg0 + zeroang)) ** 2) + ((tools.tand(thetar_deg0 - zeroang)) ** 2) / ((tools.tand(thetar_deg0 + zeroang)) ** 2)))))
     
     IAM=tau / tau0
     

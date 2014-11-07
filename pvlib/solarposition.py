@@ -17,7 +17,7 @@ import pandas as pd
 import pytz
     
 
-from .pvl_tools import localize_to_utc, datetime_to_djd, djd_to_datetime
+from pvlib.pvl_tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
 def get_solarposition(time, location, method='pyephem', pressure=101325, 
@@ -84,7 +84,7 @@ def spa(time, location, raw_spa_output=False):
     # Edited by Will Holmgren (@wholmgren), University of Arizona, 2014 
 
     try:
-        from .spa_c_files.spa_py import spa_calc
+        from pvlib.spa_c_files.spa_py import spa_calc
     except ImportError as e:
         raise ImportError('Could not import built-in SPA calculator. '+
                           'You may need to recompile the SPA code.')

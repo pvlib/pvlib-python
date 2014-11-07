@@ -1,7 +1,7 @@
 from nose.tools import *
 import numpy as np
 import pandas as pd 
-from ..pvsystem import ashraeiam
+from pvlib.pvsystem import ashraeiam
 
 def test_proper():
 	IAM=ashraeiam(.05,pd.DataFrame(list(range(90)))	)

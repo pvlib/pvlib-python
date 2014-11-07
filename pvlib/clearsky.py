@@ -13,10 +13,10 @@ import numpy as np
 import pandas as pd
 import scipy.io
 
-from . import pvl_tools
-from . import irradiance
-from . import atmosphere
-from . import solarposition
+from pvlib import pvl_tools
+from pvlib import irradiance
+from pvlib import atmosphere
+from pvlib import solarposition
 
 
 

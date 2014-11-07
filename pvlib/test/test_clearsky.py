@@ -8,9 +8,9 @@ import pandas as pd
 
 from nose.tools import raises
 
-from ..location import Location
-from .. import clearsky
-from .. import solarposition
+from pvlib.location import Location
+from pvlib import clearsky
+from pvlib import solarposition
 
 # setup times and location to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24), 

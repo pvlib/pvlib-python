@@ -1,7 +1,7 @@
 from nose.tools import *
 import numpy as np
 import pandas as pd 
-from ..pvsystem import physicaliam
+from pvlib.pvsystem import physicaliam
 
 def test_proper():
 	IAM=physicaliam(.05,.5,.2,pd.DataFrame(list(range(90))))	

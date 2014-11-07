@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import scipy.io
 
-from pvlib import pvl_tools
+from pvlib import tools
 from pvlib import irradiance
 from pvlib import atmosphere
 from pvlib import solarposition
@@ -193,7 +193,7 @@ def ineichen(time, location, linke_turbidity=None,
     #  We used the equation from pg 311 because of the existence of known typos 
     #  in the pg 156 publication (notably the fh2-(TL-1) should be fh2 * (TL-1)). 
     
-    cos_zenith = pvl_tools.cosd(ApparentZenith)
+    cos_zenith = tools.cosd(ApparentZenith)
     
     clearsky_GHI = cg1 * I0 * cos_zenith * np.exp(-cg2*AMabsolute*(fh1 + fh2*(TL - 1))) * np.exp(0.01*AMabsolute**1.8)
     clearsky_GHI[clearsky_GHI < 0] = 0
@@ -268,7 +268,7 @@ def haurwitz(ApparentZenith):
     pvl_ineichen
     '''
 
-    cos_zenith = pvl_tools.cosd(ApparentZenith)
+    cos_zenith = tools.cosd(ApparentZenith)
 
     clearsky_GHI = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
 
@@ -353,29 +353,20 @@ def disc(GHI, SunZen, Time, pressure=101325):
 
     '''
 
-    Vars=locals()
-    Expect={'GHI': ('array','num','x>=0'),
-          'SunZen': ('array','num','x<=180','x>=0'),
-          'Time':'',
-          'pressure':('num','default','default=101325','x>=0'),
-          }
-
-    var=pvl_tools.Parse(Vars,Expect)
-
     #create a temporary dataframe to house masked values, initially filled with NaN
-    temp=pd.DataFrame(index=var.Time,columns=['A','B','C'])
+    temp=pd.DataFrame(index=Time,columns=['A','B','C'])
 
 
-    var.pressure=101325
-    doy=var.Time.dayofyear
+    pressure=101325
+    doy=Time.dayofyear
     DayAngle=2.0 * np.pi*((doy - 1)) / 365
     re=1.00011 + 0.034221*(np.cos(DayAngle)) + (0.00128)*(np.sin(DayAngle)) + 0.000719*(np.cos(2.0 * DayAngle)) + (7.7e-05)*(np.sin(2.0 * DayAngle))
     I0=re*(1370)
-    I0h=I0*(np.cos(np.radians(var.SunZen)))
-    Ztemp=var.SunZen
-    Ztemp[var.SunZen > 87]=87
-    AM=1.0 / (np.cos(np.radians(Ztemp)) + 0.15*(((93.885 - Ztemp) ** (- 1.253))))*(var.pressure) / 101325
-    Kt=var.GHI / (I0h)
+    I0h=I0*(np.cos(np.radians(SunZen)))
+    Ztemp=SunZen
+    Ztemp[SunZen > 87]=87
+    AM=1.0 / (np.cos(np.radians(Ztemp)) + 0.15*(((93.885 - Ztemp) ** (- 1.253))))*(pressure) / 101325
+    Kt=GHI / (I0h)
     Kt[Kt < 0]=0
     Kt[Kt > 2]=np.NaN
     temp.A[Kt > 0.6]=- 5.743 + 21.77*(Kt[Kt > 0.6]) - 27.49*(Kt[Kt > 0.6] ** 2) + 11.56*(Kt[Kt > 0.6] ** 3)
@@ -391,8 +382,8 @@ def disc(GHI, SunZen, Time, pressure=101325):
     Kn=Knc - delKn
     DNI=(Kn)*(I0)
 
-    DNI[var.SunZen > 87]=np.NaN
-    DNI[var.GHI < 1]=np.NaN
+    DNI[SunZen > 87]=np.NaN
+    DNI[GHI < 1]=np.NaN
     DNI[DNI < 0]=np.NaN
 
     DFOut=pd.DataFrame({'DNI_gen_DISC':DNI})

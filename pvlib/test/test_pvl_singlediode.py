@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd 
 import sys
 import os
-from ..pvsystem import singlediode, getaoi ,calcparams_desoto 
-from ..irradiance import  extraradiation  
-from ..atmosphere import relativeairmass 
-from ..solarposition import ephemeris
-from .. import pvl_tools
-from .. import tmy
+from pvlib.pvsystem import singlediode, getaoi ,calcparams_desoto 
+from pvlib.irradiance import  extraradiation  
+from pvlib.atmosphere import relativeairmass 
+from pvlib.solarposition import ephemeris
+from pvlib import pvl_tools
+from pvlib import tmy
 
 def test_proper_vector():
         # definitely not the proper way to run tests, doesn't need to use other modules

@@ -23,6 +23,8 @@ install:
     - conda install --yes coverage
     - pip install coveralls
     - python setup.py install
+    # for nosetests to actually work since it alters the path
+    - python setup.py build_ext --inplace
 
 script:
     - nosetests -v --with-coverage --cover-package=pvlib pvlib

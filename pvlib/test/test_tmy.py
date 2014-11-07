@@ -6,7 +6,7 @@ import os
 
 test_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
-from .. import tmy
+from pvlib import tmy
 
 
 def test_readtmy3():

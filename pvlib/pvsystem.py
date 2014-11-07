@@ -7,7 +7,7 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from . import  pvl_tools
+from pvlib import  pvl_tools
 
 
 def makelocationstruct(latitude,longitude,TZ,altitude=100,Name='Usr_input',State='Usr_input'):

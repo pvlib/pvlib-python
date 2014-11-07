@@ -17,7 +17,7 @@ import pandas as pd
 import pytz
     
 
-from pvlib.pvl_tools import localize_to_utc, datetime_to_djd, djd_to_datetime
+from pvlib.tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
 def get_solarposition(time, location, method='pyephem', pressure=101325, 

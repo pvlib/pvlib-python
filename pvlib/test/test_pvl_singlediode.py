@@ -8,7 +8,7 @@ from pvlib.pvsystem import singlediode, getaoi ,calcparams_desoto
 from pvlib.irradiance import  extraradiation  
 from pvlib.atmosphere import relativeairmass 
 from pvlib.solarposition import ephemeris
-from pvlib import pvl_tools
+from pvlib import tools
 from pvlib import tmy
 
 def test_proper_vector():
@@ -40,7 +40,7 @@ def test_proper_vector():
 			 'V_mp_ref': 46.6,
 			 'V_oc_ref': 58.3}
 
-	module=pvl_tools.repack(module)
+	module=tools.repack(module)
 
 	TMY['SunAz'], TMY['SunEl'], TMY['ApparentSunEl'], TMY['SolarTime'], TMY['SunZen']=ephemeris(Time=TMY.index,Location=meta)
 

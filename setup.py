@@ -35,6 +35,7 @@ setuptools_kwargs = {
     'install_requires': ['numpy >= 1.7.0',
                          'pandas >= 0.13',
                          'pytz',
+                         'numpydoc'
                          ],
     'scripts': [],
     'include_package_data': True

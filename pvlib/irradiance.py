@@ -13,7 +13,7 @@ try:
 except ImportError as e:
     pvl_logger.warning('PyEphem not found.')
 
-from . import pvl_tools
+from pvlib import tools
  
 
 SURFACE_ALBEDOS = {'urban':0.18,
@@ -155,7 +155,7 @@ def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
     float or Series. Dot product of panel normal and solar angle.
     """
     
-    projection = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
+    projection = tools.cosd(surf_tilt)*tools.cosd(sun_zen) + tools.sind(surf_tilt)*tools.sind(sun_zen)*tools.cosd(sun_az - surf_az)
     
     try:
         projection.name = 'aoi_projection'
@@ -229,7 +229,7 @@ def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
     
     cos_poa_zen = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
-    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    cos_sun_zen = tools.cosd(sun_zen)
     
     # ratio of titled and horizontal beam irradiance
     ratio = cos_poa_zen / cos_sun_zen
@@ -397,7 +397,7 @@ def globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
       'GR':('x>=0'),
       }
 
-    var=pvl_tools.Parse(Vars,Expect)
+    var=tools.Parse(Vars,Expect)
 
     Eb = var.DNI*np.cos(np.radians(var.AOI)) 
     E = Eb + var.In_Plane_SkyDiffuse + var.GR
@@ -545,7 +545,7 @@ def isotropic(surf_tilt, DHI):
 
     pvl_logger.debug('diffuse_sky.isotropic()')
 
-    sky_diffuse = DHI * (1 + pvl_tools.cosd(surf_tilt)) * 0.5
+    sky_diffuse = DHI * (1 + tools.cosd(surf_tilt)) * 0.5
 
     return sky_diffuse
 
@@ -650,9 +650,9 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     except AttributeError:
         F = 0
 
-    term1 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
-    term2 = 1 + F * (pvl_tools.sind(0.5*surf_tilt) ** 3)
-    term3 = 1 + F * (cos_tt ** 2) * (pvl_tools.sind(sun_zen) ** 3)
+    term1 = 0.5 * (1 + tools.cosd(surf_tilt))
+    term2 = 1 + F * (tools.sind(0.5*surf_tilt) ** 3)
+    term3 = 1 + F * (cos_tt ** 2) * (tools.sind(sun_zen) ** 3)
 
     sky_diffuse = DHI * term1 * term2 * term3
 
@@ -748,7 +748,7 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     
     cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
-    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    cos_sun_zen = tools.cosd(sun_zen)
     
     # ratio of titled and horizontal beam irradiance
     Rb = cos_tt / cos_sun_zen
@@ -758,7 +758,7 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
 
     # these are actually the () and [] sub-terms of the second term of eqn 7
     term1 = 1 - AI
-    term2 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
+    term2 = 0.5 * (1 + tools.cosd(surf_tilt))
 
     sky_diffuse = DHI * ( AI*Rb + term1 * term2 )
     sky_diffuse[sky_diffuse < 0] = 0
@@ -870,7 +870,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     
     cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
-    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    cos_sun_zen = tools.cosd(sun_zen)
     
     # ratio of titled and horizontal beam irradiance
     Rb = cos_tt / cos_sun_zen
@@ -884,8 +884,8 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
 
     # these are actually the () and [] sub-terms of the second term of eqn 8
     term1 = 1 - AI
-    term2 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
-    term3 = 1 + np.sqrt(HB / GHI) * (pvl_tools.sind(0.5*surf_tilt) ** 3)
+    term2 = 0.5 * (1 + tools.cosd(surf_tilt))
+    term3 = 1 + np.sqrt(HB / GHI) * (tools.sind(0.5*surf_tilt) ** 3)
 
     sky_diffuse = DHI * ( AI*Rb + term1 * term2 * term3 )
     sky_diffuse[sky_diffuse < 0] = 0
@@ -949,7 +949,7 @@ def king(surf_tilt, DHI, GHI, sun_zen):
     
     pvl_logger.debug('diffuse_sky.king()')
 
-    sky_diffuse = DHI * ((1 + pvl_tools.cosd(surf_tilt))) / 2 + GHI*((0.012 * sun_zen - 0.04))*((1 - pvl_tools.cosd(surf_tilt))) / 2
+    sky_diffuse = DHI * ((1 + tools.cosd(surf_tilt))) / 2 + GHI*((0.012 * sun_zen - 0.04))*((1 - tools.cosd(surf_tilt))) / 2
     sky_diffuse[sky_diffuse < 0] = 0
     
     return sky_diffuse
@@ -1137,15 +1137,15 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     A = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     A[A < 0] = 0
 
-    B = pvl_tools.cosd(sun_zen);
-    B[B < pvl_tools.cosd(85)] = pvl_tools.cosd(85)
+    B = tools.cosd(sun_zen);
+    B[B < tools.cosd(85)] = tools.cosd(85)
 
 
     #Calculate Diffuse POA from sky dome
     
-    term1 = 0.5 * (1 - F1) * (1 + pvl_tools.cosd(surf_tilt))
+    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surf_tilt))
     term2 = F1 * A[ebin.index] / B[ebin.index]
-    term3 = F2*pvl_tools.sind(surf_tilt)
+    term3 = F2*tools.sind(surf_tilt)
     
     sky_diffuse = DHI[ebin.index] * (term1 + term2 + term3)
     sky_diffuse[sky_diffuse < 0] = 0

@@ -1,5 +1,5 @@
 
-from .. import pvl_tools	 
+from pvlib import pvl_tools	 
 from nose.tools import *
 import numpy as np
 import pandas as pd 

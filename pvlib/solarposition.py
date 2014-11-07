@@ -7,29 +7,20 @@ Calculate the solar position using a variety of methods/packages.
 # Will Holmgren (@wholmgren), University of Arizona, 2014 
 
 from __future__ import division
-
 import logging
 pvl_logger = logging.getLogger('pvlib')
+import datetime as dt
 
-import datetime
 
 import numpy as np
 import pandas as pd
 import pytz
     
-try:
-    from .spa_c_files.spa_py import spa_calc
-except ImportError as e:
-    pvl_logger.exception('Could not import built-in SPA calculator. You may need to recompile the SPA code.')
 
-try:    
-    import ephem
-except ImportError as e:
-    pvl_logger.warning('PyEphem not found.')
+from pvlib.pvl_tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
-
-def get_solarposition(time, location, method='spa', pressure=101325, 
+def get_solarposition(time, location, method='pyephem', pressure=101325, 
                       temperature=12):
     """
     A convenience wrapper for the solar position calculators.
@@ -48,6 +39,8 @@ def get_solarposition(time, location, method='spa', pressure=101325,
     """
     
     method = method.lower()
+    if isinstance(time, dt.datetime):
+        time = pd.DatetimeIndex([time,])
     
     if method == 'spa':
         ephem_df = spa(time, location)
@@ -57,7 +50,6 @@ def get_solarposition(time, location, method='spa', pressure=101325,
         raise ValueError('Invalid solar position method')
         
     return ephem_df
-
 
 
 def spa(time, location, raw_spa_output=False):
@@ -90,10 +82,16 @@ def spa(time, location, raw_spa_output=False):
     
     # Added by Rob Andrews (@Calama-Consulting), Calama Consulting, 2014 
     # Edited by Will Holmgren (@wholmgren), University of Arizona, 2014 
+
+    try:
+        from pvlib.spa_c_files.spa_py import spa_calc
+    except ImportError as e:
+        raise ImportError('Could not import built-in SPA calculator. '+
+                          'You may need to recompile the SPA code.')
     
     pvl_logger.debug('using built-in spa code to calculate solar position')
     
-    time_utc = _localize_to_utc(time, location)
+    time_utc = localize_to_utc(time, location)
         
     spa_out = []
     
@@ -120,6 +118,20 @@ def spa(time, location, raw_spa_output=False):
         return dfout
 
 
+def _ephem_setup(location, pressure, temperature):
+    import ephem
+    # initialize a PyEphem observer
+    obs = ephem.Observer()
+    obs.lat = str(location.latitude)
+    obs.lon = str(location.longitude)
+    obs.elevation = location.altitude
+    obs.pressure = pressure / 100. # convert to mBar
+    obs.temp = temperature
+    
+    # the PyEphem sun
+    sun = ephem.Sun()
+    return obs, sun
+
 
 def pyephem(time, location, pressure=101325, temperature=12):
     """
@@ -144,24 +156,17 @@ def pyephem(time, location, pressure=101325, temperature=12):
     """
     
     # Written by Will Holmgren (@wholmgren), University of Arizona, 2014 
-    
+
+    import ephem
+
     pvl_logger.debug('using PyEphem to calculate solar position')
     
-    time_utc = _localize_to_utc(time, location)
+    time_utc = localize_to_utc(time, location)
     
     sun_coords = pd.DataFrame(index=time_utc)
     
-    # initialize a PyEphem observer
-    obs = ephem.Observer()
-    obs.lat = str(location.latitude)
-    obs.lon = str(location.longitude)
-    obs.elevation = location.altitude
-    obs.pressure = pressure / 100. # convert to mBar
-    obs.temp = temperature
-    
-    # the PyEphem sun
-    sun = ephem.Sun()
-    
+    obs, sun = _ephem_setup(location, pressure, temperature)
+
     # make and fill lists of the sun's altitude and azimuth
     # this is the pressure and temperature corrected apparent alt/az.
     alts = []
@@ -197,8 +202,7 @@ def pyephem(time, location, pressure=101325, temperature=12):
         return sun_coords.tz_convert(location.tz)
     except TypeError:
         return sun_coords.tz_localize(location.tz)
-        
-        
+
         
 def ephemeris(time, location, pressure=101325, temperature=12):
     ''' 
@@ -217,7 +221,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     pressure : float or DataFrame
           Ambient pressure (Pascals)
 
-    tempreature: float or DataFrame
+    temperature : float or DataFrame
           Ambient temperature (C)
       
     Returns
@@ -374,30 +378,63 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     DFOut['solar_time'] = SolarTime
 
     return DFOut
-        
-        
-        
-def _localize_to_utc(time, location):
+
+
+def calc_time(lower_bound, upper_bound, location, attribute, value, 
+              pressure=101325, temperature=12, xtol=1.0e-12):
     """
-    Converts or localizes a time series to UTC.
+    Calculate the time between lower_bound and upper_bound
+    where the attribute is equal to value. Uses PyEphem for
+    solar position calculations.
     
     Parameters
     ----------
-    time : pandas.DatetimeIndex or pandas.Series/DataFrame with a DatetimeIndex.
+    lower_bound : datetime.datetime 
+    upper_bound : datetime.datetime 
     location : pvlib.Location object
+    attribute : str
+        The attribute of a pyephem.Sun object that
+        you want to solve for. Likely options are 'alt'
+        and 'az' (which must be given in radians).
+    value : int or float
+        The value of the attribute to solve for
+    pressure : int or float, optional
+        Air pressure in Pascals. Set to 0 for no
+        atmospheric correction.
+    temperature : int or float, optional
+        Air temperature in degrees C.
+    xtol : float, optional
+        The allowed error in the result from value
     
     Returns
     -------
-    pandas object localized to UTC.
+    datetime.datetime
+
+    Raises
+    ------
+    ValueError
+        If the value is not contained between the bounds.
+    AttributeError
+        If the given attribute is not an attribute of a
+        PyEphem.Sun object.
     """
-    
+
     try:
-        time_utc = time.tz_convert('UTC')
-        pvl_logger.debug('tz_convert to UTC')
-    except TypeError:
-        time_utc = time.tz_localize(location.tz).tz_convert('UTC')
-        pvl_logger.debug('tz_localize to {} and then tz_convert to UTC'
-                         .format(location.tz))
+        import scipy.optimize as so
+    except ImportError as e:
+        raise ImportError('The calc_time function requires scipy')
+
+    obs, sun = _ephem_setup(location, pressure, temperature)
+
+    def compute_attr(thetime, target, attr):
+        obs.date = thetime
+        sun.compute(obs)
+        return getattr(sun, attr) - target
         
-    return time_utc
-    
+    lb = datetime_to_djd(lower_bound)
+    ub = datetime_to_djd(upper_bound)
+
+    djd_root = so.brentq(compute_attr, lb, ub, 
+                         (value, attribute), xtol=xtol)
+
+    return djd_to_datetime(djd_root, location.tz)

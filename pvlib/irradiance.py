@@ -13,7 +13,7 @@ try:
 except ImportError as e:
     pvl_logger.warning('PyEphem not found.')
 
-from . import pvl_tools
+from pvlib import pvl_tools
  
 
 SURFACE_ALBEDOS = {'urban':0.18,

@@ -9,9 +9,9 @@ import pandas as pd
 from nose.tools import raises
 from nose.tools import assert_almost_equals
 
-from ..location import Location
-from .. import solarposition
-from .. import atmosphere
+from pvlib.location import Location
+from pvlib import solarposition
+from pvlib import atmosphere
 
 
 # setup times and location to be tested.

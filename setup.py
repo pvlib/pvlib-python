@@ -27,8 +27,8 @@ MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 # check python version.
-if sys.version_info[:2] != (2, 7):
-    sys.exit('%s requires Python 2.7' % DISTNAME)
+#if sys.version_info[:2] != (2, 7):
+#    sys.exit('%s requires Python 2.7' % DISTNAME)
 
 setuptools_kwargs = {
     'zip_safe': False,

@@ -165,7 +165,7 @@ def _doy_to_timestamp(doy, epoch='2013-12-31'):
     -------
     pd.Timestamp
     """
-    return pd.Timestamp('2013-12-31') + pd.Timedelta(days=np.int64(doy))
+    return pd.Timestamp('2013-12-31') + pd.Timedelta(days=float(doy))
     
     
     

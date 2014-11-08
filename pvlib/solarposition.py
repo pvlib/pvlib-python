@@ -438,3 +438,33 @@ def calc_time(lower_bound, upper_bound, location, attribute, value,
                          (value, attribute), xtol=xtol)
 
     return djd_to_datetime(djd_root, location.tz)
+    
+    
+    
+def pyephem_earthsun_distance(time):
+    """
+    Calculates the distance from the earth to the sun using pyephem.
+    
+    Parameters
+    ----------
+    time : pd.DatetimeIndex
+    
+    Returns
+    -------
+    pd.Series. Earth-sun distance in AU.
+    """
+    pvl_logger.debug('solarposition.pyephem_earthsun_distance()')
+    
+    import ephem
+    
+    sun = ephem.Sun()
+    earthsun = []
+    for thetime in time:
+        sun.compute(ephem.Date(thetime))
+        earthsun.append(sun.earth_distance)
+        
+    return pd.Series(earthsun, index=time)
+
+
+
+

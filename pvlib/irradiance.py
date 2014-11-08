@@ -8,13 +8,8 @@ import pdb
 import numpy as np
 import pandas as pd
 
-try:    
-    import ephem
-except ImportError as e:
-    pvl_logger.warning('PyEphem not found.')
-
 from pvlib import tools
- 
+from pvlib import solarposition 
 
 SURFACE_ALBEDOS = {'urban':0.18,
                    'grass':0.20,
@@ -34,22 +29,15 @@ SURFACE_ALBEDOS = {'urban':0.18,
 
 
 # would be nice if this took pandas index as well. Use try:except of isinstance.
-# could also use pyephem (if available)
-def extraradiation(doy, solar_constant=1366.1, method='spencer'):
-    '''
+def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
+    """
     Determine extraterrestrial radiation from day of year.
-    
-    The calculation method appears to be based on Spencer 1971.
-    The primary references here cannot be easily obtained.
-    
-    If you really care about this parameter, consider using NREL's SOLPOS or 
-    pyephem's earth_distance() function.
 
     Parameters
     ----------
-
-    doy : int or pandas.index.dayofyear
-        Day of the year
+    datetime_or_doy : int, float, array, pd.DatetimeIndex
+        Day of year, array of days of year e.g. pd.DatetimeIndex.dayofyear, 
+        or pd.DatetimeIndex.
         
     solar_constant : float
         The solar constant.
@@ -60,34 +48,53 @@ def extraradiation(doy, solar_constant=1366.1, method='spencer'):
 
     Returns
     -------
-
-    Ea : float or Series
+    float or Series
 
         The extraterrestrial radiation present in watts per square meter
         on a surface which is normal to the sun. Ea is of the same size as the
-        input doy.
-
+        input doy. 
+        
+        'pyephem' always returns a series.
+        
+    Notes
+    -----
+    The Spencer method contains a minus sign discrepancy between
+    equation 12 of [1]. It's unclear what the correct formula is. 
 
     References
     ----------
-    <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs. SR1 and SR2
-
-    SR1       Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes in Meteorology and Climatology.
-
-    SR2       Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
-
-    There is a minus sign discrepancy with equation 12 of 
-    M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
+    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
     Sky Models: Implementation and Analysis", Sandia National
     Laboratories, SAND2012-2389, 2012. 
     
+    [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, 
+    Eqs. SR1 and SR2
+
+    [3] Partridge, G. W. and Platt, C. M. R. 1976. 
+    Radiative Processes in Meteorology and Climatology.
+
+    [4] Duffie, J. A. and Beckman, W. A. 1991. 
+    Solar Engineering of Thermal Processes, 
+    2nd edn. J. Wiley and Sons, New York.
+
     See Also 
     --------
-    pvl_disc
-
-    '''
+    disc
+    """
+    
+    pvl_logger.debug('irradiance.extraradiation()')
     
     method = method.lower()
+    
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        doy = datetime_or_doy.dayofyear
+        input_to_datetimeindex = lambda x: datetime_or_doy
+    elif isinstance(datetime_or_doy, (int, float)):
+        doy = datetime_or_doy
+        input_to_datetimeindex = _scalar_to_datetimeindex
+    else: # assume that we have an array-like object of doy. danger?
+        doy = datetime_or_doy
+        input_to_datetimeindex = _array_to_datetimeindex
     
     B = ( 2*np.pi / 365 ) * doy
     
@@ -98,6 +105,10 @@ def extraradiation(doy, solar_constant=1366.1, method='spencer'):
         pvl_logger.debug('Calculating ET rad using Spencer method')
         RoverR0sqrd = (1.00011 + 0.034221*np.cos(B) + 0.00128*np.sin(B) + 
                        0.000719*np.cos(2*B) + 7.7e-05*np.sin(2*B))
+    elif method == 'pyephem':
+        pvl_logger.debug('Calculating ET rad using pyephem method')
+        times = input_to_datetimeindex(datetime_or_doy)
+        RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
     
     Ea = solar_constant * RoverR0sqrd
     
@@ -105,30 +116,56 @@ def extraradiation(doy, solar_constant=1366.1, method='spencer'):
     
     
     
-def extraradiation_ephem(time, solar_constant=1366.1):
+def _scalar_to_datetimeindex(doy_scalar):
     """
-    Use PyEphem to calculate the extraterrestrial radiation.
+    Convert a scalar day of year number to a pd.DatetimeIndex.
     
     Parameters
-    ==========
-    time : pd.DatetimeIndex
-    
-    Returns
-    =======
-    pd.Series
-    """
-    
-    pvl_logger.debug('Calculating ET rad using PyEphem')
-    
-    sun = ephem.Sun()
-    RoverR0sqrd = []
-    for thetime in time:
-        sun.compute(ephem.Date(thetime))
-        RoverR0sqrd.append(sun.earth_distance**(-2))
+    ----------
+    doy_array : int or float
+        Contains days of the year
         
-    Ea = solar_constant * pd.Series(RoverR0sqrd, index=time)
+    Returns
+    -------
+    pd.DatetimeIndex
+    """
+    return pd.DatetimeIndex([_doy_to_timestamp(doy_scalar)])
     
-    return Ea 
+    
+    
+def _array_to_datetimeindex(doy_array):
+    """
+    Convert an array of day of year numbers to a pd.DatetimeIndex.
+    
+    Parameters
+    ----------
+    doy_array : Iterable
+        Contains days of the year
+        
+    Returns
+    -------
+    pd.DatetimeIndex
+    """
+    return pd.DatetimeIndex(map(_doy_to_timestamp, doy_array))
+    
+    
+    
+def _doy_to_timestamp(doy, epoch='2013-12-31'):
+    """
+    Convert a numeric day of the year to a pd.Timestamp.
+    
+    Parameters
+    ----------
+    doy : int or float.
+        Numeric day of year.
+    epoch : pd.Timestamp compatible object.
+        Date to which to add the day of year to.
+        
+    Returns
+    -------
+    pd.Timestamp
+    """
+    return pd.Timestamp('2013-12-31') + pd.Timedelta(days=np.int64(doy))
     
     
     

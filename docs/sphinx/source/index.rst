@@ -6,6 +6,17 @@
 Welcome to PVLIB_Python's documentation!
 ========================================
 
+This is the documentation for the University of Arizona PVLIB fork hosted at
+https://github.com/UARENForecasting/PVLIB_Python
+
+The official Sandia repo is hosted at 
+https://github.com/Sandia-Labs/PVLIB_Python
+
+You may also want to browser the tutorials using nbviewer at 
+http://nbviewer.ipython.org/github/UARENForecasting/PVLIB_Python/tree/master/docs/tutorials/
+
+
+
 Contents:
 
 .. toctree::

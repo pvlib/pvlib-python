@@ -3,6 +3,7 @@ PVLIB_Python
 
 ![TravisCI](https://travis-ci.org/UARENForecasting/PVLIB_Python.svg)
 [![Coverage Status](https://img.shields.io/coveralls/UARENForecasting/PVLIB_Python.svg)](https://coveralls.io/r/UARENForecasting/PVLIB_Python)
+[![Documentation Status](https://readthedocs.org/projects/uarenforecasting-pvlib-python/badge/?version=latest)](https://readthedocs.org/projects/uarenforecasting-pvlib-python/?badge=latest)
 
 This repo is a fork of the [Sandia PVLIB_Python](https://github.com/Sandia-Labs/PVLIB_Python) project.
 

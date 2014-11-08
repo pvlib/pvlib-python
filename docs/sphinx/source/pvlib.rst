@@ -48,3 +48,20 @@ solarposition module
     :members:
     :undoc-members:
     :show-inheritance:
+    
+tmy module
+--------------------
+
+.. automodule:: pvlib.tmy
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
+tools module
+--------------------
+
+.. automodule:: pvlib.tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    

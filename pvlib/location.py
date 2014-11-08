@@ -18,6 +18,7 @@ class Location(object):
     geographic location. You can also assign a name to a location object.
     
     Location objects have two timezone attributes: 
+    
         * ``location.tz`` is a IANA timezone string.
         * ``location.pytz`` is a pytz timezone object.
         

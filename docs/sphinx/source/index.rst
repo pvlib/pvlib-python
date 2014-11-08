@@ -1,81 +1,30 @@
-.. PV LIB documentation master file, created by
-   sphinx-quickstart on Thu Apr 17 11:32:46 2014.
+.. PVLIB_Python documentation master file, created by
+   sphinx-quickstart on Fri Nov  7 15:56:33 2014.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PV LIB's documentation!
-==================================
-.. only:: html
-	
-    .. toctree::
+Welcome to PVLIB_Python's documentation!
+========================================
 
-		Test_Script_1
+This is the documentation for the University of Arizona PVLIB fork hosted at
+https://github.com/UARENForecasting/PVLIB_Python
+
+The official Sandia repo is hosted at 
+https://github.com/Sandia-Labs/PVLIB_Python
+
+You may also want to browser the tutorials using nbviewer at 
+http://nbviewer.ipython.org/github/UARENForecasting/PVLIB_Python/tree/master/docs/tutorials/
 
 
-Irradiance and atmosperhic functions
-====================================
-.. autosummary::
-	:toctree: stubs
 
-	pvlib.pvl_alt2pres
-	pvlib.pvl_pres2alt
-	pvlib.pvl_getaoi
-	pvlib.pvl_disc
-	pvlib.pvl_ephemeris
-	pvlib.pvl_spa
-	pvlib.pvl_extraradiation
-	pvlib.pvl_globalinplane
-	pvlib.pvl_grounddiffuse
-	pvlib.pvl_makelocationstruct
-	pvlib.pvl_relativeairmass
-	pvlib.pvl_absoluteairmass
-	pvlib.pvl_clearsky_ineichen
-	pvlib.pvl_clearsky_haurwitz
+Contents:
 
-Irradiance Translation Functions
-================================
-.. autosummary::
-	:toctree: stubs
+.. toctree::
+   :maxdepth: 2
+   
+   self
+   pvlib
 
-	pvlib.pvl_perez
-	pvlib.pvl_haydavies1980
-	pvlib.pvl_isotropicsky
-	pvlib.pvl_kingdiffuse
-	pvlib.pvl_klucher1979
-	pvlib.pvl_reindl1990
-	
-Data Handling
-==============
-.. autosummary::
-	:toctree: stubs
-
-	pvlib.tmy.readtmy2
-	pvlib.tmy.readtmy3
-
-System Modelling functions
-==========================
-.. autosummary::
-	:toctree: stubs
-
-	pvlib.pvl_physicaliam
-	pvlib.pvl_ashraeiam
-	pvlib.pvl_calcparams_desoto
-	pvlib.pvl_retreiveSAM
-	pvlib.pvl_sapm
-	pvlib.pvl_sapmcelltemp
-	pvlib.pvl_singlediode
-	pvlib.pvl_snlinverter
-	pvlib.pvl_systemdef
-
-PVLIB functions
-===============
-.. autosummary::
-	:toctree: stubs
-
-	pvlib.pvl_tools.Parse
-	pvlib.pvl_tools.repack
-	pvlib.pvl_tools.cosd
-	pvlib.pvl_tools.sind
 
 
 Indices and tables

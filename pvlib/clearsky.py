@@ -5,7 +5,7 @@ Contains several methods to calculate clear sky GHI, DNI, and DHI.
 from __future__ import division
 
 import logging
-pvl_logger = logging.getLogger('pvlib')
+logger = logging.getLogger('pvlib')
 
 import os
 
@@ -59,18 +59,15 @@ def ineichen(time, location, linke_turbidity=None,
     Returns
     --------
 
-    ClearSkyGHI : Dataframe
-
+    ClearSkyGHI : Dataframe.
          the modeled global horizonal irradiance in W/m^2 provided
           by the Ineichen clear-sky model.
 
-    ClearSkyDNI : Dataframe
-
+    ClearSkyDNI : Dataframe.
         the modeled direct normal irradiance in W/m^2 provided
         by the Ineichen clear-sky model.
 
-    ClearSkyDHI : Dataframe
-
+    ClearSkyDHI : Dataframe.
         the calculated diffuse horizonal irradiance in W/m^2 
         provided by the Ineichen clear-sky model.
 
@@ -116,7 +113,7 @@ def ineichen(time, location, linke_turbidity=None,
             ApparentZenith = ephem_data['apparent_zenith']
         except KeyError:
             ApparentZenith = ephem_data['zenith']
-            pvl_logger.warning('could not find apparent_zenith. using zenith')
+            logger.warning('could not find apparent_zenith. using zenith')
     else:
         ApparentZenith = zenith_data
     #ApparentZenith[ApparentZenith >= 90] = 90 # can cause problems in edge cases
@@ -136,29 +133,29 @@ def ineichen(time, location, linke_turbidity=None,
         
         # consider putting this code at module level
         this_path = os.path.dirname(os.path.abspath(__file__))
-        pvl_logger.debug('this_path={}'.format(this_path))
+        logger.debug('this_path={}'.format(this_path))
         mat = scipy.io.loadmat(os.path.join(this_path, 'data', 'LinkeTurbidities.mat'))
         linke_turbidity = mat['LinkeTurbidity']
         LatitudeIndex = np.round_(_linearly_scale(location.latitude,90,- 90,1,2160))
         LongitudeIndex = np.round_(_linearly_scale(location.longitude,- 180,180,1,4320))
         g = linke_turbidity[LatitudeIndex][LongitudeIndex]
         if interp_turbidity:
-            pvl_logger.info('interpolating turbidity to the day')
+            logger.info('interpolating turbidity to the day')
             g2 = np.concatenate([[g[-1]], g, [g[0]]]) # wrap ends around
             days = np.linspace(-15, 380, num=14) # map day of year onto month (approximate)
             LT = pd.Series(np.interp(time.dayofyear, days, g2), index=time)
         else:
-            pvl_logger.info('using monthly turbidity')
+            logger.info('using monthly turbidity')
             ApplyMonth = lambda x:g[x[0]-1]
             LT = pd.DataFrame(time.month, index=time)
             LT = LT.apply(ApplyMonth, axis=1)
         TL = LT / 20.
-        pvl_logger.info('using TL=\n{}'.format(TL))
+        logger.info('using TL=\n{}'.format(TL))
     else:
         TL = linke_turbidity
 
     # Get the absolute airmass assuming standard local pressure (per
-    # pvl_alt2pres) using Kasten and Young's 1989 formula for airmass.
+    # alt2pres) using Kasten and Young's 1989 formula for airmass.
     
     if airmass_data is None:
         AMabsolute = atmosphere.absoluteairmass(AMrelative=atmosphere.relativeairmass(ApparentZenith, airmass_model),
@@ -170,7 +167,7 @@ def ineichen(time, location, linke_turbidity=None,
     fh2 = np.exp(-location.altitude/1250.)
     cg1 = 5.09e-05 * location.altitude + 0.868
     cg2 = 3.92e-05 * location.altitude + 0.0387
-    pvl_logger.debug('fh1={}, fh2={}, cg1={}, cg2={}'.format(fh1, fh2, cg1, cg2))
+    logger.debug('fh1={}, fh2={}, cg1={}, cg2={}'.format(fh1, fh2, cg1, cg2))
 
     #  Dan's note on the TL correction: By my reading of the publication on
     #  pages 151-157, Ineichen and Perez introduce (among other things) three
@@ -201,7 +198,7 @@ def ineichen(time, location, linke_turbidity=None,
     # BncI == "normal beam clear sky radiation"
     b = 0.664 + 0.163/fh1
     BncI = b * I0 * np.exp( -0.09 * AMabsolute * (TL - 1) )
-    pvl_logger.debug('b={}'.format(b))
+    logger.debug('b={}'.format(b))
     
     # "empirical correction" SE 73, 157 & SE 73, 312.
     BncI_2 = clearsky_GHI * ( 1 - (0.1 - 0.2*np.exp(-TL))/(0.1 + 0.882/fh1) ) / cos_zenith
@@ -233,18 +230,15 @@ def haurwitz(ApparentZenith):
     Parameters
     ----------
     ApparentZenith : DataFrame
-
-                     The apparent (refraction corrected) sun zenith angle
-                    in degrees.
+        The apparent (refraction corrected) sun zenith angle
+        in degrees.
 
     Returns
-    -------
-    ClearSkyGHI : DataFrame
-             
-                 the modeled global horizonal irradiance in W/m^2 provided
-                  by the Haurwitz clear-sky model.
+    -------        
+    pd.Series. The modeled global horizonal irradiance in W/m^2 provided
+    by the Haurwitz clear-sky model.
 
-                   Initial implementation of this algorithm by Matthew Reno.
+    Initial implementation of this algorithm by Matthew Reno.
 
     References
     ----------
@@ -261,11 +255,11 @@ def haurwitz(ApparentZenith):
 
     See Also
     ---------
-    pvl_maketimestruct    
-    pvl_makelocationstruct   
-    pvl_ephemeris   
-    pvl_spa
-    pvl_ineichen
+    maketimestruct    
+    makelocationstruct   
+    ephemeris   
+    spa
+    ineichen
     '''
 
     cos_zenith = tools.cosd(ApparentZenith)
@@ -302,14 +296,13 @@ def disc(GHI, SunZen, Time, pressure=101325):
     ----------
 
     GHI : float or DataFrame
-          global horizontal irradiance in W/m^2. GHI must be >=0.
+        global horizontal irradiance in W/m^2. GHI must be >=0.
 
     Z : float or DataFrame
         True (not refraction - corrected) zenith angles in decimal degrees. 
         Z must be >=0 and <=180.
 
     doy : float or DataFrame
-
         the day of the year. doy must be >= 1 and < 367.
 
     Other Parameters
@@ -347,9 +340,9 @@ def disc(GHI, SunZen, Time, pressure=101325):
 
     See Also 
     --------
-    pvl_ephemeris 
-    pvl_alt2pres 
-    pvl_dirint
+    ephemeris 
+    alt2pres 
+    dirint
 
     '''
 

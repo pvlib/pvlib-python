@@ -481,7 +481,7 @@ def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
     
 
 def isotropic(surf_tilt, DHI):
-    '''
+    r'''
     Determine diffuse irradiance from the sky on a 
     tilted surface using the isotropic sky model.
 
@@ -499,28 +499,27 @@ def isotropic(surf_tilt, DHI):
     ----------
 
     surf_tilt : float or Series
-            Surface tilt angle in decimal degrees. 
-            surf_tilt must be >=0 and <=180. The tilt angle is defined as
-            degrees from horizontal (e.g. surface facing up = 0, surface facing
-            horizon = 90)
+        Surface tilt angle in decimal degrees. 
+        surf_tilt must be >=0 and <=180. The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
     DHI : float or Series
-            Diffuse horizontal irradiance in W/m^2.
-            DHI must be >=0.
+        Diffuse horizontal irradiance in W/m^2.
+        DHI must be >=0.
 
 
     Returns
     -------   
-
     float or Series
 
-            The diffuse component of the solar radiation  on an
-            arbitrarily tilted surface defined by the isotropic sky model as
-            given in Loutzenhiser et. al (2007) equation 3.
-            SkyDiffuse is the diffuse component ONLY and does not include the ground
-            reflected irradiance or the irradiance due to the beam.
-            SkyDiffuse is a column vector vector with a number of elements equal to
-            the input vector(s).
+    The diffuse component of the solar radiation  on an
+    arbitrarily tilted surface defined by the isotropic sky model as
+    given in Loutzenhiser et. al (2007) equation 3.
+    SkyDiffuse is the diffuse component ONLY and does not include the ground
+    reflected irradiance or the irradiance due to the beam.
+    SkyDiffuse is a column vector vector with a number of elements equal to
+    the input vector(s).
 
 
     References
@@ -552,7 +551,7 @@ def isotropic(surf_tilt, DHI):
 
 
 def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
-    '''
+    r'''
     Determine diffuse irradiance from the sky on a tilted surface 
     using Klucher's 1979 model
 
@@ -577,45 +576,45 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     ----------
 
     surf_tilt : float or Series
-            Surface tilt angles in decimal degrees.
-            surf_tilt must be >=0 and <=180. The tilt angle is defined as
-            degrees from horizontal (e.g. surface facing up = 0, surface facing
-            horizon = 90)
+        Surface tilt angles in decimal degrees.
+        surf_tilt must be >=0 and <=180. The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
     surf_az : float or Series
-            Surface azimuth angles in decimal degrees.
-            surf_az must be >=0 and <=360. The Azimuth convention is defined
-            as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+        Surface azimuth angles in decimal degrees.
+        surf_az must be >=0 and <=360. The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     DHI : float or Series
-            diffuse horizontal irradiance in W/m^2. 
-            DHI must be >=0.
+        diffuse horizontal irradiance in W/m^2. 
+        DHI must be >=0.
 
     GHI : float or Series
-            Global  irradiance in W/m^2. 
-            DNI must be >=0.
+        Global  irradiance in W/m^2. 
+        DNI must be >=0.
 
     sun_zen : float or Series
-            apparent (refraction-corrected) zenith
-            angles in decimal degrees. 
-            sun_zen must be >=0 and <=180.
+        apparent (refraction-corrected) zenith
+        angles in decimal degrees. 
+        sun_zen must be >=0 and <=180.
 
     sun_az : float or Series
-            Sun azimuth angles in decimal degrees.
-            sun_az must be >=0 and <=360. The Azimuth convention is defined
-            as degrees east of north (e.g. North = 0, East = 90, West = 270).
+        Sun azimuth angles in decimal degrees.
+        sun_az must be >=0 and <=360. The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
     Returns
     -------
-    float or Series
+    float or Series.
 
-                the diffuse component of the solar radiation on an
-                arbitrarily tilted surface defined by the Klucher model as given in
-                Loutzenhiser et. al (2007) equation 4.
-                SkyDiffuse is the diffuse component ONLY and does not include the ground
-                reflected irradiance or the irradiance due to the beam.
-                SkyDiffuse is a column vector vector with a number of elements equal to
-                the input vector(s).
+    The diffuse component of the solar radiation on an
+    arbitrarily tilted surface defined by the Klucher model as given in
+    Loutzenhiser et. al (2007) equation 4.
+    SkyDiffuse is the diffuse component ONLY and does not include the ground
+    reflected irradiance or the irradiance due to the beam.
+    SkyDiffuse is a column vector vector with a number of elements equal to
+    the input vector(s).
 
     References
     ----------
@@ -661,14 +660,12 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
 
 
 def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
-
-    '''
+    r'''
     Determine diffuse irradiance from the sky on a 
     tilted surface using Hay & Davies' 1980 model
 
     .. math::
-
-       I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) )
+        I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) )
 
     Hay and Davies' 1980 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a
@@ -676,15 +673,14 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     diffuse horizontal irradiance, direct normal irradiance, 
     extraterrestrial irradiance, sun zenith angle, and sun azimuth angle.
 
-
     Parameters
     ----------
 
     surf_tilt : float or Series
-          Surface tilt angles in decimal degrees.
-          The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
     surf_az : float or Series
           Surface azimuth angles in decimal degrees.
@@ -768,7 +764,7 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
 
 
 def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
-    '''
+    r'''
     Determine diffuse irradiance from the sky on a 
     tilted surface using Reindl's 1990 model
 
@@ -787,59 +783,59 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     ----------
 
     surf_tilt : float or Series.
-          Surface tilt angles in decimal degrees.
-          The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
     surf_az : float or Series.
-          Surface azimuth angles in decimal degrees.
-          The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+        Surface azimuth angles in decimal degrees.
+        The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     DHI : float or Series.
-          diffuse horizontal irradiance in W/m^2. 
+        diffuse horizontal irradiance in W/m^2. 
 
     DNI : float or Series.
-          direct normal irradiance in W/m^2. 
+        direct normal irradiance in W/m^2. 
 
     GHI: float or Series.
-          Global irradiance in W/m^2. 
+        Global irradiance in W/m^2. 
 
     DNI_ET : float or Series.
-          extraterrestrial normal irradiance in W/m^2. 
+        extraterrestrial normal irradiance in W/m^2. 
 
     sun_zen : float or Series.
-          apparent (refraction-corrected) zenith
-          angles in decimal degrees. 
+        apparent (refraction-corrected) zenith
+        angles in decimal degrees. 
 
     sun_az : float or Series.
-          Sun azimuth angles in decimal degrees. 
-          The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, East = 90, West = 270).
+        Sun azimuth angles in decimal degrees. 
+        The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
     Returns
     -------
 
     SkyDiffuse : float or Series.
 
-           the diffuse component of the solar radiation  on an
-           arbitrarily tilted surface defined by the Reindl model as given in
-           Loutzenhiser et. al (2007) equation 8.
-           SkyDiffuse is the diffuse component ONLY and does not include the ground
-           reflected irradiance or the irradiance due to the beam.
-           SkyDiffuse is a column vector vector with a number of elements equal to
-           the input vector(s).
+        The diffuse component of the solar radiation  on an
+        arbitrarily tilted surface defined by the Reindl model as given in
+        Loutzenhiser et. al (2007) equation 8.
+        SkyDiffuse is the diffuse component ONLY and does not include the ground
+        reflected irradiance or the irradiance due to the beam.
+        SkyDiffuse is a column vector vector with a number of elements equal to
+        the input vector(s).
 
 
     Notes
     -----
 
-     The POAskydiffuse calculation is generated from the Loutzenhiser et al.
-     (2007) paper, equation 8. Note that I have removed the beam and ground
-     reflectance portion of the equation and this generates ONLY the diffuse
-     radiation from the sky and circumsolar, so the form of the equation
-     varies slightly from equation 8.
+    The POAskydiffuse calculation is generated from the Loutzenhiser et al.
+    (2007) paper, equation 8. Note that I have removed the beam and ground
+    reflectance portion of the equation and this generates ONLY the diffuse
+    radiation from the sky and circumsolar, so the form of the equation
+    varies slightly from equation 8.
 
     References
     ----------

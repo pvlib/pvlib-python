@@ -33,7 +33,7 @@ VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 setuptools_kwargs = {
     'zip_safe': False,
     'install_requires': ['numpy >= 1.7.0',
-                         'pandas >= 0.13',
+                         'pandas >= 0.15',
                          'pytz',
                          'numpydoc'
                          ],

@@ -5,14 +5,13 @@ import datetime
 
 import pandas as pd
 
-from nose.tools import raises
+from nose.tools import raises, assert_almost_equals
 
-
-from ..location import Location
-from .. import clearsky
-from .. import solarposition
-from .. import irradiance
-from .. import atmosphere
+from pvlib.location import Location
+from pvlib import clearsky
+from pvlib import solarposition
+from pvlib import irradiance
+from pvlib import atmosphere
 
 # setup times and location to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24), 
@@ -35,10 +34,28 @@ ghi = irrad_data['GHI']
 # need to add physical tests.
 
 def test_extraradiation():
-    irradiance.extraradiation(300)
+    assert_almost_equals(1382, irradiance.extraradiation(300), -1)
     
-def test_extraradiation_ephem():
-    irradiance.extraradiation_ephem(times)
+def test_extraradiation_dtindex():
+    irradiance.extraradiation(times)
+    
+def test_extraradiation_doyarray():
+    irradiance.extraradiation(times.dayofyear)
+    
+def test_extraradiation_asce():
+    assert_almost_equals(1382, irradiance.extraradiation(300, method='asce'), -1)
+    
+def test_extraradiation_spencer():
+    assert_almost_equals(1382, irradiance.extraradiation(300, method='spencer'), -1)
+    
+def test_extraradiation_ephem_dtindex():
+    irradiance.extraradiation(times, method='pyephem')
+    
+def test_extraradiation_ephem_scalar():
+    assert_almost_equals(1382, irradiance.extraradiation(300, method='pyephem').values[0], -1)
+    
+def test_extraradiation_ephem_doyarray():
+    irradiance.extraradiation(times.dayofyear, method='pyephem')
 
 def test_grounddiffuse_simple_float():
     irradiance.grounddiffuse(40, 900)

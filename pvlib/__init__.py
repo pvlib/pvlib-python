@@ -1,13 +1,14 @@
 
 import logging
 logging.basicConfig()
-from . import tools
-from . import atmosphere
-from . import clearsky
-from . import irradiance
-from . import location
-from . import solarposition
-from . import tmy
+from pvlib import tools
+from pvlib import atmosphere
+from pvlib import clearsky
+from pvlib import irradiance
+from pvlib import location
+from pvlib import solarposition
+from pvlib import tmy
+from pvlib.version import __version__
 
 # '''
 # Irradiance and atmosperhic functions

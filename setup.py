@@ -23,7 +23,8 @@ URL = 'https://github.com/UARENForecasting/pythonic-PVLIB'
 
 # imports __version__ into the local namespace
 version_file = os.path.join(os.path.dirname(__file__), 'pvlib/version.py')
-execfile(version_file)
+with open(version_file, 'r') as f:
+    exec(f.read())
 
 # check python version.
 #if sys.version_info[:2] != (2, 7):

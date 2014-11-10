@@ -73,7 +73,9 @@ copyright = u'2014, Sandia National Labs, Rob Andrews, University of Arizona, gi
 # Get the version from the version file
 version_file = os.path.join(os.path.dirname(__file__), 
                             '../../../pvlib/version.py')
-execfile(version_file)
+with open(version_file, 'r') as f:
+    exec(f.read())
+
 # The short X.Y version.
 version = __version__
 # The full version, including alpha/beta/rc tags.

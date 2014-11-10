@@ -27,14 +27,15 @@ MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 # check python version.
-if sys.version_info[:2] != (2, 7):
-    sys.exit('%s requires Python 2.7' % DISTNAME)
+#if sys.version_info[:2] != (2, 7):
+#    sys.exit('%s requires Python 2.7' % DISTNAME)
 
 setuptools_kwargs = {
     'zip_safe': False,
     'install_requires': ['numpy >= 1.7.0',
-                         'pandas >= 0.13',
+                         'pandas >= 0.15',
                          'pytz',
+                         'numpydoc'
                          ],
     'scripts': [],
     'include_package_data': True

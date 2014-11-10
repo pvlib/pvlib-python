@@ -1,68 +1,15 @@
+import os
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
 
 import numpy as np
 import pandas as pd
-import os
-import pvl_tools
-import scipy 
-import urllib2
-from scipy.special import lambertw
+
+from pvlib import tools
 
 
-def makelocationstruct(latitude,longitude,TZ,altitude=100,Name='Usr_input',State='Usr_input'):
-  '''
-  Create a struct to define a site location
-
-  Parameters
-  ----------
-
-  Latitude : float
-            Positive north of equator, decimal notation
-  Longitude : float 
-            Positive east of prime meridian, decimal notation
-  TZ  : int
-            Timezone in GMT offset
-
-  Other Parameters
-  ----------------
-
-  altitude : float (optional, default=100)
-            Altitude from sea level. Set to 100m if none input
-
-  Returns
-  -------
-
-  Location : struct
-
-          *Location.latitude*
-
-          *Location.longitude*
-
-          *Location.TZ*
-
-          *Location.altitude*
-
-
-  See Also
-  --------
-
-  pvl_ephemeris
-  pvl_alt2pres
-  pvl_pres2alt
-
-  '''
-
-  Vars=locals()
-  Expect={'latitude':('num','x>=-90','x<=90'),
-          'longitude': ('num','x<=180','x>=-180'),
-          'altitude':('num','default','default=100'),
-          'TZ':('num'),
-          'Name':'',
-          'State':''
-          }
-  Location=pvl_tools.Parse(Vars,Expect)
-
-
-  return Location
 
 def systemdef(TMYmeta,SurfTilt, SurfAz,Albedo,SeriesModules,ParallelModules):
 
@@ -138,29 +85,18 @@ def systemdef(TMYmeta,SurfTilt, SurfAz,Albedo,SeriesModules,ParallelModules):
 
     '''
 
+    system={'SurfTilt':SurfTilt,
+            'SurfAz':SurfAz,
+            'Albedo':Albedo,
+            'SeriesModules':SeriesModules,
+            'ParallelModules':ParallelModules,
+            'latitude':TMYmeta.latitude,
+            'longitude':TMYmeta.longitude,
+            'TZ':TMYmeta.TZ,
+            'name':TMYmeta.Name,
+            'altitude':TMYmeta.altitude}
 
-    Vars=locals()
-    Expect={'TMYmeta':'',
-            'SurfTilt':('num','x>=0'),
-            'SurfAz':('num'),
-            'Albedo':('num','x>=0'),
-            'SeriesModules':('default','default=1','num','x>=0'),
-            'ParallelModules':('default','default=1','num','x>=0')}
-
-    var=pvl_tools.Parse(Vars,Expect)
-
-    system={'SurfTilt':var.SurfTilt,
-            'SurfAz':var.SurfAz,
-            'Albedo':var.Albedo,
-            'SeriesModules':var.SeriesModules,
-            'ParallelModules':var.ParallelModules,
-            'latitude':var.TMYmeta.latitude,
-            'longitude':var.TMYmeta.longitude,
-            'TZ':var.TMYmeta.TZ,
-            'name':var.TMYmeta.Name,
-            'altitude':var.TMYmeta.altitude}
-
-    return pvl_tools.repack(system)
+    return system
 
 
 
@@ -222,18 +158,14 @@ def ashraeiam(b,theta):
     pvl_physicaliam
     
     '''
-    Vars=locals()
-    Expect={'b':'x >= 0',
-            'theta':'num'}
-    var=pvl_tools.Parse(Vars,Expect)
 
-    if any((var.theta < 0) | (var.theta >= 90)):
+    if any((theta < 0) | (theta >= 90)):
         print('Input incident angles <0 or >=90 detected For input angles with absolute value greater than 90, the ' + 'modifier is set to 0. For input angles between -90 and 0, the ' + 'angle is changed to its absolute value and evaluated.')
-        var.theta[(var.theta < 0) | (var.theta >= 90)]=abs((var.theta < 0) | (var.theta >= 90))
+        theta[(theta < 0) | (theta >= 90)]=abs((theta < 0) | (theta >= 90))
 
-    IAM=1 - var.b*((1/np.cos(np.radians(var.theta)) - 1))
+    IAM=1 - b*((1/np.cos(np.radians(theta)) - 1))
 
-    IAM[abs(var.theta) > 90]=0
+    IAM[abs(theta) > 90]=0
 
     if any((IAM > 1) | (IAM < 0)):
         print('It seems that we have encountered a discontinuity. Any incident angle modifiers calculated to be less than 0 or ' + 'greather than 1 have been set to 0.')
@@ -319,29 +251,20 @@ def physicaliam(K,L,n,theta):
     pvl_ashraeiam
 
     '''
-    Vars=locals()
 
-    Expect={'K':'x >= 0',
-            'L':'x >= 0',
-            'n':'x >= 0',
-            'theta':'num'}
-    var=pvl_tools.Parse(Vars,Expect)
-
-
-
-    if any((var.theta < 0) | (var.theta >= 90)):
+    if any((theta < 0) | (theta >= 90)):
         print('Input incident angles <0 or >=90 detected For input angles with absolute value greater than 90, the ' + 'modifier is set to 0. For input angles between -90 and 0, the ' + 'angle is changed to its absolute value and evaluated.')
-        var.theta[(var.theta < 0) | (var.theta >= 90)]=abs((var.theta < 0) | (var.theta >= 90))
+        theta[(theta < 0) | (theta >= 90)]=abs((theta < 0) | (theta >= 90))
 
-    thetar_deg=pvl_tools.asind(1.0 / n*(pvl_tools.sind(theta)))
+    thetar_deg=tools.asind(1.0 / n*(tools.sind(theta)))
 
-    tau=np.exp(- 1.0 * (K*(L) / pvl_tools.cosd(thetar_deg)))*((1 - 0.5*((((pvl_tools.sind(thetar_deg - theta)) ** 2) / ((pvl_tools.sind(thetar_deg + theta)) ** 2) + ((pvl_tools.tand(thetar_deg - theta)) ** 2) / ((pvl_tools.tand(thetar_deg + theta)) ** 2)))))
+    tau=np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg)))*((1 - 0.5*((((tools.sind(thetar_deg - theta)) ** 2) / ((tools.sind(thetar_deg + theta)) ** 2) + ((tools.tand(thetar_deg - theta)) ** 2) / ((tools.tand(thetar_deg + theta)) ** 2)))))
     
     zeroang=1e-06
     
-    thetar_deg0=pvl_tools.asind(1.0 / n*(pvl_tools.sind(zeroang)))
+    thetar_deg0=tools.asind(1.0 / n*(tools.sind(zeroang)))
     
-    tau0=np.exp(- 1.0 * (K*(L) / pvl_tools.cosd(thetar_deg0)))*((1 - 0.5*((((pvl_tools.sind(thetar_deg0 - zeroang)) ** 2) / ((pvl_tools.sind(thetar_deg0 + zeroang)) ** 2) + ((pvl_tools.tand(thetar_deg0 - zeroang)) ** 2) / ((pvl_tools.tand(thetar_deg0 + zeroang)) ** 2)))))
+    tau0=np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg0)))*((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) / ((tools.sind(thetar_deg0 + zeroang)) ** 2) + ((tools.tand(thetar_deg0 - zeroang)) ** 2) / ((tools.tand(thetar_deg0 + zeroang)) ** 2)))))
     
     IAM=tau / tau0
     
@@ -546,44 +469,30 @@ def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
          Source = Reference 4
     '''
 
-    Vars=locals()
-
-    Expect={'S':('x >= 0') ,
-            'Tcell':('x >= - 273.15') ,
-            'alpha_isc': (''),
-            'ModuleParameters': (''),
-            'EgRef': ('x > 0'),
-            'dEgdT': (''),
-            'M': ('num','default','default=1'),
-            'Sref':('default','default=1000'),
-            'Tref':('default','default=25')
-            }
-
-    var=pvl_tools.Parse(Vars,Expect)
-
-    var.M=np.max(var.M,0)
-    a_ref=var.ModuleParameters.A_ref
-    IL_ref=var.ModuleParameters.I_l_ref
-    I0_ref=var.ModuleParameters.I_o_ref
-    Rsh_ref=var.ModuleParameters.R_sh_ref
-    Rs_ref=var.ModuleParameters.R_s
+    M=np.max(M,0)
+    a_ref=ModuleParameters.A_ref
+    IL_ref=ModuleParameters.I_l_ref
+    I0_ref=ModuleParameters.I_o_ref
+    Rsh_ref=ModuleParameters.R_sh_ref
+    Rs_ref=ModuleParameters.R_s
 
 
     k=8.617332478e-05
-    Tref_K=var.Tref + 273.15
-    Tcell_K=var.Tcell + 273.15
+    Tref_K=Tref + 273.15
+    Tcell_K=Tcell + 273.15
 
-    var.S[var.S == 0]=1e-10
-    E_g=var.EgRef * ((1 + var.dEgdT*((Tcell_K - Tref_K))))
+    S[S == 0]=1e-10
+    E_g=EgRef * ((1 + dEgdT*((Tcell_K - Tref_K))))
 
     nNsVth=a_ref*((Tcell_K / Tref_K))
 
-    IL=var.S / var.Sref *(var.M) *((IL_ref + var.alpha_isc * ((Tcell_K - Tref_K))))
-    I0=I0_ref * (((Tcell_K / Tref_K) ** 3)) * (np.exp((var.EgRef / (k*(Tref_K))) - (E_g / (k*(Tcell_K)))))
-    Rsh=Rsh_ref * ((var.Sref / var.S))
+    IL=S / Sref *(M) *((IL_ref + alpha_isc * ((Tcell_K - Tref_K))))
+    I0=I0_ref * (((Tcell_K / Tref_K) ** 3)) * (np.exp((EgRef / (k*(Tref_K))) - (E_g / (k*(Tcell_K)))))
+    Rsh=Rsh_ref * ((Sref / S))
     Rs=Rs_ref
 
     return IL,I0,Rs,Rsh,nNsVth
+    
 
 def getaoi(SurfTilt,SurfAz,SunZen,SunAz):
   '''
@@ -635,16 +544,8 @@ def getaoi(SurfTilt,SurfAz,SunZen,SunAz):
   PVL_EPHEMERIS
   '''
 
-  Vars=locals()
-  Expect={'SurfTilt':('num','x>=0'),
-        'SurfAz':('num','x>=-180','x<=180'),
-        'SunZen':('x>=0'),
-        'SunAz':('x>=0')
-  }
 
-  var=pvl_tools.Parse(Vars,Expect)
-
-  AOI=np.degrees(np.arccos(np.cos(np.radians(var.SunZen))*(np.cos(np.radians(var.SurfTilt))) + np.sin(np.radians(var.SurfTilt))*(np.sin(np.radians(var.SunZen)))*(np.cos(np.radians(var.SunAz) - np.radians(var.SurfAz))))) #Duffie and Beckmann 1.6.3
+  AOI=np.degrees(np.arccos(np.cos(np.radians(SunZen))*(np.cos(np.radians(SurfTilt))) + np.sin(np.radians(SurfTilt))*(np.sin(np.radians(SunZen)))*(np.cos(np.radians(SunAz) - np.radians(SurfAz))))) #Duffie and Beckmann 1.6.3
 
 
   return pd.DataFrame({'AOI':AOI})
@@ -714,18 +615,13 @@ def retreiveSAM(name,FileLoc='none'):
     Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
     
     '''
-    Vars=locals()
-    Expect={'name':('str',('CECMod','SandiaMod','SandiaInverter')),
-            'FileLoc':('optional')}
-
-    var=pvl_tools.Parse(Vars,Expect)
 
 
-    if var.name=='CECMod':
+    if name=='CECMod':
         url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-modules-2014-1-14.csv'
-    elif var.name=='SandiaMod':
+    elif name=='SandiaMod':
         url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2014-1-14.csv'
-    elif var.name=='SandiaInverter':
+    elif name=='SandiaInverter':
         url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
     
     if FileLoc=='none':
@@ -743,7 +639,7 @@ def retreiveSAM(name,FileLoc='none'):
         
 def read_url_to_pandas(url):
 
-    data = urllib2.urlopen(url)
+    data = urlopen(url)
     df=pd.read_csv(data,index_col=0)
     parsedindex=[]
     for index in df.index:
@@ -765,235 +661,214 @@ def read_relative_to_pandas(FileLoc):
     return df
 
 def sapm(Module,Eb,Ediff,Tcell,AM,AOI):
-  '''
-  Performs Sandia PV Array Performance Model to get 5 points on IV curve given SAPM module parameters, Ee, and cell temperature
+    '''
+    Performs Sandia PV Array Performance Model to get 5 points on IV curve given SAPM module parameters, Ee, and cell temperature
 
-  The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
-  module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
-  SAND2004-3535. Assumes a reference cell temperature of 25 C.
-  
-  parameters
-  ----------
+    The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
+    module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
+    SAND2004-3535. Assumes a reference cell temperature of 25 C.
 
-  Module : DataFrame
+    parameters
+    ----------
 
-          A DataFrame defining the SAPM performance parameters (see
-          pvl_retreivesam)
+    Module : DataFrame
 
-  Eb : float of DataFrame
+            A DataFrame defining the SAPM performance parameters (see
+            pvl_retreivesam)
 
-          The effective irradiance incident upon the module (suns). Any Ee<0
-          are set to 0.
-  
-  celltemp : float of DataFrame
-          
-          The cell temperature (degrees C)
+    Eb : float of DataFrame
 
-  Returns
-  -------
-  Result - DataFrame
+            The effective irradiance incident upon the module (suns). Any Ee<0
+            are set to 0.
 
-          A DataFrame with:
+    celltemp : float of DataFrame
 
-          * Result.Isc
-          * Result.Imp
-          * Result.Ix
-          * Result.Ixx
-          * Result.Voc
-          * Result.Vmp
-          * Result.Pmp
+            The cell temperature (degrees C)
 
-  Notes
-  -----
+    Returns
+    -------
+    Result - DataFrame
 
-  The particular coefficients from SAPM which are required in Module
-  are:
-  
-  ================   ======================================================================================================================
-  Module field        Description
-  ================   ======================================================================================================================
-  Module.c           1x8 vector with the C coefficients Module.c(1) = C0
-  Module.Isc0        Short circuit current at reference condition (amps)
-  Module.Imp0        Maximum power current at reference condition (amps)
-  Module.AlphaIsc    Short circuit current temperature coefficient at reference condition (1/C)
-  Module.AlphaImp    Maximum power current temperature coefficient at reference condition (1/C)
-  Module.BetaVoc     Open circuit voltage temperature coefficient at reference condition (V/C)
-  Module.mBetaVoc    Coefficient providing the irradiance dependence for the BetaVoc temperature coefficient at reference irradiance (V/C)
-  Module.BetaVmp     Maximum power voltage temperature coefficient at reference condition
-  Module.mBetaVmp    Coefficient providing the irradiance dependence for the BetaVmp temperature coefficient at reference irradiance (V/C)
-  Module.n           Empirically determined "diode factor" (dimensionless)
-  Module.Ns          Number of cells in series in a module's cell string(s)
-  ================   ======================================================================================================================
-  
-  References
-  ----------
+            A DataFrame with:
 
-  [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
-  3535, Sandia National Laboratories, Albuquerque, NM
+            * Result.Isc
+            * Result.Imp
+            * Result.Ix
+            * Result.Ixx
+            * Result.Voc
+            * Result.Vmp
+            * Result.Pmp
 
-  See Also
-  --------
+    Notes
+    -----
 
-  pvl_retreivesam
-  pvl_sapmcelltemp 
-  
-  '''
-  Vars=locals()
-  Expect={'Module':(''),
-          'Eb':('x>0'),
-          'Ediff':('x>0'),
-          'Tcell':('x>0'),
-          'AM':('x>0'),
-          'AOI':('x>0')
-  }
-  var=pvl_tools.Parse(Vars,Expect)
+    The particular coefficients from SAPM which are required in Module
+    are:
 
-  T0=25
-  q=1.60218e-19
-  k=1.38066e-23
-  E0=1000
+    ================   ======================================================================================================================
+    Module field        Description
+    ================   ======================================================================================================================
+    Module.c           1x8 vector with the C coefficients Module.c(1) = C0
+    Module.Isc0        Short circuit current at reference condition (amps)
+    Module.Imp0        Maximum power current at reference condition (amps)
+    Module.AlphaIsc    Short circuit current temperature coefficient at reference condition (1/C)
+    Module.AlphaImp    Maximum power current temperature coefficient at reference condition (1/C)
+    Module.BetaVoc     Open circuit voltage temperature coefficient at reference condition (V/C)
+    Module.mBetaVoc    Coefficient providing the irradiance dependence for the BetaVoc temperature coefficient at reference irradiance (V/C)
+    Module.BetaVmp     Maximum power voltage temperature coefficient at reference condition
+    Module.mBetaVmp    Coefficient providing the irradiance dependence for the BetaVmp temperature coefficient at reference irradiance (V/C)
+    Module.n           Empirically determined "diode factor" (dimensionless)
+    Module.Ns          Number of cells in series in a module's cell string(s)
+    ================   ======================================================================================================================
 
-  AMcoeff=[var.Module['A4'],var.Module['A3'],var.Module['A2'],var.Module['A1'],var.Module['A0']]
-  AOIcoeff=[var.Module['B5'],var.Module['B4'],var.Module['B3'],var.Module['B2'],var.Module['B1'],var.Module['B0']]
+    References
+    ----------
 
-  F1 = np.polyval(AMcoeff,var.AM)
-  F2 = np.polyval(AOIcoeff,var.AOI)
-  var.Ee= F1*((var.Eb*F2+var.Module['FD']*var.Ediff)/E0)
-  #var['Ee']=F1*((var.Eb+var.Ediff)/E0)
-  #print "Ee modifed, revert for main function"
-  var.Ee.fillna(0)
-  var.Ee[var.Ee < 0]=0
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
+    3535, Sandia National Laboratories, Albuquerque, NM
 
-  Filt=var.Ee[var.Ee >= 0.001]
+    See Also
+    --------
 
-  Isc=var.Module.ix['Isco']*(var.Ee)*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
+    pvl_retreivesam
+    pvl_sapmcelltemp 
 
-  DFOut=pd.DataFrame({'Isc':Isc})
+    '''
 
-  DFOut['Imp']=var.Module.ix['Impo']*((var.Module.ix['C0']*(var.Ee) + var.Module.ix['C1'] * (var.Ee ** 2)))*((1 + var.Module.ix['Aimp']*((var.Tcell - T0))))
-  Bvoco=var.Module.ix['Bvoco'] + var.Module.ix['Mbvoc']*((1 - var.Ee))
-  delta=var.Module.ix['N']*(k)*((var.Tcell + 273.15)) / q
-  DFOut['Voc']=(var.Module.ix['Voco'] + var.Module.ix['#Series']*(delta)*(np.log(var.Ee)) + Bvoco*((var.Tcell - T0)))
-  Bvmpo=var.Module.ix['Bvmpo'] + var.Module.ix['Mbvmp']*((1 - var.Ee))
-  DFOut['Vmp']=(var.Module.ix['Vmpo'] + var.Module.ix['C2']*(var.Module.ix['#Series'])*(delta)*(np.log(var.Ee)) + var.Module.ix['C3']*(var.Module.ix['#Series'])*((delta*(np.log(var.Ee))) ** 2) + Bvmpo*((var.Tcell - T0)))
-  DFOut['Vmp'][DFOut['Vmp']<0]=0
-  DFOut['Pmp']=DFOut.Imp*DFOut.Vmp
-  DFOut['Ix']=var.Module.ix['IXO'] * (var.Module.ix['C4']*(var.Ee) + var.Module.ix['C5']*((var.Ee) ** 2))*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
-  DFOut['Ixx']=var.Module.ix['IXXO'] * (var.Module.ix['C6']*(var.Ee) + var.Module.ix['C7']*((var.Ee) ** 2))*((1 + var.Module.ix['Aisc']*((var.Tcell - T0))))
+    T0=25
+    q=1.60218e-19
+    k=1.38066e-23
+    E0=1000
 
-  return  DFOut
+    AMcoeff=[Module['A4'],Module['A3'],Module['A2'],Module['A1'],Module['A0']]
+    AOIcoeff=[Module['B5'],Module['B4'],Module['B3'],Module['B2'],Module['B1'],Module['B0']]
+
+    F1 = np.polyval(AMcoeff,AM)
+    F2 = np.polyval(AOIcoeff,AOI)
+    Ee= F1*((Eb*F2+Module['FD']*Ediff)/E0)
+    #var['Ee']=F1*((Eb+Ediff)/E0)
+    #print "Ee modifed, revert for main function"
+    Ee.fillna(0)
+    Ee[Ee < 0]=0
+
+    Filt=Ee[Ee >= 0.001]
+
+    Isc=Module.ix['Isco']*(Ee)*((1 + Module.ix['Aisc']*((Tcell - T0))))
+
+    DFOut=pd.DataFrame({'Isc':Isc})
+
+    DFOut['Imp']=Module.ix['Impo']*((Module.ix['C0']*(Ee) + Module.ix['C1'] * (Ee ** 2)))*((1 + Module.ix['Aimp']*((Tcell - T0))))
+    Bvoco=Module.ix['Bvoco'] + Module.ix['Mbvoc']*((1 - Ee))
+    delta=Module.ix['N']*(k)*((Tcell + 273.15)) / q
+    DFOut['Voc']=(Module.ix['Voco'] + Module.ix['#Series']*(delta)*(np.log(Ee)) + Bvoco*((Tcell - T0)))
+    Bvmpo=Module.ix['Bvmpo'] + Module.ix['Mbvmp']*((1 - Ee))
+    DFOut['Vmp']=(Module.ix['Vmpo'] + Module.ix['C2']*(Module.ix['#Series'])*(delta)*(np.log(Ee)) + Module.ix['C3']*(Module.ix['#Series'])*((delta*(np.log(Ee))) ** 2) + Bvmpo*((Tcell - T0)))
+    DFOut['Vmp'][DFOut['Vmp']<0]=0
+    DFOut['Pmp']=DFOut.Imp*DFOut.Vmp
+    DFOut['Ix']=Module.ix['IXO'] * (Module.ix['C4']*(Ee) + Module.ix['C5']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
+    DFOut['Ixx']=Module.ix['IXXO'] * (Module.ix['C6']*(Ee) + Module.ix['C7']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
+
+    return  DFOut
 
 
 def sapmcelltemp(E, Wspd, Tamb,modelt='Open_rack_cell_glassback',**kwargs):
-  '''
-  Estimate cell temperature from irradiance, windspeed, ambient temperature, and module parameters (SAPM)
+    '''
+    Estimate cell temperature from irradiance, windspeed, ambient temperature, and module parameters (SAPM)
 
-  Estimate cell and module temperatures per the Sandia PV Array
-  Performance model (SAPM, SAND2004-3535), when given the incident
-  irradiance, wind speed, ambient temperature, and SAPM module
-  parameters.
+    Estimate cell and module temperatures per the Sandia PV Array
+    Performance model (SAPM, SAND2004-3535), when given the incident
+    irradiance, wind speed, ambient temperature, and SAPM module
+    parameters.
 
-  Parameters
-  ----------
+    Parameters
+    ----------
 
-  E : float or DataFrame
-          Total incident irradiance in W/m^2. Must be >=0.
-
-
-  windspeed : float or DataFrame
-          Wind speed in m/s at a height of 10 meters. Must be >=0
-
-  Tamb : float or DataFrame
-          Ambient dry bulb temperature in degrees C. Must be >= -273.15.
+    E : float or DataFrame
+            Total incident irradiance in W/m^2. Must be >=0.
 
 
-  Other Parameters
-  ----------------
+    windspeed : float or DataFrame
+            Wind speed in m/s at a height of 10 meters. Must be >=0
 
-  modelt :  string
+    Tamb : float or DataFrame
+            Ambient dry bulb temperature in degrees C. Must be >= -273.15.
 
-  Model to be used for parameters, can be:
 
-          * 'Open_rack_cell_glassback' (DEFAULT)
-          * 'Roof_mount_cell_glassback'
-          * 'Open_rack_cell_polymerback'
-          * 'Insulated_back_polumerback'
-          * 'Open_rack_Polymer_thinfilm_steel'
-          * '22X_Concentrator_tracker'
+    Other Parameters
+    ----------------
 
-  a : float (optional)
-          SAPM module parameter for establishing the upper limit for module 
-          temperature at low wind speeds and high solar irradiance (see SAPM
-          eqn. 11). Must be a scalar.If not input, this value will be taken from the chosen
-          model
-  b : float (optional)
+    modelt :  string
 
-          SAPM module parameter for establishing the rate at which the module
-          temperature drops as wind speed increases (see SAPM eqn. 11). Must be
-          a scalar.If not input, this value will be taken from the chosen
-          model
+    Model to be used for parameters, can be:
 
-  deltaT : float (optional) 
+            * 'Open_rack_cell_glassback' (DEFAULT)
+            * 'Roof_mount_cell_glassback'
+            * 'Open_rack_cell_polymerback'
+            * 'Insulated_back_polumerback'
+            * 'Open_rack_Polymer_thinfilm_steel'
+            * '22X_Concentrator_tracker'
 
-          SAPM module parameter giving the temperature difference
-          between the cell and module back surface at the reference irradiance,
-          E0. Must be a numeric scalar >=0. If not input, this value will be taken from the chosen
-          model
+    a : float (optional)
+            SAPM module parameter for establishing the upper limit for module 
+            temperature at low wind speeds and high solar irradiance (see SAPM
+            eqn. 11). Must be a scalar.If not input, this value will be taken from the chosen
+            model
+    b : float (optional)
 
-  Returns
-  --------
-  Tcell : float or DataFrame
-          Cell temperatures in degrees C.
-  
-  Tmodule : float or DataFrame
-          Module back temperature in degrees C.
+            SAPM module parameter for establishing the rate at which the module
+            temperature drops as wind speed increases (see SAPM eqn. 11). Must be
+            a scalar.If not input, this value will be taken from the chosen
+            model
 
-  References
-  ----------
+    deltaT : float (optional) 
 
-  [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
-  3535, Sandia National Laboratories, Albuquerque, NM
+            SAPM module parameter giving the temperature difference
+            between the cell and module back surface at the reference irradiance,
+            E0. Must be a numeric scalar >=0. If not input, this value will be taken from the chosen
+            model
 
-  See Also 
-  --------
+    Returns
+    --------
+    Tcell : float or DataFrame
+            Cell temperatures in degrees C.
 
-  pvl_sapm
-  '''
-  Vars=locals()
-  Expect={'a':('optional','num'),
-          'b':('optional','num'),
-          'deltaT':('optional','num'), 
-          'E':('x>=0'),
-          'Wspd':('x>=0'),
-          'Tamb':('x>=0'),
-          'modelt': ('default','default=Open_rack_cell_glassback')
-          }
+    Tmodule : float or DataFrame
+            Module back temperature in degrees C.
 
-  var=pvl_tools.Parse(Vars,Expect)
+    References
+    ----------
 
-  TempModel={'Open_rack_cell_glassback':[-3.47, -.0594, 3],
-              'Roof_mount_cell_glassback':[-2.98, -.0471, 1],
-              'Open_rack_cell_polymerback': [-3.56, -.0750, 3],
-              'Insulated_back_polumerback': [-2.81, -.0455, 0 ],
-              'Open_rack_Polymer_thinfilm_steel':[-3.58, -.113, 3],
-              '22X_Concentrator_tracker':[-3.23, -.130, 13]
-          }
-  try: 
-      a=var.a
-      b=var.b
-      deltaT=var.deltaT
-  except:
-      a=TempModel[var.modelt][0]
-      b=TempModel[var.modelt][1]
-      deltaT=TempModel[var.modelt][2]
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
+    3535, Sandia National Laboratories, Albuquerque, NM
 
-  E0=1000 # Reference irradiance
+    See Also 
+    --------
 
-  Tmodule=var.E*((np.exp(a + b*var.Wspd))) + var.Tamb
+    pvl_sapm
+    '''
 
-  Tcell=Tmodule + var.E / E0*(deltaT)
+    TempModel={'Open_rack_cell_glassback':[-3.47, -.0594, 3],
+                'Roof_mount_cell_glassback':[-2.98, -.0471, 1],
+                'Open_rack_cell_polymerback': [-3.56, -.0750, 3],
+                'Insulated_back_polumerback': [-2.81, -.0455, 0 ],
+                'Open_rack_Polymer_thinfilm_steel':[-3.58, -.113, 3],
+                '22X_Concentrator_tracker':[-3.23, -.130, 13]
+            }
+    try: 
+        a=a
+        b=b
+        deltaT=deltaT
+    except:
+        a=TempModel[modelt][0]
+        b=TempModel[modelt][1]
+        deltaT=TempModel[modelt][2]
 
-  return pd.DataFrame({'Tcell':Tcell,'Tmodule':Tmodule})
+    E0=1000 # Reference irradiance
+    Tmodule=E*((np.exp(a + b*Wspd))) + Tamb
+
+    Tcell=Tmodule + E / E0*(deltaT)
+
+    return pd.DataFrame({'Tcell':Tcell,'Tmodule':Tmodule})
 
 def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
     '''
@@ -1094,47 +969,37 @@ def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
 
 
     '''
-    Vars=locals()
-    Expect={'Module':(''),
-            'IL':('x>0'),
-            'I0':('x>0'),
-            'Rs':('x>0'),
-            'Rsh':('x>0'),
-            'nNsVth':('x>0'),
-    }
-
-    var=pvl_tools.Parse(Vars,Expect)
 
     # Find Isc using Lambert W
-    Isc = I_from_V(Rsh=var.Rsh, Rs=var.Rs, nNsVth=var.nNsVth, V=0.01, I0=var.I0, IL=var.IL)
+    Isc = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.01, I0=I0, IL=IL)
 
 
     #If passed a dataframe, output a dataframe, if passed a list or scalar,
     #return a dict 
-    if isinstance(var.Rsh,pd.Series):
+    if isinstance(Rsh,pd.Series):
         DFOut=pd.DataFrame({'Isc':Isc})
-        DFOut.index=var.Rsh.index
+        DFOut.index=Rsh.index
     else:
         DFOut={'Isc':Isc}
 
 
-    DFOut['Rsh']=var.Rsh
-    DFOut['Rs']=var.Rs
-    DFOut['nNsVth']=var.nNsVth
-    DFOut['I0']=var.I0
-    DFOut['IL']=var.IL
+    DFOut['Rsh']=Rsh
+    DFOut['Rs']=Rs
+    DFOut['nNsVth']=nNsVth
+    DFOut['I0']=I0
+    DFOut['IL']=IL
 
-    __,Voc_return = golden_sect_DataFrame(DFOut,0,var.Module.V_oc_ref*1.6,Voc_optfcn)
+    __,Voc_return = golden_sect_DataFrame(DFOut,0,Module.V_oc_ref*1.6,Voc_optfcn)
     Voc=Voc_return.copy() #create an immutable copy 
 
-    Pmp,Vmax = golden_sect_DataFrame(DFOut,0,var.Module.V_oc_ref*1.14,pwr_optfcn)
-    Imax = I_from_V(Rsh=var.Rsh, Rs=var.Rs, nNsVth=var.nNsVth, V=Vmax, I0=var.I0, IL=var.IL)
+    Pmp,Vmax = golden_sect_DataFrame(DFOut,0,Module.V_oc_ref*1.14,pwr_optfcn)
+    Imax = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=Vmax, I0=I0, IL=IL)
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is Imax. Start the optimization at Voc/2
 
     # Find Ix and Ixx using Lambert W
-    Ix = I_from_V(Rsh=var.Rsh, Rs=var.Rs, nNsVth=var.nNsVth, V=.5*Voc, I0=var.I0, IL=var.IL)
-    Ixx = I_from_V(Rsh=var.Rsh, Rs=var.Rs, nNsVth=var.nNsVth, V=0.5*(Voc+Vmax), I0=var.I0, IL=var.IL)
+    Ix = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=.5*Voc, I0=I0, IL=IL)
+    Ixx = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.5*(Voc+Vmax), I0=I0, IL=IL)
 
     '''
     # If the user says they want a curve of with number of points equal to
@@ -1206,7 +1071,7 @@ def golden_sect_DataFrame(df,VL,VH,func):
 
     df['VH']=VH
     df['VL']=VL
-
+      
     err=df['VH']-df['VL']
     errflag=True
     iterations=0
@@ -1260,7 +1125,11 @@ def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
     # Rsh, nVth, V, I0, IL can all be DataFrames
     # Rs can be a DataFrame, but should be a scalar
     '''
-
+    try:
+        from scipy.special import lambertw
+    except ImportError:
+        raise ImportError('The I_from_V function requires scipy')
+    
     argW = Rs*I0*Rsh*np.exp(Rsh*(Rs*(IL+I0)+V)/(nNsVth*(Rs+Rsh)))/(nNsVth*(Rs + Rsh))
     inputterm =lambertw(argW)
 
@@ -1347,28 +1216,22 @@ def snlinverter(Inverter,Vmp,Pmp):
 
   '''
 
-  Vars=locals()
-  Expect={'Inverter':(''),
-      'Vmp':'',
-      'Pmp':''}
 
-  var=pvl_tools.Parse(Vars,Expect)
-
-  Paco=var.Inverter['Paco']
-  Pdco=var.Inverter['Pdco']
-  Vdco=var.Inverter['Vdco']
-  Pso=var.Inverter['Pso']
-  C0=var.Inverter['C0']
-  C1=var.Inverter['C1']
-  C2=var.Inverter['C2']
-  C3=var.Inverter['C3']
-  Pnt=var.Inverter['Pnt']
+  Paco=Inverter['Paco']
+  Pdco=Inverter['Pdco']
+  Vdco=Inverter['Vdco']
+  Pso=Inverter['Pso']
+  C0=Inverter['C0']
+  C1=Inverter['C1']
+  C2=Inverter['C2']
+  C3=Inverter['C3']
+  Pnt=Inverter['Pnt']
 
 
-  A=Pdco*((1 + C1*((var.Vmp - Vdco))))
-  B=Pso*((1 + C2*((var.Vmp - Vdco))))
-  C=C0*((1 + C3*((var.Vmp - Vdco))))
-  ACPower=((Paco / (A - B)) - C*((A - B)))*((var.Pmp - B)) + C*((var.Pmp - B) ** 2)
+  A=Pdco*((1 + C1*((Vmp - Vdco))))
+  B=Pso*((1 + C2*((Vmp - Vdco))))
+  C=C0*((1 + C3*((Vmp - Vdco))))
+  ACPower=((Paco / (A - B)) - C*((A - B)))*((Pmp - B)) + C*((Pmp - B) ** 2)
   ACPower[ACPower > Paco]=Paco
   ACPower[ACPower < Pso]=- 1.0 * abs(Pnt)
 

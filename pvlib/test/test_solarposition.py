@@ -9,8 +9,8 @@ import pandas as pd
 from nose.tools import raises, assert_almost_equals
 from pandas.util.testing import assert_frame_equal
 
-from ..location import Location
-from .. import solarposition
+from pvlib.location import Location
+from pvlib import solarposition
 
 
 # setup times and locations to be tested.
@@ -98,6 +98,11 @@ def test_calc_time():
                           epoch_dt).total_seconds(), actual_timestamp)
     assert_almost_equals((az.replace(second=0, microsecond=0) - 
                           epoch_dt).total_seconds(), actual_timestamp)
+                          
+                          
+def test_earthsun_distance():
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1, freq='D')
+    assert_almost_equals(1, solarposition.pyephem_earthsun_distance(times).values[0], 0)
     
         
 # add tests for daylight savings time?

@@ -19,11 +19,15 @@ before_install:
     
 install:
     - echo "install"
-    - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas nose pytz pyephem coverage
+    - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas nose pytz ephem
+    - conda install --yes coverage
+    - pip install coveralls
     - python setup.py install
+    # for nosetests to actually work since it alters the path
+    - python setup.py build_ext --inplace
 
 script:
-    - nosetests -v --with-coverage --coverate-inclusive pvlib
-    
-    
-	
+    - nosetests -v --with-coverage --cover-package=pvlib pvlib
+
+after_success:
+    coveralls

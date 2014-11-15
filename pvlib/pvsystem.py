@@ -11,101 +11,100 @@ from pvlib import tools
 
 
 
-def systemdef(TMYmeta,SurfTilt, SurfAz,Albedo,SeriesModules,ParallelModules):
-
+def systemdef(tmy_meta, surftilt, surfaz, albedo, series_modules, 
+              parallel_modules):
     '''
-    Generates a dict of system paramters used throughout a simulation
+    Generates a dict of system paramters used throughout a simulation.
 
     Parameters
     ----------
 
-    TMYmeta : struct or dict
-                meta file generated from a TMY file using pvl_readtmy2 or pvl_readtmy3.
-                It should contain at least the following fields: 
+    tmy_meta : dict
+        meta file generated from a TMY file using pvl_readtmy2 or pvl_readtmy3.
+        It should contain at least the following fields: 
 
-                    ===============   ======  ====================  
-                    meta field        format  description
-                    ===============   ======  ====================  
-                    meta.altitude     Float   site elevation
-                    meta.latitude     Float   site latitude
-                    meta.longitude    Float   site longitude
-                    meta.Name         String  site name
-                    meta.State        String  state
-                    meta.TZ           Float   timezone
-                    ===============   ======  ====================  
+            ===============   ======  ====================  
+            meta field        format  description
+            ===============   ======  ====================  
+            meta.altitude     Float   site elevation
+            meta.latitude     Float   site latitude
+            meta.longitude    Float   site longitude
+            meta.Name         String  site name
+            meta.State        String  state
+            meta.TZ           Float   timezone
+            ===============   ======  ====================  
 
-    SurfTilt : float or DataFrame
-              Surface tilt angles in decimal degrees.
-              SurfTilt must be >=0 and <=180. The tilt angle is defined as
-              degrees from horizontal (e.g. surface facing up = 0, surface facing
-              horizon = 90)
+    surftilt : float or DataFrame
+        Surface tilt angles in decimal degrees.
+        surftilt must be >=0 and <=180. The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
-    SurfAz : float or DataFrame
-            Surface azimuth angles in decimal degrees.
-            SurfAz must be >=0 and <=360. The Azimuth convention is defined
-            as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+    surfaz : float or DataFrame
+        Surface azimuth angles in decimal degrees.
+        surfaz must be >=0 and <=360. The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    Albedo : float or DataFrame 
-            Ground reflectance, typically 0.1-0.4 for
-            surfaces on Earth (land), may increase over snow, ice, etc. May also 
-            be known as the reflection coefficient. Must be >=0 and <=1.
+    albedo : float or DataFrame 
+        Ground reflectance, typically 0.1-0.4 for
+        surfaces on Earth (land), may increase over snow, ice, etc. May also 
+        be known as the reflection coefficient. Must be >=0 and <=1.
 
-    SeriesModules : float
-            Number of modules connected in series in a string. 
+    series_modules : float
+        Number of modules connected in series in a string. 
 
-    ParallelModules : int
-            Number of strings connected in parallel.
+    parallel_modules : int
+        Number of strings connected in parallel.
     
-    
-
     Returns
     -------
-
     Result : dict
 
-                A dict with the following fields.
-      
-                    * 'SurfTilt'
-                    * 'SurfAz'
-                    * 'Albedo'
-                    * 'SeriesModules'
-                    * 'ParallelModules'
-                    * 'Lat'
-                    * 'Long'
-                    * 'TZ'
-                    * 'name'
-                    * 'altitude'
+        A dict with the following fields.
+
+            * 'surftilt'
+            * 'surfaz'
+            * 'albedo'
+            * 'series_modules'
+            * 'parallel_modules'
+            * 'Lat'
+            * 'Long'
+            * 'TZ'
+            * 'name'
+            * 'altitude'
 
 
     See also
     --------
-    pvl_readtmy3
-    pvl_readtmy2
-
-
+    readtmy3
+    readtmy2
     '''
-
-    system={'SurfTilt':SurfTilt,
-            'SurfAz':SurfAz,
-            'Albedo':Albedo,
-            'SeriesModules':SeriesModules,
-            'ParallelModules':ParallelModules,
-            'latitude':TMYmeta.latitude,
-            'longitude':TMYmeta.longitude,
-            'TZ':TMYmeta.TZ,
-            'name':TMYmeta.Name,
-            'altitude':TMYmeta.altitude}
+    
+    try:
+        name = tmy_meta['Name']
+    except KeyError:
+        name = tmy_meta['City']
+    
+    system = {'surftilt':surftilt,
+              'surfaz':surfaz,
+              'albedo':albedo,
+              'series_modules':series_modules,
+              'parallel_modules':parallel_modules,
+              'latitude':tmy_meta['latitude'],
+              'longitude':tmy_meta['longitude'],
+              'TZ':tmy_meta['TZ'],
+              'name':name,
+              'altitude':tmy_meta['altitude']}
 
     return system
 
 
 
-def ashraeiam(b,theta):
+def ashraeiam(b, theta):
     '''
     Determine the incidence angle modifier using the ASHRAE transmission model.
 
-
-    pvl_ashraeiam calculates the incidence angle modifier as developed in
+    ashraeiam calculates the incidence angle modifier as developed in
     [1], and adopted by ASHRAE (American Society of Heating, Refrigeration,
     and Air Conditioning Engineers) [2]. The model has been used by model
     programs such as PVSyst [3].
@@ -116,22 +115,22 @@ def ashraeiam(b,theta):
     Parameters
     ----------
     b : float
-            A parameter to adjust the modifier as a function of angle of
-            incidence. Typical values are on the order of 0.05 [3].
-    theta : DataFrame
-            The angle of incidence between the module normal vector and the
-            sun-beam vector in degrees. Theta must be a numeric scalar or vector.
-            For any values of theta where abs(theta)>90, IAM is set to 0. For any
-            values of theta where -90 < theta < 0, theta is set to abs(theta) and
-            evaluated. A warning will be generated if any(theta<0 or theta>90).
-            For values of theta near 90 degrees, the ASHRAE model may be above 1
-            or less than 0 due to the discontinuity of secant(theta). IAM values
-            outside of [0,1] are set to 0 and a warning is generated.
+        A parameter to adjust the modifier as a function of angle of
+        incidence. Typical values are on the order of 0.05 [3].
+    theta : Series
+        The angle of incidence between the module normal vector and the
+        sun-beam vector in degrees. Theta must be a numeric scalar or vector.
+        For any values of theta where abs(theta)>90, IAM is set to 0. For any
+        values of theta where -90 < theta < 0, theta is set to abs(theta) and
+        evaluated. A warning will be generated if any(theta<0 or theta>90).
+        For values of theta near 90 degrees, the ASHRAE model may be above 1
+        or less than 0 due to the discontinuity of secant(theta). IAM values
+        outside of [0,1] are set to 0 and a warning is generated.
 
     Returns
     -------
     IAM : DataFrame
-
+    
         The incident angle modifier calculated as 1-b*(sec(theta)-1) as
         described in [2,3]. IAM is a column vector with the same number of 
         elements as the largest input vector.
@@ -151,19 +150,17 @@ def ashraeiam(b,theta):
 
     See Also
     --------
-
-    pvl_getaoi
-    pvl_ephemeris
-    pvl_spa  
-    pvl_physicaliam
-    
+    getaoi
+    ephemeris
+    spa  
+    physicaliam
     '''
 
     if any((theta < 0) | (theta >= 90)):
         print('Input incident angles <0 or >=90 detected For input angles with absolute value greater than 90, the ' + 'modifier is set to 0. For input angles between -90 and 0, the ' + 'angle is changed to its absolute value and evaluated.')
         theta[(theta < 0) | (theta >= 90)]=abs((theta < 0) | (theta >= 90))
 
-    IAM=1 - b*((1/np.cos(np.radians(theta)) - 1))
+    IAM = 1 - b*((1/np.cos(np.radians(theta)) - 1))
 
     IAM[abs(theta) > 90]=0
 
@@ -172,6 +169,8 @@ def ashraeiam(b,theta):
     IAM[((IAM > 1) | (IAM < 0))]=0
 
     return IAM
+    
+    
 
 def physicaliam(K,L,n,theta):
 

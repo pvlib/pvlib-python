@@ -58,3 +58,12 @@ def test_physicaliam():
     thetas = pd.Series(np.linspace(-180,180,361))
     iam = pvsystem.physicaliam(4, 0.002, 1.526, thetas)
     
+    
+    
+def test_retrieve_sam_network():
+    pvsystem.retrieve_sam('cecmod')
+    pvsystem.retrieve_sam('sandiamod')
+    pvsystem.retrieve_sam('sandiainverter')
+
+    
+    

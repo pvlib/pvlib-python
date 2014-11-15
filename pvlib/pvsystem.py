@@ -252,9 +252,8 @@ def physicaliam(K, L, n, theta):
 
 
 
-
 def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
-                          M=1, Sref=1000, Tref=25):
+                      M=1, Sref=1000, Tref=25):
     '''
     Applies the temperature and irradiance corrections to inputs for pvl_singlediode
 
@@ -378,11 +377,10 @@ def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
 
     See Also
     --------
-    pvl_sapm
-    pvl_sapmcelltemp
-    pvl_singlediode
-    pvl_retreivesam
-
+    sapm
+    sapmcelltemp
+    singlediode
+    retreivesam
 
     Notes
     -----
@@ -471,53 +469,47 @@ def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
     
 
 
-def retreiveSAM(name,FileLoc='none'):
+def retrieve_sam(name=None, samfile=None):
     '''
-    Retreive lastest module and inverter info from SAM website
+    Retrieve lastest module and inverter info from SAM website
 
-    PVL_RETREIVESAM Retreive lastest module and inverter info from SAM website.
-    This function will retreive either:
+    This function will retrieve either:
 
         * CEC module database
         * Sandia Module database
         * Sandia Inverter database
 
-    and export it as a pandas dataframe
-
+    and return it as a pandas dataframe.
 
     Parameters
     ----------
 
-    name: String
-                Name can be one of:
+    name : String
+        Name can be one of:
 
-                * 'CECMod'- returns the CEC module database
-                * 'SandiaInverter- returns the Sandia Inverter database
-                * 'SandiaMod'- returns the Sandia Module database
-    FileLoc: String
+        * 'CECMod' - returns the CEC module database
+        * 'SandiaInverter' - returns the Sandia Inverter database
+        * 'SandiaMod' - returns the Sandia Module database
+        
+    samfile : String
+        Absolute path to the location of local versions of the SAM file. 
+        If file is specified, the latest versions of the SAM database will
+        not be downloaded. The selected file must be in .csv format. 
 
-                Absolute path to the location of local versions of the SAM file. 
-                If FileLoc is specified, the latest versions of the SAM database will
-                not be downloaded. The selected file must be in .csv format. 
-
-                If set to 'select', a dialogue will open allowing the suer to navigate 
-                to the appropriate page. 
+        If set to 'select', a dialogue will open allowing the user to navigate 
+        to the appropriate page. 
+        
     Returns
     -------
-
-    df: DataFrame
-
-                A DataFrame containing all the elements of the desired database. 
-                Each column representa a module or inverter, and a specific dataset
-                can be retreived by the command
-
-                >>> df.module_or_inverter_name
+    A DataFrame containing all the elements of the desired database. 
+    Each column representa a module or inverter, and a specific dataset
+    can be retreived by the command
 
     Examples
     --------
 
-    >>> Invdb=SAM.pvl_retreiveSAM(name='SandiaInverter')
-    >>> inverter=Invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
+    >>> invdb = pvsystem.retreiveSAM(name='SandiaInverter')
+    >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
     >>> inverter    
     Vac           277.000000
     Paco         6000.000000
@@ -534,52 +526,44 @@ def retreiveSAM(name,FileLoc='none'):
     Mppt_low      200.000000
     Mppt_high     500.000000
     Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
-    
     '''
-
-
-    if name=='CECMod':
-        url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-modules-2014-1-14.csv'
-    elif name=='SandiaMod':
-        url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2014-1-14.csv'
-    elif name=='SandiaInverter':
-        url='https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
     
-    if FileLoc=='none':
-        return read_url_to_pandas(url)
-    elif FileLoc=='select':
-        try:
-            import Tkinter 
-            from tkFileDialog import askopenfilename
-            Tkinter.Tk().withdraw()                  #Start interactive file input
-            return read_relative_to_pandas(askopenfilename())                               
-        except:
-            raise Exception ('Python not configured for TKinter. Try installing XQuartz and rerunning')
+    if name is not None:
+        name = name.lower()
+
+        if name == 'cecmod':
+            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-modules-2014-1-14.csv'
+        elif name == 'sandiamod':
+            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2014-1-14.csv'
+        elif name == 'sandiainverter':
+            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
+    
+    if samfile is None:
+        csvdata = urlopen(url)
+    elif samfile == 'select':
+        import Tkinter 
+        from tkFileDialog import askopenfilename
+        Tkinter.Tk().withdraw() 
+        csvdata = askopenfilename()                           
     else: 
-        return read_relative_to_pandas(FileLoc)
+        csvdata = samfile
         
-def read_url_to_pandas(url):
-
-    data = urlopen(url)
-    df=pd.read_csv(data,index_col=0)
-    parsedindex=[]
+    return _parse_raw_sam_df(csvdata)
+        
+        
+        
+def _parse_raw_sam_df(csvdata):
+    df = pd.read_csv(csvdata, index_col=0)
+    parsedindex = []
     for index in df.index:
         parsedindex.append(index.replace(' ','_').replace('-','_').replace('.','_').replace('(','_').replace(')','_').replace('[','_').replace(']','_').replace(':','_'))
         
-    df.index=parsedindex
-    df=df.transpose()
+    df.index = parsedindex
+    df = df.transpose()
+    
     return df
-
-def read_relative_to_pandas(FileLoc):
-
-    df=pd.read_csv(FileLoc,index_col=0)
-    parsedindex=[]
-    for index in df.index:
-        parsedindex.append(index.replace(' ','_').replace('-','_').replace('.','_').replace('(','_').replace(')','_').replace('[','_').replace(']','_').replace(':','_'))
-        
-    df.index=parsedindex
-    df=df.transpose()
-    return df
+    
+    
 
 def sapm(Module,Eb,Ediff,Tcell,AM,AOI):
     '''

@@ -4,6 +4,7 @@ import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import os
+import io
 try:
     from urllib2 import urlopen
 except ImportError:
@@ -541,7 +542,8 @@ def retrieve_sam(name=None, samfile=None):
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
     
     if samfile is None:
-        csvdata = urlopen(url)
+        response = urlopen(url)
+        csvdata = io.BytesIO(response.read())
     elif samfile == 'select':
         import Tkinter 
         from tkFileDialog import askopenfilename

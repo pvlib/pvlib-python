@@ -53,3 +53,8 @@ def test_ashraeiam():
     iam = pvsystem.ashraeiam(.05, thetas)
     
     
+    
+def test_physicaliam():
+    thetas = pd.Series(np.linspace(-180,180,361))
+    iam = pvsystem.physicaliam(4, 0.002, 1.526, thetas)
+    

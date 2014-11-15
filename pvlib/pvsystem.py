@@ -164,12 +164,12 @@ def ashraeiam(b, theta):
     
     
 
-def physicaliam(K,L,n,theta):
+def physicaliam(K, L, n, theta):
     '''
     Determine the incidence angle modifier using refractive 
     index, glazing thickness, and extinction coefficient
 
-    pvl_physicaliam calculates the incidence angle modifier as described in
+    physicaliam calculates the incidence angle modifier as described in
     De Soto et al. "Improvement and validation of a model for photovoltaic
     array performance", section 3. The calculation is based upon a physical
     model of absorbtion and transmission through a cover. Required
@@ -182,48 +182,42 @@ def physicaliam(K,L,n,theta):
 
     Parameters
     ----------
-
     K : float
-
-            The glazing extinction coefficient in units of 1/meters. Reference
-            [1] indicates that a value of  4 is reasonable for "water white"
-            glass. K must be a numeric scalar or vector with all values >=0. If K
-            is a vector, it must be the same size as all other input vectors.
+        The glazing extinction coefficient in units of 1/meters. Reference
+        [1] indicates that a value of  4 is reasonable for "water white"
+        glass. K must be a numeric scalar or vector with all values >=0. If K
+        is a vector, it must be the same size as all other input vectors.
 
     L : float
-
-            The glazing thickness in units of meters. Reference [1] indicates
-            that 0.002 meters (2 mm) is reasonable for most glass-covered
-            PV panels. L must be a numeric scalar or vector with all values >=0. 
-            If L is a vector, it must be the same size as all other input vectors.
+        The glazing thickness in units of meters. Reference [1] indicates
+        that 0.002 meters (2 mm) is reasonable for most glass-covered
+        PV panels. L must be a numeric scalar or vector with all values >=0. 
+        If L is a vector, it must be the same size as all other input vectors.
 
     n : float
+        The effective index of refraction (unitless). Reference [1]
+        indicates that a value of 1.526 is acceptable for glass. n must be a 
+        numeric scalar or vector with all values >=0. If n is a vector, it 
+        must be the same size as all other input vectors.
 
-            The effective index of refraction (unitless). Reference [1]
-            indicates that a value of 1.526 is acceptable for glass. n must be a 
-            numeric scalar or vector with all values >=0. If n is a vector, it 
-            must be the same size as all other input vectors.
-
-    theta :float
-
-            The angle of incidence between the module normal vector and the
-            sun-beam vector in degrees. Theta must be a numeric scalar or vector.
-            For any values of theta where abs(theta)>90, IAM is set to 0. For any
-            values of theta where -90 < theta < 0, theta is set to abs(theta) and
-            evaluated. A warning will be generated if any(theta<0 or theta>90).
+    theta : Series
+        The angle of incidence between the module normal vector and the
+        sun-beam vector in degrees. 
 
     Returns
     -------
-
     IAM : float
-
-       The incident angle modifier as specified in eqns. 14-16 of [1].
-         IAM is a column vector with the same number of elements as the
-         largest input vector.
+        The incident angle modifier as specified in eqns. 14-16 of [1].
+        IAM is a column vector with the same number of elements as the
+        largest input vector.
+        
+        Theta must be a numeric scalar or vector.
+        For any values of theta where abs(theta)>90, IAM is set to 0. For any
+        values of theta where -90 < theta < 0, theta is set to abs(theta) and
+        evaluated. A warning will be generated if any(theta<0 or theta>90).
 
     References
     ----------
-
     [1] W. De Soto et al., "Improvement and validation of a model for
      photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
      2006.
@@ -234,33 +228,25 @@ def physicaliam(K,L,n,theta):
 
     See Also 
     --------
-          
-    pvl_getaoi   
-    pvl_ephemeris   
-    pvl_spa    
-    pvl_ashraeiam
-
+    getaoi   
+    ephemeris   
+    spa    
+    ashraeiam
     '''
+    thetar_deg = tools.asind(1.0 / n*(tools.sind(theta)))
 
-    if any((theta < 0) | (theta >= 90)):
-        print('Input incident angles <0 or >=90 detected For input angles with absolute value greater than 90, the ' + 'modifier is set to 0. For input angles between -90 and 0, the ' + 'angle is changed to its absolute value and evaluated.')
-        theta[(theta < 0) | (theta >= 90)]=abs((theta < 0) | (theta >= 90))
-
-    thetar_deg=tools.asind(1.0 / n*(tools.sind(theta)))
-
-    tau=np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg)))*((1 - 0.5*((((tools.sind(thetar_deg - theta)) ** 2) / ((tools.sind(thetar_deg + theta)) ** 2) + ((tools.tand(thetar_deg - theta)) ** 2) / ((tools.tand(thetar_deg + theta)) ** 2)))))
+    tau = np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg)))*((1 - 0.5*((((tools.sind(thetar_deg - theta)) ** 2) / ((tools.sind(thetar_deg + theta)) ** 2) + ((tools.tand(thetar_deg - theta)) ** 2) / ((tools.tand(thetar_deg + theta)) ** 2)))))
     
-    zeroang=1e-06
+    zeroang = 1e-06
     
-    thetar_deg0=tools.asind(1.0 / n*(tools.sind(zeroang)))
+    thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
     
-    tau0=np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg0)))*((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) / ((tools.sind(thetar_deg0 + zeroang)) ** 2) + ((tools.tand(thetar_deg0 - zeroang)) ** 2) / ((tools.tand(thetar_deg0 + zeroang)) ** 2)))))
+    tau0 = np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg0)))*((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) / ((tools.sind(thetar_deg0 + zeroang)) ** 2) + ((tools.tand(thetar_deg0 - zeroang)) ** 2) / ((tools.tand(thetar_deg0 + zeroang)) ** 2)))))
     
-    IAM=tau / tau0
+    IAM = tau / tau0
     
-    IAM[theta == 0]=1
-    
-    IAM[abs(theta) > 90 | (IAM < 0)]=0
+    IAM[abs(theta) >= 90] = np.nan
+    IAM[IAM < 0] = np.nan
     
     return IAM
 

@@ -1,3 +1,5 @@
+from __future__ import division
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
@@ -676,10 +678,8 @@ def sapm(Module,Eb,Ediff,Tcell,AM,AOI):
     return  DFOut
 
 
-def sapmcelltemp(E, Wspd, Tamb,modelt='Open_rack_cell_glassback',**kwargs):
+def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     '''
-    Estimate cell temperature from irradiance, windspeed, ambient temperature, and module parameters (SAPM)
-
     Estimate cell and module temperatures per the Sandia PV Array
     Performance model (SAPM, SAND2004-3535), when given the incident
     irradiance, wind speed, ambient temperature, and SAPM module
@@ -687,24 +687,19 @@ def sapmcelltemp(E, Wspd, Tamb,modelt='Open_rack_cell_glassback',**kwargs):
 
     Parameters
     ----------
+    irrad : float or DataFrame
+        Total incident irradiance in W/m^2.
 
-    E : float or DataFrame
-            Total incident irradiance in W/m^2. Must be >=0.
+    wind : float or DataFrame
+        Wind speed in m/s at a height of 10 meters.
 
+    temp : float or DataFrame
+        Ambient dry bulb temperature in degrees C.
 
-    windspeed : float or DataFrame
-            Wind speed in m/s at a height of 10 meters. Must be >=0
-
-    Tamb : float or DataFrame
-            Ambient dry bulb temperature in degrees C. Must be >= -273.15.
-
-
-    Other Parameters
-    ----------------
-
-    modelt :  string
-
-    Model to be used for parameters, can be:
+    model : string or list
+        Model to be used.
+        
+        If string, can be:
 
             * 'Open_rack_cell_glassback' (DEFAULT)
             * 'Roof_mount_cell_glassback'
@@ -712,68 +707,64 @@ def sapmcelltemp(E, Wspd, Tamb,modelt='Open_rack_cell_glassback',**kwargs):
             * 'Insulated_back_polumerback'
             * 'Open_rack_Polymer_thinfilm_steel'
             * '22X_Concentrator_tracker'
+    
+        If list, supply the following parameters in the following order:
+        
+            * a : float
+                  SAPM module parameter for establishing the upper limit for module 
+                  temperature at low wind speeds and high solar irradiance (see SAPM
+                  eqn. 11).
+            
+            * b : float
+                SAPM module parameter for establishing the rate at which the module
+                temperature drops as wind speed increases (see SAPM eqn. 11). Must be
+                a scalar.
 
-    a : float (optional)
-            SAPM module parameter for establishing the upper limit for module 
-            temperature at low wind speeds and high solar irradiance (see SAPM
-            eqn. 11). Must be a scalar.If not input, this value will be taken from the chosen
-            model
-    b : float (optional)
-
-            SAPM module parameter for establishing the rate at which the module
-            temperature drops as wind speed increases (see SAPM eqn. 11). Must be
-            a scalar.If not input, this value will be taken from the chosen
-            model
-
-    deltaT : float (optional) 
-
-            SAPM module parameter giving the temperature difference
-            between the cell and module back surface at the reference irradiance,
-            E0. Must be a numeric scalar >=0. If not input, this value will be taken from the chosen
-            model
+            * deltaT : float
+                SAPM module parameter giving the temperature difference
+                between the cell and module back surface at the reference irradiance,
+                E0. 
 
     Returns
     --------
-    Tcell : float or DataFrame
-            Cell temperatures in degrees C.
-
-    Tmodule : float or DataFrame
-            Module back temperature in degrees C.
+    dict with keys tcell and tmodule. Values in degrees C.
 
     References
     ----------
-
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
-    3535, Sandia National Laboratories, Albuquerque, NM
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", 
+    SAND Report 3535, Sandia National Laboratories, Albuquerque, NM.
 
     See Also 
     --------
-
-    pvl_sapm
+    sapm
     '''
 
-    TempModel={'Open_rack_cell_glassback':[-3.47, -.0594, 3],
-                'Roof_mount_cell_glassback':[-2.98, -.0471, 1],
-                'Open_rack_cell_polymerback': [-3.56, -.0750, 3],
-                'Insulated_back_polumerback': [-2.81, -.0455, 0 ],
-                'Open_rack_Polymer_thinfilm_steel':[-3.58, -.113, 3],
-                '22X_Concentrator_tracker':[-3.23, -.130, 13]
-            }
-    try: 
-        a=a
-        b=b
-        deltaT=deltaT
-    except:
-        a=TempModel[modelt][0]
-        b=TempModel[modelt][1]
-        deltaT=TempModel[modelt][2]
+    temp_models = {'open_rack_cell_glassback':[-3.47, -.0594, 3],
+                   'roof_mount_cell_glassback':[-2.98, -.0471, 1],
+                   'open_rack_cell_polymerback': [-3.56, -.0750, 3],
+                   'insulated_back_polumerback': [-2.81, -.0455, 0 ],
+                   'open_rack_polymer_thinfilm_steel':[-3.58, -.113, 3],
+                   '22x_concentrator_tracker':[-3.23, -.130, 13]
+                  }
+    
+    if isinstance(model, str):                  
+        model = temp_models[model.lower()]
+    elif isinstance(model, list):
+        model = model
+    
+    a = model[0]
+    b = model[1]
+    deltaT = model[2]
 
-    E0=1000 # Reference irradiance
-    Tmodule=E*((np.exp(a + b*Wspd))) + Tamb
+    E0 = 1000. # Reference irradiance
+    
+    tmodule = irrad*np.exp(a + b*wind) + temp
 
-    Tcell=Tmodule + E / E0*(deltaT)
+    tcell = tmodule + (irrad / E0)*(deltaT)
 
-    return pd.DataFrame({'Tcell':Tcell,'Tmodule':Tmodule})
+    return {'tcell':tcell, 'tmodule':tmodule}
+    
+    
 
 def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
     '''

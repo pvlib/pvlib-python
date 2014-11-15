@@ -7,7 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from nose.tools import assert_equals
+from nose.tools import assert_equals, assert_almost_equals
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -64,6 +64,13 @@ def test_retrieve_sam_network():
     pvsystem.retrieve_sam('cecmod')
     pvsystem.retrieve_sam('sandiamod')
     pvsystem.retrieve_sam('sandiainverter')
+    
+    
 
+def test_sapm_celltemp():
+    default = pvsystem.sapm_celltemp(900, 5, 20)
+    assert_almost_equals(43.509, default['tcell'], 3)
+    assert_almost_equals(40.809, default['tmodule'], 3)
+    assert_equals(default, pvsystem.sapm_celltemp(900, 5, 20, [-3.47, -.0594, 3]))
     
     

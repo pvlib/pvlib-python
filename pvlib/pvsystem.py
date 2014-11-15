@@ -1,3 +1,6 @@
+import logging
+pvl_logger = logging.getLogger('pvlib')
+
 import os
 try:
     from urllib2 import urlopen
@@ -119,21 +122,17 @@ def ashraeiam(b, theta):
         incidence. Typical values are on the order of 0.05 [3].
     theta : Series
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees. Theta must be a numeric scalar or vector.
-        For any values of theta where abs(theta)>90, IAM is set to 0. For any
-        values of theta where -90 < theta < 0, theta is set to abs(theta) and
-        evaluated. A warning will be generated if any(theta<0 or theta>90).
-        For values of theta near 90 degrees, the ASHRAE model may be above 1
-        or less than 0 due to the discontinuity of secant(theta). IAM values
-        outside of [0,1] are set to 0 and a warning is generated.
+        sun-beam vector in degrees.
 
     Returns
     -------
-    IAM : DataFrame
+    IAM : Series
     
         The incident angle modifier calculated as 1-b*(sec(theta)-1) as
-        described in [2,3]. IAM is a column vector with the same number of 
-        elements as the largest input vector.
+        described in [2,3]. 
+        
+        Returns nan for all abs(theta) >= 90 and for all IAM values
+        that would be less than 0.
 
     References
     ----------
@@ -155,25 +154,17 @@ def ashraeiam(b, theta):
     spa  
     physicaliam
     '''
-
-    if any((theta < 0) | (theta >= 90)):
-        print('Input incident angles <0 or >=90 detected For input angles with absolute value greater than 90, the ' + 'modifier is set to 0. For input angles between -90 and 0, the ' + 'angle is changed to its absolute value and evaluated.')
-        theta[(theta < 0) | (theta >= 90)]=abs((theta < 0) | (theta >= 90))
-
+    
     IAM = 1 - b*((1/np.cos(np.radians(theta)) - 1))
-
-    IAM[abs(theta) > 90]=0
-
-    if any((IAM > 1) | (IAM < 0)):
-        print('It seems that we have encountered a discontinuity. Any incident angle modifiers calculated to be less than 0 or ' + 'greather than 1 have been set to 0.')
-    IAM[((IAM > 1) | (IAM < 0))]=0
+    
+    IAM[abs(theta) >= 90] = np.nan
+    IAM[IAM < 0] = np.nan
 
     return IAM
     
     
 
 def physicaliam(K,L,n,theta):
-
     '''
     Determine the incidence angle modifier using refractive 
     index, glazing thickness, and extinction coefficient

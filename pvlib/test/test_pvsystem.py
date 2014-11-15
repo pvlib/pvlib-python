@@ -4,6 +4,9 @@ pvl_logger = logging.getLogger('pvlib')
 import inspect
 import os
 
+import numpy as np
+import pandas as pd
+
 from nose.tools import assert_equals
 
 from pvlib import tmy
@@ -42,3 +45,11 @@ def test_systemdef_tmy2():
                 'surfaz': 0,
                 'surftilt': 0}
     assert_equals(expected, pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5))
+    
+
+
+def test_ashraeiam():
+    thetas = pd.Series(np.linspace(-180,180,361))
+    iam = pvsystem.ashraeiam(.05, thetas)
+    
+    

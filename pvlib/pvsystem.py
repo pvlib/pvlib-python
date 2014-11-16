@@ -567,53 +567,43 @@ def _parse_raw_sam_df(csvdata):
     
     
 
-def sapm(Module,Eb,Ediff,Tcell,AM,AOI):
+def sapm(Module, Eb, Ediff, Tcell, AM, AOI):
     '''
-    Performs Sandia PV Array Performance Model to get 5 points on IV curve given SAPM module parameters, Ee, and cell temperature
-
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
     module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
     SAND2004-3535. Assumes a reference cell temperature of 25 C.
 
-    parameters
+    Parameters
     ----------
+    Module : Series
+        A DataFrame defining the SAPM performance parameters
 
-    Module : DataFrame
+    Eb : Series
+        The direct irradiance incident upon the module (suns). Any Ee<0
+        are set to 0.
 
-            A DataFrame defining the SAPM performance parameters (see
-            pvl_retreivesam)
+    Ediff : Series
+        The diffuse irradiance incident on module.
 
-    Eb : float of DataFrame
-
-            The effective irradiance incident upon the module (suns). Any Ee<0
-            are set to 0.
-
-    celltemp : float of DataFrame
-
-            The cell temperature (degrees C)
+    Tcell : Series
+        The cell temperature (degrees C).
+        
+    AM : Series
+        Absolute airmass.
+    
+    AOI : Series
+        Angle of incidence.
 
     Returns
     -------
-    Result - DataFrame
-
-            A DataFrame with:
-
-            * Result.Isc
-            * Result.Imp
-            * Result.Ix
-            * Result.Ixx
-            * Result.Voc
-            * Result.Vmp
-            * Result.Pmp
+    A DataFrame with the columns Isc, Imp, Ix, Ixx, Voc, Vmp, Pmp.
 
     Notes
     -----
-
-    The particular coefficients from SAPM which are required in Module
-    are:
+    The coefficients from SAPM which are required in Module are:
 
     ================   ======================================================================================================================
-    Module field        Description
+    Module field       Description
     ================   ======================================================================================================================
     Module.c           1x8 vector with the C coefficients Module.c(1) = C0
     Module.Isc0        Short circuit current at reference condition (amps)
@@ -630,52 +620,50 @@ def sapm(Module,Eb,Ediff,Tcell,AM,AOI):
 
     References
     ----------
-
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", SAND Report
-    3535, Sandia National Laboratories, Albuquerque, NM
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model", 
+    SAND Report 3535, Sandia National Laboratories, Albuquerque, NM.
 
     See Also
     --------
-
-    pvl_retreivesam
-    pvl_sapmcelltemp 
-
+    retrievesam
+    sapm_celltemp 
     '''
 
-    T0=25
-    q=1.60218e-19
-    k=1.38066e-23
-    E0=1000
+    T0 = 25
+    q = 1.60218e-19
+    k = 1.38066e-23
+    E0 = 1000
 
-    AMcoeff=[Module['A4'],Module['A3'],Module['A2'],Module['A1'],Module['A0']]
-    AOIcoeff=[Module['B5'],Module['B4'],Module['B3'],Module['B2'],Module['B1'],Module['B0']]
+    AMcoeff = [Module['A4'], Module['A3'], Module['A2'], Module['A1'], 
+               Module['A0']]
+    AOIcoeff = [Module['B5'], Module['B4'], Module['B3'], Module['B2'],
+                Module['B1'], Module['B0']]
 
-    F1 = np.polyval(AMcoeff,AM)
-    F2 = np.polyval(AOIcoeff,AOI)
+    F1 = np.polyval(AMcoeff, AM)
+    F2 = np.polyval(AOIcoeff, AOI)
     Ee= F1*((Eb*F2+Module['FD']*Ediff)/E0)
-    #var['Ee']=F1*((Eb+Ediff)/E0)
-    #print "Ee modifed, revert for main function"
     Ee.fillna(0)
-    Ee[Ee < 0]=0
+    Ee[Ee < 0] = 0
 
-    Filt=Ee[Ee >= 0.001]
+    Filt = Ee[Ee >= 0.001]
 
-    Isc=Module.ix['Isco']*(Ee)*((1 + Module.ix['Aisc']*((Tcell - T0))))
+    Isc = Module.ix['Isco']*(Ee)*((1 + Module.ix['Aisc']*((Tcell - T0))))
 
-    DFOut=pd.DataFrame({'Isc':Isc})
+    DFOut = pd.DataFrame({'Isc':Isc})
 
-    DFOut['Imp']=Module.ix['Impo']*((Module.ix['C0']*(Ee) + Module.ix['C1'] * (Ee ** 2)))*((1 + Module.ix['Aimp']*((Tcell - T0))))
-    Bvoco=Module.ix['Bvoco'] + Module.ix['Mbvoc']*((1 - Ee))
-    delta=Module.ix['N']*(k)*((Tcell + 273.15)) / q
-    DFOut['Voc']=(Module.ix['Voco'] + Module.ix['#Series']*(delta)*(np.log(Ee)) + Bvoco*((Tcell - T0)))
-    Bvmpo=Module.ix['Bvmpo'] + Module.ix['Mbvmp']*((1 - Ee))
-    DFOut['Vmp']=(Module.ix['Vmpo'] + Module.ix['C2']*(Module.ix['#Series'])*(delta)*(np.log(Ee)) + Module.ix['C3']*(Module.ix['#Series'])*((delta*(np.log(Ee))) ** 2) + Bvmpo*((Tcell - T0)))
-    DFOut['Vmp'][DFOut['Vmp']<0]=0
-    DFOut['Pmp']=DFOut.Imp*DFOut.Vmp
-    DFOut['Ix']=Module.ix['IXO'] * (Module.ix['C4']*(Ee) + Module.ix['C5']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
-    DFOut['Ixx']=Module.ix['IXXO'] * (Module.ix['C6']*(Ee) + Module.ix['C7']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
+    DFOut['Imp'] = Module.ix['Impo']*((Module.ix['C0']*(Ee) + Module.ix['C1'] * (Ee ** 2)))*((1 + Module.ix['Aimp']*((Tcell - T0))))
+    Bvoco = Module.ix['Bvoco'] + Module.ix['Mbvoc']*((1 - Ee))
+    delta = Module.ix['N']*(k)*((Tcell + 273.15)) / q
+    DFOut['Voc'] = (Module.ix['Voco'] + Module.ix['#Series']*(delta)*(np.log(Ee)) + Bvoco*((Tcell - T0)))
+    Bvmpo = Module.ix['Bvmpo'] + Module.ix['Mbvmp']*((1 - Ee))
+    DFOut['Vmp'] = (Module.ix['Vmpo'] + Module.ix['C2']*(Module.ix['#Series'])*(delta)*(np.log(Ee)) + Module.ix['C3']*(Module.ix['#Series'])*((delta*(np.log(Ee))) ** 2) + Bvmpo*((Tcell - T0)))
+    DFOut['Vmp'][DFOut['Vmp'] < 0] = 0
+    DFOut['Pmp'] = DFOut.Imp*DFOut.Vmp
+    DFOut['Ix'] = Module.ix['IXO'] * (Module.ix['C4']*(Ee) + Module.ix['C5']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
+    DFOut['Ixx'] = Module.ix['IXXO'] * (Module.ix['C6']*(Ee) + Module.ix['C7']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
 
-    return  DFOut
+    return DFOut
+
 
 
 def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):

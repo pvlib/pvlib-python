@@ -3,6 +3,7 @@ pvl_logger = logging.getLogger('pvlib')
 
 import inspect
 import os
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -58,12 +59,35 @@ def test_physicaliam():
     thetas = pd.Series(np.linspace(-180,180,361))
     iam = pvsystem.physicaliam(4, 0.002, 1.526, thetas)
     
-    
-    
+
+
+# if this completes successfully we'll be able to do more tests below.
+sam_data = {}
 def test_retrieve_sam_network():
-    pvsystem.retrieve_sam('cecmod')
-    pvsystem.retrieve_sam('sandiamod')
-    pvsystem.retrieve_sam('sandiainverter')
+    sam_data['cecmod'] = pvsystem.retrieve_sam('cecmod')
+    sam_data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
+    sam_data['sandiainverter'] = pvsystem.retrieve_sam('sandiainverter')
+    
+    
+    
+def test_sapm():
+    from pvlib import clearsky
+    from pvlib import irradiance
+    from pvlib import atmosphere
+    from pvlib import solarposition
+    from pvlib.location import Location
+
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    times = pd.date_range(start=datetime.datetime(2014,1,1), end=datetime.datetime(2014,1,2), freq='1Min')
+    ephem_data = solarposition.get_solarposition(times, tus, method='pyephem')
+    irrad_data = clearsky.ineichen(times, tus, solarposition_method='pyephem')
+    aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'])
+    am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
+    
+    modules = sam_data['sandiamod']
+    module = modules.Canadian_Solar_CS5P_220M___2009_
+    
+    sapm = pvsystem.sapm(module, irrad_data.DNI, irrad_data.DHI, 25, am, aoi)
     
     
 
@@ -76,7 +100,7 @@ def test_sapm_celltemp():
     
     
 def test_snlinverter():
-    inverters = pvsystem.retrieve_sam('sandiainverter')
+    inverters = sam_data['sandiainverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
     vdcs = pd.Series(np.linspace(0,50,51))
     idcs = pd.Series(np.linspace(0,11,110))

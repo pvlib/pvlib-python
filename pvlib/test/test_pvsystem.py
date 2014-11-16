@@ -74,3 +74,13 @@ def test_sapm_celltemp():
     assert_equals(default, pvsystem.sapm_celltemp(900, 5, 20, [-3.47, -.0594, 3]))
     
     
+    
+def test_snlinverter():
+    inverters = pvsystem.retrieve_sam('sandiainverter')
+    testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
+    vdcs = pd.Series(np.linspace(0,50,51))
+    idcs = pd.Series(np.linspace(0,11,110))
+    pdcs = idcs * vdcs
+
+    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    

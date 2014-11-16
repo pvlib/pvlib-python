@@ -540,6 +540,11 @@ def retrieve_sam(name=None, samfile=None):
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2014-1-14.csv'
         elif name == 'sandiainverter':
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
+        elif samfile is None:
+            raise ValueError('invalid name {}'.format(name))
+            
+    if name is None and samfile is None:
+        raise ValueError('must supply name or samfile')
     
     if samfile is None:
         pvl_logger.info('retrieving {} from {}'.format(name, url))
@@ -1001,6 +1006,8 @@ def golden_sect_DataFrame(df,VL,VH,func):
 
     return func(df,'V1') , df['V1']
 
+
+
 def pwr_optfcn(df,loc):
     '''
     function to find power from I_from_V
@@ -1009,12 +1016,15 @@ def pwr_optfcn(df,loc):
     I=I_from_V(Rsh=df['Rsh'],Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL'])
     return I*df[loc]
 
+
+
 def Voc_optfcn(df,loc):
     '''
     function to find V_oc from I_from_V
     '''
-    I=-abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL']))
+    I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL']))
     return I
+
 
 
 def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
@@ -1030,111 +1040,100 @@ def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
         raise ImportError('The I_from_V function requires scipy')
     
     argW = Rs*I0*Rsh*np.exp(Rsh*(Rs*(IL+I0)+V)/(nNsVth*(Rs+Rsh)))/(nNsVth*(Rs + Rsh))
-    inputterm =lambertw(argW)
+    inputterm = lambertw(argW)
 
     # Eqn. 4 in Jain and Kapoor, 2004
     I = -V/(Rs + Rsh) - (nNsVth/Rs) * inputterm + Rsh*(IL + I0)/(Rs + Rsh)
     
-
     return I.real
 
 
-def snlinverter(Inverter,Vmp,Pmp):
-  '''
-  Converts DC power and voltage to AC power using Sandia's Grid-Connected PV Inverter model
 
-  Determine the AC power output of an inverter given the DC voltage, DC
-  power, and appropriate Sandia Grid-Connected Photovoltaic Inverter
-  Model parameters. The output, ACPower, is clipped at the maximum power
-  output, and gives a negative power during low-input power conditions,
-  but does NOT account for maximum power point tracking voltage windows
-  nor maximum current or voltage limits on the inverter. 
+def snlinverter(inverter, Vmp, Pmp):
+    '''
+    Converts DC power and voltage to AC power using 
+    Sandia's Grid-Connected PV Inverter model
 
-  Parameters
-  ----------
+    Determine the AC power output of an inverter given the DC voltage, DC
+    power, and appropriate Sandia Grid-Connected Photovoltaic Inverter
+    Model parameters. The output, ACPower, is clipped at the maximum power
+    output, and gives a negative power during low-input power conditions,
+    but does NOT account for maximum power point tracking voltage windows
+    nor maximum current or voltage limits on the inverter. 
 
-  Inverter : DataFrame
+    Parameters
+    ----------
+    inverter : DataFrame
+        A DataFrame defining the inverter to be used, giving the
+        inverter performance parameters according to the Sandia
+        Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1]. A set of
+        inverter performance parameters are provided with pvlib, or may be
+        generated from a System Advisor Model (SAM) [2] library using retreivesam. 
+       
+        Required DataFrame components are:
 
-           A DataFrame defining the inverter to be used, giving the
-           inverter performance parameters according to the Sandia
-           Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1]. A set of
-           inverter performance parameters are provided with PV_LIB, or may be
-           generated from a System Advisor Model (SAM) [2] library using pvl_retreivesam. 
-           
-            Required DataFrame components are:
+        =============   ==============================================================================================================================================================================================
+        Field           DataFrame
+        =============   ==============================================================================================================================================================================================
+        Inverter.Pac0   AC-power output from inverter based on input power and voltage, (W) 
+        Inverter.Pdc0   DC-power input to inverter, typically assumed to be equal to the PV array maximum power, (W)
+        Inverter.Vdc0   DC-voltage level at which the AC-power rating is achieved at the reference operating condition, (V)
+        Inverter.Ps0    DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels, (W)
+        Inverter.C0     Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship, (1/W)
+        Inverter.C1     Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero, (1/V)
+        Inverter.C2     empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero, (1/V)
+        Inverter.C3     empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero, (1/V)
+        Inverter.Pnt    ac-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage, (W)
+        =============   ==============================================================================================================================================================================================
 
-           =============   ==============================================================================================================================================================================================
-           Field            DataFrame
-           =============   ==============================================================================================================================================================================================
-           Inverter.Pac0   AC-power output from inverter based on input power and voltage, (W) 
-           Inverter.Pdc0   DC-power input to inverter, typically assumed to be equal to the PV array maximum power, (W)
-           Inverter.Vdc0   DC-voltage level at which the AC-power rating is achieved at the reference operating condition, (V)
-           Inverter.Ps0    DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels, (W)
-           Inverter.C0     Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship, (1/W)
-           Inverter.C1     Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero, (1/V)
-           Inverter.C2     empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero, (1/V)
-           Inverter.C3     empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero, (1/V)
-           Inverter.Pnt    ac-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage, (W)
-           =============   ==============================================================================================================================================================================================
-  
-  Vdc : float or DataFrame
-          DC voltages, in volts, which are provided as input to the inverter. Vdc must be >= 0.
-  Pdc : float or DataFrame
+    Vdc : float or DataFrame
+        DC voltages, in volts, which are provided as input to the inverter. 
+        Vdc must be >= 0.
+    Pdc : float or DataFrame
+        A scalar or DataFrame of DC powers, in watts, which are provided
+        as input to the inverter. Pdc must be >= 0.
 
-          A scalar or DataFrame of DC powers, in watts, which are provided
-           as input to the inverter. Pdc must be >= 0.
+    Returns
+    -------
+    ACPower : float or DataFrame
+        Modeled AC power output given the input 
+        DC voltage, Vdc, and input DC power, Pdc. When ACPower would be 
+        greater than Pac0, it is set to Pac0 to represent inverter 
+        "clipping". When ACPower would be less than Ps0 (startup power
+        required), then ACPower is set to -1*abs(Pnt) to represent nightly 
+        power losses. ACPower is not adjusted for maximum power point
+        tracking (MPPT) voltage windows or maximum current limits of the
+        inverter.
 
-  Returns
-  -------
+    References
+    ----------
+    [1] (SAND2007-5036, "Performance Model for Grid-Connected Photovoltaic 
+    Inverters by D. King, S. Gonzalez, G. Galbraith, W. Boyson)
 
-  ACPower : float or DataFrame
+    [2] System Advisor Model web page. https://sam.nrel.gov.
 
-           Mdeled AC power output given the input 
-           DC voltage, Vdc, and input DC power, Pdc. When ACPower would be 
-           greater than Pac0, it is set to Pac0 to represent inverter 
-           "clipping". When ACPower would be less than Ps0 (startup power
-           required), then ACPower is set to -1*abs(Pnt) to represent nightly 
-           power losses. ACPower is not adjusted for maximum power point
-           tracking (MPPT) voltage windows or maximum current limits of the
-           inverter.
+    See also
+    --------
+    sapm
+    samlibrary
+    singlediode
+    '''
 
-  References
-  ----------
+    Paco = inverter['Paco']
+    Pdco = inverter['Pdco']
+    Vdco = inverter['Vdco']
+    Pso = inverter['Pso']
+    C0 = inverter['C0']
+    C1 = inverter['C1']
+    C2 = inverter['C2']
+    C3 = inverter['C3']
+    Pnt = inverter['Pnt']
 
-  [1] (SAND2007-5036, "Performance Model for Grid-Connected Photovoltaic 
-  Inverters by D. King, S. Gonzalez, G. Galbraith, W. Boyson)
+    A = Pdco*((1 + C1*((Vmp - Vdco))))
+    B = Pso*((1 + C2*((Vmp - Vdco))))
+    C = C0*((1 + C3*((Vmp - Vdco))))
+    ACPower = ((Paco / (A - B)) - C*((A - B)))*((Pmp - B)) + C*((Pmp - B) ** 2)
+    ACPower[ACPower > Paco] = Paco
+    ACPower[ACPower < Pso] = - 1.0 * abs(Pnt)
 
-  [2] System Advisor Model web page. https://sam.nrel.gov.
-
-  See also
-  --------
-
-  pvl_sapm
-  pvl_samlibrary
-  pvl_singlediode
-
-  '''
-
-
-  Paco=Inverter['Paco']
-  Pdco=Inverter['Pdco']
-  Vdco=Inverter['Vdco']
-  Pso=Inverter['Pso']
-  C0=Inverter['C0']
-  C1=Inverter['C1']
-  C2=Inverter['C2']
-  C3=Inverter['C3']
-  Pnt=Inverter['Pnt']
-
-
-  A=Pdco*((1 + C1*((Vmp - Vdco))))
-  B=Pso*((1 + C2*((Vmp - Vdco))))
-  C=C0*((1 + C3*((Vmp - Vdco))))
-  ACPower=((Paco / (A - B)) - C*((A - B)))*((Pmp - B)) + C*((Pmp - B) ** 2)
-  ACPower[ACPower > Paco]=Paco
-  ACPower[ACPower < Pso]=- 1.0 * abs(Pnt)
-
-  return ACPower
-
-
-
+    return ACPower

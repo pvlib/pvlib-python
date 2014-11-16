@@ -258,7 +258,8 @@ def physicaliam(K, L, n, theta):
 def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
                       M=1, Sref=1000, Tref=25):
     '''
-    Applies the temperature and irradiance corrections to inputs for pvl_singlediode
+    Applies the temperature and irradiance corrections to 
+    inputs for singlediode.
 
     Applies the temperature and irradiance corrections to the IL, I0,
     Rs, Rsh, and a parameters at reference conditions (IL_ref, I0_ref,
@@ -270,101 +271,93 @@ def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
     Parameters
     ----------
     S : float or DataFrame
-          The irradiance (in W/m^2) absorbed by the module. S must be >= 0.
-          Due to a division by S in the script, any S value equal to 0 will be set to 1E-10.
+        The irradiance (in W/m^2) absorbed by the module. S must be >= 0.
+        Due to a division by S in the script, any S value equal to 0 will be set to 1E-10.
 
     Tcell : float or DataFrame
-          The average cell temperature of cells within a module in C.
-          Tcell must be >= -273.15.
+        The average cell temperature of cells within a module in C.
+        Tcell must be >= -273.15.
 
     alpha_isc : float
+        The short-circuit current temperature coefficient of the module in units of 1/C.
 
-          The short-circuit current temperature coefficient of the module in units of 1/C.
+    ModuleParameters : DataFrame
+        parameters describing PV module performance at reference conditions according
+        to DeSoto's paper. Parameters may be generated or found by lookup. For ease of use,
+        retreivesam can automatically generate a struct based on the most recent SAM CEC module
+        database. The ModuleParameters struct must contain (at least) the
+        following 5 fields:
 
-    ModuleParameters : struct
-          parameters describing PV module performance at reference conditions according
-          to DeSoto's paper. Parameters may be generated or found by lookup. For ease of use,
-          PVL_RETREIVESAM can automatically generate a struct based on the most recent SAM CEC module
-          database. The ModuleParameters struct must contain (at least) the
-          following 5 fields:
+            *ModuleParameters.a_ref* - modified diode ideality factor parameter at
+              reference conditions (units of eV), a_ref can be calculated from the
+              usual diode ideality factor (n), number of cells in series (Ns),
+              and cell temperature (Tcell) per equation (2) in [1].
 
-              *ModuleParameters.a_ref* - modified diode ideality factor parameter at
-                  reference conditions (units of eV), a_ref can be calculated from the
-                  usual diode ideality factor (n), number of cells in series (Ns),
-                  and cell temperature (Tcell) per equation (2) in [1].
+            *ModuleParameters.IL_ref* - Light-generated current (or photocurrent)
+              in amperes at reference conditions. This value is referred to
+              as Iph in some literature.
 
-              *ModuleParameters.IL_ref* - Light-generated current (or photocurrent)
-                  in amperes at reference conditions. This value is referred to
-                  as Iph in some literature.
+            *ModuleParameters.I0_ref* - diode reverse saturation current in amperes,
+              under reference conditions.
 
-              *ModuleParameters.I0_ref* - diode reverse saturation current in amperes,
-                  under reference conditions.
+            *ModuleParameters.Rsh_ref* - shunt resistance under reference conditions (ohms)
 
-              *ModuleParameters.Rsh_ref* - shunt resistance under reference conditions (ohms)
-
-              *ModuleParameters.Rs_ref* - series resistance under reference conditions (ohms)
+            *ModuleParameters.Rs_ref* - series resistance under reference conditions (ohms)
 
     EgRef : float
-
-          The energy bandgap at reference temperature (in eV). 1.121 eV for silicon. EgRef must be >0.
+        The energy bandgap at reference temperature (in eV). 1.121 eV for silicon. EgRef must be >0.
 
     dEgdT : float
-
-          The temperature dependence of the energy bandgap at SRC (in 1/C).
-          May be either a scalar value (e.g. -0.0002677 as in [1]) or a
-          DataFrame of dEgdT values corresponding to each input condition (this
-          may be useful if dEgdT is a function of temperature).
+        The temperature dependence of the energy bandgap at SRC (in 1/C).
+        May be either a scalar value (e.g. -0.0002677 as in [1]) or a
+        DataFrame of dEgdT values corresponding to each input condition (this
+        may be useful if dEgdT is a function of temperature).
 
     Other Parameters
     ----------------
-
     M : float or DataFrame (optional, Default=1)
-          An optional airmass modifier, if omitted, M is given a value of 1,
-          which assumes absolute (pressure corrected) airmass = 1.5. In this
-          code, M is equal to M/Mref as described in [1] (i.e. Mref is assumed
-          to be 1). Source [1] suggests that an appropriate value for M
-          as a function absolute airmass (AMa) may be:
+        An optional airmass modifier, if omitted, M is given a value of 1,
+        which assumes absolute (pressure corrected) airmass = 1.5. In this
+        code, M is equal to M/Mref as described in [1] (i.e. Mref is assumed
+        to be 1). Source [1] suggests that an appropriate value for M
+        as a function absolute airmass (AMa) may be:
 
-          >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093], AMa)
+        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093], AMa)
 
-          M may be a DataFrame.
+        M may be a DataFrame.
 
     Sref : float (optional, Default=1000)
-
-          Optional reference irradiance in W/m^2. If omitted, a value of
-          1000 is used.
+        Optional reference irradiance in W/m^2. If omitted, a value of
+        1000 is used.
 
     Tref : float (Optional, Default=25)
-          Optional reference cell temperature in C. If omitted, a value of
-          25 C is used.
+        Optional reference cell temperature in C. If omitted, a value of
+        25 C is used.
 
     Returns
     -------
-
     IL : float or DataFrame
-          Light-generated current in amperes at irradiance=S and
-          cell temperature=Tcell.
+        Light-generated current in amperes at irradiance=S and
+        cell temperature=Tcell.
+        
     I0 : float or DataFrame
-          Diode saturation curent in amperes at irradiance S and cell temperature Tcell.
-
+        Diode saturation curent in amperes at irradiance S and cell temperature Tcell.
+    
     Rs : float
-          Series resistance in ohms at irradiance S and cell temperature Tcell.
+        Series resistance in ohms at irradiance S and cell temperature Tcell.
 
     Rsh : float or DataFrame
-          Shunt resistance in ohms at irradiance S and cell temperature Tcell.
-
+        Shunt resistance in ohms at irradiance S and cell temperature Tcell.
+    
     nNsVth : float or DataFrame
-          Modified diode ideality factor at irradiance S and cell temperature
-          Tcell. Note that in source [1] nNsVth = a (equation 2). nNsVth is the
-          product of the usual diode ideality factor (n), the number of
-          series-connected cells in the module (Ns), and the thermal voltage
-          of a cell in the module (Vth) at a cell temperature of Tcell.
-
-
+        Modified diode ideality factor at irradiance S and cell temperature
+        Tcell. Note that in source [1] nNsVth = a (equation 2). nNsVth is the
+        product of the usual diode ideality factor (n), the number of
+        series-connected cells in the module (Ns), and the thermal voltage
+        of a cell in the module (Vth) at a cell temperature of Tcell.
 
     References
     ----------
-
     [1] W. De Soto et al., "Improvement and validation of a model for
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
        2006.
@@ -387,7 +380,6 @@ def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
 
     Notes
     -----
-
     If the reference parameters in the ModuleParameters struct are read
     from a database or library of parameters (e.g. System Advisor Model),
     it is important to use the same EgRef and dEgdT values that
@@ -774,12 +766,11 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     
     
 
-def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
+def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     '''
-    Solve the single-diode model to obtain a photovoltaic IV curve
+    Solve the single-diode model to obtain a photovoltaic IV curve.
 
-
-    pvl_singlediode solves the single diode equation [1]:
+    singlediode solves the single diode equation [1]:
     I = IL - I0*[exp((V+I*Rs)/(nNsVth))-1] - (V + I*Rs)/Rsh
     for I and V when given IL, I0, Rs, Rsh, and nNsVth (nNsVth = n*Ns*Vth) which
     are described later. pvl_singlediode returns a struct which contains
@@ -787,75 +778,72 @@ def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
     If all IL, I0, Rs, Rsh, and nNsVth are scalar, a single curve
     will be returned, if any are DataFrames (of the same length), multiple IV
     curves will be calculated.
-
+    
+    The input parameters can be calculated using calcparams_desoto from 
+    meterological data. 
+    
     Parameters
     ----------
-
-    These imput parameters can be calculated using PVL_CALCPARAMS_DESOTO from 
-    meterological data. 
+    Module : DataFrame
+        A DataFrame defining the SAPM performance parameters.
 
     IL : float or DataFrame
-                Light-generated current (photocurrent) in amperes under desired IV
-                curve conditions. 
+        Light-generated current (photocurrent) in amperes under desired IV
+        curve conditions. 
 
     I0 : float or DataFrame
-                Diode saturation current in amperes under desired IV curve
-                conditions. 
+        Diode saturation current in amperes under desired IV curve
+        conditions. 
 
     Rs : float or DataFrame
-                Series resistance in ohms under desired IV curve conditions. 
+        Series resistance in ohms under desired IV curve conditions. 
 
     Rsh : float or DataFrame
-                Shunt resistance in ohms under desired IV curve conditions. May
-                be a scalar or DataFrame, but DataFrames must be of same length as all
-                other input DataFrames.
+        Shunt resistance in ohms under desired IV curve conditions. May
+        be a scalar or DataFrame, but DataFrames must be of same length as all
+        other input DataFrames.
 
     nNsVth : float or DataFrame
-                the product of three components. 1) The usual diode ideal 
-                factor (n), 2) the number of cells in series (Ns), and 3) the cell 
-                thermal voltage under the desired IV curve conditions (Vth).
-                The thermal voltage of the cell (in volts) may be calculated as 
-                k*Tcell/q, where k is Boltzmann's constant (J/K), Tcell is the
-                temperature of the p-n junction in Kelvin, and q is the elementary 
-                charge of an electron (coulombs). 
+        The product of three components. 1) The usual diode ideal 
+        factor (n), 2) the number of cells in series (Ns), and 3) the cell 
+        thermal voltage under the desired IV curve conditions (Vth).
+        The thermal voltage of the cell (in volts) may be calculated as 
+        k*Tcell/q, where k is Boltzmann's constant (J/K), Tcell is the
+        temperature of the p-n junction in Kelvin, and q is the elementary 
+        charge of an electron (coulombs). 
+        
     Other Parameters
     ----------------
-
     NumPoints : integer
-
-                Number of points in the desired IV curve (optional). Must be a finite 
-                scalar value. Non-integer values will be rounded to the next highest
-                integer (ceil). If ceil(NumPoints) is < 2, no IV curves will be produced
-                (i.e. Result.V and Result.I will not be generated). The default
-                value is 0, resulting in no calculation of IV points other than
-                those specified in [3].
+        Number of points in the desired IV curve (optional). Must be a finite 
+        scalar value. Non-integer values will be rounded to the next highest
+        integer (ceil). If ceil(NumPoints) is < 2, no IV curves will be produced
+        (i.e. Result.V and Result.I will not be generated). The default
+        value is 0, resulting in no calculation of IV points other than
+        those specified in [3].
 
     Returns
-
-    Result : DataFrame
-
-                A DataFrame with the following fields. All fields have the
-                same number of rows as the largest input DataFrame:
-                
-                * Result.Isc -  short circuit current in amperes.
-                * Result.Voc -  open circuit voltage in volts.
-                * Result.Imp -  current at maximum power point in amperes. 
-                * Result.Vmp -  voltage at maximum power point in volts.
-                * Result.Pmp -  power at maximum power point in watts.
-                * Result.Ix -  current, in amperes, at V = 0.5*Voc.
-                * Result.Ixx -  current, in amperes, at V = 0.5*(Voc+Vmp).
+    -------
+    A DataFrame with the following fields. All fields have the
+    same number of rows as the largest input DataFrame:
+    
+    * Result.Isc -  short circuit current in amperes.
+    * Result.Voc -  open circuit voltage in volts.
+    * Result.Imp -  current at maximum power point in amperes. 
+    * Result.Vmp -  voltage at maximum power point in volts.
+    * Result.Pmp -  power at maximum power point in watts.
+    * Result.Ix -  current, in amperes, at V = 0.5*Voc.
+    * Result.Ixx -  current, in amperes, at V = 0.5*(Voc+Vmp).
 
 
     Notes
     -----
-
     The solution employed to solve the implicit diode equation utilizes
     the Lambert W function to obtain an explicit function of V=f(i) and
     I=f(V) as shown in [2].
 
     References
     -----------
-
     [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" 
     ISBN 0 86758 909 4
 
@@ -868,10 +856,8 @@ def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
 
     See also
     --------
-    pvl_sapm
-    pvl_calcparams_desoto
-
-
+    sapm
+    calcparams_desoto
     '''
 
     # Find Isc using Lambert W
@@ -880,11 +866,11 @@ def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
 
     #If passed a dataframe, output a dataframe, if passed a list or scalar,
     #return a dict 
-    if isinstance(Rsh,pd.Series):
-        DFOut=pd.DataFrame({'Isc':Isc})
-        DFOut.index=Rsh.index
+    if isinstance(Rsh, pd.Series):
+        DFOut = pd.DataFrame({'Isc':Isc})
+        DFOut.index = Rsh.index
     else:
-        DFOut={'Isc':Isc}
+        DFOut = {'Isc':Isc}
 
 
     DFOut['Rsh']=Rsh
@@ -905,30 +891,30 @@ def singlediode(Module,IL,I0,Rs,Rsh,nNsVth,**kwargs):
     Ix = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=.5*Voc, I0=I0, IL=IL)
     Ixx = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.5*(Voc+Vmax), I0=I0, IL=IL)
 
-    '''
-    # If the user says they want a curve of with number of points equal to
-    # NumPoints (must be >=2), then create a voltage array where voltage is
-    # zero in the first column, and Voc in the last column. Number of columns
-    # must equal NumPoints. Each row represents the voltage for one IV curve.
-    # Then create a current array where current is Isc in the first column, and
-    # zero in the last column, and each row represents the current in one IV
-    # curve. Thus the nth (V,I) point of curve m would be found as follows:
-    # (Result.V(m,n),Result.I(m,n)).
-    if NumPoints >= 2
-       s = ones(1,NumPoints); # shaping DataFrame to shape the column DataFrame parameters into 2-D matrices
-       Result.V = (Voc)*(0:1/(NumPoints-1):1);
-       Result.I = I_from_V(Rsh*s, Rs*s, nNsVth*s, Result.V, I0*s, IL*s);
-    end
-    '''
+    
+#     If the user says they want a curve of with number of points equal to
+#     NumPoints (must be >=2), then create a voltage array where voltage is
+#     zero in the first column, and Voc in the last column. Number of columns
+#     must equal NumPoints. Each row represents the voltage for one IV curve.
+#     Then create a current array where current is Isc in the first column, and
+#     zero in the last column, and each row represents the current in one IV
+#     curve. Thus the nth (V,I) point of curve m would be found as follows:
+#     (Result.V(m,n),Result.I(m,n)).
+#     if NumPoints >= 2
+#        s = ones(1,NumPoints); # shaping DataFrame to shape the column DataFrame parameters into 2-D matrices
+#        Result.V = (Voc)*(0:1/(NumPoints-1):1);
+#        Result.I = I_from_V(Rsh*s, Rs*s, nNsVth*s, Result.V, I0*s, IL*s);
+#     end
+    
 
-    DFOut['Imp']=Imax
-    DFOut['Voc']=Voc
-    DFOut['Vmp']=Vmax
-    DFOut['Pmp']=Pmp
-    DFOut['Ix']=Ix
-    DFOut['Ixx']=Ixx
+    DFOut['Imp'] = Imax
+    DFOut['Voc'] = Voc
+    DFOut['Vmp'] = Vmax
+    DFOut['Pmp'] = Pmp
+    DFOut['Ix'] = Ix
+    DFOut['Ixx'] = Ixx
 
-    return  DFOut
+    return DFOut
 
 
 
@@ -939,38 +925,35 @@ Author: Rob Andrews, Calama Consulting
 
 def golden_sect_DataFrame(df,VL,VH,func):
     '''
-    Vectorized golden section search for finding MPPT from a dataframe timeseries
+    Vectorized golden section search for finding MPPT 
+    from a dataframe timeseries
 
     Parameters
     ----------
-
     df : DataFrame
-
-            Dataframe containing a timeseries of inputs to the function to be optimized.
-            Each row should represent an independant optimization
+        Dataframe containing a timeseries of inputs to the function to be optimized.
+        Each row should represent an independant optimization
 
     VL: float
-            low bound of the optimization
+        Lower bound of the optimization
 
     VH: float
-            Uppoer bound of the optimization
+        Upper bound of the optimization
 
     func: function
-            function to be optimized must be in the form f(dataframe,x)
+        Function to be optimized must be in the form f(dataframe, x)
 
     Returns
     -------
     func(df,'V1') : DataFrame
-            function evaluated at the optimal point
+        function evaluated at the optimal point
 
     df['V1']: Dataframe
-            Dataframe of optimal points
+        Dataframe of optimal points
 
     Notes
     -----
-
     This funtion will find the MAXIMUM of a function
-
     '''
 
     df['VH']=VH

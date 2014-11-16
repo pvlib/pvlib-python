@@ -12,6 +12,18 @@ from nose.tools import assert_equals, assert_almost_equals
 
 from pvlib import tmy
 from pvlib import pvsystem
+from pvlib import clearsky
+from pvlib import irradiance
+from pvlib import atmosphere
+from pvlib import solarposition
+from pvlib.location import Location
+
+tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+times = pd.date_range(start=datetime.datetime(2014,1,1), end=datetime.datetime(2014,1,2), freq='1Min')
+ephem_data = solarposition.get_solarposition(times, tus, method='pyephem')
+irrad_data = clearsky.ineichen(times, tus, solarposition_method='pyephem')
+aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'])
+am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
 
 pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
 
@@ -71,23 +83,34 @@ def test_retrieve_sam_network():
     
     
 def test_sapm():
-    from pvlib import clearsky
-    from pvlib import irradiance
-    from pvlib import atmosphere
-    from pvlib import solarposition
-    from pvlib.location import Location
-
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.date_range(start=datetime.datetime(2014,1,1), end=datetime.datetime(2014,1,2), freq='1Min')
-    ephem_data = solarposition.get_solarposition(times, tus, method='pyephem')
-    irrad_data = clearsky.ineichen(times, tus, solarposition_method='pyephem')
-    aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'])
-    am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
-    
     modules = sam_data['sandiamod']
     module = modules.Canadian_Solar_CS5P_220M___2009_
     
     sapm = pvsystem.sapm(module, irrad_data.DNI, irrad_data.DHI, 25, am, aoi)
+    
+    
+    
+def test_calcparams_desoto():
+    cecmodule = sam_data['cecmod'].Example_Module 
+    pvsystem.calcparams_desoto(S=irrad_data.GHI,
+                               Tcell=25,
+                               alpha_isc=cecmodule['Alpha_sc'],
+                               module_parameters=cecmodule,
+                               EgRef=1.121,
+                               dEgdT=-0.0002677)
+                               
+                               
+
+def test_singlediode():  
+    cecmodule = sam_data['cecmod'].Example_Module 
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(S=irrad_data.GHI,
+                                         Tcell=25,
+                                         alpha_isc=cecmodule['Alpha_sc'],
+                                         module_parameters=cecmodule,
+                                         EgRef=1.121,
+                                         dEgdT=-0.0002677)                       
+    pvsystem.singlediode(Module=cecmodule, IL=IL, I0=I0, Rs=Rs, Rsh=Rsh,
+                         nNsVth=nNsVth)
     
     
 

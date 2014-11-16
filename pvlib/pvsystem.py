@@ -255,7 +255,7 @@ def physicaliam(K, L, n, theta):
 
 
 
-def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
+def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
                       M=1, Sref=1000, Tref=25):
     '''
     Applies the temperature and irradiance corrections to 
@@ -281,31 +281,28 @@ def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
     alpha_isc : float
         The short-circuit current temperature coefficient of the module in units of 1/C.
 
-    ModuleParameters : DataFrame
-        parameters describing PV module performance at reference conditions according
+    module_parameters : dict or Series
+        Parameters describing PV module performance at reference conditions according
         to DeSoto's paper. Parameters may be generated or found by lookup. For ease of use,
-        retreivesam can automatically generate a struct based on the most recent SAM CEC module
-        database. The ModuleParameters struct must contain (at least) the
+        retrieve_sam can automatically generate a dict based on the most recent SAM CEC module
+        database. The module_parameters dict must contain the
         following 5 fields:
 
-            *ModuleParameters.a_ref* - modified diode ideality factor parameter at
+            * a_ref - modified diode ideality factor parameter at
               reference conditions (units of eV), a_ref can be calculated from the
               usual diode ideality factor (n), number of cells in series (Ns),
               and cell temperature (Tcell) per equation (2) in [1].
-
-            *ModuleParameters.IL_ref* - Light-generated current (or photocurrent)
+            * IL_ref - Light-generated current (or photocurrent)
               in amperes at reference conditions. This value is referred to
               as Iph in some literature.
-
-            *ModuleParameters.I0_ref* - diode reverse saturation current in amperes,
+            * I0_ref - diode reverse saturation current in amperes,
               under reference conditions.
-
-            *ModuleParameters.Rsh_ref* - shunt resistance under reference conditions (ohms)
-
-            *ModuleParameters.Rs_ref* - series resistance under reference conditions (ohms)
+            * Rsh_ref - shunt resistance under reference conditions (ohms).
+            * Rs_ref - series resistance under reference conditions (ohms).
 
     EgRef : float
-        The energy bandgap at reference temperature (in eV). 1.121 eV for silicon. EgRef must be >0.
+        The energy bandgap at reference temperature (in eV). 
+        1.121 eV for silicon. EgRef must be >0.
 
     dEgdT : float
         The temperature dependence of the energy bandgap at SRC (in 1/C).
@@ -359,24 +356,24 @@ def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
     References
     ----------
     [1] W. De Soto et al., "Improvement and validation of a model for
-       photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-       2006.
+    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+    2006.
 
     [2] System Advisor Model web page. https://sam.nrel.gov.
 
     [3] A. Dobos, "An Improved Coefficient Calculator for the California
-       Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
-       Solar Energy Engineering, vol 134, 2012.
+    Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
+    Solar Energy Engineering, vol 134, 2012.
 
     [4] O. Madelung, "Semiconductors: Data Handbook, 3rd ed." ISBN
-       3-540-40488-0
+    3-540-40488-0
 
     See Also
     --------
     sapm
-    sapmcelltemp
+    sapm_celltemp
     singlediode
-    retreivesam
+    retrieve_sam
 
     Notes
     -----
@@ -438,29 +435,27 @@ def calcparams_desoto(S, Tcell, alpha_isc, ModuleParameters, EgRef, dEgdT,
          Source = Reference 4
     '''
 
-    M=np.max(M,0)
-    a_ref=ModuleParameters.A_ref
-    IL_ref=ModuleParameters.I_l_ref
-    I0_ref=ModuleParameters.I_o_ref
-    Rsh_ref=ModuleParameters.R_sh_ref
-    Rs_ref=ModuleParameters.R_s
+    M = np.max(M, 0)
+    a_ref = module_parameters['A_ref']
+    IL_ref = module_parameters['I_l_ref']
+    I0_ref = module_parameters['I_o_ref']
+    Rsh_ref = module_parameters['R_sh_ref']
+    Rs_ref = module_parameters['R_s']
 
+    k = 8.617332478e-05
+    Tref_K = Tref + 273.15
+    Tcell_K = Tcell + 273.15
 
-    k=8.617332478e-05
-    Tref_K=Tref + 273.15
-    Tcell_K=Tcell + 273.15
+    E_g = EgRef * (1 + dEgdT*(Tcell_K - Tref_K))
 
-    S[S == 0]=1e-10
-    E_g=EgRef * ((1 + dEgdT*((Tcell_K - Tref_K))))
+    nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    nNsVth=a_ref*((Tcell_K / Tref_K))
+    IL = S / Sref * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
+    I0 = I0_ref * ((Tcell_K / Tref_K) ** 3) * (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K)))))
+    Rsh = Rsh_ref * (Sref / S)
+    Rs = Rs_ref
 
-    IL=S / Sref *(M) *((IL_ref + alpha_isc * ((Tcell_K - Tref_K))))
-    I0=I0_ref * (((Tcell_K / Tref_K) ** 3)) * (np.exp((EgRef / (k*(Tref_K))) - (E_g / (k*(Tcell_K)))))
-    Rsh=Rsh_ref * ((Sref / S))
-    Rs=Rs_ref
-
-    return IL,I0,Rs,Rsh,nNsVth
+    return IL, I0, Rs, Rsh, nNsVth
     
 
 
@@ -851,7 +846,6 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     # Find Isc using Lambert W
     Isc = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.01, I0=I0, IL=IL)
 
-
     #If passed a dataframe, output a dataframe, if passed a list or scalar,
     #return a dict 
     if isinstance(Rsh, pd.Series):
@@ -860,17 +854,16 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     else:
         DFOut = {'Isc':Isc}
 
+    DFOut['Rsh'] = Rsh
+    DFOut['Rs'] = Rs
+    DFOut['nNsVth'] = nNsVth
+    DFOut['I0'] = I0
+    DFOut['IL'] = IL
 
-    DFOut['Rsh']=Rsh
-    DFOut['Rs']=Rs
-    DFOut['nNsVth']=nNsVth
-    DFOut['I0']=I0
-    DFOut['IL']=IL
+    __, Voc_return = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.6, Voc_optfcn)
+    Voc = Voc_return.copy() #create an immutable copy 
 
-    __,Voc_return = golden_sect_DataFrame(DFOut,0,Module.V_oc_ref*1.6,Voc_optfcn)
-    Voc=Voc_return.copy() #create an immutable copy 
-
-    Pmp,Vmax = golden_sect_DataFrame(DFOut,0,Module.V_oc_ref*1.14,pwr_optfcn)
+    Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.14, pwr_optfcn)
     Imax = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=Vmax, I0=I0, IL=IL)
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is Imax. Start the optimization at Voc/2
@@ -879,7 +872,6 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     Ix = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=.5*Voc, I0=I0, IL=IL)
     Ixx = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.5*(Voc+Vmax), I0=I0, IL=IL)
 
-    
 #     If the user says they want a curve of with number of points equal to
 #     NumPoints (must be >=2), then create a voltage array where voltage is
 #     zero in the first column, and Voc in the last column. Number of columns
@@ -894,7 +886,6 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
 #        Result.I = I_from_V(Rsh*s, Rs*s, nNsVth*s, Result.V, I0*s, IL*s);
 #     end
     
-
     DFOut['Imp'] = Imax
     DFOut['Voc'] = Voc
     DFOut['Vmp'] = Vmax
@@ -981,7 +972,7 @@ def golden_sect_DataFrame(df,VL,VH,func):
 
 def pwr_optfcn(df,loc):
     '''
-    function to find power from I_from_V
+    Function to find power from I_from_V
     '''
 
     I=I_from_V(Rsh=df['Rsh'],Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL'])
@@ -991,7 +982,7 @@ def pwr_optfcn(df,loc):
 
 def Voc_optfcn(df,loc):
     '''
-    function to find V_oc from I_from_V
+    Function to find V_oc from I_from_V
     '''
     I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL']))
     return I
@@ -1000,10 +991,10 @@ def Voc_optfcn(df,loc):
 
 def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
     '''
-    # calculates I from V per Eq 2 Jain and Kapoor 2004
-    # uses Lambert W implemented in wapr_vec.m
-    # Rsh, nVth, V, I0, IL can all be DataFrames
-    # Rs can be a DataFrame, but should be a scalar
+    calculates I from V per Eq 2 Jain and Kapoor 2004
+    uses Lambert W implemented in wapr_vec.m
+    Rsh, nVth, V, I0, IL can all be DataFrames
+    Rs can be a DataFrame, but should be a scalar
     '''
     try:
         from scipy.special import lambertw

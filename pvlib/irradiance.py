@@ -8,13 +8,8 @@ import pdb
 import numpy as np
 import pandas as pd
 
-try:    
-    import ephem
-except ImportError as e:
-    pvl_logger.warning('PyEphem not found.')
-
-from pvlib import pvl_tools
- 
+from pvlib import tools
+from pvlib import solarposition 
 
 SURFACE_ALBEDOS = {'urban':0.18,
                    'grass':0.20,
@@ -34,22 +29,15 @@ SURFACE_ALBEDOS = {'urban':0.18,
 
 
 # would be nice if this took pandas index as well. Use try:except of isinstance.
-# could also use pyephem (if available)
-def extraradiation(doy, solar_constant=1366.1, method='spencer'):
-    '''
+def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
+    """
     Determine extraterrestrial radiation from day of year.
-    
-    The calculation method appears to be based on Spencer 1971.
-    The primary references here cannot be easily obtained.
-    
-    If you really care about this parameter, consider using NREL's SOLPOS or 
-    pyephem's earth_distance() function.
 
     Parameters
     ----------
-
-    doy : int or pandas.index.dayofyear
-        Day of the year
+    datetime_or_doy : int, float, array, pd.DatetimeIndex
+        Day of year, array of days of year e.g. pd.DatetimeIndex.dayofyear, 
+        or pd.DatetimeIndex.
         
     solar_constant : float
         The solar constant.
@@ -60,34 +48,53 @@ def extraradiation(doy, solar_constant=1366.1, method='spencer'):
 
     Returns
     -------
-
-    Ea : float or Series
+    float or Series
 
         The extraterrestrial radiation present in watts per square meter
         on a surface which is normal to the sun. Ea is of the same size as the
-        input doy.
-
+        input doy. 
+        
+        'pyephem' always returns a series.
+        
+    Notes
+    -----
+    The Spencer method contains a minus sign discrepancy between
+    equation 12 of [1]. It's unclear what the correct formula is. 
 
     References
     ----------
-    <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs. SR1 and SR2
-
-    SR1       Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes in Meteorology and Climatology.
-
-    SR2       Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
-
-    There is a minus sign discrepancy with equation 12 of 
-    M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
+    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
     Sky Models: Implementation and Analysis", Sandia National
     Laboratories, SAND2012-2389, 2012. 
     
+    [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, 
+    Eqs. SR1 and SR2
+
+    [3] Partridge, G. W. and Platt, C. M. R. 1976. 
+    Radiative Processes in Meteorology and Climatology.
+
+    [4] Duffie, J. A. and Beckman, W. A. 1991. 
+    Solar Engineering of Thermal Processes, 
+    2nd edn. J. Wiley and Sons, New York.
+
     See Also 
     --------
-    pvl_disc
-
-    '''
+    disc
+    """
+    
+    pvl_logger.debug('irradiance.extraradiation()')
     
     method = method.lower()
+    
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        doy = datetime_or_doy.dayofyear
+        input_to_datetimeindex = lambda x: datetime_or_doy
+    elif isinstance(datetime_or_doy, (int, float)):
+        doy = datetime_or_doy
+        input_to_datetimeindex = _scalar_to_datetimeindex
+    else: # assume that we have an array-like object of doy. danger?
+        doy = datetime_or_doy
+        input_to_datetimeindex = _array_to_datetimeindex
     
     B = ( 2*np.pi / 365 ) * doy
     
@@ -98,6 +105,10 @@ def extraradiation(doy, solar_constant=1366.1, method='spencer'):
         pvl_logger.debug('Calculating ET rad using Spencer method')
         RoverR0sqrd = (1.00011 + 0.034221*np.cos(B) + 0.00128*np.sin(B) + 
                        0.000719*np.cos(2*B) + 7.7e-05*np.sin(2*B))
+    elif method == 'pyephem':
+        pvl_logger.debug('Calculating ET rad using pyephem method')
+        times = input_to_datetimeindex(datetime_or_doy)
+        RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
     
     Ea = solar_constant * RoverR0sqrd
     
@@ -105,30 +116,56 @@ def extraradiation(doy, solar_constant=1366.1, method='spencer'):
     
     
     
-def extraradiation_ephem(time, solar_constant=1366.1):
+def _scalar_to_datetimeindex(doy_scalar):
     """
-    Use PyEphem to calculate the extraterrestrial radiation.
+    Convert a scalar day of year number to a pd.DatetimeIndex.
     
     Parameters
-    ==========
-    time : pd.DatetimeIndex
-    
-    Returns
-    =======
-    pd.Series
-    """
-    
-    pvl_logger.debug('Calculating ET rad using PyEphem')
-    
-    sun = ephem.Sun()
-    RoverR0sqrd = []
-    for thetime in time:
-        sun.compute(ephem.Date(thetime))
-        RoverR0sqrd.append(sun.earth_distance**(-2))
+    ----------
+    doy_array : int or float
+        Contains days of the year
         
-    Ea = solar_constant * pd.Series(RoverR0sqrd, index=time)
+    Returns
+    -------
+    pd.DatetimeIndex
+    """
+    return pd.DatetimeIndex([_doy_to_timestamp(doy_scalar)])
     
-    return Ea 
+    
+    
+def _array_to_datetimeindex(doy_array):
+    """
+    Convert an array of day of year numbers to a pd.DatetimeIndex.
+    
+    Parameters
+    ----------
+    doy_array : Iterable
+        Contains days of the year
+        
+    Returns
+    -------
+    pd.DatetimeIndex
+    """
+    return pd.DatetimeIndex(map(_doy_to_timestamp, doy_array))
+    
+    
+    
+def _doy_to_timestamp(doy, epoch='2013-12-31'):
+    """
+    Convert a numeric day of the year to a pd.Timestamp.
+    
+    Parameters
+    ----------
+    doy : int or float.
+        Numeric day of year.
+    epoch : pd.Timestamp compatible object.
+        Date to which to add the day of year to.
+        
+    Returns
+    -------
+    pd.Timestamp
+    """
+    return pd.Timestamp('2013-12-31') + pd.Timedelta(days=float(doy))
     
     
     
@@ -155,7 +192,7 @@ def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
     float or Series. Dot product of panel normal and solar angle.
     """
     
-    projection = pvl_tools.cosd(surf_tilt)*pvl_tools.cosd(sun_zen) + pvl_tools.sind(surf_tilt)*pvl_tools.sind(sun_zen)*pvl_tools.cosd(sun_az - surf_az)
+    projection = tools.cosd(surf_tilt)*tools.cosd(sun_zen) + tools.sind(surf_tilt)*tools.sind(sun_zen)*tools.cosd(sun_az - surf_az)
     
     try:
         projection.name = 'aoi_projection'
@@ -229,7 +266,7 @@ def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
     
     cos_poa_zen = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
-    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    cos_sun_zen = tools.cosd(sun_zen)
     
     # ratio of titled and horizontal beam irradiance
     ratio = cos_poa_zen / cos_sun_zen
@@ -397,7 +434,7 @@ def globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
       'GR':('x>=0'),
       }
 
-    var=pvl_tools.Parse(Vars,Expect)
+    var=tools.Parse(Vars,Expect)
 
     Eb = var.DNI*np.cos(np.radians(var.AOI)) 
     E = Eb + var.In_Plane_SkyDiffuse + var.GR
@@ -481,7 +518,7 @@ def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
     
 
 def isotropic(surf_tilt, DHI):
-    '''
+    r'''
     Determine diffuse irradiance from the sky on a 
     tilted surface using the isotropic sky model.
 
@@ -499,28 +536,27 @@ def isotropic(surf_tilt, DHI):
     ----------
 
     surf_tilt : float or Series
-            Surface tilt angle in decimal degrees. 
-            surf_tilt must be >=0 and <=180. The tilt angle is defined as
-            degrees from horizontal (e.g. surface facing up = 0, surface facing
-            horizon = 90)
+        Surface tilt angle in decimal degrees. 
+        surf_tilt must be >=0 and <=180. The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
     DHI : float or Series
-            Diffuse horizontal irradiance in W/m^2.
-            DHI must be >=0.
+        Diffuse horizontal irradiance in W/m^2.
+        DHI must be >=0.
 
 
     Returns
     -------   
-
     float or Series
 
-            The diffuse component of the solar radiation  on an
-            arbitrarily tilted surface defined by the isotropic sky model as
-            given in Loutzenhiser et. al (2007) equation 3.
-            SkyDiffuse is the diffuse component ONLY and does not include the ground
-            reflected irradiance or the irradiance due to the beam.
-            SkyDiffuse is a column vector vector with a number of elements equal to
-            the input vector(s).
+    The diffuse component of the solar radiation  on an
+    arbitrarily tilted surface defined by the isotropic sky model as
+    given in Loutzenhiser et. al (2007) equation 3.
+    SkyDiffuse is the diffuse component ONLY and does not include the ground
+    reflected irradiance or the irradiance due to the beam.
+    SkyDiffuse is a column vector vector with a number of elements equal to
+    the input vector(s).
 
 
     References
@@ -545,14 +581,14 @@ def isotropic(surf_tilt, DHI):
 
     pvl_logger.debug('diffuse_sky.isotropic()')
 
-    sky_diffuse = DHI * (1 + pvl_tools.cosd(surf_tilt)) * 0.5
+    sky_diffuse = DHI * (1 + tools.cosd(surf_tilt)) * 0.5
 
     return sky_diffuse
 
 
 
 def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
-    '''
+    r'''
     Determine diffuse irradiance from the sky on a tilted surface 
     using Klucher's 1979 model
 
@@ -577,45 +613,45 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     ----------
 
     surf_tilt : float or Series
-            Surface tilt angles in decimal degrees.
-            surf_tilt must be >=0 and <=180. The tilt angle is defined as
-            degrees from horizontal (e.g. surface facing up = 0, surface facing
-            horizon = 90)
+        Surface tilt angles in decimal degrees.
+        surf_tilt must be >=0 and <=180. The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
     surf_az : float or Series
-            Surface azimuth angles in decimal degrees.
-            surf_az must be >=0 and <=360. The Azimuth convention is defined
-            as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+        Surface azimuth angles in decimal degrees.
+        surf_az must be >=0 and <=360. The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     DHI : float or Series
-            diffuse horizontal irradiance in W/m^2. 
-            DHI must be >=0.
+        diffuse horizontal irradiance in W/m^2. 
+        DHI must be >=0.
 
     GHI : float or Series
-            Global  irradiance in W/m^2. 
-            DNI must be >=0.
+        Global  irradiance in W/m^2. 
+        DNI must be >=0.
 
     sun_zen : float or Series
-            apparent (refraction-corrected) zenith
-            angles in decimal degrees. 
-            sun_zen must be >=0 and <=180.
+        apparent (refraction-corrected) zenith
+        angles in decimal degrees. 
+        sun_zen must be >=0 and <=180.
 
     sun_az : float or Series
-            Sun azimuth angles in decimal degrees.
-            sun_az must be >=0 and <=360. The Azimuth convention is defined
-            as degrees east of north (e.g. North = 0, East = 90, West = 270).
+        Sun azimuth angles in decimal degrees.
+        sun_az must be >=0 and <=360. The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
     Returns
     -------
-    float or Series
+    float or Series.
 
-                the diffuse component of the solar radiation on an
-                arbitrarily tilted surface defined by the Klucher model as given in
-                Loutzenhiser et. al (2007) equation 4.
-                SkyDiffuse is the diffuse component ONLY and does not include the ground
-                reflected irradiance or the irradiance due to the beam.
-                SkyDiffuse is a column vector vector with a number of elements equal to
-                the input vector(s).
+    The diffuse component of the solar radiation on an
+    arbitrarily tilted surface defined by the Klucher model as given in
+    Loutzenhiser et. al (2007) equation 4.
+    SkyDiffuse is the diffuse component ONLY and does not include the ground
+    reflected irradiance or the irradiance due to the beam.
+    SkyDiffuse is a column vector vector with a number of elements equal to
+    the input vector(s).
 
     References
     ----------
@@ -650,9 +686,9 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     except AttributeError:
         F = 0
 
-    term1 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
-    term2 = 1 + F * (pvl_tools.sind(0.5*surf_tilt) ** 3)
-    term3 = 1 + F * (cos_tt ** 2) * (pvl_tools.sind(sun_zen) ** 3)
+    term1 = 0.5 * (1 + tools.cosd(surf_tilt))
+    term2 = 1 + F * (tools.sind(0.5*surf_tilt) ** 3)
+    term3 = 1 + F * (cos_tt ** 2) * (tools.sind(sun_zen) ** 3)
 
     sky_diffuse = DHI * term1 * term2 * term3
 
@@ -661,14 +697,12 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
 
 
 def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
-
-    '''
+    r'''
     Determine diffuse irradiance from the sky on a 
     tilted surface using Hay & Davies' 1980 model
 
     .. math::
-
-       I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) )
+        I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) )
 
     Hay and Davies' 1980 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a
@@ -676,15 +710,14 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     diffuse horizontal irradiance, direct normal irradiance, 
     extraterrestrial irradiance, sun zenith angle, and sun azimuth angle.
 
-
     Parameters
     ----------
 
     surf_tilt : float or Series
-          Surface tilt angles in decimal degrees.
-          The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
     surf_az : float or Series
           Surface azimuth angles in decimal degrees.
@@ -748,7 +781,7 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     
     cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
-    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    cos_sun_zen = tools.cosd(sun_zen)
     
     # ratio of titled and horizontal beam irradiance
     Rb = cos_tt / cos_sun_zen
@@ -758,7 +791,7 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
 
     # these are actually the () and [] sub-terms of the second term of eqn 7
     term1 = 1 - AI
-    term2 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
+    term2 = 0.5 * (1 + tools.cosd(surf_tilt))
 
     sky_diffuse = DHI * ( AI*Rb + term1 * term2 )
     sky_diffuse[sky_diffuse < 0] = 0
@@ -768,7 +801,7 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
 
 
 def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
-    '''
+    r'''
     Determine diffuse irradiance from the sky on a 
     tilted surface using Reindl's 1990 model
 
@@ -787,59 +820,59 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     ----------
 
     surf_tilt : float or Series.
-          Surface tilt angles in decimal degrees.
-          The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
     surf_az : float or Series.
-          Surface azimuth angles in decimal degrees.
-          The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+        Surface azimuth angles in decimal degrees.
+        The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     DHI : float or Series.
-          diffuse horizontal irradiance in W/m^2. 
+        diffuse horizontal irradiance in W/m^2. 
 
     DNI : float or Series.
-          direct normal irradiance in W/m^2. 
+        direct normal irradiance in W/m^2. 
 
     GHI: float or Series.
-          Global irradiance in W/m^2. 
+        Global irradiance in W/m^2. 
 
     DNI_ET : float or Series.
-          extraterrestrial normal irradiance in W/m^2. 
+        extraterrestrial normal irradiance in W/m^2. 
 
     sun_zen : float or Series.
-          apparent (refraction-corrected) zenith
-          angles in decimal degrees. 
+        apparent (refraction-corrected) zenith
+        angles in decimal degrees. 
 
     sun_az : float or Series.
-          Sun azimuth angles in decimal degrees. 
-          The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, East = 90, West = 270).
+        Sun azimuth angles in decimal degrees. 
+        The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
     Returns
     -------
 
     SkyDiffuse : float or Series.
 
-           the diffuse component of the solar radiation  on an
-           arbitrarily tilted surface defined by the Reindl model as given in
-           Loutzenhiser et. al (2007) equation 8.
-           SkyDiffuse is the diffuse component ONLY and does not include the ground
-           reflected irradiance or the irradiance due to the beam.
-           SkyDiffuse is a column vector vector with a number of elements equal to
-           the input vector(s).
+        The diffuse component of the solar radiation  on an
+        arbitrarily tilted surface defined by the Reindl model as given in
+        Loutzenhiser et. al (2007) equation 8.
+        SkyDiffuse is the diffuse component ONLY and does not include the ground
+        reflected irradiance or the irradiance due to the beam.
+        SkyDiffuse is a column vector vector with a number of elements equal to
+        the input vector(s).
 
 
     Notes
     -----
 
-     The POAskydiffuse calculation is generated from the Loutzenhiser et al.
-     (2007) paper, equation 8. Note that I have removed the beam and ground
-     reflectance portion of the equation and this generates ONLY the diffuse
-     radiation from the sky and circumsolar, so the form of the equation
-     varies slightly from equation 8.
+    The POAskydiffuse calculation is generated from the Loutzenhiser et al.
+    (2007) paper, equation 8. Note that I have removed the beam and ground
+    reflectance portion of the equation and this generates ONLY the diffuse
+    radiation from the sky and circumsolar, so the form of the equation
+    varies slightly from equation 8.
 
     References
     ----------
@@ -870,7 +903,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     
     cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     
-    cos_sun_zen = pvl_tools.cosd(sun_zen)
+    cos_sun_zen = tools.cosd(sun_zen)
     
     # ratio of titled and horizontal beam irradiance
     Rb = cos_tt / cos_sun_zen
@@ -884,8 +917,8 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
 
     # these are actually the () and [] sub-terms of the second term of eqn 8
     term1 = 1 - AI
-    term2 = 0.5 * (1 + pvl_tools.cosd(surf_tilt))
-    term3 = 1 + np.sqrt(HB / GHI) * (pvl_tools.sind(0.5*surf_tilt) ** 3)
+    term2 = 0.5 * (1 + tools.cosd(surf_tilt))
+    term3 = 1 + np.sqrt(HB / GHI) * (tools.sind(0.5*surf_tilt) ** 3)
 
     sky_diffuse = DHI * ( AI*Rb + term1 * term2 * term3 )
     sky_diffuse[sky_diffuse < 0] = 0
@@ -949,7 +982,7 @@ def king(surf_tilt, DHI, GHI, sun_zen):
     
     pvl_logger.debug('diffuse_sky.king()')
 
-    sky_diffuse = DHI * ((1 + pvl_tools.cosd(surf_tilt))) / 2 + GHI*((0.012 * sun_zen - 0.04))*((1 - pvl_tools.cosd(surf_tilt))) / 2
+    sky_diffuse = DHI * ((1 + tools.cosd(surf_tilt))) / 2 + GHI*((0.012 * sun_zen - 0.04))*((1 - tools.cosd(surf_tilt))) / 2
     sky_diffuse[sky_diffuse < 0] = 0
     
     return sky_diffuse
@@ -1137,15 +1170,15 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     A = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     A[A < 0] = 0
 
-    B = pvl_tools.cosd(sun_zen);
-    B[B < pvl_tools.cosd(85)] = pvl_tools.cosd(85)
+    B = tools.cosd(sun_zen);
+    B[B < tools.cosd(85)] = tools.cosd(85)
 
 
     #Calculate Diffuse POA from sky dome
     
-    term1 = 0.5 * (1 - F1) * (1 + pvl_tools.cosd(surf_tilt))
+    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surf_tilt))
     term2 = F1 * A[ebin.index] / B[ebin.index]
-    term3 = F2*pvl_tools.sind(surf_tilt)
+    term3 = F2*tools.sind(surf_tilt)
     
     sky_diffuse = DHI[ebin.index] * (term1 + term2 + term3)
     sky_diffuse[sky_diffuse < 0] = 0

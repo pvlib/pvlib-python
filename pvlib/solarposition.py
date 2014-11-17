@@ -17,7 +17,7 @@ import pandas as pd
 import pytz
     
 
-from pvlib.pvl_tools import localize_to_utc, datetime_to_djd, djd_to_datetime
+from pvlib.tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
 def get_solarposition(time, location, method='pyephem', pressure=101325, 
@@ -438,3 +438,33 @@ def calc_time(lower_bound, upper_bound, location, attribute, value,
                          (value, attribute), xtol=xtol)
 
     return djd_to_datetime(djd_root, location.tz)
+    
+    
+    
+def pyephem_earthsun_distance(time):
+    """
+    Calculates the distance from the earth to the sun using pyephem.
+    
+    Parameters
+    ----------
+    time : pd.DatetimeIndex
+    
+    Returns
+    -------
+    pd.Series. Earth-sun distance in AU.
+    """
+    pvl_logger.debug('solarposition.pyephem_earthsun_distance()')
+    
+    import ephem
+    
+    sun = ephem.Sun()
+    earthsun = []
+    for thetime in time:
+        sun.compute(ephem.Date(thetime))
+        earthsun.append(sun.earth_distance)
+        
+    return pd.Series(earthsun, index=time)
+
+
+
+

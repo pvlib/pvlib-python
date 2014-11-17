@@ -21,10 +21,10 @@ AUTHOR = 'Dan Riley, Clifford Hanson, Rob Andrews, Will Holmgren, github contrib
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/UARENForecasting/pythonic-PVLIB'
 
-MAJOR = 0
-MINOR = 2
-MICRO = 0
-VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
+# imports __version__ into the local namespace
+version_file = os.path.join(os.path.dirname(__file__), 'pvlib/version.py')
+with open(version_file, 'r') as f:
+    exec(f.read())
 
 # check python version.
 #if sys.version_info[:2] != (2, 7):
@@ -33,8 +33,9 @@ VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 setuptools_kwargs = {
     'zip_safe': False,
     'install_requires': ['numpy >= 1.7.0',
-                         'pandas >= 0.13',
+                         'pandas >= 0.15',
                          'pytz',
+                         'six',
                          ],
     'scripts': [],
     'include_package_data': True
@@ -64,7 +65,7 @@ extensions.append(spa_ext)
 
  
 setup(name=DISTNAME,
-      version=VERSION,
+      version=__version__,
       packages=PACKAGES,
       ext_modules=extensions,
       description=DESCRIPTION,

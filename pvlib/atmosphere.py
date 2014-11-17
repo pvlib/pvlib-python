@@ -1,5 +1,7 @@
 """
-Contains methods to calculate the relative and absolute airmass.
+The atmosphere module contains methods to calculate 
+relative and absolute airmass and to determine
+pressure from altitude or vice versa.
 """
 
 from __future__ import division
@@ -25,7 +27,7 @@ def pres2alt(pressure):
 
     Returns
     -------
-    altitude: scalar or Series
+    altitude : scalar or Series
         Altitude in meters above sea level 
 
     Notes
@@ -62,13 +64,13 @@ def alt2pres(altitude):
 
     Parameters
     ----------
-    Altitude: scalar or Series
+    Altitude : scalar or Series
         Altitude in meters above sea level 
 
     Returns
     -------
     Pressure : scalar or Series
-        Atomspheric pressure (Pascals)
+        Atmospheric pressure (Pascals)
 
     Notes
     ------
@@ -107,22 +109,23 @@ def absoluteairmass(AMrelative, pressure=101325.):
     pressure). The input argument "AMrelative" is the relative airmass. The
     input argument "pressure" is the pressure (in Pascals) at the location
     of interest and must be greater than 0. The calculation for
-    absolute airmass is:
-    absolute airmass = (relative airmass)*pressure/101325
+    absolute airmass is
+    
+    .. math::
+        absolute airmass = (relative airmass)*pressure/101325
 
     Parameters
     ----------
 
-    AMrelative : float or DataFrame	
+    AMrelative : scalar or Series	
         The airmass at sea-level. 
 
-    pressure : float or DataFrame
+    pressure : scalar or Series
         The site pressure in Pascal. 
 
     Returns
     -------
-
-    AMa : float or DataFrame
+    scalar or Series
         Absolute (pressure corrected) airmass
 
     References

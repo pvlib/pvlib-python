@@ -9,11 +9,13 @@ This repo is a fork of the [Sandia PVLIB_Python](https://github.com/Sandia-Labs/
 
 It provides a set of documented functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed in MATLAB at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. 
 
-We make some contributions to the Sandia develop branch, and we pull some commits back into our fork. We hope that the Sandia PVLIB_Python becomes the community standard, but we had some different ideas about how things should be done and we needed to make progress faster than the collaborative cycle would allow. See below for a partial list of differences. 
+We make some contributions to the Sandia develop branch, and we pull some commits back into our fork. We hope that Sandia's PVLIB_Python becomes the community standard, but we had some different ideas about how things should be done and we needed to make progress faster than the collaborative cycle would allow. See below for a partial list of differences. 
 
 We use this library to generate solar power forecasts for TEP, APS, and other SVERI utilities, and to perform grid integration and variability studies for SVERI. For more information, see [https://forecasting.uaren.org](https://forecasting.uaren.org) and [https://sveri.uaren.org](https://sveri.uaren.org).
 
-The primary drawback to using this library over the official library is that, well, it's not the official Sandia library. Another drawback is that the structure of this library will look a lot different to people coming from the MATLAB world, which is either a good thing or a bad thing depending on your perspective. Keep the following in mind as you consider using or contributing our fork:
+The primary drawback to using this library over the official library is that, well, it's not the official Sandia library. Another drawback is that the structure of this library will look a lot different to people coming from the MATLAB world, which is either a good thing or a bad thing depending on your perspective. 
+
+Keep the following in mind as you consider using or contributing our fork:
 
 * We hope to keep the projects as similar as possible to make it easier for people to experiment with our fork. 
 * The Sandia repo should be the default repo for the user community.
@@ -26,7 +28,7 @@ That being said, we welcome your thoughts and contributions to our fork.
 
 Code differences
 ================
-Here are some of the major differences between our fork and the official python project. Note that some of these differences have been resolved in the Sandia [develop branch](https://github.com/Sandia-Labs/PVLIB_Python/tree/develop). We have not attempted to catalog the differences with the MATLAB code.
+Here are some of the major differences between our fork and the Sandia PVLIB\_Python project. Note that some of these differences have been resolved in the Sandia [develop branch](https://github.com/Sandia-Labs/PVLIB_Python/tree/develop). We have not attempted to catalog the differences with the MATLAB code.
 
 Library wide changes:
 * Remove ``pvl_`` from module names.

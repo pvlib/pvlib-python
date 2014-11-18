@@ -1,13 +1,13 @@
 PVLIB_Python
 ============
 
-![TravisCI](https://travis-ci.org/UARENForecasting/PVLIB_Python.svg)
+[![TravisCI](https://travis-ci.org/UARENForecasting/PVLIB_Python.svg)](https://travis-ci.org/UARENForecasting/PVLIB_Python)
 [![Coverage Status](https://img.shields.io/coveralls/UARENForecasting/PVLIB_Python.svg)](https://coveralls.io/r/UARENForecasting/PVLIB_Python)
-[![Documentation Status](https://readthedocs.org/projects/uarenforecasting-pvlib-python/badge/?version=latest)](https://readthedocs.org/projects/uarenforecasting-pvlib-python/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/uarenforecasting-pvlib-python/badge/?version=latest)](http://uarenforecasting-pvlib-python.readthedocs.org/en/latest/)
 
 This repo is a fork of the [Sandia PVLIB_Python](https://github.com/Sandia-Labs/PVLIB_Python) project.
 
-It provides a set of sometimes-well-documented and usually correct functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. 
+It provides a set of documented functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed in MATLAB at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. 
 
 We make some contributions to the Sandia develop branch, and we pull some commits back into our fork. We hope that the Sandia PVLIB_Python becomes the community standard, but we had some different ideas about how things should be done and we needed to make progress faster than the collaborative cycle would allow. See below for a partial list of differences. 
 
@@ -20,7 +20,6 @@ The primary drawback to using this library over the official library is that, we
 * Developers should strongly consider contributing to the official Sandia repo rather than, or in addition to, our fork.
 * Reread the above point (...waiting...) before the following (...waiting again...): community contributions in the form of PRs, issues, wikis, docs, tutorials, thoughts, etc are all welcomed and we will try hard to address them in a timely manner.
 * All code contributions must be documented, tested, PEP8 compliant, and python 3 compatible. Pythonic code is easier to use, easier to maintain, and faster to develop. Adhering to PEP8 guidelines allows other python developers read code more quickly and accurately. 
-* We're not promising to maintain this repo for any length of time. 
 
 That being said, we welcome your thoughts and contributions to our fork.
 
@@ -53,7 +52,7 @@ Documentation:
 * Using readthedocs for documentation hosting.
 * Many typos and formatting errors corrected.
 * Documentation source code and tutorials live in ``/`` rather than ``/pvlib/docs``.
-* Additional tutorials in ``/pvlib/docs/tutorials``.
+* Additional tutorials in ``/docs/tutorials``.
 
 Testing:
 * Tests are cleaner and more thorough. They are still no where near complete.
@@ -64,7 +63,16 @@ Testing:
 
 Quick Start
 ===========
-Hopefully you're using [virtualenv](http://virtualenv.readthedocs.org/en/latest/) and [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org). To install, clone this library and run
+
+Installation
+------------
+Hopefully you're using [virtualenv](http://virtualenv.readthedocs.org/en/latest/) and [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org). To install, run
+
+```
+pip install git+https://github.com/UARENForecasting/PVLIB_Python.git
+```
+
+Alternatively, ``git clone`` this repository and run
 
 ```
 pip install .
@@ -72,6 +80,8 @@ pip install .
 
 Add ``-e`` to install in [develop mode](http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs).
 
+Usage Example
+-------------
 ```
 # built-in imports
 import sys
@@ -109,7 +119,7 @@ logging.getLogger('pvlib').setLevel(logging.DEBUG) # or at least INFO
 
 Testing
 ============
-Testing can be accomplished by running nosetests on the pvlib directory (or pvlib/tests):
+First, make sure the package is installed in develop mode or run ``python setup.py build_ext --inplace`` to properly compile the ``spa_py.c`` code. Testing can be accomplished by running nosetests on the pvlib directory (or pvlib/tests):
 ```
 nosetests -v pvlib
 ```

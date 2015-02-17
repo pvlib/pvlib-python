@@ -3,17 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PVLIB_Python's documentation!
+Welcome to pvlib/pvlib-python's documentation!
 ========================================
 
-This is the documentation for the University of Arizona PVLIB fork hosted at
-https://github.com/UARENForecasting/PVLIB_Python
-
-The official Sandia repo is hosted at 
-https://github.com/Sandia-Labs/PVLIB_Python
+This is the documentation for the pvlib-python project hosted at
+https://github.com/pvlib/pvlib-python
 
 You may also want to browser the tutorials using nbviewer at 
-http://nbviewer.ipython.org/github/UARENForecasting/PVLIB_Python/tree/master/docs/tutorials/
+http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/master/docs/tutorials/
 
 
 

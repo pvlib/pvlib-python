@@ -115,4 +115,3 @@ Testing:
 * Using Coveralls to measure test coverage. 
 * Using TravisCI for automated testing.
 * Using ``nosetests`` for more concise test code. 
-* 

@@ -8,6 +8,10 @@ pvlib-python
 
 pvlib-python provides a set of documented functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed in MATLAB at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. More information on Sandia Labs PV performance modelling programs can be found at https://pvpmc.sandia.gov/. 
 
+Documentation
+=============
+
+Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.org/en/latest/)
 
 Quick Start
 ===========

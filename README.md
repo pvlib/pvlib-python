@@ -21,7 +21,7 @@ Installation
 Hopefully you're using [virtualenv](http://virtualenv.readthedocs.org/en/latest/) and [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org). To install, run
 
 ```
-pip install git+https://github.com/UARENForecasting/PVLIB_Python.git
+pip install git+https://github.com/pvlib/pvlib-python.git
 ```
 
 Alternatively, ``git clone`` this repository and run

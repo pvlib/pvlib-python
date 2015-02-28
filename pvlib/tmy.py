@@ -394,43 +394,35 @@ def readtmy2(filename):
 
     [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
     for TMY2s". NREL 1995.
-
-    See also
-    --------
-
-    pvl_makelocationstruct 
-    pvl_maketimestruct  
-    pvl_readtmy3
-
     '''
     
     if filename is None: 					#If no filename is input
         try:
-            filename = interactive_load()
+            filename = _interactive_load()
         except:
             raise Exception('Interactive load failed. Tkinter not supported on this system. Try installing X-Quartz and reloading')
 
-    string='%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'
-    columns='year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'
-    hdr_columns='WBAN,City,State,TZ,latitude,longitude,altitude'
+    string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'
+    columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'
+    hdr_columns = 'WBAN,City,State,TZ,latitude,longitude,altitude'
 
-    TMY2, TMY2_meta = readTMY(string, columns, hdr_columns, filename)	
+    TMY2, TMY2_meta = _readTMY2(string, columns, hdr_columns, filename)	
 
     return TMY2, TMY2_meta
 
 
 
-def parsemeta(columns,line):
+def _parsemeta_tmy2(columns, line):
     """Retrieves metadata from the top line of the tmy2 file.
 
     Parameters
     ----------
 
-    Columns : string
-          String of column headings in the header
+    columns : string
+        String of column headings in the header
 
     line : string
-          Header string containing DataFrame
+        Header string containing DataFrame
 
     Returns
     -------
@@ -454,7 +446,7 @@ def parsemeta(columns,line):
 
 
 
-def readTMY(string, columns, hdr_columns, fname):
+def _readTMY2(string, columns, hdr_columns, fname):
     head=1
     date=[]
     with open(fname) as infile:
@@ -462,7 +454,7 @@ def readTMY(string, columns, hdr_columns, fname):
         for line in infile:
             #Skip the header
             if head!=0:
-                meta=parsemeta(hdr_columns,line)
+                meta = _parsemeta_tmy2(hdr_columns,line)
                 head-=1
                 continue
             #Reset the cursor and array for each line    

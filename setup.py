@@ -14,7 +14,6 @@ except ImportError:
 DESCRIPTION = 'The PVLIB toolbox provides a set functions for simulating the performance of photovoltaic energy systems.'
 LONG_DESCRIPTION = open('README.md').read()
 
-# consider changing name to pythonic-pvlib
 DISTNAME = 'pvlib'
 LICENSE = 'The BSD 3-Clause License'
 AUTHOR = 'Dan Riley, Clifford Hanson, Rob Andrews, Will Holmgren, github contributors'
@@ -27,8 +26,8 @@ with open(version_file, 'r') as f:
     exec(f.read())
 
 # check python version.
-#if sys.version_info[:2] != (2, 7):
-#    sys.exit('%s requires Python 2.7' % DISTNAME)
+if not sys.version_info[:2] in ((2,7), (3,3), (3,4)):
+   sys.exit('%s requires Python 2.7, 3.3, or 3.4' % DISTNAME)
 
 setuptools_kwargs = {
     'zip_safe': False,
@@ -42,14 +41,7 @@ setuptools_kwargs = {
 }
 
 # more packages that we should consider requiring:
-# 'scipy >= 0.14.0', 
-# 'matplotlib',
-# 'ipython >= 2.0',
-# 'pyzmq >= 2.1.11',
-# 'jinja2',
-# 'tornado',
 # 'pyephem',
-
 
 # set up pvlib packages to be installed and extensions to be compiled
 PACKAGES = ['pvlib', 

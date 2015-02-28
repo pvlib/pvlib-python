@@ -182,7 +182,8 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
 
     TMYData = pd.read_csv(filename, header=1,
                           parse_dates={'datetime':['Date (MM/DD/YYYY)','Time (HH:MM)']},
-                          date_parser=_parsedate, index_col='datetime')
+                          date_parser=lambda *x: _parsedate(*x, year=coerce_year), 
+                          index_col='datetime')
     
     if recolumn:
         _recolumn(TMYData) #rename to standard column names
@@ -201,13 +202,15 @@ def _interactive_load():
 
 
 
-def _parsedate(ymd, hour):
+def _parsedate(ymd, hour, year=None):
     # stupidly complicated due to TMY3's usage of hour 24
     # and dateutil's inability to handle that. 
     offset_hour = int(hour[:2]) - 1
     offset_datetime = '{} {}:00'.format(ymd, offset_hour)
     offset_date = dateutil.parser.parse(offset_datetime)
     true_date = offset_date + dateutil.relativedelta.relativedelta(hours=1)
+    if year is not None:
+        true_date = true_date.replace(year=year)
     return true_date
 
 

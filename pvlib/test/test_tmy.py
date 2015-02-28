@@ -26,6 +26,16 @@ def test_readtmy3_norecolumn():
     data, meta = tmy.readtmy3(tmy3_testfile, recolumn=False)
     assert 'GHI source' in data.columns
     
+def test_readtmy3_coerce_year():
+    coerce_year = 1987
+    data, meta = tmy.readtmy3(tmy3_testfile, coerce_year=coerce_year)
+    assert (data.index.year == 1987).all()
+    
+def test_readtmy3_no_coerce_year():
+    coerce_year = None
+    data, meta = tmy.readtmy3(tmy3_testfile, coerce_year=coerce_year)
+    assert 1997 and 1999 in data.index.year
+    
 def test_readtmy2():
     tmy.readtmy2(tmy2_testfile)
     

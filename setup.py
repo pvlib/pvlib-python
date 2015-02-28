@@ -11,7 +11,7 @@ try:
 except ImportError:
     raise RuntimeError('setuptools is required')
 
-DESCRIPTION = 'Pythonic port of the python port of the PVLIB package'
+DESCRIPTION = 'The PVLIB toolbox provides a set functions for simulating the performance of photovoltaic energy systems.'
 LONG_DESCRIPTION = open('README.md').read()
 
 # consider changing name to pythonic-pvlib
@@ -19,7 +19,7 @@ DISTNAME = 'pvlib'
 LICENSE = 'The BSD 3-Clause License'
 AUTHOR = 'Dan Riley, Clifford Hanson, Rob Andrews, Will Holmgren, github contributors'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
-URL = 'https://github.com/UARENForecasting/pythonic-PVLIB'
+URL = 'https://github.com/pvlib/pvlib-python'
 
 # imports __version__ into the local namespace
 version_file = os.path.join(os.path.dirname(__file__), 'pvlib/version.py')

@@ -158,7 +158,7 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     
     if filename is None:
         try:
-            filename = interactive_load()
+            filename = _interactive_load()
         except:
             raise Exception('Interactive load failed. Tkinter not supported on this system. Try installing X-Quartz and reloading')
 
@@ -182,7 +182,7 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
 
     TMYData = pd.read_csv(filename, header=1,
                           parse_dates={'datetime':['Date (MM/DD/YYYY)','Time (HH:MM)']},
-                          date_parser=parsedate, index_col='datetime')
+                          date_parser=_parsedate, index_col='datetime')
     
     if recolumn:
         _recolumn(TMYData) #rename to standard column names
@@ -193,7 +193,7 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
 
 
 
-def interactive_load():
+def _interactive_load():
     import Tkinter 
     from tkFileDialog import askopenfilename
     Tkinter.Tk().withdraw() #Start interactive file input
@@ -201,7 +201,7 @@ def interactive_load():
 
 
 
-def parsedate(ymd, hour):
+def _parsedate(ymd, hour):
     # stupidly complicated due to TMY3's usage of hour 24
     # and dateutil's inability to handle that. 
     offset_hour = int(hour[:2]) - 1
@@ -209,18 +209,6 @@ def parsedate(ymd, hour):
     offset_date = dateutil.parser.parse(offset_datetime)
     true_date = offset_date + dateutil.relativedelta.relativedelta(hours=1)
     return true_date
-
-
-
-def parsetz(UTC):
-    #currently not used, need to make these daylight savings unaware
-    TZinfo = {-5:'EST',
-              -6:'CST',
-              -7:'MST',
-              -8:'PST',
-              -9:'AKST',
-              -10:'HAST'}
-    return TZinfo[UTC]
 
 
 

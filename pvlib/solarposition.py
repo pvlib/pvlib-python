@@ -91,6 +91,9 @@ def spa(time, location, raw_spa_output=False):
     
     pvl_logger.debug('using built-in spa code to calculate solar position')
     
+    pvl_logger.warning('Using solarposition.spa is currently liscenced for ' \
+                       'non-commercial purposes only, according to the NREL SPA' \
+                       'documentation at http://www.nrel.gov/midc/spa/#agree')
     time_utc = localize_to_utc(time, location)
         
     spa_out = []

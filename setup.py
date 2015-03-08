@@ -35,13 +35,11 @@ setuptools_kwargs = {
                          'pandas >= 0.15',
                          'pytz',
                          'six',
+                         'pyephem',
                          ],
     'scripts': [],
     'include_package_data': True
 }
-
-# more packages that we should consider requiring:
-# 'pyephem',
 
 # set up pvlib packages to be installed and extensions to be compiled
 PACKAGES = ['pvlib']

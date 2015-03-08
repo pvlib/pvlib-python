@@ -24,13 +24,21 @@ Hopefully you're using [virtualenv](http://virtualenv.readthedocs.org/en/latest/
 pip install git+https://github.com/pvlib/pvlib-python.git
 ```
 
-Alternatively, ``git clone`` this repository and run
+Alternatively, ``git clone`` this repository, ``cd`` into it, and run
 
 ```
 pip install .
 ```
 
 Add ``-e`` to install in [develop mode](http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs).
+
+``pvlib-python`` comes with Python bindings for NREL's solar position C code,
+however you must manually download the C code directly from [NREL](http://www.nrel.gov/midc/spa/).
+To use the NREL SPA algorithm,
+
+1. Download the SPA files from [NREL](http://www.nrel.gov/midc/spa/)
+2. Copy the SPA files into ``pvlib/spa_c_files``
+3. From this ``pvlib-python`` directory, run ``pip install .``
 
 Usage Example
 -------------

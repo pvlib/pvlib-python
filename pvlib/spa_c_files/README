@@ -1,46 +1,35 @@
 README
 ------
 
-This folder contains the files required to wrap the NREL SPA algorithm using the Cython package. 
+NREL provides a fast C implementation of the solar position algorithm 
+described in 
+(Reda, I.; Andreas, A. (2003). Solar Position Algorithm for Solar Radiation Applications. 55 pp.; NREL Report No. TP-560-34302)
+[http://www.nrel.gov/docs/fy08osti/34302.pdf].
 
-**There are 5 files needed for this, described below:**
+This folder contains the files required to make NREL's C code accessible
+to the pvlib-python package. We use the Cython package to wrap the NREL SPA 
+algorithm. 
 
-spa.c : Original C code from NREL 
-spa.h : header file for spa.c
+** Due to license issues, you must download the NREL C files from their 
+(website)[http://www.nrel.gov/midc/spa/#register] **
 
-cspa_py.pxd: a cython header file- essentially tells cython which parts of the main header file to pay attention to
+Download the ``spa.c`` and ``spa.h`` files from NREL, 
+and copy them into the ``pvlib/spa_c_files`` directory. 
 
-spa_py.pyx : the cython code used to define both functions in the python namespace. NOTE: It is possible to provide user access to other paramters of the SPA algorithm through modifying this file 
+There are a total of 5 files needed to compile the C code, described below:
 
-setup.py: a distutils file which performs the compiling of the cython code
+* ``spa.c``: original C code from NREL 
+* ``spa.h``: header file for spa.c
+* ``cspa_py.pxd``: a cython header file- essentially tells cython which parts of the main header file to pay attention to
+* ``spa_py.pyx``: the cython code used to define both functions in the python namespace. NOTE: It is possible to provide user access to other paramters of the SPA algorithm through modifying this file 
+* ``setup.py``: a distutils file which performs the compiling of the cython code
 
-**the process produces two files**
+The cython compilation process produces two files:
+* ``spa_py.c``: an intermediate cython c file
+* ``spa_py.so``: the python module which can be imported into a namespace
 
-c_adder.c: an intermediate cython c file
-c_adder.so: the python module which can be imported into a namespace
-
-in order to process the orignial 5 files, use the following bash command inside this folder
-
+To process the original 5 files, 
+use the following shell command inside this folder
  
  $ python setup.py build_ext --inplace
 
-This folder also contains the original test files from the NREL C code. This can be run to check the underlying code using the following shell commands: 
-
-$ gcc spatester.c
-$ ./a.out
-
-and should produce the following: 
-
-Julian Day:    2452930.312847
-L:             2.401826e+01 degrees
-B:             -1.011219e-04 degrees
-R:             0.996542 AU
-H:             11.105902 degrees
-Delta Psi:     -3.998404e-03 degrees
-Delta Epsilon: 1.666568e-03 degrees
-Epsilon:       23.440465 degrees
-Zenith:        50.111622 degrees
-Azimuth:       194.340241 degrees
-Incidence:     25.187000 degrees
-Sunrise:       06:12:43 Local Time
-Sunset:        17:20:19 Local Time

@@ -64,8 +64,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PVLIB_Python'
-copyright = u'2014, Sandia National Labs, Rob Andrews, University of Arizona, github contributors'
+project = u'pvlib-python'
+copyright = u'2015, Sandia National Labs, Rob Andrews, University of Arizona, github contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -191,7 +191,7 @@ html_static_path = ['_static']
 #html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = False
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the

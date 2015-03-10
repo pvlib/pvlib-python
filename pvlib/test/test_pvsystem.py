@@ -24,6 +24,7 @@ ephem_data = solarposition.get_solarposition(times, tus, method='pyephem')
 irrad_data = clearsky.ineichen(times, tus, solarposition_method='pyephem')
 aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'])
 am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
+meta = { 'latitude': 37.8, 'longitude': -122.3, 'altitude': 10, 'Name': 'Oakland', 'State': 'CA', 'TZ': -8}
 
 pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
 
@@ -58,6 +59,19 @@ def test_systemdef_tmy2():
                 'surfaz': 0,
                 'surftilt': 0}
     assert_equals(expected, pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5))
+
+def test_systemdef_dict():
+    expected = {'TZ': -8, ## Note that TZ is float, but Location sets tz as string 
+                'albedo': 0.1,
+                'altitude': 10,
+                'latitude': 37.8,
+                'longitude': -122.3,
+                'name': 'Oakland',
+                'parallel_modules': 5,
+                'series_modules': 5,
+                'surfaz': 0,
+                'surftilt': 5}
+    assert_equals(expected, pvsystem.systemdef(meta, 5, 0, .1, 5, 5))
     
 
 

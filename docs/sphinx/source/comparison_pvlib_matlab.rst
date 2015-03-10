@@ -11,3 +11,44 @@ Please see our
 and
 `PVSC 2015 abstract <https://github.com/UARENForecasting/pvlib-pvsc2015/blob/master/pvlib_pvsc_42.pdf?raw=true>`_ 
 for more information.
+
+Here are some of the major differences between the latest pvlib-python build 
+and the original Sandia PVLIB\_Python project, but many of these
+comments apply to the difference between pvlib-python and PVLIB\_MATLAB.
+
+
+Library wide changes
+~~~~~~~~~~~~~~~~~~~~
+
+* Remove ``pvl_`` from module names.
+* Consolidation of similar modules. For example, functions from ``pvl_clearsky_ineichen.py`` and ``pvl_clearsky_haurwitz.py`` have been consolidated into ``clearsky.py``. 
+* Removed ``Vars=Locals(); Expect...; var=pvl\_tools.Parse(Vars,Expect);`` pattern. Very few tests of input validitity remain. Garbage in, garbage or ``nan`` out.
+* Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90 or airmass=0. Instead, we make extensive use of ``nan`` values.
+* Changing function and module names so that they do not conflict.
+* Added ``/pvlib/data`` for lookup tables, test, and tutorial data.
+
+
+More specific changes
+~~~~~~~~~~~~~~~~~~~~~
+
+* Add PyEphem option to solar position calculations. 
+* ``irradiance.py`` has more AOI, projection, and irradiance sum and calculation functions
+* Locations are now ``pvlib.location.Location`` objects, not structs.
+* Specify time zones using a string from the standard IANA Time Zone Database naming conventions or using a pytz.timezone instead of an integer GMT offset. We may add dateutils support in the future.
+* ``clearsky.ineichen`` supports interpolating monthly Linke Turbidities to daily resolution.
+
+Documentation
+~~~~~~~~~~~~~
+
+* Using readthedocs for documentation hosting.
+* Many typos and formatting errors corrected.
+* Documentation source code and tutorials live in ``/`` rather than ``/pvlib/docs``.
+* Additional tutorials in ``/docs/tutorials``.
+
+Testing
+~~~~~~~
+
+* Tests are cleaner and more thorough. They are still no where near complete.
+* Using Coveralls to measure test coverage. 
+* Using TravisCI for automated testing.
+* Using ``nosetests`` for more concise test code. 

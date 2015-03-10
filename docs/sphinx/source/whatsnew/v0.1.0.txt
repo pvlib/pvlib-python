@@ -1,0 +1,17 @@
+.. _whatsnew_0100:
+
+v0.1.0 (March 17, 2015)
+-----------------------
+
+This is the first true release of the pvlib-python project.
+As such, this document is a little hard to write.
+There will be significant overlap with the to-be-written document
+that describes the differences between pvlib-python and PVLIB\_Matlab.
+
+New features
+~~~~~~~~~~~~
+
+
+
+Bug fixes
+~~~~~~~~~

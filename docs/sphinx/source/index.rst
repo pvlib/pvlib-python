@@ -38,6 +38,7 @@ Contents:
    :maxdepth: 2
    
    self
+   whatsnew
    pvlib
 
 

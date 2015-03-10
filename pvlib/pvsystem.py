@@ -1049,19 +1049,19 @@ def snlinverter(inverter, Vmp, Pmp):
        
         Required DataFrame columns are:
 
-        =============   ==============================================================================================================================================================================================
-        Field           Column name
-        =============   ==============================================================================================================================================================================================
-        Inverter.Pac0   AC-power output from inverter based on input power and voltage, (W) 
-        Inverter.Pdc0   DC-power input to inverter, typically assumed to be equal to the PV array maximum power, (W)
-        Inverter.Vdc0   DC-voltage level at which the AC-power rating is achieved at the reference operating condition, (V)
-        Inverter.Ps0    DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels, (W)
-        Inverter.C0     Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship, (1/W)
-        Inverter.C1     Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero, (1/V)
-        Inverter.C2     empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero, (1/V)
-        Inverter.C3     empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero, (1/V)
-        Inverter.Pnt    ac-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage, (W)
-        =============   ==============================================================================================================================================================================================
+        ======   ============================================================================================================================================================================================
+        Column   Description
+        ======   ============================================================================================================================================================================================
+        Pac0     AC-power output from inverter based on input power and voltage (W) 
+        Pdc0     DC-power input to inverter, typically assumed to be equal to the PV array maximum power (W)
+        Vdc0     DC-voltage level at which the AC-power rating is achieved at the reference operating condition (V)
+        Ps0      DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels (W)
+        C0       Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship (1/W)
+        C1       Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero (1/V)
+        C2       Empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero (1/V)
+        C3       Empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero (1/V)
+        Pnt      AC-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage (W)
+        ======   ============================================================================================================================================================================================
 
     Vdc : float or DataFrame
         DC voltages, in volts, which are provided as input to the inverter. 

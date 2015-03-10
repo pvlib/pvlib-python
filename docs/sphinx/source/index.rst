@@ -15,10 +15,10 @@ More information on Sandia Labs PV performance modeling programs
 can be found at https://pvpmc.sandia.gov/.
 
 The source code for pvlib-python is hosted on 
-[github](https://github.com/pvlib/pvlib-python).
+`github <https://github.com/pvlib/pvlib-python>`_.
 
 The github page also contains a valuable
-[wiki](https://github.com/pvlib/pvlib-python/wiki)
+`wiki <https://github.com/pvlib/pvlib-python/wiki>`_
 with information on how you can contribute to pvlib-python development!
 
 Please see the links above for details on the status of the pvlib-python
@@ -28,7 +28,7 @@ so expect to see significant API changes in the next few releases.
 This documenation focuses on providing a reference for all of 
 the modules and functions available in pvlib-python.
 For examples of how to use pvlib-python, please see the
-[tutorials](http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/master/docs/tutorials/).
+`tutorials <http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/master/docs/tutorials/>`_.
 
 
 

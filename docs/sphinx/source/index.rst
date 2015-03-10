@@ -31,6 +31,11 @@ For examples of how to use pvlib-python, please see the
    Python, NumPy, and Pandas. Google searches will yield many
    excellent tutorials for these packages. 
    
+Please see our 
+`PVSC 2014 paper <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`_
+and
+`PVSC 2015 abstract <https://github.com/UARENForecasting/pvlib-pvsc2015/blob/master/pvlib_pvsc_42.pdf?raw=true>`_ 
+for more information.
 
 Installation
 ============

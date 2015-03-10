@@ -1,5 +1,5 @@
 """
-Import TMY2 and TMY3 data.
+Import functions for TMY2 and TMY3 data files.
 """
 
 import logging
@@ -25,33 +25,31 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     '''
     Read a TMY3 file in to a pandas dataframe.
 
-    Read a TMY3 file and make a pandas dataframe of the data. Note that values
-    contained in the metadata dictionary are unchanged from the TMY3 file (i.e. units 
+    Note that values contained in the metadata dictionary are 
+    unchanged from the TMY3 file (i.e. units 
     are retained). In the case of any discrepencies between this
-    documentation and the TMY3 User's Manual ([1]), the TMY3 User's Manual
+    documentation and the TMY3 User's Manual [1], the TMY3 User's Manual
     takes precedence.
 
     Parameters
     ----------
-
     filename : None or string
-        If None, attempts to use an interactive file browser.
+        If None, attempts to use a Tkinter file browser.
         A string can be a relative file path, absolute file path,
         or url.
     
     coerce_year : None or int
-        If supplied, the year of the data will be coerced to this input.
+        If supplied, the year of the data will be set to this value.
     
     recolumn : bool
         If True, apply standard names to TMY3 columns.
-        Typically this resulsts in stripping the units from the column name.
+        Typically this results in stripping the units from the column name.
         
-
     Returns
     -------
-
+    Tuple of the form (data, metadata).
+    
     data : DataFrame
-
         A pandas dataframe with the columns described in the table below. 
         For more detailed descriptions of each component, please consult
         the TMY3 User's Manual ([1]), especially tables 1-1 through 1-6. 
@@ -62,6 +60,8 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     Notes
     -----
 
+    The returned structures have the following fields.
+    
     ===============   ======  ===================  
     key               format  description
     ===============   ======  ===================  
@@ -251,73 +251,58 @@ def _recolumn(tmy3_dataframe, inplace=True):
     return tmy3_dataframe.rename(columns=mapping, inplace=True)
     
     
-    
-#########################
-#
-#   TMY2 below
-#
-#########################
-
-
 
 def readtmy2(filename):
     '''
-    Read a TMY2 file in to a DataFrame
+    Read a TMY2 file in to a DataFrame.
 
-    Note that valuescontained in the DataFrame are unchanged from the TMY2 
-    file (i.e. units  are retained). Time/Date and Location data imported from the 
+    Note that values contained in the DataFrame are unchanged from the TMY2 
+    file (i.e. units  are retained). Time/Date and location data imported from the 
     TMY2 file have been modified to a "friendlier" form conforming to modern
     conventions (e.g. N latitude is postive, E longitude is positive, the
     "24th" hour of any day is technically the "0th" hour of the next day).
     In the case of any discrepencies between this documentation and the 
-    TMY2 User's Manual ([1]), the TMY2 User's Manual takes precedence.
-
-    If a filename is not provided, the user will be prompted to browse to
-    an appropriate TMY2 file.
+    TMY2 User's Manual [1], the TMY2 User's Manual takes precedence.
 
     Parameters
     ----------
-    filename : string
-
-          an optional argument which allows the user to select which
-          TMY2 format file should be read. A file path may also be necessary if
-          the desired TMY2 file is not in the working path. If filename
-          is not provided, the user will be prompted to browse to an
-          appropriate TMY2 file.
+    filename : None or string
+        If None, attempts to use a Tkinter file browser.
+        A string can be a relative file path, absolute file path,
+        or url.
 
     Returns
     -------
+    Tuple of the form (data, metadata).
+    
+    data : DataFrame 
+        A dataframe with the columns described in the table below.
+        For a more detailed descriptions of each component, please consult
+        the TMY2 User's Manual ([1]), especially tables 3-1 through 3-6, and 
+        Appendix B. 
 
-    TMYData : DataFrame 
-
-          A dataframe, is provided with the following components.  Note
-          that for more detailed descriptions of each component, please consult
-          the TMY2 User's Manual ([1]), especially tables 3-1 through 3-6, and 
-          Appendix B. 
-
-    meta : struct
-
-         A struct containing the metadata from the TMY2 file.
+    metadata : dict
+        The site metadata available in the file.
 
     Notes
     -----
 
-    The structures have the following fields
+    The returned structures have the following fields.
 
-    ============================     ============================================================ 
-    meta Field
-    ============================     ============================================================
-    meta.SiteID                      Site identifier code (WBAN number), scalar unsigned integer
-    meta.StationName                 Station name, 1x1 cell string
-    meta.StationState                Station state 2 letter designator, 1x1 cell string
-    meta.SiteTimeZone                Hours from Greenwich, scalar double
-    meta.latitude                    Latitude in decimal degrees, scalar double
-    meta.longitude                   Longitude in decimal degrees, scalar double
-    meta.SiteElevation               Site elevation in meters, scalar double
-    ============================     ============================================================
+    =============    ==================================
+    key              description
+    =============    ==================================
+    SiteID           Site identifier code (WBAN number)
+    StationName      Station name
+    StationState     Station state 2 letter designator
+    SiteTimeZone     Hours from Greenwich
+    latitude         Latitude in decimal degrees
+    longitude        Longitude in decimal degrees
+    SiteElevation    Site elevation in meters
+    =============    ==================================
 
     ============================   ==========================================================================================================================================================================
-    TMYData Field                       Meaning
+    TMYData field                   description
     ============================   ==========================================================================================================================================================================
     index                           Pandas timeseries object containing timestamps
     year                              
@@ -399,7 +384,7 @@ def readtmy2(filename):
     for TMY2s". NREL 1995.
     '''
     
-    if filename is None: 					#If no filename is input
+    if filename is None:
         try:
             filename = _interactive_load()
         except:

@@ -34,10 +34,11 @@ For examples of how to use pvlib-python, please see the
 
 Installation
 ============
-1. Follow Pandas 
-`instructions <http://pandas.pydata.org/pandas-docs/stable/install.html>`_
-for installing the scientific python stack, including ``pip``.
-2. ``pip install pvlib-python``
+
+1. Follow Pandas' 
+   `instructions <http://pandas.pydata.org/pandas-docs/stable/install.html>`_
+   for installing the scientific python stack, including ``pip``.
+#. ``pip install pvlib-python``
 
 
 Contents:

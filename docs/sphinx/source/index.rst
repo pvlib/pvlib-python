@@ -41,7 +41,8 @@ Installation
 #. ``pip install pvlib-python``
 
 
-Contents:
+Contents
+========
 
 .. toctree::
    :maxdepth: 2

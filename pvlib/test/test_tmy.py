@@ -16,7 +16,7 @@ from pvlib import tmy
 def test_readtmy3():
     tmy.readtmy3(tmy3_testfile)
 
-@network(raise_on_error=True)
+@network
 def test_readtmy3_remote():
     url = 'http://rredc.nrel.gov/solar/old_data/nsrdb/1991-2005/data/tmy3/703165TYA.CSV'
     tmy.readtmy3(url)

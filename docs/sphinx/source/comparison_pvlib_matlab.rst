@@ -5,12 +5,22 @@ Comparison with PVLIB_MATLAB
 ****************************
 
 This document is under construction.
-
 Please see our 
 `PVSC 2014 paper <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`_
 and
 `PVSC 2015 abstract <https://github.com/UARENForecasting/pvlib-pvsc2015/blob/master/pvlib_pvsc_42.pdf?raw=true>`_ 
 for more information.
+
+The pvlib-python license is BSD 3-clause,
+the PVLIB\_MATLAB license is ??.
+
+We want to keep developing the core functionality and algorithms 
+of the Python and MATLAB projects roughly in parallel, 
+but we're not making any promises at this point.
+The PVLIB\_MATLAB and pvlib-python projects are currently developed 
+by different teams that do not regularly work together. 
+We hope to grow this collaboration in the future.
+Do not expect feature parity between the libaries, only similarity.
 
 Here are some of the major differences between the latest pvlib-python build 
 and the original Sandia PVLIB\_Python project, but many of these

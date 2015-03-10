@@ -30,6 +30,19 @@ the modules and functions available in pvlib-python.
 For examples of how to use pvlib-python, please see the
 `tutorials <http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/master/docs/tutorials/>`_.
 
+.. note::
+
+   This documentation assumes general familiarity with
+   Python, NumPy, and Pandas. Google searches will yield many
+   excellent tutorials for these packages. 
+   
+
+Installation
+============
+1. Follow Pandas 
+`instructions <http://pandas.pydata.org/pandas-docs/stable/install.html>`_
+for installing the scientific python stack, including ``pip``.
+2. ``pip install pvlib-python``
 
 
 Contents:
@@ -39,6 +52,7 @@ Contents:
    
    self
    whatsnew
+   comparison_pvlib_matlab
    pvlib
 
 

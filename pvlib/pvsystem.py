@@ -17,7 +17,7 @@ from pvlib import tools
 
 
 
-def systemdef(tmy_meta, surftilt, surfaz, albedo, series_modules, 
+def systemdef(meta, surftilt, surfaz, albedo, series_modules, 
               parallel_modules):
     '''
     Generates a dict of system paramters used throughout a simulation.
@@ -25,9 +25,9 @@ def systemdef(tmy_meta, surftilt, surfaz, albedo, series_modules,
     Parameters
     ----------
 
-    tmy_meta : dict
-        meta file generated from a TMY file using pvl_readtmy2 or pvl_readtmy3.
-        It should contain at least the following fields: 
+    meta : dict
+        meta dict either generated from a TMY file using readtmy2 or readtmy3, or
+        a dict containing at least the following fields: 
 
             ===============   ======  ====================  
             meta field        format  description
@@ -73,8 +73,8 @@ def systemdef(tmy_meta, surftilt, surfaz, albedo, series_modules,
             * 'albedo'
             * 'series_modules'
             * 'parallel_modules'
-            * 'Lat'
-            * 'Long'
+            * 'latitude'
+            * 'longitude'
             * 'TZ'
             * 'name'
             * 'altitude'
@@ -87,20 +87,20 @@ def systemdef(tmy_meta, surftilt, surfaz, albedo, series_modules,
     '''
     
     try:
-        name = tmy_meta['Name']
+        name = meta['Name']
     except KeyError:
-        name = tmy_meta['City']
+        name = meta['City']
     
     system = {'surftilt':surftilt,
               'surfaz':surfaz,
               'albedo':albedo,
               'series_modules':series_modules,
               'parallel_modules':parallel_modules,
-              'latitude':tmy_meta['latitude'],
-              'longitude':tmy_meta['longitude'],
-              'TZ':tmy_meta['TZ'],
+              'latitude':meta['latitude'],
+              'longitude':meta['longitude'],
+              'TZ':meta['TZ'],
               'name':name,
-              'altitude':tmy_meta['altitude']}
+              'altitude':meta['altitude']}
 
     return system
 

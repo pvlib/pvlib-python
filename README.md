@@ -38,7 +38,7 @@ To use the NREL SPA algorithm,
 
 1. Download the SPA files from [NREL](http://www.nrel.gov/midc/spa/)
 2. Copy the SPA files into ``pvlib/spa_c_files``
-3. From this ``pvlib-python`` directory, run ``pip install .``
+3. From this ``pvlib-python`` directory, run ``pip install . -I --no-deps``
 
 Usage Example
 -------------

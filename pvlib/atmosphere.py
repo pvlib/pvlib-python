@@ -1,5 +1,5 @@
 """
-The atmosphere module contains methods to calculate 
+The ``atmosphere`` module contains methods to calculate 
 relative and absolute airmass and to determine
 pressure from altitude or vice versa.
 """
@@ -18,7 +18,7 @@ AIRMASS_MODELS = ['kastenyoung1989', 'kasten1966', 'simple',
 
 def pres2alt(pressure):
     '''
-    Determine altitude from site pressure
+    Determine altitude from site pressure.
 
     Parameters
     ----------
@@ -42,7 +42,7 @@ def pres2alt(pressure):
     Gravitational acceleration     9.80665 m/s^2
     Lapse rate                     -6.5E-3 K/m
     Gas constant for air           287.053 J/(kgK)
-    Relative Humidity               0%
+    Relative Humidity              0%
     ============================   ================
 
     References
@@ -60,7 +60,7 @@ def pres2alt(pressure):
 
 def alt2pres(altitude):
     '''
-    Determine site pressure from altitude
+    Determine site pressure from altitude.
 
     Parameters
     ----------
@@ -84,7 +84,7 @@ def alt2pres(altitude):
     Gravitational acceleration     9.80665 m/s^2
     Lapse rate                     -6.5E-3 K/m
     Gas constant for air           287.053 J/(kgK)
-    Relative Humidity               0%
+    Relative Humidity              0%
     ============================   ================
 
     References
@@ -130,14 +130,9 @@ def absoluteairmass(AMrelative, pressure=101325.):
 
     References
     ----------
-
     [1] C. Gueymard, "Critical analysis and performance assessment of 
     clear sky solar irradiance models using theoretical and measured data,"
     Solar Energy, vol. 51, pp. 121-138, 1993.
-
-    See also 
-    ---------
-    relativeairmass 
 
     '''
 

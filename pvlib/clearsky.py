@@ -1,5 +1,6 @@
 """
-Contains several methods to calculate clear sky GHI, DNI, and DHI.
+The ``clearsky`` module contains several methods 
+to calculate clear sky GHI, DNI, and DHI.
 """
 
 from __future__ import division
@@ -32,8 +33,9 @@ def ineichen(time, location, linke_turbidity=None,
     the clear-sky diffuse horizontal (DHI) component as the difference
     between GHI and DNI*cos(zenith) as presented in [1, 2]. A report on clear
     sky models found the Ineichen/Perez model to have excellent performance
-    with a minimal input data set [3]. Default values for Linke turbidity
-    provided by SoDa [4, 5].
+    with a minimal input data set [3]. 
+    
+    Default values for montly Linke turbidity provided by SoDa [4, 5].
 
     Parameters
     -----------
@@ -42,9 +44,11 @@ def ineichen(time, location, linke_turbidity=None,
     location : pvlib.Location
     
     linke_turbidity : None or float
+        If None, uses ``LinkeTurbidities.mat`` lookup table.
     
     solarposition_method : string
-        See pvlib.solarposition.get_solarposition()
+        Sets the solar position algorithm. 
+        See solarposition.get_solarposition()
     
     zenith_data : None or pandas.Series
         If None, ephemeris data will be calculated using ``solarposition_method``.
@@ -55,21 +59,14 @@ def ineichen(time, location, linke_turbidity=None,
     airmass_data : None or pandas.Series
         If None, absolute air mass data will be calculated using 
         ``airmass_model`` and location.alitude.
+    
+    interp_turbidity : bool
+        If ``True``, interpolates the monthly Linke turbidity values
+        found in ``LinkeTurbidities.mat`` to daily values.
 
     Returns
     --------
-
-    ClearSkyGHI : Dataframe.
-         the modeled global horizonal irradiance in W/m^2 provided
-          by the Ineichen clear-sky model.
-
-    ClearSkyDNI : Dataframe.
-        the modeled direct normal irradiance in W/m^2 provided
-        by the Ineichen clear-sky model.
-
-    ClearSkyDHI : Dataframe.
-        the calculated diffuse horizonal irradiance in W/m^2 
-        provided by the Ineichen clear-sky model.
+    DataFrame with the following columns: ``GHI, DNI, DHI``.
 
     Notes
     -----
@@ -77,7 +74,6 @@ def ineichen(time, location, linke_turbidity=None,
     in a loop, it may be faster to load LinkeTurbidities.mat outside of
     the loop and feed it in as a variable, rather than
     having the function open the file each time it is called.
-
 
     References
     ----------
@@ -235,7 +231,8 @@ def haurwitz(ApparentZenith):
 
     Returns
     -------        
-    pd.Series. The modeled global horizonal irradiance in W/m^2 provided
+    pd.Series
+    The modeled global horizonal irradiance in W/m^2 provided
     by the Haurwitz clear-sky model.
 
     Initial implementation of this algorithm by Matthew Reno.
@@ -252,14 +249,6 @@ def haurwitz(ApparentZenith):
     [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
      Sky Models: Implementation and Analysis", Sandia National
      Laboratories, SAND2012-2389, 2012.
-
-    See Also
-    ---------
-    maketimestruct    
-    makelocationstruct   
-    ephemeris   
-    spa
-    ineichen
     '''
 
     cos_zenith = tools.cosd(ApparentZenith)
@@ -332,9 +321,8 @@ def disc(GHI, zenith, times, pressure=101325):
     January 12, 2012
 
     See Also 
-    --------
-    ephemeris 
-    alt2pres 
+    -------- 
+    atmosphere.alt2pres 
     dirint
     '''
 

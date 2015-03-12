@@ -303,7 +303,7 @@ def disc(GHI, zenith, times, pressure=101325):
         True (not refraction - corrected) solar zenith 
         angles in decimal degrees. 
 
-    times : Series or DatetimeIndex
+    times : DatetimeIndex
 
     pressure : float or Series
         Site pressure in Pascal.
@@ -317,7 +317,6 @@ def disc(GHI, zenith, times, pressure=101325):
         * ``Kt_gen_DISC``: Ratio of global to extraterrestrial 
           irradiance on a horizontal plane.
         * ``AM``: Airmass
-        * ``Ztemp``: Zenith
 
     References
     ----------
@@ -384,9 +383,7 @@ def disc(GHI, zenith, times, pressure=101325):
     DNI[DNI < 0] = np.NaN
 
     DFOut = pd.DataFrame({'DNI_gen_DISC':DNI})
-
     DFOut['Kt_gen_DISC'] = Kt
     DFOut['AM'] = AM
-    DFOut['Ztemp'] = Ztemp
 
     return DFOut

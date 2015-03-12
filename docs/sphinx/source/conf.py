@@ -47,6 +47,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
+    'sphinx.ext.extlinks',
     'numpydoc',
     'sphinx.ext.autosummary'
 ]
@@ -246,6 +247,11 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_domain_indices = True
 
+# extlinks alias
+extlinks = {'issue': ('https://github.com/pvlib/pvlib-python/issues/%s',
+                      'GH'),
+            'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s',
+                     'wiki ')}
 
 # -- Options for manual page output ---------------------------------------
 

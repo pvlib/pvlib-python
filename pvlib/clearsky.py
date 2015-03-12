@@ -284,9 +284,10 @@ def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
 
 
 
-def disc(GHI, SunZen, Time, pressure=101325):
+def disc(GHI, zenith, times, pressure=101325):
     '''
-    Estimate Direct Normal Irradiance from Global Horizontal Irradiance using the DISC model
+    Estimate Direct Normal Irradiance from Global Horizontal Irradiance 
+    using the DISC model.
 
     The DISC algorithm converts global horizontal irradiance to direct
     normal irradiance through empirical relationships between the global
@@ -295,35 +296,27 @@ def disc(GHI, SunZen, Time, pressure=101325):
     Parameters
     ----------
 
-    GHI : float or DataFrame
-        global horizontal irradiance in W/m^2. GHI must be >=0.
+    GHI : Series
+        Global horizontal irradiance in W/m^2.
 
-    Z : float or DataFrame
-        True (not refraction - corrected) zenith angles in decimal degrees. 
-        Z must be >=0 and <=180.
+    zenith : Series
+        True (not refraction - corrected) solar zenith 
+        angles in decimal degrees. 
 
-    doy : float or DataFrame
-        the day of the year. doy must be >= 1 and < 367.
+    times : DatetimeIndex
 
-    Other Parameters
-    ----------------
-
-    pressure : float or DataFrame (optional, Default=101325)
-
-        site pressure in Pascal. Pressure may be measured
-        or an average pressure may be calculated from site altitude. If
-        pressure is omitted, standard pressure (101325 Pa) will be used, this
-        is acceptable if the site is near sea level. If the site is not near
-        sea:level, inclusion of a measured or average pressure is highly
-        recommended.
+    pressure : float or Series
+        Site pressure in Pascal.
 
     Returns   
     -------
-    DNI : float or DataFrame
-        The modeled direct normal irradiance in W/m^2 provided by the
-        Direct Insolation Simulation Code (DISC) model. 
-    Kt : float or DataFrame
-        Ratio of global to extraterrestrial irradiance on a horizontal plane.
+    DataFrame with the following keys:
+        * ``DNI_gen_DISC``: The modeled direct normal irradiance 
+          in W/m^2 provided by the
+          Direct Insolation Simulation Code (DISC) model. 
+        * ``Kt_gen_DISC``: Ratio of global to extraterrestrial 
+          irradiance on a horizontal plane.
+        * ``AM``: Airmass
 
     References
     ----------
@@ -343,46 +336,54 @@ def disc(GHI, SunZen, Time, pressure=101325):
     ephemeris 
     alt2pres 
     dirint
-
     '''
 
-    #create a temporary dataframe to house masked values, initially filled with NaN
-    temp=pd.DataFrame(index=Time,columns=['A','B','C'])
+    logger.debug('clearsky.disc')
+    
+    temp = pd.DataFrame(index=times, columns=['A','B','C'])
 
-
-    pressure=101325
-    doy=Time.dayofyear
-    DayAngle=2.0 * np.pi*((doy - 1)) / 365
-    re=1.00011 + 0.034221*(np.cos(DayAngle)) + (0.00128)*(np.sin(DayAngle)) + 0.000719*(np.cos(2.0 * DayAngle)) + (7.7e-05)*(np.sin(2.0 * DayAngle))
-    I0=re*(1370)
-    I0h=I0*(np.cos(np.radians(SunZen)))
-    Ztemp=SunZen
-    Ztemp[SunZen > 87]=87
-    AM=1.0 / (np.cos(np.radians(Ztemp)) + 0.15*(((93.885 - Ztemp) ** (- 1.253))))*(pressure) / 101325
-    Kt=GHI / (I0h)
-    Kt[Kt < 0]=0
-    Kt[Kt > 2]=np.NaN
-    temp.A[Kt > 0.6]=- 5.743 + 21.77*(Kt[Kt > 0.6]) - 27.49*(Kt[Kt > 0.6] ** 2) + 11.56*(Kt[Kt > 0.6] ** 3)
-    temp.B[Kt > 0.6]=41.4 - 118.5*(Kt[Kt > 0.6]) + 66.05*(Kt[Kt > 0.6] ** 2) + 31.9*(Kt[Kt > 0.6] ** 3)
-    temp.C[Kt > 0.6]=- 47.01 + 184.2*(Kt[Kt > 0.6]) - 222.0 * Kt[Kt > 0.6] ** 2 + 73.81*(Kt[Kt > 0.6] ** 3)
-    temp.A[(Kt <= 0.6-1)]=0.512 - 1.56*(Kt[(Kt <= 0.6-1)]) + 2.286*(Kt[(Kt <= 0.6-1)] ** 2) - 2.222*(Kt[(Kt <= 0.6-1)] ** 3)
-    temp.B[(Kt <= 0.6-1)]=0.37 + 0.962*(Kt[(Kt <= 0.6-1)])
-    temp.C[(Kt <= 0.6-1)]=- 0.28 + 0.932*(Kt[(Kt <= 0.6-1)]) - 2.048*(Kt[(Kt <= 0.6-1)] ** 2)
+    doy = times.dayofyear
+    
+    DayAngle = 2. * np.pi*(doy - 1) / 365
+    
+    re = (1.00011 + 0.034221*np.cos(DayAngle) + 0.00128*np.sin(DayAngle)
+          + 0.000719*np.cos(2.*DayAngle) + 7.7e-05*np.sin(2.*DayAngle) )
+          
+    I0 = re * 1370.
+    I0h = I0 * np.cos(np.radians(zenith))
+    
+    Ztemp = zenith.copy()
+    Ztemp[zenith > 87] = np.NaN
+    
+    AM = 1.0 / ( np.cos(np.radians(Ztemp)) + 0.15*( (93.885 - Ztemp)**(-1.253) ) ) * (pressure / 101325)
+    
+    Kt = GHI / I0h
+    Kt[Kt < 0] = 0
+    Kt[Kt > 2] = np.NaN
+    
+    temp.A[Kt > 0.6] = -5.743 + 21.77*(Kt[Kt > 0.6]) - 27.49*(Kt[Kt > 0.6] ** 2) + 11.56*(Kt[Kt > 0.6] ** 3)
+    temp.B[Kt > 0.6] = 41.4 - 118.5*(Kt[Kt > 0.6]) + 66.05*(Kt[Kt > 0.6] ** 2) + 31.9*(Kt[Kt > 0.6] ** 3)
+    temp.C[Kt > 0.6] = -47.01 + 184.2*(Kt[Kt > 0.6]) - 222.0 * Kt[Kt > 0.6] ** 2 + 73.81*(Kt[Kt > 0.6] ** 3)
+    temp.A[Kt <= 0.6] = 0.512 - 1.56*(Kt[Kt <= 0.6]) + 2.286*(Kt[Kt <= 0.6] ** 2) - 2.222*(Kt[Kt <= 0.6] ** 3)
+    temp.B[Kt <= 0.6] = 0.37 + 0.962*(Kt[Kt <= 0.6])
+    temp.C[Kt <= 0.6] = -0.28 + 0.932*(Kt[Kt <= 0.6]) - 2.048*(Kt[Kt <= 0.6] ** 2)
+    
     #return to numeric after masking operations 
-    temp=temp.astype(float)
-    delKn=temp.A + temp.B*((temp.C*(AM)).apply(np.exp))
-    Knc=0.866 - 0.122*(AM) + 0.0121*(AM ** 2) - 0.000653*(AM ** 3) + 1.4e-05*(AM ** 4)
-    Kn=Knc - delKn
-    DNI=(Kn)*(I0)
+    temp = temp.astype(float)
 
-    DNI[SunZen > 87]=np.NaN
-    DNI[GHI < 1]=np.NaN
-    DNI[DNI < 0]=np.NaN
+    delKn = temp.A + temp.B * np.exp(temp.C*AM)
+   
+    Knc = 0.866 - 0.122*(AM) + 0.0121*(AM ** 2) - 0.000653*(AM ** 3) + 1.4e-05*(AM ** 4)
+    Kn = Knc - delKn
+    
+    DNI = Kn * I0
 
-    DFOut=pd.DataFrame({'DNI_gen_DISC':DNI})
+    DNI[zenith > 87] = np.NaN
+    DNI[GHI < 1] = np.NaN
+    DNI[DNI < 0] = np.NaN
 
-    DFOut['Kt_gen_DISC']=Kt
-    DFOut['AM']=AM
-    DFOut['Ztemp']=Ztemp
+    DFOut = pd.DataFrame({'DNI_gen_DISC':DNI})
+    DFOut['Kt_gen_DISC'] = Kt
+    DFOut['AM'] = AM
 
     return DFOut

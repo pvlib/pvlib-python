@@ -32,13 +32,13 @@ pip install .
 
 Add ``-e`` to install in [develop mode](http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs).
 
-``pvlib-python`` comes with Python bindings for NREL's solar position C code,
-however you must manually download the C code directly from [NREL](http://www.nrel.gov/midc/spa/).
-To use the NREL SPA algorithm,
+To use the NREL SPA algorithm, a pip install from the web cannot be used. Instead: 
 
-1. Download the SPA files from [NREL](http://www.nrel.gov/midc/spa/)
-2. Copy the SPA files into ``pvlib/spa_c_files``
-3. From this ``pvlib-python`` directory, run ``pip install . -I --no-deps``
+1. Download the pvlib repository from https://github.com/pvlib/pvlib-python.git
+#. Download the SPA files from [NREL](http://www.nrel.gov/midc/spa/)
+#. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files`` 
+#. From the ``pvlib-python`` directory, run ``pip uninstall pvlib`` followed by ``pip install . ``
+
 
 Usage Example
 -------------

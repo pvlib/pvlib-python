@@ -23,30 +23,29 @@ class Location(object):
         * ``location.pytz`` is a pytz timezone object.
         
     Location objects support the print method.
+    
+    Parameters
+    ----------
+    latitude : float.
+        Positive is north of the equator.
+        Use decimal degrees notation.
+    longitude : float. 
+        Positive is east of the prime meridian.
+        Use decimal degrees notation.
+    tz : string or pytz.timezone. 
+        See 
+        http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        for a list of valid time zones.
+        pytz.timezone objects will be converted to strings.
+    alitude : float. 
+        Altitude from sea level in meters.
+    name : None or string. 
+        Sets the name attribute of the Location object.
     """
     
     def __init__(self, latitude, longitude, tz='US/Mountain', altitude=100,
                  name=None):
-        """
-        Parameters
-        ==========
-        latitude : float.
-            Positive is north of the equator.
-            Use decimal degrees notation.
-        longitude : float. 
-            Positive is east of the prime meridian.
-            Use decimal degrees notation.
-        tz : string or pytz.timezone. 
-            See 
-            http ://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-            for a list of valid time zones.
-            pytz.timezone objects will be converted to strings.
-        alitude : float. 
-            Altitude from sea level in meters.
-        name : None or string. 
-            Optional. Sets the name attribute of the Location object.
-        """
-        
+
         pvl_logger.debug('creating Location object')
         
         self.latitude = latitude

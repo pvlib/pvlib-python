@@ -1,3 +1,8 @@
+"""
+The ``pvsystem`` module contains functions for modeling the output and
+performance of PV modules and inverters.
+"""
+
 from __future__ import division
 
 import logging
@@ -152,9 +157,7 @@ def ashraeiam(b, theta):
 
     See Also
     --------
-    getaoi
-    ephemeris
-    spa  
+    irradiance.aoi  
     physicaliam
     '''
     
@@ -281,24 +284,24 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
     alpha_isc : float
         The short-circuit current temperature coefficient of the module in units of 1/C.
 
-    module_parameters : dict or Series
+    module_parameters : dict
         Parameters describing PV module performance at reference conditions according
         to DeSoto's paper. Parameters may be generated or found by lookup. For ease of use,
         retrieve_sam can automatically generate a dict based on the most recent SAM CEC module
         database. The module_parameters dict must contain the
         following 5 fields:
 
-            * a_ref - modified diode ideality factor parameter at
+            * A_ref - modified diode ideality factor parameter at
               reference conditions (units of eV), a_ref can be calculated from the
               usual diode ideality factor (n), number of cells in series (Ns),
               and cell temperature (Tcell) per equation (2) in [1].
-            * IL_ref - Light-generated current (or photocurrent)
+            * I_l_ref - Light-generated current (or photocurrent)
               in amperes at reference conditions. This value is referred to
               as Iph in some literature.
-            * I0_ref - diode reverse saturation current in amperes,
+            * I_o_ref - diode reverse saturation current in amperes,
               under reference conditions.
-            * Rsh_ref - shunt resistance under reference conditions (ohms).
-            * Rs_ref - series resistance under reference conditions (ohms).
+            * R_sh_ref - shunt resistance under reference conditions (ohms).
+            * R_s - series resistance under reference conditions (ohms).
 
     EgRef : float
         The energy bandgap at reference temperature (in eV). 
@@ -461,7 +464,7 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
 
 def retrieve_sam(name=None, samfile=None):
     '''
-    Retrieve lastest module and inverter info from SAM website
+    Retrieve lastest module and inverter info from SAM website.
 
     This function will retrieve either:
 
@@ -498,7 +501,7 @@ def retrieve_sam(name=None, samfile=None):
     Examples
     --------
 
-    >>> invdb = pvsystem.retreiveSAM(name='SandiaInverter')
+    >>> invdb = pvsystem.retrieveSAM(name='SandiaInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
     >>> inverter    
     Vac           277.000000
@@ -753,10 +756,15 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     '''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
-    singlediode solves the single diode equation [1]:
-    I = IL - I0*[exp((V+I*Rs)/(nNsVth))-1] - (V + I*Rs)/Rsh
-    for I and V when given IL, I0, Rs, Rsh, and nNsVth (nNsVth = n*Ns*Vth) which
-    are described later. pvl_singlediode returns a struct which contains
+    Singlediode solves the single diode equation [1]
+    
+    .. math::
+    
+        I = IL - I0*[exp((V+I*Rs)/(nNsVth))-1] - (V + I*Rs)/Rsh
+        
+    for ``I`` and ``V`` when given 
+    ``IL, I0, Rs, Rsh,`` and ``nNsVth (nNsVth = n*Ns*Vth)`` which
+    are described later. Returns a DataFrame which contains
     the 5 points on the I-V curve specified in SAND2004-3535 [3]. 
     If all IL, I0, Rs, Rsh, and nNsVth are scalar, a single curve
     will be returned, if any are DataFrames (of the same length), multiple IV
@@ -897,15 +905,16 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
 
 
 
-'''
-Created April,2014
-Author: Rob Andrews, Calama Consulting
-'''
+# Created April,2014
+# Author: Rob Andrews, Calama Consulting
+# These may become private methods in 0.2
 
 def golden_sect_DataFrame(df,VL,VH,func):
     '''
     Vectorized golden section search for finding MPPT 
-    from a dataframe timeseries
+    from a dataframe timeseries.
+    
+    Do not expect this function to remain in the public API.
 
     Parameters
     ----------
@@ -972,7 +981,9 @@ def golden_sect_DataFrame(df,VL,VH,func):
 
 def pwr_optfcn(df,loc):
     '''
-    Function to find power from I_from_V
+    Function to find power from I_from_V.
+    
+    Do not expect this function to remain in the public API.
     '''
 
     I=I_from_V(Rsh=df['Rsh'],Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL'])
@@ -982,7 +993,9 @@ def pwr_optfcn(df,loc):
 
 def Voc_optfcn(df,loc):
     '''
-    Function to find V_oc from I_from_V
+    Function to find V_oc from I_from_V.
+    
+    Do not expect this function to remain in the public API.
     '''
     I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL']))
     return I
@@ -991,10 +1004,12 @@ def Voc_optfcn(df,loc):
 
 def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
     '''
-    calculates I from V per Eq 2 Jain and Kapoor 2004
+    Calculates I from V per Eq 2 Jain and Kapoor 2004
     uses Lambert W implemented in wapr_vec.m
     Rsh, nVth, V, I0, IL can all be DataFrames
-    Rs can be a DataFrame, but should be a scalar
+    Rs can be a DataFrame, but should be a scalar.
+    
+    Do not expect this function to remain in the public API.
     '''
     try:
         from scipy.special import lambertw
@@ -1014,7 +1029,7 @@ def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
 def snlinverter(inverter, Vmp, Pmp):
     '''
     Converts DC power and voltage to AC power using 
-    Sandia's Grid-Connected PV Inverter model
+    Sandia's Grid-Connected PV Inverter model.
 
     Determine the AC power output of an inverter given the DC voltage, DC
     power, and appropriate Sandia Grid-Connected Photovoltaic Inverter
@@ -1032,21 +1047,21 @@ def snlinverter(inverter, Vmp, Pmp):
         inverter performance parameters are provided with pvlib, or may be
         generated from a System Advisor Model (SAM) [2] library using retreivesam. 
        
-        Required DataFrame components are:
+        Required DataFrame columns are:
 
-        =============   ==============================================================================================================================================================================================
-        Field           DataFrame
-        =============   ==============================================================================================================================================================================================
-        Inverter.Pac0   AC-power output from inverter based on input power and voltage, (W) 
-        Inverter.Pdc0   DC-power input to inverter, typically assumed to be equal to the PV array maximum power, (W)
-        Inverter.Vdc0   DC-voltage level at which the AC-power rating is achieved at the reference operating condition, (V)
-        Inverter.Ps0    DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels, (W)
-        Inverter.C0     Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship, (1/W)
-        Inverter.C1     Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero, (1/V)
-        Inverter.C2     empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero, (1/V)
-        Inverter.C3     empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero, (1/V)
-        Inverter.Pnt    ac-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage, (W)
-        =============   ==============================================================================================================================================================================================
+        ======   ============================================================================================================================================================================================
+        Column   Description
+        ======   ============================================================================================================================================================================================
+        Pac0     AC-power output from inverter based on input power and voltage (W) 
+        Pdc0     DC-power input to inverter, typically assumed to be equal to the PV array maximum power (W)
+        Vdc0     DC-voltage level at which the AC-power rating is achieved at the reference operating condition (V)
+        Ps0      DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels (W)
+        C0       Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship (1/W)
+        C1       Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero (1/V)
+        C2       Empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero (1/V)
+        C3       Empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero (1/V)
+        Pnt      AC-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage (W)
+        ======   ============================================================================================================================================================================================
 
     Vdc : float or DataFrame
         DC voltages, in volts, which are provided as input to the inverter. 

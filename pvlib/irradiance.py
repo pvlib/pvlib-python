@@ -1,3 +1,10 @@
+"""
+The ``irradiance`` module contains functions for modeling 
+global horizontal irradiance, direct normal irradiance, 
+diffuse horizontal irradiance, and total irradiance 
+under various conditions.
+"""
+
 from __future__ import division
 
 import logging
@@ -44,7 +51,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
         
     method : string
         The method by which the ET radiation should be calculated.
-        Options include 'pyephem', 'spencer', 'asce'.
+        Options include ``'pyephem', 'spencer', 'asce'``.
 
     Returns
     -------
@@ -283,6 +290,23 @@ def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
 def beam_component(surf_tilt, surf_az, sun_zen, sun_az, DNI):
     """
     Calculates the beam component of the plane of array irradiance.
+    
+    Parameters
+    ----------
+    surf_tilt : float or Series. 
+        Panel tilt from horizontal.
+    surf_az : float or Series. 
+        Panel azimuth from north.
+    sun_zen : float or Series. 
+        Solar zenith angle.
+    sun_az : float or Series. 
+        Solar azimuth angle.
+    DNI : float or Series
+        Direct Normal Irradiance
+        
+    Returns
+    -------
+    Series
     """
     beam = DNI * aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
     beam[beam < 0] = 0
@@ -308,26 +332,42 @@ def total_irrad(surf_tilt, surf_az,
     
     Parameters
     ----------
-
-
+    surf_tilt : float or Series. 
+        Panel tilt from horizontal.
+    surf_az : float or Series. 
+        Panel azimuth from north.
+    sun_zen : float or Series. 
+        Solar zenith angle.
+    sun_az : float or Series. 
+        Solar azimuth angle.
+    DNI : float or Series
+        Direct Normal Irradiance
+    GHI : float or Series
+        Global horizontal irradiance
+    DHI : float or Series
+        Diffuse horizontal irradiance
+    DNI_ET : float or Series
+        Extraterrestrial direct normal irradiance
+    AM : float or Series
+        Airmass
+    albedo : float
+        Surface albedo
+    surface_type : String
+        Surface type. See grounddiffuse.
+    model : String
+        Irradiance model.
+    model_perez : String
+        See perez.
 
     Returns
     -------   
-
-    DataFrame with columns 'total', 'beam', 'sky', 'ground'.
-
+    DataFrame with columns ``'total', 'beam', 'sky', 'ground'``.
 
     References
     ----------
-
     [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
     solar irradiance on inclined surfaces for building energy simulation"
     2007, Solar Energy vol. 81. pp. 254-267
-
-
-    See also    
-    --------
-
     '''
 
     pvl_logger.debug('planeofarray.total_irrad()')
@@ -404,26 +444,10 @@ def globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
 
     Returns
     -------
-
-    E : float or DataFrame
-          Total in-plane irradiance (W/m^2)
-    Eb : float or DataFrame 
-          Total in-plane beam irradiance (W/m^2)
-    Ediff : float or DataFrame
-          Total in-plane diffuse irradiance (W/m^2)
-
-    See also
-    --------
-
-    pvl_grounddiffuse
-    pvl_getaoi
-    pvl_perez
-    pvl_reindl1990
-    pvl_klucher1979
-    pvl_haydavies1980
-    pvl_isotropicsky
-    pvl_kingdiffuse
-
+    DataFrame with the following keys:
+        * ``E`` : Total in-plane irradiance (W/m^2)
+        * ``Eb`` : Total in-plane beam irradiance (W/m^2)
+        * ``Ediff`` : Total in-plane diffuse irradiance (W/m^2)
     '''
     Vars=locals()
     Expect={'SurfTilt':('num','x>=0'),
@@ -471,9 +495,9 @@ def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
         Will be overridden if surface_type is supplied.
           
     surface_type: None or string in 
-                  'urban', 'grass', 'fresh grass', 'snow', 'fresh snow',
+                  ``'urban', 'grass', 'fresh grass', 'snow', 'fresh snow',
                   'asphalt', 'concrete', 'aluminum', 'copper', 
-                  'fresh steel', 'dirty steel'.
+                  'fresh steel', 'dirty steel'``.
                   Overrides albedo.
 
     Returns
@@ -568,15 +592,6 @@ def isotropic(surf_tilt, DHI):
 
     [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar heat
     collector. Trans. ASME 64, 91.
-
-    See also    
-    --------
-
-    pvl_reindl1990  
-    pvl_haydavies1980  
-    pvl_perez  
-    pvl_klucher1979
-    pvl_kingdiffuse
     '''
 
     pvl_logger.debug('diffuse_sky.isotropic()')
@@ -661,17 +676,6 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
 
     [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on tilted
     surfaces. Solar Energy 23 (2), 111-114.
-
-    See also
-    --------
-    pvl_ephemeris   
-    pvl_extraradiation   
-    pvl_isotropicsky
-    pvl_haydavies1980   
-    pvl_perez 
-    pvl_reindl1990  
-    pvl_kingdiffuse
-
     '''
 
     pvl_logger.debug('diffuse_sky.klucher()')
@@ -763,18 +767,6 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     on an inclined surface. In: Hay, J.E., Won, T.K. (Eds.), Proc. of First
     Canadian Solar Radiation Data Workshop, 59. Ministry of Supply
     and Services, Canada.
-
-    See Also
-    --------
-    pvl_ephemeris   
-    pvl_extraradiation   
-    pvl_isotropicsky
-    pvl_reindl1990   
-    pvl_perez 
-    pvl_klucher1979   
-    pvl_kingdiffuse
-    pvl_spa
-
     '''
     
     pvl_logger.debug('diffuse_sky.haydavies()')
@@ -886,17 +878,6 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
 
     [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of hourly
     tilted surface radiation models. Solar Energy 45(1), 9-17.
-
-    See Also 
-    ---------
-    pvl_ephemeris   
-    pvl_extraradiation   
-    pvl_isotropicsky
-    pvl_haydavies1980   
-    pvl_perez 
-    pvl_klucher1979   
-    pvl_kingdiffuse
-
     '''          
     
     pvl_logger.debug('diffuse_sky.reindl()')
@@ -965,19 +946,6 @@ def king(surf_tilt, DHI, GHI, sun_zen):
             the diffuse component of the solar radiation  on an
             arbitrarily tilted surface as given by a model developed by David L.
             King at Sandia National Laboratories. 
-
-
-    See Also
-    --------
-
-    pvl_ephemeris   
-    pvl_extraradiation   
-    pvl_isotropicsky
-    pvl_haydavies1980   
-    pvl_perez 
-    pvl_klucher1979   
-    pvl_reindl1990
-
     '''
     
     pvl_logger.debug('diffuse_sky.king()')
@@ -1098,18 +1066,6 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
 
     [4] Perez, R. et. al 1988. "The Development and Verification of the
     Perez Diffuse Radiation Model". SAND88-7030
-
-    See also
-    --------
-    pvl_ephemeris
-    pvl_extraradiation
-    pvl_isotropicsky
-    pvl_haydavies1980
-    pvl_reindl1990
-    pvl_klucher1979
-    pvl_kingdiffuse
-    pvl_relativeairmass
-
     '''
 
     pvl_logger.debug('diffuse_sky.perez()')

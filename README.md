@@ -35,9 +35,9 @@ Add ``-e`` to install in [develop mode](http://pip.readthedocs.org/en/latest/ref
 To use the NREL SPA algorithm, a pip install from the web cannot be used. Instead: 
 
 1. Download the pvlib repository from https://github.com/pvlib/pvlib-python.git
-#. Download the SPA files from [NREL](http://www.nrel.gov/midc/spa/)
-#. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files`` 
-#. From the ``pvlib-python`` directory, run ``pip uninstall pvlib`` followed by ``pip install . ``
+2. Download the SPA files from [NREL](http://www.nrel.gov/midc/spa/)
+3. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files`` 
+4. From the ``pvlib-python`` directory, run ``pip uninstall pvlib`` followed by ``pip install . ``
 
 
 Usage Example

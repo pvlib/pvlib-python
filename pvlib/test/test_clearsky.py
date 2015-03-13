@@ -30,6 +30,7 @@ ephem_data = solarposition.get_solarposition(times, tus)
 
 def test_ineichen_required():
     # the clearsky function should lookup the linke turbidity on its own
+    # will fail without scipy
     clearsky.ineichen(times, tus)
     
 def test_ineichen_supply_linke():
@@ -37,11 +38,11 @@ def test_ineichen_supply_linke():
 
 def test_ineichen_solpos():
     clearsky.ineichen(times, tus, linke_turbidity=3,
-                            solarposition_method='pyephem')
+                      solarposition_method='pyephem')
 
 def test_ineichen_airmass():
     clearsky.ineichen(times, tus, linke_turbidity=3,
-                            airmass_model='simple')
+                      airmass_model='simple')
 
 def test_ineichen_keys():
     clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
@@ -60,7 +61,7 @@ def test_haurwitz_keys():
     
 # test DISC
 def test_disc_keys():
-    clearsky_data = clearsky.ineichen(times, tus)
+    clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
     disc_data = clearsky.disc(clearsky_data['GHI'], ephem_data['zenith'], 
                               ephem_data.index)
     assert 'DNI_gen_DISC' in disc_data.columns

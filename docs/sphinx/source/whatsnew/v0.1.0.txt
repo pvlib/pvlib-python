@@ -40,6 +40,9 @@ Other changes
 * Adding logging calls, removing print calls.
 * Improved PEP8 compliance.
 * Added ``/pvlib/data`` for lookup tables, test, and tutorial data.
+* Limited the scope of ``clearsky.py``'s ``scipy`` dependency.
+  ``clearsky.ineichen`` will work without ``scipy`` so long as 
+  the Linke Turbidity is supplied as a keyword argument. (:issue:`13`)
 
 
 Documentation
@@ -55,7 +58,7 @@ Documentation
 Testing
 ~~~~~~~
 
-* Tests are cleaner and more thorough. They are still no where near complete.
+* Tests are cleaner and more thorough. They are still nowhere near complete.
 * Using Coveralls to measure test coverage. 
 * Using TravisCI for automated testing.
 * Using ``nosetests`` for more concise test code. 

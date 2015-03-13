@@ -40,6 +40,7 @@ Other changes
 * Adding logging calls, removing print calls.
 * Improved PEP8 compliance.
 * Added ``/pvlib/data`` for lookup tables, test, and tutorial data.
+* Removed NREL's SPA code to comply with their license (:issue:`9`).
 
 
 Documentation

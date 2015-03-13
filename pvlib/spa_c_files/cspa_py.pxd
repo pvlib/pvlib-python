@@ -5,7 +5,7 @@ cdef extern from "spa.h":
 		int day            
 		int hour           
 		int minute         
-		int second  
+		double second  
 		double delta_ut1   
 		double delta_t     
 		double timezone    
@@ -27,7 +27,7 @@ cdef extern from "spa.h":
 		int function       
 
 		double zenith     
-		double azimuth180 
+		double azimuth_astro
 		double azimuth    
 		double incidence  
 

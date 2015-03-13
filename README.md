@@ -24,13 +24,21 @@ Hopefully you're using [virtualenv](http://virtualenv.readthedocs.org/en/latest/
 pip install git+https://github.com/pvlib/pvlib-python.git
 ```
 
-Alternatively, ``git clone`` this repository and run
+Alternatively, ``git clone`` this repository, ``cd`` into it, and run
 
 ```
 pip install .
 ```
 
 Add ``-e`` to install in [develop mode](http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs).
+
+To use the NREL SPA algorithm, a pip install from the web cannot be used. Instead: 
+
+1. Download the pvlib repository from https://github.com/pvlib/pvlib-python.git
+2. Download the SPA files from [NREL](http://www.nrel.gov/midc/spa/)
+3. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files`` 
+4. From the ``pvlib-python`` directory, run ``pip uninstall pvlib`` followed by ``pip install . ``
+
 
 Usage Example
 -------------

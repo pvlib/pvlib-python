@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from nose.tools import raises, assert_almost_equals
+from nose.plugins.skip import SkipTest
 from pandas.util.testing import assert_frame_equal
 
 from pvlib.location import Location
@@ -30,8 +31,10 @@ times_localized = times.tz_localize(tus.tz)
 
 def test_spa_physical():
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30), periods=1, freq='D')
-    ephem_data = solarposition.spa(times, golden_mst).ix[0]
-    
+    try:
+        ephem_data = solarposition.spa(times, golden_mst).ix[0]
+    except ImportError:
+        raise SkipTest    
     assert_almost_equals(50.111622, ephem_data['zenith'], 6)
     assert_almost_equals(194.340241, ephem_data['azimuth'], 6)
     assert_almost_equals(39.888378, ephem_data['elevation'], 6)
@@ -40,8 +43,10 @@ def test_spa_physical():
     
 def test_spa_physical_dst():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1, freq='D')
-    ephem_data = solarposition.spa(times, golden).ix[0]
-    
+    try:
+        ephem_data = solarposition.spa(times, golden).ix[0]
+    except ImportError:
+        raise SkipTest    
     assert_almost_equals(50.111622, ephem_data['zenith'], 6)
     assert_almost_equals(194.340241, ephem_data['azimuth'], 6)
     assert_almost_equals(39.888378, ephem_data['elevation'], 6)
@@ -49,8 +54,10 @@ def test_spa_physical_dst():
 
 
 def test_spa_localization():    
-    assert_frame_equal(solarposition.spa(times, tus), solarposition.spa(times_localized, tus))
-
+    try:
+        assert_frame_equal(solarposition.spa(times, tus), solarposition.spa(times_localized, tus))
+    except ImportError:
+        raise SkipTest
 
 
 def test_pyephem_physical():

@@ -43,6 +43,7 @@ Other changes
 * Limited the scope of ``clearsky.py``'s ``scipy`` dependency.
   ``clearsky.ineichen`` will work without ``scipy`` so long as 
   the Linke Turbidity is supplied as a keyword argument. (:issue:`13`)
+* Removed NREL's SPA code to comply with their license (:issue:`9`).
 
 
 Documentation

@@ -458,11 +458,9 @@ def globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
       'GR':('x>=0'),
       }
 
-    var=tools.Parse(Vars,Expect)
-
-    Eb = var.DNI*np.cos(np.radians(var.AOI)) 
-    E = Eb + var.In_Plane_SkyDiffuse + var.GR
-    Ediff = var.In_Plane_SkyDiffuse + var.GR
+    Eb = DNI*np.cos(np.radians(AOI))
+    E = Eb + In_Plane_SkyDiffuse + GR
+    Ediff = In_Plane_SkyDiffuse + GR
 
 
     return pd.DataFrame({'E':E,'Eb':Eb,'Ediff':Ediff})

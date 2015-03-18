@@ -409,8 +409,8 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
     ----------
 
     AOI : float or DataFrame
-          Angle of incedence of solar rays with respect
-          to the module surface, from :py:mod:`pvl_getaoi`.
+          Angle of incidence of solar rays with respect
+          to the module surface, from :func:`aoi`.
           AOI must be >=0 and <=180.
 
     DNI : float or DataFrame
@@ -423,7 +423,7 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
 
     GR : float or DataFrame
           a scalar or DataFrame of ground reflected irradiance (W/m^2),
-          as calculated by a albedo model (eg. :py:mod:`pvl_grounddiffuse`)
+          as calculated by a albedo model (eg. :func:`grounddiffuse`)
 
     Returns
     -------

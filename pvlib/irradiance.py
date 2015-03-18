@@ -105,11 +105,11 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
 
     if method == 'asce':
         pvl_logger.debug('Calculating ET rad using ASCE method')
-        RoverR0sqrd = 1 + 0.033*np.cos(B)
+        RoverR0sqrd = 1 + 0.033 * np.cos(B)
     elif method == 'spencer':
         pvl_logger.debug('Calculating ET rad using Spencer method')
-        RoverR0sqrd = (1.00011 + 0.034221*np.cos(B) + 0.00128*np.sin(B) +
-                       0.000719*np.cos(2*B) + 7.7e-05*np.sin(2*B))
+        RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
+                       0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
     elif method == 'pyephem':
         pvl_logger.debug('Calculating ET rad using pyephem method')
         times = input_to_datetimeindex(datetime_or_doy)
@@ -149,7 +149,7 @@ def _array_to_datetimeindex(doy_array):
     -------
     pd.DatetimeIndex
     """
-    return pd.DatetimeIndex(map(_doy_to_timestamp, doy_array))
+    return pd.DatetimeIndex(list(map(_doy_to_timestamp, doy_array)))
 
 
 def _doy_to_timestamp(doy, epoch='2013-12-31'):
@@ -433,7 +433,7 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
         * ``Ediff`` : Total in-plane diffuse irradiance (W/m^2)
     '''
 
-    Eb = DNI*np.cos(np.radians(AOI))
+    Eb = DNI * np.cos(np.radians(AOI))
     E = Eb + In_Plane_SkyDiffuse + GR
     Ediff = In_Plane_SkyDiffuse + GR
 
@@ -662,7 +662,7 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
         F = 0
 
     term1 = 0.5 * (1 + tools.cosd(surf_tilt))
-    term2 = 1 + F * (tools.sind(0.5*surf_tilt) ** 3)
+    term2 = 1 + F * (tools.sind(0.5 * surf_tilt) ** 3)
     term3 = 1 + F * (cos_tt ** 2) * (tools.sind(sun_zen) ** 3)
 
     sky_diffuse = DHI * term1 * term2 * term3
@@ -871,7 +871,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     # these are actually the () and [] sub-terms of the second term of eqn 8
     term1 = 1 - AI
     term2 = 0.5 * (1 + tools.cosd(surf_tilt))
-    term3 = 1 + np.sqrt(HB / GHI) * (tools.sind(0.5*surf_tilt) ** 3)
+    term3 = 1 + np.sqrt(HB / GHI) * (tools.sind(0.5 * surf_tilt) ** 3)
 
     sky_diffuse = DHI * (AI * Rb + term1 * term2 * term3)
     sky_diffuse[sky_diffuse < 0] = 0
@@ -1048,7 +1048,7 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     z = np.radians(sun_zen)  # convert to radians
 
     # epsilon is the sky's "clearness"
-    eps = ((DHI + DNI)/DHI + kappa * (z**3)) / (1 + kappa * (z**3))
+    eps = ((DHI + DNI) / DHI + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
 
     # Perez et al define clearness bins according to the following rules.
     # 1 = overcast ... 8 = clear
@@ -1094,7 +1094,7 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     F1[F1 < 0] = 0
     F1 = F1.astype(float)
 
-    F2 = F2c[ebin, 0] + F2c[ebin, 1]*delta + F2c[ebin, 2] * z
+    F2 = F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z
     F2[F2 < 0] = 0
     F2 = F2.astype(float)
 
@@ -1108,7 +1108,7 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
 
     term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surf_tilt))
     term2 = F1 * A[ebin.index] / B[ebin.index]
-    term3 = F2*tools.sind(surf_tilt)
+    term3 = F2 * tools.sind(surf_tilt)
 
     sky_diffuse = DHI[ebin.index] * (term1 + term2 + term3)
     sky_diffuse[sky_diffuse < 0] = 0

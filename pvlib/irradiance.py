@@ -449,14 +449,6 @@ def globalinplane(SurfTilt,SurfAz,AOI,DNI,In_Plane_SkyDiffuse, GR):
         * ``Eb`` : Total in-plane beam irradiance (W/m^2)
         * ``Ediff`` : Total in-plane diffuse irradiance (W/m^2)
     '''
-    Vars=locals()
-    Expect={'SurfTilt':('num','x>=0'),
-      'SurfAz':('num','x>=-180','x<=180'),
-      'AOI':('x>=0'),
-      'DNI':('x>=0'),
-      'In_Plane_SkyDiffuse':('x>=0'),
-      'GR':('x>=0'),
-      }
 
     Eb = DNI*np.cos(np.radians(AOI))
     E = Eb + In_Plane_SkyDiffuse + GR

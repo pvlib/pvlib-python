@@ -397,7 +397,7 @@ def total_irrad(surf_tilt, surf_az,
 
 
 # ToDo: keep this or not? wholmgren, 2014-11-03
-def globalinplane(SurfTilt, SurfAz, AOI, DNI, In_Plane_SkyDiffuse, GR):
+def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
     '''
     Determine the three components on in-plane irradiance
 
@@ -407,18 +407,6 @@ def globalinplane(SurfTilt, SurfAz, AOI, DNI, In_Plane_SkyDiffuse, GR):
 
     Parameters
     ----------
-
-    SurfTilt : float or DataFrame
-          surface tilt angles in decimal degrees.
-          SurfTilt must be >=0 and <=180. The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
-
-    SurfAz : float or DataFrame
-          Surface azimuth angles in decimal degrees.
-          SurfAz must be >=0 and <=360. The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, south=180, East = 90,
-          West = 270).
 
     AOI : float or DataFrame
           Angle of incedence of solar rays with respect

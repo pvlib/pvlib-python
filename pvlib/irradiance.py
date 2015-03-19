@@ -84,7 +84,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
 
     See Also
     --------
-    disc
+    pvlib.clearsky.disc
     """
 
     pvl_logger.debug('irradiance.extraradiation()')
@@ -491,7 +491,6 @@ def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
     http://pvpmc.org/modeling-steps/incident-irradiance/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/albedo/
 
     and
-
     http://en.wikipedia.org/wiki/Albedo
     '''
     pvl_logger.debug('diffuse_ground.get_diffuse_ground()')

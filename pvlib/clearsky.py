@@ -12,7 +12,6 @@ import os
 
 import numpy as np
 import pandas as pd
-import scipy.io
 
 from pvlib import tools
 from pvlib import irradiance
@@ -127,9 +126,17 @@ def ineichen(time, location, linke_turbidity=None,
         # so divide the number from the file by 20 to get the
         # turbidity.
         
+        try:
+            import scipy.io
+        except ImportError:
+            raise ImportError('The Linke turbidity lookup table requires scipy. ' +
+                              'You can still use clearsky.ineichen if you ' +
+                              'supply your own turbidities.')
+        
         # consider putting this code at module level
         this_path = os.path.dirname(os.path.abspath(__file__))
         logger.debug('this_path={}'.format(this_path))
+        
         mat = scipy.io.loadmat(os.path.join(this_path, 'data', 'LinkeTurbidities.mat'))
         linke_turbidity = mat['LinkeTurbidity']
         LatitudeIndex = np.round_(_linearly_scale(location.latitude,90,- 90,1,2160))

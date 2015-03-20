@@ -19,12 +19,21 @@ from pvlib import solarposition
 from pvlib.location import Location
 
 tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-times = pd.date_range(start=datetime.datetime(2014,1,1), end=datetime.datetime(2014,1,2), freq='1Min')
+times = pd.date_range(start=datetime.datetime(2014,1,1),
+                      end=datetime.datetime(2014,1,2), freq='1Min')
 ephem_data = solarposition.get_solarposition(times, tus, method='pyephem')
-irrad_data = clearsky.ineichen(times, tus, solarposition_method='pyephem')
-aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'])
+irrad_data = clearsky.ineichen(times, tus, linke_turbidity=3,
+                               solarposition_method='pyephem')
+aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'],
+                     ephem_data['apparent_azimuth'])
 am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
-meta = { 'latitude': 37.8, 'longitude': -122.3, 'altitude': 10, 'Name': 'Oakland', 'State': 'CA', 'TZ': -8}
+
+meta = {'latitude': 37.8,
+        'longitude': -122.3,
+        'altitude': 10,
+        'Name': 'Oakland',
+        'State': 'CA',
+        'TZ': -8}
 
 pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
 

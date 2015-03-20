@@ -23,7 +23,8 @@ times_localized = times.tz_localize(tus.tz)
 
 ephem_data = solarposition.get_solarposition(times, tus, method='pyephem')
 
-irrad_data = clearsky.ineichen(times, tus, solarposition_method='pyephem')
+irrad_data = clearsky.ineichen(times, tus, linke_turbidity=3,
+                               solarposition_method='pyephem')
 
 dni_et = irradiance.extraradiation(times.dayofyear)
 

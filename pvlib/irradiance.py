@@ -408,20 +408,20 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
     Parameters
     ----------
 
-    AOI : float or DataFrame
+    AOI : float or Series
           Angle of incidence of solar rays with respect
           to the module surface, from :func:`aoi`.
           AOI must be >=0 and <=180.
-
-    DNI : float or DataFrame
+          
+    DNI : float or Series
           Direct normal irradiance (W/m^2), as measured
           from a TMY file or calculated with a clearsky model.
 
-    In_Plane_SkyDiffuse :  float or DataFrame
+    In_Plane_SkyDiffuse :  float or Series
           Diffuse irradiance (W/m^2) in the plane of the modules, as
           calculated by a diffuse irradiance translation function
 
-    GR : float or DataFrame
+    GR : float or Series
           a scalar or DataFrame of ground reflected irradiance (W/m^2),
           as calculated by a albedo model (eg. :func:`grounddiffuse`)
 

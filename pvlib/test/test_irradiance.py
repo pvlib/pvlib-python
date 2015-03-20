@@ -133,4 +133,17 @@ def test_perez():
     AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     irradiance.perez(40, 180, irrad_data['DHI'], irrad_data['DNI'],
                      dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['apparent_azimuth'],AM)
+                     ephem_data['apparent_azimuth'], AM)
+
+
+def test_globalinplane():
+    aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
+                         ephem_data['apparent_azimuth'])
+    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+    gr_sand = irradiance.grounddiffuse(40, ghi, surface_type='sand')
+    diff_perez = irradiance.perez(
+        40, 180, irrad_data['DHI'], irrad_data['DNI'], dni_et,
+        ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'], am)
+    irradiance.globalinplane(
+        AOI=aoi, DNI=irrad_data['DNI'], In_Plane_SkyDiffuse=diff_perez,
+        GR=gr_sand)

@@ -433,7 +433,7 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
 
     Notes
     ------
-    Negative beam irradiation due to aoi :math:`> 90^{\circ}` or aoi
+    Negative beam irradiation due to aoi :math:`> 90^{\circ}` or AOI
     :math:`< 0^{\circ}` is set to zero.
     '''
 

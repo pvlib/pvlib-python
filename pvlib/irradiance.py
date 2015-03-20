@@ -411,7 +411,7 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
     AOI : float or Series
           Angle of incidence of solar rays with respect
           to the module surface, from :func:`aoi`.
-          
+
     DNI : float or Series
           Direct normal irradiance (W/m^2), as measured
           from a TMY file or calculated with a clearsky model.
@@ -430,9 +430,14 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
         * ``E`` : Total in-plane irradiance (W/m^2)
         * ``Eb`` : Total in-plane beam irradiance (W/m^2)
         * ``Ediff`` : Total in-plane diffuse irradiance (W/m^2)
+
+    Notes
+    ------
+    Negative beam irradiation due to aoi :math:`> 90^{\circ}` or aoi
+    :math:`< 0^{\circ}` is set to zero.
     '''
 
-    Eb = DNI * np.cos(np.radians(AOI))
+    Eb = pd.Series(DNI * np.cos(np.radians(AOI))).clip_lower(0)
     E = Eb + In_Plane_SkyDiffuse + GR
     Ediff = In_Plane_SkyDiffuse + GR
 

@@ -44,7 +44,7 @@ Other changes
   ``clearsky.ineichen`` will work without ``scipy`` so long as 
   the Linke Turbidity is supplied as a keyword argument. (:issue:`13`)
 * Removed NREL's SPA code to comply with their license (:issue:`9`).
-
+* Revised the globalinplane function and added a test_globalinplane (:issue:`21`, :issue:`33`).
 
 Documentation
 ~~~~~~~~~~~~~
@@ -92,3 +92,4 @@ and
 * Jorissup
 * dacoex
 * alexisph
+* Uwe Krien

@@ -411,7 +411,6 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
     AOI : float or Series
           Angle of incidence of solar rays with respect
           to the module surface, from :func:`aoi`.
-          AOI must be >=0 and <=180.
           
     DNI : float or Series
           Direct normal irradiance (W/m^2), as measured

@@ -19,15 +19,16 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     required.
 
     Rotation angle is determined in a panel-oriented coordinate system.
-    The tracker azimuth AxisAzimuth defines the positive y-axis; the positive
-    x-axis is 90 degress clockwise from the y-axis and parallel to the
-    earth surface, and the positive z-axis is normal and oriented towards the sun.
+    The tracker azimuth AxisAzimuth defines the positive y-axis;
+    the positive x-axis is 90 degress clockwise from the y-axis 
+    and parallel to the earth surface, and the positive z-axis is 
+    normal and oriented towards the sun.
     Rotation angle TrkrTheta indicates tracker position relative to horizontal:
     TrkrTheta = 0 is horizontal, and positive TrkrTheta is a clockwise rotation
-    around the y axis in the x, y, z coordinate system.  For example, if tracker azimuth 
-    AxisAzimuth is 180 (oriented south), TrkrTheta = 30 is a rotation of 
-    30 degrees towards the west, and TrkrTheta = -90 is a rotation to the 
-    vertical plane facing east.
+    around the y axis in the x, y, z coordinate system.
+    For example, if tracker azimuth AxisAzimuth is 180 (oriented south), 
+    TrkrTheta = 30 is a rotation of 30 degrees towards the west, 
+    and TrkrTheta = -90 is a rotation to the vertical plane facing east.
 
     Parameters
     ----------
@@ -97,7 +98,7 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     
     pvl_logger.debug('tracking.singleaxis')
     
-    # initial matlab to python conversion by 
+    # MATLAB to Python conversion by 
     # Will Holmgren, U. Arizona, March, 2015. @wholmgren
     
     # Calculate sun position x, y, z using coordinate system as in [1], Eq 2.
@@ -109,7 +110,8 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # Equations in [1] assume solar azimuth is relative to reference vector
     # pointed south, with clockwise positive.  Here, the input solar azimuth 
     # is degrees East of North, i.e., relative to a reference vector pointed 
-    # north with clockwise positive.  Rotate sun azimuth to coordinate system as in [1]
+    # north with clockwise positive.
+    # Rotate sun azimuth to coordinate system as in [1] 
     # to calculate sun position.
     
     times = SunAz.index
@@ -123,27 +125,30 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # translate array azimuth from compass bearing to [1] coord system
     AxisAz = AxisAzimuth - 180
 
-    # translate input array tilt angle axistilt to [1] coordinate system.  In 
-    # [1] coordinates, axistilt is a rotation about the x-axis.  For a system 
-    # with array azimuth (y-axis) oriented south, the x-axis is oriented west,
-    # and a positive axistilt is a counterclockwise rotation, i.e, lifting the 
-    # north edge of the panel.  Thus, in [1] coordinate system, in the northern 
-    # hemisphere a positive axistilt indicates a rotation toward the equator, 
+    # translate input array tilt angle axistilt to [1] coordinate system.
+    
+    # In [1] coordinates, axistilt is a rotation about the x-axis.
+    # For a system with array azimuth (y-axis) oriented south, 
+    # the x-axis is oriented west, and a positive axistilt is a 
+    # counterclockwise rotation, i.e, lifting the north edge of the panel.
+    # Thus, in [1] coordinate system, in the northern hemisphere a positive
+    # axistilt indicates a rotation toward the equator, 
     # whereas in the southern hemisphere rotation toward the equator is 
-    # indicated by axistilt<0.  Here, the input axistilt is always positive and
-    # is a rotation toward the equator.
+    # indicated by axistilt<0.  Here, the input axistilt is
+    # always positive and is a rotation toward the equator.
 
     # Calculate sun position (xp, yp, zp) in panel-oriented coordinate system: 
     # positive y-axis is oriented along tracking axis at panel tilt;
     # positive x-axis is orthogonal, clockwise, parallel to earth surface;
     # positive z-axis is normal to x-y axes, pointed upward.  
     # Calculate sun position (xp,yp,zp) in panel coordinates using [1] Eq 11
+    # note that equation for yp (y' in Eq. 11 of Lorenzo et al 2011) is
+    # corrected, after conversation with paper's authors.
+    
     xp = x*cosd(AxisAz) - y*sind(AxisAz);
     yp = (x*cosd(AxisTilt)*sind(AxisAz) +
           y*cosd(AxisTilt)*cosd(AxisAz) -
           z*sind(AxisTilt))
-    # note that equation for yp (y' in Eq. 11 of Lorenzo et al 2011) is
-    # corrected, after conversation with paper's authors
     zp = (x*sind(AxisTilt)*sind(AxisAz) +
           y*sind(AxisTilt)*cosd(AxisAz) +
           z*cosd(AxisTilt))
@@ -160,11 +165,15 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # can we use atan2?
     
     # filter to avoid undefined inverse tangent
-    #tmp(xp~=0) = atand(zp./xp)  # angle from x-y plane to projection of sun vector onto x-z plane
-    tmp = np.degrees(np.arctan(zp/xp))  # angle from x-y plane to projection of sun vector onto x-z plane
+    
+    # angle from x-y plane to projection of sun vector onto x-z plane
+    #tmp(xp~=0) = atand(zp./xp)
+    # angle from x-y plane to projection of sun vector onto x-z plane
+    tmp = np.degrees(np.arctan(zp/xp))  
     #tmp(xp==0 & zp>=0) = 90     # fill in when atan is undefined
     #tmp(xp==0 & zp<0) = -90     # fill in when atan is undefined
     #tmp=tmp(:);                  # ensure tmp is a column vector
+    
     # Obtain wid by translating tmp to convention for rotation angles.
     # Have to account for which quadrant of the x-z plane in which the sun 
     # vector lies.  Complete solution here but probably not necessary to 
@@ -188,7 +197,11 @@ def singleaxis(SunZen, SunAz, Latitude=1,
         pvl_logger.debug('applying backtracking')
         Lew = 1/GCR
         temp = np.minimum(Lew*cosd(wid), 1)
-        wc = np.degrees(np.arccos(temp))   # backtrack angle; always positive (acosd returns values between 0 and 180)
+        
+        # backtrack angle
+        # (always positive b/c acosd returns values between 0 and 180)
+        wc = np.degrees(np.arccos(temp))
+        
         v = wid < 0
         widc = pd.Series(index=times)
         widc[~v] = wid[~v] - wc[~v]; # Eq 4 applied when wid in QI
@@ -219,17 +232,19 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     AOI = np.degrees(np.arccos(np.abs(np.sum(P*Norm, axis=0))))
     #AOI(~u) = 0    # set to zero when sun is below panel horizon
     
-    # calculate panel elevation SurfEl and azimuth SurfAz in a coordinate system where the
-    # panel elevation is the angle from horizontal, and the panel azimuth is
-    # the compass angle (clockwise from north) to the projection of the panel's
-    # normal to the earth's surface.  These outputs are provided for
-    # convenience and comparison with other PV software which use these angle
-    # conventions.
+    # calculate panel elevation SurfEl and azimuth SurfAz 
+    # in a coordinate system where the panel elevation is the 
+    # angle from horizontal, and the panel azimuth is
+    # the compass angle (clockwise from north) to the projection 
+    # of the panel's normal to the earth's surface. 
+    # These outputs are provided for convenience and comparison 
+    # with other PV software which use these angle conventions.
 
-    # project normal vector to earth surface.  First rotate 
-    # about x-axis by angle -AxisTilt so that y-axis is also parallel to earth 
-    # surface, then project.
-    #rotation matrix
+    # project normal vector to earth surface.
+    # First rotate about x-axis by angle -AxisTilt so that y-axis is 
+    # also parallel to earth surface, then project.
+    
+    # Calculate standard rotation matrix
     Rot_x = np.array([[1, 0, 0], 
                       [0, cosd(-AxisTilt), -sind(-AxisTilt)], 
                       [0, sind(-AxisTilt), cosd(-AxisTilt)]])
@@ -237,7 +252,7 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # temp contains the normal vector expressed in earth-surface coordinates
     # (z normal to surface, y aligned with tracker axis parallel to earth)
     temp = np.dot(Rot_x, Norm) 
-    temp = temp.T  # ensure column format
+    temp = temp.T
     
     # projection to plane tangent to earth surface,
     # in earth surface coordinates

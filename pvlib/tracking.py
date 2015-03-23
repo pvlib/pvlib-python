@@ -278,11 +278,11 @@ def singleaxis(SunZen, SunAz, Latitude=1,
                        index=times)
     
     # clean up atan when x-coord is zero
-    SurfAz[(projNorm[:,0])==0 & (projNorm[:,1]>0)] =  90
-    SurfAz[(projNorm[:,0])==0 & (projNorm[:,1]<0)] =  -90
+    SurfAz[(projNorm[:,0]==0) & (projNorm[:,1]>0)] =  90
+    SurfAz[(projNorm[:,0]==0) & (projNorm[:,1]<0)] =  -90
     # clean up atan when y-coord is zero
-    SurfAz[(projNorm[:,1])==0 & (projNorm[:,0]>0)] =  0
-    SurfAz[(projNorm[:,1])==0 & (projNorm[:,0]<0)] = 180
+    SurfAz[(projNorm[:,1]==0) & (projNorm[:,0]>0)] =  0
+    SurfAz[(projNorm[:,1]==0) & (projNorm[:,0]<0)] = 180
     # correct for QII and QIII
     SurfAz[(projNorm[:,0]<0) & (projNorm[:,1]>0)] += 180 # QII
     SurfAz[(projNorm[:,0]<0) & (projNorm[:,1]<0)] += 180 # QIII

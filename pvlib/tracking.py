@@ -299,12 +299,12 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
 
     # finally rotate to align y-axis with true north
     # PVLIB_MATLAB has this latitude correction,
-    # but I don't think it's necessary if you always
+    # but I don't think it's latitude dependent if you always
     # specify axis_azimuth with respect to North.
-    #     if latitude > 0:
-    #         surface_azimuth = surface_azimuth - axis_azimuth
-    #     else:
-    #         surface_azimuth = surface_azimuth - axis_azimuth - 180
+    if latitude > 0 or True:
+        surface_azimuth = surface_azimuth - axis_azimuth
+    else:
+        surface_azimuth = surface_azimuth - axis_azimuth - 180
     surface_azimuth[surface_azimuth<0] = 360 + surface_azimuth[surface_azimuth<0]
     
     surface_tilt = pd.Series(90 - np.degrees(np.arccos(temp[:,2])),

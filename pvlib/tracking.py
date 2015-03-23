@@ -102,14 +102,17 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # Will Holmgren, U. Arizona, March, 2015. @wholmgren
     
     # Calculate sun position x, y, z using coordinate system as in [1], Eq 2.
+    
     # Positive y axis is oriented parallel to earth surface along tracking axis 
     # (for the purpose of illustration, assume y is oriented to the south);
     # positive x axis is orthogonal, 90 deg clockwise from y-axis, and parallel
     # to the earth's surface (if y axis is south, x axis is west); 
-    # positive z axis is normal to x,y axes, pointed upward.
+    # positive z axis is normal to x, y axes, pointed upward.
+    
     # Equations in [1] assume solar azimuth is relative to reference vector
-    # pointed south, with clockwise positive.  Here, the input solar azimuth 
-    # is degrees East of North, i.e., relative to a reference vector pointed 
+    # pointed south, with clockwise positive.
+    # Here, the input solar azimuth is degrees East of North, 
+    # i.e., relative to a reference vector pointed 
     # north with clockwise positive.
     # Rotate sun azimuth to coordinate system as in [1] 
     # to calculate sun position.
@@ -123,6 +126,8 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     z = sind(El)
     
     # translate array azimuth from compass bearing to [1] coord system
+    # wholmgren: strange to see AxisAz calculated differently from Az,
+    # (not that it matters, or at least it shouldn't...).
     AxisAz = AxisAzimuth - 180
 
     # translate input array tilt angle axistilt to [1] coordinate system.
@@ -186,10 +191,11 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     #wid=wid(:);                  # ensure wid is a column vector
     
     # filter for sun above panel horizon)
-    #u = zp > 0;
+    u = zp > 0
 
     # apply limits to ideal rotation angle
-    #wid(~u) = 0;  # set horizontal if zenith<0, sun is below panel horizon
+    # set horizontal if zenith<0, sun is below panel horizon
+    wid[~u] = np.nan
     
     # Account for backtracking; modified from [1] to account for rotation
     # angle convention being used here.
@@ -209,9 +215,10 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     else:
         pvl_logger.debug('no backtracking')
         widc = wid
-        
-    #TrkrTheta[u] = widc[u];
-    #TrkrTheta(~u) = 0;    # set to zero when sun is below panel horizon
+    
+    #TrkrTheta = pd.Series(index=times)
+    #TrkrTheta[u] = widc[u]
+    #TrkrTheta[~u] = np.nan    # set to zero when sun is below panel horizon
     #TrkrTheta = TrkrTheta(:);   # ensure column vector format
     TrkrTheta = widc.copy()
     TrkrTheta[TrkrTheta > MaxAngle] = MaxAngle
@@ -220,9 +227,9 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # calculate normal vector to panel in panel-oriented x, y, z coordinates
     # y-axis is axis of tracker rotation.  TrkrTheta is a compass angle
     # (clockwise is positive) rather than a trigonometric angle.
-
+    # the *0 is a trick to preserve NaN values.
     Norm = np.array([sind(TrkrTheta), 
-                     np.zeros_like(TrkrTheta),
+                     TrkrTheta*0,
                      cosd(TrkrTheta)])
     
     # sun position in vector format in panel-oriented x, y, z coordinates
@@ -230,7 +237,8 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     
     # calculate angle-of-incidence on panel
     AOI = np.degrees(np.arccos(np.abs(np.sum(P*Norm, axis=0))))
-    #AOI(~u) = 0    # set to zero when sun is below panel horizon
+    AOI = pd.Series(AOI, index=times)
+    #AOI[~u] = 0    # set to zero when sun is below panel horizon
     
     # calculate panel elevation SurfEl and azimuth SurfAz 
     # in a coordinate system where the panel elevation is the 
@@ -251,26 +259,30 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     
     # temp contains the normal vector expressed in earth-surface coordinates
     # (z normal to surface, y aligned with tracker axis parallel to earth)
-    temp = np.dot(Rot_x, Norm) 
-    temp = temp.T
+    temp = np.dot(Rot_x, Norm).T
     
     # projection to plane tangent to earth surface,
     # in earth surface coordinates
-    projNorm = np.array([temp[:,0], temp[:,1], np.zeros_like(temp[:,2])]) 
+    projNorm = np.array([temp[:,0], temp[:,1], temp[:,2]*0]).T
+    
+    # calculate norms
     tempnorm = np.sqrt(np.nansum(temp**2, axis=1))
     projNormnorm = np.sqrt(np.nansum(projNorm**2, axis=1))
+    pvl_logger.debug('tempnorm={}, projNormnorm={}'
+                     .format(tempnorm, projNormnorm))
 
-    #SurfAz = 0.*TrkrTheta;
+    projNorm = (projNorm.T / projNormnorm).T
+
     # calculation of SurfAz
-    projNorm = projNorm.T
-    SurfAz = np.degrees(np.arctan(projNorm[:,1]/projNorm[:,0]))
+    SurfAz = pd.Series(np.degrees(np.arctan(projNorm[:,1]/projNorm[:,0])), 
+                       index=times)
     
     # clean up atan when x-coord is zero
-    #SurfAz[projNorm(:,1)==0 & projNorm(:,2)>0] =  90;
-    #SurfAz[projNorm(:,1)==0 & projNorm(:,2)<0] =  -90;
+    SurfAz[(projNorm[:,0])==0 & (projNorm[:,1]>0)] =  90
+    SurfAz[(projNorm[:,0])==0 & (projNorm[:,1]<0)] =  -90
     # clean up atan when y-coord is zero
-    #SurfAz[projNorm(:,2)==0 & projNorm(:,1)>0] =  0;
-    #SurfAz[projNorm(:,2)==0 & projNorm(:,1)<0] = 180;
+    SurfAz[(projNorm[:,1])==0 & (projNorm[:,0]>0)] =  0
+    SurfAz[(projNorm[:,1])==0 & (projNorm[:,0]<0)] = 180
     # correct for QII and QIII
     SurfAz[(projNorm[:,0]<0) & (projNorm[:,1]>0)] += 180 # QII
     SurfAz[(projNorm[:,0]<0) & (projNorm[:,1]<0)] += 180 # QIII
@@ -292,13 +304,11 @@ def singleaxis(SunZen, SunAz, Latitude=1,
         SurfAz = SurfAz - AxisAzimuth - 180
     SurfAz[SurfAz<0] = 360 + SurfAz[SurfAz<0]
     
-    #divisor = np.round(tempnorm*projNormnorm*10000)/10000
-    #dividend = np.round(temp*projNorm*10000)/10000
-    #SurfTilt = 90 - np.degrees(np.arccos(dividend/divisor))
+    SurfTilt = pd.Series(90 - np.degrees(np.arccos(temp[:,2])), index=times)
     
-    df_out = pd.DataFrame({'AOI':AOI, 'SurfAz':SurfAz, 'SurfTilt':np.nan},
+    df_out = pd.DataFrame({'AOI':AOI, 'SurfAz':SurfAz, 'SurfTilt':SurfTilt},
                           index=times)
     
-    df_out[SunZen > 90] = np.nan
+    #df_out[SunZen > 90] = np.nan
     
     return df_out

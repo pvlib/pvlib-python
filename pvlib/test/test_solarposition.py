@@ -32,25 +32,27 @@ times_localized = times.tz_localize(tus.tz)
 def test_spa_physical():
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30), periods=1, freq='D')
     try:
-        ephem_data = solarposition.spa(times, golden_mst).ix[0]
+        ephem_data = solarposition.spa(times, golden_mst, pressure=82000, 
+                                       temperature=11).ix[0]
     except ImportError:
         raise SkipTest    
-    assert_almost_equals(50.111622, ephem_data['zenith'], 6)
+    assert_almost_equals(39.872046, ephem_data['elevation'], 6)
+    assert_almost_equals(50.111622, ephem_data['apparent_zenith'], 6)
     assert_almost_equals(194.340241, ephem_data['azimuth'], 6)
-    assert_almost_equals(39.888378, ephem_data['elevation'], 6)
-    
+    assert_almost_equals(39.888378, ephem_data['apparent_elevation'], 6)
     
     
 def test_spa_physical_dst():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1, freq='D')
     try:
-        ephem_data = solarposition.spa(times, golden).ix[0]
+        ephem_data = solarposition.spa(times, golden, pressure=82000,
+                                       temperature=11).ix[0]
     except ImportError:
         raise SkipTest    
-    assert_almost_equals(50.111622, ephem_data['zenith'], 6)
+    assert_almost_equals(39.872046, ephem_data['elevation'], 6)
+    assert_almost_equals(50.111622, ephem_data['apparent_zenith'], 6)
     assert_almost_equals(194.340241, ephem_data['azimuth'], 6)
-    assert_almost_equals(39.888378, ephem_data['elevation'], 6)
-
+    assert_almost_equals(39.888378, ephem_data['apparent_elevation'], 6)
 
 
 def test_spa_localization():    
@@ -58,6 +60,73 @@ def test_spa_localization():
         assert_frame_equal(solarposition.spa(times, tus), solarposition.spa(times_localized, tus))
     except ImportError:
         raise SkipTest
+
+
+def test_spa_python_numpy_physical():
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30), periods=1, freq='D')
+    ephem_data = solarposition.spa_python(times, golden_mst, pressure=82000, 
+                                          temperature=11, delta_t=67, 
+                                          atmos_refract=0.5667,
+                                          how='numpy').ix[0]
+    assert_almost_equals(39.872046, ephem_data['elevation'], 6)
+    assert_almost_equals(50.111622, ephem_data['apparent_zenith'], 6)
+    assert_almost_equals(194.340241, ephem_data['azimuth'], 6)
+    assert_almost_equals(39.888378, ephem_data['apparent_elevation'], 6)
+
+
+def test_spa_python_numpy_physical_dst():
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1, freq='D')
+    ephem_data = solarposition.spa_python(times, golden, pressure=82000, 
+                                          temperature=11, delta_t=67, 
+                                          atmos_refract=0.5667,
+                                          how='numpy').ix[0]
+    assert_almost_equals(50.111622, ephem_data['apparent_zenith'], 6)
+    assert_almost_equals(194.340241, ephem_data['azimuth'], 6)
+    assert_almost_equals(39.888378, ephem_data['apparent_elevation'], 6)
+
+
+def test_spa_python_numba_physical():
+    try:
+        import numba
+    except ImportError:
+        raise SkipTest
+    vers = numba.__version__.split('.')
+    if int(vers[0] + vers[1]) < 17:
+        raise SkipTest
+        
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30), periods=1, freq='D')
+    ephem_data = solarposition.spa_python(times, golden_mst, pressure=82000, 
+                                          temperature=11, delta_t=67, 
+                                          atmos_refract=0.5667,
+                                          how='numba', numthreads=1).ix[0]
+    assert_almost_equals(39.872046, ephem_data['elevation'], 6)
+    assert_almost_equals(50.111622, ephem_data['apparent_zenith'], 6)
+    assert_almost_equals(194.340241, ephem_data['azimuth'], 6)
+    assert_almost_equals(39.888378, ephem_data['apparent_elevation'], 6)
+
+
+def test_spa_python_numba_physical_dst():
+    try:
+        import numba
+    except ImportError:
+        raise SkipTest
+    vers = numba.__version__.split('.')
+    if int(vers[0] + vers[1]) < 17:
+        raise SkipTest
+
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1, freq='D')
+    ephem_data = solarposition.spa_python(times, golden, pressure=82000, 
+                                          temperature=11, delta_t=67, 
+                                          atmos_refract=0.5667,
+                                          how='numba', numthreads=1).ix[0]
+    assert_almost_equals(50.111622, ephem_data['apparent_zenith'], 6)
+    assert_almost_equals(194.340241, ephem_data['azimuth'], 6)
+    assert_almost_equals(39.888378, ephem_data['apparent_elevation'], 6)
+
+
+def test_spa_python_localization():    
+    assert_frame_equal(solarposition.spa_python(times, tus), 
+                       solarposition.spa_python(times_localized, tus))
 
 
 def test_pyephem_physical():

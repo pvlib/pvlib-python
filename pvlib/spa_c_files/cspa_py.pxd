@@ -26,6 +26,8 @@ cdef extern from "spa.h":
 
 		int function       
 
+		double e0
+		double e
 		double zenith     
 		double azimuth_astro
 		double azimuth    

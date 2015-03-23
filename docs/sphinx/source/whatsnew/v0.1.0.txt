@@ -24,6 +24,7 @@ New features
 * Library is Python 3.3 and 3.4 compatible
 * Add What's New section to docs (:issue:`10`)
 * Add PyEphem option to solar position calculations. 
+* Add a Python translation of NREL's SPA algorithm.
 * ``irradiance.py`` has more AOI, projection, and irradiance sum and calculation functions
 * TMY data import has a ``coerce_year`` option
 * TMY data can be loaded from a url (:issue:`5`)

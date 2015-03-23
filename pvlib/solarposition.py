@@ -5,11 +5,20 @@ Calculate the solar position using a variety of methods/packages.
 # Contributors:
 # Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
 # Will Holmgren (@wholmgren), University of Arizona, 2014
+# Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
 from __future__ import division
+import os
 import logging
 pvl_logger = logging.getLogger('pvlib')
 import datetime as dt
+try:
+    from importlib import reload
+except ImportError:
+    try:
+        from imp import reload
+    except ImportError:
+        pass
 
 
 import numpy as np
@@ -32,7 +41,11 @@ def get_solarposition(time, location, method='pyephem', pressure=101325,
     method : string
         'pyephem' uses the PyEphem package (default): :func:`pyephem`
 
-        'spa' uses the spa code: :func:`spa`
+        'spa' or 'spa_c' uses the spa code: :func:`spa`
+
+        'spa_numpy' uses SPA code translated to python: :func: `spa_python`
+
+        'spa_numba' uses SPA code translated to python: :func: `spa_python`
 
         'ephemeris' uses the pvlib ephemeris code: :func:`ephemeris`
     pressure : float
@@ -45,10 +58,16 @@ def get_solarposition(time, location, method='pyephem', pressure=101325,
     if isinstance(time, dt.datetime):
         time = pd.DatetimeIndex([time, ])
 
-    if method == 'spa':
-        ephem_df = spa(time, location)
+    if method == 'spa' or method == 'spa_c':
+        ephem_df = spa(time, location, pressure, temperature)
     elif method == 'pyephem':
         ephem_df = pyephem(time, location, pressure, temperature)
+    elif method == 'spa_numpy':
+        ephem_df = spa_python(time, location, pressure, temperature, 
+                              how='numpy')
+    elif method == 'spa_numba':
+        ephem_df = spa_python(time, location, pressure, temperature, 
+                              how='numba')
     elif method == 'ephemeris':
         ephem_df = ephemeris(time, location, pressure, temperature)
     else:
@@ -57,7 +76,8 @@ def get_solarposition(time, location, method='pyephem', pressure=101325,
     return ephem_df
 
 
-def spa(time, location, raw_spa_output=False):
+def spa(time, location, pressure=101325, temperature=12, delta_t=67.0, 
+        raw_spa_output=False):
     '''
     Calculate the solar position using the C implementation of the NREL
     SPA code
@@ -69,6 +89,13 @@ def spa(time, location, raw_spa_output=False):
     ----------
     time : pandas.DatetimeIndex
     location : pvlib.Location object
+    pressure : float
+        Pressure in Pascals
+    temperature : float
+        Temperature in C
+    delta_t : float
+        Difference between terrestrial time and UT1.
+        USNO has previous values and predictions.
     raw_spa_output : bool
         If true, returns the raw SPA output.
 
@@ -78,15 +105,19 @@ def spa(time, location, raw_spa_output=False):
         The DataFrame will have the following columns:
         elevation,
         azimuth,
-        zenith.
+        zenith,
+        apparent_elevation,
+        apparent_zenith.
 
     References
     ----------
     NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    USNO delta T: http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
     '''
 
     # Added by Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
     # Edited by Will Holmgren (@wholmgren), University of Arizona, 2014
+    # Edited by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
     try:
         from pvlib.spa_c_files.spa_py import spa_calc
@@ -102,26 +133,128 @@ def spa(time, location, raw_spa_output=False):
 
     for date in time_utc:
         spa_out.append(spa_calc(year=date.year,
-                       month=date.month,
-                       day=date.day,
-                       hour=date.hour,
-                       minute=date.minute,
-                       second=date.second,
-                       timezone=0,  # timezone corrections handled above
-                       latitude=location.latitude,
-                       longitude=location.longitude,
-                       elevation=location.altitude))
+                                month=date.month,
+                                day=date.day,
+                                hour=date.hour,
+                                minute=date.minute,
+                                second=date.second,
+                                timezone=0,  # timezone corrections handled above
+                                latitude=location.latitude,
+                                longitude=location.longitude,
+                                elevation=location.altitude,
+                                pressure=pressure / 100,
+                                temperature=temperature,
+                                delta_t=delta_t
+                            ))
 
     spa_df = pd.DataFrame(spa_out, index=time_utc).tz_convert(location.tz)
 
     if raw_spa_output:
         return spa_df
     else:
-        dfout = spa_df[['zenith', 'azimuth']]
-        dfout['elevation'] = 90 - dfout.zenith
-
+        dfout = pd.DataFrame({'azimuth':spa_df['azimuth'],
+                              'apparent_zenith':spa_df['zenith'],
+                              'apparent_elevation':spa_df['e'],
+                              'elevation':spa_df['e0'],
+                              'zenith': 90 - spa_df['e0']})
+            
         return dfout
 
+
+def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
+               atmos_refract=None, how='numpy', numthreads=4):
+    """
+    Calculate the solar position using a python translation of the
+    NREL SPA code.
+
+    If numba is installed, the functions can be compiled to 
+    machine code and the function can be multithreaded.
+    Without numba, the function evaluates via numpy with
+    a slight performance hit.
+
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+    location : pvlib.Location object
+    pressure : int or float, optional
+        avg. yearly air pressure in Pascals.
+    temperature : int or float, optional
+        avg. yearly air temperature in degrees C.
+    delta_t : float, optional
+        Difference between terrestrial time and UT1.
+        By default, use USNO historical data and predictions
+    how : str, optional
+        If numba >= 0.17.0 is installed, how='numba' will
+        compile the spa functions to machine code and 
+        run them multithreaded. Otherwise, numpy calculations
+        are used.
+    numthreads : int, optional
+        Number of threads to use if how == 'numba'.
+
+    Returns
+    -------
+    DataFrame
+        The DataFrame will have the following columns:
+        apparent_zenith, zenith,
+        apparent_elevation, elevation, 
+        azimuth.
+
+
+    References
+    ----------
+    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
+    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+    """
+    
+    # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
+
+    from pvlib import spa
+    pvl_logger.debug('Calculating solar position with spa_python code')
+
+    lat = location.latitude
+    lon = location.longitude
+    elev = location.altitude
+    pressure = pressure / 100 # pressure must be in millibars for calculation
+    delta_t = delta_t or 67.0
+    atmos_refract = atmos_refract or 0.5667
+
+    if not isinstance(time, pd.DatetimeIndex):
+        try:
+            time = pd.DatetimeIndex(time)
+        except (TypeError, ValueError):
+            time = pd.DatetimeIndex([time,])
+
+    unixtime = localize_to_utc(time, location).astype(int)/10**9    
+
+    using_numba = spa.USE_NUMBA
+    if how == 'numpy' and using_numba:
+        os.environ['PVLIB_USE_NUMBA'] = '0'
+        pvl_logger.debug('Reloading spa module without compiling')
+        spa = reload(spa)
+        del os.environ['PVLIB_USE_NUMBA']
+    elif how == 'numba' and not using_numba:
+        os.environ['PVLIB_USE_NUMBA'] = '1'
+        pvl_logger.debug('Reloading spa module, compiling with numba')
+        spa = reload(spa)
+        del os.environ['PVLIB_USE_NUMBA']
+    elif how != 'numba' and how != 'numpy':
+        raise ValueError("how must be either 'numba' or 'numpy'")
+
+    app_zenith, zenith, app_elevation, elevation, azimuth  = spa.solar_position(
+        unixtime, lat, lon, elev, pressure, temperature, delta_t, atmos_refract,
+        numthreads)
+    result = pd.DataFrame({'apparent_zenith':app_zenith, 'zenith':zenith,
+                           'apparent_elevation':app_elevation, 
+                           'elevation':elevation, 'azimuth':azimuth},
+                          index = time)
+
+    try:
+        result = result.tz_convert(location.tz)
+    except TypeError:
+        result = result.tz_localize(location.tz)
+
+    return result
+    
 
 def _ephem_setup(location, pressure, temperature):
     import ephem

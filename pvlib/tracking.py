@@ -9,84 +9,84 @@ import pandas as pd
 from pvlib.tools import cosd, sind
 
 
-def singleaxis(SunZen, SunAz, Latitude=1, 
-               AxisTilt=0, AxisAzimuth=0, MaxAngle=90, 
-               Backtrack=True, GCR=2.0/7.0):
+def singleaxis(apparent_zenith, apparent_azimuth, latitude=1, 
+               axis_tilt=0, axis_azimuth=0, max_angle=90, 
+               backtrack=True, gcr=2.0/7.0):
     """
     Determine the rotation angle of a single axis tracker using the
     equations in [1] when given a particular sun zenith and azimuth angle.
-    Backtracking may be specified, and if so, a ground coverage ratio is 
+    backtracking may be specified, and if so, a ground coverage ratio is 
     required.
 
     Rotation angle is determined in a panel-oriented coordinate system.
-    The tracker azimuth AxisAzimuth defines the positive y-axis;
+    The tracker azimuth axis_azimuth defines the positive y-axis;
     the positive x-axis is 90 degress clockwise from the y-axis 
     and parallel to the earth surface, and the positive z-axis is 
     normal and oriented towards the sun.
-    Rotation angle TrkrTheta indicates tracker position relative to horizontal:
-    TrkrTheta = 0 is horizontal, and positive TrkrTheta is a clockwise rotation
+    Rotation angle tracker_theta indicates tracker position relative to horizontal:
+    tracker_theta = 0 is horizontal, and positive tracker_theta is a clockwise rotation
     around the y axis in the x, y, z coordinate system.
-    For example, if tracker azimuth AxisAzimuth is 180 (oriented south), 
-    TrkrTheta = 30 is a rotation of 30 degrees towards the west, 
-    and TrkrTheta = -90 is a rotation to the vertical plane facing east.
+    For example, if tracker azimuth axis_azimuth is 180 (oriented south), 
+    tracker_theta = 30 is a rotation of 30 degrees towards the west, 
+    and tracker_theta = -90 is a rotation to the vertical plane facing east.
 
     Parameters
     ----------
-    SunZen : Series
-        Apparent (refraction-corrected) zenith angles in decimal degrees. 
+    apparent_zenith : Series
+        Solar apparent zenith angles in decimal degrees. 
     
-    SunAz : Series
-        Sun azimuth angles in decimal degrees.
+    apparent_azimuth : Series
+        Solar apparent azimuth angles in decimal degrees.
     
-    Latitude : float
+    latitude : float
         A value denoting which hempisphere the tracker is
         in. The exact latitude is NOT required, any positive number denotes
         the northern hemisphere, any negative number denotes the southern
         hemisphere, a value of 0 is assumed to be northern hemisphere.
     
-    AxisTilt : float
+    axis_tilt : float
         The tilt of the axis of rotation
-        (i.e, the y-axis defined by AxisAzimuth) with respect to horizontal, 
+        (i.e, the y-axis defined by axis_azimuth) with respect to horizontal, 
         in decimal degrees.
     
-    AxisAzimuth : float
+    axis_azimuth : float
         A value denoting the compass direction along which
         the axis of rotation lies, in decimal degrees. 
     
-    MaxAngle : float
+    max_angle : float
         A value denoting the maximum rotation angle, in
         decimal degrees, of the one-axis tracker from its horizontal position
-        (horizontal if AxisTilt = 0). 
-        A MaxAngle of 90 degrees allows the tracker to rotate to a vertical
+        (horizontal if axis_tilt = 0). 
+        A max_angle of 90 degrees allows the tracker to rotate to a vertical
         position to point the panel towards a horizon.  
-        MaxAngle of 180 degrees allows for full rotation.
+        max_angle of 180 degrees allows for full rotation.
     
-    Backtrack : bool
+    backtrack : bool
         Controls whether the tracker has the
         capability to "backtrack" to avoid row-to-row shading. 
         False denotes no backtrack capability. 
         True denotes backtrack capability. 
     
-    GCR : float
+    gcr : float
         A value denoting the ground coverage ratio of a tracker
         system which utilizes backtracking; i.e. the ratio between the PV
         array surface area to total ground area. A tracker system with modules 2
         meters wide, centered on the tracking axis, with 6 meters between the
-        tracking axes has a GCR of 2/6=0.333. If GCR is not provided, a GCR
-        of 2/7 is default. GCR must be <=1.
+        tracking axes has a gcr of 2/6=0.333. If gcr is not provided, a gcr
+        of 2/7 is default. gcr must be <=1.
 
     Returns
     -------
     DataFrame with the following columns:
     
-    * TrkrTheta: The rotation angle (Theta) of the tracker.  
-        TrkrTheta = 0 is horizontal, and positive rotation angles are
+    * tracker_theta: The rotation angle of the tracker.  
+        tracker_theta = 0 is horizontal, and positive rotation angles are
         clockwise.
-    * AOI: The angle-of-incidence of direct irradiance onto the
+    * aoi: The angle-of-incidence of direct irradiance onto the
         rotated panel surface.
-    * SurfTilt: The angle between the panel surface and the earth
+    * surface_tilt: The angle between the panel surface and the earth
         surface, accounting for panel rotation.
-    * SurfAz: The azimuth of the rotated panel, determined by 
+    * surface_azimuth: The azimuth of the rotated panel, determined by 
         projecting the vector normal to the panel's surface to the earth's
         surface.
 
@@ -117,29 +117,29 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # Rotate sun azimuth to coordinate system as in [1] 
     # to calculate sun position.
     
-    times = SunAz.index
+    times = apparent_azimuth.index
     
-    Az = SunAz - 180
-    El = 90 - SunZen
-    x = cosd(El) * sind(Az)
-    y = cosd(El) * cosd(Az)
-    z = sind(El)
+    az = apparent_azimuth - 180
+    apparent_elevation = 90 - apparent_zenith
+    x = cosd(apparent_elevation) * sind(az)
+    y = cosd(apparent_elevation) * cosd(az)
+    z = sind(apparent_elevation)
     
     # translate array azimuth from compass bearing to [1] coord system
-    # wholmgren: strange to see AxisAz calculated differently from Az,
+    # wholmgren: strange to see axis_azimuth calculated differently from Az,
     # (not that it matters, or at least it shouldn't...).
-    AxisAz = AxisAzimuth - 180
+    axis_azimuth_south = axis_azimuth - 180
 
-    # translate input array tilt angle axistilt to [1] coordinate system.
+    # translate input array tilt angle axis_tilt to [1] coordinate system.
     
-    # In [1] coordinates, axistilt is a rotation about the x-axis.
+    # In [1] coordinates, axis_tilt is a rotation about the x-axis.
     # For a system with array azimuth (y-axis) oriented south, 
-    # the x-axis is oriented west, and a positive axistilt is a 
+    # the x-axis is oriented west, and a positive axis_tilt is a 
     # counterclockwise rotation, i.e, lifting the north edge of the panel.
     # Thus, in [1] coordinate system, in the northern hemisphere a positive
-    # axistilt indicates a rotation toward the equator, 
+    # axis_tilt indicates a rotation toward the equator, 
     # whereas in the southern hemisphere rotation toward the equator is 
-    # indicated by axistilt<0.  Here, the input axistilt is
+    # indicated by axis_tilt<0.  Here, the input axis_tilt is
     # always positive and is a rotation toward the equator.
 
     # Calculate sun position (xp, yp, zp) in panel-oriented coordinate system: 
@@ -150,13 +150,13 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # note that equation for yp (y' in Eq. 11 of Lorenzo et al 2011) is
     # corrected, after conversation with paper's authors.
     
-    xp = x*cosd(AxisAz) - y*sind(AxisAz);
-    yp = (x*cosd(AxisTilt)*sind(AxisAz) +
-          y*cosd(AxisTilt)*cosd(AxisAz) -
-          z*sind(AxisTilt))
-    zp = (x*sind(AxisTilt)*sind(AxisAz) +
-          y*sind(AxisTilt)*cosd(AxisAz) +
-          z*cosd(AxisTilt))
+    xp = x*cosd(axis_azimuth_south) - y*sind(axis_azimuth_south);
+    yp = (x*cosd(axis_tilt)*sind(axis_azimuth_south) +
+          y*cosd(axis_tilt)*cosd(axis_azimuth_south) -
+          z*sind(axis_tilt))
+    zp = (x*sind(axis_tilt)*sind(axis_azimuth_south) +
+          y*sind(axis_tilt)*cosd(axis_azimuth_south) +
+          z*cosd(axis_tilt))
 
     # The ideal tracking angle wid is the rotation to place the sun position 
     # vector (xp, yp, zp) in the (y, z) plane; i.e., normal to the panel and 
@@ -199,10 +199,10 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     
     # Account for backtracking; modified from [1] to account for rotation
     # angle convention being used here.
-    if Backtrack:
+    if backtrack:
         pvl_logger.debug('applying backtracking')
-        Lew = 1/GCR
-        temp = np.minimum(Lew*cosd(wid), 1)
+        axes_distance = 1/gcr
+        temp = np.minimum(axes_distance*cosd(wid), 1)
         
         # backtrack angle
         # (always positive b/c acosd returns values between 0 and 180)
@@ -216,21 +216,21 @@ def singleaxis(SunZen, SunAz, Latitude=1,
         pvl_logger.debug('no backtracking')
         widc = wid
     
-    #TrkrTheta = pd.Series(index=times)
-    #TrkrTheta[u] = widc[u]
-    #TrkrTheta[~u] = np.nan    # set to zero when sun is below panel horizon
-    #TrkrTheta = TrkrTheta(:);   # ensure column vector format
-    TrkrTheta = widc.copy()
-    TrkrTheta[TrkrTheta > MaxAngle] = MaxAngle
-    TrkrTheta[TrkrTheta < -MaxAngle] = -MaxAngle
+    #tracker_theta = pd.Series(index=times)
+    #tracker_theta[u] = widc[u]
+    #tracker_theta[~u] = np.nan    # set to zero when sun is below panel horizon
+    #tracker_theta = tracker_theta(:);   # ensure column vector format
+    tracker_theta = widc.copy()
+    tracker_theta[tracker_theta > max_angle] = max_angle
+    tracker_theta[tracker_theta < -max_angle] = -max_angle
     
     # calculate normal vector to panel in panel-oriented x, y, z coordinates
-    # y-axis is axis of tracker rotation.  TrkrTheta is a compass angle
+    # y-axis is axis of tracker rotation.  tracker_theta is a compass angle
     # (clockwise is positive) rather than a trigonometric angle.
     # the *0 is a trick to preserve NaN values.
-    Norm = np.array([sind(TrkrTheta), 
-                     TrkrTheta*0,
-                     cosd(TrkrTheta)])
+    Norm = np.array([sind(tracker_theta), 
+                     tracker_theta*0,
+                     cosd(tracker_theta)])
     
     # sun position in vector format in panel-oriented x, y, z coordinates
     P = np.array([xp, yp, zp])
@@ -240,7 +240,7 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     AOI = pd.Series(AOI, index=times)
     #AOI[~u] = 0    # set to zero when sun is below panel horizon
     
-    # calculate panel elevation SurfEl and azimuth SurfAz 
+    # calculate panel elevation SurfEl and azimuth surface_azimuth 
     # in a coordinate system where the panel elevation is the 
     # angle from horizontal, and the panel azimuth is
     # the compass angle (clockwise from north) to the projection 
@@ -249,13 +249,13 @@ def singleaxis(SunZen, SunAz, Latitude=1,
     # with other PV software which use these angle conventions.
 
     # project normal vector to earth surface.
-    # First rotate about x-axis by angle -AxisTilt so that y-axis is 
+    # First rotate about x-axis by angle -axis_tilt so that y-axis is 
     # also parallel to earth surface, then project.
     
     # Calculate standard rotation matrix
     Rot_x = np.array([[1, 0, 0], 
-                      [0, cosd(-AxisTilt), -sind(-AxisTilt)], 
-                      [0, sind(-AxisTilt), cosd(-AxisTilt)]])
+                      [0, cosd(-axis_tilt), -sind(-axis_tilt)], 
+                      [0, sind(-axis_tilt), cosd(-axis_tilt)]])
     
     # temp contains the normal vector expressed in earth-surface coordinates
     # (z normal to surface, y aligned with tracker axis parallel to earth)
@@ -273,42 +273,48 @@ def singleaxis(SunZen, SunAz, Latitude=1,
 
     projNorm = (projNorm.T / projNormnorm).T
 
-    # calculation of SurfAz
-    SurfAz = pd.Series(np.degrees(np.arctan(projNorm[:,1]/projNorm[:,0])), 
+    # calculation of surface_azimuth
+    surface_azimuth = pd.Series(np.degrees(np.arctan(projNorm[:,1]/projNorm[:,0])), 
                        index=times)
     
     # clean up atan when x-coord is zero
-    SurfAz[(projNorm[:,0]==0) & (projNorm[:,1]>0)] =  90
-    SurfAz[(projNorm[:,0]==0) & (projNorm[:,1]<0)] =  -90
+    surface_azimuth[(projNorm[:,0]==0) & (projNorm[:,1]>0)] =  90
+    surface_azimuth[(projNorm[:,0]==0) & (projNorm[:,1]<0)] =  -90
     # clean up atan when y-coord is zero
-    SurfAz[(projNorm[:,1]==0) & (projNorm[:,0]>0)] =  0
-    SurfAz[(projNorm[:,1]==0) & (projNorm[:,0]<0)] = 180
+    surface_azimuth[(projNorm[:,1]==0) & (projNorm[:,0]>0)] =  0
+    surface_azimuth[(projNorm[:,1]==0) & (projNorm[:,0]<0)] = 180
     # correct for QII and QIII
-    SurfAz[(projNorm[:,0]<0) & (projNorm[:,1]>0)] += 180 # QII
-    SurfAz[(projNorm[:,0]<0) & (projNorm[:,1]<0)] += 180 # QIII
+    surface_azimuth[(projNorm[:,0]<0) & (projNorm[:,1]>0)] += 180 # QII
+    surface_azimuth[(projNorm[:,0]<0) & (projNorm[:,1]<0)] += 180 # QIII
 
-    # at this point SurfAz contains angles between -90 and +270,
+    # at this point surface_azimuth contains angles between -90 and +270,
     # where 0 is along the positive x-axis,
     # the y-axis is in the direction of the tracker azimuth,
     # and positive angles are rotations from the positive x axis towards
     # the positive y-axis.
     # Adjust to compass angles
     # (clockwise rotation from 0 along the positive y-axis)
-    SurfAz[SurfAz<=90] = 90 - SurfAz[SurfAz<=90]
-    SurfAz[SurfAz>90] = 450 - SurfAz[SurfAz>90]
+    surface_azimuth[surface_azimuth<=90] = 90 - surface_azimuth[surface_azimuth<=90]
+    surface_azimuth[surface_azimuth>90] = 450 - surface_azimuth[surface_azimuth>90]
 
     # finally rotate to align y-axis with true north
-    if Latitude > 0:
-        SurfAz = SurfAz - AxisAzimuth
-    else:
-        SurfAz = SurfAz - AxisAzimuth - 180
-    SurfAz[SurfAz<0] = 360 + SurfAz[SurfAz<0]
+    # PVLIB_MATLAB has this latitude correction,
+    # but I don't think it's necessary if you always
+    # specify axis_azimuth with respect to North.
+    #     if latitude > 0:
+    #         surface_azimuth = surface_azimuth - axis_azimuth
+    #     else:
+    #         surface_azimuth = surface_azimuth - axis_azimuth - 180
+    surface_azimuth[surface_azimuth<0] = 360 + surface_azimuth[surface_azimuth<0]
     
-    SurfTilt = pd.Series(90 - np.degrees(np.arccos(temp[:,2])), index=times)
+    surface_tilt = pd.Series(90 - np.degrees(np.arccos(temp[:,2])),
+                             index=times)
     
-    df_out = pd.DataFrame({'AOI':AOI, 'SurfAz':SurfAz, 'SurfTilt':SurfTilt},
+    df_out = pd.DataFrame({'tracker_theta':tracker_theta, 'aoi':AOI,
+                           'surface_azimuth':surface_azimuth,
+                           'surface_tilt':surface_tilt},
                           index=times)
     
-    #df_out[SunZen > 90] = np.nan
+    df_out[apparent_zenith > 90] = np.nan
     
     return df_out

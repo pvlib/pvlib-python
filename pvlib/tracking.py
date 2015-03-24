@@ -294,21 +294,37 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     # the positive y-axis.
     # Adjust to compass angles
     # (clockwise rotation from 0 along the positive y-axis)
-    surface_azimuth[surface_azimuth<=90] = 90 - surface_azimuth[surface_azimuth<=90]
-    surface_azimuth[surface_azimuth>90] = 450 - surface_azimuth[surface_azimuth>90]
+#    surface_azimuth[surface_azimuth<=90] = 90 - surface_azimuth[surface_azimuth<=90]
+#    surface_azimuth[surface_azimuth>90] = 450 - surface_azimuth[surface_azimuth>90]
 
     # finally rotate to align y-axis with true north
     # PVLIB_MATLAB has this latitude correction,
     # but I don't think it's latitude dependent if you always
     # specify axis_azimuth with respect to North.
-    if latitude > 0 or True:
-        surface_azimuth = surface_azimuth - axis_azimuth
-    else:
-        surface_azimuth = surface_azimuth - axis_azimuth - 180
-    surface_azimuth[surface_azimuth<0] = 360 + surface_azimuth[surface_azimuth<0]
+#     if latitude > 0 or True:
+#         surface_azimuth = surface_azimuth - axis_azimuth
+#     else:
+#         surface_azimuth = surface_azimuth - axis_azimuth - 180
+#     surface_azimuth[surface_azimuth<0] = 360 + surface_azimuth[surface_azimuth<0]
     
-    surface_tilt = pd.Series(90 - np.degrees(np.arccos(temp[:,2])),
-                             index=times)
+    # the commented code above is mostly part of PVLIB_MATLAB.
+    # My take is that after the q2,q3 correction, it's a little more simple.
+    # Say that we're pointing along the postive x axis (likely west).
+    # We just need to rotate 90 degrees to get from the x axis
+    # to the y axis (likely south),
+    # and then add the axis_azimuth to get back to North.
+    # Anything left over is the azimuth that we want,
+    # and we can map it into the [0,360) domain.
+
+    surface_azimuth += 90 + axis_azimuth
+
+    surface_azimuth[surface_azimuth<0] += 360
+    surface_azimuth[surface_azimuth>=360] -= 360
+    
+    surface_tilt = pd.Series(
+        90 - np.degrees(np.arccos(np.nansum(temp * projNorm, axis=1))),
+                             index=times
+                             )
     
     df_out = pd.DataFrame({'tracker_theta':tracker_theta, 'aoi':AOI,
                            'surface_azimuth':surface_azimuth,

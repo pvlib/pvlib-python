@@ -24,7 +24,7 @@ def test_solar_noon():
                                        gcr=2.0/7.0)
     
     expect = pd.DataFrame({'aoi': 10, 'surface_azimuth': np.nan,
-                           'surface_tilt': 90, 'tracker_theta': 0},
+                           'surface_tilt': 0, 'tracker_theta': 0},
                            index=[0], dtype=np.float64)
     
     assert_frame_equal(expect, tracker_data)
@@ -40,7 +40,7 @@ def test_azimuth_north_south():
                                        gcr=2.0/7.0)
     
     expect = pd.DataFrame({'aoi': 0, 'surface_azimuth': 90,
-                           'surface_tilt': 30, 'tracker_theta': -60},
+                           'surface_tilt': 60, 'tracker_theta': -60},
                            index=[0], dtype=np.float64)
                            
     assert_frame_equal(expect, tracker_data)
@@ -80,7 +80,7 @@ def test_backtrack():
                                        gcr=2.0/7.0)
     
     expect = pd.DataFrame({'aoi': 0, 'surface_azimuth': 90,
-                           'surface_tilt': 10, 'tracker_theta': 80},
+                           'surface_tilt': 80, 'tracker_theta': 80},
                            index=[0], dtype=np.float64)
     
     assert_frame_equal(expect, tracker_data)
@@ -91,7 +91,7 @@ def test_backtrack():
                                        gcr=2.0/7.0)
     
     expect = pd.DataFrame({'aoi': 52.5716, 'surface_azimuth': 90,
-                           'surface_tilt': 62.5716, 'tracker_theta': 27.4283},
+                           'surface_tilt': 27.42833, 'tracker_theta': 27.4283},
                            index=[0], dtype=np.float64)
     
     assert_frame_equal(expect, tracker_data)
@@ -106,8 +106,8 @@ def test_axis_tilt():
                                        max_angle=90, backtrack=True, 
                                        gcr=2.0/7.0)
     
-    expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 142.6573,
-                           'surface_tilt': 54.0125, 'tracker_theta': -20.88121},
+    expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 37.3427,
+                           'surface_tilt': 35.98741, 'tracker_theta': -20.88121},
                            index=[0], dtype=np.float64)
     
     assert_frame_equal(expect, tracker_data)
@@ -117,8 +117,8 @@ def test_axis_tilt():
                                        max_angle=90, backtrack=True, 
                                        gcr=2.0/7.0)
     
-    expect = pd.DataFrame({'aoi': 47.6632, 'surface_azimuth': 50.9696,
-                           'surface_tilt': 47.4847, 'tracker_theta': 31.6655},
+    expect = pd.DataFrame({'aoi': 47.6632, 'surface_azimuth': 129.0303,
+                           'surface_tilt': 42.5152, 'tracker_theta': 31.6655},
                            index=[0], dtype=np.float64)
     
     assert_frame_equal(expect, tracker_data)
@@ -134,7 +134,7 @@ def test_axis_azimuth():
                                        gcr=2.0/7.0)
     
     expect = pd.DataFrame({'aoi': 30, 'surface_azimuth': np.nan,
-                           'surface_tilt': 90, 'tracker_theta': 0},
+                           'surface_tilt': 0, 'tracker_theta': 0},
                            index=[0], dtype=np.float64)
     
     assert_frame_equal(expect, tracker_data)
@@ -147,8 +147,19 @@ def test_axis_azimuth():
                                        max_angle=90, backtrack=True, 
                                        gcr=2.0/7.0)
     
-    expect = pd.DataFrame({'aoi': 0, 'surface_azimuth': 0,
-                           'surface_tilt': 60, 'tracker_theta': 30},
+    expect = pd.DataFrame({'aoi': 0, 'surface_azimuth': 180,
+                           'surface_tilt': 30, 'tracker_theta': 30},
                            index=[0], dtype=np.float64)
     
     assert_frame_equal(expect, tracker_data)
+
+
+@raises(ValueError)
+def test_index_mismatch():
+    apparent_zenith = pd.Series([30])
+    apparent_azimuth = pd.Series([90,180])
+
+    tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                       axis_tilt=0, axis_azimuth=90,
+                                       max_angle=90, backtrack=True, 
+                                       gcr=2.0/7.0)

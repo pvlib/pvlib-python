@@ -5,6 +5,7 @@ pvl_logger = logging.getLogger('pvlib')
 
 import numpy as np
 import pandas as pd
+from pandas.util.testing import assert_index_equal
 
 from pvlib.tools import cosd, sind
 
@@ -51,7 +52,8 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     
     axis_azimuth : float
         A value denoting the compass direction along which
-        the axis of rotation lies, in decimal degrees. 
+        the axis of rotation lies.
+        Measured in decimal degrees East of North. 
     
     max_angle : float
         A value denoting the maximum rotation angle, in
@@ -99,7 +101,7 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     pvl_logger.debug('tracking.singleaxis')
     
     # MATLAB to Python conversion by 
-    # Will Holmgren, U. Arizona, March, 2015. @wholmgren
+    # Will Holmgren (@wholmgren), U. Arizona. March, 2015.
     
     # Calculate sun position x, y, z using coordinate system as in [1], Eq 2.
     
@@ -117,6 +119,12 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     # Rotate sun azimuth to coordinate system as in [1] 
     # to calculate sun position.
     
+    try:
+        assert_index_equal(apparent_azimuth.index, apparent_zenith.index)
+    except AssertionError:
+        raise ValueError('apparent_azimuth.index and ' +
+                         'apparent_zenith.index must match.')
+        
     times = apparent_azimuth.index
     
     az = apparent_azimuth - 180

@@ -23,7 +23,7 @@ def test_solar_noon():
                                        max_angle=90, backtrack=True, 
                                        gcr=2.0/7.0)
     
-    expect = pd.DataFrame({'aoi': 10, 'surface_azimuth': np.nan,
+    expect = pd.DataFrame({'aoi': 10, 'surface_azimuth': 90,
                            'surface_tilt': 0, 'tracker_theta': 0},
                            index=[0], dtype=np.float64)
     
@@ -133,7 +133,7 @@ def test_axis_azimuth():
                                        max_angle=90, backtrack=True, 
                                        gcr=2.0/7.0)
     
-    expect = pd.DataFrame({'aoi': 30, 'surface_azimuth': np.nan,
+    expect = pd.DataFrame({'aoi': 30, 'surface_azimuth': 180,
                            'surface_tilt': 0, 'tracker_theta': 0},
                            index=[0], dtype=np.float64)
     

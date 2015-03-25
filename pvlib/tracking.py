@@ -100,6 +100,14 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     
     pvl_logger.debug('tracking.singleaxis')
     
+    pvl_logger.debug(('axis_tilt={}, axis_azimuth={}, max_angle={}, ' +
+                      'backtrack={}, gcr={:.3f}')
+                     .format(axis_tilt, axis_azimuth, max_angle, backtrack,
+                             gcr))
+                             
+    pvl_logger.debug('\napparent_zenith=\n{}\napparent_azimuth=\n{}'
+                     .format(apparent_zenith.head(), apparent_azimuth.head()))
+    
     # MATLAB to Python conversion by 
     # Will Holmgren (@wholmgren), U. Arizona. March, 2015.
     
@@ -134,7 +142,7 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     z = sind(apparent_elevation)
     
     # translate array azimuth from compass bearing to [1] coord system
-    # wholmgren: strange to see axis_azimuth calculated differently from Az,
+    # wholmgren: strange to see axis_azimuth calculated differently from az,
     # (not that it matters, or at least it shouldn't...).
     axis_azimuth_south = axis_azimuth - 180
     pvl_logger.debug('axis_azimuth_south={}'.format(axis_azimuth_south))
@@ -176,20 +184,24 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     # a rotation toward the east is negative, and a rotation to the west is 
     # positive.
 
-    # can we use atan2 and avoid the tmp corrections?
+    # Use arctan2 and avoid the tmp corrections.
     
     # angle from x-y plane to projection of sun vector onto x-z plane
-    tmp = np.degrees(np.arctan(zp/xp))  
+#     tmp = np.degrees(np.arctan(zp/xp))
     
     # Obtain wid by translating tmp to convention for rotation angles.
     # Have to account for which quadrant of the x-z plane in which the sun 
     # vector lies.  Complete solution here but probably not necessary to 
     # consider QIII and QIV.
-    wid = pd.Series(index=times)
-    wid[(xp>=0) & (zp>=0)] =  90 - tmp[(xp>=0) & (zp>=0)]  # QI
-    wid[(xp<0)  & (zp>=0)] = -90 - tmp[(xp<0)  & (zp>=0)]  # QII
-    wid[(xp<0)  & (zp<0)]  = -90 - tmp[(xp<0)  & (zp<0)]   # QIII
-    wid[(xp>=0) & (zp<0)]  =  90 - tmp[(xp>=0) & (zp<0)]   # QIV
+#     wid = pd.Series(index=times)
+#     wid[(xp>=0) & (zp>=0)] =  90 - tmp[(xp>=0) & (zp>=0)]  # QI
+#     wid[(xp<0)  & (zp>=0)] = -90 - tmp[(xp<0)  & (zp>=0)]  # QII
+#     wid[(xp<0)  & (zp<0)]  = -90 - tmp[(xp<0)  & (zp<0)]   # QIII
+#     wid[(xp>=0) & (zp<0)]  =  90 - tmp[(xp>=0) & (zp<0)]   # QIV
+    
+    # Calculate angle from x-y plane to projection of sun vector onto x-z plane
+    # and then obtain wid by translating tmp to convention for rotation angles.
+    wid = pd.Series(90 - np.degrees(np.arctan2(zp, xp)), index=times)
     
     # filter for sun above panel horizon
     wid[zp <= 0] = np.nan
@@ -248,7 +260,7 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     rot_x = np.array([[1, 0, 0], 
                       [0, cosd(-axis_tilt), -sind(-axis_tilt)], 
                       [0, sind(-axis_tilt), cosd(-axis_tilt)]])
-    pvl_logger.debug('rot_x={}'.format(rot_x))
+    pvl_logger.debug('rot_x=\n{}'.format(rot_x))
     
     # panel_norm_earth contains the normal vector
     # expressed in earth-surface coordinates
@@ -279,19 +291,22 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
 
     # calculation of surface_azimuth
     # 1. Find the angle.
+#     surface_azimuth = pd.Series(
+#         np.degrees(np.arctan(projected_normal[:,1]/projected_normal[:,0])), 
+#                                 index=times)
     surface_azimuth = pd.Series(
-        np.degrees(np.arctan(projected_normal[:,1]/projected_normal[:,0])), 
+        np.degrees(np.arctan2(projected_normal[:,1], projected_normal[:,0])), 
                                 index=times)
     
     # 2. Clean up atan when x-coord or y-coord is zero
-    surface_azimuth[(projected_normal[:,0]==0) & (projected_normal[:,1]>0)] =  90
-    surface_azimuth[(projected_normal[:,0]==0) & (projected_normal[:,1]<0)] =  -90
-    surface_azimuth[(projected_normal[:,1]==0) & (projected_normal[:,0]>0)] =  0
-    surface_azimuth[(projected_normal[:,1]==0) & (projected_normal[:,0]<0)] = 180
+#     surface_azimuth[(projected_normal[:,0]==0) & (projected_normal[:,1]>0)] =  90
+#     surface_azimuth[(projected_normal[:,0]==0) & (projected_normal[:,1]<0)] =  -90
+#     surface_azimuth[(projected_normal[:,1]==0) & (projected_normal[:,0]>0)] =  0
+#     surface_azimuth[(projected_normal[:,1]==0) & (projected_normal[:,0]<0)] = 180
     
     # 3. Correct atan for QII and QIII
-    surface_azimuth[(projected_normal[:,0]<0) & (projected_normal[:,1]>0)] += 180 # QII
-    surface_azimuth[(projected_normal[:,0]<0) & (projected_normal[:,1]<0)] += 180 # QIII
+#     surface_azimuth[(projected_normal[:,0]<0) & (projected_normal[:,1]>0)] += 180 # QII
+#     surface_azimuth[(projected_normal[:,0]<0) & (projected_normal[:,1]<0)] += 180 # QIII
 
     # 4. Skip to below
 

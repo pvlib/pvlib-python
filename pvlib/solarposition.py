@@ -35,9 +35,9 @@ def get_solarposition(time, location, method='pyephem', pressure=101325,
         'spa' uses the spa code: :func:`spa`
 
         'ephemeris' uses the pvlib ephemeris code: :func:`ephemeris`
-    pressure : float [default: 101325]
+    pressure : float
         Pascals.
-    temperature : float [default: 12]
+    temperature : float
         Degrees C.
     """
 
@@ -223,10 +223,10 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     Other Parameters
     ----------------
 
-    pressure : float or DataFrame [default: 101325]
+    pressure : float or DataFrame
           Ambient pressure (Pascals)
 
-    temperature : float or DataFrame [default: 12]
+    temperature : float or DataFrame
           Ambient temperature (C)
 
     Returns

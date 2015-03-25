@@ -46,9 +46,11 @@ def get_solarposition(time, location, method='pyephem', pressure=101325,
         ephem_df = spa(time, location)
     elif method == 'pyephem':
         ephem_df = pyephem(time, location, pressure, temperature)
+    elif method == 'ephemeris':
+        ephem_df = ephemeris(time, location, pressure, temperature)
     else:
         raise ValueError('Invalid solar position method')
-        
+
     return ephem_df
 
 

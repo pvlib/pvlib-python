@@ -210,9 +210,9 @@ def pyephem(time, location, pressure=101325, temperature=12):
 
         
 def ephemeris(time, location, pressure=101325, temperature=12):
-    ''' 
+    '''
     Python-native solar position calculator.
-    The accuracy of this code is not guaranteed. 
+    The accuracy of this code is not guaranteed.
     Consider using the built-in spa_c code or the PyEphem library.
 
     Parameters
@@ -223,47 +223,45 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     Other Parameters
     ----------------
 
-    pressure : float or DataFrame
+    pressure : float or DataFrame [default: 101325]
           Ambient pressure (Pascals)
 
-    temperature : float or DataFrame
+    temperature : float or DataFrame [default: 12]
           Ambient temperature (C)
-      
+
     Returns
     -------
-    
+
     DataFrame with the following columns
-    
+
     SunEl : float of DataFrame
-        Actual elevation (not accounting for refraction)of the sun 
+        Actual elevation (not accounting for refraction)of the sun
         in decimal degrees, 0 = on horizon. The complement of the True Zenith
         Angle.
-        
-    SunAz : Azimuth of the sun in decimal degrees from North. 0 = North to 270 = West
-    
+
+    SunAz : Azimuth of the sun in decimal degrees from North.
+        0 = North, 90 = West, 180 = South, 270 = West
+
     SunZen : Solar zenith angle
 
     ApparentSunEl : float or DataFrame
 
-        Apparent sun elevation accounting for atmospheric 
+        Apparent sun elevation accounting for atmospheric
         refraction. This is the complement of the Apparent Zenith Angle.
 
     SolarTime : fload or DataFrame
         Solar time in decimal hours (solar noon is 12.00).
-        
+
 
     References
     -----------
 
-    Grover Hughes' class and related class materials on Engineering 
+    Grover Hughes' class and related class materials on Engineering
     Astronomy at Sandia National Laboratories, 1985.
 
     See also
     --------
-    pvl_makelocationstruct
-    pvl_alt2pres
-    pvl_getaoi 
-    pvl_spa
+    pyephem, spa
 
     '''
     

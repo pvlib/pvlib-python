@@ -73,6 +73,7 @@ Bug fixes
   the ``Kt`` conditional evaluation (:issue:`6`),
   and ignoring the input pressure (:issue:`25`).
 * Many more bug fixes were made, but you'll have to look at the detailed commit history.
+* Fixed inconsistent azimuth angle in the ephemeris function (:issue:`40`)
 
 
 Contributors

@@ -24,17 +24,20 @@ def get_solarposition(time, location, method='pyephem', pressure=101325,
                       temperature=12):
     """
     A convenience wrapper for the solar position calculators.
-    
+
     Parameters
     ----------
     time : pandas.DatetimeIndex
     location : pvlib.Location object
     method : string
-        'pyephem' uses the PyEphem package. Default.
-        'spa' uses the pvlib ephemeris code.
-    pressure : float
+        'pyephem' uses the PyEphem package (default): :func:`pyephem`
+
+        'spa' uses the spa code: :func:`spa`
+
+        'ephemeris' uses the pvlib ephemeris code: :func:`ephemeris`
+    pressure : float [default: 101325]
         Pascals.
-    temperature : float 
+    temperature : float [default: 12]
         Degrees C.
     """
     

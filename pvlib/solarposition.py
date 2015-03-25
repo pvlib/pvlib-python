@@ -375,8 +375,8 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     
     ApparentSunEl = SunEl + Refract
 
-    DFOut = pd.DataFrame({'elevation':SunEl}, index=time)
-    DFOut['azimuth'] = SunAz-180  #Changed RA Feb 18,2014 to match Duffe
+    DFOut = pd.DataFrame({'elevation': SunEl}, index=time)
+    DFOut['azimuth'] = SunAz
     DFOut['zenith'] = SunZen
     DFOut['apparent_elevation'] = ApparentSunEl
     DFOut['apparent_zenith'] = 90 - ApparentSunEl

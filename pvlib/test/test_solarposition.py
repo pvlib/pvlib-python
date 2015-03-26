@@ -110,6 +110,11 @@ def test_calc_time():
 def test_earthsun_distance():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1, freq='D')
     assert_almost_equals(1, solarposition.pyephem_earthsun_distance(times).values[0], 0)
-    
-        
+
+
+def test_ephemeris_functional():
+    solarposition.get_solarposition(
+        time=times, location=golden_mst, method='ephemeris')
+
+
 # add tests for daylight savings time?

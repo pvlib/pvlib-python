@@ -3,6 +3,11 @@ python:
     - 2.7
     - 3.3
     - 3.4
+env:
+    - PD_VERSION=0.13.1
+    - PD_VERSION="0.14.*"
+    - PD_VERSION="0.15.*"
+
 # setup miniconda for numpy, scipy, pandas
 before_install:
     - echo "before install"
@@ -19,7 +24,7 @@ before_install:
     
 install:
     - echo "install"
-    - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas nose pytz ephem
+    - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas=$PD_VERSION nose pytz ephem
     - conda install --yes coverage
     - pip install coveralls
     - python setup.py install

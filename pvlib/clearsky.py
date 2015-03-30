@@ -385,7 +385,7 @@ def disc(GHI, zenith, times, pressure=101325):
     
 
 def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True, 
-           temp_dew=None)
+           temp_dew=None):
     """
     Determine DNI from GHI using the DIRINT modification 
     of the DISC model.
@@ -461,13 +461,15 @@ def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True,
     # Note that we calculate the AM pressure correction slightly differently
     # than Perez. He uses altitude, we use pressure (which we calculate
     # slightly differently)
-    airmass = (1./(cosd(zenith) + 0.15*((93.885-zenith)**(-1.253))) * 
+    airmass = (1./(tools.cosd(zenith) + 0.15*((93.885-zenith)**(-1.253))) * 
                pressure/101325)
     
     coeffs = _get_dirint_coeffs()
     
     kt_prime = kt / (1.031 * np.exp(-1.4/(0.9+9.4/airmass)) + 0.1)
     kt_prime[kt_prime > 0.82] = 0.82 # From SRRL code. consider np.NaN
+    kt_prime.fillna(0, inplace=True)
+    logger.debug('kt_prime:\n{}'.format(kt_prime))
     
     # wholmgren: 
     # the use_delta_kt_prime statement is a port of the MATLAB code.
@@ -486,7 +488,10 @@ def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True,
     else:
         w = pd.Series(-1, index=times)
     
-    # Error check KtPrime and create KtPrime bins
+    # @wholmgren: the following bin assignments use MATLAB's 1-indexing.
+    # Later, we'll subtract 1 to conform to Python's 0-indexing.
+    
+    # Create kt_prime bins
     kt_prime_bin = pd.Series(index=times)
     kt_prime_bin[(kt_prime>=0) & (kt_prime<0.24)] = 1
     kt_prime_bin[(kt_prime>=0.24) & (kt_prime<0.4)] = 2
@@ -494,8 +499,9 @@ def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True,
     kt_prime_bin[(kt_prime>=0.56) & (kt_prime<0.7)] = 4
     kt_prime_bin[(kt_prime>=0.7) & (kt_prime<0.8)] = 5
     kt_prime_bin[(kt_prime>=0.8) & (kt_prime<=1)] = 6
+    logger.debug('kt_prime_bin:\n{}'.format(kt_prime_bin))
     
-    # Create Zenith angle bins
+    # Create zenith angle bins
     zenith_bin = pd.Series(index=times)
     zenith_bin[(zenith>=0) & (zenith<25)] = 1
     zenith_bin[(zenith>=25) & (zenith<40)] = 2
@@ -503,16 +509,18 @@ def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True,
     zenith_bin[(zenith>=55) & (zenith<70)] = 4
     zenith_bin[(zenith>=70) & (zenith<80)] = 5
     zenith_bin[(zenith>=80)] = 6
+    logger.debug('zenith_bin:\n{}'.format(zenith_bin))
     
-    # Create the bins for W based on dew point temperature
+    # Create the bins for w based on dew point temperature
     w_bin = pd.Series(index=times)
     w_bin[(w>=0) & (w<1)] = 1
     w_bin[(w>=1) & (w<2)] = 2
     w_bin[(w>=2) & (w<3)] = 3
     w_bin[(w>=3)] = 4
     w_bin[(w == -1)] = 5
+    logger.debug('w_bin:\n{}'.format(w_bin))
 
-    # Error check values of DelKtPrime, and create DelKtPrime binning.
+    # Create delta_kt_prime binning.
     delta_kt_prime_bin = pd.Series(index=times)
     delta_kt_prime_bin[(delta_kt_prime>=0) & (delta_kt_prime<0.015)] = 1
     delta_kt_prime_bin[(delta_kt_prime>=0.015) & (delta_kt_prime<0.035)] = 2
@@ -521,9 +529,12 @@ def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True,
     delta_kt_prime_bin[(delta_kt_prime>=0.15) & (delta_kt_prime<0.3)] = 5
     delta_kt_prime_bin[(delta_kt_prime>=0.3) & (delta_kt_prime<=1)] = 6
     delta_kt_prime_bin[delta_kt_prime == -1] = 7
+    logger.debug('delta_kt_prime_bin:\n{}'.format(delta_kt_prime_bin))
     
-    dirint_coeffs = coeffs[kt_prime_bin, zenith_bin,
-                           delta_kt_prime_bin, w_bin]
+    # subtract 1 to account for difference between MATLAB-style bin
+    # assignment and Python-style array lookup.
+    dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
+                           delta_kt_prime_bin-1, w_bin-1]
     
     dni = disc_out['DNI_gen_DISC'] * dirint_coeffs
     
@@ -536,9 +547,14 @@ def _get_dirint_coeffs():
     
     Returns
     -------
-    np.array with shape ``(7, 7, 7, 5)``. The MATLAB indicies are preserved,
-    meaning that 0 padding has been added to the "left" side of the array(s).
+    np.array with shape ``(6, 6, 7, 5)``.
+    Ordering is ``[kt_prime_bin, zenith_bin, delta_kt_prime_bin, w_bin]``
     """
+    
+    
+    # To allow for maximum copy/paste from the MATLAB 1-indexed code, 
+    # we create and assign values to an oversized array.
+    # Then, we return the [1:, 1:, :, :] slice.
     
     coeffs = np.zeros((7,7,7,5))
     
@@ -866,5 +882,5 @@ def _get_dirint_coeffs():
         [0.475230, 0.500000, 0.518640, 0.339970, 0.520230],
         [0.743440, 0.592190, 0.603060, 0.316930, 0.794390 ]]
         
-    return coeffs
+    return coeffs[1:,1:,:,:]
     

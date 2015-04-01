@@ -323,24 +323,24 @@ def ephemeris(time, location, pressure=101325, temperature=12):
 
     while np.max(abs(EccenAnom - E)) > 0.0001:
         E = EccenAnom
-        EccenAnom = MeanAnom + np.degrees(Eccen) * (np.sin(np.radians(E)))
+        EccenAnom = MeanAnom + np.degrees(Eccen)*np.sin(np.radians(E))
 
     TrueAnom = (
         2 * np.mod(np.degrees(np.arctan2(((1 + Eccen) / (1 - Eccen)) ** 0.5 *
                    np.tan(np.radians(EccenAnom) / 2.), 1)), 360))
     EcLon = np.mod(MlPerigee + TrueAnom, 360) - Abber
     EcLonR = np.radians(EcLon)
-    DecR = np.arcsin(np.sin(ObliquityR)*(np.sin(EcLonR)))
+    DecR = np.arcsin(np.sin(ObliquityR)*np.sin(EcLonR))
 
-    RtAscen = np.degrees(np.arctan2(np.cos(ObliquityR) * ((np.sin(EcLonR))),
-                                    np.cos(EcLonR)))
+    RtAscen = np.degrees(np.arctan2(np.cos(ObliquityR)*np.sin(EcLonR),
+                                    np.cos(EcLonR) ))
 
     HrAngle = LocAST - RtAscen
     HrAngleR = np.radians(HrAngle)
     HrAngle = HrAngle - (360 * ((abs(HrAngle) > 180)))
     
-    SunAz = np.degrees(np.arctan2(- 1 * np.sin(HrAngleR), np.cos(LatR) *
-                       (np.tan(DecR)) - np.sin(LatR)*(np.cos(HrAngleR))))
+    SunAz = np.degrees(np.arctan2(-np.sin(HrAngleR),
+        np.cos(LatR)*np.tan(DecR) - np.sin(LatR)*np.cos(HrAngleR) ))
     SunAz[SunAz < 0] += 360
 
     SunEl = np.degrees(np.arcsin(
@@ -355,7 +355,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     Refract = pd.Series(0, index=time_utc)
 
     Refract[(Elevation > 5) & (Elevation <= 85)] = (
-        58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5))
+        58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5) )
 
     Refract[(Elevation > -0.575) & (Elevation <= 5)] = ( Elevation *
         (-518.2 + Elevation*(103.4 + Elevation*(-12.79 + Elevation*0.711))) +

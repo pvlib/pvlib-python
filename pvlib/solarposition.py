@@ -219,26 +219,26 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     ----------
     time : pandas.DatetimeIndex
     location : pvlib.Location
-    pressure : float or DataFrame
-          Ambient pressure (Pascals)
-
-    temperature : float or DataFrame
-          Ambient temperature (C)
+    pressure : float or Series
+        Ambient pressure (Pascals)
+    temperature : float or Series
+        Ambient temperature (C)
 
     Returns
     -------
 
     DataFrame with the following columns:
 
-        * elevation : actual elevation (not accounting for refraction) of the sun
-          in decimal degrees, 0 = on horizon. The complement of the zenith
-          angle.
+        * apparent_elevation : apparent sun elevation accounting for
+          atmospheric refraction.
+        * elevation : actual elevation (not accounting for refraction)
+          of the sun in decimal degrees, 0 = on horizon.
+          The complement of the zenith angle.
         * azimuth : Azimuth of the sun in decimal degrees East of North.
-        * zenith : Solar zenith angle
-        * apparent_elevation : apparent sun elevation accounting for atmospheric
-          refraction. This is the complement of the Apparent Zenith Angle.
+          This is the complement of the apparent zenith angle.
         * apparent_zenith : apparent sun zenith accounting for atmospheric
           refraction.
+        * zenith : Solar zenith angle
         * solar_time : Solar time in decimal hours (solar noon is 12.00).
 
     References
@@ -250,7 +250,6 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     See also
     --------
     pyephem, spa
-
     '''
 
     # Added by Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
@@ -369,11 +368,11 @@ def ephemeris(time, location, pressure=101325, temperature=12):
 
     # make output DataFrame
     DFOut = pd.DataFrame(index=time_utc).tz_convert(location.tz)
+    DFOut['apparent_elevation'] = ApparentSunEl
     DFOut['elevation'] = SunEl
     DFOut['azimuth'] = SunAz
-    DFOut['zenith'] = 90 - SunEl
-    DFOut['apparent_elevation'] = ApparentSunEl
     DFOut['apparent_zenith'] = 90 - ApparentSunEl
+    DFOut['zenith'] = 90 - SunEl
     DFOut['solar_time'] = SolarTime
 
     return DFOut

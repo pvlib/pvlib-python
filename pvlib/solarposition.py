@@ -271,6 +271,8 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     # Most comments in this function are from PVLIB_MATLAB or from
     # pvlib-python's attempt to understand and fix problems with the
     # algorithm. The comments are *not* based on the reference material.
+    # This helps a little bit:
+    # http://www.cv.nrao.edu/~rfisher/Ephemerides/times.html
 
     pvl_logger.warning('Using solarposition.ephemeris is discouraged. '
                        'solarposition.pyephem and solarposition.spa are '
@@ -301,15 +303,14 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     
     # strip out the day of the year and calculate the decimal hour
     DayOfYear = time_utc.dayofyear
-    DecHours = (time_utc.hour + time_utc.minute/60. + time_utc.second/3600.
+    DecHours = (time_utc.hour + time_utc.minute/60. + time_utc.second/3600. +
                 time_utc.microsecond/3600.e6)
 
     UnivDate = DayOfYear
     UnivHr = DecHours
 
     Yr = Year - 1900
-
-    YrBegin = 365 * Yr + np.floor((Yr - 1) / float(4)) - 0.5
+    YrBegin = 365 * Yr + np.floor((Yr - 1) / 4.) - 0.5
 
     Ezero = YrBegin + UnivDate
     T = Ezero / 36525.
@@ -318,7 +319,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     GMST0 = 6 / 24. + 38 / 1440. + (
         45.836 + 8640184.542 * T + 0.0929 * T ** 2) / 86400.
     GMST0 = 360 * (GMST0 - np.floor(GMST0))
-    GMSTi = np.mod(GMST0 + 360 * (1.0027379093 * UnivHr / float(24)), 360)
+    GMSTi = np.mod(GMST0 + 360 * (1.0027379093 * UnivHr / 24.), 360)
 
     LocAST = np.mod((360 + GMSTi - Longitude), 360)
     EpochDate = Ezero + UnivHr / 24.
@@ -357,7 +358,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     # potential error in the following line
     SunEl = np.degrees(np.arcsin((np.cos(LatR) * (np.cos(DecR)) *
                        (np.cos(HrAngleR)) + np.sin(LatR)*(np.sin(DecR)))))
-    SolarTime = (180 + HrAngle) / float(15)
+    SolarTime = (180 + HrAngle) / 15.
 
     # replace with conditional array assignment
     Refract = []
@@ -375,7 +376,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
         else:
             Refract.append(0)
 
-    Refract = (np.array(Refract) * ((283 / float(273 + temperature))) *
+    Refract = (np.array(Refract) * ((283 / (273. + temperature))) *
                pressure / 101325. / 3600.)
 
     SunZen = 90 - SunEl

@@ -219,10 +219,6 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     ----------
     time : pandas.DatetimeIndex
     location : pvlib.Location
-
-    Other Parameters
-    ----------------
-
     pressure : float or DataFrame
           Ambient pressure (Pascals)
 
@@ -232,26 +228,18 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     Returns
     -------
 
-    DataFrame with the following columns
+    DataFrame with the following columns:
 
-    SunEl : float of DataFrame
-        Actual elevation (not accounting for refraction)of the sun
-        in decimal degrees, 0 = on horizon. The complement of the True Zenith
-        Angle.
-
-    SunAz : Azimuth of the sun in decimal degrees from North.
-        0 = North, 90 = West, 180 = South, 270 = West
-
-    SunZen : Solar zenith angle
-
-    ApparentSunEl : float or DataFrame
-
-        Apparent sun elevation accounting for atmospheric
-        refraction. This is the complement of the Apparent Zenith Angle.
-
-    SolarTime : fload or DataFrame
-        Solar time in decimal hours (solar noon is 12.00).
-
+        * elevation : actual elevation (not accounting for refraction) of the sun
+          in decimal degrees, 0 = on horizon. The complement of the zenith
+          angle.
+        * azimuth : Azimuth of the sun in decimal degrees East of North.
+        * zenith : Solar zenith angle
+        * apparent_elevation : apparent sun elevation accounting for atmospheric
+          refraction. This is the complement of the Apparent Zenith Angle.
+        * apparent_zenith : apparent sun zenith accounting for atmospheric
+          refraction.
+        * solar_time : Solar time in decimal hours (solar noon is 12.00).
 
     References
     -----------
@@ -274,10 +262,6 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     # This helps a little bit:
     # http://www.cv.nrao.edu/~rfisher/Ephemerides/times.html
 
-    pvl_logger.warning('Using solarposition.ephemeris is discouraged. '
-                       'solarposition.pyephem and solarposition.spa are '
-                       'faster and more accurate.')
-
     pvl_logger.debug('location={}, temperature={}, pressure={}'.format(
         location, temperature, pressure))
 
@@ -290,7 +274,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     # to be inverted for use in the code.
     
     Latitude = location.latitude
-    Longitude = 1 * location.longitude
+    Longitude = -1 * location.longitude
     
     Abber = 20 / 3600.
     LatR = np.radians(Latitude)
@@ -388,7 +372,8 @@ def ephemeris(time, location, pressure=101325, temperature=12):
 
     ApparentSunEl = SunEl + Refract
 
-    DFOut = pd.DataFrame({'elevation': SunEl}, index=time)
+    DFOut = pd.DataFrame(index=time_utc).tz_convert(location.tz)
+    DFOut['elevation'] = SunEl
     DFOut['azimuth'] = SunAz
     DFOut['zenith'] = SunZen
     DFOut['apparent_elevation'] = ApparentSunEl

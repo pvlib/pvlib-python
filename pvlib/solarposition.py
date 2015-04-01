@@ -342,40 +342,36 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     SunAz = np.degrees(np.arctan2(- 1 * np.sin(HrAngleR), np.cos(LatR) *
                        (np.tan(DecR)) - np.sin(LatR)*(np.cos(HrAngleR))))
     SunAz[SunAz < 0] += 360
-    # potential error in the following line
-    SunEl = np.degrees(np.arcsin((np.cos(LatR) * (np.cos(DecR)) *
-                       (np.cos(HrAngleR)) + np.sin(LatR)*(np.sin(DecR)))))
-                       
+
+    SunEl = np.degrees(np.arcsin(
+        np.cos(LatR) * np.cos(DecR) * np.cos(HrAngleR) +
+        np.sin(LatR) * np.sin(DecR) ))
+           
     SolarTime = (180 + HrAngle) / 15.
 
     # Calculate refraction correction
-    # replace with conditional array assignment
-    Refract = []
-    for Elevation in SunEl:
-        TanEl = np.tan(np.radians(Elevation))
-        if Elevation > 5 and Elevation <= 85:
-            Refract.append((58.1 / float(TanEl) - 0.07 / float(TanEl ** 3) +
-                           8.6e-05 / float(TanEl ** 5)))
-        elif Elevation > -0.575 and Elevation <= 5:
-            Refract.append((Elevation * ((- 518.2 + Elevation *
-                           ((103.4 + Elevation * ((- 12.79 + Elevation *
-                                                   (0.711))))))) + 1735))
-        elif Elevation > -1 and Elevation <= -0.575:
-            Refract.append(- 20.774 / float(TanEl))
-        else:
-            Refract.append(0)
+    Elevation = SunEl
+    TanEl = pd.Series(np.tan(np.radians(Elevation)), index=time_utc)
+    Refract = pd.Series(0, index=time_utc)
 
-    Refract = (np.array(Refract) * ((283 / (273. + temperature))) *
-               pressure / 101325. / 3600.)
+    Refract[(Elevation > 5) & (Elevation <= 85)] = (
+        58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5))
 
-    SunZen = 90 - SunEl
+    Refract[(Elevation > -0.575) & (Elevation <= 5)] = ( Elevation *
+        (-518.2 + Elevation*(103.4 + Elevation*(-12.79 + Elevation*0.711))) +
+        1735 )
+
+    Refract[(Elevation > -1) & (Elevation <= -0.575)] = -20.774 / TanEl
+
+    Refract *= (283/(273. + temperature)) * (pressure/101325.) / 3600.
 
     ApparentSunEl = SunEl + Refract
 
+    # make output DataFrame
     DFOut = pd.DataFrame(index=time_utc).tz_convert(location.tz)
     DFOut['elevation'] = SunEl
     DFOut['azimuth'] = SunAz
-    DFOut['zenith'] = SunZen
+    DFOut['zenith'] = 90 - SunEl
     DFOut['apparent_elevation'] = ApparentSunEl
     DFOut['apparent_zenith'] = 90 - ApparentSunEl
     DFOut['solar_time'] = SolarTime

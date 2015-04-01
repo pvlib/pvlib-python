@@ -309,7 +309,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     UnivDate = DayOfYear
     UnivHr = DecHours
 
-    Yr = Year - 1900
+    Yr = time_utc.year - 1900
     YrBegin = 365 * Yr + np.floor((Yr - 1) / 4.) - 0.5
 
     Ezero = YrBegin + UnivDate
@@ -320,16 +320,19 @@ def ephemeris(time, location, pressure=101325, temperature=12):
         45.836 + 8640184.542 * T + 0.0929 * T ** 2) / 86400.
     GMST0 = 360 * (GMST0 - np.floor(GMST0))
     GMSTi = np.mod(GMST0 + 360 * (1.0027379093 * UnivHr / 24.), 360)
-
+    
+    # Local apparent sidereal time
     LocAST = np.mod((360 + GMSTi - Longitude), 360)
+
     EpochDate = Ezero + UnivHr / 24.
     T1 = EpochDate / 36525.
+    
     ObliquityR = np.radians(
         23.452294 - 0.0130125 * T1 - 1.64e-06 * T1 ** 2 + 5.03e-07 * T1 ** 3)
     MlPerigee = 281.22083 + 4.70684e-05 * EpochDate + 0.000453 * T1 ** 2 + (
         3e-06 * T1 ** 3)
     MeanAnom = np.mod((358.47583 + 0.985600267 * EpochDate - 0.00015 *
-                      T1 ** 2 - 3e-06 * T1 ** 3), 360)
+                       T1 ** 2 - 3e-06 * T1 ** 3), 360)
     Eccen = 0.01675104 - 4.18e-05 * T1 - 1.26e-07 * T1 ** 2
     EccenAnom = MeanAnom
     E = 0
@@ -340,7 +343,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
 
     TrueAnom = (
         2 * np.mod(np.degrees(np.arctan2(((1 + Eccen) / (1 - Eccen)) ** 0.5 *
-                   np.tan(np.radians(EccenAnom) / float(2)), 1)), 360))
+                   np.tan(np.radians(EccenAnom) / 2.), 1)), 360))
     EcLon = np.mod(MlPerigee + TrueAnom, 360) - Abber
     EcLonR = np.radians(EcLon)
     DecR = np.arcsin(np.sin(ObliquityR)*(np.sin(EcLonR)))
@@ -350,16 +353,18 @@ def ephemeris(time, location, pressure=101325, temperature=12):
 
     HrAngle = LocAST - RtAscen
     HrAngleR = np.radians(HrAngle)
-
     HrAngle = HrAngle - (360 * ((abs(HrAngle) > 180)))
+    
     SunAz = np.degrees(np.arctan2(- 1 * np.sin(HrAngleR), np.cos(LatR) *
                        (np.tan(DecR)) - np.sin(LatR)*(np.cos(HrAngleR))))
-    SunAz = SunAz + (SunAz < 0) * 360
+    SunAz[SunAz < 0] += 360
     # potential error in the following line
     SunEl = np.degrees(np.arcsin((np.cos(LatR) * (np.cos(DecR)) *
                        (np.cos(HrAngleR)) + np.sin(LatR)*(np.sin(DecR)))))
+                       
     SolarTime = (180 + HrAngle) / 15.
 
+    # Calculate refraction correction
     # replace with conditional array assignment
     Refract = []
     for Elevation in SunEl:

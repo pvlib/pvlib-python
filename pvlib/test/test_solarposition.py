@@ -117,4 +117,23 @@ def test_ephemeris_functional():
         time=times, location=golden_mst, method='ephemeris')
 
 
-# add tests for daylight savings time?
+def test_ephemeris_physical():
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
+                          periods=1, freq='D')
+    ephem_data = solarposition.ephemeris(times, golden_mst, pressure=82000,
+                                         temperature=11).ix[0]
+    
+    assert_almost_equals(50.111622, ephem_data['apparent_zenith'], 2)
+    assert_almost_equals(194.340241, ephem_data['azimuth'], 2)
+    assert_almost_equals(39.888378, ephem_data['apparent_elevation'], 2)
+
+
+def test_ephemeris_physical_dst():
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
+                          periods=1, freq='D')
+    ephem_data = solarposition.ephemeris(times, golden, pressure=82000,
+                                         temperature=11).ix[0]
+    
+    assert_almost_equals(50.111622, ephem_data['apparent_zenith'], 2)
+    assert_almost_equals(194.340241, ephem_data['azimuth'], 2)
+    assert_almost_equals(39.888378, ephem_data['apparent_elevation'], 2)

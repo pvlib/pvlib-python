@@ -10,6 +10,8 @@ from __future__ import division
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
+import datetime
+
 import numpy as np
 import pandas as pd
 
@@ -167,7 +169,7 @@ def _doy_to_timestamp(doy, epoch='2013-12-31'):
     -------
     pd.Timestamp
     """
-    return pd.Timestamp('2013-12-31') + pd.Timedelta(days=float(doy))
+    return pd.Timestamp('2013-12-31') + datetime.timedelta(days=float(doy))
 
 
 def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):

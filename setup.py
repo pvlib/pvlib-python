@@ -32,7 +32,7 @@ if not sys.version_info[:2] in ((2,7), (3,3), (3,4)):
 setuptools_kwargs = {
     'zip_safe': False,
     'install_requires': ['numpy >= 1.7.0',
-                         'pandas >= 0.15',
+                         'pandas >= 0.13.1',
                          'pytz',
                          'six',
                          'pyephem',

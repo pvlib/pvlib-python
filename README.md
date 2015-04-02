@@ -11,7 +11,12 @@ pvlib-python provides a set of documented functions for simulating the performan
 Documentation
 =============
 
-Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.org/en/latest/)
+Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.org/en/latest/).
+
+Development
+===========
+
+We need your help to make pvlib-python a great tool! Please see the [Development information wiki](https://github.com/pvlib/pvlib-python/wiki/Development-information) for more on how you can contribute.
 
 Quick Start
 ===========

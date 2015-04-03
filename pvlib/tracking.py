@@ -10,7 +10,7 @@ from pandas.util.testing import assert_index_equal
 from pvlib.tools import cosd, sind
 
 
-def singleaxis(apparent_zenith, apparent_azimuth, latitude=1, 
+def singleaxis(apparent_zenith, apparent_azimuth, 
                axis_tilt=0, axis_azimuth=0, max_angle=90, 
                backtrack=True, gcr=2.0/7.0):
     """
@@ -38,12 +38,6 @@ def singleaxis(apparent_zenith, apparent_azimuth, latitude=1,
     
     apparent_azimuth : Series
         Solar apparent azimuth angles in decimal degrees.
-    
-    latitude : float
-        A value denoting which hempisphere the tracker is
-        in. The exact latitude is NOT required, any positive number denotes
-        the northern hemisphere, any negative number denotes the southern
-        hemisphere, a value of 0 is assumed to be northern hemisphere.
     
     axis_tilt : float
         The tilt of the axis of rotation

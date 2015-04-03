@@ -335,7 +335,7 @@ def disc(GHI, zenith, times, pressure=101325):
 
     logger.debug('clearsky.disc')
     
-    temp = pd.DataFrame(index=times, columns=['A','B','C'])
+    temp = pd.DataFrame(index=times, columns=['A','B','C'], dtype=float)
 
     doy = times.dayofyear
     
@@ -355,16 +355,13 @@ def disc(GHI, zenith, times, pressure=101325):
     Kt = GHI / I0h
     Kt[Kt < 0] = 0
     Kt[Kt > 2] = np.NaN
-    
+
     temp.A[Kt > 0.6] = -5.743 + 21.77*(Kt[Kt > 0.6]) - 27.49*(Kt[Kt > 0.6] ** 2) + 11.56*(Kt[Kt > 0.6] ** 3)
     temp.B[Kt > 0.6] = 41.4 - 118.5*(Kt[Kt > 0.6]) + 66.05*(Kt[Kt > 0.6] ** 2) + 31.9*(Kt[Kt > 0.6] ** 3)
     temp.C[Kt > 0.6] = -47.01 + 184.2*(Kt[Kt > 0.6]) - 222.0 * Kt[Kt > 0.6] ** 2 + 73.81*(Kt[Kt > 0.6] ** 3)
     temp.A[Kt <= 0.6] = 0.512 - 1.56*(Kt[Kt <= 0.6]) + 2.286*(Kt[Kt <= 0.6] ** 2) - 2.222*(Kt[Kt <= 0.6] ** 3)
     temp.B[Kt <= 0.6] = 0.37 + 0.962*(Kt[Kt <= 0.6])
     temp.C[Kt <= 0.6] = -0.28 + 0.932*(Kt[Kt <= 0.6]) - 2.048*(Kt[Kt <= 0.6] ** 2)
-    
-    #return to numeric after masking operations 
-    temp = temp.astype(float)
 
     delKn = temp.A + temp.B * np.exp(temp.C*AM)
    
@@ -374,8 +371,7 @@ def disc(GHI, zenith, times, pressure=101325):
     DNI = Kn * I0
 
     DNI[zenith > 87] = np.NaN
-    DNI[GHI < 1] = np.NaN
-    DNI[DNI < 0] = np.NaN
+    DNI[(GHI < 0) | (DNI < 0)] = 0
 
     DFOut = pd.DataFrame({'DNI_gen_DISC':DNI})
     DFOut['Kt_gen_DISC'] = Kt
@@ -384,7 +380,7 @@ def disc(GHI, zenith, times, pressure=101325):
     return DFOut
     
 
-def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True, 
+def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True, 
            temp_dew=None):
     """
     Determine DNI from GHI using the DIRINT modification 
@@ -409,7 +405,7 @@ def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True,
     
     times : DatetimeIndex
         
-    pressure : pd.Series
+    pressure : float or pd.Series
         The site pressure in Pascal. 
         Pressure may be measured or an average pressure may be 
         calculated from site altitude.
@@ -537,6 +533,8 @@ def dirint(ghi, zenith, times, pressure, use_delta_kt_prime=True,
                            delta_kt_prime_bin-1, w_bin-1]
     
     dni = disc_out['DNI_gen_DISC'] * dirint_coeffs
+
+    dni.name = 'DNI_DIRINT'
     
     return dni
 

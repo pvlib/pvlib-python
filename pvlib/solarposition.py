@@ -219,39 +219,27 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     ----------
     time : pandas.DatetimeIndex
     location : pvlib.Location
-
-    Other Parameters
-    ----------------
-
-    pressure : float or DataFrame
-          Ambient pressure (Pascals)
-
-    temperature : float or DataFrame
-          Ambient temperature (C)
+    pressure : float or Series
+        Ambient pressure (Pascals)
+    temperature : float or Series
+        Ambient temperature (C)
 
     Returns
     -------
 
-    DataFrame with the following columns
+    DataFrame with the following columns:
 
-    SunEl : float of DataFrame
-        Actual elevation (not accounting for refraction)of the sun
-        in decimal degrees, 0 = on horizon. The complement of the True Zenith
-        Angle.
-
-    SunAz : Azimuth of the sun in decimal degrees from North.
-        0 = North, 90 = West, 180 = South, 270 = West
-
-    SunZen : Solar zenith angle
-
-    ApparentSunEl : float or DataFrame
-
-        Apparent sun elevation accounting for atmospheric
-        refraction. This is the complement of the Apparent Zenith Angle.
-
-    SolarTime : fload or DataFrame
-        Solar time in decimal hours (solar noon is 12.00).
-
+        * apparent_elevation : apparent sun elevation accounting for
+          atmospheric refraction.
+        * elevation : actual elevation (not accounting for refraction)
+          of the sun in decimal degrees, 0 = on horizon.
+          The complement of the zenith angle.
+        * azimuth : Azimuth of the sun in decimal degrees East of North.
+          This is the complement of the apparent zenith angle.
+        * apparent_zenith : apparent sun zenith accounting for atmospheric
+          refraction.
+        * zenith : Solar zenith angle
+        * solar_time : Solar time in decimal hours (solar noon is 12.00).
 
     References
     -----------
@@ -262,133 +250,129 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     See also
     --------
     pyephem, spa
-
     '''
 
     # Added by Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
     # Edited by Will Holmgren (@wholmgren), University of Arizona, 2014
-
-    pvl_logger.warning('Using solarposition.ephemeris is discouraged. '
-                       'solarposition.pyephem and solarposition.spa are '
-                       'faster and more accurate.')
+    
+    # Most comments in this function are from PVLIB_MATLAB or from
+    # pvlib-python's attempt to understand and fix problems with the
+    # algorithm. The comments are *not* based on the reference material.
+    # This helps a little bit:
+    # http://www.cv.nrao.edu/~rfisher/Ephemerides/times.html
 
     pvl_logger.debug('location={}, temperature={}, pressure={}'.format(
         location, temperature, pressure))
 
+    # the inversion of longitude is due to the fact that this code was
+    # originally written for the convention that positive longitude were for
+    # locations west of the prime meridian. However, the correct convention (as
+    # of 2009) is to use negative longitudes for locations west of the prime
+    # meridian. Therefore, the user should input longitude values under the
+    # correct convention (e.g. Albuquerque is at -106 longitude), but it needs
+    # to be inverted for use in the code.
+    
     Latitude = location.latitude
-    ''' the inversion of longitude is due to the fact that this code was
-    originally written for the convention that positive longitude were for
-    locations west of the prime meridian. However, the correct convention (as
-    of 2009) is to use negative longitudes for locations west of the prime
-    meridian. Therefore, the user should input longitude values under the
-    correct convention (e.g. Albuquerque is at -106 longitude), but it needs
-    to be inverted for use in the code.
-    '''
-    Latitude = location.latitude
-    Longitude = 1 * location.longitude
-    Year = time.year
-    Hour = time.hour
-    Minute = time.minute
-    Second = time.second
-    DayOfYear = time.dayofyear
-
-    DecHours = Hour + Minute / float(60) + Second / float(3600)
-
-    Abber = 20 / float(3600)
+    Longitude = -1 * location.longitude
+    
+    Abber = 20 / 3600.
     LatR = np.radians(Latitude)
-
-    # this code is needed to handle the new location.tz format string
-    try:
-        utc_offset = pytz.timezone(location.tz).utcoffset(
-            time[0]).total_seconds() / 3600.
-    except ValueError:
-        utc_offset = time.tzinfo.utcoffset(time[0]).total_seconds() / 3600.
-    pvl_logger.debug('utc_offset={}'.format(utc_offset))
+    
+    # the SPA algorithm needs time to be expressed in terms of
+    # decimal UTC hours of the day of the year.
+    
+    # first convert to utc
+    time_utc = localize_to_utc(time, location)
+    
+    # strip out the day of the year and calculate the decimal hour
+    DayOfYear = time_utc.dayofyear
+    DecHours = (time_utc.hour + time_utc.minute/60. + time_utc.second/3600. +
+                time_utc.microsecond/3600.e6)
 
     UnivDate = DayOfYear
+    UnivHr = DecHours
 
-    # ToDo: Will H: surprised to see the 0.5 here, but moving on...
-    UnivHr = DecHours + utc_offset - .5
-
-    Yr = Year - 1900
-
-    YrBegin = 365 * Yr + np.floor((Yr - 1) / float(4)) - 0.5
+    Yr = time_utc.year - 1900
+    YrBegin = 365 * Yr + np.floor((Yr - 1) / 4.) - 0.5
 
     Ezero = YrBegin + UnivDate
-    T = Ezero / float(36525)
-    GMST0 = 6 / float(24) + 38 / float(1440) + (
-        45.836 + 8640184.542 * T + 0.0929 * T ** 2) / float(86400)
+    T = Ezero / 36525.
+    
+    # Calculate Greenwich Mean Sidereal Time (GMST)
+    GMST0 = 6 / 24. + 38 / 1440. + (
+        45.836 + 8640184.542 * T + 0.0929 * T ** 2) / 86400.
     GMST0 = 360 * (GMST0 - np.floor(GMST0))
-    GMSTi = np.mod(GMST0 + 360 * (1.0027379093 * UnivHr / float(24)), 360)
-
+    GMSTi = np.mod(GMST0 + 360 * (1.0027379093 * UnivHr / 24.), 360)
+    
+    # Local apparent sidereal time
     LocAST = np.mod((360 + GMSTi - Longitude), 360)
-    EpochDate = Ezero + UnivHr / float(24)
-    T1 = EpochDate / float(36525)
+
+    EpochDate = Ezero + UnivHr / 24.
+    T1 = EpochDate / 36525.
+    
     ObliquityR = np.radians(
         23.452294 - 0.0130125 * T1 - 1.64e-06 * T1 ** 2 + 5.03e-07 * T1 ** 3)
     MlPerigee = 281.22083 + 4.70684e-05 * EpochDate + 0.000453 * T1 ** 2 + (
         3e-06 * T1 ** 3)
     MeanAnom = np.mod((358.47583 + 0.985600267 * EpochDate - 0.00015 *
-                      T1 ** 2 - 3e-06 * T1 ** 3), 360)
+                       T1 ** 2 - 3e-06 * T1 ** 3), 360)
     Eccen = 0.01675104 - 4.18e-05 * T1 - 1.26e-07 * T1 ** 2
     EccenAnom = MeanAnom
     E = 0
 
     while np.max(abs(EccenAnom - E)) > 0.0001:
         E = EccenAnom
-        EccenAnom = MeanAnom + np.degrees(Eccen) * (np.sin(np.radians(E)))
+        EccenAnom = MeanAnom + np.degrees(Eccen)*np.sin(np.radians(E))
 
-    # pdb.set_trace()
     TrueAnom = (
         2 * np.mod(np.degrees(np.arctan2(((1 + Eccen) / (1 - Eccen)) ** 0.5 *
-                   np.tan(np.radians(EccenAnom) / float(2)), 1)), 360))
+                   np.tan(np.radians(EccenAnom) / 2.), 1)), 360))
     EcLon = np.mod(MlPerigee + TrueAnom, 360) - Abber
     EcLonR = np.radians(EcLon)
-    DecR = np.arcsin(np.sin(ObliquityR)*(np.sin(EcLonR)))
+    DecR = np.arcsin(np.sin(ObliquityR)*np.sin(EcLonR))
 
-    RtAscen = np.degrees(np.arctan2(np.cos(ObliquityR) * ((np.sin(EcLonR))),
-                                    np.cos(EcLonR)))
+    RtAscen = np.degrees(np.arctan2(np.cos(ObliquityR)*np.sin(EcLonR),
+                                    np.cos(EcLonR) ))
 
     HrAngle = LocAST - RtAscen
     HrAngleR = np.radians(HrAngle)
-
     HrAngle = HrAngle - (360 * ((abs(HrAngle) > 180)))
-    SunAz = np.degrees(np.arctan2(- 1 * np.sin(HrAngleR), np.cos(LatR) *
-                       (np.tan(DecR)) - np.sin(LatR)*(np.cos(HrAngleR))))
-    SunAz = SunAz + (SunAz < 0) * 360
-    # potential error in the following line
-    SunEl = np.degrees(np.arcsin((np.cos(LatR) * (np.cos(DecR)) *
-                       (np.cos(HrAngleR)) + np.sin(LatR)*(np.sin(DecR)))))
-    SolarTime = (180 + HrAngle) / float(15)
+    
+    SunAz = np.degrees(np.arctan2(-np.sin(HrAngleR),
+        np.cos(LatR)*np.tan(DecR) - np.sin(LatR)*np.cos(HrAngleR) ))
+    SunAz[SunAz < 0] += 360
 
-    Refract = []
+    SunEl = np.degrees(np.arcsin(
+        np.cos(LatR) * np.cos(DecR) * np.cos(HrAngleR) +
+        np.sin(LatR) * np.sin(DecR) ))
+           
+    SolarTime = (180 + HrAngle) / 15.
 
-    for Elevation in SunEl:
-        TanEl = np.tan(np.radians(Elevation))
-        if Elevation > 5 and Elevation <= 85:
-            Refract.append((58.1 / float(TanEl) - 0.07 / float(TanEl ** 3) +
-                           8.6e-05 / float(TanEl ** 5)))
-        elif Elevation > -0.575 and Elevation <= 5:
-            Refract.append((Elevation * ((- 518.2 + Elevation *
-                           ((103.4 + Elevation * ((- 12.79 + Elevation *
-                                                   (0.711))))))) + 1735))
-        elif Elevation > -1 and Elevation <= -0.575:
-            Refract.append(- 20.774 / float(TanEl))
-        else:
-            Refract.append(0)
+    # Calculate refraction correction
+    Elevation = SunEl
+    TanEl = pd.Series(np.tan(np.radians(Elevation)), index=time_utc)
+    Refract = pd.Series(0, index=time_utc)
 
-    Refract = (np.array(Refract) * ((283 / float(273 + temperature))) *
-               pressure / float(101325) / float(3600))
+    Refract[(Elevation > 5) & (Elevation <= 85)] = (
+        58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5) )
 
-    SunZen = 90 - SunEl
+    Refract[(Elevation > -0.575) & (Elevation <= 5)] = ( Elevation *
+        (-518.2 + Elevation*(103.4 + Elevation*(-12.79 + Elevation*0.711))) +
+        1735 )
+
+    Refract[(Elevation > -1) & (Elevation <= -0.575)] = -20.774 / TanEl
+
+    Refract *= (283/(273. + temperature)) * (pressure/101325.) / 3600.
 
     ApparentSunEl = SunEl + Refract
 
-    DFOut = pd.DataFrame({'elevation': SunEl}, index=time)
-    DFOut['azimuth'] = SunAz
-    DFOut['zenith'] = SunZen
+    # make output DataFrame
+    DFOut = pd.DataFrame(index=time_utc).tz_convert(location.tz)
     DFOut['apparent_elevation'] = ApparentSunEl
+    DFOut['elevation'] = SunEl
+    DFOut['azimuth'] = SunAz
     DFOut['apparent_zenith'] = 90 - ApparentSunEl
+    DFOut['zenith'] = 90 - SunEl
     DFOut['solar_time'] = SolarTime
 
     return DFOut

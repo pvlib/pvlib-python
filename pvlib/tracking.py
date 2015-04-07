@@ -5,7 +5,6 @@ pvl_logger = logging.getLogger('pvlib')
 
 import numpy as np
 import pandas as pd
-from pandas.util.testing import assert_index_equal
 
 from pvlib.tools import cosd, sind
 
@@ -122,7 +121,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # to calculate sun position.
     
     try:
-        assert_index_equal(apparent_azimuth.index, apparent_zenith.index)
+        pd.util.testing.assert_index_equal(apparent_azimuth.index,
+                                           apparent_zenith.index)
     except AssertionError:
         raise ValueError('apparent_azimuth.index and ' +
                          'apparent_zenith.index must match.')

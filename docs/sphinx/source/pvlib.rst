@@ -56,7 +56,15 @@ tmy module
     :members:
     :undoc-members:
     :show-inheritance:
-    
+
+tracking module
+--------------------
+
+.. automodule:: pvlib.tracking
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 tools module
 --------------------
 

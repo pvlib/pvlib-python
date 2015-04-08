@@ -35,7 +35,6 @@ setuptools_kwargs = {
                          'pandas >= 0.13.1',
                          'pytz',
                          'six',
-                         'pyephem',
                          ],
     'scripts': [],
     'include_package_data': True

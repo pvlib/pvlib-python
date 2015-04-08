@@ -1,4 +1,5 @@
 import os
+import datetime as dt
 import logging
 pvl_logger = logging.getLogger('pvlib')
 try:
@@ -228,7 +229,88 @@ class SpaBase(object):
         npt.assert_almost_equal(
             np.array([[theta, theta0, e, e0, Phi]]).T, self.spa.solar_position(
                 unixtimes, lat, lon, elev, pressure, temp, delta_t, 
-                atmos_refract), 5)
+                atmos_refract)[:-1], 5)
+        npt.assert_almost_equal(
+            np.array([[v, alpha, delta]]).T, self.spa.solar_position(
+                unixtimes, lat, lon, elev, pressure, temp, delta_t, 
+                atmos_refract, sst=True)[:3], 5)
+
+    def test_equation_of_time(self):
+        eot = 14.64
+        M = self.spa.sun_mean_longitude(JME)
+        assert_almost_equals(eot, self.spa.equation_of_time(
+            M, alpha, dPsi, epsilon), 2)
+        
+
+    def test_transit_sunrise_sunset(self):
+        # tests at greenwich
+        times = pd.DatetimeIndex([dt.datetime(1996, 7, 5, 0),
+                                  dt.datetime(2004, 12, 4, 0)]
+                                 ).tz_localize('UTC').astype(int)*1.0/10**9
+        sunrise = pd.DatetimeIndex([dt.datetime(1996, 7, 5, 7, 8, 15),
+                                    dt.datetime(2004, 12, 4, 4, 38, 57)]
+                                   ).tz_localize('UTC').astype(int)*1.0/10**9
+        sunset = pd.DatetimeIndex([dt.datetime(1996, 7, 5, 17, 1, 4),
+                                   dt.datetime(2004, 12, 4, 19, 2, 2)]
+                                  ).tz_localize('UTC').astype(int)*1.0/10**9
+        result = self.spa.transit_sunrise_sunset(times, -35.0, 0.0, 64.0, 1)
+        npt.assert_almost_equal(sunrise/1e3, result[1]/1e3, 3)
+        npt.assert_almost_equal(sunset/1e3, result[2]/1e3, 3)
+
+
+        times = pd.DatetimeIndex([dt.datetime(1994, 1, 2),]
+                                 ).tz_localize('UTC').astype(int)*1.0/10**9
+        sunset = pd.DatetimeIndex([dt.datetime(1994, 1, 2, 16, 59, 55),]
+                                  ).tz_localize('UTC').astype(int)*1.0/10**9
+        sunrise = pd.DatetimeIndex([dt.datetime(1994, 1, 2, 7, 8, 12),]
+                                   ).tz_localize('UTC').astype(int)*1.0/10**9
+        result = self.spa.transit_sunrise_sunset(times, 35.0, 0.0, 64.0, 1)
+        npt.assert_almost_equal(sunrise/1e3, result[1]/1e3, 3)
+        npt.assert_almost_equal(sunset/1e3, result[2]/1e3, 3)
+
+        # tests from USNO
+        # Golden
+        times = pd.DatetimeIndex([dt.datetime(2015, 1, 2),
+                                  dt.datetime(2015, 4, 2),
+                                  dt.datetime(2015, 8, 2),
+                                  dt.datetime(2015, 12, 2),],
+                                 ).tz_localize('UTC').astype(int)*1.0/10**9
+        sunrise = pd.DatetimeIndex([dt.datetime(2015, 1, 2, 7, 19),
+                                    dt.datetime(2015, 4, 2, 5, 43),
+                                    dt.datetime(2015, 8, 2, 5, 1),
+                                    dt.datetime(2015, 12, 2, 7, 1),],
+                                   ).tz_localize('MST').astype(int)*1.0/10**9
+        sunset = pd.DatetimeIndex([dt.datetime(2015, 1, 2, 16, 49),
+                                   dt.datetime(2015, 4, 2, 18, 24),
+                                   dt.datetime(2015, 8, 2, 19, 10),
+                                   dt.datetime(2015, 12, 2, 16, 38),],
+                                  ).tz_localize('MST').astype(int)*1.0/10**9
+        result = self.spa.transit_sunrise_sunset(times, 39.0, -105.0, 64.0, 1)
+        npt.assert_almost_equal(sunrise/1e3, result[1]/1e3, 1)
+        npt.assert_almost_equal(sunset/1e3, result[2]/1e3, 1)
+        
+        # Beijing
+        times = pd.DatetimeIndex([dt.datetime(2015, 1, 2),
+                                  dt.datetime(2015, 4, 2),
+                                  dt.datetime(2015, 8, 2),
+                                  dt.datetime(2015, 12, 2),],
+                                 ).tz_localize('UTC').astype(int)*1.0/10**9
+        sunrise = pd.DatetimeIndex([dt.datetime(2015, 1, 2, 7, 36),
+                                    dt.datetime(2015, 4, 2, 5, 58),
+                                    dt.datetime(2015, 8, 2, 5, 13),
+                                    dt.datetime(2015, 12, 2, 7, 17),],
+                                   ).tz_localize('Asia/Shanghai'
+                                   ).astype(int)*1.0/10**9
+        sunset = pd.DatetimeIndex([dt.datetime(2015, 1, 2, 17, 0),
+                                   dt.datetime(2015, 4, 2, 18, 39),
+                                   dt.datetime(2015, 8, 2, 19, 28),
+                                   dt.datetime(2015, 12, 2, 16, 50),],
+                                  ).tz_localize('Asia/Shanghai'
+                                  ).astype(int)*1.0/10**9
+        result = self.spa.transit_sunrise_sunset(times, 39.917, 116.383, 64.0,1)
+        npt.assert_almost_equal(sunrise/1e3, result[1]/1e3, 1)
+        npt.assert_almost_equal(sunset/1e3, result[2]/1e3, 1)
+                
 
 
 class NumpySpaTest(unittest.TestCase, SpaBase):
@@ -267,6 +349,16 @@ class NumbaSpaTest(unittest.TestCase, SpaBase):
     def test_julian_day(self):
         assert_almost_equals(JD, self.spa.julian_day(unixtimes[0]), 6)
 
+    def test_solar_position_singlethreaded(self):
+        npt.assert_almost_equal(
+            np.array([[theta, theta0, e, e0, Phi]]).T, self.spa.solar_position(
+                unixtimes, lat, lon, elev, pressure, temp, delta_t, 
+                atmos_refract, numthreads=1)[:-1], 5)
+        npt.assert_almost_equal(
+            np.array([[v, alpha, delta]]).T, self.spa.solar_position(
+                unixtimes, lat, lon, elev, pressure, temp, delta_t, 
+                atmos_refract, numthreads=1, sst=True)[:3], 5)
+
     def test_solar_position_multithreaded(self):
         result = np.array([theta, theta0, e, e0, Phi])
         nresult = np.array([result, result, result]).T
@@ -275,5 +367,12 @@ class NumbaSpaTest(unittest.TestCase, SpaBase):
             nresult
             , self.spa.solar_position(
                 times, lat, lon, elev, pressure, temp, delta_t, 
-                atmos_refract, numthreads=8), 5)        
+                atmos_refract, numthreads=8)[:-1], 5)
+        result = np.array([v, alpha, delta])
+        nresult = np.array([result, result, result]).T
+        npt.assert_almost_equal(
+            nresult
+            , self.spa.solar_position(
+                times, lat, lon, elev, pressure, temp, delta_t, 
+                atmos_refract, numthreads=8, sst=True)[:3], 5)        
                                                                   

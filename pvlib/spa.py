@@ -1,5 +1,5 @@
 """
-Calculate the solar position using a translation of NREL SPA code either using
+Calculate the solar position using the NREL SPA algorithm either using
 numpy arrays or compiling the code to machine language with numba.
 """
 
@@ -17,13 +17,20 @@ pvl_logger = logging.getLogger('pvlib')
 import numpy as np
 
 
+# this block is a way to use an environment variable to switch between
+# compiling the functions with numba or just use numpy
 def nocompile(*args, **kwargs):
     return lambda func: func
 
 
 if os.getenv('PVLIB_USE_NUMBA', '0') != '0':
     try:
-        from numba import vectorize, jit, float64, guvectorize, __version__
+        from numba import jit, __version__
+    except ImportError:
+        warnings.warn('Could not import numba, falling back to numpy calculation')
+        jcompile = nocompile
+        USE_NUMBA = False
+    else:
         major, minor = __version__.split('.')[:2]
         if int(major + minor) >= 17:
             # need at least numba >= 0.17.0
@@ -33,10 +40,6 @@ if os.getenv('PVLIB_USE_NUMBA', '0') != '0':
             warnings.warn('Numba version must be >= 0.17.0, falling back to numpy')
             jcompile = nocompile
             USE_NUMBA = False
-    except ImportError:
-        warnings.warn('Could not import numba, falling back to numpy calculation')
-        jcompile = nocompile
-        USE_NUMBA = False
 else:
     jcompile = nocompile
     USE_NUMBA = False
@@ -442,7 +445,7 @@ def julian_day_dt(year, month, day, hour, minute, second, microsecond):
 
 @jcompile('float64(float64)', nopython=True)
 def julian_day(unixtime):
-    jd = unixtime*1.0/86400 + 2440587.5
+    jd = unixtime * 1.0 / 86400 + 2440587.5
     return jd
 
 
@@ -818,9 +821,10 @@ def topocentric_elevation_angle_without_atmosphere(observer_latitude,
 @jcompile('float64(float64, float64, float64, float64)', nopython=True)
 def atmospheric_refraction_correction(local_pressure, local_temp,
                                       topocentric_elevation_angle_wo_atmosphere,
-                                      atmos_refract
-                                      ):
-    switch = topocentric_elevation_angle_wo_atmosphere >= -1*(0.26667 + atmos_refract)
+                                      atmos_refract):
+    # switch sets delta_e when the sun is below the horizon
+    switch = topocentric_elevation_angle_wo_atmosphere >= -1.0 * (0.26667 + 
+                                                                  atmos_refract)
     delta_e = ((local_pressure / 1010.0) * (283.0 / (273 + local_temp))
                * 1.02 / (60 * np.tan(np.radians(
                    topocentric_elevation_angle_wo_atmosphere
@@ -862,6 +866,32 @@ def topocentric_azimuth_angle(topocentric_astronomers_azimuth):
     return phi % 360
 
 
+@jcompile('float64(float64)', nopython=True)
+def sun_mean_longitude(julian_ephemeris_millennium):
+    M = (280.4664567 + 360007.6982779 * julian_ephemeris_millennium
+         + 0.03032028 * julian_ephemeris_millennium**2 
+         + julian_ephemeris_millennium**3 / 49931
+         - julian_ephemeris_millennium**4 / 15300
+         - julian_ephemeris_millennium**5 / 2000000)
+    return M
+
+
+@jcompile('float64(float64, float64, float64, float64)', nopython=True)
+def equation_of_time(sun_mean_longitude, geocentric_sun_right_ascension,
+                     longitude_nutation, true_ecliptic_obliquity):
+    E = (sun_mean_longitude - 0.0057183 - geocentric_sun_right_ascension + 
+         longitude_nutation * np.cos(np.radians(true_ecliptic_obliquity)))
+    # limit between 0 and 360
+    E = E % 360
+    # convert to minutes
+    E *= 4
+    greater = E > 20
+    less = E < -20
+    other = (E <= 20) & (E >= -20)
+    E = greater * (E - 1440) + less * (E + 1440) + other * E
+    return E
+
+
 @jcompile('void(float64[:], float64[:], float64[:,:])', nopython=True, 
           nogil=True)
 def solar_position_loop(unixtime, loc_args, out):
@@ -873,6 +903,7 @@ def solar_position_loop(unixtime, loc_args, out):
     temp = loc_args[4]
     delta_t = loc_args[5]
     atmos_refract = loc_args[6]
+    sst = loc_args[7]
     
     for i in range(unixtime.shape[0]):
         utime = unixtime[i]
@@ -901,6 +932,13 @@ def solar_position_loop(unixtime, loc_args, out):
         v = apparent_sidereal_time(v0, delta_psi, epsilon)
         alpha = geocentric_sun_right_ascension(lamd, epsilon, beta)
         delta = geocentric_sun_declination(lamd, epsilon, beta)
+        if sst:
+            out[0,i] = v
+            out[1,i] = alpha
+            out[2,i] = delta
+            continue
+        m = sun_mean_longitude(jme)
+        eot = equation_of_time(m, alpha, delta_psi, epsilon)
         H = local_hour_angle(v, lon, alpha)
         xi = equatorial_horizontal_parallax(R)
         u = uterm(lat)
@@ -925,17 +963,20 @@ def solar_position_loop(unixtime, loc_args, out):
         out[2,i] = e
         out[3,i] = e0
         out[4,i] = phi
-
+        out[5,i] = eot
+        
 
 def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t, 
-                        atmos_refract, numthreads):
+                         atmos_refract, numthreads, sst=False):
     """Calculate the solar position using the numba compiled functions
     and multiple threads. Very slow if functions are not numba compiled.
     """
     loc_args = np.array([lat, lon, elev, pressure, temp, delta_t, 
-                         atmos_refract])
+                         atmos_refract, sst])
     ulength = unixtime.shape[0]
-    result = np.empty((5,ulength), dtype=np.float64)
+    result = np.empty((6,ulength), dtype=np.float64)
+    if unixtime.dtype != np.float64:
+        unixtime = unixtime.astype(np.float64)
 
     if ulength < numthreads:
         pvl_logger.warning('The number of threads is more than the length of' +
@@ -962,7 +1003,7 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
 
 def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t, 
-                         atmos_refract, numthreads):    
+                         atmos_refract, numthreads, sst=False):    
     """Calculate the solar position assuming unixtime is a numpy array. Note
     this function will not work if the solar position functions were 
     compiled with numba.
@@ -993,6 +1034,10 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     v = apparent_sidereal_time(v0, delta_psi, epsilon)
     alpha = geocentric_sun_right_ascension(lamd, epsilon, beta)
     delta = geocentric_sun_declination(lamd, epsilon, beta)
+    if sst:
+        return v, alpha, delta
+    m = sun_mean_longitude(jme)
+    eot = equation_of_time(m, alpha, delta_psi, epsilon)
     H = local_hour_angle(v, lon, alpha)
     xi = equatorial_horizontal_parallax(R)
     u = uterm(lat)
@@ -1010,19 +1055,19 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     theta0 = topocentric_zenith_angle(e0)
     gamma = topocentric_astronomers_azimuth(H_prime, delta_prime, lat)
     phi = topocentric_azimuth_angle(gamma)
-    return theta, theta0, e, e0, phi
+    return theta, theta0, e, e0, phi, eot
 
 
 def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,  
-                   atmos_refract, numthreads=8,):
+                   atmos_refract, numthreads=8, sst=False):
 
     """
-    Calculate the solar position using a translation of the
-    NREL SPA code.
+    Calculate the solar position using the
+    NREL SPA algorithm described in [1].
 
     If numba is installed, the functions can be compiled
     and the code runs quickly. If not, the functions 
-    still evaluate but use numpy instead
+    still evaluate but use numpy instead.
 
     Parameters
     ----------
@@ -1042,12 +1087,15 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     temp : int or float
         avg. yearly temperature at location in 
         degrees C; used for atmospheric correction
-    numthreads: int, optional
-        Number of threads to use for computation if numba>=0.17 
-        is installed.
     delta_t : float, optional
         Difference between terrestrial time and UT1.
         By default, use USNO historical data and predictions
+    atmos_refrac : float, optional
+        The approximate atmospheric refraction (in degrees)
+        at sunrise and sunset.
+    numthreads: int, optional
+        Number of threads to use for computation if numba>=0.17 
+        is installed.
 
     Returns
     -------
@@ -1056,7 +1104,8 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
         zenith,
         elevation,
         apparent_elevation,
-        azimuth
+        azimuth,
+        equation_of_time
 
     References
     ----------
@@ -1070,7 +1119,8 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
 
     result = do_calc(unixtime, lat, lon, elev, pressure, 
-                     temp, delta_t, atmos_refract, numthreads)
+                     temp, delta_t, atmos_refract, numthreads, 
+                     sst)
 
     if not isinstance(result, np.ndarray):
         try:
@@ -1079,3 +1129,111 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
             pass
 
     return result
+
+
+def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
+    """
+    Calculate the sun transit, sunrise, and sunset
+    for a set of dates at a given location.
+    
+    Parameters
+    ----------
+    dates : array
+        Numpy array of ints/floats corresponding to the Unix time
+        for the dates of interest, must be midnight UTC (00:00+00:00)
+        on the day of interest.
+    lat : float
+        Latitude of location to perform calculation for
+    lon : float
+        Longitude of location
+    delta_t : float
+        Difference between terrestrial time and UT. USNO has tables.
+    numthreads : int
+        Number to threads to use for calculation (if using numba)
+    
+    Returns
+    -------
+    tuple : (transit, sunrise, sunset) localized to UTC
+
+    """
+
+    if ((dates % 86400) != 0.0).any():
+        raise ValueError('Input dates must be at 00:00 UTC')
+
+    utday = (dates // 86400) * 86400
+    ttday0 = utday - delta_t
+    ttdayn1 = ttday0 - 86400
+    ttdayp1 = ttday0 + 86400
+    
+    #index 0 is v, 1 is alpha, 2 is delta
+    utday_res = solar_position(utday, 0, 0, 0, 0, 0, delta_t,
+                               0, numthreads, sst=True)
+    v = utday_res[0]
+
+    ttday0_res = solar_position(ttday0, 0, 0, 0, 0, 0, delta_t,
+                                0, numthreads, sst=True)
+    ttdayn1_res = solar_position(ttdayn1, 0, 0, 0, 0, 0, delta_t,
+                                 0, numthreads, sst=True)
+    ttdayp1_res = solar_position(ttdayp1, 0, 0, 0, 0, 0, delta_t,
+                                 0, numthreads, sst=True)
+    m0 = (ttday0_res[1] - lon - v) / 360
+    cos_arg = ((np.sin(np.radians(-0.8333)) - np.sin(np.radians(lat)) 
+               * np.sin(np.radians(ttday0_res[2]))) / 
+               (np.cos(np.radians(lat)) * np.cos(np.radians(ttday0_res[2]))))
+    cos_arg[abs(cos_arg) > 1] = np.nan
+    H0 = np.degrees(np.arccos(cos_arg)) % 180
+
+    m = np.empty((3, len(utday)))
+    m[0] = m0 % 1
+    m[1] = (m[0] - H0 / 360) #% 1
+    m[2] = (m[0] + H0 / 360) #% 1
+
+    # need to account for fractions of day that may be the next or previous
+    # day in UTC
+    add_a_day = m[2] >= 1
+    sub_a_day = m[1] < 0
+    m[1] = m[1] %1
+    m[2] = m[2] %1
+    vs = v + 360.985647 * m
+    n = m + delta_t / 86400
+
+    a = ttday0_res[1] - ttdayn1_res[1]
+    a[abs(a) > 2] = a[abs(a) > 2] % 1
+    ap = ttday0_res[2] - ttdayn1_res[2]
+    ap[abs(ap) > 2] = ap[abs(ap) > 2] % 1
+    b = ttdayp1_res[1] - ttday0_res[1]
+    b[abs(b) > 2] = b[abs(b) > 2] % 1
+    bp = ttdayp1_res[2] - ttday0_res[2]
+    bp[abs(bp) > 2] = bp[abs(bp) > 2] % 1
+    c = b - a
+    cp = bp - ap
+
+    alpha_prime = ttday0_res[1] + (n * (a + b + c * n)) / 2
+    delta_prime = ttday0_res[2] + (n * (ap + bp + cp * n)) / 2
+    Hp = (vs + lon - alpha_prime) % 360
+    Hp[Hp >= 180] = Hp[Hp >= 180] - 360
+
+    h = np.degrees(np.arcsin(np.sin(np.radians(lat)) *
+                             np.sin(np.radians(delta_prime)) +
+                             np.cos(np.radians(lat)) * 
+                             np.cos(np.radians(delta_prime))
+                             * np.cos(np.radians(Hp))))
+
+    T = (m[0] - Hp[0] / 360) * 86400 
+    R = (m[1] + (h[1] + 0.8333) / (360 * np.cos(np.radians(delta_prime[1])) *
+                                   np.cos(np.radians(lat)) *
+                                   np.sin(np.radians(Hp[1])))) * 86400
+    S = (m[2] + (h[2] + 0.8333) / (360 * np.cos(np.radians(delta_prime[2])) *
+                                   np.cos(np.radians(lat)) *
+                                   np.sin(np.radians(Hp[2])))) * 86400
+
+        
+    S[add_a_day] += 86400
+    R[sub_a_day] -= 86400
+        
+    transit = T + utday
+    sunrise = R + utday
+    sunset = S + utday
+    
+
+    return transit, sunrise, sunset

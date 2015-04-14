@@ -10,3 +10,4 @@ from pvlib import solarposition
 from pvlib import tmy
 from pvlib import tracking
 from pvlib import pvsystem
+from pvlib import spa

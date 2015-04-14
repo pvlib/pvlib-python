@@ -667,19 +667,19 @@ def sapm(Module, Eb, Ediff, Tcell, AM, AOI):
 def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     '''
     Estimate cell and module temperatures per the Sandia PV Array
-    Performance model (SAPM, SAND2004-3535), when given the incident
+    Performance Model (SAPM, SAND2004-3535), from the incident
     irradiance, wind speed, ambient temperature, and SAPM module
     parameters.
 
     Parameters
     ----------
-    irrad : float or DataFrame
+    irrad : float or Series
         Total incident irradiance in W/m^2.
 
-    wind : float or DataFrame
+    wind : float or Series
         Wind speed in m/s at a height of 10 meters.
 
-    temp : float or DataFrame
+    temp : float or Series
         Ambient dry bulb temperature in degrees C.
 
     model : string or list
@@ -687,29 +687,29 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
         
         If string, can be:
 
-            * 'Open_rack_cell_glassback' (DEFAULT)
-            * 'Roof_mount_cell_glassback'
-            * 'Open_rack_cell_polymerback'
-            * 'Insulated_back_polumerback'
-            * 'Open_rack_Polymer_thinfilm_steel'
-            * '22X_Concentrator_tracker'
+            * 'open_rack_cell_glassback' (default)
+            * 'roof_mount_cell_glassback'
+            * 'open_rack_cell_polymerback'
+            * 'insulated_back_polymerback'
+            * 'open_rack_polymer_thinfilm_steel'
+            * '22x_concentrator_tracker'
     
         If list, supply the following parameters in the following order:
         
             * a : float
-                  SAPM module parameter for establishing the upper limit for module 
-                  temperature at low wind speeds and high solar irradiance (see SAPM
-                  eqn. 11).
+                SAPM module parameter for establishing the upper
+                limit for module temperature at low wind speeds and
+                high solar irradiance.
             
             * b : float
-                SAPM module parameter for establishing the rate at which the module
-                temperature drops as wind speed increases (see SAPM eqn. 11). Must be
-                a scalar.
+                SAPM module parameter for establishing the rate at
+                which the module temperature drops as wind speed increases
+                (see SAPM eqn. 11).
 
             * deltaT : float
                 SAPM module parameter giving the temperature difference
-                between the cell and module back surface at the reference irradiance,
-                E0. 
+                between the cell and module back surface at the
+                reference irradiance, E0.
 
     Returns
     --------
@@ -725,12 +725,12 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     sapm
     '''
 
-    temp_models = {'open_rack_cell_glassback':[-3.47, -.0594, 3],
-                   'roof_mount_cell_glassback':[-2.98, -.0471, 1],
+    temp_models = {'open_rack_cell_glassback': [-3.47, -.0594, 3],
+                   'roof_mount_cell_glassback': [-2.98, -.0471, 1],
                    'open_rack_cell_polymerback': [-3.56, -.0750, 3],
-                   'insulated_back_polumerback': [-2.81, -.0455, 0 ],
-                   'open_rack_polymer_thinfilm_steel':[-3.58, -.113, 3],
-                   '22x_concentrator_tracker':[-3.23, -.130, 13]
+                   'insulated_back_polymerback': [-2.81, -.0455, 0],
+                   'open_rack_polymer_thinfilm_steel': [-3.58, -.113, 3],
+                   '22x_concentrator_tracker': [-3.23, -.130, 13]
                   }
     
     if isinstance(model, str):                  

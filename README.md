@@ -81,6 +81,10 @@ import logging
 logging.getLogger('pvlib').setLevel(logging.DEBUG) # or at least INFO
 ```
 
+License
+=======
+3 clause BSD.
+
 
 Testing
 ============

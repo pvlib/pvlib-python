@@ -600,34 +600,45 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
         * Voc : Open-circuit voltage (V)
         * Vmp : Voltage at maximum-power point (V)
         * Pmp : Power at maximum-power point (W)
-        * Ix : Current at module V = 0.5Voc, defines 4th point on I-V curve for modeling curve shape
-        * Ixx : Current at module V = 0.5(Voc+Vmp), defines 5th point on I-V curve for modeling curve shape
+        * Ix : Current at module V = 0.5Voc, defines 4th point on I-V
+          curve for modeling curve shape
+        * Ixx : Current at module V = 0.5(Voc+Vmp), defines 5th point on
+          I-V curve for modeling curve shape
         * Ee : Effective irradiance
 
     Notes
     -----
     The coefficients from SAPM which are required in ``module`` are:
 
-    ========   ======================================================================================================================
+    ========   ===============================================================
     Key        Description
-    ========   ======================================================================================================================
-    A0-A4      The airmass coefficients used in calculating effective irradiance
-    B0-B5      The angle of incidence coefficients used in calculating effective irradiance
-    C0-C7      The empirically determined coefficients relating Imp, Vmp, Ix, and Ixx to effective irradiance
+    ========   ===============================================================
+    A0-A4      The airmass coefficients used in calculating
+               effective irradiance
+    B0-B5      The angle of incidence coefficients used in calculating
+               effective irradiance
+    C0-C7      The empirically determined coefficients relating
+               Imp, Vmp, Ix, and Ixx to effective irradiance
     Isco       Short circuit current at reference condition (amps)
     Impo       Maximum power current at reference condition (amps)
-    Aisc       Short circuit current temperature coefficient at reference condition (1/C)
-    Aimp       Maximum power current temperature coefficient at reference condition (1/C)
-    Bvoc       Open circuit voltage temperature coefficient at reference condition (V/C)
-    Mbvoc      Coefficient providing the irradiance dependence for the BetaVoc temperature coefficient at reference irradiance (V/C)
-    Bvmpo      Maximum power voltage temperature coefficient at reference condition
-    Mbvmp      Coefficient providing the irradiance dependence for the BetaVmp temperature coefficient at reference irradiance (V/C)
+    Aisc       Short circuit current temperature coefficient at
+               reference condition (1/C)
+    Aimp       Maximum power current temperature coefficient at
+               reference condition (1/C)
+    Bvoc       Open circuit voltage temperature coefficient at
+               reference condition (V/C)
+    Mbvoc      Coefficient providing the irradiance dependence for the BetaVoc
+               temperature coefficient at reference irradiance (V/C)
+    Bvmpo      Maximum power voltage temperature coefficient at
+               reference condition
+    Mbvmp      Coefficient providing the irradiance dependence for the
+               BetaVmp temperature coefficient at reference irradiance (V/C)
     N          Empirically determined "diode factor" (dimensionless)
     #Series    Number of cells in series in a module's cell string(s)
     IXO        Ix at reference conditions
     IXXO       Ixx at reference conditions
     FD         Fraction of diffuse irradiance used by module
-    ========   ======================================================================================================================
+    ========   ===============================================================
 
     References
     ----------

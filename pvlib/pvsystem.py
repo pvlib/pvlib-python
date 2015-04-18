@@ -602,6 +602,7 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
         * Pmp : Power at maximum-power point (W)
         * Ix : Current at module V = 0.5Voc, defines 4th point on I-V curve for modeling curve shape
         * Ixx : Current at module V = 0.5(Voc+Vmp), defines 5th point on I-V curve for modeling curve shape
+        * Ee : Effective irradiance
 
     Notes
     -----
@@ -688,6 +689,8 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     dfout['Ixx'] = ( module['IXXO'] *
         (module['C6']*Ee + module['C7']*(Ee**2)) *
         (1 + module['Aisc']*(temp_cell - T0)) )
+
+    dfout['Ee'] = Ee
 
     return dfout
 

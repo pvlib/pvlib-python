@@ -31,8 +31,8 @@ def systemdef(meta, surftilt, surfaz, albedo, series_modules,
     ----------
 
     meta : dict
-        meta dict either generated from a TMY file using readtmy2 or readtmy3, or
-        a dict containing at least the following fields: 
+        meta dict either generated from a TMY file using readtmy2 or readtmy3,
+        or a dict containing at least the following fields: 
 
             ===============   ======  ====================  
             meta field        format  description
@@ -83,7 +83,6 @@ def systemdef(meta, surftilt, surfaz, albedo, series_modules,
             * 'TZ'
             * 'name'
             * 'altitude'
-
 
     See also
     --------
@@ -241,13 +240,21 @@ def physicaliam(K, L, n, theta):
     '''
     thetar_deg = tools.asind(1.0 / n*(tools.sind(theta)))
 
-    tau = np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg)))*((1 - 0.5*((((tools.sind(thetar_deg - theta)) ** 2) / ((tools.sind(thetar_deg + theta)) ** 2) + ((tools.tand(thetar_deg - theta)) ** 2) / ((tools.tand(thetar_deg + theta)) ** 2)))))
+    tau = ( np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) *
+            ((1 - 0.5*((((tools.sind(thetar_deg - theta)) ** 2) /
+            ((tools.sind(thetar_deg + theta)) ** 2) +
+            ((tools.tand(thetar_deg - theta)) ** 2) /
+            ((tools.tand(thetar_deg + theta)) ** 2))))) )
     
     zeroang = 1e-06
     
     thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
     
-    tau0 = np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg0)))*((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) / ((tools.sind(thetar_deg0 + zeroang)) ** 2) + ((tools.tand(thetar_deg0 - zeroang)) ** 2) / ((tools.tand(thetar_deg0 + zeroang)) ** 2)))))
+    tau0 = ( np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg0))) *
+             ((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) /
+             ((tools.sind(thetar_deg0 + zeroang)) ** 2) +
+             ((tools.tand(thetar_deg0 - zeroang)) ** 2) /
+             ((tools.tand(thetar_deg0 + zeroang)) ** 2))))) )
     
     IAM = tau / tau0
     
@@ -274,26 +281,28 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
     Parameters
     ----------
     S : float or DataFrame
-        The irradiance (in W/m^2) absorbed by the module. S must be >= 0.
-        Due to a division by S in the script, any S value equal to 0 will be set to 1E-10.
+        The irradiance (in W/m^2) absorbed by the module.
 
     Tcell : float or DataFrame
         The average cell temperature of cells within a module in C.
-        Tcell must be >= -273.15.
 
     alpha_isc : float
-        The short-circuit current temperature coefficient of the module in units of 1/C.
+        The short-circuit current temperature coefficient of the
+        module in units of 1/C.
 
     module_parameters : dict
-        Parameters describing PV module performance at reference conditions according
-        to DeSoto's paper. Parameters may be generated or found by lookup. For ease of use,
-        retrieve_sam can automatically generate a dict based on the most recent SAM CEC module
+        Parameters describing PV module performance at reference
+        conditions according to DeSoto's paper. Parameters may be
+        generated or found by lookup. For ease of use,
+        retrieve_sam can automatically generate a dict based on the
+        most recent SAM CEC module
         database. The module_parameters dict must contain the
         following 5 fields:
 
             * A_ref - modified diode ideality factor parameter at
-              reference conditions (units of eV), a_ref can be calculated from the
-              usual diode ideality factor (n), number of cells in series (Ns),
+              reference conditions (units of eV), a_ref can be calculated
+              from the usual diode ideality factor (n),
+              number of cells in series (Ns),
               and cell temperature (Tcell) per equation (2) in [1].
             * I_l_ref - Light-generated current (or photocurrent)
               in amperes at reference conditions. This value is referred to
@@ -341,7 +350,8 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
         cell temperature=Tcell.
         
     I0 : float or DataFrame
-        Diode saturation curent in amperes at irradiance S and cell temperature Tcell.
+        Diode saturation curent in amperes at irradiance
+        S and cell temperature Tcell.
     
     Rs : float
         Series resistance in ohms at irradiance S and cell temperature Tcell.
@@ -454,7 +464,8 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
     IL = S / Sref * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
-    I0 = I0_ref * ((Tcell_K / Tref_K) ** 3) * (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K)))))
+    I0 = ( I0_ref * ((Tcell_K / Tref_K) ** 3) *
+           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))) )
     Rsh = Rsh_ref * (Sref / S)
     Rs = Rs_ref
 
@@ -556,7 +567,10 @@ def _parse_raw_sam_df(csvdata):
     df = pd.read_csv(csvdata, index_col=0)
     parsedindex = []
     for index in df.index:
-        parsedindex.append(index.replace(' ','_').replace('-','_').replace('.','_').replace('(','_').replace(')','_').replace('[','_').replace(']','_').replace(':','_'))
+        parsedindex.append(index.replace(' ','_').replace('-','_')
+                                .replace('.','_').replace('(','_')
+                                .replace(')','_').replace('[','_')
+                                .replace(']','_').replace(':','_'))
         
     df.index = parsedindex
     df = df.transpose()
@@ -910,17 +924,20 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     DFOut['I0'] = I0
     DFOut['IL'] = IL
 
-    __, Voc_return = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.6, Voc_optfcn)
+    __, Voc_return = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.6,
+                                           Voc_optfcn)
     Voc = Voc_return.copy() #create an immutable copy 
 
-    Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.14, pwr_optfcn)
+    Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.14,
+                                      pwr_optfcn)
     Imax = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=Vmax, I0=I0, IL=IL)
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is Imax. Start the optimization at Voc/2
 
     # Find Ix and Ixx using Lambert W
     Ix = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=.5*Voc, I0=I0, IL=IL)
-    Ixx = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.5*(Voc+Vmax), I0=I0, IL=IL)
+    Ixx = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.5*(Voc+Vmax), I0=I0,
+                   IL=IL)
 
 #     If the user says they want a curve of with number of points equal to
 #     NumPoints (must be >=2), then create a voltage array where voltage is
@@ -961,7 +978,8 @@ def golden_sect_DataFrame(df,VL,VH,func):
     Parameters
     ----------
     df : DataFrame
-        Dataframe containing a timeseries of inputs to the function to be optimized.
+        Dataframe containing a timeseries of inputs to the function
+        to be optimized.
         Each row should represent an independant optimization
 
     VL: float
@@ -1028,9 +1046,9 @@ def pwr_optfcn(df,loc):
     Do not expect this function to remain in the public API.
     '''
 
-    I=I_from_V(Rsh=df['Rsh'],Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL'])
+    I = I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc],
+                 I0=df['I0'], IL=df['IL'])
     return I*df[loc]
-
 
 
 def Voc_optfcn(df,loc):
@@ -1039,9 +1057,9 @@ def Voc_optfcn(df,loc):
     
     Do not expect this function to remain in the public API.
     '''
-    I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL']))
+    I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'],
+                      V=df[loc], I0=df['I0'], IL=df['IL']))
     return I
-
 
 
 def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
@@ -1058,7 +1076,8 @@ def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
     except ImportError:
         raise ImportError('The I_from_V function requires scipy')
     
-    argW = Rs*I0*Rsh*np.exp(Rsh*(Rs*(IL+I0)+V)/(nNsVth*(Rs+Rsh)))/(nNsVth*(Rs + Rsh))
+    argW = (Rs*I0*Rsh * np.exp(Rsh*(Rs*(IL+I0)+V) /
+            (nNsVth*(Rs+Rsh))) / (nNsVth*(Rs + Rsh)) )
     inputterm = lambertw(argW)
 
     # Eqn. 4 in Jain and Kapoor, 2004
@@ -1085,25 +1104,38 @@ def snlinverter(inverter, Vmp, Pmp):
     inverter : DataFrame
         A DataFrame defining the inverter to be used, giving the
         inverter performance parameters according to the Sandia
-        Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1]. A set of
-        inverter performance parameters are provided with pvlib, or may be
-        generated from a System Advisor Model (SAM) [2] library using retreivesam. 
+        Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1].
+        A set of inverter performance parameters are provided with pvlib,
+        or may be generated from a System Advisor Model (SAM) [2]
+        library using retrievesam. 
        
         Required DataFrame columns are:
 
-        ======   ============================================================================================================================================================================================
+        ======   ============================================================
         Column   Description
-        ======   ============================================================================================================================================================================================
-        Pac0     AC-power output from inverter based on input power and voltage (W) 
-        Pdc0     DC-power input to inverter, typically assumed to be equal to the PV array maximum power (W)
-        Vdc0     DC-voltage level at which the AC-power rating is achieved at the reference operating condition (V)
-        Ps0      DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels (W)
-        C0       Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship (1/W)
-        C1       Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero (1/V)
-        C2       Empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero (1/V)
-        C3       Empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero (1/V)
-        Pnt      AC-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage (W)
-        ======   ============================================================================================================================================================================================
+        ======   ============================================================
+        Pac0     AC-power output from inverter based on input power
+                 and voltage (W) 
+        Pdc0     DC-power input to inverter, typically assumed to be equal
+                 to the PV array maximum power (W)
+        Vdc0     DC-voltage level at which the AC-power rating is achieved
+                 at the reference operating condition (V)
+        Ps0      DC-power required to start the inversion process, or
+                 self-consumption by inverter, strongly influences inverter
+                 efficiency at low power levels (W)
+        C0       Parameter defining the curvature (parabolic) of the
+                 relationship between ac-power and dc-power at the reference
+                 operating condition, default value of zero gives a
+                 linear relationship (1/W)
+        C1       Empirical coefficient allowing Pdco to vary linearly
+                 with dc-voltage input, default value is zero (1/V)
+        C2       Empirical coefficient allowing Pso to vary linearly with
+                 dc-voltage input, default value is zero (1/V)
+        C3       Empirical coefficient allowing Co to vary linearly with
+                 dc-voltage input, default value is zero (1/V)
+        Pnt      AC-power consumed by inverter at night (night tare) to
+                 maintain circuitry required to sense PV array voltage (W)
+        ======   ============================================================
 
     Vdc : float or DataFrame
         DC voltages, in volts, which are provided as input to the inverter. 

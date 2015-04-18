@@ -681,7 +681,7 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     # Ee is the "effective irradiance"
     Ee = F1 * ( (poa_direct*F2 + module['FD']*poa_diffuse) / E0 )
     Ee.fillna(0, inplace=True)
-    Ee[Ee < 0] = 0
+    Ee = Ee.clip_lower(0)
 
     Bvmpo = module['Bvmpo'] + module['Mbvmp']*(1 - Ee)
     Bvoco = module['Bvoco'] + module['Mbvoc']*(1 - Ee)
@@ -696,8 +696,9 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
         (module['C0']*Ee + module['C1']*(Ee**2)) *
         (1 + module['Aimp']*(temp_cell - T0)) )
 
-    dfout['Voc'] = ( module['Voco'] +
+    dfout['Voc'] = (( module['Voco'] +
         module['#Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
+        .clip_lower(0))
 
     dfout['Vmp'] = ( module['Vmpo'] +
         module['C2']*module['#Series']*delta*np.log(Ee) +

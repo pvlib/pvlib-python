@@ -603,7 +603,7 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
         Absolute airmass.
     
     aoi : Series
-        Angle of incidence.
+        Angle of incidence (degrees).
 
     Returns
     -------

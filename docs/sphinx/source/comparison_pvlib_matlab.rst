@@ -46,6 +46,8 @@ More specific changes
 * Locations are now ``pvlib.location.Location`` objects, not structs.
 * Specify time zones using a string from the standard IANA Time Zone Database naming conventions or using a pytz.timezone instead of an integer GMT offset. We may add dateutils support in the future.
 * ``clearsky.ineichen`` supports interpolating monthly Linke Turbidities to daily resolution.
+* Instead of requiring effective irradiance as an input, ``pvsystem.sapm``
+  calculates and returns it based on input POA irradiance, AM, and AOI.
 
 Documentation
 ~~~~~~~~~~~~~

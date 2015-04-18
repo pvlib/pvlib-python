@@ -565,7 +565,7 @@ def _parse_raw_sam_df(csvdata):
     
     
 
-def sapm(Module, Eb, Ediff, Tcell, AM, AOI):
+def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
     module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
@@ -573,48 +573,60 @@ def sapm(Module, Eb, Ediff, Tcell, AM, AOI):
 
     Parameters
     ----------
-    Module : Series
-        A DataFrame defining the SAPM performance parameters
+    module : Series or dict
+        A DataFrame defining the SAPM performance parameters.
 
-    Eb : Series
-        The direct irradiance incident upon the module (suns). Any Ee<0
-        are set to 0.
+    poa_direct : Series
+        The direct irradiance incident upon the module (W/m^2).
 
-    Ediff : Series
+    poa_diffuse : Series
         The diffuse irradiance incident on module.
 
-    Tcell : Series
+    temp_cell : Series
         The cell temperature (degrees C).
         
-    AM : Series
+    airmass_absolute : Series
         Absolute airmass.
     
-    AOI : Series
+    aoi : Series
         Angle of incidence.
 
     Returns
     -------
-    A DataFrame with the columns Isc, Imp, Ix, Ixx, Voc, Vmp, Pmp.
+    A DataFrame with the columns:
+
+        * Isc : Short-circuit current (A)
+        * Imp : Current at the maximum-power point (A)
+        * Voc : Open-circuit voltage (V)
+        * Vmp : Voltage at maximum-power point (V)
+        * Pmp : Power at maximum-power point (W)
+        * Ix : Current at module V = 0.5Voc, defines 4th point on I-V curve for modeling curve shape
+        * Ixx : Current at module V = 0.5(Voc+Vmp), defines 5th point on I-V curve for modeling curve shape
 
     Notes
     -----
-    The coefficients from SAPM which are required in Module are:
+    The coefficients from SAPM which are required in ``module`` are:
 
-    ================   ======================================================================================================================
-    Module field       Description
-    ================   ======================================================================================================================
-    Module.c           1x8 vector with the C coefficients Module.c(1) = C0
-    Module.Isc0        Short circuit current at reference condition (amps)
-    Module.Imp0        Maximum power current at reference condition (amps)
-    Module.AlphaIsc    Short circuit current temperature coefficient at reference condition (1/C)
-    Module.AlphaImp    Maximum power current temperature coefficient at reference condition (1/C)
-    Module.BetaVoc     Open circuit voltage temperature coefficient at reference condition (V/C)
-    Module.mBetaVoc    Coefficient providing the irradiance dependence for the BetaVoc temperature coefficient at reference irradiance (V/C)
-    Module.BetaVmp     Maximum power voltage temperature coefficient at reference condition
-    Module.mBetaVmp    Coefficient providing the irradiance dependence for the BetaVmp temperature coefficient at reference irradiance (V/C)
-    Module.n           Empirically determined "diode factor" (dimensionless)
-    Module.Ns          Number of cells in series in a module's cell string(s)
-    ================   ======================================================================================================================
+    ========   ======================================================================================================================
+    Key        Description
+    ========   ======================================================================================================================
+    A0-A4      The airmass coefficients used in calculating effective irradiance
+    B0-B5      The angle of incidence coefficients used in calculating effective irradiance
+    C0-C7      The empirically determined coefficients relating Imp, Vmp, Ix, and Ixx to effective irradiance
+    Isco       Short circuit current at reference condition (amps)
+    Impo       Maximum power current at reference condition (amps)
+    Aisc       Short circuit current temperature coefficient at reference condition (1/C)
+    Aimp       Maximum power current temperature coefficient at reference condition (1/C)
+    Bvoc       Open circuit voltage temperature coefficient at reference condition (V/C)
+    Mbvoc      Coefficient providing the irradiance dependence for the BetaVoc temperature coefficient at reference irradiance (V/C)
+    Bvmpo      Maximum power voltage temperature coefficient at reference condition
+    Mbvmp      Coefficient providing the irradiance dependence for the BetaVmp temperature coefficient at reference irradiance (V/C)
+    N          Empirically determined "diode factor" (dimensionless)
+    #Series    Number of cells in series in a module's cell string(s)
+    IXO        Ix at reference conditions
+    IXXO       Ixx at reference conditions
+    FD         Fraction of diffuse irradiance used by module
+    ========   ======================================================================================================================
 
     References
     ----------
@@ -628,40 +640,56 @@ def sapm(Module, Eb, Ediff, Tcell, AM, AOI):
     '''
 
     T0 = 25
-    q = 1.60218e-19
-    k = 1.38066e-23
+    q = 1.60218e-19 # Elementary charge in units of coulombs
+    kb = 1.38066e-23 # Boltzmann's constant in units of J/K
     E0 = 1000
 
-    AMcoeff = [Module['A4'], Module['A3'], Module['A2'], Module['A1'], 
-               Module['A0']]
-    AOIcoeff = [Module['B5'], Module['B4'], Module['B3'], Module['B2'],
-                Module['B1'], Module['B0']]
+    am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],
+                module['A0']]
+    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
+                 module['B1'], module['B0']]
 
-    F1 = np.polyval(AMcoeff, AM)
-    F2 = np.polyval(AOIcoeff, AOI)
-    Ee= F1*((Eb*F2+Module['FD']*Ediff)/E0)
-    Ee.fillna(0)
+    F1 = np.polyval(am_coeff, airmass_absolute)
+    F2 = np.polyval(aoi_coeff, aoi)
+
+    # Ee is the "effective irradiance"
+    Ee = F1 * ( (poa_direct*F2 + module['FD']*poa_diffuse) / E0 )
+    Ee.fillna(0, inplace=True)
     Ee[Ee < 0] = 0
 
-    Filt = Ee[Ee >= 0.001]
+    Bvmpo = module['Bvmpo'] + module['Mbvmp']*(1 - Ee)
+    Bvoco = module['Bvoco'] + module['Mbvoc']*(1 - Ee)
+    delta = module['N'] * kb * (temp_cell + 273.15) / q
 
-    Isc = Module.ix['Isco']*(Ee)*((1 + Module.ix['Aisc']*((Tcell - T0))))
+    dfout = pd.DataFrame(index=Ee.index)
 
-    DFOut = pd.DataFrame({'Isc':Isc})
+    dfout['Isc'] = (
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - T0)) )
 
-    DFOut['Imp'] = Module.ix['Impo']*((Module.ix['C0']*(Ee) + Module.ix['C1'] * (Ee ** 2)))*((1 + Module.ix['Aimp']*((Tcell - T0))))
-    Bvoco = Module.ix['Bvoco'] + Module.ix['Mbvoc']*((1 - Ee))
-    delta = Module.ix['N']*(k)*((Tcell + 273.15)) / q
-    DFOut['Voc'] = (Module.ix['Voco'] + Module.ix['#Series']*(delta)*(np.log(Ee)) + Bvoco*((Tcell - T0)))
-    Bvmpo = Module.ix['Bvmpo'] + Module.ix['Mbvmp']*((1 - Ee))
-    DFOut['Vmp'] = (Module.ix['Vmpo'] + Module.ix['C2']*(Module.ix['#Series'])*(delta)*(np.log(Ee)) + Module.ix['C3']*(Module.ix['#Series'])*((delta*(np.log(Ee))) ** 2) + Bvmpo*((Tcell - T0)))
-    DFOut['Vmp'][DFOut['Vmp'] < 0] = 0
-    DFOut['Pmp'] = DFOut.Imp*DFOut.Vmp
-    DFOut['Ix'] = Module.ix['IXO'] * (Module.ix['C4']*(Ee) + Module.ix['C5']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
-    DFOut['Ixx'] = Module.ix['IXXO'] * (Module.ix['C6']*(Ee) + Module.ix['C7']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
+    dfout['Imp'] = ( module['Impo'] *
+        (module['C0']*Ee + module['C1']*(Ee**2)) *
+        (1 + module['Aimp']*(temp_cell - T0)) )
 
-    return DFOut
+    dfout['Voc'] = ( module['Voco'] +
+        module['#Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
 
+    dfout['Vmp'] = ( module['Vmpo'] +
+        module['C2']*module['#Series']*delta*np.log(Ee) +
+        module['C3']*module['#Series']*((delta*np.log(Ee)) ** 2) +
+        Bvmpo*(temp_cell - T0) ).clip_lower(0)
+
+    dfout['Pmp'] = dfout['Imp'] * dfout['Vmp']
+
+    dfout['Ix'] = ( module['IXO'] *
+        (module['C4']*Ee + module['C5']*(Ee**2)) *
+        (1 + module['Aisc']*(temp_cell - T0)) )
+
+    # the Ixx calculation in King 2004 has a typo (mixes up Aisc and Aimp)
+    dfout['Ixx'] = ( module['IXXO'] *
+        (module['C6']*Ee + module['C7']*(Ee**2)) *
+        (1 + module['Aisc']*(temp_cell - T0)) )
+
+    return dfout
 
 
 def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):

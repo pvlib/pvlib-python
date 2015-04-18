@@ -111,6 +111,9 @@ def test_sapm():
     
     sapm = pvsystem.sapm(module, irrad_data.DNI, irrad_data.DHI, 25, am, aoi)
     
+    sapm = pvsystem.sapm(module.to_dict(), irrad_data.DNI,
+                         irrad_data.DHI, 25, am, aoi)
+    
     
     
 def test_calcparams_desoto():

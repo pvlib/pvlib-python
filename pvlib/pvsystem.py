@@ -22,7 +22,7 @@ from pvlib import tools
 
 
 
-def systemdef(meta, surftilt, surfaz, albedo, series_modules, 
+def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules, 
               parallel_modules):
     '''
     Generates a dict of system paramters used throughout a simulation.
@@ -45,23 +45,22 @@ def systemdef(meta, surftilt, surfaz, albedo, series_modules,
             meta.TZ           Float   timezone
             ===============   ======  ====================  
 
-    surftilt : float or DataFrame
+    surface_tilt : float or Series
         Surface tilt angles in decimal degrees.
-        surftilt must be >=0 and <=180. The tilt angle is defined as
-        degrees from horizontal (e.g. surface facing up = 0, surface facing
-        horizon = 90)
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surfaz : float or DataFrame
+    surface_azimuth : float or Series
         Surface azimuth angles in decimal degrees.
         surfaz must be >=0 and <=360. The Azimuth convention is defined
         as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    albedo : float or DataFrame 
+    albedo : float or Series
         Ground reflectance, typically 0.1-0.4 for
         surfaces on Earth (land), may increase over snow, ice, etc. May also 
         be known as the reflection coefficient. Must be >=0 and <=1.
 
-    series_modules : float
+    series_modules : int
         Number of modules connected in series in a string. 
 
     parallel_modules : int
@@ -73,21 +72,21 @@ def systemdef(meta, surftilt, surfaz, albedo, series_modules,
 
         A dict with the following fields.
 
-            * 'surftilt'
-            * 'surfaz'
+            * 'surface_tilt'
+            * 'surface_azimuth'
             * 'albedo'
             * 'series_modules'
             * 'parallel_modules'
             * 'latitude'
             * 'longitude'
-            * 'TZ'
+            * 'tz'
             * 'name'
             * 'altitude'
 
     See also
     --------
-    readtmy3
-    readtmy2
+    tmy.readtmy3
+    tmy.readtmy2
     '''
     
     try:
@@ -95,16 +94,16 @@ def systemdef(meta, surftilt, surfaz, albedo, series_modules,
     except KeyError:
         name = meta['City']
     
-    system = {'surftilt':surftilt,
-              'surfaz':surfaz,
-              'albedo':albedo,
-              'series_modules':series_modules,
-              'parallel_modules':parallel_modules,
-              'latitude':meta['latitude'],
-              'longitude':meta['longitude'],
-              'TZ':meta['TZ'],
-              'name':name,
-              'altitude':meta['altitude']}
+    system = {'surface_tilt': surface_tilt,
+              'surface_azimuth': surface_azimuth,
+              'albedo': albedo,
+              'series_modules': series_modules,
+              'parallel_modules': parallel_modules,
+              'latitude': meta['latitude'],
+              'longitude': meta['longitude'],
+              'tz': meta['TZ'],
+              'name': name,
+              'altitude': meta['altitude']}
 
     return system
 

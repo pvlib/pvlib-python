@@ -8,7 +8,6 @@ from __future__ import division
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
-import os
 import io
 try:
     from urllib2 import urlopen
@@ -21,8 +20,7 @@ import pandas as pd
 from pvlib import tools
 
 
-
-def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules, 
+def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
               parallel_modules):
     '''
     Generates a dict of system paramters used throughout a simulation.
@@ -52,8 +50,9 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
 
     surface_azimuth : float or Series
         Surface azimuth angles in decimal degrees.
-        surfaz must be >=0 and <=360. The Azimuth convention is defined
-        as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+        The azimuth convention is defined
+        as degrees east of north
+        (North=0, South=180, East=90, West=270).
 
     albedo : float or Series
         Ground reflectance, typically 0.1-0.4 for
@@ -106,7 +105,6 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
               'altitude': meta['altitude']}
 
     return system
-
 
 
 def ashraeiam(b, theta):
@@ -165,8 +163,7 @@ def ashraeiam(b, theta):
     IAM[IAM < 0] = np.nan
 
     return IAM
-    
-    
+
 
 def physicaliam(K, L, n, theta):
     '''
@@ -261,7 +258,6 @@ def physicaliam(K, L, n, theta):
     IAM[IAM < 0] = np.nan
     
     return IAM
-
 
 
 def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
@@ -469,7 +465,6 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
     Rs = Rs_ref
 
     return IL, I0, Rs, Rsh, nNsVth
-    
 
 
 def retrieve_sam(name=None, samfile=None):
@@ -530,7 +525,7 @@ def retrieve_sam(name=None, samfile=None):
     Mppt_high     500.000000
     Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
     '''
-    
+
     if name is not None:
         name = name.lower()
 
@@ -542,10 +537,10 @@ def retrieve_sam(name=None, samfile=None):
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
         elif samfile is None:
             raise ValueError('invalid name {}'.format(name))
-            
+
     if name is None and samfile is None:
         raise ValueError('must supply name or samfile')
-    
+
     if samfile is None:
         pvl_logger.info('retrieving {} from {}'.format(name, url))
         response = urlopen(url)
@@ -557,19 +552,18 @@ def retrieve_sam(name=None, samfile=None):
         csvdata = askopenfilename()                           
     else: 
         csvdata = samfile
-        
+
     return _parse_raw_sam_df(csvdata)
-        
-        
-        
+
+
 def _parse_raw_sam_df(csvdata):
     df = pd.read_csv(csvdata, index_col=0)
     parsedindex = []
     for index in df.index:
-        parsedindex.append(index.replace(' ','_').replace('-','_')
-                                .replace('.','_').replace('(','_')
-                                .replace(')','_').replace('[','_')
-                                .replace(']','_').replace(':','_'))
+        parsedindex.append(index.replace(' ', '_').replace('-', '_')
+                                .replace('.', '_').replace('(', '_')
+                                .replace(')', '_').replace('[', '_')
+                                .replace(']', '_').replace(':', '_'))
         
     df.index = parsedindex
     df = df.transpose()
@@ -577,7 +571,6 @@ def _parse_raw_sam_df(csvdata):
     return df
     
     
-
 def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
@@ -807,7 +800,6 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     return {'tcell':tcell, 'tmodule':tmodule}
     
     
-
 def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     '''
     Solve the single-diode model to obtain a photovoltaic IV curve.
@@ -910,13 +902,13 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     # Find Isc using Lambert W
     Isc = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.01, I0=I0, IL=IL)
 
-    #If passed a dataframe, output a dataframe, if passed a list or scalar,
-    #return a dict 
+    # If passed a dataframe, output a dataframe, if passed a list or scalar,
+    # return a dict 
     if isinstance(Rsh, pd.Series):
-        DFOut = pd.DataFrame({'Isc':Isc})
+        DFOut = pd.DataFrame({'Isc': Isc})
         DFOut.index = Rsh.index
     else:
-        DFOut = {'Isc':Isc}
+        DFOut = {'Isc': Isc}
 
     DFOut['Rsh'] = Rsh
     DFOut['Rs'] = Rs
@@ -926,7 +918,7 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
 
     __, Voc_return = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.6,
                                            Voc_optfcn)
-    Voc = Voc_return.copy() #create an immutable copy 
+    Voc = Voc_return.copy()
 
     Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.14,
                                       pwr_optfcn)
@@ -963,12 +955,11 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     return DFOut
 
 
-
 # Created April,2014
 # Author: Rob Andrews, Calama Consulting
 # These may become private methods in 0.2
 
-def golden_sect_DataFrame(df,VL,VH,func):
+def golden_sect_DataFrame(df, VL, VH, func):
     '''
     Vectorized golden section search for finding MPPT 
     from a dataframe timeseries.
@@ -1038,8 +1029,7 @@ def golden_sect_DataFrame(df,VL,VH,func):
     return func(df,'V1') , df['V1']
 
 
-
-def pwr_optfcn(df,loc):
+def pwr_optfcn(df, loc):
     '''
     Function to find power from I_from_V.
     
@@ -1051,7 +1041,7 @@ def pwr_optfcn(df,loc):
     return I*df[loc]
 
 
-def Voc_optfcn(df,loc):
+def Voc_optfcn(df, loc):
     '''
     Function to find V_oc from I_from_V.
     
@@ -1084,7 +1074,6 @@ def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
     I = -V/(Rs + Rsh) - (nNsVth/Rs) * inputterm + Rsh*(IL + I0)/(Rs + Rsh)
     
     return I.real
-
 
 
 def snlinverter(inverter, Vmp, Pmp):

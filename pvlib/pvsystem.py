@@ -107,7 +107,7 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
     return system
 
 
-def ashraeiam(b, theta):
+def ashraeiam(b, aoi):
     '''
     Determine the incidence angle modifier using the ASHRAE transmission model.
 
@@ -124,7 +124,7 @@ def ashraeiam(b, theta):
     b : float
         A parameter to adjust the modifier as a function of angle of
         incidence. Typical values are on the order of 0.05 [3].
-    theta : Series
+    aoi : Series
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees.
 
@@ -132,10 +132,10 @@ def ashraeiam(b, theta):
     -------
     IAM : Series
     
-        The incident angle modifier calculated as 1-b*(sec(theta)-1) as
+        The incident angle modifier calculated as 1-b*(sec(aoi)-1) as
         described in [2,3]. 
         
-        Returns nan for all abs(theta) >= 90 and for all IAM values
+        Returns nan for all abs(aoi) >= 90 and for all IAM values
         that would be less than 0.
 
     References
@@ -157,15 +157,15 @@ def ashraeiam(b, theta):
     physicaliam
     '''
     
-    IAM = 1 - b*((1/np.cos(np.radians(theta)) - 1))
+    IAM = 1 - b*((1/np.cos(np.radians(aoi)) - 1))
     
-    IAM[abs(theta) >= 90] = np.nan
+    IAM[abs(aoi) >= 90] = np.nan
     IAM[IAM < 0] = np.nan
 
     return IAM
 
 
-def physicaliam(K, L, n, theta):
+def physicaliam(K, L, n, aoi):
     '''
     Determine the incidence angle modifier using refractive 
     index, glazing thickness, and extinction coefficient
@@ -201,7 +201,7 @@ def physicaliam(K, L, n, theta):
         numeric scalar or vector with all values >=0. If n is a vector, it 
         must be the same size as all other input vectors.
 
-    theta : Series
+    aoi : Series
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees. 
 
@@ -234,13 +234,13 @@ def physicaliam(K, L, n, theta):
     spa    
     ashraeiam
     '''
-    thetar_deg = tools.asind(1.0 / n*(tools.sind(theta)))
+    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
 
     tau = ( np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) *
-            ((1 - 0.5*((((tools.sind(thetar_deg - theta)) ** 2) /
-            ((tools.sind(thetar_deg + theta)) ** 2) +
-            ((tools.tand(thetar_deg - theta)) ** 2) /
-            ((tools.tand(thetar_deg + theta)) ** 2))))) )
+            ((1 - 0.5*((((tools.sind(thetar_deg - aoi)) ** 2) /
+            ((tools.sind(thetar_deg + aoi)) ** 2) +
+            ((tools.tand(thetar_deg - aoi)) ** 2) /
+            ((tools.tand(thetar_deg + aoi)) ** 2))))) )
     
     zeroang = 1e-06
     
@@ -254,14 +254,14 @@ def physicaliam(K, L, n, theta):
     
     IAM = tau / tau0
     
-    IAM[abs(theta) >= 90] = np.nan
+    IAM[abs(aoi) >= 90] = np.nan
     IAM[IAM < 0] = np.nan
     
     return IAM
 
 
-def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
-                      M=1, Sref=1000, Tref=25):
+def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
+                      dEgdT, M=1, Sref=1000, Tref=25):
     '''
     Applies the temperature and irradiance corrections to 
     inputs for singlediode.
@@ -275,10 +275,10 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
 
     Parameters
     ----------
-    S : float or DataFrame
+    S : float or Series
         The irradiance (in W/m^2) absorbed by the module.
 
-    Tcell : float or DataFrame
+    temp_cell : float or Series
         The average cell temperature of cells within a module in C.
 
     alpha_isc : float
@@ -452,7 +452,7 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
 
     k = 8.617332478e-05
     Tref_K = Tref + 273.15
-    Tcell_K = Tcell + 273.15
+    Tcell_K = temp_cell + 273.15
 
     E_g = EgRef * (1 + dEgdT*(Tcell_K - Tref_K))
 
@@ -800,7 +800,7 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     return {'tcell':tcell, 'tmodule':tmodule}
     
     
-def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
+def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     '''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -823,7 +823,7 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     
     Parameters
     ----------
-    Module : DataFrame
+    module : DataFrame
         A DataFrame defining the SAPM performance parameters.
 
     IL : float or DataFrame
@@ -916,11 +916,11 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     DFOut['I0'] = I0
     DFOut['IL'] = IL
 
-    __, Voc_return = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.6,
+    __, Voc_return = golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.6,
                                            Voc_optfcn)
     Voc = Voc_return.copy()
 
-    Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.14,
+    Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.14,
                                       pwr_optfcn)
     Imax = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=Vmax, I0=I0, IL=IL)
     # Invert the Power-Current curve. Find the current where the inverted power

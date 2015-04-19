@@ -83,17 +83,14 @@ def test_systemdef_dict():
     assert_equals(expected, pvsystem.systemdef(meta, 5, 0, .1, 5, 5))
     
 
-
 def test_ashraeiam():
     thetas = pd.Series(np.linspace(-180,180,361))
     iam = pvsystem.ashraeiam(.05, thetas)
-    
-    
-    
+
+
 def test_physicaliam():
     thetas = pd.Series(np.linspace(-180,180,361))
     iam = pvsystem.physicaliam(4, 0.002, 1.526, thetas)
-    
 
 
 # if this completes successfully we'll be able to do more tests below.
@@ -102,9 +99,8 @@ def test_retrieve_sam_network():
     sam_data['cecmod'] = pvsystem.retrieve_sam('cecmod')
     sam_data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
     sam_data['sandiainverter'] = pvsystem.retrieve_sam('sandiainverter')
-    
-    
-    
+
+
 def test_sapm():
     modules = sam_data['sandiamod']
     module = modules.Canadian_Solar_CS5P_220M___2009_
@@ -113,40 +109,37 @@ def test_sapm():
     
     sapm = pvsystem.sapm(module.to_dict(), irrad_data.DNI,
                          irrad_data.DHI, 25, am, aoi)
-    
-    
-    
+
+
 def test_calcparams_desoto():
     cecmodule = sam_data['cecmod'].Example_Module 
     pvsystem.calcparams_desoto(S=irrad_data.GHI,
-                               Tcell=25,
+                               temp_cell=25,
                                alpha_isc=cecmodule['Alpha_sc'],
                                module_parameters=cecmodule,
                                EgRef=1.121,
                                dEgdT=-0.0002677)
-                               
-                               
+
 
 def test_singlediode():  
     cecmodule = sam_data['cecmod'].Example_Module 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(S=irrad_data.GHI,
-                                         Tcell=25,
+                                         temp_cell=25,
                                          alpha_isc=cecmodule['Alpha_sc'],
                                          module_parameters=cecmodule,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)                       
-    pvsystem.singlediode(Module=cecmodule, IL=IL, I0=I0, Rs=Rs, Rsh=Rsh,
+    pvsystem.singlediode(module=cecmodule, IL=IL, I0=I0, Rs=Rs, Rsh=Rsh,
                          nNsVth=nNsVth)
-    
-    
+
 
 def test_sapm_celltemp():
     default = pvsystem.sapm_celltemp(900, 5, 20)
     assert_almost_equals(43.509, default['tcell'], 3)
     assert_almost_equals(40.809, default['tmodule'], 3)
-    assert_equals(default, pvsystem.sapm_celltemp(900, 5, 20, [-3.47, -.0594, 3]))
-    
-    
+    assert_equals(default, pvsystem.sapm_celltemp(900, 5, 20,
+                                                  [-3.47, -.0594, 3]))
+
     
 def test_snlinverter():
     inverters = sam_data['sandiainverter']

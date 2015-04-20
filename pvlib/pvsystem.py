@@ -23,7 +23,7 @@ from pvlib import tools
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
               parallel_modules):
     '''
-    Generates a dict of system paramters used throughout a simulation.
+    Generates a dict of system parameters used throughout a simulation.
 
     Parameters
     ----------
@@ -84,8 +84,8 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
 
     See also
     --------
-    tmy.readtmy3
-    tmy.readtmy2
+    pvlib.tmy.readtmy3
+    pvlib.tmy.readtmy2
     '''
     
     try:
@@ -207,25 +207,25 @@ def physicaliam(K, L, n, aoi):
 
     Returns
     -------
-    IAM : float
+    IAM : float or Series
         The incident angle modifier as specified in eqns. 14-16 of [1].
         IAM is a column vector with the same number of elements as the
         largest input vector.
         
         Theta must be a numeric scalar or vector.
-        For any values of theta where abs(theta)>90, IAM is set to 0. For any
-        values of theta where -90 < theta < 0, theta is set to abs(theta) and
-        evaluated. A warning will be generated if any(theta<0 or theta>90).
+        For any values of theta where abs(aoi)>90, IAM is set to 0. For any
+        values of aoi where -90 < aoi < 0, theta is set to abs(aoi) and
+        evaluated.
 
     References
     ----------
     [1] W. De Soto et al., "Improvement and validation of a model for
-     photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-     2006.
+    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+    2006.
 
     [2] Duffie, John A. & Beckman, William A.. (2006). Solar Engineering 
-     of Thermal Processes, third edition. [Books24x7 version] Available 
-     from http://common.books24x7.com/toc.aspx?bookid=17160. 
+    of Thermal Processes, third edition. [Books24x7 version] Available 
+    from http://common.books24x7.com/toc.aspx?bookid=17160. 
 
     See Also 
     --------
@@ -653,7 +653,7 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
 
     See Also
     --------
-    retrievesam
+    retrieve_sam
     sapm_celltemp 
     '''
 
@@ -1147,15 +1147,14 @@ def snlinverter(inverter, Vmp, Pmp):
 
     References
     ----------
-    [1] (SAND2007-5036, "Performance Model for Grid-Connected Photovoltaic 
-    Inverters by D. King, S. Gonzalez, G. Galbraith, W. Boyson)
+    [1] SAND2007-5036, "Performance Model for Grid-Connected Photovoltaic 
+    Inverters by D. King, S. Gonzalez, G. Galbraith, W. Boyson
 
     [2] System Advisor Model web page. https://sam.nrel.gov.
 
     See also
     --------
     sapm
-    samlibrary
     singlediode
     '''
 

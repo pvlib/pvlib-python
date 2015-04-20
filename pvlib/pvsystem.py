@@ -8,7 +8,6 @@ from __future__ import division
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
-import os
 import io
 try:
     from urllib2 import urlopen
@@ -21,18 +20,17 @@ import pandas as pd
 from pvlib import tools
 
 
-
-def systemdef(meta, surftilt, surfaz, albedo, series_modules, 
+def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
               parallel_modules):
     '''
-    Generates a dict of system paramters used throughout a simulation.
+    Generates a dict of system parameters used throughout a simulation.
 
     Parameters
     ----------
 
     meta : dict
-        meta dict either generated from a TMY file using readtmy2 or readtmy3, or
-        a dict containing at least the following fields: 
+        meta dict either generated from a TMY file using readtmy2 or readtmy3,
+        or a dict containing at least the following fields: 
 
             ===============   ======  ====================  
             meta field        format  description
@@ -45,23 +43,23 @@ def systemdef(meta, surftilt, surfaz, albedo, series_modules,
             meta.TZ           Float   timezone
             ===============   ======  ====================  
 
-    surftilt : float or DataFrame
+    surface_tilt : float or Series
         Surface tilt angles in decimal degrees.
-        surftilt must be >=0 and <=180. The tilt angle is defined as
-        degrees from horizontal (e.g. surface facing up = 0, surface facing
-        horizon = 90)
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surfaz : float or DataFrame
+    surface_azimuth : float or Series
         Surface azimuth angles in decimal degrees.
-        surfaz must be >=0 and <=360. The Azimuth convention is defined
-        as degrees east of north (e.g. North = 0, South=180 East = 90, West = 270).
+        The azimuth convention is defined
+        as degrees east of north
+        (North=0, South=180, East=90, West=270).
 
-    albedo : float or DataFrame 
+    albedo : float or Series
         Ground reflectance, typically 0.1-0.4 for
         surfaces on Earth (land), may increase over snow, ice, etc. May also 
         be known as the reflection coefficient. Must be >=0 and <=1.
 
-    series_modules : float
+    series_modules : int
         Number of modules connected in series in a string. 
 
     parallel_modules : int
@@ -73,22 +71,21 @@ def systemdef(meta, surftilt, surfaz, albedo, series_modules,
 
         A dict with the following fields.
 
-            * 'surftilt'
-            * 'surfaz'
+            * 'surface_tilt'
+            * 'surface_azimuth'
             * 'albedo'
             * 'series_modules'
             * 'parallel_modules'
             * 'latitude'
             * 'longitude'
-            * 'TZ'
+            * 'tz'
             * 'name'
             * 'altitude'
 
-
     See also
     --------
-    readtmy3
-    readtmy2
+    pvlib.tmy.readtmy3
+    pvlib.tmy.readtmy2
     '''
     
     try:
@@ -96,22 +93,21 @@ def systemdef(meta, surftilt, surfaz, albedo, series_modules,
     except KeyError:
         name = meta['City']
     
-    system = {'surftilt':surftilt,
-              'surfaz':surfaz,
-              'albedo':albedo,
-              'series_modules':series_modules,
-              'parallel_modules':parallel_modules,
-              'latitude':meta['latitude'],
-              'longitude':meta['longitude'],
-              'TZ':meta['TZ'],
-              'name':name,
-              'altitude':meta['altitude']}
+    system = {'surface_tilt': surface_tilt,
+              'surface_azimuth': surface_azimuth,
+              'albedo': albedo,
+              'series_modules': series_modules,
+              'parallel_modules': parallel_modules,
+              'latitude': meta['latitude'],
+              'longitude': meta['longitude'],
+              'tz': meta['TZ'],
+              'name': name,
+              'altitude': meta['altitude']}
 
     return system
 
 
-
-def ashraeiam(b, theta):
+def ashraeiam(b, aoi):
     '''
     Determine the incidence angle modifier using the ASHRAE transmission model.
 
@@ -128,7 +124,7 @@ def ashraeiam(b, theta):
     b : float
         A parameter to adjust the modifier as a function of angle of
         incidence. Typical values are on the order of 0.05 [3].
-    theta : Series
+    aoi : Series
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees.
 
@@ -136,10 +132,10 @@ def ashraeiam(b, theta):
     -------
     IAM : Series
     
-        The incident angle modifier calculated as 1-b*(sec(theta)-1) as
+        The incident angle modifier calculated as 1-b*(sec(aoi)-1) as
         described in [2,3]. 
         
-        Returns nan for all abs(theta) >= 90 and for all IAM values
+        Returns nan for all abs(aoi) >= 90 and for all IAM values
         that would be less than 0.
 
     References
@@ -161,16 +157,15 @@ def ashraeiam(b, theta):
     physicaliam
     '''
     
-    IAM = 1 - b*((1/np.cos(np.radians(theta)) - 1))
+    IAM = 1 - b*((1/np.cos(np.radians(aoi)) - 1))
     
-    IAM[abs(theta) >= 90] = np.nan
+    IAM[abs(aoi) >= 90] = np.nan
     IAM[IAM < 0] = np.nan
 
     return IAM
-    
-    
 
-def physicaliam(K, L, n, theta):
+
+def physicaliam(K, L, n, aoi):
     '''
     Determine the incidence angle modifier using refractive 
     index, glazing thickness, and extinction coefficient
@@ -206,31 +201,31 @@ def physicaliam(K, L, n, theta):
         numeric scalar or vector with all values >=0. If n is a vector, it 
         must be the same size as all other input vectors.
 
-    theta : Series
+    aoi : Series
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees. 
 
     Returns
     -------
-    IAM : float
+    IAM : float or Series
         The incident angle modifier as specified in eqns. 14-16 of [1].
         IAM is a column vector with the same number of elements as the
         largest input vector.
         
         Theta must be a numeric scalar or vector.
-        For any values of theta where abs(theta)>90, IAM is set to 0. For any
-        values of theta where -90 < theta < 0, theta is set to abs(theta) and
-        evaluated. A warning will be generated if any(theta<0 or theta>90).
+        For any values of theta where abs(aoi)>90, IAM is set to 0. For any
+        values of aoi where -90 < aoi < 0, theta is set to abs(aoi) and
+        evaluated.
 
     References
     ----------
     [1] W. De Soto et al., "Improvement and validation of a model for
-     photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-     2006.
+    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+    2006.
 
     [2] Duffie, John A. & Beckman, William A.. (2006). Solar Engineering 
-     of Thermal Processes, third edition. [Books24x7 version] Available 
-     from http://common.books24x7.com/toc.aspx?bookid=17160. 
+    of Thermal Processes, third edition. [Books24x7 version] Available 
+    from http://common.books24x7.com/toc.aspx?bookid=17160. 
 
     See Also 
     --------
@@ -239,27 +234,34 @@ def physicaliam(K, L, n, theta):
     spa    
     ashraeiam
     '''
-    thetar_deg = tools.asind(1.0 / n*(tools.sind(theta)))
+    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
 
-    tau = np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg)))*((1 - 0.5*((((tools.sind(thetar_deg - theta)) ** 2) / ((tools.sind(thetar_deg + theta)) ** 2) + ((tools.tand(thetar_deg - theta)) ** 2) / ((tools.tand(thetar_deg + theta)) ** 2)))))
+    tau = ( np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) *
+            ((1 - 0.5*((((tools.sind(thetar_deg - aoi)) ** 2) /
+            ((tools.sind(thetar_deg + aoi)) ** 2) +
+            ((tools.tand(thetar_deg - aoi)) ** 2) /
+            ((tools.tand(thetar_deg + aoi)) ** 2))))) )
     
     zeroang = 1e-06
     
     thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
     
-    tau0 = np.exp(- 1.0 * (K*(L) / tools.cosd(thetar_deg0)))*((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) / ((tools.sind(thetar_deg0 + zeroang)) ** 2) + ((tools.tand(thetar_deg0 - zeroang)) ** 2) / ((tools.tand(thetar_deg0 + zeroang)) ** 2)))))
+    tau0 = ( np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg0))) *
+             ((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) /
+             ((tools.sind(thetar_deg0 + zeroang)) ** 2) +
+             ((tools.tand(thetar_deg0 - zeroang)) ** 2) /
+             ((tools.tand(thetar_deg0 + zeroang)) ** 2))))) )
     
     IAM = tau / tau0
     
-    IAM[abs(theta) >= 90] = np.nan
+    IAM[abs(aoi) >= 90] = np.nan
     IAM[IAM < 0] = np.nan
     
     return IAM
 
 
-
-def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
-                      M=1, Sref=1000, Tref=25):
+def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
+                      dEgdT, M=1, Sref=1000, Tref=25):
     '''
     Applies the temperature and irradiance corrections to 
     inputs for singlediode.
@@ -273,27 +275,29 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
 
     Parameters
     ----------
-    S : float or DataFrame
-        The irradiance (in W/m^2) absorbed by the module. S must be >= 0.
-        Due to a division by S in the script, any S value equal to 0 will be set to 1E-10.
+    S : float or Series
+        The irradiance (in W/m^2) absorbed by the module.
 
-    Tcell : float or DataFrame
+    temp_cell : float or Series
         The average cell temperature of cells within a module in C.
-        Tcell must be >= -273.15.
 
     alpha_isc : float
-        The short-circuit current temperature coefficient of the module in units of 1/C.
+        The short-circuit current temperature coefficient of the
+        module in units of 1/C.
 
     module_parameters : dict
-        Parameters describing PV module performance at reference conditions according
-        to DeSoto's paper. Parameters may be generated or found by lookup. For ease of use,
-        retrieve_sam can automatically generate a dict based on the most recent SAM CEC module
+        Parameters describing PV module performance at reference
+        conditions according to DeSoto's paper. Parameters may be
+        generated or found by lookup. For ease of use,
+        retrieve_sam can automatically generate a dict based on the
+        most recent SAM CEC module
         database. The module_parameters dict must contain the
         following 5 fields:
 
             * A_ref - modified diode ideality factor parameter at
-              reference conditions (units of eV), a_ref can be calculated from the
-              usual diode ideality factor (n), number of cells in series (Ns),
+              reference conditions (units of eV), a_ref can be calculated
+              from the usual diode ideality factor (n),
+              number of cells in series (Ns),
               and cell temperature (Tcell) per equation (2) in [1].
             * I_l_ref - Light-generated current (or photocurrent)
               in amperes at reference conditions. This value is referred to
@@ -341,7 +345,8 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
         cell temperature=Tcell.
         
     I0 : float or DataFrame
-        Diode saturation curent in amperes at irradiance S and cell temperature Tcell.
+        Diode saturation curent in amperes at irradiance
+        S and cell temperature Tcell.
     
     Rs : float
         Series resistance in ohms at irradiance S and cell temperature Tcell.
@@ -447,19 +452,19 @@ def calcparams_desoto(S, Tcell, alpha_isc, module_parameters, EgRef, dEgdT,
 
     k = 8.617332478e-05
     Tref_K = Tref + 273.15
-    Tcell_K = Tcell + 273.15
+    Tcell_K = temp_cell + 273.15
 
     E_g = EgRef * (1 + dEgdT*(Tcell_K - Tref_K))
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
     IL = S / Sref * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
-    I0 = I0_ref * ((Tcell_K / Tref_K) ** 3) * (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K)))))
+    I0 = ( I0_ref * ((Tcell_K / Tref_K) ** 3) *
+           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))) )
     Rsh = Rsh_ref * (Sref / S)
     Rs = Rs_ref
 
     return IL, I0, Rs, Rsh, nNsVth
-    
 
 
 def retrieve_sam(name=None, samfile=None):
@@ -520,7 +525,7 @@ def retrieve_sam(name=None, samfile=None):
     Mppt_high     500.000000
     Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
     '''
-    
+
     if name is not None:
         name = name.lower()
 
@@ -532,10 +537,10 @@ def retrieve_sam(name=None, samfile=None):
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
         elif samfile is None:
             raise ValueError('invalid name {}'.format(name))
-            
+
     if name is None and samfile is None:
         raise ValueError('must supply name or samfile')
-    
+
     if samfile is None:
         pvl_logger.info('retrieving {} from {}'.format(name, url))
         response = urlopen(url)
@@ -547,16 +552,18 @@ def retrieve_sam(name=None, samfile=None):
         csvdata = askopenfilename()                           
     else: 
         csvdata = samfile
-        
+
     return _parse_raw_sam_df(csvdata)
-        
-        
-        
+
+
 def _parse_raw_sam_df(csvdata):
     df = pd.read_csv(csvdata, index_col=0)
     parsedindex = []
     for index in df.index:
-        parsedindex.append(index.replace(' ','_').replace('-','_').replace('.','_').replace('(','_').replace(')','_').replace('[','_').replace(']','_').replace(':','_'))
+        parsedindex.append(index.replace(' ', '_').replace('-', '_')
+                                .replace('.', '_').replace('(', '_')
+                                .replace(')', '_').replace('[', '_')
+                                .replace(']', '_').replace(':', '_'))
         
     df.index = parsedindex
     df = df.transpose()
@@ -564,8 +571,7 @@ def _parse_raw_sam_df(csvdata):
     return df
     
     
-
-def sapm(Module, Eb, Ediff, Tcell, AM, AOI):
+def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
     module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
@@ -573,48 +579,72 @@ def sapm(Module, Eb, Ediff, Tcell, AM, AOI):
 
     Parameters
     ----------
-    Module : Series
-        A DataFrame defining the SAPM performance parameters
+    module : Series or dict
+        A DataFrame defining the SAPM performance parameters.
 
-    Eb : Series
-        The direct irradiance incident upon the module (suns). Any Ee<0
-        are set to 0.
+    poa_direct : Series
+        The direct irradiance incident upon the module (W/m^2).
 
-    Ediff : Series
+    poa_diffuse : Series
         The diffuse irradiance incident on module.
 
-    Tcell : Series
+    temp_cell : Series
         The cell temperature (degrees C).
         
-    AM : Series
+    airmass_absolute : Series
         Absolute airmass.
     
-    AOI : Series
-        Angle of incidence.
+    aoi : Series
+        Angle of incidence (degrees).
 
     Returns
     -------
-    A DataFrame with the columns Isc, Imp, Ix, Ixx, Voc, Vmp, Pmp.
+    A DataFrame with the columns:
+
+        * Isc : Short-circuit current (A)
+        * Imp : Current at the maximum-power point (A)
+        * Voc : Open-circuit voltage (V)
+        * Vmp : Voltage at maximum-power point (V)
+        * Pmp : Power at maximum-power point (W)
+        * Ix : Current at module V = 0.5Voc, defines 4th point on I-V
+          curve for modeling curve shape
+        * Ixx : Current at module V = 0.5(Voc+Vmp), defines 5th point on
+          I-V curve for modeling curve shape
+        * Ee : Effective irradiance
 
     Notes
     -----
-    The coefficients from SAPM which are required in Module are:
+    The coefficients from SAPM which are required in ``module`` are:
 
-    ================   ======================================================================================================================
-    Module field       Description
-    ================   ======================================================================================================================
-    Module.c           1x8 vector with the C coefficients Module.c(1) = C0
-    Module.Isc0        Short circuit current at reference condition (amps)
-    Module.Imp0        Maximum power current at reference condition (amps)
-    Module.AlphaIsc    Short circuit current temperature coefficient at reference condition (1/C)
-    Module.AlphaImp    Maximum power current temperature coefficient at reference condition (1/C)
-    Module.BetaVoc     Open circuit voltage temperature coefficient at reference condition (V/C)
-    Module.mBetaVoc    Coefficient providing the irradiance dependence for the BetaVoc temperature coefficient at reference irradiance (V/C)
-    Module.BetaVmp     Maximum power voltage temperature coefficient at reference condition
-    Module.mBetaVmp    Coefficient providing the irradiance dependence for the BetaVmp temperature coefficient at reference irradiance (V/C)
-    Module.n           Empirically determined "diode factor" (dimensionless)
-    Module.Ns          Number of cells in series in a module's cell string(s)
-    ================   ======================================================================================================================
+    ========   ===============================================================
+    Key        Description
+    ========   ===============================================================
+    A0-A4      The airmass coefficients used in calculating
+               effective irradiance
+    B0-B5      The angle of incidence coefficients used in calculating
+               effective irradiance
+    C0-C7      The empirically determined coefficients relating
+               Imp, Vmp, Ix, and Ixx to effective irradiance
+    Isco       Short circuit current at reference condition (amps)
+    Impo       Maximum power current at reference condition (amps)
+    Aisc       Short circuit current temperature coefficient at
+               reference condition (1/C)
+    Aimp       Maximum power current temperature coefficient at
+               reference condition (1/C)
+    Bvoc       Open circuit voltage temperature coefficient at
+               reference condition (V/C)
+    Mbvoc      Coefficient providing the irradiance dependence for the BetaVoc
+               temperature coefficient at reference irradiance (V/C)
+    Bvmpo      Maximum power voltage temperature coefficient at
+               reference condition
+    Mbvmp      Coefficient providing the irradiance dependence for the
+               BetaVmp temperature coefficient at reference irradiance (V/C)
+    N          Empirically determined "diode factor" (dimensionless)
+    #Series    Number of cells in series in a module's cell string(s)
+    IXO        Ix at reference conditions
+    IXXO       Ixx at reference conditions
+    FD         Fraction of diffuse irradiance used by module
+    ========   ===============================================================
 
     References
     ----------
@@ -623,45 +653,64 @@ def sapm(Module, Eb, Ediff, Tcell, AM, AOI):
 
     See Also
     --------
-    retrievesam
+    retrieve_sam
     sapm_celltemp 
     '''
 
     T0 = 25
-    q = 1.60218e-19
-    k = 1.38066e-23
+    q = 1.60218e-19 # Elementary charge in units of coulombs
+    kb = 1.38066e-23 # Boltzmann's constant in units of J/K
     E0 = 1000
 
-    AMcoeff = [Module['A4'], Module['A3'], Module['A2'], Module['A1'], 
-               Module['A0']]
-    AOIcoeff = [Module['B5'], Module['B4'], Module['B3'], Module['B2'],
-                Module['B1'], Module['B0']]
+    am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],
+                module['A0']]
+    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
+                 module['B1'], module['B0']]
 
-    F1 = np.polyval(AMcoeff, AM)
-    F2 = np.polyval(AOIcoeff, AOI)
-    Ee= F1*((Eb*F2+Module['FD']*Ediff)/E0)
-    Ee.fillna(0)
-    Ee[Ee < 0] = 0
+    F1 = np.polyval(am_coeff, airmass_absolute)
+    F2 = np.polyval(aoi_coeff, aoi)
 
-    Filt = Ee[Ee >= 0.001]
+    # Ee is the "effective irradiance"
+    Ee = F1 * ( (poa_direct*F2 + module['FD']*poa_diffuse) / E0 )
+    Ee.fillna(0, inplace=True)
+    Ee = Ee.clip_lower(0)
 
-    Isc = Module.ix['Isco']*(Ee)*((1 + Module.ix['Aisc']*((Tcell - T0))))
+    Bvmpo = module['Bvmpo'] + module['Mbvmp']*(1 - Ee)
+    Bvoco = module['Bvoco'] + module['Mbvoc']*(1 - Ee)
+    delta = module['N'] * kb * (temp_cell + 273.15) / q
 
-    DFOut = pd.DataFrame({'Isc':Isc})
+    dfout = pd.DataFrame(index=Ee.index)
 
-    DFOut['Imp'] = Module.ix['Impo']*((Module.ix['C0']*(Ee) + Module.ix['C1'] * (Ee ** 2)))*((1 + Module.ix['Aimp']*((Tcell - T0))))
-    Bvoco = Module.ix['Bvoco'] + Module.ix['Mbvoc']*((1 - Ee))
-    delta = Module.ix['N']*(k)*((Tcell + 273.15)) / q
-    DFOut['Voc'] = (Module.ix['Voco'] + Module.ix['#Series']*(delta)*(np.log(Ee)) + Bvoco*((Tcell - T0)))
-    Bvmpo = Module.ix['Bvmpo'] + Module.ix['Mbvmp']*((1 - Ee))
-    DFOut['Vmp'] = (Module.ix['Vmpo'] + Module.ix['C2']*(Module.ix['#Series'])*(delta)*(np.log(Ee)) + Module.ix['C3']*(Module.ix['#Series'])*((delta*(np.log(Ee))) ** 2) + Bvmpo*((Tcell - T0)))
-    DFOut['Vmp'][DFOut['Vmp'] < 0] = 0
-    DFOut['Pmp'] = DFOut.Imp*DFOut.Vmp
-    DFOut['Ix'] = Module.ix['IXO'] * (Module.ix['C4']*(Ee) + Module.ix['C5']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
-    DFOut['Ixx'] = Module.ix['IXXO'] * (Module.ix['C6']*(Ee) + Module.ix['C7']*((Ee) ** 2))*((1 + Module.ix['Aisc']*((Tcell - T0))))
+    dfout['Isc'] = (
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - T0)) )
 
-    return DFOut
+    dfout['Imp'] = ( module['Impo'] *
+        (module['C0']*Ee + module['C1']*(Ee**2)) *
+        (1 + module['Aimp']*(temp_cell - T0)) )
 
+    dfout['Voc'] = (( module['Voco'] +
+        module['#Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
+        .clip_lower(0))
+
+    dfout['Vmp'] = ( module['Vmpo'] +
+        module['C2']*module['#Series']*delta*np.log(Ee) +
+        module['C3']*module['#Series']*((delta*np.log(Ee)) ** 2) +
+        Bvmpo*(temp_cell - T0) ).clip_lower(0)
+
+    dfout['Pmp'] = dfout['Imp'] * dfout['Vmp']
+
+    dfout['Ix'] = ( module['IXO'] *
+        (module['C4']*Ee + module['C5']*(Ee**2)) *
+        (1 + module['Aisc']*(temp_cell - T0)) )
+
+    # the Ixx calculation in King 2004 has a typo (mixes up Aisc and Aimp)
+    dfout['Ixx'] = ( module['IXXO'] *
+        (module['C6']*Ee + module['C7']*(Ee**2)) *
+        (1 + module['Aisc']*(temp_cell - T0)) )
+
+    dfout['Ee'] = Ee
+
+    return dfout
 
 
 def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
@@ -751,8 +800,7 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     return {'tcell':tcell, 'tmodule':tmodule}
     
     
-
-def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
+def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     '''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -775,7 +823,7 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     
     Parameters
     ----------
-    Module : DataFrame
+    module : DataFrame
         A DataFrame defining the SAPM performance parameters.
 
     IL : float or DataFrame
@@ -854,13 +902,13 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     # Find Isc using Lambert W
     Isc = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.01, I0=I0, IL=IL)
 
-    #If passed a dataframe, output a dataframe, if passed a list or scalar,
-    #return a dict 
+    # If passed a dataframe, output a dataframe, if passed a list or scalar,
+    # return a dict 
     if isinstance(Rsh, pd.Series):
-        DFOut = pd.DataFrame({'Isc':Isc})
+        DFOut = pd.DataFrame({'Isc': Isc})
         DFOut.index = Rsh.index
     else:
-        DFOut = {'Isc':Isc}
+        DFOut = {'Isc': Isc}
 
     DFOut['Rsh'] = Rsh
     DFOut['Rs'] = Rs
@@ -868,17 +916,20 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     DFOut['I0'] = I0
     DFOut['IL'] = IL
 
-    __, Voc_return = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.6, Voc_optfcn)
-    Voc = Voc_return.copy() #create an immutable copy 
+    __, Voc_return = golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.6,
+                                           Voc_optfcn)
+    Voc = Voc_return.copy()
 
-    Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, Module.V_oc_ref*1.14, pwr_optfcn)
+    Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.14,
+                                      pwr_optfcn)
     Imax = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=Vmax, I0=I0, IL=IL)
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is Imax. Start the optimization at Voc/2
 
     # Find Ix and Ixx using Lambert W
     Ix = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=.5*Voc, I0=I0, IL=IL)
-    Ixx = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.5*(Voc+Vmax), I0=I0, IL=IL)
+    Ixx = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.5*(Voc+Vmax), I0=I0,
+                   IL=IL)
 
 #     If the user says they want a curve of with number of points equal to
 #     NumPoints (must be >=2), then create a voltage array where voltage is
@@ -904,12 +955,11 @@ def singlediode(Module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     return DFOut
 
 
-
 # Created April,2014
 # Author: Rob Andrews, Calama Consulting
 # These may become private methods in 0.2
 
-def golden_sect_DataFrame(df,VL,VH,func):
+def golden_sect_DataFrame(df, VL, VH, func):
     '''
     Vectorized golden section search for finding MPPT 
     from a dataframe timeseries.
@@ -919,7 +969,8 @@ def golden_sect_DataFrame(df,VL,VH,func):
     Parameters
     ----------
     df : DataFrame
-        Dataframe containing a timeseries of inputs to the function to be optimized.
+        Dataframe containing a timeseries of inputs to the function
+        to be optimized.
         Each row should represent an independant optimization
 
     VL: float
@@ -978,28 +1029,27 @@ def golden_sect_DataFrame(df,VL,VH,func):
     return func(df,'V1') , df['V1']
 
 
-
-def pwr_optfcn(df,loc):
+def pwr_optfcn(df, loc):
     '''
     Function to find power from I_from_V.
     
     Do not expect this function to remain in the public API.
     '''
 
-    I=I_from_V(Rsh=df['Rsh'],Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL'])
+    I = I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc],
+                 I0=df['I0'], IL=df['IL'])
     return I*df[loc]
 
 
-
-def Voc_optfcn(df,loc):
+def Voc_optfcn(df, loc):
     '''
     Function to find V_oc from I_from_V.
     
     Do not expect this function to remain in the public API.
     '''
-    I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc], I0=df['I0'], IL=df['IL']))
+    I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'],
+                      V=df[loc], I0=df['I0'], IL=df['IL']))
     return I
-
 
 
 def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
@@ -1016,14 +1066,14 @@ def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
     except ImportError:
         raise ImportError('The I_from_V function requires scipy')
     
-    argW = Rs*I0*Rsh*np.exp(Rsh*(Rs*(IL+I0)+V)/(nNsVth*(Rs+Rsh)))/(nNsVth*(Rs + Rsh))
+    argW = (Rs*I0*Rsh * np.exp(Rsh*(Rs*(IL+I0)+V) /
+            (nNsVth*(Rs+Rsh))) / (nNsVth*(Rs + Rsh)) )
     inputterm = lambertw(argW)
 
     # Eqn. 4 in Jain and Kapoor, 2004
     I = -V/(Rs + Rsh) - (nNsVth/Rs) * inputterm + Rsh*(IL + I0)/(Rs + Rsh)
     
     return I.real
-
 
 
 def snlinverter(inverter, Vmp, Pmp):
@@ -1043,25 +1093,38 @@ def snlinverter(inverter, Vmp, Pmp):
     inverter : DataFrame
         A DataFrame defining the inverter to be used, giving the
         inverter performance parameters according to the Sandia
-        Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1]. A set of
-        inverter performance parameters are provided with pvlib, or may be
-        generated from a System Advisor Model (SAM) [2] library using retreivesam. 
+        Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1].
+        A set of inverter performance parameters are provided with pvlib,
+        or may be generated from a System Advisor Model (SAM) [2]
+        library using retrievesam. 
        
         Required DataFrame columns are:
 
-        ======   ============================================================================================================================================================================================
+        ======   ============================================================
         Column   Description
-        ======   ============================================================================================================================================================================================
-        Pac0     AC-power output from inverter based on input power and voltage (W) 
-        Pdc0     DC-power input to inverter, typically assumed to be equal to the PV array maximum power (W)
-        Vdc0     DC-voltage level at which the AC-power rating is achieved at the reference operating condition (V)
-        Ps0      DC-power required to start the inversion process, or self-consumption by inverter, strongly influences inverter efficiency at low power levels (W)
-        C0       Parameter defining the curvature (parabolic) of the relationship between ac-power and dc-power at the reference operating condition, default value of zero gives a linear relationship (1/W)
-        C1       Empirical coefficient allowing Pdco to vary linearly with dc-voltage input, default value is zero (1/V)
-        C2       Empirical coefficient allowing Pso to vary linearly with dc-voltage input, default value is zero (1/V)
-        C3       Empirical coefficient allowing Co to vary linearly with dc-voltage input, default value is zero (1/V)
-        Pnt      AC-power consumed by inverter at night (night tare) to maintain circuitry required to sense PV array voltage (W)
-        ======   ============================================================================================================================================================================================
+        ======   ============================================================
+        Pac0     AC-power output from inverter based on input power
+                 and voltage (W) 
+        Pdc0     DC-power input to inverter, typically assumed to be equal
+                 to the PV array maximum power (W)
+        Vdc0     DC-voltage level at which the AC-power rating is achieved
+                 at the reference operating condition (V)
+        Ps0      DC-power required to start the inversion process, or
+                 self-consumption by inverter, strongly influences inverter
+                 efficiency at low power levels (W)
+        C0       Parameter defining the curvature (parabolic) of the
+                 relationship between ac-power and dc-power at the reference
+                 operating condition, default value of zero gives a
+                 linear relationship (1/W)
+        C1       Empirical coefficient allowing Pdco to vary linearly
+                 with dc-voltage input, default value is zero (1/V)
+        C2       Empirical coefficient allowing Pso to vary linearly with
+                 dc-voltage input, default value is zero (1/V)
+        C3       Empirical coefficient allowing Co to vary linearly with
+                 dc-voltage input, default value is zero (1/V)
+        Pnt      AC-power consumed by inverter at night (night tare) to
+                 maintain circuitry required to sense PV array voltage (W)
+        ======   ============================================================
 
     Vdc : float or DataFrame
         DC voltages, in volts, which are provided as input to the inverter. 
@@ -1084,15 +1147,14 @@ def snlinverter(inverter, Vmp, Pmp):
 
     References
     ----------
-    [1] (SAND2007-5036, "Performance Model for Grid-Connected Photovoltaic 
-    Inverters by D. King, S. Gonzalez, G. Galbraith, W. Boyson)
+    [1] SAND2007-5036, "Performance Model for Grid-Connected Photovoltaic 
+    Inverters by D. King, S. Gonzalez, G. Galbraith, W. Boyson
 
     [2] System Advisor Model web page. https://sam.nrel.gov.
 
     See also
     --------
     sapm
-    samlibrary
     singlediode
     '''
 

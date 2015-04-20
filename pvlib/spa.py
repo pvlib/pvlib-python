@@ -1113,8 +1113,11 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     References
     ----------
-    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
-    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation
+    applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
+
+    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
+    solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
     """
     if USE_NUMBA:
         do_calc = solar_position_numba

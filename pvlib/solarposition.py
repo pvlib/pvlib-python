@@ -58,8 +58,12 @@ def get_solarposition(time, location, method='nrel_numpy', pressure=101325,
 
     References
     ----------
-    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
-    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation
+    applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
+
+    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
+    solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+
     [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
     """
 
@@ -123,6 +127,7 @@ def spa_c(time, location, pressure=101325, temperature=12, delta_t=67.0,
     References
     ----------
     NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+
     USNO delta T: http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
 
     See also
@@ -153,7 +158,7 @@ def spa_c(time, location, pressure=101325, temperature=12, delta_t=67.0,
                                 hour=date.hour,
                                 minute=date.minute,
                                 second=date.second,
-                                timezone=0,  # timezone corrections handled above
+                                timezone=0,  # tz corrections handled above
                                 latitude=location.latitude,
                                 longitude=location.longitude,
                                 elevation=location.altitude,
@@ -252,8 +257,12 @@ def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
 
     References
     ----------
-    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
-    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+    [1] I. Reda and A. Andreas, Solar position algorithm for solar
+    radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
+
+    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
+    solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+
     [3] USNO delta T: http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
 
     See also
@@ -334,7 +343,9 @@ def get_sun_rise_set_transit(time, location, how='numpy', delta_t=None,
 
     References
     ----------
-    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar radiation applications. Technical report: NREL/TP-560- 34302. Golden, USA, http://www.nrel.gov.
+    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+    USA, http://www.nrel.gov.
     """
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 

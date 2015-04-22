@@ -27,7 +27,8 @@ if os.getenv('PVLIB_USE_NUMBA', '0') != '0':
     try:
         from numba import jit, __version__
     except ImportError:
-        warnings.warn('Could not import numba, falling back to numpy calculation')
+        warnings.warn('Could not import numba, falling back to numpy ' +
+                      'calculation')
         jcompile = nocompile
         USE_NUMBA = False
     else:
@@ -37,7 +38,8 @@ if os.getenv('PVLIB_USE_NUMBA', '0') != '0':
             jcompile = jit
             USE_NUMBA = True
         else:
-            warnings.warn('Numba version must be >= 0.17.0, falling back to numpy')
+            warnings.warn('Numba version must be >= 0.17.0, falling back to ' +
+                          'numpy')
             jcompile = nocompile
             USE_NUMBA = False
 else:
@@ -46,7 +48,7 @@ else:
 
 
 TABLE_1_DICT = {
-    'L0':np.array(
+    'L0': np.array(
         [[175347046.0, 0.0, 0.0],
          [3341656.0, 4.6692568, 6283.07585],
          [34894.0, 4.6261, 12566.1517],
@@ -111,7 +113,7 @@ TABLE_1_DICT = {
          [30.0, 0.44, 83996.85],
          [30.0, 2.74, 1349.87],
          [25.0, 3.16, 4690.48]]),
-    'L1':np.array(
+    'L1': np.array(
         [[628331966747.0, 0.0, 0.0],
          [206059.0, 2.678235, 6283.07585],
          [4303.0, 2.6351, 12566.1517],
@@ -145,8 +147,8 @@ TABLE_1_DICT = {
          [9.0, 5.64, 951.72],
          [8.0, 5.3, 2352.87],
          [6.0, 2.65, 9437.76],
-          [6.0, 4.67, 4690.48]]),
-    'L2':np.array(
+         [6.0, 4.67, 4690.48]]),
+    'L2': np.array(
         [[52919.0, 0.0, 0.0],
          [8720.0, 1.0721, 6283.0758],
          [309.0, 0.867, 12566.152],
@@ -167,7 +169,7 @@ TABLE_1_DICT = {
          [3.0, 2.28, 553.57],
          [2.0, 4.38, 5223.69],
          [2.0, 3.75, 0.98]]),
-    'L3':np.array(
+    'L3': np.array(
         [[289.0, 5.844, 6283.076],
          [35.0, 0.0, 0.0],
          [17.0, 5.49, 12566.15],
@@ -175,22 +177,22 @@ TABLE_1_DICT = {
          [1.0, 4.72, 3.52],
          [1.0, 5.3, 18849.23],
          [1.0, 5.97, 242.73]]),
-    'L4':np.array(
-        [[114.0, 3.142, 0.0], 
-         [8.0, 4.13, 6283.08], 
+    'L4': np.array(
+        [[114.0, 3.142, 0.0],
+         [8.0, 4.13, 6283.08],
          [1.0, 3.84, 12566.15]]),
-    'L5':np.array(
+    'L5': np.array(
         [[1.0, 3.14, 0.0]]),
-    'B0':np.array(
+    'B0': np.array(
         [[280.0, 3.199, 84334.662],
          [102.0, 5.422, 5507.553],
          [80.0, 3.88, 5223.69],
          [44.0, 3.7, 2352.87],
          [32.0, 4.0, 1577.34]]),
-    'B1':np.array(
-        [[9.0, 3.9, 5507.55], 
+    'B1': np.array(
+        [[9.0, 3.9, 5507.55],
          [6.0, 1.73, 5223.69]]),
-    'R0':np.array(
+    'R0': np.array(
         [[100013989.0, 0.0, 0.0],
          [1670700.0, 3.0984635, 6283.07585],
          [13956.0, 3.05525, 12566.1517],
@@ -231,7 +233,7 @@ TABLE_1_DICT = {
          [28.0, 1.21, 6286.6],
          [28.0, 1.9, 6279.55],
          [26.0, 4.59, 10447.39]]),
-    'R1':np.array(
+    'R1': np.array(
         [[103019.0, 1.10749, 6283.07585],
          [1721.0, 1.0644, 12566.1517],
          [702.0, 3.142, 0.0],
@@ -242,33 +244,33 @@ TABLE_1_DICT = {
          [10.0, 5.91, 10977.08],
          [9.0, 1.42, 6275.96],
          [9.0, 0.27, 5486.78]]),
-    'R2':np.array(
+    'R2': np.array(
         [[4359.0, 5.7846, 6283.0758],
          [124.0, 5.579, 12566.152],
          [12.0, 3.14, 0.0],
          [9.0, 3.63, 77713.77],
          [6.0, 1.87, 5573.14],
          [3.0, 5.47, 18849.23]]),
-    'R3':np.array(
-        [[145.0, 4.273, 6283.076], 
+    'R3': np.array(
+        [[145.0, 4.273, 6283.076],
          [7.0, 3.92, 12566.15]]),
-    'R4':np.array(
+    'R4': np.array(
         [[4.0, 2.56, 6283.08]])
 }
-                  
 
-TABLE_1_DICT['L1'].resize((64,3))
-TABLE_1_DICT['L2'].resize((64,3))
-TABLE_1_DICT['L3'].resize((64,3))
-TABLE_1_DICT['L4'].resize((64,3))
-TABLE_1_DICT['L5'].resize((64,3))
 
-TABLE_1_DICT['B1'].resize((5,3))
+TABLE_1_DICT['L1'].resize((64, 3))
+TABLE_1_DICT['L2'].resize((64, 3))
+TABLE_1_DICT['L3'].resize((64, 3))
+TABLE_1_DICT['L4'].resize((64, 3))
+TABLE_1_DICT['L5'].resize((64, 3))
 
-TABLE_1_DICT['R1'].resize((40,3))
-TABLE_1_DICT['R2'].resize((40,3))
-TABLE_1_DICT['R3'].resize((40,3))
-TABLE_1_DICT['R4'].resize((40,3))
+TABLE_1_DICT['B1'].resize((5, 3))
+
+TABLE_1_DICT['R1'].resize((40, 3))
+TABLE_1_DICT['R2'].resize((40, 3))
+TABLE_1_DICT['R3'].resize((40, 3))
+TABLE_1_DICT['R4'].resize((40, 3))
 
 
 HELIO_LONG_TABLE = np.array([TABLE_1_DICT['L0'],
@@ -291,141 +293,141 @@ HELIO_RADIUS_TABLE = np.array([TABLE_1_DICT['R0'],
 
 
 NUTATION_ABCD_ARRAY = np.array([
-    [-171996,-174.2,92025,8.9],
-    [-13187,-1.6,5736,-3.1],
-    [-2274,-0.2,977,-0.5],
-    [2062,0.2,-895,0.5],
-    [1426,-3.4,54,-0.1],
-    [712,0.1,-7,0],
-    [-517,1.2,224,-0.6],
-    [-386,-0.4,200,0],
-    [-301,0,129,-0.1],
-    [217,-0.5,-95,0.3],
-    [-158,0,0,0],
-    [129,0.1,-70,0],
-    [123,0,-53,0],
-    [63,0,0,0],
-    [63,0.1,-33,0],
-    [-59,0,26,0],
-    [-58,-0.1,32,0],
-    [-51,0,27,0],
-    [48,0,0,0],
-    [46,0,-24,0],
-    [-38,0,16,0],
-    [-31,0,13,0],
-    [29,0,0,0],
-    [29,0,-12,0],
-    [26,0,0,0],
-    [-22,0,0,0],
-    [21,0,-10,0],
-    [17,-0.1,0,0],
-    [16,0,-8,0],
-    [-16,0.1,7,0],
-    [-15,0,9,0],
-    [-13,0,7,0],
-    [-12,0,6,0],
-    [11,0,0,0],
-    [-10,0,5,0],
-    [-8,0,3,0],
-    [7,0,-3,0],
-    [-7,0,0,0],
-    [-7,0,3,0],
-    [-7,0,3,0],
-    [6,0,0,0],
-    [6,0,-3,0],
-    [6,0,-3,0],
-    [-6,0,3,0],
-    [-6,0,3,0],
-    [5,0,0,0],
-    [-5,0,3,0],
-    [-5,0,3,0],
-    [-5,0,3,0],
-    [4,0,0,0],
-    [4,0,0,0],
-    [4,0,0,0],
-    [-4,0,0,0],
-    [-4,0,0,0],
-    [-4,0,0,0],
-    [3,0,0,0],
-    [-3,0,0,0],
-    [-3,0,0,0],
-    [-3,0,0,0],
-    [-3,0,0,0],
-    [-3,0,0,0],
-    [-3,0,0,0],
-    [-3,0,0,0],
+    [-171996, -174.2, 92025, 8.9],
+    [-13187, -1.6, 5736, -3.1],
+    [-2274, -0.2, 977, -0.5],
+    [2062, 0.2, -895, 0.5],
+    [1426, -3.4, 54, -0.1],
+    [712, 0.1, -7, 0],
+    [-517, 1.2, 224, -0.6],
+    [-386, -0.4, 200, 0],
+    [-301, 0, 129, -0.1],
+    [217, -0.5, -95, 0.3],
+    [-158, 0, 0, 0],
+    [129, 0.1, -70, 0],
+    [123, 0, -53, 0],
+    [63, 0, 0, 0],
+    [63, 0.1, -33, 0],
+    [-59, 0, 26, 0],
+    [-58, -0.1, 32, 0],
+    [-51, 0, 27, 0],
+    [48, 0, 0, 0],
+    [46, 0, -24, 0],
+    [-38, 0, 16, 0],
+    [-31, 0, 13, 0],
+    [29, 0, 0, 0],
+    [29, 0, -12, 0],
+    [26, 0, 0, 0],
+    [-22, 0, 0, 0],
+    [21, 0, -10, 0],
+    [17, -0.1, 0, 0],
+    [16, 0, -8, 0],
+    [-16, 0.1, 7, 0],
+    [-15, 0, 9, 0],
+    [-13, 0, 7, 0],
+    [-12, 0, 6, 0],
+    [11, 0, 0, 0],
+    [-10, 0, 5, 0],
+    [-8, 0, 3, 0],
+    [7, 0, -3, 0],
+    [-7, 0, 0, 0],
+    [-7, 0, 3, 0],
+    [-7, 0, 3, 0],
+    [6, 0, 0, 0],
+    [6, 0, -3, 0],
+    [6, 0, -3, 0],
+    [-6, 0, 3, 0],
+    [-6, 0, 3, 0],
+    [5, 0, 0, 0],
+    [-5, 0, 3, 0],
+    [-5, 0, 3, 0],
+    [-5, 0, 3, 0],
+    [4, 0, 0, 0],
+    [4, 0, 0, 0],
+    [4, 0, 0, 0],
+    [-4, 0, 0, 0],
+    [-4, 0, 0, 0],
+    [-4, 0, 0, 0],
+    [3, 0, 0, 0],
+    [-3, 0, 0, 0],
+    [-3, 0, 0, 0],
+    [-3, 0, 0, 0],
+    [-3, 0, 0, 0],
+    [-3, 0, 0, 0],
+    [-3, 0, 0, 0],
+    [-3, 0, 0, 0],
 ])
 
 
 NUTATION_YTERM_ARRAY = np.array([
-    [0,0,0,0,1],
-    [-2,0,0,2,2],
-    [0,0,0,2,2],
-    [0,0,0,0,2],
-    [0,1,0,0,0],
-    [0,0,1,0,0],
-    [-2,1,0,2,2],
-    [0,0,0,2,1],
-    [0,0,1,2,2],
-    [-2,-1,0,2,2],
-    [-2,0,1,0,0],
-    [-2,0,0,2,1],
-    [0,0,-1,2,2],
-    [2,0,0,0,0],
-    [0,0,1,0,1],
-    [2,0,-1,2,2],
-    [0,0,-1,0,1],
-    [0,0,1,2,1],
-    [-2,0,2,0,0],
-    [0,0,-2,2,1],
-    [2,0,0,2,2],
-    [0,0,2,2,2],
-    [0,0,2,0,0],
-    [-2,0,1,2,2],
-    [0,0,0,2,0],
-    [-2,0,0,2,0],
-    [0,0,-1,2,1],
-    [0,2,0,0,0],
-    [2,0,-1,0,1],
-    [-2,2,0,2,2],
-    [0,1,0,0,1],
-    [-2,0,1,0,1],
-    [0,-1,0,0,1],
-    [0,0,2,-2,0],
-    [2,0,-1,2,1],
-    [2,0,1,2,2],
-    [0,1,0,2,2],
-    [-2,1,1,0,0],
-    [0,-1,0,2,2],
-    [2,0,0,2,1],
-    [2,0,1,0,0],
-    [-2,0,2,2,2],
-    [-2,0,1,2,1],
-    [2,0,-2,0,1],
-    [2,0,0,0,1],
-    [0,-1,1,0,0],
-    [-2,-1,0,2,1],
-    [-2,0,0,0,1],
-    [0,0,2,2,1],
-    [-2,0,2,0,1],
-    [-2,1,0,2,1],
-    [0,0,1,-2,0],
-    [-1,0,1,0,0],
-    [-2,1,0,0,0],
-    [1,0,0,0,0],
-    [0,0,1,2,0],
-    [0,0,-2,2,2],
-    [-1,-1,1,0,0],
-    [0,1,1,0,0],
-    [0,-1,1,2,2],
-    [2,-1,-1,2,2],
-    [0,0,3,2,2],
-    [2,-1,0,2,2],
+    [0, 0, 0, 0, 1],
+    [-2, 0, 0, 2, 2],
+    [0, 0, 0, 2, 2],
+    [0, 0, 0, 0, 2],
+    [0, 1, 0, 0, 0],
+    [0, 0, 1, 0, 0],
+    [-2, 1, 0, 2, 2],
+    [0, 0, 0, 2, 1],
+    [0, 0, 1, 2, 2],
+    [-2, -1, 0, 2, 2],
+    [-2, 0, 1, 0, 0],
+    [-2, 0, 0, 2, 1],
+    [0, 0, -1, 2, 2],
+    [2, 0, 0, 0, 0],
+    [0, 0, 1, 0, 1],
+    [2, 0, -1, 2, 2],
+    [0, 0, -1, 0, 1],
+    [0, 0, 1, 2, 1],
+    [-2, 0, 2, 0, 0],
+    [0, 0, -2, 2, 1],
+    [2, 0, 0, 2, 2],
+    [0, 0, 2, 2, 2],
+    [0, 0, 2, 0, 0],
+    [-2, 0, 1, 2, 2],
+    [0, 0, 0, 2, 0],
+    [-2, 0, 0, 2, 0],
+    [0, 0, -1, 2, 1],
+    [0, 2, 0, 0, 0],
+    [2, 0, -1, 0, 1],
+    [-2, 2, 0, 2, 2],
+    [0, 1, 0, 0, 1],
+    [-2, 0, 1, 0, 1],
+    [0, -1, 0, 0, 1],
+    [0, 0, 2, -2, 0],
+    [2, 0, -1, 2, 1],
+    [2, 0, 1, 2, 2],
+    [0, 1, 0, 2, 2],
+    [-2, 1, 1, 0, 0],
+    [0, -1, 0, 2, 2],
+    [2, 0, 0, 2, 1],
+    [2, 0, 1, 0, 0],
+    [-2, 0, 2, 2, 2],
+    [-2, 0, 1, 2, 1],
+    [2, 0, -2, 0, 1],
+    [2, 0, 0, 0, 1],
+    [0, -1, 1, 0, 0],
+    [-2, -1, 0, 2, 1],
+    [-2, 0, 0, 0, 1],
+    [0, 0, 2, 2, 1],
+    [-2, 0, 2, 0, 1],
+    [-2, 1, 0, 2, 1],
+    [0, 0, 1, -2, 0],
+    [-1, 0, 1, 0, 0],
+    [-2, 1, 0, 0, 0],
+    [1, 0, 0, 0, 0],
+    [0, 0, 1, 2, 0],
+    [0, 0, -2, 2, 2],
+    [-1, -1, 1, 0, 0],
+    [0, 1, 1, 0, 0],
+    [0, -1, 1, 2, 2],
+    [2, -1, -1, 2, 2],
+    [0, 0, 3, 2, 2],
+    [2, -1, 0, 2, 2],
 ])
 
-                             
-@jcompile('float64(int64, int64, int64, int64, int64, int64, int64)', 
-           nopython=True)
+
+@jcompile('float64(int64, int64, int64, int64, int64, int64, int64)',
+          nopython=True)
 def julian_day_dt(year, month, day, hour, minute, second, microsecond):
     """This is the original way to calculate the julian day from the NREL paper.
     However, it is much faster to convert to unix/epoch time and then convert
@@ -435,10 +437,10 @@ def julian_day_dt(year, month, day, hour, minute, second, microsecond):
         month = month+12
     a = int(year/100)
     b = 2 - a + int(a * 0.25)
-    frac_of_day = (microsecond + (second + minute * 60 + hour * 3600 )
+    frac_of_day = (microsecond + (second + minute * 60 + hour * 3600)
                    ) * 1.0 / (3600*24)
     d = day + frac_of_day
-    jd = (int(365.25 * (year + 4716)) + int(30.6001 * (month + 1)) + d + 
+    jd = (int(365.25 * (year + 4716)) + int(30.6001 * (month + 1)) + d +
           b - 1524.5)
     return jd
 
@@ -483,32 +485,32 @@ def heliocentric_longitude(jme):
     l5 = 0.0
 
     for row in range(HELIO_LONG_TABLE.shape[1]):
-        l0 += (HELIO_LONG_TABLE[0, row, 0] 
+        l0 += (HELIO_LONG_TABLE[0, row, 0]
                * np.cos(HELIO_LONG_TABLE[0, row, 1]
                         + HELIO_LONG_TABLE[0, row, 2] * jme)
-            )
-        l1 += (HELIO_LONG_TABLE[1, row, 0] 
+               )
+        l1 += (HELIO_LONG_TABLE[1, row, 0]
                * np.cos(HELIO_LONG_TABLE[1, row, 1]
                         + HELIO_LONG_TABLE[1, row, 2] * jme)
-            )
-        l2 += (HELIO_LONG_TABLE[2, row, 0] 
+               )
+        l2 += (HELIO_LONG_TABLE[2, row, 0]
                * np.cos(HELIO_LONG_TABLE[2, row, 1]
                         + HELIO_LONG_TABLE[2, row, 2] * jme)
-            )
-        l3 += (HELIO_LONG_TABLE[3, row, 0] 
+               )
+        l3 += (HELIO_LONG_TABLE[3, row, 0]
                * np.cos(HELIO_LONG_TABLE[3, row, 1]
                         + HELIO_LONG_TABLE[3, row, 2] * jme)
-            )
-        l4 += (HELIO_LONG_TABLE[4, row, 0] 
+               )
+        l4 += (HELIO_LONG_TABLE[4, row, 0]
                * np.cos(HELIO_LONG_TABLE[4, row, 1]
                         + HELIO_LONG_TABLE[4, row, 2] * jme)
-            )
-        l5 += (HELIO_LONG_TABLE[5, row, 0] 
+               )
+        l5 += (HELIO_LONG_TABLE[5, row, 0]
                * np.cos(HELIO_LONG_TABLE[5, row, 1]
                         + HELIO_LONG_TABLE[5, row, 2] * jme)
-            )
+               )
 
-    l_rad = (l0 + l1 * jme + l2 * jme**2 + l3 * jme**3 + l4 * jme**4 + 
+    l_rad = (l0 + l1 * jme + l2 * jme**2 + l3 * jme**3 + l4 * jme**4 +
              l5 * jme**5)/10**8
     l = np.rad2deg(l_rad)
     return l % 360
@@ -519,11 +521,11 @@ def heliocentric_latitude(jme):
     b0 = 0.0
     b1 = 0.0
     for row in range(HELIO_LAT_TABLE.shape[1]):
-        b0 += (HELIO_LAT_TABLE[0, row, 0] 
+        b0 += (HELIO_LAT_TABLE[0, row, 0]
                * np.cos(HELIO_LAT_TABLE[0, row, 1]
                         + HELIO_LAT_TABLE[0, row, 2] * jme)
-            )
-        b1 += (HELIO_LAT_TABLE[1, row, 0] 
+               )
+        b1 += (HELIO_LAT_TABLE[1, row, 0]
                * np.cos(HELIO_LAT_TABLE[1, row, 1]
                         + HELIO_LAT_TABLE[1, row, 2] * jme)
                )
@@ -541,26 +543,26 @@ def heliocentric_radius_vector(jme):
     r3 = 0.0
     r4 = 0.0
     for row in range(HELIO_RADIUS_TABLE.shape[1]):
-        r0 += (HELIO_RADIUS_TABLE[0, row, 0] 
+        r0 += (HELIO_RADIUS_TABLE[0, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[0, row, 1]
                         + HELIO_RADIUS_TABLE[0, row, 2] * jme)
-            )
-        r1 += (HELIO_RADIUS_TABLE[1, row, 0] 
+               )
+        r1 += (HELIO_RADIUS_TABLE[1, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[1, row, 1]
                         + HELIO_RADIUS_TABLE[1, row, 2] * jme)
-            )
-        r2 += (HELIO_RADIUS_TABLE[2, row, 0] 
+               )
+        r2 += (HELIO_RADIUS_TABLE[2, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[2, row, 1]
                         + HELIO_RADIUS_TABLE[2, row, 2] * jme)
-            )
-        r3 += (HELIO_RADIUS_TABLE[3, row, 0] 
+               )
+        r3 += (HELIO_RADIUS_TABLE[3, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[3, row, 1]
                         + HELIO_RADIUS_TABLE[3, row, 2] * jme)
-            )
-        r4 += (HELIO_RADIUS_TABLE[4, row, 0] 
+               )
+        r4 += (HELIO_RADIUS_TABLE[4, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[4, row, 1]
                         + HELIO_RADIUS_TABLE[4, row, 2] * jme)
-            )
+               )
 
     r = (r0 + r1 * jme + r2 * jme**2 + r3 * jme**3 + r4 * jme**4)/10**8
     return r
@@ -580,16 +582,16 @@ def geocentric_latitude(heliocentric_latitude):
 
 @jcompile('float64(float64)', nopython=True)
 def mean_elongation(julian_ephemeris_century):
-    x0 = (297.85036 
-          + 445267.111480 * julian_ephemeris_century 
-          - 0.0019142 * julian_ephemeris_century**2 
+    x0 = (297.85036
+          + 445267.111480 * julian_ephemeris_century
+          - 0.0019142 * julian_ephemeris_century**2
           + julian_ephemeris_century**3 / 189474)
     return x0
 
 
 @jcompile('float64(float64)', nopython=True)
 def mean_anomaly_sun(julian_ephemeris_century):
-    x1 = (357.52772 
+    x1 = (357.52772
           + 35999.050340 * julian_ephemeris_century
           - 0.0001603 * julian_ephemeris_century**2
           - julian_ephemeris_century**3 / 300000)
@@ -598,7 +600,7 @@ def mean_anomaly_sun(julian_ephemeris_century):
 
 @jcompile('float64(float64)', nopython=True)
 def mean_anomaly_moon(julian_ephemeris_century):
-    x2 = (134.96298 
+    x2 = (134.96298
           + 477198.867398 * julian_ephemeris_century
           + 0.0086972 * julian_ephemeris_century**2
           + julian_ephemeris_century**3 / 56250)
@@ -623,36 +625,36 @@ def moon_ascending_longitude(julian_ephemeris_century):
     return x4
 
 
-@jcompile('float64(float64, float64, float64, float64, float64, float64)', 
+@jcompile('float64(float64, float64, float64, float64, float64, float64)',
           nopython=True)
 def longitude_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     delta_psi_sum = 0
     for row in range(NUTATION_YTERM_ARRAY.shape[0]):
-        a = NUTATION_ABCD_ARRAY[row,0]
-        b = NUTATION_ABCD_ARRAY[row,1]
-        argsin = (NUTATION_YTERM_ARRAY[row,0]*x0 + 
-                  NUTATION_YTERM_ARRAY[row,1]*x1 + 
-                  NUTATION_YTERM_ARRAY[row,2]*x2 + 
-                  NUTATION_YTERM_ARRAY[row,3]*x3 +
-                  NUTATION_YTERM_ARRAY[row,4]*x4)
+        a = NUTATION_ABCD_ARRAY[row, 0]
+        b = NUTATION_ABCD_ARRAY[row, 1]
+        argsin = (NUTATION_YTERM_ARRAY[row, 0]*x0 +
+                  NUTATION_YTERM_ARRAY[row, 1]*x1 +
+                  NUTATION_YTERM_ARRAY[row, 2]*x2 +
+                  NUTATION_YTERM_ARRAY[row, 3]*x3 +
+                  NUTATION_YTERM_ARRAY[row, 4]*x4)
         term = (a + b * julian_ephemeris_century) * np.sin(np.radians(argsin))
         delta_psi_sum += term
     delta_psi = delta_psi_sum*1.0/36000000
     return delta_psi
 
 
-@jcompile('float64(float64, float64, float64, float64, float64, float64)', 
+@jcompile('float64(float64, float64, float64, float64, float64, float64)',
           nopython=True)
 def obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     delta_eps_sum = 0.0
     for row in range(NUTATION_YTERM_ARRAY.shape[0]):
-        c = NUTATION_ABCD_ARRAY[row,2]
-        d = NUTATION_ABCD_ARRAY[row,3]
-        argcos = (NUTATION_YTERM_ARRAY[row,0]*x0 + 
-                  NUTATION_YTERM_ARRAY[row,1]*x1 + 
-                  NUTATION_YTERM_ARRAY[row,2]*x2 + 
-                  NUTATION_YTERM_ARRAY[row,3]*x3 +
-                  NUTATION_YTERM_ARRAY[row,4]*x4)
+        c = NUTATION_ABCD_ARRAY[row, 2]
+        d = NUTATION_ABCD_ARRAY[row, 3]
+        argcos = (NUTATION_YTERM_ARRAY[row, 0]*x0 +
+                  NUTATION_YTERM_ARRAY[row, 1]*x1 +
+                  NUTATION_YTERM_ARRAY[row, 2]*x2 +
+                  NUTATION_YTERM_ARRAY[row, 3]*x3 +
+                  NUTATION_YTERM_ARRAY[row, 4]*x4)
         term = (c + d * julian_ephemeris_century) * np.cos(np.radians(argcos))
         delta_eps_sum += term
     delta_eps = delta_eps_sum*1.0/36000000
@@ -675,7 +677,7 @@ def true_ecliptic_obliquity(mean_ecliptic_obliquity, obliquity_nutation):
     deleps = obliquity_nutation
     e = e0*1.0/3600 + deleps
     return e
-        
+
 
 @jcompile('float64(float64)', nopython=True)
 def aberration_correction(earth_radius_vector):
@@ -684,7 +686,7 @@ def aberration_correction(earth_radius_vector):
 
 
 @jcompile('float64(float64, float64, float64)', nopython=True)
-def apparent_sun_longitude(geocentric_longitude, longitude_nutation, 
+def apparent_sun_longitude(geocentric_longitude, longitude_nutation,
                            aberration_correction):
     lamd = geocentric_longitude + longitude_nutation + aberration_correction
     return lamd
@@ -692,26 +694,26 @@ def apparent_sun_longitude(geocentric_longitude, longitude_nutation,
 
 @jcompile('float64(float64, float64)', nopython=True)
 def mean_sidereal_time(julian_day, julian_century):
-    v0 = (280.46061837 + 360.98564736629 * (julian_day - 2451545) 
+    v0 = (280.46061837 + 360.98564736629 * (julian_day - 2451545)
           + 0.000387933 * julian_century**2 - julian_century**3 / 38710000)
     return v0 % 360.0
 
 
 @jcompile('float64(float64, float64, float64)', nopython=True)
-def apparent_sidereal_time(mean_sidereal_time, longitude_nutation, 
+def apparent_sidereal_time(mean_sidereal_time, longitude_nutation,
                            true_ecliptic_obliquity):
-    v= mean_sidereal_time + longitude_nutation * np.cos(
+    v = mean_sidereal_time + longitude_nutation * np.cos(
         np.radians(true_ecliptic_obliquity))
     return v
 
-          
+
 @jcompile('float64(float64, float64, float64)', nopython=True)
-def geocentric_sun_right_ascension(apparent_sun_longitude, 
-                                   true_ecliptic_obliquity, 
+def geocentric_sun_right_ascension(apparent_sun_longitude,
+                                   true_ecliptic_obliquity,
                                    geocentric_latitude):
-    num = (np.sin(np.radians(apparent_sun_longitude)) 
+    num = (np.sin(np.radians(apparent_sun_longitude))
            * np.cos(np.radians(true_ecliptic_obliquity))
-           - np.tan(np.radians(geocentric_latitude)) 
+           - np.tan(np.radians(geocentric_latitude))
            * np.sin(np.radians(true_ecliptic_obliquity)))
     alpha = np.degrees(np.arctan2(num, np.cos(
         np.radians(apparent_sun_longitude))))
@@ -719,18 +721,18 @@ def geocentric_sun_right_ascension(apparent_sun_longitude,
 
 
 @jcompile('float64(float64, float64, float64)', nopython=True)
-def geocentric_sun_declination(apparent_sun_longitude, true_ecliptic_obliquity, 
+def geocentric_sun_declination(apparent_sun_longitude, true_ecliptic_obliquity,
                                geocentric_latitude):
-    delta = np.degrees(np.arcsin(np.sin(np.radians(geocentric_latitude)) * 
+    delta = np.degrees(np.arcsin(np.sin(np.radians(geocentric_latitude)) *
                                  np.cos(np.radians(true_ecliptic_obliquity)) +
                                  np.cos(np.radians(geocentric_latitude)) *
-                                 np.sin(np.radians(true_ecliptic_obliquity))*
+                                 np.sin(np.radians(true_ecliptic_obliquity)) *
                                  np.sin(np.radians(apparent_sun_longitude))))
     return delta
 
 
 @jcompile('float64(float64, float64, float64)', nopython=True)
-def local_hour_angle(apparent_sidereal_time, observer_longitude, 
+def local_hour_angle(apparent_sidereal_time, observer_longitude,
                      sun_right_ascension):
     """Measured westward from south"""
     H = apparent_sidereal_time + observer_longitude - sun_right_ascension
@@ -751,7 +753,7 @@ def uterm(observer_latitude):
 
 @jcompile('float64(float64, float64, float64)', nopython=True)
 def xterm(u, observer_latitude, observer_elevation):
-    x = (np.cos(u) + observer_elevation / 6378140 
+    x = (np.cos(u) + observer_elevation / 6378140
          * np.cos(np.radians(observer_latitude)))
     return x
 
@@ -766,9 +768,9 @@ def yterm(u, observer_latitude, observer_elevation):
 @jcompile('float64(float64, float64,float64, float64)', nopython=True)
 def parallax_sun_right_ascension(xterm, equatorial_horizontal_parallax,
                                  local_hour_angle, geocentric_sun_declination):
-    num = (-xterm * np.sin(np.radians(equatorial_horizontal_parallax)) 
+    num = (-xterm * np.sin(np.radians(equatorial_horizontal_parallax))
            * np.sin(np.radians(local_hour_angle)))
-    denom = (np.cos(np.radians(geocentric_sun_declination)) 
+    denom = (np.cos(np.radians(geocentric_sun_declination))
              - xterm * np.sin(np.radians(equatorial_horizontal_parallax))
              * np.cos(np.radians(local_hour_angle)))
     delta_alpha = np.degrees(np.arctan2(num, denom))
@@ -782,8 +784,8 @@ def topocentric_sun_right_ascension(geocentric_sun_right_ascension,
     return alpha_prime
 
 
-@jcompile('float64(float64, float64, float64, float64, float64, float64)', 
-           nopython=True)
+@jcompile('float64(float64, float64, float64, float64, float64, float64)',
+          nopython=True)
 def topocentric_sun_declination(geocentric_sun_declination, xterm, yterm,
                                 equatorial_horizontal_parallax,
                                 parallax_sun_right_ascension,
@@ -791,7 +793,7 @@ def topocentric_sun_declination(geocentric_sun_declination, xterm, yterm,
     num = ((np.sin(np.radians(geocentric_sun_declination)) - yterm
             * np.sin(np.radians(equatorial_horizontal_parallax)))
            * np.cos(np.radians(parallax_sun_right_ascension)))
-    denom = (np.cos(np.radians(geocentric_sun_declination)) - xterm 
+    denom = (np.cos(np.radians(geocentric_sun_declination)) - xterm
              * np.sin(np.radians(equatorial_horizontal_parallax))
              * np.cos(np.radians(local_hour_angle)))
     delta = np.degrees(np.arctan2(num, denom))
@@ -799,7 +801,7 @@ def topocentric_sun_declination(geocentric_sun_declination, xterm, yterm,
 
 
 @jcompile('float64(float64, float64)', nopython=True)
-def topocentric_local_hour_angle(local_hour_angle, 
+def topocentric_local_hour_angle(local_hour_angle,
                                  parallax_sun_right_ascension):
     H_prime = local_hour_angle - parallax_sun_right_ascension
     return H_prime
@@ -807,10 +809,11 @@ def topocentric_local_hour_angle(local_hour_angle,
 
 @jcompile('float64(float64, float64, float64)', nopython=True)
 def topocentric_elevation_angle_without_atmosphere(observer_latitude,
-                                                topocentric_sun_declination,
-                                                topocentric_local_hour_angle):
+                                                   topocentric_sun_declination,
+                                                   topocentric_local_hour_angle
+                                                   ):
     e0 = np.degrees(np.arcsin(
-        np.sin(np.radians(observer_latitude)) 
+        np.sin(np.radians(observer_latitude))
         * np.sin(np.radians(topocentric_sun_declination))
         + np.cos(np.radians(observer_latitude))
         * np.cos(np.radians(topocentric_sun_declination))
@@ -823,8 +826,8 @@ def atmospheric_refraction_correction(local_pressure, local_temp,
                                       topocentric_elevation_angle_wo_atmosphere,
                                       atmos_refract):
     # switch sets delta_e when the sun is below the horizon
-    switch = topocentric_elevation_angle_wo_atmosphere >= -1.0 * (0.26667 + 
-                                                                  atmos_refract)
+    switch = topocentric_elevation_angle_wo_atmosphere >= -1.0 * (
+        0.26667 + atmos_refract)
     delta_e = ((local_pressure / 1010.0) * (283.0 / (273 + local_temp))
                * 1.02 / (60 * np.tan(np.radians(
                    topocentric_elevation_angle_wo_atmosphere
@@ -836,7 +839,7 @@ def atmospheric_refraction_correction(local_pressure, local_temp,
 @jcompile('float64(float64, float64)', nopython=True)
 def topocentric_elevation_angle(topocentric_elevation_angle_without_atmosphere,
                                 atmospheric_refraction_correction):
-    e = (topocentric_elevation_angle_without_atmosphere 
+    e = (topocentric_elevation_angle_without_atmosphere
          + atmospheric_refraction_correction)
     return e
 
@@ -849,7 +852,7 @@ def topocentric_zenith_angle(topocentric_elevation_angle):
 
 @jcompile('float64(float64, float64, float64)', nopython=True)
 def topocentric_astronomers_azimuth(topocentric_local_hour_angle,
-                                    topocentric_sun_declination, 
+                                    topocentric_sun_declination,
                                     observer_latitude):
     num = np.sin(np.radians(topocentric_local_hour_angle))
     denom = (np.cos(np.radians(topocentric_local_hour_angle))
@@ -869,7 +872,7 @@ def topocentric_azimuth_angle(topocentric_astronomers_azimuth):
 @jcompile('float64(float64)', nopython=True)
 def sun_mean_longitude(julian_ephemeris_millennium):
     M = (280.4664567 + 360007.6982779 * julian_ephemeris_millennium
-         + 0.03032028 * julian_ephemeris_millennium**2 
+         + 0.03032028 * julian_ephemeris_millennium**2
          + julian_ephemeris_millennium**3 / 49931
          - julian_ephemeris_millennium**4 / 15300
          - julian_ephemeris_millennium**5 / 2000000)
@@ -879,7 +882,7 @@ def sun_mean_longitude(julian_ephemeris_millennium):
 @jcompile('float64(float64, float64, float64, float64)', nopython=True)
 def equation_of_time(sun_mean_longitude, geocentric_sun_right_ascension,
                      longitude_nutation, true_ecliptic_obliquity):
-    E = (sun_mean_longitude - 0.0057183 - geocentric_sun_right_ascension + 
+    E = (sun_mean_longitude - 0.0057183 - geocentric_sun_right_ascension +
          longitude_nutation * np.cos(np.radians(true_ecliptic_obliquity)))
     # limit between 0 and 360
     E = E % 360
@@ -892,7 +895,7 @@ def equation_of_time(sun_mean_longitude, geocentric_sun_right_ascension,
     return E
 
 
-@jcompile('void(float64[:], float64[:], float64[:,:])', nopython=True, 
+@jcompile('void(float64[:], float64[:], float64[:,:])', nopython=True,
           nogil=True)
 def solar_position_loop(unixtime, loc_args, out):
     """Loop through the time array and calculate the solar position"""
@@ -904,7 +907,7 @@ def solar_position_loop(unixtime, loc_args, out):
     delta_t = loc_args[5]
     atmos_refract = loc_args[6]
     sst = loc_args[7]
-    
+
     for i in range(unixtime.shape[0]):
         utime = unixtime[i]
         jd = julian_day(utime)
@@ -933,9 +936,9 @@ def solar_position_loop(unixtime, loc_args, out):
         alpha = geocentric_sun_right_ascension(lamd, epsilon, beta)
         delta = geocentric_sun_declination(lamd, epsilon, beta)
         if sst:
-            out[0,i] = v
-            out[1,i] = alpha
-            out[2,i] = delta
+            out[0, i] = v
+            out[1, i] = alpha
+            out[2, i] = delta
             continue
         m = sun_mean_longitude(jme)
         eot = equation_of_time(m, alpha, delta_psi, epsilon)
@@ -946,35 +949,35 @@ def solar_position_loop(unixtime, loc_args, out):
         y = yterm(u, lat, elev)
         delta_alpha = parallax_sun_right_ascension(x, xi, H, delta)
         alpha_prime = topocentric_sun_right_ascension(alpha, delta_alpha)
-        delta_prime = topocentric_sun_declination(delta, x, y, xi, delta_alpha, 
+        delta_prime = topocentric_sun_declination(delta, x, y, xi, delta_alpha,
                                                   H)
         H_prime = topocentric_local_hour_angle(H, delta_alpha)
-        e0 = topocentric_elevation_angle_without_atmosphere(lat, delta_prime, 
+        e0 = topocentric_elevation_angle_without_atmosphere(lat, delta_prime,
                                                             H_prime)
-        delta_e = atmospheric_refraction_correction(pressure, temp, e0, 
+        delta_e = atmospheric_refraction_correction(pressure, temp, e0,
                                                     atmos_refract)
         e = topocentric_elevation_angle(e0, delta_e)
         theta = topocentric_zenith_angle(e)
         theta0 = topocentric_zenith_angle(e0)
         gamma = topocentric_astronomers_azimuth(H_prime, delta_prime, lat)
         phi = topocentric_azimuth_angle(gamma)
-        out[0,i] = theta
-        out[1,i] = theta0
-        out[2,i] = e
-        out[3,i] = e0
-        out[4,i] = phi
-        out[5,i] = eot
-        
+        out[0, i] = theta
+        out[1, i] = theta0
+        out[2, i] = e
+        out[3, i] = e0
+        out[4, i] = phi
+        out[5, i] = eot
 
-def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t, 
+
+def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
                          atmos_refract, numthreads, sst=False):
     """Calculate the solar position using the numba compiled functions
     and multiple threads. Very slow if functions are not numba compiled.
     """
-    loc_args = np.array([lat, lon, elev, pressure, temp, delta_t, 
+    loc_args = np.array([lat, lon, elev, pressure, temp, delta_t,
                          atmos_refract, sst])
     ulength = unixtime.shape[0]
-    result = np.empty((6,ulength), dtype=np.float64)
+    result = np.empty((6, ulength), dtype=np.float64)
     if unixtime.dtype != np.float64:
         unixtime = unixtime.astype(np.float64)
 
@@ -991,7 +994,7 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     split0 = np.array_split(unixtime, numthreads)
     split2 = np.array_split(result, numthreads, axis=1)
-    chunks = [ [a0, loc_args, split2[i]] for i, a0 in enumerate(split0)]
+    chunks = [[a0, loc_args, split2[i]] for i, a0 in enumerate(split0)]
     # Spawn one thread per chunk
     threads = [threading.Thread(target=solar_position_loop, args=chunk)
                for chunk in chunks]
@@ -1002,13 +1005,13 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
     return result
 
 
-def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t, 
-                         atmos_refract, numthreads, sst=False):    
+def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
+                         atmos_refract, numthreads, sst=False):
     """Calculate the solar position assuming unixtime is a numpy array. Note
-    this function will not work if the solar position functions were 
+    this function will not work if the solar position functions were
     compiled with numba.
     """
-    
+
     jd = julian_day(unixtime)
     jde = julian_ephemeris_day(jd, delta_t)
     jc = julian_century(jd)
@@ -1047,9 +1050,10 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     alpha_prime = topocentric_sun_right_ascension(alpha, delta_alpha)
     delta_prime = topocentric_sun_declination(delta, x, y, xi, delta_alpha, H)
     H_prime = topocentric_local_hour_angle(H, delta_alpha)
-    e0 = topocentric_elevation_angle_without_atmosphere(lat, delta_prime, 
+    e0 = topocentric_elevation_angle_without_atmosphere(lat, delta_prime,
                                                         H_prime)
-    delta_e = atmospheric_refraction_correction(pressure, temp, e0, atmos_refract)
+    delta_e = atmospheric_refraction_correction(pressure, temp, e0,
+                                                atmos_refract)
     e = topocentric_elevation_angle(e0, delta_e)
     theta = topocentric_zenith_angle(e)
     theta0 = topocentric_zenith_angle(e0)
@@ -1058,7 +1062,7 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     return theta, theta0, e, e0, phi, eot
 
 
-def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,  
+def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
                    atmos_refract, numthreads=8, sst=False):
 
     """
@@ -1066,7 +1070,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     NREL SPA algorithm described in [1].
 
     If numba is installed, the functions can be compiled
-    and the code runs quickly. If not, the functions 
+    and the code runs quickly. If not, the functions
     still evaluate but use numpy instead.
 
     Parameters
@@ -1085,7 +1089,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
         avg. yearly pressure at location in Pascals;
         used for atmospheric correction
     temp : int or float
-        avg. yearly temperature at location in 
+        avg. yearly temperature at location in
         degrees C; used for atmospheric correction
     delta_t : float, optional
         Difference between terrestrial time and UT1.
@@ -1094,7 +1098,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     numthreads: int, optional
-        Number of threads to use for computation if numba>=0.17 
+        Number of threads to use for computation if numba>=0.17
         is installed.
 
     Returns
@@ -1109,23 +1113,25 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     References
     ----------
-    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
-    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation
+    applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
+
+    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
+    solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
     """
     if USE_NUMBA:
         do_calc = solar_position_numba
     else:
         do_calc = solar_position_numpy
 
-
-    result = do_calc(unixtime, lat, lon, elev, pressure, 
-                     temp, delta_t, atmos_refract, numthreads, 
+    result = do_calc(unixtime, lat, lon, elev, pressure,
+                     temp, delta_t, atmos_refract, numthreads,
                      sst)
 
     if not isinstance(result, np.ndarray):
         try:
             result = np.array(result)
-        except:
+        except Exception:
             pass
 
     return result
@@ -1135,7 +1141,7 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     """
     Calculate the sun transit, sunrise, and sunset
     for a set of dates at a given location.
-    
+
     Parameters
     ----------
     dates : array
@@ -1150,7 +1156,7 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
         Difference between terrestrial time and UT. USNO has tables.
     numthreads : int
         Number to threads to use for calculation (if using numba)
-    
+
     Returns
     -------
     tuple : (transit, sunrise, sunset) localized to UTC
@@ -1164,8 +1170,8 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     ttday0 = utday - delta_t
     ttdayn1 = ttday0 - 86400
     ttdayp1 = ttday0 + 86400
-    
-    #index 0 is v, 1 is alpha, 2 is delta
+
+    # index 0 is v, 1 is alpha, 2 is delta
     utday_res = solar_position(utday, 0, 0, 0, 0, 0, delta_t,
                                0, numthreads, sst=True)
     v = utday_res[0]
@@ -1177,23 +1183,23 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     ttdayp1_res = solar_position(ttdayp1, 0, 0, 0, 0, 0, delta_t,
                                  0, numthreads, sst=True)
     m0 = (ttday0_res[1] - lon - v) / 360
-    cos_arg = ((np.sin(np.radians(-0.8333)) - np.sin(np.radians(lat)) 
-               * np.sin(np.radians(ttday0_res[2]))) / 
+    cos_arg = ((np.sin(np.radians(-0.8333)) - np.sin(np.radians(lat))
+               * np.sin(np.radians(ttday0_res[2]))) /
                (np.cos(np.radians(lat)) * np.cos(np.radians(ttday0_res[2]))))
     cos_arg[abs(cos_arg) > 1] = np.nan
     H0 = np.degrees(np.arccos(cos_arg)) % 180
 
     m = np.empty((3, len(utday)))
     m[0] = m0 % 1
-    m[1] = (m[0] - H0 / 360) #% 1
-    m[2] = (m[0] + H0 / 360) #% 1
+    m[1] = (m[0] - H0 / 360)
+    m[2] = (m[0] + H0 / 360)
 
     # need to account for fractions of day that may be the next or previous
     # day in UTC
     add_a_day = m[2] >= 1
     sub_a_day = m[1] < 0
-    m[1] = m[1] %1
-    m[2] = m[2] %1
+    m[1] = m[1] % 1
+    m[2] = m[2] % 1
     vs = v + 360.985647 * m
     n = m + delta_t / 86400
 
@@ -1215,11 +1221,11 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
 
     h = np.degrees(np.arcsin(np.sin(np.radians(lat)) *
                              np.sin(np.radians(delta_prime)) +
-                             np.cos(np.radians(lat)) * 
+                             np.cos(np.radians(lat)) *
                              np.cos(np.radians(delta_prime))
                              * np.cos(np.radians(Hp))))
 
-    T = (m[0] - Hp[0] / 360) * 86400 
+    T = (m[0] - Hp[0] / 360) * 86400
     R = (m[1] + (h[1] + 0.8333) / (360 * np.cos(np.radians(delta_prime[1])) *
                                    np.cos(np.radians(lat)) *
                                    np.sin(np.radians(Hp[1])))) * 86400
@@ -1227,13 +1233,11 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
                                    np.cos(np.radians(lat)) *
                                    np.sin(np.radians(Hp[2])))) * 86400
 
-        
     S[add_a_day] += 86400
     R[sub_a_day] -= 86400
-        
+
     transit = T + utday
     sunrise = R + utday
     sunset = S + utday
-    
 
     return transit, sunrise, sunset

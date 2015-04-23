@@ -434,12 +434,11 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
 
     References
     ----------
-
-        [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka, (1992).
+    [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka, (1992).
     "Dynamic Global-to-Direct Irradiance Conversion Models".  ASHRAE 
     Transactions-Research Series, pp. 354-369
 
-        [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly 
+    [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly 
     Global Horizontal to Direct Normal Insolation", Technical 
     Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research 
     Institute, 1987.

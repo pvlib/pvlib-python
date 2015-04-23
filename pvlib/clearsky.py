@@ -428,9 +428,10 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
         improvements are not applied.  
 
     Returns
-    -------   
-    pd.Series. The modeled direct normal irradiance in W/m^2 provided by the
-    DIRINT model. 
+    -------
+    DNI : pd.Series.
+        The modeled direct normal irradiance in W/m^2 provided by the
+        DIRINT model.
 
     References
     ----------

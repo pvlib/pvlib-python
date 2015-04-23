@@ -675,7 +675,8 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     return sky_diffuse
 
 
-def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
+def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+              solar_zenith=None, solar_azimuth=None, projection_ratio=None):
     r'''
     Determine diffuse irradiance from the sky on a
     tilted surface using Hay & Davies' 1980 model
@@ -692,46 +693,52 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
     Parameters
     ----------
 
-    surf_tilt : float or Series
+    surface_tilt : float or Series
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as
         degrees from horizontal (e.g. surface facing up = 0, surface facing
         horizon = 90)
 
-    surf_az : float or Series
-          Surface azimuth angles in decimal degrees.
-          The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, South=180 East = 90,
-          West = 270).
+    surface_azimuth : float or Series
+        Surface azimuth angles in decimal degrees.
+        The azimuth convention is defined
+        as degrees east of north (e.g. North=0, South=180, East=90,
+        West=270).
 
-    DHI : float or Series
-          diffuse horizontal irradiance in W/m^2.
+    dhi : float or Series
+        Diffuse horizontal irradiance in W/m^2.
 
-    DNI : float or Series
-          direct normal irradiance in W/m^2.
+    dni : float or Series
+        Direct normal irradiance in W/m^2.
 
-    DNI_ET : float or Series
-          extraterrestrial normal irradiance in W/m^2.
+    dni_extra : float or Series
+        Extraterrestrial normal irradiance in W/m^2.
 
-    sun_zen : float or Series
-          apparent (refraction-corrected) zenith
-          angles in decimal degrees.
+    solar_zenith : None, float or Series
+        Solar apparent (refraction-corrected) zenith
+        angles in decimal degrees.
+        Must supply ``solar_zenith`` and ``solar_azimuth`` or supply
+        ``projection_ratio``.
 
-    sun_az : float or Series
-          Sun azimuth angles in decimal degrees.
-          The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, East = 90, West = 270).
+    solar_azimuth : None, float or Series
+        Solar azimuth angles in decimal degrees.
+        Must supply ``solar_zenith`` and ``solar_azimuth`` or supply
+        ``projection_ratio``.
+
+    projection_ratio : None, float or Series
+        Ratio of angle of incidence projection to solar zenith
+        angle projection.
+        Must supply ``solar_zenith`` and ``solar_azimuth`` or supply
+        ``projection_ratio``.
 
     Returns
     --------
 
-    SkyDiffuse : float or Series
-
-          the diffuse component of the solar radiation  on an
-          arbitrarily tilted surface defined by the Perez model as given in
-          reference [3].
-          SkyDiffuse is the diffuse component ONLY and does not include the
-          ground reflected irradiance or the irradiance due to the beam.
+    sky_diffuse : float or Series
+        The diffuse component of the solar radiation on an
+        arbitrarily tilted surface defined by the Perez model as given in
+        reference [3]. Does not include the
+        ground reflected irradiance or the irradiance due to the beam.
 
     References
     -----------
@@ -747,21 +754,23 @@ def haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az):
 
     pvl_logger.debug('diffuse_sky.haydavies()')
 
-    cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
-
-    cos_sun_zen = tools.cosd(sun_zen)
-
-    # ratio of titled and horizontal beam irradiance
-    Rb = cos_tt / cos_sun_zen
+    # if necessary, calculate ratio of titled and horizontal beam irradiance
+    if projection_ratio is None:
+        cos_tt = aoi_projection(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth)
+        cos_sun_zen = tools.cosd(solar_zenith)
+        Rb = cos_tt / cos_sun_zen
+    else:
+        Rb = projection_ratio
 
     # Anisotropy Index
-    AI = DNI / DNI_ET
+    AI = dni / dni_extra
 
     # these are actually the () and [] sub-terms of the second term of eqn 7
     term1 = 1 - AI
-    term2 = 0.5 * (1 + tools.cosd(surf_tilt))
+    term2 = 0.5 * (1 + tools.cosd(surface_tilt))
 
-    sky_diffuse = DHI * (AI * Rb + term1 * term2)
+    sky_diffuse = dhi * (AI * Rb + term1 * term2)
     sky_diffuse[sky_diffuse < 0] = 0
 
     return sky_diffuse

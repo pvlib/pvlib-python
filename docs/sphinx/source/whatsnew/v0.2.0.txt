@@ -1,0 +1,42 @@
+.. _whatsnew_0200:
+
+v0.2.0 (??, 2015)
+-----------------------
+
+This is a major release from 0.1 and includes a small number of API changes,
+several new features and enhancements along with a number of bug fixes.
+We recommend that all users upgrade to this version.
+
+
+API changes
+~~~~~~~~~~~
+
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* PEP8 fixups to solarposition.py and spa.py (:issue:`50`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* fix local build of the documentation (:issue:`49`, :issue:`56`)
+
+
+Contributors
+~~~~~~~~~~~~
+
+This list includes all contributors to 
+`pvlib/pvlib-python <https://github.com/pvlib/pvlib-python>`_.
+
+* Rob Andrews
+* Will Holmgren
+* bmu
+* Tony Lorenzo
+* jforbess
+* Jorissup
+* dacoex
+* alexisph
+* Uwe Krien

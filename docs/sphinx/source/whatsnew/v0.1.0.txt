@@ -1,6 +1,6 @@
 .. _whatsnew_0100:
 
-v0.1.0 (March 17, 2015)
+v0.1.0 (April 20, 2015)
 -----------------------
 
 This is the first official release of the pvlib-python project.

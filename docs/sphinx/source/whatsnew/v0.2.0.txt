@@ -23,20 +23,12 @@ Bug fixes
 ~~~~~~~~~
 
 * fix local build of the documentation (:issue:`49`, :issue:`56`)
-
+* The release date of 0.1 was fixed in the documentation
+  (see :ref:`whatsnew_0100`)
 
 Contributors
 ~~~~~~~~~~~~
 
-This list includes all contributors to 
-`pvlib/pvlib-python <https://github.com/pvlib/pvlib-python>`_.
-
-* Rob Andrews
 * Will Holmgren
+* Rob Andrews
 * bmu
-* Tony Lorenzo
-* jforbess
-* Jorissup
-* dacoex
-* alexisph
-* Uwe Krien

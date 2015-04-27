@@ -1,0 +1,34 @@
+.. _whatsnew_0200:
+
+v0.2.0 (??, 2015)
+-----------------------
+
+This is a major release from 0.1 and includes a small number of API changes,
+several new features and enhancements along with a number of bug fixes.
+We recommend that all users upgrade to this version.
+
+
+API changes
+~~~~~~~~~~~
+
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* PEP8 fixups to solarposition.py and spa.py (:issue:`50`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* fix local build of the documentation (:issue:`49`, :issue:`56`)
+* The release date of 0.1 was fixed in the documentation
+  (see :ref:`whatsnew_0100`)
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren
+* Rob Andrews
+* bmu

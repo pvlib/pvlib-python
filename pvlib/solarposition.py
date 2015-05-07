@@ -287,7 +287,7 @@ def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = localize_to_utc(time, location).astype(int)/10**9
+    unixtime = localize_to_utc(time, location).astype(np.int64)/10**9
 
     spa = _spa_python_import(how)
 
@@ -363,7 +363,7 @@ def get_sun_rise_set_transit(time, location, how='numpy', delta_t=None,
 
     # must convert to midnight UTC on day of interest
     utcday = pd.DatetimeIndex(time.date).tz_localize('UTC')
-    unixtime = utcday.astype(int)/10**9
+    unixtime = utcday.astype(np.int64)/10**9
 
     spa = _spa_python_import(how)
 

@@ -25,6 +25,7 @@ Bug fixes
 * fix local build of the documentation (:issue:`49`, :issue:`56`)
 * The release date of 0.1 was fixed in the documentation
   (see :ref:`whatsnew_0100`)
+* fix casting of DateTimeIndex to int64 epoch timestamp on machines with 32 bit python int (:issue:`63`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -32,3 +33,4 @@ Contributors
 * Will Holmgren
 * Rob Andrews
 * bmu
+* Tony Lorenzo

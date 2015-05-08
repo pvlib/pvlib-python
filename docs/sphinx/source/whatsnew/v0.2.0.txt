@@ -26,6 +26,7 @@ Bug fixes
 * The release date of 0.1 was fixed in the documentation
   (see :ref:`whatsnew_0100`)
 * fix casting of DateTimeIndex to int64 epoch timestamp on machines with 32 bit python int (:issue:`63`)
+* fixed some docstrings with failing doctests (:issue:`62`)
 
 Contributors
 ~~~~~~~~~~~~

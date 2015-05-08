@@ -326,7 +326,8 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
         to be 1). Source [1] suggests that an appropriate value for M
         as a function absolute airmass (AMa) may be:
 
-        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093], AMa)
+        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
+        ...                AMa) # doctest: +SKIP
 
         M may be a DataFrame.
 
@@ -407,15 +408,17 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
          EgRef = 1.121
          dEgdT = -0.0002677
 
-         >>> M = polyval([-0.000126 0.002816 -0.024459 0.086257 0.918093], AMa)
+         >>> M = polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
+         ...             AMa) # doctest: +SKIP
 
-         Source = Reference 1
+         Source: Reference 1
 
      Cadmium Telluride (CdTe):
          EgRef = 1.475
          dEgdT = -0.0003
 
-         >>> M = polyval([-2.46E-5 9.607E-4 -0.0134 0.0716 0.9196], AMa)
+         >>> M = polyval([-2.46E-5, 9.607E-4, -0.0134, 0.0716, 0.9196],
+         ...             AMa) # doctest: +SKIP
 
          Source = Reference 4
 
@@ -423,7 +426,8 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
          EgRef = 1.010
          dEgdT = -0.00011
 
-         >>> M = polyval([-3.74E-5 0.00125 -0.01462 0.0718 0.9210], AMa)
+         >>> M = polyval([-3.74E-5, 0.00125, -0.01462, 0.0718, 0.9210],
+         ...             AMa) # doctest: +SKIP
 
          Source = Reference 4
 
@@ -431,7 +435,8 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
          EgRef = 1.15
          dEgdT = ????
 
-         >>> M = polyval([-9.07E-5 0.0022 -0.0202 0.0652 0.9417], AMa)
+         >>> M = polyval([-9.07E-5, 0.0022, -0.0202, 0.0652, 0.9417],
+         ...             AMa) # doctest: +SKIP
 
          Source = Wikipedia
 

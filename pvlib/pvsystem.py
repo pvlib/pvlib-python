@@ -432,8 +432,8 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
          Source: [4]
 
      Copper Indium Gallium diSelenide (CIGS):
-         EgRef = 1.15
-         dEgdT = ????
+         * EgRef = 1.15
+         * dEgdT = ????
 
          >>> M = np.polyval([-9.07E-5, 0.0022, -0.0202, 0.0652, 0.9417],
          ...                AMa) # doctest: +SKIP
@@ -444,7 +444,8 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
          * EgRef = 1.424
          * dEgdT = -0.000433
          * M = unknown
-         Source = [4]
+
+         Source: [4]
     '''
 
     M = np.max(M, 0)

@@ -1078,7 +1078,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     unixtime : numpy array
         Array of unix/epoch timestamps to calculate solar position for.
         Unixtime is the number of seconds since Jan. 1, 1970 00:00:00 UTC.
-        A pandas.DatetimeIndex is easily converted using .astype(int)/10**9
+        A pandas.DatetimeIndex is easily converted using .astype(np.int64)/10**9
     lat : float
         Latitude to calculate solar position for
     lon : float

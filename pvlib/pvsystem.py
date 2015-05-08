@@ -326,7 +326,8 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
         to be 1). Source [1] suggests that an appropriate value for M
         as a function absolute airmass (AMa) may be:
 
-        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093], AMa)
+        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
+        ...                AMa) # doctest: +SKIP
 
         M may be a DataFrame.
 
@@ -404,43 +405,47 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
     temperature, and airmass) per DeSoto's equations.
 
      Silicon (Si):
-         EgRef = 1.121
-         dEgdT = -0.0002677
+         * EgRef = 1.121
+         * dEgdT = -0.0002677
 
-         >>> M = polyval([-0.000126 0.002816 -0.024459 0.086257 0.918093], AMa)
+         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.918093],
+         ...                AMa) # doctest: +SKIP
 
-         Source = Reference 1
+         Source: [1]
 
      Cadmium Telluride (CdTe):
-         EgRef = 1.475
-         dEgdT = -0.0003
+         * EgRef = 1.475
+         * dEgdT = -0.0003
 
-         >>> M = polyval([-2.46E-5 9.607E-4 -0.0134 0.0716 0.9196], AMa)
+         >>> M = np.polyval([-2.46E-5, 9.607E-4, -0.0134, 0.0716, 0.9196],
+         ...                AMa) # doctest: +SKIP
 
-         Source = Reference 4
+         Source: [4]
 
      Copper Indium diSelenide (CIS):
-         EgRef = 1.010
-         dEgdT = -0.00011
+         * EgRef = 1.010
+         * dEgdT = -0.00011
 
-         >>> M = polyval([-3.74E-5 0.00125 -0.01462 0.0718 0.9210], AMa)
+         >>> M = np.polyval([-3.74E-5, 0.00125, -0.01462, 0.0718, 0.9210],
+         ...                AMa) # doctest: +SKIP
 
-         Source = Reference 4
+         Source: [4]
 
      Copper Indium Gallium diSelenide (CIGS):
-         EgRef = 1.15
-         dEgdT = ????
+         * EgRef = 1.15
+         * dEgdT = ????
 
-         >>> M = polyval([-9.07E-5 0.0022 -0.0202 0.0652 0.9417], AMa)
+         >>> M = np.polyval([-9.07E-5, 0.0022, -0.0202, 0.0652, 0.9417],
+         ...                AMa) # doctest: +SKIP
 
-         Source = Wikipedia
+         Source: Wikipedia
 
      Gallium Arsenide (GaAs):
+         * EgRef = 1.424
+         * dEgdT = -0.000433
+         * M = unknown
 
-         EgRef = 1.424
-         dEgdT = -0.000433
-         M = unknown
-         Source = Reference 4
+         Source: [4]
     '''
 
     M = np.max(M, 0)
@@ -506,9 +511,10 @@ def retrieve_sam(name=None, samfile=None):
     Examples
     --------
 
-    >>> invdb = pvsystem.retrieveSAM(name='SandiaInverter')
+    >>> from pvlib import pvsystem
+    >>> invdb = pvsystem.retrieve_sam(name='SandiaInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
-    >>> inverter    
+    >>> inverter
     Vac           277.000000
     Paco         6000.000000
     Pdco         6165.670000

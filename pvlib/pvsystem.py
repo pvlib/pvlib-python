@@ -511,9 +511,10 @@ def retrieve_sam(name=None, samfile=None):
     Examples
     --------
 
-    >>> invdb = pvsystem.retrieveSAM(name='SandiaInverter')
+    >>> from pvlib import pvsystem
+    >>> invdb = pvsystem.retrieve_sam(name='SandiaInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
-    >>> inverter    
+    >>> inverter
     Vac           277.000000
     Paco         6000.000000
     Pdco         6165.670000

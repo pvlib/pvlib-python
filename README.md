@@ -98,7 +98,7 @@ Unit test code should be placed in the ``pvlib/test`` directory. Each module sho
 Compatibility
 =============
 
-pvlib-python is compatible with Python versions 2.7, 3.3, and 3.4, and pandas versions 0.13.1 through 0.16.
+pvlib-python is compatible with Python versions 2.7, 3.3, and 3.4, and pandas versions 0.13.1 through 0.16.1.
 
 
 Code Transition

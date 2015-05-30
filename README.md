@@ -23,7 +23,13 @@ Quick Start
 
 Installation
 ------------
-Hopefully you're using [virtualenv](http://virtualenv.readthedocs.org/en/latest/) and [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org). To install, run
+To obtain the most recent stable release, just use ``pip``:
+
+```
+pip install pvlib-python
+```
+
+We strongly recommend working in a *virtual environment* (see the wiki or Google for more information). To install the latest development versions, run
 
 ```
 pip install git+https://github.com/pvlib/pvlib-python.git

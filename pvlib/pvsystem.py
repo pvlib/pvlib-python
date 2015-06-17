@@ -922,12 +922,12 @@ def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     DFOut['I0'] = I0
     DFOut['IL'] = IL
 
-    __, Voc_return = golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.6,
-                                           Voc_optfcn)
+    __, Voc_return = _golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.6,
+                                            _Voc_optfcn)
     Voc = Voc_return.copy()
 
-    Pmp, Vmax = golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.14,
-                                      pwr_optfcn)
+    Pmp, Vmax = _golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.14,
+                                       _pwr_optfcn)
     Imax = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=Vmax, I0=I0, IL=IL)
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is Imax. Start the optimization at Voc/2
@@ -963,14 +963,11 @@ def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
 
 # Created April,2014
 # Author: Rob Andrews, Calama Consulting
-# These may become private methods in 0.2
 
-def golden_sect_DataFrame(df, VL, VH, func):
+def _golden_sect_DataFrame(df, VL, VH, func):
     '''
     Vectorized golden section search for finding MPPT 
     from a dataframe timeseries.
-    
-    Do not expect this function to remain in the public API.
 
     Parameters
     ----------
@@ -1031,15 +1028,12 @@ def golden_sect_DataFrame(df, VL, VH, func):
         if iterations >50:
             raise Exception("EXCEPTION:iterations exeeded maximum (50)")
 
-
     return func(df,'V1') , df['V1']
 
 
-def pwr_optfcn(df, loc):
+def _pwr_optfcn(df, loc):
     '''
     Function to find power from I_from_V.
-    
-    Do not expect this function to remain in the public API.
     '''
 
     I = I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc],
@@ -1047,11 +1041,9 @@ def pwr_optfcn(df, loc):
     return I*df[loc]
 
 
-def Voc_optfcn(df, loc):
+def _Voc_optfcn(df, loc):
     '''
     Function to find V_oc from I_from_V.
-    
-    Do not expect this function to remain in the public API.
     '''
     I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'],
                       V=df[loc], I0=df['I0'], IL=df['IL']))
@@ -1064,13 +1056,11 @@ def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
     uses Lambert W implemented in wapr_vec.m
     Rsh, nVth, V, I0, IL can all be DataFrames
     Rs can be a DataFrame, but should be a scalar.
-    
-    Do not expect this function to remain in the public API.
     '''
     try:
         from scipy.special import lambertw
     except ImportError:
-        raise ImportError('The I_from_V function requires scipy')
+        raise ImportError('This function requires scipy')
     
     argW = (Rs*I0*Rsh * np.exp(Rsh*(Rs*(IL+I0)+V) /
             (nNsVth*(Rs+Rsh))) / (nNsVth*(Rs + Rsh)) )

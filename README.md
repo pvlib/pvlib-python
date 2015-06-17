@@ -81,30 +81,25 @@ tus_cs = pvlib.clearsky.ineichen(times, tus, airmass_model='young1994')
 tus_cs.plot()
 ```
 
-Until the code is tested more thoroughly, you might find it useful to add:
-```
-import logging
-logging.getLogger('pvlib').setLevel(logging.DEBUG) # or at least INFO
-```
 
 License
 =======
 3 clause BSD.
 
 
-Testing
-============
-First, make sure the package is installed in develop mode or run ``python setup.py build_ext --inplace`` to properly compile the ``spa_py.c`` code. Testing can be accomplished by running nosetests on the pvlib directory (or pvlib/tests):
-```
-nosetests -v pvlib
-```
-Unit test code should be placed in the ``pvlib/test`` directory. Each module should have its own test module. 
-
-
 Compatibility
 =============
 
 pvlib-python is compatible with Python versions 2.7, 3.3, and 3.4, and pandas versions 0.13.1 through 0.16.2.
+
+
+Testing
+=======
+Testing can easily be accomplished by running ``nosetests`` on the pvlib directory:
+```
+nosetests -v pvlib
+```
+Unit test code should be placed in the corresponding test module in the pvlib/test directory. Use ``pip`` or ``conda`` to install ``nose``. Developers must include comprehensive tests for any additions or modifications to pvlib.
 
 
 Code Transition

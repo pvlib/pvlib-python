@@ -6,43 +6,65 @@ pvlib-python
 [![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=latest)](http://pvlib-python.readthedocs.org/en/latest/)
 
 
-pvlib-python provides a set of documented functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed in MATLAB at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. More information on Sandia Labs PV performance modelling programs can be found at https://pvpmc.sandia.gov/. 
+pvlib-python is a community supported tool that provides a set of documented functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed in MATLAB at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. More information on Sandia Labs PV performance modeling programs can be found at https://pvpmc.sandia.gov/. We collaborate with the PVLIB-MATLAB project, but operate independently of it.
 
 Documentation
 =============
 
 Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.org/en/latest/).
 
-Development
-===========
 
-We need your help to make pvlib-python a great tool! Please see the [Development information wiki](https://github.com/pvlib/pvlib-python/wiki/Development-information) for more on how you can contribute.
+Contributing
+============
 
-Quick Start
-===========
+We need your help to make pvlib-python a great tool! Please see the [Development information wiki](https://github.com/pvlib/pvlib-python/wiki/Development-information) for more on how you can contribute. The long-term success of pvlib-python requires community support.
+
 
 Installation
-------------
+============
+
+If you have Python
+------------------
 To obtain the most recent stable release, just use ``pip``:
 
 ```
 pip install pvlib-python
 ```
 
-We strongly recommend working in a *virtual environment* (see the wiki or Google for more information). To install the latest development versions, run
+
+If you don't have Python
+------------------------
+The Anaconda Python distribution provides an easy way for new users to get started. Here's the short version:
+
+1. Install the full Anaconda Python distribution available [here](). Anaconda includes all of the libraries that you'll need, including ``pandas``, ``numpy``, and ``scipy``.
+2. Create a new ``conda`` environment for pvlib: ``conda create -n pvlib``
+2. Activate the new environment: ``source activate pvlib``
+2. Install pvlib: ``pip install pvlib-python``
+
+You're now ready to start some version of the Python interpreter and use pvlib. The easiest way to start is with one of our IPython notebook tutorials:
+
+1. Use the nbviewer website to choose a tutorial to experiment with. Go to [](), click on e.g. Tutorial.ipynb, and then click on the download symbol.
+1. Start the IPython notebook: ``ipython notebook``. This should open a web browser with a file/folder listing. If not, navigate to ``http://localhost:8000``
+2. In IPython Notebook, navigate to the file that you downloaded in step one and open it.
+2. Use ``shift-enter`` to execute the notebook cell-by-cell. There is also a Play button that will execute all of the cells in the notebook.
+
+Many good online resources exist for getting started with scientific Python. The [pandas tutorial]() is particularly good.
+
+
+Working at the bleeding-edge
+----------------------------
+We strongly recommend working in a ``conda`` or ``virtualenv`` *virtual environment* (see the wiki or Google for more information). 
+To install the very latest development versions, activate your new virtual environment, then run
 
 ```
 pip install git+https://github.com/pvlib/pvlib-python.git
 ```
 
-Alternatively, ``git clone`` this repository, ``cd`` into it, and run
 
-```
-pip install .
-```
-
-Add ``-e`` to install in [develop mode](http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs).
-
+NREL SPA algorithm
+------------------
+pvlib-python is distributed with several validated, high-precision, and high-performance solar position calculators.
+It also includes wrappers for the official NREL SPA algorithm.
 To use the NREL SPA algorithm, a pip install from the web cannot be used. Instead: 
 
 1. Download the pvlib repository from https://github.com/pvlib/pvlib-python.git
@@ -52,7 +74,7 @@ To use the NREL SPA algorithm, a pip install from the web cannot be used. Instea
 
 
 Usage Example
--------------
+=============
 ```
 # built-in imports
 import sys

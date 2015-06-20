@@ -8,6 +8,7 @@ pvlib-python
 
 pvlib-python is a community supported tool that provides a set of documented functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed in MATLAB at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. More information on Sandia Labs PV performance modeling programs can be found at https://pvpmc.sandia.gov/. We collaborate with the PVLIB-MATLAB project, but operate independently of it.
 
+
 Documentation
 =============
 
@@ -17,7 +18,7 @@ Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs
 Contributing
 ============
 
-We need your help to make pvlib-python a great tool! Please see the [Development information wiki](https://github.com/pvlib/pvlib-python/wiki/Development-information) for more on how you can contribute. The long-term success of pvlib-python requires community support.
+We need your help to make pvlib-python a great tool! Please see the [Development information wiki](https://github.com/pvlib/pvlib-python/wiki/Development-information) for more on how you can contribute. The long-term success of pvlib-python requires substantial community support.
 
 
 Installation
@@ -25,40 +26,42 @@ Installation
 
 If you have Python
 ------------------
-To obtain the most recent stable release, just use ``pip``:
+To obtain the most recent stable release, just use ``pip`` or ``conda``:
 
 ```
-pip install pvlib-python
+pip install pvlib
 ```
+
+```
+conda install -c http://conda.anaconda.org/pvlib pvlib
+```
+
+If your system complains that you don't have access privileges or asks for a password then you're trying to install pvlib into your system's Python distribution. This is a very bad idea and you should instead follow the **If you don't have Python** instructions below.
 
 
 If you don't have Python
 ------------------------
-The Anaconda Python distribution provides an easy way for new users to get started. Here's the short version:
+There are many ways to install Python on your system, but the Anaconda Scientific Python distribution provides by far the easiest way for new users to get started. Anaconda includes all of the popular libraries that you'll need for pvlib, including Pandas, NumPy, and SciPy. "Anaconda installs cleanly into a single directory, does not require Administrator or root privileges, does not affect other Python installs on your system, or interfere with OSX Frameworks." -Anaconda Documentation.
 
-1. Install the full Anaconda Python distribution available [here](). Anaconda includes all of the libraries that you'll need, including ``pandas``, ``numpy``, and ``scipy``.
-2. Create a new ``conda`` environment for pvlib: ``conda create -n pvlib``
-2. Activate the new environment: ``source activate pvlib``
-2. Install pvlib: ``pip install pvlib-python``
+1. Install the full Anaconda Scientific Python distribution available [here](https://store.continuum.io/cshop/anaconda/). 
 
-You're now ready to start some version of the Python interpreter and use pvlib. The easiest way to start is with one of our IPython notebook tutorials:
+2. Install pvlib: ``conda install -c http://conda.anaconda.org/pvlib pvlib``
 
-1. Use the nbviewer website to choose a tutorial to experiment with. Go to [](), click on e.g. Tutorial.ipynb, and then click on the download symbol.
-1. Start the IPython notebook: ``ipython notebook``. This should open a web browser with a file/folder listing. If not, navigate to ``http://localhost:8000``
-2. In IPython Notebook, navigate to the file that you downloaded in step one and open it.
-2. Use ``shift-enter`` to execute the notebook cell-by-cell. There is also a Play button that will execute all of the cells in the notebook.
-
-Many good online resources exist for getting started with scientific Python. The [pandas tutorial]() is particularly good.
+If you have trouble, see the [Anaconda FAQ](http://docs.continuum.io/anaconda/faq.html), Google your error messages, or make a new issue on our [Issues page](https://github.com/pvlib/pvlib-python/issues).
 
 
-Working at the bleeding-edge
+Working at the bleeding edge
 ----------------------------
-We strongly recommend working in a ``conda`` or ``virtualenv`` *virtual environment* (see the wiki or Google for more information). 
-To install the very latest development versions, activate your new virtual environment, then run
+We strongly recommend working in a **virtual environment** if you're going to use the development versions of the code. There are many ways to use virtual environments in Python, but Anaconda again provides the easiest solution:
 
-```
-pip install git+https://github.com/pvlib/pvlib-python.git
-```
+1. Create a new conda environment for pvlib and pre-install a handful of packages into the environment: ``conda create --name pvlibdev python pandas scipy ephem``
+2. Activate the new environment: ``source activate pvlibdev``
+2. Install the latest development version
+A. If you don't plan to modify the source-code: ``pip install git+https://github.com/pvlib/pvlib-python.git``
+B. If you do plan to modify the source code: Use the GitHub GUI application or git command-line tool to clone this repository to your computer, then navigate your command-line to the top-level pvlib-python directory, then ``pip install -e .``
+2. You may also consider installing additional packages into your development environment: ``conda install ipython-notebook nose seaborn``
+
+The [conda documentation](http://conda.pydata.org/docs/using/index.html) has more information on how to use virtual environments.
 
 
 NREL SPA algorithm
@@ -73,8 +76,17 @@ To use the NREL SPA algorithm, a pip install from the web cannot be used. Instea
 4. From the ``pvlib-python`` directory, run ``pip uninstall pvlib`` followed by ``pip install . ``
 
 
-Usage Example
-=============
+Usage
+=====
+You're now ready to start some version of the Python interpreter and use pvlib. The easiest way to start is with one of our IPython notebook tutorials:
+
+1. Use the nbviewer website to choose a tutorial to experiment with. Go to our [nbviewer tutorial page](http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/master/docs/tutorials/), click on e.g. pvsystem.ipynb, and then click on the download symbol.
+1. Start the IPython Notebook server: ``ipython notebook``. This should open a web browser with the IPython Notebook's file/folder listing. If not, navigate to the url shown in the command line history, likely ``http://localhost:8888``
+2. In IPython Notebook, navigate to the file that you downloaded in step one and open it.
+2. Use ``shift-enter`` to execute the notebook cell-by-cell. There is also a Play button that will execute all of the cells in the notebook.
+
+You can also experiment with the following simple code in a new IPython notebook or any other Python interpreter:
+
 ```
 # built-in imports
 import sys
@@ -95,13 +107,15 @@ tus = Location(32.2, -111, 'MST', 700)
 times = pd.date_range(start=datetime.datetime(2014,6,24), end=datetime.datetime(2014,6,25), freq='1Min')
 
 # calculate the solar position
-solpos = pvlib.solarposition.get_solarposition(times, tus, method='pyephem')
+solpos = pvlib.solarposition.get_solarposition(times, tus)
 solpos.plot()
 
 # calculate clear sky data
 tus_cs = pvlib.clearsky.ineichen(times, tus, airmass_model='young1994')
 tus_cs.plot()
 ```
+
+Many good online resources exist for getting started with scientific Python.
 
 
 License

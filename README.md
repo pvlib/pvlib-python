@@ -18,7 +18,7 @@ Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs
 Contributing
 ============
 
-We need your help to make pvlib-python a great tool! Please see the [Development information wiki](https://github.com/pvlib/pvlib-python/wiki/Development-information) for more on how you can contribute. The long-term success of pvlib-python requires substantial community support.
+We need your help to make pvlib-python a great tool! Please see the [Contributing to pvlib-python wiki](https://github.com/pvlib/pvlib-python/wiki/Contributing-to-pvlib-python) for more on how you can contribute. The long-term success of pvlib-python requires substantial community support.
 
 
 Installation

@@ -768,7 +768,8 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
 
     Returns
     --------
-    dict with keys tcell and tmodule. Values in degrees C.
+    DataFrame with columns 'temp_cell' and 'temp_module'.
+    Values in degrees C.
 
     References
     ----------
@@ -799,11 +800,11 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
 
     E0 = 1000. # Reference irradiance
     
-    tmodule = irrad*np.exp(a + b*wind) + temp
+    temp_module = pd.Series(irrad*np.exp(a + b*wind) + temp)
 
-    tcell = tmodule + (irrad / E0)*(deltaT)
+    temp_cell = temp_module + (irrad / E0)*(deltaT)
 
-    return {'tcell':tcell, 'tmodule':tmodule}
+    return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
     
     
 def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):

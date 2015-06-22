@@ -17,6 +17,7 @@ API changes
 * Change variable names to conform with new
   `Variables and style rules wiki <https://github.com/pvlib/pvlib-python/wiki/Variables-and-style-rules>`_
   (:issue:`37`, :issue:`54`).
+* Make output of ``pvsystem.sapm_celltemp`` a DataFrame (:issue:`54`)
 
 Enhancements
 ~~~~~~~~~~~~

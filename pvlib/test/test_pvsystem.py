@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from nose.tools import assert_equals, assert_almost_equals
+from pandas.util.testing import assert_frame_equal
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -135,10 +136,25 @@ def test_singlediode():
 
 def test_sapm_celltemp():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_almost_equals(43.509, default['tcell'], 3)
-    assert_almost_equals(40.809, default['tmodule'], 3)
-    assert_equals(default, pvsystem.sapm_celltemp(900, 5, 20,
-                                                  [-3.47, -.0594, 3]))
+    assert_almost_equals(43.509, default.ix[0, 'temp_cell'], 3)
+    assert_almost_equals(40.809, default.ix[0, 'temp_module'], 3)
+    assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20,
+                                                       [-3.47, -.0594, 3]))
+
+
+def test_sapm_celltemp_with_index():
+    times = pd.DatetimeIndex(start='2015-01-01', end='2015-01-02', freq='12H')
+    temps = pd.Series([0, 10, 5], index=times)
+    irrads = pd.Series([0, 500, 0], index=times)
+    winds = pd.Series([10, 5, 0], index=times)
+
+    pvtemps = pvsystem.sapm_celltemp(irrads, winds, temps)
+    
+    expected = pd.DataFrame({'temp_cell':[0., 23.06066166, 5.],
+                             'temp_module':[0., 21.56066166, 5.]},
+                            index=times)
+    
+    assert_frame_equal(expected, pvtemps)
 
     
 def test_snlinverter():

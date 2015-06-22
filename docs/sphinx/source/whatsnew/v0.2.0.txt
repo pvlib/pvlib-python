@@ -14,6 +14,9 @@ API changes
 * Move ``dirint`` and ``disc`` algorithms from ``clearsky.py``
   to ``irradiance.py`` (:issue:`42`)
 * Mark some ``pvsystem.py`` methods as private (:issue:`20`)
+* Change variable names to conform with new
+  `Variables and style rules wiki <https://github.com/pvlib/pvlib-python/wiki/Variables-and-style-rules>`_
+  (:issue:`37`, :issue:`54`).
 
 Enhancements
 ~~~~~~~~~~~~

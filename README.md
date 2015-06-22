@@ -56,9 +56,9 @@ We strongly recommend working in a **virtual environment** if you're going to us
 
 1. Create a new conda environment for pvlib and pre-install a handful of packages into the environment: ``conda create --name pvlibdev python pandas scipy ephem``
 2. Activate the new environment: ``source activate pvlibdev``
-2. Install the latest development version
-A. If you don't plan to modify the source-code: ``pip install git+https://github.com/pvlib/pvlib-python.git``
-B. If you do plan to modify the source code: Use the GitHub GUI application or git command-line tool to clone this repository to your computer, then navigate your command-line to the top-level pvlib-python directory, then ``pip install -e .``
+2. Install the latest development version:
+  2. If you don't plan to modify the source-code: ``pip install git+https://github.com/pvlib/pvlib-python.git``
+  2. If you do plan to modify the source code: Use the GitHub GUI application or git command-line tool to clone this repository to your computer, then navigate your command-line to the top-level pvlib-python directory, then ``pip install -e .``
 2. You may also consider installing additional packages into your development environment: ``conda install ipython-notebook nose seaborn``
 
 The [conda documentation](http://conda.pydata.org/docs/using/index.html) has more information on how to use virtual environments.

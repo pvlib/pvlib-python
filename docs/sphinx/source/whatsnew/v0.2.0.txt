@@ -11,13 +11,18 @@ We recommend that all users upgrade to this version.
 API changes
 ~~~~~~~~~~~
 
-
+* Move ``dirint`` and ``disc`` algorithms from ``clearsky.py``
+  to ``irradiance.py`` (:issue:`42`)
+* Mark some ``pvsystem.py`` methods as private (:issue:`20`)
 
 Enhancements
 ~~~~~~~~~~~~
 
+* Add conda installer
 * PEP8 fixups to solarposition.py and spa.py (:issue:`50`)
-
+* Add optional ``projection_ratio`` keyword argument to the ``haydavies``
+  calculator. Speeds calculations when irradiance changes but
+  solar position remains the same (:issue:`58`)
 
 Bug fixes
 ~~~~~~~~~

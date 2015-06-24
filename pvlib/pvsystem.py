@@ -807,7 +807,8 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
     
     
-def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
+def singlediode(module, photocurrent, saturation_current,
+                resistance_series, resistance_shunt, nNsVth):
     '''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -822,65 +823,56 @@ def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     are described later. Returns a DataFrame which contains
     the 5 points on the I-V curve specified in SAND2004-3535 [3]. 
     If all IL, I0, Rs, Rsh, and nNsVth are scalar, a single curve
-    will be returned, if any are DataFrames (of the same length), multiple IV
+    will be returned, if any are Series (of the same length), multiple IV
     curves will be calculated.
     
     The input parameters can be calculated using calcparams_desoto from 
-    meterological data. 
+    meteorological data. 
     
     Parameters
     ----------
     module : DataFrame
         A DataFrame defining the SAPM performance parameters.
 
-    IL : float or DataFrame
+    photocurrent : float or Series
         Light-generated current (photocurrent) in amperes under desired IV
-        curve conditions. 
+        curve conditions. Often abbreviated ``I_L``.
 
-    I0 : float or DataFrame
+    saturation_current : float or Series
         Diode saturation current in amperes under desired IV curve
-        conditions. 
+        conditions. Often abbreviated ``I_0``.
 
-    Rs : float or DataFrame
-        Series resistance in ohms under desired IV curve conditions. 
+    resistance_series : float or Series
+        Series resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rs``.
 
-    Rsh : float or DataFrame
-        Shunt resistance in ohms under desired IV curve conditions. May
-        be a scalar or DataFrame, but DataFrames must be of same length as all
-        other input DataFrames.
+    resistance_shunt : float or Series
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
 
-    nNsVth : float or DataFrame
+    nNsVth : float or Series
         The product of three components. 1) The usual diode ideal 
         factor (n), 2) the number of cells in series (Ns), and 3) the cell 
         thermal voltage under the desired IV curve conditions (Vth).
         The thermal voltage of the cell (in volts) may be calculated as 
-        k*Tcell/q, where k is Boltzmann's constant (J/K), Tcell is the
-        temperature of the p-n junction in Kelvin, and q is the elementary 
-        charge of an electron (coulombs). 
-        
-    Other Parameters
-    ----------------
-    NumPoints : integer
-        Number of points in the desired IV curve (optional). Must be a finite 
-        scalar value. Non-integer values will be rounded to the next highest
-        integer (ceil). If ceil(NumPoints) is < 2, no IV curves will be produced
-        (i.e. Result.V and Result.I will not be generated). The default
-        value is 0, resulting in no calculation of IV points other than
-        those specified in [3].
+        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
+        temp_cell is the temperature of the p-n junction in Kelvin,
+        and q is the charge of an electron (coulombs). 
 
     Returns
     -------
-    A DataFrame with the following fields. All fields have the
-    same number of rows as the largest input DataFrame:
+    If ``photocurrent`` is a Series, a DataFrame with the following columns.
+    All columns have the same number of rows as the largest input DataFrame.
     
-    * Result.Isc -  short circuit current in amperes.
-    * Result.Voc -  open circuit voltage in volts.
-    * Result.Imp -  current at maximum power point in amperes. 
-    * Result.Vmp -  voltage at maximum power point in volts.
-    * Result.Pmp -  power at maximum power point in watts.
-    * Result.Ix -  current, in amperes, at V = 0.5*Voc.
-    * Result.Ixx -  current, in amperes, at V = 0.5*(Voc+Vmp).
-
+    If ``photocurrent`` is a scalar, a dict with the following keys.
+    
+    * i_sc -  short circuit current in amperes.
+    * v_oc -  open circuit voltage in volts.
+    * i_mp -  current at maximum power point in amperes. 
+    * v_mp -  voltage at maximum power point in volts.
+    * p_mp -  power at maximum power point in watts.
+    * i_x -  current, in amperes, at ``v = 0.5*v_oc``.
+    * i_xx -  current, in amperes, at ``V = 0.5*(v_oc+v_mp)``.
 
     Notes
     -----
@@ -905,39 +897,37 @@ def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
     sapm
     calcparams_desoto
     '''
+    pvl_logger.debug('pvsystem.singlediode')
+    
+    # Find short circuit current using Lambert W
+    i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.01,
+                    saturation_current, photocurrent)
+    
+    params = {'r_sh': resistance_shunt,
+              'r_s': resistance_series,
+              'nNsVth': nNsVth,
+              'i_0': saturation_current,
+              'i_l': photocurrent}
 
-    # Find Isc using Lambert W
-    Isc = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.01, I0=I0, IL=IL)
+    __, v_oc = _golden_sect_DataFrame(params, 0, module['V_oc_ref']*1.6,
+                                      _v_oc_optfcn)
 
-    # If passed a dataframe, output a dataframe, if passed a list or scalar,
-    # return a dict 
-    if isinstance(Rsh, pd.Series):
-        DFOut = pd.DataFrame({'Isc': Isc})
-        DFOut.index = Rsh.index
-    else:
-        DFOut = {'Isc': Isc}
-
-    DFOut['Rsh'] = Rsh
-    DFOut['Rs'] = Rs
-    DFOut['nNsVth'] = nNsVth
-    DFOut['I0'] = I0
-    DFOut['IL'] = IL
-
-    __, Voc_return = _golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.6,
-                                            _Voc_optfcn)
-    Voc = Voc_return.copy()
-
-    Pmp, Vmax = _golden_sect_DataFrame(DFOut, 0, module.V_oc_ref*1.14,
-                                       _pwr_optfcn)
-    Imax = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=Vmax, I0=I0, IL=IL)
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0, module['V_oc_ref']*1.14,
+                                        _pwr_optfcn)
+    
     # Invert the Power-Current curve. Find the current where the inverted power
-    # is minimized. This is Imax. Start the optimization at Voc/2
+    # is minimized. This is i_mp. Start the optimization at v_oc/2
+    i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
+                    saturation_current, photocurrent)
 
     # Find Ix and Ixx using Lambert W
-    Ix = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=.5*Voc, I0=I0, IL=IL)
-    Ixx = I_from_V(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=0.5*(Voc+Vmax), I0=I0,
-                   IL=IL)
+    i_x = i_from_v(resistance_shunt, resistance_series, nNsVth,
+                    0.5*v_oc, saturation_current, photocurrent)
 
+    i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
+                    0.5*(v_oc+v_mp), saturation_current, photocurrent)
+
+    # @wholmgren: need to move this stuff to a different function
 #     If the user says they want a curve of with number of points equal to
 #     NumPoints (must be >=2), then create a voltage array where voltage is
 #     zero in the first column, and Voc in the last column. Number of columns
@@ -952,30 +942,37 @@ def singlediode(module, IL, I0, Rs, Rsh, nNsVth, **kwargs):
 #        Result.I = I_from_V(Rsh*s, Rs*s, nNsVth*s, Result.V, I0*s, IL*s);
 #     end
     
-    DFOut['Imp'] = Imax
-    DFOut['Voc'] = Voc
-    DFOut['Vmp'] = Vmax
-    DFOut['Pmp'] = Pmp
-    DFOut['Ix'] = Ix
-    DFOut['Ixx'] = Ixx
+    dfout = {}
+    dfout['i_sc'] = i_sc
+    dfout['i_mp'] = i_mp
+    dfout['v_oc'] = v_oc
+    dfout['v_mp'] = v_mp
+    dfout['p_mp'] = p_mp
+    dfout['i_x'] = i_x
+    dfout['i_xx'] = i_xx
+    
+    try:
+        dfout = pd.DataFrame(dfout, index=photocurrent.index)
+    except AttributeError:
+        pass
 
-    return DFOut
+    return dfout
 
 
 # Created April,2014
 # Author: Rob Andrews, Calama Consulting
 
-def _golden_sect_DataFrame(df, VL, VH, func):
+def _golden_sect_DataFrame(params, VL, VH, func):
     '''
     Vectorized golden section search for finding MPPT 
     from a dataframe timeseries.
 
     Parameters
     ----------
-    df : DataFrame
-        Dataframe containing a timeseries of inputs to the function
-        to be optimized.
-        Each row should represent an independant optimization
+    params : dict
+        Dictionary containing scalars or arrays
+        of inputs to the function to be optimized.
+        Each row should represent an independent optimization.
 
     VL: float
         Lower bound of the optimization
@@ -984,7 +981,7 @@ def _golden_sect_DataFrame(df, VL, VH, func):
         Upper bound of the optimization
 
     func: function
-        Function to be optimized must be in the form f(dataframe, x)
+        Function to be optimized must be in the form f(array-like, x)
 
     Returns
     -------
@@ -998,77 +995,122 @@ def _golden_sect_DataFrame(df, VL, VH, func):
     -----
     This funtion will find the MAXIMUM of a function
     '''
-
-    df['VH']=VH
-    df['VL']=VL
+    
+    df = params
+    df['VH'] = VH
+    df['VL'] = VL
       
-    err=df['VH']-df['VL']
-    errflag=True
-    iterations=0
+    err = df['VH'] - df['VL']
+    errflag = True
+    iterations = 0
+    
     while errflag:
 
-        phi=(np.sqrt(5)-1)/2*(df['VH']-df['VL'])
-        df['V1']=df['VL']+phi
-        df['V2']=df['VH']-phi
+        phi = (np.sqrt(5)-1)/2*(df['VH']-df['VL'])
+        df['V1'] = df['VL'] + phi
+        df['V2'] = df['VH'] - phi
         
-        df['f1']=func(df,'V1')
-        df['f2']=func(df,'V2')
-        df['SW_Flag']=df['f1']>df['f2']
+        df['f1'] = func(df, 'V1')
+        df['f2'] = func(df, 'V2')
+        df['SW_Flag'] = df['f1'] > df['f2']
         
-        df['VL']=df['V2']*df['SW_Flag']+df['VL']*(~df['SW_Flag'])
-        df['VH']=df['V1']*~df['SW_Flag']+df['VH']*(df['SW_Flag'])
+        df['VL'] = df['V2']*df['SW_Flag'] + df['VL']*(~df['SW_Flag'])
+        df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
         
-        err=(df['V1']-df['V2'])
-        if isinstance(df,pd.DataFrame):
-            errflag=all(abs(err)>.01)
-        else:
-            errflag=(abs(err)>.01)
+        err = df['V1'] - df['V2']
+        try:
+            errflag = (abs(err)>.01).all()
+        except ValueError:
+            errflag = (abs(err)>.01)
 
-        iterations=iterations+1
+        iterations += 1
 
-        if iterations >50:
+        if iterations > 50:
             raise Exception("EXCEPTION:iterations exeeded maximum (50)")
 
-    return func(df,'V1') , df['V1']
+    return func(df, 'V1'), df['V1']
 
 
 def _pwr_optfcn(df, loc):
     '''
-    Function to find power from I_from_V.
+    Function to find power from ``i_from_v``.
     '''
 
-    I = I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'], V=df[loc],
-                 I0=df['I0'], IL=df['IL'])
+    I = i_from_v(df['r_sh'], df['r_s'], df['nNsVth'],
+                 df[loc], df['i_0'], df['i_l'])
     return I*df[loc]
 
 
-def _Voc_optfcn(df, loc):
+def _v_oc_optfcn(df, loc):
     '''
-    Function to find V_oc from I_from_V.
+    Function to find the open circuit voltage from ``i_from_v``.
     '''
-    I = -abs(I_from_V(Rsh=df['Rsh'], Rs=df['Rs'], nNsVth=df['nNsVth'],
-                      V=df[loc], I0=df['I0'], IL=df['IL']))
+    I = -abs(i_from_v(df['r_sh'], df['r_s'], df['nNsVth'],
+                      df[loc], df['i_0'], df['i_l']))
     return I
 
 
-def I_from_V(Rsh, Rs, nNsVth, V, I0, IL):
+def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
+             saturation_current, photocurrent):
     '''
-    Calculates I from V per Eq 2 Jain and Kapoor 2004
-    uses Lambert W implemented in wapr_vec.m
-    Rsh, nVth, V, I0, IL can all be DataFrames
-    Rs can be a DataFrame, but should be a scalar.
+    Calculates current from voltage per Eq 2 Jain and Kapoor 2004 [1].
+
+    Parameters
+    ----------
+    resistance_series : float or Series
+        Series resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rs``.
+
+    resistance_shunt : float or Series
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+
+    saturation_current : float or Series
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+
+    nNsVth : float or Series
+        The product of three components. 1) The usual diode ideal
+        factor (n), 2) the number of cells in series (Ns), and 3) the cell
+        thermal voltage under the desired IV curve conditions (Vth).
+        The thermal voltage of the cell (in volts) may be calculated as
+        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
+        temp_cell is the temperature of the p-n junction in Kelvin,
+        and q is the charge of an electron (coulombs).
+
+    photocurrent : float or Series
+        Light-generated current (photocurrent) in amperes under desired IV
+        curve conditions. Often abbreviated ``I_L``.
+
+    Returns
+    -------
+    current : np.array
+
+    References
+    ----------
+    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of
+    real solar cells using Lambert W-function", Solar Energy Materials
+    and Solar Cells, 81 (2004) 269-277.
     '''
     try:
         from scipy.special import lambertw
     except ImportError:
         raise ImportError('This function requires scipy')
     
-    argW = (Rs*I0*Rsh * np.exp(Rsh*(Rs*(IL+I0)+V) /
-            (nNsVth*(Rs+Rsh))) / (nNsVth*(Rs + Rsh)) )
-    inputterm = lambertw(argW)
+    Rsh = resistance_shunt
+    Rs = resistance_series
+    I0 = saturation_current
+    IL = photocurrent
+    V = voltage
+
+    argW = (Rs*I0*Rsh *
+            np.exp( Rsh*(Rs*(IL+I0)+V) / (nNsVth*(Rs+Rsh)) ) /
+            (nNsVth*(Rs + Rsh)) )
+    lambertwterm = lambertw(argW)
+    pvl_logger.debug('argW: {}, lambertwterm{}'.format(argW, lambertwterm))
 
     # Eqn. 4 in Jain and Kapoor, 2004
-    I = -V/(Rs + Rsh) - (nNsVth/Rs) * inputterm + Rsh*(IL + I0)/(Rs + Rsh)
+    I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
     
     return I.real
 

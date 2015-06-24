@@ -122,7 +122,12 @@ def test_calcparams_desoto():
                                dEgdT=-0.0002677)
 
 
-def test_singlediode():  
+def test_i_from_v():
+    output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
+    assert_almost_equals(-299.746389916, output, 5)
+
+
+def test_singlediode_series():  
     cecmodule = sam_data['cecmod'].Example_Module 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(S=irrad_data.GHI,
                                          temp_cell=25,
@@ -130,8 +135,23 @@ def test_singlediode():
                                          module_parameters=cecmodule,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)                       
-    pvsystem.singlediode(module=cecmodule, IL=IL, I0=I0, Rs=Rs, Rsh=Rsh,
-                         nNsVth=nNsVth)
+    out = pvsystem.singlediode(cecmodule, IL, I0, Rs, Rsh, nNsVth)
+    assert isinstance(out, pd.DataFrame)
+
+
+def test_singlediode_series():  
+    cecmodule = sam_data['cecmod'].Example_Module                       
+    out = pvsystem.singlediode(cecmodule, 7, 6e-7, .1, 20, .5)
+    expected = {'i_xx': 4.2549732697234193,
+                'i_mp': 6.1390251797935704,
+                'v_oc': 8.1147298764528042,
+                'p_mp': 38.194165464983037,
+                'i_x': 6.7556075876880621,
+                'i_sc': 6.9646747613963198,
+                'v_mp': 6.221535886625464}
+    assert isinstance(out, dict)
+    for k, v in out.items():
+        assert_almost_equals(expected[k], v, 5)
 
 
 def test_sapm_celltemp():

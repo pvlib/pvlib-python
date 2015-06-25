@@ -114,7 +114,7 @@ def test_sapm():
 
 def test_calcparams_desoto():
     cecmodule = sam_data['cecmod'].Example_Module 
-    pvsystem.calcparams_desoto(S=irrad_data.GHI,
+    pvsystem.calcparams_desoto(irrad_data.GHI,
                                temp_cell=25,
                                alpha_isc=cecmodule['Alpha_sc'],
                                module_parameters=cecmodule,
@@ -129,7 +129,8 @@ def test_i_from_v():
 
 def test_singlediode_series():  
     cecmodule = sam_data['cecmod'].Example_Module 
-    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(S=irrad_data.GHI,
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
+                                         irrad_data.GHI,
                                          temp_cell=25,
                                          alpha_isc=cecmodule['Alpha_sc'],
                                          module_parameters=cecmodule,

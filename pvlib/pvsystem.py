@@ -260,8 +260,8 @@ def physicaliam(K, L, n, aoi):
     return IAM
 
 
-def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
-                      dEgdT, M=1, Sref=1000, Tref=25):
+def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
+                      EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
     '''
     Applies the temperature and irradiance corrections to 
     inputs for singlediode.
@@ -275,7 +275,7 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
 
     Parameters
     ----------
-    S : float or Series
+    poa_global : float or Series
         The irradiance (in W/m^2) absorbed by the module.
 
     temp_cell : float or Series
@@ -317,9 +317,7 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
         DataFrame of dEgdT values corresponding to each input condition (this
         may be useful if dEgdT is a function of temperature).
 
-    Other Parameters
-    ----------------
-    M : float or DataFrame (optional, Default=1)
+    M : float or Series (optional, default=1)
         An optional airmass modifier, if omitted, M is given a value of 1,
         which assumes absolute (pressure corrected) airmass = 1.5. In this
         code, M is equal to M/Mref as described in [1] (i.e. Mref is assumed
@@ -329,33 +327,33 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
         >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
         ...                AMa) # doctest: +SKIP
 
-        M may be a DataFrame.
+        M may be a Series.
 
-    Sref : float (optional, Default=1000)
-        Optional reference irradiance in W/m^2. If omitted, a value of
-        1000 is used.
+    irrad_ref : float (optional, default=1000)
+        Reference irradiance in W/m^2.
 
-    Tref : float (Optional, Default=25)
-        Optional reference cell temperature in C. If omitted, a value of
-        25 C is used.
+    temp_ref : float (optional, default=25)
+        Reference cell temperature in C.
 
     Returns
     -------
-    IL : float or DataFrame
+    Tuple of the following results:
+    
+    photocurrent : float or Series
         Light-generated current in amperes at irradiance=S and
         cell temperature=Tcell.
         
-    I0 : float or DataFrame
+    saturation_current : float or Series
         Diode saturation curent in amperes at irradiance
         S and cell temperature Tcell.
     
-    Rs : float
+    resistance_series : float
         Series resistance in ohms at irradiance S and cell temperature Tcell.
 
-    Rsh : float or DataFrame
+    resistance_shunt : float or Series
         Shunt resistance in ohms at irradiance S and cell temperature Tcell.
     
-    nNsVth : float or DataFrame
+    nNsVth : float or Series
         Modified diode ideality factor at irradiance S and cell temperature
         Tcell. Note that in source [1] nNsVth = a (equation 2). nNsVth is the
         product of the usual diode ideality factor (n), the number of
@@ -456,17 +454,17 @@ def calcparams_desoto(S, temp_cell, alpha_isc, module_parameters, EgRef,
     Rs_ref = module_parameters['R_s']
 
     k = 8.617332478e-05
-    Tref_K = Tref + 273.15
+    Tref_K = temp_ref + 273.15
     Tcell_K = temp_cell + 273.15
 
     E_g = EgRef * (1 + dEgdT*(Tcell_K - Tref_K))
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    IL = S / Sref * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
+    IL = poa_global/irrad_ref * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
     I0 = ( I0_ref * ((Tcell_K / Tref_K) ** 3) *
            (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))) )
-    Rsh = Rsh_ref * (Sref / S)
+    Rsh = Rsh_ref * (irrad_ref / poa_global)
     Rs = Rs_ref
 
     return IL, I0, Rs, Rsh, nNsVth

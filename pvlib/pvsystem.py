@@ -461,7 +461,7 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    IL = poa_global/irrad_ref * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
+    IL = (poa_global/irrad_ref) * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
     I0 = ( I0_ref * ((Tcell_K / Tref_K) ** 3) *
            (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))) )
     Rsh = Rsh_ref * (irrad_ref / poa_global)

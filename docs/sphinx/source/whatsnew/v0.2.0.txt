@@ -3,20 +3,24 @@
 v0.2.0 (??, 2015)
 -----------------------
 
-This is a major release from 0.1 and includes a small number of API changes,
+This is a major release from 0.1 and includes a large number of API changes,
 several new features and enhancements along with a number of bug fixes.
 We recommend that all users upgrade to this version.
+
+Due to the large number of API changes, you will probably need to update your
+code.
 
 
 API changes
 ~~~~~~~~~~~
 
+* Change variable names to conform with new
+  `Variables and style rules wiki <https://github.com/pvlib/pvlib-python/wiki/Variables-and-style-rules>`_.
+  This impacts many function declarations and return values.
+  Your existing code probably will not work! (:issue:`37`, :issue:`54`).
 * Move ``dirint`` and ``disc`` algorithms from ``clearsky.py``
   to ``irradiance.py`` (:issue:`42`)
 * Mark some ``pvsystem.py`` methods as private (:issue:`20`)
-* Change variable names to conform with new
-  `Variables and style rules wiki <https://github.com/pvlib/pvlib-python/wiki/Variables-and-style-rules>`_
-  (:issue:`37`, :issue:`54`).
 * Make output of ``pvsystem.sapm_celltemp`` a DataFrame (:issue:`54`)
 
 Enhancements

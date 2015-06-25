@@ -607,16 +607,16 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     -------
     A DataFrame with the columns:
 
-        * Isc : Short-circuit current (A)
-        * Imp : Current at the maximum-power point (A)
-        * Voc : Open-circuit voltage (V)
-        * Vmp : Voltage at maximum-power point (V)
-        * Pmp : Power at maximum-power point (W)
-        * Ix : Current at module V = 0.5Voc, defines 4th point on I-V
+        * i_sc : Short-circuit current (A)
+        * I_mp : Current at the maximum-power point (A)
+        * v_oc : Open-circuit voltage (V)
+        * v_mp : Voltage at maximum-power point (V)
+        * p_mp : Power at maximum-power point (W)
+        * i_x : Current at module V = 0.5Voc, defines 4th point on I-V
           curve for modeling curve shape
-        * Ixx : Current at module V = 0.5(Voc+Vmp), defines 5th point on
+        * i_xx : Current at module V = 0.5(Voc+Vmp), defines 5th point on
           I-V curve for modeling curve shape
-        * Ee : Effective irradiance
+        * effective_irradiance : Effective irradiance
 
     Notes
     -----
@@ -687,34 +687,34 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
 
     dfout = pd.DataFrame(index=Ee.index)
 
-    dfout['Isc'] = (
+    dfout['i_sc'] = (
         module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - T0)) )
 
-    dfout['Imp'] = ( module['Impo'] *
+    dfout['i_mp'] = ( module['Impo'] *
         (module['C0']*Ee + module['C1']*(Ee**2)) *
         (1 + module['Aimp']*(temp_cell - T0)) )
 
-    dfout['Voc'] = (( module['Voco'] +
+    dfout['v_oc'] = (( module['Voco'] +
         module['#Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
         .clip_lower(0))
 
-    dfout['Vmp'] = ( module['Vmpo'] +
+    dfout['v_mp'] = ( module['Vmpo'] +
         module['C2']*module['#Series']*delta*np.log(Ee) +
         module['C3']*module['#Series']*((delta*np.log(Ee)) ** 2) +
         Bvmpo*(temp_cell - T0) ).clip_lower(0)
 
-    dfout['Pmp'] = dfout['Imp'] * dfout['Vmp']
+    dfout['p_mp'] = dfout['i_mp'] * dfout['v_mp']
 
-    dfout['Ix'] = ( module['IXO'] *
+    dfout['i_x'] = ( module['IXO'] *
         (module['C4']*Ee + module['C5']*(Ee**2)) *
         (1 + module['Aisc']*(temp_cell - T0)) )
 
     # the Ixx calculation in King 2004 has a typo (mixes up Aisc and Aimp)
-    dfout['Ixx'] = ( module['IXXO'] *
+    dfout['i_xx'] = ( module['IXXO'] *
         (module['C6']*Ee + module['C7']*(Ee**2)) *
         (1 + module['Aisc']*(temp_cell - T0)) )
 
-    dfout['Ee'] = Ee
+    dfout['effective_irradiance'] = Ee
 
     return dfout
 

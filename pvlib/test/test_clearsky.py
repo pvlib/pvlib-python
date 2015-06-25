@@ -46,9 +46,9 @@ def test_ineichen_airmass():
 
 def test_ineichen_keys():
     clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
-    assert 'GHI' in clearsky_data.columns
-    assert 'DNI' in clearsky_data.columns
-    assert 'DHI' in clearsky_data.columns
+    assert 'ghi' in clearsky_data.columns
+    assert 'dni' in clearsky_data.columns
+    assert 'dhi' in clearsky_data.columns
 
 # test the haurwitz clear sky implementation
 def test_haurwitz():
@@ -56,4 +56,4 @@ def test_haurwitz():
 
 def test_haurwitz_keys():
     clearsky_data = clearsky.haurwitz(ephem_data['zenith'])
-    assert 'GHI' in clearsky_data.columns
+    assert 'ghi' in clearsky_data.columns

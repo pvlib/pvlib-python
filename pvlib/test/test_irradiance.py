@@ -30,7 +30,7 @@ irrad_data = clearsky.ineichen(times, tus, linke_turbidity=3,
 
 dni_et = irradiance.extraradiation(times.dayofyear)
 
-ghi = irrad_data['GHI']
+ghi = irrad_data['ghi']
 
 
 # the test functions. these are almost all functional tests.
@@ -99,7 +99,7 @@ def test_isotropic_float():
 
 
 def test_isotropic_series():
-    irradiance.isotropic(40, irrad_data['DHI'])
+    irradiance.isotropic(40, irrad_data['dhi'])
 
 
 def test_klucher_series_float():
@@ -107,33 +107,33 @@ def test_klucher_series_float():
 
 
 def test_klucher_series():
-    irradiance.klucher(40, 180, irrad_data['DHI'], irrad_data['GHI'],
+    irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
                        ephem_data['apparent_zenith'],
                        ephem_data['apparent_azimuth'])
 
 
 def test_haydavies():
-    irradiance.haydavies(40, 180, irrad_data['DHI'], irrad_data['DNI'],
+    irradiance.haydavies(40, 180, irrad_data['dhi'], irrad_data['dni'],
                          dni_et,
                          ephem_data['apparent_zenith'],
                          ephem_data['apparent_azimuth'])
 
 
 def test_reindl():
-    irradiance.reindl(40, 180, irrad_data['DHI'], irrad_data['DNI'],
-                      irrad_data['GHI'], dni_et,
+    irradiance.reindl(40, 180, irrad_data['dhi'], irrad_data['dni'],
+                      irrad_data['ghi'], dni_et,
                       ephem_data['apparent_zenith'],
                       ephem_data['apparent_azimuth'])
 
 
 def test_king():
-    irradiance.king(40, irrad_data['DHI'], irrad_data['GHI'],
+    irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
                     ephem_data['apparent_zenith'])
 
 
 def test_perez():
     AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
-    irradiance.perez(40, 180, irrad_data['DHI'], irrad_data['DNI'],
+    irradiance.perez(40, 180, irrad_data['dhi'], irrad_data['dni'],
                      dni_et, ephem_data['apparent_zenith'],
                      ephem_data['apparent_azimuth'], AM)
 
@@ -144,17 +144,17 @@ def test_globalinplane():
     AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     gr_sand = irradiance.grounddiffuse(40, ghi, surface_type='sand')
     diff_perez = irradiance.perez(
-        40, 180, irrad_data['DHI'], irrad_data['DNI'], dni_et,
+        40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
         ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'], AM)
     irradiance.globalinplane(
-        AOI=AOI, DNI=irrad_data['DNI'], In_Plane_SkyDiffuse=diff_perez,
+        AOI=AOI, DNI=irrad_data['dni'], In_Plane_SkyDiffuse=diff_perez,
         GR=gr_sand)
 
 
 # test DISC
 def test_disc_keys():
     clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
-    disc_data = irradiance.disc(clearsky_data['GHI'], ephem_data['zenith'], 
+    disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'], 
                               ephem_data.index)
     assert 'DNI_gen_DISC' in disc_data.columns
     assert 'Kt_gen_DISC' in disc_data.columns
@@ -172,7 +172,7 @@ def test_disc_value():
 def test_dirint():
     clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
     pressure = 93193.
-    dirint_data = irradiance.dirint(clearsky_data['GHI'], ephem_data['zenith'], 
+    dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'], 
                                     ephem_data.index, pressure=pressure)
 
 def test_dirint_value():

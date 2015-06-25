@@ -105,16 +105,17 @@ def test_retrieve_sam_network():
 def test_sapm():
     modules = sam_data['sandiamod']
     module = modules.Canadian_Solar_CS5P_220M___2009_
-    
-    sapm = pvsystem.sapm(module, irrad_data.DNI, irrad_data.DHI, 25, am, aoi)
-    
-    sapm = pvsystem.sapm(module.to_dict(), irrad_data.DNI,
-                         irrad_data.DHI, 25, am, aoi)
+
+    sapm = pvsystem.sapm(module, irrad_data['dni'],
+                         irrad_data['dhi'], 25, am, aoi)
+
+    sapm = pvsystem.sapm(module.to_dict(), irrad_data['dni'],
+                         irrad_data['dhi'], 25, am, aoi)
 
 
 def test_calcparams_desoto():
     cecmodule = sam_data['cecmod'].Example_Module 
-    pvsystem.calcparams_desoto(irrad_data.GHI,
+    pvsystem.calcparams_desoto(irrad_data['ghi'],
                                temp_cell=25,
                                alpha_isc=cecmodule['Alpha_sc'],
                                module_parameters=cecmodule,
@@ -130,7 +131,7 @@ def test_i_from_v():
 def test_singlediode_series():  
     cecmodule = sam_data['cecmod'].Example_Module 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                         irrad_data.GHI,
+                                         irrad_data['ghi'],
                                          temp_cell=25,
                                          alpha_isc=cecmodule['Alpha_sc'],
                                          module_parameters=cecmodule,

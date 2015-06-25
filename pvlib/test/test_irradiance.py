@@ -139,26 +139,26 @@ def test_perez():
 
 
 def test_globalinplane():
-    AOI = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
+    aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
                          ephem_data['apparent_azimuth'])
-    AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+    airmass = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     gr_sand = irradiance.grounddiffuse(40, ghi, surface_type='sand')
     diff_perez = irradiance.perez(
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
-        ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'], AM)
+        ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'], airmass)
     irradiance.globalinplane(
-        AOI=AOI, DNI=irrad_data['dni'], In_Plane_SkyDiffuse=diff_perez,
-        GR=gr_sand)
+        aoi=aoi, dni=irrad_data['dni'], poa_sky_diffuse=diff_perez,
+        poa_ground_diffuse=gr_sand)
 
 
-# test DISC
 def test_disc_keys():
     clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
     disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'], 
                               ephem_data.index)
-    assert 'DNI_gen_DISC' in disc_data.columns
-    assert 'Kt_gen_DISC' in disc_data.columns
-    assert 'AM' in disc_data.columns
+    assert 'dni' in disc_data.columns
+    assert 'kt' in disc_data.columns
+    assert 'airmass' in disc_data.columns
+
 
 def test_disc_value():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
@@ -166,8 +166,9 @@ def test_disc_value():
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
     disc_data = irradiance.disc(ghi, zenith, times, pressure=pressure)
-    assert_almost_equal(disc_data['DNI_gen_DISC'].values,
+    assert_almost_equal(disc_data['dni'].values,
                         np.array([830.46, 676.09]), 1)
+
 
 def test_dirint():
     clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)

@@ -31,6 +31,7 @@ Enhancements
 * Add optional ``projection_ratio`` keyword argument to the ``haydavies``
   calculator. Speeds calculations when irradiance changes but
   solar position remains the same (:issue:`58`)
+* Improved installation instructions in README.
 
 Bug fixes
 ~~~~~~~~~

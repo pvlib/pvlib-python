@@ -1115,17 +1115,17 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     return I.real
 
 
-def snlinverter(inverter, Vmp, Pmp):
+def snlinverter(inverter, v_dc, p_dc):
     '''
     Converts DC power and voltage to AC power using 
     Sandia's Grid-Connected PV Inverter model.
 
-    Determine the AC power output of an inverter given the DC voltage, DC
+    Determines the AC power output of an inverter given the DC voltage, DC
     power, and appropriate Sandia Grid-Connected Photovoltaic Inverter
-    Model parameters. The output, ACPower, is clipped at the maximum power
+    Model parameters. The output, ac_power, is clipped at the maximum power
     output, and gives a negative power during low-input power conditions,
     but does NOT account for maximum power point tracking voltage windows
-    nor maximum current or voltage limits on the inverter. 
+    nor maximum current or voltage limits on the inverter.
 
     Parameters
     ----------
@@ -1165,22 +1165,22 @@ def snlinverter(inverter, Vmp, Pmp):
                  maintain circuitry required to sense PV array voltage (W)
         ======   ============================================================
 
-    Vdc : float or DataFrame
+    v_dc : float or Series
         DC voltages, in volts, which are provided as input to the inverter. 
         Vdc must be >= 0.
-    Pdc : float or DataFrame
+    p_dc : float or Series
         A scalar or DataFrame of DC powers, in watts, which are provided
         as input to the inverter. Pdc must be >= 0.
 
     Returns
     -------
-    ACPower : float or DataFrame
+    ac_power : float or Series
         Modeled AC power output given the input 
-        DC voltage, Vdc, and input DC power, Pdc. When ACPower would be 
+        DC voltage, Vdc, and input DC power, Pdc. When ac_power would be 
         greater than Pac0, it is set to Pac0 to represent inverter 
-        "clipping". When ACPower would be less than Ps0 (startup power
-        required), then ACPower is set to -1*abs(Pnt) to represent nightly 
-        power losses. ACPower is not adjusted for maximum power point
+        "clipping". When ac_power would be less than Ps0 (startup power
+        required), then ac_power is set to -1*abs(Pnt) to represent nightly 
+        power losses. ac_power is not adjusted for maximum power point
         tracking (MPPT) voltage windows or maximum current limits of the
         inverter.
 
@@ -1207,11 +1207,18 @@ def snlinverter(inverter, Vmp, Pmp):
     C3 = inverter['C3']
     Pnt = inverter['Pnt']
 
-    A = Pdco*((1 + C1*((Vmp - Vdco))))
-    B = Pso*((1 + C2*((Vmp - Vdco))))
-    C = C0*((1 + C3*((Vmp - Vdco))))
-    ACPower = ((Paco / (A - B)) - C*((A - B)))*((Pmp - B)) + C*((Pmp - B) ** 2)
-    ACPower[ACPower > Paco] = Paco
-    ACPower[ACPower < Pso] = - 1.0 * abs(Pnt)
+    A = Pdco * (1 + C1*(v_dc - Vdco))
+    B = Pso * (1 + C2*(v_dc - Vdco))
+    C = C0 * (1 + C3*(v_dc - Vdco))
+    
+    # ensures that function works with scalar or Series input
+    p_dc = pd.Series(p_dc)
+    
+    ac_power = ( Paco/(A-B) - C*(A-B) ) * (p_dc-B) + C*((p_dc-B)**2)
+    ac_power[ac_power > Paco] = Paco
+    ac_power[ac_power < Pso] = - 1.0 * abs(Pnt)
+    
+    if len(ac_power) == 1:
+        ac_power = ac_power.ix[0]
 
-    return ACPower
+    return ac_power

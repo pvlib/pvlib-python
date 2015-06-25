@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from nose.tools import assert_equals, assert_almost_equals
-from pandas.util.testing import assert_frame_equal
+from pandas.util.testing import assert_series_equal, assert_frame_equal
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -180,9 +180,21 @@ def test_sapm_celltemp_with_index():
 def test_snlinverter():
     inverters = sam_data['sandiainverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
-    vdcs = pd.Series(np.linspace(0,50,51))
-    idcs = pd.Series(np.linspace(0,11,110))
+    vdcs = pd.Series(np.linspace(0,50,3))
+    idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
     pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+
+
+def test_snlinverter_float():
+    inverters = sam_data['sandiainverter']
+    testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
+    vdcs = 25.
+    idcs = 5.5
+    pdcs = idcs * vdcs
+
+    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    assert_almost_equals(pacs, 132.004308, 5)
     

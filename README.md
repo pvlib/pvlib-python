@@ -128,6 +128,13 @@ Compatibility
 
 pvlib-python is compatible with Python versions 2.7, 3.3, and 3.4, and pandas versions 0.13.1 through 0.16.2.
 
+For Linux + Python 3 users: The combination of Linux, Python 3, NumPy 1.9, and SciPy 0.15 has some bugs. The most common place for these bugs to show up when using pvlib-python is in calculating IV curve parameters using the ``singlediode`` function. Downgrade your NumPy to 1.8 and SciPy to 0.14, then install whatever version of pandas you want but without dependencies. The conda commands for this are:
+
+```
+conda install numpy=1.8 scipy=0.14
+conda install pandas --no-deps
+```
+
 
 Testing
 =======

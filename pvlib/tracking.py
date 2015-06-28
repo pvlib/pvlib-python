@@ -124,8 +124,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         pd.util.testing.assert_index_equal(apparent_azimuth.index,
                                            apparent_zenith.index)
     except AssertionError:
-        raise ValueError('apparent_azimuth.index and ' +
-                         'apparent_zenith.index must match.')
+        raise ValueError('apparent_azimuth.index {} and '.format(apparent_azimuth.index) +
+                         'apparent_zenith.index {} must match.'.format(apparent_zenith.index))
         
     times = apparent_azimuth.index
     

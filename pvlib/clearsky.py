@@ -49,13 +49,13 @@ def ineichen(time, location, linke_turbidity=None,
         Sets the solar position algorithm. 
         See solarposition.get_solarposition()
     
-    zenith_data : None or pandas.Series
+    zenith_data : None or Series
         If None, ephemeris data will be calculated using ``solarposition_method``.
     
     airmass_model : string
         See pvlib.airmass.relativeairmass().
     
-    airmass_data : None or pandas.Series
+    airmass_data : None or Series
         If None, absolute air mass data will be calculated using 
         ``airmass_model`` and location.alitude.
     
@@ -65,14 +65,14 @@ def ineichen(time, location, linke_turbidity=None,
 
     Returns
     --------
-    DataFrame with the following columns: ``GHI, DNI, DHI``.
+    DataFrame with the following columns: ``ghi, dni, dhi``.
 
     Notes
     -----
     If you are using this function
     in a loop, it may be faster to load LinkeTurbidities.mat outside of
-    the loop and feed it in as a variable, rather than
-    having the function open the file each time it is called.
+    the loop and feed it in as a keyword argument, rather than
+    having the function open and process the file each time it is called.
 
     References
     ----------
@@ -96,7 +96,7 @@ def ineichen(time, location, linke_turbidity=None,
     '''
     # Initial implementation of this algorithm by Matthew Reno.
     # Ported to python by Rob Andrews
-    # Added functionality by Will Holmgren
+    # Added functionality by Will Holmgren (@wholmgren)
     
     I0 = irradiance.extraradiation(time.dayofyear)
     
@@ -161,7 +161,7 @@ def ineichen(time, location, linke_turbidity=None,
     # alt2pres) using Kasten and Young's 1989 formula for airmass.
     
     if airmass_data is None:
-        AMabsolute = atmosphere.absoluteairmass(AMrelative=atmosphere.relativeairmass(ApparentZenith, airmass_model),
+        AMabsolute = atmosphere.absoluteairmass(airmass_relative=atmosphere.relativeairmass(ApparentZenith, airmass_model),
                                                 pressure=atmosphere.alt2pres(location.altitude))
     else:
         AMabsolute = airmass_data
@@ -195,7 +195,9 @@ def ineichen(time, location, linke_turbidity=None,
     
     cos_zenith = tools.cosd(ApparentZenith)
     
-    clearsky_GHI = cg1 * I0 * cos_zenith * np.exp(-cg2*AMabsolute*(fh1 + fh2*(TL - 1))) * np.exp(0.01*AMabsolute**1.8)
+    clearsky_GHI = ( cg1 * I0 * cos_zenith *
+                     np.exp(-cg2*AMabsolute*(fh1 + fh2*(TL - 1))) *
+                     np.exp(0.01*AMabsolute**1.8) )
     clearsky_GHI[clearsky_GHI < 0] = 0
     
     # BncI == "normal beam clear sky radiation"
@@ -204,25 +206,24 @@ def ineichen(time, location, linke_turbidity=None,
     logger.debug('b={}'.format(b))
     
     # "empirical correction" SE 73, 157 & SE 73, 312.
-    BncI_2 = clearsky_GHI * ( 1 - (0.1 - 0.2*np.exp(-TL))/(0.1 + 0.882/fh1) ) / cos_zenith
-    #return BncI, BncI_2
-    clearsky_DNI = np.minimum(BncI, BncI_2) # Will H: use np.minimum explicitly
+    BncI_2 = ( clearsky_GHI *
+               ( 1 - (0.1 - 0.2*np.exp(-TL))/(0.1 + 0.882/fh1) ) /
+               cos_zenith )
+
+    clearsky_DNI = np.minimum(BncI, BncI_2)
     
     clearsky_DHI = clearsky_GHI - clearsky_DNI*cos_zenith
     
-    df_out = pd.DataFrame({'GHI':clearsky_GHI, 'DNI':clearsky_DNI, 
-                           'DHI':clearsky_DHI})
+    df_out = pd.DataFrame({'ghi':clearsky_GHI, 'dni':clearsky_DNI, 
+                           'dhi':clearsky_DHI})
     df_out.fillna(0, inplace=True)
-    #df_out['BncI'] = BncI
-    #df_out['BncI_2'] = BncI
     
     return df_out
-    
-    
-    
-def haurwitz(ApparentZenith):
+
+
+def haurwitz(apparent_zenith):
     '''
-    Determine clear sky GHI from Haurwitz model
+    Determine clear sky GHI from Haurwitz model.
    
     Implements the Haurwitz clear sky model for global horizontal
     irradiance (GHI) as presented in [1, 2]. A report on clear
@@ -232,7 +233,7 @@ def haurwitz(ApparentZenith):
 
     Parameters
     ----------
-    ApparentZenith : DataFrame
+    apparent_zenith : Series
         The apparent (refraction corrected) sun zenith angle
         in degrees.
 
@@ -258,13 +259,13 @@ def haurwitz(ApparentZenith):
      Laboratories, SAND2012-2389, 2012.
     '''
 
-    cos_zenith = tools.cosd(ApparentZenith)
+    cos_zenith = tools.cosd(apparent_zenith)
 
     clearsky_GHI = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
 
     clearsky_GHI[clearsky_GHI < 0] = 0
     
-    df_out = pd.DataFrame({'GHI':clearsky_GHI})
+    df_out = pd.DataFrame({'ghi':clearsky_GHI})
     
     return df_out
 
@@ -274,5 +275,5 @@ def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
     
     inputrange = inputmax - inputmin
     outputrange = outputmax - outputmin
-    OutputMatrix = (inputmatrix - inputmin) * outputrange / inputrange + outputmin
+    OutputMatrix = (inputmatrix-inputmin) * outputrange/inputrange + outputmin
     return OutputMatrix

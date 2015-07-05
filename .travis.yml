@@ -25,7 +25,8 @@ before_install:
     
 install:
     - echo "install"
-    - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas=$PD_VERSION nose pytz ephem
+    - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas=$PD_VERSION nose pytz ephem; fi
+    - if [[ $TRAVIS_PYTHON_VERSION == '3.3' || $TRAVIS_PYTHON_VERSION == '3.4' ]]; then conda install --yes python=$TRAVIS_PYTHON_VERSION numpy=1.8 scipy=0.14 pandas nose pytz ephem; conda install --yes pandas=$PD_VERSION --no-deps; fi
     - test $PD_VERSION != 0.13.1 && conda install --yes "numba>=0.17" || echo "Not installing numba"
     - conda install --yes coverage
     - pip install coveralls

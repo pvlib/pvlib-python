@@ -24,6 +24,9 @@ This documenation focuses on providing a reference for all of
 the modules and functions available in pvlib-python.
 For examples of how to use pvlib-python, please see the
 `tutorials <http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/master/docs/tutorials/>`_.
+Some of the tutorials were written with older
+versions of pvlib-python and we would greatly appreciate your
+help updating them!
 
 .. note::
 

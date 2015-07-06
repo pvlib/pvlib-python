@@ -20,7 +20,7 @@ Please see the links above for details on the status of the pvlib-python
 project. We are at an early stage in the development of this project,
 so expect to see significant API changes in the next few releases.
 
-This documenation focuses on providing a reference for all of 
+This documentation focuses on providing a reference for all of 
 the modules and functions available in pvlib-python.
 For examples of how to use pvlib-python, please see the
 `tutorials <http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/master/docs/tutorials/>`_.

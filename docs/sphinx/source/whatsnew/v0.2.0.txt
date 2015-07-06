@@ -1,6 +1,6 @@
 .. _whatsnew_0200:
 
-v0.2.0 (??, 2015)
+v0.2.0 (July 6, 2015)
 -----------------------
 
 This is a major release from 0.1 and includes a large number of API changes,

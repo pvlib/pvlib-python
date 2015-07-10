@@ -11,6 +11,7 @@ Bug fixes
 ~~~~~~~~~
 
 * Fix incorrect call to Perez irradiance function (:issue:`76`)
+* Fix numerous bugs in the IPython notebook tutorials (:issue:`30`)
 
 Contributors
 ~~~~~~~~~~~~

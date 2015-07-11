@@ -172,7 +172,7 @@ def _doy_to_timestamp(doy, epoch='2013-12-31'):
     return pd.Timestamp('2013-12-31') + datetime.timedelta(days=float(doy))
 
 
-def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
+def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
     Calculates the dot product of the solar vector and the surface normal.
 
@@ -181,13 +181,13 @@ def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
     Parameters
     ==========
 
-    surf_tilt : float or Series.
+    surface_tilt : float or Series.
         Panel tilt from horizontal.
-    surf_az : float or Series.
+    surface_azimuth : float or Series.
         Panel azimuth from north.
-    sun_zen : float or Series.
+    solar_zenith : float or Series.
         Solar zenith angle.
-    sun_az : float or Series.
+    solar_azimuth : float or Series.
         Solar azimuth angle.
 
     Returns
@@ -196,8 +196,8 @@ def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
     """
 
     projection = (
-        tools.cosd(surf_tilt) * tools.cosd(sun_zen) + tools.sind(surf_tilt) *
-        tools.sind(sun_zen) * tools.cosd(sun_az - surf_az))
+        tools.cosd(surface_tilt) * tools.cosd(solar_zenith) + tools.sind(surface_tilt) *
+        tools.sind(solar_zenith) * tools.cosd(solar_azimuth - surface_azimuth))
 
     try:
         projection.name = 'aoi_projection'
@@ -207,7 +207,7 @@ def aoi_projection(surf_tilt, surf_az, sun_zen, sun_az):
     return projection
 
 
-def aoi(surf_tilt, surf_az, sun_zen, sun_az):
+def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
     Calculates the angle of incidence of the solar vector on a surface.
     This is the angle between the solar vector and the surface normal.
@@ -217,13 +217,13 @@ def aoi(surf_tilt, surf_az, sun_zen, sun_az):
     Parameters
     ==========
 
-    surf_tilt : float or Series.
+    surface_tilt : float or Series.
         Panel tilt from horizontal.
-    surf_az : float or Series.
+    surface_azimuth : float or Series.
         Panel azimuth from north.
-    sun_zen : float or Series.
+    solar_zenith : float or Series.
         Solar zenith angle.
-    sun_az : float or Series.
+    solar_azimuth : float or Series.
         Solar azimuth angle.
 
     Returns
@@ -231,7 +231,7 @@ def aoi(surf_tilt, surf_az, sun_zen, sun_az):
     float or Series. Angle of incidence in degrees.
     """
 
-    projection = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    projection = aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     aoi_value = np.rad2deg(np.arccos(projection))
 
     try:
@@ -242,7 +242,8 @@ def aoi(surf_tilt, surf_az, sun_zen, sun_az):
     return aoi_value
 
 
-def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
+def poa_horizontal_ratio(surface_tilt, surface_azimuth,
+                         solar_zenith, solar_azimuth):
     """
     Calculates the ratio of the beam components of the
     plane of array irradiance and the horizontal irradiance.
@@ -252,13 +253,13 @@ def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
     Parameters
     ==========
 
-    surf_tilt : float or Series.
+    surface_tilt : float or Series.
         Panel tilt from horizontal.
-    surf_az : float or Series.
+    surface_azimuth : float or Series.
         Panel azimuth from north.
-    sun_zen : float or Series.
+    solar_zenith : float or Series.
         Solar zenith angle.
-    sun_az : float or Series.
+    solar_azimuth : float or Series.
         Solar azimuth angle.
 
     Returns
@@ -267,12 +268,13 @@ def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
     horizontal plane irradiance
     """
 
-    cos_poa_zen = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_poa_zen = aoi_projection(surface_tilt, surface_azimuth,
+                                 solar_zenith, solar_azimuth)
 
-    cos_sun_zen = tools.cosd(sun_zen)
+    cos_solar_zenith = tools.cosd(solar_zenith)
 
     # ratio of titled and horizontal beam irradiance
-    ratio = cos_poa_zen / cos_sun_zen
+    ratio = cos_poa_zen / cos_solar_zenith
 
     try:
         ratio.name = 'poa_ratio'
@@ -282,37 +284,39 @@ def poa_horizontal_ratio(surf_tilt, surf_az, sun_zen, sun_az):
     return ratio
 
 
-def beam_component(surf_tilt, surf_az, sun_zen, sun_az, DNI):
+def beam_component(surface_tilt, surface_azimuth,
+                   solar_zenith, solar_azimuth, dni):
     """
     Calculates the beam component of the plane of array irradiance.
 
     Parameters
     ----------
-    surf_tilt : float or Series.
+    surface_tilt : float or Series.
         Panel tilt from horizontal.
-    surf_az : float or Series.
+    surface_azimuth : float or Series.
         Panel azimuth from north.
-    sun_zen : float or Series.
+    solar_zenith : float or Series.
         Solar zenith angle.
-    sun_az : float or Series.
+    solar_azimuth : float or Series.
         Solar azimuth angle.
-    DNI : float or Series
+    dni : float or Series
         Direct Normal Irradiance
 
     Returns
     -------
     Series
     """
-    beam = DNI * aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    beam = dni * aoi_projection(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth)
     beam[beam < 0] = 0
 
     return beam
 
 
 # ToDo: how to best structure this function? wholmgren 2014-11-03
-def total_irrad(surf_tilt, surf_az,
-                sun_zen, sun_az,
-                DNI, GHI, DHI, DNI_ET=None, AM=None,
+def total_irrad(surface_tilt, surface_azimuth,
+                solar_zenith, solar_azimuth,
+                dni, ghi, dhi, dni_extra=None, airmass=None,
                 albedo=.25, surface_type=None,
                 model='isotropic',
                 model_perez='allsitescomposite1990'):
@@ -326,23 +330,23 @@ def total_irrad(surf_tilt, surf_az,
 
     Parameters
     ----------
-    surf_tilt : float or Series.
+    surface_tilt : float or Series.
         Panel tilt from horizontal.
-    surf_az : float or Series.
+    surface_azimuth : float or Series.
         Panel azimuth from north.
-    sun_zen : float or Series.
+    solar_zenith : float or Series.
         Solar zenith angle.
-    sun_az : float or Series.
+    solar_azimuth : float or Series.
         Solar azimuth angle.
-    DNI : float or Series
+    dni : float or Series
         Direct Normal Irradiance
-    GHI : float or Series
+    ghi : float or Series
         Global horizontal irradiance
-    DHI : float or Series
+    dhi : float or Series
         Diffuse horizontal irradiance
-    DNI_ET : float or Series
+    dni_extra : float or Series
         Extraterrestrial direct normal irradiance
-    AM : float or Series
+    airmass : float or Series
         Airmass
     albedo : float
         Surface albedo
@@ -366,27 +370,28 @@ def total_irrad(surf_tilt, surf_az,
 
     pvl_logger.debug('planeofarray.total_irrad()')
 
-    beam = beam_component(surf_tilt, surf_az, sun_zen, sun_az, DNI)
+    beam = beam_component(surface_tilt, surface_azimuth,
+                          solar_zenith, solar_azimuth, dni)
 
     model = model.lower()
     if model == 'isotropic':
-        sky = isotropic(surf_tilt, DHI)
+        sky = isotropic(surface_tilt, dhi)
     elif model == 'klutcher':
-        sky = klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az)
+        sky = klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth)
     elif model == 'haydavies':
-        sky = haydavies(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az)
+        sky = haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra, solar_zenith, solar_azimuth)
     elif model == 'reindl':
-        sky = reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen,
-                     sun_az)
+        sky = reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra, solar_zenith,
+                     solar_azimuth)
     elif model == 'king':
-        sky = king(surf_tilt, DHI, GHI, sun_zen)
+        sky = king(surface_tilt, dhi, ghi, solar_zenith)
     elif model == 'perez':
-        sky = perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
+        sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra, solar_zenith, solar_azimuth, AM,
                     modelt=model_perez)
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
-    ground = grounddiffuse(surf_tilt, GHI, albedo, surface_type)
+    ground = grounddiffuse(surface_tilt, ghi, albedo, surface_type)
 
     total = beam + sky + ground
 
@@ -399,7 +404,7 @@ def total_irrad(surf_tilt, surf_az,
 
 
 # ToDo: keep this or not? wholmgren, 2014-11-03
-def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
+def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     '''
     Determine the three components on in-plane irradiance
 
@@ -410,28 +415,28 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
     Parameters
     ----------
 
-    AOI : float or Series
-          Angle of incidence of solar rays with respect
-          to the module surface, from :func:`aoi`.
+    aoi : float or Series
+        Angle of incidence of solar rays with respect
+        to the module surface, from :func:`aoi`.
 
-    DNI : float or Series
-          Direct normal irradiance (W/m^2), as measured
-          from a TMY file or calculated with a clearsky model.
+    dni : float or Series
+        Direct normal irradiance (W/m^2), as measured
+        from a TMY file or calculated with a clearsky model.
 
-    In_Plane_SkyDiffuse :  float or Series
-          Diffuse irradiance (W/m^2) in the plane of the modules, as
-          calculated by a diffuse irradiance translation function
+    poa_sky_diffuse :  float or Series
+        Diffuse irradiance (W/m^2) in the plane of the modules, as
+        calculated by a diffuse irradiance translation function
 
-    GR : float or Series
-          a scalar or DataFrame of ground reflected irradiance (W/m^2),
-          as calculated by a albedo model (eg. :func:`grounddiffuse`)
+    poa_ground_diffuse : float or Series
+        Ground reflected irradiance (W/m^2) in the plane of the modules,
+        as calculated by an albedo model (eg. :func:`grounddiffuse`)
 
     Returns
     -------
     DataFrame with the following keys:
-        * ``E`` : Total in-plane irradiance (W/m^2)
-        * ``Eb`` : Total in-plane beam irradiance (W/m^2)
-        * ``Ediff`` : Total in-plane diffuse irradiance (W/m^2)
+        * ``poa_global`` : Total in-plane irradiance (W/m^2)
+        * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
+        * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
 
     Notes
     ------
@@ -439,14 +444,16 @@ def globalinplane(AOI, DNI, In_Plane_SkyDiffuse, GR):
     :math:`< 0^{\circ}` is set to zero.
     '''
 
-    Eb = pd.Series(DNI * np.cos(np.radians(AOI))).clip_lower(0)
-    E = Eb + In_Plane_SkyDiffuse + GR
-    Ediff = In_Plane_SkyDiffuse + GR
+    poa_direct = pd.Series(dni * np.cos(np.radians(aoi))).clip_lower(0)
+    poa_global = poa_direct + poa_sky_diffuse + poa_ground_diffuse
+    poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
 
-    return pd.DataFrame({'E': E, 'Eb': Eb, 'Ediff': Ediff})
+    return pd.DataFrame({'poa_global': poa_global,
+                         'poa_direct': poa_direct,
+                         'poa_diffuse': poa_diffuse})
 
 
-def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
+def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
     irradiance, albedo, and surface tilt
@@ -456,7 +463,7 @@ def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
 
     Parameters
     ----------
-    surf_tilt : float or DataFrame
+    surface_tilt : float or DataFrame
         Surface tilt angles in decimal degrees.
         SurfTilt must be >=0 and <=180. The tilt angle is defined as
         degrees from horizontal (e.g. surface facing up = 0, surface facing
@@ -506,7 +513,7 @@ def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
         pvl_logger.info('surface_type={} mapped to albedo={}'
                         .format(surface_type, albedo))
 
-    diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surf_tilt))) * 0.5
+    diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surface_tilt))) * 0.5
 
     try:
         diffuse_irrad.name = 'diffuse_ground'
@@ -516,7 +523,7 @@ def grounddiffuse(surf_tilt, ghi, albedo=.25, surface_type=None):
     return diffuse_irrad
 
 
-def isotropic(surf_tilt, DHI):
+def isotropic(surface_tilt, dhi):
     r'''
     Determine diffuse irradiance from the sky on a
     tilted surface using the isotropic sky model.
@@ -534,13 +541,13 @@ def isotropic(surf_tilt, DHI):
     Parameters
     ----------
 
-    surf_tilt : float or Series
+    surface_tilt : float or Series
         Surface tilt angle in decimal degrees.
-        surf_tilt must be >=0 and <=180. The tilt angle is defined as
+        surface_tilt must be >=0 and <=180. The tilt angle is defined as
         degrees from horizontal (e.g. surface facing up = 0, surface facing
         horizon = 90)
 
-    DHI : float or Series
+    dhi : float or Series
         Diffuse horizontal irradiance in W/m^2.
         DHI must be >=0.
 
@@ -571,12 +578,13 @@ def isotropic(surf_tilt, DHI):
 
     pvl_logger.debug('diffuse_sky.isotropic()')
 
-    sky_diffuse = DHI * (1 + tools.cosd(surf_tilt)) * 0.5
+    sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
     return sky_diffuse
 
 
-def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
+def klucher(surface_tilt, surface_azimuth, dhi, ghi,
+            solar_zenith, solar_azimuth):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface
     using Klucher's 1979 model
@@ -602,34 +610,34 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     Parameters
     ----------
 
-    surf_tilt : float or Series
+    surface_tilt : float or Series
         Surface tilt angles in decimal degrees.
-        surf_tilt must be >=0 and <=180. The tilt angle is defined as
+        surface_tilt must be >=0 and <=180. The tilt angle is defined as
         degrees from horizontal (e.g. surface facing up = 0, surface facing
         horizon = 90)
 
-    surf_az : float or Series
+    surface_azimuth : float or Series
         Surface azimuth angles in decimal degrees.
-        surf_az must be >=0 and <=360. The Azimuth convention is defined
+        surface_azimuth must be >=0 and <=360. The Azimuth convention is defined
         as degrees east of north (e.g. North = 0, South=180 East = 90,
         West = 270).
 
-    DHI : float or Series
+    dhi : float or Series
         diffuse horizontal irradiance in W/m^2.
         DHI must be >=0.
 
-    GHI : float or Series
+    ghi : float or Series
         Global  irradiance in W/m^2.
         DNI must be >=0.
 
-    sun_zen : float or Series
+    solar_zenith : float or Series
         apparent (refraction-corrected) zenith
         angles in decimal degrees.
-        sun_zen must be >=0 and <=180.
+        solar_zenith must be >=0 and <=180.
 
-    sun_az : float or Series
+    solar_azimuth : float or Series
         Sun azimuth angles in decimal degrees.
-        sun_az must be >=0 and <=360. The Azimuth convention is defined
+        solar_azimuth must be >=0 and <=360. The Azimuth convention is defined
         as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
     Returns
@@ -657,20 +665,21 @@ def klucher(surf_tilt, surf_az, DHI, GHI, sun_zen, sun_az):
     pvl_logger.debug('diffuse_sky.klucher()')
 
     # zenith angle with respect to panel normal.
-    cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = aoi_projection(surface_tilt, surface_azimuth,
+                            solar_zenith, solar_azimuth)
 
-    F = 1 - ((DHI / GHI) ** 2)
+    F = 1 - ((ghi / ghi) ** 2)
     try:
         # fails with single point input
         F.fillna(0, inplace=True)
     except AttributeError:
         F = 0
 
-    term1 = 0.5 * (1 + tools.cosd(surf_tilt))
-    term2 = 1 + F * (tools.sind(0.5 * surf_tilt) ** 3)
-    term3 = 1 + F * (cos_tt ** 2) * (tools.sind(sun_zen) ** 3)
+    term1 = 0.5 * (1 + tools.cosd(surface_tilt))
+    term2 = 1 + F * (tools.sind(0.5 * surface_tilt) ** 3)
+    term3 = 1 + F * (cos_tt ** 2) * (tools.sind(solar_zenith) ** 3)
 
-    sky_diffuse = DHI * term1 * term2 * term3
+    sky_diffuse = dhi * term1 * term2 * term3
 
     return sky_diffuse
 
@@ -758,8 +767,8 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     if projection_ratio is None:
         cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                                 solar_zenith, solar_azimuth)
-        cos_sun_zen = tools.cosd(solar_zenith)
-        Rb = cos_tt / cos_sun_zen
+        cos_solar_zenith = tools.cosd(solar_zenith)
+        Rb = cos_tt / cos_solar_zenith
     else:
         Rb = projection_ratio
 
@@ -776,7 +785,8 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     return sky_diffuse
 
 
-def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
+def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
+           solar_zenith, solar_azimuth):
     r'''
     Determine diffuse irradiance from the sky on a
     tilted surface using Reindl's 1990 model
@@ -796,35 +806,35 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     Parameters
     ----------
 
-    surf_tilt : float or Series.
+    surface_tilt : float or Series.
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as
         degrees from horizontal (e.g. surface facing up = 0, surface facing
         horizon = 90)
 
-    surf_az : float or Series.
+    surface_azimuth : float or Series.
         Surface azimuth angles in decimal degrees.
         The Azimuth convention is defined
         as degrees east of north (e.g. North = 0, South=180 East = 90,
         West = 270).
 
-    DHI : float or Series.
+    dhi : float or Series.
         diffuse horizontal irradiance in W/m^2.
 
-    DNI : float or Series.
+    dni : float or Series.
         direct normal irradiance in W/m^2.
 
-    GHI: float or Series.
+    ghi: float or Series.
         Global irradiance in W/m^2.
 
-    DNI_ET : float or Series.
+    dni_extra : float or Series.
         extraterrestrial normal irradiance in W/m^2.
 
-    sun_zen : float or Series.
+    solar_zenith : float or Series.
         apparent (refraction-corrected) zenith
         angles in decimal degrees.
 
-    sun_az : float or Series.
+    solar_azimuth : float or Series.
         Sun azimuth angles in decimal degrees.
         The Azimuth convention is defined
         as degrees east of north (e.g. North = 0, East = 90, West = 270).
@@ -832,7 +842,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     Returns
     -------
 
-    SkyDiffuse : float or Series.
+    poa_sky_diffuse : float or Series.
 
         The diffuse component of the solar radiation  on an
         arbitrarily tilted surface defined by the Reindl model as given in
@@ -846,7 +856,7 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
     Notes
     -----
 
-    The POAskydiffuse calculation is generated from the Loutzenhiser et al.
+    The poa_sky_diffuse calculation is generated from the Loutzenhiser et al.
     (2007) paper, equation 8. Note that I have removed the beam and ground
     reflectance portion of the equation and this generates ONLY the diffuse
     radiation from the sky and circumsolar, so the form of the equation
@@ -868,32 +878,33 @@ def reindl(surf_tilt, surf_az, DHI, DNI, GHI, DNI_ET, sun_zen, sun_az):
 
     pvl_logger.debug('diffuse_sky.reindl()')
 
-    cos_tt = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    cos_tt = aoi_projection(surface_tilt, surface_azimuth,
+                            solar_zenith, solar_azimuth)
 
-    cos_sun_zen = tools.cosd(sun_zen)
+    cos_solar_zenith = tools.cosd(solar_zenith)
 
     # ratio of titled and horizontal beam irradiance
-    Rb = cos_tt / cos_sun_zen
+    Rb = cos_tt / cos_solar_zenith
 
     # Anisotropy Index
-    AI = DNI / DNI_ET
+    AI = dni / dni_extra
 
     # DNI projected onto horizontal
-    HB = DNI * cos_sun_zen
+    HB = dni * cos_solar_zenith
     HB[HB < 0] = 0
 
     # these are actually the () and [] sub-terms of the second term of eqn 8
     term1 = 1 - AI
-    term2 = 0.5 * (1 + tools.cosd(surf_tilt))
-    term3 = 1 + np.sqrt(HB / GHI) * (tools.sind(0.5 * surf_tilt) ** 3)
+    term2 = 0.5 * (1 + tools.cosd(surface_tilt))
+    term3 = 1 + np.sqrt(HB / ghi) * (tools.sind(0.5 * surface_tilt) ** 3)
 
-    sky_diffuse = DHI * (AI * Rb + term1 * term2 * term3)
+    sky_diffuse = dhi * (AI * Rb + term1 * term2 * term3)
     sky_diffuse[sky_diffuse < 0] = 0
 
     return sky_diffuse
 
 
-def king(surf_tilt, DHI, GHI, sun_zen):
+def king(surface_tilt, dhi, ghi, solar_zenith):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using the
     King model.
@@ -908,43 +919,42 @@ def king(surf_tilt, DHI, GHI, sun_zen):
     Parameters
     ----------
 
-    surf_tilt : float or Series
-          Surface tilt angles in decimal degrees.
-          The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
+    surface_tilt : float or Series
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
-    DHI : float or Series
-          diffuse horizontal irradiance in W/m^2.
+    dhi : float or Series
+        Diffuse horizontal irradiance in W/m^2.
 
-    GHI : float or Series
-          global horizontal irradiance in W/m^2.
+    ghi : float or Series
+        Global horizontal irradiance in W/m^2.
 
-    sun_zen : float or Series
-          apparent (refraction-corrected) zenith
-          angles in decimal degrees.
+    solar_zenith : float or Series
+        Apparent (refraction-corrected) zenith
+        angles in decimal degrees.
 
     Returns
     --------
-
-    SkyDiffuse : float or Series
-
-            the diffuse component of the solar radiation  on an
-            arbitrarily tilted surface as given by a model developed by
-            David L. King at Sandia National Laboratories.
+    poa_sky_diffuse : float or Series
+        The diffuse component of the solar radiation on an
+        arbitrarily tilted surface as given by a model developed by
+        David L. King at Sandia National Laboratories.
     '''
 
     pvl_logger.debug('diffuse_sky.king()')
 
-    sky_diffuse = (DHI * ((1 + tools.cosd(surf_tilt))) / 2 + GHI *
-                   ((0.012 * sun_zen - 0.04)) *
-                   ((1 - tools.cosd(surf_tilt))) / 2)
+    sky_diffuse = (dhi * ((1 + tools.cosd(surface_tilt))) / 2 + ghi *
+                   ((0.012 * solar_zenith - 0.04)) *
+                   ((1 - tools.cosd(surface_tilt))) / 2)
     sky_diffuse[sky_diffuse < 0] = 0
 
     return sky_diffuse
 
 
-def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
+def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+          solar_zenith, solar_azimuth, airmass,
           modelt='allsitescomposite1990'):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using one of
@@ -962,79 +972,75 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     Parameters
     ----------
 
-    surf_tilt : float or Series
-          Surface tilt angles in decimal degrees.
-          surf_tilt must be >=0 and <=180. The tilt angle is defined as
-          degrees from horizontal (e.g. surface facing up = 0, surface facing
-          horizon = 90)
+    surface_tilt : float or Series
+        Surface tilt angles in decimal degrees.
+        surface_tilt must be >=0 and <=180. The tilt angle is defined as
+        degrees from horizontal (e.g. surface facing up = 0, surface facing
+        horizon = 90)
 
-    surf_az : float or Series
-          Surface azimuth angles in decimal degrees.
-          surf_az must be >=0 and <=360. The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, South=180 East = 90,
-          West = 270).
+    surface_azimuth : float or Series
+        Surface azimuth angles in decimal degrees.
+        surface_azimuth must be >=0 and <=360. The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, South=180 East = 90,
+        West = 270).
 
-    DHI : float or Series
-          diffuse horizontal irradiance in W/m^2.
-          DHI must be >=0.
+    dhi : float or Series
+        Diffuse horizontal irradiance in W/m^2.
+        DHI must be >=0.
 
-    DNI : float or Series
-          direct normal irradiance in W/m^2.
-          DNI must be >=0.
+    dni : float or Series
+        Direct normal irradiance in W/m^2.
+        DNI must be >=0.
 
-    DNI_ET : float or Series
-          extraterrestrial normal irradiance in W/m^2.
-           DNI_ET must be >=0.
+    dni_extra : float or Series
+        Extraterrestrial normal irradiance in W/m^2.
 
-    sun_zen : float or Series
-          apparent (refraction-corrected) zenith
-          angles in decimal degrees.
-          sun_zen must be >=0 and <=180.
+    solar_zenith : float or Series
+        apparent (refraction-corrected) zenith
+        angles in decimal degrees.
+        solar_zenith must be >=0 and <=180.
 
-    sun_az : float or Series
-          Sun azimuth angles in decimal degrees.
-          sun_az must be >=0 and <=360. The Azimuth convention is defined
-          as degrees east of north (e.g. North = 0, East = 90, West = 270).
+    solar_azimuth : float or Series
+        Sun azimuth angles in decimal degrees.
+        solar_azimuth must be >=0 and <=360. The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, East = 90, West = 270).
 
-    AM : float or Series
-          relative (not pressure-corrected) airmass
-          values. If AM is a DataFrame it must be of the same size as all other
-          DataFrame inputs. AM must be >=0 (careful using the 1/sec(z) model of
-          AM generation)
-
-    Other Parameters
-    ----------------
+    airmass : float or Series
+        relative (not pressure-corrected) airmass
+        values. If AM is a DataFrame it must be of the same size as all other
+        DataFrame inputs. AM must be >=0 (careful using the 1/sec(z) model of
+        AM generation)
 
     model : string (optional, default='allsitescomposite1990')
 
-          a character string which selects the desired set of Perez
-          coefficients. If model is not provided as an input, the default,
-          '1990' will be used.
-          All possible model selections are:
+        A string which selects the desired set of Perez
+        coefficients. If model is not provided as an input, the default,
+        '1990' will be used.
+        All possible model selections are:
 
-          * '1990'
-          * 'allsitescomposite1990' (same as '1990')
-          * 'allsitescomposite1988'
-          * 'sandiacomposite1988'
-          * 'usacomposite1988'
-          * 'france1988'
-          * 'phoenix1988'
-          * 'elmonte1988'
-          * 'osage1988'
-          * 'albuquerque1988'
-          * 'capecanaveral1988'
-          * 'albany1988'
+        * '1990'
+        * 'allsitescomposite1990' (same as '1990')
+        * 'allsitescomposite1988'
+        * 'sandiacomposite1988'
+        * 'usacomposite1988'
+        * 'france1988'
+        * 'phoenix1988'
+        * 'elmonte1988'
+        * 'osage1988'
+        * 'albuquerque1988'
+        * 'capecanaveral1988'
+        * 'albany1988'
 
     Returns
     --------
 
     float or Series
 
-          the diffuse component of the solar radiation  on an
-          arbitrarily tilted surface defined by the Perez model as given in
-          reference [3].
-          SkyDiffuse is the diffuse component ONLY and does not include the
-          ground reflected irradiance or the irradiance due to the beam.
+        The diffuse component of the solar radiation  on an
+        arbitrarily tilted surface defined by the Perez model as given in
+        reference [3].
+        SkyDiffuse is the diffuse component ONLY and does not include the
+        ground reflected irradiance or the irradiance due to the beam.
 
 
     References
@@ -1058,11 +1064,11 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
 
     pvl_logger.debug('diffuse_sky.perez()')
 
-    kappa = 1.041  # for sun_zen in radians
-    z = np.radians(sun_zen)  # convert to radians
+    kappa = 1.041  # for solar_zenith in radians
+    z = np.radians(solar_zenith)  # convert to radians
 
     # epsilon is the sky's "clearness"
-    eps = ((DHI + DNI) / DHI + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
+    eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
 
     # Perez et al define clearness bins according to the following rules.
     # 1 = overcast ... 8 = clear
@@ -1084,17 +1090,17 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     ebin = ebin.dropna().astype(int)
 
     # This is added because in cases where the sun is below the horizon
-    # (var.sun_zen > 90) but there is still diffuse horizontal light
+    # (var.solar_zenith > 90) but there is still diffuse horizontal light
     # (var.DHI>0), it is possible that the airmass (var.AM) could be NaN, which
     # messes up later calculations. Instead, if the sun is down, and there is
     # still var.DHI, we set the airmass to the airmass value on the horizon
     # (approximately 37-38).
-    # var.AM(var.sun_zen >=90 & var.DHI >0) = 37;
+    # var.AM(var.solar_zenith >=90 & var.DHI >0) = 37;
 
     # var.DNI_ET[var.DNI_ET==0] = .00000001 #very hacky, fix this
 
     # delta is the sky's "brightness"
-    delta = DHI * AM / DNI_ET
+    delta = dhi * airmass / dni_extra
 
     # keep only valid times
     delta = delta[ebin.index]
@@ -1112,19 +1118,20 @@ def perez(surf_tilt, surf_az, DHI, DNI, DNI_ET, sun_zen, sun_az, AM,
     F2[F2 < 0] = 0
     F2 = F2.astype(float)
 
-    A = aoi_projection(surf_tilt, surf_az, sun_zen, sun_az)
+    A = aoi_projection(surface_tilt, surface_azimuth,
+                       solar_zenith, solar_azimuth)
     A[A < 0] = 0
 
-    B = tools.cosd(sun_zen)
+    B = tools.cosd(solar_zenith)
     B[B < tools.cosd(85)] = tools.cosd(85)
 
     # Calculate Diffuse POA from sky dome
 
-    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surf_tilt))
+    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))
     term2 = F1 * A[ebin.index] / B[ebin.index]
-    term3 = F2 * tools.sind(surf_tilt)
+    term3 = F2 * tools.sind(surface_tilt)
 
-    sky_diffuse = DHI[ebin.index] * (term1 + term2 + term3)
+    sky_diffuse = dhi[ebin.index] * (term1 + term2 + term3)
     sky_diffuse[sky_diffuse < 0] = 0
 
     return sky_diffuse
@@ -1294,7 +1301,7 @@ def _get_perez_coefficients(perezmodelt):
     return F1coeffs, F2coeffs
 
 
-def disc(GHI, zenith, times, pressure=101325):
+def disc(ghi, zenith, times, pressure=101325):
     '''
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance 
     using the DISC model.
@@ -1306,10 +1313,10 @@ def disc(GHI, zenith, times, pressure=101325):
     Parameters
     ----------
 
-    GHI : Series
+    ghi : Series
         Global horizontal irradiance in W/m^2.
 
-    zenith : Series
+    solar_zenith : Series
         True (not refraction - corrected) solar zenith 
         angles in decimal degrees. 
 
@@ -1321,12 +1328,12 @@ def disc(GHI, zenith, times, pressure=101325):
     Returns   
     -------
     DataFrame with the following keys:
-        * ``DNI_gen_DISC``: The modeled direct normal irradiance 
+        * ``dni``: The modeled direct normal irradiance 
           in W/m^2 provided by the
           Direct Insolation Simulation Code (DISC) model. 
-        * ``Kt_gen_DISC``: Ratio of global to extraterrestrial 
+        * ``kt``: Ratio of global to extraterrestrial 
           irradiance on a horizontal plane.
-        * ``AM``: Airmass
+        * ``airmass``: Airmass
 
     References
     ----------
@@ -1366,7 +1373,7 @@ def disc(GHI, zenith, times, pressure=101325):
     
     AM = 1.0 / ( np.cos(np.radians(Ztemp)) + 0.15*( (93.885 - Ztemp)**(-1.253) ) ) * (pressure / 101325)
     
-    Kt = GHI / I0h
+    Kt = ghi / I0h
     Kt[Kt < 0] = 0
     Kt[Kt > 2] = np.NaN
 
@@ -1382,16 +1389,16 @@ def disc(GHI, zenith, times, pressure=101325):
     Knc = 0.866 - 0.122*(AM) + 0.0121*(AM ** 2) - 0.000653*(AM ** 3) + 1.4e-05*(AM ** 4)
     Kn = Knc - delKn
     
-    DNI = Kn * I0
+    dni = Kn * I0
 
-    DNI[zenith > 87] = np.NaN
-    DNI[(GHI < 0) | (DNI < 0)] = 0
+    dni[zenith > 87] = np.NaN
+    dni[(ghi < 0) | (dni < 0)] = 0
 
-    DFOut = pd.DataFrame({'DNI_gen_DISC':DNI})
-    DFOut['Kt_gen_DISC'] = Kt
-    DFOut['AM'] = AM
+    dfout = pd.DataFrame({'dni':dni})
+    dfout['kt'] = Kt
+    dfout['airmass'] = AM
 
-    return DFOut
+    return dfout
     
 
 def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True, 
@@ -1443,7 +1450,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
 
     Returns
     -------
-    DNI : pd.Series.
+    dni : pd.Series.
         The modeled direct normal irradiance in W/m^2 provided by the
         DIRINT model.
 
@@ -1465,7 +1472,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     pvl_logger.debug('clearsky.dirint')
     
     disc_out = disc(ghi, zenith, times)
-    kt = disc_out['Kt_gen_DISC']
+    kt = disc_out['kt']
     
     # Absolute Airmass, per the DISC model
     # Note that we calculate the AM pressure correction slightly differently
@@ -1545,14 +1552,14 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     # assignment and Python-style array lookup.
     dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
                            delta_kt_prime_bin-1, w_bin-1]
-    
-    dni = disc_out['DNI_gen_DISC'] * dirint_coeffs
 
-    dni.name = 'DNI_DIRINT'
-    
+    dni = disc_out['dni'] * dirint_coeffs
+
+    dni.name = 'dni'
+
     return dni
 
-    
+
 def _get_dirint_coeffs():
     """
     A place to stash the dirint coefficients.
@@ -1562,8 +1569,7 @@ def _get_dirint_coeffs():
     np.array with shape ``(6, 6, 7, 5)``.
     Ordering is ``[kt_prime_bin, zenith_bin, delta_kt_prime_bin, w_bin]``
     """
-    
-    
+
     # To allow for maximum copy/paste from the MATLAB 1-indexed code, 
     # we create and assign values to an oversized array.
     # Then, we return the [1:, 1:, :, :] slice.

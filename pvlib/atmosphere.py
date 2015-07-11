@@ -22,8 +22,8 @@ def pres2alt(pressure):
 
     Parameters
     ----------
-    Pressure : scalar or Series
-        Atomspheric pressure (Pascals)
+    pressure : scalar or Series
+        Atmospheric pressure (Pascals)
 
     Returns
     -------
@@ -100,7 +100,7 @@ def alt2pres(altitude):
 
 
 
-def absoluteairmass(AMrelative, pressure=101325.):
+def absoluteairmass(airmass_relative, pressure=101325.):
     '''
     Determine absolute (pressure corrected) airmass from relative 
     airmass and pressure
@@ -117,7 +117,7 @@ def absoluteairmass(AMrelative, pressure=101325.):
     Parameters
     ----------
 
-    AMrelative : scalar or Series	
+    airmass_relative : scalar or Series	
         The airmass at sea-level. 
 
     pressure : scalar or Series
@@ -136,13 +136,12 @@ def absoluteairmass(AMrelative, pressure=101325.):
 
     '''
 
-    AMa = AMrelative * pressure / 101325.
+    airmass_absolute = airmass_relative * pressure / 101325.
 
-    return AMa
+    return airmass_absolute
 
 
-
-def relativeairmass(z, model='kastenyoung1989'):
+def relativeairmass(zenith, model='kastenyoung1989'):
     '''
     Gives the relative (not pressure-corrected) airmass
 
@@ -155,17 +154,20 @@ def relativeairmass(z, model='kastenyoung1989'):
     Parameters
     ----------
 
-    z : float or DataFrame 
+    zenith : float or Series 
         Zenith angle of the sun in degrees.  
         Note that some models use the apparent (refraction corrected)
-        zenith angle, and some models use the true (not refraction-corrected)
-        zenith angle. See model descriptions to determine which type of zenith
-        angle is required. Apparent zenith angles must be calculated at sea level.
+        zenith angle, and some models use the true
+        (not refraction-corrected) zenith angle.
+        See model descriptions to determine which type of zenith
+        angle is required.
+        Apparent zenith angles must be calculated at sea level.
   
     model : String 
         Available models include the following:
         
-        * 'simple' - secant(apparent zenith angle) - Note that this gives -inf at zenith=90
+        * 'simple' - secant(apparent zenith angle) -
+          Note that this gives -inf at zenith=90
         * 'kasten1966' - See reference [1] - requires apparent sun zenith
         * 'youngirvine1967' - See reference [2] - requires true sun zenith
         * 'kastenyoung1989' - See reference [3] - requires apparent sun zenith
@@ -175,7 +177,7 @@ def relativeairmass(z, model='kastenyoung1989'):
 
     Returns
     -------
-    AM : float or DataFrame 
+    airmass_relative : float or Series 
         Relative airmass at sea level.  Will return NaN values for any 
         zenith angle greater than 90 degrees.
 
@@ -207,27 +209,38 @@ def relativeairmass(z, model='kastenyoung1989'):
     Sandia Report, (2012).
     '''
     
+    z = zenith
     zenith_rad = np.radians(z)
     
     model = model.lower()
     
     if 'kastenyoung1989' == model:
-        AM = 1.0 / (np.cos(zenith_rad) + 0.50572*(((6.07995 + (90 - z)) ** - 1.6364)))
+        AM = ( 1.0 / (np.cos(zenith_rad) +
+            0.50572*(((6.07995 + (90 - z)) ** - 1.6364))) )
     elif 'kasten1966' == model:
         AM = 1.0 / (np.cos(zenith_rad) + 0.15*((93.885 - z) ** - 1.253))
     elif 'simple' == model:
         AM = 1.0 / np.cos(zenith_rad)
     elif 'pickering2002' == model:
-        AM = 1.0 / (np.sin(np.radians(90 - z + 244.0 / (165 + 47.0 * (90 - z) ** 1.1))))
+        AM = ( 1.0 / (np.sin(np.radians(90 - z +
+            244.0 / (165 + 47.0 * (90 - z) ** 1.1)))) )
     elif 'youngirvine1967' == model:
-        AM = (1.0 / np.cos(zenith_rad)) * (1 - 0.0012*( (1.0 / np.cos(zenith_rad)) ** 2) - 1)
+        AM = ( (1.0 / np.cos(zenith_rad)) *
+            (1 - 0.0012*( (1.0 / np.cos(zenith_rad)) ** 2) - 1) )
     elif 'young1994' == model:
-        AM = (1.002432*((np.cos(zenith_rad)) ** 2) + 0.148386*(np.cos(zenith_rad)) + 0.0096467) / (np.cos(zenith_rad) ** 3 + 0.149864*(np.cos(zenith_rad) ** 2) + 0.0102963*(np.cos(zenith_rad)) + 0.000303978)
+        AM = ( (1.002432*((np.cos(zenith_rad)) ** 2) +
+            0.148386*(np.cos(zenith_rad)) + 0.0096467) /
+            (np.cos(zenith_rad) ** 3 +
+            0.149864*(np.cos(zenith_rad) ** 2) +
+            0.0102963*(np.cos(zenith_rad)) + 0.000303978) )
     elif 'gueymard1993' == model:
-        AM = 1.0 / (np.cos(zenith_rad) + 0.00176759*(z)*((94.37515 - z) ** - 1.21563))
+        AM = ( 1.0 / (np.cos(zenith_rad) +
+            0.00176759*(z)*((94.37515 - z) ** - 1.21563)) )
     else:
-        pvl_logger.warning("{} is not a valid model type for relative airmass. The 'kastenyoung1989' model was used.".format(model))
-        AM = 1.0 / (np.cos(zenith_rad) + 0.50572*(((6.07995 + (90 - z)) ** - 1.6364)))
+        pvl_logger.warning("{} is not a valid model type for relative airmass. The 'kastenyoung1989' model was used."
+                           .format(model))
+        AM = ( 1.0 / (np.cos(zenith_rad) +
+            0.50572*(((6.07995 + (90 - z)) ** - 1.6364))) )
     
     try:
         AM[z > 90] = np.nan

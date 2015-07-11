@@ -33,29 +33,29 @@ def test_pres2alt():
 def test_alt2press():
     atmosphere.pres2alt(1000)
 
+
 # two functions combined will generate unique unit tests for each model
 def test_airmasses():
     models = ['simple', 'kasten1966', 'youngirvine1967', 'kastenyoung1989',
               'gueymard1993', 'young1994', 'pickering2002', 'invalid']
     for model in models:
-        yield run_airmass, ephem_data['zenith'], model
-    
-def run_airmass(zenith, model):
+        yield run_airmass, model, ephem_data['zenith']
+
+
+def run_airmass(model, zenith):
     atmosphere.relativeairmass(zenith, model)
-    
-    
+
     
 def test_absoluteairmass():
     relative_am = atmosphere.relativeairmass(ephem_data['zenith'], 'simple')
     atmosphere.absoluteairmass(relative_am)
     atmosphere.absoluteairmass(relative_am, pressure=100000)
-    
-    
+
 
 def test_absoluteairmass_numeric():
     atmosphere.absoluteairmass(2)
-    
-    
+
+
 def test_absoluteairmass_nan():
     np.testing.assert_equal(np.nan, atmosphere.absoluteairmass(np.nan))
-    
+

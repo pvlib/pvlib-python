@@ -3,7 +3,7 @@
 v0.2.1 (July 13, 2015)
 -----------------------
 
-This is a minor release from 0.2.1. It includes a large number of bug fixes
+This is a minor release from 0.2. It includes a large number of bug fixes
 for the IPython notebook tutorials.
 We recommend that all users upgrade to this version.
 
@@ -11,6 +11,7 @@ Bug fixes
 ~~~~~~~~~
 
 * Fix incorrect call to Perez irradiance function (:issue:`76`)
+* Fix numerous bugs in the IPython notebook tutorials (:issue:`30`)
 
 Contributors
 ~~~~~~~~~~~~

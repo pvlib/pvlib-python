@@ -477,6 +477,9 @@ def pyephem(time, location, pressure=101325, temperature=12):
     sun_coords['apparent_zenith'] = 90 - sun_coords['apparent_elevation']
     sun_coords['zenith'] = 90 - sun_coords['elevation']
 
+    print("pvlib.solarosition.pyephem: sun_coords['apparent_zenith']  #cjwcjw")
+    print(sun_coords['apparent_zenith'][::1000]) 
+
     try:
         return sun_coords.tz_convert(location.tz)
     except TypeError:

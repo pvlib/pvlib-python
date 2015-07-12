@@ -208,10 +208,14 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     "Global Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
     Sandia Report, (2012).
     '''
+
+    print('pvlib.atmosphere.relativeairmass: zenith input z  #cjwcjw')
+    print(zenith[::100]) 
     
     z = zenith
     zenith_rad = np.radians(z)
-    
+
+
     model = model.lower()
     
     if 'kastenyoung1989' == model:

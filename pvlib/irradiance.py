@@ -386,7 +386,7 @@ def total_irrad(surface_tilt, surface_azimuth,
     elif model == 'king':
         sky = king(surface_tilt, dhi, ghi, solar_zenith)
     elif model == 'perez':
-        sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra, solar_zenith, solar_azimuth, AM,
+        sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra, solar_zenith, solar_azimuth, airmass,
                     modelt=model_perez)
     else:
         raise ValueError('invalid model selection {}'.format(model))

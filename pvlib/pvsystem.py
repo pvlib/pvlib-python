@@ -5,6 +5,8 @@ performance of PV modules and inverters.
 
 from __future__ import division
 
+import os.path
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
@@ -470,7 +472,7 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
     return IL, I0, Rs, Rsh, nNsVth
 
 
-def retrieve_sam(name=None, samfile=None):
+def retrieve_sam(name=None, samfile=None, updatelocalFile=False):
     '''
     Retrieve lastest module and inverter info from SAM website.
 
@@ -494,11 +496,16 @@ def retrieve_sam(name=None, samfile=None):
         
     samfile : String
         Absolute path to the location of local versions of the SAM file. 
-        If file is specified, the latest versions of the SAM database will
-        not be downloaded. The selected file must be in .csv format. 
+        If file is specified, but not available, the latest versions of the SAM 
+        database will be downloaded. The selected file must be in .csv format. 
 
         If set to 'select', a dialogue will open allowing the user to navigate 
         to the appropriate page. 
+        
+    updatelocalFile : Boolean
+        If True, download the file and save along samfile path.
+        If False, don't download.
+        If samfile is None, raise an error
         
     Returns
     -------
@@ -540,28 +547,41 @@ def retrieve_sam(name=None, samfile=None):
         elif name == 'sandiainverter':
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
         elif samfile is None:
-            raise ValueError('invalid name {}'.format(name))
+            raise ValueError('retrieve_sam: invalid name {}'.format(name))
 
     if name is None and samfile is None:
-        raise ValueError('must supply name or samfile')
+        raise ValueError('retrieve_sam: must supply name or samfile')
 
     if samfile is None:
-        pvl_logger.info('retrieving {} from {}'.format(name, url))
-        response = urlopen(url)
-        csvdata = io.StringIO(response.read().decode(errors='ignore'))
+        if updatelocalFile:
+            raise ValueError('retrieve_sam: to update a local file, samfile must not be None')
+        else:
+            pvl_logger.info('retrieve_sam: retrieving {} from {}'.format(name, url))
+            response = urlopen(url)
+            csvdatapath = io.StringIO(response.read().decode(errors='ignore'))
     elif samfile == 'select':
         import Tkinter 
         from tkFileDialog import askopenfilename
         Tkinter.Tk().withdraw() 
-        csvdata = askopenfilename()                           
-    else: 
-        csvdata = samfile
+        csvdatapath = askopenfilename()                           
 
-    return _parse_raw_sam_df(csvdata)
+    else:
+        if os.path.exists(samfile) and not updatelocalFile:
+            csvdatapath = samfile
+        else:
+            if not os.path.exists(os.path.dirname(samfile)):
+                os.makedirs(os.path.dirname(samfile))
+            with open(samfile, "wt") as file:
+                pvl_logger.info('retrieve_sam: retrieving {} from {}'.format(name, url))
+                response = urlopen(url)
+                file.write(response.read())
+            csvdatapath = samfile
+
+    return _parse_raw_sam_df(csvdatapath)
 
 
-def _parse_raw_sam_df(csvdata):
-    df = pd.read_csv(csvdata, index_col=0)
+def _parse_raw_sam_df(csvdatapath):
+    df = pd.read_csv(csvdatapath, index_col=0)
     parsedindex = []
     for index in df.index:
         parsedindex.append(index.replace(' ', '_').replace('-', '_')
@@ -717,7 +737,7 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     return dfout
 
 
-def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
+def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback', ref_irrad=1000.):
     '''
     Estimate cell and module temperatures per the Sandia PV Array
     Performance Model (SAPM, SAND2004-3535), from the incident
@@ -764,6 +784,10 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
                 between the cell and module back surface at the
                 reference irradiance, E0.
 
+    ref_irrad : float 
+        Reference irradiance, default 1000 W/m2.
+
+
     Returns
     --------
     DataFrame with columns 'temp_cell' and 'temp_module'.
@@ -796,11 +820,14 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
     b = model[1]
     deltaT = model[2]
 
-    E0 = 1000. # Reference irradiance
-    
-    temp_module = pd.Series(irrad*np.exp(a + b*wind) + temp)
+    # print('pvlib.pvsystem.sapm_celltemp #cjwcjw')
+    # print('irrad\n{}\n{}'.format(type(irrad),irrad))
+    # print('wind\n{}\n{}'.format(type(wind),wind))
+    # print('temp\n{}\n{}'.format(type(temp),temp))
 
-    temp_cell = temp_module + (irrad / E0)*(deltaT)
+    temp_module = pd.Series(irrad * np.exp(a + b * wind) + temp)
+
+    temp_cell = temp_module + (irrad / ref_irrad) * (deltaT)
 
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
     

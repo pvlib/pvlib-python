@@ -447,7 +447,8 @@ def julian_day_dt(year, month, day, hour, minute, second, microsecond):
 
 @jcompile('float64(float64)', nopython=True)
 def julian_day(unixtime):
-    jd = unixtime * 1.0 / 86400 + 2440587.5
+    """unix time in seconds"""
+    jd = unixtime * 1.0 / 86400. + 2440587.5
     return jd
 
 

@@ -294,12 +294,12 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
         database. The module_parameters dict must contain the
         following 5 fields:
 
-            * A_ref - modified diode ideality factor parameter at
+            * a_ref - modified diode ideality factor parameter at
               reference conditions (units of eV), a_ref can be calculated
               from the usual diode ideality factor (n),
               number of cells in series (Ns),
               and cell temperature (Tcell) per equation (2) in [1].
-            * I_l_ref - Light-generated current (or photocurrent)
+            * I_L_ref - Light-generated current (or photocurrent)
               in amperes at reference conditions. This value is referred to
               as Iph in some literature.
             * I_o_ref - diode reverse saturation current in amperes,
@@ -447,8 +447,8 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
     '''
 
     M = np.max(M, 0)
-    a_ref = module_parameters['A_ref']
-    IL_ref = module_parameters['I_l_ref']
+    a_ref = module_parameters['a_ref']
+    IL_ref = module_parameters['I_L_ref']
     I0_ref = module_parameters['I_o_ref']
     Rsh_ref = module_parameters['R_sh_ref']
     Rs_ref = module_parameters['R_s']
@@ -534,11 +534,11 @@ def retrieve_sam(name=None, samfile=None):
         name = name.lower()
 
         if name == 'cecmod':
-            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-modules-2014-1-14.csv'
+            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-modules-2015-6-30.csv'
         elif name == 'sandiamod':
-            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2014-1-14.csv'
-        elif name == 'sandiainverter':
-            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-inverters-2014-1-14.csv'
+            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2015-6-30.csv'
+        elif name == 'sandiainverter': # Still only one current inverter set, so left it as sandia, to avoid breaking old code
+            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-inverters-2015-6-30.csv'
         elif samfile is None:
             raise ValueError('invalid name {}'.format(name))
 
@@ -561,13 +561,15 @@ def retrieve_sam(name=None, samfile=None):
 
 
 def _parse_raw_sam_df(csvdata):
-    df = pd.read_csv(csvdata, index_col=0)
+    df = pd.read_csv(csvdata, index_col=0, skiprows=[1,2])
     parsedindex = []
     for index in df.index:
         parsedindex.append(index.replace(' ', '_').replace('-', '_')
                                 .replace('.', '_').replace('(', '_')
                                 .replace(')', '_').replace('[', '_')
-                                .replace(']', '_').replace(':', '_'))
+                                .replace(']', '_').replace(':', '_')
+                                .replace('+', '_').replace('/', '_')
+                                .replace('"', '_').replace(',', '_'))
         
     df.index = parsedindex
     df = df.transpose()
@@ -635,7 +637,7 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
                reference condition (1/C)
     Aimp       Maximum power current temperature coefficient at
                reference condition (1/C)
-    Bvoc       Open circuit voltage temperature coefficient at
+    Bvoco      Open circuit voltage temperature coefficient at
                reference condition (V/C)
     Mbvoc      Coefficient providing the irradiance dependence for the BetaVoc
                temperature coefficient at reference irradiance (V/C)
@@ -644,7 +646,7 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     Mbvmp      Coefficient providing the irradiance dependence for the
                BetaVmp temperature coefficient at reference irradiance (V/C)
     N          Empirically determined "diode factor" (dimensionless)
-    #Series    Number of cells in series in a module's cell string(s)
+    Cells in Series    Number of cells in series in a module's cell string(s)
     IXO        Ix at reference conditions
     IXXO       Ixx at reference conditions
     FD         Fraction of diffuse irradiance used by module
@@ -693,12 +695,12 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
         (1 + module['Aimp']*(temp_cell - T0)) )
 
     dfout['v_oc'] = (( module['Voco'] +
-        module['#Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
+        module['Cells in Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
         .clip_lower(0))
 
     dfout['v_mp'] = ( module['Vmpo'] +
-        module['C2']*module['#Series']*delta*np.log(Ee) +
-        module['C3']*module['#Series']*((delta*np.log(Ee)) ** 2) +
+        module['C2']*module['Cells in Series']*delta*np.log(Ee) +
+        module['C3']*module['Cells in Series']*((delta*np.log(Ee)) ** 2) +
         Bvmpo*(temp_cell - T0) ).clip_lower(0)
 
     dfout['p_mp'] = dfout['i_mp'] * dfout['v_mp']

@@ -117,7 +117,7 @@ def test_calcparams_desoto():
     cecmodule = sam_data['cecmod'].Example_Module 
     pvsystem.calcparams_desoto(irrad_data['ghi'],
                                temp_cell=25,
-                               alpha_isc=cecmodule['Alpha_sc'],
+                               alpha_isc=cecmodule['alpha_sc'],
                                module_parameters=cecmodule,
                                EgRef=1.121,
                                dEgdT=-0.0002677)
@@ -133,7 +133,7 @@ def test_singlediode_series():
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                          irrad_data['ghi'],
                                          temp_cell=25,
-                                         alpha_isc=cecmodule['Alpha_sc'],
+                                         alpha_isc=cecmodule['alpha_sc'],
                                          module_parameters=cecmodule,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)                       
@@ -198,5 +198,5 @@ def test_snlinverter_float():
     pdcs = idcs * vdcs
 
     pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
-    assert_almost_equals(pacs, 132.004308, 5)
+    assert_almost_equals(pacs, 132.004278, 5)
     

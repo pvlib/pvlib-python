@@ -377,16 +377,19 @@ def total_irrad(surface_tilt, surface_azimuth,
     if model == 'isotropic':
         sky = isotropic(surface_tilt, dhi)
     elif model == 'klutcher':
-        sky = klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth)
+        sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
+                      solar_zenith, solar_azimuth)
     elif model == 'haydavies':
-        sky = haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra, solar_zenith, solar_azimuth)
+        sky = haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                        solar_zenith, solar_azimuth)
     elif model == 'reindl':
-        sky = reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra, solar_zenith,
-                     solar_azimuth)
+        sky = reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
+                     solar_zenith, solar_azimuth)
     elif model == 'king':
         sky = king(surface_tilt, dhi, ghi, solar_zenith)
     elif model == 'perez':
-        sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra, solar_zenith, solar_azimuth, AM,
+        sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                    solar_zenith, solar_azimuth, airmass,
                     modelt=model_perez)
     else:
         raise ValueError('invalid model selection {}'.format(model))

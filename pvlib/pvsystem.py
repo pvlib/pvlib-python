@@ -537,7 +537,7 @@ def retrieve_sam(name=None, samfile=None):
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-modules-2015-6-30.csv'
         elif name == 'sandiamod':
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2015-6-30.csv'
-        elif name == 'sandiainverter': # Still only one current inverter set, so left it as sandia, to avoid breaking old code
+        elif name in ['cecinverter', 'sandiainverter']: # Allowing either, to provide for old code, while aligning with current expectations
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-inverters-2015-6-30.csv'
         elif samfile is None:
             raise ValueError('invalid name {}'.format(name))
@@ -562,6 +562,13 @@ def retrieve_sam(name=None, samfile=None):
 
 def _parse_raw_sam_df(csvdata):
     df = pd.read_csv(csvdata, index_col=0, skiprows=[1,2])
+    colnames = df.columns.values.tolist()
+    parsedcolnames = []
+    for cn in colnames:
+        parsedcolnames.append(cn.replace(' ', '_'))
+
+    df.columns = parsedcolnames        
+
     parsedindex = []
     for index in df.index:
         parsedindex.append(index.replace(' ', '_').replace('-', '_')
@@ -646,7 +653,7 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     Mbvmp      Coefficient providing the irradiance dependence for the
                BetaVmp temperature coefficient at reference irradiance (V/C)
     N          Empirically determined "diode factor" (dimensionless)
-    Cells in Series    Number of cells in series in a module's cell string(s)
+    Cells_in_Series    Number of cells in series in a module's cell string(s)
     IXO        Ix at reference conditions
     IXXO       Ixx at reference conditions
     FD         Fraction of diffuse irradiance used by module
@@ -695,12 +702,12 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
         (1 + module['Aimp']*(temp_cell - T0)) )
 
     dfout['v_oc'] = (( module['Voco'] +
-        module['Cells in Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
+        module['Cells_in_Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
         .clip_lower(0))
 
     dfout['v_mp'] = ( module['Vmpo'] +
-        module['C2']*module['Cells in Series']*delta*np.log(Ee) +
-        module['C3']*module['Cells in Series']*((delta*np.log(Ee)) ** 2) +
+        module['C2']*module['Cells_in_Series']*delta*np.log(Ee) +
+        module['C3']*module['Cells_in_Series']*((delta*np.log(Ee)) ** 2) +
         Bvmpo*(temp_cell - T0) ).clip_lower(0)
 
     dfout['p_mp'] = dfout['i_mp'] * dfout['v_mp']

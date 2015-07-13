@@ -99,7 +99,7 @@ sam_data = {}
 def test_retrieve_sam_network():
     sam_data['cecmod'] = pvsystem.retrieve_sam('cecmod')
     sam_data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
-    sam_data['sandiainverter'] = pvsystem.retrieve_sam('sandiainverter')
+    sam_data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
 
 
 def test_sapm():
@@ -180,7 +180,7 @@ def test_sapm_celltemp_with_index():
 
     
 def test_snlinverter():
-    inverters = sam_data['sandiainverter']
+    inverters = sam_data['cecinverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
     vdcs = pd.Series(np.linspace(0,50,3))
     idcs = pd.Series(np.linspace(0,11,3))
@@ -191,7 +191,7 @@ def test_snlinverter():
 
 
 def test_snlinverter_float():
-    inverters = sam_data['sandiainverter']
+    inverters = sam_data['cecinverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
     vdcs = 25.
     idcs = 5.5

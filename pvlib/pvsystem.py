@@ -472,13 +472,13 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
 
 def retrieve_sam(name=None, samfile=None):
     '''
-    Retrieve lastest module and inverter info from SAM website.
+    Retrieve latest module and inverter info from SAM website.
 
     This function will retrieve either:
 
         * CEC module database
         * Sandia Module database
-        * Sandia Inverter database
+        * CEC Inverter database
 
     and return it as a pandas dataframe.
 
@@ -489,7 +489,8 @@ def retrieve_sam(name=None, samfile=None):
         Name can be one of:
 
         * 'CECMod' - returns the CEC module database
-        * 'SandiaInverter' - returns the Sandia Inverter database
+        * 'CECInverter' - returns the CEC Inverter database
+        * 'SandiaInverter' - returns the CEC Inverter database (CEC is only current inverter db available; tag kept for backwards compatibility)
         * 'SandiaMod' - returns the Sandia Module database
         
     samfile : String
@@ -503,14 +504,14 @@ def retrieve_sam(name=None, samfile=None):
     Returns
     -------
     A DataFrame containing all the elements of the desired database. 
-    Each column representa a module or inverter, and a specific dataset
-    can be retreived by the command
+    Each column represents a module or inverter, and a specific dataset
+    can be retrieved by the command
 
     Examples
     --------
 
     >>> from pvlib import pvsystem
-    >>> invdb = pvsystem.retrieve_sam(name='SandiaInverter')
+    >>> invdb = pvsystem.retrieve_sam(name='CECInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
     >>> inverter
     Vac           277.000000

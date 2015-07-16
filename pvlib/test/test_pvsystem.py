@@ -99,7 +99,7 @@ sam_data = {}
 def test_retrieve_sam_network():
     sam_data['cecmod'] = pvsystem.retrieve_sam('cecmod')
     sam_data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
-    sam_data['sandiainverter'] = pvsystem.retrieve_sam('sandiainverter')
+    sam_data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
 
 
 def test_sapm():
@@ -117,7 +117,7 @@ def test_calcparams_desoto():
     cecmodule = sam_data['cecmod'].Example_Module 
     pvsystem.calcparams_desoto(irrad_data['ghi'],
                                temp_cell=25,
-                               alpha_isc=cecmodule['Alpha_sc'],
+                               alpha_isc=cecmodule['alpha_sc'],
                                module_parameters=cecmodule,
                                EgRef=1.121,
                                dEgdT=-0.0002677)
@@ -133,7 +133,7 @@ def test_singlediode_series():
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                          irrad_data['ghi'],
                                          temp_cell=25,
-                                         alpha_isc=cecmodule['Alpha_sc'],
+                                         alpha_isc=cecmodule['alpha_sc'],
                                          module_parameters=cecmodule,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)                       
@@ -180,7 +180,7 @@ def test_sapm_celltemp_with_index():
 
     
 def test_snlinverter():
-    inverters = sam_data['sandiainverter']
+    inverters = sam_data['cecinverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
     vdcs = pd.Series(np.linspace(0,50,3))
     idcs = pd.Series(np.linspace(0,11,3))
@@ -191,12 +191,12 @@ def test_snlinverter():
 
 
 def test_snlinverter_float():
-    inverters = sam_data['sandiainverter']
+    inverters = sam_data['cecinverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
     vdcs = 25.
     idcs = 5.5
     pdcs = idcs * vdcs
 
     pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
-    assert_almost_equals(pacs, 132.004308, 5)
+    assert_almost_equals(pacs, 132.004278, 5)
     

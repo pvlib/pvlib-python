@@ -1,6 +1,6 @@
 .. _whatsnew_0210:
 
-v0.2.1 (July 13, 2015)
+v0.2.1 (July 16, 2015)
 -----------------------
 
 This is a minor release from 0.2. It includes a large number of bug fixes

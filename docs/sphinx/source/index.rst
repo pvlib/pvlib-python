@@ -37,8 +37,10 @@ help updating them!
 Please see our 
 `PVSC 2014 paper <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`_
 and
-`PVSC 2015 abstract <https://github.com/UARENForecasting/pvlib-pvsc2015/blob/master/pvlib_pvsc_42.pdf?raw=true>`_ 
-for more information.
+`PVSC 2015 abstract <http://energy.sandia.gov/about/publications/download-info/pvlib-python-2015/>`_ 
+(and the `notebook to reproduce the figures <http://nbviewer.ipython.org/github/pvlib/pvsc2015/blob/master/paper.ipynb>`_ therein) for more information.
+
+The wiki also has a page on `Projects and publications that use pvlib python <https://github.com/pvlib/pvlib-python/wiki/Projects-and-publications-that-use-pvlib-python>`_. for inspiration and listing of your application.
 
 Installation
 ============

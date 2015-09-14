@@ -1,40 +1,71 @@
+# Based on
+# http://conda.pydata.org/docs/travis.html
+# https://github.com/xray/xray/blob/master/.travis.yml
+# https://github.com/scipy/scipy/blob/master/.travis.yml
+
 language: python
-python:
-    - 2.7
-    - 3.3
-    - 3.4
-    - 3.5
-env:
-    - PD_VERSION=0.13.1
-    - PD_VERSION="0.14.*"
-    - PD_VERSION="0.15.*"
-    - PD_VERSION="0.16.*"
-    - PD_VERSION="0.17.*"
+sudo: false # if false, use TravisCI's container based build
+
+matrix:
+    include:
+    - python: 2.7
+      env: CONDA_ENV=py27-min
+    - python: 2.7
+      env: CONDA_ENV=py27
+    - python: 3.4
+      env: CONDA_ENV=py34
+      addons:
+          apt:
+            packages:
+            - libatlas-dev
+            - libatlas-base-dev
+            - liblapack-dev
+            - gfortran
+            - libgmp-dev
+            - libmpfr-dev
+    - python: 3.5
+      env: CONDA_ENV=py35
+      addons:
+          apt:
+            packages:
+            - libatlas-dev
+            - libatlas-base-dev
+            - liblapack-dev
+            - gfortran
+            - libgmp-dev
+            - libmpfr-dev
+
+
+#    - ccache
+#cache:
+#  directories:
+#    - $HOME/.ccache
 
 # setup miniconda for numpy, scipy, pandas
 before_install:
     - echo "before install"
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b
-    - export PATH=/home/travis/miniconda/bin:$PATH
-    - conda update --yes conda
-    - sudo rm -rf /dev/shm
-    - sudo ln -s /run/shm /dev/shm
-    - date
-    - uname -a
-    - python -V
+    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+        wget http://repo.continuum.io/miniconda/Miniconda-3.16.0-Linux-x86_64.sh -O miniconda.sh;
+      else
+        wget http://repo.continuum.io/miniconda/Miniconda3-3.16.0-Linux-x86_64.sh -O miniconda.sh;
+      fi
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - hash -r
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q conda
+    - conda info -a
     
 install:
     - echo "install"
-    - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas=$PD_VERSION nose pytz ephem; fi
-    - if [[ $TRAVIS_PYTHON_VERSION == '3.3' || $TRAVIS_PYTHON_VERSION == '3.4' ]]; then conda install --yes python=$TRAVIS_PYTHON_VERSION numpy=1.8 scipy=0.14 pandas nose pytz ephem; conda install --yes pandas=$PD_VERSION --no-deps; fi
-    - test $PD_VERSION != 0.13.1 && conda install --yes "numba>=0.17" || echo "Not installing numba"
-    - conda install --yes coverage
-    - pip install coveralls
+    - conda env create --file ci/requirements-$CONDA_ENV.yml
+    - source activate test_env # all envs are named test_env in the yml files
+    - conda list
+    - echo $PATH
+    - ls -l /home/travis/miniconda/envs/test_env/lib
+    #- pip install . # use pip to automatically install anything not in the yml files (i.e. numpy/scipy/pandas for py3*)
+    - pip install scipy # won't do anything if already installed
     - python setup.py install
-    # for nosetests to actually work since it alters the path
-    - python setup.py build_ext --inplace
 
 script:
     - nosetests -v --with-coverage --cover-package=pvlib pvlib

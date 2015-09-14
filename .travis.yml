@@ -3,11 +3,13 @@ python:
     - 2.7
     - 3.3
     - 3.4
+    - 3.5
 env:
     - PD_VERSION=0.13.1
     - PD_VERSION="0.14.*"
     - PD_VERSION="0.15.*"
     - PD_VERSION="0.16.*"
+    - PD_VERSION="0.17.*"
 
 # setup miniconda for numpy, scipy, pandas
 before_install:

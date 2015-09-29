@@ -1,0 +1,4 @@
+Plant Name,Latitude,Longitude,Timezone,Elev (meters),TZ,albedo,series_modules,parallel_modules,surface_azimuth,surface_tilt,pitch,collector,module_name,module_count,module_wattage,inverter_name,inverter_count,inv_pmax,Soiling,DCOhmic,MQF,LID,Mismatch,ACOhmic,MVLoad,inv_pnom,inv_pmax_default,inv_pnom_temp,inv_pmax_temp
+Site 1: 500kWac,38.6,-121.5,US/Pacific,3,-8,0.2,14,190,190,20,6.3,3.3,REC_Solar_REC250PE_(BLK),2660,250,SMA America: SC 500HE-US 200V [CEC 2010],1,500000,0.01,0.015,-0.008,0.015,0.01,0.005,0.01,500,550,50,25
+Site 2: 880kWac,38.6,-121.5,US/Pacific,3,-8,0.2,19,206,180,20,7.64,3.93,BYD (Huizhou) Battery BYD 295P6C-36,3914,295,SMA America: SC800CP-US 360V [CEC 2012],1,880000,0.01,0.01,-0.008,0.015,0.01,0.005,0.01,800,880,50,25
+Site 3: 660kWac,38.6,-121.5,US/Pacific,3,-8,0.2,19,168,180,25,6.8,3.74,Jinko_Solar_JKM305P-72,3192,305,SMA_America__SC630CP_US_315V__CEC_2012_,1,660000,0.03,0.01,-0.008,0.015,0.01,0.005,0.01,630,700,50,25

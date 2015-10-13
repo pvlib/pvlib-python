@@ -37,133 +37,69 @@ from netCDF4 import num2date
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
-from pvlibfm import PvlibFM
+from forecast import *
 
 def testGFS(start,end):
 
-    model_list = ['GFS Half Degree Forecast',
-                  'NAM CONUS 12km from CONDUIT']
+    fm = GFS()
+    data = fm.get_query_data([-110.9,32.2],[start,end])
 
-    fm = PvlibFM(model_type='Forecast Model Data')
-    # fm.get_fm_models()
-    fm.set_model(model_list[0])
-    fm.set_dataset()
-    # print(fm.get_model_datasets())
-    # print(fm.get_model_vars())
+    time_vals = fm.time
 
-    fm.set_latlon([-110.9,32.2])
-    fm.set_time([start,end])
-    fm.set_vertical_level(100000)
-    fm.set_query_vars(['Temperature_isobaric'])
-
-    data = fm.get_query_data()
-
-    temp = fm.get_temp()
-    time_vals = fm.get_time()
+    var_name = fm.variables[0]
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 8))
-    ax.plot(time_vals, temp[:].squeeze(), 'r', linewidth=2)
-    ax.set_ylabel(temp.standard_name + ' (%s)' % temp.units)
+    ax.plot(time_vals, data[var_name], 'r', linewidth=2)
+    ax.set_ylabel(fm.var_stdnames[var_name] + ' (%s)' % fm.var_units[var_name])
     ax.set_xlabel('Forecast Time (UTC)')
 
-    fm.close()
- 
-    plt.show()
+    var_name = fm.variables[3]
 
-    fm = PvlibFM(model_type='Forecast Model Data')
-    fm.set_model(model_list[0])
-    fm.set_dataset()
-
-    fm.set_latlon([-110.9,32.2])
-    fm.set_time([start,end])
-    fm.set_vertical_level(100000)
-
-    cloud_vars = ['Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
-                  'Total_cloud_cover_convective_cloud',
-                  'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
-                  'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
-                  'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
-                  'Total_cloud_cover_middle_cloud_Mixed_intervals_Average']
-
-    fm.set_query_vars(cloud_vars)
-
-    data = fm.get_query_data()
-
-    time_vals = fm.get_time()
-
-    total_cloud_cover = fm.get_cloud_cover()
+    total_cloud_cover = fm.data[var_name]
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-    for varname in cloud_vars:
-        ax.plot(time_vals, data[varname][:].squeeze(), linewidth=2, label=varname)
+    for varname in fm.variables[1:]:
+        ax.plot(time_vals, fm.data[varname], linewidth=2, label=varname)
         
-    ax.set_ylabel('Cloud cover' + ' (%s)' % total_cloud_cover.units)
+    ax.set_ylabel('Cloud cover' + ' (%s)' % fm.var_units[var_name])
     ax.set_xlabel('Forecast Time (UTC)')
     ax.legend(bbox_to_anchor=(1.4,1.1))
     ax.set_title('GFS 0.5 deg')
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-    ax.plot(time_vals, total_cloud_cover[:].squeeze(), 'r', linewidth=2)
-    ax.set_ylabel('Total cloud cover' + ' (%s)' % total_cloud_cover.units)
+    ax.plot(time_vals, total_cloud_cover, 'r', linewidth=2)
+    ax.set_ylabel('Total cloud cover' + ' (%s)' % fm.var_units[var_name])
     ax.set_xlabel('Forecast Time (UTC)')
     ax.set_title('GFS 0.5 deg')
-
-    fm.close()
 
     plt.show()    
 
 def testNAM(start,end):
 
-    model_list = ['GFS Half Degree Forecast',
-                  'NAM CONUS 12km from CONDUIT']
+    fm = GFS()
+    data = fm.get_query_data([-110.9,32.2],[start,end])
 
-    fm = PvlibFM(model_type='Forecast Model Data')
-    # fm.get_fm_models()
-    fm.set_model(model_list[1])
-    fm.set_dataset()
-    # print(fm.get_model_datasets())
-    # print(fm.get_model_vars())
+    time_vals = fm.time
 
-    fm.set_latlon([-110.9,32.2])
-    fm.set_time([start,end])
-
-    variables = ['Downward_Short-Wave_Radiation_Flux_surface',
-                 'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',
-                 'Temperature_surface',
-                 'High_cloud_cover_high_cloud',
-                 'Low_cloud_cover_low_cloud',
-                 'Medium_cloud_cover_middle_cloud',
-                 'Total_cloud_cover_entire_atmosphere_single_layer']
-
-    fm.set_query_vars(variables)
-
-    data = fm.get_query_data()
- 
-    time_vals = fm.get_time()
-
-    # The NAM has cloud cover and GHI data. I'm guessing that GHI is not very good.
-
-    cloud_vars = variables[3:]
+    cloud_vars = fm.variables[3:]
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
     for varname in cloud_vars:
-        ax.plot(time_vals, data[varname][:].squeeze(), linewidth=2, label=varname)
+        ax.plot(time_vals, fm.data[varname], linewidth=2, label=varname)
         
     ax.set_ylabel('Cloud cover (%)')
     ax.set_xlabel('Forecast Time (UTC)')
     ax.legend(bbox_to_anchor=(1.4,1.1))
     ax.set_title('NAM')
 
-    ghis = variables[:2]
+    ghis = fm.variables[:2]
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
     for varname in ghis:
-        ax.plot(time_vals, data[varname][:].squeeze(), linewidth=2, label=varname)
+        ax.plot(time_vals, fm.data[varname], linewidth=2, label=varname)
     ax.set_ylabel('GHI W/m**2')
     ax.set_xlabel('Forecast Time (UTC)')
     ax.legend()
-
-    data.close()
 
     plt.show()
 
@@ -174,48 +110,30 @@ def testNDFD(start,end):
 
     # ## NDFD
 
-    model_list = ['National Weather Service CONUS Forecast Grids (CONDUIT)']
+    fm = NDFD()
+    data = fm.get_query_data([-110.9,32.2],[start,end])
 
-    fm = PvlibFM(model_type='Forecast Products and Analyses')
-    # print(fm.get_fm_models())
-    fm.set_model(model_list[2])
-    fm.set_dataset()
-    # print(fm.get_model_datasets())
-    # print(fm.get_model_vars())
+    time_vals = fm.time
 
-    fm.set_latlon([-110.9,32.2])
-    fm.set_time([start,end])
-
-    ndfd_vars = ['Total_cloud_cover_surface',
-                 'Temperature_surface',
-                 'Wind_speed_surface']
-
-    fm.set_query_vars(ndfd_vars)
-
-    data = fm.get_query_data()
-
-    total_cloud_cover = data['Total_cloud_cover_surface']
-    temp = data['Temperature_surface']
-    wind = data['Wind_speed_surface']
-    time_vals = fm.get_time()
+    total_cloud_cover = fm.data['Total_cloud_cover_surface']
+    temp = fm.data['Temperature_surface']
+    wind = fm.data['Wind_speed_surface']
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-    ax.plot(time_vals, total_cloud_cover[:].squeeze(), 'r', linewidth=2)
+    ax.plot(time_vals, total_cloud_cover, 'r', linewidth=2)
     ax.set_ylabel('Cloud cover (%)')
     ax.set_xlabel('Forecast Time (UTC)')
     plt.ylim(0,100)
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-    ax.plot(time_vals, temp[:].squeeze(), 'r', linewidth=2)
-    ax.set_ylabel('temp {}'.format(temp.units))
+    ax.plot(time_vals, temp, 'r', linewidth=2)
+    ax.set_ylabel('temp {}'.format(fm.var_units['Temperature_surface']))
     ax.set_xlabel('Forecast Time (UTC)')
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-    ax.plot(time_vals, wind[:].squeeze(), 'r', linewidth=2)
-    ax.set_ylabel('wind {}'.format(wind.units))
+    ax.plot(time_vals, wind, 'r', linewidth=2)
+    ax.set_ylabel('wind {}'.format(fm.var_units['Wind_speed_surface']))
     ax.set_xlabel('Forecast Time (UTC)')
-
-    data.close()
 
     plt.show()
 

@@ -27,7 +27,7 @@ class Mock(MagicMock):
         return Mock()
 
 MOCK_MODULES = ['scipy', 'scipy.io', 'numpy', 'ephem', 'pandas', 
-                'pvlib.spa_c_files.spa_py', 'dateutil']
+                'pvlib.spa_c_files.spa_py', 'dateutil','netCDF4']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -37,6 +37,9 @@ sys.path.insert(0, os.path.abspath('../sphinxext'))
 sys.path.insert(0, os.path.abspath('../../../'))
 
 # -- General configuration ------------------------------------------------
+
+# turns off numpydoc autosummary warnings
+numpydoc_show_class_members = False
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'

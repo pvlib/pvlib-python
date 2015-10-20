@@ -37,7 +37,9 @@ from netCDF4 import num2date
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
-from forecast import *
+from pvlib.forecast import *
+
+import pickle as pkl
 
 def testGFS(start,end):
 
@@ -142,28 +144,100 @@ def exploreTDS():
 
     cat = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml')
 
-    print(list(cat.catalog_refs.keys()))
-    print(cat.catalog_refs['Forecast Model Data'].href)
-    print(cat.services)
+    # print(list(cat.catalog_refs.keys()))
+    # print(cat.catalog_refs['Forecast Model Data'].href)
+    # print(cat.services)
 
     cat = TDSCatalog(cat.catalog_refs['Forecast Model Data'].href)
+    # cat = TDSCatalog(cat.catalog_refs['Forecast Products and Analyses'].href)
     catList = sorted(list(cat.catalog_refs.keys()))
     for item in catList:
         print(item)
 
     # print(cat.catalog_refs['GFS Half Degree Forecast'].href)
-    # cat = TDSCatalog(cat.catalog_refs['GFS Half Degree Forecast'].href)
-    cat = TDSCatalog(cat.catalog_refs['NAM CONUS 12km from CONDUIT'].href)
+    cat = TDSCatalog(cat.catalog_refs['GFS Half Degree Forecast'].href)
+    # cat = TDSCatalog(cat.catalog_refs['NAM CONUS 12km from CONDUIT'].href)
     print(cat.datasets.keys())
-    # print(cat.__dict__['datasets'])
+    print(cat.__dict__['datasets'])
     # print(cat.__dict__.keys())
-    # print(cat.datasets['Best GFS Half Degree Forecast Time Series'].__dict__)
+    print(cat.datasets['Best GFS Half Degree Forecast Time Series'].__dict__)
     catKey = list(cat.datasets.keys())[2]
     print(cat.datasets[catKey].__dict__)
     
-    # catList = sorted(list(cat.catalog_refs.keys()))
-    # for item in catList:
-    #     print(item)
+    catList = sorted(list(cat.catalog_refs.keys()))
+    for item in catList:
+        print(item)
+
+    # best_gfs_nc_sub = NCSS('http://thredds-jumbo.unidata.ucar.edu/thredds/ncss/grib/NCEP/GFS/Global_0p25deg/Best')
+    # best_gfs_nc_sub.variables
+    # variables = [
+    #              'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',
+    #              'Temperature_surface',
+    #              'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
+    #              'Total_cloud_cover_convective_cloud',
+    #              'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
+    #              'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+    #              'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+    #              'Total_cloud_cover_middle_cloud_Mixed_intervals_Average']
+    # query = best_gfs_nc_sub.query()
+    # query.lonlat_point(-110.9, 32.2).time_range(start, end)
+    # query.variables(*variables)
+    # #query.vertical_level(100000)
+    # #query.add_query_parameter(height_above_ground=1)
+    # query.accept('netcdf')
+    # data = best_gfs_nc_sub.get_data(query)
+
+
+def testFM(start,end):
+
+    # gfs = GFS()
+    # gfshires = GFS_HIRES()
+    # nam = NAM()
+    # rap = RAP()
+    # ncep = NCEP()
+    # noaa = NOAA()
+    ndfd = NDFD()
+
+    # models = [gfs,gfshires,nam,rap,ncep,noaa,ndfd]
+    models = [ndfd]
+
+    varlists = []
+
+    for model in models:
+        model.get_query_data([-110.9,32.2],[start,end])
+        print(model.data_labels)
+
+    #     # print(model.access_url)
+    #     print(len(model.ncss.variables))
+    #     # print(model.ncss.variables)
+    #     varlists.append(sorted(model.ncss.variables))
+
+    # pkl_file = open('varlists.pkl', 'wb')
+    # pkl.dump(varlists,pkl_file)
+    # pkl_file.close()
+
+    # pkl_file = open('varlists.pkl', 'rb')
+    # lists = pkl.load(pkl_file)
+    # pkl_file.close()
+
+    # outlines = []
+
+    # for alist in lists:
+    #     outlines.append(','.join(alist)+'\n')
+
+    # outfile = open('varlist.csv','w')
+    # outfile.writelines(outlines)
+    # outfile.close()
+
+    # data = gfs.get_query_data([-110.9,32.2],[start,end])
+    # print(data)
+
+
+    # print(gfs.model_name,nam.model_name)
+
+    # gfs.model_name = 'test'
+
+    # print(gfs.model_name,nam.model_name)
 
 
 def main():
@@ -176,6 +250,8 @@ def main():
     # testNDFD(start,end) # 3 plots
 
     # exploreTDS()
+
+    testFM(start,end)
 
 if __name__=='__main__':
     main()

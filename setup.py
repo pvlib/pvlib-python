@@ -31,12 +31,12 @@ if not sys.version_info[:2] in ((2,7), (3,3), (3,4), (3,5)):
 
 setuptools_kwargs = {
     'zip_safe': False,
-    'install_requires': ['netCDF4',
-                         'numpy >= 1.7.0',
+    'install_requires': ['numpy >= 1.7.0',
                          'pandas >= 0.13.1',
                          'pytz',
-                         'siphon',
-                         'six',                         
+                         'six',
+                         'netCDF4',
+                         'siphon',               
                          ],
     'scripts': [],
     'include_package_data': True

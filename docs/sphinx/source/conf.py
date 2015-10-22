@@ -27,7 +27,7 @@ class Mock(MagicMock):
         return Mock()
 
 MOCK_MODULES = ['scipy', 'scipy.io', 'numpy', 'ephem', 'pandas', 
-                'pvlib.spa_c_files.spa_py', 'dateutil','netCDF4']
+                'pvlib.spa_c_files.spa_py', 'dateutil', 'netCDF4']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # If extensions (or modules to document with autodoc) are in another directory,

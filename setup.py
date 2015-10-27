@@ -26,12 +26,12 @@ with open(version_file, 'r') as f:
     exec(f.read())
 
 # check python version.
-if not sys.version_info[:2] in ((2,7), (3,3), (3,4)):
+if not sys.version_info[:2] in ((2,7), (3,3), (3,4), (3,5)):
    sys.exit('%s requires Python 2.7, 3.3, or 3.4' % DISTNAME)
 
 setuptools_kwargs = {
     'zip_safe': False,
-    'install_requires': ['numpy >= 1.7.0',
+    'install_requires': ['numpy >= 1.8.2',
                          'pandas >= 0.13.1',
                          'pytz',
                          'six',

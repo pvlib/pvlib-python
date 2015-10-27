@@ -1,0 +1,11 @@
+name: test_env
+dependencies:
+    - python=3.5
+    - nose
+    - pytz
+    - ephem
+#    - numba
+    - pip:
+        - numpy
+        - pandas
+        - coveralls

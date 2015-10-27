@@ -35,15 +35,19 @@ matrix:
             - libgmp-dev
             - libmpfr-dev
 
+addons:
+    apt:
+        packages:
+            - ccache
 
-#    - ccache
-#cache:
-#  directories:
-#    - $HOME/.ccache
+cache:
+    directories:
+        - $HOME/.ccache
 
 # setup miniconda for numpy, scipy, pandas
 before_install:
     - echo "before install"
+    - export PATH=/usr/lib/ccache:$PATH
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         wget http://repo.continuum.io/miniconda/Miniconda-3.16.0-Linux-x86_64.sh -O miniconda.sh;
       else

@@ -428,7 +428,7 @@ def _parsemeta_tmy2(columns, line):
     meta.append(float(rawmeta[10]))	
     
     meta_dict = dict(zip(columns.split(','),meta)) #Creates a dictionary of metadata
-    pvl_logger.debug('meta: {}'.format(meta_dict))
+    pvl_logger.debug('meta: %s', meta_dict)
     
     return meta_dict
 

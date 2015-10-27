@@ -983,8 +983,8 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     if ulength < numthreads:
         pvl_logger.warning('The number of threads is more than the length of' +
-                           ' the time array. Only using {} threads.'.format(
-                               ulength))
+                           ' the time array. Only using %s threads.',
+                            ulength)
         numthreads = ulength
 
     if numthreads <= 1:

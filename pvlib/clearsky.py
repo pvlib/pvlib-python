@@ -135,7 +135,7 @@ def ineichen(time, location, linke_turbidity=None,
         
         # consider putting this code at module level
         this_path = os.path.dirname(os.path.abspath(__file__))
-        logger.debug('this_path={}'.format(this_path))
+        logger.debug('this_path=%s', this_path)
         
         mat = scipy.io.loadmat(os.path.join(this_path, 'data', 'LinkeTurbidities.mat'))
         linke_turbidity = mat['LinkeTurbidity']
@@ -153,7 +153,7 @@ def ineichen(time, location, linke_turbidity=None,
             LT = pd.DataFrame(time.month, index=time)
             LT = LT.apply(ApplyMonth, axis=1)
         TL = LT / 20.
-        logger.info('using TL=\n{}'.format(TL))
+        logger.info('using TL=\n%s', TL)
     else:
         TL = linke_turbidity
 
@@ -170,7 +170,7 @@ def ineichen(time, location, linke_turbidity=None,
     fh2 = np.exp(-location.altitude/1250.)
     cg1 = 5.09e-05 * location.altitude + 0.868
     cg2 = 3.92e-05 * location.altitude + 0.0387
-    logger.debug('fh1={}, fh2={}, cg1={}, cg2={}'.format(fh1, fh2, cg1, cg2))
+    logger.debug('fh1=%s, fh2=%s, cg1=%s, cg2=%s', fh1, fh2, cg1, cg2)
 
     #  Dan's note on the TL correction: By my reading of the publication on
     #  pages 151-157, Ineichen and Perez introduce (among other things) three
@@ -203,7 +203,7 @@ def ineichen(time, location, linke_turbidity=None,
     # BncI == "normal beam clear sky radiation"
     b = 0.664 + 0.163/fh1
     BncI = b * I0 * np.exp( -0.09 * AMabsolute * (TL - 1) )
-    logger.debug('b={}'.format(b))
+    logger.debug('b=%s', b)
     
     # "empirical correction" SE 73, 157 & SE 73, 312.
     BncI_2 = ( clearsky_GHI *

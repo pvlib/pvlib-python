@@ -547,7 +547,7 @@ def retrieve_sam(name=None, samfile=None):
         raise ValueError('must supply name or samfile')
 
     if samfile is None:
-        pvl_logger.info('retrieving {} from {}'.format(name, url))
+        pvl_logger.info('retrieving %s from %s', name, url)
         response = urlopen(url)
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
     elif samfile == 'select':
@@ -1115,7 +1115,6 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
             np.exp( Rsh*(Rs*(IL+I0)+V) / (nNsVth*(Rs+Rsh)) ) /
             (nNsVth*(Rs + Rsh)) )
     lambertwterm = lambertw(argW)
-    pvl_logger.debug('argW: {}, lambertwterm{}'.format(argW, lambertwterm))
 
     # Eqn. 4 in Jain and Kapoor, 2004
     I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)

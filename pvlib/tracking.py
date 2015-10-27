@@ -93,13 +93,12 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     
     pvl_logger.debug('tracking.singleaxis')
     
-    pvl_logger.debug(('axis_tilt={}, axis_azimuth={}, max_angle={}, ' +
-                      'backtrack={}, gcr={:.3f}')
-                     .format(axis_tilt, axis_azimuth, max_angle, backtrack,
-                             gcr))
+    pvl_logger.debug('axis_tilt=%s, axis_azimuth=%s, max_angle=%s, ' +
+                     'backtrack=%s, gcr=%.3f',
+                     axis_tilt, axis_azimuth, max_angle, backtrack, gcr)
                              
-    pvl_logger.debug('\napparent_zenith=\n{}\napparent_azimuth=\n{}'
-                     .format(apparent_zenith.head(), apparent_azimuth.head()))
+    pvl_logger.debug('\napparent_zenith=\n%s\napparent_azimuth=\n%s',
+                     apparent_zenith.head(), apparent_azimuth.head())
     
     # MATLAB to Python conversion by 
     # Will Holmgren (@wholmgren), U. Arizona. March, 2015.
@@ -139,7 +138,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # wholmgren: strange to see axis_azimuth calculated differently from az,
     # (not that it matters, or at least it shouldn't...).
     axis_azimuth_south = axis_azimuth - 180
-    pvl_logger.debug('axis_azimuth_south={}'.format(axis_azimuth_south))
+    pvl_logger.debug('axis_azimuth_south=%s', axis_azimuth_south)
 
     # translate input array tilt angle axis_tilt to [1] coordinate system.
     
@@ -254,34 +253,34 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     rot_x = np.array([[1, 0, 0], 
                       [0, cosd(-axis_tilt), -sind(-axis_tilt)], 
                       [0, sind(-axis_tilt), cosd(-axis_tilt)]])
-    pvl_logger.debug('rot_x=\n{}'.format(rot_x))
+    pvl_logger.debug('rot_x=\n%s', rot_x)
     
     # panel_norm_earth contains the normal vector
     # expressed in earth-surface coordinates
     # (z normal to surface, y aligned with tracker axis parallel to earth)
     panel_norm_earth = np.dot(rot_x, panel_norm).T
-    pvl_logger.debug('panel_norm_earth={}'.format(panel_norm_earth))
+    pvl_logger.debug('panel_norm_earth=%s', panel_norm_earth)
     
     # projection to plane tangent to earth surface,
     # in earth surface coordinates
     projected_normal = np.array([panel_norm_earth[:,0], 
                                  panel_norm_earth[:,1], 
                                  panel_norm_earth[:,2]*0]).T
-    pvl_logger.debug('projected_normal={}'.format(projected_normal))
+    pvl_logger.debug('projected_normal=%s', projected_normal)
     
     # calculate vector magnitudes
     panel_norm_earth_mag = np.sqrt(np.nansum(panel_norm_earth**2, axis=1))
     projected_normal_mag = np.sqrt(np.nansum(projected_normal**2, axis=1))
-    pvl_logger.debug('panel_norm_earth_mag={}, projected_normal_mag={}'
-                     .format(panel_norm_earth_mag, projected_normal_mag))
+    pvl_logger.debug('panel_norm_earth_mag=%s, projected_normal_mag=%s',
+                     panel_norm_earth_mag, projected_normal_mag)
 
     # renormalize the projected vector
     # avoid creating nan values.
     non_zeros = projected_normal_mag != 0
     projected_normal[non_zeros] = (projected_normal[non_zeros].T / 
                                    projected_normal_mag[non_zeros]).T
-    pvl_logger.debug('renormalized projected_normal={}'
-                     .format(projected_normal))
+    pvl_logger.debug('renormalized projected_normal=%s',
+                     projected_normal)
 
     # calculation of surface_azimuth
     # 1. Find the angle.

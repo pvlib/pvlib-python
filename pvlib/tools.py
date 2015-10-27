@@ -130,8 +130,8 @@ def localize_to_utc(time, location):
             pvl_logger.debug('tz_convert to UTC')
         except TypeError:
             time_utc = time.tz_localize(location.tz).tz_convert('UTC')
-            pvl_logger.debug('tz_localize to {} and then tz_convert to UTC'
-                             .format(location.tz))
+            pvl_logger.debug('tz_localize to %s and then tz_convert to UTC',
+                             location.tz)
         
         
     return time_utc

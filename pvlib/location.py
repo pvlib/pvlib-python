@@ -43,7 +43,7 @@ class Location(object):
         Sets the name attribute of the Location object.
     """
     
-    def __init__(self, latitude, longitude, tz='US/Mountain', altitude=100,
+    def __init__(self, latitude, longitude, tz='UTC', altitude=100,
                  name=None):
 
         pvl_logger.debug('creating Location object')

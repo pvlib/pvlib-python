@@ -513,8 +513,8 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
     if surface_type is not None:
         albedo = SURFACE_ALBEDOS[surface_type]
-        pvl_logger.info('surface_type={} mapped to albedo={}'
-                        .format(surface_type, albedo))
+        pvl_logger.info('surface_type=%s mapped to albedo=%s',
+                        surface_type, albedo)
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surface_tilt))) * 0.5
 
@@ -1489,7 +1489,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     kt_prime = kt / (1.031 * np.exp(-1.4/(0.9+9.4/airmass)) + 0.1)
     kt_prime[kt_prime > 0.82] = 0.82 # From SRRL code. consider np.NaN
     kt_prime.fillna(0, inplace=True)
-    pvl_logger.debug('kt_prime:\n{}'.format(kt_prime))
+    pvl_logger.debug('kt_prime:\n%s', kt_prime)
     
     # wholmgren: 
     # the use_delta_kt_prime statement is a port of the MATLAB code.
@@ -1519,7 +1519,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     kt_prime_bin[(kt_prime>=0.56) & (kt_prime<0.7)] = 4
     kt_prime_bin[(kt_prime>=0.7) & (kt_prime<0.8)] = 5
     kt_prime_bin[(kt_prime>=0.8) & (kt_prime<=1)] = 6
-    pvl_logger.debug('kt_prime_bin:\n{}'.format(kt_prime_bin))
+    pvl_logger.debug('kt_prime_bin:\n%s', kt_prime_bin)
     
     # Create zenith angle bins
     zenith_bin = pd.Series(index=times)
@@ -1529,7 +1529,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     zenith_bin[(zenith>=55) & (zenith<70)] = 4
     zenith_bin[(zenith>=70) & (zenith<80)] = 5
     zenith_bin[(zenith>=80)] = 6
-    pvl_logger.debug('zenith_bin:\n{}'.format(zenith_bin))
+    pvl_logger.debug('zenith_bin:\n%s', zenith_bin)
     
     # Create the bins for w based on dew point temperature
     w_bin = pd.Series(index=times)
@@ -1538,7 +1538,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     w_bin[(w>=2) & (w<3)] = 3
     w_bin[(w>=3)] = 4
     w_bin[(w == -1)] = 5
-    pvl_logger.debug('w_bin:\n{}'.format(w_bin))
+    pvl_logger.debug('w_bin:\n%s', w_bin)
 
     # Create delta_kt_prime binning.
     delta_kt_prime_bin = pd.Series(index=times)
@@ -1549,7 +1549,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     delta_kt_prime_bin[(delta_kt_prime>=0.15) & (delta_kt_prime<0.3)] = 5
     delta_kt_prime_bin[(delta_kt_prime>=0.3) & (delta_kt_prime<=1)] = 6
     delta_kt_prime_bin[delta_kt_prime == -1] = 7
-    pvl_logger.debug('delta_kt_prime_bin:\n{}'.format(delta_kt_prime_bin))
+    pvl_logger.debug('delta_kt_prime_bin:\n%s', delta_kt_prime_bin)
     
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.

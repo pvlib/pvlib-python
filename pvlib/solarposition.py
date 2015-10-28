@@ -536,8 +536,8 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     # This helps a little bit:
     # http://www.cv.nrao.edu/~rfisher/Ephemerides/times.html
 
-    pvl_logger.debug('location={}, temperature={}, pressure={}'.format(
-        location, temperature, pressure))
+    pvl_logger.debug('location=%s, temperature=%s, pressure=%s',
+                     location, temperature, pressure)
 
     # the inversion of longitude is due to the fact that this code was
     # originally written for the convention that positive longitude were for

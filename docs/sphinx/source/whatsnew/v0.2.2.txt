@@ -1,0 +1,27 @@
+.. _whatsnew_0220:
+
+v0.2.2 (November, 2015)
+-----------------------
+
+This is a minor release from 0.2.1.
+We recommend that all users upgrade to this version.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adds Python 3.5 compatibility (:issue:`87`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* Uses the ``logging`` module properly by replacing ``format``
+  calls with ``args``. This results in a 5x speed increase for
+  ``tracking.singleaxis`` (:issue:`89`).
+* Adds a link to the 2015 PVSC paper (:issue:`81`)
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren
+* dacoex

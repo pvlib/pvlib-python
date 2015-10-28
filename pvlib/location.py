@@ -79,14 +79,50 @@ class Location(object):
     
     
     @classmethod
-    def from_tmy(cls, tmy_metadata):
+    def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):
         """
         Create an object based on a metadata 
         dictionary from tmy2 or tmy3 data readers.
+        
+        Parameters
+        ----------
+        tmy_metadata : dict
+            Returned from tmy.readtmy2 or tmy.readtmy3
+        tmy_data : None or DataFrame
+            Optionally attach the TMY data to this object.
+        
+        Returns
+        -------
+        Location object (or the child class of Location that you
+        called this method from).
         """
-        return cls(**tmy_metadata)
-    
-    
+        # not complete, but hopefully you get the idea.
+        # might need code to handle the difference between tmy2 and tmy3
+        
+        # determine if we're dealing with TMY2 or TMY3 data
+        tmy2 = tmy_metadata.get('StationName', False)
+        
+        latitude = tmy_metadata['latitude']
+        longitude = tmy_metadata['longitude']
+        
+        if tmy2:
+            altitude = tmy_metadata['SiteElevation']
+            name = tmy_metadata['StationName']
+            tz = tmy_metadata['SiteTimeZone']
+        else:
+            altitude = tmy_metadata['alititude']
+            name = tmy_metadata['Name']
+            tz = tmy_metadata['TZ']
+        
+        new_object = cls(latitude, longitude, tz, altitude, name, **kwargs)
+        
+        # not sure if this should be assigned regardless of input.
+        if tmy_data is not None:
+            new_object.tmy_data = tmy_data
+        
+        return new_object
+
+
     def get_solarposition(self, times, **kwargs):
         return solarposition.get_solarposition(times, latitude=self.latitude,
                                                longitude=self.longitude,

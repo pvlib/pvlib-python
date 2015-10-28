@@ -21,68 +21,123 @@ from pvlib import tools
 from pvlib.location import Location
 
 
-def PVSystem(Location):
+# not sure if this belongs in the pvsystem module.
+# maybe something more like core.py? It may eventually grow to
+# import a lot more functionality from other modules.
+class PVSystem(Location):
     """
-    PVSystem objects are convenient containers for latitude, longitude,
-    timezone, and altitude data associated with a particular 
-    geographic location. You can also assign a name to a location object.
+    The PVSystem class defines a standard set of system attributes and
+    wraps the module-level modeling functions. The class is complementary
+    to the module-level functions. Some modeling applications benefit from
+    the structure imposed by classes.
     
-    PVSystem objects have two timezone attributes: 
+    The attributes should generally be things that don't change about
+    the system, such the type of module and the inverter. The instance
+    methods accept arguments for things that do change, such as
+    irradiance and temperature.
     
-        * ``tz`` is a IANA timezone string.
-        * ``pytz`` is a pytz timezone object.
-        
-    PVSystem objects support the print method.
+    Inherits the ``from_tmy`` constructor from Location.
+    
+    Inherits the ``get_solarposition`` method from Location.
     
     Parameters
     ----------
     latitude : float.
         Positive is north of the equator.
         Use decimal degrees notation.
+        
     longitude : float. 
         Positive is east of the prime meridian.
         Use decimal degrees notation.
+    
     tz : string or pytz.timezone. 
         See 
         http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         for a list of valid time zones.
         pytz.timezone objects will be converted to strings.
+    
     alitude : float. 
         Altitude from sea level in meters.
+    
     name : None or string. 
         Sets the name attribute of the PVSystem object.
-    kwargs : dict
-        Any other data that you want to attach as an attribute.
+    
+    surface_tilt: None, float, or array-like
+        Tilt angle of the module surface.
+        Up=0, horizon=90.
+    
+    surface_azimuth: None, float, or array-like
+        Azimuth angle of the module surface.
+        North=0, East=90, South=180, West=270.
+    
+    module : None, string
+        The model name of the modules.
+        May be used to look up the module_parameters dictionary
+        via some other method.
+    
+    module_parameters : None, dict or Series
+        Module parameters as defined by the SAPM, CEC, or other.
+    
+    inverter : None, string
+        The model name of the inverters.
+        May be used to look up the inverter_parameters dictionary
+        via some other method.
+    
+    inverter_parameters : None, dict or Series
+        Inverter parameters as defined by the SAPM, CEC, or other.
+    
+    racking_model : None or string
+        Used for cell and module temperature calculations.
+    
+    kwargs : anything
+        Any other data that you want to assign as an attribute
+        that may be used by the PVSystem instance methods.
     
     See also
     --------
     location.Location
+    tracking.SingleAxisTracker
     """
     
     def __init__(self, latitude, longitude, tz='UTC', altitude=0,
-                 name=None, **kwargs):
+                 name=None, module=None, module_parameters=None,
+                 inverter=None, inverter_parameters=None,
+                 racking_model=None, **kwargs):
 
         super(PVSystem, self).__init__(latitude, longitude, tz=tz,
                                        altitude=altitude, name=name)
+        
+        self.surface_tilt = surface_tilt
+        self.surface_azimuth = surface_azimuth
+        
+        # could tie these together with @property
+        self.module = module
+        self.module_parameters = module_parameters
+        
+        self.inverter = inverter
+        self.inverter_parameters = inverter_parameters
+        
+        self.racking_model = racking_model
 
+        # makes self.some_parameter = some_value for everything in kwargs
         [setattr(self, k, v) for k, v in kwargs.items()]
-
-
-    def __str__(self):
-        return ('{}: latitude={}, longitude={}, tz={}, altitude={}'
-                .format(self.name, self.latitude, self.longitude, 
-                        self.tz, self.altitude))
     
     
     # defaults to kwargs, falls back to attributes. complicated.
     # harder to support?
     def ashraeiam(self, **kwargs):
-    
+        """Wrapper around the ashraeiam function.
+        
+        Parameters
+        ----------
+        kwargs : None, b, a
+            See pvsystem.ashraeiam for details
+        """
         return ashraeiam(kwargs.pop('b', self.b), kwargs.pop('aoi', self.aoi))
     
     
     # thin wrappers of other pvsystem functions
-    def physicaliam(self, K, L, n, aoi):
+    def physicaliam(self, aoi):
     
         return physicaliam(K, L, n, aoi)
     
@@ -103,16 +158,17 @@ def PVSystem(Location):
                     temp_cell, airmass_absolute, aoi)
     
     
-    def sapm_celltemp(self, irrad, wind, temp,
-                      model='open_rack_cell_glassback'):
+    # model now specified by self.racking_model
+    def sapm_celltemp(self, irrad, wind, temp):
     
-        return sapm_celltemp(irrad, wind, temp, model)
+        return sapm_celltemp(irrad, wind, temp, self.racking_model)
     
     
-    def singlediode(self, module, photocurrent, saturation_current,
+    def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth):
     
-        return singlediode(module, photocurrent, saturation_current,
+        return singlediode(self.module_parameters, photocurrent,
+                           saturation_current,
                            resistance_series, resistance_shunt, nNsVth)
     
     
@@ -123,9 +179,10 @@ def PVSystem(Location):
                         saturation_current, photocurrent)
                         
     
-    def snlinverter(self, inverter, v_dc, p_dc):
+    # inverter now specified by self.inverter_parameters
+    def snlinverter(self, v_dc, p_dc):
     
-        return snlinverter(inverter, v_dc, p_dc)
+        return snlinverter(self.inverter_parameters, v_dc, p_dc)
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,

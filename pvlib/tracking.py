@@ -9,6 +9,43 @@ import pandas as pd
 from pvlib.tools import cosd, sind
 
 
+# should this live next to PVSystem? Is this even a good idea?
+# possibly should inherit from an abstract base class Tracker
+# All children would define their own ``track`` method
+class SingleAxisTracker(PVSystem):
+    """
+    Inherits the ``from_tmy`` constructor from Location.
+    
+    Inherits the ``get_solarposition`` method from Location.
+    
+    Inherits all of the PV modeling methods from PVSystem.
+    """
+    # should make better use of kwargs in the inheritance
+    def __init__(self, latitude, longitude, tz='UTC', altitude=0,
+                 name=None, module=None, module_parameters=None,
+                 inverter=None, inverter_parameters=None,
+                 racking_model=None, axis_tilt=0, axis_azimuth=0,
+                 max_angle=90, backtrack=True, gcr=2.0/7.0, **kwargs):
+        
+        super(SingleAxisTracker, self).__init__(
+            latitude, longitude, tz=tz, altitude=altitude, name=name,
+            module=module, module_parameters=module_parameters,
+            inverter=inverter, inverter_parameters=inverter_parameters,
+            racking_model=None)
+        
+        self.axis_tilt = axis_tilt
+        self.axis_azimuth = axis_azimuth
+        self.max_angle = max_angle
+        self.backtrack = backtrack
+        self.gcr = gcr
+
+
+    def singleaxis(self, apparent_zenith, apparent_azimuth):
+        return singleaxis(apparent_azimuth, apparent_zenith,
+                          self.axis_tilt, self.axis_azimuth, self.max_angle,
+                          self.backtrack, self.gcr)
+
+
 def singleaxis(apparent_zenith, apparent_azimuth, 
                axis_tilt=0, axis_azimuth=0, max_angle=90, 
                backtrack=True, gcr=2.0/7.0):

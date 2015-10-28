@@ -20,6 +20,7 @@ except ImportError:
     except ImportError:
         pass
 
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -28,7 +29,8 @@ import pandas as pd
 from pvlib.tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
-def get_solarposition(time, location, method='nrel_numpy', pressure=101325,
+def get_solarposition(time, location=None, latitude=None, longitude=None,
+                      method='nrel_numpy', pressure=101325,
                       temperature=12, **kwargs):
     """
     A convenience wrapper for the solar position calculators.
@@ -36,7 +38,9 @@ def get_solarposition(time, location, method='nrel_numpy', pressure=101325,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-    location : pvlib.Location object
+    location : None or pvlib.Location object
+    latitude : None or float
+    longitude : None or float
     method : string
         'pyephem' uses the PyEphem package: :func:`pyephem`
 
@@ -66,30 +70,38 @@ def get_solarposition(time, location, method='nrel_numpy', pressure=101325,
 
     [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
     """
-
+    
+    if location is not None:
+        warnings.warn("The location argument is deprecated. Use " +
+                      "Location.get_solarposition or specify the " +
+                      "latitude and longitude arguments", DeprecationWarning)
+    
     method = method.lower()
     if isinstance(time, dt.datetime):
         time = pd.DatetimeIndex([time, ])
 
     if method == 'nrel_c':
-        ephem_df = spa_c(time, location, pressure, temperature, **kwargs)
+        ephem_df = spa_c(time, latitude, longitude, pressure, temperature,
+                         **kwargs)
     elif method == 'nrel_numba':
-        ephem_df = spa_python(time, location, pressure, temperature,
+        ephem_df = spa_python(time, latitude, longitude, pressure, temperature,
                               how='numba', **kwargs)
     elif method == 'nrel_numpy':
-        ephem_df = spa_python(time, location, pressure, temperature,
+        ephem_df = spa_python(time, latitude, longitude, pressure, temperature,
                               how='numpy', **kwargs)
     elif method == 'pyephem':
-        ephem_df = pyephem(time, location, pressure, temperature, **kwargs)
+        ephem_df = pyephem(time, latitude, longitude, pressure, temperature,
+                           **kwargs)
     elif method == 'ephemeris':
-        ephem_df = ephemeris(time, location, pressure, temperature, **kwargs)
+        ephem_df = ephemeris(time, latitude, longitude, pressure, temperature,
+                             **kwargs)
     else:
         raise ValueError('Invalid solar position method')
 
     return ephem_df
 
 
-def spa_c(time, location, pressure=101325, temperature=12, delta_t=67.0,
+def spa_c(time, latitude, longitude, pressure=101325, temperature=12, delta_t=67.0,
           raw_spa_output=False):
     """
     Calculate the solar position using the C implementation of the NREL

@@ -11,6 +11,8 @@ import datetime
 
 import pytz
 
+from pvlib import solarposition
+
 class Location(object):
     """
     Location objects are convenient containers for latitude, longitude,
@@ -19,8 +21,8 @@ class Location(object):
     
     Location objects have two timezone attributes: 
     
-        * ``location.tz`` is a IANA timezone string.
-        * ``location.pytz`` is a pytz timezone object.
+        * ``tz`` is a IANA timezone string.
+        * ``pytz`` is a pytz timezone object.
         
     Location objects support the print method.
     
@@ -41,9 +43,13 @@ class Location(object):
         Altitude from sea level in meters.
     name : None or string. 
         Sets the name attribute of the Location object.
+        
+    See also
+    --------
+    pvsystem.PVSystem
     """
     
-    def __init__(self, latitude, longitude, tz='UTC', altitude=100,
+    def __init__(self, latitude, longitude, tz='UTC', altitude=0,
                  name=None):
 
         pvl_logger.debug('creating Location object')
@@ -70,3 +76,19 @@ class Location(object):
         return ('{}: latitude={}, longitude={}, tz={}, altitude={}'
                 .format(self.name, self.latitude, self.longitude, 
                         self.tz, self.altitude))
+    
+    
+    @classmethod
+    def from_tmy(cls, tmy_metadata):
+        """
+        Create an object based on a metadata 
+        dictionary from tmy2 or tmy3 data readers.
+        """
+        return cls(**tmy_metadata)
+    
+    
+    def get_solarposition(self, times, **kwargs):
+        return solarposition.get_solarposition(times, latitude=self.latitude,
+                                               longitude=self.longitude,
+                                               **kwargs)
+                                               

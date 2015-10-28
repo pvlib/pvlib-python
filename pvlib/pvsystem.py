@@ -18,6 +18,114 @@ import numpy as np
 import pandas as pd
 
 from pvlib import tools
+from pvlib.location import Location
+
+
+def PVSystem(Location):
+    """
+    PVSystem objects are convenient containers for latitude, longitude,
+    timezone, and altitude data associated with a particular 
+    geographic location. You can also assign a name to a location object.
+    
+    PVSystem objects have two timezone attributes: 
+    
+        * ``tz`` is a IANA timezone string.
+        * ``pytz`` is a pytz timezone object.
+        
+    PVSystem objects support the print method.
+    
+    Parameters
+    ----------
+    latitude : float.
+        Positive is north of the equator.
+        Use decimal degrees notation.
+    longitude : float. 
+        Positive is east of the prime meridian.
+        Use decimal degrees notation.
+    tz : string or pytz.timezone. 
+        See 
+        http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        for a list of valid time zones.
+        pytz.timezone objects will be converted to strings.
+    alitude : float. 
+        Altitude from sea level in meters.
+    name : None or string. 
+        Sets the name attribute of the PVSystem object.
+    kwargs : dict
+        Any other data that you want to attach as an attribute.
+    
+    See also
+    --------
+    location.Location
+    """
+    
+    def __init__(self, latitude, longitude, tz='UTC', altitude=0,
+                 name=None, **kwargs):
+
+        super(PVSystem, self).__init__(latitude, longitude, tz=tz,
+                                       altitude=altitude, name=name)
+
+        [setattr(self, k, v) for k, v in kwargs.items()]
+
+
+    def __str__(self):
+        return ('{}: latitude={}, longitude={}, tz={}, altitude={}'
+                .format(self.name, self.latitude, self.longitude, 
+                        self.tz, self.altitude))
+    
+    
+    # defaults to kwargs, falls back to attributes. complicated.
+    # harder to support?
+    def ashraeiam(self, **kwargs):
+    
+        return ashraeiam(kwargs.pop('b', self.b), kwargs.pop('aoi', self.aoi))
+    
+    
+    # thin wrappers of other pvsystem functions
+    def physicaliam(self, K, L, n, aoi):
+    
+        return physicaliam(K, L, n, aoi)
+    
+    
+    def calcparams_desoto(self, poa_global, temp_cell, alpha_isc,
+                          module_parameters,
+                          EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
+                          
+        return calcparams_desoto(poa_global, temp_cell, alpha_isc,
+                                 module_parameters,
+                                 EgRef, dEgdT, M, irrad_ref, temp_ref):
+    
+    
+    def sapm(self, module, poa_direct, poa_diffuse,
+             temp_cell, airmass_absolute, aoi):
+        
+        return sapm(module, poa_direct, poa_diffuse,
+                    temp_cell, airmass_absolute, aoi)
+    
+    
+    def sapm_celltemp(self, irrad, wind, temp,
+                      model='open_rack_cell_glassback'):
+    
+        return sapm_celltemp(irrad, wind, temp, model)
+    
+    
+    def singlediode(self, module, photocurrent, saturation_current,
+                    resistance_series, resistance_shunt, nNsVth):
+    
+        return singlediode(module, photocurrent, saturation_current,
+                           resistance_series, resistance_shunt, nNsVth)
+    
+    
+    def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
+                 saturation_current, photocurrent):
+             
+        return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
+                        saturation_current, photocurrent)
+                        
+    
+    def snlinverter(self, inverter, v_dc, p_dc):
+    
+        return snlinverter(inverter, v_dc, p_dc)
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,

@@ -8,5 +8,6 @@ dependencies:
     - pytz
     - ephem
     - numba
+    - netcdf4
     - pip:
         - coveralls

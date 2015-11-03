@@ -7,5 +7,6 @@ dependencies:
     - nose
     - pytz
     - ephem
+    - netcdf4
     - pip:
         - coveralls

@@ -4,6 +4,7 @@ dependencies:
     - nose
     - pytz
     - ephem
+    - netcdf4
 #    - numba
     - pip:
         - numpy

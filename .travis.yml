@@ -62,12 +62,13 @@ before_install:
     
 install:
     - echo "install"
-    - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas=$PD_VERSION nose pytz ephem netcdf4; fi
-    - if [[ $TRAVIS_PYTHON_VERSION == '3.3' || $TRAVIS_PYTHON_VERSION == '3.4' ]]; then conda install --yes python=$TRAVIS_PYTHON_VERSION numpy=1.8 scipy=0.14 pandas nose pytz ephem netcdf4; conda install --yes pandas=$PD_VERSION --no-deps; fi
-    - test $PD_VERSION != 0.13.1 && conda install --yes "numba>=0.17" || echo "Not installing numba"
-    - conda install --yes coverage
-    - pip install git+https://github.com/Unidata/siphon.git@master
-    - pip install coveralls
+    - conda env create --file ci/requirements-$CONDA_ENV.yml
+    - source activate test_env # all envs are named test_env in the yml files
+    - conda list
+    - echo $PATH
+    - ls -l /home/travis/miniconda/envs/test_env/lib
+    #- pip install . # use pip to automatically install anything not in the yml files (i.e. numpy/scipy/pandas for py3*)
+    - pip install scipy # won't do anything if already installed
     - python setup.py install
 
 script:

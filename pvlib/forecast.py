@@ -96,12 +96,13 @@ class ForecastModel(object):
                         'boundary_clouds',
                         'convect_clouds',
                         'downward_shortwave_radflux',
-                        'downward_shortwave_radflux_avg'])
+                        'downward_shortwave_radflux_avg',])
 
     def __init__(self,model_type,model_name,labels):
         self.model_name = model_name
         self.model_type = model_type
-        self.variables = labels.keys()
+        self.variables = list(labels.keys())
+        self.modelvariables = list(labels.values())
         self.data_labels = labels
         self.catalog = TDSCatalog(self.catalog_url)
         self.fm_models = TDSCatalog(self.catalog.catalog_refs[self.model_type].href)
@@ -180,14 +181,14 @@ class ForecastModel(object):
         if vert_level != None:
             self.vert_level = vert_level
         if variables != None:
-            self.variables = variables
+            self.modelvariables = variables
         
         self.latlon = latlon
         self.set_query_latlon()
         self.timespan = timespan
         self.set_query_time()
         self.query.vertical_level(self.vert_level)
-        self.query.variables(*self.variables)
+        self.query.variables(*self.modelvariables)
 
         self.query.accept(self.data_format)
         netcdf_data = self.ncss.get_data(self.query)
@@ -213,7 +214,7 @@ class ForecastModel(object):
         """
         data_dict = {}
         for var in self.variables:
-            data_dict[self.data_labels[var]] = pd.Series(data[var][:].squeeze())
+            data_dict[var] = pd.Series(data[self.data_labels[var]][:].squeeze())
         dataframe = pd.DataFrame(data_dict,columns=self.columns)
         return dataframe
 
@@ -244,7 +245,7 @@ class ForecastModel(object):
         """
         self.var_units = {}
         for var in self.variables:
-            self.var_units[self.data_labels[var]] = data[var].units
+            self.var_units[var] = data[self.data_labels[var]].units
 
     def set_variable_stdnames(self,data):
         """
@@ -259,52 +260,14 @@ class ForecastModel(object):
         self.var_stdnames = {}
         for var in self.variables:
             try:
-                self.var_stdnames[self.data_labels[var]] = data[var].standard_name
+                self.var_stdnames[var] = data[self.data_labels[var]].standard_name
             except AttributeError:
-                self.var_stdnames[self.data_labels[var]] = var
+                self.var_stdnames[var] = var
+
 
 class GFS(ForecastModel):
     '''
     Subclass of the ForecastModel class representing GFS forecast model.
-
-    Model data corresponds to 0.5 degree resolution forecasts.
-
-    Attributes
-    ----------
-    cols: list
-        Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
-    model: string
-        Name of the UNIDATA forecast model.
-    model_type: string
-        UNIDATA category in which the model is located.
-    variables: list
-        Names of default variables specific to the model.
-
-    '''
-    def __init__(self):
-        model_type = 'Forecast Model Data'
-        model = 'GFS Half Degree Forecast'
-        variables = ['Temperature_isobaric',
-                     'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
-                     'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
-                     'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
-                     'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
-                     'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
-                     'Total_cloud_cover_convective_cloud']
-        cols = super(GFS, self).columns
-        idx = [1,3,4,5,6,7,8]
-        data_labels = dict(zip(variables,cols[idx]))
-        super(GFS, self).__init__(model_type,model,data_labels)
-
-
-class GFS_HIRES(ForecastModel):
-    '''
-    Subclass of the ForecastModel class representing GFS_HIRES forecast model.
 
     Model data corresponds to 0.25 degree resolution forecasts.
 
@@ -325,9 +288,9 @@ class GFS_HIRES(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self):
+    def __init__(self,res='Half'):
         model_type = 'Forecast Model Data'
-        model = 'GFS Quarter Degree Forecast'
+        model = 'GFS '+res+' Degree Forecast'
         variables = ['Temperature_isobaric',
                      'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
                      'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
@@ -335,10 +298,10 @@ class GFS_HIRES(ForecastModel):
                      'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
                      'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
                      'Total_cloud_cover_convective_cloud']
-        cols = super(GFS_HIRES, self).columns
+        cols = super(GFS, self).columns
         idx = [1,3,4,5,6,7,8]
-        data_labels = dict(zip(variables,cols[idx]))
-        super(GFS_HIRES, self).__init__(model_type,model,data_labels)
+        data_labels = dict(zip(cols[idx],variables))
+        super(GFS, self).__init__(model_type,model,data_labels)
 
 
 class NAM(ForecastModel):
@@ -361,6 +324,8 @@ class NAM(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
+    res: string
+        Determines which resolution of the GFS to use, as 'Half' or 'Quarter'
     variables: list
         Names of default variables specific to the model.
 
@@ -379,7 +344,7 @@ class NAM(ForecastModel):
                      'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average']
         cols = super(NAM, self).columns
         idx = [0,1,3,4,5,6,9,10]
-        data_labels = dict(zip(variables,cols[idx]))
+        data_labels = dict(zip(cols[idx],variables))
         super(NAM, self).__init__(model_type,model,data_labels)
 
 
@@ -418,7 +383,7 @@ class RAP(ForecastModel):
                      'High_cloud_cover_high_cloud']
         cols = super(RAP, self).columns
         idx = [0,3,4,5,6]
-        data_labels = dict(zip(variables,cols[idx]))
+        data_labels = dict(zip(cols[idx],variables))
         super(RAP, self).__init__(model_type,model,data_labels)
 
 
@@ -448,7 +413,7 @@ class NCEP(ForecastModel):
     '''
     def __init__(self):
         model_type = 'Forecast Model Data'
-        model = 'NCEP HRRR CONUS 2.5km'
+        model = 'NCEP HRRR CONUS 2.5km'            
         description = ''
         variables = ['Total_cloud_cover_entire_atmosphere',
                      'Low_cloud_cover_low_cloud',
@@ -456,15 +421,15 @@ class NCEP(ForecastModel):
                      'High_cloud_cover_high_cloud',]
         cols = super(NCEP, self).columns
         idx = [3,4,5,6]
-        data_labels = dict(zip(variables,cols[idx]))
+        data_labels = dict(zip(cols[idx],variables))
         super(NCEP, self).__init__(model_type,model,data_labels)
 
 
-class NOAA(ForecastModel):
+class GSD(ForecastModel):
     '''
-    Subclass of the ForecastModel class representing NOAA forecast model.
+    Subclass of the ForecastModel class representing NCEP forecast model.
 
-    Model data corresponds to GSD HRRR CONUS 3km resolution
+    Model data corresponds to NOAA/GSD HRRR CONUS 3km resolution
     surface forecasts.
 
     Attributes
@@ -487,6 +452,7 @@ class NOAA(ForecastModel):
     def __init__(self):
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
+
         description = ''
         variables = ['Temperature_surface',
                      'Total_cloud_cover_entire_atmosphere',
@@ -494,10 +460,10 @@ class NOAA(ForecastModel):
                      'Medium_cloud_cover_UnknownLevelType-224',
                      'High_cloud_cover_UnknownLevelType-234',
                      'Downward_short-wave_radiation_flux_surface']
-        cols = super(NOAA, self).columns
+        cols = super(GSD, self).columns
         idx = [0,3,4,5,6,9]
-        data_labels = dict(zip(variables,cols[idx]))
-        super(NOAA, self).__init__(model_type,model,data_labels)
+        data_labels = dict(zip(cols[idx],variables))
+        super(GSD, self).__init__(model_type,model,data_labels)
 
 
 class NDFD(ForecastModel):
@@ -533,5 +499,5 @@ class NDFD(ForecastModel):
                      'Total_cloud_cover_surface']
         cols = super(NDFD, self).columns
         idx = [0,2,3]
-        data_labels = dict(zip(variables,cols[idx]))
+        data_labels = dict(zip(cols[idx],variables))
         super(NDFD, self).__init__(model_type,model,data_labels)

@@ -194,12 +194,12 @@ def testFM(start,end):
     # gfshires = GFS_HIRES()
     # nam = NAM()
     # rap = RAP()
-    # ncep = NCEP()
+    hrrr = HRRR('esrl')
     # noaa = NOAA()
-    ndfd = NDFD()
+    # ndfd = NDFD()
 
-    # models = [gfs,gfshires,nam,rap,ncep,noaa,ndfd]
-    models = [ndfd]
+    # models = [gfs,gfshires,nam,rap,hrrr,noaa,ndfd]
+    models = [hrrr]
 
     varlists = []
 

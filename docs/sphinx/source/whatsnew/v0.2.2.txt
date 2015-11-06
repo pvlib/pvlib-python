@@ -10,11 +10,15 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Adds Python 3.5 compatibility (:issue:`87`)
+* Moves the Linke turbidity lookup into ``clearsky.lookup_linke_turbidity``.
+  The API for ``clearsky.ineichen`` remains the same. (:issue:`95`)
 
 
 Bug fixes
 ~~~~~~~~~
 
+* Fixes an import and KeyError in the IPython notebook tutorials
+  (:issue:`94`).
 * Uses the ``logging`` module properly by replacing ``format``
   calls with ``args``. This results in a 5x speed increase for
   ``tracking.singleaxis`` (:issue:`89`).
@@ -24,4 +28,5 @@ Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* jetheurer
 * dacoex

@@ -6,7 +6,7 @@ import pandas as pd
 
 from nose.tools import raises
 from numpy.testing import assert_almost_equal
-from pandas.util.testing import assert_frame_equal
+from pandas.util.testing import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
 from pvlib import clearsky
@@ -20,10 +20,8 @@ times_localized = times.tz_localize(tus.tz)
 ephem_data = solarposition.get_solarposition(times, tus)
 
 
-# test the ineichen clear sky model implementation in a few ways
-
 def test_ineichen_required():
-    # the clearsky function should lookup the linke turbidity on its own
+    # the clearsky function should call lookup_linke_turbidity by default
     # will fail without scipy
     expected = pd.DataFrame(np.array([[0.,0.,0.],
                                       [0.,0.,0.],
@@ -39,6 +37,7 @@ def test_ineichen_required():
     out = clearsky.ineichen(times, tus)
     assert_frame_equal(expected, out)
     
+
 def test_ineichen_supply_linke():
     expected = pd.DataFrame(np.array([[0.,0.,0.],
                                       [0.,0.,0.],
@@ -54,9 +53,11 @@ def test_ineichen_supply_linke():
     out = clearsky.ineichen(times, tus, linke_turbidity=3)
     assert_frame_equal(expected, out)
 
+
 def test_ineichen_solpos():
     clearsky.ineichen(times, tus, linke_turbidity=3,
                       solarposition_method='ephemeris')
+
 
 def test_ineichen_airmass():
     expected = pd.DataFrame(np.array([[0.,0.,0.],
@@ -74,19 +75,63 @@ def test_ineichen_airmass():
                             airmass_model='simple')
     assert_frame_equal(expected, out)
 
-def test_ineichen_keys():
-    clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
-    assert 'ghi' in clearsky_data.columns
-    assert 'dni' in clearsky_data.columns
-    assert 'dhi' in clearsky_data.columns
 
 def test_lookup_linke_turbidity():
-    raise Exception
+    times = pd.date_range(start='2014-06-24', end='2014-06-25',
+                          freq='12h', tz=tus.tz)
+    # expect same value on 2014-06-24 0000 and 1200, and
+    # diff value on 2014-06-25
+    expected = pd.Series(np.array([3.10126582, 3.10126582, 3.11443038]),
+                         index=times)
+    out = clearsky.lookup_linke_turbidity(times, tus.latitude, tus.longitude)
+    assert_series_equal(expected, out)
 
-# test the haurwitz clear sky implementation
+
+def test_lookup_linke_turbidity_nointerp():
+    times = pd.date_range(start='2014-06-24', end='2014-06-25',
+                          freq='12h', tz=tus.tz)
+    # expect same value for all days
+    expected = pd.Series(np.array([3., 3., 3.]), index=times)
+    out = clearsky.lookup_linke_turbidity(times, tus.latitude, tus.longitude,
+                                          interp_turbidity=False)
+    assert_series_equal(expected, out)
+
+
+def test_lookup_linke_turbidity_months():
+    times = pd.date_range(start='2014-04-01', end='2014-07-01',
+                          freq='1M', tz=tus.tz)
+    expected = pd.Series(np.array([2.8943038, 2.97316456, 3.18025316]),
+                         index=times)
+    out = clearsky.lookup_linke_turbidity(times, tus.latitude,
+                                          tus.longitude)
+    assert_series_equal(expected, out)
+
+
+def test_lookup_linke_turbidity_nointerp_months():
+    times = pd.date_range(start='2014-04-10', end='2014-07-10',
+                          freq='1M', tz=tus.tz)
+    expected = pd.Series(np.array([2.85, 2.95, 3.]), index=times)
+    out = clearsky.lookup_linke_turbidity(times, tus.latitude, tus.longitude,
+                                          interp_turbidity=False)
+    assert_series_equal(expected, out)
+    # changing the dates shouldn't matter if interp=False
+    times = pd.date_range(start='2014-04-05', end='2014-07-05',
+                          freq='1M', tz=tus.tz)
+    out = clearsky.lookup_linke_turbidity(times, tus.latitude, tus.longitude,
+                                          interp_turbidity=False)
+    assert_series_equal(expected, out)
+
+
 def test_haurwitz():
-    clearsky.haurwitz(ephem_data['zenith'])
-
-def test_haurwitz_keys():
-    clearsky_data = clearsky.haurwitz(ephem_data['zenith'])
-    assert 'ghi' in clearsky_data.columns
+    expected = pd.DataFrame(np.array([[0.],
+                                      [0.],
+                                      [82.85934048],
+                                      [699.74514735],
+                                      [1016.50198354],
+                                      [838.32103769],
+                                      [271.90853863],
+                                      [0.],
+                                      [0.]]),
+                             columns=['ghi'], index=times_localized)
+    out = clearsky.haurwitz(ephem_data['zenith'])
+    assert_frame_equal(expected, out)

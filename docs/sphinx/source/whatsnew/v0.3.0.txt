@@ -1,0 +1,27 @@
+.. _whatsnew_0300:
+
+v0.3.0 (2016)
+-----------------------
+
+This is a major release from 0.2.2.
+We recommend that all users upgrade to this version after testing
+their code for compatibility and updating as necessary.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adds ``PVSystem`` and ``SingleAxisTracker`` classes. (:issue:`17`)
+* Replaces ``location`` arguments with ``latitude``, ``longitude``,
+  ``altitude``, and ``tz`` as appropriate.
+  This separates the object-oriented API from the procedural API.
+  (:issue:`17`)
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren

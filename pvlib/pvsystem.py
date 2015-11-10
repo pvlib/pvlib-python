@@ -114,6 +114,7 @@ class PVSystem(Location):
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
                  module=None, module_parameters=None,
+                 series_modules=None, parallel_modules=None,
                  inverter=None, inverter_parameters=None,
                  racking_model=None,
                  **kwargs):
@@ -134,6 +135,9 @@ class PVSystem(Location):
         # could tie these together with @property
         self.module = module
         self.module_parameters = module_parameters
+        
+        self.series_modules = series_modules
+        self.parallel_modules = parallel_modules
         
         self.inverter = inverter
         self.inverter_parameters = inverter_parameters
@@ -194,7 +198,7 @@ class PVSystem(Location):
     # defaults to kwargs, falls back to attributes. complicated.
     # harder to support?
     def ashraeiam(self, **kwargs):
-        """Wrapper around the ashraeiam function.
+        """Wrapper around the :func:`ashraeiam` function.
         
         Parameters
         ----------
@@ -210,7 +214,7 @@ class PVSystem(Location):
     
     # thin wrappers of other pvsystem functions
     def physicaliam(self, aoi):
-        """Wrapper around the physicaliam function.
+        """Wrapper around the :func:`physicaliam` function.
         
         Parameters
         ----------
@@ -226,7 +230,7 @@ class PVSystem(Location):
     def calcparams_desoto(self, poa_global, temp_cell, alpha_isc,
                           module_parameters,
                           EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
-        """Wrapper around the calcparams_desoto function.
+        """Wrapper around the :func:`calcparams_desoto` function.
         
         Parameters
         ----------
@@ -243,7 +247,7 @@ class PVSystem(Location):
     
     def sapm(self, module, poa_direct, poa_diffuse,
              temp_cell, airmass_absolute, aoi):
-        """Wrapper around the sapm function.
+        """Wrapper around the :func:`sapm` function.
         
         Parameters
         ----------
@@ -259,7 +263,7 @@ class PVSystem(Location):
     
     # model now specified by self.racking_model
     def sapm_celltemp(self, irrad, wind, temp):
-        """Wrapper around the sapm_celltemp function.
+        """Wrapper around the :func:`sapm_celltemp` function.
         
         Parameters
         ----------
@@ -274,7 +278,7 @@ class PVSystem(Location):
     
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth):
-        """Wrapper around the singlediode function.
+        """Wrapper around the :func:`singlediode` function.
         
         Parameters
         ----------
@@ -291,7 +295,7 @@ class PVSystem(Location):
     
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
-        """Wrapper around the i_from_v function.
+        """Wrapper around the :func:`i_from_v` function.
         
         Parameters
         ----------
@@ -307,7 +311,7 @@ class PVSystem(Location):
     
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
-        """Wrapper around the snlinverter function.
+        """Wrapper around the :func:`snlinverter` function.
         
         Parameters
         ----------

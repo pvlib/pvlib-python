@@ -37,9 +37,10 @@ class PVSystem(Location):
     methods accept arguments for things that do change, such as
     irradiance and temperature.
     
-    Inherits the ``from_tmy`` constructor from Location.
+    Inherits the ``from_tmy`` constructor from ``Location``.
     
-    Inherits the ``get_solarposition`` method from Location.
+    Inherits the ``get_solarposition`` and ``get_clearsky``
+    method from ``Location``. Defines ``get_irradiance``.
     
     Parameters
     ----------

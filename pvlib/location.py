@@ -144,6 +144,7 @@ class Location(object):
         """
         return solarposition.get_solarposition(times, latitude=self.latitude,
                                                longitude=self.longitude,
+                                               altitude=self.altitude,
                                                **kwargs)
 
 
@@ -165,6 +166,7 @@ class Location(object):
         """
         return clearsky.ineichen(times, latitude=self.latitude,
                                  longitude=self.longitude,
+                                 altitude=self.altitude,
                                  **kwargs)
 
                                       

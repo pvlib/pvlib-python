@@ -30,6 +30,7 @@ from pvlib.tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
 def get_solarposition(time, location=None, latitude=None, longitude=None,
+                      altitude=None,
                       method='nrel_numpy', pressure=101325,
                       temperature=12, **kwargs):
     """
@@ -41,6 +42,7 @@ def get_solarposition(time, location=None, latitude=None, longitude=None,
     location : None or pvlib.Location object
     latitude : None or float
     longitude : None or float
+    altitude : None or float
     method : string
         'pyephem' uses the PyEphem package: :func:`pyephem`
 
@@ -87,7 +89,8 @@ def get_solarposition(time, location=None, latitude=None, longitude=None,
         ephem_df = spa_python(time, latitude, longitude, pressure, temperature,
                               how='numba', **kwargs)
     elif method == 'nrel_numpy':
-        ephem_df = spa_python(time, latitude, longitude, pressure, temperature,
+        ephem_df = spa_python(time, latitude, longitude, altitude,
+                              pressure, temperature,
                               how='numpy', **kwargs)
     elif method == 'pyephem':
         ephem_df = pyephem(time, latitude, longitude, pressure, temperature,

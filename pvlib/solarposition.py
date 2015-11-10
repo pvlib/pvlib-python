@@ -101,7 +101,8 @@ def get_solarposition(time, location=None, latitude=None, longitude=None,
     return ephem_df
 
 
-def spa_c(time, latitude, longitude, pressure=101325, temperature=12, delta_t=67.0,
+def spa_c(time, latitude, longitude, pressure=101325,
+          temperature=12, delta_t=67.0,
           raw_spa_output=False):
     """
     Calculate the solar position using the C implementation of the NREL
@@ -223,7 +224,8 @@ def _spa_python_import(how):
     return spa
 
 
-def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
+def spa_python(time, latitude, longitude,
+               altitude=0, pressure=101325, temperature=12, delta_t=None,
                atmos_refract=None, how='numpy', numthreads=4):
     """
     Calculate the solar position using a python implementation of the
@@ -237,7 +239,9 @@ def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-    location : pvlib.Location object
+    latitude : float
+    longitude : float
+    altitude : float
     pressure : int or float, optional
         avg. yearly air pressure in Pascals.
     temperature : int or float, optional
@@ -286,9 +290,9 @@ def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
 
     pvl_logger.debug('Calculating solar position with spa_python code')
 
-    lat = location.latitude
-    lon = location.longitude
-    elev = location.altitude
+    lat = latitude
+    lon = longitude
+    elev = altitude
     pressure = pressure / 100  # pressure must be in millibars for calculation
     delta_t = delta_t or 67.0
     atmos_refract = atmos_refract or 0.5667
@@ -299,7 +303,7 @@ def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = localize_to_utc(time, location).astype(np.int64)/10**9
+    unixtime = time.astype(np.int64)/10**9
 
     spa = _spa_python_import(how)
 
@@ -314,9 +318,9 @@ def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
                           index=time)
 
     try:
-        result = result.tz_convert(location.tz)
+        result = result.tz_convert(time.tz)
     except TypeError:
-        result = result.tz_localize(location.tz)
+        result = result.tz_localize(time.tz)
 
     return result
 

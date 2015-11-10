@@ -20,7 +20,7 @@ from pvlib import solarposition
 
 
 
-def ineichen(time, location, linke_turbidity=None, 
+def ineichen(time, latitude, longitude, linke_turbidity=None, 
              solarposition_method='pyephem', zenith_data=None,
              airmass_model='young1994', airmass_data=None,
              interp_turbidity=True):
@@ -40,7 +40,9 @@ def ineichen(time, location, linke_turbidity=None,
     -----------
     time : pandas.DatetimeIndex
     
-    location : pvlib.Location
+    latitude : float
+    
+    longitude : float
     
     linke_turbidity : None or float
         If None, uses ``LinkeTurbidities.mat`` lookup table.
@@ -101,7 +103,9 @@ def ineichen(time, location, linke_turbidity=None,
     I0 = irradiance.extraradiation(time.dayofyear)
     
     if zenith_data is None:
-        ephem_data = solarposition.get_solarposition(time, location, 
+        ephem_data = solarposition.get_solarposition(time,
+                                                     latitude=latitude,
+                                                     longitude=longitude, 
                                                      method=solarposition_method)
         time = ephem_data.index # fixes issue with time possibly not being tz-aware    
         try:

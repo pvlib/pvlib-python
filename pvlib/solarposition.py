@@ -86,7 +86,8 @@ def get_solarposition(time, location=None, latitude=None, longitude=None,
         ephem_df = spa_c(time, latitude, longitude, pressure, temperature,
                          **kwargs)
     elif method == 'nrel_numba':
-        ephem_df = spa_python(time, latitude, longitude, pressure, temperature,
+        ephem_df = spa_python(time, latitude, longitude, altitude,
+                              pressure, temperature,
                               how='numba', **kwargs)
     elif method == 'nrel_numpy':
         ephem_df = spa_python(time, latitude, longitude, altitude,

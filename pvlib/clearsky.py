@@ -20,7 +20,7 @@ from pvlib import solarposition
 
 
 
-def ineichen(time, latitude, longitude, linke_turbidity=None, 
+def ineichen(time, latitude, longitude, altitude, linke_turbidity=None, 
              solarposition_method='pyephem', zenith_data=None,
              airmass_model='young1994', airmass_data=None,
              interp_turbidity=True):
@@ -43,6 +43,8 @@ def ineichen(time, latitude, longitude, linke_turbidity=None,
     latitude : float
     
     longitude : float
+
+    altitude : float
     
     linke_turbidity : None or float
         If None, uses ``LinkeTurbidities.mat`` lookup table.
@@ -105,7 +107,8 @@ def ineichen(time, latitude, longitude, linke_turbidity=None,
     if zenith_data is None:
         ephem_data = solarposition.get_solarposition(time,
                                                      latitude=latitude,
-                                                     longitude=longitude, 
+                                                     longitude=longitude,
+                                                     altitude=altitude,
                                                      method=solarposition_method)
         time = ephem_data.index # fixes issue with time possibly not being tz-aware    
         try:
@@ -119,8 +122,7 @@ def ineichen(time, latitude, longitude, linke_turbidity=None,
 
     
     if linke_turbidity is None:
-        TL = lookup_linke_turbidity(time, location.latitude,
-                                    location.longitude,
+        TL = lookup_linke_turbidity(time, latitude, longitude,
                                     interp_turbidity=interp_turbidity)
     else:
         TL = linke_turbidity
@@ -130,14 +132,14 @@ def ineichen(time, latitude, longitude, linke_turbidity=None,
     
     if airmass_data is None:
         AMabsolute = atmosphere.absoluteairmass(airmass_relative=atmosphere.relativeairmass(ApparentZenith, airmass_model),
-                                                pressure=atmosphere.alt2pres(location.altitude))
+                                                pressure=atmosphere.alt2pres(altitude))
     else:
         AMabsolute = airmass_data
         
-    fh1 = np.exp(-location.altitude/8000.)
-    fh2 = np.exp(-location.altitude/1250.)
-    cg1 = 5.09e-05 * location.altitude + 0.868
-    cg2 = 3.92e-05 * location.altitude + 0.0387
+    fh1 = np.exp(-altitude/8000.)
+    fh2 = np.exp(-altitude/1250.)
+    cg1 = 5.09e-05 * altitude + 0.868
+    cg2 = 3.92e-05 * altitude + 0.0387
     logger.debug('fh1=%s, fh2=%s, cg1=%s, cg2=%s', fh1, fh2, cg1, cg2)
 
     #  Dan's note on the TL correction: By my reading of the publication on

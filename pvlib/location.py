@@ -12,6 +12,8 @@ import datetime
 import pytz
 
 from pvlib import solarposition
+from pvlib import clearsky
+
 
 class Location(object):
     """
@@ -124,7 +126,45 @@ class Location(object):
 
 
     def get_solarposition(self, times, **kwargs):
+        """
+        Uses the :func:`solarposition.get_solarposition` function
+        to calculate the solar zenith, azimuth, etc. at this location.
+        
+        Parameters
+        ----------
+        times : DatetimeIndex
+        
+        kwargs passed to :func:`solarposition.get_solarposition`
+        
+        Returns
+        -------
+        solarposition : DataFrame
+            Columns depend on the ``method`` kwarg, but always include
+            ``zenith`` and ``azimuth``. 
+        """
         return solarposition.get_solarposition(times, latitude=self.latitude,
                                                longitude=self.longitude,
                                                **kwargs)
-                                               
+
+
+    def get_clearsky(self, times, **kwargs):
+        """
+        Uses the :func:`clearsky.ineichen` function to calculate
+        the clear sky estimates of GHI, DNI, and DHI at this location.
+        
+        Parameters
+        ----------
+        times : DatetimeIndex
+        
+        kwargs passed to :func:`clearsky.ineichen`
+        
+        Returns
+        -------
+        clearsky : DataFrame
+            Column names are: ``ghi, dni, dhi``.
+        """
+        return clearsky.ineichen(times, latitude=self.latitude,
+                                 longitude=self.longitude,
+                                 **kwargs)
+
+                                      

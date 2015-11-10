@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind
-
+from pvlib.pvsystem import PVSystem
 
 # should this live next to PVSystem? Is this even a good idea?
 # possibly should inherit from an abstract base class Tracker

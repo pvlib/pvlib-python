@@ -19,6 +19,7 @@ import pandas as pd
 
 from pvlib import tools
 from pvlib.location import Location
+from pvlib import irradiance
 
 
 # not sure if this belongs in the pvsystem module.
@@ -62,13 +63,22 @@ class PVSystem(Location):
     name : None or string. 
         Sets the name attribute of the PVSystem object.
     
-    surface_tilt: None, float, or array-like
+    surface_tilt: float or array-like
         Tilt angle of the module surface.
         Up=0, horizon=90.
     
-    surface_azimuth: None, float, or array-like
+    surface_azimuth: float or array-like
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
+    
+    albedo : None, float
+        The ground albedo. If ``None``, will attempt to use
+        ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
+        to lookup albedo.
+    
+    surface_type : None, string
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
+        for valid values.
     
     module : None, string
         The model name of the modules.
@@ -100,15 +110,26 @@ class PVSystem(Location):
     """
     
     def __init__(self, latitude, longitude, tz='UTC', altitude=0,
-                 name=None, module=None, module_parameters=None,
+                 name=None,
+                 surface_tilt=0, surface_azimuth=180,
+                 albedo=None, surface_type=None,
+                 module=None, module_parameters=None,
                  inverter=None, inverter_parameters=None,
-                 racking_model=None, **kwargs):
+                 racking_model=None,
+                 **kwargs):
 
         super(PVSystem, self).__init__(latitude, longitude, tz=tz,
                                        altitude=altitude, name=name)
         
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
+        
+        # could tie these together with @property
+        self.surface_type = surface_type
+        if albedo is None:
+            self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
+        else:
+            self.albedo = albedo
         
         # could tie these together with @property
         self.module = module
@@ -121,8 +142,55 @@ class PVSystem(Location):
 
         # makes self.some_parameter = some_value for everything in kwargs
         [setattr(self, k, v) for k, v in kwargs.items()]
-    
-    
+
+
+    def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
+                       dni_extra=None, airmass=None, model='isotropic',
+                       **kwargs):
+        """
+        Uses the :func:`irradiance.total_irrad` function to calculate
+        the plane of array irradiance components on a tilted surface
+        defined by 
+        ``self.surface_tilt``, ``self.surface_azimuth``, and
+        ``self.albedo``.
+        
+        Parameters
+        ----------
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+        dni : float or Series
+            Direct Normal Irradiance
+        ghi : float or Series
+            Global horizontal irradiance
+        dhi : float or Series
+            Diffuse horizontal irradiance
+        dni_extra : float or Series
+            Extraterrestrial direct normal irradiance
+        airmass : float or Series
+            Airmass
+        model : String
+            Irradiance model.
+        
+        kwargs passed to :func:`irradiance.total_irrad`.
+        
+        Returns
+        -------
+        poa_irradiance : DataFrame
+            Column names are: ``total, beam, sky, ground``.
+        """
+
+        return irradiance.total_irrad(self.surface_tilt,
+                                      self.surface_azimuth,
+                                      solar_zenith, solar_azimuth,
+                                      dni, ghi, dhi,
+                                      dni_extra=dni_extra, airmass=airmass,
+                                      model=model,
+                                      albedo=self.albedo,
+                                      **kwargs)
+
+
     # defaults to kwargs, falls back to attributes. complicated.
     # harder to support?
     def ashraeiam(self, **kwargs):
@@ -132,41 +200,90 @@ class PVSystem(Location):
         ----------
         kwargs : None, b, a
             See pvsystem.ashraeiam for details
+        
+        Returns
+        -------
+        See pvsystem.ashraeiam for details
         """
         return ashraeiam(kwargs.pop('b', self.b), kwargs.pop('aoi', self.aoi))
     
     
     # thin wrappers of other pvsystem functions
     def physicaliam(self, aoi):
-    
+        """Wrapper around the physicaliam function.
+        
+        Parameters
+        ----------
+        See pvsystem.physicaliam for details
+        
+        Returns
+        -------
+        See pvsystem.physicaliam for details
+        """
         return physicaliam(K, L, n, aoi)
     
     
     def calcparams_desoto(self, poa_global, temp_cell, alpha_isc,
                           module_parameters,
                           EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
-                          
+        """Wrapper around the calcparams_desoto function.
+        
+        Parameters
+        ----------
+        See pvsystem.calcparams_desoto for details
+        
+        Returns
+        -------
+        See pvsystem.calcparams_desoto for details
+        """             
         return calcparams_desoto(poa_global, temp_cell, alpha_isc,
                                  module_parameters,
-                                 EgRef, dEgdT, M, irrad_ref, temp_ref):
+                                 EgRef, dEgdT, M, irrad_ref, temp_ref)
     
     
     def sapm(self, module, poa_direct, poa_diffuse,
              temp_cell, airmass_absolute, aoi):
+        """Wrapper around the sapm function.
         
+        Parameters
+        ----------
+        See pvsystem.sapm for details
+        
+        Returns
+        -------
+        See pvsystem.sapm for details
+        """
         return sapm(module, poa_direct, poa_diffuse,
                     temp_cell, airmass_absolute, aoi)
     
     
     # model now specified by self.racking_model
     def sapm_celltemp(self, irrad, wind, temp):
-    
+        """Wrapper around the sapm_celltemp function.
+        
+        Parameters
+        ----------
+        See pvsystem.sapm_celltemp for details
+        
+        Returns
+        -------
+        See pvsystem.sapm_celltemp for details
+        """
         return sapm_celltemp(irrad, wind, temp, self.racking_model)
     
     
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth):
-    
+        """Wrapper around the singlediode function.
+        
+        Parameters
+        ----------
+        See pvsystem.singlediode for details
+        
+        Returns
+        -------
+        See pvsystem.singlediode for details
+        """
         return singlediode(self.module_parameters, photocurrent,
                            saturation_current,
                            resistance_series, resistance_shunt, nNsVth)
@@ -174,14 +291,32 @@ class PVSystem(Location):
     
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
-             
+        """Wrapper around the i_from_v function.
+        
+        Parameters
+        ----------
+        See pvsystem.i_from_v for details
+        
+        Returns
+        -------
+        See pvsystem.i_from_v for details
+        """ 
         return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                         saturation_current, photocurrent)
                         
     
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
-    
+        """Wrapper around the snlinverter function.
+        
+        Parameters
+        ----------
+        See pvsystem.snlinverter for details
+        
+        Returns
+        -------
+        See pvsystem.snlinverter for details
+        """
         return snlinverter(self.inverter_parameters, v_dc, p_dc)
 
 

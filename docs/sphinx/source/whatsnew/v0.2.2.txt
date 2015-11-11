@@ -17,6 +17,11 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
+* ``irradiance.total_irrad`` had a typo that required the
+  Klucher model to be accessed with ``'klutcher'``. Both spellings will work
+  for the remaining 0.2.* versions of pvlib,
+  but the misspelled method will be removed in 0.3.
+  (:issue:`97`)
 * Fixes an import and KeyError in the IPython notebook tutorials
   (:issue:`94`).
 * Uses the ``logging`` module properly by replacing ``format``

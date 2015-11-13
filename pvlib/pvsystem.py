@@ -25,7 +25,7 @@ from pvlib import irradiance
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
-class PVSystem(Location):
+class PVSystem(object):
     """
     The PVSystem class defines a standard set of system attributes and
     wraps the module-level modeling functions. The class is complementary
@@ -37,33 +37,8 @@ class PVSystem(Location):
     methods accept arguments for things that do change, such as
     irradiance and temperature.
     
-    Inherits the ``from_tmy`` constructor from ``Location``.
-    
-    Inherits the ``get_solarposition`` and ``get_clearsky``
-    method from ``Location``. Defines ``get_irradiance``.
-    
     Parameters
     ----------
-    latitude : float.
-        Positive is north of the equator.
-        Use decimal degrees notation.
-        
-    longitude : float. 
-        Positive is east of the prime meridian.
-        Use decimal degrees notation.
-    
-    tz : string or pytz.timezone. 
-        See 
-        http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-        for a list of valid time zones.
-        pytz.timezone objects will be converted to strings.
-    
-    alitude : float. 
-        Altitude from sea level in meters.
-    
-    name : None or string. 
-        Sets the name attribute of the PVSystem object.
-    
     surface_tilt: float or array-like
         Tilt angle of the module surface.
         Up=0, horizon=90.
@@ -110,8 +85,7 @@ class PVSystem(Location):
     tracking.SingleAxisTracker
     """
     
-    def __init__(self, latitude, longitude, tz='UTC', altitude=0,
-                 name=None,
+    def __init__(self,
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
                  module=None, module_parameters=None,
@@ -119,9 +93,6 @@ class PVSystem(Location):
                  inverter=None, inverter_parameters=None,
                  racking_model=None,
                  **kwargs):
-
-        super(PVSystem, self).__init__(latitude, longitude, tz=tz,
-                                       altitude=altitude, name=name)
         
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth

@@ -20,24 +20,17 @@ class SingleAxisTracker(PVSystem):
     
     Inherits all of the PV modeling methods from PVSystem.
     """
-    # should make better use of kwargs in the inheritance
-    def __init__(self, latitude, longitude, tz='UTC', altitude=0,
-                 name=None, module=None, module_parameters=None,
-                 inverter=None, inverter_parameters=None,
-                 racking_model=None, axis_tilt=0, axis_azimuth=0,
+
+    def __init__(self, axis_tilt=0, axis_azimuth=0,
                  max_angle=90, backtrack=True, gcr=2.0/7.0, **kwargs):
-        
-        super(SingleAxisTracker, self).__init__(
-            latitude, longitude, tz=tz, altitude=altitude, name=name,
-            module=module, module_parameters=module_parameters,
-            inverter=inverter, inverter_parameters=inverter_parameters,
-            racking_model=None)
         
         self.axis_tilt = axis_tilt
         self.axis_azimuth = axis_azimuth
         self.max_angle = max_angle
         self.backtrack = backtrack
         self.gcr = gcr
+        
+        super(SingleAxisTracker, self).__init__(**kwargs)
 
 
     def singleaxis(self, apparent_zenith, apparent_azimuth):

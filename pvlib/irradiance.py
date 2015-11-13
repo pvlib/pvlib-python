@@ -376,7 +376,7 @@ def total_irrad(surface_tilt, surface_azimuth,
     model = model.lower()
     if model == 'isotropic':
         sky = isotropic(surface_tilt, dhi)
-    elif model == 'klutcher':
+    elif model in ['klucher', 'klutcher']:
         sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
                       solar_zenith, solar_azimuth)
     elif model == 'haydavies':

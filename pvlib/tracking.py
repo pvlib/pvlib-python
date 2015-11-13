@@ -14,10 +14,6 @@ from pvlib.pvsystem import PVSystem
 # All children would define their own ``track`` method
 class SingleAxisTracker(PVSystem):
     """
-    Inherits the ``from_tmy`` constructor from Location.
-    
-    Inherits the ``get_solarposition`` method from Location.
-    
     Inherits all of the PV modeling methods from PVSystem.
     """
 

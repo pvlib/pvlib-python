@@ -75,9 +75,9 @@ class PVSystem(object):
     racking_model : None or string
         Used for cell and module temperature calculations.
     
-    kwargs : anything
-        Any other data that you want to assign as an attribute
-        that may be used by the PVSystem instance methods.
+    **kwargs
+        Arbitrary keyword arguments.
+        Included for compatibility, but not used.
     
     See also
     --------
@@ -116,9 +116,6 @@ class PVSystem(object):
         
         self.racking_model = racking_model
 
-        # makes self.some_parameter = some_value for everything in kwargs
-        [setattr(self, k, v) for k, v in kwargs.items()]
-
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='isotropic',
@@ -149,7 +146,8 @@ class PVSystem(object):
         model : String
             Irradiance model.
         
-        kwargs passed to :func:`irradiance.total_irrad`.
+        **kwargs
+            Passed to :func:`irradiance.total_irrad`.
         
         Returns
         -------
@@ -199,43 +197,72 @@ class PVSystem(object):
         return physicaliam(K, L, n, aoi)
     
     
-    def calcparams_desoto(self, poa_global, temp_cell, alpha_isc,
-                          module_parameters,
-                          EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
-        """Wrapper around the :func:`calcparams_desoto` function.
+    def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
+        """
+        Use the :func:`calcparams_desoto` function, the input parameters
+        and ``self.module_parameters`` to calculate the module
+        currents and resistances.
         
         Parameters
         ----------
-        See pvsystem.calcparams_desoto for details
+        poa_global : float or Series
+            The irradiance (in W/m^2) absorbed by the module.
+
+        temp_cell : float or Series
+            The average cell temperature of cells within a module in C.
+        
+        **kwargs
+            See pvsystem.calcparams_desoto for details
         
         Returns
         -------
         See pvsystem.calcparams_desoto for details
         """             
-        return calcparams_desoto(poa_global, temp_cell, alpha_isc,
-                                 module_parameters,
-                                 EgRef, dEgdT, M, irrad_ref, temp_ref)
+        return calcparams_desoto(poa_global, temp_cell,
+                                 self.module_parameters,
+                                 EgRef, dEgdT, **kwargs)
     
     
-    def sapm(self, module, poa_direct, poa_diffuse,
-             temp_cell, airmass_absolute, aoi):
-        """Wrapper around the :func:`sapm` function.
+    def sapm(self, poa_direct, poa_diffuse,
+             temp_cell, airmass_absolute, aoi, **kwargs):
+        """
+        Use the :func:`sapm` function, the input parameters,
+        and ``self.module_parameters`` to calculate
+        Voc, Isc, Ix, Ixx, Vmp/Imp.
         
         Parameters
         ----------
-        See pvsystem.sapm for details
+        poa_direct : Series
+            The direct irradiance incident upon the module (W/m^2).
+
+        poa_diffuse : Series
+            The diffuse irradiance incident on module.
+
+        temp_cell : Series
+            The cell temperature (degrees C).
+        
+        airmass_absolute : Series
+            Absolute airmass.
+    
+        aoi : Series
+            Angle of incidence (degrees).
+        
+        **kwargs
+            See pvsystem.sapm for details
         
         Returns
         -------
         See pvsystem.sapm for details
         """
-        return sapm(module, poa_direct, poa_diffuse,
+        return sapm(self.module_parameters, poa_direct, poa_diffuse,
                     temp_cell, airmass_absolute, aoi)
     
     
     # model now specified by self.racking_model
     def sapm_celltemp(self, irrad, wind, temp):
-        """Wrapper around the :func:`sapm_celltemp` function.
+        """Uses :func:`sapm_celltemp` to calculate module and cell
+        temperatures based on ``self.racking_model`` and 
+        the input parameters.
         
         Parameters
         ----------
@@ -283,7 +310,8 @@ class PVSystem(object):
     
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
-        """Wrapper around the :func:`snlinverter` function.
+        """Uses :func:`snlinverter` to calculate AC power based on
+        ``self.inverter_parameters`` and the input parameters.
         
         Parameters
         ----------

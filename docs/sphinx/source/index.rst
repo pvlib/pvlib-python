@@ -60,7 +60,8 @@ Contents
    self
    whatsnew
    comparison_pvlib_matlab
-   pvlib
+   modules
+   classes
 
 
 

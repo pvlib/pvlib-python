@@ -80,6 +80,9 @@ class Location(object):
         
         self.name = name
         
+        # needed for tying together Location and PVSystem in LocalizedPVSystem
+        super(Location, self).__init__(**kwargs)
+        
         
         
     def __str__(self):

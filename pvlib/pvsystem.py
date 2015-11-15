@@ -27,10 +27,17 @@ from pvlib import irradiance
 # import a lot more functionality from other modules.
 class PVSystem(object):
     """
-    The PVSystem class defines a standard set of system attributes and
-    wraps the module-level modeling functions. The class is complementary
-    to the module-level functions. Some modeling applications benefit from
-    the structure imposed by classes.
+    The PVSystem class defines a standard set of PV system attributes and
+    modeling functions. This class describes the collection and interactions
+    of PV system components rather than an installed system on the ground.
+    It is typically used in combination with ``Location`` and ``ModelChain``
+    objects.
+    
+    See the :class:`LocalizedPVSystem` class for an object model that
+    describes an installed PV system.
+    
+    The class is complementary
+    to the module-level functions.
     
     The attributes should generally be things that don't change about
     the system, such the type of module and the inverter. The instance
@@ -83,6 +90,7 @@ class PVSystem(object):
     --------
     location.Location
     tracking.SingleAxisTracker
+    pvsystem.LocalizedPVSystem
     """
     
     def __init__(self,
@@ -115,6 +123,9 @@ class PVSystem(object):
         self.inverter_parameters = inverter_parameters
         
         self.racking_model = racking_model
+        
+        # needed for tying together Location and PVSystem in LocalizedPVSystem
+        super(PVSystem, self).__init__(**kwargs)
 
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
@@ -322,6 +333,20 @@ class PVSystem(object):
         See pvsystem.snlinverter for details
         """
         return snlinverter(self.inverter_parameters, v_dc, p_dc)
+
+
+class LocalizedPVSystem(PVSystem, Location):
+    """
+    The LocalizedPVSystem class defines a standard set of
+    installed PV system attributes and modeling functions.
+    This class combines the attributes and methods
+    of the PVSystem and Location classes.
+    
+    See the :class:`PVSystem` class for an object model that
+    describes an unlocalized PV system.
+    """
+    def __init__(self, **kwargs):
+        super(LocalizedPVSystem, self).__init__(**kwargs)
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,

@@ -304,6 +304,49 @@ class GFS(ForecastModel):
         super(GFS, self).__init__(model_type,model,data_labels)
 
 
+class GSD(ForecastModel):
+    '''
+    Subclass of the ForecastModel class representing NCEP forecast model.
+
+    Model data corresponds to NOAA/GSD HRRR CONUS 3km resolution
+    surface forecasts.
+
+    Attributes
+    ----------
+    cols: list
+        Common names for variables.
+    data_labels: dictionary
+        Dictionary where the common variable name references the model 
+        specific variable name.
+    idx: list
+        Indices of the variables corresponding to their common name.
+    model: string
+        Name of the UNIDATA forecast model.
+    model_type: string
+        UNIDATA category in which the model is located.
+    variables: list
+        Names of default variables specific to the model.
+
+    '''
+    def __init__(self):
+        import warnings
+        warnings.warn('Experimental model. May not be available.')       
+        model_type = 'Forecast Model Data'
+        model = 'GSD HRRR CONUS 3km surface'
+        description = ''
+        variables = ['Temperature_surface',
+                     'Total_cloud_cover_entire_atmosphere',
+                     'Low_cloud_cover_UnknownLevelType-214',
+                     'Medium_cloud_cover_UnknownLevelType-224',
+                     'High_cloud_cover_UnknownLevelType-234',
+                     'Downward_short-wave_radiation_flux_surface']
+        cols = super(GSD, self).columns
+        idx = [0,3,4,5,6,9]
+        data_labels = dict(zip(cols[idx],variables))
+        super(GSD, self).__init__(model_type,model,data_labels)
+
+
+        
 class NAM(ForecastModel):
     '''
     Subclass of the ForecastModel class representing NAM forecast model.
@@ -348,45 +391,6 @@ class NAM(ForecastModel):
         super(NAM, self).__init__(model_type,model,data_labels)
 
 
-class RAP(ForecastModel):
-    '''
-    Subclass of the ForecastModel class representing RAP forecast model.
-
-    Model data corresponds to Rapid Refresh CONUS 20km resolution 
-    forecasts.
-
-    Attributes
-    ----------
-    cols: list
-        Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
-    model: string
-        Name of the UNIDATA forecast model.
-    model_type: string
-        UNIDATA category in which the model is located.
-    variables: list
-        Names of default variables specific to the model.
-
-    '''
-    def __init__(self):
-        model_type = 'Forecast Model Data'
-        model = 'Rapid Refresh CONUS 20km'
-        description = ''
-        variables = ['Temperature_surface',
-                     'Total_cloud_cover_entire_atmosphere_single_layer',
-                     'Low_cloud_cover_low_cloud',
-                     'Medium_cloud_cover_middle_cloud',
-                     'High_cloud_cover_high_cloud']
-        cols = super(RAP, self).columns
-        idx = [0,3,4,5,6]
-        data_labels = dict(zip(cols[idx],variables))
-        super(RAP, self).__init__(model_type,model,data_labels)
-
-
 class NCEP(ForecastModel):
     '''
     Subclass of the ForecastModel class representing NCEP forecast model.
@@ -425,47 +429,6 @@ class NCEP(ForecastModel):
         super(NCEP, self).__init__(model_type,model,data_labels)
 
 
-class GSD(ForecastModel):
-    '''
-    Subclass of the ForecastModel class representing NCEP forecast model.
-
-    Model data corresponds to NOAA/GSD HRRR CONUS 3km resolution
-    surface forecasts.
-
-    Attributes
-    ----------
-    cols: list
-        Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
-    model: string
-        Name of the UNIDATA forecast model.
-    model_type: string
-        UNIDATA category in which the model is located.
-    variables: list
-        Names of default variables specific to the model.
-
-    '''
-    def __init__(self):
-        model_type = 'Forecast Model Data'
-        model = 'GSD HRRR CONUS 3km surface'
-
-        description = ''
-        variables = ['Temperature_surface',
-                     'Total_cloud_cover_entire_atmosphere',
-                     'Low_cloud_cover_UnknownLevelType-214',
-                     'Medium_cloud_cover_UnknownLevelType-224',
-                     'High_cloud_cover_UnknownLevelType-234',
-                     'Downward_short-wave_radiation_flux_surface']
-        cols = super(GSD, self).columns
-        idx = [0,3,4,5,6,9]
-        data_labels = dict(zip(cols[idx],variables))
-        super(GSD, self).__init__(model_type,model,data_labels)
-
-
 class NDFD(ForecastModel):
     '''
     Subclass of the ForecastModel class representing NDFD forecast model.
@@ -501,3 +464,42 @@ class NDFD(ForecastModel):
         idx = [0,2,3]
         data_labels = dict(zip(cols[idx],variables))
         super(NDFD, self).__init__(model_type,model,data_labels)
+
+
+class RAP(ForecastModel):
+    '''
+    Subclass of the ForecastModel class representing RAP forecast model.
+
+    Model data corresponds to Rapid Refresh CONUS 20km resolution 
+    forecasts.
+
+    Attributes
+    ----------
+    cols: list
+        Common names for variables.
+    data_labels: dictionary
+        Dictionary where the common variable name references the model 
+        specific variable name.
+    idx: list
+        Indices of the variables corresponding to their common name.
+    model: string
+        Name of the UNIDATA forecast model.
+    model_type: string
+        UNIDATA category in which the model is located.
+    variables: list
+        Names of default variables specific to the model.
+
+    '''
+    def __init__(self):
+        model_type = 'Forecast Model Data'
+        model = 'Rapid Refresh CONUS 20km'
+        description = ''
+        variables = ['Temperature_surface',
+                     'Total_cloud_cover_entire_atmosphere_single_layer',
+                     'Low_cloud_cover_low_cloud',
+                     'Medium_cloud_cover_middle_cloud',
+                     'High_cloud_cover_high_cloud']
+        cols = super(RAP, self).columns
+        idx = [0,3,4,5,6]
+        data_labels = dict(zip(cols[idx],variables))
+        super(RAP, self).__init__(model_type,model,data_labels)

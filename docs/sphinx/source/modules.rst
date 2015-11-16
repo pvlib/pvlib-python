@@ -1,7 +1,7 @@
 Modules
 =======
 
-atmosphere module
+atmosphere
 -----------------
 
 .. automodule:: pvlib.atmosphere
@@ -9,7 +9,7 @@ atmosphere module
     :undoc-members:
     :show-inheritance:
 
-clearsky module
+clearsky
 ----------------
 
 .. automodule:: pvlib.clearsky
@@ -17,7 +17,7 @@ clearsky module
     :undoc-members:
     :show-inheritance:
 
-irradiance module
+irradiance
 -----------------
 
 .. automodule:: pvlib.irradiance
@@ -25,7 +25,7 @@ irradiance module
     :undoc-members:
     :show-inheritance:
 
-location module
+location
 ---------------
 
 .. automodule:: pvlib.location
@@ -33,7 +33,15 @@ location module
     :undoc-members:
     :show-inheritance:
 
-pvsystem module
+modelchain
+----------
+
+.. automodule:: pvlib.modelchain
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pvsystem
 ---------------
 
 .. automodule:: pvlib.pvsystem
@@ -41,7 +49,7 @@ pvsystem module
     :undoc-members:
     :show-inheritance:
 
-solarposition module
+solarposition
 --------------------
 
 .. automodule:: pvlib.solarposition
@@ -49,7 +57,7 @@ solarposition module
     :undoc-members:
     :show-inheritance:
     
-tmy module
+tmy
 --------------------
 
 .. automodule:: pvlib.tmy
@@ -57,7 +65,7 @@ tmy module
     :undoc-members:
     :show-inheritance:
 
-tracking module
+tracking
 --------------------
 
 .. automodule:: pvlib.tracking
@@ -65,7 +73,7 @@ tracking module
     :undoc-members:
     :show-inheritance:
 
-tools module
+tools
 --------------------
 
 .. automodule:: pvlib.tools

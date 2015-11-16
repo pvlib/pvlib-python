@@ -1,8 +1,11 @@
 Package Overview
 ================
 
+Introduction
+------------
+
 The core mission of pvlib-python is to provide open, reliable,
-interoperable, and benchmark implementations of PV modeling algorithms.
+interoperable, and benchmark implementations of PV system models.
 
 There are at least as many opinions about how to model PV systems as
 there are modelers of PV systems, so 
@@ -13,7 +16,7 @@ Modeling paradigms
 ------------------
 
 The backbone of pvlib-python
-is well-tested procedural code that implements these algorithms.
+is well-tested procedural code that implements PV system models.
 pvlib-python also provides a collection of classes for users
 that prefer object-oriented programming.
 These classes can help users keep track of data in a more organized way,
@@ -37,30 +40,60 @@ configuration at a handful of sites listed below ::
                    (50, 10, 'Berlin')]
 
 None of these examples are complete!
+Should replace the clear sky assumption with TMY or similar
+(or leave as an exercise to the reader?).
 
-Procedural method ::
-    import pvlib as pvl
+
+Procedural
+^^^^^^^^^^
+
+Procedural code can be used to for all modeling steps in pvlib-python.
+
+The following code demonstrates how to use the procedural code
+to accomplish our system modeling goal: ::
+
+    import pvlib
     
     system = {'module': module, 'inverter': inverter,
               'surface_azimuth': 180, **other_params}
 
     energies = {}
     for latitude, longitude, name in coordinates:
-        cs = pvl.clearsky.ineichen(times, latitude, longitude)
-        solpos = pvl.solarposition.get_solarposition(times, latitude, longitude)
+        cs = pvlib.clearsky.ineichen(times, latitude, longitude)
+        solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
         system['surface_tilt'] = latitude
-        total_irrad = pvl.irradiance.total_irradiance(**solpos, **cs, **system)
-        temps = pvl.pvsystem.sapm_celltemp(**total_irrad, **system)
-        dc = pvl.pvsystem.sapm(**temps, **total_irrad, **system)
-        ac = pvl.pvsystem.snlinverter(**system, **dc)
+        total_irrad = pvlib.irradiance.total_irradiance(**solpos, **cs, **system)
+        temps = pvlib.pvsystem.sapm_celltemp(**total_irrad, **system)
+        dc = pvlib.pvsystem.sapm(**temps, **total_irrad, **system)
+        ac = pvlib.pvsystem.snlinverter(**system, **dc)
         annual_energy = power.sum()
         energies[name] = annual_energy
+    
+    #energies = pd.DataFrame(energies)
+    #energies.plot()
 
 
-Object oriented method using
-:class:`pvlib.location.Location`,
-:class:`pvlib.pvsystem.PVSystem`, and
-:class:`pvlib.modelchain.ModelChain` ::
+Object oriented (Location, PVSystem, ModelChain)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The first object oriented paradigm uses a model where
+a :class:`PVSystem <pvlib.pvsystem.PVSystem>` object represents an
+assembled collection of modules, inverters, etc.,
+a :class:`Location <pvlib.location.Location>` object represents a
+particular place on the planet,
+and a :class:`ModelChain <pvlib.modelchain.ModelChain>` object describes
+the modeling chain used to calculate PV output at that Location.
+This can be a useful paradigm if you prefer to think about
+the PV system and its location as separate concepts or if
+you develop your own ModelChain subclasses.
+It can also be helpful if you make extensive use of Location-specific
+methods for other calculations.
+
+The following code demonstrates how to use
+:class:`Location <pvlib.location.Location>`,
+:class:`PVSystem <pvlib.pvsystem.PVSystem>`, and
+:class:`ModelChain <pvlib.modelchain.ModelChain>`
+objects to accomplish our system modeling goal: ::
     
     from pvlib.pvsystem import PVSystem
     from pvlib.location import Location
@@ -77,10 +110,23 @@ Object oriented method using
         output = mc.run_model()
         annual_energy = output['power'].sum()
         energies[name] = annual_energy
+    
+    #energies = pd.DataFrame(energies)
+    #energies.plot()
 
 
-Object oriented method using
-:class:`pvlib.pvsystem.LocalizedPVSystem` ::
+Object oriented (LocalizedPVSystem)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The second object oriented paradigm uses a model where a 
+:class:`LocalizedPVSystem <pvlib.pvsystem.LocalizedPVSystem>` represents a
+PV system at a particular place on the planet.
+This can be a useful paradigm if you're thinking about
+a power plant that already exists.
+
+The following code demonstrates how to use a
+:class:`LocalizedPVSystem <pvlib.pvsystem.LocalizedPVSystem>`
+object to accomplish our modeling goal: ::
 
     from pvlib.pvsystem import PVSystem, LocalizedPVSystem
 
@@ -96,4 +142,13 @@ Object oriented method using
         power = localized_system.get_power(stuff)
         annual_energy = power.sum()
         energies[name] = annual_energy
+    
+    #energies = pd.DataFrame(energies)
+    #energies.plot()
 
+
+User extensions
+---------------
+There are many other ways to organize PV modeling code. 
+The pvlib-python developers encourage users to build on one of
+these paradigms and to share their experiences.

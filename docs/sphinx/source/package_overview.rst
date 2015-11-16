@@ -51,7 +51,7 @@ Procedural code can be used to for all modeling steps in pvlib-python.
 
 The following code demonstrates how to use the procedural code
 to accomplish our system modeling goal: ::
-
+    
     import pvlib
     
     system = {'module': module, 'inverter': inverter,
@@ -127,7 +127,7 @@ a power plant that already exists.
 The following code demonstrates how to use a
 :class:`LocalizedPVSystem <pvlib.pvsystem.LocalizedPVSystem>`
 object to accomplish our modeling goal: ::
-
+    
     from pvlib.pvsystem import PVSystem, LocalizedPVSystem
 
     base_system = PVSystem(module, inverter, **other_system_params)
@@ -150,5 +150,33 @@ object to accomplish our modeling goal: ::
 User extensions
 ---------------
 There are many other ways to organize PV modeling code. 
-The pvlib-python developers encourage users to build on one of
-these paradigms and to share their experiences.
+We encourage you to build on these paradigms and to share your experiences
+with the pvlib community via issues and pull requests.
+
+
+Getting support
+---------------
+The best way to get support is to make an issue on our
+`GitHub issues page<https://github.com/pvlib/pvlib-python/issues>`_.
+
+
+How do I contribute?
+--------------------
+We're so glad you asked! Please see our
+`wiki <https://github.com/pvlib/pvlib-python/wiki/Contributing-to-pvlib-python>`_
+for information and instructions on how to contribute.
+We really appreciate it!
+
+
+Credits
+-------
+The pvlib-python community thanks Sandia National Lab
+for developing PVLIB Matlab and for supporting
+Rob Andrews of Calama Consulting to port the library to Python.
+Will Holmgren thanks the DOE EERE Postdoctoral Fellowship program
+for support.
+The pvlib-python maintainers thank all of pvlib's contributors of issues
+and especially pull requests.
+The pvlib-python community thanks all of the
+maintainers and contributors to the PyData stack.
+

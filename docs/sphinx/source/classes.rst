@@ -22,6 +22,27 @@ PVSystem
     :members:
     :undoc-members:
     :show-inheritance:
+    
+ModelChain
+----------
+.. autoclass:: pvlib.modelchain.ModelChain
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
+MoreSpecificModelChain
+----------
+.. autoclass:: pvlib.modelchain.MoreSpecificModelChain
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+LocalizedPVSystem
+-----------------
+.. autoclass:: pvlib.pvsystem.LocalizedPVSystem
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 SingleAxisTracker
 -----------------

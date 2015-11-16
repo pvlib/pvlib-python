@@ -178,24 +178,28 @@ class PVSystem(object):
 
     # defaults to kwargs, falls back to attributes. complicated.
     # harder to support?
-    def ashraeiam(self, **kwargs):
-        """Wrapper around the :func:`ashraeiam` function.
+    def ashraeiam(self, aoi):
+        """
+        Determine the incidence angle modifier using
+        ``self.b``, ``aoi``, and the :func:`ashraeiam` function.
         
         Parameters
         ----------
-        kwargs : None, b, a
-            See pvsystem.ashraeiam for details
+        See pvsystem.ashraeiam for details
         
         Returns
         -------
         See pvsystem.ashraeiam for details
         """
-        return ashraeiam(kwargs.pop('b', self.b), kwargs.pop('aoi', self.aoi))
+        return ashraeiam(self.b, aoi)
     
     
     # thin wrappers of other pvsystem functions
     def physicaliam(self, aoi):
-        """Wrapper around the :func:`physicaliam` function.
+        """
+        Determine the incidence angle modifier using
+        ``self.K``, ``self.L``, ``self.n``, ``aoi``, and
+        :func:`physicaliam` function.
         
         Parameters
         ----------
@@ -205,7 +209,7 @@ class PVSystem(object):
         -------
         See pvsystem.physicaliam for details
         """
-        return physicaliam(K, L, n, aoi)
+        return physicaliam(self.K, self.L, self.n, aoi)
     
     
     def calcparams_desoto(self, poa_global, temp_cell, **kwargs):

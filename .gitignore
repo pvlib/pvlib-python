@@ -67,7 +67,6 @@ coverage.xml
 # HDF tables
 *.h5
 
-
 #Datafiles
 *.csv
 
@@ -77,7 +76,11 @@ coverage.xml
 #Ignore some notebooks
 *.ipynb
 !docs/tutorials/*.ipynb
-/pvlib/*.csv
-/pvlib/pvlibdev.sublime-workspace
-/pvlib/pvlibdev.sublime-project
-/pvlib/varlists.pkl
+pvlib/*.csv
+*pvlibdev.sublime-workspace
+*pvlibdev.sublime-project
+pvlib/varlists.pkl
+docs/tutorials/scripts/*.py
+
+# miscellaneous
+**/*ignore*

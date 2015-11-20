@@ -74,7 +74,7 @@ coverage.xml
 *.swp
 
 #Ignore some notebooks
-*.ipynb
+!*.ipynb
 !docs/tutorials/*.ipynb
 pvlib/*.csv
 *pvlibdev.sublime-workspace

@@ -66,10 +66,12 @@ class ForecastModel(object):
         The url path of the dataset to parse.
     query: NCSS query object
         NCSS object used to complete the forecast data retrival.
+    set_type: string
+        Model dataset type.
     time: datetime
         Time range specified for the NCSS query.
-    timespan: datetime
-        A datetime object, that defines the time range for the data.
+    time_var: string
+        Netcdf4 time variable returned from query.
     var_stdnames: dictionary
         Dictionary containing the standard names of the variables in the
         query, where the keys are the common names.
@@ -87,7 +89,7 @@ class ForecastModel(object):
     base_tds_url = catalog_url.split('/thredds/')[0]
     data_format = 'netcdf'
     vert_level = 100000
-    sp0 = 1367 #W m^-2
+    sp0 = 1367 # W m^-2
     columns = np.array(['temperature',
                         'temperature_iso',
                         'wind_speed',
@@ -102,10 +104,11 @@ class ForecastModel(object):
                         'downward_shortwave_radflux',
                         'downward_shortwave_radflux_avg',])
 
-    def __init__(self,model_type,model_name,labels,calcWind=False):
+    def __init__(self,model_type,model_name,labels,set_type,calcWind=False):
         self.model_name = model_name
         self.model_type = model_type
         self.calcWind = calcWind
+        self.set_type = set_type
         self.variables = list(labels.keys())
         self.modelvariables = list(labels.values())
         if self.calcWind:
@@ -119,24 +122,19 @@ class ForecastModel(object):
         self.datasets_list = list(self.model.datasets.keys())
         self.set_dataset()
 
-    def set_dataset(self,set_type='best'):
+    def set_dataset(self):
         """
         Retreives the designated dataset, creates NCSS object, and 
         initiates a NCSS query.
 
-        Parameters
-        ----------
-        set_type: string
-            as: "best","latest", or "full"
-
         """
         keys = list(self.model.datasets.keys())
         labels = [item.split()[0].lower() for item in keys]
-        if set_type == 'best':
+        if self.set_type == 'best':
             self.dataset = self.model.datasets[keys[labels.index('best')]]
-        elif set_type == 'latest':
+        elif self.set_type == 'latest':
             self.dataset = self.model.datasets[keys[labels.index('latest')]]
-        elif set_type == 'full':
+        elif self.set_type == 'full':
             self.dataset = self.model.datasets[keys[labels.index('full')]]
 
         self.access_url = self.dataset.access_urls[self.access_url_key]
@@ -149,9 +147,11 @@ class ForecastModel(object):
 
         """
         if len(self.latlon)>2:
-            self.query.lonlat_box(self.latlon[0],self.latlon[1],self.latlon[2],self.latlon[3])
+            self.query.lonlat_box(self.latlon[0],self.latlon[1],self.latlon[2],self.latlon[3]) # west, east, south, north
+            self.time_var = 'time1'
         else:
-            self.query.lonlat_point(self.latlon[1],self.latlon[0])
+            self.query.lonlat_point(self.latlon[1],self.latlon[0]) #longitude, latitude
+            self.time_var = 'time'
 
     def set_query_time(self):
         """
@@ -161,11 +161,11 @@ class ForecastModel(object):
 
         """
         if len(self.time) == 1:
-            self.query.time_range(pd.to_datetime(self.time))
+            self.query.time(pd.to_datetime(self.time)[0])
         else:
             self.query.time_range(pd.to_datetime(self.time)[0],pd.to_datetime(self.time)[-1])        
 
-    def get_query_data(self,latlon,time,vert_level=None,variables=None):
+    def get_query_data(self,latlon,time,vert_level=None,labels=None):
         """
         Submits a query to the UNIDATA servers using siphon NCSS and 
         converts the netcdf data to a pandas DataFrame.
@@ -173,14 +173,14 @@ class ForecastModel(object):
         Parameters
         ==========
 
+        labels: dictionary
+            Variables and common names being queried.
         latlon: list
             Latitude and longitude of query location.
         time: pd.datetimeindex
             Time range of interest.
         vert_level: float or integer
             Vertical altitude of interest.
-        variables: list
-            Variables being queried.
 
         Returns
         =======
@@ -188,8 +188,14 @@ class ForecastModel(object):
         """
         if vert_level != None:
             self.vert_level = vert_level
-        if variables != None:
-            [self.modelvariables.append(var) for var in variables]
+        if labels != None:
+            self.data_labels = labels
+            self.variables = list(self.data_labels.keys())
+            self.modelvariables = [self.data_labels[key] for key in self.variables]
+            self.columns = self.variables
+            if 'u-component_of_wind_isobaric' not in self.modelvariables and \
+                'v-component_of_wind_isobaric' not in self.modelvariables:
+                self.calcWind = False
         
         self.latlon = latlon
         self.set_query_latlon()
@@ -199,24 +205,17 @@ class ForecastModel(object):
         self.query.variables(*self.modelvariables)
         self.query.accept(self.data_format)
         netcdf_data = self.ncss.get_data(self.query)
-        self.set_time(netcdf_data.variables['time'],self.time.tzinfo)
+        self.set_time(netcdf_data.variables[self.time_var],self.time.tzinfo)
         self.data = self.netcdf2pandas(netcdf_data)
         self.set_variable_units(netcdf_data)
         self.set_variable_stdnames(netcdf_data)
         self.convert_temperature()
 
-        if self.calcWind:
+        if self.calcWind and self.time_var == 'time':
             windData = np.sqrt(netcdf_data['u-component_of_wind_isobaric'][:].squeeze()**2+
                            netcdf_data['v-component_of_wind_isobaric'][:].squeeze()**2)
             self.data['wind_speed'] = pd.Series(windData,index=self.time)
             self.var_units['wind_speed'] = 'm/s'
-
-        if variables != None:
-            data_dict = {}
-            for var in variables:
-                data_dict[var] = pd.Series(netcdf_data[var][:].squeeze(),index=self.time)
-            dataframe = pd.DataFrame(data_dict,columns=variables,index=self.time)
-            return dataframe
 
         netcdf_data.close()
 
@@ -225,6 +224,8 @@ class ForecastModel(object):
     def netcdf2pandas(self,data):
         """
         Transforms data from netcdf  to pandas DataFrame.
+
+        Currently only supports one-dimensional netcdf data.
 
         Parameters
         ==========
@@ -235,11 +236,14 @@ class ForecastModel(object):
         =======
         pd.DataFrame
         """
-        data_dict = {}
-        for var in self.variables:
-            data_dict[var] = pd.Series(data[self.data_labels[var]][:].squeeze(),index=self.time)
-        dataframe = pd.DataFrame(data_dict,columns=self.columns,index=self.time)
-        return dataframe
+        if self.time_var == 'time':
+            """ one-dimensional data """
+            data_dict = {}
+            for var in self.variables:
+                data_dict[var] = pd.Series(data[self.data_labels[var]][:].squeeze(),index=self.time)
+            return pd.DataFrame(data_dict,columns=self.columns,index=self.time)
+        else:
+            return pd.DataFrame(columns=self.columns,index=self.time)
 
     def set_time(self,times,tzinfo):
         """
@@ -391,8 +395,9 @@ class ForecastModel(object):
 
         """
         for atemp in ['temperature','temperature_iso']:
-            self.data[atemp] -= 273.15
-            self.var_units[atemp] = 'C'
+            if atemp in self.data.columns:
+                self.data[atemp] -= 273.15
+                self.var_units[atemp] = 'C'
 
 
 class GFS(ForecastModel):
@@ -418,7 +423,7 @@ class GFS(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self,res='Half'):
+    def __init__(self,res='Half',set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'GFS '+res+' Degree Forecast'
         variables = ['Temperature_isobaric',
@@ -434,7 +439,7 @@ class GFS(ForecastModel):
         cols = super(GFS, self).columns
         idx = [1,3,4,5,6,7,8,9,10]
         data_labels = dict(zip(cols[idx],variables))
-        super(GFS, self).__init__(model_type,model,data_labels,calcWind=True)
+        super(GFS, self).__init__(model_type,model,data_labels,set_type,calcWind=True)
 
 
 class GSD(ForecastModel):
@@ -461,7 +466,7 @@ class GSD(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self):
+    def __init__(self,set_type='best'):
         import warnings
         warnings.warn('Experimental model. May not be available.')       
         model_type = 'Forecast Model Data'
@@ -478,7 +483,7 @@ class GSD(ForecastModel):
         cols = super(GSD, self).columns
         idx = [0,3,4,5,6,7,8,11]
         data_labels = dict(zip(cols[idx],variables))
-        super(GSD, self).__init__(model_type,model,data_labels)
+        super(GSD, self).__init__(model_type,model,data_labels,set_type)
 
 
         
@@ -508,7 +513,7 @@ class NAM(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self):
+    def __init__(self,set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'NAM CONUS 12km from CONDUIT'
         description = ''
@@ -525,7 +530,7 @@ class NAM(ForecastModel):
         cols = super(NAM, self).columns
         idx = [0,1,3,4,5,6,7,8,11,12]
         data_labels = dict(zip(cols[idx],variables))
-        super(NAM, self).__init__(model_type,model,data_labels)
+        super(NAM, self).__init__(model_type,model,data_labels,set_type)
 
 
 class NCEP(ForecastModel):
@@ -552,7 +557,7 @@ class NCEP(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self):
+    def __init__(self,set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'NCEP HRRR CONUS 2.5km'            
         description = ''
@@ -567,7 +572,7 @@ class NCEP(ForecastModel):
         cols = super(NCEP, self).columns
         idx = [0,1,3,4,5,6,7,8]
         data_labels = dict(zip(cols[idx],variables))
-        super(NCEP, self).__init__(model_type,model,data_labels,calcWind=True)
+        super(NCEP, self).__init__(model_type,model,data_labels,set_type,calcWind=True)
 
 
 class NDFD(ForecastModel):
@@ -594,7 +599,7 @@ class NDFD(ForecastModel):
 
     '''
 
-    def __init__(self):
+    def __init__(self,set_type='best'):
         model_type = 'Forecast Products and Analyses'
         model = 'National Weather Service CONUS Forecast Grids (CONDUIT)'
         description = ''
@@ -605,7 +610,7 @@ class NDFD(ForecastModel):
         cols = super(NDFD, self).columns
         idx = [0,2,3,5]
         data_labels = dict(zip(cols[idx],variables))
-        super(NDFD, self).__init__(model_type,model,data_labels,calcWind=False)
+        super(NDFD, self).__init__(model_type,model,data_labels,set_type,calcWind=False)
 
 
 class RAP(ForecastModel):
@@ -632,7 +637,7 @@ class RAP(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self):
+    def __init__(self,set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'Rapid Refresh CONUS 20km'
         description = ''
@@ -646,4 +651,4 @@ class RAP(ForecastModel):
         cols = super(RAP, self).columns
         idx = [0,3,4,5,6,7,8]
         data_labels = dict(zip(cols[idx],variables))
-        super(RAP, self).__init__(model_type,model,data_labels,calcWind=True)
+        super(RAP, self).__init__(model_type,model,data_labels,set_type,calcWind=True)

@@ -84,3 +84,4 @@ docs/tutorials/scripts/*.py
 
 # miscellaneous
 **/*ignore*
+.ipynb_checkpoints

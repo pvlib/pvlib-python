@@ -56,6 +56,8 @@ class ForecastModel(object):
         List of all available forecast models from UNIDATA.
     latlon: list
         The extent of the areal coverage of the dataset.
+    lbox: boolean
+        Indicates the use of a location bounding box.
     ncss: NCSS object
         NCSS    model_name: string
         Name of the UNIDATA forecast model.    
@@ -70,8 +72,6 @@ class ForecastModel(object):
         Model dataset type.
     time: datetime
         Time range specified for the NCSS query.
-    time_var: string
-        Netcdf4 time variable returned from query.
     var_stdnames: dictionary
         Dictionary containing the standard names of the variables in the
         query, where the keys are the common names.
@@ -148,10 +148,10 @@ class ForecastModel(object):
         """
         if len(self.latlon)>2:
             self.query.lonlat_box(self.latlon[0],self.latlon[1],self.latlon[2],self.latlon[3]) # west, east, south, north
-            self.time_var = 'time1'
+            self.lbox = True
         else:
             self.query.lonlat_point(self.latlon[1],self.latlon[0]) #longitude, latitude
-            self.time_var = 'time'
+            self.lbox = False
 
     def set_query_time(self):
         """
@@ -205,13 +205,14 @@ class ForecastModel(object):
         self.query.variables(*self.modelvariables)
         self.query.accept(self.data_format)
         netcdf_data = self.ncss.get_data(self.query)
-        self.set_time(netcdf_data.variables[self.time_var],self.time.tzinfo)
+        
+        self.set_time(netcdf_data.variables['time'],self.time.tzinfo)
         self.data = self.netcdf2pandas(netcdf_data)
         self.set_variable_units(netcdf_data)
         self.set_variable_stdnames(netcdf_data)
         self.convert_temperature()
 
-        if self.calcWind and self.time_var == 'time':
+        if self.calcWind and not self.lbox:
             windData = np.sqrt(netcdf_data['u-component_of_wind_isobaric'][:].squeeze()**2+
                            netcdf_data['v-component_of_wind_isobaric'][:].squeeze()**2)
             self.data['wind_speed'] = pd.Series(windData,index=self.time)
@@ -236,7 +237,7 @@ class ForecastModel(object):
         =======
         pd.DataFrame
         """
-        if self.time_var == 'time':
+        if not self.lbox:
             """ one-dimensional data """
             data_dict = {}
             for var in self.variables:
@@ -260,7 +261,7 @@ class ForecastModel(object):
         =======
         pandas.DatetimeIndex
         """
-        self.time = pd.DatetimeIndex(num2date(times[:].squeeze(), times.units), tz=tzinfo)
+        self.time = pd.DatetimeIndex(pd.Series(num2date(times[:].squeeze(), times.units)), tz=tzinfo)
 
     def set_variable_units(self,data):
         """
@@ -310,9 +311,9 @@ class ForecastModel(object):
         for var in ['dni','dhi','ghi']:
             self.var_units[var] = '$W m^{-2}$'
 
-    def transmittance(self,cloud_type='total_clouds'):
+    def tao(self,cloud_type='total_clouds'):
         """
-        Calculates factor for determining incoming fraction of shortwave radiation.
+        Calculates transmittance.
 
         Parameters
         ==========
@@ -322,15 +323,20 @@ class ForecastModel(object):
         Returns
         =======
         value: float
+            Shortwave radiation transmittance.
+        """        
+        return (self.data[cloud_type]/100.0)*0.35+0.40
+
+    def air_mass(self):
+        """
+        Calculates air mass number
+
+       Returns
+        =======
+        value: float
             Transmittance factor for calculating shortwave radiation
         """        
-        tao = (self.data[cloud_type]/100.0)*0.35+0.40
-        if np.all(self.zenith < 80) and False:
-            m = self.data['pressure']/(101.3*np.cos(np.radians(self.zenith)))
-        else:
-            m = 1.0/(np.cos(np.radians(self.zenith))+0.50572*(96.07995-self.zenith)**-1.6364)
-
-        return tao**m
+        return 1.0/(np.cos(np.radians(self.zenith))+0.50572*(96.07995-self.zenith)**-1.6364)
 
     def direct_radiation(self):
         """
@@ -341,7 +347,7 @@ class ForecastModel(object):
         value: float
             Direct shortwave radiation.
         """         
-        return self.sp0*self.transmittance()
+        return self.sp0*self.tao()**self.air_mass()
 
     def diffuse_radiation(self):
         """
@@ -352,7 +358,7 @@ class ForecastModel(object):
         value: float
             Diffuse shortwave radiation.
         """
-        return 0.3*(1.0-self.transmittance())*self.sp0*np.cos(np.radians(self.zenith))
+        return 0.3*(1.0-self.tao()**self.air_mass()*self.sp0*np.cos(np.radians(self.zenith)))
 
     def diffuse_global_radiation(self):
         """
@@ -378,16 +384,16 @@ class ForecastModel(object):
 
         return sb < 10 #w m**-2
 
-    def cloudy_day_global_radiation(self,zenith):
-        """
-        Calculates more accurate total shortwave radiation for ovecast days.
+    # def cloudy_day_global_radiation(self,zenith):
+    #     """
+    #     Calculates more accurate total shortwave radiation for ovecast days.
 
-        Returns
-        =======
-        logical: bool
-            If the sky is overcast.
-        """
-        pass
+    #     Returns
+    #     =======
+    #     logical: bool
+    #         If the sky is overcast.
+    #     """
+    #     pass
 
     def convert_temperature(self):
         """
@@ -435,7 +441,7 @@ class GFS(ForecastModel):
                      'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
                      'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
                      'Total_cloud_cover_convective_cloud',
-                     'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average']
+                     'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',]
         cols = super(GFS, self).columns
         idx = [1,3,4,5,6,7,8,9,10]
         data_labels = dict(zip(cols[idx],variables))

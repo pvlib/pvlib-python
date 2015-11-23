@@ -448,11 +448,12 @@ class GFS(ForecastModel):
         super(GFS, self).__init__(model_type,model,data_labels,set_type,calcWind=True)
 
 
-class GSD(ForecastModel):
+class HRRR_ESRL(ForecastModel):
     '''
-    Subclass of the ForecastModel class representing NCEP forecast model.
+    Subclass of the ForecastModel class representing
+    NOAA/GSD/ESRL's HRRR forecast model. This is not an operational product.
 
-    Model data corresponds to NOAA/GSD HRRR CONUS 3km resolution
+    Model data corresponds to NOAA/GSD/ESRL HRRR CONUS 3km resolution
     surface forecasts.
 
     Attributes
@@ -539,9 +540,9 @@ class NAM(ForecastModel):
         super(NAM, self).__init__(model_type,model,data_labels,set_type)
 
 
-class NCEP(ForecastModel):
+class HRRR(ForecastModel):
     '''
-    Subclass of the ForecastModel class representing NCEP forecast model.
+    Subclass of the ForecastModel class representing HRRR forecast model.
 
     Model data corresponds to NCEP HRRR CONUS 2.5km resolution 
     forecasts.

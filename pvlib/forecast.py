@@ -475,7 +475,7 @@ class HRRR_ESRL(ForecastModel):
     '''
     def __init__(self,set_type='best'):
         import warnings
-        warnings.warn('Experimental model. May not be available.')       
+        warnings.warn('HRRR_ESRL is an experimental model and is not always available.')       
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
         description = ''
@@ -487,10 +487,10 @@ class HRRR_ESRL(ForecastModel):
                      'Medium_cloud_cover_UnknownLevelType-224',
                      'High_cloud_cover_UnknownLevelType-234',
                      'Downward_short-wave_radiation_flux_surface',]
-        cols = super(GSD, self).columns
+        cols = super(HRRR_ESRL, self).columns
         idx = [0,3,4,5,6,7,8,11]
         data_labels = dict(zip(cols[idx],variables))
-        super(GSD, self).__init__(model_type,model,data_labels,set_type)
+        super(HRRR_ESRL, self).__init__(model_type,model,data_labels,set_type)
 
 
         
@@ -576,10 +576,10 @@ class HRRR(ForecastModel):
                      'Low_cloud_cover_low_cloud',
                      'Medium_cloud_cover_middle_cloud',
                      'High_cloud_cover_high_cloud',]
-        cols = super(NCEP, self).columns
+        cols = super(HRRR, self).columns
         idx = [0,1,3,4,5,6,7,8]
         data_labels = dict(zip(cols[idx],variables))
-        super(NCEP, self).__init__(model_type,model,data_labels,set_type,calcWind=True)
+        super(HRRR, self).__init__(model_type,model,data_labels,set_type,calcWind=True)
 
 
 class NDFD(ForecastModel):

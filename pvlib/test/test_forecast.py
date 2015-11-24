@@ -18,7 +18,7 @@ from pvlib.location import Location
 _location = [32.2,-110.9] # Tucson, AZ
 _tz = 'US/Arizona'
 _timerange = pd.DatetimeIndex([datetime.now()], tz=_tz)
-_model_list = ['GFS','GSD','NAM','NCEP','NDFD','RAP']
+_model_list = ['GFS','HRRR_ESRL','NAM','HRRR','NDFD','RAP']
 _models = {}
 _variables = np.array(['temperature',
                        'temperature_iso',
@@ -144,7 +144,7 @@ def test_varmap():
             'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
             'Total_cloud_cover_convective_cloud',
             'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',],
-    'GSD':['Temperature_surface',
+    'HRRR_ESRL':['Temperature_surface',
             'Wind_speed_gust_surface',
             'Pressure_surface',
             'Total_cloud_cover_entire_atmosphere',
@@ -162,7 +162,7 @@ def test_varmap():
             'High_cloud_cover_high_cloud',
             'Downward_Short-Wave_Radiation_Flux_surface',
             'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',],
-   'NCEP':['Temperature_height_above_ground',
+   'HRRR':['Temperature_height_above_ground',
             'Temperature_isobaric',
             'Wind_speed_gust_surface',
             'Pressure_surface',
@@ -184,9 +184,9 @@ def test_varmap():
 
     idx_dict = \
     {'GFS':[1,3,4,5,6,7,8,9,10],
-    'GSD':[0,3,4,5,6,7,8,11],
+    'HRRR_ESRL':[0,3,4,5,6,7,8,11],
     'NAM':[0,1,3,4,5,6,7,8,11,12],
-    'NCEP':[0,1,3,4,5,6,7,8],
+    'HRRR':[0,1,3,4,5,6,7,8],
     'NDFD':[0,2,3,5],
     'RAP':[0,3,4,5,6,7,8]}
 

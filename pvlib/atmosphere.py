@@ -57,7 +57,6 @@ def pres2alt(pressure):
     return alt
 
 
-
 def alt2pres(altitude):
     '''
     Determine site pressure from altitude.
@@ -97,7 +96,6 @@ def alt2pres(altitude):
     press = 100 * ((44331.514 - altitude) / 11880.516) ** (1 / 0.1902632)
 
     return press
-
 
 
 def absoluteairmass(airmass_relative, pressure=101325.):
@@ -248,3 +246,57 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         AM = np.nan if z > 90 else AM
         
     return AM
+
+
+def transmittance(zenith, cloud_prct):
+    '''
+    Calculates transmittance.
+
+    Based on observations by Liu and Jordan, 1960 as well as
+    Gates 1980.
+
+    Parameters
+    ----------
+    cloud_prct: float or int
+        Percentage of clouds covering the sky.
+
+    Returns
+    -------
+    value: float
+        Shortwave radiation transmittance.
+    
+    References
+    ----------
+    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
+    Environmental Biophysics. 2nd Ed. New York: Springer.
+
+    [2] Gates, D. M. (1980) Biophysical Ecology. New York: Springer Verlag.
+
+    [3] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
+    characteristic distribution of direct, diffuse, and total solar
+    radiation".  Solar Energy 4:1-19 
+    '''
+
+    return ((100.0 - cloud_prct) / 100.0) * 0.75
+
+
+def cloudy_day_check(zenith, cloud_prct, pressure=101325.):
+    '''
+    Determines if the sky is overcast.
+
+    Returns
+    -------
+    logical: bool
+        Is the sky is overcast.
+
+    References
+    ----------
+    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
+    Environmental Biophysics. 2nd Ed. New York: Springer.
+    '''
+
+    sb = atmosphere.liujordan_dni(zenith, cloud_prct, pressure) * np.cos(np.radians(zenith))
+
+    return sb < 10.0
+
+

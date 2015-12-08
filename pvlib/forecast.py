@@ -1,7 +1,7 @@
-"""
+'''
 The 'forecast' module contains class definitions for 
 retreiving forecasted data from UNIDATA Thredd servers.
-"""
+'''
 
 from netCDF4 import num2date
 import pandas as pd
@@ -20,10 +20,6 @@ class ForecastModel(object):
 
     Parameters
     ----------
-    calcWind: bool
-        Indicates whether wind is calculated using components.
-    labels: dictionary
-        Common variable name to pecific variable name references.
     model_type: string
         UNIDATA category in which the model is located.
     model_name: string
@@ -89,32 +85,21 @@ class ForecastModel(object):
     base_tds_url = catalog_url.split('/thredds/')[0]
     data_format = 'netcdf'
     vert_level = 100000
-    sp0 = 1367 # W m^-2
     columns = np.array(['temperature',
-                        'temperature_iso',
                         'wind_speed',
-                        'wind_speed_gust',
                         'pressure',
                         'total_clouds',
                         'low_clouds',
                         'mid_clouds',
                         'high_clouds',
-                        'boundary_clouds',
-                        'convect_clouds',
-                        'downward_shortwave_radflux',
-                        'downward_shortwave_radflux_avg',])
+                        'dni',
+                        'dhi',
+                        'ghi',])
 
-    def __init__(self,model_type,model_name,labels,set_type,calcWind=False):
+    def __init__(self, model_type, model_name, set_type):
         self.model_name = model_name
         self.model_type = model_type
-        self.calcWind = calcWind
         self.set_type = set_type
-        self.variables = list(labels.keys())
-        self.modelvariables = list(labels.values())
-        if self.calcWind:
-            self.modelvariables.append('u-component_of_wind_isobaric')
-            self.modelvariables.append('v-component_of_wind_isobaric')
-        self.data_labels = labels
         self.catalog = TDSCatalog(self.catalog_url)
         self.fm_models = TDSCatalog(self.catalog.catalog_refs[self.model_type].href)
         self.fm_models_list = sorted(list(self.fm_models.catalog_refs.keys()))
@@ -123,11 +108,11 @@ class ForecastModel(object):
         self.set_dataset()
 
     def set_dataset(self):
-        """
+        '''
         Retreives the designated dataset, creates NCSS object, and 
         initiates a NCSS query.
 
-        """
+        '''
         keys = list(self.model.datasets.keys())
         labels = [item.split()[0].lower() for item in keys]
         if self.set_type == 'best':
@@ -142,36 +127,36 @@ class ForecastModel(object):
         self.query = self.ncss.query()        
 
     def set_query_latlon(self):
-        """
+        '''
         Sets the NCSS query location latitude and longitude.
 
-        """
-        if len(self.latlon)>2:
-            self.query.lonlat_box(self.latlon[0],self.latlon[1],self.latlon[2],self.latlon[3]) # west, east, south, north
+        '''
+        if len(self.longitude) == 2:
+            self.query.lonlat_box(self.latitude[0], self.latitude[1], self.longitude[0], self.longitude[1]) # west, east, south, north
             self.lbox = True
-        else:
-            self.query.lonlat_point(self.latlon[1],self.latlon[0]) #longitude, latitude
+        elif len(self.longitude) == 1:
+            self.query.lonlat_point(self.longitude, self.latitude)
             self.lbox = False
 
     def set_query_time(self):
-        """
+        '''
         Sets the NCSS query time range.
 
         as: single or range
 
-        """
+        '''
         if len(self.time) == 1:
             self.query.time(pd.to_datetime(self.time)[0])
         else:
-            self.query.time_range(pd.to_datetime(self.time)[0],pd.to_datetime(self.time)[-1])        
+            self.query.time_range(pd.to_datetime(self.time)[0], pd.to_datetime(self.time)[-1])        
 
-    def get_query_data(self,latlon,time,vert_level=None,labels=None):
-        """
+    def get_query_data(self, latitude, longitude, time, vert_level=None, variables=None):
+        '''
         Submits a query to the UNIDATA servers using siphon NCSS and 
         converts the netcdf data to a pandas DataFrame.
 
         Parameters
-        ==========
+        ----------
 
         labels: dictionary
             Variables and common names being queried.
@@ -183,110 +168,105 @@ class ForecastModel(object):
             Vertical altitude of interest.
 
         Returns
-        =======
+        -------
         pd.DataFrame
-        """
+        '''
         if vert_level != None:
             self.vert_level = vert_level
         if labels != None:
-            self.data_labels = labels
-            self.variables = list(self.data_labels.keys())
-            self.modelvariables = [self.data_labels[key] for key in self.variables]
-            self.columns = self.variables
-            if 'u-component_of_wind_isobaric' not in self.modelvariables and \
-                'v-component_of_wind_isobaric' not in self.modelvariables:
-                self.calcWind = False
+            self.variables = variables
+            self.modelvariables = list(self.variables.keys())
+            self.queryvariables = [self.variables[key] for key in self.modelvariables]
+            self.columns = self.modelvariables
         
-        self.latlon = latlon
+        self.latitude = latitude
+        self.longitude = longitude
         self.set_query_latlon()
         self.time = time
         self.set_query_time()
         self.query.vertical_level(self.vert_level)
-        self.query.variables(*self.modelvariables)
+        self.query.variables(*self.queryvariables)
         self.query.accept(self.data_format)
         netcdf_data = self.ncss.get_data(self.query)
-        
-        self.set_time(netcdf_data.variables['time'],self.time.tzinfo)
+        self.set_time(netcdf_data.variables['time'], self.time.tzinfo)
         self.data = self.netcdf2pandas(netcdf_data)
         self.set_variable_units(netcdf_data)
         self.set_variable_stdnames(netcdf_data)
-        self.convert_temperature()
+        self.convert_temperature(netcdf_data)
 
-        if self.calcWind and not self.lbox:
-            windData = np.sqrt(netcdf_data['u-component_of_wind_isobaric'][:].squeeze()**2+
-                           netcdf_data['v-component_of_wind_isobaric'][:].squeeze()**2)
-            self.data['wind_speed'] = pd.Series(windData,index=self.time)
-            self.var_units['wind_speed'] = 'm/s'
+        self.calc_wind(netcdf_data)
+
+        self.calc_radiation()
 
         netcdf_data.close()
 
         return self.data       
 
-    def netcdf2pandas(self,data):
-        """
+    def netcdf2pandas(self, data):
+        '''
         Transforms data from netcdf  to pandas DataFrame.
 
         Currently only supports one-dimensional netcdf data.
 
         Parameters
-        ==========
+        ----------
         data: netcdf
             Data returned from UNIDATA NCSS query.
 
         Returns
-        =======
+        -------
         pd.DataFrame
-        """
+        '''
         if not self.lbox:
-            """ one-dimensional data """
+            ''' one-dimensional data '''
             data_dict = {}
-            for var in self.variables:
-                data_dict[var] = pd.Series(data[self.data_labels[var]][:].squeeze(),index=self.time)
-            return pd.DataFrame(data_dict,columns=self.columns,index=self.time)
+            for var in self.dataframe_variables:
+                data_dict[var] = pd.Series(data[self.variables[var]][:].squeeze(), index=self.time)
+            return pd.DataFrame(data_dict, columns=self.columns, index=self.time)
         else:
-            return pd.DataFrame(columns=self.columns,index=self.time)
+            return pd.DataFrame(columns=self.columns, index=self.time)
 
-    def set_time(self,times,tzinfo):
-        """
+    def set_time(self, times, tzinfo):
+        '''
         Converts time data into a pandas date object.
 
         Parameters
-        ==========
+        ----------
         times: netcdf
             Contains time information.
         tzinfo: tzinfo
             Timezone information.
 
         Returns
-        =======
+        -------
         pandas.DatetimeIndex
-        """
+        '''
         self.time = pd.DatetimeIndex(pd.Series(num2date(times[:].squeeze(), times.units)), tz=tzinfo)
 
-    def set_variable_units(self,data):
-        """
+    def set_variable_units(self, data):
+        '''
         Extracts variable unit information from netcdf data.
 
         Parameters
-        ==========
+        ----------
         data: netcdf
             Contains queried variable information.
 
-        """
+        '''
         self.var_units = {}
         for var in self.variables:
             self.var_units[var] = data[self.data_labels[var]].units
 
-    def set_variable_stdnames(self,data):
-        """
+    def set_variable_stdnames(self, data):
+        '''
         Extracts standard names from netcdf data.
 
         Parameters
-        ==========
+        ----------
         data: netcdf
             Contains queried variable information.
 
-        """
+        '''
         self.var_stdnames = {}
         for var in self.variables:
             try:
@@ -294,116 +274,87 @@ class ForecastModel(object):
             except AttributeError:
                 self.var_stdnames[var] = var
 
-    def addRadiation(self,zenith):
-        """
-        Calculates shortwave radiation values.
+    def calc_radiation(self, data, cloud_type='total_clouds', rad_funcs=None, args=None, keys=None):
+        '''
+        Determines shortwave radiation values if they are missing from 
+        the model data.
 
         Parameters
-        ==========
+        ----------
         zenith: pd.daraSeries
             Solar zenith angle.
 
-        """
-        self.zenith = np.array(zenith)
-        self.data['dni'] = self.direct_radiation()
-        self.data['dhi'] = self.diffuse_radiation()
-        self.data['ghi'] = self.diffuse_global_radiation()
-        for var in ['dni','dhi','ghi']:
-            self.var_units[var] = '$W m^{-2}$'
+        '''
+        self.rad_type = {}
+        if not self.lbox:
+            cloud_prct = self.data[cloud_type]
+            self.location = pvlib.location.Location(self.latitude, self.longitude, tz=self.time.tzinfo)
+            solpos = pvlib.solarposition.get_solarposition(self.time, self.location)
+            self.zenith = np.array(solpos.zenith)
+            if rad_funcs == None:
+                for rad in ['dni','dhi','ghi']:
+                    if rad in self.modelvariables:
+                        self.data[var] = pd.Series(data[self.variables[var]][:].squeeze(), index=self.time)
+                        self.rad_type[rad] = 'forecast'
+                    else:
+                        self.rad_type[rad] = 'liujordan'
+                        if rad == 'dni':
+                            self.data['dni'] = atmosphere.liujordan_dni(self.zenith, cloud_prct)
+                        elif rad == 'dhi':
+                            self.data['dhi'] = atmosphere.liujordan_dhi(self.zenith, cloud_prct)
+                        elif rad == 'ghi':
+                            self.data['ghi'] = atmosphere.liujordan_ghi(self.zenith, cloud_prct)
 
-    def tao(self,cloud_type='total_clouds'):
-        """
-        Calculates transmittance.
+            elif rad_funcs == 'linear':
+                cs = pvlib.clearsky.ineichen(self.data.index, self.location),\
+                # solarposition_method='nrel_numpy'
+                cs_scaled = cs.mul((100-self.data['total_clouds']) / 100, axis=0)
+                self.data['dni'] = cs
+                self.data['ghi'] = cs_scaled
+                self.rad_type['dni'] = 'linear'
+                self.rad_type['dhi'] = 'forecast'
+                self.rad_type['ghi'] = 'linear'
 
-        Parameters
-        ==========
-        cloud_type: string
-            Cloud type used for calculating clear-sky coverage.
+            else:
+                length = len(rad_funcs)
+                if any(len(lst) != length for lst in [args, keys]):
+                    import warnings
+                    warnings.warn('Radiation functions, arguments, and keys should be of equal length')
+                    return
 
-        Returns
-        =======
-        value: float
-            Shortwave radiation transmittance.
-        """        
-        return (self.data[cloud_type]/100.0)*0.35+0.40
+                for i in range(len(rad_funcs)):
+                    self.data[keys[i]] = rad_funcs[i](*args[i])
+                    self.rad_type[keys[i]] = rad_funcs
 
-    def air_mass(self):
-        """
-        Calculates air mass number
+            for var in ['dni', 'dhi', 'ghi']:
+                self.var_units[var] = '$W m^{-2}$'
 
-       Returns
-        =======
-        value: float
-            Transmittance factor for calculating shortwave radiation
-        """        
-        return 1.0/(np.cos(np.radians(self.zenith))+0.50572*(96.07995-self.zenith)**-1.6364)
-
-    def direct_radiation(self):
-        """
-        Calculates direct shortwave radiation
-
-        Returns
-        =======
-        value: float
-            Direct shortwave radiation.
-        """         
-        return self.sp0*self.tao()**self.air_mass()
-
-    def diffuse_radiation(self):
-        """
-        Calculates Diffuse shortwave radiation
-
-        Returns
-        =======
-        value: float
-            Diffuse shortwave radiation.
-        """
-        return 0.3*(1.0-self.tao()**self.air_mass()*self.sp0*np.cos(np.radians(self.zenith)))
-
-    def diffuse_global_radiation(self):
-        """
-        Calculates total global diffuse shortwave radiation
-
-        Returns
-        =======
-        value: float
-            Total diffuse shortwave radiation.
-        """
-        return self.diffuse_radiation() + self.direct_radiation()*np.cos(np.radians(self.zenith))
-
-    def cloudy_day_check(self):
-        """
-        Determines if the sky is overcast.
-
-        Returns
-        =======
-        logical: bool
-            If the sky is overcast.
-        """
-        sb = self.direct_radiation()*np.cos(np.radians(self.zenith))
-
-        return sb < 10 #w m**-2
-
-    # def cloudy_day_global_radiation(self,zenith):
-    #     """
-    #     Calculates more accurate total shortwave radiation for ovecast days.
-
-    #     Returns
-    #     =======
-    #     logical: bool
-    #         If the sky is overcast.
-    #     """
-    #     pass
-
-    def convert_temperature(self):
-        """
+    def convert_temperature(self, data):
+        '''
         Converts Kelvin to celsius.
 
-        """
-        for atemp in ['temperature','temperature_iso']:
+        '''
+        if 'Temperature_isobaric' in self.queryvariables:
+            self.data['temperature'] = data['Temperature_isobaric']
+
+        for atemp in ['temperature']:
             if atemp in self.data.columns:
                 self.data[atemp] -= 273.15
                 self.var_units[atemp] = 'C'
+
+    def calc_wind(self, data):
+        if not self.lbox:
+            if 'u-component_of_wind_isobaric' in self.queryvariables and \
+                'v-component_of_wind_isobaric' in self.queryvariables:
+                wind_data = np.sqrt(data['u-component_of_wind_isobaric'][:].squeeze()**2 +
+                               data['v-component_of_wind_isobaric'][:].squeeze()**2)
+                self.wind_type = 'component'
+            else:
+                wind_data = [data['Wind_speed_gust_surface'][:].squeeze()]
+                self.wind_type = 'gust'
+            self.data['wind_speed'] = pd.Series(windData, index=self.time)
+            self.var_units['wind_speed'] = 'm/s'
+
 
 
 class GFS(ForecastModel):
@@ -429,23 +380,40 @@ class GFS(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self,res='Half',set_type='best'):
+
+    def __init__(self, res='half', set_type='best'):
         model_type = 'Forecast Model Data'
-        model = 'GFS '+res+' Degree Forecast'
-        variables = ['Temperature_isobaric',
-                     'Wind_speed_gust_surface',
-                     'Pressure_surface',
-                     'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
-                     'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
-                     'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
-                     'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
-                     'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
-                     'Total_cloud_cover_convective_cloud',
-                     'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',]
-        cols = super(GFS, self).columns
-        idx = [1,3,4,5,6,7,8,9,10]
-        data_labels = dict(zip(cols[idx],variables))
-        super(GFS, self).__init__(model_type,model,data_labels,set_type,calcWind=True)
+        if res == 'half':
+            model = 'GFS Half Degree Forecast'
+        elif res == 'quarter':
+            model = 'GFS Quarter Degree Forecast'
+        self.variables = {
+        # 'temperature':'Temperature',
+        'temperature_iso':'Temperature_isobaric',
+        'wind_speed_gust':'Wind_speed_gust_surface',
+        'wind_speed_u':'u-component_of_wind_isobaric',
+        'wind_speed_v':'v-component_of_wind_isobaric',
+        'pressure':'Pressure_surface',
+        'total_clouds':'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
+        'low_clouds':'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+        'mid_clouds':'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
+        'high_clouds':'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+        'boundary_clouds':'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
+        'convect_clouds':'Total_cloud_cover_convective_cloud',
+        'ghi':'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',}
+        self.modelvariables = self.variables.keys()
+        self.queryvariables = [self.variables[key] for key in self.modelvariables]
+        self.dataframe_variables = ['pressure',
+                                    'total_clouds',
+                                    'low_clouds',
+                                    'mid_clouds',
+                                    'high_clouds',
+                                    'boundary_clouds',
+                                    'convect_clouds',
+                                    'ghi',]
+        super(GFS, self).__init__(model_type, model, set_type)
+
+        # def map_data(self):
 
 
 class HRRR_ESRL(ForecastModel):
@@ -473,7 +441,8 @@ class HRRR_ESRL(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self,set_type='best'):
+
+    def __init__(self, set_type='best'):
         import warnings
         warnings.warn('HRRR_ESRL is an experimental model and is not always available.')       
         model_type = 'Forecast Model Data'
@@ -490,7 +459,7 @@ class HRRR_ESRL(ForecastModel):
         cols = super(HRRR_ESRL, self).columns
         idx = [0,3,4,5,6,7,8,11]
         data_labels = dict(zip(cols[idx],variables))
-        super(HRRR_ESRL, self).__init__(model_type,model,data_labels,set_type)
+        super(HRRR_ESRL, self).__init__(model_type, model, data_labels, set_type)
 
 
         
@@ -520,6 +489,7 @@ class NAM(ForecastModel):
         Names of default variables specific to the model.
 
     '''
+
     def __init__(self,set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'NAM CONUS 12km from CONDUIT'
@@ -536,8 +506,8 @@ class NAM(ForecastModel):
                      'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',]
         cols = super(NAM, self).columns
         idx = [0,1,3,4,5,6,7,8,11,12]
-        data_labels = dict(zip(cols[idx],variables))
-        super(NAM, self).__init__(model_type,model,data_labels,set_type)
+        data_labels = dict(zip(cols[idx], variables))
+        super(NAM, self).__init__(model_type, model, data_labels, set_type)
 
 
 class HRRR(ForecastModel):
@@ -564,7 +534,8 @@ class HRRR(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self,set_type='best'):
+
+    def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'NCEP HRRR CONUS 2.5km'            
         description = ''
@@ -579,7 +550,7 @@ class HRRR(ForecastModel):
         cols = super(HRRR, self).columns
         idx = [0,1,3,4,5,6,7,8]
         data_labels = dict(zip(cols[idx],variables))
-        super(HRRR, self).__init__(model_type,model,data_labels,set_type,calcWind=True)
+        super(HRRR, self).__init__(model_type, model, data_labels, set_type)
 
 
 class NDFD(ForecastModel):
@@ -606,7 +577,7 @@ class NDFD(ForecastModel):
 
     '''
 
-    def __init__(self,set_type='best'):
+    def __init__(self, set_type='best'):
         model_type = 'Forecast Products and Analyses'
         model = 'National Weather Service CONUS Forecast Grids (CONDUIT)'
         description = ''
@@ -617,7 +588,7 @@ class NDFD(ForecastModel):
         cols = super(NDFD, self).columns
         idx = [0,2,3,5]
         data_labels = dict(zip(cols[idx],variables))
-        super(NDFD, self).__init__(model_type,model,data_labels,set_type,calcWind=False)
+        super(NDFD, self).__init__(model_type, model, data_labels, set_type)
 
 
 class RAP(ForecastModel):
@@ -644,7 +615,8 @@ class RAP(ForecastModel):
         Names of default variables specific to the model.
 
     '''
-    def __init__(self,set_type='best'):
+
+    def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'Rapid Refresh CONUS 20km'
         description = ''
@@ -657,5 +629,5 @@ class RAP(ForecastModel):
                      'High_cloud_cover_high_cloud',]
         cols = super(RAP, self).columns
         idx = [0,3,4,5,6,7,8]
-        data_labels = dict(zip(cols[idx],variables))
-        super(RAP, self).__init__(model_type,model,data_labels,set_type,calcWind=True)
+        data_labels = dict(zip(cols[idx], variables))
+        super(RAP, self).__init__(model_type, model, data_labels, set_type)

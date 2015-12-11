@@ -5,8 +5,11 @@ retreiving forecasted data from UNIDATA Thredd servers.
 
 from netCDF4 import num2date
 import pandas as pd
+import pytz
 import numpy as np
 
+from pvlib import *
+from pvlib.location import Location
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
@@ -94,16 +97,16 @@ class ForecastModel(object):
                         'high_clouds',
                         'dni',
                         'dhi',
-                        'ghi',])
+                        'ghi', ])
 
     def __init__(self, model_type, model_name, set_type):
         self.model_name = model_name
         self.model_type = model_type
         self.set_type = set_type
         self.catalog = TDSCatalog(self.catalog_url)
-        self.fm_models = TDSCatalog(self.catalog.catalog_refs[self.model_type].href)
+        self.fm_models = TDSCatalog(self.catalog.catalog_refs[model_type].href)
         self.fm_models_list = sorted(list(self.fm_models.catalog_refs.keys()))
-        self.model = TDSCatalog(self.fm_models.catalog_refs[self.model_name].href)
+        self.model = TDSCatalog(self.fm_models.catalog_refs[model_name].href)
         self.datasets_list = list(self.model.datasets.keys())
         self.set_dataset()
 
@@ -131,10 +134,13 @@ class ForecastModel(object):
         Sets the NCSS query location latitude and longitude.
 
         '''
-        if len(self.longitude) == 2:
-            self.query.lonlat_box(self.latitude[0], self.latitude[1], self.longitude[0], self.longitude[1]) # west, east, south, north
+        if self.longitude is list:
+            # west, east, south, north
+            self.query.lonlat_box(self.latitude[0], self.latitude[1], 
+                                    self.longitude[0], self.longitude[1]) 
+
             self.lbox = True
-        elif len(self.longitude) == 1:
+        else:
             self.query.lonlat_point(self.longitude, self.latitude)
             self.lbox = False
 
@@ -148,9 +154,11 @@ class ForecastModel(object):
         if len(self.time) == 1:
             self.query.time(pd.to_datetime(self.time)[0])
         else:
-            self.query.time_range(pd.to_datetime(self.time)[0], pd.to_datetime(self.time)[-1])        
+            self.query.time_range(pd.to_datetime(self.time)[0], 
+                pd.to_datetime(self.time)[-1])        
 
-    def get_query_data(self, latitude, longitude, time, vert_level=None, variables=None):
+    def get_query_data(self, latitude, longitude, time, vert_level=None, 
+        variables=None):
         '''
         Submits a query to the UNIDATA servers using siphon NCSS and 
         converts the netcdf data to a pandas DataFrame.
@@ -158,7 +166,7 @@ class ForecastModel(object):
         Parameters
         ----------
 
-        labels: dictionary
+        variables: dictionary
             Variables and common names being queried.
         latlon: list
             Latitude and longitude of query location.
@@ -171,32 +179,42 @@ class ForecastModel(object):
         -------
         pd.DataFrame
         '''
-        if vert_level != None:
+        if vert_level is not None:
             self.vert_level = vert_level
-        if labels != None:
+        if variables is not None:
             self.variables = variables
             self.modelvariables = list(self.variables.keys())
-            self.queryvariables = [self.variables[key] for key in self.modelvariables]
+            self.queryvariables = [self.variables[key] for key in \
+                self.modelvariables]
             self.columns = self.modelvariables
+            self.dataframe_variables = self.modelvariables
         
         self.latitude = latitude
         self.longitude = longitude
         self.set_query_latlon()
         self.time = time
         self.set_query_time()
+        # print(pd.to_datetime(self.time)[0], pd.to_datetime(self.time)[-1])
         self.query.vertical_level(self.vert_level)
         self.query.variables(*self.queryvariables)
         self.query.accept(self.data_format)
         netcdf_data = self.ncss.get_data(self.query)
+
+        # print(netcdf_data.variables['Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average'][:])
+
+        # self.netTime = num2date(netcdf_data.variables['time'][:].squeeze(),
+        #     netcdf_data.variables['time'].units)
+
         self.set_time(netcdf_data.variables['time'], self.time.tzinfo)
+
         self.data = self.netcdf2pandas(netcdf_data)
+        self.time = self.time
         self.set_variable_units(netcdf_data)
         self.set_variable_stdnames(netcdf_data)
         self.convert_temperature(netcdf_data)
 
         self.calc_wind(netcdf_data)
-
-        self.calc_radiation()
+        self.calc_radiation(netcdf_data)
 
         netcdf_data.close()
 
@@ -221,8 +239,10 @@ class ForecastModel(object):
             ''' one-dimensional data '''
             data_dict = {}
             for var in self.dataframe_variables:
-                data_dict[var] = pd.Series(data[self.variables[var]][:].squeeze(), index=self.time)
-            return pd.DataFrame(data_dict, columns=self.columns, index=self.time)
+                data_dict[var] = pd.Series(
+                    data[self.variables[var]][:].squeeze(), index=self.time)
+            df = pd.DataFrame(data_dict, columns=self.columns, index=self.time)
+            return df
         else:
             return pd.DataFrame(columns=self.columns, index=self.time)
 
@@ -241,7 +261,17 @@ class ForecastModel(object):
         -------
         pandas.DatetimeIndex
         '''
-        self.time = pd.DatetimeIndex(pd.Series(num2date(times[:].squeeze(), times.units)), tz=tzinfo)
+        self.time = pd.DatetimeIndex(pd.Series(num2date(times[:].squeeze(),
+            times.units)))
+        # print(type(tzinfo))
+        # self.time = tzinfo.localize(self.time)
+        # self.time = self.time.astimezone(pytz.timezone(tzinfo))
+
+        self.time = self.time.tz_localize(tzinfo) # correct, but doesn't plot well
+
+        # self.time = self.time.tz_localize('UTC')
+        # self.time = self.time.tz_convert(tzinfo)
+        # self.time = self.time.tz_localize(None) # shows correct time but no timezone
 
     def set_variable_units(self, data):
         '''
@@ -255,7 +285,7 @@ class ForecastModel(object):
         '''
         self.var_units = {}
         for var in self.variables:
-            self.var_units[var] = data[self.data_labels[var]].units
+            self.var_units[var] = data[self.variables[var]].units
 
     def set_variable_stdnames(self, data):
         '''
@@ -270,11 +300,13 @@ class ForecastModel(object):
         self.var_stdnames = {}
         for var in self.variables:
             try:
-                self.var_stdnames[var] = data[self.data_labels[var]].standard_name
+                self.var_stdnames[var] = \
+                    data[self.variables[var]].standard_name
             except AttributeError:
                 self.var_stdnames[var] = var
 
-    def calc_radiation(self, data, cloud_type='total_clouds', rad_funcs=None, args=None, keys=None):
+    def calc_radiation(self, data, cloud_type='total_clouds', rad_funcs=None, 
+        args=None, keys=None):
         '''
         Determines shortwave radiation values if they are missing from 
         the model data.
@@ -286,40 +318,49 @@ class ForecastModel(object):
 
         '''
         self.rad_type = {}
-        if not self.lbox:
+        if not self.lbox and cloud_type in self.data:
             cloud_prct = self.data[cloud_type]
-            self.location = pvlib.location.Location(self.latitude, self.longitude, tz=self.time.tzinfo)
-            solpos = pvlib.solarposition.get_solarposition(self.time, self.location)
+            self.location = Location(self.latitude, self.longitude)#,
+                                        #tz=self.time.tzinfo)
+            print(self.time)
+            solpos = solarposition.get_solarposition(self.time, self.location)
             self.zenith = np.array(solpos.zenith)
-            if rad_funcs == None:
+            if rad_funcs is None:
                 for rad in ['dni','dhi','ghi']:
                     if rad in self.modelvariables:
-                        self.data[var] = pd.Series(data[self.variables[var]][:].squeeze(), index=self.time)
+                        self.data[rad] = pd.Series(
+                            data[self.variables[rad]][:].squeeze(), 
+                            index=self.time)
                         self.rad_type[rad] = 'forecast'
                     else:
                         self.rad_type[rad] = 'liujordan'
                         if rad == 'dni':
-                            self.data['dni'] = atmosphere.liujordan_dni(self.zenith, cloud_prct)
+                            self.data['dni'] = \
+                                irradiance.liujordan_dni(self.zenith,
+                                    cloud_prct)
                         elif rad == 'dhi':
-                            self.data['dhi'] = atmosphere.liujordan_dhi(self.zenith, cloud_prct)
+                            self.data['dhi'] = \
+                                irradiance.liujordan_dhi(self.zenith, 
+                                    cloud_prct)
                         elif rad == 'ghi':
-                            self.data['ghi'] = atmosphere.liujordan_ghi(self.zenith, cloud_prct)
-
+                            self.data['ghi'] = \
+                                irradiance.liujordan_ghi(self.zenith, 
+                                    cloud_prct)
             elif rad_funcs == 'linear':
-                cs = pvlib.clearsky.ineichen(self.data.index, self.location),\
-                # solarposition_method='nrel_numpy'
-                cs_scaled = cs.mul((100-self.data['total_clouds']) / 100, axis=0)
+                cs = clearsky.ineichen(self.data.index, self.location)
+                cs_scaled = cs.mul((100. - self.data['total_clouds']) / 100.,
+                                     axis=0)
                 self.data['dni'] = cs
                 self.data['ghi'] = cs_scaled
                 self.rad_type['dni'] = 'linear'
-                self.rad_type['dhi'] = 'forecast'
                 self.rad_type['ghi'] = 'linear'
-
+                self.rad_type['dhi'] = 'forecast'
             else:
                 length = len(rad_funcs)
                 if any(len(lst) != length for lst in [args, keys]):
                     import warnings
-                    warnings.warn('Radiation functions, arguments, and keys should be of equal length')
+                    warnings.warn('Radiation functions, arguments, and keys \
+                                    should be of equal length')
                     return
 
                 for i in range(len(rad_funcs)):
@@ -334,27 +375,30 @@ class ForecastModel(object):
         Converts Kelvin to celsius.
 
         '''
-        if 'Temperature_isobaric' in self.queryvariables:
-            self.data['temperature'] = data['Temperature_isobaric']
-
         for atemp in ['temperature']:
             if atemp in self.data.columns:
                 self.data[atemp] -= 273.15
                 self.var_units[atemp] = 'C'
 
     def calc_wind(self, data):
+        '''
+        Calculates wind speed quantity.
+
+        '''
         if not self.lbox:
             if 'u-component_of_wind_isobaric' in self.queryvariables and \
                 'v-component_of_wind_isobaric' in self.queryvariables:
-                wind_data = np.sqrt(data['u-component_of_wind_isobaric'][:].squeeze()**2 +
-                               data['v-component_of_wind_isobaric'][:].squeeze()**2)
+                wind_data = np.sqrt(\
+                    data['u-component_of_wind_isobaric'][:].squeeze()**2 +
+                    data['v-component_of_wind_isobaric'][:].squeeze()**2)
                 self.wind_type = 'component'
-            else:
-                wind_data = [data['Wind_speed_gust_surface'][:].squeeze()]
+            elif 'Wind_speed_gust_surface' in self.queryvariables:
+                wind_data = 0.25 * data['Wind_speed_gust_surface'][:].squeeze()
                 self.wind_type = 'gust'
-            self.data['wind_speed'] = pd.Series(windData, index=self.time)
-            self.var_units['wind_speed'] = 'm/s'
 
+            if 'wind_speed' in self.data:
+                self.data['wind_speed'] = pd.Series(wind_data, index=self.time)
+                self.var_units['wind_speed'] = 'm/s'
 
 
 class GFS(ForecastModel):
@@ -388,29 +432,37 @@ class GFS(ForecastModel):
         elif res == 'quarter':
             model = 'GFS Quarter Degree Forecast'
         self.variables = {
-        # 'temperature':'Temperature',
-        'temperature_iso':'Temperature_isobaric',
+        'temperature':'Temperature_surface',
         'wind_speed_gust':'Wind_speed_gust_surface',
         'wind_speed_u':'u-component_of_wind_isobaric',
         'wind_speed_v':'v-component_of_wind_isobaric',
-        'pressure':'Pressure_surface',
-        'total_clouds':'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
-        'low_clouds':'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
-        'mid_clouds':'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
-        'high_clouds':'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
-        'boundary_clouds':'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
+        # 'pressure':'Pressure_surface',
+        'total_clouds':
+        'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
+        'low_clouds':
+        'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+        'mid_clouds':
+        'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
+        'high_clouds':
+        'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+        'boundary_clouds':
+        'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
         'convect_clouds':'Total_cloud_cover_convective_cloud',
-        'ghi':'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',}
+        'ghi':
+        'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average', }
         self.modelvariables = self.variables.keys()
-        self.queryvariables = [self.variables[key] for key in self.modelvariables]
-        self.dataframe_variables = ['pressure',
-                                    'total_clouds',
-                                    'low_clouds',
-                                    'mid_clouds',
-                                    'high_clouds',
-                                    'boundary_clouds',
-                                    'convect_clouds',
-                                    'ghi',]
+        self.queryvariables = [self.variables[key] for key in \
+                                self.modelvariables]
+        self.dataframe_variables = [
+        'temperature',
+        # 'pressure',
+        'total_clouds',
+        'low_clouds',
+        'mid_clouds',
+        'high_clouds',
+        'boundary_clouds',
+        'convect_clouds',
+        'ghi', ]
         super(GFS, self).__init__(model_type, model, set_type)
 
         # def map_data(self):
@@ -444,22 +496,32 @@ class HRRR_ESRL(ForecastModel):
 
     def __init__(self, set_type='best'):
         import warnings
-        warnings.warn('HRRR_ESRL is an experimental model and is not always available.')       
+        warnings.warn('HRRR_ESRL is an experimental model and is not always \
+                         available.')       
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
         description = ''
-        variables = ['Temperature_surface',
-                     'Wind_speed_gust_surface',
-                     'Pressure_surface',
-                     'Total_cloud_cover_entire_atmosphere',
-                     'Low_cloud_cover_UnknownLevelType-214',
-                     'Medium_cloud_cover_UnknownLevelType-224',
-                     'High_cloud_cover_UnknownLevelType-234',
-                     'Downward_short-wave_radiation_flux_surface',]
-        cols = super(HRRR_ESRL, self).columns
-        idx = [0,3,4,5,6,7,8,11]
-        data_labels = dict(zip(cols[idx],variables))
-        super(HRRR_ESRL, self).__init__(model_type, model, data_labels, set_type)
+        self.variables = {
+        'temperature':'Temperature_surface',
+        'wind_speed_gust':'Wind_speed_gust_surface',
+        # 'pressure':'Pressure_surface',
+        'total_clouds':'Total_cloud_cover_entire_atmosphere',
+        'low_clouds':'Low_cloud_cover_UnknownLevelType-214',
+        'mid_clouds':'Medium_cloud_cover_UnknownLevelType-224',
+        'high_clouds':'High_cloud_cover_UnknownLevelType-234',
+        'ghi':'Downward_short-wave_radiation_flux_surface', }
+        self.modelvariables = self.variables.keys()
+        self.queryvariables = [self.variables[key] for key in \
+                                self.modelvariables]
+        self.dataframe_variables = [
+        'temperature',
+        # 'pressure',
+        'total_clouds',
+        'low_clouds',
+        'mid_clouds',
+        'high_clouds',
+        'ghi', ]
+        super(HRRR_ESRL, self).__init__(model_type, model, set_type)
 
 
         
@@ -494,20 +556,27 @@ class NAM(ForecastModel):
         model_type = 'Forecast Model Data'
         model = 'NAM CONUS 12km from CONDUIT'
         description = ''
-        variables = ['Temperature_surface',
-                     'Temperature_isobaric',
-                     'Wind_speed_gust_surface',
-                     'Pressure_surface',
-                     'Total_cloud_cover_entire_atmosphere_single_layer',
-                     'Low_cloud_cover_low_cloud',
-                     'Medium_cloud_cover_middle_cloud',
-                     'High_cloud_cover_high_cloud',
-                     'Downward_Short-Wave_Radiation_Flux_surface',
-                     'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average',]
-        cols = super(NAM, self).columns
-        idx = [0,1,3,4,5,6,7,8,11,12]
-        data_labels = dict(zip(cols[idx], variables))
-        super(NAM, self).__init__(model_type, model, data_labels, set_type)
+        self.variables = {
+        'temperature':'Temperature_surface',
+        'wind_speed_gust':'Wind_speed_gust_surface',
+        # 'pressure':'Pressure_surface',
+        'total_clouds':'Total_cloud_cover_entire_atmosphere_single_layer',
+        'low_clouds':'Low_cloud_cover_low_cloud',
+        'mid_clouds':'Medium_cloud_cover_middle_cloud',
+        'high_clouds':'High_cloud_cover_high_cloud',
+        'ghi':'Downward_Short-Wave_Radiation_Flux_surface', }
+        self.modelvariables = self.variables.keys()
+        self.queryvariables = [self.variables[key] for key in \
+                                self.modelvariables]
+        self.dataframe_variables = [
+        'temperature',
+        # 'pressure',
+        'total_clouds',
+        'low_clouds',
+        'mid_clouds',
+        'high_clouds',
+        'ghi', ]
+        super(NAM, self).__init__(model_type, model, set_type)
 
 
 class HRRR(ForecastModel):
@@ -539,18 +608,25 @@ class HRRR(ForecastModel):
         model_type = 'Forecast Model Data'
         model = 'NCEP HRRR CONUS 2.5km'            
         description = ''
-        variables = ['Temperature_height_above_ground',
-                     'Temperature_isobaric',
-                     'Wind_speed_gust_surface',
-                     'Pressure_surface',
-                     'Total_cloud_cover_entire_atmosphere',
-                     'Low_cloud_cover_low_cloud',
-                     'Medium_cloud_cover_middle_cloud',
-                     'High_cloud_cover_high_cloud',]
-        cols = super(HRRR, self).columns
-        idx = [0,1,3,4,5,6,7,8]
-        data_labels = dict(zip(cols[idx],variables))
-        super(HRRR, self).__init__(model_type, model, data_labels, set_type)
+        self.variables = {
+        'temperature':'Temperature_height_above_ground',
+        'wind_speed_gust':'Wind_speed_gust_surface',
+        # 'pressure':'Pressure_surface',
+        'total_clouds':'Total_cloud_cover_entire_atmosphere',
+        'low_clouds':'Low_cloud_cover_low_cloud',
+        'mid_clouds':'Medium_cloud_cover_middle_cloud',
+        'high_clouds':'High_cloud_cover_high_cloud', }
+        self.modelvariables = self.variables.keys()
+        self.queryvariables = [self.variables[key] for key in \
+                                self.modelvariables]
+        self.dataframe_variables = [
+        'temperature',
+        # 'pressure',
+        'total_clouds',
+        'low_clouds',
+        'mid_clouds',
+                            'high_clouds', ]
+        super(HRRR, self).__init__(model_type, model, set_type)
 
 
 class NDFD(ForecastModel):
@@ -581,14 +657,18 @@ class NDFD(ForecastModel):
         model_type = 'Forecast Products and Analyses'
         model = 'National Weather Service CONUS Forecast Grids (CONDUIT)'
         description = ''
-        variables = ['Temperature_surface',
-                     'Wind_speed_surface',
-                     'Wind_speed_gust_surface',
-                     'Total_cloud_cover_surface',]
-        cols = super(NDFD, self).columns
-        idx = [0,2,3,5]
-        data_labels = dict(zip(cols[idx],variables))
-        super(NDFD, self).__init__(model_type, model, data_labels, set_type)
+        self.variables = {
+        'temperature':'Temperature_surface',
+        'wind_speed':'Wind_speed_surface',
+        'wind_speed_gust':'Wind_speed_gust_surface',
+        'total_clouds':'Total_cloud_cover_surface', }
+        self.modelvariables = self.variables.keys()
+        self.queryvariables = [self.variables[key] for key in \
+                                self.modelvariables]
+        self.dataframe_variables = [
+        'temperature',
+        'total_clouds', ]
+        super(NDFD, self).__init__(model_type, model, set_type)
 
 
 class RAP(ForecastModel):
@@ -620,14 +700,22 @@ class RAP(ForecastModel):
         model_type = 'Forecast Model Data'
         model = 'Rapid Refresh CONUS 20km'
         description = ''
-        variables = ['Temperature_surface',
-                     'Wind_speed_gust_surface',
-                     'Pressure_surface',
-                     'Total_cloud_cover_entire_atmosphere_single_layer',
-                     'Low_cloud_cover_low_cloud',
-                     'Medium_cloud_cover_middle_cloud',
-                     'High_cloud_cover_high_cloud',]
-        cols = super(RAP, self).columns
-        idx = [0,3,4,5,6,7,8]
-        data_labels = dict(zip(cols[idx], variables))
-        super(RAP, self).__init__(model_type, model, data_labels, set_type)
+        self.variables = {
+        'temperature':'Temperature_surface',
+        'wind_speed_gust':'Wind_speed_gust_surface',
+        # 'pressure':'Pressure_surface',
+        'total_clouds':'Total_cloud_cover_entire_atmosphere_single_layer',
+        'low_clouds':'Low_cloud_cover_low_cloud',
+        'mid_clouds':'Medium_cloud_cover_middle_cloud',
+        'high_clouds':'High_cloud_cover_high_cloud', }
+        self.modelvariables = self.variables.keys()
+        self.queryvariables = [self.variables[key] for key in \
+                                self.modelvariables]
+        self.dataframe_variables = [
+        'temperature',
+        # 'pressure',
+        'total_clouds',
+        'low_clouds',
+        'mid_clouds',
+        'high_clouds', ]
+        super(RAP, self).__init__(model_type, model, set_type)

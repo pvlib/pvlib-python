@@ -295,7 +295,8 @@ def cloudy_day_check(zenith, cloud_prct, pressure=101325.):
     Environmental Biophysics. 2nd Ed. New York: Springer.
     '''
 
-    sb = atmosphere.liujordan_dni(zenith, cloud_prct, pressure) * np.cos(np.radians(zenith))
+    sb = atmosphere.liujordan_dni(zenith, cloud_prct, pressure) * \
+            np.cos(np.radians(zenith))
 
     return sb < 10.0
 

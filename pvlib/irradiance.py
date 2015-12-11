@@ -1939,7 +1939,7 @@ def liujordan_dni(zenith, cloud_prct, pressure=101325.):
     dni_extra = 1367.0 # W m^-2
     tao = atmosphere.transmittance(zenith, cloud_prct)
     airmass_relative = atmosphere.relativeairmass(zenith)
-    airmass = absoluteairmass(airmass_relative, pressure=pressure)
+    airmass = atmosphere.absoluteairmass(airmass_relative, pressure=pressure)
 
     return dni_extra*tao**airmass
 
@@ -1977,9 +1977,10 @@ def liujordan_dhi(zenith, cloud_prct, pressure=101325.):
     dni_extra = 1367.0 # W m^-2
     tao = atmosphere.transmittance(zenith, cloud_prct)
     airmass_relative = atmosphere.relativeairmass(zenith)
-    airmass = absoluteairmass(airmass_relative, pressure=pressure)
+    airmass = atmosphere.absoluteairmass(airmass_relative, pressure=pressure)
+    dhi = 0.3 * (1.0 - tao**airmass) * dni_extra * np.cos(np.radians(zenith))
 
-    return 0.3 * (1.0 - tao**airmass * dni_extra * np.cos(np.radians(zenith)))
+    return dhi
 
 
 def liujordan_ghi(zenith, cloud_prct, times, pressure=101325.):
@@ -2006,4 +2007,5 @@ def liujordan_ghi(zenith, cloud_prct, times, pressure=101325.):
     '''
 
     return  liujordan_dhi(zenith,cloud_prct,pressure) + \
-            liujordan_dni(zenith,cloud_prct,pressure) * np.cos(np.radians(zenith))
+            liujordan_dni(zenith,cloud_prct,pressure) * \
+            np.cos(np.radians(zenith))

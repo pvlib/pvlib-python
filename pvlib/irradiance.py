@@ -1983,7 +1983,7 @@ def liujordan_dhi(zenith, cloud_prct, pressure=101325.):
     return dhi
 
 
-def liujordan_ghi(zenith, cloud_prct, times, pressure=101325.):
+def liujordan_ghi(zenith, cloud_prct, pressure=101325.):
     '''
     Determine GHI from balance of DNI and DHI.    
 

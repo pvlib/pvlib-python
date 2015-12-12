@@ -5,7 +5,6 @@ retreiving forecasted data from UNIDATA Thredd servers.
 
 from netCDF4 import num2date
 import pandas as pd
-import pytz
 import numpy as np
 
 from pvlib import *
@@ -23,38 +22,43 @@ class ForecastModel(object):
 
     Parameters
     ----------
-    model_type: string
-        UNIDATA category in which the model is located.
-    model_name: string
-        Name of the UNIDATA forecast model.
-
-    Attributes
-    ----------
     access_url: string
         URL specifying the dataset from data will be retrieved.
-    access_url_key: string
-        Key spcificying the type of data to be returned with the query.
     base_tds_url : string
         The top level server address
     catalog_url : string
         The url path of the catalog to parse.
+    columns: list
+        List of headers used to create the data DataFrame.
+    data_format: string
+        Format of the forecast data being requested from UNIDATA.
+    model_type: string
+        UNIDATA category in which the model is located.
+    model_name: string
+        Name of the UNIDATA forecast model.
+    set_type: string
+        Model dataset type.
+
+    Attributes
+    ----------
     data: pd.DataFrame
         Data returned from the query.
-    data_labels: dictionary
-        Dictionary that translates model specific variables to 
-        common named variables.
-    dataformat: string
-        Format of the forecast data being requested from UNIDATA.
     dataset: Dataset
         Object containing information used to access forecast data.
+    dataframe_variables: list
+        Model variables that are present in the data.
     datasets_list: list
         List of all available datasets.
     fm_models: Dataset
         Object containing all available foreast models.
     fm_models_list: list
         List of all available forecast models from UNIDATA.
-    latlon: list
-        The extent of the areal coverage of the dataset.
+    latitude: list
+        A list of floats containing latitude values.
+    location: Location
+        A pvlib Location object containing geographic quantities.
+    longitude: list
+        A list of floats containing longitude values.
     lbox: boolean
         Indicates the use of a location bounding box.
     ncss: NCSS object
@@ -65,22 +69,33 @@ class ForecastModel(object):
         dataset's name.
     model_url: string
         The url path of the dataset to parse.
+    modelvariables: list
+        Common variable names that correspond to queryvariables.
     query: NCSS query object
         NCSS object used to complete the forecast data retrival.
-    set_type: string
-        Model dataset type.
+    queryvariables: list
+        Variables that are used to query the THREDDS Data Server.
+    rad_type: dictionary
+        Dictionary labeling the method used for calculating radiation values.
     time: datetime
         Time range specified for the NCSS query.
+    utctime: DatetimeIndex
+        Time range in UTC.
     var_stdnames: dictionary
         Dictionary containing the standard names of the variables in the
         query, where the keys are the common names.
     var_units: dictionary
         Dictionary containing the unites of the variables in the query,
         where the keys are the common names.
-    variables: list
-        Model specific variable names.
+    variables: dictionary
+        Dictionary that translates model specific variables to 
+        common named variables.
     vert_level: float or integer
         Vertical altitude for query data.
+    wind_type: string
+        Quantity that was used to calculate wind_speed.
+    zenith: numpy.array
+        Solar zenith angles for the given time range.
     '''
 
     access_url_key = 'NetcdfSubset'
@@ -137,11 +152,10 @@ class ForecastModel(object):
         if self.longitude is list:
             # west, east, south, north
             self.query.lonlat_box(self.latitude[0], self.latitude[1], 
-                                    self.longitude[0], self.longitude[1]) 
-
+                                    self.longitude[0], self.longitude[1])
             self.lbox = True
         else:
-            self.query.lonlat_point(self.longitude, self.latitude)
+            self.query.lonlat_point(self.longitude[0], self.latitude[0])
             self.lbox = False
 
     def set_query_time(self):
@@ -151,14 +165,14 @@ class ForecastModel(object):
         as: single or range
 
         '''
-        if len(self.time) == 1:
-            self.query.time(pd.to_datetime(self.time)[0])
+        if len(self.utctime) == 1:
+            self.query.time(pd.to_datetime(self.utctime)[0])
         else:
-            self.query.time_range(pd.to_datetime(self.time)[0], 
-                pd.to_datetime(self.time)[-1])        
+            self.query.time_range(pd.to_datetime(self.utctime)[0], 
+                pd.to_datetime(self.utctime)[-1])        
 
-    def get_query_data(self, latitude, longitude, time, vert_level=None, 
-        variables=None):
+    def get_query_data(self, latitude, longitude, time, location, 
+        vert_level=None, variables=None):
         '''
         Submits a query to the UNIDATA servers using siphon NCSS and 
         converts the netcdf data to a pandas DataFrame.
@@ -170,6 +184,7 @@ class ForecastModel(object):
             Variables and common names being queried.
         latlon: list
             Latitude and longitude of query location.
+        location:
         time: pd.datetimeindex
             Time range of interest.
         vert_level: float or integer
@@ -192,31 +207,28 @@ class ForecastModel(object):
         self.latitude = latitude
         self.longitude = longitude
         self.set_query_latlon()
-        self.time = time
+
+        self.location = location
+        self.utctime = tools.localize_to_utc(time, location)
         self.set_query_time()
-        # print(pd.to_datetime(self.time)[0], pd.to_datetime(self.time)[-1])
+
         self.query.vertical_level(self.vert_level)
         self.query.variables(*self.queryvariables)
         self.query.accept(self.data_format)
         netcdf_data = self.ncss.get_data(self.query)
 
-        # print(netcdf_data.variables['Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average'][:])
-
-        # self.netTime = num2date(netcdf_data.variables['time'][:].squeeze(),
-        #     netcdf_data.variables['time'].units)
-
-        self.set_time(netcdf_data.variables['time'], self.time.tzinfo)
-
+        self.set_time(netcdf_data.variables['time'])
         self.data = self.netcdf2pandas(netcdf_data)
-        self.time = self.time
+
         self.set_variable_units(netcdf_data)
         self.set_variable_stdnames(netcdf_data)
-        self.convert_temperature(netcdf_data)
-
+        self.convert_temperature()
         self.calc_wind(netcdf_data)
         self.calc_radiation(netcdf_data)
 
-        netcdf_data.close()
+        self.data = self.data.tz_convert(location.tz)
+
+        netcdf_data.close()        
 
         return self.data       
 
@@ -240,38 +252,28 @@ class ForecastModel(object):
             data_dict = {}
             for var in self.dataframe_variables:
                 data_dict[var] = pd.Series(
-                    data[self.variables[var]][:].squeeze(), index=self.time)
-            df = pd.DataFrame(data_dict, columns=self.columns, index=self.time)
-            return df
+                    data[self.variables[var]][:].squeeze(), index=self.utctime)
+            return pd.DataFrame(data_dict, columns=self.columns)
         else:
-            return pd.DataFrame(columns=self.columns, index=self.time)
+            return pd.DataFrame(columns=self.columns, index=self.utctime)
 
-    def set_time(self, times, tzinfo):
+    def set_time(self, time):
         '''
         Converts time data into a pandas date object.
 
         Parameters
         ----------
-        times: netcdf
+        time: netcdf
             Contains time information.
-        tzinfo: tzinfo
-            Timezone information.
 
         Returns
         -------
         pandas.DatetimeIndex
         '''
-        self.time = pd.DatetimeIndex(pd.Series(num2date(times[:].squeeze(),
-            times.units)))
-        # print(type(tzinfo))
-        # self.time = tzinfo.localize(self.time)
-        # self.time = self.time.astimezone(pytz.timezone(tzinfo))
-
-        self.time = self.time.tz_localize(tzinfo) # correct, but doesn't plot well
-
-        # self.time = self.time.tz_localize('UTC')
-        # self.time = self.time.tz_convert(tzinfo)
-        # self.time = self.time.tz_localize(None) # shows correct time but no timezone
+        times = num2date(time[:].squeeze(), time.units)
+        self.time = pd.DatetimeIndex(pd.Series(times), tz='UTC')
+        self.time = self.time.tz_convert(self.location.tz)
+        self.utctime = tools.localize_to_utc(self.time, self.location.tz)
 
     def set_variable_units(self, data):
         '''
@@ -306,25 +308,29 @@ class ForecastModel(object):
                 self.var_stdnames[var] = var
 
     def calc_radiation(self, data, cloud_type='total_clouds', rad_funcs=None, 
-        args=None, keys=None):
+        args=None, rad=None):
         '''
         Determines shortwave radiation values if they are missing from 
         the model data.
 
         Parameters
         ----------
-        zenith: pd.daraSeries
-            Solar zenith angle.
-
+        args: list
+            Arguments to be along to the radiation functions.
+        cloud_type: string
+            Type of cloud cover to use for calculating radiation values.
+        data: netcdf
+            Query data formatted in netcdf format.
+        rad: list
+            List of radiation types to calculate.
+        rad_funcs: list
+            List of radiation functions used to calculate radiation.
         '''
         self.rad_type = {}
         if not self.lbox and cloud_type in self.data:
             cloud_prct = self.data[cloud_type]
-            self.location = Location(self.latitude, self.longitude)#,
-                                        #tz=self.time.tzinfo)
-            print(self.time)
             solpos = solarposition.get_solarposition(self.time, self.location)
-            self.zenith = np.array(solpos.zenith)
+            self.zenith = np.array(solpos.zenith.tz_convert('UTC'))
             if rad_funcs is None:
                 for rad in ['dni','dhi','ghi']:
                     if rad in self.modelvariables:
@@ -346,7 +352,7 @@ class ForecastModel(object):
                             self.data['ghi'] = \
                                 irradiance.liujordan_ghi(self.zenith, 
                                     cloud_prct)
-            elif rad_funcs == 'linear':
+            elif rad_funcs == ['linear']:
                 cs = clearsky.ineichen(self.data.index, self.location)
                 cs_scaled = cs.mul((100. - self.data['total_clouds']) / 100.,
                                      axis=0)
@@ -370,7 +376,7 @@ class ForecastModel(object):
             for var in ['dni', 'dhi', 'ghi']:
                 self.var_units[var] = '$W m^{-2}$'
 
-    def convert_temperature(self, data):
+    def convert_temperature(self):
         '''
         Converts Kelvin to celsius.
 
@@ -384,6 +390,10 @@ class ForecastModel(object):
         '''
         Calculates wind speed quantity.
 
+        Parameters
+        ----------
+        data: netcdf
+            Query data in netcdf format.
         '''
         if not self.lbox:
             if 'u-component_of_wind_isobaric' in self.queryvariables and \
@@ -411,8 +421,10 @@ class GFS(ForecastModel):
     ----------
     cols: list
         Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
+    dataframe_variables: list
+        Common variables present in the final set of data.
+    variables: dictionary
+        Dictionary where common variables reference the model 
         specific variable name.
     idx: list
         Indices of the variables corresponding to their common name.
@@ -420,9 +432,15 @@ class GFS(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    variables: list
+    modelvariables: list
+        Common variable names.
+    queryvariables: list
         Names of default variables specific to the model.
-
+    res: string
+        Resolution of the model.
+    variables: dictionary
+        Dictionary of common variables that reference the model
+        specific variables.
     '''
 
     def __init__(self, res='half', set_type='best'):
@@ -436,7 +454,6 @@ class GFS(ForecastModel):
         'wind_speed_gust':'Wind_speed_gust_surface',
         'wind_speed_u':'u-component_of_wind_isobaric',
         'wind_speed_v':'v-component_of_wind_isobaric',
-        # 'pressure':'Pressure_surface',
         'total_clouds':
         'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
         'low_clouds':
@@ -455,7 +472,6 @@ class GFS(ForecastModel):
                                 self.modelvariables]
         self.dataframe_variables = [
         'temperature',
-        # 'pressure',
         'total_clouds',
         'low_clouds',
         'mid_clouds',
@@ -464,8 +480,6 @@ class GFS(ForecastModel):
         'convect_clouds',
         'ghi', ]
         super(GFS, self).__init__(model_type, model, set_type)
-
-        # def map_data(self):
 
 
 class HRRR_ESRL(ForecastModel):
@@ -480,8 +494,10 @@ class HRRR_ESRL(ForecastModel):
     ----------
     cols: list
         Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
+    dataframe_variables: list
+        Common variables present in the final set of data.
+    variables: dictionary
+        Dictionary where common variables reference the model 
         specific variable name.
     idx: list
         Indices of the variables corresponding to their common name.
@@ -489,9 +505,13 @@ class HRRR_ESRL(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    variables: list
+    modelvariables: list
+        Common variable names.
+    queryvariables: list
         Names of default variables specific to the model.
-
+    variables: dictionary
+        Dictionary of common variables that reference the model
+        specific variables.
     '''
 
     def __init__(self, set_type='best'):
@@ -504,7 +524,6 @@ class HRRR_ESRL(ForecastModel):
         self.variables = {
         'temperature':'Temperature_surface',
         'wind_speed_gust':'Wind_speed_gust_surface',
-        # 'pressure':'Pressure_surface',
         'total_clouds':'Total_cloud_cover_entire_atmosphere',
         'low_clouds':'Low_cloud_cover_UnknownLevelType-214',
         'mid_clouds':'Medium_cloud_cover_UnknownLevelType-224',
@@ -515,7 +534,6 @@ class HRRR_ESRL(ForecastModel):
                                 self.modelvariables]
         self.dataframe_variables = [
         'temperature',
-        # 'pressure',
         'total_clouds',
         'low_clouds',
         'mid_clouds',
@@ -536,8 +554,10 @@ class NAM(ForecastModel):
     ----------
     cols: list
         Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
+    dataframe_variables: list
+        Common variables present in the final set of data.
+    variables: dictionary
+        Dictionary where common variables reference the model 
         specific variable name.
     idx: list
         Indices of the variables corresponding to their common name.
@@ -545,11 +565,13 @@ class NAM(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    res: string
-        Determines which resolution of the GFS to use, as 'Half' or 'Quarter'
-    variables: list
+    modelvariables: list
+        Common variable names.
+    queryvariables: list
         Names of default variables specific to the model.
-
+    variables: dictionary
+        Dictionary of common variables that reference the model
+        specific variables.
     '''
 
     def __init__(self,set_type='best'):
@@ -559,7 +581,6 @@ class NAM(ForecastModel):
         self.variables = {
         'temperature':'Temperature_surface',
         'wind_speed_gust':'Wind_speed_gust_surface',
-        # 'pressure':'Pressure_surface',
         'total_clouds':'Total_cloud_cover_entire_atmosphere_single_layer',
         'low_clouds':'Low_cloud_cover_low_cloud',
         'mid_clouds':'Medium_cloud_cover_middle_cloud',
@@ -570,7 +591,6 @@ class NAM(ForecastModel):
                                 self.modelvariables]
         self.dataframe_variables = [
         'temperature',
-        # 'pressure',
         'total_clouds',
         'low_clouds',
         'mid_clouds',
@@ -590,8 +610,10 @@ class HRRR(ForecastModel):
     ----------
     cols: list
         Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
+    dataframe_variables: list
+        Common variables present in the final set of data.
+    variables: dictionary
+        Dictionary where common variables reference the model 
         specific variable name.
     idx: list
         Indices of the variables corresponding to their common name.
@@ -599,9 +621,13 @@ class HRRR(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    variables: list
+    modelvariables: list
+        Common variable names.
+    queryvariables: list
         Names of default variables specific to the model.
-
+    variables: dictionary
+        Dictionary of common variables that reference the model
+        specific variables.
     '''
 
     def __init__(self, set_type='best'):
@@ -611,7 +637,6 @@ class HRRR(ForecastModel):
         self.variables = {
         'temperature':'Temperature_height_above_ground',
         'wind_speed_gust':'Wind_speed_gust_surface',
-        # 'pressure':'Pressure_surface',
         'total_clouds':'Total_cloud_cover_entire_atmosphere',
         'low_clouds':'Low_cloud_cover_low_cloud',
         'mid_clouds':'Medium_cloud_cover_middle_cloud',
@@ -621,7 +646,6 @@ class HRRR(ForecastModel):
                                 self.modelvariables]
         self.dataframe_variables = [
         'temperature',
-        # 'pressure',
         'total_clouds',
         'low_clouds',
         'mid_clouds',
@@ -639,8 +663,10 @@ class NDFD(ForecastModel):
     ----------
     cols: list
         Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
+    dataframe_variables: list
+        Common variables present in the final set of data.
+    variables: dictionary
+        Dictionary where common variables reference the model 
         specific variable name.
     idx: list
         Indices of the variables corresponding to their common name.
@@ -648,9 +674,13 @@ class NDFD(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    variables: list
+    modelvariables: list
+        Common variable names.
+    queryvariables: list
         Names of default variables specific to the model.
-
+    variables: dictionary
+        Dictionary of common variables that reference the model
+        specific variables.
     '''
 
     def __init__(self, set_type='best'):
@@ -682,8 +712,10 @@ class RAP(ForecastModel):
     ----------
     cols: list
         Common names for variables.
-    data_labels: dictionary
-        Dictionary where the common variable name references the model 
+    dataframe_variables: list
+        Common variables present in the final set of data.
+    variables: dictionary
+        Dictionary where common variables reference the model 
         specific variable name.
     idx: list
         Indices of the variables corresponding to their common name.
@@ -691,9 +723,13 @@ class RAP(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    variables: list
+    modelvariables: list
+        Common variable names.
+    queryvariables: list
         Names of default variables specific to the model.
-
+    variables: dictionary
+        Dictionary of common variables that reference the model
+        specific variables.
     '''
 
     def __init__(self, set_type='best'):
@@ -703,7 +739,6 @@ class RAP(ForecastModel):
         self.variables = {
         'temperature':'Temperature_surface',
         'wind_speed_gust':'Wind_speed_gust_surface',
-        # 'pressure':'Pressure_surface',
         'total_clouds':'Total_cloud_cover_entire_atmosphere_single_layer',
         'low_clouds':'Low_cloud_cover_low_cloud',
         'mid_clouds':'Medium_cloud_cover_middle_cloud',
@@ -713,7 +748,6 @@ class RAP(ForecastModel):
                                 self.modelvariables]
         self.dataframe_variables = [
         'temperature',
-        # 'pressure',
         'total_clouds',
         'low_clouds',
         'mid_clouds',

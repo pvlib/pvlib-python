@@ -289,9 +289,6 @@ def spa_python(time, location, pressure=101325, temperature=12, delta_t=None,
 
     unixtime = localize_to_utc(time, location).astype(np.int64)/10**9
 
-    print('localized time (UTC)')
-    print(localize_to_utc(time, location))
-
     spa = _spa_python_import(how)
 
     app_zenith, zenith, app_elevation, elevation, azimuth, eot = spa.solar_position(

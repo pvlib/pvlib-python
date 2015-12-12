@@ -124,18 +124,15 @@ def localize_to_utc(time, location):
         if time.tzinfo is None:
             time = pytz.timezone(location.tz).localize(time)
         time_utc = time.astimezone(pytz.utc)
-
     else:
         try:
-            print('converting to UTC')
-            #time_utc = time.tz_convert('UTC')  # wrong
-            time_utc = time.tz_localize(None)
+            time_utc = time.tz_convert('UTC')
             pvl_logger.debug('tz_convert to UTC')
         except TypeError:
-            print('TypeError')
             time_utc = time.tz_localize(location.tz).tz_convert('UTC')
             pvl_logger.debug('tz_localize to %s and then tz_convert to UTC',
                              location.tz)
+        
         
     return time_utc
 

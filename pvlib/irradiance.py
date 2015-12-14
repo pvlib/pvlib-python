@@ -1951,3 +1951,24 @@ def liujordan(zenith, cloud_prct, pressure=101325.):
     ghi = dhi + dni * np.cos(np.radians(zenith))
 
     return pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi})
+
+
+def cloudy_day_check(zenith, cloud_prct, pressure=101325.):
+    '''
+    Determines if the sky is overcast.
+
+    Returns
+    -------
+    logical: bool
+        Is the sky is overcast.
+
+    References
+    ----------
+    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
+    Environmental Biophysics. 2nd Ed. New York: Springer.
+    '''
+
+    dni = liujordan(zenith, cloud_prct, pressure)['dni'] * \
+            np.cos(np.radians(zenith))
+
+    return dni < 10.0

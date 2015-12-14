@@ -138,6 +138,16 @@ def test_perez():
                      ephem_data['apparent_azimuth'], AM)
 
 
+def test_liujordan():
+    cloud_prct = np.array([40]*len(ephem_data['apparent_zenith']))
+    irradiance.liujordan(ephem_data['apparent_zenith'], cloud_prct)
+
+
+def test_cloudy_day(): 
+    cloud_prct = np.array([40]*len(ephem_data['zenith']))
+    irradiance.cloudy_day_check(ephem_data['zenith'], cloud_prct)
+    
+
 def test_total_irrad():
     models = ['isotropic', 'klutcher', 'haydavies', 'reindl', 'king', 'perez']
     AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])

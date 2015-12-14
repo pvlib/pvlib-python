@@ -278,26 +278,3 @@ def transmittance(zenith, cloud_prct):
     '''
 
     return ((100.0 - cloud_prct) / 100.0) * 0.75
-
-
-def cloudy_day_check(zenith, cloud_prct, pressure=101325.):
-    '''
-    Determines if the sky is overcast.
-
-    Returns
-    -------
-    logical: bool
-        Is the sky is overcast.
-
-    References
-    ----------
-    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
-    Environmental Biophysics. 2nd Ed. New York: Springer.
-    '''
-
-    sb = atmosphere.liujordan_dni(zenith, cloud_prct, pressure) * \
-            np.cos(np.radians(zenith))
-
-    return sb < 10.0
-
-

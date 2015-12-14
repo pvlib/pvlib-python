@@ -133,7 +133,6 @@ class ForecastModel(object):
         except ParseError:
             import warnings
             warnings.warn(self.model_name + ' model is unavailable.')
-        
 
 
     def set_dataset(self):
@@ -160,14 +159,14 @@ class ForecastModel(object):
         Sets the NCSS query location latitude and longitude.
 
         '''
-        if self.longitude is list:
+        if isinstance(self.longitude, list):
+            self.lbox = True
             # west, east, south, north
             self.query.lonlat_box(self.latitude[0], self.latitude[1], 
                                     self.longitude[0], self.longitude[1])
-            self.lbox = True
         else:
-            self.query.lonlat_point(self.longitude, self.latitude)
             self.lbox = False
+            self.query.lonlat_point(self.longitude, self.latitude)
 
     def set_query_time(self):
         '''

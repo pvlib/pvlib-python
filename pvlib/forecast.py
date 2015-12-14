@@ -2,13 +2,16 @@
 The 'forecast' module contains class definitions for 
 retreiving forecasted data from UNIDATA Thredd servers.
 '''
-
+import datetime
+from xml.etree.ElementTree import ParseError
 from netCDF4 import num2date
 import pandas as pd
 import numpy as np
 
-from pvlib import *
 from pvlib.location import Location
+from pvlib.tools import localize_to_utc
+from pvlib.solarposition import get_solarposition
+from pvlib.irradiance import liujordan
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
@@ -121,9 +124,17 @@ class ForecastModel(object):
         self.catalog = TDSCatalog(self.catalog_url)
         self.fm_models = TDSCatalog(self.catalog.catalog_refs[model_type].href)
         self.fm_models_list = sorted(list(self.fm_models.catalog_refs.keys()))
-        self.model = TDSCatalog(self.fm_models.catalog_refs[model_name].href)
-        self.datasets_list = list(self.model.datasets.keys())
-        self.set_dataset()
+        
+        try:
+            model_url = self.fm_models.catalog_refs[model_name].href
+            self.model = TDSCatalog(model_url)
+            self.datasets_list = list(self.model.datasets.keys())
+            self.set_dataset()
+        except ParseError:
+            import warnings
+            warnings.warn(self.model_name + ' model is unavailable.')
+        
+
 
     def set_dataset(self):
         '''
@@ -155,7 +166,7 @@ class ForecastModel(object):
                                     self.longitude[0], self.longitude[1])
             self.lbox = True
         else:
-            self.query.lonlat_point(self.longitude[0], self.latitude[0])
+            self.query.lonlat_point(self.longitude, self.latitude)
             self.lbox = False
 
     def set_query_time(self):
@@ -164,15 +175,34 @@ class ForecastModel(object):
 
         as: single or range
 
-        '''
+        '''        
         if len(self.utctime) == 1:
             self.query.time(pd.to_datetime(self.utctime)[0])
         else:
             self.query.time_range(pd.to_datetime(self.utctime)[0], 
-                pd.to_datetime(self.utctime)[-1])        
+                pd.to_datetime(self.utctime)[-1])
+    
+    def set_location(self, time):
+        '''
+        Sets the location for 
 
-    def get_query_data(self, latitude, longitude, time, location, 
-        vert_level=None, variables=None):
+        Parameters
+        ----------
+        time: datetime or DatetimeIndex
+            Time range of the query.
+        '''
+        if isinstance(time, datetime.datetime):
+            tzinfo = time.tzinfo
+        else:
+            try:
+                tzinfo = time.tz
+            except TypeError:
+                tzinfo = None
+
+        self.location = Location(self.latitude, self.longitude, tz=tzinfo)
+
+    def get_query_data(self, latitude, longitude, time, vert_level=None, 
+        variables=None):
         '''
         Submits a query to the UNIDATA servers using siphon NCSS and 
         converts the netcdf data to a pandas DataFrame.
@@ -204,12 +234,13 @@ class ForecastModel(object):
             self.columns = self.modelvariables
             self.dataframe_variables = self.modelvariables
         
+
         self.latitude = latitude
         self.longitude = longitude
         self.set_query_latlon()
+        self.set_location(time)
 
-        self.location = location
-        self.utctime = tools.localize_to_utc(time, location)
+        self.utctime = localize_to_utc(time, self.location)
         self.set_query_time()
 
         self.query.vertical_level(self.vert_level)
@@ -226,7 +257,7 @@ class ForecastModel(object):
         self.calc_wind(netcdf_data)
         self.calc_radiation(netcdf_data)
 
-        self.data = self.data.tz_convert(location.tz)
+        self.data = self.data.tz_convert(self.location.tz)
 
         netcdf_data.close()        
 
@@ -273,7 +304,7 @@ class ForecastModel(object):
         times = num2date(time[:].squeeze(), time.units)
         self.time = pd.DatetimeIndex(pd.Series(times), tz='UTC')
         self.time = self.time.tz_convert(self.location.tz)
-        self.utctime = tools.localize_to_utc(self.time, self.location.tz)
+        self.utctime = localize_to_utc(self.time, self.location.tz)
 
     def set_variable_units(self, data):
         '''
@@ -307,8 +338,7 @@ class ForecastModel(object):
             except AttributeError:
                 self.var_stdnames[var] = var
 
-    def calc_radiation(self, data, cloud_type='total_clouds', rad_funcs=None, 
-        args=None, rad=None):
+    def calc_radiation(self, data, cloud_type='total_clouds'):
         '''
         Determines shortwave radiation values if they are missing from 
         the model data.
@@ -329,49 +359,17 @@ class ForecastModel(object):
         self.rad_type = {}
         if not self.lbox and cloud_type in self.data:
             cloud_prct = self.data[cloud_type]
-            solpos = solarposition.get_solarposition(self.time, self.location)
+            solpos = get_solarposition(self.time, self.location)
             self.zenith = np.array(solpos.zenith.tz_convert('UTC'))
-            if rad_funcs is None:
-                for rad in ['dni','dhi','ghi']:
-                    if rad in self.modelvariables:
-                        self.data[rad] = pd.Series(
-                            data[self.variables[rad]][:].squeeze(), 
-                            index=self.time)
-                        self.rad_type[rad] = 'forecast'
-                    else:
-                        self.rad_type[rad] = 'liujordan'
-                        if rad == 'dni':
-                            self.data['dni'] = \
-                                irradiance.liujordan_dni(self.zenith,
-                                    cloud_prct)
-                        elif rad == 'dhi':
-                            self.data['dhi'] = \
-                                irradiance.liujordan_dhi(self.zenith, 
-                                    cloud_prct)
-                        elif rad == 'ghi':
-                            self.data['ghi'] = \
-                                irradiance.liujordan_ghi(self.zenith, 
-                                    cloud_prct)
-            elif rad_funcs == ['linear']:
-                cs = clearsky.ineichen(self.data.index, self.location)
-                cs_scaled = cs.mul((100. - self.data['total_clouds']) / 100.,
-                                     axis=0)
-                self.data['dni'] = cs
-                self.data['ghi'] = cs_scaled
-                self.rad_type['dni'] = 'linear'
-                self.rad_type['ghi'] = 'linear'
-                self.rad_type['dhi'] = 'forecast'
-            else:
-                length = len(rad_funcs)
-                if any(len(lst) != length for lst in [args, keys]):
-                    import warnings
-                    warnings.warn('Radiation functions, arguments, and keys \
-                                    should be of equal length')
-                    return
-
-                for i in range(len(rad_funcs)):
-                    self.data[keys[i]] = rad_funcs[i](*args[i])
-                    self.rad_type[keys[i]] = rad_funcs
+            for rad in ['dni','dhi','ghi']:
+                if rad in self.modelvariables:
+                    self.data[rad] = pd.Series(
+                        data[self.variables[rad]][:].squeeze(), 
+                        index=self.time)
+                    self.rad_type[rad] = 'forecast'
+                else:
+                    self.rad_type[rad] = 'liujordan'
+                    self.data[rad] = liujordan(self.zenith, cloud_prct)[rad]
 
             for var in ['dni', 'dhi', 'ghi']:
                 self.var_units[var] = '$W m^{-2}$'

@@ -1906,12 +1906,14 @@ def _get_dirint_coeffs():
         
     return coeffs[1:,1:,:,:]
 
-def liujordan_dni(zenith, cloud_prct, pressure=101325.):
+def liujordan(zenith, cloud_prct, pressure=101325.):
     '''
-    Determine DNI from extraterrestrial flux, transmittance, and optical
-    air mass number.
+    Determine DNI, DHI, GHI from extraterrestrial flux, transmittance, 
+    and optical air mass number.
     
     Liu and Jordan, 1960, developed a simplified direct radiation model.
+    DHI is from an empirical equation for diffuse radiation from Liu and 
+    Jordan, 1960.
 
     Parameters
     ----------      
@@ -1925,13 +1927,16 @@ def liujordan_dni(zenith, cloud_prct, pressure=101325.):
 
     Returns
     -------
-    dni : pd.Series.
-        The modeled direct normal irradiance in W/m^2 provided by the
-        Liu and Jordan model.
+    Pandas.DataFrame
+        Modeled direct normal irradiance, direct horizontal irradiance, and
+        global horizontal irradiance in W/m^2
 
     References
     ----------
-    [1] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
+    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
+    Environmental Biophysics. 2nd Ed. New York: Springer.
+
+    [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
     characteristic distribution of direct, diffuse, and total solar
     radiation".  Solar Energy 4:1-19
     '''
@@ -1941,71 +1946,8 @@ def liujordan_dni(zenith, cloud_prct, pressure=101325.):
     airmass_relative = atmosphere.relativeairmass(zenith)
     airmass = atmosphere.absoluteairmass(airmass_relative, pressure=pressure)
 
-    return dni_extra*tao**airmass
-
-
-def liujordan_dhi(zenith, cloud_prct, pressure=101325.):
-    '''
-    Determine DHI from extraterrestrial flux, transmittance, and optical
-    air mass number.
-    
-    Empirical equation for diffuse radiation from Liu and Jordan, 1960.
-
-    Parameters
-    ----------      
-    zenith : pd.Series
-        True (not refraction-corrected) zenith angles in decimal
-        degrees. If Z is a vector it must be of the same size as
-        all other vector inputs. Z must be >=0 and <=180.
-
-    Returns
-    -------
-    dni : pd.Series.
-        The modeled direct normal irradiance in W/m^2 provided by the
-        Liu and Jordan model.
-
-    References
-    ----------
-    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
-    Environmental Biophysics. 2nd Ed. New York: Springer.
-
-    [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
-    characteristic distribution of direct, diffuse, and total solar
-    radiation".  Solar Energy 4:1-19 
-    '''
-
-    dni_extra = 1367.0 # W m^-2
-    tao = atmosphere.transmittance(zenith, cloud_prct)
-    airmass_relative = atmosphere.relativeairmass(zenith)
-    airmass = atmosphere.absoluteairmass(airmass_relative, pressure=pressure)
+    dni = dni_extra*tao**airmass
     dhi = 0.3 * (1.0 - tao**airmass) * dni_extra * np.cos(np.radians(zenith))
+    ghi = dhi + dni * np.cos(np.radians(zenith))
 
-    return dhi
-
-
-def liujordan_ghi(zenith, cloud_prct, pressure=101325.):
-    '''
-    Determine GHI from balance of DNI and DHI.    
-
-    Parameters
-    ----------      
-    zenith : pd.Series
-        True (not refraction-corrected) zenith angles in decimal
-        degrees. If Z is a vector it must be of the same size as
-        all other vector inputs. Z must be >=0 and <=180.
-
-    Returns
-    -------
-    dni : pd.Series.
-        The modeled direct normal irradiance in W/m^2 provided by the
-        Liu and Jordan model.
-
-    References
-    ----------
-    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
-    Environmental Biophysics. 2nd Ed. New York: Springer.
-    '''
-
-    return  liujordan_dhi(zenith,cloud_prct,pressure) + \
-            liujordan_dni(zenith,cloud_prct,pressure) * \
-            np.cos(np.radians(zenith))
+    return pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi})

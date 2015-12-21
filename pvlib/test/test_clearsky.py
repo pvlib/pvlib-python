@@ -17,7 +17,8 @@ tus = Location(32.2, -111, 'US/Arizona', 700)
 times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
 times_localized = times.tz_localize(tus.tz)
 
-ephem_data = solarposition.get_solarposition(times, tus)
+ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
+                                             tus.longitude)
 
 
 def test_ineichen_required():
@@ -34,7 +35,7 @@ def test_ineichen_required():
                                       [0.,0.,0.]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
-    out = clearsky.ineichen(times, tus)
+    out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude)
     assert_frame_equal(expected, out)
     
 
@@ -50,12 +51,15 @@ def test_ineichen_supply_linke():
                                       [0.,0.,0.]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
-    out = clearsky.ineichen(times, tus, linke_turbidity=3)
+    out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude,
+                            altitude=tus.altitude,
+                            linke_turbidity=3)
     assert_frame_equal(expected, out)
 
 
 def test_ineichen_solpos():
-    clearsky.ineichen(times, tus, linke_turbidity=3,
+    clearsky.ineichen(times_localized, tus.latitude, tus.longitude,
+                      linke_turbidity=3,
                       solarposition_method='ephemeris')
 
 
@@ -71,7 +75,8 @@ def test_ineichen_airmass():
                                       [0.,0.,0.]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
-    out = clearsky.ineichen(times, tus, linke_turbidity=3,
+    out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude,
+                            linke_turbidity=3,
                             airmass_model='simple')
     assert_frame_equal(expected, out)
 

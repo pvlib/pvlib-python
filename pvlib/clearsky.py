@@ -20,7 +20,7 @@ from pvlib import solarposition
 
 
 
-def ineichen(time, latitude, longitude, altitude, linke_turbidity=None, 
+def ineichen(time, latitude, longitude, altitude=0, linke_turbidity=None, 
              solarposition_method='pyephem', zenith_data=None,
              airmass_model='young1994', airmass_data=None,
              interp_turbidity=True):

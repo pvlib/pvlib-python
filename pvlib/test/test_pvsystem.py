@@ -19,14 +19,20 @@ from pvlib import atmosphere
 from pvlib import solarposition
 from pvlib.location import Location
 
-tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+latitude = 32.2
+longitude = -111
+tus = Location(latitude, longitude, 'US/Arizona', 700, 'Tucson')
 times = pd.date_range(start=datetime.datetime(2014,1,1),
                       end=datetime.datetime(2014,1,2), freq='1Min')
-ephem_data = solarposition.get_solarposition(times, tus, method='pyephem')
-irrad_data = clearsky.ineichen(times, tus, linke_turbidity=3,
-                               solarposition_method='pyephem')
+ephem_data = solarposition.get_solarposition(times,
+                                             latitude=latitude,
+                                             longitude=longitude,
+                                             method='nrel_numpy')
+irrad_data = clearsky.ineichen(times, latitude=latitude, longitude=longitude,
+                               linke_turbidity=3,
+                               solarposition_method='nrel_numpy')
 aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'],
-                     ephem_data['apparent_azimuth'])
+                     ephem_data['azimuth'])
 am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
 
 meta = {'latitude': 37.8,
@@ -200,3 +206,13 @@ def test_snlinverter_float():
     pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
     assert_almost_equals(pacs, 132.004278, 5)
     
+
+def test_PVSystem_creation():
+    pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
+
+
+def test_LocalizedPVSystem_creation():
+    localized_pv_system = pvsystem.LocalizedPVSystem(latitude=30,
+                                                     longitude=-110,
+                                                     module='blah',
+                                                     inverter='blarg')

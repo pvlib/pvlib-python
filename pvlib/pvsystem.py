@@ -176,29 +176,33 @@ class PVSystem(object):
                                       **kwargs)
 
 
-    # defaults to kwargs, falls back to attributes. complicated.
-    # harder to support?
     def ashraeiam(self, aoi):
         """
         Determine the incidence angle modifier using
-        ``self.b``, ``aoi``, and the :func:`ashraeiam` function.
+        ``self.module_parameters['b']``, ``aoi``,
+        and the :func:`ashraeiam` function.
         
         Parameters
         ----------
-        See pvsystem.ashraeiam for details
+        aoi : numeric
+            The angle of incidence in degrees.
         
         Returns
         -------
-        See pvsystem.ashraeiam for details
+        modifier : numeric
+            The AOI modifier.
         """
-        return ashraeiam(self.b, aoi)
-    
-    
-    # thin wrappers of other pvsystem functions
+        b = self.module_parameters['b']
+        return ashraeiam(b, aoi)
+
+
     def physicaliam(self, aoi):
         """
         Determine the incidence angle modifier using
-        ``self.K``, ``self.L``, ``self.n``, ``aoi``, and
+        ``self.module_parameters['K']``,
+        ``self.module_parameters['L']``,
+        ``self.module_parameters['n']``,
+        ``aoi``, and the
         :func:`physicaliam` function.
         
         Parameters
@@ -209,9 +213,12 @@ class PVSystem(object):
         -------
         See pvsystem.physicaliam for details
         """
-        return physicaliam(self.K, self.L, self.n, aoi)
-    
-    
+        K = self.module_parameters['K']
+        L = self.module_parameters['L']
+        n = self.module_parameters['n']
+        return physicaliam(K, L, n, aoi)
+
+
     def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
         """
         Use the :func:`calcparams_desoto` function, the input parameters
@@ -236,8 +243,8 @@ class PVSystem(object):
         return calcparams_desoto(poa_global, temp_cell,
                                  self.module_parameters,
                                  EgRef, dEgdT, **kwargs)
-    
-    
+
+
     def sapm(self, poa_direct, poa_diffuse,
              temp_cell, airmass_absolute, aoi, **kwargs):
         """

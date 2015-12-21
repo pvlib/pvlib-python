@@ -29,8 +29,8 @@ import pandas as pd
 from pvlib.tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
-def get_solarposition(time, location=None, latitude=None, longitude=None,
-                      altitude=None,
+def get_solarposition(time, latitude, longitude,
+                      altitude=0,
                       method='nrel_numpy', pressure=101325,
                       temperature=12, **kwargs):
     """
@@ -39,9 +39,8 @@ def get_solarposition(time, location=None, latitude=None, longitude=None,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-    location : None or pvlib.Location object
-    latitude : None or float
-    longitude : None or float
+    latitude : float
+    longitude : float
     altitude : None or float
     method : string
         'pyephem' uses the PyEphem package: :func:`pyephem`
@@ -73,11 +72,6 @@ def get_solarposition(time, location=None, latitude=None, longitude=None,
     [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
     """
     
-    if location is not None:
-        warnings.warn("The location argument is deprecated. Use " +
-                      "Location.get_solarposition or specify the " +
-                      "latitude and longitude arguments", DeprecationWarning)
-    
     method = method.lower()
     if isinstance(time, dt.datetime):
         time = pd.DatetimeIndex([time, ])
@@ -105,7 +99,7 @@ def get_solarposition(time, location=None, latitude=None, longitude=None,
     return ephem_df
 
 
-def spa_c(time, latitude, longitude, pressure=101325,
+def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
           temperature=12, delta_t=67.0,
           raw_spa_output=False):
     """
@@ -120,9 +114,13 @@ def spa_c(time, latitude, longitude, pressure=101325,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-    location : pvlib.Location object
+        Localized or UTC.
+    latitude : float
+    longitude : float
     pressure : float
         Pressure in Pascals
+    altitude : float
+        Elevation above sea level.
     temperature : float
         Temperature in C
     delta_t : float
@@ -164,8 +162,8 @@ def spa_c(time, latitude, longitude, pressure=101325,
 
     pvl_logger.debug('using built-in spa code to calculate solar position')
 
-    time_utc = localize_to_utc(time, location)
-
+    time_utc = time
+    
     spa_out = []
 
     for date in time_utc:
@@ -175,16 +173,16 @@ def spa_c(time, latitude, longitude, pressure=101325,
                                 hour=date.hour,
                                 minute=date.minute,
                                 second=date.second,
-                                timezone=0,  # tz corrections handled above
-                                latitude=location.latitude,
-                                longitude=location.longitude,
-                                elevation=location.altitude,
+                                timezone=0,  # must input localized or utc times
+                                latitude=latitude,
+                                longitude=longitude,
+                                elevation=altitude,
                                 pressure=pressure / 100,
                                 temperature=temperature,
                                 delta_t=delta_t
                                 ))
 
-    spa_df = pd.DataFrame(spa_out, index=time_utc).tz_convert(location.tz)
+    spa_df = pd.DataFrame(spa_out, index=time_utc)
 
     if raw_spa_output:
         return spa_df
@@ -243,6 +241,7 @@ def spa_python(time, latitude, longitude,
     Parameters
     ----------
     time : pandas.DatetimeIndex
+        Localized or UTC.
     latitude : float
     longitude : float
     altitude : float
@@ -321,15 +320,11 @@ def spa_python(time, latitude, longitude,
                            'equation_of_time': eot},
                           index=time)
 
-    try:
-        result = result.tz_convert(time.tz)
-    except TypeError:
-        result = result.tz_localize(time.tz)
-
     return result
 
 
-def get_sun_rise_set_transit(time, location, how='numpy', delta_t=None,
+def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
+                             delta_t=None,
                              numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
@@ -344,7 +339,8 @@ def get_sun_rise_set_transit(time, location, how='numpy', delta_t=None,
     ----------
     time : pandas.DatetimeIndex
         Only the date part is used
-    location : pvlib.Location object
+    latitude : float
+    longitude : float
     delta_t : float, optional
         Difference between terrestrial time and UT1.
         By default, use USNO historical data and predictions
@@ -371,8 +367,8 @@ def get_sun_rise_set_transit(time, location, how='numpy', delta_t=None,
 
     pvl_logger.debug('Calculating sunrise, set, transit with spa_python code')
 
-    lat = location.latitude
-    lon = location.longitude
+    lat = latitude
+    lon = longitude
     delta_t = delta_t or 67.0
 
     if not isinstance(time, pd.DatetimeIndex):
@@ -392,31 +388,26 @@ def get_sun_rise_set_transit(time, location, how='numpy', delta_t=None,
 
     # arrays are in seconds since epoch format, need to conver to timestamps
     transit = pd.to_datetime(transit, unit='s', utc=True).tz_convert(
-        location.tz).tolist()
+        time.tz).tolist()
     sunrise = pd.to_datetime(sunrise, unit='s', utc=True).tz_convert(
-        location.tz).tolist()
+        time.tz).tolist()
     sunset = pd.to_datetime(sunset, unit='s', utc=True).tz_convert(
-        location.tz).tolist()
+        time.tz).tolist()
 
     result = pd.DataFrame({'transit': transit,
                            'sunrise': sunrise,
                            'sunset': sunset}, index=time)
 
-    try:
-        result = result.tz_convert(location.tz)
-    except TypeError:
-        result = result.tz_localize(location.tz)
-
     return result
 
 
-def _ephem_setup(location, pressure, temperature):
+def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
     import ephem
     # initialize a PyEphem observer
     obs = ephem.Observer()
-    obs.lat = str(location.latitude)
-    obs.lon = str(location.longitude)
-    obs.elevation = location.altitude
+    obs.lat = str(latitude)
+    obs.lon = str(longitude)
+    obs.elevation = altitude
     obs.pressure = pressure / 100.  # convert to mBar
     obs.temp = temperature
 
@@ -425,14 +416,19 @@ def _ephem_setup(location, pressure, temperature):
     return obs, sun
 
 
-def pyephem(time, location, pressure=101325, temperature=12):
+def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
+            temperature=12):
     """
     Calculate the solar position using the PyEphem package.
 
     Parameters
     ----------
     time : pandas.DatetimeIndex
-    location : pvlib.Location object
+        Localized or UTC.
+    latitude : float
+    longitude : float
+    altitude : float
+        distance above sea level.
     pressure : int or float, optional
         air pressure in Pascals.
     temperature : int or float, optional
@@ -449,7 +445,6 @@ def pyephem(time, location, pressure=101325, temperature=12):
     See also
     --------
     spa_python, spa_c, ephemeris
-
     """
 
     # Written by Will Holmgren (@wholmgren), University of Arizona, 2014
@@ -460,17 +455,22 @@ def pyephem(time, location, pressure=101325, temperature=12):
 
     pvl_logger.debug('using PyEphem to calculate solar position')
 
-    time_utc = localize_to_utc(time, location)
+    # if localized, convert to UTC. otherwise, assume UTC.
+    try:
+        time_utc = time.tz_convert('UTC')
+    except TypeError:
+        time_utc = time
 
-    sun_coords = pd.DataFrame(index=time_utc)
+    sun_coords = pd.DataFrame(index=time)
 
-    obs, sun = _ephem_setup(location, pressure, temperature)
+    obs, sun = _ephem_setup(latitude, longitude, altitude,
+                            pressure, temperature)
 
     # make and fill lists of the sun's altitude and azimuth
     # this is the pressure and temperature corrected apparent alt/az.
     alts = []
     azis = []
-    for thetime in sun_coords.index:
+    for thetime in time_utc:
         obs.date = ephem.Date(thetime)
         sun.compute(obs)
         alts.append(sun.alt)
@@ -483,7 +483,7 @@ def pyephem(time, location, pressure=101325, temperature=12):
     obs.pressure = 0
     alts = []
     azis = []
-    for thetime in sun_coords.index:
+    for thetime in time_utc:
         obs.date = ephem.Date(thetime)
         sun.compute(obs)
         alts.append(sun.alt)
@@ -497,13 +497,10 @@ def pyephem(time, location, pressure=101325, temperature=12):
     sun_coords['apparent_zenith'] = 90 - sun_coords['apparent_elevation']
     sun_coords['zenith'] = 90 - sun_coords['elevation']
 
-    try:
-        return sun_coords.tz_convert(location.tz)
-    except TypeError:
-        return sun_coords.tz_localize(location.tz)
+    return sun_coords
 
 
-def ephemeris(time, location, pressure=101325, temperature=12):
+def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     """
     Python-native solar position calculator.
     The accuracy of this code is not guaranteed.
@@ -512,7 +509,8 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     Parameters
     ----------
     time : pandas.DatetimeIndex
-    location : pvlib.Location
+    latitude : float
+    longitude : float
     pressure : float or Series
         Ambient pressure (Pascals)
     temperature : float or Series
@@ -556,9 +554,6 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     # This helps a little bit:
     # http://www.cv.nrao.edu/~rfisher/Ephemerides/times.html
 
-    pvl_logger.debug('location=%s, temperature=%s, pressure=%s',
-                     location, temperature, pressure)
-
     # the inversion of longitude is due to the fact that this code was
     # originally written for the convention that positive longitude were for
     # locations west of the prime meridian. However, the correct convention (as
@@ -567,8 +562,8 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     # correct convention (e.g. Albuquerque is at -106 longitude), but it needs
     # to be inverted for use in the code.
 
-    Latitude = location.latitude
-    Longitude = -1 * location.longitude
+    Latitude = latitude
+    Longitude = -1 * longitude
 
     Abber = 20 / 3600.
     LatR = np.radians(Latitude)
@@ -576,8 +571,11 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     # the SPA algorithm needs time to be expressed in terms of
     # decimal UTC hours of the day of the year.
 
-    # first convert to utc
-    time_utc = localize_to_utc(time, location)
+    # if localized, convert to UTC. otherwise, assume UTC.
+    try:
+        time_utc = time.tz_convert('UTC')
+    except TypeError:
+        time_utc = time
 
     # strip out the day of the year and calculate the decimal hour
     DayOfYear = time_utc.dayofyear
@@ -664,7 +662,7 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     ApparentSunEl = SunEl + Refract
 
     # make output DataFrame
-    DFOut = pd.DataFrame(index=time_utc).tz_convert(location.tz)
+    DFOut = pd.DataFrame(index=time)
     DFOut['apparent_elevation'] = ApparentSunEl
     DFOut['elevation'] = SunEl
     DFOut['azimuth'] = SunAz
@@ -675,8 +673,8 @@ def ephemeris(time, location, pressure=101325, temperature=12):
     return DFOut
 
 
-def calc_time(lower_bound, upper_bound, location, attribute, value,
-              pressure=101325, temperature=12, xtol=1.0e-12):
+def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
+              altitude=0, pressure=101325, temperature=12, xtol=1.0e-12):
     """
     Calculate the time between lower_bound and upper_bound
     where the attribute is equal to value. Uses PyEphem for
@@ -686,13 +684,16 @@ def calc_time(lower_bound, upper_bound, location, attribute, value,
     ----------
     lower_bound : datetime.datetime
     upper_bound : datetime.datetime
-    location : pvlib.Location object
+    latitude : float
+    longitude : float
     attribute : str
         The attribute of a pyephem.Sun object that
         you want to solve for. Likely options are 'alt'
         and 'az' (which must be given in radians).
     value : int or float
         The value of the attribute to solve for
+    altitude : float
+        Distance above sea level.
     pressure : int or float, optional
         Air pressure in Pascals. Set to 0 for no
         atmospheric correction.
@@ -719,7 +720,8 @@ def calc_time(lower_bound, upper_bound, location, attribute, value,
     except ImportError:
         raise ImportError('The calc_time function requires scipy')
 
-    obs, sun = _ephem_setup(location, pressure, temperature)
+    obs, sun = _ephem_setup(latitude, longitude, altitude,
+                            pressure, temperature)
 
     def compute_attr(thetime, target, attr):
         obs.date = thetime
@@ -732,7 +734,7 @@ def calc_time(lower_bound, upper_bound, location, attribute, value,
     djd_root = so.brentq(compute_attr, lb, ub,
                          (value, attribute), xtol=xtol)
 
-    return djd_to_datetime(djd_root, location.tz)
+    return djd_to_datetime(djd_root)
 
 
 def pyephem_earthsun_distance(time):

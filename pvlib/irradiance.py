@@ -1942,7 +1942,7 @@ def liujordan(zenith, cloud_prct, pressure=101325.):
     '''
 
     dni_extra = 1367.0 # W m^-2
-    tao = atmosphere.transmittance(zenith, cloud_prct)
+    tao = atmosphere.transmittance(cloud_prct)
     airmass_relative = atmosphere.relativeairmass(zenith)
     airmass = atmosphere.absoluteairmass(airmass_relative, pressure=pressure)
 

@@ -248,7 +248,7 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     return AM
 
 
-def transmittance(zenith, cloud_prct):
+def transmittance(cloud_prct):
     '''
     Calculates transmittance.
 

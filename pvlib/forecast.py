@@ -25,16 +25,6 @@ class ForecastModel(object):
 
     Parameters
     ----------
-    access_url: string
-        URL specifying the dataset from data will be retrieved.
-    base_tds_url : string
-        The top level server address
-    catalog_url : string
-        The url path of the catalog to parse.
-    columns: list
-        List of headers used to create the data DataFrame.
-    data_format: string
-        Format of the forecast data being requested from UNIDATA.
     model_type: string
         UNIDATA category in which the model is located.
     model_name: string
@@ -44,8 +34,18 @@ class ForecastModel(object):
 
     Attributes
     ----------
+    access_url: string
+        URL specifying the dataset from data will be retrieved.
+    base_tds_url : string
+        The top level server address
+    catalog_url : string
+        The url path of the catalog to parse.
+    columns: list
+        List of headers used to create the data DataFrame.
     data: pd.DataFrame
         Data returned from the query.
+    data_format: string
+        Format of the forecast data being requested from UNIDATA.
     dataset: Dataset
         Object containing information used to access forecast data.
     dataframe_variables: list
@@ -108,7 +108,6 @@ class ForecastModel(object):
     vert_level = 100000
     columns = np.array(['temperature',
                         'wind_speed',
-                        'pressure',
                         'total_clouds',
                         'low_clouds',
                         'mid_clouds',
@@ -118,8 +117,8 @@ class ForecastModel(object):
                         'ghi', ])
 
     def __init__(self, model_type, model_name, set_type):
-        self.model_name = model_name
         self.model_type = model_type
+        self.model_name = model_name
         self.set_type = set_type
         self.catalog = TDSCatalog(self.catalog_url)
         self.fm_models = TDSCatalog(self.catalog.catalog_refs[model_type].href)
@@ -127,12 +126,12 @@ class ForecastModel(object):
         
         try:
             model_url = self.fm_models.catalog_refs[model_name].href
-            self.model = TDSCatalog(model_url)
-            self.datasets_list = list(self.model.datasets.keys())
-            self.set_dataset()
         except ParseError:
-            import warnings
-            warnings.warn(self.model_name + ' model is unavailable.')
+            raise ParseError(self.model_name + ' model may be unavailable.')
+
+        self.model = TDSCatalog(model_url)
+        self.datasets_list = list(self.model.datasets.keys())
+        self.set_dataset()
 
 
     def set_dataset(self):
@@ -208,16 +207,16 @@ class ForecastModel(object):
 
         Parameters
         ----------
-
-        variables: dictionary
-            Variables and common names being queried.
-        latlon: list
-            Latitude and longitude of query location.
-        location:
+        latitude: list
+            A list of floats containing latitude values.
+        longitude: list
+            A list of floats containing longitude values.
         time: pd.datetimeindex
             Time range of interest.
         vert_level: float or integer
             Vertical altitude of interest.
+        variables: dictionary
+            Variables and common names being queried.
 
         Returns
         -------
@@ -247,11 +246,19 @@ class ForecastModel(object):
         self.query.accept(self.data_format)
         netcdf_data = self.ncss.get_data(self.query)
 
-        self.set_time(netcdf_data.variables['time'])
+        try:
+            time_var = 'time'
+            self.set_time(netcdf_data.variables[time_var])
+        except KeyError:
+            time_var = 'time1'
+            self.set_time(netcdf_data.variables[time_var])
+
         self.data = self.netcdf2pandas(netcdf_data)
 
         self.set_variable_units(netcdf_data)
         self.set_variable_stdnames(netcdf_data)
+        if self.__class__.__name__ is 'HRRR':
+            self.calc_temperature(netcdf_data)
         self.convert_temperature()
         self.calc_wind(netcdf_data)
         self.calc_radiation(netcdf_data)
@@ -344,33 +351,34 @@ class ForecastModel(object):
 
         Parameters
         ----------
-        args: list
-            Arguments to be along to the radiation functions.
-        cloud_type: string
-            Type of cloud cover to use for calculating radiation values.
         data: netcdf
             Query data formatted in netcdf format.
-        rad: list
-            List of radiation types to calculate.
-        rad_funcs: list
-            List of radiation functions used to calculate radiation.
+        cloud_type: string
+            Type of cloud cover to use for calculating radiation values.
         '''
         self.rad_type = {}
-        if not self.lbox and cloud_type in self.data:
+        if not self.lbox and cloud_type in self.modelvariables:           
             cloud_prct = self.data[cloud_type]
             solpos = get_solarposition(self.time, self.location)
             self.zenith = np.array(solpos.zenith.tz_convert('UTC'))
             for rad in ['dni','dhi','ghi']:
-                if rad in self.modelvariables:
-                    self.data[rad] = pd.Series(
-                        data[self.variables[rad]][:].squeeze(), 
-                        index=self.time)
-                    self.rad_type[rad] = 'forecast'
+                if self.model_name is 'HRRR_ESRL':
+                    # HRRR_ESRL is the only model with the 
+                    # correct equation of time.
+                    if rad in self.modelvariables:
+                        self.data[rad] = pd.Series(
+                            data[self.variables[rad]][:].squeeze(), 
+                            index=self.time)
+                        self.rad_type[rad] = 'forecast'
+                        self.data[rad].fillna(0, inplace=True)
                 else:
-                    self.rad_type[rad] = 'liujordan'
-                    self.data[rad] = liujordan(self.zenith, cloud_prct)[rad]
+                    for rad in ['dni','dhi','ghi']:
+                        self.rad_type[rad] = 'liujordan'
+                        self.data[rad] = liujordan(self.zenith, cloud_prct)[rad]
+                        self.data[rad].fillna(0, inplace=True)
 
             for var in ['dni', 'dhi', 'ghi']:
+                self.data[var].fillna(0, inplace=True)
                 self.var_units[var] = '$W m^{-2}$'
 
     def convert_temperature(self):
@@ -378,14 +386,31 @@ class ForecastModel(object):
         Converts Kelvin to celsius.
 
         '''
-        for atemp in ['temperature']:
-            if atemp in self.data.columns:
-                self.data[atemp] -= 273.15
-                self.var_units[atemp] = 'C'
+        self.data['temperature'] -= 273.15
+        self.var_units['temperature'] = 'C'
+
+    def calc_temperature(self, data):
+        '''
+        Calculates temperature (in degrees C) from isobaric temperature.
+
+        Parameters
+        ----------
+        data: netcdf
+            Query data in netcdf format.
+        '''
+        P = data['Pressure_surface'][:].squeeze() / 100.0
+        Tiso = data['Temperature_isobaric'][:].squeeze()
+        Td = data['Dewpoint_temperature_isobaric'][:].squeeze() - 273.15
+        e = 6.11 * 10**((7.5 * Td) / (Td + 273.3))
+        w = 0.622 * (e / (P - e))
+
+        T = Tiso - ((2.501 * 10.**6) / 1005.7) * w
+
+        self.data['temperature'] = T
 
     def calc_wind(self, data):
         '''
-        Calculates wind speed quantity.
+        Computes wind speed.
 
         Parameters
         ----------
@@ -400,7 +425,7 @@ class ForecastModel(object):
                     data['v-component_of_wind_isobaric'][:].squeeze()**2)
                 self.wind_type = 'component'
             elif 'Wind_speed_gust_surface' in self.queryvariables:
-                wind_data = 0.25 * data['Wind_speed_gust_surface'][:].squeeze()
+                wind_data = data['Wind_speed_gust_surface'][:].squeeze()
                 self.wind_type = 'gust'
 
             if 'wind_speed' in self.data:
@@ -414,17 +439,17 @@ class GFS(ForecastModel):
 
     Model data corresponds to 0.25 degree resolution forecasts.
 
+    Parameters
+    ----------
+    res: string
+        Resolution of the model.
+    set_type: string
+        Type of model to pull data from.
+
     Attributes
     ----------
-    cols: list
-        Common names for variables.
     dataframe_variables: list
         Common variables present in the final set of data.
-    variables: dictionary
-        Dictionary where common variables reference the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
     model: string
         Name of the UNIDATA forecast model.
     model_type: string
@@ -433,8 +458,6 @@ class GFS(ForecastModel):
         Common variable names.
     queryvariables: list
         Names of default variables specific to the model.
-    res: string
-        Resolution of the model.
     variables: dictionary
         Dictionary of common variables that reference the model
         specific variables.
@@ -487,17 +510,15 @@ class HRRR_ESRL(ForecastModel):
     Model data corresponds to NOAA/GSD/ESRL HRRR CONUS 3km resolution
     surface forecasts.
 
+    Parameters
+    ----------
+    set_type: string
+        Type of model to pull data from.
+
     Attributes
     ----------
-    cols: list
-        Common names for variables.
     dataframe_variables: list
         Common variables present in the final set of data.
-    variables: dictionary
-        Dictionary where common variables reference the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
     model: string
         Name of the UNIDATA forecast model.
     model_type: string
@@ -513,11 +534,10 @@ class HRRR_ESRL(ForecastModel):
 
     def __init__(self, set_type='best'):
         import warnings
-        warnings.warn('HRRR_ESRL is an experimental model and is not always \
-                         available.')       
+        warnings.warn('HRRR_ESRL is an experimental model and is not always '
+                        + 'available.')       
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
-        description = ''
         self.variables = {
         'temperature':'Temperature_surface',
         'wind_speed_gust':'Wind_speed_gust_surface',
@@ -547,17 +567,15 @@ class NAM(ForecastModel):
     Model data corresponds to NAM CONUS 12km resolution forecasts
     from CONDUIT.
 
+    Parameters
+    ----------
+    set_type: string
+        Type of model to pull data from.
+
     Attributes
     ----------
-    cols: list
-        Common names for variables.
     dataframe_variables: list
         Common variables present in the final set of data.
-    variables: dictionary
-        Dictionary where common variables reference the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
     model: string
         Name of the UNIDATA forecast model.
     model_type: string
@@ -574,7 +592,6 @@ class NAM(ForecastModel):
     def __init__(self,set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'NAM CONUS 12km from CONDUIT'
-        description = ''
         self.variables = {
         'temperature':'Temperature_surface',
         'wind_speed_gust':'Wind_speed_gust_surface',
@@ -603,17 +620,15 @@ class HRRR(ForecastModel):
     Model data corresponds to NCEP HRRR CONUS 2.5km resolution 
     forecasts.
 
+    Parameters
+    ----------
+    set_type: string
+        Type of model to pull data from.
+
     Attributes
     ----------
-    cols: list
-        Common names for variables.
     dataframe_variables: list
         Common variables present in the final set of data.
-    variables: dictionary
-        Dictionary where common variables reference the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
     model: string
         Name of the UNIDATA forecast model.
     model_type: string
@@ -630,23 +645,24 @@ class HRRR(ForecastModel):
     def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'NCEP HRRR CONUS 2.5km'            
-        description = ''
         self.variables = {
-        'temperature':'Temperature_height_above_ground',
+        'temperature_iso':'Dewpoint_temperature_isobaric',
+        'temperature_dew_iso':'Temperature_isobaric',
+        'pressure':'Pressure_surface',
         'wind_speed_gust':'Wind_speed_gust_surface',
         'total_clouds':'Total_cloud_cover_entire_atmosphere',
         'low_clouds':'Low_cloud_cover_low_cloud',
         'mid_clouds':'Medium_cloud_cover_middle_cloud',
-        'high_clouds':'High_cloud_cover_high_cloud', }
+        'high_clouds':'High_cloud_cover_high_cloud',
+        'condensation_height':'Geopotential_height_adiabatic_condensation_lifted'}
         self.modelvariables = self.variables.keys()
         self.queryvariables = [self.variables[key] for key in \
                                 self.modelvariables]
         self.dataframe_variables = [
-        'temperature',
         'total_clouds',
         'low_clouds',
         'mid_clouds',
-                            'high_clouds', ]
+        'high_clouds', ]
         super(HRRR, self).__init__(model_type, model, set_type)
 
 
@@ -656,17 +672,15 @@ class NDFD(ForecastModel):
 
     Model data corresponds to NWS CONUS CONDUIT forecasts.
 
+    Parameters
+    ----------
+    set_type: string
+        Type of model to pull data from.
+
     Attributes
     ----------
-    cols: list
-        Common names for variables.
     dataframe_variables: list
         Common variables present in the final set of data.
-    variables: dictionary
-        Dictionary where common variables reference the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
     model: string
         Name of the UNIDATA forecast model.
     model_type: string
@@ -683,7 +697,6 @@ class NDFD(ForecastModel):
     def __init__(self, set_type='best'):
         model_type = 'Forecast Products and Analyses'
         model = 'National Weather Service CONUS Forecast Grids (CONDUIT)'
-        description = ''
         self.variables = {
         'temperature':'Temperature_surface',
         'wind_speed':'Wind_speed_surface',
@@ -705,17 +718,15 @@ class RAP(ForecastModel):
     Model data corresponds to Rapid Refresh CONUS 20km resolution 
     forecasts.
 
+    Parameters
+    ----------
+    set_type: string
+        Type of model to pull data from.
+
     Attributes
     ----------
-    cols: list
-        Common names for variables.
     dataframe_variables: list
         Common variables present in the final set of data.
-    variables: dictionary
-        Dictionary where common variables reference the model 
-        specific variable name.
-    idx: list
-        Indices of the variables corresponding to their common name.
     model: string
         Name of the UNIDATA forecast model.
     model_type: string
@@ -732,7 +743,6 @@ class RAP(ForecastModel):
     def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'Rapid Refresh CONUS 20km'
-        description = ''
         self.variables = {
         'temperature':'Temperature_surface',
         'wind_speed_gust':'Wind_speed_gust_surface',

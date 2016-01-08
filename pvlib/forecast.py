@@ -411,7 +411,10 @@ class ForecastModel(object):
 
     def calc_wind(self, data):
         '''
-        Computes wind speed.
+        Computes wind speed. 
+
+        In some cases only gust wind speed is available. The wind_type 
+        attribute will indicate the type of wind speed that is present.
 
         Parameters
         ----------

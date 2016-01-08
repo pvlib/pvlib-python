@@ -192,12 +192,12 @@ class ForecastModel(object):
         if isinstance(time, datetime.datetime):
             tzinfo = time.tzinfo
         else:
-            try:
-                tzinfo = time.tz
-            except TypeError:
-                tzinfo = None
+            tzinfo = time.tz
 
-        self.location = Location(self.latitude, self.longitude, tz=tzinfo)
+        if tzinfo is None:
+            self.location = Location(self.latitude, self.longitude)
+        else:
+            self.location = Location(self.latitude, self.longitude, tz=tzinfo)
 
     def get_query_data(self, latitude, longitude, time, vert_level=None, 
         variables=None):
@@ -386,8 +386,9 @@ class ForecastModel(object):
         Converts Kelvin to celsius.
 
         '''
-        self.data['temperature'] -= 273.15
-        self.var_units['temperature'] = 'C'
+        if 'Temperature_surface' in self.queryvariables or 'Temperature_isobaric' in self.queryvariables:
+            self.data['temperature'] -= 273.15
+            self.var_units['temperature'] = 'C'
 
     def calc_temperature(self, data):
         '''

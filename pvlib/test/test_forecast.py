@@ -1,6 +1,7 @@
 from datetime import datetime,timedelta
 import inspect
 from math import isnan
+from pytz import timezone
 
 import numpy as np
 import pandas as pd
@@ -102,6 +103,7 @@ def test_gfs():
 
 def test_temp_convert():
     amodel = _working_models[0]
+    amodel.queryvariables = ['Temperature']
     amodel.data = pd.DataFrame({'temperature':[273.15]})
     amodel.convert_temperature()
 
@@ -115,3 +117,9 @@ def test_bounding_box():
     new_variables = {'temperature':'Temperature_surface'}
     data = amodel.get_query_data(latitude, longitude, _time, 
         variables=new_variables)
+
+def test_set_location():
+    amodel = _working_models[0]
+    time = datetime.now(timezone('UTC'))
+    amodel.set_location(time)
+

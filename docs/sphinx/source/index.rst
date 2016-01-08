@@ -60,6 +60,7 @@ Contents
    self
    whatsnew
    comparison_pvlib_matlab
+   forecast_module
    pvlib
 
 

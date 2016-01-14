@@ -91,6 +91,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
     Examples
     --------
     .. ipython::
+    
         times = pd.date_range('2014-01-01', '2015-01-01', freq='1D')
         spencer = pd.Series(pvlib.irradiance.extraradiation(times, method='spencer'), times)
         asce = pd.Series(pvlib.irradiance.extraradiation(times, method='asce'), times)

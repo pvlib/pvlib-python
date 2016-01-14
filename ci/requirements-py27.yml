@@ -1,4 +1,7 @@
 name: test_env
+channels:
+    - defaults
+    - http://conda.anaconda.org/Unidata
 dependencies:
     - python=2.7 
     - numpy
@@ -8,6 +11,6 @@ dependencies:
     - pytz
     - ephem
     - numba
-    - netcdf4
+    - siphon
     - pip:
         - coveralls

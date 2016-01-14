@@ -1,3 +1,6 @@
+# the has/skip patterns closely follow the examples set by
+# the xray/xarray project
+
 import sys
 
 try:

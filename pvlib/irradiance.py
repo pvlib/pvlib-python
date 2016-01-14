@@ -3,6 +3,13 @@ The ``irradiance`` module contains functions for modeling
 global horizontal irradiance, direct normal irradiance,
 diffuse horizontal irradiance, and total irradiance
 under various conditions.
+
+.. ipython:: python
+    :suppress:
+    
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
 """
 
 from __future__ import division

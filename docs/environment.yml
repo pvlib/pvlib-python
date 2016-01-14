@@ -9,3 +9,5 @@ dependencies:
     - numba
     - ipython
     - sphinx
+    - numpydoc
+    - seaborn

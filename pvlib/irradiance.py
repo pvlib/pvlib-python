@@ -4,12 +4,26 @@ global horizontal irradiance, direct normal irradiance,
 diffuse horizontal irradiance, and total irradiance
 under various conditions.
 
+Extraterrestrial radiation can be modeled using :func:`extraradiation`.
+
 .. ipython:: python
-    :suppress:
     
     import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt
+    import pvlib
+    
+    times = pd.date_range('2014-01-01', '2015-01-01', freq='1D')
+    spencer = pd.Series(pvlib.irradiance.extraradiation(times, method='spencer'), times)
+    asce = pd.Series(pvlib.irradiance.extraradiation(times, method='asce'), times)
+    ephem = pvlib.irradiance.extraradiation(times, method='pyephem') # approx 100x slower than the above.
+    spencer.plot(label='spencer')
+    asce.plot(label='asce')
+    ephem.plot(label='pyephem')
+    plt.legend()
+    @savefig extraradiation.png width=4in
+    plt.ylabel('Extraterrestrial radiation (W/m^2)')
+    
 """
 
 from __future__ import division
@@ -94,22 +108,6 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
     See Also
     --------
     pvlib.clearsky.disc
-    
-    Examples
-    --------
-    .. ipython::
-    
-        times = pd.date_range('2014-01-01', '2015-01-01', freq='1D')
-        spencer = pd.Series(pvlib.irradiance.extraradiation(times, method='spencer'), times)
-        asce = pd.Series(pvlib.irradiance.extraradiation(times, method='asce'), times)
-        ephem = pvlib.irradiance.extraradiation(times, method='pyephem') # approx 100x slower than the above.
-        spencer.plot(label='spencer')
-        asce.plot(label='asce')
-        ephem.plot(label='pyephem')
-        plt.legend()
-        @savefig extraradiation.png width=4in
-        plt.ylabel('Extraterrestrial radiation (W/m^2)')
-
     """
 
     pvl_logger.debug('irradiance.extraradiation()')

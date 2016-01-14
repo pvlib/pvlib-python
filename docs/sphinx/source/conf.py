@@ -26,8 +26,12 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return Mock()
 
+<<<<<<< HEAD
 MOCK_MODULES = ['scipy', 'scipy.io', 'numpy', 'ephem', 'pandas', 
                 'pvlib.spa_c_files.spa_py', 'dateutil', 'netCDF4']
+=======
+MOCK_MODULES = []
+>>>>>>> rtdconda
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -53,7 +57,9 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.extlinks',
     'numpydoc',
-    'sphinx.ext.autosummary'
+    'sphinx.ext.autosummary',
+    'IPython.sphinxext.ipython_directive',
+    'IPython.sphinxext.ipython_console_highlighting',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

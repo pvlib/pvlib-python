@@ -10,4 +10,5 @@ dependencies:
     - ipython
     - sphinx
     - numpydoc
+    - matplotlib
     - seaborn

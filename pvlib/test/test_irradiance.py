@@ -149,14 +149,16 @@ def test_cloudy_day():
     
 
 def test_total_irrad():
-    models = ['isotropic', 'klutcher', 'haydavies', 'reindl', 'king', 'perez']
+    models = ['isotropic', 'klutcher', 'klucher',
+              'haydavies', 'reindl', 'king', 'perez']
     AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
 
     for model in models:
         total = irradiance.total_irrad(
             32, 180, 
             ephem_data['apparent_zenith'], ephem_data['azimuth'],
-            dni=irrad_data['dni'], ghi=irrad_data['ghi'], dhi=irrad_data['dhi'],
+            dni=irrad_data['dni'], ghi=irrad_data['ghi'],
+            dhi=irrad_data['dhi'],
             dni_extra=dni_et, airmass=AM,
             model=model,
             surface_type='urban')

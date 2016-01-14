@@ -1,6 +1,6 @@
 .. _whatsnew_0220:
 
-v0.2.2 (November, 2015)
+v0.2.2 (November 13, 2015)
 -----------------------
 
 This is a minor release from 0.2.1.
@@ -10,11 +10,20 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Adds Python 3.5 compatibility (:issue:`87`)
+* Moves the Linke turbidity lookup into ``clearsky.lookup_linke_turbidity``.
+  The API for ``clearsky.ineichen`` remains the same. (:issue:`95`)
 
 
 Bug fixes
 ~~~~~~~~~
 
+* ``irradiance.total_irrad`` had a typo that required the
+  Klucher model to be accessed with ``'klutcher'``. Both spellings will work
+  for the remaining 0.2.* versions of pvlib,
+  but the misspelled method will be removed in 0.3.
+  (:issue:`97`)
+* Fixes an import and KeyError in the IPython notebook tutorials
+  (:issue:`94`).
 * Uses the ``logging`` module properly by replacing ``format``
   calls with ``args``. This results in a 5x speed increase for
   ``tracking.singleaxis`` (:issue:`89`).
@@ -24,4 +33,5 @@ Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* jetheurer
 * dacoex

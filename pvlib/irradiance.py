@@ -109,6 +109,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
         plt.legend()
         @savefig extraradiation.png width=4in
         plt.ylabel('Extraterrestrial radiation (W/m^2)')
+
     """
 
     pvl_logger.debug('irradiance.extraradiation()')

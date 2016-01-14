@@ -1,4 +1,7 @@
 name: pvlib
+channels:
+    - defaults
+    - http://conda.anaconda.org/Unidata
 dependencies:
     - python=2.7 
     - numpy
@@ -12,3 +15,4 @@ dependencies:
     - numpydoc
     - matplotlib
     - seaborn
+    - siphon

@@ -22,7 +22,7 @@ _latitude = 32.2
 _longitude = -110.9
 _tz = 'US/Arizona'
 _time = pd.DatetimeIndex([datetime.now()], tz=_tz)
-_models = [GFS, NAM, HRRR, NDFD, RAP, HRRR_ESRL]
+_models = [GFS, NAM, HRRR, RAP, NDFD, HRRR_ESRL]
 _working_models = []
 _variables = np.array(['temperature',
                        'wind_speed',
@@ -46,7 +46,6 @@ def test_fmcreation():
         if model.__name__ is not 'HRRR_ESRL':
             amodel = model()
             _working_models.append(amodel)
-            data = amodel.get_query_data(_latitude, _longitude, _time)
         else:
             try:
                 amodel = model()
@@ -54,9 +53,9 @@ def test_fmcreation():
                 pass
 
 
-# def test_data_query():
-#     for amodel in _working_models:
-#         data = amodel.get_query_data(_latitude, _longitude, _time)
+def test_data_query():
+    for amodel in _working_models:
+        data = amodel.get_query_data(_latitude, _longitude, _time)
 
 
 def test_dataframe_variables():

@@ -127,10 +127,14 @@ class ForecastModel(object):
         
         try:
             model_url = self.fm_models.catalog_refs[model_name].href
-        except (ParseError, HTTPError) as e:
-            raise e(self.model_name + ' model may be unavailable.')
+        except ParseError:
+            raise ParseError(self.model_name + ' model may be unavailable.')
 
-        self.model = TDSCatalog(model_url)
+        try:
+            self.model = TDSCatalog(model_url)
+        except HTTPError:
+            raise HTTPError(self.model_name + ' model may be unavailable.')
+
         self.datasets_list = list(self.model.datasets.keys())
         self.set_dataset()
 

@@ -10,6 +10,7 @@ import requests
 from nose.tools import raises,assert_almost_equals
 from nose.plugins.skip import SkipTest
 from numpy.testing import assert_almost_equal
+from urllib2 import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.forecast import GFS,HRRR_ESRL,HRRR,NAM,NDFD,RAP
@@ -48,7 +49,7 @@ def test_fmcreation():
         else:
             try:
                 amodel = model()
-            except ParseError:
+            except ParseError,HTTPError:
                 pass
 
 

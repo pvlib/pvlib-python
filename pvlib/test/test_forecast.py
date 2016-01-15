@@ -46,6 +46,7 @@ def test_fmcreation():
         if model.__name__ is not 'HRRR_ESRL':
             amodel = model()
             _working_models.append(amodel)
+            data = amodel.get_query_data(_latitude, _longitude, _time)
         else:
             try:
                 amodel = model()
@@ -53,9 +54,9 @@ def test_fmcreation():
                 pass
 
 
-def test_data_query():
-    for amodel in _working_models:
-        data = amodel.get_query_data(_latitude, _longitude, _time)
+# def test_data_query():
+#     for amodel in _working_models:
+#         data = amodel.get_query_data(_latitude, _longitude, _time)
 
 
 def test_dataframe_variables():

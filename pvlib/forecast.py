@@ -6,7 +6,7 @@ import datetime
 from netCDF4 import num2date
 import numpy as np
 import pandas as pd
-from urllib2 import HTTPError
+from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location

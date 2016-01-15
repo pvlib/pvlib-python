@@ -21,7 +21,7 @@ _latitude = 32.2
 _longitude = -110.9
 _tz = 'US/Arizona'
 _time = pd.DatetimeIndex([datetime.now()], tz=_tz)
-_models = [GFS, HRRR_ESRL, NAM, HRRR, NDFD, RAP]
+_models = [GFS, NAM, HRRR, NDFD, RAP, HRRR_ESRL]
 _working_models = []
 _variables = np.array(['temperature',
                        'wind_speed',
@@ -103,7 +103,7 @@ def test_gfs():
 
 def test_temp_convert():
     amodel = _working_models[0]
-    amodel.queryvariables = ['Temperature']
+    amodel.queryvariables = ['Temperature_surface']
     amodel.data = pd.DataFrame({'temperature':[273.15]})
     amodel.convert_temperature()
 

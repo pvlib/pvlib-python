@@ -38,4 +38,4 @@ install:
 build: false
 
 test_script:
-    - "nosetests -v --with-coverage --cover-package=pvlib pvlib"
+    - "nosetests -v pvlib"

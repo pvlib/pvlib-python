@@ -14,26 +14,8 @@ matrix:
       env: CONDA_ENV=py27
     - python: 3.4
       env: CONDA_ENV=py34
-      addons:
-          apt:
-            packages:
-            - libatlas-dev
-            - libatlas-base-dev
-            - liblapack-dev
-            - gfortran
-            - libgmp-dev
-            - libmpfr-dev
     - python: 3.5
       env: CONDA_ENV=py35
-      addons:
-          apt:
-            packages:
-            - libatlas-dev
-            - libatlas-base-dev
-            - liblapack-dev
-            - gfortran
-            - libgmp-dev
-            - libmpfr-dev
 
 addons:
     apt:

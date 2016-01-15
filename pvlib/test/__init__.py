@@ -2,6 +2,7 @@
 # the xray/xarray project
 
 import sys
+import platform
 
 try:
     import unittest2 as unittest
@@ -17,15 +18,16 @@ except ImportError:
 def requires_scipy(test):
     return test if has_scipy else unittest.skip('requires scipy')(test)
 
-def incompatible_conda_py3(test):
+def incompatible_conda_linux_py3(test):
     """
     Test won't work in Python 3.x due to Anaconda issue.
     """
     major = sys.version_info[0]
     minor = sys.version_info[1]
+    system = platform.system()
 
-    if major == 3:
-        out = unittest.skip('error on Python 3 due to anaconda')(test)
+    if major == 3 and system == 'Linux':
+        out = unittest.skip('error on Linux Python 3 due to Anaconda')(test)
     else:
         out = test
 

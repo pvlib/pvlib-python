@@ -1,9 +1,13 @@
 name: test_env
+channels:
+    - defaults
+    - http://conda.anaconda.org/Unidata
 dependencies:
     - python=3.4
     - nose
     - pytz
     - ephem
+    - siphon
     #- numba
     - pip:
         - numpy

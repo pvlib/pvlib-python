@@ -137,7 +137,17 @@ def test_perez():
                      dni_et, ephem_data['apparent_zenith'],
                      ephem_data['apparent_azimuth'], AM)
 
-# klutcher (misspelling) will be removed in 0.3
+
+def test_liujordan():
+    cloud_prct = np.array([40]*len(ephem_data['apparent_zenith']))
+    irradiance.liujordan(ephem_data['apparent_zenith'], cloud_prct)
+
+
+def test_cloudy_day(): 
+    cloud_prct = np.array([40]*len(ephem_data['zenith']))
+    irradiance.cloudy_day_check(ephem_data['zenith'], cloud_prct)
+    
+
 def test_total_irrad():
     models = ['isotropic', 'klutcher', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']

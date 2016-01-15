@@ -17,6 +17,7 @@ import pandas as pd
 
 from pvlib import tools
 from pvlib import solarposition
+from pvlib import atmosphere
 
 SURFACE_ALBEDOS = {'urban': 0.18,
                    'grass': 0.20,
@@ -1905,3 +1906,69 @@ def _get_dirint_coeffs():
         
     return coeffs[1:,1:,:,:]
 
+def liujordan(zenith, cloud_prct, pressure=101325.):
+    '''
+    Determine DNI, DHI, GHI from extraterrestrial flux, transmittance, 
+    and optical air mass number.
+    
+    Liu and Jordan, 1960, developed a simplified direct radiation model.
+    DHI is from an empirical equation for diffuse radiation from Liu and 
+    Jordan, 1960.
+
+    Parameters
+    ----------      
+    zenith : pd.Series
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. If Z is a vector it must be of the same size as
+        all other vector inputs. Z must be >=0 and <=180.
+
+    cloud_prct : integer or float
+        Cloud coverage in percentage, %.
+
+    Returns
+    -------
+    Pandas.DataFrame
+        Modeled direct normal irradiance, direct horizontal irradiance, and
+        global horizontal irradiance in W/m^2
+
+    References
+    ----------
+    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
+    Environmental Biophysics. 2nd Ed. New York: Springer.
+
+    [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
+    characteristic distribution of direct, diffuse, and total solar
+    radiation".  Solar Energy 4:1-19
+    '''
+
+    dni_extra = 1367.0 # W m^-2
+    tao = atmosphere.transmittance(cloud_prct)
+    airmass_relative = atmosphere.relativeairmass(zenith)
+    airmass = atmosphere.absoluteairmass(airmass_relative, pressure=pressure)
+
+    dni = dni_extra*tao**airmass
+    dhi = 0.3 * (1.0 - tao**airmass) * dni_extra * np.cos(np.radians(zenith))
+    ghi = dhi + dni * np.cos(np.radians(zenith))
+
+    return pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi})
+
+
+def cloudy_day_check(zenith, cloud_prct, pressure=101325.):
+    '''
+    Determines if the sky is overcast.
+
+    Returns
+    -------
+    logical: bool
+        Is the sky is overcast.
+
+    References
+    ----------
+    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
+    Environmental Biophysics. 2nd Ed. New York: Springer.
+    '''
+
+    dni = liujordan(zenith, cloud_prct, pressure)['dni'] * \
+            np.cos(np.radians(zenith))
+
+    return dni < 10.0

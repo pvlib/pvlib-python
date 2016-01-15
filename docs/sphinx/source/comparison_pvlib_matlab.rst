@@ -36,6 +36,7 @@ Library wide changes
 * Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90 or airmass=0. Instead, we make extensive use of ``nan`` values.
 * Changing function and module names so that they do not conflict.
 * Added ``/pvlib/data`` for lookup tables, test, and tutorial data.
+* Added ''forecast.py'' module, for downloading UNIDATA weather forecast data.
 
 
 More specific changes

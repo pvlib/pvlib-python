@@ -1,4 +1,4 @@
-name: test_env
+name: pvlib
 channels:
     - defaults
     - http://conda.anaconda.org/Unidata
@@ -7,10 +7,12 @@ dependencies:
     - numpy
     - scipy
     - pandas
-    - nose
     - pytz
     - ephem
     - numba
+    - ipython
+    - sphinx
+    - numpydoc
+    - matplotlib
+    - seaborn
     - siphon
-    - pip:
-        - coveralls

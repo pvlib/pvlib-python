@@ -16,6 +16,14 @@ clearsky module
     :members:
     :undoc-members:
     :show-inheritance:
+    
+forecast module
+----------------
+
+.. automodule:: pvlib.forecast
+    :members:
+    :undoc-members:
+    :show-inheritance:    
 
 irradiance module
 -----------------

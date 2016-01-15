@@ -11,6 +11,38 @@ try:
 except ImportError:
     raise RuntimeError('setuptools is required')
 
+class MakeExamples(Command):
+    description = 'Create example scripts from IPython notebooks'
+    user_options=[]
+    
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass    
+
+    def run(self):
+        import glob
+        import os
+        import os.path
+        from nbconvert.exporters import PythonExporter
+        from traitlets.config import Config
+        examples_dir = os.path.join(os.path.dirname(__file__), 'docs/tutorials')
+        script_dir = os.path.join(examples_dir, 'scripts')
+        if not os.path.exists(script_dir):
+            os.makedirs(script_dir)
+        c = Config({'Exporter': {'template_file': 'docs/tutorials/python-scripts.tpl'}})
+        exporter = PythonExporter(config=c)
+        for fname in glob.glob(os.path.join(examples_dir, 'notebooks', '*.ipynb')):
+            output, _ = exporter.from_filename(fname)
+            out_fname = os.path.splitext(os.path.basename(fname))[0]
+            out_name = os.path.join(script_dir, out_fname + '.py')
+            print(fname, '->', out_name)
+            with open(out_name, 'w') as outf:
+                outf.write(output)
+
+commands = {'examples':MakeExamples}
+
 DESCRIPTION = 'The PVLIB toolbox provides a set functions for simulating the performance of photovoltaic energy systems.'
 LONG_DESCRIPTION = open('README.md').read()
 
@@ -35,6 +67,8 @@ setuptools_kwargs = {
                          'pandas >= 0.13.1',
                          'pytz',
                          'six',
+                         'netCDF4',
+                         'siphon',               
                          ],
     'scripts': [],
     'include_package_data': True
@@ -65,6 +99,7 @@ else:
 setup(name=DISTNAME,
       version=__version__,
       packages=PACKAGES,
+      cmdclass=commands,
       ext_modules=extensions,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,

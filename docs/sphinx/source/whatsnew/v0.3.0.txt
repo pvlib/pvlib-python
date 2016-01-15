@@ -1,0 +1,21 @@
+.. _whatsnew_0300:
+
+v0.3.0 (October 22, 2015)
+-----------------------
+
+This version only differs from 0.2.1 in that it adds a module that
+can download weather forecast data from UNIDATA using the siphon
+library .
+Upgrade to this module is only necessary if you would like to access
+UNIDATA forecast model data.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Added ''forecast.py'' module which defines forecast model classes.
+
+Contributors
+~~~~~~~~~~~~
+
+* Derek Groenendyk
+* Will Holmgren

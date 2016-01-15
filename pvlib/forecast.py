@@ -3,10 +3,11 @@ The 'forecast' module contains class definitions for
 retreiving forecasted data from UNIDATA Thredd servers.
 '''
 import datetime
-from xml.etree.ElementTree import ParseError
 from netCDF4 import num2date
-import pandas as pd
 import numpy as np
+import pandas as pd
+from urllib2 import HTTPError
+from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
 from pvlib.tools import localize_to_utc
@@ -126,8 +127,8 @@ class ForecastModel(object):
         
         try:
             model_url = self.fm_models.catalog_refs[model_name].href
-        except ParseError:
-            raise ParseError(self.model_name + ' model may be unavailable.')
+        except (ParseError, HTTPError) as e:
+            raise e(self.model_name + ' model may be unavailable.')
 
         self.model = TDSCatalog(model_url)
         self.datasets_list = list(self.model.datasets.keys())

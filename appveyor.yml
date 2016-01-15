@@ -32,5 +32,5 @@ install:
 
 build: false
 
-script:
-    - "nosetests -v --with-coverage --cover-package=pvlib pvlib"
+test_script:
+    - nosetests -v --with-coverage --cover-package=pvlib pvlib

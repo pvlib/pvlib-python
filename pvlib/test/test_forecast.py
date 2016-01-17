@@ -10,6 +10,7 @@ import requests
 from nose.tools import raises,assert_almost_equals
 from nose.plugins.skip import SkipTest
 from numpy.testing import assert_almost_equal
+from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.forecast import GFS,HRRR_ESRL,HRRR,NAM,NDFD,RAP
@@ -21,7 +22,7 @@ _latitude = 32.2
 _longitude = -110.9
 _tz = 'US/Arizona'
 _time = pd.DatetimeIndex([datetime.now()], tz=_tz)
-_models = [GFS, HRRR_ESRL, NAM, HRRR, NDFD, RAP]
+_models = [GFS, NAM, HRRR, RAP, NDFD, HRRR_ESRL]
 _working_models = []
 _variables = np.array(['temperature',
                        'wind_speed',
@@ -48,7 +49,7 @@ def test_fmcreation():
         else:
             try:
                 amodel = model()
-            except ParseError:
+            except (ParseError, HTTPError):
                 pass
 
 
@@ -103,7 +104,7 @@ def test_gfs():
 
 def test_temp_convert():
     amodel = _working_models[0]
-    amodel.queryvariables = ['Temperature']
+    amodel.queryvariables = ['Temperature_surface']
     amodel.data = pd.DataFrame({'temperature':[273.15]})
     amodel.convert_temperature()
 

@@ -11,6 +11,5 @@ dependencies:
     - pytz
     - ephem
     - numba
-    - siphon
     - pip:
         - coveralls

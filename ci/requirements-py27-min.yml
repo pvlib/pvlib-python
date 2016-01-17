@@ -10,6 +10,5 @@ dependencies:
     - nose
     - pytz
     - ephem
-    - siphon
     - pip:
         - coveralls

@@ -1,46 +1,48 @@
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 import inspect
 from math import isnan
 from pytz import timezone
 
 import numpy as np
 import pandas as pd
-import requests
 
-from nose.tools import raises,assert_almost_equals
+from nose.tools import raises, assert_almost_equals
 from nose.plugins.skip import SkipTest
 from numpy.testing import assert_almost_equal
-from requests.exceptions import HTTPError
-from xml.etree.ElementTree import ParseError
 
-from pvlib.forecast import GFS,HRRR_ESRL,HRRR,NAM,NDFD,RAP
-import pvlib.solarposition as solarposition
-from pvlib.location import Location
+from . import requires_siphon, has_siphon
 
-from . import requires_siphon
+if has_siphon:
+    import requests
+    from requests.exceptions import HTTPError
+    from xml.etree.ElementTree import ParseError
 
-# setup times and location to be tested. Tucson, AZ
-_latitude = 32.2
-_longitude = -110.9
-_tz = 'US/Arizona'
-_time = pd.DatetimeIndex([datetime.now()], tz=_tz)
-_models = [GFS, NAM, HRRR, RAP, NDFD, HRRR_ESRL]
-_working_models = []
-_variables = np.array(['temperature',
-                       'wind_speed',
-                       'total_clouds',
-                       'low_clouds',
-                       'mid_clouds',
-                       'high_clouds',
-                       'dni',
-                       'dhi',
-                       'ghi',])
-_nonnan_variables = np.array(['temperature',
-            'wind_speed',
-            'total_clouds',
-            'dni',
-            'dhi',
-            'ghi',])
+    from pvlib.forecast import GFS,HRRR_ESRL,HRRR,NAM,NDFD,RAP
+    import pvlib.solarposition as solarposition
+    from pvlib.location import Location
+
+    # setup times and location to be tested. Tucson, AZ
+    _latitude = 32.2
+    _longitude = -110.9
+    _tz = 'US/Arizona'
+    _time = pd.DatetimeIndex([datetime.now()], tz=_tz)
+    _models = [GFS, NAM, HRRR, RAP, NDFD, HRRR_ESRL]
+    _working_models = []
+    _variables = np.array(['temperature',
+                           'wind_speed',
+                           'total_clouds',
+                           'low_clouds',
+                           'mid_clouds',
+                           'high_clouds',
+                           'dni',
+                           'dhi',
+                           'ghi',])
+    _nonnan_variables = np.array(['temperature',
+                'wind_speed',
+                'total_clouds',
+                'dni',
+                'dhi',
+                'ghi',])
 
 @requires_siphon
 def test_fmcreation():

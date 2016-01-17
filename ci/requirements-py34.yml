@@ -4,12 +4,13 @@ channels:
     - http://conda.anaconda.org/Unidata
 dependencies:
     - python=3.4
+    - numpy
+    - scipy
+    - pandas
     - nose
     - pytz
     - ephem
-    - siphon
-    #- numba
+    - numba
+	- siphon
     - pip:
-        - numpy
-        - pandas
         - coveralls

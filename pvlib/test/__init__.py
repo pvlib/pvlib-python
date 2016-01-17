@@ -15,8 +15,17 @@ try:
 except ImportError:
     has_scipy = False
 
+try:
+    import siphon
+    has_siphon = True
+except ImportError:
+    has_siphon = False
+
 def requires_scipy(test):
     return test if has_scipy else unittest.skip('requires scipy')(test)
+
+def requires_siphon(test):
+    return test if has_siphon else unittest.skip('requires siphon')(test)
 
 def incompatible_conda_linux_py3(test):
     """

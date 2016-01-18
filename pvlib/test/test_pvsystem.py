@@ -10,6 +10,7 @@ import pandas as pd
 
 from nose.tools import assert_equals, assert_almost_equals
 from pandas.util.testing import assert_series_equal, assert_frame_equal
+from . import incompatible_conda_linux_py3
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -128,7 +129,7 @@ def test_calcparams_desoto():
                                EgRef=1.121,
                                dEgdT=-0.0002677)
 
-
+@incompatible_conda_linux_py3
 def test_i_from_v():
     output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
     assert_almost_equals(-299.746389916, output, 5)
@@ -146,7 +147,7 @@ def test_singlediode_series():
     out = pvsystem.singlediode(cecmodule, IL, I0, Rs, Rsh, nNsVth)
     assert isinstance(out, pd.DataFrame)
 
-
+@incompatible_conda_linux_py3
 def test_singlediode_series():  
     cecmodule = sam_data['cecmod'].Example_Module                       
     out = pvsystem.singlediode(cecmodule, 7, 6e-7, .1, 20, .5)

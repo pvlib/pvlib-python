@@ -11,7 +11,7 @@ There is a convention on consistent variable names throughout the library:
    :delim: ;
    :header-rows: 1
    :widths: 5, 7
-   _stub-columns: 1
+   :stub-columns: 1
    
 For an definition and further help on symbols and units refer to the following sources:
 

@@ -26,7 +26,9 @@ For an definition and further help on symbols and units refer to the following s
   * `Terminology: definitions of the main quantities. <http://www.soda-is.com/eng/education/terminology.html>`_
   * `Acronyms in solar radiation <http://www.soda-is.com/eng/education/acronymes.html>`_ (more extensive list)
   
-Test:
+.. _test:
+
+List Test acc. http://www.sphinx-doc.org/en/stable/rest.html#lists-and-quote-like-blocks
 
 * This is a bulleted list.
 * It has two items, the second

@@ -14,6 +14,7 @@ There is a convention on consistent variable names throughout the library:
    
 For an definition and further help on symbols and units refer to the following sources:
 
+
 * `Reference Variable List by PVPMC <https://pvpmc.sandia.gov/resources/variable-list/>`_
 * with technical focus in `IEC 61724:1998 -- Photovoltaic system performance monitoring - Guidelines for measurement, data exchange and analysis <https://webstore.iec.ch/publication/5733>`_ ; the Indian Standard referencing the global IEC standard is available online: `IS/IEC 61724 (1998) <https://law.resource.org/pub/in/bis/S05/is.iec.61724.1998.pdf>`_
 * with physics focus:
@@ -25,6 +26,7 @@ For an definition and further help on symbols and units refer to the following s
   * `Units and conversion tool <http://www.soda-is.com/eng/education/units.html>`_
   * `Terminology: definitions of the main quantities. <http://www.soda-is.com/eng/education/terminology.html>`_
   * `Acronyms in solar radiation <http://www.soda-is.com/eng/education/acronymes.html>`_ (more extensive list)
+
   
 .. _test:
 

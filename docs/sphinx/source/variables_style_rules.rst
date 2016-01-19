@@ -10,7 +10,7 @@ There is a convention on consistent variable names throughout the library:
    :file: ../../../pvlib/data/variables_style-rules.csv
    :delim: ;
    :header-rows: 1
-   :widths: 5, 20
+   :widths: 5, 10
    
 For an definition and further help on symbols and units refer to the following sources:
 
@@ -25,3 +25,24 @@ For an definition and further help on symbols and units refer to the following s
   * `Units and conversion tool <http://www.soda-is.com/eng/education/units.html>`_
   * `Terminology: definitions of the main quantities. <http://www.soda-is.com/eng/education/terminology.html>`_
   * `Acronyms in solar radiation <http://www.soda-is.com/eng/education/acronymes.html>`_ (more extensive list)
+  
+Test:
+
+* This is a bulleted list.
+* It has two items, the second
+  item uses two lines.
+
+1. This is a numbered list.
+2. It has two items too.
+
+#. This is a numbered list.
+#. It has two items too.
+
+
+* this is
+* a list
+
+  * with a nested list
+  * and some subitems
+
+* and here the parent list continues

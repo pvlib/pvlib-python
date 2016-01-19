@@ -6,11 +6,11 @@ Variables and Symbols
 
 There is a convention on consistent variable names throughout the library:
 
-.. csv-table:: List of Variables
+.. csv-table:: List of used Symbols and Variables
    :file: ../../../pvlib/data/variables_style-rules.csv
    :delim: ;
    :header-rows: 1
-   :widths: 5, 10, 10, 10
+   :widths: 5, 20
    
 For an definition and further help on symbols and units refer to the following sources
    * with technical focus in `IEC 61724:1998 -- Photovoltaic system performance monitoring - Guidelines for measurement, data exchange and analysis<https://webstore.iec.ch/publication/5733>`_; the Indian Standard referencing the global IEC standard is available online: `IS/IEC 61724 (1998): Photovoltaic System Performance Monitoring - Guidelines for Measurement, Data exchange and Analysis [ETD 28: Solar Photovoltaic Energy Systems] <https://law.resource.org/pub/in/bis/S05/is.iec.61724.1998.pdf>`_

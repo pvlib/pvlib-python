@@ -15,6 +15,8 @@ from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
 
+from . import requires_ephem
+
 # setup times and location to be tested.
 times = pd.date_range(start=datetime.datetime(2014, 6, 24),
                       end=datetime.datetime(2014, 6, 26), freq='1Min')
@@ -24,11 +26,11 @@ tus = Location(32.2, -111, 'US/Arizona', 700)
 times_localized = times.tz_localize(tus.tz)
 
 ephem_data = solarposition.get_solarposition(times, tus.latitude,
-                                             tus.longitude, method='pyephem')
+                                             tus.longitude, method='nrel_numpy')
 
 irrad_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
                                altitude=tus.altitude, linke_turbidity=3,
-                               solarposition_method='pyephem')
+                               solarposition_method='nrel_numpy')
 
 dni_et = irradiance.extraradiation(times.dayofyear)
 
@@ -60,15 +62,18 @@ def test_extraradiation_spencer():
         1382, irradiance.extraradiation(300, method='spencer'), -1)
 
 
+@requires_ephem
 def test_extraradiation_ephem_dtindex():
     irradiance.extraradiation(times, method='pyephem')
 
 
+@requires_ephem
 def test_extraradiation_ephem_scalar():
     assert_almost_equals(
         1382, irradiance.extraradiation(300, method='pyephem').values[0], -1)
 
 
+@requires_ephem
 def test_extraradiation_ephem_doyarray():
     irradiance.extraradiation(times.dayofyear, method='pyephem')
 
@@ -111,21 +116,21 @@ def test_klucher_series_float():
 def test_klucher_series():
     irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
                        ephem_data['apparent_zenith'],
-                       ephem_data['apparent_azimuth'])
+                       ephem_data['azimuth'])
 
 
 def test_haydavies():
     irradiance.haydavies(40, 180, irrad_data['dhi'], irrad_data['dni'],
                          dni_et,
                          ephem_data['apparent_zenith'],
-                         ephem_data['apparent_azimuth'])
+                         ephem_data['azimuth'])
 
 
 def test_reindl():
     irradiance.reindl(40, 180, irrad_data['dhi'], irrad_data['dni'],
                       irrad_data['ghi'], dni_et,
                       ephem_data['apparent_zenith'],
-                      ephem_data['apparent_azimuth'])
+                      ephem_data['azimuth'])
 
 
 def test_king():
@@ -137,7 +142,7 @@ def test_perez():
     AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     irradiance.perez(40, 180, irrad_data['dhi'], irrad_data['dni'],
                      dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['apparent_azimuth'], AM)
+                     ephem_data['azimuth'], AM)
 
 # klutcher (misspelling) will be removed in 0.3
 def test_total_irrad():
@@ -158,12 +163,12 @@ def test_total_irrad():
 
 def test_globalinplane():
     aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
-                         ephem_data['apparent_azimuth'])
+                         ephem_data['azimuth'])
     airmass = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     gr_sand = irradiance.grounddiffuse(40, ghi, surface_type='sand')
     diff_perez = irradiance.perez(
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
-        ephem_data['apparent_zenith'], ephem_data['apparent_azimuth'], airmass)
+        ephem_data['apparent_zenith'], ephem_data['azimuth'], airmass)
     irradiance.globalinplane(
         aoi=aoi, dni=irrad_data['dni'], poa_sky_diffuse=diff_perez,
         poa_ground_diffuse=gr_sand)

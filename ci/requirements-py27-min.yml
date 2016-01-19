@@ -2,7 +2,6 @@ name: test_env
 dependencies:
     - python=2.7 
     - numpy==1.8.2
-    - scipy
     - pandas==0.13.1
     - nose
     - pytz

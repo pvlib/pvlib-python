@@ -25,15 +25,16 @@ ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
 @requires_scipy
 def test_ineichen_required():
     # the clearsky function should call lookup_linke_turbidity by default
-    expected = pd.DataFrame(np.array([[0.,0.,0.],
-                                      [0.,0.,0.],
-                                      [51.0100314,259.73341927,82.76689082],
-                                      [104.99512329,832.22000002,682.43280974],
-                                      [121.97931179,901.31646645,1008.00975362],
-                                      [112.5726345,867.73434086,824.48415382],
-                                      [76.61228483,587.82419004,253.67624301],
-                                      [0.,0.,0.],
-                                      [0.,0.,0.]]),
+    expected = pd.DataFrame(
+        np.array([[    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ],
+                  [   51.47811191,   265.33462162,    84.48262202],
+                  [  105.008507  ,   832.29100407,   682.67761951],
+                  [  121.97988054,   901.31821834,  1008.02102657],
+                  [  112.57957512,   867.76297247,   824.61702926],
+                  [   76.69672675,   588.8462898 ,   254.5808329 ],
+                  [    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
     out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude)
@@ -41,15 +42,16 @@ def test_ineichen_required():
     
 
 def test_ineichen_supply_linke():
-    expected = pd.DataFrame(np.array([[0.,0.,0.],
-                                      [0.,0.,0.],
-                                      [39.81862097,316.23284759,78.48350328],
-                                      [95.12705301,876.43232906,703.24156169],
-                                      [118.45796469,939.81499487,1042.33401282],
-                                      [105.35769022,909.0884868,851.19721202],
-                                      [61.83556162,646.45362207,256.55983299],
-                                      [0.,0.,0.],
-                                      [0.,0.,0.]]),
+    expected = pd.DataFrame(
+        np.array([[    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ],
+                  [   40.19492186,   322.1949484 ,    80.27218726],
+                  [   95.14479487,   876.49778895,   703.49655602],
+                  [  118.45876694,   939.816594  ,  1042.34575261],
+                  [  105.36721216,   909.11474576,   851.33560265],
+                  [   61.91851386,   647.43752674,   257.50239737],
+                  [    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
     out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude,
@@ -65,15 +67,16 @@ def test_ineichen_solpos():
 
 
 def test_ineichen_airmass():
-    expected = pd.DataFrame(np.array([[0.,0.,0.],
-                                      [0.,0.,0.],
-                                      [53.52826665,250.64463008,84.17386592],
-                                      [101.32775752,842.86030421,686.14824255],
-                                      [117.7568185,909.70199089,1012.03056908],
-                                      [108.61662929,877.27820363,828.35817853],
-                                      [75.15682967,601.03375193,256.19976209],
-                                      [0.,0.,0.],
-                                      [0.,0.,0.]]),
+    expected = pd.DataFrame(
+        np.array([[    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ],
+                  [   53.90422388,   257.01655613,    85.87406435],
+                  [  101.34055688,   842.92925705,   686.39337307],
+                  [  117.7573735 ,   909.70367947,  1012.04184961],
+                  [  108.6233401 ,   877.30589626,   828.49118038],
+                  [   75.23108133,   602.06895546,   257.10961202],
+                  [    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
     out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude,
@@ -82,6 +85,7 @@ def test_ineichen_airmass():
     assert_frame_equal(expected, out)
 
 
+@requires_scipy
 def test_lookup_linke_turbidity():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz=tus.tz)
@@ -93,6 +97,7 @@ def test_lookup_linke_turbidity():
     assert_series_equal(expected, out)
 
 
+@requires_scipy
 def test_lookup_linke_turbidity_nointerp():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz=tus.tz)
@@ -103,6 +108,7 @@ def test_lookup_linke_turbidity_nointerp():
     assert_series_equal(expected, out)
 
 
+@requires_scipy
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
                           freq='1M', tz=tus.tz)
@@ -113,6 +119,7 @@ def test_lookup_linke_turbidity_months():
     assert_series_equal(expected, out)
 
 
+@requires_scipy
 def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
                           freq='1M', tz=tus.tz)

@@ -10,7 +10,7 @@ There is a convention on consistent variable names throughout the library:
    :file: ../../../pvlib/data/variables_style-rules.csv
    :delim: ;
    :header-rows: 1
-   :widths: 5, 7
+   :widths: 5, 5
    :stub-columns: 1
    
 For an definition and further help on symbols and units refer to the following sources:
@@ -70,3 +70,17 @@ List Test acc. http://www.sphinx-doc.org/en/stable/rest.html#lists-and-quote-lik
    * - Gannet Ripple
      - 1.99
      - On a stick!
+
+
+.. csv-table::
+    :header: Header1, Header2, Header3
+
+    A, B, "These lines appear as one line, 
+    even though they are written in two lines."
+    C, D, "| These lines appear as two lines, 
+    | but they are indented, and my OCD will simply not allow it."
+    E, F, "| If I continue this line in another line,
+    it will appear in a new line."
+    G, H, "If there is a blank line between the two lines,
+
+    there will be a blank line between the lines."

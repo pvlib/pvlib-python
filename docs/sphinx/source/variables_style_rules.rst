@@ -5,7 +5,7 @@ Variables and Symbols
 
 There is a convention on consistent variable names throughout the library:
 
-.. csv-table:: List of used Symbols and Variables
+.. csv-table:: List of used Variables and Parameters
    :file: ../../../pvlib/data/variables_style-rules.csv
    :delim: ;
    :header-rows: 1
@@ -26,4 +26,4 @@ For an definition and further help on symbols and units refer to the following s
    * `Terminology: definitions of the main quantities. <http://www.soda-is.com/eng/education/terminology.html>`_
    * `Acronyms in solar radiation <http://www.soda-is.com/eng/education/acronymes.html>`_ (more extensive list)
 
-.. note:: These further references might not use the same terminology as :mod:pvlib. But the physical process referred to is the same.
+.. note:: These further references might not use the same terminology as *pvlib*. But the physical process referred to is the same.

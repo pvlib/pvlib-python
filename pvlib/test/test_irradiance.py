@@ -159,6 +159,10 @@ def test_total_irrad():
             dni_extra=dni_et, airmass=AM,
             model=model,
             surface_type='urban')
+        
+        assert total.columns.tolist() == ['poa_global', 'poa_direct',
+                                          'poa_diffuse', 'poa_sky_diffuse',
+                                          'poa_ground_diffuse']
 
 
 def test_globalinplane():

@@ -11,6 +11,7 @@ There is a convention on consistent variable names throughout the library:
    :delim: ;
    :header-rows: 1
    :widths: 5, 7
+   _stub-columns: 1
    
 For an definition and further help on symbols and units refer to the following sources:
 
@@ -50,3 +51,22 @@ List Test acc. http://www.sphinx-doc.org/en/stable/rest.html#lists-and-quote-lik
   * and some subitems
 
 * and here the parent list continues
+
+
+.. list-table:: Frozen Delights!
+   :widths: 15 10 30
+   :header-rows: 1
+
+   * - Treat
+     - Quantity
+     - Description
+   * - Albatross
+     - 2.99
+     - On a stick!
+   * - Crunchy Frog
+     - 1.49
+     - If we took the bones out, it wouldn't be
+       crunchy, now would it?
+   * - Gannet Ripple
+     - 1.99
+     - On a stick!

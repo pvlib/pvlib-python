@@ -27,7 +27,9 @@ corresponding procedural code.
 
 Let's use each of these pvlib modeling paradigms
 to calculate the yearly energy yield for a given hardware
-configuration at a handful of sites listed below ::
+configuration at a handful of sites listed below.
+
+.. ipython:: python
 
     import pandas as pd
     
@@ -38,36 +40,44 @@ configuration at a handful of sites listed below ::
                    (35, -105, 'Albuquerque'),
                    (40, -120, 'San Francisco'),
                    (50, 10, 'Berlin')]
-
-None of these examples are complete!
-Should replace the clear sky assumption with TMY or similar
-(or leave as an exercise to the reader?).
+    
+    import pvlib
+    
+    sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
+    sapm_inverters = pvlib.pvsystem.retrieve_sam('sandiainverter')
+    module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
+    inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
 
 Procedural
 ^^^^^^^^^^
 
-Procedural code can be used to for all modeling steps in pvlib-python.
+The straightforward procedural code can be used for all modeling
+steps in pvlib-python.
 
 The following code demonstrates how to use the procedural code
-to accomplish our system modeling goal: ::
-    
-    import pvlib
+to accomplish our system modeling goal:
+
+.. ipython:: python
     
     system = {'module': module, 'inverter': inverter,
-              'surface_azimuth': 180, **other_params}
+              'surface_azimuth': 180}
 
     energies = {}
     for latitude, longitude, name in coordinates:
+        system['surface_tilt'] = latitude
         cs = pvlib.clearsky.ineichen(times, latitude, longitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
-        system['surface_tilt'] = latitude
-        total_irrad = pvlib.irradiance.total_irradiance(**solpos, **cs, **system)
-        temps = pvlib.pvsystem.sapm_celltemp(**total_irrad, **system)
-        dc = pvlib.pvsystem.sapm(**temps, **total_irrad, **system)
-        ac = pvlib.pvsystem.snlinverter(**system, **dc)
-        annual_energy = power.sum()
+        airmass = pvlib.atmosphere.relativeairmass(solpos['apparent_zenith'])
+        aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'], solpos['apparent_zenith'], solpos['azimuth'])
+        total_irrad = pvlib.irradiance.total_irrad(**solpos, **cs, **system)
+        temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'], 0, 20)
+        dc = pvlib.pvsystem.sapm(module, total_irrad['poa_direct'], total_irrad['poa_diffuse'], temps['temp_cell'], airmass, aoi)
+        ac = pvlib.pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
+        annual_energy = ac.sum()
         energies[name] = annual_energy
+
+    print(energies)
     
     #energies = pd.DataFrame(energies)
     #energies.plot()
@@ -93,7 +103,9 @@ The following code demonstrates how to use
 :class:`Location <pvlib.location.Location>`,
 :class:`PVSystem <pvlib.pvsystem.PVSystem>`, and
 :class:`ModelChain <pvlib.modelchain.ModelChain>`
-objects to accomplish our system modeling goal: ::
+objects to accomplish our system modeling goal:
+
+.. ipython:: python
     
     from pvlib.pvsystem import PVSystem
     from pvlib.location import Location
@@ -126,10 +138,15 @@ a power plant that already exists.
 
 The following code demonstrates how to use a
 :class:`LocalizedPVSystem <pvlib.pvsystem.LocalizedPVSystem>`
-object to accomplish our modeling goal: ::
+object to accomplish our modeling goal:
+
+.. ipython:: python
     
     from pvlib.pvsystem import PVSystem, LocalizedPVSystem
 
+    module = 
+    inverter = 
+    other_system_params = {} # sometime helpful to break apart
     base_system = PVSystem(module, inverter, **other_system_params)
 
     energies = {}

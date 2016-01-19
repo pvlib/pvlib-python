@@ -12,3 +12,5 @@ dependencies:
     - numpydoc
     - matplotlib
     - seaborn
+    - pip:
+        - recommonmark

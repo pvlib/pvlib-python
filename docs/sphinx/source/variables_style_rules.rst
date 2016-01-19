@@ -1,8 +1,7 @@
 .. _variables_style_rules:
 
-************************
 Variables and Symbols
-*************************
+=====================
 
 There is a convention on consistent variable names throughout the library:
 

@@ -6,7 +6,7 @@ Variables and Symbols
 There is a convention on consistent variable names throughout the library:
 
 .. csv-table:: List of used Variables and Parameters
-   :file: ../../../pvlib/data/variables_style-rules.csv
+   :file: ../../../pvlib/data/variables_style_rules.csv
    :delim: ;
    :header-rows: 1
    :widths: 5, 5

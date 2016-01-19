@@ -35,4 +35,4 @@ photocurrent;photocurrent
 saturation_current;diode saturation current
 resistance_series;series resistance
 resistance_shunt;shunt resistance
-tf;transposition factor, the gain ration of the radiation in inclinded plane to horizontal plane: :math:`\\frac{poa_global}{ghi}`
+tf;transposition factor, the gain ration of the radiation in inclinded plane to horizontal plane: :math:`\frac{poa_global}{ghi}`

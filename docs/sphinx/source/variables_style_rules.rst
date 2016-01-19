@@ -20,10 +20,11 @@ For an definition and further help on symbols and units refer to the following s
 * with physics focus:
 
   * Explanation of Solar irradiation and solar geometry by `SoDa Service <http://www.soda-pro.com/home>`_ and partner pages (http://www.soda-is.com/, http://pro.soda-is.com/)
-  * `Acronyms, Terminology and Units <http://www.soda-pro.com/help/general/acronyms-terminology-and-units>`_
-  * `Plane orientations and radiation components <http://www.soda-pro.com/help/general/plane-orientations-and-radiation-components>`_
-  * `Time references <http://www.soda-pro.com/help/general/time-references>`_
-  * `Units and conversion tool <http://www.soda-is.com/eng/education/units.html>`_
-  * `Terminology: definitions of the main quantities. <http://www.soda-is.com/eng/education/terminology.html>`_
-  * `Acronyms in solar radiation <http://www.soda-is.com/eng/education/acronymes.html>`_ (more extensive list)
+  
+     * `Acronyms, Terminology and Units <http://www.soda-pro.com/help/general/acronyms-terminology-and-units>`_
+     * `Plane orientations and radiation components <http://www.soda-pro.com/help/general/plane-orientations-and-radiation-components>`_
+     * `Time references <http://www.soda-pro.com/help/general/time-references>`_
+     * `Units and conversion tool <http://www.soda-is.com/eng/education/units.html>`_
+     * `Terminology: definitions of the main quantities. <http://www.soda-is.com/eng/education/terminology.html>`_
+     * `Acronyms in solar radiation <http://www.soda-is.com/eng/education/acronymes.html>`_ (more extensive list)
 

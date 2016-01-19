@@ -171,6 +171,16 @@ def test_sapm_celltemp():
                                                        [-3.47, -.0594, 3]))
 
 
+def test_sapm_celltemp_dict_like():
+    default = pvsystem.sapm_celltemp(900, 5, 20)
+    assert_almost_equals(43.509, default.ix[0, 'temp_cell'], 3)
+    assert_almost_equals(40.809, default.ix[0, 'temp_module'], 3)
+    model = {'a':-3.47, 'b':-.0594, 'deltaT':3}
+    assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
+    model = pd.Series(model)
+    assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
+
+
 def test_sapm_celltemp_with_index():
     times = pd.DatetimeIndex(start='2015-01-01', end='2015-01-02', freq='12H')
     temps = pd.Series([0, 10, 5], index=times)

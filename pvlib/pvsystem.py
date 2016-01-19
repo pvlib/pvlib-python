@@ -1067,7 +1067,8 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     return dfout
 
 
-def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
+def sapm_celltemp(poa_global, wind_speed, temp_air,
+                  model='open_rack_cell_glassback'):
     '''
     Estimate cell and module temperatures per the Sandia PV Array
     Performance Model (SAPM, SAND2004-3535), from the incident
@@ -1076,16 +1077,16 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
 
     Parameters
     ----------
-    irrad : float or Series
+    poa_global : float or Series
         Total incident irradiance in W/m^2.
 
-    wind : float or Series
+    wind_speed : float or Series
         Wind speed in m/s at a height of 10 meters.
 
-    temp : float or Series
+    temp_air : float or Series
         Ambient dry bulb temperature in degrees C.
 
-    model : string or list
+    model : string, list, or dict
         Model to be used.
         
         If string, can be:
@@ -1097,7 +1098,8 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
             * 'open_rack_polymer_thinfilm_steel'
             * '22x_concentrator_tracker'
     
-        If list, supply the following parameters in the following order:
+        If dict, supply the following parameters
+        (if list, in the following order):
         
             * a : float
                 SAPM module parameter for establishing the upper
@@ -1136,25 +1138,27 @@ def sapm_celltemp(irrad, wind, temp, model='open_rack_cell_glassback'):
                    'open_rack_polymer_thinfilm_steel': [-3.58, -.113, 3],
                    '22x_concentrator_tracker': [-3.23, -.130, 13]
                   }
-    
+
     if isinstance(model, str):                  
         model = temp_models[model.lower()]
     elif isinstance(model, list):
         model = model
-    
+    elif isinstance(model, (dict, pd.Series)):
+        model = [model['a'], model['b'], model['deltaT']]
+
     a = model[0]
     b = model[1]
     deltaT = model[2]
 
     E0 = 1000. # Reference irradiance
-    
-    temp_module = pd.Series(irrad*np.exp(a + b*wind) + temp)
 
-    temp_cell = temp_module + (irrad / E0)*(deltaT)
+    temp_module = pd.Series(poa_global*np.exp(a + b*wind_speed) + temp_air)
+
+    temp_cell = temp_module + (poa_global / E0)*(deltaT)
 
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
-    
-    
+
+
 def singlediode(module, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth):
     '''

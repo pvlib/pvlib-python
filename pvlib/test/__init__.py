@@ -18,6 +18,15 @@ except ImportError:
 def requires_scipy(test):
     return test if has_scipy else unittest.skip('requires scipy')(test)
 
+try:
+    import ephem
+    has_ephem = True
+except ImportError:
+    has_ephem = False
+
+def requires_ephem(test):
+    return test if has_ephem else unittest.skip('requires ephem')(test)
+
 def incompatible_conda_linux_py3(test):
     """
     Test won't work in Python 3.x due to Anaconda issue.

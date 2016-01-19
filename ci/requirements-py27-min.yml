@@ -6,6 +6,5 @@ dependencies:
     - pandas==0.13.1
     - nose
     - pytz
-    - ephem
     - pip:
         - coveralls

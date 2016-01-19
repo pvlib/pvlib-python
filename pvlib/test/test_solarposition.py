@@ -14,6 +14,7 @@ from pandas.util.testing import assert_frame_equal, assert_index_equal
 from pvlib.location import Location
 from pvlib import solarposition
 
+from . import requires_ephem
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24), 
@@ -176,7 +177,7 @@ def test_get_sun_rise_set_transit():
     del result['transit']
     assert_frame_equal(frame, result)
 
-
+@requires_ephem
 def test_pyephem_physical():
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
@@ -188,7 +189,7 @@ def test_pyephem_physical():
     assert_frame_equal(this_expected.round(2),
                        ephem_data[this_expected.columns].round(2))
 
-
+@requires_ephem
 def test_pyephem_physical_dst():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1,
                           freq='D', tz=golden.tz)
@@ -200,7 +201,7 @@ def test_pyephem_physical_dst():
     assert_frame_equal(this_expected.round(2),
                        ephem_data[this_expected.columns].round(2))
 
-
+@requires_ephem
 def test_calc_time():
     import pytz
     import math
@@ -225,7 +226,7 @@ def test_calc_time():
     assert_almost_equals((az.replace(second=0, microsecond=0) - 
                           epoch_dt).total_seconds(), actual_timestamp)
                           
-                          
+@requires_ephem
 def test_earthsun_distance():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D')
@@ -242,8 +243,9 @@ def test_ephemeris_physical():
                                          temperature=11)
     this_expected = expected.copy()
     this_expected.index = times
-    assert_frame_equal(this_expected.round(2),
-                       ephem_data[this_expected.columns].round(2))
+    this_expected = np.round(this_expected, 2)
+    ephem_data = np.round(ephem_data, 2)
+    assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
 
 def test_ephemeris_physical_dst():
@@ -254,5 +256,6 @@ def test_ephemeris_physical_dst():
                                          temperature=11)
     this_expected = expected.copy()
     this_expected.index = times
-    assert_frame_equal(this_expected.round(2),
-                       ephem_data[this_expected.columns].round(2))
+    this_expected = np.round(this_expected, 2)
+    ephem_data = np.round(ephem_data, 2)
+    assert_frame_equal(this_expected, ephem_data[this_expected.columns])

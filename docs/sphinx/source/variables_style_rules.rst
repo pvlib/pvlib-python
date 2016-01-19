@@ -12,7 +12,7 @@ There is a convention on consistent variable names throughout the library:
    :widths: 5, 5
    :stub-columns: 1
    
-For an definition and further help on symbols and units refer to the following sources:
+For a definition and further explanation on the variables, common symbols and units refer to the following sources:
 
 
 * `Reference Variable List by PVPMC <https://pvpmc.sandia.gov/resources/variable-list/>`_

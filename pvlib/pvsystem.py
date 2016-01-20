@@ -551,9 +551,9 @@ def retrieve_sam(name=None, samfile=None):
         response = urlopen(url)
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
     elif samfile == 'select':
-        import Tkinter 
-        from tkFileDialog import askopenfilename
-        Tkinter.Tk().withdraw() 
+        import tkinter 
+        from tkinter.filedialog import askopenfilename
+        tkinter.Tk().withdraw() 
         csvdata = askopenfilename()                           
     else: 
         csvdata = samfile

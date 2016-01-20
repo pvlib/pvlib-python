@@ -32,6 +32,9 @@ configuration at a handful of sites listed below.
 .. ipython:: python
 
     import pandas as pd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set_color_codes()
     
     times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
     
@@ -68,19 +71,34 @@ to accomplish our system modeling goal:
         system['surface_tilt'] = latitude
         cs = pvlib.clearsky.ineichen(times, latitude, longitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+        dni_extra = pvlib.irradiance.extraradiation(times)
+        dni_extra = pd.Series(dni_extra, index=times)
         airmass = pvlib.atmosphere.relativeairmass(solpos['apparent_zenith'])
-        aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'], solpos['apparent_zenith'], solpos['azimuth'])
-        total_irrad = pvlib.irradiance.total_irrad(**solpos, **cs, **system)
+        aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'],
+                                   solpos['apparent_zenith'], solpos['azimuth'])
+        total_irrad = pvlib.irradiance.total_irrad(system['surface_tilt'],
+                                                   system['surface_azimuth'],
+                                                   solpos['apparent_zenith'],
+                                                   solpos['azimuth'],
+                                                   cs['dni'], cs['ghi'], cs['dhi'],
+                                                   dni_extra=dni_extra,
+                                                   model='haydavies')
         temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'], 0, 20)
-        dc = pvlib.pvsystem.sapm(module, total_irrad['poa_direct'], total_irrad['poa_diffuse'], temps['temp_cell'], airmass, aoi)
+        dc = pvlib.pvsystem.sapm(module, total_irrad['poa_direct'],
+                                 total_irrad['poa_diffuse'], temps['temp_cell'],
+                                 airmass, aoi)
         ac = pvlib.pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
         annual_energy = ac.sum()
         energies[name] = annual_energy
-
-    print(energies)
     
-    #energies = pd.DataFrame(energies)
-    #energies.plot()
+    energies = pd.Series(energies)
+
+    # based on the parameters specified above, these are in W*hrs
+    print(energies.round(0))
+    
+    energies.plot(kind='bar', rot=0)
+    @savefig proc-energies.png width=6in
+    plt.ylabel('Yearly energy yield (W hr)')
 
 
 Object oriented (Location, PVSystem, ModelChain)

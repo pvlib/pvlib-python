@@ -192,7 +192,7 @@ with the pvlib community via issues and pull requests.
 Getting support
 ---------------
 The best way to get support is to make an issue on our
-`GitHub issues page<https://github.com/pvlib/pvlib-python/issues>`_.
+`GitHub issues page <https://github.com/pvlib/pvlib-python/issues>`_ .
 
 
 How do I contribute?

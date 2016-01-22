@@ -399,7 +399,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     _coefficients['multisi'] = _coefficients['polysi']
 
     if module_type is not None and coefficients is None:
-        coefficients = _coefficients[module_type]
+        coefficients = _coefficients[module_type.lower()]
     elif module_type is None and coefficients is not None:
         pass
     else:

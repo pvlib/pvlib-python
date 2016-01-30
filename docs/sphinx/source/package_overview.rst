@@ -192,7 +192,7 @@ object to accomplish our modeling goal:
         temps = localized_system.sapm_celltemp(total_irrad['poa_global'], 0, 20)
         aoi = localized_system.get_aoi(solar_position['apparent_zenith'],
                                        solar_position['azimuth'])
-        am_rel = atmosphere.relativeairmass(solar_position['apparent_zenith'])
+        am_rel = pvlib.atmosphere.relativeairmass(solar_position['apparent_zenith'])
         am_abs = localized_system.get_absoluteairmass(am_rel)
         dc = localized_system.sapm(total_irrad['poa_direct'],
                                    total_irrad['poa_diffuse'],
@@ -223,7 +223,7 @@ with the pvlib community via issues and pull requests.
 Getting support
 ---------------
 The best way to get support is to make an issue on our
-`GitHub issues page<https://github.com/pvlib/pvlib-python/issues>`_.
+`GitHub issues page <https://github.com/pvlib/pvlib-python/issues>`_.
 
 
 How do I contribute?

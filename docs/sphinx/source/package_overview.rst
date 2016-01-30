@@ -129,20 +129,25 @@ objects to accomplish our system modeling goal:
     from pvlib.location import Location
     from pvlib.modelchain import ModelChain
     
-    system = PVSystem(module, inverter, **other_params)
+    system = PVSystem(module_parameters=module,
+                      inverter_parameters=inverter)
     
     energies = {}
     for latitude, longitude, name in coordinates:
         location = Location(latitude, longitude)
         # not yet clear what, exactly, goes into ModelChain(s)
-        mc = ModelChain(system, location, times,
-                        'south_at_latitude', **other_modelchain_params)
-        output = mc.run_model()
-        annual_energy = output['power'].sum()
+        mc = ModelChain(system, location,
+                        orientation_strategy='south_at_latitude')
+        dc, ac = mc.run_model(times)
+        annual_energy = ac.sum()
         energies[name] = annual_energy
     
-    #energies = pd.DataFrame(energies)
-    #energies.plot()
+    # based on the parameters specified above, these are in W*hrs
+    print(energies.round(0))
+    
+    energies.plot(kind='bar', rot=0)
+    @savefig modelchain-energies.png width=6in
+    plt.ylabel('Yearly energy yield (W hr)')
 
 
 Object oriented (LocalizedPVSystem)

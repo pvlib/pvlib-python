@@ -69,7 +69,7 @@ to accomplish our system modeling goal:
     energies = {}
     for latitude, longitude, name, altitude in coordinates:
         system['surface_tilt'] = latitude
-        cs = pvlib.clearsky.ineichen(times, latitude, longitude)
+        cs = pvlib.clearsky.ineichen(times, latitude, longitude, altitude=altitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
         dni_extra = pvlib.irradiance.extraradiation(times)
         dni_extra = pd.Series(dni_extra, index=times)
@@ -137,9 +137,9 @@ objects to accomplish our system modeling goal:
     energies = {}
     for latitude, longitude, name, altitude in coordinates:
         location = Location(latitude, longitude, name=name, altitude=altitude)
-        # not yet clear what, exactly, goes into ModelChain(s)
+        # very experimental
         mc = ModelChain(system, location,
-                        orientation_strategy='south_at_latitude')
+                        orientation_strategy='south_at_latitude_tilt')
         dc, ac = mc.run_model(times)
         annual_energy = ac.sum()
         energies[name] = annual_energy
@@ -169,21 +169,18 @@ object to accomplish our modeling goal:
 
 .. ipython:: python
     
-    from pvlib.pvsystem import PVSystem, LocalizedPVSystem
-
-    other_system_params = {} # sometimes helpful to break apart
-    base_system = PVSystem(module_parameters=module,
-                           inverter_parameters=inverter,
-                           **other_system_params)
+    from pvlib.pvsystem import LocalizedPVSystem
 
     energies = {}
     for latitude, longitude, name, altitude in coordinates:
-        localized_system = base_system.localize(latitude=latitude,
-                                                longitude=longitude,
-                                                name=name,
-                                                altitude=altitude)
-        localized_system.surface_tilt = latitude
-        localized_system.surface_azimuth = 180
+        localized_system = LocalizedPVSystem(module_parameters=module,
+                                             inverter_parameters=inverter,
+                                             surface_tilt=latitude,
+                                             surface_azimuth=180,
+                                             latitude=latitude,
+                                             longitude=longitude,
+                                             name=name,
+                                             altitude=altitude)
         clearsky = localized_system.get_clearsky(times)
         solar_position = localized_system.get_solarposition(times)
         total_irrad = localized_system.get_irradiance(solar_position['apparent_zenith'],

@@ -47,7 +47,7 @@ class ModelChain(object):
     """
 
     def __init__(self, system, location,
-                 orientation_strategy='south_at_latitude',
+                 orientation_strategy='south_at_latitude_tilt',
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
                  solar_position_method='nrel_numpy',
@@ -73,7 +73,7 @@ class ModelChain(object):
     def orientation_strategy(self, strategy):
         if strategy is None or strategy == 'None':
             pass
-        elif strategy == 'south_at_latitude':
+        elif strategy == 'south_at_latitude_tilt':
             self.system.surface_azimuth = 180
             self.system.surface_tilt = self.location.latitude
         elif strategy == 'flat':

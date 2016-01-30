@@ -13,6 +13,7 @@ import pytz
 
 from pvlib import solarposition
 from pvlib import clearsky
+from pvlib import atmosphere
 
 
 class Location(object):
@@ -159,25 +160,45 @@ class Location(object):
                                                **kwargs)
 
 
-    def get_clearsky(self, times, **kwargs):
+    def get_clearsky(self, times, model='ineichen', **kwargs):
         """
-        Uses the :func:`clearsky.ineichen` function to calculate
-        the clear sky estimates of GHI, DNI, and DHI at this location.
+        Calculate the clear sky estimates of GHI, DNI, and/or DHI
+        at this location.
         
         Parameters
         ----------
         times : DatetimeIndex
         
-        kwargs passed to :func:`clearsky.ineichen`
+        model : str
+            The clear sky model to use.
+        
+        kwargs passed to the relevant function(s).
         
         Returns
         -------
-        clearsky : DataFrame
+        clearsky : Series or DataFrame
             Column names are: ``ghi, dni, dhi``.
         """
-        return clearsky.ineichen(times, latitude=self.latitude,
-                                 longitude=self.longitude,
-                                 altitude=self.altitude,
-                                 **kwargs)
+        
+        if model == 'ineichen':
+            cs = clearsky.ineichen(times, latitude=self.latitude,
+                                   longitude=self.longitude,
+                                   altitude=self.altitude,
+                                   **kwargs)
+        elif model == 'haurwitz':
+            solpos = self.get_solarposition(times, **kwargs)
+            cs = clearsky.haurwitz(solpos['apparent_zenith'])
+        else:
+            raise ValueError('%s is not a valid clear sky model', model)
+
+        return cs
+
+
+    def get_absoluteairmass(self, airmass_relative):
+        
+        pressure = atmosphere.alt2pres(self.altitude)
+        am = atmosphere.absoluteairmass(airmass_relative, pressure)
+        
+        return am
 
                                       

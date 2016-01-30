@@ -150,7 +150,7 @@ class PVSystem(object):
     
     
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='isotropic',
+                       dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
         Uses the :func:`irradiance.total_irrad` function to calculate

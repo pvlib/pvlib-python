@@ -74,6 +74,8 @@ to accomplish our system modeling goal:
         dni_extra = pvlib.irradiance.extraradiation(times)
         dni_extra = pd.Series(dni_extra, index=times)
         airmass = pvlib.atmosphere.relativeairmass(solpos['apparent_zenith'])
+        pressure = pvlib.atmosphere.alt2pres(altitude)
+        am_abs = pvlib.atmosphere.absoluteairmass(airmass, pressure)
         aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'],
                                    solpos['apparent_zenith'], solpos['azimuth'])
         total_irrad = pvlib.irradiance.total_irrad(system['surface_tilt'],
@@ -86,7 +88,7 @@ to accomplish our system modeling goal:
         temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'], 0, 20)
         dc = pvlib.pvsystem.sapm(module, total_irrad['poa_direct'],
                                  total_irrad['poa_diffuse'], temps['temp_cell'],
-                                 airmass, aoi)
+                                 am_abs, aoi)
         ac = pvlib.pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
         annual_energy = ac.sum()
         energies[name] = annual_energy
@@ -105,11 +107,11 @@ Object oriented (Location, PVSystem, ModelChain)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The first object oriented paradigm uses a model where
-a :class:`PVSystem <pvlib.pvsystem.PVSystem>` object represents an
+a :py:class:`~pvlib.pvsystem.PVSystem` object represents an
 assembled collection of modules, inverters, etc.,
-a :class:`Location <pvlib.location.Location>` object represents a
+a :py:class:`~pvlib.location.Location` object represents a
 particular place on the planet,
-and a :class:`ModelChain <pvlib.modelchain.ModelChain>` object describes
+and a :py:class:`~pvlib.modelchain.ModelChain` object describes
 the modeling chain used to calculate PV output at that Location.
 This can be a useful paradigm if you prefer to think about
 the PV system and its location as separate concepts or if
@@ -156,20 +158,20 @@ Object oriented (LocalizedPVSystem)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The second object oriented paradigm uses a model where a 
-:class:`LocalizedPVSystem <pvlib.pvsystem.LocalizedPVSystem>` represents a
+:py:class:`~pvlib.pvsystem.LocalizedPVSystem` represents a
 PV system at a particular place on the planet.
 This can be a useful paradigm if you're thinking about
 a power plant that already exists.
 
 The following code demonstrates how to use a
-:class:`LocalizedPVSystem <pvlib.pvsystem.LocalizedPVSystem>`
+:py:class:`~pvlib.pvsystem.LocalizedPVSystem`
 object to accomplish our modeling goal:
 
 .. ipython:: python
     
     from pvlib.pvsystem import PVSystem, LocalizedPVSystem
 
-    other_system_params = {} # sometime helpful to break apart
+    other_system_params = {} # sometimes helpful to break apart
     base_system = PVSystem(module_parameters=module,
                            inverter_parameters=inverter,
                            **other_system_params)

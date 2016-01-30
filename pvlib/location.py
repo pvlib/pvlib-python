@@ -62,8 +62,6 @@ class Location(object):
     
     def __init__(self, latitude, longitude, tz='UTC', altitude=0,
                  name=None, **kwargs):
-
-        pvl_logger.debug('creating Location object')
         
         self.latitude = latitude
         self.longitude = longitude
@@ -82,7 +80,8 @@ class Location(object):
         self.name = name
         
         # needed for tying together Location and PVSystem in LocalizedPVSystem
-        super(Location, self).__init__(**kwargs)
+        # if LocalizedPVSystem signature is reversed
+        # super(Location, self).__init__(**kwargs)
         
         
         

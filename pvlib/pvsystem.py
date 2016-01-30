@@ -375,6 +375,30 @@ class PVSystem(object):
         return snlinverter(self.inverter_parameters, v_dc, p_dc)
 
 
+    def localize(self, location=None, latitude=None, longitude=None,
+                 **kwargs):
+        """Creates a LocalizedPVSystem object using this object
+        and location data. Must supply either location object or
+        latitude, longitude, and any location kwargs
+        
+        Parameters
+        ----------
+        location : None or Location
+        latitude : None or float
+        longitude : None or float
+        **kwargs : see Location
+        
+        Returns
+        -------
+        localized_system : LocalizedPVSystem
+        """
+
+        if location is None:
+            location = Location(latitude, longitude, **kwargs)
+
+        return LocalizedPVSystem(pvsystem=self, location=location)
+
+
 class LocalizedPVSystem(PVSystem, Location):
     """
     The LocalizedPVSystem class defines a standard set of
@@ -385,8 +409,26 @@ class LocalizedPVSystem(PVSystem, Location):
     See the :class:`PVSystem` class for an object model that
     describes an unlocalized PV system.
     """
-    def __init__(self, **kwargs):
-        super(LocalizedPVSystem, self).__init__(**kwargs)
+    def __init__(self, pvsystem=None, location=None, **kwargs):
+
+        # get and combine attributes from the pvsystem and/or location
+        # with the rest of the kwargs
+
+        if pvsystem is not None:
+            pv_dict = pvsystem.__dict__
+        else:
+            pv_dict = {}
+
+        if location is not None:
+            loc_dict = location.__dict__
+        else:
+            loc_dict = {}
+
+        new_kwargs = dict(list(pv_dict.items()) +
+                          list(loc_dict.items()) +
+                          list(kwargs.items()))
+
+        super(LocalizedPVSystem, self).__init__(**new_kwargs)
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,

@@ -118,9 +118,9 @@ It can also be helpful if you make extensive use of Location-specific
 methods for other calculations.
 
 The following code demonstrates how to use
-:class:`Location <pvlib.location.Location>`,
-:class:`PVSystem <pvlib.pvsystem.PVSystem>`, and
-:class:`ModelChain <pvlib.modelchain.ModelChain>`
+:py:class:`~pvlib.location.Location`,
+:py:class:`~pvlib.pvsystem.PVSystem`, and
+:py:class:`~pvlib.modelchain.ModelChain`
 objects to accomplish our system modeling goal:
 
 .. ipython:: python

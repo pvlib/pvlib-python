@@ -171,16 +171,21 @@ object to accomplish our modeling goal:
 
     other_system_params = {} # sometime helpful to break apart
     base_system = PVSystem(module_parameters=module,
-                           inverter_parameters=inverter)
+                           inverter_parameters=inverter,
+                           **other_system_params)
 
     energies = {}
     for latitude, longitude, name in coordinates:
         localized_system = base_system.localize(latitude, longitude, name=name)
         localized_system.surface_tilt = latitude
         localized_system.surface_azimuth = 0
-        cs = localized_system.get_clearsky(times)
+        clearsky = localized_system.get_clearsky(times)
         solar_position = localized_system.get_solarposition(times)
-        total_irrad = localized_system.get_irradiance(times, **solpos, **cs)
+        total_irrad = localized_system.get_irradiance(solar_position['apparent_zenith'],
+                                                      solar_position['azimuth'],
+                                                      clearsky['dni'],
+                                                      clearsky['ghi'],
+                                                      clearsky['dhi'])
         temps = localized_system.sapm_celltemp(total_irrad['poa_global'], 0, 20)
         aoi = localized_system.get_aoi(solar_position['apparent_zenith'],
                                        solar_position['azimuth'])

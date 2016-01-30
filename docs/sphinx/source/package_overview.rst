@@ -183,7 +183,7 @@ object to accomplish our modeling goal:
                                                 name=name,
                                                 altitude=altitude)
         localized_system.surface_tilt = latitude
-        localized_system.surface_azimuth = 0
+        localized_system.surface_azimuth = 180
         clearsky = localized_system.get_clearsky(times)
         solar_position = localized_system.get_solarposition(times)
         total_irrad = localized_system.get_irradiance(solar_position['apparent_zenith'],

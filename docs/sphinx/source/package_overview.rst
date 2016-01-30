@@ -39,10 +39,10 @@ configuration at a handful of sites listed below.
     times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
     
     # very approximate
-    coordinates = [(30, -110, 'Tucson'),
-                   (35, -105, 'Albuquerque'),
-                   (40, -120, 'San Francisco'),
-                   (50, 10, 'Berlin')]
+    coordinates = [(30, -110, 'Tucson', 700),
+                   (35, -105, 'Albuquerque', 1500),
+                   (40, -120, 'San Francisco', 10),
+                   (50, 10, 'Berlin', 34)]
     
     import pvlib
     
@@ -67,7 +67,7 @@ to accomplish our system modeling goal:
               'surface_azimuth': 180}
 
     energies = {}
-    for latitude, longitude, name in coordinates:
+    for latitude, longitude, name, altitude in coordinates:
         system['surface_tilt'] = latitude
         cs = pvlib.clearsky.ineichen(times, latitude, longitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
@@ -133,8 +133,8 @@ objects to accomplish our system modeling goal:
                       inverter_parameters=inverter)
     
     energies = {}
-    for latitude, longitude, name in coordinates:
-        location = Location(latitude, longitude)
+    for latitude, longitude, name, altitude in coordinates:
+        location = Location(latitude, longitude, name=name, altitude=altitude)
         # not yet clear what, exactly, goes into ModelChain(s)
         mc = ModelChain(system, location,
                         orientation_strategy='south_at_latitude')
@@ -175,8 +175,11 @@ object to accomplish our modeling goal:
                            **other_system_params)
 
     energies = {}
-    for latitude, longitude, name in coordinates:
-        localized_system = base_system.localize(latitude, longitude, name=name)
+    for latitude, longitude, name, altitude in coordinates:
+        localized_system = base_system.localize(latitude=latitude,
+                                                longitude=longitude,
+                                                name=name,
+                                                altitude=altitude)
         localized_system.surface_tilt = latitude
         localized_system.surface_azimuth = 0
         clearsky = localized_system.get_clearsky(times)

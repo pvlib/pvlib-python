@@ -199,7 +199,6 @@ object to accomplish our modeling goal:
                                    temps['temp_cell'],
                                    am_abs, aoi)
         ac = localized_system.snlinverter(dc['v_mp'], dc['p_mp'])
-
         annual_energy = ac.sum()
         energies[name] = annual_energy
     
@@ -223,7 +222,7 @@ with the pvlib community via issues and pull requests.
 Getting support
 ---------------
 The best way to get support is to make an issue on our
-`GitHub issues page <https://github.com/pvlib/pvlib-python/issues>`_.
+`GitHub issues page <https://github.com/pvlib/pvlib-python/issues>`_ .
 
 
 How do I contribute?

@@ -142,6 +142,8 @@ objects to accomplish our system modeling goal:
         annual_energy = ac.sum()
         energies[name] = annual_energy
     
+    energies = pd.Series(energies)
+    
     # based on the parameters specified above, these are in W*hrs
     print(energies.round(0))
     
@@ -167,24 +169,40 @@ object to accomplish our modeling goal:
     
     from pvlib.pvsystem import PVSystem, LocalizedPVSystem
 
-    module = 
-    inverter = 
     other_system_params = {} # sometime helpful to break apart
-    base_system = PVSystem(module, inverter, **other_system_params)
+    base_system = PVSystem(module_parameters=module,
+                           inverter_parameters=inverter)
 
     energies = {}
     for latitude, longitude, name in coordinates:
         localized_system = base_system.localize(latitude, longitude, name=name)
         localized_system.surface_tilt = latitude
+        localized_system.surface_azimuth = 0
         cs = localized_system.get_clearsky(times)
-        solpos = localized_system.get_solarposition(times)
+        solar_position = localized_system.get_solarposition(times)
         total_irrad = localized_system.get_irradiance(times, **solpos, **cs)
-        power = localized_system.get_power(stuff)
-        annual_energy = power.sum()
+        temps = localized_system.sapm_celltemp(total_irrad['poa_global'], 0, 20)
+        aoi = localized_system.get_aoi(solar_position['apparent_zenith'],
+                                       solar_position['azimuth'])
+        am_rel = atmosphere.relativeairmass(solar_position['apparent_zenith'])
+        am_abs = localized_system.get_absoluteairmass(am_rel)
+        dc = localized_system.sapm(total_irrad['poa_direct'],
+                                   total_irrad['poa_diffuse'],
+                                   temps['temp_cell'],
+                                   am_abs, aoi)
+        ac = localized_system.snlinverter(dc['v_mp'], dc['p_mp'])
+
+        annual_energy = ac.sum()
         energies[name] = annual_energy
     
-    #energies = pd.DataFrame(energies)
-    #energies.plot()
+    energies = pd.Series(energies)
+    
+    # based on the parameters specified above, these are in W*hrs
+    print(energies.round(0))
+    
+    energies.plot(kind='bar', rot=0)
+    @savefig localized-pvsystem-energies.png width=6in
+    plt.ylabel('Yearly energy yield (W hr)')
 
 
 User extensions

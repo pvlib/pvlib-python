@@ -33,12 +33,15 @@ configuration at a handful of sites listed below.
 
     import pandas as pd
     import matplotlib.pyplot as plt
+    
+    # seaborn makes the plots look nicer
     import seaborn as sns
     sns.set_color_codes()
     
     times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
     
     # very approximate
+    # latitude, longitude, name, altitude
     coordinates = [(30, -110, 'Tucson', 700),
                    (35, -105, 'Albuquerque', 1500),
                    (40, -120, 'San Francisco', 10),
@@ -46,10 +49,15 @@ configuration at a handful of sites listed below.
     
     import pvlib
     
+    # get the module and inverter specifications from SAM
     sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
     sapm_inverters = pvlib.pvsystem.retrieve_sam('sandiainverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
     inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    
+    # specify constant ambient air temp and wind
+    temp_air = 20
+    wind_speed = 0
 
 
 Procedural
@@ -85,7 +93,8 @@ to accomplish our system modeling goal:
                                                    cs['dni'], cs['ghi'], cs['dhi'],
                                                    dni_extra=dni_extra,
                                                    model='haydavies')
-        temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'], 0, 20)
+        temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'],
+                                             wind_speed, temp_air)
         dc = pvlib.pvsystem.sapm(module, total_irrad['poa_direct'],
                                  total_irrad['poa_diffuse'], temps['temp_cell'],
                                  am_abs, aoi)
@@ -140,6 +149,7 @@ objects to accomplish our system modeling goal:
         # very experimental
         mc = ModelChain(system, location,
                         orientation_strategy='south_at_latitude_tilt')
+        # optional parameters for irradiance and weather data
         dc, ac = mc.run_model(times)
         annual_energy = ac.sum()
         energies[name] = annual_energy
@@ -188,7 +198,8 @@ object to accomplish our modeling goal:
                                                       clearsky['dni'],
                                                       clearsky['ghi'],
                                                       clearsky['dhi'])
-        temps = localized_system.sapm_celltemp(total_irrad['poa_global'], 0, 20)
+        temps = localized_system.sapm_celltemp(total_irrad['poa_global'],
+                                               wind_speed, temp_air)
         aoi = localized_system.get_aoi(solar_position['apparent_zenith'],
                                        solar_position['azimuth'])
         am_rel = pvlib.atmosphere.relativeairmass(solar_position['apparent_zenith'])

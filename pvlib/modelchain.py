@@ -86,31 +86,45 @@ class ModelChain(object):
         self._orientation_strategy = strategy
         
 
-    def run_model(self, times):
+    def run_model(self, times=None, irradiance=None, weather=None):
         """
         Run the model.
         
-        Problems:
-        
-        * assumes clear sky
-        * assumes 0 m/s wind and 20 C temp.
-        * only works with SAPM
-        
+        Parameters
+        ----------
+        times : None or DatetimeIndex
+        irradiance : None or DataFrame
+            If None, calculates clear sky data.
+            Columns must be 'dni', 'ghi', 'dhi'
+        weather : None or DataFrame
+            If None, assumes air temperature is 20 C and
+            wind speed is 0 m/s.
+            Columns must be 'wind_speed', 'temp_air'.
+
         Returns
         -------
         output : DataFrame
             Some combination of AC power, DC power, POA irrad, etc.
         """
         solar_position = self.location.get_solarposition(times)
-        clearsky = self.location.get_clearsky(solar_position.index,
-                                              self.clearsky_model)
-        irradiance = self.system.get_irradiance(solar_position['apparent_zenith'],
-                                                solar_position['azimuth'],
-                                                clearsky['dni'],
-                                                clearsky['ghi'],
-                                                clearsky['dhi'],
-                                                model=self.transposition_model)
-        temps = self.system.sapm_celltemp(irradiance['poa_global'], 0, 20)
+        
+        if irradiance is None:
+            irradiance = self.location.get_clearsky(solar_position.index,
+                                                    self.clearsky_model)
+
+        total_irrad = self.system.get_irradiance(solar_position['apparent_zenith'],
+                                                 solar_position['azimuth'],
+                                                 irradiance['dni'],
+                                                 irradiance['ghi'],
+                                                 irradiance['dhi'],
+                                                 model=self.transposition_model)
+                                                
+        if weather is None:
+            weather = {'wind_speed': 0, 'temp_air': 20}
+
+        temps = self.system.sapm_celltemp(total_irrad['poa_global'],
+                                          weather['wind_speed'],
+                                          weather['temp_air'])
         
         aoi = self.system.get_aoi(solar_position['apparent_zenith'],
                                   solar_position['azimuth'])
@@ -119,8 +133,9 @@ class ModelChain(object):
                                             self.airmass_model)
         am_abs = self.location.get_absoluteairmass(am_rel)
 
-        dc = self.system.sapm(irradiance['poa_direct'],
-                              irradiance['poa_diffuse'], temps['temp_cell'],
+        dc = self.system.sapm(total_irrad['poa_direct'],
+                              total_irrad['poa_diffuse'],
+                              temps['temp_cell'],
                               am_abs, aoi)
 
         ac = self.system.snlinverter(dc['v_mp'], dc['p_mp'])

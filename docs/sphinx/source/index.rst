@@ -42,6 +42,8 @@ and
 
 The GitHub wiki also has a page on `Projects and publications that use pvlib python <https://github.com/pvlib/pvlib-python/wiki/Projects-and-publications-that-use-pvlib-python>`_ for inspiration and listing of your application.
 
+There is a :ref:`variable naming convention <variables_style_rules>` to ensure consistency throughout the library.
+
 Installation
 ============
 
@@ -62,7 +64,13 @@ Contents
    modules
    classes
    comparison_pvlib_matlab
+<<<<<<< HEAD
    whatsnew
+=======
+   variables_style_rules
+   pvlib
+
+>>>>>>> pvlib/master
 
 
 Indices and tables

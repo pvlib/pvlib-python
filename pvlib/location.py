@@ -228,7 +228,7 @@ class Location(object):
             zenith = solar_position['apparent_zenith']
         elif model in trues:
             zenith = solar_position['zenith']
-        else
+        else:
             raise ValueError('invalid model %s', model)
 
         airmass_relative = atmosphere.relativeairmass(zenith, model)

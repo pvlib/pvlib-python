@@ -20,10 +20,11 @@ is well-tested procedural code that implements PV system models.
 pvlib-python also provides a collection of classes for users
 that prefer object-oriented programming.
 These classes can help users keep track of data in a more organized way,
-and can help to simplify the modeling process.
-The classes do not add any functionality beyond the procedural code.
-Most of the object methods are simple wrappers around the
-corresponding procedural code.
+provide some "smart" functions with more flexible inputs,
+and simplify the modeling process for common situations.
+The classes do not add any algorithms beyond what's available
+in the procedural code, and most of the object methods
+are simple wrappers around the corresponding procedural code.
 
 Let's use each of these pvlib modeling paradigms
 to calculate the yearly energy yield for a given hardware

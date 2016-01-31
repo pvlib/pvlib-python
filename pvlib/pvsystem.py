@@ -30,10 +30,12 @@ class PVSystem(object):
     The PVSystem class defines a standard set of PV system attributes and
     modeling functions. This class describes the collection and interactions
     of PV system components rather than an installed system on the ground.
-    It is typically used in combination with ``Location`` and ``ModelChain``
+    It is typically used in combination with
+    :py:class:`~pvlib.location.Location` and
+    :py:class:`~pvlib.modelchain.ModelChain`
     objects.
     
-    See the :class:`LocalizedPVSystem` class for an object model that
+    See the :py:class:`LocalizedPVSystem` class for an object model that
     describes an installed PV system.
     
     The class is complementary
@@ -88,9 +90,9 @@ class PVSystem(object):
     
     See also
     --------
-    location.Location
-    tracking.SingleAxisTracker
-    pvsystem.LocalizedPVSystem
+    :py:class:`~pvlib.location.Location`
+    :py:class:`~pvlib.tracking.SingleAxisTracker`
+    :py:class:`~pvlib.pvsystem.LocalizedPVSystem`
     """
     
     def __init__(self,
@@ -406,7 +408,7 @@ class LocalizedPVSystem(PVSystem, Location):
     This class combines the attributes and methods
     of the PVSystem and Location classes.
     
-    See the :class:`PVSystem` class for an object model that
+    See the :py:class:`PVSystem` class for an object model that
     describes an unlocalized PV system.
     """
     def __init__(self, pvsystem=None, location=None, **kwargs):

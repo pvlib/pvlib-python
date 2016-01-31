@@ -61,16 +61,11 @@ Contents
    
    self
    package_overview
+   whatsnew
    modules
    classes
    comparison_pvlib_matlab
-<<<<<<< HEAD
-   whatsnew
-=======
    variables_style_rules
-   pvlib
-
->>>>>>> pvlib/master
 
 
 Indices and tables

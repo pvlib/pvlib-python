@@ -9,6 +9,7 @@ pvl_logger = logging.getLogger('pvlib')
 
 import datetime
 
+import pandas as pd
 import pytz
 
 from pvlib import solarposition
@@ -188,13 +189,13 @@ class Location(object):
             solpos = self.get_solarposition(times, **kwargs)
             cs = clearsky.haurwitz(solpos['apparent_zenith'])
         else:
-            raise ValueError('%s is not a valid clear sky model', model)
+            raise ValueError('{} is not a valid clear sky model'.format(model))
 
         return cs
     
     
     def get_airmass(self, times=None, solar_position=None,
-                    model='kastenyoung1998'):
+                    model='kastenyoung1989'):
         """
         Calculate the relative and absolute airmass.
         
@@ -229,7 +230,7 @@ class Location(object):
         elif model in trues:
             zenith = solar_position['zenith']
         else:
-            raise ValueError('invalid model %s', model)
+            raise ValueError('{} is not a valid airmass model'.format(model))
 
         airmass_relative = atmosphere.relativeairmass(zenith, model)
 

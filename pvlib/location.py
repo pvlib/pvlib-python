@@ -40,11 +40,12 @@ class Location(object):
         Positive is east of the prime meridian.
         Use decimal degrees notation.
     
-    tz : string or pytz.timezone. 
+    tz : str, int, float, or pytz.timezone. 
         See 
         http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         for a list of valid time zones.
         pytz.timezone objects will be converted to strings.
+        ints and floats must be in hours from UTC.
     
     alitude : float. 
         Altitude from sea level in meters.
@@ -73,6 +74,9 @@ class Location(object):
         elif isinstance(tz, datetime.tzinfo):
             self.tz = tz.zone
             self.pytz = tz
+        elif isinstance(tz, (int, float)):
+            self.tz = tz
+            self.pytz = pytz.FixedOffset(tz*60)
         else:
             raise TypeError('Invalid tz specification')
         
@@ -114,21 +118,21 @@ class Location(object):
         # might need code to handle the difference between tmy2 and tmy3
         
         # determine if we're dealing with TMY2 or TMY3 data
-        tmy2 = tmy_metadata.get('StationName', False)
+        tmy2 = tmy_metadata.get('City', False)
         
         latitude = tmy_metadata['latitude']
         longitude = tmy_metadata['longitude']
         
         if tmy2:
-            altitude = tmy_metadata['SiteElevation']
-            name = tmy_metadata['StationName']
-            tz = tmy_metadata['SiteTimeZone']
-        else:
-            altitude = tmy_metadata['alititude']
+            name = tmy_metadata['City']
+        else:            
             name = tmy_metadata['Name']
-            tz = tmy_metadata['TZ']
-        
-        new_object = cls(latitude, longitude, tz, altitude, name, **kwargs)
+            
+        tz = tmy_metadata['TZ']
+        altitude = tmy_metadata['altitude']
+
+        new_object = cls(latitude, longitude, tz=tz, altitude=altitude,
+                         name=name, **kwargs)
         
         # not sure if this should be assigned regardless of input.
         if tmy_data is not None:
@@ -137,26 +141,36 @@ class Location(object):
         return new_object
 
 
-    def get_solarposition(self, times, **kwargs):
+    def get_solarposition(self, times, pressure=None, temperature=12,
+                          **kwargs):
         """
-        Uses the :func:`solarposition.get_solarposition` function
+        Uses the :py:func:`solarposition.get_solarposition` function
         to calculate the solar zenith, azimuth, etc. at this location.
         
         Parameters
         ----------
         times : DatetimeIndex
-        
-        kwargs passed to :func:`solarposition.get_solarposition`
+        pressure : None, float, or array-like
+            If None, pressure will be calculated using
+            :py:func:`atmosphere.alt2pres` and ``self.altitude``.
+        temperature : None, float, or array-like
+
+        kwargs passed to :py:func:`solarposition.get_solarposition`
         
         Returns
         -------
-        solarposition : DataFrame
+        solar_position : DataFrame
             Columns depend on the ``method`` kwarg, but always include
-            ``zenith`` and ``azimuth``. 
+            ``zenith`` and ``azimuth``.
         """
+        if pressure is None:
+            pressure = atmosphere.alt2pres(self.altitude)
+
         return solarposition.get_solarposition(times, latitude=self.latitude,
                                                longitude=self.longitude,
                                                altitude=self.altitude,
+                                               pressure=pressure,
+                                               temperature=temperature,
                                                **kwargs)
 
 
@@ -221,14 +235,9 @@ class Location(object):
         if solar_position is None:
             solar_position = self.get_solarposition(times)
 
-        apparents = ['simple', 'kasten1966', 'kastenyoung1989',
-                     'gueymard1993', 'pickering2002']
-
-        trues = ['youngirvine1967', 'young1994']
-
-        if model in apparents:
+        if model in atmosphere.APPARENT_ZENITH_MODELS:
             zenith = solar_position['apparent_zenith']
-        elif model in trues:
+        elif model in atmosphere.TRUE_ZENITH_MODELS:
             zenith = solar_position['zenith']
         else:
             raise ValueError('{} is not a valid airmass model'.format(model))

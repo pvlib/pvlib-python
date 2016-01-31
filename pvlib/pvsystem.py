@@ -90,9 +90,9 @@ class PVSystem(object):
     
     See also
     --------
-    :py:class:`~pvlib.location.Location`
-    :py:class:`~pvlib.tracking.SingleAxisTracker`
-    :py:class:`~pvlib.pvsystem.LocalizedPVSystem`
+    pvlib.location.Location
+    pvlib.tracking.SingleAxisTracker
+    pvlib.pvsystem.LocalizedPVSystem
     """
     
     def __init__(self,

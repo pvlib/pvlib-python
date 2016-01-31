@@ -56,7 +56,7 @@ configuration at a handful of sites listed below.
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
     inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     
-    # specify constant ambient air temp and wind
+    # specify constant ambient air temp and wind for simplicity
     temp_air = 20
     wind_speed = 0
 

@@ -189,7 +189,8 @@ class Location(object):
             solpos = self.get_solarposition(times, **kwargs)
             cs = clearsky.haurwitz(solpos['apparent_zenith'])
         else:
-            raise ValueError('{} is not a valid clear sky model'.format(model))
+            raise ValueError('{} is not a valid clear sky model'
+                             .format(model))
 
         return cs
     
@@ -199,9 +200,9 @@ class Location(object):
         """
         Calculate the relative and absolute airmass.
         
-        Function will calculate the solar zenith and apparent zenith angles,
-        and choose the appropriate one.
-        
+        Automatically chooses zenith or apparant zenith
+        depending on the selected model.
+
         Parameters
         ----------
         times : None or DatetimeIndex
@@ -243,4 +244,4 @@ class Location(object):
         airmass['airmass_absolute'] = airmass_absolute
 
         return airmass
-                                      
+            

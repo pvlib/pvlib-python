@@ -2,8 +2,6 @@
 Stub documentation for the module.
 """
 
-from pvlib import atmosphere
-
 class ModelChain(object):
     """
     A class that represents all of the modeling steps necessary for
@@ -108,9 +106,14 @@ class ModelChain(object):
         """
         solar_position = self.location.get_solarposition(times)
         
+        airmass = self.location.get_airmass(solar_position=solar_position,
+                                            model=self.airmass_model)
+
         if irradiance is None:
             irradiance = self.location.get_clearsky(solar_position.index,
-                                                    self.clearsky_model)
+                                                    self.clearsky_model,
+                                                    zenith_data=solar_position['apparent_zenith'],
+                                                    airmass_data=airmass['airmass_absolute'])
 
         total_irrad = self.system.get_irradiance(solar_position['apparent_zenith'],
                                                  solar_position['azimuth'],
@@ -118,30 +121,27 @@ class ModelChain(object):
                                                  irradiance['ghi'],
                                                  irradiance['dhi'],
                                                  model=self.transposition_model)
-                                                
+
         if weather is None:
             weather = {'wind_speed': 0, 'temp_air': 20}
 
         temps = self.system.sapm_celltemp(total_irrad['poa_global'],
                                           weather['wind_speed'],
                                           weather['temp_air'])
-        
+
         aoi = self.system.get_aoi(solar_position['apparent_zenith'],
                                   solar_position['azimuth'])
-
-        am_rel = atmosphere.relativeairmass(solar_position['apparent_zenith'],
-                                            self.airmass_model)
-        am_abs = self.location.get_absoluteairmass(am_rel)
 
         dc = self.system.sapm(total_irrad['poa_direct'],
                               total_irrad['poa_diffuse'],
                               temps['temp_cell'],
-                              am_abs, aoi)
+                              airmass['airmass_absolute'],
+                              aoi)
 
         ac = self.system.snlinverter(dc['v_mp'], dc['p_mp'])
 
         return dc, ac
-    
+
 
     def model_system(self):
         """

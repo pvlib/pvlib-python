@@ -191,13 +191,55 @@ class Location(object):
             raise ValueError('%s is not a valid clear sky model', model)
 
         return cs
-
-
-    def get_absoluteairmass(self, airmass_relative):
+    
+    
+    def get_airmass(self, times=None, solar_position=None,
+                    model='kastenyoung1998'):
+        """
+        Calculate the relative and absolute airmass.
         
+        Function will calculate the solar zenith and apparent zenith angles,
+        and choose the appropriate one.
+        
+        Parameters
+        ----------
+        times : None or DatetimeIndex
+            Only used if solar_position is not provided.
+        solar_position : None or DataFrame
+            DataFrame with with columns 'apparent_zenith', 'zenith'.
+        model : str
+            Relative airmass model
+        
+        Returns
+        -------
+        airmass : DataFrame
+            Columns are 'airmass_relative', 'airmass_absolute'
+        """
+
+        if solar_position is None:
+            solar_position = self.get_solarposition(times)
+
+        apparents = ['simple', 'kasten1966', 'kastenyoung1989',
+                     'gueymard1993', 'pickering2002']
+
+        trues = ['youngirvine1967', 'young1994']
+
+        if model in apparents:
+            zenith = solar_position['apparent_zenith']
+        elif model in trues:
+            zenith = solar_position['zenith']
+        else
+            raise ValueError('invalid model %s', model)
+
+        airmass_relative = atmosphere.relativeairmass(zenith, model)
+
         pressure = atmosphere.alt2pres(self.altitude)
-        am = atmosphere.absoluteairmass(airmass_relative, pressure)
-        
-        return am
+        airmass_absolute = atmosphere.absoluteairmass(airmass_relative,
+                                                      pressure)
 
+        airmass = pd.DataFrame()
+        airmass['airmass_relative'] = airmass_relative
+        airmass['airmass_absolute'] = airmass_absolute
+
+        return airmass
                                       

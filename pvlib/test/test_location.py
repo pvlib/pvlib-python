@@ -1,6 +1,3 @@
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import pytz
 from nose.tools import raises
 from pytz.exceptions import UnknownTimeZoneError
@@ -35,3 +32,15 @@ def test_location_print_pytz():
     tus = Location(32.2, -111, aztz, 700, 'Tucson')
     expected_str = 'Tucson: latitude=32.2, longitude=-111, tz=US/Arizona, altitude=700'
     assert tus.__str__() == expected_str
+
+def test_get_clearsky():
+    raise Exception('test me')
+
+def test_from_tmy():
+    raise Exception('test me')
+
+def test_get_solarposition():
+    raise Exception('test me')
+
+def test_get_airmass():
+    raise Exception('test me')

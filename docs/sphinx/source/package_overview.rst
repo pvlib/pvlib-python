@@ -202,12 +202,12 @@ object to accomplish our modeling goal:
                                                wind_speed, temp_air)
         aoi = localized_system.get_aoi(solar_position['apparent_zenith'],
                                        solar_position['azimuth'])
-        am_rel = pvlib.atmosphere.relativeairmass(solar_position['apparent_zenith'])
-        am_abs = localized_system.get_absoluteairmass(am_rel)
+        airmass = localized_system.get_airmass(solar_position=solar_position)
         dc = localized_system.sapm(total_irrad['poa_direct'],
                                    total_irrad['poa_diffuse'],
                                    temps['temp_cell'],
-                                   am_abs, aoi)
+                                   airmass['airmass_absolute'],
+                                   aoi)
         ac = localized_system.snlinverter(dc['v_mp'], dc['p_mp'])
         annual_energy = ac.sum()
         energies[name] = annual_energy

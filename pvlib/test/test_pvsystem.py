@@ -222,8 +222,32 @@ def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
 
 
+def test_PVSystem_get_aoi():
+    raise Exception('test me')
+
+
+def test_PVSystem_get_irradiance():
+    raise Exception('test me')
+
+
+def test_PVSystem_localize_with_location():
+    raise Exception('test me')
+
+
+def test_PVSystem_localize_with_latlon():
+    raise Exception('test me')
+
+
+# in principle, we should be retesting each of the models tested above
+# when they are attached to PVSystem
+
+
 def test_LocalizedPVSystem_creation():
     localized_pv_system = pvsystem.LocalizedPVSystem(latitude=30,
                                                      longitude=-110,
                                                      module='blah',
                                                      inverter='blarg')
+
+
+def test_LocalizedPVSystem_do_stuff():
+    raise Exception('test me')

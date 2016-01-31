@@ -56,11 +56,12 @@ def test_spa_c_physical():
     
     
 def test_spa_c_physical_dst():
-    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1, 
-                          freq='D', tz=golden.tz)
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
+                          periods=1, freq='D', tz=golden.tz)
     try:
         ephem_data = solarposition.spa_c(times, golden.latitude,
-                                         golden.longitude, pressure=82000,
+                                         golden.longitude,
+                                         pressure=82000,
                                          temperature=11)
     except ImportError:
         raise SkipTest    
@@ -87,7 +88,8 @@ def test_spa_python_numpy_physical_dst():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_python(times, golden.latitude,
-                                          golden.longitude, pressure=82000, 
+                                          golden.longitude,
+                                          pressure=82000, 
                                           temperature=11, delta_t=67, 
                                           atmos_refract=0.5667,
                                           how='numpy')

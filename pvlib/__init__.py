@@ -11,3 +11,4 @@ from pvlib import tmy
 from pvlib import tracking
 from pvlib import pvsystem
 from pvlib import spa
+from pvlib import modelchain

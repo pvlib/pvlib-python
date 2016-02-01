@@ -75,7 +75,7 @@ class ModelChain(object):
             self.system.surface_azimuth = 180
             self.system.surface_tilt = self.location.latitude
         elif strategy == 'flat':
-            self.system.surface_azimuth = 0
+            self.system.surface_azimuth = 180
             self.system.surface_tilt = 0
         else:
             raise ValueError('invalid orientation strategy. strategy must ' +
@@ -84,13 +84,13 @@ class ModelChain(object):
         self._orientation_strategy = strategy
         
 
-    def run_model(self, times=None, irradiance=None, weather=None):
+    def run_model(self, times, irradiance=None, weather=None):
         """
         Run the model.
         
         Parameters
         ----------
-        times : None or DatetimeIndex
+        times : DatetimeIndex
         irradiance : None or DataFrame
             If None, calculates clear sky data.
             Columns must be 'dni', 'ghi', 'dhi'

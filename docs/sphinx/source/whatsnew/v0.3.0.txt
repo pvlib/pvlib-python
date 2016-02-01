@@ -59,3 +59,5 @@ Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* pyElena21
+* DaCoEx

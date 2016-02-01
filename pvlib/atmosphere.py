@@ -11,10 +11,11 @@ pvl_logger = logging.getLogger('pvlib')
 
 import numpy as np
 
-AIRMASS_MODELS = ['kastenyoung1989', 'kasten1966', 'simple', 
-                  'pickering2002', 'youngirvine1967', 'young1994',
-                  'gueymard1993']
-                  
+APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
+                          'gueymard1993', 'pickering2002')
+TRUE_ZENITH_MODELS = ('youngirvine1967', 'young1994')
+AIRMASS_MODELS = APPARENT_ZENITH_MODELS + TRUE_ZENITH_MODELS
+
 
 def pres2alt(pressure):
     '''
@@ -143,12 +144,12 @@ def absoluteairmass(airmass_relative, pressure=101325.):
 
 def relativeairmass(zenith, model='kastenyoung1989'):
     '''
-    Gives the relative (not pressure-corrected) airmass
+    Gives the relative (not pressure-corrected) airmass.
 
-    Gives the airmass at sea-level when given a sun zenith angle, z (in 
-    degrees). 
-    The "model" variable allows selection of different airmass models
-    (described below). "model" must be a valid string. If "model" is not 
+    Gives the airmass at sea-level when given a sun zenith angle
+    (in degrees). 
+    The ``model`` variable allows selection of different airmass models
+    (described below). If ``model`` is not 
     included or is not valid, the default model is 'kastenyoung1989'.
 
     Parameters

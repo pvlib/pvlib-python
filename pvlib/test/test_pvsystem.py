@@ -1,6 +1,3 @@
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import inspect
 import os
 import datetime
@@ -222,8 +219,74 @@ def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
 
 
+def test_PVSystem_get_aoi():
+    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+    aoi = system.get_aoi(30, 225)
+    assert np.round(aoi, 4) == 42.7408
+
+
+def test_PVSystem_get_irradiance():
+    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+    times = pd.DatetimeIndex(start='20160101 1200-0700',
+                             end='20160101 1800-0700', freq='6H')
+    location = Location(latitude=32, longitude=-111)
+    solar_position = location.get_solarposition(times)
+    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
+                          index=times)
+    
+    irradiance = system.get_irradiance(solar_position['apparent_zenith'],
+                                       solar_position['azimuth'],
+                                       irrads['dni'],
+                                       irrads['ghi'],
+                                       irrads['dhi'])
+    
+    expected = pd.DataFrame(data=np.array(
+        [[ 883.65494055,  745.86141676,  137.79352379,  126.397131  ,
+              11.39639279],
+           [   0.        ,   -0.        ,    0.        ,    0.        ,    0.        ]]),
+                            columns=['poa_global', 'poa_direct',
+                                     'poa_diffuse', 'poa_sky_diffuse',
+                                     'poa_ground_diffuse'],
+                            index=times)
+    
+    irradiance = np.round(irradiance, 4)
+    expected = np.round(expected, 4)
+    assert_frame_equal(irradiance, expected)
+
+
+def test_PVSystem_localize_with_location():
+    system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    location = Location(latitude=32, longitude=-111)
+    localized_system = system.localize(location=location)
+    
+    assert localized_system.module == 'blah'
+    assert localized_system.inverter == 'blarg'
+    assert localized_system.latitude == 32
+    assert localized_system.longitude == -111
+
+
+def test_PVSystem_localize_with_latlon():
+    system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    localized_system = system.localize(latitude=32, longitude=-111)
+    
+    assert localized_system.module == 'blah'
+    assert localized_system.inverter == 'blarg'
+    assert localized_system.latitude == 32
+    assert localized_system.longitude == -111
+
+
+# we could retest each of the models tested above
+# when they are attached to LocalizedPVSystem, but
+# that's probably not necessary at this point.
+
+
 def test_LocalizedPVSystem_creation():
-    localized_pv_system = pvsystem.LocalizedPVSystem(latitude=30,
-                                                     longitude=-110,
-                                                     module='blah',
-                                                     inverter='blarg')
+    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
+                                                  longitude=-111,
+                                                  module='blah',
+                                                  inverter='blarg')
+
+    assert localized_system.module == 'blah'
+    assert localized_system.inverter == 'blarg'
+    assert localized_system.latitude == 32
+    assert localized_system.longitude == -111

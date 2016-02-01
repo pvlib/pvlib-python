@@ -7,18 +7,48 @@ This is a major release from 0.2.2.
 We recommend that all users upgrade to this version after testing
 their code for compatibility and updating as necessary.
 
+
 Enhancements
 ~~~~~~~~~~~~
 
-* Adds ``PVSystem`` and ``SingleAxisTracker`` classes. (:issue:`17`)
+* Adds ``PVSystem``, ``LocalizedPVSystem``, ``ModelChain``,
+  and ``SingleAxisTracker`` classes. (:issue:`17`)
 * Replaces ``location`` arguments with ``latitude``, ``longitude``,
   ``altitude``, and ``tz`` as appropriate.
   This separates the object-oriented API from the procedural API.
   (:issue:`17`)
-
+* ``Location`` classes can be created from TMY2/TMY3 metadata
+  using the ``from_tmy`` constructor.
+* ``Location`` classes gain the ``get_solarposition``, ``get_clearsky``,
+  and ``get_airmass`` functions.
+* Add Package Overview and Classes pages to documentation.
+* Adds support for Appveyor, a Windows continuous integration service.
+  (:issue:`111`)
+* The readthedocs documentation build now uses conda packages
+  instead of mock packages. This enables code to be run
+  and figures to be generated during the documentation builds.
+  (:issue:`104`)
+* Reconfigures TravisCI builds and adds e.g. ``has_numba`` decorators
+  to the test suite. The result is that the TravisCI test suite runs
+  almost 10x faster and users do not have to install all optional
+  dependencies to run the test suite. (:issue:`109`)
+* Adds more unit tests that test that the return values are
+  actually correct.
+* Add ``atmosphere.APPARENT_ZENITH_MODELS`` and
+  ``atmosphere.TRUE_ZENITH_MODELS`` to enable code that can
+  automatically determine which type of zenith data to use
+  e.g. ``Location.get_airmass``.
+* Change default ``Location`` timezone to ``'UTC'``.
 
 Bug fixes
 ~~~~~~~~~
+
+* ``pvsystem.sapm_celltemp`` argument names now follow the
+  variable conventions.
+* ``irradiance.total_irrad`` now follows the variable conventions.
+  (:issue:`105`)
+* Fixed the metadata key specification in documentation of the
+  readtmy2 function.
 
 
 Contributors

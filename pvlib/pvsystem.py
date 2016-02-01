@@ -19,7 +19,7 @@ import pandas as pd
 
 from pvlib import tools
 from pvlib.location import Location
-from pvlib import irradiance
+from pvlib import irradiance, atmosphere
 
 
 # not sure if this belongs in the pvsystem module.
@@ -30,10 +30,12 @@ class PVSystem(object):
     The PVSystem class defines a standard set of PV system attributes and
     modeling functions. This class describes the collection and interactions
     of PV system components rather than an installed system on the ground.
-    It is typically used in combination with ``Location`` and ``ModelChain``
+    It is typically used in combination with
+    :py:class:`~pvlib.location.Location` and
+    :py:class:`~pvlib.modelchain.ModelChain`
     objects.
     
-    See the :class:`LocalizedPVSystem` class for an object model that
+    See the :py:class:`LocalizedPVSystem` class for an object model that
     describes an installed PV system.
     
     The class is complementary
@@ -88,9 +90,9 @@ class PVSystem(object):
     
     See also
     --------
-    location.Location
-    tracking.SingleAxisTracker
-    pvsystem.LocalizedPVSystem
+    pvlib.location.Location
+    pvlib.tracking.SingleAxisTracker
+    pvlib.pvsystem.LocalizedPVSystem
     """
     
     def __init__(self,
@@ -99,7 +101,7 @@ class PVSystem(object):
                  module=None, module_parameters=None,
                  series_modules=None, parallel_modules=None,
                  inverter=None, inverter_parameters=None,
-                 racking_model=None,
+                 racking_model='open_rack_cell_glassback',
                  **kwargs):
         
         self.surface_tilt = surface_tilt
@@ -128,8 +130,29 @@ class PVSystem(object):
         super(PVSystem, self).__init__(**kwargs)
 
 
+    def get_aoi(self, solar_zenith, solar_azimuth):
+        """Get the angle of incidence on the system.
+        
+        Parameters
+        ----------
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+            
+        Returns
+        -------
+        aoi : Series
+            The angle of incidence
+        """
+        
+        aoi = irradiance.aoi(self.surface_tilt, self.surface_azimuth,
+                             solar_zenith, solar_azimuth)
+        return aoi
+    
+    
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='isotropic',
+                       dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
         Uses the :func:`irradiance.total_irrad` function to calculate
@@ -165,6 +188,14 @@ class PVSystem(object):
         poa_irradiance : DataFrame
             Column names are: ``total, beam, sky, ground``.
         """
+
+        # not needed for all models, but this is easier
+        if dni_extra is None:
+            dni_extra = irradiance.extraradiation(solar_zenith.index)
+            dni_extra = pd.Series(dni_extra, index=solar_zenith.index)
+
+        if airmass is None:
+            airmass = atmosphere.relativeairmass(solar_zenith)
 
         return irradiance.total_irrad(self.surface_tilt,
                                       self.surface_azimuth,
@@ -346,6 +377,30 @@ class PVSystem(object):
         return snlinverter(self.inverter_parameters, v_dc, p_dc)
 
 
+    def localize(self, location=None, latitude=None, longitude=None,
+                 **kwargs):
+        """Creates a LocalizedPVSystem object using this object
+        and location data. Must supply either location object or
+        latitude, longitude, and any location kwargs
+        
+        Parameters
+        ----------
+        location : None or Location
+        latitude : None or float
+        longitude : None or float
+        **kwargs : see Location
+        
+        Returns
+        -------
+        localized_system : LocalizedPVSystem
+        """
+
+        if location is None:
+            location = Location(latitude, longitude, **kwargs)
+
+        return LocalizedPVSystem(pvsystem=self, location=location)
+
+
 class LocalizedPVSystem(PVSystem, Location):
     """
     The LocalizedPVSystem class defines a standard set of
@@ -353,11 +408,29 @@ class LocalizedPVSystem(PVSystem, Location):
     This class combines the attributes and methods
     of the PVSystem and Location classes.
     
-    See the :class:`PVSystem` class for an object model that
+    See the :py:class:`PVSystem` class for an object model that
     describes an unlocalized PV system.
     """
-    def __init__(self, **kwargs):
-        super(LocalizedPVSystem, self).__init__(**kwargs)
+    def __init__(self, pvsystem=None, location=None, **kwargs):
+
+        # get and combine attributes from the pvsystem and/or location
+        # with the rest of the kwargs
+
+        if pvsystem is not None:
+            pv_dict = pvsystem.__dict__
+        else:
+            pv_dict = {}
+
+        if location is not None:
+            loc_dict = location.__dict__
+        else:
+            loc_dict = {}
+
+        new_kwargs = dict(list(pv_dict.items()) +
+                          list(loc_dict.items()) +
+                          list(kwargs.items()))
+
+        super(LocalizedPVSystem, self).__init__(**new_kwargs)
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
@@ -891,10 +964,17 @@ def retrieve_sam(name=None, samfile=None):
         response = urlopen(url)
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
     elif samfile == 'select':
-        import Tkinter 
-        from tkFileDialog import askopenfilename
-        Tkinter.Tk().withdraw() 
-        csvdata = askopenfilename()                           
+        try:
+            # python 2
+            import Tkinter as tkinter
+            from tkFileDialog import askopenfilename
+        except ImportError:
+            # python 3
+            import tkinter
+            from tkinter.filedialog import askopenfilename
+            
+        tkinter.Tk().withdraw()
+        csvdata = askopenfilename()                          
     else: 
         csvdata = samfile
 

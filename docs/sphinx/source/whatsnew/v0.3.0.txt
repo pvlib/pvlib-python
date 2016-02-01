@@ -52,7 +52,7 @@ Bug fixes
   (:issue:`105`)
 * Fixed the metadata key specification in documentation of the
   readtmy2 function.
-* Fixes import of tkinter(:issue:`112`)
+* Fixes the import of tkinter (:issue:`112`)
 
 
 Contributors

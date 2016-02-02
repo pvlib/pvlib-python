@@ -62,6 +62,7 @@ Contents
    self
    package_overview
    whatsnew
+   usage
    modules
    classes
    comparison_pvlib_matlab

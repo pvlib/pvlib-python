@@ -7,7 +7,7 @@ Examples on Usage
 Tutorials
 -----------
 
-These tutorials aim at exemplying the usage of the core libray for various uses.
+These tutorials aim at exemplying the usage of the core library for various uses.
 
 * generals
     * imports
@@ -63,7 +63,13 @@ These tutorials aim at exemplying the usage of the core libray for various uses.
         * Klucher Model
         * Reindl
     * Plot Results
-* 
+* TMY to Power Tutorial -- http://nbviewer.jupyter.org/github/pvlib/pvlib-python/blob/master/docs/tutorials/tmy_to_power.ipynb
+    * Setup
+    * Load TMY data
+    * Calculate modeling intermediates
+    * DC power using SAPM
+    * AC power using SAPM
+* Modeling multiple systems with system losses -- source: http://nbviewer.jupyter.org/github/jforbess/pvlib-python/blob/Issue84/docs/tutorials/system_loss_modeling.ipynb
 
 
 

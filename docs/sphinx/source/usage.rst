@@ -7,7 +7,7 @@ Examples on Usage
 Tutorials
 -----------
 
-These tutorials aim at exemplying the usage of the core library for various uses.
+These tutorials aim at exemplifying the usage of the core library for various uses.
 
 * generals
     * imports

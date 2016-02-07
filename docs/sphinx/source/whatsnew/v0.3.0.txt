@@ -39,6 +39,9 @@ Enhancements
   automatically determine which type of zenith data to use
   e.g. ``Location.get_airmass``.
 * Change default ``Location`` timezone to ``'UTC'``.
+* Added new sections to the documentation:
+    * :ref:`package_overview`
+    * :ref:`variables_style_rules`
 
 Bug fixes
 ~~~~~~~~~
@@ -49,9 +52,12 @@ Bug fixes
   (:issue:`105`)
 * Fixed the metadata key specification in documentation of the
   readtmy2 function.
+* Fixes the import of tkinter on Python 3 (:issue:`112`)
 
 
 Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* pyElena21
+* DaCoEx

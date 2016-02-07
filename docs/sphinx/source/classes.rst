@@ -1,3 +1,5 @@
+.. _classes:
+
 Classes
 =======
 
@@ -47,6 +49,13 @@ LocalizedPVSystem
 SingleAxisTracker
 -----------------
 .. autoclass:: pvlib.tracking.SingleAxisTracker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+LocalizedSingleAxisTracker
+-----------------
+.. autoclass:: pvlib.tracking.LocalizedSingleAxisTracker
     :members:
     :undoc-members:
     :show-inheritance:

@@ -33,7 +33,7 @@ ModelChain
     :show-inheritance:
     
 MoreSpecificModelChain
-----------
+----------------------
 .. autoclass:: pvlib.modelchain.MoreSpecificModelChain
     :members:
     :undoc-members:
@@ -54,7 +54,7 @@ SingleAxisTracker
     :show-inheritance:
 
 LocalizedSingleAxisTracker
------------------
+--------------------------
 .. autoclass:: pvlib.tracking.LocalizedSingleAxisTracker
     :members:
     :undoc-members:

@@ -39,9 +39,11 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Added new sections to the documentation:
+
     * :ref:`package_overview`
     * :ref:`variables_style_rules`
-    * :ref:'classes`
+    * :ref:`classes`
+
 * Adds support for Appveyor, a Windows continuous integration service.
   (:issue:`111`)
 * The readthedocs documentation build now uses conda packages

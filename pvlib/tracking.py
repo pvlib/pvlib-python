@@ -105,8 +105,16 @@ class SingleAxisTracker(PVSystem):
 
         surface_tilt = kwargs.pop('surface_tilt', self.surface_tilt)
         surface_azimuth = kwargs.pop('surface_azimuth', self.surface_azimuth)
-        solar_zenith = kwargs.pop('solar_zenith', self.solar_zenith)
-        solar_azimuth = kwargs.pop('solar_azimuth', self.solar_azimuth)
+        
+        try:
+            solar_zenith = kwargs['solar_zenith']
+        except KeyError:
+            solar_zenith = self.solar_zenith
+        
+        try:
+            solar_azimuth = kwargs['solar_azimuth']
+        except KeyError:
+            solar_azimuth = self.solar_azimuth
 
         # not needed for all models, but this is easier
         if dni_extra is None:

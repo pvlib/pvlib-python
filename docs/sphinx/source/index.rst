@@ -96,10 +96,9 @@ Contents (potential new ToC)
     * Validations
         * SAPM – Some simulations using the Sandia Array Performance Model.
         * IV curves – Make some IV curves based on this data
-* Principal components
+* API reference with principal components
     * Modules
     * Classes
-* API reference
 * Support and Development
     * Getting support
     * How do I contribute?

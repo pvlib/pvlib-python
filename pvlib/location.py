@@ -2,10 +2,7 @@
 This module contains the Location class.
 """
 
-# Will Holmgren, University of Arizona, 2014.
-
-import logging
-pvl_logger = logging.getLogger('pvlib')
+# Will Holmgren, University of Arizona, 2014-2016.
 
 import datetime
 
@@ -190,7 +187,7 @@ class Location(object):
         
         Returns
         -------
-        clearsky : Series or DataFrame
+        clearsky : DataFrame
             Column names are: ``ghi, dni, dhi``.
         """
         

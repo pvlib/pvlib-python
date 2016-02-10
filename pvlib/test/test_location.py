@@ -62,6 +62,32 @@ def test_get_clearsky():
     assert_frame_equal(expected, clearsky)
 
 
+def test_get_clearsky_haurwitz():
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    times = pd.DatetimeIndex(start='20160101T0600-0700',
+                             end='20160101T1800-0700',
+                             freq='3H')
+    clearsky = tus.get_clearsky(times, model='haurwitz')
+    expected = pd.DataFrame(data=np.array(
+                            [[   0.        ],
+                             [ 242.30085588],
+                             [ 559.38247117],
+                             [ 384.6873791 ],
+                             [   0.        ]]),
+                            columns=['ghi'],
+                            index=times)
+    assert_frame_equal(expected, clearsky)
+
+
+@raises(ValueError)
+def test_get_clearsky_valueerror():
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    times = pd.DatetimeIndex(start='20160101T0600-0700',
+                             end='20160101T1800-0700',
+                             freq='3H')
+    clearsky = tus.get_clearsky(times, model='invalid_model')
+
+
 def test_from_tmy_3():
     from .test_tmy import tmy3_testfile
     from ..tmy import readtmy3
@@ -125,4 +151,12 @@ def test_get_airmass():
                             columns=['airmass_relative', 'airmass_absolute'],
                             index=times)
     assert_frame_equal(expected, airmass)
-    
+
+
+@raises(ValueError)
+def test_get_airmass_valueerror():
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    times = pd.DatetimeIndex(start='20160101T0600-0700',
+                             end='20160101T1800-0700',
+                             freq='3H')
+    clearsky = tus.get_airmass(times, model='invalid_model')

@@ -68,6 +68,48 @@ Contents
    comparison_pvlib_matlab
    variables_style_rules
 
+   
+Contents (potential new ToC)
+============================
+
+* What’s New
+* Overview: Why pvlib?
+    * Introduction
+    * Modeling paradigms
+    * User extensions
+    * What it is not
+    * Comparison with PVLIB_MATLAB
+* Installation
+* Examples
+    * Using the principal components
+        * atmosphere.py tutorial
+        * solarposition.py tutorial
+        * irradiance.py tutorial 
+    * Specific datasets
+        * TMY tutorial 
+        * TMY data and diffuse irradiance model 
+        * TMY to Power Tutorial 
+    * System Modelling
+        * pvsystem tutorial
+        * Tracking
+        * Modeling multiple systems with system losses
+    * Validations
+        * SAPM – Some simulations using the Sandia Array Performance Model.
+        * IV curves – Make some IV curves based on this data
+* Principal components
+    * Modules
+    * Classes
+* API reference
+* Support and Development
+    * Getting support
+    * How do I contribute?
+* Frequently Asked Questions
+* Citing and References
+    * Citing pvlib
+    * References used for the code
+    * Publications and projects using pvlib
+    * Credits
+
 
 Indices and tables
 ==================

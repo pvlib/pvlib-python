@@ -7,7 +7,7 @@ dependencies:
     - pytz
     - ephem
     - numba
-    - ipython
+    - ipython=4.0.1
     - sphinx
     - numpydoc
     - matplotlib

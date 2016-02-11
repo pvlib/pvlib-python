@@ -155,7 +155,7 @@ class PVSystem(object):
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
-        Uses the :func:`irradiance.total_irrad` function to calculate
+        Uses the :py:func:`irradiance.total_irrad` function to calculate
         the plane of array irradiance components on a tilted surface
         defined by 
         ``self.surface_tilt``, ``self.surface_azimuth``, and
@@ -211,7 +211,7 @@ class PVSystem(object):
         """
         Determine the incidence angle modifier using
         ``self.module_parameters['b']``, ``aoi``,
-        and the :func:`ashraeiam` function.
+        and the :py:func:`ashraeiam` function.
         
         Parameters
         ----------
@@ -234,7 +234,7 @@ class PVSystem(object):
         ``self.module_parameters['L']``,
         ``self.module_parameters['n']``,
         ``aoi``, and the
-        :func:`physicaliam` function.
+        :py:func:`physicaliam` function.
         
         Parameters
         ----------
@@ -252,7 +252,7 @@ class PVSystem(object):
 
     def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
         """
-        Use the :func:`calcparams_desoto` function, the input parameters
+        Use the :py:func:`calcparams_desoto` function, the input parameters
         and ``self.module_parameters`` to calculate the module
         currents and resistances.
         
@@ -272,14 +272,16 @@ class PVSystem(object):
         See pvsystem.calcparams_desoto for details
         """             
         return calcparams_desoto(poa_global, temp_cell,
+                                 self.module_parameters['alpha_sc'],
                                  self.module_parameters,
-                                 EgRef, dEgdT, **kwargs)
+                                 self.module_parameters['EgRef'],
+                                 self.module_parameters['dEgdT'], **kwargs)
 
 
     def sapm(self, poa_direct, poa_diffuse,
              temp_cell, airmass_absolute, aoi, **kwargs):
         """
-        Use the :func:`sapm` function, the input parameters,
+        Use the :py:func:`sapm` function, the input parameters,
         and ``self.module_parameters`` to calculate
         Voc, Isc, Ix, Ixx, Vmp/Imp.
         
@@ -313,7 +315,7 @@ class PVSystem(object):
     
     # model now specified by self.racking_model
     def sapm_celltemp(self, irrad, wind, temp):
-        """Uses :func:`sapm_celltemp` to calculate module and cell
+        """Uses :py:func:`sapm_celltemp` to calculate module and cell
         temperatures based on ``self.racking_model`` and 
         the input parameters.
         
@@ -330,7 +332,7 @@ class PVSystem(object):
     
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth):
-        """Wrapper around the :func:`singlediode` function.
+        """Wrapper around the :py:func:`singlediode` function.
         
         Parameters
         ----------
@@ -347,7 +349,7 @@ class PVSystem(object):
     
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
-        """Wrapper around the :func:`i_from_v` function.
+        """Wrapper around the :py:func:`i_from_v` function.
         
         Parameters
         ----------

@@ -1,5 +1,5 @@
 '''
-The 'forecast' module contains class definitions for 
+The 'forecast' module contains class definitions for
 retreiving forecasted data from UNIDATA Thredd servers.
 '''
 import datetime
@@ -19,7 +19,7 @@ from siphon.ncss import NCSS
 
 class ForecastModel(object):
     '''
-    An object for holding forecast model information for use within the 
+    An object for holding forecast model information for use within the
     pvlib library.
 
     Simplifies use of siphon library on a THREDDS server.
@@ -67,7 +67,7 @@ class ForecastModel(object):
         Indicates the use of a location bounding box.
     ncss: NCSS object
         NCSS    model_name: string
-        Name of the UNIDATA forecast model.    
+        Name of the UNIDATA forecast model.
     model: Dataset
         A dictionary of Dataset object, whose keys are the name of the
         dataset's name.
@@ -92,7 +92,7 @@ class ForecastModel(object):
         Dictionary containing the unites of the variables in the query,
         where the keys are the common names.
     variables: dictionary
-        Dictionary that translates model specific variables to 
+        Dictionary that translates model specific variables to
         common named variables.
     vert_level: float or integer
         Vertical altitude for query data.
@@ -124,7 +124,7 @@ class ForecastModel(object):
         self.catalog = TDSCatalog(self.catalog_url)
         self.fm_models = TDSCatalog(self.catalog.catalog_refs[model_type].href)
         self.fm_models_list = sorted(list(self.fm_models.catalog_refs.keys()))
-        
+
         try:
             model_url = self.fm_models.catalog_refs[model_name].href
         except ParseError:
@@ -141,10 +141,10 @@ class ForecastModel(object):
 
     def set_dataset(self):
         '''
-        Retreives the designated dataset, creates NCSS object, and 
+        Retrieves the designated dataset, creates NCSS object, and
         initiates a NCSS query.
-
         '''
+
         keys = list(self.model.datasets.keys())
         labels = [item.split()[0].lower() for item in keys]
         if self.set_type == 'best':
@@ -156,38 +156,28 @@ class ForecastModel(object):
 
         self.access_url = self.dataset.access_urls[self.access_url_key]
         self.ncss = NCSS(self.access_url)
-        self.query = self.ncss.query()        
+        self.query = self.ncss.query()
+
 
     def set_query_latlon(self):
         '''
         Sets the NCSS query location latitude and longitude.
-
         '''
-        if isinstance(self.longitude, list):
+
+        if (isinstance(self.longitude, list) and
+            isinstance(self.latitude, list)):
             self.lbox = True
             # west, east, south, north
-            self.query.lonlat_box(self.latitude[0], self.latitude[1], 
-                                    self.longitude[0], self.longitude[1])
+            self.query.lonlat_box(self.latitude[0], self.latitude[1],
+                                  self.longitude[0], self.longitude[1])
         else:
             self.lbox = False
             self.query.lonlat_point(self.longitude, self.latitude)
 
-    def set_query_time(self):
-        '''
-        Sets the NCSS query time range.
 
-        as: single or range
-
-        '''        
-        if len(self.utctime) == 1:
-            self.query.time(pd.to_datetime(self.utctime)[0])
-        else:
-            self.query.time_range(pd.to_datetime(self.utctime)[0], 
-                pd.to_datetime(self.utctime)[-1])
-    
     def set_location(self, time):
         '''
-        Sets the location for 
+        Sets the location for the query.
 
         Parameters
         ----------
@@ -204,31 +194,37 @@ class ForecastModel(object):
         else:
             self.location = Location(self.latitude, self.longitude, tz=tzinfo)
 
-    def get_query_data(self, latitude, longitude, time, vert_level=None, 
-        variables=None):
+
+    def get_query_data(self, latitude, longitude, start, end,
+                       vert_level=None, variables=None):
         '''
-        Submits a query to the UNIDATA servers using siphon NCSS and 
+        Submits a query to the UNIDATA servers using Siphon NCSS and
         converts the netcdf data to a pandas DataFrame.
 
         Parameters
         ----------
-        latitude: list
-            A list of floats containing latitude values.
-        longitude: list
-            A list of floats containing longitude values.
-        time: pd.datetimeindex
-            Time range of interest.
-        vert_level: float or integer
+        latitude: float
+            The latitude value.
+        longitude: float
+            The longitude value.
+        start: datetime or timestamp
+            The start time.
+        end: datetime or timestamp
+            The end time.
+        vert_level: None, float or integer
             Vertical altitude of interest.
-        variables: dictionary
+        variables: None or dict
             Variables and common names being queried.
+            If None, uses self.variables.
 
         Returns
         -------
-        pd.DataFrame
+        forecast_data : DataFrame
         '''
+
         if vert_level is not None:
             self.vert_level = vert_level
+
         if variables is not None:
             self.variables = variables
             self.modelvariables = list(self.variables.keys())
@@ -236,15 +232,15 @@ class ForecastModel(object):
                 self.modelvariables]
             self.columns = self.modelvariables
             self.dataframe_variables = self.modelvariables
-        
 
         self.latitude = latitude
         self.longitude = longitude
         self.set_query_latlon()
-        self.set_location(time)
+        self.set_location(start)
 
-        self.utctime = localize_to_utc(time, self.location)
-        self.set_query_time()
+        self.start = localize_to_utc(start, self.location)
+        self.end = localize_to_utc(end, self.location)
+        self.query.time_range(self.start, self.end)
 
         self.query.vertical_level(self.vert_level)
         self.query.variables(*self.queryvariables)
@@ -255,6 +251,7 @@ class ForecastModel(object):
             time_var = 'time'
             self.set_time(netcdf_data.variables[time_var])
         except KeyError:
+            # which model does this dumb thing?
             time_var = 'time1'
             self.set_time(netcdf_data.variables[time_var])
 
@@ -262,7 +259,7 @@ class ForecastModel(object):
 
         self.set_variable_units(netcdf_data)
         self.set_variable_stdnames(netcdf_data)
-        if self.__class__.__name__ is 'HRRR':
+        if self.__class__.__name__ == 'HRRR':
             self.calc_temperature(netcdf_data)
         self.convert_temperature()
         self.calc_wind(netcdf_data)
@@ -270,13 +267,14 @@ class ForecastModel(object):
 
         self.data = self.data.tz_convert(self.location.tz)
 
-        netcdf_data.close()        
+        netcdf_data.close()
 
-        return self.data       
+        return self.data
+
 
     def netcdf2pandas(self, data):
         '''
-        Transforms data from netcdf  to pandas DataFrame.
+        Transforms data from netcdf to pandas DataFrame.
 
         Currently only supports one-dimensional netcdf data.
 
@@ -351,7 +349,7 @@ class ForecastModel(object):
 
     def calc_radiation(self, data, cloud_type='total_clouds'):
         '''
-        Determines shortwave radiation values if they are missing from 
+        Determines shortwave radiation values if they are missing from
         the model data.
 
         Parameters
@@ -362,17 +360,17 @@ class ForecastModel(object):
             Type of cloud cover to use for calculating radiation values.
         '''
         self.rad_type = {}
-        if not self.lbox and cloud_type in self.modelvariables:           
+        if not self.lbox and cloud_type in self.modelvariables:
             cloud_prct = self.data[cloud_type]
             solpos = get_solarposition(self.time, self.location)
             self.zenith = np.array(solpos.zenith.tz_convert('UTC'))
             for rad in ['dni','dhi','ghi']:
                 if self.model_name is 'HRRR_ESRL':
-                    # HRRR_ESRL is the only model with the 
+                    # HRRR_ESRL is the only model with the
                     # correct equation of time.
                     if rad in self.modelvariables:
                         self.data[rad] = pd.Series(
-                            data[self.variables[rad]][:].squeeze(), 
+                            data[self.variables[rad]][:].squeeze(),
                             index=self.time)
                         self.rad_type[rad] = 'forecast'
                         self.data[rad].fillna(0, inplace=True)
@@ -416,9 +414,9 @@ class ForecastModel(object):
 
     def calc_wind(self, data):
         '''
-        Computes wind speed. 
+        Computes wind speed.
 
-        In some cases only gust wind speed is available. The wind_type 
+        In some cases only gust wind speed is available. The wind_type
         attribute will indicate the type of wind speed that is present.
 
         Parameters
@@ -544,7 +542,7 @@ class HRRR_ESRL(ForecastModel):
     def __init__(self, set_type='best'):
         import warnings
         warnings.warn('HRRR_ESRL is an experimental model and is not always '
-                        + 'available.')       
+                        + 'available.')
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
         self.variables = {
@@ -568,7 +566,7 @@ class HRRR_ESRL(ForecastModel):
         super(HRRR_ESRL, self).__init__(model_type, model, set_type)
 
 
-        
+
 class NAM(ForecastModel):
     '''
     Subclass of the ForecastModel class representing NAM forecast model.
@@ -626,7 +624,7 @@ class HRRR(ForecastModel):
     '''
     Subclass of the ForecastModel class representing HRRR forecast model.
 
-    Model data corresponds to NCEP HRRR CONUS 2.5km resolution 
+    Model data corresponds to NCEP HRRR CONUS 2.5km resolution
     forecasts.
 
     Parameters
@@ -653,7 +651,7 @@ class HRRR(ForecastModel):
 
     def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
-        model = 'NCEP HRRR CONUS 2.5km'            
+        model = 'NCEP HRRR CONUS 2.5km'
         self.variables = {
         'temperature_iso':'Dewpoint_temperature_isobaric',
         'temperature_dew_iso':'Temperature_isobaric',
@@ -724,7 +722,7 @@ class RAP(ForecastModel):
     '''
     Subclass of the ForecastModel class representing RAP forecast model.
 
-    Model data corresponds to Rapid Refresh CONUS 20km resolution 
+    Model data corresponds to Rapid Refresh CONUS 20km resolution
     forecasts.
 
     Parameters

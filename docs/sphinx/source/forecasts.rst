@@ -1,10 +1,10 @@
 .. _forecasts:
 
-**************************************
-Forecasting PV Power with pvlib-python
-**************************************
+***********
+Forecasting
+***********
 
-pvlib-python provides a set of functions that make it easy to obtain
+pvlib-python provides a set of functions and classes that make it easy to obtain
 weather forecast data and convert that data into a PV power forecast.
 Users can retrieve standardized weather forecast data relevant to PV
 power modeling from NOAA/NCEP/NWS models including the GFS, NAM, RAP,
@@ -34,15 +34,15 @@ Unfortunately, many of these models use different names to describe the
 same quantity (or a very similar one), and not all variables are present
 in all models. For example, on the THREDDS server, the GFS has a field
 named
-*Total\_cloud\_cover\_entire\_atmosphere\_Mixed\_intervals\_Average*,
+``Total\_cloud\_cover\_entire\_atmosphere\_Mixed\_intervals\_Average``,
 while the RAP has a field named
-*Total\_cloud\_cover\_entire\_atmosphere\_single\_layer*, and a similar
-field in the HRRR is named *Total\_cloud\_cover\_entire\_atmosphere*.
+``Total\_cloud\_cover\_entire\_atmosphere\_single\_layer``, and a similar
+field in the HRRR is named ``Total\_cloud\_cover\_entire\_atmosphere``.
 
 PVLIB-Python aims to simplify the access of the model fields relevant
 for solar power forecasts. All models accessed via PVLIB-Python are
-returned with uniform field names: *temperature, wind\_speed,
-total\_clouds, low\_clouds, mid\_clouds, high\_clouds, dni, dhi, ghi*. To
+returned with uniform field names: ``temperature, wind\_speed,
+total\_clouds, low\_clouds, mid\_clouds, high\_clouds, dni, dhi, ghi``. To
 accomplish this, we use an object-oriented framework in which each
 weather model is represented by a class that inherits from a parent
 :py:ref:`~pvlib.forecast.ForecastModel` class.
@@ -52,35 +52,33 @@ Siphon, while the child model-specific classes contain the code
 necessary to map and process that specific model's data to the
 standardized fields.
 
+The code below demonstrates how simple it is to access
+and plot forecast data using PVLIB-Python.
+
 .. ipython:: python
 
     import pandas as pd
     import matplotlib.pyplot as plt
 
     # seaborn makes the plots look nicer
-    import seaborn as sns
-    sns.set_color_codes()
+    import seaborn as sns; sns.set_color_codes()
 
     # import forecast models
     from pvlib.forecast import GFS, NAM, NDFD, HRRR
 
-    # specify location
-    latitude = 32.2
-    longitude = -110.9
-    tz = 'US/Arizona'
+    # specify location (Tucson, AZ)
+    latitude, longitude, tz = 32.2, -110.9, 'US/Arizona'
 
     # specify time range
-    start = pd.Timestamp.now()
+    start = pd.Timestamp.now(tz=tz)
     end = start + pd.Timedelta(days=7)
-    timerange = pd.date_range(start, end, tz=tz)
 
     # GFS model, defaults to 0.5 degree resolution
     # 0.25 deg available
     model = GFS()
 
     # retrieve data. returns pandas.DataFrame object
-    data = model.get_query_data(latitude, longitude,
-                                timerange)
+    data = model.get_query_data(latitude, longitude, start, end)
 
     # plot cloud cover percentages
     cloud_vars = ['total_clouds', 'low_clouds',

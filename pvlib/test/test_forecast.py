@@ -25,7 +25,8 @@ if has_siphon:
     _latitude = 32.2
     _longitude = -110.9
     _tz = 'US/Arizona'
-    _time = pd.DatetimeIndex([datetime.now()], tz=_tz)
+    _start = pd.Timestamp.now(tz=_tz)
+    _end = _start + pd.Timedelta(days=1)
     _models = [GFS, NAM, HRRR, RAP, NDFD, HRRR_ESRL]
     _working_models = []
     _variables = np.array(['temperature',
@@ -59,7 +60,7 @@ def test_fmcreation():
 @requires_siphon
 def test_data_query():
     for amodel in _working_models:
-        data = amodel.get_query_data(_latitude, _longitude, _time)
+        data = amodel.get_query_data(_latitude, _longitude, _start, _end)
 
 @requires_siphon
 def test_dataframe_variables():
@@ -73,24 +74,23 @@ def test_dataframe_variables():
 def test_vert_level():
     amodel = _working_models[0]
     vert_level = 5000
-    data = amodel.get_query_data(_latitude, _longitude, _time,
+    data = amodel.get_query_data(_latitude, _longitude, _start, _end,
         vert_level=vert_level)
 
 @requires_siphon
-def test_timerange():
+def test_datetime():
     amodel = _working_models[0]
-    start = datetime.now() # today's date
-    end = start + timedelta(days=7) # 7 days from today
-    timerange = pd.date_range(start, end, tz=_tz)
-    data = amodel.get_query_data(_latitude, _longitude , timerange)
+    start = datetime.now()
+    end = start + timedelta(days=1)
+    data = amodel.get_query_data(_latitude, _longitude , start, end)
 
 @requires_siphon
 def test_queryvariables():
     amodel = _working_models[0]
     old_variables = amodel.variables
     new_variables = {'u':'u-component_of_wind_height_above_ground'}
-    data = amodel.get_query_data(_latitude, _longitude, _time,
-        variables=new_variables)
+    data = amodel.get_query_data(_latitude, _longitude, _start, _end,
+                                 variables=new_variables)
     amodel.variables = old_variables
 
 @requires_siphon
@@ -120,8 +120,8 @@ def test_bounding_box():
     latitude = [31.2,32.2]
     longitude = [-111.9,-110.9]
     new_variables = {'temperature':'Temperature_surface'}
-    data = amodel.get_query_data(latitude, longitude, _time, 
-        variables=new_variables)
+    data = amodel.get_query_data(latitude, longitude, _start, _end,
+                                 variables=new_variables)
 
 @requires_siphon
 def test_set_location():

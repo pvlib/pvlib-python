@@ -4,23 +4,23 @@
 Forecasting
 ***********
 
-pvlib-python provides a set of functions and classes that make it easy to obtain
-weather forecast data and convert that data into a PV power forecast.
-Users can retrieve standardized weather forecast data relevant to PV
-power modeling from NOAA/NCEP/NWS models including the GFS, NAM, RAP,
-HRRR, and the NDFD. A PV power forecast can then be obtained using the
-weather data as inputs to the comprehensive modeling capabilities of
+pvlib-python provides a set of functions and classes that make it easy
+to obtain weather forecast data and convert that data into a PV power
+forecast. Users can retrieve standardized weather forecast data relevant
+to PV power modeling from NOAA/NCEP/NWS models including the GFS, NAM,
+RAP, HRRR, and the NDFD. A PV power forecast can then be obtained using
+the weather data as inputs to the comprehensive modeling capabilities of
 PVLIB-Python. Standardized, open source, reference implementations of
 forecast methods using publicly available data may help advance the
 state-of-the-art of solar power forecasting.
 
-pvlib-python uses Unidata's
-`Siphon <http://siphon.readthedocs.org/en/latest/>`_ library to simplify
-access to forecast data hosted on the Unidata
-`THREDDS catalog <http://thredds.ucar.edu/thredds/catalog.html>`_.
+pvlib-python uses Unidata's `Siphon
+<http://siphon.readthedocs.org/en/latest/>`_ library to simplify access
+to forecast data hosted on the Unidata `THREDDS catalog
+<http://thredds.ucar.edu/thredds/catalog.html>`_.
 
-This document demonstrates how to use pvlib-python to create
-a PV power forecast using these tools.
+This document demonstrates how to use pvlib-python to create a PV power
+forecast using these tools.
 
 
 Accessing Forecast Data
@@ -36,24 +36,25 @@ in all models. For example, on the THREDDS server, the GFS has a field
 named
 ``Total\_cloud\_cover\_entire\_atmosphere\_Mixed\_intervals\_Average``,
 while the RAP has a field named
-``Total\_cloud\_cover\_entire\_atmosphere\_single\_layer``, and a similar
-field in the HRRR is named ``Total\_cloud\_cover\_entire\_atmosphere``.
+``Total\_cloud\_cover\_entire\_atmosphere\_single\_layer``, and a
+similar field in the HRRR is named
+``Total\_cloud\_cover\_entire\_atmosphere``.
 
 PVLIB-Python aims to simplify the access of the model fields relevant
 for solar power forecasts. All models accessed via PVLIB-Python are
 returned with uniform field names: ``temperature, wind\_speed,
-total\_clouds, low\_clouds, mid\_clouds, high\_clouds, dni, dhi, ghi``. To
-accomplish this, we use an object-oriented framework in which each
+total\_clouds, low\_clouds, mid\_clouds, high\_clouds, dni, dhi, ghi``.
+To accomplish this, we use an object-oriented framework in which each
 weather model is represented by a class that inherits from a parent
 :py:ref:`~pvlib.forecast.ForecastModel` class.
-The parent :py:ref:`~pvlib.forecast.ForecastModel` class
-contains the common code for accessing and parsing the data using
-Siphon, while the child model-specific classes contain the code
-necessary to map and process that specific model's data to the
-standardized fields.
+The parent :py:ref:`~pvlib.forecast.ForecastModel` class contains the
+common code for accessing and parsing the data using Siphon, while the
+child model-specific classes contain the code necessary to map and
+process that specific model's data to the standardized fields.
 
-The code below demonstrates how simple it is to access
-and plot forecast data using PVLIB-Python.
+The code below demonstrates how simple it is to access and plot forecast
+data using PVLIB-Python. First, we set up make the basic imports and
+then set the location and time range data.
 
 .. ipython:: python
 
@@ -63,8 +64,8 @@ and plot forecast data using PVLIB-Python.
     # seaborn makes the plots look nicer
     import seaborn as sns; sns.set_color_codes()
 
-    # import forecast models
-    from pvlib.forecast import GFS, NAM, NDFD, HRRR
+    # import pvlib forecast models
+    from pvlib.forecast import GFS, NAM, NDFD, HRRR, RAP
 
     # specify location (Tucson, AZ)
     latitude, longitude, tz = 32.2, -110.9, 'US/Arizona'
@@ -73,12 +74,25 @@ and plot forecast data using PVLIB-Python.
     start = pd.Timestamp.now(tz=tz)
     end = start + pd.Timedelta(days=7)
 
+
+Next, we instantiate a GFS model object and get the forecast data
+from Unidata.
+
+.. ipython:: python
+
     # GFS model, defaults to 0.5 degree resolution
     # 0.25 deg available
     model = GFS()
 
     # retrieve data. returns pandas.DataFrame object
     data = model.get_query_data(latitude, longitude, start, end)
+
+    print(data.head())
+
+
+Finally, we plot the GFS cloud cover data.
+
+.. ipython:: python
 
     # plot cloud cover percentages
     cloud_vars = ['total_clouds', 'low_clouds',
@@ -89,28 +103,27 @@ and plot forecast data using PVLIB-Python.
     plt.title('GFS 0.5 deg forecast for lat={}, lon={}'
               .format(latitude, longitude));
     @savefig gfs_cloud_cover.png width=6in
-    plt.legend()
+    plt.legend();
 
 
 Cloud cover and radiation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Many of forecast models do not include radiation components in their output
-fields, or if they do they suffer from poor solar
-position calculations or radiative transfer algorithms.
-It is often more accurate to create empirically derived
-radiation forecasts from the weather models' cloud cover
-forecasts. pvlib-python currently uses the Liu Jordan model
-to convert cloud cover to radiation, however, we encourage
-developers to explore alternatives.
+Many of forecast models do not include radiation components in their
+output fields, or if they do the radiation fields suffer from poor solar
+position calculations or radiative transfer algorithms. It is often more
+accurate to create empirically derived radiation forecasts from the
+weather models' cloud cover forecasts. pvlib-python currently uses the
+Liu Jordan model to convert cloud cover to radiation, however, we
+encourage developers to explore alternatives.
 
-PVLIB-Python currently uses the Liu-Jordan [Liu60] model to convert
+PVLIB-Python currently uses the Liu-Jordan [Liu60]_ model to convert
 cloud cover forecasts to irradiance forecasts, though it is fairly
-simple to implement new models and provide additional options.
-The figure below shows the result of the cloud cover to irradiance
+simple to implement new models and provide additional options. The
+figure below shows the result of the cloud cover to irradiance
 conversion.
 
-.. ipython: python
+.. ipython:: python
 
     # plot irradiance data
     irrad_vars = ['dni', 'ghi', 'dhi']
@@ -120,107 +133,204 @@ conversion.
     plt.title('GFS 0.5 deg forecast for lat={}, lon={}'
               .format(latitude, longitude));
     @savefig gfs_irrad.png width=6in
-    plt.legend()
+    plt.legend();
 
-Note that the GFS data is hourly resolution, thus the
-default irradiance forecasts are also hourly resolution. However, it is
-straightforward to interpolate the cloud cover forecasts onto a higher
-resolution time domain, and then recalculate the irradiance. We
-reiterate that the open source, permissively licensed, and accessible
-code enables users to customize the model processing to their liking.
+
+Note that the GFS data is hourly resolution, thus the default irradiance
+forecasts are also hourly resolution. However, it is straightforward to
+interpolate the cloud cover forecasts onto a higher resolution time
+domain, and then recalculate the irradiance. We reiterate that the open
+source code enables users to customize the model processing to their
+liking.
 
 .. [Liu60] B. Y. Liu and R. C. Jordan, The interrelationship and
     characteristic distribution of direct, diffuse, and total solar
     radiation, *Solar Energy* **4**, 1 (1960).
 
-pvlib-python Forecast Module Overview
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Forecasts in pvlib-python aim to be:
-
-* Simple and easy to use
-* Comprehensive
-* Flexible
-* Integrated
-* Standardized
-
-
-pvlib-python's forecasting tools address a number of common issues with
-weather model data:
-
-* Data format dissimilarities between forecast models
-	* Forecast period
-		Many of the forecasts come at different intervals
-		and span different lengths of time.
-	* Variables provided
-		The model share many of the same quantities,
-		however they are labeled using different terms
-		or need to be converted into useful values.
-	* Data availability
-		The models are updated a different intervals and
-		also are sometimes missing data.
-
-* Irradiance
-	* Cloud cover and radiation
-		Many of the forecast models do not have radiation
-		fields, or if they do they suffer from poor solar
-		position calculations or radiative transfer algorithms.
-		It is often more accurate to create empirically derived
-		radiation forecasts from the weather models' cloud cover
-		forecasts. pvlib-python currently uses the Liu Jordan model
-		to convert cloud cover to radiation, however, we encourage
-		developers to explore alternatives.
-
-.. math::
-
-	DNI &= {\tau} ^m DNI_{ET} \\
-	DHI &= 0.3(1 - {\tau} ^m)cos{\psi}DNI_{ET}
-
-
-
-Forecast Module Structure
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Model subclass
+Weather Models
 ~~~~~~~~~~~~~~
 
-Each forecast model has its own subclass.
-These subclasses belong to a more comprehensive parent
-class that holds many of the methods used by every model.
+Next, we provide a brief description of the weather models available
+to pvlib users.
 
-Within each subclass model specific variables are
-assigned to common variable labels that are
-available from each forecast model.
+GFS
+---
+The Global Forecast System (GFS) is the US model that provides forecasts
+for the entire globe. There is a lot of hype about how "the Euro"
+(ECMWF) model is superior to the GFS. The GFS is still a great model. On
+standard meteorology metrics, the ECMWF is superior to the GFS by about
+a day. In other words, the accuracy of the GFS at 6 days out is
+comparable to the ECMWF at 5 days out. The GFS is updated every 6 hours.
+The GFS is run at two resolutions, 0.25 deg and 0.5 deg. Forecasts from
+GFS model were shown above. Use the GFS, among others, if you want
+forecasts for 1-7 days.
 
-Here are the subclasses for two models.
 
-.. image:: images/gfs.jpg
-.. image:: images/ndfd.jpg
+HRRR
+----
+The High Resolution Rapid Refresh (HRRR) model is perhaps the most
+accurate model, however, it is only available for ~15 hours. It is
+updated every hour and runs at 3 km resolution. The HRRR excels in
+severe weather situations. A major upgrade to the HRRR model is expected
+in Spring, 2016. See the `NOAA ESRL HRRR page
+<http://rapidrefresh.noaa.gov/hrrr/>`_ for more information. Use the
+HRRR, among others, if you want forecasts for less than 24 hours.
+
+.. ipython:: python
+
+    model = HRRR()
+    data = model.get_query_data(latitude, longitude, start, end)
+
+    data[irrad_vars].plot();
+    plt.ylabel('Irradiance ($W/m^2$)');
+    plt.xlabel('Forecast Time ({})'.format(tz));
+    plt.title('HRRR 3 km forecast for lat={}, lon={}'
+              .format(latitude, longitude));
+    @savefig hrrr_irrad.png width=6in
+    plt.legend();
 
 
-ForecastModel class
-~~~~~~~~~~~~~~~~~~~
+RAP
+---
+The Rapid Refresh (RAP) model is the parent model for the HRRR. It is
+updated every hour and runs at 13 km resolution. It is also excels in
+severe weather situations. A major upgrade to the RAP model is expected
+in Spring, 2016. See the `NOAA ESRL HRRR page
+<http://rapidrefresh.noaa.gov/hrrr/>`_ for more information. Use the
+RAP, among others, if you want forecasts for less than 24 hours.
 
-The following code is part of the parent class that
-each forecast model belongs to.
+.. ipython:: python
 
-.. image:: images/forecastmodel.jpg
+    model = RAP()
+    data = model.get_query_data(latitude, longitude, start, end)
 
-Upon instatiation of a forecast model, several assignments are
-made and functions called to initialize
-values and objects within the class.
+    data[irrad_vars].plot();
+    plt.ylabel('Irradiance ($W/m^2$)');
+    plt.xlabel('Forecast Time ({})'.format(tz));
+    plt.title('RAP 13 km forecast for lat={}, lon={}'
+              .format(latitude, longitude));
+    @savefig rap_irrad.png width=6in
+    plt.legend();
 
-.. image:: images/fm_init.jpg
 
-The query function is responsible for completing the retrieval
-of data from the Unidata THREDDS server using
-the Unidata siphon THREDDS server API.
+NAM
+---
+The North American Mesoscale model is a somewhat older model that is
+target of frequent criticism, justly or not. It is updated every 6 hours
+and runs at 20 km resolution. Use the NAM as part of an ensemble forecast.
 
-.. image:: images/query.jpg
+.. ipython:: python
 
-The ForecastModel class also contains miscellaneous functions
-that process raw NetCDF data from the THREDDS
-server and create a DataFrame for all the processed data.
+    model = NAM()
+    data = model.get_query_data(latitude, longitude, start, end)
 
-.. image:: images/tempconvert.jpg
+    data[irrad_vars].plot();
+    plt.ylabel('Irradiance ($W/m^2$)');
+    plt.xlabel('Forecast Time ({})'.format(tz));
+    plt.title('NAM 20 km forecast for lat={}, lon={}'
+              .format(latitude, longitude));
+    @savefig nam_irrad.png width=6in
+    plt.legend();
+
+
+NDFD
+----
+The National Digital Forecast Database is not a model, but rather a
+collection of forecasts made by National Weather Service offices
+across the country. It is updated every 6 hours.
+Use the NDFD, among others, for forecasts at all time horizons.
+
+.. ipython:: python
+
+    model = NDFD()
+    data = model.get_query_data(latitude, longitude, start, end)
+
+    data[irrad_vars].plot();
+    plt.ylabel('Irradiance ($W/m^2$)');
+    plt.xlabel('Forecast Time ({})'.format(tz));
+    plt.title('NDFD forecast for lat={}, lon={}'
+              .format(latitude, longitude));
+    @savefig ndfd_irrad.png width=6in
+    plt.legend();
+
+
+PV Power Forecast
+~~~~~~~~~~~~~~~~~
+
+Finally, we demonstrate the application of the weather forecast data to
+a PV power forecast. Please see the remainder of the pvlib documentation
+for details.
+
+.. ipython:: python
+
+    from pvlib.location import Location
+    from pvlib import pvsystem, irradiance, atmosphere, solarposition
+
+    surface_tilt = 30
+    surface_azimuth = 180
+    albedo = 0.2
+
+    sandia_modules = pvsystem.retrieve_sam(name='SandiaMod')
+    sapm_inverters = pvsystem.retrieve_sam('sandiainverter')
+    module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
+    inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+
+    model = GFS()
+    forecast_data = model.get_query_data(latitude, longitude, start, end)
+
+
+Now we need to calculate some PV modeling intermediates...
+
+.. ipython:: python
+
+    time = forecast_data.index
+
+    solpos = solarposition.get_solarposition(time, model.location)
+
+    dni_extra = irradiance.extraradiation(time)
+    dni_extra = pd.Series(dni_extra, index=time)
+
+    airmass = atmosphere.relativeairmass(solpos['apparent_zenith'])
+
+    poa_sky_diffuse = irradiance.haydavies(surface_tilt, surface_azimuth,
+                                           forecast_data['dhi'], forecast_data['dni'], dni_extra,
+                                           solpos['apparent_zenith'], solpos['azimuth'])
+
+    poa_ground_diffuse = irradiance.grounddiffuse(surface_tilt, forecast_data['ghi'], albedo=albedo)
+
+    aoi = irradiance.aoi(surface_tilt, surface_azimuth,
+                         solpos['apparent_zenith'], solpos['azimuth'])
+
+    # forecast plane of array irradiance
+    poa_irrad = irradiance.globalinplane(aoi, forecast_data['dni'],
+                                         poa_sky_diffuse, poa_ground_diffuse)
+
+    poa_irrad.plot();
+    @savefig poa_irrad.png width=6in
+    plt.ylabel('Plane of array irradiance ($W/m**2$)')
+
+    # forecast module and cell temperatures,
+    # accounting for irrad, wind, and ambient temp
+    pvtemps = pvsystem.sapm_celltemp(poa_irrad['poa_global'],
+                                     forecast_data['wind_speed'],
+                                     forecast_data['temperature'])
+
+    pvtemps.plot();
+    @savefig pv_temps.png width=6in
+    plt.ylabel('Temperature (C)')
+
+
+Finally, we can calculate DC and AC power.
+
+.. ipython:: python
+
+    dc = pvsystem.sapm(module, poa_irrad['poa_direct'], poa_irrad['poa_diffuse'],
+                       pvtemps['temp_cell'], airmass, aoi)
+
+    ac = pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
+
+    ac.plot();
+    @savefig ac_power.png width=6in
+    plt.ylabel('AC Power (W)')
 

@@ -88,7 +88,7 @@ and plot forecast data using PVLIB-Python.
     plt.xlabel('Forecast Time ({})'.format(tz));
     plt.title('GFS 0.5 deg forecast for lat={}, lon={}'
               .format(latitude, longitude));
-    @savefig cloud_cover.png width=6in
+    @savefig gfs_cloud_cover.png width=6in
     plt.legend()
 
 
@@ -106,9 +106,23 @@ developers to explore alternatives.
 
 PVLIB-Python currently uses the Liu-Jordan [Liu60] model to convert
 cloud cover forecasts to irradiance forecasts, though it is fairly
-simple to implement new models and provide additional options. Figure
-**fix me** shows the result of the cloud cover to irradiance
-conversion. Note that the GFS data is hourly resolution, thus the
+simple to implement new models and provide additional options.
+The figure below shows the result of the cloud cover to irradiance
+conversion.
+
+.. ipython: python
+
+    # plot irradiance data
+    irrad_vars = ['dni', 'ghi', 'dhi']
+    data[irrad_vars].plot();
+    plt.ylabel('Irradiance ($W/m^2$)');
+    plt.xlabel('Forecast Time ({})'.format(tz));
+    plt.title('GFS 0.5 deg forecast for lat={}, lon={}'
+              .format(latitude, longitude));
+    @savefig gfs_irrad.png width=6in
+    plt.legend()
+
+Note that the GFS data is hourly resolution, thus the
 default irradiance forecasts are also hourly resolution. However, it is
 straightforward to interpolate the cloud cover forecasts onto a higher
 resolution time domain, and then recalculate the irradiance. We

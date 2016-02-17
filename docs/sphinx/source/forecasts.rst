@@ -34,23 +34,25 @@ Unfortunately, many of these models use different names to describe the
 same quantity (or a very similar one), and not all variables are present
 in all models. For example, on the THREDDS server, the GFS has a field
 named
-``Total\_cloud\_cover\_entire\_atmosphere\_Mixed\_intervals\_Average``,
+``Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average``,
 while the RAP has a field named
-``Total\_cloud\_cover\_entire\_atmosphere\_single\_layer``, and a
+``Total_cloud_cover_entire_atmosphere_single_layer``, and a
 similar field in the HRRR is named
-``Total\_cloud\_cover\_entire\_atmosphere``.
+``Total_cloud_cover_entire_atmosphere``.
 
 PVLIB-Python aims to simplify the access of the model fields relevant
-for solar power forecasts. All models accessed via PVLIB-Python are
-returned with uniform field names: ``temperature, wind\_speed,
-total\_clouds, low\_clouds, mid\_clouds, high\_clouds, dni, dhi, ghi``.
-To accomplish this, we use an object-oriented framework in which each
-weather model is represented by a class that inherits from a parent
-:py:ref:`~pvlib.forecast.ForecastModel` class.
-The parent :py:ref:`~pvlib.forecast.ForecastModel` class contains the
+for solar power forecasts. Model data accessed with PVLIB-Python is
+returned as a pandas DataFrame with consistent column names:
+``temperature, wind_speed, total_clouds, low_clouds, mid_clouds,
+high_clouds, dni, dhi, ghi``. To accomplish this, we use an
+object-oriented framework in which each weather model is represented by
+a class that inherits from a parent
+:py:class:`~pvlib.forecast.ForecastModel` class.
+The parent :py:class:`~pvlib.forecast.ForecastModel` class contains the
 common code for accessing and parsing the data using Siphon, while the
-child model-specific classes contain the code necessary to map and
-process that specific model's data to the standardized fields.
+child model-specific classes (:py:class:`~pvlib.forecast.GFS`,
+:py:class:`~pvlib.forecast.HRRR`, etc.) contain the code necessary to
+map and process that specific model's data to the standardized fields.
 
 The code below demonstrates how simple it is to access and plot forecast
 data using PVLIB-Python. First, we set up make the basic imports and
@@ -60,6 +62,7 @@ then set the location and time range data.
 
     import pandas as pd
     import matplotlib.pyplot as plt
+    import datetime
 
     # seaborn makes the plots look nicer
     import seaborn as sns; sns.set_color_codes()
@@ -70,8 +73,8 @@ then set the location and time range data.
     # specify location (Tucson, AZ)
     latitude, longitude, tz = 32.2, -110.9, 'US/Arizona'
 
-    # specify time range
-    start = pd.Timestamp.now(tz=tz)
+    # specify time range.
+    start = pd.Timestamp(datetime.date.today(), tz=tz)
     end = start + pd.Timedelta(days=7)
 
 
@@ -151,8 +154,9 @@ liking.
 Weather Models
 ~~~~~~~~~~~~~~
 
-Next, we provide a brief description of the weather models available
-to pvlib users.
+Next, we provide a brief description of the weather models available to
+pvlib users. Note that the figures are generated when this documentation
+is compiled so they will vary over time.
 
 GFS
 ---

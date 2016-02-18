@@ -81,6 +81,8 @@ class ForecastModel(object):
         Variables that are used to query the THREDDS Data Server.
     rad_type: dictionary
         Dictionary labeling the method used for calculating radiation values.
+    solar_position: DataFrame
+        Solar position for the forecast times.
     time: datetime
         Time range specified for the NCSS query.
     utctime: DatetimeIndex
@@ -98,8 +100,6 @@ class ForecastModel(object):
         Vertical altitude for query data.
     wind_type: string
         Quantity that was used to calculate wind_speed.
-    zenith: numpy.array
-        Solar zenith angles for the given time range.
     '''
 
     access_url_key = 'NetcdfSubset'
@@ -107,15 +107,15 @@ class ForecastModel(object):
     base_tds_url = catalog_url.split('/thredds/')[0]
     data_format = 'netcdf'
     vert_level = 100000
-    columns = np.array(['temperature',
-                        'wind_speed',
-                        'total_clouds',
-                        'low_clouds',
-                        'mid_clouds',
-                        'high_clouds',
-                        'dni',
-                        'dhi',
-                        'ghi', ])
+    columns = ['temperature',
+               'wind_speed',
+               'total_clouds',
+               'low_clouds',
+               'mid_clouds',
+               'high_clouds',
+               'dni',
+               'dhi',
+               'ghi', ]
 
     def __init__(self, model_type, model_name, set_type):
         self.model_type = model_type
@@ -138,10 +138,13 @@ class ForecastModel(object):
         self.datasets_list = list(self.model.datasets.keys())
         self.set_dataset()
 
+    def __repr__(self):
+        return '{}, {}'.format(self.model_name, self.set_type)
+
     def set_dataset(self):
         '''
         Retrieves the designated dataset, creates NCSS object, and
-        initiates a NCSS query.
+        creates a NCSS query object.
         '''
 
         keys = list(self.model.datasets.keys())
@@ -216,6 +219,8 @@ class ForecastModel(object):
         Returns
         -------
         forecast_data : DataFrame
+            Contains columns: 'temperature', 'wind_speed', 'total_clouds',
+            'low_clouds', 'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi'.
         '''
 
         if vert_level is not None:
@@ -231,7 +236,7 @@ class ForecastModel(object):
 
         self.latitude = latitude
         self.longitude = longitude
-        self.set_query_latlon()
+        self.set_query_latlon() # modifies self.query
         self.set_location(start)
 
         self.start = localize_to_utc(start, self.location)
@@ -241,6 +246,7 @@ class ForecastModel(object):
         self.query.vertical_level(self.vert_level)
         self.query.variables(*self.queryvariables)
         self.query.accept(self.data_format)
+
         netcdf_data = self.ncss.get_data(self.query)
 
         try:
@@ -255,6 +261,7 @@ class ForecastModel(object):
 
         self.set_variable_units(netcdf_data)
         self.set_variable_stdnames(netcdf_data)
+
         if self.__class__.__name__ == 'HRRR':
             self.calc_temperature(netcdf_data)
         self.convert_temperature()
@@ -355,30 +362,30 @@ class ForecastModel(object):
             Type of cloud cover to use for calculating radiation values.
         '''
         self.rad_type = {}
-        if not self.lbox and cloud_type in self.modelvariables:
-            cloud_prct = self.data[cloud_type]
-            solpos = get_solarposition(self.time, self.location)
-            self.zenith = np.array(solpos.zenith.tz_convert('UTC'))
-            for rad in ['dni', 'dhi', 'ghi']:
-                if self.model_name is 'HRRR_ESRL':
-                    # HRRR_ESRL is the only model with the
-                    # correct equation of time.
-                    if rad in self.modelvariables:
-                        self.data[rad] = pd.Series(
-                            data[self.variables[rad]][:].squeeze(),
-                            index=self.time)
-                        self.rad_type[rad] = 'forecast'
-                        self.data[rad].fillna(0, inplace=True)
-                else:
-                    for rad in ['dni', 'dhi', 'ghi']:
-                        self.rad_type[rad] = 'liujordan'
-                        self.data[rad] = liujordan(self.zenith,
-                                                   cloud_prct)[rad]
-                        self.data[rad].fillna(0, inplace=True)
+        self.solar_position = get_solarposition(self.time, self.location)
 
-            for var in ['dni', 'dhi', 'ghi']:
-                self.data[var].fillna(0, inplace=True)
-                self.var_units[var] = '$W m^{-2}$'
+        if self.model_name == 'HRRR_ESRL':
+            # HRRR_ESRL is the only model with the
+            # correct equation of time.
+            for rad in ['dni', 'dhi', 'ghi']:
+                self.data[rad] = pd.Series(
+                    data[self.variables[rad]][:].squeeze(),
+                    index=self.time)
+                self.rad_type[rad] = 'forecast'
+                self.data[rad].fillna(0, inplace=True)
+        else:
+            cloud_prct = self.data[cloud_type]
+            rads = ['dni', 'dhi', 'ghi']
+            for rad in rads:
+                self.rad_type[rad] = 'liujordan'
+            new_rads = liujordan(self.solar_position['apparent_zenith'],
+                                 cloud_prct)
+            new_rads = new_rads.fillna(0)
+            self.data = self.data.drop(rads, axis=1)
+            self.data = pd.concat([self.data, new_rads], axis=1)
+
+        for var in ['dni', 'dhi', 'ghi']:
+            self.var_units[var] = '$W m^{-2}$'
 
     def convert_temperature(self):
         '''
@@ -393,7 +400,8 @@ class ForecastModel(object):
 
     def calc_temperature(self, data):
         '''
-        Calculates temperature (in degrees C) from isobaric temperature.
+        Calculates temperature (in degrees C) from
+        isobaric temperature.
 
         Parameters
         ----------
@@ -442,7 +450,8 @@ class ForecastModel(object):
 
 class GFS(ForecastModel):
     '''
-    Subclass of the ForecastModel class representing GFS forecast model.
+    Subclass of the ForecastModel class representing GFS
+    forecast model.
 
     Model data corresponds to 0.25 degree resolution forecasts.
 
@@ -506,7 +515,8 @@ class GFS(ForecastModel):
 class HRRR_ESRL(ForecastModel):
     '''
     Subclass of the ForecastModel class representing
-    NOAA/GSD/ESRL's HRRR forecast model. This is not an operational product.
+    NOAA/GSD/ESRL's HRRR forecast model.
+    This is not an operational product.
 
     Model data corresponds to NOAA/GSD/ESRL HRRR CONUS 3km resolution
     surface forecasts.
@@ -562,7 +572,8 @@ class HRRR_ESRL(ForecastModel):
 
 class NAM(ForecastModel):
     '''
-    Subclass of the ForecastModel class representing NAM forecast model.
+    Subclass of the ForecastModel class representing NAM
+    forecast model.
 
     Model data corresponds to NAM CONUS 12km resolution forecasts
     from CONDUIT.
@@ -615,7 +626,8 @@ class NAM(ForecastModel):
 
 class HRRR(ForecastModel):
     '''
-    Subclass of the ForecastModel class representing HRRR forecast model.
+    Subclass of the ForecastModel class representing HRRR
+    forecast model.
 
     Model data corresponds to NCEP HRRR CONUS 2.5km resolution
     forecasts.
@@ -668,7 +680,8 @@ class HRRR(ForecastModel):
 
 class NDFD(ForecastModel):
     '''
-    Subclass of the ForecastModel class representing NDFD forecast model.
+    Subclass of the ForecastModel class representing NDFD forecast
+    model.
 
     Model data corresponds to NWS CONUS CONDUIT forecasts.
 

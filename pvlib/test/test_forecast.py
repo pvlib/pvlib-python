@@ -65,10 +65,13 @@ def test_data_query():
 @requires_siphon
 def test_dataframe_variables():
     for amodel in _working_models:
-        for variable in _variables:
-            assert variable in amodel.data.columns
-        for variable in _nonnan_variables:
-            assert not amodel.data[variable].isnull().values.any()
+        yield run_variables, amodel
+
+def run_variables(amodel):
+    for variable in _variables:
+        assert variable in amodel.data.columns
+    for variable in _nonnan_variables:
+        assert not amodel.data[variable].isnull().values.any()
 
 @requires_siphon
 def test_vert_level():
@@ -85,6 +88,7 @@ def test_datetime():
     data = amodel.get_query_data(_latitude, _longitude , start, end)
 
 @requires_siphon
+@raises(KeyError)
 def test_queryvariables():
     amodel = _working_models[0]
     old_variables = amodel.variables
@@ -114,14 +118,14 @@ def test_temp_convert():
 
     assert amodel.data['temperature'].values == 0.0
 
-@requires_siphon
-def test_bounding_box():
-    amodel = GFS()
-    latitude = [31.2,32.2]
-    longitude = [-111.9,-110.9]
-    new_variables = {'temperature':'Temperature_surface'}
-    data = amodel.get_query_data(latitude, longitude, _start, _end,
-                                 variables=new_variables)
+# @requires_siphon
+# def test_bounding_box():
+#     amodel = GFS()
+#     latitude = [31.2,32.2]
+#     longitude = [-111.9,-110.9]
+#     new_variables = {'temperature':'Temperature_surface'}
+#     data = amodel.get_query_data(latitude, longitude, _start, _end,
+#                                  variables=new_variables)
 
 @requires_siphon
 def test_set_location():

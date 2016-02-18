@@ -116,14 +116,12 @@ Many of forecast models do not include radiation components in their
 output fields, or if they do the radiation fields suffer from poor solar
 position calculations or radiative transfer algorithms. It is often more
 accurate to create empirically derived radiation forecasts from the
-weather models' cloud cover forecasts. pvlib-python currently uses the
-Liu Jordan model to convert cloud cover to radiation, however, we
-encourage developers to explore alternatives.
+weather models' cloud cover forecasts.
 
 PVLIB-Python currently uses the Liu-Jordan [Liu60]_ model to convert
-cloud cover forecasts to irradiance forecasts, though it is fairly
-simple to implement new models and provide additional options. The
-figure below shows the result of the cloud cover to irradiance
+total cloud cover forecasts to irradiance forecasts. We encourage pvlib
+users to implement new cloud cover to irradiance algorithms. The figure
+below shows the result of the Liu-Jordan total cloud cover to irradiance
 conversion.
 
 .. ipython:: python
@@ -139,12 +137,30 @@ conversion.
     plt.legend();
 
 
-Note that the GFS data is hourly resolution, thus the default irradiance
-forecasts are also hourly resolution. However, it is straightforward to
-interpolate the cloud cover forecasts onto a higher resolution time
-domain, and then recalculate the irradiance. We reiterate that the open
-source code enables users to customize the model processing to their
-liking.
+Most weather model output has a fairly coarse time resolution, at least
+an hour. The irradiance forecasts have the same time resolution as the
+weather data. However, it is straightforward to interpolate the cloud
+cover forecasts onto a higher resolution time domain, and then
+recalculate the irradiance.
+
+.. ipython:: python
+
+    from pvlib import solarposition
+    from pvlib import irradiance
+    total_clouds = data['total_clouds'].resample('5min').interpolate()
+    solar_position = solarposition.get_solarposition(total_clouds.index, model.location)
+    irrad_data = irradiance.liujordan(solar_position['apparent_zenith'], total_clouds)
+    irrad_data.plot();
+    plt.ylabel('Irradiance ($W/m^2$)');
+    plt.xlabel('Forecast Time ({})'.format(tz));
+    plt.title('GFS 0.5 deg forecast for lat={}, lon={}'
+              .format(latitude, longitude));
+    @savefig gfs_irrad_high_res.png width=6in
+    plt.legend();
+
+
+We reiterate that the open source code enables users to customize the
+model processing to their liking.
 
 .. [Liu60] B. Y. Liu and R. C. Jordan, The interrelationship and
     characteristic distribution of direct, diffuse, and total solar
@@ -166,9 +182,10 @@ for the entire globe. There is a lot of hype about how "the Euro"
 standard meteorology metrics, the ECMWF is superior to the GFS by about
 a day. In other words, the accuracy of the GFS at 6 days out is
 comparable to the ECMWF at 5 days out. The GFS is updated every 6 hours.
-The GFS is run at two resolutions, 0.25 deg and 0.5 deg. Forecasts from
-GFS model were shown above. Use the GFS, among others, if you want
-forecasts for 1-7 days.
+The GFS is run at two resolutions, 0.25 deg and 0.5 deg, and is
+available with 3 hour time resolution. Forecasts from GFS model were
+shown above. Use the GFS, among others, if you want forecasts for 1-7
+days.
 
 
 HRRR
@@ -335,6 +352,7 @@ Finally, we can calculate DC and AC power.
     ac = pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
 
     ac.plot();
+    plt.ylim(0, None);
     @savefig ac_power.png width=6in
     plt.ylabel('AC Power (W)')
 

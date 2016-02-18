@@ -603,7 +603,8 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     Parameters
     ----------
     module : Series or dict
-        A DataFrame defining the SAPM performance parameters.
+        A DataFrame defining the SAPM performance parameters. See the notes
+        section for more details.
 
     poa_direct : Series
         The direct irradiance incident upon the module (W/m^2).
@@ -637,7 +638,12 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
 
     Notes
     -----
-    The coefficients from SAPM which are required in ``module`` are:
+    The coefficients from SAPM which are required in ``module`` are listed in
+    the following table.
+
+    Remark that modules of the Sandia module database contain these
+    coefficients but modules of the CEC module database do not. Both databases
+    can be accessed using :py:func:`retrieve_sam`.
 
     ================   ========================================================
     Key                Description

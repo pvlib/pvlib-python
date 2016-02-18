@@ -641,9 +641,9 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     The coefficients from SAPM which are required in ``module`` are listed in
     the following table.
 
-    Remark that modules of the Sandia module database contain these
-    coefficients but modules of the CEC module database do not. Both databases
-    can be accessed using :py:func:`retrieve_sam`.
+    The modules in the Sandia module database contain these coefficients, but
+    the modules in the CEC module database do not. Both databases can be
+    accessed using :py:func:`retrieve_sam`.
 
     ================   ========================================================
     Key                Description

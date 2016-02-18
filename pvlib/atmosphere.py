@@ -1,5 +1,5 @@
 """
-The ``atmosphere`` module contains methods to calculate 
+The ``atmosphere`` module contains methods to calculate
 relative and absolute airmass and to determine
 pressure from altitude or vice versa.
 """
@@ -11,10 +11,10 @@ pvl_logger = logging.getLogger('pvlib')
 
 import numpy as np
 
-AIRMASS_MODELS = ['kastenyoung1989', 'kasten1966', 'simple', 
+AIRMASS_MODELS = ['kastenyoung1989', 'kasten1966', 'simple',
                   'pickering2002', 'youngirvine1967', 'young1994',
                   'gueymard1993']
-                  
+
 
 def pres2alt(pressure):
     '''
@@ -28,7 +28,7 @@ def pres2alt(pressure):
     Returns
     -------
     altitude : scalar or Series
-        Altitude in meters above sea level 
+        Altitude in meters above sea level
 
     Notes
     ------
@@ -64,7 +64,7 @@ def alt2pres(altitude):
     Parameters
     ----------
     Altitude : scalar or Series
-        Altitude in meters above sea level 
+        Altitude in meters above sea level
 
     Returns
     -------
@@ -100,7 +100,7 @@ def alt2pres(altitude):
 
 def absoluteairmass(airmass_relative, pressure=101325.):
     '''
-    Determine absolute (pressure corrected) airmass from relative 
+    Determine absolute (pressure corrected) airmass from relative
     airmass and pressure
 
     Gives the airmass for locations not at sea-level (i.e. not at standard
@@ -108,18 +108,18 @@ def absoluteairmass(airmass_relative, pressure=101325.):
     input argument "pressure" is the pressure (in Pascals) at the location
     of interest and must be greater than 0. The calculation for
     absolute airmass is
-    
+
     .. math::
         absolute airmass = (relative airmass)*pressure/101325
 
     Parameters
     ----------
 
-    airmass_relative : scalar or Series	
-        The airmass at sea-level. 
+    airmass_relative : scalar or Series
+        The airmass at sea-level.
 
     pressure : scalar or Series
-        The site pressure in Pascal. 
+        The site pressure in Pascal.
 
     Returns
     -------
@@ -128,7 +128,7 @@ def absoluteairmass(airmass_relative, pressure=101325.):
 
     References
     ----------
-    [1] C. Gueymard, "Critical analysis and performance assessment of 
+    [1] C. Gueymard, "Critical analysis and performance assessment of
     clear sky solar irradiance models using theoretical and measured data,"
     Solar Energy, vol. 51, pp. 121-138, 1993.
 
@@ -143,27 +143,27 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     '''
     Gives the relative (not pressure-corrected) airmass
 
-    Gives the airmass at sea-level when given a sun zenith angle, z (in 
-    degrees). 
+    Gives the airmass at sea-level when given a sun zenith angle, z (in
+    degrees).
     The "model" variable allows selection of different airmass models
-    (described below). "model" must be a valid string. If "model" is not 
+    (described below). "model" must be a valid string. If "model" is not
     included or is not valid, the default model is 'kastenyoung1989'.
 
     Parameters
     ----------
 
-    zenith : float or Series 
-        Zenith angle of the sun in degrees.  
+    zenith : float or Series
+        Zenith angle of the sun in degrees.
         Note that some models use the apparent (refraction corrected)
         zenith angle, and some models use the true
         (not refraction-corrected) zenith angle.
         See model descriptions to determine which type of zenith
         angle is required.
         Apparent zenith angles must be calculated at sea level.
-  
-    model : String 
+
+    model : String
         Available models include the following:
-        
+
         * 'simple' - secant(apparent zenith angle) -
           Note that this gives -inf at zenith=90
         * 'kasten1966' - See reference [1] - requires apparent sun zenith
@@ -175,8 +175,8 @@ def relativeairmass(zenith, model='kastenyoung1989'):
 
     Returns
     -------
-    airmass_relative : float or Series 
-        Relative airmass at sea level.  Will return NaN values for any 
+    airmass_relative : float or Series
+        Relative airmass at sea level.  Will return NaN values for any
         zenith angle greater than 90 degrees.
 
     References
@@ -187,31 +187,31 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     Army Material Command, CRREL.
 
     [2] A. T. Young and W. M. Irvine, "Multicolor Photoelectric Photometry
-    of the Brighter Planets," The Astronomical Journal, vol. 72, 
+    of the Brighter Planets," The Astronomical Journal, vol. 72,
     pp. 945-950, 1967.
 
     [3] Fritz Kasten and Andrew Young. "Revised optical air mass tables and
     approximation formula". Applied Optics 28:4735-4738
 
-    [4] C. Gueymard, "Critical analysis and performance assessment of 
+    [4] C. Gueymard, "Critical analysis and performance assessment of
     clear sky solar irradiance models using theoretical and measured data,"
     Solar Energy, vol. 51, pp. 121-138, 1993.
 
-    [5] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33, 
+    [5] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33,
     pp. 1108-1110, Feb 1994.
 
     [6] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
-    
+
     [7] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein,
     "Global Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
     Sandia Report, (2012).
     '''
-    
+
     z = zenith
     zenith_rad = np.radians(z)
-    
+
     model = model.lower()
-    
+
     if 'kastenyoung1989' == model:
         AM = ( 1.0 / (np.cos(zenith_rad) +
             0.50572*(((6.07995 + (90 - z)) ** - 1.6364))) )
@@ -239,12 +239,12 @@ def relativeairmass(zenith, model='kastenyoung1989'):
                            model)
         AM = ( 1.0 / (np.cos(zenith_rad) +
             0.50572*(((6.07995 + (90 - z)) ** - 1.6364))) )
-    
+
     try:
         AM[z > 90] = np.nan
     except TypeError:
         AM = np.nan if z > 90 else AM
-        
+
     return AM
 
 
@@ -264,17 +264,17 @@ def transmittance(cloud_prct):
     -------
     value: float
         Shortwave radiation transmittance.
-    
+
     References
     ----------
-    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to 
+    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
     Environmental Biophysics. 2nd Ed. New York: Springer.
 
     [2] Gates, D. M. (1980) Biophysical Ecology. New York: Springer Verlag.
 
     [3] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
     characteristic distribution of direct, diffuse, and total solar
-    radiation".  Solar Energy 4:1-19 
+    radiation".  Solar Energy 4:1-19
     '''
 
     return ((100.0 - cloud_prct) / 100.0) * 0.75

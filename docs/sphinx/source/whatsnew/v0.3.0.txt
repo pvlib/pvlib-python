@@ -1,7 +1,7 @@
 .. _whatsnew_0300:
 
 v0.3.0 (October 22, 2015)
------------------------
+-------------------------
 
 This version only differs from 0.2.1 in that it adds a module that
 can download weather forecast data from UNIDATA using the siphon

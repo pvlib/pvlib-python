@@ -143,11 +143,6 @@ def test_liujordan():
     irradiance.liujordan(ephem_data['apparent_zenith'], cloud_prct)
 
 
-def test_cloudy_day(): 
-    cloud_prct = np.array([40]*len(ephem_data['zenith']))
-    irradiance.cloudy_day_check(ephem_data['zenith'], cloud_prct)
-    
-
 def test_total_irrad():
     models = ['isotropic', 'klutcher', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']
@@ -155,7 +150,7 @@ def test_total_irrad():
 
     for model in models:
         total = irradiance.total_irrad(
-            32, 180, 
+            32, 180,
             ephem_data['apparent_zenith'], ephem_data['azimuth'],
             dni=irrad_data['dni'], ghi=irrad_data['ghi'],
             dhi=irrad_data['dhi'],
@@ -179,7 +174,7 @@ def test_globalinplane():
 
 def test_disc_keys():
     clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
-    disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'], 
+    disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'],
                               ephem_data.index)
     assert 'dni' in disc_data.columns
     assert 'kt' in disc_data.columns
@@ -199,7 +194,7 @@ def test_disc_value():
 def test_dirint():
     clearsky_data = clearsky.ineichen(times, tus, linke_turbidity=3)
     pressure = 93193.
-    dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'], 
+    dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'],
                                     ephem_data.index, pressure=pressure)
 
 def test_dirint_value():

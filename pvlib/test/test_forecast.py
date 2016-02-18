@@ -17,7 +17,7 @@ if has_siphon:
     from requests.exceptions import HTTPError
     from xml.etree.ElementTree import ParseError
 
-    from pvlib.forecast import GFS,HRRR_ESRL,HRRR,NAM,NDFD,RAP
+    from pvlib.forecast import GFS, HRRR_ESRL, HRRR, NAM, NDFD, RAP
     import pvlib.solarposition as solarposition
     from pvlib.location import Location
 
@@ -29,38 +29,32 @@ if has_siphon:
     _end = _start + pd.Timedelta(days=1)
     _models = [GFS, NAM, HRRR, RAP, NDFD, HRRR_ESRL]
     _working_models = []
-    _variables = np.array(['temperature',
-                           'wind_speed',
-                           'total_clouds',
-                           'low_clouds',
-                           'mid_clouds',
-                           'high_clouds',
-                           'dni',
-                           'dhi',
-                           'ghi',])
-    _nonnan_variables = np.array(['temperature',
-                'wind_speed',
-                'total_clouds',
-                'dni',
-                'dhi',
-                'ghi',])
+    _variables = ['temperature', 'wind_speed', 'total_clouds', 'low_clouds',
+                  'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi',]
+    _nonnan_variables = ['temperature', 'wind_speed', 'total_clouds', 'dni',
+                         'dhi', 'ghi',]
 
 @requires_siphon
-def test_fmcreation():
+def test_model_creation():
     for model in _models:
-        if model.__name__ is not 'HRRR_ESRL':
-            amodel = model()
-            _working_models.append(amodel)
-        else:
+        if model.__name__ != 'HRRR_ESRL':
             try:
+                resolutions = model._resolutions
+            except AttributeError:
                 amodel = model()
-            except (ParseError, HTTPError):
-                pass
+                _working_models.append(amodel)
+            else:
+                for resolution in resolutions:
+                    amodel = model(resolution=resolution)
+                    _working_models.append(amodel)
 
 @requires_siphon
 def test_data_query():
-    for amodel in _working_models:
-        data = amodel.get_query_data(_latitude, _longitude, _start, _end)
+    for model in _working_models:
+        yield run_query, model
+
+def run_query(model):
+    data = model.get_query_data(_latitude, _longitude, _start, _end)
 
 @requires_siphon
 def test_dataframe_variables():
@@ -78,7 +72,7 @@ def test_vert_level():
     amodel = _working_models[0]
     vert_level = 5000
     data = amodel.get_query_data(_latitude, _longitude, _start, _end,
-        vert_level=vert_level)
+                                 vert_level=vert_level)
 
 @requires_siphon
 def test_datetime():
@@ -104,10 +98,6 @@ def test_latest():
 @requires_siphon
 def test_full():
     GFS(set_type='full')
-
-@requires_siphon
-def test_gfs():
-    GFS(res='quarter')
 
 @requires_siphon
 def test_temp_convert():

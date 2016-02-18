@@ -20,7 +20,12 @@ to forecast data hosted on the Unidata `THREDDS catalog
 <http://thredds.ucar.edu/thredds/catalog.html>`_.
 
 This document demonstrates how to use pvlib-python to create a PV power
-forecast using these tools.
+forecast using these tools. The `forecast
+<http://nbviewer.jupyter.org/github/wholmgren/pvlib-python/blob/fx-
+master/docs/tutorials/forecast.ipynb>`_ and `forecast_to_power
+<http://nbviewer.jupyter.org/github/wholmgren/pvlib-python/blob/fx-
+master/docs/tutorials/forecast_to_power.ipynb>`_ Jupyter notebooks
+provide additional example code.
 
 
 Accessing Forecast Data
@@ -215,9 +220,10 @@ HRRR, among others, if you want forecasts for less than 24 hours.
 RAP
 ---
 The Rapid Refresh (RAP) model is the parent model for the HRRR. It is
-updated every hour and runs at 13 km resolution. It is also excels in
-severe weather situations. A major upgrade to the RAP model is expected
-in Spring, 2016. See the `NOAA ESRL HRRR page
+updated every hour and runs at 40, 20, and 13 km resolutions. Only the
+20 and 40 km resolutions are currently available in pvlib. It is also
+excels in severe weather situations. A major upgrade to the RAP model is
+expected in Spring, 2016. See the `NOAA ESRL HRRR page
 <http://rapidrefresh.noaa.gov/hrrr/>`_ for more information. Use the
 RAP, among others, if you want forecasts for less than 24 hours.
 

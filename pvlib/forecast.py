@@ -236,7 +236,7 @@ class ForecastModel(object):
 
         self.latitude = latitude
         self.longitude = longitude
-        self.set_query_latlon() # modifies self.query
+        self.set_query_latlon()  # modifies self.query
         self.set_location(start)
 
         self.start = localize_to_utc(start, self.location)
@@ -457,8 +457,8 @@ class GFS(ForecastModel):
 
     Parameters
     ----------
-    res: string
-        Resolution of the model.
+    resolution: string
+        Resolution of the model, either 'half' or 'quarter' degree.
     set_type: string
         Type of model to pull data from.
 
@@ -479,12 +479,17 @@ class GFS(ForecastModel):
         specific variables.
     '''
 
-    def __init__(self, res='half', set_type='best'):
+    _resolutions = ['Half', 'Quarter']
+
+    def __init__(self, resolution='half', set_type='best'):
         model_type = 'Forecast Model Data'
-        if res == 'half':
-            model = 'GFS Half Degree Forecast'
-        elif res == 'quarter':
-            model = 'GFS Quarter Degree Forecast'
+
+        resolution = resolution.title()
+        if resolution not in self._resolutions:
+            raise ValueError('resolution must in {}'.format(self._resolutions))
+
+        model = 'GFS {} Degree Forecast'.format(resolution)
+
         self.variables = {
             'temperature': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
@@ -545,8 +550,8 @@ class HRRR_ESRL(ForecastModel):
 
     def __init__(self, set_type='best'):
         import warnings
-        warnings.warn('HRRR_ESRL is an experimental model and is not always' +
-                      ' available.')
+        warnings.warn('HRRR_ESRL is an experimental model and is not always available.')
+
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
         self.variables = {
@@ -733,6 +738,8 @@ class RAP(ForecastModel):
 
     Parameters
     ----------
+    resolution: string or int
+        The model resolution, either '20' or '40' (km)
     set_type: string
         Type of model to pull data from.
 
@@ -753,9 +760,16 @@ class RAP(ForecastModel):
         specific variables.
     '''
 
-    def __init__(self, set_type='best'):
+    _resolutions = ['20', '40']
+
+    def __init__(self, resolution='20', set_type='best'):
+
+        resolution = str(resolution)
+        if resolution not in self._resolutions:
+            raise ValueError('resolution must in {}'.format(self._resolutions))
+
         model_type = 'Forecast Model Data'
-        model = 'Rapid Refresh CONUS 20km'
+        model = 'Rapid Refresh CONUS {}km'.format(resolution)
         self.variables = {
             'temperature': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',

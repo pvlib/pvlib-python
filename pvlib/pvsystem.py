@@ -5,7 +5,6 @@ performance of PV modules and inverters.
 
 from __future__ import division
 
-import logging
 import io
 try:
     from urllib2 import urlopen
@@ -25,74 +24,73 @@ from pvlib import irradiance, atmosphere
 # import a lot more functionality from other modules.
 class PVSystem(object):
     """
-    The PVSystem class defines a standard set of PV system attributes and
-    modeling functions. This class describes the collection and interactions
-    of PV system components rather than an installed system on the ground.
-    It is typically used in combination with
+    The PVSystem class defines a standard set of PV system attributes
+    and modeling functions. This class describes the collection and
+    interactions of PV system components rather than an installed system
+    on the ground. It is typically used in combination with
     :py:class:`~pvlib.location.Location` and
     :py:class:`~pvlib.modelchain.ModelChain`
     objects.
-    
+
     See the :py:class:`LocalizedPVSystem` class for an object model that
     describes an installed PV system.
-    
-    The class is complementary
-    to the module-level functions.
-    
+
+    The class is complementary to the module-level functions.
+
     The attributes should generally be things that don't change about
     the system, such the type of module and the inverter. The instance
     methods accept arguments for things that do change, such as
     irradiance and temperature.
-    
+
     Parameters
     ----------
     surface_tilt: float or array-like
         Tilt angle of the module surface.
         Up=0, horizon=90.
-    
+
     surface_azimuth: float or array-like
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
-    
+
     albedo : None, float
         The ground albedo. If ``None``, will attempt to use
         ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
         to lookup albedo.
-    
+
     surface_type : None, string
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
         for valid values.
-    
+
     module : None, string
         The model name of the modules.
         May be used to look up the module_parameters dictionary
         via some other method.
-    
+
     module_parameters : None, dict or Series
         Module parameters as defined by the SAPM, CEC, or other.
-    
+
     inverter : None, string
         The model name of the inverters.
         May be used to look up the inverter_parameters dictionary
         via some other method.
-    
+
     inverter_parameters : None, dict or Series
         Inverter parameters as defined by the SAPM, CEC, or other.
-    
+
     racking_model : None or string
         Used for cell and module temperature calculations.
-    
+
     **kwargs
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
-    
+
     See also
     --------
     pvlib.location.Location
     pvlib.tracking.SingleAxisTracker
     pvlib.pvsystem.LocalizedPVSystem
     """
-    
+
     def __init__(self,
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
@@ -101,64 +99,61 @@ class PVSystem(object):
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
                  **kwargs):
-        
+
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
-        
+
         # could tie these together with @property
         self.surface_type = surface_type
         if albedo is None:
             self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
         else:
             self.albedo = albedo
-        
+
         # could tie these together with @property
         self.module = module
         self.module_parameters = module_parameters
-        
+
         self.series_modules = series_modules
         self.parallel_modules = parallel_modules
-        
+
         self.inverter = inverter
         self.inverter_parameters = inverter_parameters
-        
+
         self.racking_model = racking_model
-        
+
         # needed for tying together Location and PVSystem in LocalizedPVSystem
         super(PVSystem, self).__init__(**kwargs)
 
-
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
-        
+
         Parameters
         ----------
         solar_zenith : float or Series.
             Solar zenith angle.
         solar_azimuth : float or Series.
             Solar azimuth angle.
-            
+
         Returns
         -------
         aoi : Series
             The angle of incidence
         """
-        
+
         aoi = irradiance.aoi(self.surface_tilt, self.surface_azimuth,
                              solar_zenith, solar_azimuth)
         return aoi
-    
-    
+
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
         Uses the :py:func:`irradiance.total_irrad` function to calculate
         the plane of array irradiance components on a tilted surface
-        defined by 
-        ``self.surface_tilt``, ``self.surface_azimuth``, and
+        defined by ``self.surface_tilt``, ``self.surface_azimuth``, and
         ``self.albedo``.
-        
+
         Parameters
         ----------
         solar_zenith : float or Series.
@@ -177,10 +172,10 @@ class PVSystem(object):
             Airmass
         model : String
             Irradiance model.
-        
+
         **kwargs
             Passed to :func:`irradiance.total_irrad`.
-        
+
         Returns
         -------
         poa_irradiance : DataFrame
@@ -204,18 +199,17 @@ class PVSystem(object):
                                       albedo=self.albedo,
                                       **kwargs)
 
-
     def ashraeiam(self, aoi):
         """
         Determine the incidence angle modifier using
         ``self.module_parameters['b']``, ``aoi``,
         and the :py:func:`ashraeiam` function.
-        
+
         Parameters
         ----------
         aoi : numeric
             The angle of incidence in degrees.
-        
+
         Returns
         -------
         modifier : numeric
@@ -223,7 +217,6 @@ class PVSystem(object):
         """
         b = self.module_parameters['b']
         return ashraeiam(b, aoi)
-
 
     def physicaliam(self, aoi):
         """
@@ -233,11 +226,11 @@ class PVSystem(object):
         ``self.module_parameters['n']``,
         ``aoi``, and the
         :py:func:`physicaliam` function.
-        
+
         Parameters
         ----------
         See pvsystem.physicaliam for details
-        
+
         Returns
         -------
         See pvsystem.physicaliam for details
@@ -247,13 +240,12 @@ class PVSystem(object):
         n = self.module_parameters['n']
         return physicaliam(K, L, n, aoi)
 
-
     def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
         """
-        Use the :py:func:`calcparams_desoto` function, the input parameters
-        and ``self.module_parameters`` to calculate the module
-        currents and resistances.
-        
+        Use the :py:func:`calcparams_desoto` function, the input
+        parameters and ``self.module_parameters`` to calculate the
+        module currents and resistances.
+
         Parameters
         ----------
         poa_global : float or Series
@@ -261,20 +253,19 @@ class PVSystem(object):
 
         temp_cell : float or Series
             The average cell temperature of cells within a module in C.
-        
+
         **kwargs
             See pvsystem.calcparams_desoto for details
-        
+
         Returns
         -------
         See pvsystem.calcparams_desoto for details
-        """             
+        """
         return calcparams_desoto(poa_global, temp_cell,
                                  self.module_parameters['alpha_sc'],
                                  self.module_parameters,
                                  self.module_parameters['EgRef'],
                                  self.module_parameters['dEgdT'], **kwargs)
-
 
     def sapm(self, poa_direct, poa_diffuse,
              temp_cell, airmass_absolute, aoi, **kwargs):
@@ -282,7 +273,7 @@ class PVSystem(object):
         Use the :py:func:`sapm` function, the input parameters,
         and ``self.module_parameters`` to calculate
         Voc, Isc, Ix, Ixx, Vmp/Imp.
-        
+
         Parameters
         ----------
         poa_direct : Series
@@ -293,49 +284,47 @@ class PVSystem(object):
 
         temp_cell : Series
             The cell temperature (degrees C).
-        
+
         airmass_absolute : Series
             Absolute airmass.
-    
+
         aoi : Series
             Angle of incidence (degrees).
-        
+
         **kwargs
             See pvsystem.sapm for details
-        
+
         Returns
         -------
         See pvsystem.sapm for details
         """
         return sapm(self.module_parameters, poa_direct, poa_diffuse,
                     temp_cell, airmass_absolute, aoi)
-    
-    
+
     # model now specified by self.racking_model
     def sapm_celltemp(self, irrad, wind, temp):
         """Uses :py:func:`sapm_celltemp` to calculate module and cell
-        temperatures based on ``self.racking_model`` and 
+        temperatures based on ``self.racking_model`` and
         the input parameters.
-        
+
         Parameters
         ----------
         See pvsystem.sapm_celltemp for details
-        
+
         Returns
         -------
         See pvsystem.sapm_celltemp for details
         """
         return sapm_celltemp(irrad, wind, temp, self.racking_model)
-    
-    
+
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth):
         """Wrapper around the :py:func:`singlediode` function.
-        
+
         Parameters
         ----------
         See pvsystem.singlediode for details
-        
+
         Returns
         -------
         See pvsystem.singlediode for details
@@ -343,53 +332,50 @@ class PVSystem(object):
         return singlediode(self.module_parameters, photocurrent,
                            saturation_current,
                            resistance_series, resistance_shunt, nNsVth)
-    
-    
+
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
         """Wrapper around the :py:func:`i_from_v` function.
-        
+
         Parameters
         ----------
         See pvsystem.i_from_v for details
-        
+
         Returns
         -------
         See pvsystem.i_from_v for details
-        """ 
+        """
         return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                         saturation_current, photocurrent)
-                        
-    
+
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
         """Uses :func:`snlinverter` to calculate AC power based on
         ``self.inverter_parameters`` and the input parameters.
-        
+
         Parameters
         ----------
         See pvsystem.snlinverter for details
-        
+
         Returns
         -------
         See pvsystem.snlinverter for details
         """
         return snlinverter(self.inverter_parameters, v_dc, p_dc)
 
-
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
         """Creates a LocalizedPVSystem object using this object
         and location data. Must supply either location object or
         latitude, longitude, and any location kwargs
-        
+
         Parameters
         ----------
         location : None or Location
         latitude : None or float
         longitude : None or float
         **kwargs : see Location
-        
+
         Returns
         -------
         localized_system : LocalizedPVSystem
@@ -403,11 +389,10 @@ class PVSystem(object):
 
 class LocalizedPVSystem(PVSystem, Location):
     """
-    The LocalizedPVSystem class defines a standard set of
-    installed PV system attributes and modeling functions.
-    This class combines the attributes and methods
-    of the PVSystem and Location classes.
-    
+    The LocalizedPVSystem class defines a standard set of installed PV
+    system attributes and modeling functions. This class combines the
+    attributes and methods of the PVSystem and Location classes.
+
     See the :py:class:`PVSystem` class for an object model that
     describes an unlocalized PV system.
     """
@@ -442,8 +427,8 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
     ----------
 
     meta : dict
-        meta dict either generated from a TMY file using readtmy2 or readtmy3,
-        or a dict containing at least the following fields:
+        meta dict either generated from a TMY file using readtmy2 or
+        readtmy3, or a dict containing at least the following fields:
 
             ===============   ======  ====================
             meta field        format  description
@@ -468,9 +453,9 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
         (North=0, South=180, East=90, West=270).
 
     albedo : float or Series
-        Ground reflectance, typically 0.1-0.4 for
-        surfaces on Earth (land), may increase over snow, ice, etc. May also
-        be known as the reflection coefficient. Must be >=0 and <=1.
+        Ground reflectance, typically 0.1-0.4 for surfaces on Earth
+        (land), may increase over snow, ice, etc. May also be known as
+        the reflection coefficient. Must be >=0 and <=1.
 
     series_modules : int
         Number of modules connected in series in a string.
@@ -522,12 +507,13 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
 
 def ashraeiam(b, aoi):
     '''
-    Determine the incidence angle modifier using the ASHRAE transmission model.
+    Determine the incidence angle modifier using the ASHRAE transmission
+    model.
 
     ashraeiam calculates the incidence angle modifier as developed in
-    [1], and adopted by ASHRAE (American Society of Heating, Refrigeration,
-    and Air Conditioning Engineers) [2]. The model has been used by model
-    programs such as PVSyst [3].
+    [1], and adopted by ASHRAE (American Society of Heating,
+    Refrigeration, and Air Conditioning Engineers) [2]. The model has
+    been used by model programs such as PVSyst [3].
 
     Note: For incident angles near 90 degrees, this model has a
     discontinuity which has been addressed in this function.
@@ -554,9 +540,9 @@ def ashraeiam(b, aoi):
     References
     ----------
 
-    [1] Souka A.F., Safwat H.H., "Determindation of the optimum orientations
-    for the double exposure flat-plate collector and its reflections".
-    Solar Energy vol .10, pp 170-174. 1966.
+    [1] Souka A.F., Safwat H.H., "Determindation of the optimum
+    orientations for the double exposure flat-plate collector and its
+    reflections". Solar Energy vol .10, pp 170-174. 1966.
 
     [2] ASHRAE standard 93-77
 
@@ -580,15 +566,15 @@ def ashraeiam(b, aoi):
 
 def physicaliam(K, L, n, aoi):
     '''
-    Determine the incidence angle modifier using refractive
-    index, glazing thickness, and extinction coefficient
+    Determine the incidence angle modifier using refractive index,
+    glazing thickness, and extinction coefficient
 
     physicaliam calculates the incidence angle modifier as described in
-    De Soto et al. "Improvement and validation of a model for photovoltaic
-    array performance", section 3. The calculation is based upon a physical
-    model of absorbtion and transmission through a cover. Required
-    information includes, incident angle, cover extinction coefficient,
-    cover thickness
+    De Soto et al. "Improvement and validation of a model for
+    photovoltaic array performance", section 3. The calculation is based
+    upon a physical model of absorbtion and transmission through a
+    cover. Required information includes, incident angle, cover
+    extinction coefficient, cover thickness
 
     Note: The authors of this function believe that eqn. 14 in [1] is
     incorrect. This function uses the following equation in its place:
@@ -597,22 +583,24 @@ def physicaliam(K, L, n, aoi):
     Parameters
     ----------
     K : float
-        The glazing extinction coefficient in units of 1/meters. Reference
-        [1] indicates that a value of  4 is reasonable for "water white"
-        glass. K must be a numeric scalar or vector with all values >=0. If K
-        is a vector, it must be the same size as all other input vectors.
+        The glazing extinction coefficient in units of 1/meters.
+        Reference [1] indicates that a value of  4 is reasonable for
+        "water white" glass. K must be a numeric scalar or vector with
+        all values >=0. If K is a vector, it must be the same size as
+        all other input vectors.
 
     L : float
-        The glazing thickness in units of meters. Reference [1] indicates
-        that 0.002 meters (2 mm) is reasonable for most glass-covered
-        PV panels. L must be a numeric scalar or vector with all values >=0.
-        If L is a vector, it must be the same size as all other input vectors.
+        The glazing thickness in units of meters. Reference [1]
+        indicates that 0.002 meters (2 mm) is reasonable for most
+        glass-covered PV panels. L must be a numeric scalar or vector
+        with all values >=0. If L is a vector, it must be the same size
+        as all other input vectors.
 
     n : float
         The effective index of refraction (unitless). Reference [1]
-        indicates that a value of 1.526 is acceptable for glass. n must be a
-        numeric scalar or vector with all values >=0. If n is a vector, it
-        must be the same size as all other input vectors.
+        indicates that a value of 1.526 is acceptable for glass. n must
+        be a numeric scalar or vector with all values >=0. If n is a
+        vector, it must be the same size as all other input vectors.
 
     aoi : Series
         The angle of incidence between the module normal vector and the
@@ -625,10 +613,9 @@ def physicaliam(K, L, n, aoi):
         IAM is a column vector with the same number of elements as the
         largest input vector.
 
-        Theta must be a numeric scalar or vector.
-        For any values of theta where abs(aoi)>90, IAM is set to 0. For any
-        values of aoi where -90 < aoi < 0, theta is set to abs(aoi) and
-        evaluated.
+        Theta must be a numeric scalar or vector. For any values of
+        theta where abs(aoi)>90, IAM is set to 0. For any values of aoi
+        where -90 < aoi < 0, theta is set to abs(aoi) and evaluated.
 
     References
     ----------
@@ -676,8 +663,8 @@ def physicaliam(K, L, n, aoi):
 def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
                       EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
     '''
-    Applies the temperature and irradiance corrections to
-    inputs for singlediode.
+    Applies the temperature and irradiance corrections to inputs for
+    singlediode.
 
     Applies the temperature and irradiance corrections to the IL, I0,
     Rs, Rsh, and a parameters at reference conditions (IL_ref, I0_ref,
@@ -725,17 +712,18 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
         1.121 eV for silicon. EgRef must be >0.
 
     dEgdT : float
-        The temperature dependence of the energy bandgap at SRC (in 1/C).
-        May be either a scalar value (e.g. -0.0002677 as in [1]) or a
-        DataFrame of dEgdT values corresponding to each input condition (this
-        may be useful if dEgdT is a function of temperature).
+        The temperature dependence of the energy bandgap at SRC (in
+        1/C). May be either a scalar value (e.g. -0.0002677 as in [1])
+        or a DataFrame of dEgdT values corresponding to each input
+        condition (this may be useful if dEgdT is a function of
+        temperature).
 
     M : float or Series (optional, default=1)
-        An optional airmass modifier, if omitted, M is given a value of 1,
-        which assumes absolute (pressure corrected) airmass = 1.5. In this
-        code, M is equal to M/Mref as described in [1] (i.e. Mref is assumed
-        to be 1). Source [1] suggests that an appropriate value for M
-        as a function absolute airmass (AMa) may be:
+        An optional airmass modifier, if omitted, M is given a value of
+        1, which assumes absolute (pressure corrected) airmass = 1.5. In
+        this code, M is equal to M/Mref as described in [1] (i.e. Mref
+        is assumed to be 1). Source [1] suggests that an appropriate
+        value for M as a function absolute airmass (AMa) may be:
 
         >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
         ...                AMa) # doctest: +SKIP
@@ -761,17 +749,20 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
         S and cell temperature Tcell.
 
     resistance_series : float
-        Series resistance in ohms at irradiance S and cell temperature Tcell.
+        Series resistance in ohms at irradiance S and cell temperature
+        Tcell.
 
     resistance_shunt : float or Series
-        Shunt resistance in ohms at irradiance S and cell temperature Tcell.
+        Shunt resistance in ohms at irradiance S and cell temperature
+        Tcell.
 
     nNsVth : float or Series
-        Modified diode ideality factor at irradiance S and cell temperature
-        Tcell. Note that in source [1] nNsVth = a (equation 2). nNsVth is the
-        product of the usual diode ideality factor (n), the number of
-        series-connected cells in the module (Ns), and the thermal voltage
-        of a cell in the module (Vth) at a cell temperature of Tcell.
+        Modified diode ideality factor at irradiance S and cell
+        temperature Tcell. Note that in source [1] nNsVth = a (equation
+        2). nNsVth is the product of the usual diode ideality factor
+        (n), the number of series-connected cells in the module (Ns),
+        and the thermal voltage of a cell in the module (Vth) at a cell
+        temperature of Tcell.
 
     References
     ----------
@@ -798,22 +789,22 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
     Notes
     -----
     If the reference parameters in the ModuleParameters struct are read
-    from a database or library of parameters (e.g. System Advisor Model),
-    it is important to use the same EgRef and dEgdT values that
+    from a database or library of parameters (e.g. System Advisor
+    Model), it is important to use the same EgRef and dEgdT values that
     were used to generate the reference parameters, regardless of the
     actual bandgap characteristics of the semiconductor. For example, in
-    the case of the System Advisor Model library, created as described in
-    [3], EgRef and dEgdT for all modules were 1.121 and -0.0002677,
+    the case of the System Advisor Model library, created as described
+    in [3], EgRef and dEgdT for all modules were 1.121 and -0.0002677,
     respectively.
 
     This table of reference bandgap energies (EgRef), bandgap energy
-    temperature dependence (dEgdT), and "typical" airmass response (M) is
-    provided purely as reference to those who may generate their own
-    reference module parameters (a_ref, IL_ref, I0_ref, etc.) based upon the
-    various PV semiconductors. Again, we stress the importance of
-    using identical EgRef and dEgdT when generation reference
-    parameters and modifying the reference parameters (for irradiance,
-    temperature, and airmass) per DeSoto's equations.
+    temperature dependence (dEgdT), and "typical" airmass response (M)
+    is provided purely as reference to those who may generate their own
+    reference module parameters (a_ref, IL_ref, I0_ref, etc.) based upon
+    the various PV semiconductors. Again, we stress the importance of
+    using identical EgRef and dEgdT when generation reference parameters
+    and modifying the reference parameters (for irradiance, temperature,
+    and airmass) per DeSoto's equations.
 
      Silicon (Si):
          * EgRef = 1.121
@@ -910,11 +901,12 @@ def retrieve_sam(name=None, samfile=None):
 
     samfile : String
         Absolute path to the location of local versions of the SAM file.
-        If file is specified, the latest versions of the SAM database will
-        not be downloaded. The selected file must be in .csv format.
+        If file is specified, the latest versions of the SAM database
+        will not be downloaded. The selected file must be in .csv
+        format.
 
-        If set to 'select', a dialogue will open allowing the user to navigate
-        to the appropriate page.
+        If set to 'select', a dialogue will open allowing the user to
+        navigate to the appropriate page.
 
     Returns
     -------
@@ -953,7 +945,9 @@ def retrieve_sam(name=None, samfile=None):
             url = base_url + 'sam-library-cec-modules-2015-6-30.csv'
         elif name == 'sandiamod':
             url = base_url + 'sam-library-sandia-modules-2015-6-30.csv'
-        elif name in ['cecinverter', 'sandiainverter']: # Allowing either, to provide for old code, while aligning with current expectations
+        elif name in ['cecinverter', 'sandiainverter']:
+            # Allowing either, to provide for old code,
+            # while aligning with current expectations
             url = base_url + 'sam-library-cec-inverters-2015-6-30.csv'
         elif samfile is None:
             raise ValueError('invalid name {}'.format(name))
@@ -962,7 +956,6 @@ def retrieve_sam(name=None, samfile=None):
         raise ValueError('must supply name or samfile')
 
     if samfile is None:
-        pvl_logger.info('retrieving %s from %s', name, url)
         response = urlopen(url)
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
     elif samfile == 'select':
@@ -1009,15 +1002,15 @@ def _parse_raw_sam_df(csvdata):
 
 def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     '''
-    The Sandia PV Array Performance Model (SAPM) generates 5 points on a PV
-    module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
+    The Sandia PV Array Performance Model (SAPM) generates 5 points on a
+    PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
     SAND2004-3535. Assumes a reference cell temperature of 25 C.
 
     Parameters
     ----------
     module : Series or dict
-        A DataFrame defining the SAPM performance parameters. See the notes
-        section for more details.
+        A DataFrame defining the SAPM performance parameters. See the
+        notes section for more details.
 
     poa_direct : Series
         The direct irradiance incident upon the module (W/m^2).
@@ -1051,12 +1044,12 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
 
     Notes
     -----
-    The coefficients from SAPM which are required in ``module`` are listed in
-    the following table.
+    The coefficients from SAPM which are required in ``module`` are
+    listed in the following table.
 
-    The modules in the Sandia module database contain these coefficients, but
-    the modules in the CEC module database do not. Both databases can be
-    accessed using :py:func:`retrieve_sam`.
+    The modules in the Sandia module database contain these
+    coefficients, but the modules in the CEC module database do not.
+    Both databases can be accessed using :py:func:`retrieve_sam`.
 
     ================   ========================================================
     Key                Description
@@ -1092,8 +1085,9 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
 
     References
     ----------
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model",
-    SAND Report 3535, Sandia National Laboratories, Albuquerque, NM.
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
+    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
+    NM.
 
     See Also
     --------
@@ -1126,20 +1120,25 @@ def sapm(module, poa_direct, poa_diffuse, temp_cell, airmass_absolute, aoi):
     dfout = pd.DataFrame(index=Ee.index)
 
     dfout['i_sc'] = (
-        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - T0)) )
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - T0))
+                    )
 
-    dfout['i_mp'] = ( module['Impo'] *
-        (module['C0']*Ee + module['C1']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - T0)) )
+    dfout['i_mp'] = (
+        module['Impo'] * (module['C0']*Ee + module['C1']*(Ee**2)) *
+        (1 + module['Aimp']*(temp_cell - T0))
+                     )
 
-    dfout['v_oc'] = (( module['Voco'] +
-        module['Cells_in_Series']*delta*np.log(Ee) + Bvoco*(temp_cell - T0) )
-        .clip_lower(0))
+    dfout['v_oc'] = (
+        module['Voco'] + module['Cells_in_Series']*delta*np.log(Ee) +
+        Bvoco*(temp_cell - T0)
+                     ).clip_lower(0)
 
-    dfout['v_mp'] = ( module['Vmpo'] +
+    dfout['v_mp'] = (
+        module['Vmpo'] +
         module['C2']*module['Cells_in_Series']*delta*np.log(Ee) +
         module['C3']*module['Cells_in_Series']*((delta*np.log(Ee)) ** 2) +
-        Bvmpo*(temp_cell - T0)).clip_lower(0)
+        Bvmpo*(temp_cell - T0)
+                     ).clip_lower(0)
 
     dfout['p_mp'] = dfout['i_mp'] * dfout['v_mp']
 
@@ -1187,10 +1186,10 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
             * 'insulated_back_polymerback'
             * 'open_rack_polymer_thinfilm_steel'
             * '22x_concentrator_tracker'
-    
+
         If dict, supply the following parameters
         (if list, in the following order):
-        
+
             * a : float
                 SAPM module parameter for establishing the upper
                 limit for module temperature at low wind speeds and
@@ -1213,8 +1212,9 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
     References
     ----------
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance Model",
-    SAND Report 3535, Sandia National Laboratories, Albuquerque, NM.
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
+    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
+    NM.
 
     See Also
     --------
@@ -1229,7 +1229,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
                    '22x_concentrator_tracker': [-3.23, -.130, 13]
                   }
 
-    if isinstance(model, str):                  
+    if isinstance(model, str):
         model = temp_models[model.lower()]
     elif isinstance(model, list):
         model = model
@@ -1240,7 +1240,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     b = model[1]
     deltaT = model[2]
 
-    E0 = 1000. # Reference irradiance
+    E0 = 1000.  # Reference irradiance
 
     temp_module = pd.Series(poa_global*np.exp(a + b*wind_speed) + temp_air)
 
@@ -1260,13 +1260,12 @@ def singlediode(module, photocurrent, saturation_current,
 
         I = IL - I0*[exp((V+I*Rs)/(nNsVth))-1] - (V + I*Rs)/Rsh
 
-    for ``I`` and ``V`` when given
-    ``IL, I0, Rs, Rsh,`` and ``nNsVth (nNsVth = n*Ns*Vth)`` which
-    are described later. Returns a DataFrame which contains
-    the 5 points on the I-V curve specified in SAND2004-3535 [3].
-    If all IL, I0, Rs, Rsh, and nNsVth are scalar, a single curve
-    will be returned, if any are Series (of the same length), multiple IV
-    curves will be calculated.
+    for ``I`` and ``V`` when given ``IL, I0, Rs, Rsh,`` and ``nNsVth
+    (nNsVth = n*Ns*Vth)`` which are described later. Returns a DataFrame
+    which contains the 5 points on the I-V curve specified in
+    SAND2004-3535 [3]. If all IL, I0, Rs, Rsh, and nNsVth are scalar, a
+    single curve will be returned, if any are Series (of the same
+    length), multiple IV curves will be calculated.
 
     The input parameters can be calculated using calcparams_desoto from
     meteorological data.
@@ -1277,8 +1276,8 @@ def singlediode(module, photocurrent, saturation_current,
         A DataFrame defining the SAPM performance parameters.
 
     photocurrent : float or Series
-        Light-generated current (photocurrent) in amperes under desired IV
-        curve conditions. Often abbreviated ``I_L``.
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
 
     saturation_current : float or Series
         Diode saturation current in amperes under desired IV curve
@@ -1293,18 +1292,19 @@ def singlediode(module, photocurrent, saturation_current,
         Often abbreviated ``Rsh``.
 
     nNsVth : float or Series
-        The product of three components. 1) The usual diode ideal
-        factor (n), 2) the number of cells in series (Ns), and 3) the cell
-        thermal voltage under the desired IV curve conditions (Vth).
-        The thermal voltage of the cell (in volts) may be calculated as
+        The product of three components. 1) The usual diode ideal factor
+        (n), 2) the number of cells in series (Ns), and 3) the cell
+        thermal voltage under the desired IV curve conditions (Vth). The
+        thermal voltage of the cell (in volts) may be calculated as
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
-        temp_cell is the temperature of the p-n junction in Kelvin,
-        and q is the charge of an electron (coulombs).
+        temp_cell is the temperature of the p-n junction in Kelvin, and
+        q is the charge of an electron (coulombs).
 
     Returns
     -------
-    If ``photocurrent`` is a Series, a DataFrame with the following columns.
-    All columns have the same number of rows as the largest input DataFrame.
+    If ``photocurrent`` is a Series, a DataFrame with the following
+    columns. All columns have the same number of rows as the largest
+    input DataFrame.
 
     If ``photocurrent`` is a scalar, a dict with the following keys.
 
@@ -1324,12 +1324,12 @@ def singlediode(module, photocurrent, saturation_current,
 
     References
     -----------
-    [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics"
-    ISBN 0 86758 909 4
+    [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
+    0 86758 909 4
 
-    [2] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of
-    real solar cells using Lambert W-function", Solar Energy Materials
-    and Solar Cells, 81 (2004) 269-277.
+    [2] A. Jain, A. Kapoor, "Exact analytical solutions of the
+    parameters of real solar cells using Lambert W-function", Solar
+    Energy Materials and Solar Cells, 81 (2004) 269-277.
 
     [3] D. King et al, "Sandia Photovoltaic Array Performance Model",
     SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
@@ -1339,7 +1339,6 @@ def singlediode(module, photocurrent, saturation_current,
     sapm
     calcparams_desoto
     '''
-    pvl_logger.debug('pvsystem.singlediode')
 
     # Find short circuit current using Lambert W
     i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.01,
@@ -1513,17 +1512,17 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         conditions. Often abbreviated ``I_0``.
 
     nNsVth : float or Series
-        The product of three components. 1) The usual diode ideal
-        factor (n), 2) the number of cells in series (Ns), and 3) the cell
-        thermal voltage under the desired IV curve conditions (Vth).
-        The thermal voltage of the cell (in volts) may be calculated as
+        The product of three components. 1) The usual diode ideal factor
+        (n), 2) the number of cells in series (Ns), and 3) the cell
+        thermal voltage under the desired IV curve conditions (Vth). The
+        thermal voltage of the cell (in volts) may be calculated as
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
-        temp_cell is the temperature of the p-n junction in Kelvin,
-        and q is the charge of an electron (coulombs).
+        temp_cell is the temperature of the p-n junction in Kelvin, and
+        q is the charge of an electron (coulombs).
 
     photocurrent : float or Series
-        Light-generated current (photocurrent) in amperes under desired IV
-        curve conditions. Often abbreviated ``I_L``.
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
 
     Returns
     -------
@@ -1531,9 +1530,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
     References
     ----------
-    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of
-    real solar cells using Lambert W-function", Solar Energy Materials
-    and Solar Cells, 81 (2004) 269-277.
+    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
+    parameters of real solar cells using Lambert W-function", Solar
+    Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     try:
         from scipy.special import lambertw
@@ -1559,15 +1558,16 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
 def snlinverter(inverter, v_dc, p_dc):
     '''
-    Converts DC power and voltage to AC power using
-    Sandia's Grid-Connected PV Inverter model.
+    Converts DC power and voltage to AC power using Sandia's
+    Grid-Connected PV Inverter model.
 
-    Determines the AC power output of an inverter given the DC voltage, DC
-    power, and appropriate Sandia Grid-Connected Photovoltaic Inverter
-    Model parameters. The output, ac_power, is clipped at the maximum power
-    output, and gives a negative power during low-input power conditions,
-    but does NOT account for maximum power point tracking voltage windows
-    nor maximum current or voltage limits on the inverter.
+    Determines the AC power output of an inverter given the DC voltage,
+    DC power, and appropriate Sandia Grid-Connected Photovoltaic
+    Inverter Model parameters. The output, ac_power, is clipped at the
+    maximum power output, and gives a negative power during low-input
+    power conditions, but does NOT account for maximum power point
+    tracking voltage windows nor maximum current or voltage limits on
+    the inverter.
 
     Parameters
     ----------
@@ -1575,8 +1575,8 @@ def snlinverter(inverter, v_dc, p_dc):
         A DataFrame defining the inverter to be used, giving the
         inverter performance parameters according to the Sandia
         Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1].
-        A set of inverter performance parameters are provided with pvlib,
-        or may be generated from a System Advisor Model (SAM) [2]
+        A set of inverter performance parameters are provided with
+        pvlib, or may be generated from a System Advisor Model (SAM) [2]
         library using retrievesam.
 
         Required DataFrame columns are:
@@ -1608,8 +1608,8 @@ def snlinverter(inverter, v_dc, p_dc):
         ======   ============================================================
 
     v_dc : float or Series
-        DC voltages, in volts, which are provided as input to the inverter.
-        Vdc must be >= 0.
+        DC voltages, in volts, which are provided as input to the
+        inverter. Vdc must be >= 0.
     p_dc : float or Series
         A scalar or DataFrame of DC powers, in watts, which are provided
         as input to the inverter. Pdc must be >= 0.
@@ -1617,19 +1617,20 @@ def snlinverter(inverter, v_dc, p_dc):
     Returns
     -------
     ac_power : float or Series
-        Modeled AC power output given the input
-        DC voltage, Vdc, and input DC power, Pdc. When ac_power would be
-        greater than Pac0, it is set to Pac0 to represent inverter
-        "clipping". When ac_power would be less than Ps0 (startup power
-        required), then ac_power is set to -1*abs(Pnt) to represent nightly
-        power losses. ac_power is not adjusted for maximum power point
+        Modeled AC power output given the input DC voltage, Vdc, and
+        input DC power, Pdc. When ac_power would be greater than Pac0,
+        it is set to Pac0 to represent inverter "clipping". When
+        ac_power would be less than Ps0 (startup power required), then
+        ac_power is set to -1*abs(Pnt) to represent nightly power
+        losses. ac_power is not adjusted for maximum power point
         tracking (MPPT) voltage windows or maximum current limits of the
         inverter.
 
     References
     ----------
-    [1] SAND2007-5036, "Performance Model for Grid-Connected Photovoltaic
-    Inverters by D. King, S. Gonzalez, G. Galbraith, W. Boyson
+    [1] SAND2007-5036, "Performance Model for Grid-Connected
+    Photovoltaic Inverters by D. King, S. Gonzalez, G. Galbraith, W.
+    Boyson
 
     [2] System Advisor Model web page. https://sam.nrel.gov.
 

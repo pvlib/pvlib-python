@@ -39,19 +39,19 @@ def test_ineichen_required():
                             index=times_localized)
     out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude)
     assert_frame_equal(expected, out)
-    
+
 
 def test_ineichen_supply_linke():
-    expected = pd.DataFrame(
-        np.array([[    0.        ,     0.        ,     0.        ],
-                  [    0.        ,     0.        ,     0.        ],
-                  [   40.19492186,   322.1949484 ,    80.27218726],
-                  [   95.14479487,   876.49778895,   703.49655602],
-                  [  118.45876694,   939.816594  ,  1042.34575261],
-                  [  105.36721216,   909.11474576,   851.33560265],
-                  [   61.91851386,   647.43752674,   257.50239737],
-                  [    0.        ,     0.        ,     0.        ],
-                  [    0.        ,     0.        ,     0.        ]]),
+    expected = pd.DataFrame(np.array(
+        [[    0.        ,     0.        ,     0.        ],
+         [    0.        ,     0.        ,     0.        ],
+         [   40.16490879,   321.71856556,    80.12815294],
+         [   95.14336873,   876.49252839,   703.47605855],
+         [  118.4587024 ,   939.81646535,  1042.34480815],
+         [  105.36645492,   909.11265773,   851.32459694],
+         [   61.91187639,   647.35889938,   257.42691896],
+         [    0.        ,     0.        ,     0.        ],
+         [    0.        ,     0.        ,     0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
     out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude,

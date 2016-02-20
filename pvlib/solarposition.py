@@ -25,13 +25,13 @@ import warnings
 import numpy as np
 import pandas as pd
 
-
+from pvlib import atmosphere
 from pvlib.tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
 def get_solarposition(time, latitude, longitude,
-                      altitude=0,
-                      method='nrel_numpy', pressure=101325,
+                      altitude=None, pressure=None,
+                      method='nrel_numpy',
                       temperature=12, **kwargs):
     """
     A convenience wrapper for the solar position calculators.
@@ -42,6 +42,11 @@ def get_solarposition(time, latitude, longitude,
     latitude : float
     longitude : float
     altitude : None or float
+        If None, computed from pressure. Assumed to be 0 m
+        if pressure is also None.
+    pressure : None or float
+        If None, computed from altitude. Assumed to be 101325 Pa
+        if altitude is also None.
     method : string
         'pyephem' uses the PyEphem package: :func:`pyephem`
 
@@ -54,8 +59,6 @@ def get_solarposition(time, latitude, longitude,
         described in [1], but also compiles the code first: :func:`spa_python`
 
         'ephemeris' uses the pvlib ephemeris code: :func:`ephemeris`
-    pressure : float
-        Pascals.
     temperature : float
         Degrees C.
 
@@ -71,7 +74,15 @@ def get_solarposition(time, latitude, longitude,
 
     [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
     """
-    
+
+    if altitude is None and pressure is None:
+        altitude = 0.
+        pressure = 101325.
+    elif altitude is None:
+        altitude = atmosphere.pres2alt(pressure)
+    elif pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
+
     method = method.lower()
     if isinstance(time, dt.datetime):
         time = pd.DatetimeIndex([time, ])
@@ -163,7 +174,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     pvl_logger.debug('using built-in spa code to calculate solar position')
 
     time_utc = time
-    
+
     spa_out = []
 
     for date in time_utc:

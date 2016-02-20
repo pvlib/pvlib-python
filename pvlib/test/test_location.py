@@ -15,18 +15,18 @@ aztz = pytz.timezone('US/Arizona')
 
 def test_location_required():
     Location(32.2, -111)
-    
+
 def test_location_all():
     Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
-@raises(UnknownTimeZoneError)    
+@raises(UnknownTimeZoneError)
 def test_location_invalid_tz():
     Location(32.2, -111, 'invalid')
-    
+
 @raises(TypeError)
 def test_location_invalid_tz_type():
     Location(32.2, -111, [5])
-    
+
 def test_location_pytz_tz():
     Location(32.2, -111, aztz)
 
@@ -38,7 +38,7 @@ def test_location_print_all():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     expected_str = 'Tucson: latitude=32.2, longitude=-111, tz=US/Arizona, altitude=700'
     assert tus.__str__() == expected_str
-    
+
 def test_location_print_pytz():
     tus = Location(32.2, -111, aztz, 700, 'Tucson')
     expected_str = 'Tucson: latitude=32.2, longitude=-111, tz=US/Arizona, altitude=700'
@@ -52,11 +52,11 @@ def test_get_clearsky():
                              freq='3H')
     clearsky = tus.get_clearsky(times)
     expected = pd.DataFrame(data=np.array(
-                            [[   0.        ,    0.        ,    0.        ],
-                             [  49.99776128,  763.02009659,  258.93387913],
-                             [  70.79971557,  957.15432484,  612.08052529],
-                             [  59.01912609,  879.09965133,  415.32459426],
-                             [   0.        ,    0.        ,    0.        ]]),
+        [[   0.        ,    0.        ,    0.        ],
+         [  49.99257714,  762.92663984,  258.84368467],
+         [  70.79757257,  957.14396999,  612.04545874],
+         [  59.01570645,  879.06844381,  415.26616693],
+         [   0.        ,    0.        ,    0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     assert_frame_equal(expected, clearsky)
@@ -123,7 +123,7 @@ def test_get_solarposition():
     this_expected = np.round(this_expected, 3)
     print(this_expected, ephem_data[expected.columns])
     assert_frame_equal(this_expected, ephem_data[expected.columns])
-    
+
 
 def test_get_airmass():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')

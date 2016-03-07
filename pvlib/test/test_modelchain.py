@@ -131,7 +131,7 @@ def test_basic_chain_alt_az():
                                     surface_azimuth=surface_azimuth,
                                     altitude=altitude)
 
-    expected = pd.Series(np.array([  1.14484467e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  1.15771428788e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -151,6 +151,6 @@ def test_basic_chain_strategy():
                                     orientation_strategy='south_at_latitude_tilt',
                                     altitude=altitude)
 
-    expected = pd.Series(np.array([  1.79622788e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  1.82033563543e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)

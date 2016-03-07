@@ -20,6 +20,7 @@ def basic_chain(times, latitude, longitude,
                 transposition_model='haydavies',
                 solar_position_method='nrel_numpy',
                 airmass_model='kastenyoung1989',
+                altitude=None, pressure=None,
                 **kwargs):
     """
     An experimental function that computes all of the modeling steps
@@ -79,9 +80,23 @@ def basic_chain(times, latitude, longitude,
     airmass_model : str
         Passed to location.get_airmass.
 
+    altitude : None or float
+        If None, computed from pressure. Assumed to be 0 m
+        if pressure is also None.
+
+    pressure : None or float
+        If None, computed from altitude. Assumed to be 101325 Pa
+        if altitude is also None.
+
     **kwargs
         Arbitrary keyword arguments.
         See code for details.
+
+    Returns
+    -------
+    output : (dc, ac)
+        Tuple of DC power (with SAPM parameters) (DataFrame) and AC
+        power (Series).
     """
 
     # use surface_tilt and surface_azimuth if provided,
@@ -97,14 +112,24 @@ def basic_chain(times, latitude, longitude,
 
     times = times
 
+    if altitude is None and pressure is None:
+        altitude = 0.
+        pressure = 101325.
+    elif altitude is None:
+        altitude = atmosphere.pres2alt(pressure)
+    elif pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
+
     solar_position = solarposition.get_solarposition(times, latitude,
-                                                     longitude, **kwargs)
+                                                     longitude,
+                                                     altitude=altitude,
+                                                     pressure=pressure,
+                                                     **kwargs)
 
     # possible error with using apparent zenith with some models
     airmass = atmosphere.relativeairmass(solar_position['apparent_zenith'],
                                          model=airmass_model)
-    airmass = atmosphere.absoluteairmass(airmass,
-                                         kwargs.get('pressure', 101325.))
+    airmass = atmosphere.absoluteairmass(airmass, pressure)
     dni_extra = pvlib.irradiance.extraradiation(solar_position.index)
     dni_extra = pd.Series(dni_extra, index=solar_position.index)
 
@@ -118,7 +143,8 @@ def basic_chain(times, latitude, longitude,
             latitude,
             longitude,
             zenith_data=solar_position['apparent_zenith'],
-            airmass_data=airmass)
+            airmass_data=airmass,
+            altitude=altitude)
 
     total_irrad = pvlib.irradiance.total_irrad(
         surface_tilt,
@@ -272,9 +298,9 @@ class ModelChain(object):
 
         Returns
         -------
-        output : (ac, dc)
-            Tuple of AC power (Series) and DC power with SAPM parameters
-            (DataFrame).
+        output : (dc, ac)
+            Tuple of DC power (with SAPM parameters) (DataFrame) and AC
+            power (Series).
 
         Assigns attributes: times, solar_position, airmass, irradiance,
         total_irrad, weather, temps, aoi, dc, ac

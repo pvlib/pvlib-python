@@ -321,30 +321,3 @@ class ModelChain(object):
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
 
         return self.dc, self.ac
-
-    def model_system(self):
-        """
-        Model the system?
-
-        I'm just copy/pasting example code...
-
-        Returns
-        -------
-        ???
-        """
-
-        final_output = self.run_model()
-        input = self.prettify_input()
-        modeling_steps = self.get_modeling_steps()
-
-
-class MoreSpecificModelChain(ModelChain):
-    """
-    Something more specific.
-    """
-    def __init__(self, *args, **kwargs):
-        super(MoreSpecificModelChain, self).__init__(**kwargs)
-
-    def run_model(self):
-        # overrides the parent ModelChain method
-        pass

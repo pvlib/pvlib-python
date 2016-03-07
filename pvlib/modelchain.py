@@ -22,34 +22,62 @@ def basic_chain(times, latitude, longitude,
                 airmass_model='kastenyoung1989',
                 **kwargs):
     """
-    A function that computes all of the modeling steps necessary for
-    calculating power or energy for a PV system at a given location.
+    An experimental function that computes all of the modeling steps
+    necessary for calculating power or energy for a PV system at a given
+    location.
 
     Parameters
     ----------
-    system : dict
-        The connected set of modules, inverters, etc.
-        keys must include latitude, longitude, module_parameters
-
-    location : dict
-        The physical location at which to evaluate the model.
-
     times : DatetimeIndex
         Times at which to evaluate the model.
+
+    latitude : float.
+        Positive is north of the equator.
+        Use decimal degrees notation.
+
+    longitude : float.
+        Positive is east of the prime meridian.
+        Use decimal degrees notation.
+
+    module_parameters : None, dict or Series
+        Module parameters as defined by the SAPM, CEC, or other.
+
+    inverter_parameters : None, dict or Series
+        Inverter parameters as defined by the SAPM, CEC, or other.
+
+    irradiance : None or DataFrame
+        If None, calculates clear sky data.
+        Columns must be 'dni', 'ghi', 'dhi'.
+
+    weather : None or DataFrame
+        If None, assumes air temperature is 20 C and
+        wind speed is 0 m/s.
+        Columns must be 'wind_speed', 'temp_air'.
+
+    surface_tilt : float or Series
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : float or Series
+        Surface azimuth angles in decimal degrees.
+        The azimuth convention is defined
+        as degrees east of north
+        (North=0, South=180, East=90, West=270).
 
     orientation_strategy : None or str
         The strategy for aligning the modules.
         If not None, sets the ``surface_azimuth`` and ``surface_tilt``
         properties of the ``system``.
 
-    clearsky_model : str
-        Passed to location.get_clearsky.
-
     transposition_model : str
         Passed to system.get_irradiance.
 
     solar_position_method : str
         Passed to location.get_solarposition.
+
+    airmass_model : str
+        Passed to location.get_airmass.
 
     **kwargs
         Arbitrary keyword arguments.
@@ -154,27 +182,25 @@ def get_orientation(strategy, **kwargs):
 
 class ModelChain(object):
     """
-    A class that represents all of the modeling steps necessary for
-    calculating power or energy for a PV system at a given location.
-
-    Consider an abstract base class.
+    An experimental class that represents all of the modeling steps
+    necessary for calculating power or energy for a PV system at a given
+    location.
 
     Parameters
     ----------
     system : PVSystem
-        The connected set of modules, inverters, etc.
+        A :py:class:`~pvlib.pvsystem.PVSystem` object that represents
+        the connected set of modules, inverters, etc.
 
-    location : location
-        The physical location at which to evaluate the model.
-
-    times : DatetimeIndex
-        Times at which to evaluate the model.
+    location : Location
+        A :py:class:`~pvlib.location.Location` object that represents
+        the physical location at which to evaluate the model.
 
     orientation_strategy : None or str
-        The strategy for aligning the modules.
-        If not None, sets the ``surface_azimuth`` and ``surface_tilt``
-        properties of the ``system``.
-        Allowed strategies include 'flat', 'south_at_latitude_tilt'.
+        The strategy for aligning the modules. If not None, sets the
+        ``surface_azimuth`` and ``surface_tilt`` properties of the
+        ``system``. Allowed strategies include 'flat',
+        'south_at_latitude_tilt'.
 
     clearsky_model : str
         Passed to location.get_clearsky.
@@ -185,14 +211,12 @@ class ModelChain(object):
     solar_position_method : str
         Passed to location.get_solarposition.
 
+    airmass_model : str
+        Passed to location.get_airmass.
+
     **kwargs
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
-
-    See also
-    --------
-    location.Location
-    pvsystem.PVSystem
     """
 
     def __init__(self, system, location,
@@ -235,9 +259,12 @@ class ModelChain(object):
         Parameters
         ----------
         times : DatetimeIndex
+            Times at which to evaluate the model.
+
         irradiance : None or DataFrame
             If None, calculates clear sky data.
-            Columns must be 'dni', 'ghi', 'dhi'
+            Columns must be 'dni', 'ghi', 'dhi'.
+
         weather : None or DataFrame
             If None, assumes air temperature is 20 C and
             wind speed is 0 m/s.
@@ -245,8 +272,9 @@ class ModelChain(object):
 
         Returns
         -------
-        output : DataFrame
-            Some combination of AC power, DC power, POA irrad, etc.
+        output : (ac, dc)
+            Tuple of AC power (Series) and DC power with SAPM parameters
+            (DataFrame).
 
         Assigns attributes: times, solar_position, airmass, irradiance,
         total_irrad, weather, temps, aoi, dc, ac
@@ -294,7 +322,6 @@ class ModelChain(object):
 
         return self.dc, self.ac
 
-
     def model_system(self):
         """
         Model the system?
@@ -309,7 +336,6 @@ class ModelChain(object):
         final_output = self.run_model()
         input = self.prettify_input()
         modeling_steps = self.get_modeling_steps()
-
 
 
 class MoreSpecificModelChain(ModelChain):

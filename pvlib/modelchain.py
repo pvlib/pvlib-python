@@ -298,9 +298,7 @@ class ModelChain(object):
 
         Returns
         -------
-        output : (dc, ac)
-            Tuple of DC power (with SAPM parameters) (DataFrame) and AC
-            power (Series).
+        self
 
         Assigns attributes: times, solar_position, airmass, irradiance,
         total_irrad, weather, temps, aoi, dc, ac
@@ -346,4 +344,4 @@ class ModelChain(object):
 
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
 
-        return self.dc, self.ac
+        return self

@@ -68,7 +68,7 @@ def test_run_model():
     system, location = mc_setup()
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    dc, ac = mc.run_model(times)
+    ac = mc.run_model(times).ac
 
     expected = pd.Series(np.array([  1.82033564e+02,  -2.00000000e-02]),
                          index=times)
@@ -81,7 +81,7 @@ def test_run_model_with_irradiance():
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
                               index=times)
-    dc, ac = mc.run_model(times, irradiance=irradiance)
+    ac = mc.run_model(times, irradiance=irradiance).ac
 
     expected = pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]),
                          index=times)
@@ -93,7 +93,7 @@ def test_run_model_with_weather():
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     weather = pd.DataFrame({'wind_speed':5, 'temp_air':10}, index=times)
-    dc, ac = mc.run_model(times, weather=weather)
+    ac = mc.run_model(times, weather=weather).ac
 
     expected = pd.Series(np.array([  1.99952400e+02,  -2.00000000e-02]),
                          index=times)

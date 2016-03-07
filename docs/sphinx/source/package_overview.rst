@@ -176,9 +176,10 @@ objects to accomplish our system modeling goal:
         # very experimental
         mc = ModelChain(system, location,
                         orientation_strategy='south_at_latitude_tilt')
-        # optional parameters for irradiance and weather data
-        dc, ac = mc.run_model(times)
-        annual_energy = ac.sum()
+        # model results (ac, dc) and intermediates (aoi, temps, etc.)
+        # assigned as mc object attributes
+        mc.run_model(times)
+        annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 
     energies = pd.Series(energies)

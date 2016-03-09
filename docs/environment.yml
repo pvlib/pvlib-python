@@ -1,13 +1,13 @@
 name: pvlib
 dependencies:
-    - python=2.7 
+    - python=2.7
     - numpy
     - scipy
     - pandas
     - pytz
     - ephem
     - numba
-    - ipython
+    - ipython=4.0.1
     - sphinx
     - numpydoc
     - matplotlib

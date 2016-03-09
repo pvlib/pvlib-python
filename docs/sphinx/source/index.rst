@@ -60,11 +60,12 @@ Contents
    :maxdepth: 2
    
    self
+   package_overview
    whatsnew
+   modules
+   classes
    comparison_pvlib_matlab
    variables_style_rules
-   pvlib
-
 
 
 Indices and tables

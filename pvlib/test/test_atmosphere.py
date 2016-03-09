@@ -22,7 +22,8 @@ tus = Location(32.2, -111, 'US/Arizona', 700)
 
 times_localized = times.tz_localize(tus.tz)
 
-ephem_data = solarposition.get_solarposition(times, tus)
+ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
+                                             tus.longitude)
 
 
 # need to add physical tests instead of just functional tests

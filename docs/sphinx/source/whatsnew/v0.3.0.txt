@@ -1,0 +1,78 @@
+.. _whatsnew_0300:
+
+v0.3.0 (2016)
+-----------------------
+
+This is a major release from 0.2.2.
+It will almost certainly break your code, but it's worth it!
+We recommend that all users upgrade to this version after testing
+their code for compatibility and updating as necessary.
+
+
+API changes
+~~~~~~~~~~~
+
+* The ``location`` argument in ``solarposition.get_solarposition``
+  and ``clearsky.ineichen``
+  has been replaced with ``latitude``, ``longitude``,
+  ``altitude``, and ``tz`` as appropriate.
+  This separates the object-oriented API from the procedural API.
+  (:issue:`17`)
+* ``Location`` classes gain the ``get_solarposition``, ``get_clearsky``,
+  and ``get_airmass`` functions.
+* Adds ``ModelChain``, ``PVSystem``, ``LocalizedPVSystem``,
+  ``SingleAxisTracker``, and ``LocalizedSingleAxisTracker``
+  classes. (:issue:`17`)
+* ``Location`` objects can be created from TMY2/TMY3 metadata
+  using the ``from_tmy`` constructor.
+* Change default ``Location`` timezone to ``'UTC'``.
+* The solar position calculators now assume UTC time if the input time
+  is not localized. The calculators previously tried to infer the timezone
+  from the now defunct location argument.
+* ``pvsystem.sapm_celltemp`` argument names now follow the
+  variable conventions.
+* ``irradiance.total_irrad`` now follows the variable conventions.
+  (:issue:`105`)
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* Added new sections to the documentation:
+
+    * :ref:`package_overview`
+    * :ref:`variables_style_rules`
+    * :ref:`classes`
+
+* Adds support for Appveyor, a Windows continuous integration service.
+  (:issue:`111`)
+* The readthedocs documentation build now uses conda packages
+  instead of mock packages. This enables code to be run
+  and figures to be generated during the documentation builds.
+  (:issue:`104`)
+* Reconfigures TravisCI builds and adds e.g. ``has_numba`` decorators
+  to the test suite. The result is that the TravisCI test suite runs
+  almost 10x faster and users do not have to install all optional
+  dependencies to run the test suite. (:issue:`109`)
+* Adds more unit tests that test that the return values are
+  actually correct.
+* Add ``atmosphere.APPARENT_ZENITH_MODELS`` and
+  ``atmosphere.TRUE_ZENITH_MODELS`` to enable code that can
+  automatically determine which type of zenith data to use
+  e.g. ``Location.get_airmass``.
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fixed the metadata key specification in documentation of the
+  ``readtmy2`` function.
+* Fixes the import of tkinter on Python 3 (:issue:`112`)
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren
+* pyElena21
+* DaCoEx

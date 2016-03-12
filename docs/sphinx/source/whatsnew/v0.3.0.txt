@@ -73,6 +73,7 @@ Bug fixes
 * Fixes the import of tkinter on Python 3 (:issue:`112`)
 * Add a decorator to skip ``test_calcparams_desoto`` on pandas 0.18.0.
   (:issue:`130`)
+* Fixes ``i_from_v`` documentation. (:issue:`126`)
 
 
 Contributors

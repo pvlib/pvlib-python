@@ -6,9 +6,6 @@ pressure from altitude or vice versa.
 
 from __future__ import division
 
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import numpy as np
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
@@ -238,10 +235,7 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         AM = ( 1.0 / (np.cos(zenith_rad) +
             0.00176759*(z)*((94.37515 - z) ** - 1.21563)) )
     else:
-        pvl_logger.warning("%s is not a valid model type for relative airmass. The 'kastenyoung1989' model was used.",
-                           model)
-        AM = ( 1.0 / (np.cos(zenith_rad) +
-            0.50572*(((6.07995 + (90 - z)) ** - 1.6364))) )
+        raise ValueError('%s is not a valid model for relativeairmass', model)
 
     try:
         AM[z > 90] = np.nan

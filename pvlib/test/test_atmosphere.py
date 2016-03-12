@@ -38,13 +38,18 @@ def test_alt2press():
 # two functions combined will generate unique unit tests for each model
 def test_airmasses():
     models = ['simple', 'kasten1966', 'youngirvine1967', 'kastenyoung1989',
-              'gueymard1993', 'young1994', 'pickering2002', 'invalid']
+              'gueymard1993', 'young1994', 'pickering2002']
     for model in models:
         yield run_airmass, model, ephem_data['zenith']
 
 
 def run_airmass(model, zenith):
     atmosphere.relativeairmass(zenith, model)
+
+
+@raises(ValueError)
+def test_airmass_invalid():
+    atmosphere.relativeairmass(ephem_data['zenith'], 'invalid')
 
 
 def test_absoluteairmass():

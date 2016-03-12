@@ -8,7 +8,7 @@ import pandas as pd
 
 from nose.tools import assert_equals, assert_almost_equals
 from pandas.util.testing import assert_series_equal, assert_frame_equal
-from . import incompatible_conda_linux_py3
+from . import incompatible_conda_linux_py3, incompatible_pandas_0180
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -61,7 +61,7 @@ def test_systemdef_tmy3():
                 'surface_azimuth': 0,
                 'surface_tilt': 0}
     assert_equals(expected, pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5))
-    
+
 def test_systemdef_tmy2():
     expected = {'tz': -5,
                 'albedo': 0.1,
@@ -76,7 +76,7 @@ def test_systemdef_tmy2():
     assert_equals(expected, pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5))
 
 def test_systemdef_dict():
-    expected = {'tz': -8, ## Note that TZ is float, but Location sets tz as string 
+    expected = {'tz': -8, ## Note that TZ is float, but Location sets tz as string
                 'albedo': 0.1,
                 'altitude': 10,
                 'latitude': 37.8,
@@ -87,7 +87,7 @@ def test_systemdef_dict():
                 'surface_azimuth': 0,
                 'surface_tilt': 5}
     assert_equals(expected, pvsystem.systemdef(meta, 5, 0, .1, 5, 5))
-    
+
 
 def test_ashraeiam():
     thetas = np.linspace(-90, 90, 9)
@@ -143,10 +143,10 @@ def test_sapm():
                               index=times)
     am = pd.Series([0, 2.25], index=times)
     aoi = pd.Series([180, 30], index=times)
-    
+
     sapm = pvsystem.sapm(module_parameters, irrad_data['dni'],
                          irrad_data['dhi'], 25, am, aoi)
-    
+
     expected = pd.DataFrame(np.array(
     [[   0.        ,    0.        ,    0.        ,    0.        ,
            0.        ,    0.        ,    0.        ,    0.        ],
@@ -155,7 +155,7 @@ def test_sapm():
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx',
                  'effective_irradiance'],
         index=times)
-    
+
     assert_frame_equal(sapm, expected)
 
     # just make sure it works with a dict input
@@ -174,9 +174,9 @@ def test_PVSystem_sapm():
                               index=times)
     am = pd.Series([0, 2.25], index=times)
     aoi = pd.Series([180, 30], index=times)
-    
+
     sapm = system.sapm(irrad_data['dni'], irrad_data['dhi'], 25, am, aoi)
-    
+
     expected = pd.DataFrame(np.array(
     [[   0.        ,    0.        ,    0.        ,    0.        ,
            0.        ,    0.        ,    0.        ,    0.        ],
@@ -185,13 +185,14 @@ def test_PVSystem_sapm():
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx',
                  'effective_irradiance'],
         index=times)
-    
+
     assert_frame_equal(sapm, expected)
 
 
+@incompatible_pandas_0180
 def test_calcparams_desoto():
-    module = 'Example_Module'  
-    module_parameters = sam_data['cecmod'][module] 
+    module = 'Example_Module'
+    module_parameters = sam_data['cecmod'][module]
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)
 
@@ -210,8 +211,9 @@ def test_calcparams_desoto():
     assert_almost_equals(nNsVth, 0.473)
 
 
+@incompatible_pandas_0180
 def test_PVSystem_calcparams_desoto():
-    module = 'Example_Module'  
+    module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module].copy()
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
@@ -238,7 +240,7 @@ def test_i_from_v():
 
 @incompatible_conda_linux_py3
 def test_PVSystem_i_from_v():
-    module = 'Example_Module'  
+    module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     system = pvsystem.PVSystem(module=module,
                                module_parameters=module_parameters)
@@ -247,7 +249,7 @@ def test_PVSystem_i_from_v():
 
 
 def test_singlediode_series():
-    module = 'Example_Module'  
+    module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)
@@ -257,15 +259,15 @@ def test_singlediode_series():
                                          alpha_isc=module_parameters['alpha_sc'],
                                          module_parameters=module_parameters,
                                          EgRef=1.121,
-                                         dEgdT=-0.0002677)                       
+                                         dEgdT=-0.0002677)
     out = pvsystem.singlediode(module_parameters, IL, I0, Rs, Rsh, nNsVth)
     assert isinstance(out, pd.DataFrame)
 
 
 @incompatible_conda_linux_py3
-def test_singlediode_floats():  
-    module = 'Example_Module'  
-    module_parameters = sam_data['cecmod'][module]                     
+def test_singlediode_floats():
+    module = 'Example_Module'
+    module_parameters = sam_data['cecmod'][module]
     out = pvsystem.singlediode(module_parameters, 7, 6e-7, .1, 20, .5)
     expected = {'i_xx': 4.2549732697234193,
                 'i_mp': 6.1390251797935704,
@@ -280,11 +282,11 @@ def test_singlediode_floats():
 
 
 @incompatible_conda_linux_py3
-def test_PVSystem_singlediode_floats():  
-    module = 'Example_Module'  
+def test_PVSystem_singlediode_floats():
+    module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)                    
+                               module_parameters=module_parameters)
     out = system.singlediode(7, 6e-7, .1, 20, .5)
     expected = {'i_xx': 4.2549732697234193,
                 'i_mp': 6.1390251797935704,
@@ -323,11 +325,11 @@ def test_sapm_celltemp_with_index():
     winds = pd.Series([10, 5, 0], index=times)
 
     pvtemps = pvsystem.sapm_celltemp(irrads, winds, temps)
-    
+
     expected = pd.DataFrame({'temp_cell':[0., 23.06066166, 5.],
                              'temp_module':[0., 21.56066166, 5.]},
                             index=times)
-    
+
     assert_frame_equal(expected, pvtemps)
 
 
@@ -380,7 +382,7 @@ def test_snlinverter_float():
 
     pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
     assert_almost_equals(pacs, 132.004278, 5)
-    
+
 
 def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
@@ -400,13 +402,13 @@ def test_PVSystem_get_irradiance():
     solar_position = location.get_solarposition(times)
     irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
                           index=times)
-    
+
     irradiance = system.get_irradiance(solar_position['apparent_zenith'],
                                        solar_position['azimuth'],
                                        irrads['dni'],
                                        irrads['ghi'],
                                        irrads['dhi'])
-    
+
     expected = pd.DataFrame(data=np.array(
         [[ 883.65494055,  745.86141676,  137.79352379,  126.397131  ,
               11.39639279],
@@ -415,7 +417,7 @@ def test_PVSystem_get_irradiance():
                                      'poa_diffuse', 'poa_sky_diffuse',
                                      'poa_ground_diffuse'],
                             index=times)
-    
+
     irradiance = np.round(irradiance, 4)
     expected = np.round(expected, 4)
     assert_frame_equal(irradiance, expected)
@@ -425,7 +427,7 @@ def test_PVSystem_localize_with_location():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')
     location = Location(latitude=32, longitude=-111)
     localized_system = system.localize(location=location)
-    
+
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'
     assert localized_system.latitude == 32
@@ -435,7 +437,7 @@ def test_PVSystem_localize_with_location():
 def test_PVSystem_localize_with_latlon():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')
     localized_system = system.localize(latitude=32, longitude=-111)
-    
+
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'
     assert localized_system.latitude == 32

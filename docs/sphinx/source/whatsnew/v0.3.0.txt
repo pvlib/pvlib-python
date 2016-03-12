@@ -68,6 +68,8 @@ Bug fixes
 * Fixed the metadata key specification in documentation of the
   ``readtmy2`` function.
 * Fixes the import of tkinter on Python 3 (:issue:`112`)
+* Add a decorator to skip ``test_calcparams_desoto`` on pandas 0.18.0.
+  (:issue:`130`)
 
 
 Contributors

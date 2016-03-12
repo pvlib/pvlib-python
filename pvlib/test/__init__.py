@@ -5,10 +5,12 @@ import sys
 import platform
 import pandas as pd
 
+
 try:
     import unittest2 as unittest
 except ImportError:
     import unittest
+
 
 try:
     import scipy
@@ -16,8 +18,10 @@ try:
 except ImportError:
     has_scipy = False
 
+
 def requires_scipy(test):
     return test if has_scipy else unittest.skip('requires scipy')(test)
+
 
 try:
     import ephem
@@ -25,8 +29,10 @@ try:
 except ImportError:
     has_ephem = False
 
+
 def requires_ephem(test):
     return test if has_ephem else unittest.skip('requires ephem')(test)
+
 
 def incompatible_conda_linux_py3(test):
     """

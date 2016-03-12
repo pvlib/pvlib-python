@@ -15,7 +15,7 @@ from pvlib import atmosphere
 
 
 # setup times and location to be tested.
-times = pd.date_range(start=datetime.datetime(2014,6,24), 
+times = pd.date_range(start=datetime.datetime(2014,6,24),
                       end=datetime.datetime(2014,6,26), freq='1Min')
 
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -30,7 +30,7 @@ ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
 
 def test_pres2alt():
     atmosphere.pres2alt(100000)
-    
+
 def test_alt2press():
     atmosphere.pres2alt(1000)
 
@@ -46,7 +46,7 @@ def test_airmasses():
 def run_airmass(model, zenith):
     atmosphere.relativeairmass(zenith, model)
 
-    
+
 def test_absoluteairmass():
     relative_am = atmosphere.relativeairmass(ephem_data['zenith'], 'simple')
     atmosphere.absoluteairmass(relative_am)

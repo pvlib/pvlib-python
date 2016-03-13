@@ -1227,7 +1227,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
                    'insulated_back_polymerback': [-2.81, -.0455, 0],
                    'open_rack_polymer_thinfilm_steel': [-3.58, -.113, 3],
                    '22x_concentrator_tracker': [-3.23, -.130, 13]
-                  }
+                   }
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
@@ -1499,17 +1499,13 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
     Parameters
     ----------
-    resistance_series : float or Series
-        Series resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rs``.
-
     resistance_shunt : float or Series
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
 
-    saturation_current : float or Series
-        Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
+    resistance_series : float or Series
+        Series resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rs``.
 
     nNsVth : float or Series
         The product of three components. 1) The usual diode ideal factor
@@ -1519,6 +1515,13 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
+
+    voltage : float or Series
+        The voltage in Volts under desired IV curve conditions.
+
+    saturation_current : float or Series
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
 
     photocurrent : float or Series
         Light-generated current (photocurrent) in amperes under desired

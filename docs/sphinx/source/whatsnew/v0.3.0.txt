@@ -43,9 +43,9 @@ Enhancements
 
 * Added new sections to the documentation:
 
-    * :ref:`package_overview`
-    * :ref:`variables_style_rules`
-    * :ref:`classes`
+    * :ref:`package_overview` (:issue:`93`)
+    * :ref:`variables_style_rules` (:issue:`102`)
+    * :ref:`classes` (:issue:`93`)
 
 * Adds support for Appveyor, a Windows continuous integration service.
   (:issue:`111`)
@@ -63,6 +63,8 @@ Enhancements
   ``atmosphere.TRUE_ZENITH_MODELS`` to enable code that can
   automatically determine which type of zenith data to use
   e.g. ``Location.get_airmass``.
+* Modify ``sapm`` documentation to clarify that it does
+  not work with the CEC database. (:issue:`122`)
 
 
 Bug fixes
@@ -74,6 +76,8 @@ Bug fixes
 * Add a decorator to skip ``test_calcparams_desoto`` on pandas 0.18.0.
   (:issue:`130`)
 * Fixes ``i_from_v`` documentation. (:issue:`126`)
+* Fixes two minor sphinx documentation errors: a too short heading underline
+  in whatsnew/v0.2.2.txt and a table format in pvsystem. (:issue:`123`)
 
 
 Contributors
@@ -82,3 +86,4 @@ Contributors
 * Will Holmgren
 * pyElena21
 * DaCoEx
+* Uwe Krien

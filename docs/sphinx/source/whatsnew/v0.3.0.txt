@@ -33,6 +33,9 @@ API changes
   variable conventions.
 * ``irradiance.total_irrad`` now follows the variable conventions.
   (:issue:`105`)
+* ``atmosphere.relativeairmass`` now raises a ValueError instead of
+  assuming ``'kastenyoung1989'`` if an invalid model is supplied.
+  (:issue:`119`)
 
 
 Enhancements

@@ -44,6 +44,9 @@ Enhancements
 * Added new sections to the documentation:
 
     * :ref:`package_overview` (:issue:`93`)
+    * :ref:`installation` (:issue:`135`)
+    * :ref:`contributing` (:issue:`46`)
+    * :ref:`timetimezones` (:issue:`47`)
     * :ref:`variables_style_rules` (:issue:`102`)
     * :ref:`classes` (:issue:`93`)
 
@@ -65,6 +68,8 @@ Enhancements
   e.g. ``Location.get_airmass``.
 * Modify ``sapm`` documentation to clarify that it does
   not work with the CEC database. (:issue:`122`)
+* Adds citation information to the documentation. (:issue:`73`)
+* Updates the :ref:`comparison_pvlib_matlab` documentation. (:issue:`116`)
 
 
 Bug fixes
@@ -87,3 +92,6 @@ Contributors
 * pyElena21
 * DaCoEx
 * Uwe Krien
+
+Will Holmgren, Jessica Forbess, bmu, Cliff Hansen, Tony Lorenzo,
+Uwe Krien, and bt- contributed to the object model discussion.

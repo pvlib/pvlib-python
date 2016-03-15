@@ -14,6 +14,8 @@ there are modelers of PV systems, so
 pvlib-python provides several modeling paradigms.
 
 
+.. _modeling-paradigms:
+
 Modeling paradigms
 ------------------
 

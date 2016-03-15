@@ -50,6 +50,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.extlinks',
     'numpydoc',
     'sphinx.ext.autosummary',
@@ -77,7 +78,7 @@ copyright = u'2015, Sandia National Labs, Rob Andrews, University of Arizona, gi
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 # Get the version from the version file
-version_file = os.path.join(os.path.dirname(__file__), 
+version_file = os.path.join(os.path.dirname(__file__),
                             '../../../pvlib/version.py')
 with open(version_file, 'r') as f:
     exec(f.read())
@@ -301,3 +302,11 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3.5/', None),
+    'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+}
+

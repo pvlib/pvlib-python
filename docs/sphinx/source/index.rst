@@ -72,6 +72,7 @@ Contents
    whatsnew
    installation
    contributing
+   timetimezones
    modules
    classes
    comparison_pvlib_matlab

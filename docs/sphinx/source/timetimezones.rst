@@ -30,14 +30,39 @@ time and time zone functionality in python and pvlib.
     import pandas as pd
     import pytz
 
-You can obtain a list of all valid time zone strings with
-``pytz.all_timezones``. It's a long list, so we only print every 20th
-time zone.
+Finding a time zone
+*******************
+
+pytz is based on the Olson time zone database. You can obtain a list of
+all valid time zone strings with ``pytz.all_timezones``. It's a long
+list, so we only print every 20th time zone.
 
 .. ipython:: python
 
     len(pytz.all_timezones)
     pytz.all_timezones[::20]
+
+Wikipedia's `List of tz database time zones
+<https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`_ is also
+good reference.
+
+The ``pytz.country_timezones`` function is useful, too.
+
+.. ipython:: python
+
+    pytz.country_timezones('US')
+
+And don't forget about Python's :py:func:`python:filter` function.
+
+.. ipython:: python
+
+    list(filter(lambda x: 'GMT' in x, pytz.all_timezones))
+
+Note that while pytz has ``'EST'`` and ``'MST'``, it does not have
+``'PST'``. Use ``'Etc/GMT+8'`` instead, or see :ref:`fixedoffsets`.
+
+Timestamps
+**********
 
 :py:class:`pandas.Timestamp` and :py:class:`pandas.DatetimeIndex`
 can be created in many ways. Here we focus on the time zone issues
@@ -57,11 +82,11 @@ You can specify the time zone using the ``tz`` keyword argument or the
     pd.Timestamp('2015-1-1 00:00', tz='America/Denver')
     pd.Timestamp('2015-1-1 00:00').tz_localize('America/Denver')
 
-Localized ``Timestamps`` can be converted from one time zone to another.
+Localized Timestamps can be converted from one time zone to another.
 
 .. ipython:: python
 
-    midnight_mst = pd.Timestamp('2015-1-1 00:00', tz='MST')
+    midnight_mst = pd.Timestamp('2015-1-1 00:00', tz='America/Denver')
     corresponding_utc = midnight_mst.tz_convert('UTC')  # returns a new Timestamp
     corresponding_utc
 
@@ -78,6 +103,9 @@ The difference between ``tz_localize`` and ``tz_convert`` is a common
 source of confusion for new users. Just remember: localize first,
 convert later.
 
+Daylight savings time
+*********************
+
 Some time zones are aware of daylight savings time and some are not. For
 example the winter time results are the same for US/Mountain and MST,
 but the summer time results are not.
@@ -87,22 +115,23 @@ Note the UTC offset in winter...
 .. ipython:: python
 
     pd.Timestamp('2015-1-1 00:00').tz_localize('US/Mountain')
-    pd.Timestamp('2015-1-1 00:00').tz_localize('MST')
+    pd.Timestamp('2015-1-1 00:00').tz_localize('Etc/GMT+7')
 
 vs. the UTC offset in summer...
 
 .. ipython:: python
 
     pd.Timestamp('2015-6-1 00:00').tz_localize('US/Mountain')
-    pd.Timestamp('2015-6-1 00:00').tz_localize('MST')
+    pd.Timestamp('2015-6-1 00:00').tz_localize('Etc/GMT+7')
 
 pandas and pytz make this time zone handling possible because pandas
 stores all times as integer nanoseconds since January 1, 1970.
-Here is the pandas time representation of the integer 1.
+Here is the pandas time representation of the integers 1 and 1e9.
 
 .. ipython:: python
 
     pd.Timestamp(1)
+    pd.Timestamp(1e9)
 
 So if we specify times consistent with the specified time zone, pandas
 will use the same integer to represent them.
@@ -110,34 +139,54 @@ will use the same integer to represent them.
 .. ipython:: python
 
     # US/Mountain
-    pd.Timestamp('2015-6-1 01:00').tz_localize('US/Mountain').value
+    pd.Timestamp('2015-6-1 01:00', tz='US/Mountain').value
 
     # MST
-    pd.Timestamp('2015-6-1 00:00').tz_localize('MST').value
+    pd.Timestamp('2015-6-1 00:00', tz='Etc/GMT+7').value
+
+    # Europe/Berlin
+    pd.Timestamp('2015-6-1 09:00', tz='Europe/Berlin').value
 
     # UTC
-    pd.Timestamp('2015-6-1 07:00').tz_localize('UTC').value
+    pd.Timestamp('2015-6-1 07:00', tz='UTC').value
 
     # UTC
     pd.Timestamp('2015-6-1 07:00').value
+
+It's ultimately these integers that are used when calculating quantities
+in pvlib such as solar position.
 
 As stated above, pandas will assume UTC if you do not specify a time
 zone. This is dangerous, and we recommend using localized timeseries,
 even if it is UTC.
 
-Timezones can also be specified with a fixed offset in minutes from UTC.
+
+.. _fixedoffsets:
+
+Fixed offsets
+*************
+
+The ``'Etc/GMT*'`` time zones mentioned above provide fixed offset
+specifications, but watch out for the counter-intuitive sign convention.
 
 .. ipython:: python
 
-    pd.Timestamp('2015-1-1 00:00').tz_localize(pytz.FixedOffset(120))
+    pd.Timestamp('2015-1-1 00:00', tz='Etc/GMT-2')
 
-You can also specify the fixed offset directly in the tz_localize
+Fixed offset time zones can also be specified as offset minutes
+from UTC using ``pytz.FixedOffset``.
+
+.. ipython:: python
+
+    pd.Timestamp('2015-1-1 00:00', tz=pytz.FixedOffset(120))
+
+You can also specify the fixed offset directly in the ``tz_localize``
 method, however, be aware that this is not documented and that the
 offset must be in seconds, not minutes.
 
 .. ipython:: python
 
-    pd.Timestamp('2015-1-1 00:00').tz_localize(7200)
+    pd.Timestamp('2015-1-1 00:00', tz=7200)
 
 Yet another way to specify a time zone with a fixed offset is by using
 the string formulation.
@@ -146,9 +195,17 @@ the string formulation.
 
     pd.Timestamp('2015-1-1 00:00+0200')
 
-pandas Timestamp objects can also be created from time zone aware or
-naive :py:class:`python:datetime.datetime` objects.
-The behavior is as expected.
+
+Native Python objects
+*********************
+
+Sometimes it's convenient to use native Python
+:py:class:`python:datetime.date` and
+:py:class:`python:datetime.datetime` objects, so we demonstrate their
+use next. pandas Timestamp objects can also be created from time zone
+aware or naive
+:py:class:`python:datetime.datetime` objects. The behavior is as
+expected.
 
 .. ipython:: python
 
@@ -170,13 +227,13 @@ passed to ``Timestamp``.
 
 .. ipython:: python
 
-    # tz naive python datetime.date object
+    # tz naive python datetime.date object (no time info)
     naive_python_date = datetime.date(2015, 6, 1)
 
-    # tz naive pandas Timestamp object
+    # tz naive pandas Timestamp object (time=midnight)
     pd.Timestamp(naive_python_date)
 
-You cannot localize a pure Python date object.
+You cannot localize a native Python date object.
 
 .. ipython:: python
     :okexcept:
@@ -200,7 +257,10 @@ most common places to get tripped up with time and time zone issues in
 solar power analysis occur during data import and solar position
 calculations.
 
-Let's first examine how pvlib handles time when it imports a tmy3 file.
+Data import
+***********
+
+Let's first examine how pvlib handles time when it imports a TMY3 file.
 
 .. ipython:: python
 
@@ -230,6 +290,9 @@ print just a few of the rows and columns of the large dataframe.
 
 The :py:func:`~pvlib.tmy.readtmy2` function also returns a DataFrame
 with a localized DatetimeIndex.
+
+Solar position
+**************
 
 The correct solar position can be immediately calculated from the
 DataFrame's index since the index has been localized.
@@ -262,6 +325,9 @@ on January 1, 1997 at Sand Point, Alaska, sunrise was at 10:09 am, solar
 noon was at 1:46 pm, and sunset was at 5:23 pm. This is consistent with
 the data plotted above (and depressing).
 
+Solar position (assumed UTC)
+****************************
+
 What if we had a DatetimeIndex that was not localized, such as the one
 below? The solar position calculator will assume UTC time.
 
@@ -285,6 +351,9 @@ below? The solar position calculator will assume UTC time.
     ax.set_ylabel('(degrees)');
 
 This looks like the plot above, but shifted by 9 hours.
+
+Solar position (calculate and convert)
+**************************************
 
 In principle, one could localize the tz-naive solar position data to
 UTC, and then convert it to the desired time zone.

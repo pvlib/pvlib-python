@@ -17,6 +17,13 @@ will require the efforts of the larger pvlib-python community, not just
 the maintainers. Therefore, do not expect feature parity between the
 libaries, only similarity.
 
+Missing functions
+~~~~~~~~~~~~~~~~~
+
+See pvlib-python GitHub `issue #2
+<https://github.com/pvlib/pvlib-python/issues/2>`_ for a list of
+functions missing from the Python version of the library.
+
 Major differences
 ~~~~~~~~~~~~~~~~~
 

@@ -45,16 +45,18 @@ that you'll need for pvlib, including Pandas, NumPy, and SciPy.
 See the `Anaconda FAQ <http://docs.continuum.io/anaconda/faq.html>`_
 for more information.
 
+You can now install pvlib-python by one of the methods below.
+
 
 .. _standardrelease:
 
 Install standard release
 ------------------------
 
-To obtain the most recent stable release of pvlib-python, use `conda
-<http://conda.pydata.org/docs/>`_ (recommended if you use the Anaconda
-Python distribution) or `pip <https://pip.pypa.io>`_ (works with any
-Python distribution)::
+To install the most recent stable release of pvlib-python in a
+non-editable way, use `conda <http://conda.pydata.org/docs/>`_
+(recommended if you use the Anaconda Python distribution) or `pip
+<https://pip.pypa.io>`_ (works with any Python distribution)::
 
     conda install -c pvlib pvlib
 

@@ -5,7 +5,7 @@ pvlib-python
 [![Build status](https://ci.appveyor.com/api/projects/status/gr2eyhc84tvtkopk?svg=true)](https://ci.appveyor.com/project/wholmgren/pvlib-python-fv2to)
 [![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
 [![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=latest)](http://pvlib-python.readthedocs.org/en/latest/)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.20562.svg)](http://dx.doi.org/10.5281/zenodo.20562)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.48072.svg)](http://dx.doi.org/10.5281/zenodo.48072)
 
 
 pvlib-python is a community supported tool that provides a set of documented functions for simulating the performance of photovoltaic energy systems. The toolbox was originally developed in MATLAB at Sandia National Laboratories and it implements many of the models and methods developed at the Labs. More information on Sandia Labs PV performance modeling programs can be found at https://pvpmc.sandia.gov/. We collaborate with the PVLIB-MATLAB project, but operate independently of it.
@@ -43,11 +43,11 @@ NREL SPA algorithm
 ------------------
 pvlib-python is distributed with several validated, high-precision, and high-performance solar position calculators.
 It also includes wrappers for the official NREL SPA algorithm.
-To use the NREL SPA algorithm, a pip install from the web cannot be used. Instead: 
+To use the NREL SPA algorithm, a pip install from the web cannot be used. Instead:
 
 1. Download the pvlib repository from https://github.com/pvlib/pvlib-python.git
 2. Download the SPA files from [NREL](http://www.nrel.gov/midc/spa/)
-3. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files`` 
+3. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files``
 4. From the ``pvlib-python`` directory, run ``pip uninstall pvlib`` followed by ``pip install . ``
 
 

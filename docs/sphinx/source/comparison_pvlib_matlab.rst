@@ -17,6 +17,9 @@ will require the efforts of the larger pvlib-python community, not just
 the maintainers. Therefore, do not expect feature parity between the
 libaries, only similarity.
 
+The `PV_LIB Matlab help webpage <https://pvpmc.sandia.gov/PVLIB_Matlab_Help/>`_
+is a good reference for this comparison.
+
 Missing functions
 ~~~~~~~~~~~~~~~~~
 

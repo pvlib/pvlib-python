@@ -51,8 +51,10 @@ for more information.
 Install standard release
 ------------------------
 
-To obtain the most recent stable release of pvlib-python, use
-`conda <http://conda.pydata.org/docs/>`_ or `pip <https://pip.pypa.io>`_::
+To obtain the most recent stable release of pvlib-python, use `conda
+<http://conda.pydata.org/docs/>`_ (recommended if you use the Anaconda
+Python distribution) or `pip <https://pip.pypa.io>`_ (works with any
+Python distribution)::
 
     conda install -c pvlib pvlib
 
@@ -67,10 +69,11 @@ You may still want to download the Python source code so that you can
 easily get all of the Jupyter Notebook tutorials. Either clone the `git
 repository <https://github.com/pvlib/pvlib-python>`_ or go to the
 `Releases page <https://github.com/pvlib/pvlib-python/releases>`_ to
-download the zip file of the most recent release. You can also use
-the nbviewer website to choose a tutorial to experiment with.
-Go to our `nbviewer tutorial page
-<http://nbviewer.jupyter.org/github/pvlib/pvlib-python/tree/master/docs/tutorials/>`_
+download the zip file of the most recent release. You can also use the
+nbviewer website to choose a tutorial to experiment with. Go to our
+`nbviewer tutorial page
+<http://nbviewer.jupyter.org/github/pvlib/pvlib-python/tree/master/docs/
+tutorials/>`_.
 
 
 .. _editablelibrary:
@@ -95,16 +98,16 @@ You'll get there.
 Obtain the source code
 ~~~~~~~~~~~~~~~~~~~~~~
 
-We will describe how to obtain the pvlib-python source code using
-the git/GitHub version control system. We encourage users to learn
-how to use these powerful tools, but we also recognize that they
-can be a substantial roadblock to getting started with pvlib-python.
-Therefore, you should know that you can download a zip file of
-the most recent development version of the source code by
-clicking on the **Download Zip** button on the right side of our
-`GitHub page <https://github.com/pvlib/pvlib-python>`_
-or download a zip file of any stable release from our
-`Releases page <https://github.com/pvlib/pvlib-python/releases>`_.
+We will briefly describe how to obtain the pvlib-python source code
+using the git/GitHub version control system. We strongly encourage users
+to learn how to use these powerful tools (see the :ref:`references`!),
+but we also recognize that they can be a substantial roadblock to
+getting started with pvlib-python. Therefore, you should know that you
+can download a zip file of the most recent development version of the
+source code by clicking on the **Download Zip** button on the right side
+of our `GitHub page <https://github.com/pvlib/pvlib-python>`_ or
+download a zip file of any stable release from our `Releases page
+<https://github.com/pvlib/pvlib-python/releases>`_.
 
 Follow these steps to obtain the library using git/GitHub:
 
@@ -114,13 +117,15 @@ Follow these steps to obtain the library using git/GitHub:
    `pvlib-python GitHub page <https://github.com/pvlib/pvlib-python>`_.
 #. **Clone** your fork to your computer using the GitHub Desktop application
    by clicking on the *Clone to Desktop* button on your fork's homepage.
-   This button is circled in the image below.
+   This button is circled in the image below. Remember the system path that
+   you clone the library to.
 
 .. image:: _images/clonebutton.png
 
 Please see GitHub's
-`Forking Projects <https://guides.github.com/activities/forking/>`_ and
-`Fork A Repo <https://help.github.com/articles/fork-a-repo/>`_ for
+`Forking Projects <https://guides.github.com/activities/forking/>`_,
+`Fork A Repo <https://help.github.com/articles/fork-a-repo/>`_,
+and the `git-scm <https://git-scm.com/documentation>`_ for
 more details.
 
 .. _setupenvironment:
@@ -160,12 +165,32 @@ Install the source code
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Good news -- installing the source code is the easiest part!
+With your conda/virtual environment still active...
 
-#. In your terminal or shell, **navigate** to the top-level
-   pvlib-python directory.
 #. **Install** pvlib-python in "development mode" by running
-   ``pip install -e .``
+   ``pip install -e /path/to/your/pvlib-python``.
+   You remember this path from the clone step, right? It's probably
+   something like ``C:\Users\%USER%\Documents\GitHub\pvlib-python``
+   (Windows) or ``/Users/%USER%/Documents/pvlib-python`` (Mac).
+#. **Test** your installation by running ``python -c 'import pvlib'``.
+   You're good to go if it returns without an exception.
 
+The version of pvlib-python that is on that path is now available
+as an installed package inside your conda/virtual environment.
+
+Any changes that you make to this pvlib-python will be available inside
+your environment. If you run a git checkout, branch, or pull command the
+result will be applied to your pvlib-python installation. This
+is great for development. Note, however, that you will need to use
+Python's ``reload`` function (`python 2
+<https://docs.python.org/2/library/functions.html#reload>`_, `python 3
+<https://docs.python.org/3/library/importlib.html#importlib.reload>`_)
+if you make changes to pvlib during an interactive Python
+session (including a Jupyter notebook). Restarting the Python
+interpreter will also work.
+
+Remember to ``source activate pvlibdev`` (or whatever you named your
+environment) when you start a new shell or terminal.
 
 .. _references:
 
@@ -182,4 +207,15 @@ Here are a few recommended references for installing Python packages:
   <http://python-packaging-user-guide.readthedocs.org/en/latest/>`_
 * `Conda User Guide
   <http://conda.pydata.org/docs/index.html>`_
+
+Here are a few recommended references for git and GitHub:
+
+* `The git documentation <https://git-scm.com/doc>`_:
+  detailed explanations, videos, more links, and cheat sheets. Go here first!
+* `Forking Projects <https://guides.github.com/activities/forking/>`_
+* `Fork A Repo <https://help.github.com/articles/fork-a-repo/>`_
+* `Cloning a repository
+  <https://help.github.com/articles/cloning-a-repository/>`_
+* `Aha! Moments When Learning Git
+  <http://betterexplained.com/articles/aha-moments-when-learning-git/>`_
 

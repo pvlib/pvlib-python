@@ -1,6 +1,6 @@
 .. _whatsnew_0300:
 
-v0.3.0 (2016)
+v0.3.0 (March 21, 2016)
 -----------------------
 
 This is a major release from 0.2.2.

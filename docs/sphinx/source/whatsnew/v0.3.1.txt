@@ -1,0 +1,22 @@
+.. _whatsnew_0300:
+
+v0.3.1 (April ??, 2016)
+-----------------------
+
+This is a minor release from 0.3.0.
+We recommend that all users upgrade to this version.
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+
+Bug fixes
+~~~~~~~~~
+
+
+
+Contributors
+~~~~~~~~~~~~
+

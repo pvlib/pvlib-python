@@ -15,8 +15,10 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
+* Fixes snlinverter Pnt problem (:issue:`140`)
 
 
 Contributors
 ~~~~~~~~~~~~
 
+* ejmiller2

@@ -384,6 +384,17 @@ def test_snlinverter_float():
     assert_almost_equals(pacs, 132.004278, 5)
 
 
+def test_snlinverter_Pnt_micro():
+    inverters = sam_data['cecinverter']
+    testinv = 'Enphase_Energy__M250_60_2LL_S2x___ZC____NA__208V_208V__CEC_2013_'
+    vdcs = pd.Series(np.linspace(0,50,3))
+    idcs = pd.Series(np.linspace(0,11,3))
+    pdcs = idcs * vdcs
+
+    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    assert_series_equal(pacs, pd.Series([-0.043000, 132.545914746, 240.000000]))
+
+
 def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
 

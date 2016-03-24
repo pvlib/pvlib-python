@@ -15,7 +15,12 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
-* Fixes night tare issue in snlinverter. When the DC input power (p_dc) to an inverter is below the inversion startup power (Ps0), the model should set the AC output (ac_power) to the night tare value (Pnt). The night tare power indicates the power consumed by the inverter to sense PV array voltage. The model was erroneously comparing Ps0 with the AC output power (ac_power), rather than the DC input power (p_dc).
+* Fixes night tare issue in snlinverter. When the DC input power (p_dc)
+  to an inverter is below the inversion startup power (Ps0), the model
+  should set the AC output (ac_power) to the night tare value (Pnt). 
+  The night tare power indicates the power consumed by the inverter to
+  sense PV array voltage. The model was erroneously comparing Ps0 with
+  the AC output power (ac_power), rather than the DC input power (p_dc).
 
 
 Contributors

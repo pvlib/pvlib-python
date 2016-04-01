@@ -11,7 +11,6 @@ from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
 from pvlib.tools import localize_to_utc
-from pvlib.solarposition import get_solarposition
 from pvlib.irradiance import liujordan
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
@@ -362,7 +361,7 @@ class ForecastModel(object):
             Type of cloud cover to use for calculating radiation values.
         '''
         self.rad_type = {}
-        self.solar_position = get_solarposition(self.time, self.location)
+        self.solar_position = self.location.get_solarposition(self.time)
 
         if self.model_name == 'HRRR_ESRL':
             # HRRR_ESRL is the only model with the

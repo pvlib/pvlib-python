@@ -17,8 +17,7 @@ clearsky
     :undoc-members:
     :show-inheritance:
 
-<<<<<<< HEAD:docs/sphinx/source/pvlib.rst
-forecast module
+forecast
 ----------------
 
 .. automodule:: pvlib.forecast
@@ -26,10 +25,7 @@ forecast module
     :undoc-members:
     :show-inheritance:
 
-irradiance module
-=======
 irradiance
->>>>>>> pvlib/master:docs/sphinx/source/modules.rst
 -----------------
 
 .. automodule:: pvlib.irradiance
@@ -68,13 +64,8 @@ solarposition
     :members:
     :undoc-members:
     :show-inheritance:
-<<<<<<< HEAD:docs/sphinx/source/pvlib.rst
 
-tmy module
-=======
-    
 tmy
->>>>>>> pvlib/master:docs/sphinx/source/modules.rst
 --------------------
 
 .. automodule:: pvlib.tmy

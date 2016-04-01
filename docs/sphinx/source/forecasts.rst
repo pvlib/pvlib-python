@@ -150,12 +150,11 @@ recalculate the irradiance.
 
 .. ipython:: python
 
-    from pvlib import solarposition
     from pvlib import irradiance
     total_clouds = data['total_clouds'].resample('5min').interpolate()
-    solar_position = solarposition.get_solarposition(total_clouds.index, model.location)
+    solar_position = model.location.get_solarposition(total_clouds.index)
     irrad_data = irradiance.liujordan(solar_position['apparent_zenith'], total_clouds)
-    irrad_data.plot();
+    irrad_data[irrad_vars].plot();
     plt.ylabel('Irradiance ($W/m^2$)');
     plt.xlabel('Forecast Time ({})'.format(tz));
     plt.title('GFS 0.5 deg forecast for lat={}, lon={}'
@@ -202,6 +201,7 @@ severe weather situations. A major upgrade to the HRRR model is expected
 in Spring, 2016. See the `NOAA ESRL HRRR page
 <http://rapidrefresh.noaa.gov/hrrr/>`_ for more information. Use the
 HRRR, among others, if you want forecasts for less than 24 hours.
+The HRRR model covers the continental United States.
 
 .. ipython:: python
 
@@ -226,6 +226,7 @@ excels in severe weather situations. A major upgrade to the RAP model is
 expected in Spring, 2016. See the `NOAA ESRL HRRR page
 <http://rapidrefresh.noaa.gov/hrrr/>`_ for more information. Use the
 RAP, among others, if you want forecasts for less than 24 hours.
+The RAP model covers most of North America.
 
 .. ipython:: python
 
@@ -246,6 +247,7 @@ NAM
 The North American Mesoscale model is a somewhat older model that is
 target of frequent criticism, justly or not. It is updated every 6 hours
 and runs at 20 km resolution. Use the NAM as part of an ensemble forecast.
+The NAM model covers North America.
 
 .. ipython:: python
 
@@ -267,6 +269,7 @@ The National Digital Forecast Database is not a model, but rather a
 collection of forecasts made by National Weather Service offices
 across the country. It is updated every 6 hours.
 Use the NDFD, among others, for forecasts at all time horizons.
+The NDFD is available for the United States.
 
 .. ipython:: python
 
@@ -292,7 +295,7 @@ for details.
 .. ipython:: python
 
     from pvlib.location import Location
-    from pvlib import pvsystem, irradiance, atmosphere, solarposition
+    from pvlib import pvsystem, irradiance, atmosphere
 
     surface_tilt = 30
     surface_azimuth = 180
@@ -313,25 +316,27 @@ Now we need to calculate some PV modeling intermediates...
 
     time = forecast_data.index
 
-    solpos = solarposition.get_solarposition(time, model.location)
+    solpos = model.location.get_solarposition(time)
 
     dni_extra = irradiance.extraradiation(time)
     dni_extra = pd.Series(dni_extra, index=time)
 
     airmass = atmosphere.relativeairmass(solpos['apparent_zenith'])
 
-    poa_sky_diffuse = irradiance.haydavies(surface_tilt, surface_azimuth,
-                                           forecast_data['dhi'], forecast_data['dni'], dni_extra,
-                                           solpos['apparent_zenith'], solpos['azimuth'])
+    poa_sky_diffuse = irradiance.haydavies(
+        surface_tilt, surface_azimuth, forecast_data['dhi'],
+        forecast_data['dni'], dni_extra, solpos['apparent_zenith'],
+        solpos['azimuth'])
 
-    poa_ground_diffuse = irradiance.grounddiffuse(surface_tilt, forecast_data['ghi'], albedo=albedo)
+    poa_ground_diffuse = irradiance.grounddiffuse(
+        surface_tilt, forecast_data['ghi'], albedo=albedo)
 
     aoi = irradiance.aoi(surface_tilt, surface_azimuth,
                          solpos['apparent_zenith'], solpos['azimuth'])
 
     # forecast plane of array irradiance
-    poa_irrad = irradiance.globalinplane(aoi, forecast_data['dni'],
-                                         poa_sky_diffuse, poa_ground_diffuse)
+    poa_irrad = irradiance.globalinplane(
+        aoi, forecast_data['dni'], poa_sky_diffuse, poa_ground_diffuse)
 
     poa_irrad.plot();
     @savefig poa_irrad.png width=6in

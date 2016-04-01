@@ -383,7 +383,7 @@ class ForecastModel(object):
             self.data = self.data.drop(rads, axis=1)
             self.data = pd.concat([self.data, new_rads], axis=1)
 
-        for var in ['dni', 'dhi', 'ghi']:
+        for var in rads:
             self.var_units[var] = '$W m^{-2}$'
 
     def convert_temperature(self):

@@ -1,0 +1,17 @@
+.. _whatsnew_0400:
+
+v0.4.0 (2016)
+-------------------------
+
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* Added ''forecast.py'' module which defines forecast model classes.
+
+Contributors
+~~~~~~~~~~~~
+
+* Derek Groenendyk
+* Will Holmgren

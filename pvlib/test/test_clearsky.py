@@ -12,70 +12,80 @@ from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
 
+from . import requires_scipy
+
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
 times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
 times_localized = times.tz_localize(tus.tz)
 
-ephem_data = solarposition.get_solarposition(times, tus)
+ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
+                                             tus.longitude)
 
-
+@requires_scipy
 def test_ineichen_required():
     # the clearsky function should call lookup_linke_turbidity by default
-    # will fail without scipy
-    expected = pd.DataFrame(np.array([[0.,0.,0.],
-                                      [0.,0.,0.],
-                                      [40.53660309,302.47614235,78.1470311],
-                                      [98.88372629,865.98938602,699.93403875],
-                                      [122.57870881,931.83716051,1038.62116584],
-                                      [109.30270612,899.88002304,847.68806472],
-                                      [64.25699595,629.91187925,254.53048144],
-                                      [0.,0.,0.],
-                                      [0.,0.,0.]]),
+    expected = pd.DataFrame(
+        np.array([[    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ],
+                  [   51.47811191,   265.33462162,    84.48262202],
+                  [  105.008507  ,   832.29100407,   682.67761951],
+                  [  121.97988054,   901.31821834,  1008.02102657],
+                  [  112.57957512,   867.76297247,   824.61702926],
+                  [   76.69672675,   588.8462898 ,   254.5808329 ],
+                  [    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
-    out = clearsky.ineichen(times, tus)
+    out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude)
     assert_frame_equal(expected, out)
-    
+
 
 def test_ineichen_supply_linke():
-    expected = pd.DataFrame(np.array([[0.,0.,0.],
-                                      [0.,0.,0.],
-                                      [40.18673553,322.0649964,80.23287692],
-                                      [95.14405816,876.49507151,703.48596755],
-                                      [118.45873721,939.81653473,1042.34531752],
-                                      [105.36671577,909.113377,851.3283881],
-                                      [61.91607984,647.40869542,257.47471759],
-                                      [0.,0.,0.],
-                                      [0.,0.,0.]]),
+    expected = pd.DataFrame(np.array(
+        [[    0.        ,     0.        ,     0.        ],
+         [    0.        ,     0.        ,     0.        ],
+         [   40.16490879,   321.71856556,    80.12815294],
+         [   95.14336873,   876.49252839,   703.47605855],
+         [  118.4587024 ,   939.81646535,  1042.34480815],
+         [  105.36645492,   909.11265773,   851.32459694],
+         [   61.91187639,   647.35889938,   257.42691896],
+         [    0.        ,     0.        ,     0.        ],
+         [    0.        ,     0.        ,     0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
-    out = clearsky.ineichen(times, tus, linke_turbidity=3)
+    out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude,
+                            altitude=tus.altitude,
+                            linke_turbidity=3)
     assert_frame_equal(expected, out)
 
 
 def test_ineichen_solpos():
-    clearsky.ineichen(times, tus, linke_turbidity=3,
+    clearsky.ineichen(times_localized, tus.latitude, tus.longitude,
+                      linke_turbidity=3,
                       solarposition_method='ephemeris')
 
 
 def test_ineichen_airmass():
-    expected = pd.DataFrame(np.array([[0.,0.,0.],
-                                      [0.,0.,0.],
-                                      [41.70761136,293.72203458,78.22953786],
-                                      [95.20590465,876.1650047,703.31872722],
-                                      [118.46089555,939.8078753,1042.33896321],
-                                      [105.39577655,908.97804342,851.24640259],
-                                      [62.35382269,642.91022293,256.55363539],
-                                      [0.,0.,0.],
-                                      [0.,0.,0.]]),
+    expected = pd.DataFrame(
+        np.array([[    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ],
+                  [   53.90422388,   257.01655613,    85.87406435],
+                  [  101.34055688,   842.92925705,   686.39337307],
+                  [  117.7573735 ,   909.70367947,  1012.04184961],
+                  [  108.6233401 ,   877.30589626,   828.49118038],
+                  [   75.23108133,   602.06895546,   257.10961202],
+                  [    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times_localized)
-    out = clearsky.ineichen(times, tus, linke_turbidity=3,
+    out = clearsky.ineichen(times_localized, tus.latitude, tus.longitude,
+                            linke_turbidity=3,
                             airmass_model='simple')
     assert_frame_equal(expected, out)
 
 
+@requires_scipy
 def test_lookup_linke_turbidity():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz=tus.tz)
@@ -87,6 +97,7 @@ def test_lookup_linke_turbidity():
     assert_series_equal(expected, out)
 
 
+@requires_scipy
 def test_lookup_linke_turbidity_nointerp():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz=tus.tz)
@@ -97,6 +108,7 @@ def test_lookup_linke_turbidity_nointerp():
     assert_series_equal(expected, out)
 
 
+@requires_scipy
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
                           freq='1M', tz=tus.tz)
@@ -107,6 +119,7 @@ def test_lookup_linke_turbidity_months():
     assert_series_equal(expected, out)
 
 
+@requires_scipy
 def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
                           freq='1M', tz=tus.tz)

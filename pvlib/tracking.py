@@ -7,6 +7,157 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind
+from pvlib.pvsystem import PVSystem
+from pvlib.location import Location
+from pvlib import irradiance, atmosphere
+
+# should this live next to PVSystem? Is this even a good idea?
+# possibly should inherit from an abstract base class Tracker
+# All children would define their own ``track`` method
+class SingleAxisTracker(PVSystem):
+    """
+    Inherits all of the PV modeling methods from PVSystem.
+    """
+
+    def __init__(self, axis_tilt=0, axis_azimuth=0,
+                 max_angle=90, backtrack=True, gcr=2.0/7.0, **kwargs):
+        
+        self.axis_tilt = axis_tilt
+        self.axis_azimuth = axis_azimuth
+        self.max_angle = max_angle
+        self.backtrack = backtrack
+        self.gcr = gcr
+        
+        super(SingleAxisTracker, self).__init__(**kwargs)
+
+
+    def singleaxis(self, apparent_zenith, apparent_azimuth):
+        tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
+                                   self.axis_tilt, self.axis_azimuth,
+                                   self.max_angle,
+                                   self.backtrack, self.gcr)
+        
+        return tracking_data
+
+
+    def localize(self, location=None, latitude=None, longitude=None,
+                 **kwargs):
+        """Creates a :py:class:`LocalizedSingleAxisTracker`
+        object using this object and location data.
+        Must supply either location object or
+        latitude, longitude, and any location kwargs
+        
+        Parameters
+        ----------
+        location : None or Location
+        latitude : None or float
+        longitude : None or float
+        **kwargs : see Location
+        
+        Returns
+        -------
+        localized_system : LocalizedSingleAxisTracker
+        """
+
+        if location is None:
+            location = Location(latitude, longitude, **kwargs)
+
+        return LocalizedSingleAxisTracker(pvsystem=self, location=location)
+
+
+    def get_irradiance(self, dni, ghi, dhi,
+                       dni_extra=None, airmass=None, model='haydavies',
+                       **kwargs):
+        """
+        Uses the :func:`irradiance.total_irrad` function to calculate
+        the plane of array irradiance components on a tilted surface
+        defined by 
+        ``self.surface_tilt``, ``self.surface_azimuth``, and
+        ``self.albedo``.
+        
+        Parameters
+        ----------
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+        dni : float or Series
+            Direct Normal Irradiance
+        ghi : float or Series
+            Global horizontal irradiance
+        dhi : float or Series
+            Diffuse horizontal irradiance
+        dni_extra : float or Series
+            Extraterrestrial direct normal irradiance
+        airmass : float or Series
+            Airmass
+        model : String
+            Irradiance model.
+        
+        **kwargs
+            Passed to :func:`irradiance.total_irrad`.
+        
+        Returns
+        -------
+        poa_irradiance : DataFrame
+            Column names are: ``total, beam, sky, ground``.
+        """
+
+        surface_tilt = kwargs.pop('surface_tilt', self.surface_tilt)
+        surface_azimuth = kwargs.pop('surface_azimuth', self.surface_azimuth)
+        
+        try:
+            solar_zenith = kwargs['solar_zenith']
+        except KeyError:
+            solar_zenith = self.solar_zenith
+        
+        try:
+            solar_azimuth = kwargs['solar_azimuth']
+        except KeyError:
+            solar_azimuth = self.solar_azimuth
+
+        # not needed for all models, but this is easier
+        if dni_extra is None:
+            dni_extra = irradiance.extraradiation(solar_zenith.index)
+            dni_extra = pd.Series(dni_extra, index=solar_zenith.index)
+
+        if airmass is None:
+            airmass = atmosphere.relativeairmass(solar_zenith)
+
+        return irradiance.total_irrad(surface_tilt,
+                                      surface_azimuth,
+                                      solar_zenith,
+                                      solar_azimuth,
+                                      dni, ghi, dhi,
+                                      dni_extra=dni_extra, airmass=airmass,
+                                      model=model,
+                                      albedo=self.albedo,
+                                      **kwargs)
+
+
+class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
+    """Highly experimental."""
+
+    def __init__(self, pvsystem=None, location=None, **kwargs):
+
+        # get and combine attributes from the pvsystem and/or location
+        # with the rest of the kwargs
+
+        if pvsystem is not None:
+            pv_dict = pvsystem.__dict__
+        else:
+            pv_dict = {}
+
+        if location is not None:
+            loc_dict = location.__dict__
+        else:
+            loc_dict = {}
+
+        new_kwargs = dict(list(pv_dict.items()) +
+                          list(loc_dict.items()) +
+                          list(kwargs.items()))
+
+        super(LocalizedSingleAxisTracker, self).__init__(**new_kwargs)
 
 
 def singleaxis(apparent_zenith, apparent_azimuth, 

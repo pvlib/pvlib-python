@@ -1,7 +1,7 @@
 Modules
 =======
 
-atmosphere module
+atmosphere
 -----------------
 
 .. automodule:: pvlib.atmosphere
@@ -9,7 +9,7 @@ atmosphere module
     :undoc-members:
     :show-inheritance:
 
-clearsky module
+clearsky
 ----------------
 
 .. automodule:: pvlib.clearsky
@@ -17,6 +17,7 @@ clearsky module
     :undoc-members:
     :show-inheritance:
 
+<<<<<<< HEAD:docs/sphinx/source/pvlib.rst
 forecast module
 ----------------
 
@@ -26,6 +27,9 @@ forecast module
     :show-inheritance:
 
 irradiance module
+=======
+irradiance
+>>>>>>> pvlib/master:docs/sphinx/source/modules.rst
 -----------------
 
 .. automodule:: pvlib.irradiance
@@ -33,7 +37,7 @@ irradiance module
     :undoc-members:
     :show-inheritance:
 
-location module
+location
 ---------------
 
 .. automodule:: pvlib.location
@@ -41,7 +45,15 @@ location module
     :undoc-members:
     :show-inheritance:
 
-pvsystem module
+modelchain
+----------
+
+.. automodule:: pvlib.modelchain
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pvsystem
 ---------------
 
 .. automodule:: pvlib.pvsystem
@@ -49,15 +61,20 @@ pvsystem module
     :undoc-members:
     :show-inheritance:
 
-solarposition module
+solarposition
 --------------------
 
 .. automodule:: pvlib.solarposition
     :members:
     :undoc-members:
     :show-inheritance:
+<<<<<<< HEAD:docs/sphinx/source/pvlib.rst
 
 tmy module
+=======
+    
+tmy
+>>>>>>> pvlib/master:docs/sphinx/source/modules.rst
 --------------------
 
 .. automodule:: pvlib.tmy
@@ -65,7 +82,7 @@ tmy module
     :undoc-members:
     :show-inheritance:
 
-tracking module
+tracking
 --------------------
 
 .. automodule:: pvlib.tracking
@@ -73,7 +90,7 @@ tracking module
     :undoc-members:
     :show-inheritance:
 
-tools module
+tools
 --------------------
 
 .. automodule:: pvlib.tools

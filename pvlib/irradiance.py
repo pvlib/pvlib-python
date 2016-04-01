@@ -316,11 +316,11 @@ def beam_component(surface_tilt, surface_azimuth,
 
 # ToDo: how to best structure this function? wholmgren 2014-11-03
 def total_irrad(surface_tilt, surface_azimuth,
-                solar_zenith, solar_azimuth,
+                apparent_zenith, azimuth,
                 dni, ghi, dhi, dni_extra=None, airmass=None,
                 albedo=.25, surface_type=None,
                 model='isotropic',
-                model_perez='allsitescomposite1990'):
+                model_perez='allsitescomposite1990', **kwargs):
     '''
     Determine diffuse irradiance from the sky on a
     tilted surface.
@@ -360,7 +360,8 @@ def total_irrad(surface_tilt, surface_azimuth,
 
     Returns
     -------
-    DataFrame with columns ``'total', 'beam', 'sky', 'ground'``.
+    DataFrame with columns ``'poa_global', 'poa_direct',
+    'poa_sky_diffuse', 'poa_ground_diffuse'``.
 
     References
     ----------
@@ -370,6 +371,9 @@ def total_irrad(surface_tilt, surface_azimuth,
     '''
 
     pvl_logger.debug('planeofarray.total_irrad()')
+
+    solar_zenith = apparent_zenith
+    solar_azimuth = azimuth
 
     beam = beam_component(surface_tilt, surface_azimuth,
                           solar_zenith, solar_azimuth, dni)
@@ -397,12 +401,15 @@ def total_irrad(surface_tilt, surface_azimuth,
 
     ground = grounddiffuse(surface_tilt, ghi, albedo, surface_type)
 
-    total = beam + sky + ground
+    diffuse = sky + ground
+    total = beam + diffuse
 
-    all_irrad = pd.DataFrame({'total': total,
-                              'beam': beam,
-                              'sky': sky,
-                              'ground': ground})
+    all_irrad = pd.DataFrame()
+    all_irrad['poa_global'] = total
+    all_irrad['poa_direct'] = beam
+    all_irrad['poa_diffuse'] = diffuse
+    all_irrad['poa_sky_diffuse'] = sky
+    all_irrad['poa_ground_diffuse'] = ground
 
     return all_irrad
 

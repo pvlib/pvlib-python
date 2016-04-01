@@ -1,7 +1,7 @@
 .. _comparison_pvlib_matlab:
 
 ****************************
-Comparison with PVLIB_MATLAB
+Comparison with PVLIB MATLAB
 ****************************
 
 This document is under construction.
@@ -49,19 +49,13 @@ More specific changes
 * ``clearsky.ineichen`` supports interpolating monthly Linke Turbidities to daily resolution.
 * Instead of requiring effective irradiance as an input, ``pvsystem.sapm``
   calculates and returns it based on input POA irradiance, AM, and AOI.
+* pvlib-python does not come with as much example data.
+* pvlib-python does not currently implement as many algorithms as
+  PVLIB MATLAB.
 
 Documentation
 ~~~~~~~~~~~~~
 
-* Using readthedocs for documentation hosting.
-* Many typos and formatting errors corrected.
-* Documentation source code and tutorials live in ``/`` rather than ``/pvlib/docs``.
-* Additional tutorials in ``/docs/tutorials``.
-
-Testing
-~~~~~~~
-
-* Tests are cleaner and more thorough. They are still no where near complete.
-* Using Coveralls to measure test coverage. 
-* Using TravisCI for automated testing.
-* Using ``nosetests`` for more concise test code. 
+* Using Sphinx to build the documentation,
+  including dynamically created inline examples.
+* Additional Jupyter tutorials in ``/docs/tutorials``.

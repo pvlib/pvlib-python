@@ -31,9 +31,16 @@ install:
     - "python --version"
     - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
+<<<<<<< HEAD
     # install dependencies, then pvlib
     - "conda config --add channels http://conda.anaconda.org/conda-forge"
     - "conda install --yes --quiet pip numpy scipy pandas nose pytz ephem numba siphon"
+=======
+    # install depenencies
+    - "conda install --yes --quiet pip numpy scipy=0.16.0 pandas nose pytz ephem numba"
+
+    # install pvlib
+>>>>>>> pvlib/master
     - "python setup.py install"
 
 build: false

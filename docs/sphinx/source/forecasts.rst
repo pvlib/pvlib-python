@@ -363,14 +363,13 @@ for details.
     fx_data = fx_model.get_processed_data(latitude, longitude, start, end)
 
     # use a ModelChain object to calculate modeling intermediates
-    mc = ModelChain(system, fx_model.location,
-                    orientation_strategy='south_at_latitude_tilt')
+    mc = ModelChain(system, fx_model.location)
 
     # extract relevant data for model chain
     irradiance = fx_data[['ghi', 'dni', 'dhi']]
     weather = fx_data[['wind_speed', 'temperature']].rename(
         columns={'temperature':'temp_air'})
-    mc.run_model(fx_data.index, irradiance=irradiance, weather=weather)
+    mc.run_model(fx_data.index, irradiance=irradiance, weather=weather);
 
 Now we plot a couple of modeling intermediates and the forecast power.
 Here's the forecast plane of array irradiance...
@@ -379,7 +378,7 @@ Here's the forecast plane of array irradiance...
 
     mc.total_irrad.plot();
     @savefig poa_irrad.png width=6in
-    plt.ylabel('Plane of array irradiance ($W/m**2$)')
+    plt.ylabel('Plane of array irradiance ($W/m**2$)');
 
 ...the cell and module temperature...
 
@@ -387,7 +386,7 @@ Here's the forecast plane of array irradiance...
 
     mc.temps.plot();
     @savefig pv_temps.png width=6in
-    plt.ylabel('Temperature (C)')
+    plt.ylabel('Temperature (C)');
 
 ...and finally AC power...
 
@@ -396,5 +395,5 @@ Here's the forecast plane of array irradiance...
     mc.ac.plot();
     plt.ylim(0, None);
     @savefig ac_power.png width=6in
-    plt.ylabel('AC Power (W)')
+    plt.ylabel('AC Power (W)');
 

@@ -93,10 +93,63 @@ from Unidata.
     model = GFS()
 
     # retrieve data. returns pandas.DataFrame object
-    data = model.get_query_data(latitude, longitude, start, end)
+    raw_data = model.get_data(latitude, longitude, start, end)
+
+    print(raw_data.head())
+
+The column names are long, temperature is in Kelvin, the wind speed is
+broken into east/west and north/south components, and most importantly, the
+irradiance data is missing. We can use a number of methods to fix this.
+
+.. ipython:: python
+
+    data = raw_data
+
+    # rename the columns according the key/value pairs in model.variables.
+    data = model.rename(data)
+
+    # convert temperature
+    data['temperature'] = model.kelvin_to_celsius(data['temperature'])
+
+    # convert wind
+    data['wind_speed'] = model.uv_to_speed(data)
+
+    # uses Location.get_solarposition and irradiance.liujordan
+    # this step is discussed in more detail in the next section
+    irrad_data = model.cloud_cover_to_irradiance(data['total_clouds'])
+    data = data.join(irrad_data, how='outer')
+
+    # keep only the final data
+    data = data.ix[:, model.output_variables]
 
     print(data.head())
 
+Much better.
+
+The GFS class's
+:py:func:`~pvlib.forecast.GFS.process_data` method combines these steps
+in a single function. In fact, each forecast model class
+implements its own ``process_data`` method since the data from each
+weather model is slightly different. The ``process_data`` functions are
+designed to be explicit about how the data is being processed, and users
+are **strongly** encouraged to read the source code of these methods.
+
+.. ipython:: python
+
+    data = model.process_data(raw_data)
+
+    print(data.head())
+
+The forecast model classes also implement a
+:py:func:`~pvlib.forecast.ForecastModel.get_processed_data` method that
+combines the :py:func:`~pvlib.forecast.ForecastModel.get_data` and
+:py:func:`~pvlib.forecast.ForecastModel.process_data` calls.
+
+.. ipython:: python
+
+    data = model.get_processed_data(latitude, longitude, start, end)
+
+    print(data.head())
 
 Finally, we plot the GFS cloud cover data.
 
@@ -206,7 +259,7 @@ The HRRR model covers the continental United States.
 .. ipython:: python
 
     model = HRRR()
-    data = model.get_query_data(latitude, longitude, start, end)
+    data = model.get_processed_data(latitude, longitude, start, end)
 
     data[irrad_vars].plot();
     plt.ylabel('Irradiance ($W/m^2$)');
@@ -231,7 +284,7 @@ The RAP model covers most of North America.
 .. ipython:: python
 
     model = RAP()
-    data = model.get_query_data(latitude, longitude, start, end)
+    data = model.get_processed_data(latitude, longitude, start, end)
 
     data[irrad_vars].plot();
     plt.ylabel('Irradiance ($W/m^2$)');
@@ -252,7 +305,7 @@ The NAM model covers North America.
 .. ipython:: python
 
     model = NAM()
-    data = model.get_query_data(latitude, longitude, start, end)
+    data = model.get_processed_data(latitude, longitude, start, end)
 
     data[irrad_vars].plot();
     plt.ylabel('Irradiance ($W/m^2$)');
@@ -274,7 +327,7 @@ The NDFD is available for the United States.
 .. ipython:: python
 
     model = NDFD()
-    data = model.get_query_data(latitude, longitude, start, end)
+    data = model.get_processed_data(latitude, longitude, start, end)
 
     data[irrad_vars].plot();
     plt.ylabel('Irradiance ($W/m^2$)');
@@ -294,75 +347,53 @@ for details.
 
 .. ipython:: python
 
-    from pvlib.location import Location
-    from pvlib import pvsystem, irradiance, atmosphere
+    from pvlib.pvsystem import PVSystem, retrieve_sam
+    from pvlib.modelchain import ModelChain
 
-    surface_tilt = 30
-    surface_azimuth = 180
-    albedo = 0.2
-
-    sandia_modules = pvsystem.retrieve_sam(name='SandiaMod')
-    sapm_inverters = pvsystem.retrieve_sam('sandiainverter')
+    sandia_modules = retrieve_sam(name='SandiaMod')
+    sapm_inverters = retrieve_sam('sandiainverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
     inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
-    model = GFS()
-    forecast_data = model.get_query_data(latitude, longitude, start, end)
+    system = PVSystem(module_parameters=module,
+                      inverter_parameters=inverter)
 
+    # fx is a common abbreviation for forecast
+    fx_model = GFS()
+    fx_data = fx_model.get_processed_data(latitude, longitude, start, end)
 
-Now we need to calculate some PV modeling intermediates...
+    # use a ModelChain object to calculate modeling intermediates
+    mc = ModelChain(system, fx_model.location,
+                    orientation_strategy='south_at_latitude_tilt')
+
+    # extract relevant data for model chain
+    irradiance = fx_data[['ghi', 'dni', 'dhi']]
+    weather = fx_data[['wind_speed', 'temperature']].rename(
+        columns={'temperature':'temp_air'})
+    mc.run_model(fx_data.index, irradiance=irradiance, weather=weather)
+
+Now we plot a couple of modeling intermediates and the forecast power.
+Here's the forecast plane of array irradiance...
 
 .. ipython:: python
 
-    time = forecast_data.index
-
-    solpos = model.location.get_solarposition(time)
-
-    dni_extra = irradiance.extraradiation(time)
-    dni_extra = pd.Series(dni_extra, index=time)
-
-    airmass = atmosphere.relativeairmass(solpos['apparent_zenith'])
-
-    poa_sky_diffuse = irradiance.haydavies(
-        surface_tilt, surface_azimuth, forecast_data['dhi'],
-        forecast_data['dni'], dni_extra, solpos['apparent_zenith'],
-        solpos['azimuth'])
-
-    poa_ground_diffuse = irradiance.grounddiffuse(
-        surface_tilt, forecast_data['ghi'], albedo=albedo)
-
-    aoi = irradiance.aoi(surface_tilt, surface_azimuth,
-                         solpos['apparent_zenith'], solpos['azimuth'])
-
-    # forecast plane of array irradiance
-    poa_irrad = irradiance.globalinplane(
-        aoi, forecast_data['dni'], poa_sky_diffuse, poa_ground_diffuse)
-
-    poa_irrad.plot();
+    mc.total_irrad.plot();
     @savefig poa_irrad.png width=6in
     plt.ylabel('Plane of array irradiance ($W/m**2$)')
 
-    # forecast module and cell temperatures,
-    # accounting for irrad, wind, and ambient temp
-    pvtemps = pvsystem.sapm_celltemp(poa_irrad['poa_global'],
-                                     forecast_data['wind_speed'],
-                                     forecast_data['temperature'])
-
-    pvtemps.plot();
-    @savefig pv_temps.png width=6in
-    plt.ylabel('Temperature (C)')
-
-
-Finally, we can calculate DC and AC power.
+...the cell and module temperature...
 
 .. ipython:: python
 
-    dc = pvsystem.sapm(module, poa_irrad['poa_direct'], poa_irrad['poa_diffuse'],
-                       pvtemps['temp_cell'], airmass, aoi)
+    mc.temps.plot();
+    @savefig pv_temps.png width=6in
+    plt.ylabel('Temperature (C)')
 
-    ac = pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
+...and finally AC power...
 
-    ac.plot();
+.. ipython:: python
+
+    mc.ac.plot();
     plt.ylim(0, None);
     @savefig ac_power.png width=6in
     plt.ylabel('AC Power (W)')

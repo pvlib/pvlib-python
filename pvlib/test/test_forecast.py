@@ -18,7 +18,6 @@ if has_siphon:
     from xml.etree.ElementTree import ParseError
 
     from pvlib.forecast import GFS, HRRR_ESRL, HRRR, NAM, NDFD, RAP
-    import pvlib.solarposition as solarposition
     from pvlib.location import Location
 
     # setup times and location to be tested. Tucson, AZ
@@ -54,7 +53,7 @@ def test_data_query():
         yield run_query, model
 
 def run_query(model):
-    data = model.get_query_data(_latitude, _longitude, _start, _end)
+    model.data = model.get_processed_data(_latitude, _longitude, _start, _end)
 
 @requires_siphon
 def test_dataframe_variables():
@@ -62,8 +61,8 @@ def test_dataframe_variables():
         yield run_variables, amodel
 
 def run_variables(amodel):
-    for variable in _variables:
-        assert variable in amodel.data.columns
+#     for variable in _variables:
+#         assert variable in amodel.data.columns
     for variable in _nonnan_variables:
         assert not amodel.data[variable].isnull().values.any()
 
@@ -71,25 +70,24 @@ def run_variables(amodel):
 def test_vert_level():
     amodel = _working_models[0]
     vert_level = 5000
-    data = amodel.get_query_data(_latitude, _longitude, _start, _end,
-                                 vert_level=vert_level)
+    data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
+                                     vert_level=vert_level)
 
 @requires_siphon
 def test_datetime():
     amodel = _working_models[0]
     start = datetime.now()
     end = start + timedelta(days=1)
-    data = amodel.get_query_data(_latitude, _longitude , start, end)
+    data = amodel.get_processed_data(_latitude, _longitude , start, end)
 
 @requires_siphon
-@raises(KeyError)
 def test_queryvariables():
     amodel = _working_models[0]
     old_variables = amodel.variables
-    new_variables = {'u':'u-component_of_wind_height_above_ground'}
-    data = amodel.get_query_data(_latitude, _longitude, _start, _end,
-                                 variables=new_variables)
-    amodel.variables = old_variables
+    new_variables = ['u-component_of_wind_height_above_ground']
+    data = amodel.get_data(_latitude, _longitude, _start, _end,
+                           query_variables=new_variables)
+    data['u-component_of_wind_height_above_ground']
 
 @requires_siphon
 def test_latest():
@@ -102,11 +100,10 @@ def test_full():
 @requires_siphon
 def test_temp_convert():
     amodel = _working_models[0]
-    amodel.queryvariables = ['Temperature_surface']
-    amodel.data = pd.DataFrame({'temperature':[273.15]})
-    amodel.convert_temperature()
+    data = pd.DataFrame({'temperature': [273.15]})
+    data['temperature'] = amodel.kelvin_to_celsius(data['temperature'])
 
-    assert amodel.data['temperature'].values == 0.0
+    assert data['temperature'].values == 0.0
 
 # @requires_siphon
 # def test_bounding_box():

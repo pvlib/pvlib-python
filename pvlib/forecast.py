@@ -10,14 +10,13 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.tools import localize_to_utc
 from pvlib.irradiance import liujordan
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
 
 class ForecastModel(object):
-    '''
+    """
     An object for querying and holding forecast model information for
     use within the pvlib library.
 
@@ -40,8 +39,6 @@ class ForecastModel(object):
         The top level server address
     catalog_url : string
         The url path of the catalog to parse.
-    columns: list
-        List of headers used to create the data DataFrame.
     data: pd.DataFrame
         Data returned from the query.
     data_format: string
@@ -53,7 +50,8 @@ class ForecastModel(object):
     datasets_list: list
         List of all available datasets.
     fm_models: Dataset
-        Object containing all available foreast models.
+        TDSCatalog object containing all available
+        forecast models from UNIDATA.
     fm_models_list: list
         List of all available forecast models from UNIDATA.
     latitude: list
@@ -78,43 +76,35 @@ class ForecastModel(object):
         NCSS object used to complete the forecast data retrival.
     queryvariables: list
         Variables that are used to query the THREDDS Data Server.
-    rad_type: dictionary
-        Dictionary labeling the method used for calculating radiation values.
-    solar_position: DataFrame
-        Solar position for the forecast times.
-    time: datetime
-        Time range specified for the NCSS query.
-    utctime: DatetimeIndex
-        Time range in UTC.
-    var_stdnames: dictionary
-        Dictionary containing the standard names of the variables in the
-        query, where the keys are the common names.
-    var_units: dictionary
-        Dictionary containing the unites of the variables in the query,
-        where the keys are the common names.
-    variables: dictionary
-        Dictionary that translates model specific variables to
-        common named variables.
+    time: DatetimeIndex
+        Time range.
+    variables: dict
+        Defines the variables to obtain from the weather
+        model and how they should be renamed to common variable names.
+    units: dict
+        Dictionary containing the units of the standard variables
+        and the model specific variables.
     vert_level: float or integer
         Vertical altitude for query data.
-    wind_type: string
-        Quantity that was used to calculate wind_speed.
-    '''
+    """
 
     access_url_key = 'NetcdfSubset'
     catalog_url = 'http://thredds.ucar.edu/thredds/catalog.xml'
     base_tds_url = catalog_url.split('/thredds/')[0]
     data_format = 'netcdf'
     vert_level = 100000
-    columns = ['temperature',
-               'wind_speed',
-               'total_clouds',
-               'low_clouds',
-               'mid_clouds',
-               'high_clouds',
-               'dni',
-               'dhi',
-               'ghi', ]
+
+    units = {
+        'temperature': 'C',
+        'wind_speed': 'm/s',
+        'ghi': 'W/m^2',
+        'ghi_raw': 'W/m^2',
+        'dni': 'W/m^2',
+        'dhi': 'W/m^2',
+        'total_clouds': '%',
+        'low_clouds': '%',
+        'mid_clouds': '%',
+        'high_clouds': '%'}
 
     def __init__(self, model_type, model_name, set_type):
         self.model_type = model_type
@@ -193,9 +183,10 @@ class ForecastModel(object):
         else:
             self.location = Location(self.latitude, self.longitude, tz=tzinfo)
 
-    def get_query_data(self, latitude, longitude, start, end,
-                       vert_level=None, variables=None):
-        '''
+    def get_data(self, latitude, longitude, start, end,
+                 vert_level=None, query_variables=None,
+                 close_netcdf_data=True):
+        """
         Submits a query to the UNIDATA servers using Siphon NCSS and
         converts the netcdf data to a pandas DataFrame.
 
@@ -211,43 +202,121 @@ class ForecastModel(object):
             The end time.
         vert_level: None, float or integer
             Vertical altitude of interest.
-        variables: None or dict
-            Variables and common names being queried.
+        variables: None or list
             If None, uses self.variables.
+        close_netcdf_data: bool
+            Controls if the temporary netcdf data file should be closed.
+            Set to False to access the raw data.
 
         Returns
         -------
         forecast_data : DataFrame
-            Contains columns: 'temperature', 'wind_speed', 'total_clouds',
-            'low_clouds', 'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi'.
-        '''
-
+            column names are the weather model's variable names.
+        """
         if vert_level is not None:
             self.vert_level = vert_level
 
-        if variables is not None:
-            self.variables = variables
-            self.modelvariables = list(self.variables.keys())
-            self.queryvariables = [self.variables[key] for key in
-                                   self.modelvariables]
-            self.columns = self.modelvariables
-            self.dataframe_variables = self.modelvariables
+        if query_variables is None:
+            self.query_variables = list(self.variables.values())
+        else:
+            self.query_variables = query_variables
 
         self.latitude = latitude
         self.longitude = longitude
         self.set_query_latlon()  # modifies self.query
         self.set_location(start)
 
-        self.start = localize_to_utc(start, self.location)
-        self.end = localize_to_utc(end, self.location)
+        self.start = start
+        self.end = end
         self.query.time_range(self.start, self.end)
 
         self.query.vertical_level(self.vert_level)
-        self.query.variables(*self.queryvariables)
+        self.query.variables(*self.query_variables)
         self.query.accept(self.data_format)
 
-        netcdf_data = self.ncss.get_data(self.query)
+        self.netcdf_data = self.ncss.get_data(self.query)
 
+        # might be better to go to xarray here so that we can handle
+        # higher dimensional data for more advanced applications
+        self.data = self._netcdf2pandas(self.netcdf_data, self.query_variables)
+
+        if close_netcdf_data:
+            self.netcdf_data.close()
+
+        return self.data
+
+    def process_data(self, data, **kwargs):
+        """
+        Defines the steps needed to convert raw forecast data
+        into processed forecast data. Most forecast models implement
+        their own version of this method which also call this one.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Raw forecast data
+
+        Returns
+        -------
+        data: DataFrame
+            Processed forecast data.
+        """
+        data = self.rename(data)
+        return data
+
+    def get_processed_data(self, *args, **kwargs):
+        """
+        Get and process forecast data.
+
+        Parameters
+        ----------
+        *args: positional arguments
+            Passed to get_data
+        **kwargs: keyword arguments
+            Passed to get_data and process_data
+
+        Returns
+        -------
+        data: DataFrame
+            Processed forecast data
+        """
+        return self.process_data(self.get_data(*args, **kwargs), **kwargs)
+
+    def rename(self, data, variables=None):
+        """
+        Renames the columns according the variable mapping.
+
+        Parameters
+        ----------
+        data: DataFrame
+        variables: None or dict
+            If None, uses self.variables
+
+        Returns
+        -------
+        data: DataFrame
+            Renamed data.
+        """
+        if variables is None:
+            variables = self.variables
+        return data.rename(columns={y: x for x, y in variables.items()})
+
+    def _netcdf2pandas(self, netcdf_data, query_variables):
+        """
+        Transforms data from netcdf to pandas DataFrame.
+
+        Parameters
+        ----------
+        data: netcdf
+            Data returned from UNIDATA NCSS query.
+        query_variables: list
+            The variables requested.
+
+        Returns
+        -------
+        pd.DataFrame
+        """
+        # set self.time
         try:
             time_var = 'time'
             self.set_time(netcdf_data.variables[time_var])
@@ -256,47 +325,10 @@ class ForecastModel(object):
             time_var = 'time1'
             self.set_time(netcdf_data.variables[time_var])
 
-        self.data = self.netcdf2pandas(netcdf_data)
+        data_dict = {key: data[:].squeeze() for key, data in
+                     netcdf_data.variables.items() if key in query_variables}
 
-        self.set_variable_units(netcdf_data)
-        self.set_variable_stdnames(netcdf_data)
-
-        if self.__class__.__name__ == 'HRRR':
-            self.calc_temperature(netcdf_data)
-        self.convert_temperature()
-        self.calc_wind(netcdf_data)
-        self.calc_radiation(netcdf_data)
-
-        self.data = self.data.tz_convert(self.location.tz)
-
-        netcdf_data.close()
-
-        return self.data
-
-    def netcdf2pandas(self, data):
-        '''
-        Transforms data from netcdf to pandas DataFrame.
-
-        Currently only supports one-dimensional netcdf data.
-
-        Parameters
-        ----------
-        data: netcdf
-            Data returned from UNIDATA NCSS query.
-
-        Returns
-        -------
-        pd.DataFrame
-        '''
-        if not self.lbox:
-            ''' one-dimensional data '''
-            data_dict = {}
-            for var in self.dataframe_variables:
-                data_dict[var] = pd.Series(
-                    data[self.variables[var]][:].squeeze(), index=self.utctime)
-            return pd.DataFrame(data_dict, columns=self.columns)
-        else:
-            return pd.DataFrame(columns=self.columns, index=self.utctime)
+        return pd.DataFrame(data_dict, index=self.time)
 
     def set_time(self, time):
         '''
@@ -312,143 +344,109 @@ class ForecastModel(object):
         pandas.DatetimeIndex
         '''
         times = num2date(time[:].squeeze(), time.units)
-        self.time = pd.DatetimeIndex(pd.Series(times), tz='UTC')
-        self.time = self.time.tz_convert(self.location.tz)
-        self.utctime = localize_to_utc(self.time, self.location.tz)
+        self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
 
-    def set_variable_units(self, data):
-        '''
-        Extracts variable unit information from netcdf data.
-
+    def cloud_cover_to_irradiance(self, cloud_cover):
+        """
         Parameters
         ----------
-        data: netcdf
-            Contains queried variable information.
+        cloud_cover: Series
 
-        '''
-        self.var_units = {}
-        for var in self.variables:
-            self.var_units[var] = data[self.variables[var]].units
-
-    def set_variable_stdnames(self, data):
-        '''
-        Extracts standard names from netcdf data.
-
-        Parameters
-        ----------
-        data: netcdf
-            Contains queried variable information.
-
-        '''
-        self.var_stdnames = {}
-        for var in self.variables:
-            try:
-                self.var_stdnames[var] = \
-                    data[self.variables[var]].standard_name
-            except AttributeError:
-                self.var_stdnames[var] = var
-
-    def calc_radiation(self, data, cloud_type='total_clouds'):
-        '''
-        Determines shortwave radiation values if they are missing from
-        the model data.
-
-        Parameters
-        ----------
-        data: netcdf
-            Query data formatted in netcdf format.
-        cloud_type: string
-            Type of cloud cover to use for calculating radiation values.
-        '''
-        self.rad_type = {}
+        Returns
+        -------
+        irradiance: DataFrame
+            keys include ghi, dni, dhi
+        """
+        # in principle, get_solarposition could use the forecast
+        # pressure, temp, etc., but the cloud cover forecast is not
+        # accurate enough to justify using these minor corrections
         self.solar_position = self.location.get_solarposition(self.time)
 
-        if self.model_name == 'HRRR_ESRL':
-            # HRRR_ESRL is the only model with the
-            # correct equation of time.
-            for rad in ['dni', 'dhi', 'ghi']:
-                self.data[rad] = pd.Series(
-                    data[self.variables[rad]][:].squeeze(),
-                    index=self.time)
-                self.rad_type[rad] = 'forecast'
-                self.data[rad].fillna(0, inplace=True)
-        else:
-            cloud_prct = self.data[cloud_type]
-            rads = ['dni', 'dhi', 'ghi']
-            for rad in rads:
-                self.rad_type[rad] = 'liujordan'
-            new_rads = liujordan(self.solar_position['apparent_zenith'],
-                                 cloud_prct)
-            new_rads = new_rads.fillna(0)
-            self.data = self.data.drop(rads, axis=1)
-            self.data = pd.concat([self.data, new_rads], axis=1)
+        rads = ['dni', 'dhi', 'ghi']
+        new_rads = liujordan(self.solar_position['apparent_zenith'],
+                             cloud_cover)
+        new_rads = new_rads.fillna(0)
 
-        for var in rads:
-            self.var_units[var] = '$W m^{-2}$'
+        return new_rads
 
-    def convert_temperature(self):
-        '''
+    def kelvin_to_celsius(self, temperature):
+        """
         Converts Kelvin to celsius.
-        '''
-
-        if ('Temperature_surface' in self.queryvariables or
-            'Temperature_isobaric' in self.queryvariables):
-
-            self.data['temperature'] -= 273.15
-            self.var_units['temperature'] = 'C'
-
-    def calc_temperature(self, data):
-        '''
-        Calculates temperature (in degrees C) from
-        isobaric temperature.
 
         Parameters
         ----------
-        data: netcdf
-            Query data in netcdf format.
-        '''
+        temperature: numeric
 
-        P = data['Pressure_surface'][:].squeeze() / 100.0
-        Tiso = data['Temperature_isobaric'][:].squeeze()
-        Td = data['Dewpoint_temperature_isobaric'][:].squeeze() - 273.15
+        Returns
+        -------
+        temperature: numeric
+        """
+        return temperature - 273.15
+
+    def isobaric_to_ambient_temperature(self, data):
+        """
+        Calculates temperature from isobaric temperature.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Must contain columns pressure, temperature_iso,
+            temperature_dew_iso. Input temperature in K.
+
+        Returns
+        -------
+        temperature : Series
+            Temperature in K
+        """
+
+        P = data['pressure'] / 100.0
+        Tiso = data['temperature_iso']
+        Td = data['temperature_dew_iso'] - 273.15
         e = 6.11 * 10**((7.5 * Td) / (Td + 273.3))
         w = 0.622 * (e / (P - e))
 
         T = Tiso - ((2.501 * 10.**6) / 1005.7) * w
 
-        self.data['temperature'] = T
+        return T
 
-    def calc_wind(self, data):
-        '''
-        Computes wind speed.
-
-        In some cases only gust wind speed is available. The wind_type
-        attribute will indicate the type of wind speed that is present.
+    def uv_to_speed(self, data):
+        """
+        Computes wind speed from wind components.
 
         Parameters
         ----------
-        data: netcdf
-            Query data in netcdf format.
-        '''
-        if not self.lbox:
-            if ('u-component_of_wind_isobaric' in self.queryvariables and
-                'v-component_of_wind_isobaric' in self.queryvariables):
+        data : DataFrame
+            Must contain the columns 'wind_speed_u' and 'wind_speed_v'.
 
-                wind_data = np.sqrt(
-                    data['u-component_of_wind_isobaric'][:].squeeze()**2 +
-                    data['v-component_of_wind_isobaric'][:].squeeze()**2)
-                self.wind_type = 'component'
-            elif 'Wind_speed_gust_surface' in self.queryvariables:
-                wind_data = data['Wind_speed_gust_surface'][:].squeeze()
-                self.wind_type = 'gust'
+        Returns
+        -------
+        wind_speed : Series
+        """
+        wind_speed = np.sqrt(data['wind_speed_u']**2 + data['wind_speed_v']**2)
 
-            if 'wind_speed' in self.data:
-                self.data['wind_speed'] = pd.Series(wind_data, index=self.time)
-                self.var_units['wind_speed'] = 'm/s'
+        return wind_speed
+
+    def gust_to_speed(self, data, scaling=1/1.4):
+        """
+        Computes standard wind speed from gust.
+        Very approximate and location dependent.
+
+        Parameters
+        ----------
+        data : DataFrame
+            Must contain the column 'wind_speed_gust'.
+
+        Returns
+        -------
+        wind_speed : Series
+        """
+        wind_speed = data['wind_speed_gust'] * scaling
+
+        return wind_speed
 
 
 class GFS(ForecastModel):
-    '''
+    """
     Subclass of the ForecastModel class representing GFS
     forecast model.
 
@@ -469,14 +467,13 @@ class GFS(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    modelvariables: list
-        Common variable names.
-    queryvariables: list
-        Names of default variables specific to the model.
-    variables: dictionary
-        Dictionary of common variables that reference the model
-        specific variables.
-    '''
+    variables: dict
+        Defines the variables to obtain from the weather
+        model and how they should be renamed to common variable names.
+    units: dict
+        Dictionary containing the units of the standard variables
+        and the model specific variables.
+    """
 
     _resolutions = ['Half', 'Quarter']
 
@@ -500,24 +497,48 @@ class GFS(ForecastModel):
             'high_clouds': 'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
             'boundary_clouds': 'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
             'convect_clouds': 'Total_cloud_cover_convective_cloud',
-            'ghi': 'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average', }
-        self.modelvariables = self.variables.keys()
-        self.queryvariables = [self.variables[key] for key in
-                               self.modelvariables]
-        self.dataframe_variables = [
+            'ghi_raw': 'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average', }
+
+        self.output_variables = [
             'temperature',
+            'wind_speed',
+            'ghi',
+            'dni',
+            'dhi',
             'total_clouds',
             'low_clouds',
             'mid_clouds',
-            'high_clouds',
-            'boundary_clouds',
-            'convect_clouds',
-            'ghi', ]
+            'high_clouds',]
+
         super(GFS, self).__init__(model_type, model, set_type)
+
+    def process_data(self, data, cloud_cover='total_clouds', **kwargs):
+        """
+        Defines the steps needed to convert raw forecast data
+        into processed forecast data.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Raw forecast data
+        cloud_cover: str
+            The type of cloud cover used to infer the irradiance.
+
+        Returns
+        -------
+        data: DataFrame
+            Processed forecast data.
+        """
+        data = super(GFS, self).process_data(data, **kwargs)
+        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['wind_speed'] = self.uv_to_speed(data)
+        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
+                         how='outer')
+        return data.ix[:, self.output_variables]
 
 
 class HRRR_ESRL(ForecastModel):
-    '''
+    """
     Subclass of the ForecastModel class representing
     NOAA/GSD/ESRL's HRRR forecast model.
     This is not an operational product.
@@ -538,14 +559,13 @@ class HRRR_ESRL(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    modelvariables: list
-        Common variable names.
-    queryvariables: list
-        Names of default variables specific to the model.
-    variables: dictionary
-        Dictionary of common variables that reference the model
-        specific variables.
-    '''
+    variables: dict
+        Defines the variables to obtain from the weather
+        model and how they should be renamed to common variable names.
+    units: dict
+        Dictionary containing the units of the standard variables
+        and the model specific variables.
+    """
 
     def __init__(self, set_type='best'):
         import warnings
@@ -553,6 +573,7 @@ class HRRR_ESRL(ForecastModel):
 
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
+
         self.variables = {
             'temperature': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
@@ -560,22 +581,50 @@ class HRRR_ESRL(ForecastModel):
             'low_clouds': 'Low_cloud_cover_UnknownLevelType-214',
             'mid_clouds': 'Medium_cloud_cover_UnknownLevelType-224',
             'high_clouds': 'High_cloud_cover_UnknownLevelType-234',
-            'ghi': 'Downward_short-wave_radiation_flux_surface', }
-        self.modelvariables = self.variables.keys()
-        self.queryvariables = [self.variables[key] for key in
-                               self.modelvariables]
-        self.dataframe_variables = [
+            'ghi_raw': 'Downward_short-wave_radiation_flux_surface', }
+
+        self.output_variables = [
             'temperature',
+            'wind_speed'
+            'ghi_raw',
+            'ghi',
+            'dni',
+            'dhi',
             'total_clouds',
             'low_clouds',
             'mid_clouds',
-            'high_clouds',
-            'ghi', ]
+            'high_clouds',]
+
         super(HRRR_ESRL, self).__init__(model_type, model, set_type)
+
+    def process_data(self, data, cloud_cover='total_clouds', **kwargs):
+        """
+        Defines the steps needed to convert raw forecast data
+        into processed forecast data.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Raw forecast data
+        cloud_cover: str
+            The type of cloud cover used to infer the irradiance.
+
+        Returns
+        -------
+        data: DataFrame
+            Processed forecast data.
+        """
+
+        data = super(HRRR_ESRL, self).process_data(data, **kwargs)
+        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['wind_speed'] = self.gust_to_speed(data)
+        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
+                         how='outer')
+        return data.ix[:, self.output_variables]
 
 
 class NAM(ForecastModel):
-    '''
+    """
     Subclass of the ForecastModel class representing NAM
     forecast model.
 
@@ -595,18 +644,18 @@ class NAM(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    modelvariables: list
-        Common variable names.
-    queryvariables: list
-        Names of default variables specific to the model.
-    variables: dictionary
-        Dictionary of common variables that reference the model
-        specific variables.
-    '''
+    variables: dict
+        Defines the variables to obtain from the weather
+        model and how they should be renamed to common variable names.
+    units: dict
+        Dictionary containing the units of the standard variables
+        and the model specific variables.
+    """
 
     def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'NAM CONUS 12km from CONDUIT'
+
         self.variables = {
             'temperature': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
@@ -614,22 +663,49 @@ class NAM(ForecastModel):
             'low_clouds': 'Low_cloud_cover_low_cloud',
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
             'high_clouds': 'High_cloud_cover_high_cloud',
-            'ghi': 'Downward_Short-Wave_Radiation_Flux_surface', }
-        self.modelvariables = self.variables.keys()
-        self.queryvariables = [self.variables[key] for key in
-                               self.modelvariables]
-        self.dataframe_variables = [
+            'ghi_raw': 'Downward_Short-Wave_Radiation_Flux_surface', }
+
+        self.output_variables = [
             'temperature',
+            'wind_speed',
+            'ghi',
+            'dni',
+            'dhi',
             'total_clouds',
             'low_clouds',
             'mid_clouds',
-            'high_clouds',
-            'ghi', ]
+            'high_clouds',]
+
         super(NAM, self).__init__(model_type, model, set_type)
+
+    def process_data(self, data, cloud_cover='total_clouds', **kwargs):
+        """
+        Defines the steps needed to convert raw forecast data
+        into processed forecast data.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Raw forecast data
+        cloud_cover: str
+            The type of cloud cover used to infer the irradiance.
+
+        Returns
+        -------
+        data: DataFrame
+            Processed forecast data.
+        """
+
+        data = super(NAM, self).process_data(data, **kwargs)
+        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['wind_speed'] = self.gust_to_speed(data)
+        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
+                         how='outer')
+        return data.ix[:, self.output_variables]
 
 
 class HRRR(ForecastModel):
-    '''
+    """
     Subclass of the ForecastModel class representing HRRR
     forecast model.
 
@@ -649,21 +725,21 @@ class HRRR(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    modelvariables: list
-        Common variable names.
-    queryvariables: list
-        Names of default variables specific to the model.
-    variables: dictionary
-        Dictionary of common variables that reference the model
-        specific variables.
-    '''
+    variables: dict
+        Defines the variables to obtain from the weather
+        model and how they should be renamed to common variable names.
+    units: dict
+        Dictionary containing the units of the standard variables
+        and the model specific variables.
+    """
 
     def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
         model = 'NCEP HRRR CONUS 2.5km'
+
         self.variables = {
-            'temperature_iso': 'Dewpoint_temperature_isobaric',
-            'temperature_dew_iso': 'Temperature_isobaric',
+            'temperature_dew_iso': 'Dewpoint_temperature_isobaric',
+            'temperature_iso': 'Temperature_isobaric',
             'pressure': 'Pressure_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere',
@@ -671,19 +747,49 @@ class HRRR(ForecastModel):
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
             'high_clouds': 'High_cloud_cover_high_cloud',
             'condensation_height': 'Geopotential_height_adiabatic_condensation_lifted'}
-        self.modelvariables = self.variables.keys()
-        self.queryvariables = [self.variables[key] for key in
-                               self.modelvariables]
-        self.dataframe_variables = [
+
+        self.output_variables = [
+            'temperature',
+            'wind_speed',
+            'ghi',
+            'dni',
+            'dhi',
             'total_clouds',
             'low_clouds',
             'mid_clouds',
             'high_clouds', ]
+
         super(HRRR, self).__init__(model_type, model, set_type)
+
+    def process_data(self, data, cloud_cover='total_clouds', **kwargs):
+        """
+        Defines the steps needed to convert raw forecast data
+        into processed forecast data.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Raw forecast data
+        cloud_cover: str
+            The type of cloud cover used to infer the irradiance.
+
+        Returns
+        -------
+        data: DataFrame
+            Processed forecast data.
+        """
+
+        data = super(HRRR, self).process_data(data, **kwargs)
+        data['temperature'] = self.isobaric_to_ambient_temperature(data)
+        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['wind_speed'] = self.gust_to_speed(data)
+        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
+                         how='outer')
+        return data.ix[:, self.output_variables]
 
 
 class NDFD(ForecastModel):
-    '''
+    """
     Subclass of the ForecastModel class representing NDFD forecast
     model.
 
@@ -702,14 +808,13 @@ class NDFD(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    modelvariables: list
-        Common variable names.
-    queryvariables: list
-        Names of default variables specific to the model.
-    variables: dictionary
-        Dictionary of common variables that reference the model
-        specific variables.
-    '''
+    variables: dict
+        Defines the variables to obtain from the weather
+        model and how they should be renamed to common variable names.
+    units: dict
+        Dictionary containing the units of the standard variables
+        and the model specific variables.
+    """
 
     def __init__(self, set_type='best'):
         model_type = 'Forecast Products and Analyses'
@@ -719,17 +824,41 @@ class NDFD(ForecastModel):
             'wind_speed': 'Wind_speed_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'total_clouds': 'Total_cloud_cover_surface', }
-        self.modelvariables = self.variables.keys()
-        self.queryvariables = [self.variables[key] for key in
-                               self.modelvariables]
-        self.dataframe_variables = [
+        self.output_variables = [
             'temperature',
+            'wind_speed',
+            'ghi',
+            'dni',
+            'dhi',
             'total_clouds', ]
         super(NDFD, self).__init__(model_type, model, set_type)
 
+    def process_data(self, data, **kwargs):
+        """
+        Defines the steps needed to convert raw forecast data
+        into processed forecast data.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Raw forecast data
+
+        Returns
+        -------
+        data: DataFrame
+            Processed forecast data.
+        """
+
+        cloud_cover = 'total_clouds'
+        data = super(NDFD, self).process_data(data, **kwargs)
+        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
+                         how='outer')
+        return data.ix[:, self.output_variables]
+
 
 class RAP(ForecastModel):
-    '''
+    """
     Subclass of the ForecastModel class representing RAP forecast model.
 
     Model data corresponds to Rapid Refresh CONUS 20km resolution
@@ -750,14 +879,13 @@ class RAP(ForecastModel):
         Name of the UNIDATA forecast model.
     model_type: string
         UNIDATA category in which the model is located.
-    modelvariables: list
-        Common variable names.
-    queryvariables: list
-        Names of default variables specific to the model.
-    variables: dictionary
-        Dictionary of common variables that reference the model
-        specific variables.
-    '''
+    variables: dict
+        Defines the variables to obtain from the weather
+        model and how they should be renamed to common variable names.
+    units: dict
+        Dictionary containing the units of the standard variables
+        and the model specific variables.
+    """
 
     _resolutions = ['20', '40']
 
@@ -776,13 +904,39 @@ class RAP(ForecastModel):
             'low_clouds': 'Low_cloud_cover_low_cloud',
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
             'high_clouds': 'High_cloud_cover_high_cloud', }
-        self.modelvariables = self.variables.keys()
-        self.queryvariables = [self.variables[key] for key in
-                               self.modelvariables]
-        self.dataframe_variables = [
+        self.output_variables = [
             'temperature',
+            'wind_speed',
+            'ghi',
+            'dni',
+            'dhi',
             'total_clouds',
             'low_clouds',
             'mid_clouds',
             'high_clouds', ]
         super(RAP, self).__init__(model_type, model, set_type)
+
+    def process_data(self, data, cloud_cover='total_clouds', **kwargs):
+        """
+        Defines the steps needed to convert raw forecast data
+        into processed forecast data.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Raw forecast data
+        cloud_cover: str
+            The type of cloud cover used to infer the irradiance.
+
+        Returns
+        -------
+        data: DataFrame
+            Processed forecast data.
+        """
+
+        data = super(RAP, self).process_data(data, **kwargs)
+        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['wind_speed'] = self.gust_to_speed(data)
+        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
+                         how='outer')
+        return data.ix[:, self.output_variables]

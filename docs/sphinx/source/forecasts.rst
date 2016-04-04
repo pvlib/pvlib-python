@@ -97,9 +97,12 @@ from Unidata.
 
     print(raw_data.head())
 
-The column names are long, temperature is in Kelvin, the wind speed is
-broken into east/west and north/south components, and most importantly, the
-irradiance data is missing. We can use a number of methods to fix this.
+It will be useful to process this data before using it with pvlib. For
+example, the column names are non-standard, the temperature is in
+Kelvin, the wind speed is broken into east/west and north/south
+components, and most importantly, most of the irradiance data is
+missing. The forecast module provides a number of methods to fix these
+problems.
 
 .. ipython:: python
 
@@ -111,9 +114,10 @@ irradiance data is missing. We can use a number of methods to fix this.
     # convert temperature
     data['temperature'] = model.kelvin_to_celsius(data['temperature'])
 
-    # convert wind
+    # convert wind components to wind speed
     data['wind_speed'] = model.uv_to_speed(data)
 
+    # calculate irradiance estimates from cloud cover.
     # uses Location.get_solarposition and irradiance.liujordan
     # this step is discussed in more detail in the next section
     irrad_data = model.cloud_cover_to_irradiance(data['total_clouds'])
@@ -140,6 +144,9 @@ are **strongly** encouraged to read the source code of these methods.
 
     print(data.head())
 
+Users can easily implement their own ``process_data`` methods on
+inherited classes or implement similar stand-alone functions.
+
 The forecast model classes also implement a
 :py:func:`~pvlib.forecast.ForecastModel.get_processed_data` method that
 combines the :py:func:`~pvlib.forecast.ForecastModel.get_data` and
@@ -151,7 +158,13 @@ combines the :py:func:`~pvlib.forecast.ForecastModel.get_data` and
 
     print(data.head())
 
-Finally, we plot the GFS cloud cover data.
+
+Cloud cover and radiation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+All of the weather models currently accessible by pvlib include one or
+more cloud cover forecasts. For example, below we plot the GFS cloud
+cover forecasts.
 
 .. ipython:: python
 
@@ -166,13 +179,9 @@ Finally, we plot the GFS cloud cover data.
     @savefig gfs_cloud_cover.png width=6in
     plt.legend();
 
-
-Cloud cover and radiation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Many of forecast models do not include radiation components in their
-output fields, or if they do the radiation fields suffer from poor solar
-position calculations or radiative transfer algorithms. It is often more
+However, many of forecast models do not include radiation components in
+their output fields, or if they do then the radiation fields suffer from
+poor solar position or radiative transfer algorithms. It is often more
 accurate to create empirically derived radiation forecasts from the
 weather models' cloud cover forecasts.
 

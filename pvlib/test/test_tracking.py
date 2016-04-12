@@ -107,7 +107,7 @@ def test_axis_tilt():
                                        max_angle=90, backtrack=True, 
                                        gcr=2.0/7.0)
     
-    expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 37.3427,
+    expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 142.65730,
                            'surface_tilt': 35.98741, 'tracker_theta': -20.88121},
                            index=[0], dtype=np.float64)
     
@@ -118,7 +118,7 @@ def test_axis_tilt():
                                        max_angle=90, backtrack=True, 
                                        gcr=2.0/7.0)
     
-    expect = pd.DataFrame({'aoi': 47.6632, 'surface_azimuth': 129.0303,
+    expect = pd.DataFrame({'aoi': 47.6632, 'surface_azimuth': 50.96969,
                            'surface_tilt': 42.5152, 'tracker_theta': 31.6655},
                            index=[0], dtype=np.float64)
     
@@ -188,11 +188,26 @@ def test_SingleAxisTracker_tracking():
 
     tracker_data = system.singleaxis(apparent_zenith, apparent_azimuth)
     
-    expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 37.3427,
+    expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 142.65730 ,
                            'surface_tilt': 35.98741, 'tracker_theta': -20.88121},
                            index=[0], dtype=np.float64)
     
     assert_frame_equal(expect, tracker_data)
+
+    ### results calculated using PVsyst
+    system.backtrack = False
+    system.max_angle = 60.
+    system.axis_tilt = 20.
+    system.axis_azimuth = 200.
+    apparent_azimuth = pd.Series([180+7.1609])
+    apparent_zenith = pd.Series([90-27.315])
+    tracker_data = system.singleaxis(apparent_zenith, apparent_azimuth)
+    expect = pd.DataFrame({'aoi': 41.07852 , 'surface_azimuth': 180-18.432 ,
+                           'surface_tilt': 24.92122 , 'tracker_theta': -15.18391},
+                           index=[0], dtype=np.float64)
+
+    assert_frame_equal(expect, tracker_data)
+
 
 
 def test_LocalizedSingleAxisTracker_creation():
@@ -254,7 +269,7 @@ def test_get_irradiance():
                                        surface_azimuth=tracker_data['surface_azimuth'])
     
     expected = pd.DataFrame(data=np.array(
-        [[ 142.71652464,   87.50125991,   55.21526473,   44.68768982,
+        [[ 961.80070,   815.94490,   145.85580,   135.32820,
           10.52757492],
        [          nan,           nan,           nan,           nan,
                   nan]]),

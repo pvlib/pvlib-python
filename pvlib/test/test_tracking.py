@@ -195,12 +195,16 @@ def test_SingleAxisTracker_tracking():
     assert_frame_equal(expect, tracker_data)
 
     ### results calculated using PVsyst
+    pvsyst_solar_azimuth = 7.1609
+    pvsyst_solar_height = 27.315
+    pvsyst_axis_tilt = 20.
+    pvsyst_axis_azimuth = 20.
     system.backtrack = False
     system.max_angle = 60.
-    system.axis_tilt = 20.
-    system.axis_azimuth = 200.
-    apparent_azimuth = pd.Series([180+7.1609])
-    apparent_zenith = pd.Series([90-27.315])
+    system.axis_tilt = pvsyst_axis_tilt
+    system.axis_azimuth = 180+pvsyst_axis_azimuth
+    apparent_azimuth = pd.Series([180+pvsyst_solar_azimuth]) # the definition of azimuth is different from PYsyst
+    apparent_zenith = pd.Series([90-pvsyst_solar_height])
     tracker_data = system.singleaxis(apparent_zenith, apparent_azimuth)
     expect = pd.DataFrame({'aoi': 41.07852 , 'surface_azimuth': 180-18.432 ,
                            'surface_tilt': 24.92122 , 'tracker_theta': -15.18391},

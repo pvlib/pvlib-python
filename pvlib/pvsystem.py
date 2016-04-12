@@ -1662,7 +1662,7 @@ def snlinverter(inverter, v_dc, p_dc):
 
     ac_power = (Paco/(A-B) - C*(A-B)) * (p_dc-B) + C*((p_dc-B)**2)
     ac_power[ac_power > Paco] = Paco
-    ac_power[ac_power < Pso] = - 1.0 * abs(Pnt)
+    ac_power[p_dc < Pso] = - 1.0 * abs(Pnt)
 
     if len(ac_power) == 1:
         ac_power = ac_power.ix[0]

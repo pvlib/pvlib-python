@@ -22,8 +22,11 @@ Bug fixes
   sense PV array voltage. The model was erroneously comparing Ps0 with
   the AC output power (ac_power), rather than the DC input power (p_dc).
 
-
+* Fixed the azimuth calculation of rotated PV panel in function
+  pvlib.tracking.singleaxis(...) so that the results are consistent
+  with PVsyst
 Contributors
 ~~~~~~~~~~~~
 
 * ejmiller2
+* Yudong Ma

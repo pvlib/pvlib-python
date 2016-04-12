@@ -485,7 +485,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     
     # 4. Rotate 0 reference from panel's x axis to it's y axis and
     #    then back to North.
-    surface_azimuth += 90 + axis_azimuth
+    surface_azimuth = 90-surface_azimuth + axis_azimuth
     
     # 5. Map azimuth into [0,360) domain.
     surface_azimuth[surface_azimuth<0] += 360

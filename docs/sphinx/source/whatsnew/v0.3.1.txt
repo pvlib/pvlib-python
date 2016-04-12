@@ -14,9 +14,11 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* Fixed the azimuth calculation of rotated PV panel in function
+  pvlib.tracking.singleaxis(...) so that the results are consistent
+  with PVsyst
 
 
 Contributors
 ~~~~~~~~~~~~
-
+* Yudong Ma

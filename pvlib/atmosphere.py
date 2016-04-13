@@ -244,11 +244,14 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     return am
 
 
-def calc_pw(temp_air, relative_humidity):
+def gueymard94_pw(temp_air, relative_humidity):
     """
     Calculates precipitable water (cm) from ambient air temperature (C)
-    and relatively humidity (%) using an empirical model [1]. The model
-    was developed by expanding Eq. 1 in [2]:
+    and relatively humidity (%) using an empirical model [1-3]. The
+    accuracy of this method is approximately 20% for moderate PW (1-3
+    cm) and less accurate otherwise.
+
+    The model was developed by expanding Eq. 1 in [2]:
     .. math::
 
            w = 0.1 H_v \rho_v
@@ -256,7 +259,7 @@ def calc_pw(temp_air, relative_humidity):
     using Eq. 2 in [2]
     .. math::
 
-           \rho_v = 216.7 RH/T e_s
+           \rho_v = 216.7 R_H e_s /T
 
     H_v is the apparant water vapor scale height (km). The expression
     for H_v is Eq. 4 in [2]:
@@ -264,12 +267,12 @@ def calc_pw(temp_air, relative_humidity):
 
            H_v = 0.4976 + 1.5265*T/273.15 + exp(13.6897*T/273.15 - 14.9188*(T/273.15)^3)
 
-    \rho_v is the surface water vapor density (g/m^3).  In the
-    expression \rho_v,  e_s is the saturation water vapor pressure
-    (millibar).  The expression for e_s is Eq. 1 in [3]
+    \rho_v is the surface water vapor density (g/m^3). In the expression
+    \rho_v, e_s is the saturation water vapor pressure (millibar). The
+    expression for e_s is Eq. 1 in [3]
     .. math::
 
-          e_s = exp(22.330 - 49.140*(100./T) - 10.922*(100./T).^2 - 0.39015*T/100)
+          e_s = exp(22.330 - 49.140*(100/T) - 10.922*(100/T)^2 - 0.39015*T/100)
 
     Parameters
     ----------
@@ -296,17 +299,17 @@ def calc_pw(temp_air, relative_humidity):
         1294-1300.
     """
 
-    T = temp_air + 273.15 # Convert to Kelvin
+    T = temp_air + 273.15  # Convert to Kelvin
     RH = relative_humidity
 
-    #RH[RH>100 | RH<=0] = NaN; #Filter RH for unreasonable Values
+    theta = T / 273.15
 
     # Eq. 1 from Keogh and Blakers
-    pw = ( 0.1 *
-           (0.4976 + 1.5265*T/273.15 +
-            np.exp(13.6897*T/273.15 - 14.9188*(T/273.15)**3)) *
-           (216.7*RH/(100.*T)*np.exp(22.330 - 49.140*(100./T) -
-            10.922*(100./T)**2 - 0.39015*T/100)))
+    pw = (
+        0.1 *
+        (0.4976 + 1.5265*theta + np.exp(13.6897*theta - 14.9188*(theta)**3)) *
+        (216.7*RH/(100*T)*np.exp(22.330 - 49.140*(100/T) -
+         10.922*(100/T)**2 - 0.39015*T/100)))
 
     pw = np.maximum(pw, 0.1)
 
@@ -326,8 +329,9 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     function:
 
     .. math::
-        M = coeff(1) + coeff(2)*AMa  + coeff(3)*Pwat  + coeff(4)*AMa^.5
-            + coeff(5)*Pwat^.5 + coeff(6)*AMa/Pwat
+
+        M = c_1 + c_2*AMa  + c_3*Pwat  + c_4*AMa^.5
+            + c_5*Pwat^.5 + c_6*AMa/Pwat
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the

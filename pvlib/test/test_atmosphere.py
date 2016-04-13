@@ -1,7 +1,5 @@
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import datetime
+import itertools
 
 import numpy as np
 import pandas as pd
@@ -65,3 +63,16 @@ def test_absoluteairmass_numeric():
 def test_absoluteairmass_nan():
     np.testing.assert_equal(np.nan, atmosphere.absoluteairmass(np.nan))
 
+
+def test_gueymard94_pw():
+    temp_air = np.array([0, 20, 40])
+    relative_humidity = np.array([0, 30, 100])
+    temps_humids = np.array(
+        list(itertools.product(temp_air, relative_humidity)))
+    pws = atmosphere.gueymard94_pw(temps_humids[:, 0], temps_humids[:, 1])
+
+    expected = np.array(
+        [  0.1       ,   0.33702061,   1.12340202,   0.1       ,
+         1.12040963,   3.73469877,   0.1       ,   3.44859767,  11.49532557])
+
+    np.testing.assert_allclose(pws, expected, atol=0.01)

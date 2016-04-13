@@ -406,12 +406,12 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     _coefficients = {}
     _coefficients['cdte'] = (
-        0.8752, -0.04588, -0.01559, 0.08751, 0.09158, -0.002295)
+        0.87102, -0.040543, -0.00929202, 0.10052, 0.073062, -0.0034187)
     _coefficients['monosi'] = (
-        0.8478, -0.03326, -0.0022953, 0.1565, 0.01566, -0.001712)
+        0.86588, -0.021637, -0.0030218, 0.12081, 0.017514, -0.0012610)
     _coefficients['xsi'] = _coefficients['monosi']
     _coefficients['polysi'] = (
-        0.83019, -0.04063, -0.005281, 0.1695, 0.02974, -0.001676)
+        0.84674, -0.028568, -0.0051832, 0.13669, 0.029234, -0.0014207)
     _coefficients['multisi'] = _coefficients['polysi']
 
     if module_type is not None and coefficients is None:

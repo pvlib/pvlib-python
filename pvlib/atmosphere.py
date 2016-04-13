@@ -239,31 +239,37 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     try:
         am[z > 90] = np.nan
     except TypeError:
-<<<<<<< d0f47c72742abc87169ec1e15705b75bb8affb88
         am = np.nan if z > 90 else am
 
     return am
-=======
-        AM = np.nan if z > 90 else AM
-        
-    return AM
 
 
 def calc_pw(temp_air, relative_humidity):
     """
-    Calculates precipitable water (cm) from ambient air temperature (C) and
-    relatively humidity (%) using an empirical model [1]. The model was
-    developed by expanding Eq. 1 in [2]:
-           w = 0.1 H_v \rho_v 
+    Calculates precipitable water (cm) from ambient air temperature (C)
+    and relatively humidity (%) using an empirical model [1]. The model
+    was developed by expanding Eq. 1 in [2]:
+    .. math::
+
+           w = 0.1 H_v \rho_v
+
     using Eq. 2 in [2]
-           \rho_v = 216.7 RH/T e_s 
-    H_v is the apparant water vapor scale height (km). The expression for 
-    H_v is Eq. 4 in [2]:
-           H_v = 0.4976 + 1.5265.*T./273.15 + exp(13.6897.*T./273.15 - 14.9188.*(T./273.15).^3)
-    \rho_v is the surface water vapor density (g/m^3).  In the expression 
-    \rho_v,  e_s is the saturation water vapor pressure (millibar).  The
-    expression for e_s is Eq. 1 in [3]
-          e_s = exp(22.330 - 49.140.*(100./T) - 10.922.*(100./T).^2 - 0.39015.*T./100)
+    .. math::
+
+           \rho_v = 216.7 RH/T e_s
+
+    H_v is the apparant water vapor scale height (km). The expression
+    for H_v is Eq. 4 in [2]:
+    .. math::
+
+           H_v = 0.4976 + 1.5265*T/273.15 + exp(13.6897*T/273.15 - 14.9188*(T/273.15)^3)
+
+    \rho_v is the surface water vapor density (g/m^3).  In the
+    expression \rho_v,  e_s is the saturation water vapor pressure
+    (millibar).  The expression for e_s is Eq. 1 in [3]
+    .. math::
+
+          e_s = exp(22.330 - 49.140*(100./T) - 10.922*(100./T).^2 - 0.39015*T/100)
 
     Parameters
     ----------
@@ -273,13 +279,13 @@ def calc_pw(temp_air, relative_humidity):
         relative humidity at the surface (%)
 
     Returns
-    ------- 
+    -------
     pw : array-like
         precipitable water (cm)
 
     Reference:
-    [1] W. M. Keogh and A. W. Blakers, Accurate Measurement, Using Natural 
-        Sunlight, of Silicon Solar Cells, Prog. in Photovoltaics: Res. 
+    [1] W. M. Keogh and A. W. Blakers, Accurate Measurement, Using Natural
+        Sunlight, of Silicon Solar Cells, Prog. in Photovoltaics: Res.
         and Appl. 2004, vol 12, pp. 1-19 (DOI: 10.1002/pip.517)
     [2] C. Gueymard, Analysis of Monthly Average Atmospheric Precipitable
         Water and Turbidity in Canada and Northern United States,
@@ -296,7 +302,7 @@ def calc_pw(temp_air, relative_humidity):
     #RH[RH>100 | RH<=0] = NaN; #Filter RH for unreasonable Values
 
     # Eq. 1 from Keogh and Blakers
-    pw = ( 0.1 * 
+    pw = ( 0.1 *
            (0.4976 + 1.5265*T/273.15 +
             np.exp(13.6897*T/273.15 - 14.9188*(T/273.15)**3)) *
            (216.7*RH/(100.*T)*np.exp(22.330 - 49.140*(100./T) -
@@ -310,33 +316,37 @@ def calc_pw(temp_air, relative_humidity):
 def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
                                     coefficients=None):
     """
-    Spectral mismatch modifier based on precipitable water and 
-    absolute (pressure corrected) airmass.
+    Spectral mismatch modifier based on precipitable water and absolute
+    (pressure corrected) airmass.
 
-    Estimates a spectral mismatch modifier M representing the effect on 
-    module short circuit current of variation in the spectral irradiance.  
-    M is estimated from absolute (pressure currected) air mass, AMa, and
-    precipitable water, Pwat, using the following function:
+    Estimates a spectral mismatch modifier M representing the effect on
+    module short circuit current of variation in the spectral
+    irradiance. M is estimated from absolute (pressure currected) air
+    mass, AMa, and precipitable water, Pwat, using the following
+    function:
 
-    M = coeff(1) + coeff(2)*AMa  + coeff(3)*Pwat  + coeff(4)*AMa.^.5  
-           + coeff(5)*Pwat.^.5 + coeff(6)*AMa./Pwat                    (1) 
+    .. math::
+        M = coeff(1) + coeff(2)*AMa  + coeff(3)*Pwat  + coeff(4)*AMa^.5
+            + coeff(5)*Pwat^.5 + coeff(6)*AMa/Pwat
 
-    Default coefficients are determined for several cell types with 
-    known quantum efficiency curves, by using the Simple Model of the 
-    Atmospheric Radiative Transfer of Sunshine (SMARTS) [1]. 
-    Using SMARTS, spectrums are simulated with all combinations of AMa 
-    and Pwat where:
-       *   0.5 cm <= Pwat <= 5 cm
-       *   0.8 <= AMa <= 4.75 (Pressure of 800 mbar and 1.01 <= AM <= 6)
-       *   Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
-       *   spectrum simulated on a plane normal to the sun
-       *   All other parameters fixed at G173 standard
-    From these simulated spectra, M is calculated using the known quantum 
-    efficiency curves. Multiple linear regression is then applied to fit 
-    Eq. 1 to determine the coefficients for each module.
+    Default coefficients are determined for several cell types with
+    known quantum efficiency curves, by using the Simple Model of the
+    Atmospheric Radiative Transfer of Sunshine (SMARTS) [1]. Using
+    SMARTS, spectrums are simulated with all combinations of AMa and
+    Pwat where:
 
-    Based on the PVLIB Matlab function pvl_FSspeccorr 
-    by Mitchell Lee and Alex Panchula, at First Solar, 2015.
+       * 0.5 cm <= Pwat <= 5 cm
+       * 0.8 <= AMa <= 4.75 (Pressure of 800 mbar and 1.01 <= AM <= 6)
+       * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
+       * spectrum simulated on a plane normal to the sun
+       * All other parameters fixed at G173 standard
+
+    From these simulated spectra, M is calculated using the known
+    quantum efficiency curves. Multiple linear regression is then
+    applied to fit Eq. 1 to determine the coefficients for each module.
+
+    Based on the PVLIB Matlab function pvl_FSspeccorr by Mitchell Lee
+    and Alex Panchula, at First Solar, 2015.
 
     Parameters
     ----------
@@ -347,55 +357,57 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         absolute (pressure corrected) airmass.
 
     module_type : None or string
-        a string specifying a cell type. Can be lower or upper case 
-        letters.  Admits values of 'cdte', 'monosi'='xsi', 'multisi'='polysi'.
-        If provided, this input
-        selects coefficients for the following default modules:
-        
-            'cdte' - coefficients for First Solar Series 4-2 CdTe modules. 
-            'monosi','xsi' - coefficients for First Solar TetraSun modules.
-            'multisi','polysi' - coefficients for multi-crystalline silicon 
-            modules.
-            
-            The module used to calculate the spectral
-            correction coefficients corresponds to the Mult-crystalline 
-            silicon Manufacturer 2 Model C from [2].
+        a string specifying a cell type. Can be lower or upper case
+        letters.  Admits values of 'cdte', 'monosi'='xsi',
+        'multisi'='polysi'. If provided, this input selects coefficients
+        for the following default modules:
+
+            * 'cdte' - coefficients for First Solar Series 4-2 CdTe modules.
+            * 'monosi','xsi' - coefficients for First Solar TetraSun modules.
+            * 'multisi','polysi' - coefficients for multi-crystalline silicon
+              modules.
+
+            The module used to calculate the spectral correction
+            coefficients corresponds to the Mult-crystalline silicon
+            Manufacturer 2 Model C from [2].
 
     coefficients : array-like
         allows for entry of user defined spectral correction
-        coefficients. Coefficients must be of length 6.
-        Derivation of coefficients requires use 
-        of SMARTS and PV module quantum efficiency curve. Useful for modeling 
-        PV module types which are not included as defaults, or to fine tune
-        the spectral correction to a particular mono-Si, multi-Si, or CdTe 
-        PV module. Note that the parameters for modules with very
-        similar QE should be similar, in most cases limiting the need for
-        module specific coefficients.
-
+        coefficients. Coefficients must be of length 6. Derivation of
+        coefficients requires use of SMARTS and PV module quantum
+        efficiency curve. Useful for modeling PV module types which are
+        not included as defaults, or to fine tune the spectral
+        correction to a particular mono-Si, multi-Si, or CdTe PV module.
+        Note that the parameters for modules with very similar QE should
+        be similar, in most cases limiting the need for module specific
+        coefficients.
 
     Returns
     -------
     modifier: array-like
         spectral mismatch factor (unitless) which is can be multiplied
         with broadband irradiance reaching a module's cells to estimate
-        effective irradiance, i.e., the irradiance that is converted
-        to electrical current.
+        effective irradiance, i.e., the irradiance that is converted to
+        electrical current.
 
     References
     ----------
-    [1] Gueymard, Christian. SMARTS2: a simple model of the atmospheric 
-        radiative transfer of sunshine: algorithms and performance 
+    [1] Gueymard, Christian. SMARTS2: a simple model of the atmospheric
+        radiative transfer of sunshine: algorithms and performance
         assessment. Cocoa, FL: Florida Solar Energy Center, 1995.
-    [2] Marion, William F., et al. User's Manual for Data for Validating 
-        Models for PV Module Performance. National Renewable Energy Laboratory, 2014.
-        http://www.nrel.gov/docs/fy14osti/61610.pdf
+    [2] Marion, William F., et al. User's Manual for Data for Validating
+        Models for PV Module Performance. National Renewable Energy
+        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
     """
 
     _coefficients = {}
-    _coefficients['cdte'] = (0.8752, -0.04588, -0.01559, 0.08751, 0.09158, -0.002295)
-    _coefficients['monosi'] = (0.8478, -0.03326, -0.0022953, 0.1565, 0.01566, -0.001712)
+    _coefficients['cdte'] = (
+        0.8752, -0.04588, -0.01559, 0.08751, 0.09158, -0.002295)
+    _coefficients['monosi'] = (
+        0.8478, -0.03326, -0.0022953, 0.1565, 0.01566, -0.001712)
     _coefficients['xsi'] = _coefficients['monosi']
-    _coefficients['polysi'] = (0.83019, -0.04063, -0.005281,	0.1695,	0.02974, -0.001676)
+    _coefficients['polysi'] = (
+        0.83019, -0.04063, -0.005281, 0.1695, 0.02974, -0.001676)
     _coefficients['multisi'] = _coefficients['polysi']
 
     if module_type is not None and coefficients is None:
@@ -403,13 +415,14 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     elif module_type is None and coefficients is not None:
         pass
     else:
-        raise TypeError('ambiguous input, must supply only 1 of module_type and coefficients')
+        raise TypeError('ambiguous input, must supply only 1 of ' +
+                        'module_type and coefficients')
 
     # Evaluate Spectral Shift
     coeff = coefficients
     AMa = airmass_absolute
-    modifier = (coeff[0] + coeff[1]*AMa  + coeff[2]*pw  + coeff[3]*np.sqrt(AMa) +
-                + coeff[4]*np.sqrt(pw) + coeff[5]*AMa/pw)
+    modifier = (
+        coeff[0] + coeff[1]*AMa  + coeff[2]*pw  + coeff[3]*np.sqrt(AMa) +
+        + coeff[4]*np.sqrt(pw) + coeff[5]*AMa/pw)
 
     return modifier
->>>>>>> add first solar spec correction. needs tests

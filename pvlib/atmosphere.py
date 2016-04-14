@@ -245,34 +245,39 @@ def relativeairmass(zenith, model='kastenyoung1989'):
 
 
 def gueymard94_pw(temp_air, relative_humidity):
-    """
+    r"""
     Calculates precipitable water (cm) from ambient air temperature (C)
-    and relatively humidity (%) using an empirical model [1-3]. The
+    and relatively humidity (%) using an empirical model. The
     accuracy of this method is approximately 20% for moderate PW (1-3
     cm) and less accurate otherwise.
 
-    The model was developed by expanding Eq. 1 in [2]:
+    The model was developed by expanding Eq. 1 in [2]_:
+
     .. math::
 
            w = 0.1 H_v \rho_v
 
-    using Eq. 2 in [2]
+    using Eq. 2 in [2]_
+
     .. math::
 
            \rho_v = 216.7 R_H e_s /T
 
-    H_v is the apparant water vapor scale height (km). The expression
-    for H_v is Eq. 4 in [2]:
+    :math:`H_v` is the apparant water vapor scale height (km). The
+    expression for :math:`H_v` is Eq. 4 in [2]_:
+
     .. math::
 
-           H_v = 0.4976 + 1.5265*T/273.15 + exp(13.6897*T/273.15 - 14.9188*(T/273.15)^3)
+           H_v = 0.4976 + 1.5265*T/273.15 + \exp(13.6897*T/273.15 - 14.9188*(T/273.15)^3)
 
-    \rho_v is the surface water vapor density (g/m^3). In the expression
-    \rho_v, e_s is the saturation water vapor pressure (millibar). The
-    expression for e_s is Eq. 1 in [3]
+    :math:`\rho_v` is the surface water vapor density (g/m^3). In the
+    expression :math:`\rho_v`, :math:`e_s` is the saturation water vapor
+    pressure (millibar). The
+    expression for :math:`e_s` is Eq. 1 in [3]_
+
     .. math::
 
-          e_s = exp(22.330 - 49.140*(100/T) - 10.922*(100/T)^2 - 0.39015*T/100)
+          e_s = \exp(22.330 - 49.140*(100/T) - 10.922*(100/T)^2 - 0.39015*T/100)
 
     Parameters
     ----------
@@ -286,17 +291,20 @@ def gueymard94_pw(temp_air, relative_humidity):
     pw : array-like
         precipitable water (cm)
 
-    Reference:
-    [1] W. M. Keogh and A. W. Blakers, Accurate Measurement, Using Natural
-        Sunlight, of Silicon Solar Cells, Prog. in Photovoltaics: Res.
-        and Appl. 2004, vol 12, pp. 1-19 (DOI: 10.1002/pip.517)
-    [2] C. Gueymard, Analysis of Monthly Average Atmospheric Precipitable
-        Water and Turbidity in Canada and Northern United States,
-        Solar Energy vol 53(1), pp. 57-71, 1994.
-    [3] C. Gueymard, Assessment of the Accuracy and Computing Speed of
-        simplified saturation vapor equations using a new reference
-        dataset, J. of Applied Meteorology 1993, vol. 32(7), pp.
-        1294-1300.
+    References
+    ----------
+    .. [1] W. M. Keogh and A. W. Blakers, Accurate Measurement, Using Natural
+       Sunlight, of Silicon Solar Cells, Prog. in Photovoltaics: Res.
+       and Appl. 2004, vol 12, pp. 1-19 (DOI: 10.1002/pip.517)
+
+    .. [2] C. Gueymard, Analysis of Monthly Average Atmospheric Precipitable
+       Water and Turbidity in Canada and Northern United States,
+       Solar Energy vol 53(1), pp. 57-71, 1994.
+
+    .. [3] C. Gueymard, Assessment of the Accuracy and Computing Speed of
+       simplified saturation vapor equations using a new reference
+       dataset, J. of Applied Meteorology 1993, vol. 32(7), pp.
+       1294-1300.
     """
 
     T = temp_air + 273.15  # Convert to Kelvin
@@ -318,7 +326,7 @@ def gueymard94_pw(temp_air, relative_humidity):
 
 def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
                                     coefficients=None):
-    """
+    r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure corrected) airmass.
 
@@ -335,7 +343,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the
-    Atmospheric Radiative Transfer of Sunshine (SMARTS) [1]. Using
+    Atmospheric Radiative Transfer of Sunshine (SMARTS) [1]_. Using
     SMARTS, spectrums are simulated with all combinations of AMa and
     Pwat where:
 
@@ -349,8 +357,8 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     quantum efficiency curves. Multiple linear regression is then
     applied to fit Eq. 1 to determine the coefficients for each module.
 
-    Based on the PVLIB Matlab function pvl_FSspeccorr by Mitchell Lee
-    and Alex Panchula, at First Solar, 2015.
+    Based on the PVLIB Matlab function ``pvl_FSspeccorr`` by Mitchell
+    Lee and Alex Panchula, at First Solar, 2015.
 
     Parameters
     ----------
@@ -362,18 +370,17 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     module_type : None or string
         a string specifying a cell type. Can be lower or upper case
-        letters.  Admits values of 'cdte', 'monosi'='xsi',
-        'multisi'='polysi'. If provided, this input selects coefficients
-        for the following default modules:
+        letters. Admits values of 'cdte', 'monosi', 'xsi', 'multisi',
+        'polysi'. If provided, this input selects coefficients for the
+        following default modules:
 
-            * 'cdte' - coefficients for First Solar Series 4-2 CdTe modules.
-            * 'monosi','xsi' - coefficients for First Solar TetraSun modules.
-            * 'multisi','polysi' - coefficients for multi-crystalline silicon
-              modules.
+            * 'cdte' - First Solar Series 4-2 CdTe modules.
+            * 'monosi', 'xsi' - First Solar TetraSun modules.
+            * 'multisi', 'polysi' - multi-crystalline silicon modules.
 
-            The module used to calculate the spectral correction
-            coefficients corresponds to the Mult-crystalline silicon
-            Manufacturer 2 Model C from [2].
+        The module used to calculate the spectral correction
+        coefficients corresponds to the Mult-crystalline silicon
+        Manufacturer 2 Model C from [2]_.
 
     coefficients : array-like
         allows for entry of user defined spectral correction
@@ -396,12 +403,13 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     References
     ----------
-    [1] Gueymard, Christian. SMARTS2: a simple model of the atmospheric
-        radiative transfer of sunshine: algorithms and performance
-        assessment. Cocoa, FL: Florida Solar Energy Center, 1995.
-    [2] Marion, William F., et al. User's Manual for Data for Validating
-        Models for PV Module Performance. National Renewable Energy
-        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
+    .. [1] Gueymard, Christian. SMARTS2: a simple model of the atmospheric
+       radiative transfer of sunshine: algorithms and performance
+       assessment. Cocoa, FL: Florida Solar Energy Center, 1995.
+
+    .. [2] Marion, William F., et al. User's Manual for Data for Validating
+       Models for PV Module Performance. National Renewable Energy
+       Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
     """
 
     _coefficients = {}

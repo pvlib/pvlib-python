@@ -411,8 +411,14 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     irrads = np.array([dni, ghi, dhi])
 
     if not return_raw:
+        if isinstance(dni, pd.Series):
+            index = dni.index
+        else:
+            index = None
+
         try:
-            irrads = pd.DataFrame(irrads.T, columns=['dni', 'ghi', 'dhi'])
+            irrads = pd.DataFrame(irrads.T, columns=['dni', 'ghi', 'dhi'],
+                                  index=index)
         except ValueError:
             # probably all scalar input, so we
             # need to increase the dimensionality

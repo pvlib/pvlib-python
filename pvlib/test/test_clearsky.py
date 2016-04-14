@@ -148,3 +148,35 @@ def test_haurwitz():
                              columns=['ghi'], index=times_localized)
     out = clearsky.haurwitz(ephem_data['zenith'])
     assert_frame_equal(expected, out)
+
+
+def test_simplified_solis():
+    clearsky.simplified_solis()
+
+
+def test_calc_i0p():
+    clearsky._calc_i0p(w, aod700, p, p0)
+
+
+def test_calc_taub():
+    clearsky._calc_taub(w, aod700, p, p0)
+
+
+def test_calc_b():
+    clearsky._calc_b(w, aod700, p, p0)
+
+
+def test_calc_taug():
+    clearsky._calc_taug(w, aod700, p, p0)
+
+
+def test_calc_g():
+    clearsky._calc_g(w, aod700, p, p0)
+
+
+def test_calc_taud():
+    clearsky._calc_taud(w, aod700, p, p0)
+
+
+def test_calc_d():
+    clearsky._calc_d(w, aod700, p, p0)

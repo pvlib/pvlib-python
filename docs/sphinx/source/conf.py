@@ -217,6 +217,10 @@ html_show_copyright = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'PVLIB_Pythondoc'
 
+# A workaround for the responsive tables always having annoying scrollbars.
+def setup(app):
+    app.add_stylesheet("no_scrollbars.css")
+
 
 # -- Options for LaTeX output ---------------------------------------------
 

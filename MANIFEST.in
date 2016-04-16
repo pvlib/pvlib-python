@@ -1,4 +1,6 @@
 #include *.txt
+include versioneer.py
+include pvlib/_version.py
 recursive-include pvlib/data *
 include README.md
 include pvlib/spa_c_files/*.h

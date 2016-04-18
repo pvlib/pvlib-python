@@ -286,7 +286,8 @@ class ModelChain(object):
 
     def prepare_inputs(self, times, irradiance=None, weather=None):
         """
-        Run the model.
+        Prepare the solar position, irradiance, and weather inputs to
+        the model.
 
         Parameters
         ----------
@@ -368,6 +369,7 @@ class ModelChain(object):
         """
         A stub function meant to be subclassed.
         """
+
         raise NotImplementedError(
             'you must subclass ModelChain and implement this method')
 
@@ -376,12 +378,23 @@ class SAPM(ModelChain):
     """
     Uses the SAPM to calculate cell temperature, DC power and AC power.
     """
-    def run_model(self):
+    def run_model(self, times, irradiance=None, weather=None):
         """
         Run the model.
 
         Parameters
         ----------
+        times : DatetimeIndex
+            Times at which to evaluate the model.
+
+        irradiance : None or DataFrame
+            If None, calculates clear sky data.
+            Columns must be 'dni', 'ghi', 'dhi'.
+
+        weather : None or DataFrame
+            If None, assumes air temperature is 20 C and
+            wind speed is 0 m/s.
+            Columns must be 'wind_speed', 'temp_air'.
 
         Returns
         -------
@@ -389,7 +402,7 @@ class SAPM(ModelChain):
 
         Assigns attributes: temps, dc, ac
         """
-
+        self.prepare_inputs(times, irradiance, weather)
 
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
                                                self.weather['wind_speed'],
@@ -414,12 +427,23 @@ class SingleDiode(ModelChain):
     and the SAPM models to calculate cell temperature and AC power.
     """
 
-    def run_model(self):
+    def run_model(self, times, irradiance=None, weather=None):
         """
         Run the model.
 
         Parameters
         ----------
+        times : DatetimeIndex
+            Times at which to evaluate the model.
+
+        irradiance : None or DataFrame
+            If None, calculates clear sky data.
+            Columns must be 'dni', 'ghi', 'dhi'.
+
+        weather : None or DataFrame
+            If None, assumes air temperature is 20 C and
+            wind speed is 0 m/s.
+            Columns must be 'wind_speed', 'temp_air'.
 
         Returns
         -------
@@ -428,6 +452,7 @@ class SingleDiode(ModelChain):
         Assigns attributes: temps, dc, ac
         """
 
+        self.prepare_inputs(times, irradiance, weather)
 
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
                                                self.weather['wind_speed'],

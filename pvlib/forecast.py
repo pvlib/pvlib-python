@@ -402,7 +402,11 @@ class ForecastModel(object):
         P = data['pressure'] / 100.0
         Tiso = data['temperature_iso']
         Td = data['temperature_dew_iso'] - 273.15
+
+        # saturation water vapor pressure
         e = 6.11 * 10**((7.5 * Td) / (Td + 273.3))
+
+        # saturation water vapor mixing ratio
         w = 0.622 * (e / (P - e))
 
         T = Tiso - ((2.501 * 10.**6) / 1005.7) * w

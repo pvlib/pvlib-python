@@ -400,7 +400,8 @@ class SAPM(ModelChain):
         -------
         self
 
-        Assigns attributes: temps, dc, ac
+        Assigns attributes: times, solar_position, airmass, irradiance,
+        total_irrad, weather, aoi, temps, dc, ac.
         """
         self.prepare_inputs(times, irradiance, weather)
 
@@ -449,7 +450,8 @@ class SingleDiode(ModelChain):
         -------
         self
 
-        Assigns attributes: temps, dc, ac
+        Assigns attributes: times, solar_position, airmass, irradiance,
+        total_irrad, weather, aoi, temps, dc, ac.
         """
 
         self.prepare_inputs(times, irradiance, weather)

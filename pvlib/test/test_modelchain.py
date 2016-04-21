@@ -3,7 +3,7 @@ import pandas as pd
 from numpy import nan
 
 from pvlib import modelchain, pvsystem
-from pvlib.modelchain import ModelChain
+from pvlib.modelchain import ModelChain, SAPM, SingleDiode
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
@@ -19,7 +19,7 @@ def retrieve_sam_network():
     sam_data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
 
 
-def mc_setup():
+def get_sapm_module_parameters():
     # limit network usage
     try:
         modules = sam_data['sandiamod']
@@ -27,20 +27,72 @@ def mc_setup():
         retrieve_sam_network()
         modules = sam_data['sandiamod']
 
-    module = modules.Canadian_Solar_CS5P_220M___2009_.copy()
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    module = 'Canadian_Solar_CS5P_220M___2009_'
+    module_parameters = modules[module].copy()
 
-    system = PVSystem(module_parameters=module,
-                      inverter_parameters=inverter)
+    return module_parameters
+
+
+def get_cec_module_parameters():
+    # limit network usage
+    try:
+        modules = sam_data['cecmod']
+    except KeyError:
+        retrieve_sam_network()
+        modules = sam_data['cecmod']
+
+    module = 'Canadian_Solar_CS5P_220M'
+    module_parameters = modules[module].copy()
+    module_parameters['EgRef'] = 1.121
+    module_parameters['dEgdT'] = -0.0002677
+
+    return module_parameters
+
+
+def get_cec_inverter_parameters():
+
+    inverters = sam_data['cecinverter']
+    inverter = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
+    inverter_parameters = inverters[inverter].copy()
+
+    return inverter_parameters
+
+
+def sapm_setup():
+
+    module_parameters = get_sapm_module_parameters()
+
+    inverter_parameters = get_cec_inverter_parameters()
+
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter_parameters)
 
     location = Location(32.2, -111, altitude=700)
 
-    return system, location
+    mc = SAPM(system, location)
+
+    return mc
+
+
+def singlediode_setup():
+
+    module_parameters = get_cec_module_parameters()
+
+    inverter_parameters = get_cec_inverter_parameters()
+
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter_parameters)
+
+    location = Location(32.2, -111, altitude=700)
+
+    mc = SingleDiode(system, location)
+
+    return mc
 
 
 def test_ModelChain_creation():
-    system, location = mc_setup()
+    system = PVSystem()
+    location = Location(32.2, -111, altitude=700)
     mc = ModelChain(system, location)
 
 
@@ -66,40 +118,63 @@ def run_orientation_strategy(strategy, expected):
     assert system.surface_azimuth == expected[1]
 
 
-def test_run_model():
-    system, location = mc_setup()
+@raises(NotImplementedError)
+def test_run_model_ModelChain():
+    system = PVSystem()
+    location = Location(32.2, -111, altitude=700)
     mc = ModelChain(system, location)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    ac = mc.run_model(times).ac
+    mc.run_model()
 
-    expected = pd.Series(np.array([  1.82033564e+02,  -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
+
+def test_run_model():
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    expected = {}
+    expected[SAPM] = \
+        pd.Series(np.array([  1.82033564e+02,  -2.00000000e-02]), index=times)
+    expected[SingleDiode] = \
+        pd.Series(np.array([179.720353871, np.nan]), index=times)
+
+    def run_test(mc):
+        ac = mc.run_model(times).ac
+        assert_series_equal(ac, expected[type(mc)])
+
+    for mc in (sapm_setup(), singlediode_setup()):
+        yield run_test, mc
 
 
 def test_run_model_with_irradiance():
-    system, location = mc_setup()
-    mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
-                              index=times)
-    ac = mc.run_model(times, irradiance=irradiance).ac
+    irradiance = pd.DataFrame(
+        {'dni': [900, 0], 'ghi': [600, 50], 'dhi': [150, 50]}, index=times)
+    expected = {}
+    expected[SAPM] = \
+        pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]), index=times)
+    expected[SingleDiode] = \
+        pd.Series(np.array([186.979595403, 7.89417460232]), index=times)
 
-    expected = pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
+    def run_test(mc):
+        ac = mc.run_model(times, irradiance=irradiance).ac
+        assert_series_equal(ac, expected[type(mc)])
+
+    for mc in (sapm_setup(), singlediode_setup()):
+        yield run_test, mc
 
 
 def test_run_model_with_weather():
-    system, location = mc_setup()
-    mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    weather = pd.DataFrame({'wind_speed':5, 'temp_air':10}, index=times)
-    ac = mc.run_model(times, weather=weather).ac
+    weather = pd.DataFrame({'wind_speed': 5, 'temp_air': 10}, index=times)
+    expected = {}
+    expected[SAPM] = \
+        pd.Series(np.array([  1.99952400e+02,  -2.00000000e-02]), index=times)
+    expected[SingleDiode] = \
+        pd.Series(np.array([198.13564009, np.nan]), index=times)
 
-    expected = pd.Series(np.array([  1.99952400e+02,  -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
+    def run_test(mc):
+        ac = mc.run_model(times, weather=weather).ac
+        assert_series_equal(ac, expected[type(mc)])
+
+    for mc in (sapm_setup(), singlediode_setup()):
+        yield run_test, mc
 
 
 def test_run_model_tracker():

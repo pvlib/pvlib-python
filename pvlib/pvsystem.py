@@ -940,7 +940,7 @@ def retrieve_sam(name=None, samfile=None):
 
     if name is not None:
         name = name.lower()
-        base_url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/'
+        base_url = 'https://sam.nrel.gov/sites/default/files/'
         if name == 'cecmod':
             url = base_url + 'sam-library-cec-modules-2015-6-30.csv'
         elif name == 'sandiamod':

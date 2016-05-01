@@ -150,33 +150,113 @@ def test_haurwitz():
     assert_frame_equal(expected, out)
 
 
-def test_simplified_solis():
-    clearsky.simplified_solis()
+def test_simplified_solis_series_elevation():
+    expected = pd.DataFrame(
+        np.array([[    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ],
+                  [  377.80060035,    79.91931339,    42.77453223],
+                  [  869.47538184,   706.37903999,   110.05635962],
+                  [  958.89448856,  1062.44821373,   129.02349236],
+                  [  913.3209839 ,   860.48978599,   118.94598678],
+                  [  634.01066762,   256.00505836,    72.18396705],
+                  [    0.        ,     0.        ,     0.        ],
+                  [    0.        ,     0.        ,     0.        ]]),
+                            columns=['dni', 'ghi', 'dhi'],
+                            index=times_localized)
+
+    out = clearsky.simplified_solis(ephem_data['apparent_elevation'])
+    assert_frame_equal(expected, out)
 
 
-def test_calc_i0p():
-    clearsky._calc_i0p(w, aod700, p, p0)
+def test_simplified_solis_scalar_elevation():
+    expected = pd.DataFrame(np.array([[959.335463,  1064.653145,  129.125602]]),
+                            columns=['dni', 'ghi', 'dhi'])
+
+    out = clearsky.simplified_solis(80)
+    assert_frame_equal(expected, out)
 
 
-def test_calc_taub():
-    clearsky._calc_taub(w, aod700, p, p0)
+def test_simplified_solis_array_elevation():
+    expected = pd.DataFrame(np.array([[959.335463,  1064.653145,  129.125602]]),
+                            columns=['dni', 'ghi', 'dhi'])
+
+    out = clearsky.simplified_solis(np.array([80]))
+    assert_frame_equal(expected, out)
 
 
-def test_calc_b():
-    clearsky._calc_b(w, aod700, p, p0)
+def test_simplified_solis_dni_extra():
+    expected = pd.DataFrame(np.array([[963.555414,  1069.33637,  129.693603]]),
+                            columns=['dni', 'ghi', 'dhi'])
+
+    out = clearsky.simplified_solis(80, dni_extra=1370)
+    assert_frame_equal(expected, out)
 
 
-def test_calc_taug():
-    clearsky._calc_taug(w, aod700, p, p0)
+def test_simplified_solis_pressure():
+    expected = pd.DataFrame(np.
+        array([[  964.26930718,  1067.96543669,   127.22841797],
+               [  961.88811874,  1066.36847963,   128.1402539 ],
+               [  959.58112234,  1064.81837558,   129.0304193 ]]),
+                            columns=['dni', 'ghi', 'dhi'])
+
+    out = clearsky.simplified_solis(
+        80, pressure=np.array([95000, 98000, 101000]))
+    assert_frame_equal(expected, out)
 
 
-def test_calc_g():
-    clearsky._calc_g(w, aod700, p, p0)
+def test_simplified_solis_aod700():
+    expected = pd.DataFrame(np.
+        array([[ 1056.61710493,  1105.7229086 ,    64.41747323],
+               [ 1007.50558875,  1085.74139063,   102.96233698],
+               [  959.3354628 ,  1064.65314509,   129.12560167],
+               [  342.45810926,   638.63409683,    77.71786575],
+               [   55.24140911,     7.5413313 ,     0.        ]]),
+                            columns=['dni', 'ghi', 'dhi'])
+
+    aod700 = np.array([0.0, 0.05, 0.1, 1, 10])
+    out = clearsky.simplified_solis(80, aod700=aod700)
+    assert_frame_equal(expected, out)
 
 
-def test_calc_taud():
-    clearsky._calc_taud(w, aod700, p, p0)
+def test_simplified_solis_precipitable_water():
+    expected = pd.DataFrame(np.
+        array([[ 1001.15353307,  1107.84678941,   128.58887606],
+               [ 1001.15353307,  1107.84678941,   128.58887606],
+               [  983.51027357,  1089.62306672,   129.08755996],
+               [  959.3354628 ,  1064.65314509,   129.12560167],
+               [  872.02335029,   974.18046717,   125.63581346]]),
+                            columns=['dni', 'ghi', 'dhi'])
+
+    out = clearsky.simplified_solis(
+        80, precipitable_water=pd.Series([0.0, 0.2, 0.5, 1.0, 5.0]))
+    assert_frame_equal(expected, out)
 
 
-def test_calc_d():
-    clearsky._calc_d(w, aod700, p, p0)
+def test_simplified_solis_small_scalar_pw():
+    expected = pd.DataFrame(np.
+        array([[ 1001.15353307,  1107.84678941,   128.58887606]]),
+                            columns=['dni', 'ghi', 'dhi'])
+
+    out = clearsky.simplified_solis(80, precipitable_water=0.1)
+    assert_frame_equal(expected, out)
+
+
+def test_simplified_solis_return_raw():
+    expected = np.array([[[ 1099.25706525,   656.24601381],
+                          [  915.31689149,   530.31697378]],
+
+                         [[ 1148.40081325,   913.42330823],
+                          [  965.48550828,   760.04527609]],
+
+                         [[   64.1063074 ,   254.6186615 ],
+                          [   62.75642216,   232.21931597]]])
+
+    aod700 = np.linspace(0, 0.5, 2)
+    precipitable_water = np.linspace(0, 10, 2)
+
+    aod700, precipitable_water = np.meshgrid(aod700, precipitable_water)
+
+    out = clearsky.simplified_solis(80, aod700, precipitable_water,
+                                    return_raw=True)
+
+    np.allclose(expected, out)

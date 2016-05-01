@@ -351,6 +351,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     precipitable_water: numeric
         The precipitable water of the atmosphere (cm).
         Algorithm derived for values between 0.2 and 10 cm.
+        Values less than 0.2 will be assumed to be equal to 0.2.
 
     pressure: numeric
         The atmospheric pressure (Pascals).
@@ -382,25 +383,31 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     """
 
     p = pressure
-    p0 = 101325.
 
     w = precipitable_water
+
+    # algorithm fails for pw < 0.2
+    if np.isscalar(w):
+        w = 0.2 if w < 0.2 else w
+    else:
+        w = w.copy()
+        w[w < 0.2] = 0.2
 
     # this algorithm is reasonably fast already, but it could be made
     # faster by precalculating the powers of aod700, the log(p/p0), and
     # the log(w) instead of repeating the calculations as needed in each
     # function
 
-    i0p = _calc_i0p(dni_extra, w, aod700, p, p0)
+    i0p = _calc_i0p(dni_extra, w, aod700, p)
 
-    taub = _calc_taub(w, aod700, p, p0)
+    taub = _calc_taub(w, aod700, p)
     b = _calc_b(w, aod700)
 
-    taug = _calc_taug(w, aod700, p, p0)
+    taug = _calc_taug(w, aod700, p)
     g = _calc_g(w, aod700)
 
-    taud = _calc_taud(w, aod700, p, p0)
-    d = _calc_d(w, aod700, p, p0)
+    taud = _calc_taud(w, aod700, p)
+    d = _calc_d(w, aod700, p)
 
     sin_elev = np.sin(np.radians(apparent_elevation))
 
@@ -430,8 +437,9 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     return irrads
 
 
-def _calc_i0p(i0, w, aod700, p, p0):
+def _calc_i0p(i0, w, aod700, p):
     """Calculate the "enhanced extraterrestrial irradiance"."""
+    p0 = 101325.
     io0 = 1.08 * w**0.0051
     i01 = 0.97 * w**0.032
     i02 = 0.12 * w**0.56
@@ -440,9 +448,9 @@ def _calc_i0p(i0, w, aod700, p, p0):
     return i0p
 
 
-def _calc_taub(w, aod700, p, p0):
+def _calc_taub(w, aod700, p):
     """Calculate the taub coefficient"""
-
+    p0 = 101325.
     tb1 = 1.82 + 0.056*np.log(w) + 0.0071*np.log(w)**2
     tb0 = 0.33 + 0.045*np.log(w) + 0.0096*np.log(w)**2
     tbp = 0.0089*w + 0.13
@@ -463,9 +471,9 @@ def _calc_b(w, aod700):
     return b
 
 
-def _calc_taug(w, aod700, p, p0):
+def _calc_taug(w, aod700, p):
     """Calculate the taug coefficient"""
-
+    p0 = 101325.
     tg1 = 1.24 + 0.047*np.log(w) + 0.0061*np.log(w)**2
     tg0 = 0.27 + 0.043*np.log(w) + 0.0090*np.log(w)**2
     tgp = 0.0079*w + 0.1
@@ -482,17 +490,20 @@ def _calc_g(w, aod700):
     return g
 
 
-def _calc_taud(w, aod700, p, p0):
+def _calc_taud(w, aod700, p):
     """Calculate the taud coefficient."""
 
     # isscalar tests needed to ensure that the arrays will have the
-    # right shape in the tds calculation
+    # right shape in the tds calculation.
+    # there's probably a better way to do this.
 
-    if np.isscalar(w):
+    if np.isscalar(w) and np.isscalar(aod700):
         w = np.array([w])
-
-    if np.isscalar(aod700):
         aod700 = np.array([aod700])
+    elif np.isscalar(w):
+        w = np.full_like(aod700, w)
+    elif np.isscalar(aod700):
+        aod700 = np.full_like(w, aod700)
 
     aod700_mask = aod700 < 0.05
     aod700_mask = np.array([aod700_mask, ~aod700_mask], dtype=np.int)
@@ -508,6 +519,7 @@ def _calc_taud(w, aod700, p, p0):
 
     tds = (np.array([td0, td1, td2, td3, td4, tdp]) * aod700_mask).sum(axis=1)
 
+    p0 = 101325.
     taud = (tds[4]*aod700**4 + tds[3]*aod700**3 + tds[2]*aod700**2 +
             tds[1]*aod700 + tds[0] + tds[5]*np.log(p/p0))
 
@@ -518,9 +530,10 @@ def _calc_taud(w, aod700, p, p0):
     return taud
 
 
-def _calc_d(w, aod700, p, p0):
+def _calc_d(w, aod700, p):
     """Calculate the d coefficient."""
 
+    p0 = 101325.
     dp = 1/(18 + 152*aod700)
     d = -0.337*aod700**2 + 0.63*aod700 + 0.116 + dp*np.log(p/p0)
 

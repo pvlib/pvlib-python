@@ -9,62 +9,60 @@ import datetime
 import pandas as pd
 import pytz
 
-from pvlib import solarposition
-from pvlib import clearsky
-from pvlib import atmosphere
+from pvlib import solarposition, clearsky, atmosphere, irradiance
 
 
 class Location(object):
     """
     Location objects are convenient containers for latitude, longitude,
-    timezone, and altitude data associated with a particular 
+    timezone, and altitude data associated with a particular
     geographic location. You can also assign a name to a location object.
-    
-    Location objects have two timezone attributes: 
-    
+
+    Location objects have two timezone attributes:
+
         * ``tz`` is a IANA timezone string.
         * ``pytz`` is a pytz timezone object.
-        
+
     Location objects support the print method.
-    
+
     Parameters
     ----------
     latitude : float.
         Positive is north of the equator.
         Use decimal degrees notation.
-    
-    longitude : float. 
+
+    longitude : float.
         Positive is east of the prime meridian.
         Use decimal degrees notation.
-    
-    tz : str, int, float, or pytz.timezone. 
-        See 
+
+    tz : str, int, float, or pytz.timezone.
+        See
         http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         for a list of valid time zones.
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
-    
-    alitude : float. 
+
+    alitude : float.
         Altitude from sea level in meters.
-    
-    name : None or string. 
+
+    name : None or string.
         Sets the name attribute of the Location object.
-    
+
     **kwargs
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
-        
+
     See also
     --------
     pvsystem.PVSystem
     """
-    
+
     def __init__(self, latitude, longitude, tz='UTC', altitude=0,
                  name=None, **kwargs):
-        
+
         self.latitude = latitude
         self.longitude = longitude
-        
+
         if isinstance(tz, str):
             self.tz = tz
             self.pytz = pytz.timezone(tz)
@@ -76,36 +74,34 @@ class Location(object):
             self.pytz = pytz.FixedOffset(tz*60)
         else:
             raise TypeError('Invalid tz specification')
-        
+
         self.altitude = altitude
-        
+
         self.name = name
-        
+
         # needed for tying together Location and PVSystem in LocalizedPVSystem
         # if LocalizedPVSystem signature is reversed
         # super(Location, self).__init__(**kwargs)
-        
-        
-        
+
     def __repr__(self):
         return ('{}: latitude={}, longitude={}, tz={}, altitude={}'
-                .format(self.name, self.latitude, self.longitude, 
+                .format(self.name, self.latitude, self.longitude,
                         self.tz, self.altitude))
-    
-    
+
+
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):
         """
-        Create an object based on a metadata 
+        Create an object based on a metadata
         dictionary from tmy2 or tmy3 data readers.
-        
+
         Parameters
         ----------
         tmy_metadata : dict
             Returned from tmy.readtmy2 or tmy.readtmy3
         tmy_data : None or DataFrame
             Optionally attach the TMY data to this object.
-        
+
         Returns
         -------
         Location object (or the child class of Location that you
@@ -113,28 +109,28 @@ class Location(object):
         """
         # not complete, but hopefully you get the idea.
         # might need code to handle the difference between tmy2 and tmy3
-        
+
         # determine if we're dealing with TMY2 or TMY3 data
         tmy2 = tmy_metadata.get('City', False)
-        
+
         latitude = tmy_metadata['latitude']
         longitude = tmy_metadata['longitude']
-        
+
         if tmy2:
             name = tmy_metadata['City']
-        else:            
+        else:
             name = tmy_metadata['Name']
-            
+
         tz = tmy_metadata['TZ']
         altitude = tmy_metadata['altitude']
 
         new_object = cls(latitude, longitude, tz=tz, altitude=altitude,
                          name=name, **kwargs)
-        
+
         # not sure if this should be assigned regardless of input.
         if tmy_data is not None:
             new_object.tmy_data = tmy_data
-        
+
         return new_object
 
 
@@ -143,7 +139,7 @@ class Location(object):
         """
         Uses the :py:func:`solarposition.get_solarposition` function
         to calculate the solar zenith, azimuth, etc. at this location.
-        
+
         Parameters
         ----------
         times : DatetimeIndex
@@ -153,7 +149,7 @@ class Location(object):
         temperature : None, float, or array-like
 
         kwargs passed to :py:func:`solarposition.get_solarposition`
-        
+
         Returns
         -------
         solar_position : DataFrame
@@ -175,22 +171,24 @@ class Location(object):
         """
         Calculate the clear sky estimates of GHI, DNI, and/or DHI
         at this location.
-        
+
         Parameters
         ----------
         times : DatetimeIndex
-        
+
         model : str
-            The clear sky model to use.
-        
-        kwargs passed to the relevant function(s).
-        
+            The clear sky model to use. Must be one of
+            'ineichen', 'haurwitz', 'simplified_solis'.
+
+        kwargs passed to the relevant functions. Climatological values
+        are assumed in many cases. See code for details.
+
         Returns
         -------
         clearsky : DataFrame
             Column names are: ``ghi, dni, dhi``.
         """
-        
+
         if model == 'ineichen':
             cs = clearsky.ineichen(times, latitude=self.latitude,
                                    longitude=self.longitude,
@@ -199,18 +197,42 @@ class Location(object):
         elif model == 'haurwitz':
             solpos = self.get_solarposition(times, **kwargs)
             cs = clearsky.haurwitz(solpos['apparent_zenith'])
+        elif model == 'simplified_solis':
+
+            # these try/excepts define default values that are only
+            # evaluated if necessary. ineichen does some of this internally
+            try:
+                dni_extra = kwargs.pop('dni_extra')
+            except KeyError:
+                dni_extra = irradiance.extraradiation(times.dayofyear)
+
+            try:
+                pressure = kwargs.pop('pressure')
+            except KeyError:
+                pressure = atmosphere.alt2pres(self.altitude)
+
+            try:
+                apparent_elevation = kwargs.pop('apparent_elevation')
+            except KeyError:
+                solpos = self.get_solarposition(
+                    times, pressure=pressure, **kwargs)
+                apparent_elevation = solpos['apparent_elevation']
+
+            cs = clearsky.simplified_solis(
+                apparent_elevation, pressure=pressure, dni_extra=dni_extra,
+                **kwargs)
         else:
             raise ValueError('{} is not a valid clear sky model'
                              .format(model))
 
         return cs
-    
-    
+
+
     def get_airmass(self, times=None, solar_position=None,
                     model='kastenyoung1989'):
         """
         Calculate the relative and absolute airmass.
-        
+
         Automatically chooses zenith or apparant zenith
         depending on the selected model.
 
@@ -222,7 +244,7 @@ class Location(object):
             DataFrame with with columns 'apparent_zenith', 'zenith'.
         model : str
             Relative airmass model
-        
+
         Returns
         -------
         airmass : DataFrame
@@ -250,4 +272,3 @@ class Location(object):
         airmass['airmass_absolute'] = airmass_absolute
 
         return airmass
-            

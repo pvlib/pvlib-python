@@ -368,9 +368,10 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     Returns
     --------
     clearsky : pd.DataFrame or np.array (determined by ``return_raw``)
-        DataFrame contains the columns ``ghi, dni, dhi`` with the units
-        of the ``dni_extra`` input. If ``return_raw=True``, returns the
-        array [dni, ghi, dhi] with shape determined by the input arrays.
+        DataFrame contains the columns ``'dhi', 'dni', 'ghi'`` with the
+        units of the ``dni_extra`` input. If ``return_raw=True``,
+        returns the array [dhi, dni, ghi] with shape determined by the
+        input arrays.
 
     References
     ----------
@@ -415,7 +416,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     ghi = i0p * np.exp(-taug/sin_elev**g) * sin_elev
     dhi = i0p * np.exp(-taud/sin_elev**d)
 
-    irrads = np.array([dni, ghi, dhi])
+    irrads = np.array([dhi, dni, ghi])
 
     if not return_raw:
         if isinstance(dni, pd.Series):
@@ -424,13 +425,13 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
             index = None
 
         try:
-            irrads = pd.DataFrame(irrads.T, columns=['dni', 'ghi', 'dhi'],
+            irrads = pd.DataFrame(irrads.T, columns=['dhi', 'dni', 'ghi'],
                                   index=index)
         except ValueError:
             # probably all scalar input, so we
             # need to increase the dimensionality
             irrads = pd.DataFrame(np.array([irrads]),
-                                  columns=['dni', 'ghi', 'dhi'])
+                                  columns=['dhi', 'dni', 'ghi'])
         finally:
             irrads = irrads.fillna(0)
 

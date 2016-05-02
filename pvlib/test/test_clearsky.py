@@ -163,6 +163,7 @@ def test_simplified_solis_series_elevation():
                   [    0.        ,     0.        ,     0.        ]]),
                             columns=['dni', 'ghi', 'dhi'],
                             index=times_localized)
+    expected = expected[['dhi', 'dni', 'ghi']]
 
     out = clearsky.simplified_solis(ephem_data['apparent_elevation'])
     assert_frame_equal(expected, out)
@@ -171,6 +172,7 @@ def test_simplified_solis_series_elevation():
 def test_simplified_solis_scalar_elevation():
     expected = pd.DataFrame(np.array([[959.335463,  1064.653145,  129.125602]]),
                             columns=['dni', 'ghi', 'dhi'])
+    expected = expected[['dhi', 'dni', 'ghi']]
 
     out = clearsky.simplified_solis(80)
     assert_frame_equal(expected, out)
@@ -179,6 +181,7 @@ def test_simplified_solis_scalar_elevation():
 def test_simplified_solis_array_elevation():
     expected = pd.DataFrame(np.array([[959.335463,  1064.653145,  129.125602]]),
                             columns=['dni', 'ghi', 'dhi'])
+    expected = expected[['dhi', 'dni', 'ghi']]
 
     out = clearsky.simplified_solis(np.array([80]))
     assert_frame_equal(expected, out)
@@ -187,6 +190,7 @@ def test_simplified_solis_array_elevation():
 def test_simplified_solis_dni_extra():
     expected = pd.DataFrame(np.array([[963.555414,  1069.33637,  129.693603]]),
                             columns=['dni', 'ghi', 'dhi'])
+    expected = expected[['dhi', 'dni', 'ghi']]
 
     out = clearsky.simplified_solis(80, dni_extra=1370)
     assert_frame_equal(expected, out)
@@ -198,6 +202,7 @@ def test_simplified_solis_pressure():
                [  961.88811874,  1066.36847963,   128.1402539 ],
                [  959.58112234,  1064.81837558,   129.0304193 ]]),
                             columns=['dni', 'ghi', 'dhi'])
+    expected = expected[['dhi', 'dni', 'ghi']]
 
     out = clearsky.simplified_solis(
         80, pressure=np.array([95000, 98000, 101000]))
@@ -212,6 +217,7 @@ def test_simplified_solis_aod700():
                [  342.45810926,   638.63409683,    77.71786575],
                [   55.24140911,     7.5413313 ,     0.        ]]),
                             columns=['dni', 'ghi', 'dhi'])
+    expected = expected[['dhi', 'dni', 'ghi']]
 
     aod700 = np.array([0.0, 0.05, 0.1, 1, 10])
     out = clearsky.simplified_solis(80, aod700=aod700)
@@ -226,6 +232,7 @@ def test_simplified_solis_precipitable_water():
                [  959.3354628 ,  1064.65314509,   129.12560167],
                [  872.02335029,   974.18046717,   125.63581346]]),
                             columns=['dni', 'ghi', 'dhi'])
+    expected = expected[['dhi', 'dni', 'ghi']]
 
     out = clearsky.simplified_solis(
         80, precipitable_water=pd.Series([0.0, 0.2, 0.5, 1.0, 5.0]))
@@ -236,6 +243,7 @@ def test_simplified_solis_small_scalar_pw():
     expected = pd.DataFrame(np.
         array([[ 1001.15353307,  1107.84678941,   128.58887606]]),
                             columns=['dni', 'ghi', 'dhi'])
+    expected = expected[['dhi', 'dni', 'ghi']]
 
     out = clearsky.simplified_solis(80, precipitable_water=0.1)
     assert_frame_equal(expected, out)

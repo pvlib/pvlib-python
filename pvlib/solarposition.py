@@ -239,7 +239,7 @@ def _spa_python_import(how):
 
 def spa_python(time, latitude, longitude,
                altitude=0, pressure=101325, temperature=12, delta_t=None,
-               atmos_refract=None, how='numpy', numthreads=4):
+               atmos_refract=None, how='numpy', numthreads=4, **kwargs):
     """
     Calculate the solar position using a python implementation of the
     NREL SPA algorithm described in [1].

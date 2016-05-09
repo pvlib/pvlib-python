@@ -1919,11 +1919,16 @@ def erbs(ghi, zenith, doy):
 
     The Erbs model [1]_ estimates the diffuse fraction DF from global
     horizontal irradiance through an empirical relationship between DF
-    and the ratio of GHI to extraterrestrial irradiance, Kt.  The
-    function uses the diffuse fraction to compute DHI. DNI is then
-    estimated as
+    and the ratio of GHI to extraterrestrial irradiance, Kt. The
+    function uses the diffuse fraction to compute DHI as
 
-    ..math:
+    .. math:
+
+        DHI = DF \times GHI
+
+    DNI is then estimated as
+
+    .. math:
 
         DNI = (GHI - DHI)/cos(Z)
 
@@ -1940,7 +1945,7 @@ def erbs(ghi, zenith, doy):
 
     Returns
     -------
-    erbs : DataFrame
+    data : DataFrame
         The DataFrame will have the following columns:
 
             * ``dni``: the modeled direct normal irradiance in W/m^2.
@@ -1950,9 +1955,9 @@ def erbs(ghi, zenith, doy):
 
     References
     ----------
-    [1] D. G. Erbs, S. A. Klein and J. A. Duffie, Estimation of the
-    diffuse radiation fraction for hourly, daily and monthly-average
-    global radiation, Solar Energy 28(4), pp 293-302, 1982. Eq. 1
+    .. [1] D. G. Erbs, S. A. Klein and J. A. Duffie, Estimation of the
+       diffuse radiation fraction for hourly, daily and monthly-average
+       global radiation, Solar Energy 28(4), pp 293-302, 1982. Eq. 1
 
     See also
     --------

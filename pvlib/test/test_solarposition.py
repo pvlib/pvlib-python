@@ -162,7 +162,7 @@ def test_get_sun_rise_set_transit():
     # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = pd.to_datetime(
-            np.floor(data.values.astype(int) / 1e9)*1e9, utc=True)
+            np.floor(data.values.astype(np.int64) / 1e9)*1e9, utc=True)
 
     del result_rounded['transit']
     assert_frame_equal(frame, result_rounded)
@@ -189,7 +189,7 @@ def test_get_sun_rise_set_transit():
     # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = (pd.to_datetime(
-            np.floor(data.values.astype(int) / 1e9)*1e9, utc=True)
+            np.floor(data.values.astype(np.int64) / 1e9)*1e9, utc=True)
             .tz_convert('MST'))
 
     del result_rounded['transit']

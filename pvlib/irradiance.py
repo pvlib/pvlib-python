@@ -1965,6 +1965,10 @@ def erbs(ghi, zenith, doy):
     disc
     """
 
+    # enables all scalar input
+    ghi = pd.Series(ghi)
+    zenith = pd.Series(zenith)
+
     dni_extra = extraradiation(doy)
 
     # This Z needs to be the true Zenith angle, not apparent,

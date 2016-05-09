@@ -257,3 +257,16 @@ def test_erbs():
     out = irradiance.erbs(ghi, zenith, doy)
 
     assert_frame_equal(out, expected)
+
+
+def test_erbs_all_scalar():
+    ghi = 1000
+    zenith = 10
+    doy = 180
+    expected = pd.DataFrame(np.
+        array([[  8.42358014e+02,   1.70439297e+02,   7.68919470e-01]]),
+        columns=['dni', 'dhi', 'kt'])
+
+    out = irradiance.erbs(ghi, zenith, doy)
+
+    assert_frame_equal(out, expected)

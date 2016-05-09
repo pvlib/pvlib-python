@@ -141,7 +141,6 @@ def test_spa_python_numba_physical_dst():
     assert_frame_equal(this_expected, ephem_data[expected.columns])
 
 
-@incompatible_pandas_0131
 def test_get_sun_rise_set_transit():
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
@@ -160,7 +159,7 @@ def test_get_sun_rise_set_transit():
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
         result_rounded[col] = pd.to_datetime(
-            np.floor(data.values.astype(int) / 1e9)*1e9, utc=True)
+            np.floor(data.astype(int) / 1e9)*1e9, utc=True)
 
     del result_rounded['transit']
     assert_frame_equal(frame, result_rounded)
@@ -185,7 +184,7 @@ def test_get_sun_rise_set_transit():
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
         result_rounded[col] = (pd.to_datetime(
-            np.floor(data.values.astype(int) / 1e9)*1e9, utc=True)
+            np.floor(data.astype(int) / 1e9)*1e9, utc=True)
             .tz_convert('MST'))
 
     del result_rounded['transit']

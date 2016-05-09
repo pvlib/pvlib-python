@@ -63,3 +63,18 @@ def incompatible_pandas_0180(test):
         out = test
 
     return out
+
+
+def incompatible_pandas_0131(test):
+    """
+    Test won't work on pandas 0.18.0 due to pandas/numpy issue with
+    np.round.
+    """
+
+    if pd.__version__ == '0.13.1':
+        out = unittest.skip(
+            'error on pandas 0.13.1 due to pandas/numpy')(test)
+    else:
+        out = test
+
+    return out

@@ -141,6 +141,7 @@ def test_spa_python_numba_physical_dst():
     assert_frame_equal(this_expected, ephem_data[expected.columns])
 
 
+@incompatible_pandas_0131
 def test_get_sun_rise_set_transit():
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
@@ -157,6 +158,8 @@ def test_get_sun_rise_set_transit():
                                                     delta_t=64.0)
     frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
     result_rounded = pd.DataFrame(index=result.index)
+    # need to iterate because to_datetime does not accept 2D data
+    # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = pd.to_datetime(
             np.floor(data.astype(int) / 1e9)*1e9, utc=True)
@@ -182,6 +185,8 @@ def test_get_sun_rise_set_transit():
                                                     delta_t=64.0)
     frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
     result_rounded = pd.DataFrame(index=result.index)
+    # need to iterate because to_datetime does not accept 2D data
+    # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = (pd.to_datetime(
             np.floor(data.astype(int) / 1e9)*1e9, utc=True)

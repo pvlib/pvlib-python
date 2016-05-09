@@ -14,7 +14,7 @@ from pandas.util.testing import assert_frame_equal, assert_index_equal
 from pvlib.location import Location
 from pvlib import solarposition
 
-from . import requires_ephem
+from . import requires_ephem, incompatible_pandas_0131
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24),
@@ -141,6 +141,7 @@ def test_spa_python_numba_physical_dst():
     assert_frame_equal(this_expected, ephem_data[expected.columns])
 
 
+@incompatible_pandas_0131
 def test_get_sun_rise_set_transit():
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),

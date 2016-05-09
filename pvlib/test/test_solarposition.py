@@ -146,18 +146,23 @@ def test_get_sun_rise_set_transit():
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
                               datetime.datetime(2004, 12, 4, 0)]
                              ).tz_localize('UTC')
-    sunrise = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 7, 8, 15, 471676),
-                                datetime.datetime(2004, 12, 4, 4, 38, 57, 27416)]
+    sunrise = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 7, 8, 15),
+                                datetime.datetime(2004, 12, 4, 4, 38, 57)]
                                ).tz_localize('UTC').tolist()
-    sunset = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 17, 1, 4, 479889),
-                               datetime.datetime(2004, 12, 4, 19, 2, 2, 499704)]
+    sunset = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 17, 1, 4),
+                               datetime.datetime(2004, 12, 4, 19, 2, 2)]
                               ).tz_localize('UTC').tolist()
     result = solarposition.get_sun_rise_set_transit(times, south.latitude,
                                                     south.longitude,
                                                     delta_t=64.0)
     frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
-    del result['transit']
-    assert_frame_equal(frame, result)
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = pd.to_datetime(
+            np.floor(data.values.astype(int) / 1e9)*1e9, utc=True)
+
+    del result_rounded['transit']
+    assert_frame_equal(frame, result_rounded)
 
 
     # tests from USNO
@@ -166,18 +171,25 @@ def test_get_sun_rise_set_transit():
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
                               datetime.datetime(2015, 8, 2),]
                              ).tz_localize('MST')
-    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 19, 2, 225169),
-                                datetime.datetime(2015, 8, 2, 5, 1, 26, 963145)
+    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 19, 2),
+                                datetime.datetime(2015, 8, 2, 5, 1, 26)
                                 ]).tz_localize('MST').tolist()
-    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 49, 10, 13145),
-                               datetime.datetime(2015, 8, 2, 19, 11, 31, 816401)
+    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 49, 10),
+                               datetime.datetime(2015, 8, 2, 19, 11, 31)
                                ]).tz_localize('MST').tolist()
     result = solarposition.get_sun_rise_set_transit(times, golden.latitude,
                                                     golden.longitude,
                                                     delta_t=64.0)
     frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
-    del result['transit']
-    assert_frame_equal(frame, result)
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = (pd.to_datetime(
+            np.floor(data.values.astype(int) / 1e9)*1e9, utc=True)
+            .tz_convert('MST'))
+
+    del result_rounded['transit']
+    assert_frame_equal(frame, result_rounded)
+
 
 @requires_ephem
 def test_pyephem_physical():

@@ -1924,7 +1924,7 @@ def erbs(ghi, zenith, doy):
 
     .. math::
 
-        DHI = DF \times GHI
+        DHI = DF * GHI
 
     DNI is then estimated as
 
@@ -1936,11 +1936,11 @@ def erbs(ghi, zenith, doy):
 
     Parameters
     ----------
-    ghi: array or Series
+    ghi: scalar, array or Series
         Global horizontal irradiance in W/m^2.
-    zenith: array or Series
+    zenith: scalar, array or Series
         True (not refraction-corrected) zenith angles in decimal degrees.
-    doy: array or DatetimeIndex
+    doy: scalar, array or DatetimeIndex
         The day of the year.
 
     Returns

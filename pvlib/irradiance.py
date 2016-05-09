@@ -1922,13 +1922,13 @@ def erbs(ghi, zenith, doy):
     and the ratio of GHI to extraterrestrial irradiance, Kt. The
     function uses the diffuse fraction to compute DHI as
 
-    .. math:
+    .. math::
 
         DHI = DF \times GHI
 
     DNI is then estimated as
 
-    .. math:
+    .. math::
 
         DNI = (GHI - DHI)/cos(Z)
 

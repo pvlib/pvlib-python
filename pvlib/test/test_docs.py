@@ -4,22 +4,32 @@ Tests for examples in documentation
 
 from nose.tools import ok_
 import pandas as pd
-from docutils.core import publish_doctree
+import pvlib
+import numpy as np
+# from docutils.core import publish_doctree
+
+ENERGIES = {
+    'Albuquerque': 512617.0,
+    'Berlin': 399745.0,
+    'San Francisco': 458293., 
+    'Tucson': 477008.,
+}
+# Tucson: 477027.0
+# San Francisco: 458334.0
 
 
 def test_package_overview():
     """
-    test package update
+    test package overview update to timezone
     """
 
-    # very approximate
+    # TODO: this is not DRY, so grab this text directly from documentation
+
     # latitude, longitude, name, altitude, timezone
     coordinates = [(30, -110, 'Tucson', 700, 'US/Mountain'),
                    (35, -105, 'Albuquerque', 1500, 'US/Mountain'),
                    (40, -120, 'San Francisco', 10, 'US/Pacific'),
                    (50, 10, 'Berlin', 34, 'Europe/Berlin')]
-
-    import pvlib
 
     # get the module and inverter specifications from SAM
     sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
@@ -65,14 +75,9 @@ def test_package_overview():
         energies[name] = annual_energy
 
     energies = pd.Series(energies)
+    ok_(np.allclose(energies.values, pd.Series(ENERGIES).values))
 
-    # based on the parameters specified above, these are in W*hrs
-    print(energies.round(0))
-
-#     energies.plot(kind='bar', rot=0)
-#     @savefig proc-energies.png width=6in
-#     plt.ylabel('Yearly energy yield (W hr)')
-    
+# TODO: use docutils to get doctree to get actual code to test 
 #     with open('docs/sphinx/source/package_overview.rst') as f:
 #         doctree = publish_doctree(f.read())
 # 

@@ -43,14 +43,12 @@ configuration at a handful of sites listed below.
     import seaborn as sns
     sns.set_color_codes()
 
-    times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
-
     # very approximate
-    # latitude, longitude, name, altitude
-    coordinates = [(30, -110, 'Tucson', 700),
-                   (35, -105, 'Albuquerque', 1500),
-                   (40, -120, 'San Francisco', 10),
-                   (50, 10, 'Berlin', 34)]
+    # latitude, longitude, name, altitude, timezone
+    coordinates = [(30, -110, 'Tucson', 700, 'US/Mountain'),
+                   (35, -105, 'Albuquerque', 1500, 'US/Mountain'),
+                   (40, -120, 'San Francisco', 10, 'US/Pacific'),
+                   (50, 10, 'Berlin', 34, 'Europe/Berlin')]
 
     import pvlib
 
@@ -80,7 +78,10 @@ to accomplish our system modeling goal:
               'surface_azimuth': 180}
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        # create datetime indices localized to timezone (pvlib>=0.3.0)
+        times = pd.DatetimeIndex(start='2015', end='2016', freq='1h',
+                                 tz=timezone)
         system['surface_tilt'] = latitude
         cs = pvlib.clearsky.ineichen(times, latitude, longitude, altitude=altitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)

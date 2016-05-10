@@ -216,6 +216,19 @@ def test_dirint_value():
     assert_almost_equal(dirint_data.values,
                         np.array([928.85, 688.26]), 1)
 
+
+def test_dirint_nans():
+    times = pd.DatetimeIndex(start='2014-06-24T12-0700', periods=5, freq='6H')
+    ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
+    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567,], index=times)
+    pressure = pd.Series([93193., 93193., np.nan, 93193., 93193.], index=times)
+    temp_dew = pd.Series([10, 10, 10, np.nan, 10], index=times)
+    dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
+                                    temp_dew=temp_dew)
+    assert_almost_equal(dirint_data.values,
+                        np.array([np.nan, np.nan, np.nan, np.nan, 934.2]), 1)
+
+
 def test_dirint_tdew():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)

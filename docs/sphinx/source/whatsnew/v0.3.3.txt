@@ -35,7 +35,8 @@ Bug fixes
 * Fix snlinverter and singlediode documentation. They incorrectly said that
   inverter/module must be a DataFrame, when in reality they can be any
   dict-like object. (:issue:`157`)
-
+* Fix numpy 1.11 deprecation warnings caused by some functions using
+  non-integer indices.
 
 Documentation
 ~~~~~~~~~~~~~
@@ -64,3 +65,4 @@ Contributors
 * Will Holmgren
 * Mark Mikofski
 * Johannes Oos
+* Tony Lorenzo

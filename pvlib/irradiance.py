@@ -1914,7 +1914,7 @@ def _get_dirint_coeffs():
 
 
 def erbs(ghi, zenith, doy):
-    """
+    r"""
     Estimate DNI and DHI from GHI using the Erbs model.
 
     The Erbs model [1]_ estimates the diffuse fraction DF from global
@@ -1924,13 +1924,13 @@ def erbs(ghi, zenith, doy):
 
     .. math::
 
-        DHI = DF * GHI
+        DHI = DF \times GHI
 
     DNI is then estimated as
 
     .. math::
 
-        DNI = (GHI - DHI)/cos(Z)
+        DNI = (GHI - DHI)/\cos(Z)
 
     where Z is the zenith angle.
 

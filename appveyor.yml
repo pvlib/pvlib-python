@@ -32,7 +32,7 @@ install:
     - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
     # install depenencies
-    - "conda install --yes --quiet pip numpy scipy=0.16.0 pandas nose pytz ephem numba"
+    - "conda install --yes --quiet pip numpy scipy pandas nose pytz ephem numba"
 
     # install pvlib
     - "python setup.py install"

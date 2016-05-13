@@ -44,7 +44,7 @@ def basic_chain(times, latitude, longitude,
         Use decimal degrees notation.
 
     module_parameters : None, dict or Series
-        Module parameters as defined by the SAPM.
+        Module parameters as defined by the SAPM, CEC, or other.
 
     inverter_parameters : None, dict or Series
         Inverter parameters as defined by the CEC.
@@ -213,10 +213,7 @@ class ModelChain(object):
     """
     An experimental base class that represents all of the modeling steps
     necessary for calculating power or energy for a PV system at a given
-    location using the SAPM.
-
-    CEC module specifications and the single diode model are not yet
-    supported.
+    location.
 
     Parameters
     ----------
@@ -456,13 +453,19 @@ class SingleDiode(ModelChain):
 
         self.prepare_inputs(times, irradiance, weather)
 
-        self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
-                                               self.weather['wind_speed'],
-                                               self.weather['temp_air'])
+        self.aoi_mod = self.system.ashraeiam(self.aoi).fillna(0)
+        self.total_irrad['poa_global_aoi'] = (
+            self.total_irrad['poa_direct'] * self.aoi_mod +
+            self.total_irrad['poa_diffuse'])
+
+        self.temps = self.system.sapm_celltemp(
+            self.total_irrad['poa_global_aoi'],
+            self.weather['wind_speed'],
+            self.weather['temp_air'])
 
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
-            self.system.calcparams_desoto(self.total_irrad['poa_global'],
+            self.system.calcparams_desoto(self.total_irrad['poa_global_aoi'],
                                           self.temps['temp_cell']))
 
         self.desoto = (photocurrent, saturation_current, resistance_series,
@@ -471,6 +474,14 @@ class SingleDiode(ModelChain):
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
+
+        self.dc = self.dc.fillna(0)
+
+        voltages = ['v_mp', 'v_oc']
+        self.dc[voltages] *= self.system.series_modules
+        currents = ['i_mp', 'i_sc', 'i_x', 'i_xx']
+        self.dc[currents] *= self.system.parallel_modules
+        self.dc['p_mp'] = self.dc['v_mp'] * self.dc['i_mp']
 
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
 

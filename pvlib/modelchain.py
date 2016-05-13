@@ -342,6 +342,8 @@ class ModelChain(object):
                                    self.airmass['airmass_absolute'],
                                    self.aoi)
 
+        self.dc = self.system.scale_voltage_current_power(self.dc)
+
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
 
         return self

@@ -12,6 +12,13 @@ Enhancements
 * Adds the Erbs model. (:issue:`2`)
 
 
+Bug fixes
+~~~~~~~~~
+
+* Fix another bug with the Appveyor continuous integration builds.
+  (:issue:`170`)
+
+
 Contributors
 ~~~~~~~~~~~~
 

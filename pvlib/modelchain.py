@@ -344,7 +344,7 @@ class ModelChain(object):
                 self.system.get_irradiance,
                 self.solar_position['apparent_zenith'],
                 self.solar_position['azimuth'])
-                
+
         self.total_irrad = get_irradiance(
             self.irradiance['dni'],
             self.irradiance['ghi'],

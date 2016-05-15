@@ -4,6 +4,7 @@ import pandas as pd
 from pvlib import modelchain, pvsystem
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
+from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 
 from pandas.util.testing import assert_series_equal, assert_frame_equal
@@ -99,6 +100,19 @@ def test_run_model_with_weather():
                          index=times)
     assert_series_equal(ac, expected)
 
+
+def test_run_model_tracker():
+    system, location = mc_setup()
+    system = SingleAxisTracker(module_parameters=system.module_parameters,
+                               inverter_parameters=system.inverter_parameters)
+    mc = ModelChain(system, location)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array([  121.421719,  -2.00000000e-02]),
+                         index=times)
+    assert_series_equal(ac, expected)
+    
 
 @raises(ValueError)
 def test_bad_get_orientation():

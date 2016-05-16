@@ -1,0 +1,25 @@
+.. _whatsnew_0330:
+
+v0.3.3 (May xx, 2016)
+-----------------------
+
+This is a minor release from 0.3.2.
+We recommend that all users upgrade to this version.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adds the Erbs model. (:issue:`2`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fix another bug with the Appveyor continuous integration builds.
+  (:issue:`170`)
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren

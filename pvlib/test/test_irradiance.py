@@ -9,6 +9,8 @@ import pandas as pd
 from nose.tools import raises, assert_almost_equals
 from numpy.testing import assert_almost_equal
 
+from pandas.util.testing import assert_frame_equal
+
 from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
@@ -152,14 +154,14 @@ def test_total_irrad():
 
     for model in models:
         total = irradiance.total_irrad(
-            32, 180, 
+            32, 180,
             ephem_data['apparent_zenith'], ephem_data['azimuth'],
             dni=irrad_data['dni'], ghi=irrad_data['ghi'],
             dhi=irrad_data['dhi'],
             dni_extra=dni_et, airmass=AM,
             model=model,
             surface_type='urban')
-        
+
         assert total.columns.tolist() == ['poa_global', 'poa_direct',
                                           'poa_diffuse', 'poa_sky_diffuse',
                                           'poa_ground_diffuse']
@@ -181,7 +183,7 @@ def test_globalinplane():
 def test_disc_keys():
     clearsky_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
                                       linke_turbidity=3)
-    disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'], 
+    disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'],
                                 ephem_data.index)
     assert 'dni' in disc_data.columns
     assert 'kt' in disc_data.columns
@@ -202,7 +204,7 @@ def test_dirint():
     clearsky_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
                                       linke_turbidity=3)
     pressure = 93193.
-    dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'], 
+    dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'],
                                     ephem_data.index, pressure=pressure)
 
 def test_dirint_value():
@@ -239,3 +241,32 @@ def test_dirint_coeffs():
     assert coeffs[0,0,0,0] == 0.385230
     assert coeffs[0,1,2,1] == 0.229970
     assert coeffs[3,2,6,3] == 1.032260
+
+
+def test_erbs():
+    ghi = pd.Series([0, 50, 1000, 1000])
+    zenith = pd.Series([120, 85, 10, 10])
+    doy = pd.Series([1, 1, 1, 180])
+    expected = pd.DataFrame(np.
+        array([[ -0.00000000e+00,   0.00000000e+00,  -0.00000000e+00],
+               [  9.67127061e+01,   4.15709323e+01,   4.05715990e-01],
+               [  7.94187742e+02,   2.17877755e+02,   7.18119416e-01],
+               [  8.42358014e+02,   1.70439297e+02,   7.68919470e-01]]),
+        columns=['dni', 'dhi', 'kt'])
+
+    out = irradiance.erbs(ghi, zenith, doy)
+
+    assert_frame_equal(out, expected)
+
+
+def test_erbs_all_scalar():
+    ghi = 1000
+    zenith = 10
+    doy = 180
+    expected = pd.DataFrame(np.
+        array([[  8.42358014e+02,   1.70439297e+02,   7.68919470e-01]]),
+        columns=['dni', 'dhi', 'kt'])
+
+    out = irradiance.erbs(ghi, zenith, doy)
+
+    assert_frame_equal(out, expected)

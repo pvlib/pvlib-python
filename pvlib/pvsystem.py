@@ -139,6 +139,9 @@ class PVSystem(object):
 
         # needed for tying together Location and PVSystem in LocalizedPVSystem
         super(PVSystem, self).__init__(**kwargs)
+        
+    def __repr__(self):
+        return 'PVSystem with tilt:' + str(self.surface_tilt) + ' and azimuth: ' + str(self.surface_azimuth)
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
@@ -452,6 +455,9 @@ class LocalizedPVSystem(PVSystem, Location):
                           list(kwargs.items()))
 
         super(LocalizedPVSystem, self).__init__(**new_kwargs)
+        
+    def __repr__(self):
+        return 'LocalizedPVSystem'
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,

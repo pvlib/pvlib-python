@@ -27,7 +27,7 @@ install:
     - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
     # install depenencies
-    - "conda create -n test_env --yes python=%PYTHON_VERSION% pip numpy scipy=0.16.0 pandas nose pytz ephem numba"
+    - "conda create -n test_env --yes --quiet python=%PYTHON_VERSION% pip numpy scipy=0.16.0 pandas nose pytz ephem numba"
     - "activate test_env"
     - "conda list"
 

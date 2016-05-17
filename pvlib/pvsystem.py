@@ -124,7 +124,7 @@ class PVSystem(object):
 
         # needed for tying together Location and PVSystem in LocalizedPVSystem
         super(PVSystem, self).__init__(**kwargs)
-
+        
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
 
@@ -400,7 +400,7 @@ class LocalizedPVSystem(PVSystem, Location):
 
         # get and combine attributes from the pvsystem and/or location
         # with the rest of the kwargs
-
+        
         if pvsystem is not None:
             pv_dict = pvsystem.__dict__
         else:

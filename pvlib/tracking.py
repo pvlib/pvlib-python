@@ -29,7 +29,12 @@ class SingleAxisTracker(PVSystem):
         self.gcr = gcr
         
         super(SingleAxisTracker, self).__init__(**kwargs)
-
+        
+        
+    def __repr__(self):
+        return ('SingleAxisTracker with max_angle: ' +
+                str(self.max_angle))
+        
 
     def singleaxis(self, apparent_zenith, apparent_azimuth):
         tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
@@ -143,6 +148,8 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
         # get and combine attributes from the pvsystem and/or location
         # with the rest of the kwargs
 
+        self.location = location
+
         if pvsystem is not None:
             pv_dict = pvsystem.__dict__
         else:
@@ -158,6 +165,12 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
                           list(kwargs.items()))
 
         super(LocalizedSingleAxisTracker, self).__init__(**new_kwargs)
+        
+        
+    def __repr__(self):
+        return ('Localized' +
+                super(LocalizedSingleAxisTracker, self).__repr__()
+                + ' at Location: ' + str(self.location))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth, 

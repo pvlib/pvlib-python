@@ -220,3 +220,18 @@ def test_basic_chain_altitude_pressure():
     expected = pd.Series(np.array([  1.15771428788e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
+    
+    
+def test_ModelChain___repr__():
+    system = PVSystem()
+    location = Location(32.2, -111, altitude=700)
+    strategy = 'south_at_latitude_tilt'
+
+    mc = ModelChain(system, location, orientation_strategy=strategy)
+
+    # the || accounts for the coercion of 'None' to None
+    assert mc.__repr__() == ('ModelChain for: PVSystem with tilt:32.2 and '+
+    'azimuth: 180 with Module: None and Inverter: None with '+
+    'orientation_startegy: south_at_latitude_tilt clearsky_model:ineichen '+
+    'transposition_model: haydavies solar_position_method: nrel_numpy '+
+    'airmass_model: kastenyoung1989')

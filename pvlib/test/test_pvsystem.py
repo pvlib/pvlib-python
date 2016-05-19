@@ -480,6 +480,21 @@ def test_PVSystem_localize_with_latlon():
     assert localized_system.longitude == -111
 
 
+def test_PVSystem___repr__():
+    system = pvsystem.PVSystem(module='blah', inverter='blarg')
+
+    assert system.__repr__()==('PVSystem with tilt:0 and azimuth:'+
+    ' 180 with Module: blah and Inverter: blarg')
+    
+
+def test_PVSystem_localize___repr__():
+    system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    localized_system = system.localize(latitude=32, longitude=-111)
+
+    assert localized_system.__repr__()==('LocalizedPVSystem with tilt:0 and'+
+    ' azimuth: 180 with Module: blah and Inverter: blarg and Location: None:'+
+    ' latitude=32, longitude=-111, tz=UTC, altitude=0')
+
 # we could retest each of the models tested above
 # when they are attached to LocalizedPVSystem, but
 # that's probably not necessary at this point.
@@ -495,3 +510,13 @@ def test_LocalizedPVSystem_creation():
     assert localized_system.inverter == 'blarg'
     assert localized_system.latitude == 32
     assert localized_system.longitude == -111
+
+    
+def test_LocalizedPVSystem___repr__():
+    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
+                                                  longitude=-111,
+                                                  module='blah',
+                                                  inverter='blarg')
+
+    assert localized_system.__repr__()==('LocalizedPVSystem with tilt:0 and'+
+    ' azimuth: 180 with Module: blah and Inverter: blarg and Location: None')

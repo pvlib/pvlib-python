@@ -357,6 +357,7 @@ for details.
 .. ipython:: python
 
     from pvlib.pvsystem import PVSystem, retrieve_sam
+    from pvlib.tracking import SingleAxisTracker
     from pvlib.modelchain import ModelChain
 
     sandia_modules = retrieve_sam('sandiamod')
@@ -364,6 +365,7 @@ for details.
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
     inverter = cec_inverters['SMA_America__SC630CP_US_315V__CEC_2012_']
 
+    # model a big tracker for more fun
     system = SingleAxisTracker(module_parameters=module,
                                inverter_parameters=inverter,
                                series_modules=15,

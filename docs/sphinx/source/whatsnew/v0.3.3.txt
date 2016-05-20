@@ -12,6 +12,8 @@ Enhancements
 * Adds the Erbs model. (:issue:`2`)
 * Adds the ``scale_voltage_current_power`` function and ``PVSystem`` method
   to support simple array modeling. (:issue:`159`)
+* Adds support for ``SingleAxisTracker`` objects in ``ModelChain``.
+  (:issue:`169`)
 
 
 Bug fixes

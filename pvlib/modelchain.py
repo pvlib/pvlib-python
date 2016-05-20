@@ -6,9 +6,12 @@ library. With great power comes great responsibility: users should take
 the time to read the source code for the module.
 """
 
+from functools import partial
+
 import pandas as pd
 
 from pvlib import solarposition, pvsystem, clearsky, atmosphere
+from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 
 
@@ -317,9 +320,32 @@ class ModelChain(object):
                 airmass_data=self.airmass['airmass_absolute'])
         self.irradiance = irradiance
 
-        self.total_irrad = self.system.get_irradiance(
-            self.solar_position['apparent_zenith'],
-            self.solar_position['azimuth'],
+        # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
+        # have different method signatures, so use partial to handle
+        # the differences.
+        if isinstance(self.system, SingleAxisTracker):
+            self.tracking = self.system.singleaxis(
+                self.solar_position['apparent_zenith'],
+                self.solar_position['azimuth'])
+            self.tracking['surface_tilt'] = (
+                self.tracking['surface_tilt']
+                    .fillna(self.system.axis_tilt))
+            self.tracking['surface_azimuth'] = (
+                self.tracking['surface_azimuth']
+                    .fillna(self.system.axis_azimuth))
+            get_irradiance = partial(
+                self.system.get_irradiance,
+                surface_tilt=self.tracking['surface_tilt'],
+                surface_azimuth=self.tracking['surface_azimuth'],
+                solar_zenith=self.solar_position['apparent_zenith'],
+                solar_azimuth=self.solar_position['azimuth'])
+        else:
+            get_irradiance = partial(
+                self.system.get_irradiance,
+                self.solar_position['apparent_zenith'],
+                self.solar_position['azimuth'])
+
+        self.total_irrad = get_irradiance(
             self.irradiance['dni'],
             self.irradiance['ghi'],
             self.irradiance['dhi'],

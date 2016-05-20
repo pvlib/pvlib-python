@@ -79,10 +79,10 @@ class PVSystem(object):
         Module parameters as defined by the SAPM, CEC, or other.
 
     series_modules: int or float
-        Number of modules in series in a string.
+        See system topology discussion above.
 
-    parallel_modules: int or float.
-        Number of modules or strings in parallel.
+    parallel_modules: int or float
+        See system topology discussion above.
 
     inverter : None, string
         The model name of the inverters.

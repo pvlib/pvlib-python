@@ -300,6 +300,31 @@ def test_PVSystem_singlediode_floats():
         assert_almost_equals(expected[k], v, 5)
 
 
+def test_scale_voltage_current_power():
+    data = pd.DataFrame(
+        np.array([[2, 1.5, 10, 8, 12, 0.5, 1.5]]),
+        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
+        index=[0])
+    expected = pd.DataFrame(
+        np.array([[6, 4.5, 20, 16, 72, 1.5, 4.5]]),
+        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
+        index=[0])
+    out = pvsystem.scale_voltage_current_power(data, voltage=2, current=3)
+
+
+def test_PVSystem_scale_voltage_current_power():
+    data = pd.DataFrame(
+        np.array([[2, 1.5, 10, 8, 12, 0.5, 1.5]]),
+        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
+        index=[0])
+    expected = pd.DataFrame(
+        np.array([[6, 4.5, 20, 16, 72, 1.5, 4.5]]),
+        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
+        index=[0])
+    system = pvsystem.PVSystem(series_modules=2, parallel_modules=3)
+    out = system.scale_voltage_current_power(data)
+
+
 def test_sapm_celltemp():
     default = pvsystem.sapm_celltemp(900, 5, 20)
     assert_almost_equals(43.509, default.ix[0, 'temp_cell'], 3)

@@ -359,13 +359,15 @@ for details.
     from pvlib.pvsystem import PVSystem, retrieve_sam
     from pvlib.modelchain import ModelChain
 
-    sandia_modules = retrieve_sam(name='SandiaMod')
-    sapm_inverters = retrieve_sam('sandiainverter')
+    sandia_modules = retrieve_sam('sandiamod')
+    cec_inverters = retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter = cec_inverters['SMA_America__SC630CP_US_315V__CEC_2012_']
 
-    system = PVSystem(module_parameters=module,
-                      inverter_parameters=inverter)
+    system = SingleAxisTracker(module_parameters=module,
+                               inverter_parameters=inverter,
+                               series_modules=15,
+                               parallel_modules=300)
 
     # fx is a common abbreviation for forecast
     fx_model = GFS()
@@ -377,7 +379,7 @@ for details.
     # extract relevant data for model chain
     irradiance = fx_data[['ghi', 'dni', 'dhi']]
     weather = fx_data[['wind_speed', 'temperature']].rename(
-        columns={'temperature':'temp_air'})
+        columns={'temperature': 'temp_air'})
     mc.run_model(fx_data.index, irradiance=irradiance, weather=weather);
 
 Now we plot a couple of modeling intermediates and the forecast power.

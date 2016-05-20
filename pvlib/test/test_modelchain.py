@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from numpy import nan
 
 from pvlib import modelchain, pvsystem
 from pvlib.modelchain import ModelChain
@@ -112,7 +113,14 @@ def test_run_model_tracker():
     expected = pd.Series(np.array([  121.421719,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
-    
+
+    expected = pd.DataFrame(np.
+        array([[ 54.82513187,  90.        ,  11.0039221 ,  11.0039221 ],
+               [         nan,   0.        ,   0.        ,          nan]]),
+        columns=['aoi', 'surface_azimuth', 'surface_tilt', 'tracker_theta'],
+        index=times)
+    assert_frame_equal(mc.tracking, expected)
+
 
 @raises(ValueError)
 def test_bad_get_orientation():

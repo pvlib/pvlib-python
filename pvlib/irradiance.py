@@ -1913,6 +1913,96 @@ def _get_dirint_coeffs():
 
     return coeffs[1:,1:,:,:]
 
+
+def erbs(ghi, zenith, doy):
+    r"""
+    Estimate DNI and DHI from GHI using the Erbs model.
+
+    The Erbs model [1]_ estimates the diffuse fraction DF from global
+    horizontal irradiance through an empirical relationship between DF
+    and the ratio of GHI to extraterrestrial irradiance, Kt. The
+    function uses the diffuse fraction to compute DHI as
+
+    .. math::
+
+        DHI = DF \times GHI
+
+    DNI is then estimated as
+
+    .. math::
+
+        DNI = (GHI - DHI)/\cos(Z)
+
+    where Z is the zenith angle.
+
+    Parameters
+    ----------
+    ghi: scalar, array or Series
+        Global horizontal irradiance in W/m^2.
+    zenith: scalar, array or Series
+        True (not refraction-corrected) zenith angles in decimal degrees.
+    doy: scalar, array or DatetimeIndex
+        The day of the year.
+
+    Returns
+    -------
+    data : DataFrame
+        The DataFrame will have the following columns:
+
+            * ``dni``: the modeled direct normal irradiance in W/m^2.
+            * ``dhi``: the modeled diffuse horizontal irradiance in W/m^2.
+            * ``kt``: Ratio of global to extraterrestrial irradiance
+              on a horizontal plane.
+
+    References
+    ----------
+    .. [1] D. G. Erbs, S. A. Klein and J. A. Duffie, Estimation of the
+       diffuse radiation fraction for hourly, daily and monthly-average
+       global radiation, Solar Energy 28(4), pp 293-302, 1982. Eq. 1
+
+    See also
+    --------
+    dirint
+    disc
+    """
+
+    # enables all scalar input
+    ghi = pd.Series(ghi)
+    zenith = pd.Series(zenith)
+
+    dni_extra = extraradiation(doy)
+
+    # This Z needs to be the true Zenith angle, not apparent,
+    # to get extraterrestrial horizontal radiation)
+    i0_h = dni_extra * tools.cosd(zenith)
+
+    kt = ghi / i0_h
+    kt[kt < 0] = 0
+
+    # For Kt <= 0.22, set the diffuse fraction
+    df = 1 - 0.09*kt
+
+    # For Kt > 0.22 and Kt <= 0.8, set the diffuse fraction
+    mask = (kt > 0.22) & (kt <= 0.8)
+    df[mask] = (
+        0.9511 - 0.1604*kt[mask] + 4.388*kt[mask]**2 - 16.638*kt[mask]**3 +
+        12.336*kt[mask]**4)
+
+    # For Kt > 0.8, set the diffuse fraction
+    df[kt > 0.8] = 0.165
+
+    dhi = df * ghi
+
+    dni = (ghi - dhi) / tools.cosd(zenith)
+
+    data = pd.DataFrame()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = kt
+
+    return data
+
+
 def liujordan(zenith, cloud_prct, pressure=101325., dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,

@@ -1,7 +1,7 @@
 name: pvlib
 channels:
     - defaults
-    - http://conda.anaconda.org/conda-forge
+    - conda-forge
 dependencies:
     - python=2.7
     - numpy

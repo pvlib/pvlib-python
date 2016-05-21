@@ -303,5 +303,7 @@ def test_LocalizedSingleAxisTracker___repr__():
 
 
     assert localized_system.__repr__() == ('LocalizedSingleAxisTracker with '+
-                                          'max_angle: 90 at Location: None')
+                                          'max_angle: 90 at Location: None: '+
+                                          'latitude=32, longitude=-111, ' +
+                                          'tz=UTC, altitude=0')
 

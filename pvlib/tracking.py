@@ -148,8 +148,6 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
         # get and combine attributes from the pvsystem and/or location
         # with the rest of the kwargs
 
-        self.location = location
-
         if pvsystem is not None:
             pv_dict = pvsystem.__dict__
         else:
@@ -170,7 +168,10 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
     def __repr__(self):
         return ('Localized' +
                 super(LocalizedSingleAxisTracker, self).__repr__()
-                + ' at Location: ' + str(self.location))
+                + ' at Location: ' + 
+                ('{}: latitude={}, longitude={}, tz={}, altitude={}'
+                .format(self.name, self.latitude, self.longitude, 
+                        self.tz, self.altitude)))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth, 

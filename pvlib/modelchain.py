@@ -44,7 +44,7 @@ def basic_chain(times, latitude, longitude,
         Use decimal degrees notation.
 
     module_parameters : None, dict or Series
-        Module parameters as defined by the SAPM, CEC, or other.
+        Module parameters as defined by the SAPM.
 
     inverter_parameters : None, dict or Series
         Inverter parameters as defined by the CEC.
@@ -375,6 +375,7 @@ class SAPM(ModelChain):
     """
     Uses the SAPM to calculate cell temperature, DC power and AC power.
     """
+
     def run_model(self, times, irradiance=None, weather=None):
         """
         Run the model.
@@ -477,11 +478,7 @@ class SingleDiode(ModelChain):
 
         self.dc = self.dc.fillna(0)
 
-        voltages = ['v_mp', 'v_oc']
-        self.dc[voltages] *= self.system.series_modules
-        currents = ['i_mp', 'i_sc', 'i_x', 'i_xx']
-        self.dc[currents] *= self.system.parallel_modules
-        self.dc['p_mp'] = self.dc['v_mp'] * self.dc['i_mp']
+        self.dc = self.system.scale_voltage_current_power(self.dc)
 
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
 

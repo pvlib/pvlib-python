@@ -146,6 +146,12 @@ def test_perez():
                      dni_et, ephem_data['apparent_zenith'],
                      ephem_data['azimuth'], AM)
 
+
+def test_liujordan():
+    cloud_prct = np.array([40]*len(ephem_data['apparent_zenith']))
+    irradiance.liujordan(ephem_data['apparent_zenith'], cloud_prct)
+
+
 # klutcher (misspelling) will be removed in 0.3
 def test_total_irrad():
     models = ['isotropic', 'klutcher', 'klucher',

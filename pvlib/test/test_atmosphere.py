@@ -65,3 +65,7 @@ def test_absoluteairmass_numeric():
 def test_absoluteairmass_nan():
     np.testing.assert_equal(np.nan, atmosphere.absoluteairmass(np.nan))
 
+
+def test_transmittance():
+    assert atmosphere.transmittance(0) == 0.75
+    assert atmosphere.transmittance(100) == 0.0

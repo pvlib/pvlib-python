@@ -18,10 +18,17 @@ try:
 except ImportError:
     has_scipy = False
 
+try:
+    import siphon
+    has_siphon = True
+except ImportError:
+    has_siphon = False
 
 def requires_scipy(test):
     return test if has_scipy else unittest.skip('requires scipy')(test)
 
+def requires_siphon(test):
+    return test if has_siphon else unittest.skip('requires siphon')(test)
 
 try:
     import ephem
@@ -29,10 +36,8 @@ try:
 except ImportError:
     has_ephem = False
 
-
 def requires_ephem(test):
     return test if has_ephem else unittest.skip('requires ephem')(test)
-
 
 def incompatible_conda_linux_py3(test):
     """

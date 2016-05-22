@@ -1,4 +1,7 @@
 name: test_env
+channels:
+    - defaults
+    - http://conda.anaconda.org/Unidata
 dependencies:
     - python=2.7 
     - numpy==1.8.2

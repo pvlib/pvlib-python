@@ -1,4 +1,7 @@
 name: test_env
+channels:
+    - defaults
+    - http://conda.anaconda.org/conda-forge
 dependencies:
     - python=3.5
     - numpy
@@ -8,5 +11,6 @@ dependencies:
     - pytz
     - ephem
     - numba
+    - siphon
     - pip:
         - coveralls

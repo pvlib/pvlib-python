@@ -44,10 +44,10 @@ def basic_chain(times, latitude, longitude,
         Use decimal degrees notation.
 
     module_parameters : None, dict or Series
-        Module parameters as defined by the SAPM, CEC, or other.
+        Module parameters as defined by the SAPM.
 
     inverter_parameters : None, dict or Series
-        Inverter parameters as defined by the SAPM, CEC, or other.
+        Inverter parameters as defined by the CEC.
 
     irradiance : None or DataFrame
         If None, calculates clear sky data.
@@ -213,7 +213,10 @@ class ModelChain(object):
     """
     An experimental class that represents all of the modeling steps
     necessary for calculating power or energy for a PV system at a given
-    location.
+    location using the SAPM.
+
+    CEC module specifications and the single diode model are not yet
+    supported.
 
     Parameters
     ----------

@@ -21,6 +21,8 @@ Bug fixes
 
 * Fix another bug with the Appveyor continuous integration builds.
   (:issue:`170`)
+* Clarify that ``ModelChain`` and ``basic_chain`` currently only
+  supports SAPM. (:issue:`177`)
 
 
 Contributors

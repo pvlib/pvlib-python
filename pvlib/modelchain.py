@@ -211,12 +211,9 @@ def get_orientation(strategy, **kwargs):
 
 class ModelChain(object):
     """
-    An experimental class that represents all of the modeling steps
+    An experimental base class that represents all of the modeling steps
     necessary for calculating power or energy for a PV system at a given
-    location using the SAPM.
-
-    CEC module specifications and the single diode model are not yet
-    supported.
+    location.
 
     Parameters
     ----------
@@ -284,9 +281,10 @@ class ModelChain(object):
 
         self._orientation_strategy = strategy
 
-    def run_model(self, times, irradiance=None, weather=None):
+    def prepare_inputs(self, times, irradiance=None, weather=None):
         """
-        Run the model.
+        Prepare the solar position, irradiance, and weather inputs to
+        the model.
 
         Parameters
         ----------
@@ -307,14 +305,18 @@ class ModelChain(object):
         self
 
         Assigns attributes: times, solar_position, airmass, irradiance,
-        total_irrad, weather, temps, aoi, dc, ac
+        total_irrad, weather, aoi
         """
+
         self.times = times
 
         self.solar_position = self.location.get_solarposition(self.times)
 
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)
+
+        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
+                                       self.solar_position['azimuth'])
 
         if irradiance is None:
             irradiance = self.location.get_clearsky(
@@ -358,18 +360,123 @@ class ModelChain(object):
             weather = {'wind_speed': 0, 'temp_air': 20}
         self.weather = weather
 
+        return self
+
+    def run_model(self):
+        """
+        A stub function meant to be subclassed.
+        """
+
+        raise NotImplementedError(
+            'you must subclass ModelChain and implement this method')
+
+
+class SAPM(ModelChain):
+    """
+    Uses the SAPM to calculate cell temperature, DC power and AC power.
+    """
+
+    def run_model(self, times, irradiance=None, weather=None):
+        """
+        Run the model.
+
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Times at which to evaluate the model.
+
+        irradiance : None or DataFrame
+            If None, calculates clear sky data.
+            Columns must be 'dni', 'ghi', 'dhi'.
+
+        weather : None or DataFrame
+            If None, assumes air temperature is 20 C and
+            wind speed is 0 m/s.
+            Columns must be 'wind_speed', 'temp_air'.
+
+        Returns
+        -------
+        self
+
+        Assigns attributes: times, solar_position, airmass, irradiance,
+        total_irrad, weather, aoi, temps, dc, ac.
+        """
+        self.prepare_inputs(times, irradiance, weather)
+
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
                                                self.weather['wind_speed'],
                                                self.weather['temp_air'])
-
-        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
-                                       self.solar_position['azimuth'])
 
         self.dc = self.system.sapm(self.total_irrad['poa_direct'],
                                    self.total_irrad['poa_diffuse'],
                                    self.temps['temp_cell'],
                                    self.airmass['airmass_absolute'],
                                    self.aoi)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc)
+
+        self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
+
+        return self
+
+
+class SingleDiode(ModelChain):
+    """
+    Uses the DeSoto and single diode models to calculate the DC power,
+    and the SAPM models to calculate cell temperature and AC power.
+    """
+
+    def run_model(self, times, irradiance=None, weather=None):
+        """
+        Run the model.
+
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Times at which to evaluate the model.
+
+        irradiance : None or DataFrame
+            If None, calculates clear sky data.
+            Columns must be 'dni', 'ghi', 'dhi'.
+
+        weather : None or DataFrame
+            If None, assumes air temperature is 20 C and
+            wind speed is 0 m/s.
+            Columns must be 'wind_speed', 'temp_air'.
+
+        Returns
+        -------
+        self
+
+        Assigns attributes: times, solar_position, airmass, irradiance,
+        total_irrad, weather, aoi, temps, dc, ac.
+        """
+
+        self.prepare_inputs(times, irradiance, weather)
+
+        self.aoi_mod = self.system.ashraeiam(self.aoi).fillna(0)
+        self.total_irrad['poa_global_aoi'] = (
+            self.total_irrad['poa_direct'] * self.aoi_mod +
+            self.total_irrad['poa_diffuse'])
+
+        self.temps = self.system.sapm_celltemp(
+            self.total_irrad['poa_global_aoi'],
+            self.weather['wind_speed'],
+            self.weather['temp_air'])
+
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_desoto(self.total_irrad['poa_global_aoi'],
+                                          self.temps['temp_cell']))
+
+        self.desoto = (photocurrent, saturation_current, resistance_series,
+                       resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+        self.dc = self.dc.fillna(0)
 
         self.dc = self.system.scale_voltage_current_power(self.dc)
 

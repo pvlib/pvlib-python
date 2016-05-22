@@ -1,0 +1,23 @@
+.. _whatsnew_0400:
+
+v0.4.0 (June xx, 2016)
+-----------------------
+
+This is a major release from 0.3.3.
+We recommend that all users upgrade to this version.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Splits ``ModelChain`` into a ``SingleDiode`` chain and a ``SAPM`` chain.
+  (:issue:`151`)
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren

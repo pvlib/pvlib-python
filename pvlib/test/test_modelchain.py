@@ -8,7 +8,7 @@ from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 
-from pandas.util.testing import assert_series_equal
+from pandas.util.testing import assert_series_equal, assert_frame_equal
 from nose.tools import raises
 
 from . import incompatible_conda_linux_py3
@@ -45,6 +45,7 @@ def get_cec_module_parameters():
 
     module = 'Canadian_Solar_CS5P_220M'
     module_parameters = modules[module].copy()
+    module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
 
@@ -60,14 +61,18 @@ def get_cec_inverter_parameters():
     return inverter_parameters
 
 
-def sapm_setup():
+def sapm_setup(tracker=False):
 
     module_parameters = get_sapm_module_parameters()
 
     inverter_parameters = get_cec_inverter_parameters()
 
-    system = PVSystem(module_parameters=module_parameters,
-                      inverter_parameters=inverter_parameters)
+    if tracker:
+        system = SingleAxisTracker(module_parameters=module_parameters,
+                                   inverter_parameters=inverter_parameters)
+    else:
+        system = PVSystem(module_parameters=module_parameters,
+                          inverter_parameters=inverter_parameters)
 
     location = Location(32.2, -111, altitude=700)
 
@@ -76,14 +81,18 @@ def sapm_setup():
     return mc
 
 
-def singlediode_setup():
+def singlediode_setup(tracker=False):
 
     module_parameters = get_cec_module_parameters()
 
     inverter_parameters = get_cec_inverter_parameters()
 
-    system = PVSystem(module_parameters=module_parameters,
-                      inverter_parameters=inverter_parameters)
+    if tracker:
+        system = SingleAxisTracker(module_parameters=module_parameters,
+                                   inverter_parameters=inverter_parameters)
+    else:
+        system = PVSystem(module_parameters=module_parameters,
+                          inverter_parameters=inverter_parameters)
 
     location = Location(32.2, -111, altitude=700)
 
@@ -135,7 +144,7 @@ def test_run_model():
     expected[SAPM] = \
         pd.Series(np.array([1.82033564e+02,  -2.00000000e-02]), index=times)
     expected[SingleDiode] = \
-        pd.Series(np.array([179.720353871, np.nan]), index=times)
+        pd.Series(np.array([179.15260, -2.00000000e-02]), index=times)
 
     def run_test(mc):
         ac = mc.run_model(times).ac
@@ -154,7 +163,7 @@ def test_run_model_with_irradiance():
     expected[SAPM] = \
         pd.Series(np.array([1.90054749e+02,  -2.00000000e-02]), index=times)
     expected[SingleDiode] = \
-        pd.Series(np.array([186.979595403, 7.89417460232]), index=times)
+        pd.Series(np.array([ 186.46774125,    7.8941746 ]), index=times)
 
     def run_test(mc):
         ac = mc.run_model(times, irradiance=irradiance).ac
@@ -172,7 +181,7 @@ def test_run_model_with_weather():
     expected[SAPM] = \
         pd.Series(np.array([1.99952400e+02,  -2.00000000e-02]), index=times)
     expected[SingleDiode] = \
-        pd.Series(np.array([198.13564009, np.nan]), index=times)
+        pd.Series(np.array([  1.97456536e+02,  -2.00000000e-02]), index=times)
 
     def run_test(mc):
         ac = mc.run_model(times, weather=weather).ac
@@ -183,23 +192,27 @@ def test_run_model_with_weather():
 
 
 def test_run_model_tracker():
-    system, location = mc_setup()
-    system = SingleAxisTracker(module_parameters=system.module_parameters,
-                               inverter_parameters=system.inverter_parameters)
-    mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([  121.421719,  -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
+    expected_ac = {}
+    expected_ac[SAPM] = \
+        pd.Series(np.array([  121.421719,  -2.00000000e-02]), index=times)
+    expected_ac[SingleDiode] = \
+        pd.Series(np.array([  1.22736286e+02,  -2.00000000e-02]), index=times)
 
-    expected = pd.DataFrame(np.
+    expected_tracking = pd.DataFrame(np.
         array([[ 54.82513187,  90.        ,  11.0039221 ,  11.0039221 ],
                [         nan,   0.        ,   0.        ,          nan]]),
         columns=['aoi', 'surface_azimuth', 'surface_tilt', 'tracker_theta'],
         index=times)
-    assert_frame_equal(mc.tracking, expected)
+
+    def run_test(mc):
+        ac = mc.run_model(times).ac
+        assert_series_equal(ac, expected_ac[type(mc)])
+        assert_frame_equal(mc.tracking, expected_tracking)
+
+    for mc in (sapm_setup(tracker=True), singlediode_setup(tracker=True)):
+        yield run_test, mc
 
 
 @raises(ValueError)

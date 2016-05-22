@@ -243,15 +243,11 @@ is compiled so they will vary over time.
 GFS
 ---
 The Global Forecast System (GFS) is the US model that provides forecasts
-for the entire globe. There is a lot of hype about how "the Euro"
-(ECMWF) model is superior to the GFS. The GFS is still a great model. On
-standard meteorology metrics, the ECMWF is superior to the GFS by about
-a day. In other words, the accuracy of the GFS at 6 days out is
-comparable to the ECMWF at 5 days out. The GFS is updated every 6 hours.
-The GFS is run at two resolutions, 0.25 deg and 0.5 deg, and is
-available with 3 hour time resolution. Forecasts from GFS model were
-shown above. Use the GFS, among others, if you want forecasts for 1-7
-days.
+for the entire globe. The GFS is updated every 6 hours. The GFS is run
+at two resolutions, 0.25 deg and 0.5 deg, and is available with 3 hour
+time resolution. Forecasts from GFS model were shown above. Use the GFS,
+among others, if you want forecasts for 1-7 days or if you want forecasts
+for anywhere on Earth.
 
 
 HRRR
@@ -306,10 +302,9 @@ The RAP model covers most of North America.
 
 NAM
 ---
-The North American Mesoscale model is a somewhat older model that is
-target of frequent criticism, justly or not. It is updated every 6 hours
-and runs at 20 km resolution. Use the NAM as part of an ensemble forecast.
-The NAM model covers North America.
+The North American Mesoscale model covers, not surprisingly, North
+America. It is updated every 6 hours. pvlib provides access to 20 km
+resolution NAM data with a time horizon of up to 4 days.
 
 .. ipython:: python
 

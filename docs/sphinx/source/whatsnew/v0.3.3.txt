@@ -23,6 +23,7 @@ Bug fixes
   (:issue:`170`)
 * Clarify that ``ModelChain`` and ``basic_chain`` currently only
   supports SAPM. (:issue:`177`)
+* Fix version number in 0.3.2 whatsnew file.
 
 
 Contributors

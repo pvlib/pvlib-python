@@ -15,14 +15,20 @@ except ImportError:
 import versioneer
 
 
-DESCRIPTION = 'The PVLIB toolbox provides a set functions for simulating the performance of photovoltaic energy systems.'
-LONG_DESCRIPTION = open('README.md').read()
+DESCRIPTION = 'The PVLIB toolbox provides a set of functions for simulating the performance of photovoltaic energy systems.'
+LONG_DESCRIPTION = break # fix me
 
 DISTNAME = 'pvlib'
-LICENSE = 'The BSD 3-Clause License'
-AUTHOR = 'Dan Riley, Clifford Hanson, Rob Andrews, Will Holmgren, github contributors'
+LICENSE = 'BSD 3-Clause'
+AUTHOR = 'PVLIB Python Developers'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
+INSTALL_REQUIRES = ['numpy >= 1.8.2',
+                    'pandas >= 0.13.1',
+                    'pytz',
+                    'six',
+                    ]
+TESTS_REQUIRE = ['nose']
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -45,11 +51,6 @@ if not sys.version_info[:2] in ((2,7), (3,3), (3,4), (3,5)):
 
 setuptools_kwargs = {
     'zip_safe': False,
-    'install_requires': ['numpy >= 1.8.2',
-                         'pandas >= 0.13.1',
-                         'pytz',
-                         'six',
-                         ],
     'scripts': [],
     'include_package_data': True
 }
@@ -80,6 +81,8 @@ setup(name=DISTNAME,
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
+      install_requires=INSTALL_REQUIRES,
+      tests_require=TESTS_REQUIRE,
       ext_modules=extensions,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,

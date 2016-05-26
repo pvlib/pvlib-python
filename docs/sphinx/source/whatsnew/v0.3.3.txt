@@ -24,6 +24,7 @@ Bug fixes
 * Clarify that ``ModelChain`` and ``basic_chain`` currently only
   supports SAPM. (:issue:`177`)
 * Fix version number in 0.3.2 whatsnew file.
+* Add classifiers to setup.py. (:issue:`181`)
 
 
 Contributors

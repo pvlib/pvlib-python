@@ -24,6 +24,21 @@ AUTHOR = 'Dan Riley, Clifford Hanson, Rob Andrews, Will Holmgren, github contrib
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
+CLASSIFIERS = [
+    'Development Status :: 4 - Beta',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: OS Independent',
+    'Intended Audience :: Science/Research',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Topic :: Scientific/Engineering',
+]
+
 # check python version.
 if not sys.version_info[:2] in ((2,7), (3,3), (3,4), (3,5)):
    sys.exit('%s requires Python 2.7, 3.3, or 3.4' % DISTNAME)
@@ -72,4 +87,5 @@ setup(name=DISTNAME,
       maintainer_email=MAINTAINER_EMAIL,
       license=LICENSE,
       url=URL,
+      classifiers=CLASSIFIERS,
       **setuptools_kwargs)

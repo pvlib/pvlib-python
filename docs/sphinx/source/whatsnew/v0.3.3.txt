@@ -21,10 +21,17 @@ Bug fixes
 
 * Fix another bug with the Appveyor continuous integration builds.
   (:issue:`170`)
+* Add classifiers to setup.py. (:issue:`181`)
+
+
+Documentation
+~~~~~~~~~~~~~
+
 * Clarify that ``ModelChain`` and ``basic_chain`` currently only
   supports SAPM. (:issue:`177`)
 * Fix version number in 0.3.2 whatsnew file.
-* Add classifiers to setup.py. (:issue:`181`)
+* Shorten README.md file and move information to official documentation.
+  (:issue:`182`)
 
 
 Contributors

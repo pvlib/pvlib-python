@@ -50,21 +50,6 @@ def incompatible_conda_linux_py3(test):
     return out
 
 
-def incompatible_pandas_0180(test):
-    """
-    Test won't work on pandas 0.18.0 due to pandas/numpy issue with
-    np.round.
-    """
-
-    if pd.__version__ == '0.18.0':
-        out = unittest.skip(
-            'error on pandas 0.18.0 due to pandas/numpy round')(test)
-    else:
-        out = test
-
-    return out
-
-
 def incompatible_pandas_0131(test):
     """
     Test won't work on pandas 0.18.0 due to pandas/numpy issue with

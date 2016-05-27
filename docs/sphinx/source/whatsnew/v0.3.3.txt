@@ -34,6 +34,13 @@ Documentation
   (:issue:`182`)
 
 
+Other
+~~~~~
+
+* Removed test skip decorator functions for Linux + Python 3 and for
+  pandas 0.18.0. (:issue:`187`)
+
+
 Contributors
 ~~~~~~~~~~~~
 

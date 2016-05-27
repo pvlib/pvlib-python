@@ -8,7 +8,6 @@ import pandas as pd
 
 from nose.tools import assert_equals, assert_almost_equals
 from pandas.util.testing import assert_series_equal, assert_frame_equal
-from . import incompatible_pandas_0180
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -189,7 +188,6 @@ def test_PVSystem_sapm():
     assert_frame_equal(sapm, expected)
 
 
-@incompatible_pandas_0180
 def test_calcparams_desoto():
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
@@ -211,7 +209,6 @@ def test_calcparams_desoto():
     assert_almost_equals(nNsVth, 0.473)
 
 
-@incompatible_pandas_0180
 def test_PVSystem_calcparams_desoto():
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module].copy()

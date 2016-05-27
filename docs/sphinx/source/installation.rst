@@ -194,6 +194,64 @@ interpreter will also work.
 Remember to ``source activate pvlibdev`` (or whatever you named your
 environment) when you start a new shell or terminal.
 
+.. _nrelspa:
+
+NREL SPA algorithm
+------------------
+
+pvlib-python is distributed with several validated, high-precision, and
+high-performance solar position calculators. We strongly recommend using
+the built-in solar position calculators.
+
+pvlib-python also includes unsupported wrappers for the official NREL
+SPA algorithm. NREL's license does not allow redistribution of the
+source code, so you must jump through some hoops to use it with pvlib.
+You will need a C compiler to use this code.
+
+To install the NREL SPA algorithm for use with pvlib:
+
+#. Download the pvlib repository (as described in :ref:`obtainsource`)
+#. Download the `SPA files from NREL <http://www.nrel.gov/midc/spa/>`_
+#. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files``
+#. From the ``pvlib-python`` directory, run ``pip uninstall pvlib``
+   followed by ``pip install .``
+
+.. _compatibility:
+
+Compatibility
+-------------
+
+pvlib-python is compatible with Python versions 2.7, 3.4, 3.5 and Pandas
+versions 0.13.1 or newer.
+
+There are several problems with Continuum's Anaconda packages that may
+impact pvlib users.
+
+For Linux + Python 3 users: Continuum's Python 3.x SciPy conda packages
+have a few bugs related to complex arithmetic. The most common place for
+these bugs to show up when using pvlib-python is in calculating IV curve
+parameters using the ``singlediode`` function. We reported `the
+issue <https://github.com/ContinuumIO/anaconda-issues/issues/425>`_ to
+Continuum and are waiting for it to be fixed. In the meantime, you can
+compile your own SciPy distribution, or you can use this hack on Python
+3.3 and 3.4 (not 3.5): Downgrade your NumPy to 1.8 and SciPy to 0.14,
+then install whatever version of pandas you want but without
+dependencies. The conda commands for this are:
+
+``conda install numpy=1.8 scipy=0.14``
+
+``conda install pandas --no-deps``
+
+For Windows + Python 2.7 users: Continuum's Python 2.7 SciPy 0.16.1,
+0.17.0, 0.17.1 packages are not compiled properly and will crash your
+Python interpreter if you use our Linke turbidity lookup function. See
+`Anaconda issue 650
+<https://github.com/ContinuumIO/anaconda-issues/issues/650>`_ for more.
+
+Note that our Numba-accelerated solar position algorithms have more
+specific version requirements that will be resolved by the Numba
+installer.
+
 .. _references:
 
 References

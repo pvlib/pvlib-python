@@ -32,6 +32,8 @@ Documentation
 * Fix version number in 0.3.2 whatsnew file.
 * Shorten README.md file and move information to official documentation.
   (:issue:`182`)
+* Change authors to *PVLIB Python Developers* and clean up setup.py.
+  (:issue:`184`)
 
 
 Contributors

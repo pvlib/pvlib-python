@@ -224,29 +224,15 @@ Compatibility
 pvlib-python is compatible with Python versions 2.7, 3.4, 3.5 and Pandas
 versions 0.13.1 or newer.
 
-There are several problems with Continuum's Anaconda packages that may
-impact pvlib users.
+There have been several problems with Continuum's Anaconda packages that
+have impacted pvlib users. The current problems that we're aware of are
+listed below:
 
-For Linux + Python 3 users: Continuum's Python 3.x SciPy conda packages
-have a few bugs related to complex arithmetic. The most common place for
-these bugs to show up when using pvlib-python is in calculating IV curve
-parameters using the ``singlediode`` function. We reported `the
-issue <https://github.com/ContinuumIO/anaconda-issues/issues/425>`_ to
-Continuum and are waiting for it to be fixed. In the meantime, you can
-compile your own SciPy distribution, or you can use this hack on Python
-3.3 and 3.4 (not 3.5): Downgrade your NumPy to 1.8 and SciPy to 0.14,
-then install whatever version of pandas you want but without
-dependencies. The conda commands for this are:
-
-``conda install numpy=1.8 scipy=0.14``
-
-``conda install pandas --no-deps``
-
-For Windows + Python 2.7 users: Continuum's Python 2.7 SciPy 0.16.1,
-0.17.0, 0.17.1 packages are not compiled properly and will crash your
-Python interpreter if you use our Linke turbidity lookup function. See
-`Anaconda issue 650
-<https://github.com/ContinuumIO/anaconda-issues/issues/650>`_ for more.
+#. For Windows + Python 2.7 users: Continuum's Python 2.7 SciPy 0.16.1,
+   0.17.0, 0.17.1 packages are not compiled properly and will crash your
+   Python interpreter if you use our Linke turbidity lookup function. See
+   `Anaconda issue 650
+   <https://github.com/ContinuumIO/anaconda-issues/issues/650>`_ for more.
 
 Note that our Numba-accelerated solar position algorithms have more
 specific version requirements that will be resolved by the Numba

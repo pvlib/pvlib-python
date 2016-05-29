@@ -443,8 +443,6 @@ class LocalizedPVSystem(PVSystem, Location):
         # get and combine attributes from the pvsystem and/or location
         # with the rest of the kwargs
         
-        self.location = location
-        
         if pvsystem is not None:
             pv_dict = pvsystem.__dict__
         else:
@@ -466,7 +464,8 @@ class LocalizedPVSystem(PVSystem, Location):
                 ' and azimuth: ' + str(self.surface_azimuth) +
                 ' with Module: ' + str(self.module) +
                 ' and Inverter: ' + str(self.inverter) +
-                ' and Location: ' + str(self.location))
+                ' at Latitude: ' + str(self.latitude) +
+                ' and Longitude: ' + str(self.longitude))
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,

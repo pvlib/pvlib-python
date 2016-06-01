@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
+from numpy import nan
 
 from pvlib import modelchain, pvsystem
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
+from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 
 from pandas.util.testing import assert_series_equal, assert_frame_equal
@@ -98,6 +100,26 @@ def test_run_model_with_weather():
     expected = pd.Series(np.array([  1.99952400e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
+
+
+def test_run_model_tracker():
+    system, location = mc_setup()
+    system = SingleAxisTracker(module_parameters=system.module_parameters,
+                               inverter_parameters=system.inverter_parameters)
+    mc = ModelChain(system, location)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array([  121.421719,  -2.00000000e-02]),
+                         index=times)
+    assert_series_equal(ac, expected)
+
+    expected = pd.DataFrame(np.
+        array([[ 54.82513187,  90.        ,  11.0039221 ,  11.0039221 ],
+               [         nan,   0.        ,   0.        ,          nan]]),
+        columns=['aoi', 'surface_azimuth', 'surface_tilt', 'tracker_theta'],
+        index=times)
+    assert_frame_equal(mc.tracking, expected)
 
 
 @raises(ValueError)

@@ -1313,12 +1313,12 @@ def _get_perez_coefficients(perezmodelt):
 
 def disc(ghi, zenith, times, pressure=101325):
     '''
-    Estimate Direct Normal Irradiance from Global Horizontal Irradiance 
+    Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
 
     The DISC algorithm converts global horizontal irradiance to direct
     normal irradiance through empirical relationships between the global
-    and direct clearness indices. 
+    and direct clearness indices.
 
     Parameters
     ----------
@@ -1327,62 +1327,62 @@ def disc(ghi, zenith, times, pressure=101325):
         Global horizontal irradiance in W/m^2.
 
     solar_zenith : Series
-        True (not refraction - corrected) solar zenith 
-        angles in decimal degrees. 
+        True (not refraction - corrected) solar zenith
+        angles in decimal degrees.
 
     times : DatetimeIndex
 
     pressure : float or Series
         Site pressure in Pascal.
 
-    Returns   
+    Returns
     -------
     DataFrame with the following keys:
-        * ``dni``: The modeled direct normal irradiance 
+        * ``dni``: The modeled direct normal irradiance
           in W/m^2 provided by the
-          Direct Insolation Simulation Code (DISC) model. 
-        * ``kt``: Ratio of global to extraterrestrial 
+          Direct Insolation Simulation Code (DISC) model.
+        * ``kt``: Ratio of global to extraterrestrial
           irradiance on a horizontal plane.
         * ``airmass``: Airmass
 
     References
     ----------
 
-    [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly 
-    Global Horizontal to Direct Normal Insolation", Technical 
-    Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research 
+    [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+    Global Horizontal to Direct Normal Insolation", Technical
+    Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
     Institute, 1987.
 
-    [2] J.W. "Fourier series representation of the position of the sun". 
+    [2] J.W. "Fourier series representation of the position of the sun".
     Found at:
     http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html on
     January 12, 2012
 
-    See Also 
-    -------- 
-    atmosphere.alt2pres 
+    See Also
+    --------
+    atmosphere.alt2pres
     dirint
     '''
 
     pvl_logger.debug('clearsky.disc')
-    
+
     temp = pd.DataFrame(index=times, columns=['A','B','C'], dtype=float)
 
     doy = times.dayofyear
-    
+
     DayAngle = 2. * np.pi*(doy - 1) / 365
-    
+
     re = (1.00011 + 0.034221*np.cos(DayAngle) + 0.00128*np.sin(DayAngle)
           + 0.000719*np.cos(2.*DayAngle) + 7.7e-05*np.sin(2.*DayAngle) )
-          
+
     I0 = re * 1370.
     I0h = I0 * np.cos(np.radians(zenith))
-    
+
     Ztemp = zenith.copy()
     Ztemp[zenith > 87] = np.NaN
-    
+
     AM = 1.0 / ( np.cos(np.radians(Ztemp)) + 0.15*( (93.885 - Ztemp)**(-1.253) ) ) * (pressure / 101325)
-    
+
     Kt = ghi / I0h
     Kt[Kt < 0] = 0
     Kt[Kt > 2] = np.NaN
@@ -1395,10 +1395,10 @@ def disc(ghi, zenith, times, pressure=101325):
     temp.C[Kt <= 0.6] = -0.28 + 0.932*(Kt[Kt <= 0.6]) - 2.048*(Kt[Kt <= 0.6] ** 2)
 
     delKn = temp.A + temp.B * np.exp(temp.C*AM)
-   
+
     Knc = 0.866 - 0.122*(AM) + 0.0121*(AM ** 2) - 0.000653*(AM ** 3) + 1.4e-05*(AM ** 4)
     Kn = Knc - delKn
-    
+
     dni = Kn * I0
 
     dni[zenith > 87] = np.NaN
@@ -1409,14 +1409,14 @@ def disc(ghi, zenith, times, pressure=101325):
     dfout['airmass'] = AM
 
     return dfout
-    
 
-def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True, 
+
+def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
            temp_dew=None):
     """
-    Determine DNI from GHI using the DIRINT modification 
+    Determine DNI from GHI using the DIRINT modification
     of the DISC model.
-    
+
     Implements the modified DISC model known as "DIRINT" introduced in [1].
     DIRINT predicts direct normal irradiance (DNI) from measured global
     horizontal irradiance (GHI). DIRINT improves upon the DISC model by
@@ -1425,22 +1425,22 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     information provided.
 
     Parameters
-    ----------  
+    ----------
     ghi : pd.Series
-        Global horizontal irradiance in W/m^2. 
-    
+        Global horizontal irradiance in W/m^2.
+
     zenith : pd.Series
         True (not refraction-corrected) zenith
         angles in decimal degrees. If Z is a vector it must be of the
         same size as all other vector inputs. Z must be >=0 and <=180.
-    
+
     times : DatetimeIndex
-        
+
     pressure : float or pd.Series
-        The site pressure in Pascal. 
-        Pressure may be measured or an average pressure may be 
+        The site pressure in Pascal.
+        Pressure may be measured or an average pressure may be
         calculated from site altitude.
-    
+
     use_delta_kt_prime : bool
         Indicates if the user would like to
         utilize the time-series nature of the GHI measurements. A value of ``False``
@@ -1450,13 +1450,13 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
         than 1.5 hours. If none of the input arguments are
         vectors, then time-series improvements are not used (because it's not
         a time-series).
-    
-    temp_dew : None, float, or pd.Series 
-        Surface dew point temperatures, in degrees C. 
+
+    temp_dew : None, float, or pd.Series
+        Surface dew point temperatures, in degrees C.
         Values of temp_dew may be numeric or NaN. Any
         single time period point with a DewPtTemp=NaN does not have dew point
-        improvements applied. If DewPtTemp is not provided, then dew point 
-        improvements are not applied.  
+        improvements applied. If DewPtTemp is not provided, then dew point
+        improvements are not applied.
 
     Returns
     -------
@@ -1467,57 +1467,57 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     References
     ----------
     [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka, (1992).
-    "Dynamic Global-to-Direct Irradiance Conversion Models".  ASHRAE 
+    "Dynamic Global-to-Direct Irradiance Conversion Models".  ASHRAE
     Transactions-Research Series, pp. 354-369
 
-    [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly 
-    Global Horizontal to Direct Normal Insolation", Technical 
-    Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research 
+    [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+    Global Horizontal to Direct Normal Insolation", Technical
+    Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
     Institute, 1987.
 
     DIRINT model requires time series data (ie. one of the inputs must be a
     vector of length >2.
     """
-    
+
     pvl_logger.debug('clearsky.dirint')
-    
+
     disc_out = disc(ghi, zenith, times)
     kt = disc_out['kt']
-    
+
     # Absolute Airmass, per the DISC model
     # Note that we calculate the AM pressure correction slightly differently
     # than Perez. He uses altitude, we use pressure (which we calculate
     # slightly differently)
-    airmass = (1./(tools.cosd(zenith) + 0.15*((93.885-zenith)**(-1.253))) * 
+    airmass = (1./(tools.cosd(zenith) + 0.15*((93.885-zenith)**(-1.253))) *
                pressure/101325)
-    
+
     coeffs = _get_dirint_coeffs()
-    
+
     kt_prime = kt / (1.031 * np.exp(-1.4/(0.9+9.4/airmass)) + 0.1)
     kt_prime[kt_prime > 0.82] = 0.82 # From SRRL code. consider np.NaN
     kt_prime.fillna(0, inplace=True)
     pvl_logger.debug('kt_prime:\n%s', kt_prime)
-    
-    # wholmgren: 
+
+    # wholmgren:
     # the use_delta_kt_prime statement is a port of the MATLAB code.
     # I am confused by the abs() in the delta_kt_prime calculation.
     # It is not the absolute value of the central difference.
     if use_delta_kt_prime:
         delta_kt_prime = 0.5*( (kt_prime - kt_prime.shift(1)).abs()
                               .add(
-                               (kt_prime - kt_prime.shift(-1)).abs(), 
+                               (kt_prime - kt_prime.shift(-1)).abs(),
                                    fill_value=0))
     else:
         delta_kt_prime = pd.Series(-1, index=times)
-    
+
     if temp_dew is not None:
         w = pd.Series(np.exp(0.07 * temp_dew - 0.075), index=times)
     else:
         w = pd.Series(-1, index=times)
-    
+
     # @wholmgren: the following bin assignments use MATLAB's 1-indexing.
     # Later, we'll subtract 1 to conform to Python's 0-indexing.
-    
+
     # Create kt_prime bins
     kt_prime_bin = pd.Series(index=times)
     kt_prime_bin[(kt_prime>=0) & (kt_prime<0.24)] = 1
@@ -1527,7 +1527,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     kt_prime_bin[(kt_prime>=0.7) & (kt_prime<0.8)] = 5
     kt_prime_bin[(kt_prime>=0.8) & (kt_prime<=1)] = 6
     pvl_logger.debug('kt_prime_bin:\n%s', kt_prime_bin)
-    
+
     # Create zenith angle bins
     zenith_bin = pd.Series(index=times)
     zenith_bin[(zenith>=0) & (zenith<25)] = 1
@@ -1537,7 +1537,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     zenith_bin[(zenith>=70) & (zenith<80)] = 5
     zenith_bin[(zenith>=80)] = 6
     pvl_logger.debug('zenith_bin:\n%s', zenith_bin)
-    
+
     # Create the bins for w based on dew point temperature
     w_bin = pd.Series(index=times)
     w_bin[(w>=0) & (w<1)] = 1
@@ -1557,7 +1557,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     delta_kt_prime_bin[(delta_kt_prime>=0.3) & (delta_kt_prime<=1)] = 6
     delta_kt_prime_bin[delta_kt_prime == -1] = 7
     pvl_logger.debug('delta_kt_prime_bin:\n%s', delta_kt_prime_bin)
-    
+
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.
     dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
@@ -1573,19 +1573,19 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
 def _get_dirint_coeffs():
     """
     A place to stash the dirint coefficients.
-    
+
     Returns
     -------
     np.array with shape ``(6, 6, 7, 5)``.
     Ordering is ``[kt_prime_bin, zenith_bin, delta_kt_prime_bin, w_bin]``
     """
 
-    # To allow for maximum copy/paste from the MATLAB 1-indexed code, 
+    # To allow for maximum copy/paste from the MATLAB 1-indexed code,
     # we create and assign values to an oversized array.
     # Then, we return the [1:, 1:, :, :] slice.
-    
+
     coeffs = np.zeros((7,7,7,5))
-    
+
     coeffs[1,1,:,:] = [
         [0.385230, 0.385230, 0.385230, 0.462880, 0.317440],
         [0.338390, 0.338390, 0.221270, 0.316730, 0.503650],
@@ -1909,6 +1909,94 @@ def _get_dirint_coeffs():
         [0.570000, 0.550000, 0.598800, 0.400000, 0.560150],
         [0.475230, 0.500000, 0.518640, 0.339970, 0.520230],
         [0.743440, 0.592190, 0.603060, 0.316930, 0.794390 ]]
-        
+
     return coeffs[1:,1:,:,:]
 
+
+def erbs(ghi, zenith, doy):
+    r"""
+    Estimate DNI and DHI from GHI using the Erbs model.
+
+    The Erbs model [1]_ estimates the diffuse fraction DF from global
+    horizontal irradiance through an empirical relationship between DF
+    and the ratio of GHI to extraterrestrial irradiance, Kt. The
+    function uses the diffuse fraction to compute DHI as
+
+    .. math::
+
+        DHI = DF \times GHI
+
+    DNI is then estimated as
+
+    .. math::
+
+        DNI = (GHI - DHI)/\cos(Z)
+
+    where Z is the zenith angle.
+
+    Parameters
+    ----------
+    ghi: scalar, array or Series
+        Global horizontal irradiance in W/m^2.
+    zenith: scalar, array or Series
+        True (not refraction-corrected) zenith angles in decimal degrees.
+    doy: scalar, array or DatetimeIndex
+        The day of the year.
+
+    Returns
+    -------
+    data : DataFrame
+        The DataFrame will have the following columns:
+
+            * ``dni``: the modeled direct normal irradiance in W/m^2.
+            * ``dhi``: the modeled diffuse horizontal irradiance in W/m^2.
+            * ``kt``: Ratio of global to extraterrestrial irradiance
+              on a horizontal plane.
+
+    References
+    ----------
+    .. [1] D. G. Erbs, S. A. Klein and J. A. Duffie, Estimation of the
+       diffuse radiation fraction for hourly, daily and monthly-average
+       global radiation, Solar Energy 28(4), pp 293-302, 1982. Eq. 1
+
+    See also
+    --------
+    dirint
+    disc
+    """
+
+    # enables all scalar input
+    ghi = pd.Series(ghi)
+    zenith = pd.Series(zenith)
+
+    dni_extra = extraradiation(doy)
+
+    # This Z needs to be the true Zenith angle, not apparent,
+    # to get extraterrestrial horizontal radiation)
+    i0_h = dni_extra * tools.cosd(zenith)
+
+    kt = ghi / i0_h
+    kt[kt < 0] = 0
+
+    # For Kt <= 0.22, set the diffuse fraction
+    df = 1 - 0.09*kt
+
+    # For Kt > 0.22 and Kt <= 0.8, set the diffuse fraction
+    mask = (kt > 0.22) & (kt <= 0.8)
+    df[mask] = (
+        0.9511 - 0.1604*kt[mask] + 4.388*kt[mask]**2 - 16.638*kt[mask]**3 +
+        12.336*kt[mask]**4)
+
+    # For Kt > 0.8, set the diffuse fraction
+    df[kt > 0.8] = 0.165
+
+    dhi = df * ghi
+
+    dni = (ghi - dhi) / tools.cosd(zenith)
+
+    data = pd.DataFrame()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = kt
+
+    return data

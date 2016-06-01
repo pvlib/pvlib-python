@@ -1,0 +1,49 @@
+.. _whatsnew_0330:
+
+v0.3.3 (May xx, 2016)
+-----------------------
+
+This is a minor release from 0.3.2.
+We recommend that all users upgrade to this version.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adds the Erbs model. (:issue:`2`)
+* Adds the ``scale_voltage_current_power`` function and ``PVSystem`` method
+  to support simple array modeling. (:issue:`159`)
+* Adds support for ``SingleAxisTracker`` objects in ``ModelChain``.
+  (:issue:`169`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fix another bug with the Appveyor continuous integration builds.
+  (:issue:`170`)
+* Add classifiers to setup.py. (:issue:`181`)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+* Clarify that ``ModelChain`` and ``basic_chain`` currently only
+  supports SAPM. (:issue:`177`)
+* Fix version number in 0.3.2 whatsnew file.
+* Shorten README.md file and move information to official documentation.
+  (:issue:`182`)
+* Change authors to *PVLIB Python Developers* and clean up setup.py.
+  (:issue:`184`)
+
+
+Other
+~~~~~
+
+* Removed test skip decorator functions for Linux + Python 3 and for
+  pandas 0.18.0. (:issue:`187`)
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren

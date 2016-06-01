@@ -3,11 +3,6 @@
 # This file was based on Olivier Grisel's python-appveyor-demo
 
 environment:
-  global:
-    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
-    # /E:ON and /V:ON options are not enabled in the batch script intepreter
-    # See: http://stackoverflow.com/a/13751649/163740
-    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
 
   matrix:
     - PYTHON: "C:\\Python27-conda32"
@@ -32,7 +27,9 @@ install:
     - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
     # install depenencies
-    - "conda install --yes --quiet pip numpy scipy=0.16.0 pandas nose pytz ephem numba"
+    - "conda create -n test_env --yes --quiet python=%PYTHON_VERSION% pip numpy scipy=0.16.0 pandas nose pytz ephem numba"
+    - "activate test_env"
+    - "conda list"
 
     # install pvlib
     - "python setup.py install"

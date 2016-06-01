@@ -80,8 +80,8 @@ to accomplish our system modeling goal:
               'surface_azimuth': 180}
 
     energies = {}
+    # localize datetime indices (pvlib>=0.3.0)
     for latitude, longitude, name, altitude, timezone in coordinates:
-        # localize datetime indices (pvlib>=0.3.0)
         times = naive_times.tz_localize(timezone)
         system['surface_tilt'] = latitude
         cs = pvlib.clearsky.ineichen(times, latitude, longitude, altitude=altitude)

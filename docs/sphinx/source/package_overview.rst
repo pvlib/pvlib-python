@@ -214,7 +214,7 @@ object to accomplish our modeling goal:
     from pvlib.pvsystem import LocalizedPVSystem
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
+    for latitude, longitude, name, altitude, timezone in coordinates:
         localized_system = LocalizedPVSystem(module_parameters=module,
                                              inverter_parameters=inverter,
                                              surface_tilt=latitude,
@@ -222,7 +222,9 @@ object to accomplish our modeling goal:
                                              latitude=latitude,
                                              longitude=longitude,
                                              name=name,
-                                             altitude=altitude)
+                                             altitude=altitude,
+                                             tz=timezone)
+        times = naive_times.tz_localize(timezone)
         clearsky = localized_system.get_clearsky(times)
         solar_position = localized_system.get_solarposition(times)
         total_irrad = localized_system.get_irradiance(solar_position['apparent_zenith'],

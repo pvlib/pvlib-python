@@ -6,6 +6,14 @@ v0.3.3 (May xx, 2016)
 This is a minor release from 0.3.2.
 We recommend that all users upgrade to this version.
 
+
+API Changes
+~~~~~~~~~~~
+
+* Renamed ``series_modules`` to ``modules_per_string`` and
+  ``parallel_modules`` to ``strings_per_inverter``. (:issue:`176`)
+
+
 Enhancements
 ~~~~~~~~~~~~
 

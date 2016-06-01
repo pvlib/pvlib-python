@@ -176,14 +176,15 @@ objects to accomplish our system modeling goal:
                       inverter_parameters=inverter)
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
-        location = Location(latitude, longitude, name=name, altitude=altitude)
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        location = Location(latitude, longitude, name=name, altitude=altitude,
+                            tz=timezone)
         # very experimental
         mc = ModelChain(system, location,
                         orientation_strategy='south_at_latitude_tilt')
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
-        mc.run_model(times)
+        mc.run_model(naive_times.tz_localize(timezone))
         annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 

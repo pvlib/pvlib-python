@@ -49,7 +49,7 @@ configuration at a handful of sites listed below.
     # latitude, longitude, name, altitude, timezone
     coordinates = [(30, -110, 'Tucson', 700, 'Etc/GMT+7'),
                    (35, -105, 'Albuquerque', 1500, 'Etc/GMT+7'),
-                   (40, -120, 'San Francisco', 10, 'Etc/GMT+7'),
+                   (40, -120, 'San Francisco', 10, 'Etc/GMT+8'),
                    (50, 10, 'Berlin', 34, 'Etc/GMT-1')]
 
     import pvlib

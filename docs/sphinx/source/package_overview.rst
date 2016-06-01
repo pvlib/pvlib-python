@@ -127,8 +127,9 @@ a full understanding of what it is doing internally!
     from pvlib.modelchain import basic_chain
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
-        dc, ac = basic_chain(times, latitude, longitude,
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        dc, ac = basic_chain(naive_times.tz_localize(timezone),
+                             latitude, longitude,
                              module, inverter,
                              altitude=altitude,
                              orientation_strategy='south_at_latitude_tilt')

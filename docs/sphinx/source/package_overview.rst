@@ -43,12 +43,14 @@ configuration at a handful of sites listed below.
     import seaborn as sns
     sns.set_color_codes()
 
+    naive_times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
+
     # very approximate
     # latitude, longitude, name, altitude, timezone
-    coordinates = [(30, -110, 'Tucson', 700, 'US/Mountain'),
-                   (35, -105, 'Albuquerque', 1500, 'US/Mountain'),
-                   (40, -120, 'San Francisco', 10, 'US/Pacific'),
-                   (50, 10, 'Berlin', 34, 'Europe/Berlin')]
+    coordinates = [(30, -110, 'Tucson', 700, 'Etc/GMT+7'),
+                   (35, -105, 'Albuquerque', 1500, 'Etc/GMT+7'),
+                   (40, -120, 'San Francisco', 10, 'Etc/GMT+7'),
+                   (50, 10, 'Berlin', 34, 'Etc/GMT-1')]
 
     import pvlib
 
@@ -79,9 +81,8 @@ to accomplish our system modeling goal:
 
     energies = {}
     for latitude, longitude, name, altitude, timezone in coordinates:
-        # create datetime indices localized to timezone (pvlib>=0.3.0)
-        times = pd.DatetimeIndex(start='2015', end='2016', freq='1h',
-                                 tz=timezone)
+        # localize datetime indices (pvlib>=0.3.0)
+        times = naive_times.tz_localize(timezone)
         system['surface_tilt'] = latitude
         cs = pvlib.clearsky.ineichen(times, latitude, longitude, altitude=altitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
@@ -284,4 +285,3 @@ The pvlib-python maintainers thank all of pvlib's contributors of issues
 and especially pull requests.
 The pvlib-python community thanks all of the
 maintainers and contributors to the PyData stack.
-

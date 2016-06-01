@@ -15,14 +15,37 @@ except ImportError:
 import versioneer
 
 
-DESCRIPTION = 'The PVLIB toolbox provides a set functions for simulating the performance of photovoltaic energy systems.'
-LONG_DESCRIPTION = open('README.md').read()
+DESCRIPTION = ('A set of functions and classes for simulating the ' +
+               'performance of photovoltaic energy systems.')
+LONG_DESCRIPTION = """
+PVLIB Python is a community supported tool that provides a set of
+functions and classes for simulating the performance of photovoltaic
+energy systems. PVLIB Python was originally ported from the PVLIB MATLAB
+toolbox developed at Sandia National Laboratories and it implements many
+of the models and methods developed at the Labs. More information on
+Sandia Labs PV performance modeling programs can be found at
+https://pvpmc.sandia.gov/. We collaborate with the PVLIB MATLAB project,
+but operate independently of it.
+
+We need your help to make pvlib-python a great tool!
+
+Documentation: http://pvlib-python.readthedocs.io
+
+Source code: https://github.com/pvlib/pvlib-python
+"""
 
 DISTNAME = 'pvlib'
-LICENSE = 'The BSD 3-Clause License'
-AUTHOR = 'Dan Riley, Clifford Hanson, Rob Andrews, Will Holmgren, github contributors'
+LICENSE = 'BSD 3-Clause'
+AUTHOR = 'PVLIB Python Developers'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
+
+INSTALL_REQUIRES = ['numpy >= 1.8.2',
+                    'pandas >= 0.13.1',
+                    'pytz',
+                    'six',
+                    ]
+TESTS_REQUIRE = ['nose']
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -39,17 +62,8 @@ CLASSIFIERS = [
     'Topic :: Scientific/Engineering',
 ]
 
-# check python version.
-if not sys.version_info[:2] in ((2,7), (3,3), (3,4), (3,5)):
-   sys.exit('%s requires Python 2.7, 3.3, or 3.4' % DISTNAME)
-
 setuptools_kwargs = {
     'zip_safe': False,
-    'install_requires': ['numpy >= 1.8.2',
-                         'pandas >= 0.13.1',
-                         'pytz',
-                         'six',
-                         ],
     'scripts': [],
     'include_package_data': True
 }
@@ -68,18 +82,20 @@ if all(map(os.path.exists, spa_all_file_paths)):
     print('all spa_c files found')
     PACKAGES.append('pvlib.spa_c_files')
 
-    spa_ext = Extension('pvlib.spa_c_files.spa_py', 
+    spa_ext = Extension('pvlib.spa_c_files.spa_py',
                         sources=spa_sources, depends=spa_depends)
     extensions.append(spa_ext)
 else:
     print('WARNING: spa_c files not detected. ' +
           'See installation instructions for more information.')
 
- 
+
 setup(name=DISTNAME,
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
+      install_requires=INSTALL_REQUIRES,
+      tests_require=TESTS_REQUIRE,
       ext_modules=extensions,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,

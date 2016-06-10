@@ -286,3 +286,24 @@ def test_get_irradiance():
     irradiance = np.round(irradiance, 4)
     expected = np.round(expected, 4)
     assert_frame_equal(irradiance, expected)
+
+    
+def test_SingleAxisTracker___repr__():
+    system = tracking.SingleAxisTracker(max_angle=45, gcr=.25,
+                                        module='blah', inverter='blarg')
+                                        
+    assert system.__repr__() == 'SingleAxisTracker with max_angle: 45'
+    
+
+def test_LocalizedSingleAxisTracker___repr__():
+    localized_system = tracking.LocalizedSingleAxisTracker(latitude=32,
+                                                           longitude=-111,
+                                                           module='blah',
+                                                           inverter='blarg')
+
+
+    assert localized_system.__repr__() == ('LocalizedSingleAxisTracker with '+
+                                          'max_angle: 90 at Location: None: '+
+                                          'latitude=32, longitude=-111, ' +
+                                          'tz=UTC, altitude=0')
+

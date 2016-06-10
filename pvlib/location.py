@@ -87,7 +87,7 @@ class Location(object):
         
         
         
-    def __str__(self):
+    def __repr__(self):
         return ('{}: latitude={}, longitude={}, tz={}, altitude={}'
                 .format(self.name, self.latitude, self.longitude, 
                         self.tz, self.altitude))

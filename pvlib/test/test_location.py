@@ -160,3 +160,10 @@ def test_get_airmass_valueerror():
                              end='20160101T1800-0700',
                              freq='3H')
     clearsky = tus.get_airmass(times, model='invalid_model')
+    
+def test_Location___repr__():
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    assert tus.__repr__()==('Tucson: latitude=32.2, longitude=-111, '+
+    'tz=US/Arizona, altitude=700')
+    
+    

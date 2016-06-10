@@ -32,6 +32,9 @@ Bug fixes
 * Fix another bug with the Appveyor continuous integration builds.
   (:issue:`170`)
 * Add classifiers to setup.py. (:issue:`181`)
+* Fix snlinverter and singlediode documentation. They incorrectly said that
+  inverter/module must be a DataFrame, when in reality they can be any
+  dict-like object. (:issue:`157`)
 
 
 Documentation

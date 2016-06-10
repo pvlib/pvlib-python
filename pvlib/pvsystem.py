@@ -139,7 +139,7 @@ class PVSystem(object):
 
         # needed for tying together Location and PVSystem in LocalizedPVSystem
         super(PVSystem, self).__init__(**kwargs)
-        
+
     def __repr__(self):
         return ('PVSystem with tilt:' + str(self.surface_tilt) +
                 ' and azimuth: ' + str(self.surface_azimuth) +
@@ -443,7 +443,7 @@ class LocalizedPVSystem(PVSystem, Location):
 
         # get and combine attributes from the pvsystem and/or location
         # with the rest of the kwargs
-        
+
         if pvsystem is not None:
             pv_dict = pvsystem.__dict__
         else:
@@ -459,7 +459,7 @@ class LocalizedPVSystem(PVSystem, Location):
                           list(kwargs.items()))
 
         super(LocalizedPVSystem, self).__init__(**new_kwargs)
-        
+
     def __repr__(self):
         return ('LocalizedPVSystem with tilt:' + str(self.surface_tilt) +
                 ' and azimuth: ' + str(self.surface_azimuth) +
@@ -1323,8 +1323,8 @@ def singlediode(module, photocurrent, saturation_current,
 
     Parameters
     ----------
-    module : DataFrame
-        A DataFrame defining the SAPM performance parameters.
+    module : dict or Series
+        A dict-like object defining the SAPM performance parameters.
 
     photocurrent : float or Series
         Light-generated current (photocurrent) in amperes under desired
@@ -1625,8 +1625,8 @@ def snlinverter(inverter, v_dc, p_dc):
 
     Parameters
     ----------
-    inverter : DataFrame
-        A DataFrame defining the inverter to be used, giving the
+    inverter : dict or Series
+        A dict-like object defining the inverter to be used, giving the
         inverter performance parameters according to the Sandia
         Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1].
         A set of inverter performance parameters are provided with

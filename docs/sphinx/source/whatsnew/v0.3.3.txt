@@ -1,6 +1,6 @@
 .. _whatsnew_0330:
 
-v0.3.3 (May xx, 2016)
+v0.3.3 (June xx, 2016)
 -----------------------
 
 This is a minor release from 0.3.2.
@@ -22,6 +22,8 @@ Enhancements
   to support simple array modeling. (:issue:`159`)
 * Adds support for ``SingleAxisTracker`` objects in ``ModelChain``.
   (:issue:`169`)
+* Add ``__repr__`` method to PVSystem, LocalizedPVSystem, ModelChain,
+  SingleAxisTracker, Location. (:issue:`142`)
 
 
 Bug fixes
@@ -58,3 +60,4 @@ Contributors
 
 * Will Holmgren
 * Mark Mikofski
+* Johannes Oos

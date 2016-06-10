@@ -55,8 +55,8 @@ def test_systemdef_tmy3():
                 'latitude': 55.317,
                 'longitude': -160.517,
                 'name': '"SAND POINT"',
-                'parallel_modules': 5,
-                'series_modules': 5,
+                'strings_per_inverter': 5,
+                'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 0}
     assert_equals(expected, pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5))
@@ -68,8 +68,8 @@ def test_systemdef_tmy2():
                 'latitude': 25.8,
                 'longitude': -80.26666666666667,
                 'name': 'MIAMI',
-                'parallel_modules': 5,
-                'series_modules': 5,
+                'strings_per_inverter': 5,
+                'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 0}
     assert_equals(expected, pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5))
@@ -81,8 +81,8 @@ def test_systemdef_dict():
                 'latitude': 37.8,
                 'longitude': -122.3,
                 'name': 'Oakland',
-                'parallel_modules': 5,
-                'series_modules': 5,
+                'strings_per_inverter': 5,
+                'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 5}
     assert_equals(expected, pvsystem.systemdef(meta, 5, 0, .1, 5, 5))
@@ -314,7 +314,7 @@ def test_PVSystem_scale_voltage_current_power():
         np.array([[6, 4.5, 20, 16, 72, 1.5, 4.5]]),
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=[0])
-    system = pvsystem.PVSystem(series_modules=2, parallel_modules=3)
+    system = pvsystem.PVSystem(modules_per_string=2, strings_per_inverter=3)
     out = system.scale_voltage_current_power(data)
 
 

@@ -38,11 +38,11 @@ class PVSystem(object):
     The class supports basic system topologies consisting of:
 
         * `N` total modules arranged in series
-          (`series_modules=N`, `parallel_modules=1`).
+          (`modules_per_string=N`, `strings_per_inverter=1`).
         * `M` total modules arranged in parallel
-          (`series_modules=1`, `parallel_modules=M`).
+          (`modules_per_string=1`, `strings_per_inverter=M`).
         * `NxM` total modules arranged in `M` strings of `N` modules each
-          (`series_modules=N`, `parallel_modules=M`).
+          (`modules_per_string=N`, `strings_per_inverter=M`).
 
     The class is complementary to the module-level functions.
 
@@ -78,10 +78,10 @@ class PVSystem(object):
     module_parameters : None, dict or Series
         Module parameters as defined by the SAPM, CEC, or other.
 
-    series_modules: int or float
+    modules_per_string: int or float
         See system topology discussion above.
 
-    parallel_modules: int or float
+    strings_per_inverter: int or float
         See system topology discussion above.
 
     inverter : None, string
@@ -110,7 +110,7 @@ class PVSystem(object):
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
                  module=None, module_parameters=None,
-                 series_modules=1, parallel_modules=1,
+                 modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
                  **kwargs):
@@ -129,8 +129,8 @@ class PVSystem(object):
         self.module = module
         self.module_parameters = module_parameters
 
-        self.series_modules = series_modules
-        self.parallel_modules = parallel_modules
+        self.modules_per_string = modules_per_string
+        self.strings_per_inverter = strings_per_inverter
 
         self.inverter = inverter
         self.inverter_parameters = inverter_parameters
@@ -382,7 +382,7 @@ class PVSystem(object):
         """
         Scales the voltage, current, and power of the DataFrames
         returned by :py:func:`singlediode` and :py:func:`sapm`
-        by `self.series_modules` and `self.parallel_modules`.
+        by `self.modules_per_string` and `self.strings_per_inverter`.
 
         Parameters
         ----------
@@ -396,8 +396,9 @@ class PVSystem(object):
             A scaled copy of the input data.
         """
 
-        return scale_voltage_current_power(data, voltage=self.series_modules,
-                                           current=self.parallel_modules)
+        return scale_voltage_current_power(data,
+                                           voltage=self.modules_per_string,
+                                           current=self.strings_per_inverter)
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
@@ -454,8 +455,8 @@ class LocalizedPVSystem(PVSystem, Location):
         super(LocalizedPVSystem, self).__init__(**new_kwargs)
 
 
-def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
-              parallel_modules):
+def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
+              strings_per_inverter):
     '''
     Generates a dict of system parameters used throughout a simulation.
 
@@ -493,10 +494,10 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
         (land), may increase over snow, ice, etc. May also be known as
         the reflection coefficient. Must be >=0 and <=1.
 
-    series_modules : int
+    modules_per_string : int
         Number of modules connected in series in a string.
 
-    parallel_modules : int
+    strings_per_inverter : int
         Number of strings connected in parallel.
 
     Returns
@@ -508,8 +509,8 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
             * 'surface_tilt'
             * 'surface_azimuth'
             * 'albedo'
-            * 'series_modules'
-            * 'parallel_modules'
+            * 'modules_per_string'
+            * 'strings_per_inverter'
             * 'latitude'
             * 'longitude'
             * 'tz'
@@ -530,8 +531,8 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
     system = {'surface_tilt': surface_tilt,
               'surface_azimuth': surface_azimuth,
               'albedo': albedo,
-              'series_modules': series_modules,
-              'parallel_modules': parallel_modules,
+              'modules_per_string': modules_per_string,
+              'strings_per_inverter': strings_per_inverter,
               'latitude': meta['latitude'],
               'longitude': meta['longitude'],
               'tz': meta['TZ'],
@@ -1732,7 +1733,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     # could make it work with a dict, but it would be more verbose
     data = data.copy()
     voltages = ['v_mp', 'v_oc']
-    currents = ['i_mp' ,'i_x', 'i_xx', 'i_sc']
+    currents = ['i_mp', 'i_x', 'i_xx', 'i_sc']
     data[voltages] *= voltage
     data[currents] *= current
     data['p_mp'] *= voltage * current

@@ -35,6 +35,8 @@ Bug fixes
 Documentation
 ~~~~~~~~~~~~~
 
+* Localize datetime indices in package overview examples.
+  (:issue:`156`)
 * Clarify that ``ModelChain`` and ``basic_chain`` currently only
   supports SAPM. (:issue:`177`)
 * Fix version number in 0.3.2 whatsnew file.
@@ -55,3 +57,4 @@ Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* Mark Mikofski

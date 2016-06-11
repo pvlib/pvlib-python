@@ -139,7 +139,7 @@ class PVSystem(object):
 
         # needed for tying together Location and PVSystem in LocalizedPVSystem
         super(PVSystem, self).__init__(**kwargs)
-        
+
     def __repr__(self):
         return ('PVSystem with tilt:' + str(self.surface_tilt) +
                 ' and azimuth: ' + str(self.surface_azimuth) +
@@ -443,7 +443,7 @@ class LocalizedPVSystem(PVSystem, Location):
 
         # get and combine attributes from the pvsystem and/or location
         # with the rest of the kwargs
-        
+
         if pvsystem is not None:
             pv_dict = pvsystem.__dict__
         else:
@@ -459,7 +459,7 @@ class LocalizedPVSystem(PVSystem, Location):
                           list(kwargs.items()))
 
         super(LocalizedPVSystem, self).__init__(**new_kwargs)
-        
+
     def __repr__(self):
         return ('LocalizedPVSystem with tilt:' + str(self.surface_tilt) +
                 ' and azimuth: ' + str(self.surface_azimuth) +
@@ -1395,14 +1395,15 @@ def singlediode(module, photocurrent, saturation_current,
     i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.01,
                     saturation_current, photocurrent)
 
+    # Find open circuit voltage using Lambert W
+    v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.0,
+                    saturation_current, photocurrent)
+
     params = {'r_sh': resistance_shunt,
               'r_s': resistance_series,
               'nNsVth': nNsVth,
               'i_0': saturation_current,
               'i_l': photocurrent}
-
-    __, v_oc = _golden_sect_DataFrame(params, 0, module['V_oc_ref']*1.6,
-                                      _v_oc_optfcn)
 
     p_mp, v_mp = _golden_sect_DataFrame(params, 0, module['V_oc_ref']*1.14,
                                         _pwr_optfcn)
@@ -1541,6 +1542,72 @@ def _v_oc_optfcn(df, loc):
     I = -abs(i_from_v(df['r_sh'], df['r_s'], df['nNsVth'],
                       df[loc], df['i_0'], df['i_l']))
     return I
+
+
+def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
+             saturation_current, photocurrent):
+    '''
+    Calculates current from voltage per Eq 3 Jain and Kapoor 2004 [1].
+
+    Parameters
+    ----------
+    resistance_shunt : float or Series
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+
+    resistance_series : float or Series
+        Series resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rs``.
+
+    nNsVth : float or Series
+        The product of three components. 1) The usual diode ideal factor
+        (n), 2) the number of cells in series (Ns), and 3) the cell
+        thermal voltage under the desired IV curve conditions (Vth). The
+        thermal voltage of the cell (in volts) may be calculated as
+        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
+        temp_cell is the temperature of the p-n junction in Kelvin, and
+        q is the charge of an electron (coulombs).
+
+    current : float or Series
+        The current in amperes under desired IV curve conditions.
+
+    saturation_current : float or Series
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+
+    photocurrent : float or Series
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
+
+    Returns
+    -------
+    current : np.array
+
+    References
+    ----------
+    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
+    parameters of real solar cells using Lambert W-function", Solar
+    Energy Materials and Solar Cells, 81 (2004) 269-277.
+    '''
+    try:
+        from scipy.special import lambertw
+    except ImportError:
+        raise ImportError('This function requires scipy')
+
+    Rsh = resistance_shunt
+    Rs = resistance_series
+    I0 = saturation_current
+    IL = photocurrent
+    I = current
+
+    argW = I0 * Rsh / nNsVth * np.exp(Rsh *(-I + IL + I0) / nNsVth)
+    lambertwterm = lambertw(argW)
+
+    # Eqn. 3 in Jain and Kapoor, 2004
+
+    V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh
+
+    return V.real
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,

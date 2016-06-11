@@ -229,6 +229,11 @@ def test_PVSystem_calcparams_desoto():
     assert_almost_equals(nNsVth, 0.473)
 
 
+def test_v_from_i():
+    output = pvsystem.v_from_i(20, .1, .5, 3, 6e-7, 7)
+    assert_almost_equals(-299.746389916, output, 5)
+
+
 def test_i_from_v():
     output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
     assert_almost_equals(-299.746389916, output, 5)
@@ -478,7 +483,7 @@ def test_PVSystem___repr__():
 
     assert system.__repr__()==('PVSystem with tilt:0 and azimuth:'+
     ' 180 with Module: blah and Inverter: blarg')
-    
+
 
 def test_PVSystem_localize___repr__():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')
@@ -504,7 +509,7 @@ def test_LocalizedPVSystem_creation():
     assert localized_system.latitude == 32
     assert localized_system.longitude == -111
 
-    
+
 def test_LocalizedPVSystem___repr__():
     localized_system = pvsystem.LocalizedPVSystem(latitude=32,
                                                   longitude=-111,

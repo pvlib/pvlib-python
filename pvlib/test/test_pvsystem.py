@@ -231,7 +231,7 @@ def test_PVSystem_calcparams_desoto():
 
 def test_v_from_i():
     output = pvsystem.v_from_i(20, .1, .5, 3, 6e-7, 7)
-    assert_almost_equals(-299.746389916, output, 5)
+    assert_almost_equals(7.5049875193450521, output, 5)
 
 
 def test_i_from_v():
@@ -268,16 +268,16 @@ def test_singlediode_floats():
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     out = pvsystem.singlediode(module_parameters, 7, 6e-7, .1, 20, .5)
-    expected = {'i_xx': 4.2549732697234193,
+    expected = {'i_xx': 4.2685798754011426,
                 'i_mp': 6.1390251797935704,
-                'v_oc': 8.1147298764528042,
+                'v_oc': 8.1063001465863085,
                 'p_mp': 38.194165464983037,
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
                 'v_mp': 6.221535886625464}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_almost_equals(expected[k], v, 5)
+        yield assert_almost_equals, expected[k], v, 3
 
 
 def test_PVSystem_singlediode_floats():
@@ -286,16 +286,16 @@ def test_PVSystem_singlediode_floats():
     system = pvsystem.PVSystem(module=module,
                                module_parameters=module_parameters)
     out = system.singlediode(7, 6e-7, .1, 20, .5)
-    expected = {'i_xx': 4.2549732697234193,
+    expected = {'i_xx': 4.2685798754011426,
                 'i_mp': 6.1390251797935704,
-                'v_oc': 8.1147298764528042,
+                'v_oc': 8.1063001465863085,
                 'p_mp': 38.194165464983037,
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
                 'v_mp': 6.221535886625464}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_almost_equals(expected[k], v, 5)
+        yield assert_almost_equals, expected[k], v, 3
 
 
 def test_scale_voltage_current_power():

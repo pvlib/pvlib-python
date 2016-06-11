@@ -1405,6 +1405,10 @@ def singlediode(module, photocurrent, saturation_current,
               'i_0': saturation_current,
               'i_l': photocurrent}
 
+    # to do:
+    # replace with a call to scipy.optimize or minimize(_dpower_dcurrent)
+    # and then calculate v_mp, and then calculate p_mp = i_mp*v_mp
+    # might need a partial(_dpower_dcurrent) for all params but I
     p_mp, v_mp = _golden_sect_DataFrame(params, 0, module['V_oc_ref']*1.14,
                                         _pwr_optfcn)
 
@@ -1675,6 +1679,72 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
 
     return I.real
+
+
+def _dpower_dcurrent(resistance_shunt, resistance_series, nNsVth, current,
+                     saturation_current, photocurrent):
+    '''
+    Calculates the partial derivative of power with respect to current
+    per Eq 10 Jain and Kapoor 2004 [1].
+
+    Parameters
+    ----------
+    resistance_shunt : float or Series
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+
+    resistance_series : float or Series
+        Series resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rs``.
+
+    nNsVth : float or Series
+        The product of three components. 1) The usual diode ideal factor
+        (n), 2) the number of cells in series (Ns), and 3) the cell
+        thermal voltage under the desired IV curve conditions (Vth). The
+        thermal voltage of the cell (in volts) may be calculated as
+        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
+        temp_cell is the temperature of the p-n junction in Kelvin, and
+        q is the charge of an electron (coulombs).
+
+    current : float or Series
+        The current in amperes under desired IV curve conditions.
+
+    saturation_current : float or Series
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+
+    photocurrent : float or Series
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
+
+    Returns
+    -------
+    current : np.array
+
+    References
+    ----------
+    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
+    parameters of real solar cells using Lambert W-function", Solar
+    Energy Materials and Solar Cells, 81 (2004) 269-277.
+    '''
+
+    # consider using numpy's out parameters, numexpr, or numba to
+    # make this faster
+
+    Rsh = resistance_shunt
+    Rs = resistance_series
+    I0 = saturation_current
+    IL = photocurrent
+    I = current
+
+    argW = I0 * Rsh / nNsVth * np.exp(Rsh *(-I + IL + I0) / nNsVth)
+    z = lambertw(argW)
+
+    # Eqn. 10 in Jain and Kapoor, 2004
+
+    dpdi = (Iph + I0 - 2*I)*Rsh - 2*I*Rs - nNsVth*z + I*Rsh*z/(1+z)
+
+    return dpdi.real
 
 
 def snlinverter(inverter, v_dc, p_dc):

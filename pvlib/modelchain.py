@@ -268,12 +268,12 @@ class ModelChain(object):
 
         # calls setter
         self.orientation_strategy = orientation_strategy
-        
+
     def __repr__(self):
-        return ('ModelChain for: '+ str(self.system) + 
+        return ('ModelChain for: '+ str(self.system) +
                 ' orientation_startegy: ' + str(self.orientation_strategy) +
                 ' clearsky_model: ' + str(self.clearsky_model) +
-                'transposition_model: ' + str(self.transposition_model) + 
+                'transposition_model: ' + str(self.transposition_model) +
                 ' solar_position_method: ' + str(self.solar_position_method) +
                 'airmass_model: ' + str(self.airmass_model))
 
@@ -360,7 +360,8 @@ class ModelChain(object):
             self.irradiance['dni'],
             self.irradiance['ghi'],
             self.irradiance['dhi'],
-            model=self.transposition_model)
+            model=self.transposition_model,
+            airmass=self.airmass['airmass_relative'])
 
         if weather is None:
             weather = {'wind_speed': 0, 'temp_air': 20}

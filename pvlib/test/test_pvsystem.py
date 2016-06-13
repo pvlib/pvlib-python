@@ -234,6 +234,11 @@ def test_v_from_i():
     assert_almost_equals(7.5049875193450521, output, 5)
 
 
+def test_v_from_i_big():
+    output = pvsystem.v_from_i(500, 10, 4.06, 0, 6e-10, 1.2)
+    assert_almost_equals(86.320000493521079, output, 5)
+
+
 def test_i_from_v():
     output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
     assert_almost_equals(-299.746389916, output, 5)

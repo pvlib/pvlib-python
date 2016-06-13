@@ -1535,15 +1535,6 @@ def _pwr_optfcn(df, loc):
     return I*df[loc]
 
 
-def _v_oc_optfcn(df, loc):
-    '''
-    Function to find the open circuit voltage from ``i_from_v``.
-    '''
-    I = -abs(i_from_v(df['r_sh'], df['r_s'], df['nNsVth'],
-                      df[loc], df['i_0'], df['i_l']))
-    return I
-
-
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
              saturation_current, photocurrent):
     '''

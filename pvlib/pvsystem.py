@@ -1538,7 +1538,7 @@ def _pwr_optfcn(df, loc):
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
              saturation_current, photocurrent):
     '''
-    Calculates current from voltage per Eq 3 Jain and Kapoor 2004 [1].
+    Calculates voltage from current per Eq 3 Jain and Kapoor 2004 [1].
 
     Parameters
     ----------

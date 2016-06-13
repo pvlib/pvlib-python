@@ -1106,19 +1106,17 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # delta is the sky's "brightness"
     delta = dhi * airmass / dni_extra
 
-    # keep only valid times
-    delta = delta[ebin.index]
-    z = z[ebin.index]
-
     # The various possible sets of Perez coefficients are contained
     # in a subfunction to clean up the code.
     F1c, F2c = _get_perez_coefficients(modelt)
 
-    F1 = F1c[ebin, 0] + F1c[ebin, 1] * delta + F1c[ebin, 2] * z
+    F1 = (F1c[ebin, 0] + F1c[ebin, 1] * delta[ebin.index] +
+          F1c[ebin, 2] * z[ebin.index])
     F1[F1 < 0] = 0
     F1 = F1.astype(float)
 
-    F2 = F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z
+    F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta[ebin.index] +
+          F2c[ebin, 2] * z[ebin.index])
     F2[F2 < 0] = 0
     F2 = F2.astype(float)
 
@@ -1135,7 +1133,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     term2 = F1 * A[ebin.index] / B[ebin.index]
     term3 = F2 * tools.sind(surface_tilt)
 
-    sky_diffuse = dhi[ebin.index] * (term1 + term2 + term3)
+    sky_diffuse = dhi * (term1 + term2 + term3)
     sky_diffuse[sky_diffuse < 0] = 0
     sky_diffuse[airmass.isnull()] = 0
 

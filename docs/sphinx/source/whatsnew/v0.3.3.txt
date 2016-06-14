@@ -24,6 +24,10 @@ Enhancements
   (:issue:`169`)
 * Add ``__repr__`` method to PVSystem, LocalizedPVSystem, ModelChain,
   SingleAxisTracker, Location. (:issue:`142`)
+* Add ``v_from_i`` function for solving the single diode model.
+  (:issue:`190`)
+* Improve speed of ``singlediode`` function by using ``v_from_i`` to
+  determine ``v_oc``. Speed is ~2x faster. (:issue:`190`)
 
 
 Bug fixes

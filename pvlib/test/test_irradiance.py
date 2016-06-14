@@ -1,8 +1,6 @@
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
-import datetime
-
 import numpy as np
 import pandas as pd
 
@@ -20,15 +18,14 @@ from pvlib import atmosphere
 from . import requires_ephem
 
 # setup times and location to be tested.
-times = pd.date_range(start=datetime.datetime(2014, 6, 24),
-                      end=datetime.datetime(2014, 6, 26), freq='1Min')
-
 tus = Location(32.2, -111, 'US/Arizona', 700)
 
-times_localized = times.tz_localize(tus.tz)
+# must include night values
+times = pd.date_range(start='20140624', end='20140626', freq='1Min',
+                      tz=tus.tz)
 
-ephem_data = solarposition.get_solarposition(times, tus.latitude,
-                                             tus.longitude, method='nrel_numpy')
+ephem_data = solarposition.get_solarposition(
+    times, tus.latitude, tus.longitude, method='nrel_numpy')
 
 irrad_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
                                altitude=tus.altitude, linke_turbidity=3,
@@ -141,10 +138,11 @@ def test_king():
 
 
 def test_perez():
-    AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
-    irradiance.perez(40, 180, irrad_data['dhi'], irrad_data['dni'],
+    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+    out = irradiance.perez(40, 180, irrad_data['dhi'], irrad_data['dni'],
                      dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['azimuth'], AM)
+                     ephem_data['azimuth'], am)
+    assert not out.isnull().any()
 
 # klutcher (misspelling) will be removed in 0.3
 def test_total_irrad():

@@ -37,6 +37,12 @@ Bug fixes
   dict-like object. (:issue:`157`)
 * Fix numpy 1.11 deprecation warnings caused by some functions using
   non-integer indices.
+* Propagate airmass data through ModelChain's get_irradiance call so that
+  the perez model can use it, if necessary. (:issue:`172`)
+* Fix problem in which the perez function dropped nighttime values.
+  Nighttime values are now set to 0.
+  (:issue:`191`)
+
 
 Documentation
 ~~~~~~~~~~~~~

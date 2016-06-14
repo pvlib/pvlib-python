@@ -1495,7 +1495,6 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
 
     kt_prime = kt / (1.031 * np.exp(-1.4/(0.9+9.4/airmass)) + 0.1)
     kt_prime[kt_prime > 0.82] = 0.82 # From SRRL code. consider np.NaN
-    kt_prime.fillna(0, inplace=True)
     pvl_logger.debug('kt_prime:\n%s', kt_prime)
 
     # wholmgren:
@@ -1519,7 +1518,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     # Later, we'll subtract 1 to conform to Python's 0-indexing.
 
     # Create kt_prime bins
-    kt_prime_bin = pd.Series(index=times)
+    kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
     kt_prime_bin[(kt_prime>=0) & (kt_prime<0.24)] = 1
     kt_prime_bin[(kt_prime>=0.24) & (kt_prime<0.4)] = 2
     kt_prime_bin[(kt_prime>=0.4) & (kt_prime<0.56)] = 3
@@ -1529,7 +1528,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     pvl_logger.debug('kt_prime_bin:\n%s', kt_prime_bin)
 
     # Create zenith angle bins
-    zenith_bin = pd.Series(index=times)
+    zenith_bin = pd.Series(0, index=times, dtype=np.int64)
     zenith_bin[(zenith>=0) & (zenith<25)] = 1
     zenith_bin[(zenith>=25) & (zenith<40)] = 2
     zenith_bin[(zenith>=40) & (zenith<55)] = 3
@@ -1539,7 +1538,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     pvl_logger.debug('zenith_bin:\n%s', zenith_bin)
 
     # Create the bins for w based on dew point temperature
-    w_bin = pd.Series(index=times)
+    w_bin = pd.Series(0, index=times, dtype=np.int64)
     w_bin[(w>=0) & (w<1)] = 1
     w_bin[(w>=1) & (w<2)] = 2
     w_bin[(w>=2) & (w<3)] = 3
@@ -1548,7 +1547,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     pvl_logger.debug('w_bin:\n%s', w_bin)
 
     # Create delta_kt_prime binning.
-    delta_kt_prime_bin = pd.Series(index=times)
+    delta_kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
     delta_kt_prime_bin[(delta_kt_prime>=0) & (delta_kt_prime<0.015)] = 1
     delta_kt_prime_bin[(delta_kt_prime>=0.015) & (delta_kt_prime<0.035)] = 2
     delta_kt_prime_bin[(delta_kt_prime>=0.035) & (delta_kt_prime<0.07)] = 3
@@ -1562,6 +1561,10 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     # assignment and Python-style array lookup.
     dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
                            delta_kt_prime_bin-1, w_bin-1]
+    # convert unassigned bins to nan
+    # use where to avoid boolean indexing deprecation
+    dirint_coeffs[np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
+                           (w_bin == 0) | (delta_kt_prime_bin == 0))] = np.nan
 
     dni = disc_out['dni'] * dirint_coeffs
 

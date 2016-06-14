@@ -241,8 +241,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     mat = scipy.io.loadmat(filepath)
     linke_turbidity_table = mat['LinkeTurbidity']
 
-    latitude_index = np.around(_linearly_scale(latitude, 90, -90, 1, 2160))
-    longitude_index = np.around(_linearly_scale(longitude, -180, 180, 1, 4320))
+    latitude_index = np.around(_linearly_scale(latitude, 90, -90, 1, 2160)).astype(np.int64)
+    longitude_index = np.around(_linearly_scale(longitude, -180, 180, 1, 4320)).astype(np.int64)
 
     g = linke_turbidity_table[latitude_index][longitude_index]
 

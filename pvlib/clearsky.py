@@ -9,6 +9,7 @@ import logging
 logger = logging.getLogger('pvlib')
 
 import os
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -330,7 +331,7 @@ def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
 
 
 def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
-                     pressure=101325., dni_extra=1364., return_raw=False):
+                     pressure=101325., dni_extra=1364.):
     """
     Calculate the clear sky GHI, DNI, and DHI according to the
     simplified Solis model [1]_.
@@ -361,17 +362,13 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     dni_extra: numeric
         Extraterrestrial irradiance.
 
-    return_raw: bool
-        Controls the return type. If False, function returns a DataFrame,
-        if True, function returns an array.
-
     Returns
     --------
-    clearsky : pd.DataFrame or np.array (determined by ``return_raw``)
-        DataFrame contains the columns ``'dhi', 'dni', 'ghi'`` with the
-        units of the ``dni_extra`` input. If ``return_raw=True``,
-        returns the array [dhi, dni, ghi] with shape determined by the
-        input arrays.
+    clearsky : DataFrame (if Series input) or OrderedDict of arrays
+        DataFrame/OrderedDict contains the columns/keys
+        ``'dhi', 'dni', 'ghi'``.
+
+        The units of ``dni_extra`` determine the units of the output.
 
     References
     ----------
@@ -410,30 +407,21 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     taud = _calc_taud(w, aod700, p)
     d = _calc_d(w, aod700, p)
 
-    sin_elev = np.sin(np.radians(apparent_elevation))
+    # this prevents the creation of nans at night instead of 0s
+    # it's also friendly to scalar and series inputs
+    sin_elev = np.maximum(1.e-30, np.sin(np.radians(apparent_elevation)))
 
     dni = i0p * np.exp(-taub/sin_elev**b)
     ghi = i0p * np.exp(-taug/sin_elev**g) * sin_elev
     dhi = i0p * np.exp(-taud/sin_elev**d)
 
-    irrads = np.array([dhi, dni, ghi])
+    irrads = OrderedDict()
+    irrads['ghi'] = ghi
+    irrads['dni'] = dni
+    irrads['dhi'] = dhi
 
-    if not return_raw:
-        if isinstance(dni, pd.Series):
-            index = dni.index
-        else:
-            index = None
-
-        try:
-            irrads = pd.DataFrame(irrads.T, columns=['dhi', 'dni', 'ghi'],
-                                  index=index)
-        except ValueError:
-            # probably all scalar input, so we
-            # need to increase the dimensionality
-            irrads = pd.DataFrame(np.array([irrads]),
-                                  columns=['dhi', 'dni', 'ghi'])
-        finally:
-            irrads = irrads.fillna(0)
+    if isinstance(dni, pd.Series):
+        irrads = pd.DataFrame.from_dict(irrads)
 
     return irrads
 

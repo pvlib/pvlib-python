@@ -93,6 +93,7 @@ def test_get_clearsky_simplified_solis():
                [   0.        ,    0.        ,    0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
+    expected = expected[['ghi', 'dni', 'dhi']]
     assert_frame_equal(expected, clearsky)
 
 
@@ -112,6 +113,7 @@ def test_get_clearsky_simplified_solis_apparent_elevation():
                [  131.3124497 ,  1001.14754036,  1108.14147919]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
+    expected = expected[['ghi', 'dni', 'dhi']]
     assert_frame_equal(expected, clearsky)
 
 
@@ -130,6 +132,7 @@ def test_get_clearsky_simplified_solis_dni_extra():
                [   0.        ,    0.        ,    0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
+    expected = expected[['ghi', 'dni', 'dhi']]
     assert_frame_equal(expected, clearsky)
 
 
@@ -148,6 +151,7 @@ def test_get_clearsky_simplified_solis_pressure():
                [   0.        ,    0.        ,    0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
+    expected = expected[['ghi', 'dni', 'dhi']]
     assert_frame_equal(expected, clearsky)
 
 
@@ -166,6 +170,7 @@ def test_get_clearsky_simplified_solis_aod_pw():
                [   0.        ,    0.        ,    0.        ]]),
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
+    expected = expected[['ghi', 'dni', 'dhi']]
     assert_frame_equal(expected, clearsky)
 
 
@@ -250,10 +255,10 @@ def test_get_airmass_valueerror():
                              end='20160101T1800-0700',
                              freq='3H')
     clearsky = tus.get_airmass(times, model='invalid_model')
-    
+
 def test_Location___repr__():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     assert tus.__repr__()==('Tucson: latitude=32.2, longitude=-111, '+
     'tz=US/Arizona, altitude=700')
-    
-    
+
+

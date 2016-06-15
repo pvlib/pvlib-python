@@ -12,6 +12,10 @@ API Changes
 
 * Renamed ``series_modules`` to ``modules_per_string`` and
   ``parallel_modules`` to ``strings_per_inverter``. (:issue:`176`)
+* Changed two of the TMY3 data reader fields for consistency with
+  the rest of the fields and with PVLIB MATLAB. Changed
+  'PresWth source' to 'PresWthSource', and 'PresWth uncert' to
+  'PresWthUncertainty'. (:issue:`193`)
 
 
 Enhancements
@@ -38,6 +42,7 @@ Bug fixes
 * Fix numpy 1.11 deprecation warnings caused by some functions using
   non-integer indices.
 
+
 Documentation
 ~~~~~~~~~~~~~
 
@@ -50,6 +55,8 @@ Documentation
   (:issue:`182`)
 * Change authors to *PVLIB Python Developers* and clean up setup.py.
   (:issue:`184`)
+* Document the PresWth, PresWthSource, and PresWthUncertainty fields in
+  the TMY3 data reader. (:issue:`193`)
 
 
 Other

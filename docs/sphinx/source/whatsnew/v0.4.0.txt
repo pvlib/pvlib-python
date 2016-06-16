@@ -1,0 +1,41 @@
+.. _whatsnew_0400:
+
+v0.4.0 (July xx, 2016)
+-----------------------
+
+This is a major release from 0.3.3.
+We recommend that all users upgrade to this version after reviewing
+the API changes.
+
+
+API Changes
+~~~~~~~~~~~
+
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adds the First Solar spectral correction model. (:issue:`115`)
+* Adds the Gueymard 1994 integrated precipitable water model. (:issue:`115`)
+
+
+Bug fixes
+~~~~~~~~~
+
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+
+Other
+~~~~~
+
+
+
+Code Contributors
+~~~~~~~~~~~~~~~~~
+
+* Will Holmgren

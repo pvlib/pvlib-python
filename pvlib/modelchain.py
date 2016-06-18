@@ -379,7 +379,7 @@ class ModelChain(object):
         elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
             return self.singlediode
         elif set(['temp_co']) <= params:
-            return self.pvwatts
+            return self.pvwatts_dc
         else:
             raise ValueError('could not infer DC model from system.module_parameters')
             
@@ -420,8 +420,9 @@ class ModelChain(object):
         
         return self
     
-    def pvwatts(self):
+    def pvwatts_dc(self):
         raise NotImplementedError
+        return self
         
     @property
     def ac_model(self):
@@ -457,6 +458,11 @@ class ModelChain(object):
         
     def adrinverter(self):
         raise NotImplementedError
+        return self
+        
+    def pvwatts_inverter(self):
+        raise NotImplementedError
+        return self
                                    
     def run_model(self, times, irradiance=None, weather=None):
         """

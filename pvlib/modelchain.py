@@ -358,32 +358,32 @@ class ModelChain(object):
     @dc_model.setter
     def dc_model(self, model):
         if model is None:
-            self._dc_model = self._infer_dc_model()
+            self._dc_model = self.infer_dc_model()
         elif isinstance(model, str):
             model = model.lower()
             if model == 'sapm':
-                self._dc_model = self._sapm
+                self._dc_model = self.sapm
             elif model == 'singlediode':
-                self._dc_model = self._singlediode
+                self._dc_model = self.singlediode
             elif model == 'pvwatts':
-                self._dc_model = self._pvwatts
+                self._dc_model = self.pvwatts
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
             self._dc_model = partial(model, self)
             
-    def _infer_dc_model(self):
+    def infer_dc_model(self):
         params = set(self.system.module_parameters.keys())
         if set(['A0', 'A1', 'C7']) <= params:
-            return self._sapm
+            return self.sapm
         elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
-            return self._singlediode
+            return self.singlediode
         elif set(['temp_co']) <= params:
-            return self._pvwatts
+            return self.pvwatts
         else:
             raise ValueError('could not infer DC model from system.module_parameters')
             
-    def _sapm(self):
+    def sapm(self):
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
                                                self.weather['wind_speed'],
                                                self.weather['temp_air'])
@@ -393,8 +393,9 @@ class ModelChain(object):
                                    self.temps['temp_cell'],
                                    self.airmass['airmass_absolute'],
                                    self.aoi)
+        return self
         
-    def _singlediode(self):
+    def singlediode(self):
         self.aoi_mod = self.system.ashraeiam(self.aoi).fillna(0)
         self.total_irrad['poa_global_aoi'] = (
             self.total_irrad['poa_direct'] * self.aoi_mod +
@@ -416,8 +417,10 @@ class ModelChain(object):
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
+        
+        return self
     
-    def _pvwatts(self):
+    def pvwatts(self):
         raise NotImplementedError
         
     @property
@@ -427,11 +430,11 @@ class ModelChain(object):
     @ac_model.setter
     def ac_model(self, model):
         if model is None:
-            self._ac_model = self._infer_ac_model()
+            self._ac_model = self.infer_ac_model()
         elif isinstance(model, str):
             model = model.lower()
             if model == 'snlinverter':
-                self._ac_model = self._snlinverter
+                self._ac_model = self.snlinverter
             elif model == 'adrinverter':
                 raise NotImplementedError
             elif model == 'pvwatts':
@@ -441,17 +444,18 @@ class ModelChain(object):
         else:
             self._ac_model = partial(model, self)
             
-    def _infer_ac_model(self):
+    def infer_ac_model(self):
         params = set(self.system.inverter_parameters.keys())
         if set(['C0', 'C1', 'C2']) <= params:
-            return self._snlinverter
+            return self.snlinverter
         else:
             raise ValueError('could not infer AC model from system.inverter_parameters')
     
-    def _snlinverter(self):
+    def snlinverter(self):
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
+        return self
         
-    def _adrinverter(self):
+    def adrinverter(self):
         raise NotImplementedError
                                    
     def run_model(self, times, irradiance=None, weather=None):

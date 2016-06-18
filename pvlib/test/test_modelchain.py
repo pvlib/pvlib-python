@@ -54,8 +54,7 @@ def test_orientation_strategy():
 
 
 def run_orientation_strategy(strategy, expected):
-    system = PVSystem()
-    location = Location(32.2, -111, altitude=700)
+    system, location = mc_setup()
 
     mc = ModelChain(system, location, orientation_strategy=strategy)
 
@@ -250,15 +249,13 @@ def test_basic_chain_altitude_pressure():
 
 
 def test_ModelChain___repr__():
-    system = PVSystem()
-    location = Location(32.2, -111, altitude=700)
+    system, location = mc_setup()
     strategy = 'south_at_latitude_tilt'
 
     mc = ModelChain(system, location, orientation_strategy=strategy)
 
-    # the || accounts for the coercion of 'None' to None
     assert mc.__repr__() == ('ModelChain for: PVSystem with tilt:32.2 and '+
     'azimuth: 180 with Module: None and Inverter: None '+
     'orientation_startegy: south_at_latitude_tilt clearsky_model: '+
-    'ineichentransposition_model: haydavies solar_position_method: '+
-    'nrel_numpyairmass_model: kastenyoung1989')
+    'ineichen transposition_model: haydavies solar_position_method: '+
+    'nrel_numpy airmass_model: kastenyoung1989')

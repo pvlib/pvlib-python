@@ -232,7 +232,7 @@ class ModelChain(object):
         The strategy for aligning the modules. If not None, sets the
         ``surface_azimuth`` and ``surface_tilt`` properties of the
         ``system``. Allowed strategies include 'flat',
-        'south_at_latitude_tilt'.
+        'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
     clearsky_model : str
         Passed to location.get_clearsky.
@@ -245,6 +245,30 @@ class ModelChain(object):
 
     airmass_model : str
         Passed to location.get_airmass.
+        
+    dc_model: None, str, or function
+        If None, the model will be inferred from the contents of
+        system.module_parameters. Valid strings are 'sapm',
+        'singlediode', 'pvwatts'. The ModelChain instance will be passed
+        as the first argument to a user-defined function.
+        
+    ac_model: None, str, or function
+        If None, the model will be inferred from the contents of
+        system.inverter_parameters. Valid strings are 'snlinverter',
+        'adrinverter', 'pvwatts'. The ModelChain instance will be passed
+        as the first argument to a user-defined function.
+
+    aoi_model: None, str, or function
+        If None, the model will be inferred from the contents of
+        system.module_parameters. Valid strings are 'physical',
+        'ashrae'. The ModelChain instance will be passed
+        as the first argument to a user-defined function.
+        
+    temp_model: None, str, or function
+        If None, the model will be inferred from the contents of
+        system.module_parameters. Valid strings are 'sapm'. 
+        The ModelChain instance will be passed
+        as the first argument to a user-defined function.
 
     **kwargs
         Arbitrary keyword arguments.
@@ -257,6 +281,8 @@ class ModelChain(object):
                  transposition_model='haydavies',
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
+                 dc_model=None, ac_model=None, aoi_model=None,
+                 temp_model=None,
                  **kwargs):
 
         self.system = system
@@ -265,17 +291,50 @@ class ModelChain(object):
         self.transposition_model = transposition_model
         self.solar_position_method = solar_position_method
         self.airmass_model = airmass_model
+        
+        # calls setters
+        self.dc_model = dc_model
+        self.ac_model = ac_model
 
-        # calls setter
+#         if temp_model is None:
+#             self.temp_model = self.infer_temp_model(self.system)
+#         elif isinstance(temp_model, str):
+#             temp_model = temp_model.lower()
+#             if temp_model == 'sapm':
+#                 raise NotImplementedError
+#             elif temp_model == 'adrinverter':
+#                 raise NotImplementedError
+#             elif temp_model == 'pvwatts':
+#                 raise NotImplementedError
+#             else:
+#                 raise ValueError(temp_model +
+#                                  ' is not a valid temperature model')
+#         else:
+#             self.temp_model = temp_model
+#             
+#         if aoi_model is None:
+#             self.aoi_model = self.infer_aoi_model(self.system)
+#         elif isinstance(aoi_model, str):
+#             aoi_model = aoi_model.lower()
+#             if aoi_model == 'ashrae':
+#                 raise NotImplementedError
+#             elif aoi_model == 'physical':
+#                 raise NotImplementedError
+#             else:
+#                 raise ValueError(aoi_model +
+#                                  ' is not a valid aoi loss model')
+#         else:
+#             self.aoi_model = aoi_model
+
         self.orientation_strategy = orientation_strategy
 
     def __repr__(self):
-        return ('ModelChain for: '+ str(self.system) +
+        return ('ModelChain for: ' + str(self.system) +
                 ' orientation_startegy: ' + str(self.orientation_strategy) +
                 ' clearsky_model: ' + str(self.clearsky_model) +
-                'transposition_model: ' + str(self.transposition_model) +
+                ' transposition_model: ' + str(self.transposition_model) +
                 ' solar_position_method: ' + str(self.solar_position_method) +
-                'airmass_model: ' + str(self.airmass_model))
+                ' airmass_model: ' + str(self.airmass_model))
 
     @property
     def orientation_strategy(self):
@@ -291,7 +350,110 @@ class ModelChain(object):
                 get_orientation(strategy, latitude=self.location.latitude)
 
         self._orientation_strategy = strategy
+        
+    @property
+    def dc_model(self):
+        return self._dc_model
+        
+    @dc_model.setter
+    def dc_model(self, model):
+        if model is None:
+            self._dc_model = self._infer_dc_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'sapm':
+                self._dc_model = self._sapm
+            elif model == 'singlediode':
+                self._dc_model = self._singlediode
+            elif model == 'pvwatts':
+                self._dc_model = self._pvwatts
+            else:
+                raise ValueError(model + ' is not a valid DC power model')
+        else:
+            self._dc_model = partial(model, self)
+            
+    def _infer_dc_model(self):
+        params = set(self.system.module_parameters.keys())
+        if set(['A0', 'A1', 'C7']) <= params:
+            return self._sapm
+        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
+            return self._singlediode
+        elif set(['temp_co']) <= params:
+            return self._pvwatts
+        else:
+            raise ValueError('could not infer DC model from system.module_parameters')
+            
+    def _sapm(self):
+        self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
+                                               self.weather['wind_speed'],
+                                               self.weather['temp_air'])
+                                               
+        self.dc = self.system.sapm(self.total_irrad['poa_direct'],
+                                   self.total_irrad['poa_diffuse'],
+                                   self.temps['temp_cell'],
+                                   self.airmass['airmass_absolute'],
+                                   self.aoi)
+        
+    def _singlediode(self):
+        self.aoi_mod = self.system.ashraeiam(self.aoi).fillna(0)
+        self.total_irrad['poa_global_aoi'] = (
+            self.total_irrad['poa_direct'] * self.aoi_mod +
+            self.total_irrad['poa_diffuse'])
 
+        self.temps = self.system.sapm_celltemp(
+            self.total_irrad['poa_global_aoi'],
+            self.weather['wind_speed'],
+            self.weather['temp_air'])
+
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_desoto(self.total_irrad['poa_global_aoi'],
+                                          self.temps['temp_cell']))
+
+        self.desoto = (photocurrent, saturation_current, resistance_series,
+                       resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+    
+    def _pvwatts(self):
+        raise NotImplementedError
+        
+    @property
+    def ac_model(self):
+        return self._ac_model
+        
+    @ac_model.setter
+    def ac_model(self, model):
+        if model is None:
+            self._ac_model = self._infer_ac_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'snlinverter':
+                self._ac_model = self._snlinverter
+            elif model == 'adrinverter':
+                raise NotImplementedError
+            elif model == 'pvwatts':
+                raise NotImplementedError
+            else:
+                raise ValueError(model + ' is not a valid AC power model')
+        else:
+            self._ac_model = partial(model, self)
+            
+    def _infer_ac_model(self):
+        params = set(self.system.inverter_parameters.keys())
+        if set(['C0', 'C1', 'C2']) <= params:
+            return self._snlinverter
+        else:
+            raise ValueError('could not infer AC model from system.inverter_parameters')
+    
+    def _snlinverter(self):
+        self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
+        
+    def _adrinverter(self):
+        raise NotImplementedError
+                                   
     def run_model(self, times, irradiance=None, weather=None):
         """
         Run the model.
@@ -374,14 +536,10 @@ class ModelChain(object):
         self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
                                        self.solar_position['azimuth'])
 
-        self.dc = self.system.sapm(self.total_irrad['poa_direct'],
-                                   self.total_irrad['poa_diffuse'],
-                                   self.temps['temp_cell'],
-                                   self.airmass['airmass_absolute'],
-                                   self.aoi)
+        self.dc_model()
 
         self.dc = self.system.scale_voltage_current_power(self.dc)
 
-        self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
+        self.ac_model()
 
         return self

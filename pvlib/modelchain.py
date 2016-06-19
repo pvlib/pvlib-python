@@ -470,7 +470,6 @@ class ModelChain(object):
         raise NotImplementedError
         return self
 
-
     def prepare_inputs(self, times, irradiance=None, weather=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
@@ -546,7 +545,6 @@ class ModelChain(object):
         self.weather = weather
 
         return self
-
 
     def run_model(self, times, irradiance=None, weather=None):
         """

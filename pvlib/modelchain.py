@@ -245,13 +245,13 @@ class ModelChain(object):
 
     airmass_model : str
         Passed to location.get_airmass.
-        
+
     dc_model: None, str, or function
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
         'singlediode', 'pvwatts'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
-        
+
     ac_model: None, str, or function
         If None, the model will be inferred from the contents of
         system.inverter_parameters. Valid strings are 'snlinverter',
@@ -263,10 +263,10 @@ class ModelChain(object):
         system.module_parameters. Valid strings are 'physical',
         'ashrae'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
-        
+
     temp_model: None, str, or function
         If None, the model will be inferred from the contents of
-        system.module_parameters. Valid strings are 'sapm'. 
+        system.module_parameters. Valid strings are 'sapm'.
         The ModelChain instance will be passed
         as the first argument to a user-defined function.
 
@@ -291,7 +291,7 @@ class ModelChain(object):
         self.transposition_model = transposition_model
         self.solar_position_method = solar_position_method
         self.airmass_model = airmass_model
-        
+
         # calls setters
         self.dc_model = dc_model
         self.ac_model = ac_model
@@ -311,7 +311,7 @@ class ModelChain(object):
 #                                  ' is not a valid temperature model')
 #         else:
 #             self.temp_model = temp_model
-#             
+#
 #         if aoi_model is None:
 #             self.aoi_model = self.infer_aoi_model(self.system)
 #         elif isinstance(aoi_model, str):
@@ -350,11 +350,11 @@ class ModelChain(object):
                 get_orientation(strategy, latitude=self.location.latitude)
 
         self._orientation_strategy = strategy
-        
+
     @property
     def dc_model(self):
         return self._dc_model
-        
+
     @dc_model.setter
     def dc_model(self, model):
         if model is None:
@@ -371,7 +371,7 @@ class ModelChain(object):
                 raise ValueError(model + ' is not a valid DC power model')
         else:
             self._dc_model = partial(model, self)
-            
+
     def infer_dc_model(self):
         params = set(self.system.module_parameters.keys())
         if set(['A0', 'A1', 'C7']) <= params:
@@ -382,20 +382,24 @@ class ModelChain(object):
             return self.pvwatts_dc
         else:
             raise ValueError('could not infer DC model from system.module_parameters')
-            
+
     def sapm(self):
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
                                                self.weather['wind_speed'],
                                                self.weather['temp_air'])
-                                               
+
         self.dc = self.system.sapm(self.total_irrad['poa_direct'],
                                    self.total_irrad['poa_diffuse'],
                                    self.temps['temp_cell'],
                                    self.airmass['airmass_absolute'],
                                    self.aoi)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc)
+
         return self
-        
+
     def singlediode(self):
+        # not sure about the aoi modifiers
         self.aoi_mod = self.system.ashraeiam(self.aoi).fillna(0)
         self.total_irrad['poa_global_aoi'] = (
             self.total_irrad['poa_direct'] * self.aoi_mod +
@@ -417,17 +421,19 @@ class ModelChain(object):
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
-        
+
+        self.dc = self.system.scale_voltage_current_power(self.dc)
+
         return self
-    
+
     def pvwatts_dc(self):
         raise NotImplementedError
         return self
-        
+
     @property
     def ac_model(self):
         return self._ac_model
-        
+
     @ac_model.setter
     def ac_model(self, model):
         if model is None:
@@ -444,57 +450,58 @@ class ModelChain(object):
                 raise ValueError(model + ' is not a valid AC power model')
         else:
             self._ac_model = partial(model, self)
-            
+
     def infer_ac_model(self):
         params = set(self.system.inverter_parameters.keys())
         if set(['C0', 'C1', 'C2']) <= params:
             return self.snlinverter
         else:
             raise ValueError('could not infer AC model from system.inverter_parameters')
-    
+
     def snlinverter(self):
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
         return self
-        
+
     def adrinverter(self):
         raise NotImplementedError
         return self
-        
+
     def pvwatts_inverter(self):
         raise NotImplementedError
         return self
-                                   
-    def run_model(self, times, irradiance=None, weather=None):
-        """
-        Run the model.
 
+
+    def prepare_inputs(self, times, irradiance=None, weather=None):
+        """
+        Prepare the solar position, irradiance, and weather inputs to
+        the model.
         Parameters
         ----------
         times : DatetimeIndex
             Times at which to evaluate the model.
-
         irradiance : None or DataFrame
             If None, calculates clear sky data.
             Columns must be 'dni', 'ghi', 'dhi'.
-
         weather : None or DataFrame
             If None, assumes air temperature is 20 C and
             wind speed is 0 m/s.
             Columns must be 'wind_speed', 'temp_air'.
-
         Returns
         -------
         self
-
         Assigns attributes: times, solar_position, airmass, irradiance,
-        total_irrad, weather, temps, aoi, dc, ac
+        total_irrad, weather, aoi
         """
+
         self.times = times
 
         self.solar_position = self.location.get_solarposition(self.times)
 
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)
+
+        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
+                                       self.solar_position['azimuth'])
 
         if irradiance is None:
             irradiance = self.location.get_clearsky(
@@ -532,23 +539,43 @@ class ModelChain(object):
             self.irradiance['dni'],
             self.irradiance['ghi'],
             self.irradiance['dhi'],
-            model=self.transposition_model,
-            airmass=self.airmass['airmass_relative'])
+            model=self.transposition_model)
 
         if weather is None:
             weather = {'wind_speed': 0, 'temp_air': 20}
         self.weather = weather
 
-        self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
-                                               self.weather['wind_speed'],
-                                               self.weather['temp_air'])
+        return self
 
-        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
-                                       self.solar_position['azimuth'])
+
+    def run_model(self, times, irradiance=None, weather=None):
+        """
+        Run the model.
+
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Times at which to evaluate the model.
+
+        irradiance : None or DataFrame
+            If None, calculates clear sky data.
+            Columns must be 'dni', 'ghi', 'dhi'.
+
+        weather : None or DataFrame
+            If None, assumes air temperature is 20 C and
+            wind speed is 0 m/s.
+            Columns must be 'wind_speed', 'temp_air'.
+
+        Returns
+        -------
+        self
+
+        Assigns attributes: times, solar_position, airmass, irradiance,
+        total_irrad, weather, temps, aoi, dc, ac
+        """
+        self.prepare_inputs(times, irradiance, weather)
 
         self.dc_model()
-
-        self.dc = self.system.scale_voltage_current_power(self.dc)
 
         self.ac_model()
 

@@ -580,9 +580,30 @@ def test_pvwatts_ac_series():
     assert_series_equal(expected, out)
 
 
+def test_pvwatts_losses_default():
+    expected = 14.075660688264469
+    out = pvsystem.pvwatts_losses()
+    assert_allclose(expected, out)
+
+
+@needs_numpy_1_10
+def test_pvwatts_losses_arrays():
+    expected = np.array([nan, 14.934904])
+    age = np.array([nan, 1])
+    out = pvsystem.pvwatts_losses(age=age)
+    assert_allclose(expected, out)
+
+
+def test_pvwatts_losses_series():
+    expected = pd.Series([nan, 14.934904])
+    age = pd.Series([nan, 1])
+    out = pvsystem.pvwatts_losses(age=age)
+    assert_series_equal(expected, out)
+
+
 def make_pvwatts_system():
-    module_parameters = {'pdc0': 100, 'gamma': -0.003}
-    inverter_parameters = {'eta_nom': 0.95}
+    module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003}
+    inverter_parameters = {'eta_inv_nom': 0.95}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
     return system

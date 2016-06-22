@@ -406,6 +406,23 @@ class PVSystem(object):
                                            voltage=self.modules_per_string,
                                            current=self.strings_per_inverter)
 
+    def pvwatts_dc(self, irrad_trans, temp_cell):
+        """
+        Uses :py:func:`pvwatts_dc` to calculate DC power according
+        to the NREL PVWatts model.
+        """
+        return pvwatts_dc(irrad_trans, temp_cell,
+                          self.module_parameters['pdc0'],
+                          self.module_parameters['gamma'])
+
+    def pvwatts_ac(self, pdc):
+        """
+        Uses :py:func:`pvwatts_ac` to calculate AC power according
+        to the NREL PVWatts model.
+        """
+        return pvwatts_ac(pdc, self.module_parameters['pdc0'],
+                          eta_nom=self.inverter_parameters['eta_nom'])
+
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
         """Creates a LocalizedPVSystem object using this object
@@ -1811,3 +1828,91 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     data['p_mp'] *= voltage * current
 
     return data
+
+
+def pvwatts_dc(irrad_trans, temp_cell, pdc0, gamma, temp_ref=25.):
+    """
+    Implements NREL's PVWatts DC power model [1]_.
+
+    .. math::
+
+        Pdc = Itr/1000 * Pdc0 ( 1 + gamma (Tcell - Tref))
+
+    Parameters
+    ----------
+    irrad_trans: numeric
+        Irradiance transmitted to the PV cells in W/m**2.
+    temp_cell: numeric
+        Cell temperature in degrees C.
+    pdc0: numeric
+        Nameplate DC rating.
+    gamma: numeric
+        Describes the temperature coefficient. Typically -0.002 to
+        -0.005 per degree C.
+    temp_ref: numeric
+        Cell reference temperature. PVWatts defines it to be 25 C and
+        is included here for flexibility.
+
+    Returns
+    -------
+    pdc: numeric
+        DC power.
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    """
+
+    pdc = irrad_trans * 0.001 * pdc0 * (1 + gamma * (temp_cell - temp_ref))
+
+    return pdc
+
+
+def pvwatts_ac(pdc, pdc0, eta_nom=0.96, eta_ref=0.9637):
+    """
+    Implements NREL's PVWatts inverter model [1]_.
+
+    .. math::
+
+        eta = eta_nom / eta_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
+
+        Pac = eta*Pdc
+        Pac = Pac0
+
+    where :math:`zeta=Pdc/Pdc0` and :math:`Pdc0=Pac0/eta_nom`.
+
+    Parameters
+    ----------
+    pdc: numeric
+        DC power.
+    pdc0: numeric
+        Nameplate DC rating.
+    eta_nom: numeric
+        Nominal inverter efficiency.
+    eta_ref: numeric
+        Reference inverter efficiency. PVWatts defines it to be 0.9637
+        and is included here for flexibility.
+
+    Returns
+    -------
+    pac: numeric
+        AC power.
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    """
+
+    pac0 = eta_nom * pdc0
+    zeta = pdc / pdc0
+
+    eta = eta_nom / eta_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
+
+    pac = eta * pdc
+    pac = np.minimum(pac0, pac)
+
+    return pac

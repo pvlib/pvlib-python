@@ -8,6 +8,7 @@ import pandas as pd
 
 from nose.tools import assert_equals, assert_almost_equals
 from pandas.util.testing import assert_series_equal, assert_frame_equal
+from numpy.testing import assert_allclose
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -524,3 +525,77 @@ def test_LocalizedPVSystem___repr__():
     assert localized_system.__repr__()==('LocalizedPVSystem with tilt:0 and'+
     ' azimuth: 180 with Module: blah and Inverter: blarg at Latitude: 32 ' +
     'and Longitude: -111')
+
+
+def test_pvwatts_dc_scalars():
+    expected = 88.65
+    out = pvsystem.pvwatts_dc(900, 30, 100, -0.003)
+    assert_allclose(expected, out)
+
+
+def test_pvwatts_dc_arrays():
+    irrad_trans = np.array([np.nan, 900, 900])
+    temp_cell = np.array([30, np.nan, 30])
+    irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
+    expected = np.array([[   nan,  88.65,  88.65],
+                         [   nan,    nan,    nan],
+                         [   nan,  88.65,  88.65]])
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
+    assert_allclose(expected, out, equal_nan=True)
+
+
+def test_pvwatts_dc_series():
+    irrad_trans = pd.Series([np.nan, 900, 900])
+    temp_cell = pd.Series([30, np.nan, 30])
+    expected = pd.Series(np.array([   nan,    nan,  88.65]))
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
+    assert_series_equal(expected, out)
+
+
+def test_pvwatts_ac_scalars():
+    expected = 85.58556604752516
+    out = pvsystem.pvwatts_ac(90, 100, 0.95)
+    assert_allclose(expected, out)
+
+
+def test_pvwatts_ac_arrays():
+    pdc = np.array([[np.nan], [50], [100]])
+    pdc0 = 100
+    expected = np.array([[         nan],
+                         [ 47.60843624],
+                         [ 95.        ]])
+    out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
+    assert_allclose(expected, out, equal_nan=True)
+
+
+def test_pvwatts_ac_series():
+    pdc = pd.Series([np.nan, 50, 100])
+    pdc0 = 100
+    expected = pd.Series(np.array([       nan,  47.608436,  95.      ]))
+    out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
+    assert_series_equal(expected, out)
+
+
+def make_pvwatts_system():
+    module_parameters = {'pdc0': 100, 'gamma': -0.003}
+    inverter_parameters = {'eta_nom': 0.95}
+    system = pvsystem.PVSystem(module_parameters=module_parameters,
+                               inverter_parameters=inverter_parameters)
+    return system
+
+
+def test_PVSystem_pvwatts_dc():
+    system = make_pvwatts_system()
+    irrad_trans = pd.Series([np.nan, 900, 900])
+    temp_cell = pd.Series([30, np.nan, 30])
+    expected = pd.Series(np.array([   nan,    nan,  88.65]))
+    out = system.pvwatts_dc(irrad_trans, temp_cell)
+    assert_series_equal(expected, out)
+
+
+def test_PVSystem_pvwatts_ac():
+    system = make_pvwatts_system()
+    pdc = pd.Series([np.nan, 50, 100])
+    expected = pd.Series(np.array([       nan,  47.608436,  95.      ]))
+    out = system.pvwatts_ac(pdc)
+    assert_series_equal(expected, out)

@@ -1877,12 +1877,12 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
 def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
                    connections=0.5, lid=1.5, nameplate_rating=1, age=0,
                    availability=3):
-    """
+    r"""
     Implements NREL's PVWatts system loss model [1]_:
 
     .. math::
 
-        L_{total}(%) = 100 [ 1 - \Pi_i ( 1 - \frac{L_i}{100} ) ]
+        L_{total}(\%) = 100 [ 1 - \Pi_i ( 1 - \frac{L_i}{100} ) ]
 
     All parameters must be in units of %. Parameters may be
     array-like, though all array sizes must match.

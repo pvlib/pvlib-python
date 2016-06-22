@@ -18,6 +18,8 @@ from pvlib import atmosphere
 from pvlib import solarposition
 from pvlib.location import Location
 
+from . import needs_numpy_1_10
+
 latitude = 32.2
 longitude = -111
 tus = Location(latitude, longitude, 'US/Arizona', 700, 'Tucson')
@@ -533,6 +535,7 @@ def test_pvwatts_dc_scalars():
     assert_allclose(expected, out)
 
 
+@needs_numpy_1_10
 def test_pvwatts_dc_arrays():
     irrad_trans = np.array([np.nan, 900, 900])
     temp_cell = np.array([30, np.nan, 30])
@@ -558,6 +561,7 @@ def test_pvwatts_ac_scalars():
     assert_allclose(expected, out)
 
 
+@needs_numpy_1_10
 def test_pvwatts_ac_arrays():
     pdc = np.array([[np.nan], [50], [100]])
     pdc0 = 100

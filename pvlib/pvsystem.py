@@ -1831,12 +1831,12 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
 
 def pvwatts_dc(irrad_trans, temp_cell, pdc0, gamma, temp_ref=25.):
-    """
+    r"""
     Implements NREL's PVWatts DC power model [1]_.
 
     .. math::
 
-        Pdc = Itr/1000 * Pdc0 ( 1 + gamma (Tcell - Tref))
+        P_{dc} = \frac{I_{tr}}{1000} P_{dc0} ( 1 + \gamma (T_{cell} - T_{ref}))
 
     Parameters
     ----------
@@ -1871,17 +1871,18 @@ def pvwatts_dc(irrad_trans, temp_cell, pdc0, gamma, temp_ref=25.):
 
 
 def pvwatts_ac(pdc, pdc0, eta_nom=0.96, eta_ref=0.9637):
-    """
+    r"""
     Implements NREL's PVWatts inverter model [1]_.
 
     .. math::
 
-        eta = eta_nom / eta_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
+        \eta = \frac{\eta_{nom}}{\eta_{ref}} (-0.0162\zeta - \frac{0.0059}{\zeta} + 0.9858)
 
-        Pac = eta*Pdc
-        Pac = Pac0
+    .. math::
 
-    where :math:`zeta=Pdc/Pdc0` and :math:`Pdc0=Pac0/eta_nom`.
+        P_{ac} = \min(\eta P_{dc}, P_{ac0})
+
+    where :math:`\zeta=P_{dc}/P_{dc0}` and :math:`P_{dc0}=P_{ac0}/\eta_{nom}`.
 
     Parameters
     ----------

@@ -406,19 +406,36 @@ class PVSystem(object):
                                            voltage=self.modules_per_string,
                                            current=self.strings_per_inverter)
 
-    def pvwatts_dc(self, irrad_trans, temp_cell):
+    def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
-        Uses :py:func:`pvwatts_dc` to calculate DC power according
-        to the NREL PVWatts model.
+        Calcuates DC power according to the PVWatts model using
+        :py:func:`pvwatts_dc`, `self.module_parameters['pdc0']`, and
+        `self.module_parameters['gamma_pdc']`.
+
+        See :py:func:`pvwatts_dc` for details.
         """
-        return pvwatts_dc(irrad_trans, temp_cell,
+        return pvwatts_dc(g_poa_effective, temp_cell,
                           self.module_parameters['pdc0'],
                           self.module_parameters['gamma_pdc'])
 
+    def pvwatts_losses(self, **kwargs):
+        """
+        Calculates DC power losses according the PVwatts model using
+        :py:func:`pvwatts_losses`. No attributes are used in this
+        calculation, but all keyword arguments will be passed to the
+        function.
+
+        See :py:func:`pvwatts_losses` for details.
+        """
+        return pvwatts_losses(**kwargs)
+
     def pvwatts_ac(self, pdc):
         """
-        Uses :py:func:`pvwatts_ac` to calculate AC power according
-        to the NREL PVWatts model.
+        Calculates AC power according to the PVWatts model using
+        :py:func:`pvwatts_ac`, `self.module_parameters['pdc0']`, and
+        `eta_inv_nom=self.inverter_parameters['eta_inv_nom']`.
+
+        See :py:func:`pvwatts_ac` for details.
         """
         return pvwatts_ac(pdc, self.module_parameters['pdc0'],
                           eta_inv_nom=self.inverter_parameters['eta_inv_nom'])

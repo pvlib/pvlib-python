@@ -618,6 +618,14 @@ def test_PVSystem_pvwatts_dc():
     assert_series_equal(expected, out)
 
 
+def test_PVSystem_pvwatts_losses():
+    system = make_pvwatts_system()
+    expected = pd.Series([nan, 14.934904])
+    age = pd.Series([nan, 1])
+    out = system.pvwatts_losses(age=age)
+    assert_series_equal(expected, out)
+
+
 def test_PVSystem_pvwatts_ac():
     system = make_pvwatts_system()
     pdc = pd.Series([np.nan, 50, 100])

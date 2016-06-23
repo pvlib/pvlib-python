@@ -413,7 +413,7 @@ class PVSystem(object):
         """
         return pvwatts_dc(irrad_trans, temp_cell,
                           self.module_parameters['pdc0'],
-                          self.module_parameters['gamma'])
+                          self.module_parameters['gamma_pdc'])
 
     def pvwatts_ac(self, pdc):
         """
@@ -421,7 +421,7 @@ class PVSystem(object):
         to the NREL PVWatts model.
         """
         return pvwatts_ac(pdc, self.module_parameters['pdc0'],
-                          eta_nom=self.inverter_parameters['eta_nom'])
+                          eta_inv_nom=self.inverter_parameters['eta_inv_nom'])
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
@@ -1968,7 +1968,7 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pac0 = eta_inv_nom * pdc0
     zeta = pdc / pdc0
 
-    eta = eta_inv_nom / eta_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
+    eta = eta_inv_nom / eta_inv_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
 
     pac = eta * pdc
     pac = np.minimum(pac0, pac)

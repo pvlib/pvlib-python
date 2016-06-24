@@ -107,9 +107,10 @@ def test_get_clearsky_simplified_solis_apparent_elevation():
     times = pd.DatetimeIndex(start='20160101T0600-0700',
                              end='20160101T1800-0700',
                              freq='3H')
-    apparent_elevation = pd.Series(80, index=times)
+    solar_position = {'apparent_elevation': pd.Series(80, index=times),
+                      'apparent_zenith': pd.Series(10, index=times)}
     clearsky = tus.get_clearsky(times, model='simplified_solis',
-                                apparent_elevation=apparent_elevation)
+                                solar_position=solar_position)
     expected = pd.DataFrame(data=np.
         array([[  131.3124497 ,  1001.14754036,  1108.14147919],
                [  131.3124497 ,  1001.14754036,  1108.14147919],

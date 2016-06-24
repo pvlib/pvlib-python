@@ -1,7 +1,6 @@
 import inspect
 import os
 import datetime
-from functools import partial
 
 import numpy as np
 from numpy import nan

@@ -1435,8 +1435,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
               'i_0': saturation_current,
               'i_l': photocurrent}
 
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0, v_oc*1.14,
-                                        _pwr_optfcn)
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0, v_oc*1.14, _pwr_optfcn)
 
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is i_mp. Start the optimization at v_oc/2

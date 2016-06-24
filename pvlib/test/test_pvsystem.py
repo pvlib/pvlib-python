@@ -1,7 +1,6 @@
 import inspect
 import os
 import datetime
-from functools import partial
 
 import numpy as np
 from numpy import nan
@@ -274,6 +273,7 @@ def test_singlediode_series():
     assert isinstance(out, pd.DataFrame)
 
 
+# nose didn't like it when I tried to use partial (wholmgren)
 def assert_allclose_atol_01(*args):
     return assert_allclose(*args, atol=0.02)
 

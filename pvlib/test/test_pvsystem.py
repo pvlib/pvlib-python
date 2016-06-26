@@ -130,7 +130,7 @@ def test_PVSystem_physicaliam():
 
 
 # if this completes successfully we'll be able to do more tests below.
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def sam_data():
     data = {}
     data['cecmod'] = pvsystem.retrieve_sam('cecmod')

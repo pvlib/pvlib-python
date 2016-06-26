@@ -5,7 +5,7 @@ from numpy import nan
 import pandas as pd
 import pytz
 
-from nose.tools import raises
+import pytest
 from pytz.exceptions import UnknownTimeZoneError
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 
@@ -19,20 +19,15 @@ def test_location_required():
 def test_location_all():
     Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
-@raises(UnknownTimeZoneError)
-def test_location_invalid_tz():
-    Location(32.2, -111, 'invalid')
 
-@raises(TypeError)
-def test_location_invalid_tz_type():
-    Location(32.2, -111, [5])
+@pytest.mark.parametrize('tz', [
+    aztz, 'America/Phoenix',  -7, -7.0,
+    pytest.mark.xfail(raises=UnknownTimeZoneError)('invalid'),
+    pytest.mark.xfail(raises=TypeError)([5])
+])
+def test_location_tz(tz):
+    Location(32.2, -111, tz)
 
-def test_location_pytz_tz():
-    Location(32.2, -111, aztz)
-
-def test_location_int_float_tz():
-    Location(32.2, -111, -7)
-    Location(32.2, -111, -7.0)
 
 def test_location_print_all():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
@@ -174,7 +169,7 @@ def test_get_clearsky_simplified_solis_aod_pw():
     assert_frame_equal(expected, clearsky)
 
 
-@raises(ValueError)
+@pytest.mark.xfail(raises=ValueError)
 def test_get_clearsky_valueerror():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='20160101T0600-0700',
@@ -187,7 +182,6 @@ def test_from_tmy_3():
     from .test_tmy import tmy3_testfile
     from ..tmy import readtmy3
     data, meta = readtmy3(tmy3_testfile)
-    print(meta)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
@@ -199,7 +193,6 @@ def test_from_tmy_2():
     from .test_tmy import tmy2_testfile
     from ..tmy import readtmy2
     data, meta = readtmy2(tmy2_testfile)
-    print(meta)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
@@ -248,7 +241,7 @@ def test_get_airmass():
     assert_frame_equal(expected, airmass)
 
 
-@raises(ValueError)
+@pytest.mark.xfail(raises=ValueError)
 def test_get_airmass_valueerror():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='20160101T0600-0700',
@@ -256,9 +249,8 @@ def test_get_airmass_valueerror():
                              freq='3H')
     clearsky = tus.get_airmass(times, model='invalid_model')
 
+
 def test_Location___repr__():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     assert tus.__repr__()==('Tucson: latitude=32.2, longitude=-111, '+
     'tz=US/Arizona, altitude=700')
-
-

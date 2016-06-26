@@ -4,8 +4,7 @@ import itertools
 import numpy as np
 import pandas as pd
 
-from nose.tools import raises
-from nose.tools import assert_almost_equals
+import pytest
 from numpy.testing import assert_allclose
 
 from pvlib.location import Location
@@ -30,25 +29,17 @@ ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
 def test_pres2alt():
     atmosphere.pres2alt(100000)
 
+
 def test_alt2press():
     atmosphere.pres2alt(1000)
 
 
-# two functions combined will generate unique unit tests for each model
-def test_airmasses():
-    models = ['simple', 'kasten1966', 'youngirvine1967', 'kastenyoung1989',
-              'gueymard1993', 'young1994', 'pickering2002']
-    for model in models:
-        yield run_airmass, model, ephem_data['zenith']
-
-
-def run_airmass(model, zenith):
-    atmosphere.relativeairmass(zenith, model)
-
-
-@raises(ValueError)
-def test_airmass_invalid():
-    atmosphere.relativeairmass(ephem_data['zenith'], 'invalid')
+@pytest.mark.parametrize("model",
+    ['simple', 'kasten1966', 'youngirvine1967', 'kastenyoung1989',
+     'gueymard1993', 'young1994', 'pickering2002',
+     pytest.mark.xfail(raises=ValueError, strict=True)('invalid')])
+def test_airmass(model):
+    atmosphere.relativeairmass(ephem_data['zenith'], model)
 
 
 def test_absoluteairmass():
@@ -79,31 +70,26 @@ def test_gueymard94_pw():
     assert_allclose(pws, expected, atol=0.01)
 
 
-def test_first_solar_spectral_correction():
+@pytest.mark.parametrize("module_type,expect", [
+    ('cdte', np.array(
+        [[ 0.99134828,  0.97701063,  0.93975103],
+         [ 1.02852847,  1.01874908,  0.98604776],
+         [ 1.04722476,  1.03835703,  1.00656735]])),
+    ('monosi', np.array(
+        [[ 0.9782842 ,  1.02092726,  1.03602157],
+         [ 0.9859024 ,  1.0302268 ,  1.04700244],
+         [ 0.98885429,  1.03351495,  1.05062687]])),
+    ('polysi', np.array(
+        [[ 0.9774921 ,  1.01757872,  1.02649543],
+         [ 0.98947361,  1.0314545 ,  1.04226547],
+         [ 0.99403107,  1.03639082,  1.04758064]]))
+])
+def test_first_solar_spectral_correction(module_type, expect):
     ams = np.array([1, 3, 5])
     pws = np.array([1, 3, 5])
     ams, pws = np.meshgrid(ams, pws)
-
-    expect = {}
-    expect['cdte'] = np.array(
-        [[ 0.99134828,  0.97701063,  0.93975103],
-         [ 1.02852847,  1.01874908,  0.98604776],
-         [ 1.04722476,  1.03835703,  1.00656735]])
-    expect['monosi'] = np.array(
-        [[ 0.9782842 ,  1.02092726,  1.03602157],
-         [ 0.9859024 ,  1.0302268 ,  1.04700244],
-         [ 0.98885429,  1.03351495,  1.05062687]])
-    expect['polysi'] = np.array(
-        [[ 0.9774921 ,  1.01757872,  1.02649543],
-         [ 0.98947361,  1.0314545 ,  1.04226547],
-         [ 0.99403107,  1.03639082,  1.04758064]])
-
-    def run_fs_test(module_type):
-        out = atmosphere.first_solar_spectral_correction(pws, ams, module_type)
-        assert_allclose(out, expect[module_type], atol=0.001)
-
-    for module_type in expect.keys():
-        yield run_fs_test, module_type
+    out = atmosphere.first_solar_spectral_correction(pws, ams, module_type)
+    assert_allclose(out, expect, atol=0.001)
 
 
 def test_first_solar_spectral_correction_supplied():
@@ -114,6 +100,6 @@ def test_first_solar_spectral_correction_supplied():
     assert_allclose(out, expected, atol=1e-3)
 
 
-@raises(TypeError)
+@pytest.mark.xfail(raises=TypeError, strict=True)
 def test_first_solar_spectral_correction_ambiguous():
     atmosphere.first_solar_spectral_correction(1, 1)

@@ -1,12 +1,13 @@
 name: test_env
 dependencies:
-    - python=2.7 
+    - python=2.7
     - numpy
     - scipy
     - pandas
-    - nose
     - pytz
     - ephem
     - numba
+    - pytest
+    - pytest-cov
     - pip:
         - coveralls

@@ -41,7 +41,7 @@ before_install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - conda info -a
-    
+
 install:
     - echo "install"
     - conda env create --file ci/requirements-$CONDA_ENV.yml
@@ -54,7 +54,7 @@ install:
     - python setup.py install
 
 script:
-    - nosetests -v --with-coverage --cover-package=pvlib pvlib
+    - py.test pvlib --cov=pvlib --cov-report term-missing
 
 after_success:
     coveralls

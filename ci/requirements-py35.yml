@@ -4,9 +4,10 @@ dependencies:
     - numpy
     - scipy
     - pandas
-    - nose
     - pytz
     - ephem
     - numba
+    - pytest
+    - pytest-cov
     - pip:
         - coveralls

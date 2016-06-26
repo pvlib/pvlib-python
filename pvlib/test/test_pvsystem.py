@@ -6,8 +6,7 @@ import numpy as np
 from numpy import nan
 import pandas as pd
 
-from nose.tools import assert_equals, assert_almost_equals
-from numpy.testing import assert_allclose
+import pytest
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
@@ -63,7 +62,7 @@ def test_systemdef_tmy3():
                 'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 0}
-    assert_equals(expected, pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5))
+    assert expected == pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5)
 
 def test_systemdef_tmy2():
     expected = {'tz': -5,
@@ -76,7 +75,7 @@ def test_systemdef_tmy2():
                 'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 0}
-    assert_equals(expected, pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5))
+    assert expected == pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5)
 
 def test_systemdef_dict():
     expected = {'tz': -8, ## Note that TZ is float, but Location sets tz as string
@@ -89,7 +88,7 @@ def test_systemdef_dict():
                 'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 5}
-    assert_equals(expected, pvsystem.systemdef(meta, 5, 0, .1, 5, 5))
+    assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
 
 
 def test_ashraeiam():
@@ -131,14 +130,16 @@ def test_PVSystem_physicaliam():
 
 
 # if this completes successfully we'll be able to do more tests below.
-sam_data = {}
-def test_retrieve_sam_network():
-    sam_data['cecmod'] = pvsystem.retrieve_sam('cecmod')
-    sam_data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
-    sam_data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
+@pytest.fixture(scope="module")
+def sam_data():
+    data = {}
+    data['cecmod'] = pvsystem.retrieve_sam('cecmod')
+    data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
+    data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
+    return data
 
 
-def test_sapm():
+def test_sapm(sam_data):
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
@@ -166,7 +167,7 @@ def test_sapm():
                          irrad_data['dhi'], 25, am, aoi)
 
 
-def test_PVSystem_sapm():
+def test_PVSystem_sapm(sam_data):
     modules = sam_data['sandiamod']
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = modules[module]
@@ -192,7 +193,7 @@ def test_PVSystem_sapm():
     assert_frame_equal(sapm, expected)
 
 
-def test_calcparams_desoto():
+def test_calcparams_desoto(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
@@ -207,13 +208,13 @@ def test_calcparams_desoto():
                                   dEgdT=-0.0002677)
 
     assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036], index=times))
-    assert_almost_equals(I0, 1.943e-9)
-    assert_almost_equals(Rs, 0.094)
+    assert_allclose(I0, 1.943e-9)
+    assert_allclose(Rs, 0.094)
     assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65], index=times))
-    assert_almost_equals(nNsVth, 0.473)
+    assert_allclose(nNsVth, 0.473)
 
 
-def test_PVSystem_calcparams_desoto():
+def test_PVSystem_calcparams_desoto(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module].copy()
     module_parameters['EgRef'] = 1.121
@@ -227,37 +228,37 @@ def test_PVSystem_calcparams_desoto():
     IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(poa_data, temp_cell)
 
     assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036], index=times))
-    assert_almost_equals(I0, 1.943e-9)
-    assert_almost_equals(Rs, 0.094)
+    assert_allclose(I0, 1.943e-9)
+    assert_allclose(Rs, 0.094)
     assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65], index=times))
-    assert_almost_equals(nNsVth, 0.473)
+    assert_allclose(nNsVth, 0.473)
 
 
 def test_v_from_i():
     output = pvsystem.v_from_i(20, .1, .5, 3, 6e-7, 7)
-    assert_almost_equals(7.5049875193450521, output, 5)
+    assert_allclose(7.5049875193450521, output, 5)
 
 
 def test_v_from_i_big():
     output = pvsystem.v_from_i(500, 10, 4.06, 0, 6e-10, 1.2)
-    assert_almost_equals(86.320000493521079, output, 5)
+    assert_allclose(86.320000493521079, output, 5)
 
 
 def test_i_from_v():
     output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_almost_equals(-299.746389916, output, 5)
+    assert_allclose(-299.746389916, output, 5)
 
 
-def test_PVSystem_i_from_v():
+def test_PVSystem_i_from_v(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     system = pvsystem.PVSystem(module=module,
                                module_parameters=module_parameters)
     output = system.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_almost_equals(-299.746389916, output, 5)
+    assert_allclose(-299.746389916, output, 5)
 
 
-def test_singlediode_series():
+def test_singlediode_series(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
@@ -273,12 +274,7 @@ def test_singlediode_series():
     assert isinstance(out, pd.DataFrame)
 
 
-# nose didn't like it when I tried to use partial (wholmgren)
-def assert_allclose_atol_01(*args):
-    return assert_allclose(*args, atol=0.02)
-
-
-def test_singlediode_floats():
+def test_singlediode_floats(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5)
@@ -291,10 +287,10 @@ def test_singlediode_floats():
                 'v_mp': 6.221535886625464}
     assert isinstance(out, dict)
     for k, v in out.items():
-        yield assert_allclose_atol_01, expected[k], v
+        yield assert_allclose, expected[k], v, 3
 
 
-def test_PVSystem_singlediode_floats():
+def test_PVSystem_singlediode_floats(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     system = pvsystem.PVSystem(module=module,
@@ -309,10 +305,10 @@ def test_PVSystem_singlediode_floats():
                 'v_mp': 6.221535886625464}
     assert isinstance(out, dict)
     for k, v in out.items():
-        yield assert_allclose_atol_01, expected[k], v
+        yield assert_allclose, expected[k], v, 3
 
 
-def test_scale_voltage_current_power():
+def test_scale_voltage_current_power(sam_data):
     data = pd.DataFrame(
         np.array([[2, 1.5, 10, 8, 12, 0.5, 1.5]]),
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
@@ -339,16 +335,16 @@ def test_PVSystem_scale_voltage_current_power():
 
 def test_sapm_celltemp():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_almost_equals(43.509, default.ix[0, 'temp_cell'], 3)
-    assert_almost_equals(40.809, default.ix[0, 'temp_module'], 3)
+    assert_allclose(43.509, default.ix[0, 'temp_cell'], 3)
+    assert_allclose(40.809, default.ix[0, 'temp_module'], 3)
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20,
                                                        [-3.47, -.0594, 3]))
 
 
 def test_sapm_celltemp_dict_like():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_almost_equals(43.509, default.ix[0, 'temp_cell'], 3)
-    assert_almost_equals(40.809, default.ix[0, 'temp_module'], 3)
+    assert_allclose(43.509, default.ix[0, 'temp_cell'], 3)
+    assert_allclose(40.809, default.ix[0, 'temp_module'], 3)
     model = {'a':-3.47, 'b':-.0594, 'deltaT':3}
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
     model = pd.Series(model)
@@ -386,7 +382,7 @@ def test_PVSystem_sapm_celltemp():
     assert_frame_equal(expected, pvtemps)
 
 
-def test_snlinverter():
+def test_snlinverter(sam_data):
     inverters = sam_data['cecinverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
     vdcs = pd.Series(np.linspace(0,50,3))
@@ -397,7 +393,7 @@ def test_snlinverter():
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
-def test_PVSystem_snlinverter():
+def test_PVSystem_snlinverter(sam_data):
     inverters = sam_data['cecinverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
     system = pvsystem.PVSystem(inverter=testinv,
@@ -410,7 +406,7 @@ def test_PVSystem_snlinverter():
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
-def test_snlinverter_float():
+def test_snlinverter_float(sam_data):
     inverters = sam_data['cecinverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
     vdcs = 25.
@@ -418,10 +414,10 @@ def test_snlinverter_float():
     pdcs = idcs * vdcs
 
     pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
-    assert_almost_equals(pacs, 132.004278, 5)
+    assert_allclose(pacs, 132.004278, 5)
 
 
-def test_snlinverter_Pnt_micro():
+def test_snlinverter_Pnt_micro(sam_data):
     inverters = sam_data['cecinverter']
     testinv = 'Enphase_Energy__M250_60_2LL_S2x___ZC____NA__208V_208V__CEC_2013_'
     vdcs = pd.Series(np.linspace(0,50,3))

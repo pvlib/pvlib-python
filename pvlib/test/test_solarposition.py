@@ -1,20 +1,25 @@
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import datetime
 
 import numpy as np
-import numpy.testing as npt
 import pandas as pd
 
-from nose.tools import raises, assert_almost_equals
-from nose.plugins.skip import SkipTest
 from pandas.util.testing import assert_frame_equal, assert_index_equal
+from numpy.testing import assert_allclose
+import pytest
 
 from pvlib.location import Location
 from pvlib import solarposition
 
 from . import requires_ephem, incompatible_pandas_0131
+
+def has_spa_c():
+    try:
+        from pvlib.spa_c_files.spa_py import spa_calc
+        return False
+    except ImportError:
+        return True
+
+requires_spa_c = pytest.mark.skipif(has_spa_c, reason="requires spa_c")
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24),
@@ -39,32 +44,27 @@ expected = pd.DataFrame({'elevation': 39.872046,
 # pyephem reproduces the NREL result to 2 decimal places.
 # this doesn't mean that one code is better than the other.
 
-
+@requires_spa_c
 def test_spa_c_physical():
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
-    try:
-        ephem_data = solarposition.spa_c(times, golden_mst.latitude,
-                                         golden_mst.longitude,
-                                         pressure=82000,
-                                         temperature=11)
-    except ImportError:
-        raise SkipTest
+    ephem_data = solarposition.spa_c(times, golden_mst.latitude,
+                                     golden_mst.longitude,
+                                     pressure=82000,
+                                     temperature=11)
     this_expected = expected.copy()
     this_expected.index = times
     assert_frame_equal(this_expected, ephem_data[expected.columns])
 
 
+@requires_spa_c
 def test_spa_c_physical_dst():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
-    try:
-        ephem_data = solarposition.spa_c(times, golden.latitude,
-                                         golden.longitude,
-                                         pressure=82000,
-                                         temperature=11)
-    except ImportError:
-        raise SkipTest
+    ephem_data = solarposition.spa_c(times, golden.latitude,
+                                     golden.longitude,
+                                     pressure=82000,
+                                     temperature=11)
     this_expected = expected.copy()
     this_expected.index = times
     assert_frame_equal(this_expected, ephem_data[expected.columns])
@@ -231,7 +231,8 @@ def test_calc_time():
 
     loc = tus
     loc.pressure = 0
-    actual_time = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, 8, 30))
+    actual_time = pytz.timezone(loc.tz).localize(
+        datetime.datetime(2014, 10, 10, 8, 30))
     lb = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, tol))
     ub = pytz.timezone(loc.tz).localize(datetime.datetime(2014, 10, 10, 10))
     alt = solarposition.calc_time(lb, ub, loc.latitude, loc.longitude,
@@ -240,9 +241,9 @@ def test_calc_time():
                                  'az', math.radians(116.3))
     actual_timestamp = (actual_time - epoch_dt).total_seconds()
 
-    assert_almost_equals((alt.replace(second=0, microsecond=0) -
+    assert_allclose((alt.replace(second=0, microsecond=0) -
                           epoch_dt).total_seconds(), actual_timestamp)
-    assert_almost_equals((az.replace(second=0, microsecond=0) -
+    assert_allclose((az.replace(second=0, microsecond=0) -
                           epoch_dt).total_seconds(), actual_timestamp)
 
 @requires_ephem
@@ -250,7 +251,7 @@ def test_earthsun_distance():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D')
     distance = solarposition.pyephem_earthsun_distance(times).values[0]
-    assert_almost_equals(1, distance, 0)
+    assert_allclose(1, distance, atol=0.1)
 
 
 def test_ephemeris_physical():
@@ -279,7 +280,8 @@ def test_ephemeris_physical_dst():
     ephem_data = np.round(ephem_data, 2)
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
-@raises(ValueError)
+
+@pytest.mark.xfail(raises=ValueError)
 def test_get_solarposition_error():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
@@ -289,12 +291,18 @@ def test_get_solarposition_error():
                                                  temperature=11,
                                                  method='error this')
 
-def test_get_solarposition_pressure():
+
+@pytest.mark.parametrize(
+    "pressure", [
+    82000,
+    pytest.mark.xfail(reason="wrong pressure", strict=True)(0.0)
+    ])
+def test_get_solarposition_pressure(pressure):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude,
-                                                 pressure=82000,
+                                                 pressure=pressure,
                                                  temperature=11)
     this_expected = expected.copy()
     this_expected.index = times
@@ -302,27 +310,18 @@ def test_get_solarposition_pressure():
     ephem_data = np.round(ephem_data, 5)
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
-    ephem_data = solarposition.get_solarposition(times, golden.latitude,
-                                                 golden.longitude,
-                                                 pressure=0.0,
-                                                 temperature=11)
-    this_expected = expected.copy()
-    this_expected.index = times
-    this_expected = np.round(this_expected, 5)
-    ephem_data = np.round(ephem_data, 5)
-    try:
-        assert_frame_equal(this_expected, ephem_data[this_expected.columns])
-    except AssertionError:
-        pass
-    else:
-        raise AssertionError
 
-def test_get_solarposition_altitude():
+@pytest.mark.parametrize(
+    "altitude", [
+    golden.altitude,
+    pytest.mark.xfail(reason="wrong pressure", strict=True)(0.0)
+    ])
+def test_get_solarposition_altitude(altitude):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude,
-                                                 altitude=golden.altitude,
+                                                 altitude=altitude,
                                                  temperature=11)
     this_expected = expected.copy()
     this_expected.index = times
@@ -330,20 +329,6 @@ def test_get_solarposition_altitude():
     ephem_data = np.round(ephem_data, 5)
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
-    ephem_data = solarposition.get_solarposition(times, golden.latitude,
-                                                 golden.longitude,
-                                                 altitude=0.0,
-                                                 temperature=11)
-    this_expected = expected.copy()
-    this_expected.index = times
-    this_expected = np.round(this_expected, 5)
-    ephem_data = np.round(ephem_data, 5)
-    try:
-        assert_frame_equal(this_expected, ephem_data[this_expected.columns])
-    except AssertionError:
-        pass
-    else:
-        raise AssertionError
 
 def test_get_solarposition_no_kwargs():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),

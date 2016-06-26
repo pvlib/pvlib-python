@@ -9,5 +9,6 @@ dependencies:
     - numba
     - pytest
     - pytest-cov
+    - nose
     - pip:
         - coveralls

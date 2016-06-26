@@ -6,5 +6,6 @@ dependencies:
     - pytz
     - pytest
     - pytest-cov
+    - nose
     - pip:
         - coveralls

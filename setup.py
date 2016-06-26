@@ -45,7 +45,8 @@ INSTALL_REQUIRES = ['numpy >= 1.8.2',
                     'pytz',
                     'six',
                     ]
-TESTS_REQUIRE = ['nose']
+SETUP_REQUIRES = ['pytest-runner']
+TESTS_REQUIRE = ['pytest', 'nose']
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -95,6 +96,7 @@ setup(name=DISTNAME,
       cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
       install_requires=INSTALL_REQUIRES,
+      setup_requires=SETUP_REQUIRES,
       tests_require=TESTS_REQUIRE,
       ext_modules=extensions,
       description=DESCRIPTION,

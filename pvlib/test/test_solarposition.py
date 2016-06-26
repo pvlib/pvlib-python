@@ -15,11 +15,26 @@ from . import requires_ephem, incompatible_pandas_0131
 def has_spa_c():
     try:
         from pvlib.spa_c_files.spa_py import spa_calc
-        return False
     except ImportError:
+        return False
+    else:
         return True
 
-requires_spa_c = pytest.mark.skipif(has_spa_c, reason="requires spa_c")
+requires_spa_c = pytest.mark.skipif(not has_spa_c(), reason="requires spa_c")
+
+def has_numba():
+    try:
+        import numba
+    except ImportError:
+        return True
+    else:
+        vers = numba.__version__.split('.')
+        if int(vers[0] + vers[1]) < 17:
+            return False
+        else:
+            return True
+
+requires_numba = pytest.mark.skipif(not has_numba(), reason="requires numba")
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24),
@@ -98,15 +113,8 @@ def test_spa_python_numpy_physical_dst():
     assert_frame_equal(this_expected, ephem_data[expected.columns])
 
 
+@requires_numba
 def test_spa_python_numba_physical():
-    try:
-        import numba
-    except ImportError:
-        raise SkipTest
-    vers = numba.__version__.split('.')
-    if int(vers[0] + vers[1]) < 17:
-        raise SkipTest
-
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
@@ -120,15 +128,8 @@ def test_spa_python_numba_physical():
     assert_frame_equal(this_expected, ephem_data[expected.columns])
 
 
+@requires_numba
 def test_spa_python_numba_physical_dst():
-    try:
-        import numba
-    except ImportError:
-        raise SkipTest
-    vers = numba.__version__.split('.')
-    if int(vers[0] + vers[1]) < 17:
-        raise SkipTest
-
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_python(times, golden.latitude,

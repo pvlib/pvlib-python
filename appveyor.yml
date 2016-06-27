@@ -37,4 +37,4 @@ install:
 build: false
 
 test_script:
-    - "nosetests -v pvlib"
+    - "py.test -v pvlib"

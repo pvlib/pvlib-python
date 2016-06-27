@@ -394,7 +394,7 @@ def total_irrad(surface_tilt, surface_azimuth,
     elif model == 'perez':
         sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                     solar_zenith, solar_azimuth, airmass,
-                    modelt=model_perez)
+                    model=model_perez)
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
@@ -965,7 +965,7 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 
 def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
           solar_zenith, solar_azimuth, airmass,
-          modelt='allsitescomposite1990'):
+          model='allsitescomposite1990'):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
     one of the Perez models.
@@ -1108,7 +1108,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     # The various possible sets of Perez coefficients are contained
     # in a subfunction to clean up the code.
-    F1c, F2c = _get_perez_coefficients(modelt)
+    F1c, F2c = _get_perez_coefficients(model)
 
     F1 = (F1c[ebin, 0] + F1c[ebin, 1] * delta[ebin.index] +
           F1c[ebin, 2] * z[ebin.index])
@@ -1140,14 +1140,14 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     return sky_diffuse
 
 
-def _get_perez_coefficients(perezmodelt):
+def _get_perez_coefficients(perezmodel):
     '''
     Find coefficients for the Perez model
 
     Parameters
     ----------
 
-    perezmodelt : string (optional, default='allsitescomposite1990')
+    perezmodel : string (optional, default='allsitescomposite1990')
 
           a character string which selects the desired set of Perez
           coefficients. If model is not provided as an input, the default,
@@ -1296,7 +1296,7 @@ def _get_perez_coefficients(perezmodelt):
             [1.4340,   -3.9940,   -0.4920,  0.4530,  -2.3760,   0.1170],
             [1.0070,   -2.2920,   -0.4820,  0.3900,  -3.3680,   0.2290]], }
 
-    array = np.array(coeffdict[perezmodelt])
+    array = np.array(coeffdict[perezmodel])
 
     F1coeffs = array.T[0:3].T
     F2coeffs = array.T[3:7].T

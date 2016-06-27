@@ -11,7 +11,7 @@ the API changes.
 API Changes
 ~~~~~~~~~~~
 
-
+* In ``pvlib.irradiance.perez``, renamed argument ``modelt`` to ``model`` (:issue:`196`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -39,3 +39,4 @@ Code Contributors
 ~~~~~~~~~~~~~~~~~
 
 * Will Holmgren
+* Jonathan Chambers

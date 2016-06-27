@@ -18,6 +18,7 @@ Enhancements
 
 * Adds the First Solar spectral correction model. (:issue:`115`)
 * Adds the Gueymard 1994 integrated precipitable water model. (:issue:`115`)
+* Adds the PVWatts DC, AC, and system losses model. (:issue:`195`)
 
 
 Bug fixes
@@ -28,6 +29,7 @@ Bug fixes
 Documentation
 ~~~~~~~~~~~~~
 
+* Added new terms to the variables documentation. (:issue:`195`)
 
 
 Other

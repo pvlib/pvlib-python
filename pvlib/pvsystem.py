@@ -406,6 +406,40 @@ class PVSystem(object):
                                            voltage=self.modules_per_string,
                                            current=self.strings_per_inverter)
 
+    def pvwatts_dc(self, g_poa_effective, temp_cell):
+        """
+        Calcuates DC power according to the PVWatts model using
+        :py:func:`pvwatts_dc`, `self.module_parameters['pdc0']`, and
+        `self.module_parameters['gamma_pdc']`.
+
+        See :py:func:`pvwatts_dc` for details.
+        """
+        return pvwatts_dc(g_poa_effective, temp_cell,
+                          self.module_parameters['pdc0'],
+                          self.module_parameters['gamma_pdc'])
+
+    def pvwatts_losses(self, **kwargs):
+        """
+        Calculates DC power losses according the PVwatts model using
+        :py:func:`pvwatts_losses`. No attributes are used in this
+        calculation, but all keyword arguments will be passed to the
+        function.
+
+        See :py:func:`pvwatts_losses` for details.
+        """
+        return pvwatts_losses(**kwargs)
+
+    def pvwatts_ac(self, pdc):
+        """
+        Calculates AC power according to the PVWatts model using
+        :py:func:`pvwatts_ac`, `self.module_parameters['pdc0']`, and
+        `eta_inv_nom=self.inverter_parameters['eta_inv_nom']`.
+
+        See :py:func:`pvwatts_ac` for details.
+        """
+        return pvwatts_ac(pdc, self.module_parameters['pdc0'],
+                          eta_inv_nom=self.inverter_parameters['eta_inv_nom'])
+
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
         """Creates a LocalizedPVSystem object using this object
@@ -1811,3 +1845,149 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     data['p_mp'] *= voltage * current
 
     return data
+
+
+def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+    r"""
+    Implements NREL's PVWatts DC power model [1]_:
+
+    .. math::
+
+        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
+
+    Parameters
+    ----------
+    g_poa_effective: numeric
+        Irradiance transmitted to the PV cells in units of W/m**2. To be
+        fully consistent with PVWatts, the user must have already
+        applied angle of incidence losses, but not soiling, spectral,
+        etc.
+    temp_cell: numeric
+        Cell temperature in degrees C.
+    pdc0: numeric
+        Nameplate DC rating.
+    gamma_pdc: numeric
+        The temperature coefficient in units of 1/C. Typically -0.002 to
+        -0.005 per degree C.
+    temp_ref: numeric
+        Cell reference temperature. PVWatts defines it to be 25 C and
+        is included here for flexibility.
+
+    Returns
+    -------
+    pdc: numeric
+        DC power.
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    """
+
+    pdc = (g_poa_effective * 0.001 * pdc0 *
+           (1 + gamma_pdc * (temp_cell - temp_ref)))
+
+    return pdc
+
+
+def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
+                   connections=0.5, lid=1.5, nameplate_rating=1, age=0,
+                   availability=3):
+    r"""
+    Implements NREL's PVWatts system loss model [1]_:
+
+    .. math::
+
+        L_{total}(\%) = 100 [ 1 - \Pi_i ( 1 - \frac{L_i}{100} ) ]
+
+    All parameters must be in units of %. Parameters may be
+    array-like, though all array sizes must match.
+
+    Parameters
+    ----------
+    soiling: numeric
+    shading: numeric
+    snow: numeric
+    mismatch: numeric
+    wiring: numeric
+    connections: numeric
+    lid: numeric
+        Light induced degradation
+    nameplate_rating: numeric
+    age: numeric
+    availability: numeric
+
+    Returns
+    -------
+    losses: numeric
+        System losses in units of %.
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    """
+
+    params = [soiling, shading, snow, mismatch, wiring, connections, lid,
+              nameplate_rating, age, availability]
+
+    # manually looping over params allows for numpy/pandas to handle any
+    # array-like broadcasting that might be necessary.
+    perf = 1
+    for param in params:
+        perf *= 1 - param/100
+
+    losses = (1 - perf) * 100.
+
+    return losses
+
+
+def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
+    r"""
+    Implements NREL's PVWatts inverter model [1]_.
+
+    .. math::
+
+        \eta = \frac{\eta_{nom}}{\eta_{ref}} (-0.0162\zeta - \frac{0.0059}{\zeta} + 0.9858)
+
+    .. math::
+
+        P_{ac} = \min(\eta P_{dc}, P_{ac0})
+
+    where :math:`\zeta=P_{dc}/P_{dc0}` and :math:`P_{dc0}=P_{ac0}/\eta_{nom}`.
+
+    Parameters
+    ----------
+    pdc: numeric
+        DC power.
+    pdc0: numeric
+        Nameplate DC rating.
+    eta_inv_nom: numeric
+        Nominal inverter efficiency.
+    eta_inv_ref: numeric
+        Reference inverter efficiency. PVWatts defines it to be 0.9637
+        and is included here for flexibility.
+
+    Returns
+    -------
+    pac: numeric
+        AC power.
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    """
+
+    pac0 = eta_inv_nom * pdc0
+    zeta = pdc / pdc0
+
+    eta = eta_inv_nom / eta_inv_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
+
+    pac = eta * pdc
+    pac = np.minimum(pac0, pac)
+
+    return pac

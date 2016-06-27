@@ -350,8 +350,7 @@ class PVSystem(object):
         -------
         See pvsystem.singlediode for details
         """
-        return singlediode(self.module_parameters, photocurrent,
-                           saturation_current,
+        return singlediode(photocurrent, saturation_current,
                            resistance_series, resistance_shunt, nNsVth)
 
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
@@ -1334,9 +1333,9 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
-def singlediode(module, photocurrent, saturation_current,
-                resistance_series, resistance_shunt, nNsVth):
-    '''
+def singlediode(photocurrent, saturation_current, resistance_series,
+                resistance_shunt, nNsVth):
+    r'''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
     Singlediode solves the single diode equation [1]
@@ -1357,9 +1356,6 @@ def singlediode(module, photocurrent, saturation_current,
 
     Parameters
     ----------
-    module : dict or Series
-        A dict-like object defining the SAPM performance parameters.
-
     photocurrent : float or Series
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
@@ -1439,8 +1435,7 @@ def singlediode(module, photocurrent, saturation_current,
               'i_0': saturation_current,
               'i_l': photocurrent}
 
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0, module['V_oc_ref']*1.14,
-                                        _pwr_optfcn)
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0, v_oc*1.14, _pwr_optfcn)
 
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is i_mp. Start the optimization at v_oc/2

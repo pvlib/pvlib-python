@@ -287,7 +287,7 @@ def test_singlediode_floats(sam_data):
                 'v_mp': 6.221535886625464}
     assert isinstance(out, dict)
     for k, v in out.items():
-        yield assert_allclose, expected[k], v, 3
+        assert_allclose(expected[k], v, atol=3)
 
 
 def test_PVSystem_singlediode_floats(sam_data):
@@ -305,7 +305,7 @@ def test_PVSystem_singlediode_floats(sam_data):
                 'v_mp': 6.221535886625464}
     assert isinstance(out, dict)
     for k, v in out.items():
-        yield assert_allclose, expected[k], v, 3
+        assert_allclose(expected[k], v, atol=3)
 
 
 def test_scale_voltage_current_power(sam_data):

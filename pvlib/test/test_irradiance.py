@@ -12,7 +12,7 @@ from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
 
-from . import requires_ephem
+from conftest import requires_ephem
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)

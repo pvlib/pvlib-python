@@ -11,7 +11,7 @@ from pvlib.location import Location
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 import pytest
 
-from .test_pvsystem import sam_data
+from test_pvsystem import sam_data
 
 
 @pytest.fixture

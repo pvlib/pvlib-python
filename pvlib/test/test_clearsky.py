@@ -11,7 +11,7 @@ from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
 
-from . import requires_scipy
+from conftest import requires_scipy
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)

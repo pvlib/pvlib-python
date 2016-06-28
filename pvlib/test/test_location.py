@@ -9,7 +9,9 @@ import pytest
 from pytz.exceptions import UnknownTimeZoneError
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 
-from ..location import Location
+from pvlib.location import Location
+
+from test_solarposition import expected_solpos
 
 aztz = pytz.timezone('US/Arizona')
 
@@ -187,8 +189,8 @@ def test_get_clearsky_valueerror():
 
 
 def test_from_tmy_3():
-    from .test_tmy import tmy3_testfile
-    from ..tmy import readtmy3
+    from test_tmy import tmy3_testfile
+    from pvlib.tmy import readtmy3
     data, meta = readtmy3(tmy3_testfile)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
@@ -198,8 +200,8 @@ def test_from_tmy_3():
 
 
 def test_from_tmy_2():
-    from .test_tmy import tmy2_testfile
-    from ..tmy import readtmy2
+    from test_tmy import tmy2_testfile
+    from pvlib.tmy import readtmy2
     data, meta = readtmy2(tmy2_testfile)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
@@ -208,17 +210,15 @@ def test_from_tmy_2():
     assert_frame_equal(loc.tmy_data, data)
 
 
-def test_get_solarposition():
-    from .test_solarposition import expected, golden_mst
+def test_get_solarposition(expected_solpos):
+    from test_solarposition import golden_mst
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = golden_mst.get_solarposition(times, temperature=11)
     ephem_data = np.round(ephem_data, 3)
-    this_expected = expected.copy()
-    this_expected.index = times
-    this_expected = np.round(this_expected, 3)
-    print(this_expected, ephem_data[expected.columns])
-    assert_frame_equal(this_expected, ephem_data[expected.columns])
+    expected_solpos.index = times
+    expected_solpos = np.round(expected_solpos, 3)
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
 def test_get_airmass():

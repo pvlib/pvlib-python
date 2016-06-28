@@ -10,31 +10,9 @@ import pytest
 from pvlib.location import Location
 from pvlib import solarposition
 
-from . import requires_ephem, incompatible_pandas_0131
+from conftest import (requires_ephem, incompatible_pandas_0131,
+                      requires_spa_c, requires_numba)
 
-def has_spa_c():
-    try:
-        from pvlib.spa_c_files.spa_py import spa_calc
-    except ImportError:
-        return False
-    else:
-        return True
-
-requires_spa_c = pytest.mark.skipif(not has_spa_c(), reason="requires spa_c")
-
-def has_numba():
-    try:
-        import numba
-    except ImportError:
-        return True
-    else:
-        vers = numba.__version__.split('.')
-        if int(vers[0] + vers[1]) < 17:
-            return False
-        else:
-            return True
-
-requires_numba = pytest.mark.skipif(not has_numba(), reason="requires numba")
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24),
@@ -49,7 +27,9 @@ times_localized = times.tz_localize(tus.tz)
 
 tol = 5
 
-expected = pd.DataFrame({'elevation': 39.872046,
+@pytest.fixture()
+def expected_solpos():
+    return pd.DataFrame({'elevation': 39.872046,
                          'apparent_zenith': 50.111622,
                          'azimuth': 194.340241,
                          'apparent_elevation': 39.888378},
@@ -60,32 +40,30 @@ expected = pd.DataFrame({'elevation': 39.872046,
 # this doesn't mean that one code is better than the other.
 
 @requires_spa_c
-def test_spa_c_physical():
+def test_spa_c_physical(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_c(times, golden_mst.latitude,
                                      golden_mst.longitude,
                                      pressure=82000,
                                      temperature=11)
-    this_expected = expected.copy()
-    this_expected.index = times
-    assert_frame_equal(this_expected, ephem_data[expected.columns])
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
 @requires_spa_c
-def test_spa_c_physical_dst():
+def test_spa_c_physical_dst(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_c(times, golden.latitude,
                                      golden.longitude,
                                      pressure=82000,
                                      temperature=11)
-    this_expected = expected.copy()
-    this_expected.index = times
-    assert_frame_equal(this_expected, ephem_data[expected.columns])
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_spa_python_numpy_physical():
+def test_spa_python_numpy_physical(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
@@ -94,12 +72,11 @@ def test_spa_python_numpy_physical():
                                           temperature=11, delta_t=67,
                                           atmos_refract=0.5667,
                                           how='numpy')
-    this_expected = expected.copy()
-    this_expected.index = times
-    assert_frame_equal(this_expected, ephem_data[expected.columns])
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_spa_python_numpy_physical_dst():
+def test_spa_python_numpy_physical_dst(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_python(times, golden.latitude,
@@ -108,13 +85,12 @@ def test_spa_python_numpy_physical_dst():
                                           temperature=11, delta_t=67,
                                           atmos_refract=0.5667,
                                           how='numpy')
-    this_expected = expected.copy()
-    this_expected.index = times
-    assert_frame_equal(this_expected, ephem_data[expected.columns])
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
 @requires_numba
-def test_spa_python_numba_physical():
+def test_spa_python_numba_physical(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
@@ -123,13 +99,12 @@ def test_spa_python_numba_physical():
                                           temperature=11, delta_t=67,
                                           atmos_refract=0.5667,
                                           how='numba', numthreads=1)
-    this_expected = expected.copy()
-    this_expected.index = times
-    assert_frame_equal(this_expected, ephem_data[expected.columns])
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
 @requires_numba
-def test_spa_python_numba_physical_dst():
+def test_spa_python_numba_physical_dst(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_python(times, golden.latitude,
@@ -137,9 +112,8 @@ def test_spa_python_numba_physical_dst():
                                           temperature=11, delta_t=67,
                                           atmos_refract=0.5667,
                                           how='numba', numthreads=1)
-    this_expected = expected.copy()
-    this_expected.index = times
-    assert_frame_equal(this_expected, ephem_data[expected.columns])
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
 @incompatible_pandas_0131
@@ -198,28 +172,26 @@ def test_get_sun_rise_set_transit():
 
 
 @requires_ephem
-def test_pyephem_physical():
+def test_pyephem_physical(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.pyephem(times, golden_mst.latitude,
                                        golden_mst.longitude, pressure=82000,
                                        temperature=11)
-    this_expected = expected.copy()
-    this_expected.index = times
-    assert_frame_equal(this_expected.round(2),
-                       ephem_data[this_expected.columns].round(2))
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos.round(2),
+                       ephem_data[expected_solpos.columns].round(2))
 
 @requires_ephem
-def test_pyephem_physical_dst():
+def test_pyephem_physical_dst(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1,
                           freq='D', tz=golden.tz)
     ephem_data = solarposition.pyephem(times, golden.latitude,
                                        golden.longitude, pressure=82000,
                                        temperature=11)
-    this_expected = expected.copy()
-    this_expected.index = times
-    assert_frame_equal(this_expected.round(2),
-                       ephem_data[this_expected.columns].round(2))
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos.round(2),
+                       ephem_data[expected_solpos.columns].round(2))
 
 @requires_ephem
 def test_calc_time():
@@ -255,31 +227,29 @@ def test_earthsun_distance():
     assert_allclose(1, distance, atol=0.1)
 
 
-def test_ephemeris_physical():
+def test_ephemeris_physical(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.ephemeris(times, golden_mst.latitude,
                                          golden_mst.longitude,
                                          pressure=82000,
                                          temperature=11)
-    this_expected = expected.copy()
-    this_expected.index = times
-    this_expected = np.round(this_expected, 2)
+    expected_solpos.index = times
+    expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
-    assert_frame_equal(this_expected, ephem_data[this_expected.columns])
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_ephemeris_physical_dst():
+def test_ephemeris_physical_dst(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.ephemeris(times, golden.latitude,
                                          golden.longitude, pressure=82000,
                                          temperature=11)
-    this_expected = expected.copy()
-    this_expected.index = times
-    this_expected = np.round(this_expected, 2)
+    expected_solpos.index = times
+    expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
-    assert_frame_equal(this_expected, ephem_data[this_expected.columns])
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
 def test_get_solarposition_error():
@@ -295,13 +265,13 @@ def test_get_solarposition_error():
 
 @pytest.mark.parametrize(
     "pressure, expected", [
-    (82000, expected),
+    (82000, expected_solpos()),
     (90000, pd.DataFrame(
         np.array([[  39.88997,   50.11003,  194.34024,   39.87205,   14.64151,
                      50.12795]]),
         columns=['apparent_elevation', 'apparent_zenith', 'azimuth', 'elevation',
                  'equation_of_time', 'zenith'],
-        index=expected.index))
+        index=expected_solpos().index))
     ])
 def test_get_solarposition_pressure(pressure, expected):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
@@ -319,13 +289,13 @@ def test_get_solarposition_pressure(pressure, expected):
 
 @pytest.mark.parametrize(
     "altitude, expected", [
-    (golden.altitude, expected),
+    (golden.altitude, expected_solpos()),
     (2000, pd.DataFrame(
         np.array([[  39.88788,   50.11212,  194.34024,   39.87205,   14.64151,
                      50.12795]]),
         columns=['apparent_elevation', 'apparent_zenith', 'azimuth', 'elevation',
                  'equation_of_time', 'zenith'],
-        index=expected.index))
+        index=expected_solpos().index))
     ])
 def test_get_solarposition_altitude(altitude, expected):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
@@ -341,13 +311,12 @@ def test_get_solarposition_altitude(altitude, expected):
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
 
-def test_get_solarposition_no_kwargs():
+def test_get_solarposition_no_kwargs(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude)
-    this_expected = expected.copy()
-    this_expected.index = times
-    this_expected = np.round(this_expected, 2)
+    expected_solpos.index = times
+    expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
-    assert_frame_equal(this_expected, ephem_data[this_expected.columns])
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])

@@ -18,7 +18,7 @@ from pvlib import atmosphere
 from pvlib import solarposition
 from pvlib.location import Location
 
-from . import needs_numpy_1_10
+from conftest import needs_numpy_1_10
 
 latitude = 32.2
 longitude = -111

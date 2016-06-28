@@ -363,8 +363,8 @@ for details.
     # model a big tracker for more fun
     system = SingleAxisTracker(module_parameters=module,
                                inverter_parameters=inverter,
-                               series_modules=15,
-                               parallel_modules=300)
+                               modules_per_string=15,
+                               strings_per_inverter=300)
 
     # fx is a common abbreviation for forecast
     fx_model = GFS()

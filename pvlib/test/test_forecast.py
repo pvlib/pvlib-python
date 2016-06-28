@@ -28,9 +28,9 @@ if has_siphon:
     _end = _start + pd.Timedelta(days=1)
     _models = [GFS, NAM, HRRR, RAP, NDFD, HRRR_ESRL]
     _working_models = []
-    _variables = ['temperature', 'wind_speed', 'total_clouds', 'low_clouds',
+    _variables = ['temp_air', 'wind_speed', 'total_clouds', 'low_clouds',
                   'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi',]
-    _nonnan_variables = ['temperature', 'wind_speed', 'total_clouds', 'dni',
+    _nonnan_variables = ['temp_air', 'wind_speed', 'total_clouds', 'dni',
                          'dhi', 'ghi',]
 
 @requires_siphon
@@ -100,10 +100,10 @@ def test_full():
 @requires_siphon
 def test_temp_convert():
     amodel = _working_models[0]
-    data = pd.DataFrame({'temperature': [273.15]})
-    data['temperature'] = amodel.kelvin_to_celsius(data['temperature'])
+    data = pd.DataFrame({'temp_air': [273.15]})
+    data['temp_air'] = amodel.kelvin_to_celsius(data['temp_air'])
 
-    assert data['temperature'].values == 0.0
+    assert data['temp_air'].values == 0.0
 
 # @requires_siphon
 # def test_bounding_box():

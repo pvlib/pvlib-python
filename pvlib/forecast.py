@@ -95,7 +95,7 @@ class ForecastModel(object):
     vert_level = 100000
 
     units = {
-        'temperature': 'C',
+        'temp_air': 'C',
         'wind_speed': 'm/s',
         'ghi': 'W/m^2',
         'ghi_raw': 'W/m^2',
@@ -491,7 +491,7 @@ class GFS(ForecastModel):
         model = 'GFS {} Degree Forecast'.format(resolution)
 
         self.variables = {
-            'temperature': 'Temperature_surface',
+            'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'wind_speed_u': 'u-component_of_wind_isobaric',
             'wind_speed_v': 'v-component_of_wind_isobaric',
@@ -504,7 +504,7 @@ class GFS(ForecastModel):
             'ghi_raw': 'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average', }
 
         self.output_variables = [
-            'temperature',
+            'temp_air',
             'wind_speed',
             'ghi',
             'dni',
@@ -534,7 +534,7 @@ class GFS(ForecastModel):
             Processed forecast data.
         """
         data = super(GFS, self).process_data(data, **kwargs)
-        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.uv_to_speed(data)
         data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
                          how='outer')
@@ -579,7 +579,7 @@ class HRRR_ESRL(ForecastModel):
         model = 'GSD HRRR CONUS 3km surface'
 
         self.variables = {
-            'temperature': 'Temperature_surface',
+            'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere',
             'low_clouds': 'Low_cloud_cover_UnknownLevelType-214',
@@ -588,7 +588,7 @@ class HRRR_ESRL(ForecastModel):
             'ghi_raw': 'Downward_short-wave_radiation_flux_surface', }
 
         self.output_variables = [
-            'temperature',
+            'temp_air',
             'wind_speed'
             'ghi_raw',
             'ghi',
@@ -620,7 +620,7 @@ class HRRR_ESRL(ForecastModel):
         """
 
         data = super(HRRR_ESRL, self).process_data(data, **kwargs)
-        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
         data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
                          how='outer')
@@ -661,7 +661,7 @@ class NAM(ForecastModel):
         model = 'NAM CONUS 12km from CONDUIT'
 
         self.variables = {
-            'temperature': 'Temperature_surface',
+            'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere_single_layer',
             'low_clouds': 'Low_cloud_cover_low_cloud',
@@ -670,7 +670,7 @@ class NAM(ForecastModel):
             'ghi_raw': 'Downward_Short-Wave_Radiation_Flux_surface', }
 
         self.output_variables = [
-            'temperature',
+            'temp_air',
             'wind_speed',
             'ghi',
             'dni',
@@ -701,7 +701,7 @@ class NAM(ForecastModel):
         """
 
         data = super(NAM, self).process_data(data, **kwargs)
-        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
         data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
                          how='outer')
@@ -753,7 +753,7 @@ class HRRR(ForecastModel):
             'condensation_height': 'Geopotential_height_adiabatic_condensation_lifted'}
 
         self.output_variables = [
-            'temperature',
+            'temp_air',
             'wind_speed',
             'ghi',
             'dni',
@@ -784,8 +784,8 @@ class HRRR(ForecastModel):
         """
 
         data = super(HRRR, self).process_data(data, **kwargs)
-        data['temperature'] = self.isobaric_to_ambient_temperature(data)
-        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['temp_air'] = self.isobaric_to_ambient_temperature(data)
+        data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
         data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
                          how='outer')
@@ -824,12 +824,12 @@ class NDFD(ForecastModel):
         model_type = 'Forecast Products and Analyses'
         model = 'National Weather Service CONUS Forecast Grids (CONDUIT)'
         self.variables = {
-            'temperature': 'Temperature_surface',
+            'temp_air': 'Temperature_surface',
             'wind_speed': 'Wind_speed_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'total_clouds': 'Total_cloud_cover_surface', }
         self.output_variables = [
-            'temperature',
+            'temp_air',
             'wind_speed',
             'ghi',
             'dni',
@@ -855,7 +855,7 @@ class NDFD(ForecastModel):
 
         cloud_cover = 'total_clouds'
         data = super(NDFD, self).process_data(data, **kwargs)
-        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
                          how='outer')
         return data.ix[:, self.output_variables]
@@ -902,14 +902,14 @@ class RAP(ForecastModel):
         model_type = 'Forecast Model Data'
         model = 'Rapid Refresh CONUS {}km'.format(resolution)
         self.variables = {
-            'temperature': 'Temperature_surface',
+            'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere_single_layer',
             'low_clouds': 'Low_cloud_cover_low_cloud',
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
             'high_clouds': 'High_cloud_cover_high_cloud', }
         self.output_variables = [
-            'temperature',
+            'temp_air',
             'wind_speed',
             'ghi',
             'dni',
@@ -939,7 +939,7 @@ class RAP(ForecastModel):
         """
 
         data = super(RAP, self).process_data(data, **kwargs)
-        data['temperature'] = self.kelvin_to_celsius(data['temperature'])
+        data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
         data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
                          how='outer')

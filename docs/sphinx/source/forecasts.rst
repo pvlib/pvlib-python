@@ -48,7 +48,7 @@ similar field in the HRRR is named
 PVLIB-Python aims to simplify the access of the model fields relevant
 for solar power forecasts. Model data accessed with PVLIB-Python is
 returned as a pandas DataFrame with consistent column names:
-``temperature, wind_speed, total_clouds, low_clouds, mid_clouds,
+``temp_air, wind_speed, total_clouds, low_clouds, mid_clouds,
 high_clouds, dni, dhi, ghi``. To accomplish this, we use an
 object-oriented framework in which each weather model is represented by
 a class that inherits from a parent
@@ -112,7 +112,7 @@ problems.
     data = model.rename(data)
 
     # convert temperature
-    data['temperature'] = model.kelvin_to_celsius(data['temperature'])
+    data['temp_air'] = model.kelvin_to_celsius(data['temp_air'])
 
     # convert wind components to wind speed
     data['wind_speed'] = model.uv_to_speed(data)
@@ -375,8 +375,7 @@ for details.
 
     # extract relevant data for model chain
     irradiance = fx_data[['ghi', 'dni', 'dhi']]
-    weather = fx_data[['wind_speed', 'temperature']].rename(
-        columns={'temperature': 'temp_air'})
+    weather = fx_data[['wind_speed', 'temp_air']]
     mc.run_model(fx_data.index, irradiance=irradiance, weather=weather);
 
 Now we plot a couple of modeling intermediates and the forecast power.

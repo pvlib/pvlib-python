@@ -1,7 +1,7 @@
 name: test_env
 channels:
     - defaults
-    - http://conda.anaconda.org/conda-forge
+    - conda-forge
 dependencies:
     - python=3.5
     - numpy

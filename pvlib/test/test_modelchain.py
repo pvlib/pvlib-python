@@ -135,12 +135,11 @@ def test_run_model_tracker(system, location):
     assert_frame_equal(mc.tracking, expected)
 
 
-@pytest.mark.xfail(raises=ValueError, strict=True)
 def test_bad_get_orientation():
-    modelchain.get_orientation('bad value')
+    with pytest.raises(ValueError):
+        modelchain.get_orientation('bad value')
 
 
-@pytest.mark.xfail(raises=ValueError, strict=True)
 def test_basic_chain_required(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')
@@ -151,10 +150,10 @@ def test_basic_chain_required(sam_data):
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
-
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
-                                    altitude=altitude)
+    with pytest.raises(ValueError):
+        dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                        module_parameters, inverter_parameters,
+                                        altitude=altitude)
 
 
 def test_basic_chain_alt_az(sam_data):

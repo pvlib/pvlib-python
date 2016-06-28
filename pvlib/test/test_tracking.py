@@ -151,15 +151,14 @@ def test_axis_azimuth():
     assert_frame_equal(expect, tracker_data)
 
 
-@pytest.mark.xfail(raises=ValueError, strict=True)
 def test_index_mismatch():
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([90,180])
-
-    tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
-                                       axis_tilt=0, axis_azimuth=90,
-                                       max_angle=90, backtrack=True,
-                                       gcr=2.0/7.0)
+    with pytest.raises(ValueError):
+        tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                           axis_tilt=0, axis_azimuth=90,
+                                           max_angle=90, backtrack=True,
+                                           gcr=2.0/7.0)
 
 
 def test_SingleAxisTracker_creation():

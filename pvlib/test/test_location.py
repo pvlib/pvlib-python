@@ -22,11 +22,19 @@ def test_location_all():
 
 @pytest.mark.parametrize('tz', [
     aztz, 'America/Phoenix',  -7, -7.0,
-    pytest.mark.xfail(raises=UnknownTimeZoneError)('invalid'),
-    pytest.mark.xfail(raises=TypeError)([5])
 ])
 def test_location_tz(tz):
     Location(32.2, -111, tz)
+
+
+def test_location_invalid_tz():
+    with pytest.raises(UnknownTimeZoneError):
+        Location(32.2, -111, 'invalid')
+
+
+def test_location_invalid_tz_type():
+    with pytest.raises(TypeError):
+        Location(32.2, -111, [5])
 
 
 def test_location_print_all():
@@ -169,13 +177,13 @@ def test_get_clearsky_simplified_solis_aod_pw():
     assert_frame_equal(expected, clearsky)
 
 
-@pytest.mark.xfail(raises=ValueError)
 def test_get_clearsky_valueerror():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='20160101T0600-0700',
                              end='20160101T1800-0700',
                              freq='3H')
-    clearsky = tus.get_clearsky(times, model='invalid_model')
+    with pytest.raises(ValueError):
+        clearsky = tus.get_clearsky(times, model='invalid_model')
 
 
 def test_from_tmy_3():
@@ -241,13 +249,13 @@ def test_get_airmass():
     assert_frame_equal(expected, airmass)
 
 
-@pytest.mark.xfail(raises=ValueError)
 def test_get_airmass_valueerror():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='20160101T0600-0700',
                              end='20160101T1800-0700',
                              freq='3H')
-    clearsky = tus.get_airmass(times, model='invalid_model')
+    with pytest.raises(ValueError):
+        clearsky = tus.get_airmass(times, model='invalid_model')
 
 
 def test_Location___repr__():

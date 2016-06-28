@@ -89,9 +89,9 @@ def test_grounddiffuse_albedo_0():
     assert 0 == ground_irrad.all()
 
 
-@pytest.mark.xfail(raises=KeyError)
 def test_grounddiffuse_albedo_invalid_surface():
-    irradiance.grounddiffuse(40, ghi, surface_type='invalid')
+    with pytest.raises(KeyError):
+        irradiance.grounddiffuse(40, ghi, surface_type='invalid')
 
 
 def test_grounddiffuse_albedo_surface():

@@ -36,10 +36,14 @@ def test_alt2press():
 
 @pytest.mark.parametrize("model",
     ['simple', 'kasten1966', 'youngirvine1967', 'kastenyoung1989',
-     'gueymard1993', 'young1994', 'pickering2002',
-     pytest.mark.xfail(raises=ValueError, strict=True)('invalid')])
+     'gueymard1993', 'young1994', 'pickering2002'])
 def test_airmass(model):
     atmosphere.relativeairmass(ephem_data['zenith'], model)
+
+
+def test_airmass_invalid():
+    with pytest.raises(ValueError):
+        atmosphere.relativeairmass(ephem_data['zenith'], 'invalid')
 
 
 def test_absoluteairmass():
@@ -100,6 +104,6 @@ def test_first_solar_spectral_correction_supplied():
     assert_allclose(out, expected, atol=1e-3)
 
 
-@pytest.mark.xfail(raises=TypeError, strict=True)
 def test_first_solar_spectral_correction_ambiguous():
-    atmosphere.first_solar_spectral_correction(1, 1)
+    with pytest.raises(TypeError):
+        atmosphere.first_solar_spectral_correction(1, 1)

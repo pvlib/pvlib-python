@@ -282,23 +282,28 @@ def test_ephemeris_physical_dst():
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
 
-@pytest.mark.xfail(raises=ValueError)
 def test_get_solarposition_error():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
-    ephem_data = solarposition.get_solarposition(times, golden.latitude,
-                                                 golden.longitude,
-                                                 pressure=82000,
-                                                 temperature=11,
-                                                 method='error this')
+    with pytest.raises(ValueError):
+        ephem_data = solarposition.get_solarposition(times, golden.latitude,
+                                                     golden.longitude,
+                                                     pressure=82000,
+                                                     temperature=11,
+                                                     method='error this')
 
 
 @pytest.mark.parametrize(
-    "pressure", [
-    82000,
-    pytest.mark.xfail(reason="wrong pressure", strict=True)(0.0)
+    "pressure, expected", [
+    (82000, expected),
+    (90000, pd.DataFrame(
+        np.array([[  39.88997,   50.11003,  194.34024,   39.87205,   14.64151,
+                     50.12795]]),
+        columns=['apparent_elevation', 'apparent_zenith', 'azimuth', 'elevation',
+                 'equation_of_time', 'zenith'],
+        index=expected.index))
     ])
-def test_get_solarposition_pressure(pressure):
+def test_get_solarposition_pressure(pressure, expected):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
@@ -313,11 +318,16 @@ def test_get_solarposition_pressure(pressure):
 
 
 @pytest.mark.parametrize(
-    "altitude", [
-    golden.altitude,
-    pytest.mark.xfail(reason="wrong pressure", strict=True)(0.0)
+    "altitude, expected", [
+    (golden.altitude, expected),
+    (2000, pd.DataFrame(
+        np.array([[  39.88788,   50.11212,  194.34024,   39.87205,   14.64151,
+                     50.12795]]),
+        columns=['apparent_elevation', 'apparent_zenith', 'azimuth', 'elevation',
+                 'equation_of_time', 'zenith'],
+        index=expected.index))
     ])
-def test_get_solarposition_altitude(altitude):
+def test_get_solarposition_altitude(altitude, expected):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,

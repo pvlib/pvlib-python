@@ -51,7 +51,7 @@ install:
     - ls -l /home/travis/miniconda/envs/test_env/lib
     #- pip install . # use pip to automatically install anything not in the yml files (i.e. numpy/scipy/pandas for py3*)
     #- pip install scipy # won't do anything if already installed
-    - python setup.py install
+    - pip install -e .
 
 script:
     - py.test pvlib --cov=pvlib --cov-report term-missing

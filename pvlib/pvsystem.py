@@ -38,11 +38,11 @@ class PVSystem(object):
     The class supports basic system topologies consisting of:
 
         * `N` total modules arranged in series
-          (`series_modules=N`, `parallel_modules=1`).
+          (`modules_per_string=N`, `strings_per_inverter=1`).
         * `M` total modules arranged in parallel
-          (`series_modules=1`, `parallel_modules=M`).
+          (`modules_per_string=1`, `strings_per_inverter=M`).
         * `NxM` total modules arranged in `M` strings of `N` modules each
-          (`series_modules=N`, `parallel_modules=M`).
+          (`modules_per_string=N`, `strings_per_inverter=M`).
 
     The class is complementary to the module-level functions.
 
@@ -78,10 +78,10 @@ class PVSystem(object):
     module_parameters : None, dict or Series
         Module parameters as defined by the SAPM, CEC, or other.
 
-    series_modules: int or float
+    modules_per_string: int or float
         See system topology discussion above.
 
-    parallel_modules: int or float
+    strings_per_inverter: int or float
         See system topology discussion above.
 
     inverter : None, string
@@ -110,7 +110,7 @@ class PVSystem(object):
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
                  module=None, module_parameters=None,
-                 series_modules=1, parallel_modules=1,
+                 modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
                  **kwargs):
@@ -129,8 +129,8 @@ class PVSystem(object):
         self.module = module
         self.module_parameters = module_parameters
 
-        self.series_modules = series_modules
-        self.parallel_modules = parallel_modules
+        self.modules_per_string = modules_per_string
+        self.strings_per_inverter = strings_per_inverter
 
         self.inverter = inverter
         self.inverter_parameters = inverter_parameters
@@ -139,6 +139,12 @@ class PVSystem(object):
 
         # needed for tying together Location and PVSystem in LocalizedPVSystem
         super(PVSystem, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return ('PVSystem with tilt:' + str(self.surface_tilt) +
+                ' and azimuth: ' + str(self.surface_azimuth) +
+                ' with Module: ' + str(self.module) +
+                ' and Inverter: ' + str(self.inverter))
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
@@ -344,8 +350,7 @@ class PVSystem(object):
         -------
         See pvsystem.singlediode for details
         """
-        return singlediode(self.module_parameters, photocurrent,
-                           saturation_current,
+        return singlediode(photocurrent, saturation_current,
                            resistance_series, resistance_shunt, nNsVth)
 
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
@@ -382,7 +387,7 @@ class PVSystem(object):
         """
         Scales the voltage, current, and power of the DataFrames
         returned by :py:func:`singlediode` and :py:func:`sapm`
-        by `self.series_modules` and `self.parallel_modules`.
+        by `self.modules_per_string` and `self.strings_per_inverter`.
 
         Parameters
         ----------
@@ -396,8 +401,43 @@ class PVSystem(object):
             A scaled copy of the input data.
         """
 
-        return scale_voltage_current_power(data, voltage=self.series_modules,
-                                           current=self.parallel_modules)
+        return scale_voltage_current_power(data,
+                                           voltage=self.modules_per_string,
+                                           current=self.strings_per_inverter)
+
+    def pvwatts_dc(self, g_poa_effective, temp_cell):
+        """
+        Calcuates DC power according to the PVWatts model using
+        :py:func:`pvwatts_dc`, `self.module_parameters['pdc0']`, and
+        `self.module_parameters['gamma_pdc']`.
+
+        See :py:func:`pvwatts_dc` for details.
+        """
+        return pvwatts_dc(g_poa_effective, temp_cell,
+                          self.module_parameters['pdc0'],
+                          self.module_parameters['gamma_pdc'])
+
+    def pvwatts_losses(self, **kwargs):
+        """
+        Calculates DC power losses according the PVwatts model using
+        :py:func:`pvwatts_losses`. No attributes are used in this
+        calculation, but all keyword arguments will be passed to the
+        function.
+
+        See :py:func:`pvwatts_losses` for details.
+        """
+        return pvwatts_losses(**kwargs)
+
+    def pvwatts_ac(self, pdc):
+        """
+        Calculates AC power according to the PVWatts model using
+        :py:func:`pvwatts_ac`, `self.module_parameters['pdc0']`, and
+        `eta_inv_nom=self.inverter_parameters['eta_inv_nom']`.
+
+        See :py:func:`pvwatts_ac` for details.
+        """
+        return pvwatts_ac(pdc, self.module_parameters['pdc0'],
+                          eta_inv_nom=self.inverter_parameters['eta_inv_nom'])
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
@@ -453,9 +493,17 @@ class LocalizedPVSystem(PVSystem, Location):
 
         super(LocalizedPVSystem, self).__init__(**new_kwargs)
 
+    def __repr__(self):
+        return ('LocalizedPVSystem with tilt:' + str(self.surface_tilt) +
+                ' and azimuth: ' + str(self.surface_azimuth) +
+                ' with Module: ' + str(self.module) +
+                ' and Inverter: ' + str(self.inverter) +
+                ' at Latitude: ' + str(self.latitude) +
+                ' and Longitude: ' + str(self.longitude))
 
-def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
-              parallel_modules):
+
+def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
+              strings_per_inverter):
     '''
     Generates a dict of system parameters used throughout a simulation.
 
@@ -493,10 +541,10 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
         (land), may increase over snow, ice, etc. May also be known as
         the reflection coefficient. Must be >=0 and <=1.
 
-    series_modules : int
+    modules_per_string : int
         Number of modules connected in series in a string.
 
-    parallel_modules : int
+    strings_per_inverter : int
         Number of strings connected in parallel.
 
     Returns
@@ -508,8 +556,8 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
             * 'surface_tilt'
             * 'surface_azimuth'
             * 'albedo'
-            * 'series_modules'
-            * 'parallel_modules'
+            * 'modules_per_string'
+            * 'strings_per_inverter'
             * 'latitude'
             * 'longitude'
             * 'tz'
@@ -530,8 +578,8 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, series_modules,
     system = {'surface_tilt': surface_tilt,
               'surface_azimuth': surface_azimuth,
               'albedo': albedo,
-              'series_modules': series_modules,
-              'parallel_modules': parallel_modules,
+              'modules_per_string': modules_per_string,
+              'strings_per_inverter': strings_per_inverter,
               'latitude': meta['latitude'],
               'longitude': meta['longitude'],
               'tz': meta['TZ'],
@@ -1285,9 +1333,9 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
-def singlediode(module, photocurrent, saturation_current,
-                resistance_series, resistance_shunt, nNsVth):
-    '''
+def singlediode(photocurrent, saturation_current, resistance_series,
+                resistance_shunt, nNsVth):
+    r'''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
     Singlediode solves the single diode equation [1]
@@ -1308,9 +1356,6 @@ def singlediode(module, photocurrent, saturation_current,
 
     Parameters
     ----------
-    module : DataFrame
-        A DataFrame defining the SAPM performance parameters.
-
     photocurrent : float or Series
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
@@ -1380,17 +1425,17 @@ def singlediode(module, photocurrent, saturation_current,
     i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.01,
                     saturation_current, photocurrent)
 
+    # Find open circuit voltage using Lambert W
+    v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.0,
+                    saturation_current, photocurrent)
+
     params = {'r_sh': resistance_shunt,
               'r_s': resistance_series,
               'nNsVth': nNsVth,
               'i_0': saturation_current,
               'i_l': photocurrent}
 
-    __, v_oc = _golden_sect_DataFrame(params, 0, module['V_oc_ref']*1.6,
-                                      _v_oc_optfcn)
-
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0, module['V_oc_ref']*1.14,
-                                        _pwr_optfcn)
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0, v_oc*1.14, _pwr_optfcn)
 
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is i_mp. Start the optimization at v_oc/2
@@ -1519,13 +1564,70 @@ def _pwr_optfcn(df, loc):
     return I*df[loc]
 
 
-def _v_oc_optfcn(df, loc):
+def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
+             saturation_current, photocurrent):
     '''
-    Function to find the open circuit voltage from ``i_from_v``.
+    Calculates voltage from current per Eq 3 Jain and Kapoor 2004 [1].
+
+    Parameters
+    ----------
+    resistance_shunt : float or Series
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+
+    resistance_series : float or Series
+        Series resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rs``.
+
+    nNsVth : float or Series
+        The product of three components. 1) The usual diode ideal factor
+        (n), 2) the number of cells in series (Ns), and 3) the cell
+        thermal voltage under the desired IV curve conditions (Vth). The
+        thermal voltage of the cell (in volts) may be calculated as
+        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
+        temp_cell is the temperature of the p-n junction in Kelvin, and
+        q is the charge of an electron (coulombs).
+
+    current : float or Series
+        The current in amperes under desired IV curve conditions.
+
+    saturation_current : float or Series
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+
+    photocurrent : float or Series
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
+
+    Returns
+    -------
+    current : np.array
+
+    References
+    ----------
+    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
+    parameters of real solar cells using Lambert W-function", Solar
+    Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
-    I = -abs(i_from_v(df['r_sh'], df['r_s'], df['nNsVth'],
-                      df[loc], df['i_0'], df['i_l']))
-    return I
+    try:
+        from scipy.special import lambertw
+    except ImportError:
+        raise ImportError('This function requires scipy')
+
+    Rsh = resistance_shunt
+    Rs = resistance_series
+    I0 = saturation_current
+    IL = photocurrent
+    I = current
+
+    argW = I0 * Rsh / nNsVth * np.exp(Rsh *(-I + IL + I0) / nNsVth)
+    lambertwterm = lambertw(argW)
+
+    # Eqn. 3 in Jain and Kapoor, 2004
+
+    V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh
+
+    return V.real
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
@@ -1610,8 +1712,8 @@ def snlinverter(inverter, v_dc, p_dc):
 
     Parameters
     ----------
-    inverter : DataFrame
-        A DataFrame defining the inverter to be used, giving the
+    inverter : dict or Series
+        A dict-like object defining the inverter to be used, giving the
         inverter performance parameters according to the Sandia
         Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1].
         A set of inverter performance parameters are provided with
@@ -1732,9 +1834,155 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     # could make it work with a dict, but it would be more verbose
     data = data.copy()
     voltages = ['v_mp', 'v_oc']
-    currents = ['i_mp' ,'i_x', 'i_xx', 'i_sc']
+    currents = ['i_mp', 'i_x', 'i_xx', 'i_sc']
     data[voltages] *= voltage
     data[currents] *= current
     data['p_mp'] *= voltage * current
 
     return data
+
+
+def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+    r"""
+    Implements NREL's PVWatts DC power model [1]_:
+
+    .. math::
+
+        P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
+
+    Parameters
+    ----------
+    g_poa_effective: numeric
+        Irradiance transmitted to the PV cells in units of W/m**2. To be
+        fully consistent with PVWatts, the user must have already
+        applied angle of incidence losses, but not soiling, spectral,
+        etc.
+    temp_cell: numeric
+        Cell temperature in degrees C.
+    pdc0: numeric
+        Nameplate DC rating.
+    gamma_pdc: numeric
+        The temperature coefficient in units of 1/C. Typically -0.002 to
+        -0.005 per degree C.
+    temp_ref: numeric
+        Cell reference temperature. PVWatts defines it to be 25 C and
+        is included here for flexibility.
+
+    Returns
+    -------
+    pdc: numeric
+        DC power.
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    """
+
+    pdc = (g_poa_effective * 0.001 * pdc0 *
+           (1 + gamma_pdc * (temp_cell - temp_ref)))
+
+    return pdc
+
+
+def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
+                   connections=0.5, lid=1.5, nameplate_rating=1, age=0,
+                   availability=3):
+    r"""
+    Implements NREL's PVWatts system loss model [1]_:
+
+    .. math::
+
+        L_{total}(\%) = 100 [ 1 - \Pi_i ( 1 - \frac{L_i}{100} ) ]
+
+    All parameters must be in units of %. Parameters may be
+    array-like, though all array sizes must match.
+
+    Parameters
+    ----------
+    soiling: numeric
+    shading: numeric
+    snow: numeric
+    mismatch: numeric
+    wiring: numeric
+    connections: numeric
+    lid: numeric
+        Light induced degradation
+    nameplate_rating: numeric
+    age: numeric
+    availability: numeric
+
+    Returns
+    -------
+    losses: numeric
+        System losses in units of %.
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    """
+
+    params = [soiling, shading, snow, mismatch, wiring, connections, lid,
+              nameplate_rating, age, availability]
+
+    # manually looping over params allows for numpy/pandas to handle any
+    # array-like broadcasting that might be necessary.
+    perf = 1
+    for param in params:
+        perf *= 1 - param/100
+
+    losses = (1 - perf) * 100.
+
+    return losses
+
+
+def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
+    r"""
+    Implements NREL's PVWatts inverter model [1]_.
+
+    .. math::
+
+        \eta = \frac{\eta_{nom}}{\eta_{ref}} (-0.0162\zeta - \frac{0.0059}{\zeta} + 0.9858)
+
+    .. math::
+
+        P_{ac} = \min(\eta P_{dc}, P_{ac0})
+
+    where :math:`\zeta=P_{dc}/P_{dc0}` and :math:`P_{dc0}=P_{ac0}/\eta_{nom}`.
+
+    Parameters
+    ----------
+    pdc: numeric
+        DC power.
+    pdc0: numeric
+        Nameplate DC rating.
+    eta_inv_nom: numeric
+        Nominal inverter efficiency.
+    eta_inv_ref: numeric
+        Reference inverter efficiency. PVWatts defines it to be 0.9637
+        and is included here for flexibility.
+
+    Returns
+    -------
+    pac: numeric
+        AC power.
+
+    References
+    ----------
+    .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
+           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
+           (2014).
+    """
+
+    pac0 = eta_inv_nom * pdc0
+    zeta = pdc / pdc0
+
+    eta = eta_inv_nom / eta_inv_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
+
+    pac = eta * pdc
+    pac = np.minimum(pac0, pac)
+
+    return pac

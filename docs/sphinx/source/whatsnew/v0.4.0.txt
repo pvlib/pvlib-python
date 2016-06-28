@@ -1,13 +1,31 @@
 .. _whatsnew_0400:
 
+<<<<<<< HEAD
 v0.4.0 (2016)
 -------------------------
 
+=======
+v0.4.0 (July xx, 2016)
+-----------------------
+
+This is a major release from 0.3.3.
+We recommend that all users upgrade to this version after reviewing
+the API changes.
+
+
+API Changes
+~~~~~~~~~~~
+
+* Remove unneeded module argument from singlediode function. (:issue:`200`)
+* In ``pvlib.irradiance.perez``, renamed argument ``modelt`` to ``model``.
+ (:issue:`196`)
+>>>>>>> pvlib/master
 
 
 Enhancements
 ~~~~~~~~~~~~
 
+<<<<<<< HEAD
 * Added ''forecast.py'' module which defines forecast model classes.
 
 Contributors
@@ -15,3 +33,31 @@ Contributors
 
 * Derek Groenendyk
 * Will Holmgren
+=======
+* Adds the First Solar spectral correction model. (:issue:`115`)
+* Adds the Gueymard 1994 integrated precipitable water model. (:issue:`115`)
+* Adds the PVWatts DC, AC, and system losses model. (:issue:`195`)
+
+
+Bug fixes
+~~~~~~~~~
+
+
+
+Documentation
+~~~~~~~~~~~~~
+
+* Added new terms to the variables documentation. (:issue:`195`)
+
+
+Other
+~~~~~
+
+
+
+Code Contributors
+~~~~~~~~~~~~~~~~~
+
+* Will Holmgren
+* Jonathan Chambers
+>>>>>>> pvlib/master

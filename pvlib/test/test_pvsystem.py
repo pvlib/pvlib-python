@@ -7,8 +7,9 @@ from numpy import nan
 import pandas as pd
 
 from nose.tools import assert_equals, assert_almost_equals
+from numpy.testing import assert_allclose
 from pandas.util.testing import assert_series_equal, assert_frame_equal
-from . import incompatible_conda_linux_py3, incompatible_pandas_0180
+from numpy.testing import assert_allclose
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -17,6 +18,8 @@ from pvlib import irradiance
 from pvlib import atmosphere
 from pvlib import solarposition
 from pvlib.location import Location
+
+from . import needs_numpy_1_10
 
 latitude = 32.2
 longitude = -111
@@ -56,8 +59,8 @@ def test_systemdef_tmy3():
                 'latitude': 55.317,
                 'longitude': -160.517,
                 'name': '"SAND POINT"',
-                'parallel_modules': 5,
-                'series_modules': 5,
+                'strings_per_inverter': 5,
+                'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 0}
     assert_equals(expected, pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5))
@@ -69,8 +72,8 @@ def test_systemdef_tmy2():
                 'latitude': 25.8,
                 'longitude': -80.26666666666667,
                 'name': 'MIAMI',
-                'parallel_modules': 5,
-                'series_modules': 5,
+                'strings_per_inverter': 5,
+                'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 0}
     assert_equals(expected, pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5))
@@ -82,8 +85,8 @@ def test_systemdef_dict():
                 'latitude': 37.8,
                 'longitude': -122.3,
                 'name': 'Oakland',
-                'parallel_modules': 5,
-                'series_modules': 5,
+                'strings_per_inverter': 5,
+                'modules_per_string': 5,
                 'surface_azimuth': 0,
                 'surface_tilt': 5}
     assert_equals(expected, pvsystem.systemdef(meta, 5, 0, .1, 5, 5))
@@ -189,7 +192,6 @@ def test_PVSystem_sapm():
     assert_frame_equal(sapm, expected)
 
 
-@incompatible_pandas_0180
 def test_calcparams_desoto():
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
@@ -211,7 +213,6 @@ def test_calcparams_desoto():
     assert_almost_equals(nNsVth, 0.473)
 
 
-@incompatible_pandas_0180
 def test_PVSystem_calcparams_desoto():
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module].copy()
@@ -232,13 +233,21 @@ def test_PVSystem_calcparams_desoto():
     assert_almost_equals(nNsVth, 0.473)
 
 
-@incompatible_conda_linux_py3
+def test_v_from_i():
+    output = pvsystem.v_from_i(20, .1, .5, 3, 6e-7, 7)
+    assert_almost_equals(7.5049875193450521, output, 5)
+
+
+def test_v_from_i_big():
+    output = pvsystem.v_from_i(500, 10, 4.06, 0, 6e-10, 1.2)
+    assert_almost_equals(86.320000493521079, output, 5)
+
+
 def test_i_from_v():
     output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
     assert_almost_equals(-299.746389916, output, 5)
 
 
-@incompatible_conda_linux_py3
 def test_PVSystem_i_from_v():
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
@@ -260,44 +269,47 @@ def test_singlediode_series():
                                          module_parameters=module_parameters,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)
-    out = pvsystem.singlediode(module_parameters, IL, I0, Rs, Rsh, nNsVth)
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth)
     assert isinstance(out, pd.DataFrame)
 
 
-@incompatible_conda_linux_py3
+# nose didn't like it when I tried to use partial (wholmgren)
+def assert_allclose_atol_01(*args):
+    return assert_allclose(*args, atol=0.02)
+
+
 def test_singlediode_floats():
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
-    out = pvsystem.singlediode(module_parameters, 7, 6e-7, .1, 20, .5)
-    expected = {'i_xx': 4.2549732697234193,
+    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5)
+    expected = {'i_xx': 4.2685798754011426,
                 'i_mp': 6.1390251797935704,
-                'v_oc': 8.1147298764528042,
+                'v_oc': 8.1063001465863085,
                 'p_mp': 38.194165464983037,
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
                 'v_mp': 6.221535886625464}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_almost_equals(expected[k], v, 5)
+        yield assert_allclose_atol_01, expected[k], v
 
 
-@incompatible_conda_linux_py3
 def test_PVSystem_singlediode_floats():
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     system = pvsystem.PVSystem(module=module,
                                module_parameters=module_parameters)
     out = system.singlediode(7, 6e-7, .1, 20, .5)
-    expected = {'i_xx': 4.2549732697234193,
+    expected = {'i_xx': 4.2685798754011426,
                 'i_mp': 6.1390251797935704,
-                'v_oc': 8.1147298764528042,
+                'v_oc': 8.1063001465863085,
                 'p_mp': 38.194165464983037,
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
                 'v_mp': 6.221535886625464}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_almost_equals(expected[k], v, 5)
+        yield assert_allclose_atol_01, expected[k], v
 
 
 def test_scale_voltage_current_power():
@@ -321,7 +333,7 @@ def test_PVSystem_scale_voltage_current_power():
         np.array([[6, 4.5, 20, 16, 72, 1.5, 4.5]]),
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=[0])
-    system = pvsystem.PVSystem(series_modules=2, parallel_modules=3)
+    system = pvsystem.PVSystem(modules_per_string=2, strings_per_inverter=3)
     out = system.scale_voltage_current_power(data)
 
 
@@ -480,6 +492,21 @@ def test_PVSystem_localize_with_latlon():
     assert localized_system.longitude == -111
 
 
+def test_PVSystem___repr__():
+    system = pvsystem.PVSystem(module='blah', inverter='blarg')
+
+    assert system.__repr__()==('PVSystem with tilt:0 and azimuth:'+
+    ' 180 with Module: blah and Inverter: blarg')
+
+
+def test_PVSystem_localize___repr__():
+    system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    localized_system = system.localize(latitude=32, longitude=-111)
+
+    assert localized_system.__repr__()==('LocalizedPVSystem with tilt:0 and'+
+    ' azimuth: 180 with Module: blah and Inverter: blarg at '+
+    'Latitude: 32 and Longitude: -111')
+
 # we could retest each of the models tested above
 # when they are attached to LocalizedPVSystem, but
 # that's probably not necessary at this point.
@@ -495,3 +522,119 @@ def test_LocalizedPVSystem_creation():
     assert localized_system.inverter == 'blarg'
     assert localized_system.latitude == 32
     assert localized_system.longitude == -111
+
+
+def test_LocalizedPVSystem___repr__():
+    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
+                                                  longitude=-111,
+                                                  module='blah',
+                                                  inverter='blarg')
+
+    assert localized_system.__repr__()==('LocalizedPVSystem with tilt:0 and'+
+    ' azimuth: 180 with Module: blah and Inverter: blarg at Latitude: 32 ' +
+    'and Longitude: -111')
+
+
+def test_pvwatts_dc_scalars():
+    expected = 88.65
+    out = pvsystem.pvwatts_dc(900, 30, 100, -0.003)
+    assert_allclose(expected, out)
+
+
+@needs_numpy_1_10
+def test_pvwatts_dc_arrays():
+    irrad_trans = np.array([np.nan, 900, 900])
+    temp_cell = np.array([30, np.nan, 30])
+    irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
+    expected = np.array([[   nan,  88.65,  88.65],
+                         [   nan,    nan,    nan],
+                         [   nan,  88.65,  88.65]])
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
+    assert_allclose(expected, out, equal_nan=True)
+
+
+def test_pvwatts_dc_series():
+    irrad_trans = pd.Series([np.nan, 900, 900])
+    temp_cell = pd.Series([30, np.nan, 30])
+    expected = pd.Series(np.array([   nan,    nan,  88.65]))
+    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
+    assert_series_equal(expected, out)
+
+
+def test_pvwatts_ac_scalars():
+    expected = 85.58556604752516
+    out = pvsystem.pvwatts_ac(90, 100, 0.95)
+    assert_allclose(expected, out)
+
+
+@needs_numpy_1_10
+def test_pvwatts_ac_arrays():
+    pdc = np.array([[np.nan], [50], [100]])
+    pdc0 = 100
+    expected = np.array([[         nan],
+                         [ 47.60843624],
+                         [ 95.        ]])
+    out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
+    assert_allclose(expected, out, equal_nan=True)
+
+
+def test_pvwatts_ac_series():
+    pdc = pd.Series([np.nan, 50, 100])
+    pdc0 = 100
+    expected = pd.Series(np.array([       nan,  47.608436,  95.      ]))
+    out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
+    assert_series_equal(expected, out)
+
+
+def test_pvwatts_losses_default():
+    expected = 14.075660688264469
+    out = pvsystem.pvwatts_losses()
+    assert_allclose(expected, out)
+
+
+@needs_numpy_1_10
+def test_pvwatts_losses_arrays():
+    expected = np.array([nan, 14.934904])
+    age = np.array([nan, 1])
+    out = pvsystem.pvwatts_losses(age=age)
+    assert_allclose(expected, out)
+
+
+def test_pvwatts_losses_series():
+    expected = pd.Series([nan, 14.934904])
+    age = pd.Series([nan, 1])
+    out = pvsystem.pvwatts_losses(age=age)
+    assert_series_equal(expected, out)
+
+
+def make_pvwatts_system():
+    module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003}
+    inverter_parameters = {'eta_inv_nom': 0.95}
+    system = pvsystem.PVSystem(module_parameters=module_parameters,
+                               inverter_parameters=inverter_parameters)
+    return system
+
+
+def test_PVSystem_pvwatts_dc():
+    system = make_pvwatts_system()
+    irrad_trans = pd.Series([np.nan, 900, 900])
+    temp_cell = pd.Series([30, np.nan, 30])
+    expected = pd.Series(np.array([   nan,    nan,  88.65]))
+    out = system.pvwatts_dc(irrad_trans, temp_cell)
+    assert_series_equal(expected, out)
+
+
+def test_PVSystem_pvwatts_losses():
+    system = make_pvwatts_system()
+    expected = pd.Series([nan, 14.934904])
+    age = pd.Series([nan, 1])
+    out = system.pvwatts_losses(age=age)
+    assert_series_equal(expected, out)
+
+
+def test_PVSystem_pvwatts_ac():
+    system = make_pvwatts_system()
+    pdc = pd.Series([np.nan, 50, 100])
+    expected = pd.Series(np.array([       nan,  47.608436,  95.      ]))
+    out = system.pvwatts_ac(pdc)
+    assert_series_equal(expected, out)

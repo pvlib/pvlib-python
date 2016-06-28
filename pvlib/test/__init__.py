@@ -4,6 +4,7 @@
 import sys
 import platform
 import pandas as pd
+import numpy as np
 
 
 try:
@@ -55,21 +56,6 @@ def incompatible_conda_linux_py3(test):
     return out
 
 
-def incompatible_pandas_0180(test):
-    """
-    Test won't work on pandas 0.18.0 due to pandas/numpy issue with
-    np.round.
-    """
-
-    if pd.__version__ == '0.18.0':
-        out = unittest.skip(
-            'error on pandas 0.18.0 due to pandas/numpy round')(test)
-    else:
-        out = test
-
-    return out
-
-
 def incompatible_pandas_0131(test):
     """
     Test won't work on pandas 0.18.0 due to pandas/numpy issue with
@@ -79,6 +65,22 @@ def incompatible_pandas_0131(test):
     if pd.__version__ == '0.13.1':
         out = unittest.skip(
             'error on pandas 0.13.1 due to pandas/numpy')(test)
+    else:
+        out = test
+
+    return out
+
+
+def needs_numpy_1_10(test):
+    """
+    Test won't work on numpy 1.10.
+    """
+
+    major = int(np.__version__.split('.')[0])
+    minor = int(np.__version__.split('.')[1])
+
+    if major == 1 and minor < 10:
+        out = unittest.skip('needs numpy 1.10')(test)
     else:
         out = test
 

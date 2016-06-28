@@ -395,7 +395,7 @@ def total_irrad(surface_tilt, surface_azimuth,
     elif model == 'perez':
         sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                     solar_zenith, solar_azimuth, airmass,
-                    modelt=model_perez)
+                    model=model_perez)
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
@@ -966,34 +966,32 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 
 def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
           solar_zenith, solar_azimuth, airmass,
-          modelt='allsitescomposite1990'):
+          model='allsitescomposite1990'):
     '''
-    Determine diffuse irradiance from the sky on a tilted surface using one of
-    the Perez models.
+    Determine diffuse irradiance from the sky on a tilted surface using
+    one of the Perez models.
 
     Perez models determine the diffuse irradiance from the sky (ground
     reflected irradiance is not included in this algorithm) on a tilted
     surface using the surface tilt angle, surface azimuth angle, diffuse
     horizontal irradiance, direct normal irradiance, extraterrestrial
     irradiance, sun zenith angle, sun azimuth angle, and relative (not
-    pressure-corrected) airmass. Optionally a selector may be used to use
-    any of Perez's model coefficient sets.
+    pressure-corrected) airmass. Optionally a selector may be used to
+    use any of Perez's model coefficient sets.
 
 
     Parameters
     ----------
 
     surface_tilt : float or Series
-        Surface tilt angles in decimal degrees.
-        surface_tilt must be >=0 and <=180. The tilt angle is defined as
-        degrees from horizontal (e.g. surface facing up = 0, surface facing
-        horizon = 90)
+        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        and <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth : float or Series
-        Surface azimuth angles in decimal degrees.
-        surface_azimuth must be >=0 and <=360. The Azimuth convention is defined
-        as degrees east of north (e.g. North = 0, South=180 East = 90,
-        West = 270).
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The Azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : float or Series
         Diffuse horizontal irradiance in W/m^2.
@@ -1012,22 +1010,20 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         solar_zenith must be >=0 and <=180.
 
     solar_azimuth : float or Series
-        Sun azimuth angles in decimal degrees.
-        solar_azimuth must be >=0 and <=360. The Azimuth convention is defined
-        as degrees east of north (e.g. North = 0, East = 90, West = 270).
+        Sun azimuth angles in decimal degrees. solar_azimuth must be >=0
+        and <=360. The Azimuth convention is defined as degrees east of
+        north (e.g. North = 0, East = 90, West = 270).
 
     airmass : float or Series
-        relative (not pressure-corrected) airmass
-        values. If AM is a DataFrame it must be of the same size as all other
-        DataFrame inputs. AM must be >=0 (careful using the 1/sec(z) model of
-        AM generation)
+        Relative (not pressure-corrected) airmass values. If AM is a
+        DataFrame it must be of the same size as all other DataFrame
+        inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
+        generation)
 
     model : string (optional, default='allsitescomposite1990')
-
-        A string which selects the desired set of Perez
-        coefficients. If model is not provided as an input, the default,
-        '1990' will be used.
-        All possible model selections are:
+        A string which selects the desired set of Perez coefficients. If
+        model is not provided as an input, the default, '1990' will be
+        used. All possible model selections are:
 
         * '1990'
         * 'allsitescomposite1990' (same as '1990')
@@ -1047,33 +1043,31 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     float or Series
 
-        The diffuse component of the solar radiation  on an
-        arbitrarily tilted surface defined by the Perez model as given in
-        reference [3].
-        SkyDiffuse is the diffuse component ONLY and does not include the
-        ground reflected irradiance or the irradiance due to the beam.
+        The diffuse component of the solar radiation on an arbitrarily
+        tilted surface defined by the Perez model as given in reference
+        [3]. SkyDiffuse is the diffuse component ONLY and does not
+        include the ground reflected irradiance or the irradiance due to
+        the beam.
 
 
     References
     ----------
 
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-    solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267
+    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+    compute solar irradiance on inclined surfaces for building energy
+    simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D., 1987.
-    A new simplified version of the Perez diffuse irradiance model for tilted
-    surfaces. Solar Energy 39(3), 221-232.
+    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
+    1987. A new simplified version of the Perez diffuse irradiance model
+    for tilted surfaces. Solar Energy 39(3), 221-232.
 
-    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R., 1990.
-    Modeling daylight availability and irradiance components from direct
-    and global irradiance. Solar Energy 44 (5), 271-289.
+    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+    1990. Modeling daylight availability and irradiance components from
+    direct and global irradiance. Solar Energy 44 (5), 271-289.
 
     [4] Perez, R. et. al 1988. "The Development and Verification of the
     Perez Diffuse Radiation Model". SAND88-7030
     '''
-
-    pvl_logger.debug('diffuse_sky.perez()')
 
     kappa = 1.041  # for solar_zenith in radians
     z = np.radians(solar_zenith)  # convert to radians
@@ -1081,10 +1075,10 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # epsilon is the sky's "clearness"
     eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
 
-    # Perez et al define clearness bins according to the following rules.
-    # 1 = overcast ... 8 = clear
-    # (these names really only make sense for small zenith angles, but...)
-    # these values will eventually be used as indicies for coeffecient look ups
+    # Perez et al define clearness bins according to the following
+    # rules. 1 = overcast ... 8 = clear (these names really only make
+    # sense for small zenith angles, but...) these values will
+    # eventually be used as indicies for coeffecient look ups
     ebin = eps.copy()
     ebin[(eps < 1.065)] = 1
     ebin[(eps >= 1.065) & (eps < 1.23)] = 2
@@ -1101,11 +1095,11 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     ebin = ebin.dropna().astype(int)
 
     # This is added because in cases where the sun is below the horizon
-    # (var.solar_zenith > 90) but there is still diffuse horizontal light
-    # (var.DHI>0), it is possible that the airmass (var.AM) could be NaN, which
-    # messes up later calculations. Instead, if the sun is down, and there is
-    # still var.DHI, we set the airmass to the airmass value on the horizon
-    # (approximately 37-38).
+    # (var.solar_zenith > 90) but there is still diffuse horizontal
+    # light (var.DHI>0), it is possible that the airmass (var.AM) could
+    # be NaN, which messes up later calculations. Instead, if the sun is
+    # down, and there is still var.DHI, we set the airmass to the
+    # airmass value on the horizon (approximately 37-38).
     # var.AM(var.solar_zenith >=90 & var.DHI >0) = 37;
 
     # var.DNI_ET[var.DNI_ET==0] = .00000001 #very hacky, fix this
@@ -1113,19 +1107,17 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # delta is the sky's "brightness"
     delta = dhi * airmass / dni_extra
 
-    # keep only valid times
-    delta = delta[ebin.index]
-    z = z[ebin.index]
-
     # The various possible sets of Perez coefficients are contained
     # in a subfunction to clean up the code.
-    F1c, F2c = _get_perez_coefficients(modelt)
+    F1c, F2c = _get_perez_coefficients(model)
 
-    F1 = F1c[ebin, 0] + F1c[ebin, 1] * delta + F1c[ebin, 2] * z
+    F1 = (F1c[ebin, 0] + F1c[ebin, 1] * delta[ebin.index] +
+          F1c[ebin, 2] * z[ebin.index])
     F1[F1 < 0] = 0
     F1 = F1.astype(float)
 
-    F2 = F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z
+    F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta[ebin.index] +
+          F2c[ebin, 2] * z[ebin.index])
     F2[F2 < 0] = 0
     F2 = F2.astype(float)
 
@@ -1142,20 +1134,21 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     term2 = F1 * A[ebin.index] / B[ebin.index]
     term3 = F2 * tools.sind(surface_tilt)
 
-    sky_diffuse = dhi[ebin.index] * (term1 + term2 + term3)
+    sky_diffuse = dhi * (term1 + term2 + term3)
     sky_diffuse[sky_diffuse < 0] = 0
+    sky_diffuse[airmass.isnull()] = 0
 
     return sky_diffuse
 
 
-def _get_perez_coefficients(perezmodelt):
+def _get_perez_coefficients(perezmodel):
     '''
     Find coefficients for the Perez model
 
     Parameters
     ----------
 
-    perezmodelt : string (optional, default='allsitescomposite1990')
+    perezmodel : string (optional, default='allsitescomposite1990')
 
           a character string which selects the desired set of Perez
           coefficients. If model is not provided as an input, the default,
@@ -1304,7 +1297,7 @@ def _get_perez_coefficients(perezmodelt):
             [1.4340,   -3.9940,   -0.4920,  0.4530,  -2.3760,   0.1170],
             [1.0070,   -2.2920,   -0.4820,  0.3900,  -3.3680,   0.2290]], }
 
-    array = np.array(coeffdict[perezmodelt])
+    array = np.array(coeffdict[perezmodel])
 
     F1coeffs = array.T[0:3].T
     F2coeffs = array.T[3:7].T
@@ -1496,7 +1489,6 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
 
     kt_prime = kt / (1.031 * np.exp(-1.4/(0.9+9.4/airmass)) + 0.1)
     kt_prime[kt_prime > 0.82] = 0.82 # From SRRL code. consider np.NaN
-    kt_prime.fillna(0, inplace=True)
     pvl_logger.debug('kt_prime:\n%s', kt_prime)
 
     # wholmgren:
@@ -1520,7 +1512,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     # Later, we'll subtract 1 to conform to Python's 0-indexing.
 
     # Create kt_prime bins
-    kt_prime_bin = pd.Series(index=times)
+    kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
     kt_prime_bin[(kt_prime>=0) & (kt_prime<0.24)] = 1
     kt_prime_bin[(kt_prime>=0.24) & (kt_prime<0.4)] = 2
     kt_prime_bin[(kt_prime>=0.4) & (kt_prime<0.56)] = 3
@@ -1530,7 +1522,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     pvl_logger.debug('kt_prime_bin:\n%s', kt_prime_bin)
 
     # Create zenith angle bins
-    zenith_bin = pd.Series(index=times)
+    zenith_bin = pd.Series(0, index=times, dtype=np.int64)
     zenith_bin[(zenith>=0) & (zenith<25)] = 1
     zenith_bin[(zenith>=25) & (zenith<40)] = 2
     zenith_bin[(zenith>=40) & (zenith<55)] = 3
@@ -1540,7 +1532,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     pvl_logger.debug('zenith_bin:\n%s', zenith_bin)
 
     # Create the bins for w based on dew point temperature
-    w_bin = pd.Series(index=times)
+    w_bin = pd.Series(0, index=times, dtype=np.int64)
     w_bin[(w>=0) & (w<1)] = 1
     w_bin[(w>=1) & (w<2)] = 2
     w_bin[(w>=2) & (w<3)] = 3
@@ -1549,7 +1541,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     pvl_logger.debug('w_bin:\n%s', w_bin)
 
     # Create delta_kt_prime binning.
-    delta_kt_prime_bin = pd.Series(index=times)
+    delta_kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
     delta_kt_prime_bin[(delta_kt_prime>=0) & (delta_kt_prime<0.015)] = 1
     delta_kt_prime_bin[(delta_kt_prime>=0.015) & (delta_kt_prime<0.035)] = 2
     delta_kt_prime_bin[(delta_kt_prime>=0.035) & (delta_kt_prime<0.07)] = 3
@@ -1563,6 +1555,10 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     # assignment and Python-style array lookup.
     dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
                            delta_kt_prime_bin-1, w_bin-1]
+    # convert unassigned bins to nan
+    # use where to avoid boolean indexing deprecation
+    dirint_coeffs[np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
+                           (w_bin == 0) | (delta_kt_prime_bin == 0))] = np.nan
 
     dni = disc_out['dni'] * dirint_coeffs
 

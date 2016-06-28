@@ -90,6 +90,33 @@ def test_run_model_with_irradiance():
     assert_series_equal(ac, expected)
 
 
+def test_run_model_perez():
+    system, location = mc_setup()
+    mc = ModelChain(system, location, transposition_model='perez')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
+                              index=times)
+    ac = mc.run_model(times, irradiance=irradiance).ac
+
+    expected = pd.Series(np.array([  190.194545796,  -2.00000000e-02]),
+                         index=times)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_gueymard_perez():
+    system, location = mc_setup()
+    mc = ModelChain(system, location, airmass_model='gueymard1993',
+                    transposition_model='perez')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
+                              index=times)
+    ac = mc.run_model(times, irradiance=irradiance).ac
+
+    expected = pd.Series(np.array([  190.194760203,  -2.00000000e-02]),
+                         index=times)
+    assert_series_equal(ac, expected)
+
+
 def test_run_model_with_weather():
     system, location = mc_setup()
     mc = ModelChain(system, location)
@@ -220,3 +247,18 @@ def test_basic_chain_altitude_pressure():
     expected = pd.Series(np.array([  1.15771428788e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
+
+
+def test_ModelChain___repr__():
+    system = PVSystem()
+    location = Location(32.2, -111, altitude=700)
+    strategy = 'south_at_latitude_tilt'
+
+    mc = ModelChain(system, location, orientation_strategy=strategy)
+
+    # the || accounts for the coercion of 'None' to None
+    assert mc.__repr__() == ('ModelChain for: PVSystem with tilt:32.2 and '+
+    'azimuth: 180 with Module: None and Inverter: None '+
+    'orientation_startegy: south_at_latitude_tilt clearsky_model: '+
+    'ineichentransposition_model: haydavies solar_position_method: '+
+    'nrel_numpyairmass_model: kastenyoung1989')

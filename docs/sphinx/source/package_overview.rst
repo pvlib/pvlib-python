@@ -43,14 +43,14 @@ configuration at a handful of sites listed below.
     import seaborn as sns
     sns.set_color_codes()
 
-    times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
+    naive_times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
 
     # very approximate
-    # latitude, longitude, name, altitude
-    coordinates = [(30, -110, 'Tucson', 700),
-                   (35, -105, 'Albuquerque', 1500),
-                   (40, -120, 'San Francisco', 10),
-                   (50, 10, 'Berlin', 34)]
+    # latitude, longitude, name, altitude, timezone
+    coordinates = [(30, -110, 'Tucson', 700, 'Etc/GMT+7'),
+                   (35, -105, 'Albuquerque', 1500, 'Etc/GMT+7'),
+                   (40, -120, 'San Francisco', 10, 'Etc/GMT+8'),
+                   (50, 10, 'Berlin', 34, 'Etc/GMT-1')]
 
     import pvlib
 
@@ -80,7 +80,9 @@ to accomplish our system modeling goal:
               'surface_azimuth': 180}
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
+    # localize datetime indices (pvlib>=0.3.0)
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        times = naive_times.tz_localize(timezone)
         system['surface_tilt'] = latitude
         cs = pvlib.clearsky.ineichen(times, latitude, longitude, altitude=altitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
@@ -125,8 +127,9 @@ a full understanding of what it is doing internally!
     from pvlib.modelchain import basic_chain
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
-        dc, ac = basic_chain(times, latitude, longitude,
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        dc, ac = basic_chain(naive_times.tz_localize(timezone),
+                             latitude, longitude,
                              module, inverter,
                              altitude=altitude,
                              orientation_strategy='south_at_latitude_tilt')
@@ -173,14 +176,15 @@ objects to accomplish our system modeling goal:
                       inverter_parameters=inverter)
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
-        location = Location(latitude, longitude, name=name, altitude=altitude)
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        location = Location(latitude, longitude, name=name, altitude=altitude,
+                            tz=timezone)
         # very experimental
         mc = ModelChain(system, location,
                         orientation_strategy='south_at_latitude_tilt')
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
-        mc.run_model(times)
+        mc.run_model(naive_times.tz_localize(timezone))
         annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 
@@ -211,7 +215,7 @@ object to accomplish our modeling goal:
     from pvlib.pvsystem import LocalizedPVSystem
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
+    for latitude, longitude, name, altitude, timezone in coordinates:
         localized_system = LocalizedPVSystem(module_parameters=module,
                                              inverter_parameters=inverter,
                                              surface_tilt=latitude,
@@ -219,7 +223,9 @@ object to accomplish our modeling goal:
                                              latitude=latitude,
                                              longitude=longitude,
                                              name=name,
-                                             altitude=altitude)
+                                             altitude=altitude,
+                                             tz=timezone)
+        times = naive_times.tz_localize(timezone)
         clearsky = localized_system.get_clearsky(times)
         solar_position = localized_system.get_solarposition(times)
         total_irrad = localized_system.get_irradiance(solar_position['apparent_zenith'],
@@ -283,4 +289,3 @@ The pvlib-python maintainers thank all of pvlib's contributors of issues
 and especially pull requests.
 The pvlib-python community thanks all of the
 maintainers and contributors to the PyData stack.
-

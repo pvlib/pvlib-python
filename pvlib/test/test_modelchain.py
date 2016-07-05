@@ -9,38 +9,30 @@ from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 
 from pandas.util.testing import assert_series_equal, assert_frame_equal
-from nose.tools import with_setup, raises
+import pytest
 
-# should store this test data locally, but for now...
-sam_data = {}
-def retrieve_sam_network():
-    sam_data['cecmod'] = pvsystem.retrieve_sam('cecmod')
-    sam_data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
-    sam_data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
+from test_pvsystem import sam_data
 
 
-def mc_setup():
-    # limit network usage
-    try:
-        modules = sam_data['sandiamod']
-    except KeyError:
-        retrieve_sam_network()
-        modules = sam_data['sandiamod']
+@pytest.fixture
+def system(sam_data):
 
-    module = modules.Canadian_Solar_CS5P_220M___2009_.copy()
+    modules = sam_data['sandiamod']
+    module = modules['Canadian_Solar_CS5P_220M___2009_'].copy()
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
 
     system = PVSystem(module_parameters=module,
                       inverter_parameters=inverter)
-
-    location = Location(32.2, -111, altitude=700)
-
-    return system, location
+    return system
 
 
-def test_ModelChain_creation():
-    system, location = mc_setup()
+@pytest.fixture()
+def location():
+    return Location(32.2, -111, altitude=700)
+
+
+def test_ModelChain_creation(system, location):
     mc = ModelChain(system, location)
 
 
@@ -66,8 +58,7 @@ def run_orientation_strategy(strategy, expected):
     assert system.surface_azimuth == expected[1]
 
 
-def test_run_model():
-    system, location = mc_setup()
+def test_run_model(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     ac = mc.run_model(times).ac
@@ -77,8 +68,7 @@ def test_run_model():
     assert_series_equal(ac, expected)
 
 
-def test_run_model_with_irradiance():
-    system, location = mc_setup()
+def test_run_model_with_irradiance(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
@@ -90,8 +80,7 @@ def test_run_model_with_irradiance():
     assert_series_equal(ac, expected)
 
 
-def test_run_model_perez():
-    system, location = mc_setup()
+def test_run_model_perez(system, location):
     mc = ModelChain(system, location, transposition_model='perez')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
@@ -103,8 +92,7 @@ def test_run_model_perez():
     assert_series_equal(ac, expected)
 
 
-def test_run_model_gueymard_perez():
-    system, location = mc_setup()
+def test_run_model_gueymard_perez(system, location):
     mc = ModelChain(system, location, airmass_model='gueymard1993',
                     transposition_model='perez')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
@@ -117,8 +105,7 @@ def test_run_model_gueymard_perez():
     assert_series_equal(ac, expected)
 
 
-def test_run_model_with_weather():
-    system, location = mc_setup()
+def test_run_model_with_weather(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     weather = pd.DataFrame({'wind_speed':5, 'temp_air':10}, index=times)
@@ -129,8 +116,7 @@ def test_run_model_with_weather():
     assert_series_equal(ac, expected)
 
 
-def test_run_model_tracker():
-    system, location = mc_setup()
+def test_run_model_tracker(system, location):
     system = SingleAxisTracker(module_parameters=system.module_parameters,
                                inverter_parameters=system.inverter_parameters)
     mc = ModelChain(system, location)
@@ -149,13 +135,12 @@ def test_run_model_tracker():
     assert_frame_equal(mc.tracking, expected)
 
 
-@raises(ValueError)
 def test_bad_get_orientation():
-    modelchain.get_orientation('bad value')
+    with pytest.raises(ValueError):
+        modelchain.get_orientation('bad value')
 
 
-@raises(ValueError)
-def test_basic_chain_required():
+def test_basic_chain_required(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')
     latitude = 32
@@ -165,13 +150,13 @@ def test_basic_chain_required():
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    with pytest.raises(ValueError):
+        dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                        module_parameters, inverter_parameters,
+                                        altitude=altitude)
 
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
-                                    altitude=altitude)
 
-
-def test_basic_chain_alt_az():
+def test_basic_chain_alt_az(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')
     latitude = 32.2
@@ -194,7 +179,7 @@ def test_basic_chain_alt_az():
     assert_series_equal(ac, expected)
 
 
-def test_basic_chain_strategy():
+def test_basic_chain_strategy(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')
     latitude = 32.2
@@ -215,7 +200,7 @@ def test_basic_chain_strategy():
     assert_series_equal(ac, expected)
 
 
-def test_basic_chain_altitude_pressure():
+def test_basic_chain_altitude_pressure(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')
     latitude = 32.2

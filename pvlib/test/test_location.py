@@ -5,11 +5,13 @@ from numpy import nan
 import pandas as pd
 import pytz
 
-from nose.tools import raises
+import pytest
 from pytz.exceptions import UnknownTimeZoneError
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 
-from ..location import Location
+from pvlib.location import Location
+
+from test_solarposition import expected_solpos
 
 aztz = pytz.timezone('US/Arizona')
 
@@ -19,20 +21,23 @@ def test_location_required():
 def test_location_all():
     Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
-@raises(UnknownTimeZoneError)
+
+@pytest.mark.parametrize('tz', [
+    aztz, 'America/Phoenix',  -7, -7.0,
+])
+def test_location_tz(tz):
+    Location(32.2, -111, tz)
+
+
 def test_location_invalid_tz():
-    Location(32.2, -111, 'invalid')
+    with pytest.raises(UnknownTimeZoneError):
+        Location(32.2, -111, 'invalid')
 
-@raises(TypeError)
+
 def test_location_invalid_tz_type():
-    Location(32.2, -111, [5])
+    with pytest.raises(TypeError):
+        Location(32.2, -111, [5])
 
-def test_location_pytz_tz():
-    Location(32.2, -111, aztz)
-
-def test_location_int_float_tz():
-    Location(32.2, -111, -7)
-    Location(32.2, -111, -7.0)
 
 def test_location_print_all():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
@@ -174,20 +179,19 @@ def test_get_clearsky_simplified_solis_aod_pw():
     assert_frame_equal(expected, clearsky)
 
 
-@raises(ValueError)
 def test_get_clearsky_valueerror():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='20160101T0600-0700',
                              end='20160101T1800-0700',
                              freq='3H')
-    clearsky = tus.get_clearsky(times, model='invalid_model')
+    with pytest.raises(ValueError):
+        clearsky = tus.get_clearsky(times, model='invalid_model')
 
 
 def test_from_tmy_3():
-    from .test_tmy import tmy3_testfile
-    from ..tmy import readtmy3
+    from test_tmy import tmy3_testfile
+    from pvlib.tmy import readtmy3
     data, meta = readtmy3(tmy3_testfile)
-    print(meta)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
@@ -196,10 +200,9 @@ def test_from_tmy_3():
 
 
 def test_from_tmy_2():
-    from .test_tmy import tmy2_testfile
-    from ..tmy import readtmy2
+    from test_tmy import tmy2_testfile
+    from pvlib.tmy import readtmy2
     data, meta = readtmy2(tmy2_testfile)
-    print(meta)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
@@ -207,17 +210,15 @@ def test_from_tmy_2():
     assert_frame_equal(loc.tmy_data, data)
 
 
-def test_get_solarposition():
-    from .test_solarposition import expected, golden_mst
+def test_get_solarposition(expected_solpos):
+    from test_solarposition import golden_mst
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = golden_mst.get_solarposition(times, temperature=11)
     ephem_data = np.round(ephem_data, 3)
-    this_expected = expected.copy()
-    this_expected.index = times
-    this_expected = np.round(this_expected, 3)
-    print(this_expected, ephem_data[expected.columns])
-    assert_frame_equal(this_expected, ephem_data[expected.columns])
+    expected_solpos.index = times
+    expected_solpos = np.round(expected_solpos, 3)
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
 def test_get_airmass():
@@ -248,17 +249,16 @@ def test_get_airmass():
     assert_frame_equal(expected, airmass)
 
 
-@raises(ValueError)
 def test_get_airmass_valueerror():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='20160101T0600-0700',
                              end='20160101T1800-0700',
                              freq='3H')
-    clearsky = tus.get_airmass(times, model='invalid_model')
+    with pytest.raises(ValueError):
+        clearsky = tus.get_airmass(times, model='invalid_model')
+
 
 def test_Location___repr__():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     assert tus.__repr__()==('Tucson: latitude=32.2, longitude=-111, '+
     'tz=US/Arizona, altitude=700')
-
-

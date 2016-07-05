@@ -1,12 +1,9 @@
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
 
-from nose.tools import raises
+import pytest
 from numpy.testing import assert_almost_equal, assert_allclose
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
@@ -14,7 +11,7 @@ from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
 
-from . import requires_scipy
+from conftest import requires_scipy
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -263,7 +260,7 @@ def test_simplified_solis_small_scalar_pw():
 
     out = clearsky.simplified_solis(80, precipitable_water=0.1)
     for k, v in expected.items():
-        yield assert_allclose, expected[k], out[k]
+        assert_allclose(expected[k], out[k])
 
 
 def test_simplified_solis_return_arrays():
@@ -286,7 +283,7 @@ def test_simplified_solis_return_arrays():
     out = clearsky.simplified_solis(80, aod700, precipitable_water)
 
     for k, v in expected.items():
-        yield assert_allclose, expected[k], out[k]
+        assert_allclose(expected[k], out[k])
 
 
 def test_simplified_solis_nans_arrays():
@@ -324,7 +321,7 @@ def test_simplified_solis_nans_arrays():
                                     precipitable_water, pressure, dni_extra)
 
     for k, v in expected.items():
-        yield assert_allclose, expected[k], out[k]
+        assert_allclose(expected[k], out[k])
 
 
 def test_simplified_solis_nans_series():

@@ -38,6 +38,7 @@ Documentation
 Other
 ~~~~~
 
+* Switch to the py.test testing framework. (:issue:`204`)
 
 
 Code Contributors

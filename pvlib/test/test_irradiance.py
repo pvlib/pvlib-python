@@ -1,11 +1,8 @@
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import numpy as np
 import pandas as pd
 
-from nose.tools import raises, assert_almost_equals
-from numpy.testing import assert_almost_equal
+import pytest
+from numpy.testing import assert_almost_equal, assert_allclose
 
 from pandas.util.testing import assert_frame_equal
 
@@ -15,7 +12,7 @@ from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
 
-from . import requires_ephem
+from conftest import requires_ephem
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -40,7 +37,7 @@ ghi = irrad_data['ghi']
 # need to add physical tests.
 
 def test_extraradiation():
-    assert_almost_equals(1382, irradiance.extraradiation(300), -1)
+    assert_allclose(1382, irradiance.extraradiation(300), atol=10)
 
 
 def test_extraradiation_dtindex():
@@ -52,13 +49,13 @@ def test_extraradiation_doyarray():
 
 
 def test_extraradiation_asce():
-    assert_almost_equals(
-        1382, irradiance.extraradiation(300, method='asce'), -1)
+    assert_allclose(
+        1382, irradiance.extraradiation(300, method='asce'), atol=10)
 
 
 def test_extraradiation_spencer():
-    assert_almost_equals(
-        1382, irradiance.extraradiation(300, method='spencer'), -1)
+    assert_allclose(
+        1382, irradiance.extraradiation(300, method='spencer'), atol=10)
 
 
 @requires_ephem
@@ -68,8 +65,9 @@ def test_extraradiation_ephem_dtindex():
 
 @requires_ephem
 def test_extraradiation_ephem_scalar():
-    assert_almost_equals(
-        1382, irradiance.extraradiation(300, method='pyephem').values[0], -1)
+    assert_allclose(
+        1382, irradiance.extraradiation(300, method='pyephem').values[0],
+        atol=10)
 
 
 @requires_ephem
@@ -91,9 +89,9 @@ def test_grounddiffuse_albedo_0():
     assert 0 == ground_irrad.all()
 
 
-@raises(KeyError)
 def test_grounddiffuse_albedo_invalid_surface():
-    irradiance.grounddiffuse(40, ghi, surface_type='invalid')
+    with pytest.raises(KeyError):
+        irradiance.grounddiffuse(40, ghi, surface_type='invalid')
 
 
 def test_grounddiffuse_albedo_surface():

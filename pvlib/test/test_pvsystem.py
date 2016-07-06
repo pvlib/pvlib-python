@@ -29,12 +29,12 @@ ephem_data = solarposition.get_solarposition(times,
                                              latitude=latitude,
                                              longitude=longitude,
                                              method='nrel_numpy')
-irrad_data = clearsky.ineichen(times, latitude=latitude, longitude=longitude,
-                               linke_turbidity=3,
-                               solarposition_method='nrel_numpy')
+am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
+irrad_data = clearsky.ineichen(ephem_data['apparent_zenith'], am,
+                               linke_turbidity=3)
 aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'],
                      ephem_data['azimuth'])
-am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
+
 
 meta = {'latitude': 37.8,
         'longitude': -122.3,

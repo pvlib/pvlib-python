@@ -1,7 +1,5 @@
 # CI on Windows via appveyor
-# This file was initially based on pandas' and xarray's appveyor.yml
-# This file was initially based on Olivier Grisel's python-appveyor-demo
-# As of 2016-07, this file was based on MetPy's appveyor.yml
+# This file is based on MetPy's appveyor.yml
 
 environment:
 
@@ -9,8 +7,8 @@ environment:
 
   matrix:
     - PYTHON_VERSION: "2.7"
-    - PYTHON_VERSION: "3.4"
-    #- PYTHON_VERSION: "3.5"
+    #- PYTHON_VERSION: "3.4"
+    - PYTHON_VERSION: "3.5"
 
 platform:
     - x86
@@ -29,7 +27,7 @@ install:
     - cmd: conda info -a
 
     # install depenencies
-    - cmd: conda create -n test_env --yes --quiet python=%PYTHON_VERSION% pip numpy scipy=0.16.0 pandas nose pytz ephem numba
+    - cmd: conda create -n test_env --yes --quiet python=%PYTHON_VERSION% pip numpy scipy=0.16.0 pandas nose pytest pytz ephem numba
     - cmd: activate test_env
     - cmd: python --version
     - cmd: conda list

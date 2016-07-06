@@ -5,9 +5,6 @@ to calculate clear sky GHI, DNI, and DHI.
 
 from __future__ import division
 
-import logging
-logger = logging.getLogger('pvlib')
-
 import os
 from collections import OrderedDict
 
@@ -49,10 +46,15 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     altitude: numeric
 
     Returns
-    --------
+    -------
     clearsky : DataFrame (if Series input) or OrderedDict of arrays
         DataFrame/OrderedDict contains the columns/keys
         ``'dhi', 'dni', 'ghi'``.
+
+    See also
+    --------
+    lookup_linke_turbidity
+    pvlib.location.Location.get_clearsky
 
     References
     ----------
@@ -98,7 +100,15 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     # the pg 156 publication (notably the fh2-(TL-1) should be fh2 *
     # (TL-1)).
 
-    cos_zenith = tools.cosd(apparent_zenith)
+    # The NaN handling is a little subtle. The AM input is likely to
+    # have NaNs that we'll want to map to 0s in the output. However, we
+    # want NaNs in other inputs to propagate through to the output. This
+    # is accomplished by judicious use and placement of np.maximum,
+    # np.minimum, and np.fmax
+
+    # use max so that nighttime values will result in 0s instead of
+    # negatives. propagates nans.
+    cos_zenith = np.maximum(tools.cosd(apparent_zenith), 0)
 
     tl = linke_turbidity
 
@@ -107,19 +117,21 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     cg1 = 5.09e-05 * altitude + 0.868
     cg2 = 3.92e-05 * altitude + 0.0387
 
-    ghi = (cg1 * dni_extra * cos_zenith *
-           np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1))) *
+    ghi = (np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1))) *
            np.exp(0.01*airmass_absolute**1.8))
-    ghi = np.maximum(ghi, 0)
+    # use fmax to map airmass nans to 0s. multiply and divide by tl to
+    # reinsert tl nans
+    ghi = cg1 * dni_extra * cos_zenith * tl / tl * np.fmax(ghi, 0)
 
     # BncI = "normal beam clear sky radiation"
     b = 0.664 + 0.163/fh1
-    BncI = b * dni_extra * np.exp(-0.09 * airmass_absolute * (tl - 1))
+    BncI = b * np.exp(-0.09 * airmass_absolute * (tl - 1))
+    BncI = dni_extra * np.fmax(BncI, 0)
 
     # "empirical correction" SE 73, 157 & SE 73, 312.
-    BncI_2 = (ghi *
-              (1 - (0.1 - 0.2*np.exp(-tl))/(0.1 + 0.882/fh1)) /
+    BncI_2 = ((1 - (0.1 - 0.2*np.exp(-tl))/(0.1 + 0.882/fh1)) /
               cos_zenith)
+    BncI_2 = ghi * np.fmin(np.fmax(BncI_2, 0), 1e20)
 
     dni = np.minimum(BncI, BncI_2)
 
@@ -187,14 +199,17 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     mat = scipy.io.loadmat(filepath)
     linke_turbidity_table = mat['LinkeTurbidity']
 
-    latitude_index = np.around(_linearly_scale(latitude, 90, -90, 1, 2160)).astype(np.int64)
-    longitude_index = np.around(_linearly_scale(longitude, -180, 180, 1, 4320)).astype(np.int64)
+    latitude_index = (
+        np.around(_linearly_scale(latitude, 90, -90, 1, 2160))
+        .astype(np.int64))
+    longitude_index = (
+        np.around(_linearly_scale(longitude, -180, 180, 1, 4320))
+        .astype(np.int64))
 
     g = linke_turbidity_table[latitude_index][longitude_index]
 
     if interp_turbidity:
-        logger.info('interpolating turbidity to the day')
-        # Cata covers 1 year.
+        # Data covers 1 year.
         # Assume that data corresponds to the value at
         # the middle of each month.
         # This means that we need to add previous Dec and next Jan
@@ -207,7 +222,6 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         linke_turbidity = pd.Series(np.interp(time.dayofyear, days, g2),
                                     index=time)
     else:
-        logger.info('using monthly turbidity')
         apply_month = lambda x: g[x[0]-1]
         linke_turbidity = pd.DataFrame(time.month, index=time)
         linke_turbidity = linke_turbidity.apply(apply_month, axis=1)
@@ -309,7 +323,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
         determine the units of the output.
 
     Returns
-    --------
+    -------
     clearsky : DataFrame (if Series input) or OrderedDict of arrays
         DataFrame/OrderedDict contains the columns/keys
         ``'dhi', 'dni', 'ghi'``.

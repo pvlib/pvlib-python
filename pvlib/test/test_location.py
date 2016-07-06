@@ -56,15 +56,35 @@ def test_get_clearsky():
                              end='20160101T1800-0700',
                              freq='3H')
     clearsky = tus.get_clearsky(times)
-    expected = pd.DataFrame(data=np.array(
-        [[   0.        ,    0.        ,    0.        ],
-         [  49.99257714,  762.92663984,  258.84368467],
-         [  70.79757257,  957.14396999,  612.04545874],
-         [  59.01570645,  879.06844381,  415.26616693],
-         [   0.        ,    0.        ,    0.        ]]),
-                            columns=['dhi', 'dni', 'ghi'],
+    expected = pd.DataFrame(data=np.
+        array([[   0.        ,    0.        ,    0.        ],
+               [ 258.60422702,  761.57329257,   50.1235982 ],
+               [ 611.96347869,  956.95353414,   70.8232806 ],
+               [ 415.10904044,  878.52649603,   59.07820922],
+               [   0.        ,    0.        ,    0.        ]]),
+                            columns=['ghi', 'dni', 'dhi'],
                             index=times)
     assert_frame_equal(expected, clearsky)
+
+
+def test_get_clearsky_ineichen_supply_linke():
+    tus = Location(32.2, -111, 'US/Arizona', 700)
+    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
+    times_localized = times.tz_localize(tus.tz)
+    expected = pd.DataFrame(np.
+        array([[    0.        ,     0.        ,     0.        ],
+               [    0.        ,     0.        ,     0.        ],
+               [   79.73090244,   316.16436502,    40.45759009],
+               [  703.43653498,   876.41452667,    95.15798252],
+               [ 1042.37962396,   939.86391062,   118.44687715],
+               [  851.32411813,   909.11186737,   105.36662462],
+               [  257.18266827,   646.16644264,    62.02777094],
+               [    0.        ,     0.        ,     0.        ],
+               [    0.        ,     0.        ,     0.        ]]),
+                            columns=['ghi', 'dni', 'dhi'],
+                            index=times_localized)
+    out = tus.get_clearsky(times_localized, linke_turbidity=3)
+    assert_frame_equal(expected, out)
 
 
 def test_get_clearsky_haurwitz():

@@ -13,7 +13,7 @@ API Changes
 
 * Remove unneeded module argument from singlediode function. (:issue:`200`)
 * In ``pvlib.irradiance.perez``, renamed argument ``modelt`` to ``model``.
- (:issue:`196`)
+  (:issue:`196`)
 
 
 Enhancements

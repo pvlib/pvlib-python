@@ -39,6 +39,8 @@ Other
 ~~~~~
 
 * Switch to the py.test testing framework. (:issue:`204`)
+* Reconfigure Appveyor CI builds and resolve an issue in which the command
+  line length was too long. (:issue:`207`)
 
 
 Code Contributors

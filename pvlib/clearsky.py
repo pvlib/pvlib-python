@@ -12,13 +12,10 @@ import numpy as np
 import pandas as pd
 
 from pvlib import tools
-from pvlib import irradiance
-from pvlib import atmosphere
-from pvlib import solarposition
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
-             dni_extra=1364., altitude=0):
+             altitude=0, dni_extra=1364.):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
 
@@ -29,21 +26,25 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     report on clear sky models found the Ineichen/Perez model to have
     excellent performance with a minimal input data set [3].
 
-    Default values for montly Linke turbidity provided by SoDa [4, 5].
+    Default values for monthly Linke turbidity provided by SoDa [4, 5].
 
     Parameters
     -----------
     apparent_zenith: numeric
+        Refraction corrected solar zenith angle in degrees.
 
     airmass_absolute: numeric
+        Pressure corrected airmass.
 
     linke_turbidity: numeric
+        Linke Turbidity.
+
+    altitude: numeric
+        Altitude above sea level in meters.
 
     dni_extra: numeric
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
-
-    altitude: numeric
 
     Returns
     -------
@@ -125,15 +126,15 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     # BncI = "normal beam clear sky radiation"
     b = 0.664 + 0.163/fh1
-    BncI = b * np.exp(-0.09 * airmass_absolute * (tl - 1))
-    BncI = dni_extra * np.fmax(BncI, 0)
+    bnci = b * np.exp(-0.09 * airmass_absolute * (tl - 1))
+    bnci = dni_extra * np.fmax(bnci, 0)
 
     # "empirical correction" SE 73, 157 & SE 73, 312.
-    BncI_2 = ((1 - (0.1 - 0.2*np.exp(-tl))/(0.1 + 0.882/fh1)) /
+    bnci_2 = ((1 - (0.1 - 0.2*np.exp(-tl))/(0.1 + 0.882/fh1)) /
               cos_zenith)
-    BncI_2 = ghi * np.fmin(np.fmax(BncI_2, 0), 1e20)
+    bnci_2 = ghi * np.fmin(np.fmax(bnci_2, 0), 1e20)
 
-    dni = np.minimum(BncI, BncI_2)
+    dni = np.minimum(bnci, bnci_2)
 
     dhi = ghi - dni*cos_zenith
 
@@ -222,9 +223,9 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         linke_turbidity = pd.Series(np.interp(time.dayofyear, days, g2),
                                     index=time)
     else:
-        apply_month = lambda x: g[x[0]-1]
         linke_turbidity = pd.DataFrame(time.month, index=time)
-        linke_turbidity = linke_turbidity.apply(apply_month, axis=1)
+        # apply monthly data
+        linke_turbidity = linke_turbidity.apply(lambda x: g[x[0]-1], axis=1)
 
     linke_turbidity /= 20.
 
@@ -271,11 +272,11 @@ def haurwitz(apparent_zenith):
 
     cos_zenith = tools.cosd(apparent_zenith)
 
-    clearsky_GHI = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
+    clearsky_ghi = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
 
-    clearsky_GHI[clearsky_GHI < 0] = 0
+    clearsky_ghi[clearsky_ghi < 0] = 0
 
-    df_out = pd.DataFrame({'ghi':clearsky_GHI})
+    df_out = pd.DataFrame({'ghi': clearsky_ghi})
 
     return df_out
 
@@ -285,8 +286,8 @@ def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
 
     inputrange = inputmax - inputmin
     outputrange = outputmax - outputmin
-    OutputMatrix = (inputmatrix-inputmin) * outputrange/inputrange + outputmin
-    return OutputMatrix
+    outputmatrix = (inputmatrix-inputmin) * outputrange/inputrange + outputmin
+    return outputmatrix
 
 
 def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,

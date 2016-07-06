@@ -75,7 +75,7 @@ def test_ineichen_nans():
     expected['dhi'][length-1] = 121.2299
 
     out = clearsky.ineichen(apparent_zenith, airmass_absolute,
-                            linke_turbidity, dni_extra)
+                            linke_turbidity, dni_extra=dni_extra)
 
     for k, v in expected.items():
         assert_allclose(expected[k], out[k])

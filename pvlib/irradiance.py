@@ -1999,7 +1999,8 @@ def erbs(ghi, zenith, doy):
     return data
 
 
-def liujordan(zenith, cloud_prct, pressure=101325., dni_extra=1367.0):
+def liujordan(zenith, transmittance, airmass, pressure=101325.,
+              dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and optical air mass number.
@@ -2015,8 +2016,8 @@ def liujordan(zenith, cloud_prct, pressure=101325., dni_extra=1367.0):
         degrees. If Z is a vector it must be of the same size as all
         other vector inputs. Z must be >=0 and <=180.
 
-    cloud_prct: integer or float
-        Cloud coverage in percentage, %.
+    transmittance: float
+        Atmospheric transmittance between 0 and 1.
 
     pressure: float
         Air pressure
@@ -2040,9 +2041,7 @@ def liujordan(zenith, cloud_prct, pressure=101325., dni_extra=1367.0):
     radiation".  Solar Energy 4:1-19
     '''
 
-    tao = atmosphere.transmittance(cloud_prct)
-    airmass_relative = atmosphere.relativeairmass(zenith)
-    airmass = atmosphere.absoluteairmass(airmass_relative, pressure=pressure)
+    tao = transmittance
 
     dni = dni_extra*tao**airmass
     dhi = 0.3 * (1.0 - tao**airmass) * dni_extra * np.cos(np.radians(zenith))

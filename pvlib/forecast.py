@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.irradiance import liujordan
+from pvlib.irradiance import liujordan, extraradiation
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
@@ -361,10 +361,14 @@ class ForecastModel(object):
         # pressure, temp, etc., but the cloud cover forecast is not
         # accurate enough to justify using these minor corrections
         self.solar_position = self.location.get_solarposition(self.time)
+        dni_extra = extraradiation(self.time.dayofyear)
+        airmass = self.location.get_airmass(self.time)
 
         rads = ['dni', 'dhi', 'ghi']
+        transmittance = ((100.0 - cloud_cover) / 100.0) * 0.75
         new_rads = liujordan(self.solar_position['apparent_zenith'],
-                             cloud_cover)
+                             transmittance, airmass['airmass_absolute'],
+                             dni_extra=dni_extra)
         new_rads = new_rads.fillna(0)
 
         return new_rads

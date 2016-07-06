@@ -438,35 +438,3 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         + coeff[4]*np.sqrt(pw) + coeff[5]*AMa/pw)
 
     return modifier
-
-
-def transmittance(cloud_prct):
-    '''
-    Calculates transmittance.
-
-    Based on observations by Liu and Jordan, 1960 as well as
-    Gates 1980.
-
-    Parameters
-    ----------
-    cloud_prct: float or int
-        Percentage of clouds covering the sky.
-
-    Returns
-    -------
-    value: float
-        Shortwave radiation transmittance.
-
-    References
-    ----------
-    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
-    Environmental Biophysics. 2nd Ed. New York: Springer.
-
-    [2] Gates, D. M. (1980) Biophysical Ecology. New York: Springer Verlag.
-
-    [3] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
-    characteristic distribution of direct, diffuse, and total solar
-    radiation".  Solar Energy 4:1-19
-    '''
-
-    return ((100.0 - cloud_prct) / 100.0) * 0.75

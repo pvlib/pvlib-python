@@ -3,12 +3,26 @@
 Clear sky
 =========
 
-Clear sky irradiance data is essential to many PV modeling tasks. Here, we
-review the clear sky modeling capabilities of pvlib-python. The
-:ref:`location` section demonstrates the easiest way to obtain a time
-series of clear sky data for a location. The :ref:`ineichen` and
-:ref:`simplified_solis` sections detail the clear sky algorithms and
-input data.
+This section reviews the clear sky modeling capabilities of
+pvlib-python.
+
+pvlib-python supports two ways to generate clear sky irradiance:
+
+1. A :py:class:`~pvlib.location.Location` object's
+   :py:meth:`~pvlib.location.Location.get_clearsky` method.
+2. The functions contained within the :py:mod:`~pvlib.clearsky` module,
+   including :py:func:`~pvlib.clearsky.ineichen` and
+   :py:func:`~pvlib.clearsky.simplified_solis`.
+
+Users that work with simple time series data may prefer to use
+:py:meth:`~pvlib.location.Location.get_clearsky`, while users
+that want finer control, more explicit code, or work with
+multidimensional data may prefer to use the basic functions.
+
+The :ref:`location` subsection demonstrates the easiest
+way to obtain a time series of clear sky data for a location.
+The :ref:`ineichen` and :ref:`simplified_solis` subsections detail the
+clear sky algorithms and input data.
 
 We'll need these imports for the examples below.
 
@@ -40,7 +54,8 @@ The easiest way to obtain a time series of clear sky irradiance is to use a
 work of calculating solar position, extraterrestrial irradiance,
 airmass, and atmospheric pressure, as appropriate, leaving the user to
 only specify the most important parameters: time and atmospheric
-attenuation.
+attenuation. The time input must be a :py:class:`pandas.DatetimeIndex`,
+while the atmospheric attenuation inputs may be constants or arrays.
 
 .. ipython:: python
 
@@ -80,11 +95,12 @@ See the sections below for more detail on the clear sky models.
 
 .. _ineichen:
 
-Ineichen
---------
+Ineichen and Perez
+------------------
 
-The Ineichen and Perez clear sky model parameterizes irradiance
-in terms of the Linke turbidity [Ine02]_.
+The Ineichen and Perez clear sky model parameterizes irradiance in terms
+of the Linke turbidity [Ine02]_. pvlib-python implements this model in
+the :py:func:`pvlib.clearsky.ineichen` function.
 
 Turbidity data
 ^^^^^^^^^^^^^^
@@ -103,11 +119,12 @@ the year. You could run it in a loop to create plots for all months.
     filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
 
     mat = scipy.io.loadmat(filepath)
+    # data is in units of 20 x turbidity
     linke_turbidity_table = mat['LinkeTurbidity'] / 20.
 
     month = 1
     plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
-    plt.title(calendar.month_name[1+month]);
+    plt.title('Linke turbidity, ' + calendar.month_name[1+month]);
     plt.colorbar(shrink=0.5);
     plt.tight_layout();
     @savefig turbidity-1.png width=10in
@@ -117,7 +134,7 @@ the year. You could run it in a loop to create plots for all months.
 
     month = 7
     plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
-    plt.title(calendar.month_name[month]);
+    plt.title('Linke turbidity, ' + calendar.month_name[month]);
     plt.colorbar(shrink=0.5);
     plt.tight_layout();
     @savefig turbidity-7.png width=10in
@@ -129,9 +146,9 @@ turbidity value for that time at those coordinates. By default, the
 :py:func:`~pvlib.clearsky.lookup_linke_turbidity` function will linearly
 interpolate turbidity from month to month. This removes discontinuities
 in multi-month PV models. Here's a plot of a few locations in the
-Southwest U.S. with and without interpolation. We have intentionally
-shown points that are relatively close so that you can get a sense of
-the variability of the data set.
+Southwest U.S. with and without interpolation. We chose points that are
+relatively close so that you can get a better sense of the spatial
+variability of the data set.
 
 .. ipython:: python
 
@@ -174,7 +191,7 @@ A clear sky time series using basic pvlib functions.
     linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
     dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
 
-    # an input is a Series, so solis is a DataFrame
+    # an input is a pandas Series, so solis is a DataFrame
     ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity,
                                  altitude, dni_extra)
     ax = ineichen.plot();
@@ -183,9 +200,9 @@ A clear sky time series using basic pvlib functions.
     @savefig ineichen-vs-time-climo.png width=6in
     plt.show();
 
-The function respects the input types. Array input results in an OrderedDict
-of array output, and Series input results in a DataFrame output. The keys
-are 'ghi', 'dni', and 'dhi'.
+The input data types determine the returned output type. Array input
+results in an OrderedDict of array output, and Series input results in a
+DataFrame output. The keys are 'ghi', 'dni', and 'dhi'.
 
 Grid with a clear sky irradiance for a few turbidity values.
 
@@ -239,7 +256,9 @@ Simplified Solis
 ----------------
 
 The Simplified Solis model parameterizes irradiance in terms of
-precipitable water and aerosol optical depth [Ine08ss]_.
+precipitable water and aerosol optical depth [Ine08ss]_. pvlib-python
+implements this model in the :py:func:`pvlib.clearsky.simplified_solis`
+function.
 
 Aerosol and precipitable water data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -289,9 +308,9 @@ A clear sky time series using basic pvlib functions.
     @savefig solis-vs-time-0.1-1.png width=6in
     plt.show();
 
-The function respects the input types. Array input results in an OrderedDict
-of array output, and Series input results in a DataFrame output. The keys
-are 'ghi', 'dni', and 'dhi'.
+The input data types determine the returned output type. Array input
+results in an OrderedDict of array output, and Series input results in a
+DataFrame output. The keys are 'ghi', 'dni', and 'dhi'.
 
 Irradiance as a function of solar elevation.
 

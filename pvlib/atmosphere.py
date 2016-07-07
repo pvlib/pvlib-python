@@ -339,7 +339,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     .. math::
 
         M = c_1 + c_2*AMa  + c_3*Pwat  + c_4*AMa^.5
-            + c_5*Pwat^.5 + c_6*AMa/Pwat
+            + c_5*Pwat^.5 + c_6*AMa/Pwat^.5
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the
@@ -348,7 +348,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     Pwat where:
 
        * 0.5 cm <= Pwat <= 5 cm
-       * 0.8 <= AMa <= 4.75 (Pressure of 800 mbar and 1.01 <= AM <= 6)
+       * 1.0 <= AMa <= 5.0 
        * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
        * spectrum simulated on a plane normal to the sun
        * All other parameters fixed at G173 standard
@@ -358,14 +358,14 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     applied to fit Eq. 1 to determine the coefficients for each module.
 
     Based on the PVLIB Matlab function ``pvl_FSspeccorr`` by Mitchell
-    Lee and Alex Panchula, at First Solar, 2015.
+    Lee and Alex Panchula, at First Solar, 2016 [2]_.
 
     Parameters
     ----------
     pw : array-like
         atmospheric precipitable water (cm).
 
-    airmass_absolute :
+    airmass_absolute : array-like
         absolute (pressure corrected) airmass.
 
     module_type : None or string
@@ -380,7 +380,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
         The module used to calculate the spectral correction
         coefficients corresponds to the Mult-crystalline silicon
-        Manufacturer 2 Model C from [2]_.
+        Manufacturer 2 Model C from [3]_.
 
     coefficients : array-like
         allows for entry of user defined spectral correction
@@ -406,20 +406,56 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     .. [1] Gueymard, Christian. SMARTS2: a simple model of the atmospheric
        radiative transfer of sunshine: algorithms and performance
        assessment. Cocoa, FL: Florida Solar Energy Center, 1995.
-
-    .. [2] Marion, William F., et al. User's Manual for Data for Validating
+    .. [2] Lee, Mitchell, and Panchula, Alex. "Spectral Correction for
+       Photovoltaic Module Performance Based on Air Mass and Precipitable 
+       Water." IEEE Photovoltaic Specialists Conference, Portland, 2016 
+    .. [3] Marion, William F., et al. User's Manual for Data for Validating
        Models for PV Module Performance. National Renewable Energy
        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
     """
 
+
+    # --- Screen Input Data ---
+
+    # *** Pwat ***
+    # Replace Pwat Values below 0.1 cm with 0.1 cm to prevent model from
+    # diverging"
+
+    if np.min(pw) < 0.1:
+        pw = np.array([val if val > 0.1 else 0.1 for val in pw])
+        print('Exceptionally low Pwat values replaced with 0.1 cm to prevent'+
+        ' model divergence')
+
+
+    # Warn user about Pwat data that is exceptionally high
+    if np.max(pw) > 8:
+        print('Exceptionally high Pwat values. Check input data:' +
+        ' model may diverge in this range')
+
+
+    # *** AMa ***
+    # Replace Extremely High AM with AM 10 to prevent model divergence
+    # AM > 10 will only occur very close to sunset
+    if np.max(airmass_absolute) > 10: 
+      airmass_absolute = np.array([val if val <= 10 else 10 for val in airmass_absolute])
+    
+    # Warn user about AMa data that is exceptionally low
+    if np.min(airmass_absolute) < 0.58:
+       print('Exceptionally low air mass: ' +
+           'model not intended for extra-terrestrial use')
+       # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58
+       # Elevation of Mina Pirquita, Argentian = 4340 m. Highest elevation city
+       # with population over 50,000.
+    
+
     _coefficients = {}
     _coefficients['cdte'] = (
-        0.87102, -0.040543, -0.00929202, 0.10052, 0.073062, -0.0034187)
+       0.86273, -0.038948, -0.012506, 0.098871, 0.084658, -0.0042948)
     _coefficients['monosi'] = (
-        0.86588, -0.021637, -0.0030218, 0.12081, 0.017514, -0.0012610)
+        0.85914, -0.020880, -0.0058853, 0.12029, 0.026814, -0.0017810)
     _coefficients['xsi'] = _coefficients['monosi']
     _coefficients['polysi'] = (
-        0.84674, -0.028568, -0.0051832, 0.13669, 0.029234, -0.0014207)
+        0.84090, -0.027539, -0.0079224, 0.13570, 0.038024, -0.0021218)
     _coefficients['multisi'] = _coefficients['polysi']
 
     if module_type is not None and coefficients is None:
@@ -435,6 +471,6 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     AMa = airmass_absolute
     modifier = (
         coeff[0] + coeff[1]*AMa  + coeff[2]*pw  + coeff[3]*np.sqrt(AMa) +
-        + coeff[4]*np.sqrt(pw) + coeff[5]*AMa/pw)
+        + coeff[4]*np.sqrt(pw) + coeff[5]*AMa/np.sqrt(pw))
 
     return modifier

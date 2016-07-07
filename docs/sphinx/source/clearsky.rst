@@ -159,7 +159,62 @@ the variability of the data set.
 Examples
 ^^^^^^^^
 
+A clear sky time series using basic pvlib functions.
+
 .. ipython:: python
+
+    latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
+    times = pd.date_range(start='2014-01-01', end='2014-01-02', freq='1Min', tz=tz)
+    solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+
+    apparent_zenith = solpos['apparent_zenith']
+    airmass = pvlib.atmosphere.relativeairmass(apparent_zenith)
+    pressure = pvlib.atmosphere.alt2pres(altitude)
+    airmass = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+    linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
+    dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
+
+    # an input is a Series, so solis is a DataFrame
+    ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity,
+                                 altitude, dni_extra)
+    ax = ineichen.plot();
+    ax.set_ylabel('Irradiance $W/m^2$');
+    ax.legend(loc=2);
+    @savefig ineichen-vs-time-climo.png width=6in
+    plt.show();
+
+The function respects the input types. Array input results in an OrderedDict
+of array output, and Series input results in a DataFrame output. The keys
+are 'ghi', 'dni', and 'dhi'.
+
+Grid with a clear sky irradiance for a few turbidity values.
+
+.. ipython:: python
+
+    times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
+    solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+
+    apparent_zenith = solpos['apparent_zenith']
+    airmass = pvlib.atmosphere.relativeairmass(apparent_zenith)
+    pressure = pvlib.atmosphere.alt2pres(altitude)
+    airmass = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+    linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
+    print('climatological linke_turbidity = {}'.format(linke_turbidity.mean()))
+    dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
+
+    linke_turbidities = [linke_turbidity.mean(), 2, 4]
+
+    fig, axes = plt.subplots(ncols=3, nrows=1, sharex=True, sharey=True, squeeze=True)
+    axes = axes.flatten()
+
+    for linke_turbidity, ax in zip(linke_turbidities, axes):
+        ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity,
+                                     altitude, dni_extra)
+        ineichen.plot(ax=ax, title='Linke turbidity = {:0.1f}'.format(linke_turbidity))
+        ax.legend(loc=1)
+
+    @savefig ineichen-grid.png width=10in
+    plt.show();
 
 
 
@@ -198,7 +253,9 @@ from `radiosondes <http://weather.uwyo.edu/upperair/sounding.html>`_,
 derived from surface relative humidity using functions such as
 :py:func:`pvlib.atmosphere.gueymard94_pw`.
 Numerous gridded products from satellites, weather models, and climate models
-contain one or both of aerosols and precipitable water.
+contain one or both of aerosols and precipitable water. Consider data
+from the `ECMWF <https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Public+Datasets>`_
+and `SoDa <http://www.soda-pro.com/web-services/radiation/cams-mcclear>`_.
 
 Aerosol optical depth is a function of wavelength, and the Simplified
 Solis model requires AOD at 700 nm. Models exist to convert AOD between
@@ -223,6 +280,7 @@ A clear sky time series using basic pvlib functions.
     pressure = pvlib.atmosphere.alt2pres(altitude)
     dni_extra = pvlib.irradiance.extraradiation(apparent_elevation.index.dayofyear)
 
+    # an input is a Series, so solis is a DataFrame
     solis = clearsky.simplified_solis(apparent_elevation, aod700, precipitable_water,
                                       pressure, dni_extra)
     ax = solis.plot();
@@ -231,6 +289,9 @@ A clear sky time series using basic pvlib functions.
     @savefig solis-vs-time-0.1-1.png width=6in
     plt.show();
 
+The function respects the input types. Array input results in an OrderedDict
+of array output, and Series input results in a DataFrame output. The keys
+are 'ghi', 'dni', and 'dhi'.
 
 Irradiance as a function of solar elevation.
 
@@ -288,6 +349,7 @@ Contour plots of irradiance as a function of both PW and AOD.
 
     aod700, precipitable_water = np.meshgrid(aod700, precipitable_water)
 
+    # inputs are arrays, so solis is an OrderedDict
     solis = clearsky.simplified_solis(apparent_elevation, aod700,
                                       precipitable_water, pressure,
                                       dni_extra)

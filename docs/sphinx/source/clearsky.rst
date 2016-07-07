@@ -70,11 +70,11 @@ functions that do the computation.
 Ineichen
 --------
 
-The Ineichen and Perez (2002) model has proven to be a popular model.
-The model parameterizes irradiance in terms of the Linke turbidity.
+The Ineichen and Perez (2002) clear sky model parameterizes irradiance
+in terms of the Linke turbidity.
 
-Turbidity
-^^^^^^^^^
+Turbidity data
+^^^^^^^^^^^^^^
 
 pvlib includes a file with monthly climatological turbidity values for
 the globe. The code below creates turbidity maps for a few months of
@@ -141,8 +141,12 @@ the variability of the data set.
     @savefig turbidity-yes-interp.png width=6in
     plt.ylabel('Linke Turbidity');
 
-Will Holmgren did some rough analysis comparing pvlib's ineichen model
-to `SoDa's McClear service
+
+Validation
+^^^^^^^^^^
+
+Will Holmgren compared pvlib's Ineichen model and climatological
+turbidity to `SoDa's McClear service
 <http://www.soda-pro.com/web-services/radiation/cams-mcclear>`_ in
 Arizona. Here are links to an
 `ipynb notebook
@@ -157,9 +161,27 @@ Simplified Solis
 The Simplified Solis model parameterizes irradiance in terms of
 precipitable water and aerosol optical depth.
 
+Aerosol and precipitable water data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are a number of sources for aerosol and precipitable water data
+of varying accuracy, global coverage, and temporal resolution.
 Ground based aerosol data can be obtained from
 `Aeronet <http://aeronet.gsfc.nasa.gov>`_. Precipitable water can be obtained
-from `ESRL <http://gpsmet.noaa.gov/cgi-bin/gnuplots/rti.cgi>`_.
+from `radiosondes <http://weather.uwyo.edu/upperair/sounding.html>`_,
+`ESRL GPS-MET <http://gpsmet.noaa.gov/cgi-bin/gnuplots/rti.cgi>`_, or
+derived from surface relative humidity using the
+:py:func:`pvlib.atmosphere.gueymard94_pw` function.
+Numerous gridded products from satellites, weather models, and climate models
+contain one or both of aerosols and precipitable water.
+
+Note that aerosol optical depth is a function of wavelength, so be sure
+that you understand the aerosol data that you're looking at. The
+Simplified Solis model requires AOD at 700 nm. Models exist to convert
+AOD between different wavelengths, as well as convert Linke turbidity to
+AOD.
+
+
 
 .. ipython:: python
 
@@ -265,6 +287,10 @@ from `ESRL <http://gpsmet.noaa.gov/cgi-bin/gnuplots/rti.cgi>`_.
     plot_solis('dhi')
     @savefig solis-dhi.png width=6in
     plt.show()
+
+
+Validation
+^^^^^^^^^^
 
 We encourage users to compare the pvlib implementation to Ineichen's
 `Excel tool <http://www.unige.ch/energie/fr/equipe/ineichen/solis-tool/>`_.

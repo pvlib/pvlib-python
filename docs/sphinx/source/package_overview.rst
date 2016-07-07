@@ -56,7 +56,7 @@ configuration at a handful of sites listed below.
 
     # get the module and inverter specifications from SAM
     sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
-    sapm_inverters = pvlib.pvsystem.retrieve_sam('sandiainverter')
+    sapm_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
     inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
@@ -80,17 +80,19 @@ to accomplish our system modeling goal:
               'surface_azimuth': 180}
 
     energies = {}
-    # localize datetime indices (pvlib>=0.3.0)
+
     for latitude, longitude, name, altitude, timezone in coordinates:
         times = naive_times.tz_localize(timezone)
         system['surface_tilt'] = latitude
-        cs = pvlib.clearsky.ineichen(times, latitude, longitude, altitude=altitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
         dni_extra = pvlib.irradiance.extraradiation(times)
         dni_extra = pd.Series(dni_extra, index=times)
         airmass = pvlib.atmosphere.relativeairmass(solpos['apparent_zenith'])
         pressure = pvlib.atmosphere.alt2pres(altitude)
         am_abs = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+        tl = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
+        cs = pvlib.clearsky.ineichen(solpos['apparent_zenith', am_abs, tl,
+                                     dni_extra=dni_extra, altitude=altitude)
         aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'],
                                    solpos['apparent_zenith'], solpos['azimuth'])
         total_irrad = pvlib.irradiance.total_irrad(system['surface_tilt'],

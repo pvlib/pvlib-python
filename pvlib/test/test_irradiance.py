@@ -24,9 +24,7 @@ times = pd.date_range(start='20140624', end='20140626', freq='1Min',
 ephem_data = solarposition.get_solarposition(
     times, tus.latitude, tus.longitude, method='nrel_numpy')
 
-irrad_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
-                               altitude=tus.altitude, linke_turbidity=3,
-                               solarposition_method='nrel_numpy')
+irrad_data = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
 
 dni_et = irradiance.extraradiation(times.dayofyear)
 
@@ -177,8 +175,8 @@ def test_globalinplane():
 
 
 def test_disc_keys():
-    clearsky_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
-                                      linke_turbidity=3)
+    clearsky_data = tus.get_clearsky(times, model='ineichen',
+                                     linke_turbidity=3)
     disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'],
                                 ephem_data.index)
     assert 'dni' in disc_data.columns
@@ -197,8 +195,8 @@ def test_disc_value():
 
 
 def test_dirint():
-    clearsky_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
-                                      linke_turbidity=3)
+    clearsky_data = tus.get_clearsky(times, model='ineichen',
+                                     linke_turbidity=3)
     pressure = 93193.
     dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'],
                                     ephem_data.index, pressure=pressure)

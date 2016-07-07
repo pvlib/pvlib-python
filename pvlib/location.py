@@ -167,62 +167,74 @@ class Location(object):
                                                **kwargs)
 
 
-    def get_clearsky(self, times, model='ineichen', **kwargs):
+    def get_clearsky(self, times, model='ineichen', solar_position=None,
+                     dni_extra=None, **kwargs):
         """
         Calculate the clear sky estimates of GHI, DNI, and/or DHI
         at this location.
 
         Parameters
         ----------
-        times : DatetimeIndex
-
-        model : str
+        times: DatetimeIndex
+        model: str
             The clear sky model to use. Must be one of
             'ineichen', 'haurwitz', 'simplified_solis'.
+        solar_position : None or DataFrame
+            DataFrame with with columns 'apparent_zenith', 'zenith',
+            'apparent_elevation'.
+        dni_extra: None or numeric
+            If None, will be calculated from times.
 
         kwargs passed to the relevant functions. Climatological values
-        are assumed in many cases. See code for details.
+        are assumed in many cases. See source code for details!
 
         Returns
         -------
         clearsky : DataFrame
             Column names are: ``ghi, dni, dhi``.
         """
+        if dni_extra is None:
+            dni_extra = irradiance.extraradiation(times.dayofyear)
+
+        try:
+            pressure = kwargs.pop('pressure')
+        except KeyError:
+            pressure = atmosphere.alt2pres(self.altitude)
+
+        if solar_position is None:
+            solar_position = self.get_solarposition(times, pressure=pressure,
+                                                    **kwargs)
+
+        apparent_zenith = solar_position['apparent_zenith']
+        apparent_elevation = solar_position['apparent_elevation']
 
         if model == 'ineichen':
-            cs = clearsky.ineichen(times, latitude=self.latitude,
-                                   longitude=self.longitude,
-                                   altitude=self.altitude,
-                                   **kwargs)
+            try:
+                linke_turbidity = kwargs.pop('linke_turbidity')
+            except KeyError:
+                interp_turbidity = kwargs.pop('interp_turbidity', True)
+                linke_turbidity = clearsky.lookup_linke_turbidity(
+                    times, self.latitude, self.longitude,
+                    interp_turbidity=interp_turbidity)
+
+            try:
+                airmass_absolute = kwargs.pop('airmass_absolute')
+            except KeyError:
+                airmass_absolute = self.get_airmass(
+                    times, solar_position=solar_position)['airmass_absolute']
+
+            cs = clearsky.ineichen(apparent_zenith, airmass_absolute,
+                                   linke_turbidity, altitude=self.altitude,
+                                   dni_extra=dni_extra)
         elif model == 'haurwitz':
-            solpos = self.get_solarposition(times, **kwargs)
-            cs = clearsky.haurwitz(solpos['apparent_zenith'])
+            cs = clearsky.haurwitz(apparent_zenith)
         elif model == 'simplified_solis':
-
-            # these try/excepts define default values that are only
-            # evaluated if necessary. ineichen does some of this internally
-            try:
-                dni_extra = kwargs.pop('dni_extra')
-            except KeyError:
-                dni_extra = irradiance.extraradiation(times.dayofyear)
-
-            try:
-                pressure = kwargs.pop('pressure')
-            except KeyError:
-                pressure = atmosphere.alt2pres(self.altitude)
-
-            try:
-                apparent_elevation = kwargs.pop('apparent_elevation')
-            except KeyError:
-                solpos = self.get_solarposition(
-                    times, pressure=pressure, **kwargs)
-                apparent_elevation = solpos['apparent_elevation']
-
             cs = clearsky.simplified_solis(
                 apparent_elevation, pressure=pressure, dni_extra=dni_extra,
                 **kwargs)
         else:
-            raise ValueError('{} is not a valid clear sky model'
+            raise ValueError(('{} is not a valid clear sky model. Must be ' +
+                              'one of ineichen, simplified_solis, haurwitz')
                              .format(model))
 
         return cs

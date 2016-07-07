@@ -141,13 +141,15 @@ def basic_chain(times, latitude, longitude,
                                solar_position['azimuth'])
 
     if irradiance is None:
+        linke_turbidity = clearsky.lookup_linke_turbidity(
+            solar_position.index, latitude, longitude)
         irradiance = clearsky.ineichen(
-            solar_position.index,
-            latitude,
-            longitude,
-            zenith_data=solar_position['apparent_zenith'],
-            airmass_data=airmass,
-            altitude=altitude)
+            solar_position['apparent_zenith'],
+            airmass,
+            linke_turbidity,
+            altitude=altitude,
+            dni_extra=dni_extra
+            )
 
     total_irrad = pvlib.irradiance.total_irrad(
         surface_tilt,

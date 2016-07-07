@@ -55,7 +55,7 @@ functions that do the computation.
     cs.plot();
     plt.title('Ineichen, linke_turbidity=3');
     @savefig location-ineichen.png width=6in
-    plt.ylabel('Irradiance $W/m^2$')
+    plt.ylabel('Irradiance $W/m^2$');
 
 .. ipython:: python
 
@@ -76,8 +76,9 @@ The model parameterizes irradiance in terms of the Linke turbidity.
 Turbidity
 ^^^^^^^^^
 
-The code below creates turbidity plots for a few months of the year.
-You could run it in a loop to create plots for all months.
+pvlib includes a file with monthly climatological turbidity values for
+the globe. The code below creates turbidity maps for a few months of
+the year. You could run it in a loop to create plots for all months.
 
 .. ipython:: python
 
@@ -107,15 +108,20 @@ You could run it in a loop to create plots for all months.
     @savefig turbidity-7.png width=10in
     plt.colorbar();
 
-
-Here's a plot of selected areas in the Southwest U.S. We have
-intentionally shown points that are relatively close so that you can get
-a sense of the variability of the data set.
+The :py:func:`~pvlib.clearsky.lookup_linke_turbidity` function takes a
+time, latitude, and longitude and gets the corresponding climatological
+turbidity value for that time at those coordinates. By default, the
+:py:func:`~pvlib.clearsky.lookup_linke_turbidity` function will linearly
+interpolate turbidity from month to month. This removes discontinuities
+in multi-month PV models. Here's a plot of a few locations in the
+Southwest U.S. with and without interpolation. We have intentionally
+shown points that are relatively close so that you can get a sense of
+the variability of the data set.
 
 .. ipython:: python
 
     times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
-    plt.figure()
+    plt.figure();
     pvlib.clearsky.lookup_linke_turbidity(times, 32, -111, interp_turbidity=False).plot(label='Tucson1');
     pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9, interp_turbidity=False).plot(label='Tucson2');
     pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1, interp_turbidity=False).plot(label='Phoenix');
@@ -123,11 +129,6 @@ a sense of the variability of the data set.
     plt.legend();
     @savefig turbidity-no-interp.png width=6in
     plt.ylabel('Linke Turbidity');
-
-By default, the :py:func:`~pvlib.clearsky.lookup_linke_turbidity`
-function will linearly interpolate turbidity from month to month. This
-removes discontinuities in multi-month PV models. See the source code
-for details.
 
 .. ipython:: python
 
@@ -147,7 +148,7 @@ Arizona. Here are links to an
 `ipynb notebook
 <https://forecasting.energy.arizona.edu/media/ineichen_vs_mcclear.ipynb>`_
 and its `html rendering
-<https://forecasting.uaren.org/media/ineichen_vs_mcclear.html>`_.
+<https://forecasting.energy.arizona.edu/media/ineichen_vs_mcclear.html>`_.
 
 
 Simplified Solis

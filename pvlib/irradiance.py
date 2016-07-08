@@ -313,20 +313,21 @@ def beam_component(surface_tilt, surface_azimuth,
     return beam
 
 
-# ToDo: how to best structure this function? wholmgren 2014-11-03
 def total_irrad(surface_tilt, surface_azimuth,
                 apparent_zenith, azimuth,
                 dni, ghi, dhi, dni_extra=None, airmass=None,
                 albedo=.25, surface_type=None,
                 model='isotropic',
                 model_perez='allsitescomposite1990', **kwargs):
-    '''
+    r"""
     Determine diffuse irradiance from the sky on a
     tilted surface.
 
     .. math::
 
        I_{tot} = I_{beam} + I_{sky} + I_{ground}
+
+    See the transposition function documentation for details.
 
     Parameters
     ----------
@@ -359,15 +360,10 @@ def total_irrad(surface_tilt, surface_azimuth,
 
     Returns
     -------
-    DataFrame with columns ``'poa_global', 'poa_direct',
-    'poa_sky_diffuse', 'poa_ground_diffuse'``.
-
-    References
-    ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-    solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267
-    '''
+    irradiance: DataFrame
+        Contains columns ``'poa_global', 'poa_direct',
+        'poa_sky_diffuse', 'poa_ground_diffuse'``.
+    """
 
     pvl_logger.debug('planeofarray.total_irrad()')
 
@@ -415,7 +411,7 @@ def total_irrad(surface_tilt, surface_azimuth,
 
 # ToDo: keep this or not? wholmgren, 2014-11-03
 def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
-    '''
+    r'''
     Determine the three components on in-plane irradiance
 
     Combines in-plane irradaince compoents from the chosen diffuse translation,

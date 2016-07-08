@@ -192,8 +192,7 @@ A clear sky time series using basic pvlib functions.
     dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
 
     # an input is a pandas Series, so solis is a DataFrame
-    ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity,
-                                 altitude, dni_extra)
+    ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
     ax = ineichen.plot();
     ax.set_ylabel('Irradiance $W/m^2$');
     ax.legend(loc=2);
@@ -348,10 +347,7 @@ Grid with a clear sky irradiance for a few PW and AOD values.
     fig, axes = plt.subplots(ncols=2, nrows=2, sharex=True, sharey=True, squeeze=True)
     axes = axes.flatten()
 
-    for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes):
-        solis = clearsky.simplified_solis(apparent_elevation, aod, pw,
-                                          pressure, dni_extra)
-        solis.plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw))
+    [clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra).plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw)) for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes)];
 
     @savefig solis-grid.png width=10in
     plt.show();

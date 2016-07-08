@@ -6,6 +6,7 @@ absolute airmass and to determine pressure from altitude or vice versa.
 from __future__ import division
 
 import numpy as np
+from warnings import warn
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')
@@ -414,6 +415,8 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
     """
 
+    import pdb
+    pdb.set_trace()
 
     # --- Screen Input Data ---
 
@@ -422,14 +425,14 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     # diverging"
 
     if np.min(pw) < 0.1:
-        pw = np.array([val if val > 0.1 else 0.1 for val in pw])
-        print('Exceptionally low Pwat values replaced with 0.1 cm to prevent'+
+        pw = np.maximum(pw, 0.1)
+        warn('Exceptionally low Pwat values replaced with 0.1 cm to prevent'+
         ' model divergence')
 
 
     # Warn user about Pwat data that is exceptionally high
     if np.max(pw) > 8:
-        print('Exceptionally high Pwat values. Check input data:' +
+        warn('Exceptionally high Pwat values. Check input data:' +
         ' model may diverge in this range')
 
 
@@ -437,11 +440,11 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     # Replace Extremely High AM with AM 10 to prevent model divergence
     # AM > 10 will only occur very close to sunset
     if np.max(airmass_absolute) > 10: 
-      airmass_absolute = np.array([val if val <= 10 else 10 for val in airmass_absolute])
+      airmass_absolute = np.minimum(airmass_absolute,10)
     
     # Warn user about AMa data that is exceptionally low
     if np.min(airmass_absolute) < 0.58:
-       print('Exceptionally low air mass: ' +
+       warn('Exceptionally low air mass: ' +
            'model not intended for extra-terrestrial use')
        # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58
        # Elevation of Mina Pirquita, Argentian = 4340 m. Highest elevation city

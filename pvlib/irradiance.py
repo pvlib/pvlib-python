@@ -11,12 +11,14 @@ import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import datetime
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
 
 from pvlib import tools
 from pvlib import solarposition
+from pvlib import atmosphere
 
 SURFACE_ALBEDOS = {'urban': 0.18,
                    'grass': 0.20,
@@ -1301,7 +1303,7 @@ def _get_perez_coefficients(perezmodel):
 
 
 def disc(ghi, zenith, times, pressure=101325):
-    '''
+    """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
 
@@ -1311,12 +1313,11 @@ def disc(ghi, zenith, times, pressure=101325):
 
     Parameters
     ----------
-
     ghi : Series
         Global horizontal irradiance in W/m^2.
 
     solar_zenith : Series
-        True (not refraction - corrected) solar zenith
+        True (not refraction-corrected) solar zenith
         angles in decimal degrees.
 
     times : DatetimeIndex
@@ -1336,7 +1337,6 @@ def disc(ghi, zenith, times, pressure=101325):
 
     References
     ----------
-
     [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
     Global Horizontal to Direct Normal Insolation", Technical
     Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
@@ -1351,53 +1351,58 @@ def disc(ghi, zenith, times, pressure=101325):
     --------
     atmosphere.alt2pres
     dirint
-    '''
+    """
 
-    pvl_logger.debug('clearsky.disc')
-
-    temp = pd.DataFrame(index=times, columns=['A','B','C'], dtype=float)
+    # in principle, the dni_extra calculation could be done by
+    # pvlib's function. However, this is the algorithm used in
+    # the DISC paper
 
     doy = times.dayofyear
 
-    DayAngle = 2. * np.pi*(doy - 1) / 365
+    dayangle = 2. * np.pi*(doy - 1) / 365
 
-    re = (1.00011 + 0.034221*np.cos(DayAngle) + 0.00128*np.sin(DayAngle)
-          + 0.000719*np.cos(2.*DayAngle) + 7.7e-05*np.sin(2.*DayAngle) )
+    re = (1.00011 + 0.034221*np.cos(dayangle) + 0.00128*np.sin(dayangle) +
+          0.000719*np.cos(2.*dayangle) + 7.7e-5*np.sin(2.*dayangle) )
 
     I0 = re * 1370.
     I0h = I0 * np.cos(np.radians(zenith))
 
-    Ztemp = zenith.copy()
-    Ztemp[zenith > 87] = np.NaN
+    am = atmosphere.relativeairmass(zenith, model='kasten1966')
+    am = atmosphere.absoluteairmass(am, pressure)
 
-    AM = 1.0 / ( np.cos(np.radians(Ztemp)) + 0.15*( (93.885 - Ztemp)**(-1.253) ) ) * (pressure / 101325)
+    kt = ghi / I0h
+    kt = np.maximum(kt, 0)
+    kt[kt > 2] = np.nan
 
-    Kt = ghi / I0h
-    Kt[Kt < 0] = 0
-    Kt[Kt > 2] = np.NaN
+    bools = (kt <= 0.6)
+    a = np.where(bools,
+                 0.512 - 1.56*kt + 2.286*kt**2 - 2.222*kt**3,
+                 -5.743 + 21.77*kt - 27.49*kt**2 + 11.56*kt**3)
+    b = np.where(bools,
+                 0.37 + 0.962*kt,
+                 41.4 - 118.5*kt + 66.05*kt**2 + 31.9*kt**3)
+    c = np.where(bools,
+                 -0.28 + 0.932*kt - 2.048*kt**2,
+                 -47.01 + 184.2*kt - 222.0*kt**2 + 73.81*kt**3)
 
-    temp.A[Kt > 0.6] = -5.743 + 21.77*(Kt[Kt > 0.6]) - 27.49*(Kt[Kt > 0.6] ** 2) + 11.56*(Kt[Kt > 0.6] ** 3)
-    temp.B[Kt > 0.6] = 41.4 - 118.5*(Kt[Kt > 0.6]) + 66.05*(Kt[Kt > 0.6] ** 2) + 31.9*(Kt[Kt > 0.6] ** 3)
-    temp.C[Kt > 0.6] = -47.01 + 184.2*(Kt[Kt > 0.6]) - 222.0 * Kt[Kt > 0.6] ** 2 + 73.81*(Kt[Kt > 0.6] ** 3)
-    temp.A[Kt <= 0.6] = 0.512 - 1.56*(Kt[Kt <= 0.6]) + 2.286*(Kt[Kt <= 0.6] ** 2) - 2.222*(Kt[Kt <= 0.6] ** 3)
-    temp.B[Kt <= 0.6] = 0.37 + 0.962*(Kt[Kt <= 0.6])
-    temp.C[Kt <= 0.6] = -0.28 + 0.932*(Kt[Kt <= 0.6]) - 2.048*(Kt[Kt <= 0.6] ** 2)
+    delta_kn = a + b * np.exp(c*am)
 
-    delKn = temp.A + temp.B * np.exp(temp.C*AM)
-
-    Knc = 0.866 - 0.122*(AM) + 0.0121*(AM ** 2) - 0.000653*(AM ** 3) + 1.4e-05*(AM ** 4)
-    Kn = Knc - delKn
+    Knc = 0.866 - 0.122*am + 0.0121*am**2 - 0.000653*am**3 + 1.4e-05*am**4
+    Kn = Knc - delta_kn
 
     dni = Kn * I0
 
-    dni[zenith > 87] = np.NaN
-    dni[(ghi < 0) | (dni < 0)] = 0
+    dni[(zenith > 87) | (ghi < 0) | (dni < 0)] = 0
 
-    dfout = pd.DataFrame({'dni':dni})
-    dfout['kt'] = Kt
-    dfout['airmass'] = AM
+    output = OrderedDict()
+    output['dni'] = dni
+    output['kt'] = kt
+    output['airmass'] = am
 
-    return dfout
+    if isinstance(dni, pd.Series):
+        output = pd.DataFrame(output)
+
+    return output
 
 
 def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,

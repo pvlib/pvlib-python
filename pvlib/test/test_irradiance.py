@@ -74,6 +74,11 @@ def test_extraradiation_ephem_doyarray():
     irradiance.extraradiation(times.dayofyear, method='pyephem')
 
 
+def test_extraradiation_invalid():
+    with pytest.raises(ValueError):
+        irradiance.extraradiation(times.dayofyear, method='invalid')
+
+
 def test_grounddiffuse_simple_float():
     irradiance.grounddiffuse(40, 900)
 

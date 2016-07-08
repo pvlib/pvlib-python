@@ -102,8 +102,9 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
         doy = datetime_or_doy
         input_to_datetimeindex = _array_to_datetimeindex
 
-    B = (2 * np.pi / 365) * doy
+    B = (2. * np.pi / 365.) * doy
 
+    method = method.lower()
     if method == 'asce':
         pvl_logger.debug('Calculating ET rad using ASCE method')
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
@@ -115,6 +116,8 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
         pvl_logger.debug('Calculating ET rad using pyephem method')
         times = input_to_datetimeindex(datetime_or_doy)
         RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
+    else:
+        raise ValueError('Invalid method: %s', method)
 
     Ea = solar_constant * RoverR0sqrd
 

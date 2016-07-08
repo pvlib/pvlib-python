@@ -415,9 +415,6 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
     """
 
-    import pdb
-    pdb.set_trace()
-
     # --- Screen Input Data ---
 
     # *** Pwat ***

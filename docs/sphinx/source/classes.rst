@@ -17,6 +17,7 @@ Location
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 PVSystem
 --------
@@ -24,6 +25,7 @@ PVSystem
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 ModelChain
 ----------
@@ -31,6 +33,7 @@ ModelChain
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 LocalizedPVSystem
 -----------------
@@ -38,6 +41,7 @@ LocalizedPVSystem
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 SingleAxisTracker
 -----------------
@@ -45,6 +49,7 @@ SingleAxisTracker
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 LocalizedSingleAxisTracker
 --------------------------
@@ -52,4 +57,5 @@ LocalizedSingleAxisTracker
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 

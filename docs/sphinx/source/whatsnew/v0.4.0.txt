@@ -33,6 +33,7 @@ Documentation
 ~~~~~~~~~~~~~
 
 * Added new terms to the variables documentation. (:issue:`195`)
+* Fix documentation build warnings. (:issue:`210`)
 
 
 Other

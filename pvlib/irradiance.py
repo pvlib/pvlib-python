@@ -102,7 +102,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
         doy = datetime_or_doy
         input_to_datetimeindex = _array_to_datetimeindex
 
-    B = (2. * np.pi / 365.) * doy
+    B = (2. * np.pi / 365.) * (doy - 1)
 
     method = method.lower()
     if method == 'asce':

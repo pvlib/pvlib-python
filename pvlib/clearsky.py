@@ -533,3 +533,119 @@ def _calc_d(w, aod700, p):
     d = -0.337*aod700**2 + 0.63*aod700 + 0.116 + dp*np.log(p/p0)
 
     return d
+
+
+def detect_clearsky(ghi, clearsky_ghi, window_length,
+                    sample_interval, mean_diff=75, max_diff=75,
+                    lower_line_length=-5, upper_line_length=10,
+                    var_diff=0.005, slope_dev=8):
+    """
+    Detects clear sky times by comparing statistics for a regular GHI
+    time series to the Ineichen clear sky model.  Statistics are calculated
+    using a sliding time window (e.g., 10 minutes). An iterative algorithm
+    identifies clear periods, uses the identified periods to estimate bias
+    in the clear sky model and/or GHI data, adjusts the clear sky model and
+    repeats.  Code handles GHI data with some irregularities, i.e., missing
+    values or unequal data spacing, but execution is significantly faster
+    if data are equally spaced and without missing values.
+
+    Clear times are identified by meeting 5 criteria, thresholds
+    for which are hardcoded in this version.  Values for these thresholds
+    are appropriate for 10 minute windows of 1 minute GHI data.
+
+    Parameters
+    ----------
+    ghi : Series
+        Time-series of measured GHI values localized to the appropriate timezone
+    clearsky_ghi : Series
+        Time-series of the expected clearsky GHI values. Must have the same
+        index as ghi
+    window_length : int
+        length of sliding time window in minutes
+    sample_interval : int
+        nominal minutes between each GHI sample time
+    mean_diff : float
+        threshold value in W/m**2 for agreement between mean values of GHI
+        in each interval, see Eq. 6 in [1]
+    max_diff : float
+        threshold value in W/m**2 for agreement between maxima of GHI values
+        in each interval, see Eq. 7 in [1]
+    lower_line_length : float
+        lower limit of line length criterion from Eq. 8 in [1].
+        Criterion satisfied when
+        lower_line_length < line length difference < upper_line_length
+    upper_line_length : float
+        upper limit of line length criterion from Eq. 8 in [1]
+    var_diff : float
+        threshold value in Hz for the agreement between normalized
+        standard deviations of rate of change in irradiance, see
+        Eqs. 9 through 11 in [1]
+    slope_dev : float
+        threshold value in W/m**2 for agreement between the largest
+        magnitude of change in successive GHI values, see Eqs. 12
+        through 14 in [1]
+
+    Returns
+    -------
+    clear_times : Series
+        Boolean series of whether or not the given time is clear
+
+    References
+    ----------
+    [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear sky
+    irradiance in time series of GHI measurements" Renewable Energy, v90,
+    p. 520-531, 2016.
+
+    Notes
+    -----
+    Initial implementation in MATLAB by Matthew Reno. Modifications for
+    computational efficiency by Joshua Patrick and Curtis Martin. Ported
+    to Python by Tony Lorenzo.
+    """
+    # assert that inputs are series otherwise rolling things get
+    # screwy
+    if not isinstance(ghi, pd.Series):
+        raise TypeError('ghi must be a Pandas Series')
+    if not isinstance(clearsky_ghi, pd.Series):
+        raise TypeError('clearsky_ghi must be a Pandas Series')
+
+    if not ghi.index.equals(clearsky_ghi.index):
+        raise ValueError('ghi and clearsky_ghi must have the same index')
+    # assuming only equal time spacing for now
+
+    min_samples_per_window = int((0.8 * window_length) // sample_interval)
+    samples_per_window = int(window_length / sample_interval)
+
+    clear_mean = pd.rolling_mean(clearsky_ghi, samples_per_window,
+                                 min_samples_per_window)
+    clear_max = pd.rolling_max(clearsky_ghi, samples_per_window,
+                               min_samples_per_window)
+    clear_slope = clearsky_ghi.diff()
+    clear_line_length = pd.rolling_mean(np.sqrt(
+        clear_slope**2 + (sample_interval * np.ones(clear_slope.shape))**2),
+                                        samples_per_window,
+                                        min_samples_per_window)
+    clear_max_slope = pd.rolling_max(clear_slope.abs(), samples_per_window,
+                                     min_samples_per_window)
+
+    meas_mean = pd.rolling_mean(ghi, samples_per_window,
+                                min_samples_per_window)
+    meas_max = pd.rolling_max(ghi, samples_per_window, min_samples_per_window)
+    meas_slope = ghi.diff()
+    meas_max_slope = pd.rolling_max(meas_slope.abs(), samples_per_window,
+                                    min_samples_per_window)
+    meas_line_length = pd.rolling_mean(np.sqrt(
+        meas_slope**2 + (sample_interval * np.ones(meas_slope.shape))**2),
+                                       samples_per_window,
+                                       min_samples_per_window)
+    line_diff = meas_line_length - clear_line_length
+
+    c1 = np.abs(meas_mean - clear_mean) < mean_diff
+    c2 = np.abs(meas_max - clear_max) < max_diff
+    c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
+    c4 = (pd.rolling_std(meas_slope, samples_per_window,
+                         min_samples_per_window) / meas_mean) < var_diff
+    c5 = (meas_max_slope - clear_max_slope) < slope_dev
+    c6 = (clear_mean != 0) &  ~np.isnan(clear_mean)
+    clear_times = c1 & c2 & c3 & c4 & c5 & c6
+    return clear_times

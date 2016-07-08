@@ -46,11 +46,11 @@ of:
   modelling package,” in 40th IEEE Photovoltaic Specialist
   Conference, 2014.
   (`paper
-  <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`_)
+  <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`__)
 * W.F. Holmgren, R.W. Andrews, A.T. Lorenzo, and J.S. Stein,
   “PVLIB Python 2015,” in 42nd Photovoltaic Specialists Conference, 2015.
   (`paper
-  <https://github.com/pvlib/pvsc2015/blob/master/pvlib_pvsc_42.pdf>`_ and
+  <https://github.com/pvlib/pvsc2015/blob/master/pvlib_pvsc_42.pdf>`__ and
   the `notebook to reproduce the figures
   <http://nbviewer.ipython.org/github/pvlib/pvsc2015/blob/master/paper.ipynb>`_)
 * J.S. Stein, W.F. Holmgren, J. Forbess, and C.W. Hansen,

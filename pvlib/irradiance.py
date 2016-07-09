@@ -35,32 +35,35 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'dirty steel': 0.08}
 
 
-def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
+def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
+                   **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
 
     Parameters
     ----------
     datetime_or_doy : int, float, array, pd.DatetimeIndex
-        Day of year, array of days of year e.g. pd.DatetimeIndex.dayofyear,
-        or pd.DatetimeIndex.
+        Day of year, array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
     solar_constant : float
         The solar constant.
 
     method : string
         The method by which the ET radiation should be calculated.
-        Options include ``'pyephem', 'spencer', 'asce'``.
+        Options include ``'pyephem', 'spencer', 'asce', 'nrel'``.
+
+    kwargs :
+        Passed to solarposition.nrel_earthsun_distance
 
     Returns
     -------
-    float or Series
-
+    dni_extra : float, array, or Series
         The extraterrestrial radiation present in watts per square meter
-        on a surface which is normal to the sun. Ea is of the same size as the
-        input doy.
+        on a surface which is normal to the sun. Ea is of the same size
+        as the input doy.
 
-        'pyephem' always returns a series.
+        'pyephem' and 'nrel' always return a Series.
 
     Notes
     -----
@@ -69,8 +72,8 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
 
     References
     ----------
-    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-    Sky Models: Implementation and Analysis", Sandia National
+    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+    Clear Sky Models: Implementation and Analysis", Sandia National
     Laboratories, SAND2012-2389, 2012.
 
     [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>,
@@ -116,6 +119,10 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
         pvl_logger.debug('Calculating ET rad using pyephem method')
         times = input_to_datetimeindex(datetime_or_doy)
         RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
+    elif method == 'nrel':
+        times = input_to_datetimeindex(datetime_or_doy)
+        RoverR0sqrd = \
+            solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
     else:
         raise ValueError('Invalid method: %s', method)
 

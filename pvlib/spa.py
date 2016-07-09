@@ -916,12 +916,12 @@ def solar_position_loop(unixtime, loc_args, out):
         jc = julian_century(jd)
         jce = julian_ephemeris_century(jde)
         jme = julian_ephemeris_millennium(jce)
-        L = heliocentric_longitude(jme)
-        B = heliocentric_latitude(jme)
         R = heliocentric_radius_vector(jme)
         if esd:
             out[0, i] = R
             continue
+        L = heliocentric_longitude(jme)
+        B = heliocentric_latitude(jme)
         Theta = geocentric_longitude(L)
         beta = geocentric_latitude(B)
         x0 = mean_elongation(jce)
@@ -1032,11 +1032,11 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     jc = julian_century(jd)
     jce = julian_ephemeris_century(jde)
     jme = julian_ephemeris_millennium(jce)
-    L = heliocentric_longitude(jme)
-    B = heliocentric_latitude(jme)
     R = heliocentric_radius_vector(jme)
     if esd:
         return (R, )
+    L = heliocentric_longitude(jme)
+    B = heliocentric_latitude(jme)
     Theta = geocentric_longitude(L)
     beta = geocentric_latitude(B)
     x0 = mean_elongation(jce)

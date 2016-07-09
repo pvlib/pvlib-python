@@ -14,7 +14,7 @@ from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
 
-from conftest import requires_ephem
+from conftest import requires_ephem, requires_numba
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -72,6 +72,25 @@ def test_extraradiation_ephem_scalar():
 @requires_ephem
 def test_extraradiation_ephem_doyarray():
     irradiance.extraradiation(times.dayofyear, method='pyephem')
+
+
+def test_extraradiation_nrel_dtindex():
+    irradiance.extraradiation(times, method='nrel')
+
+
+def test_extraradiation_nrel_scalar():
+    assert_allclose(
+        1382, irradiance.extraradiation(300, method='nrel').values[0],
+        atol=10)
+
+
+def test_extraradiation_nrel_doyarray():
+    irradiance.extraradiation(times.dayofyear, method='nrel')
+
+
+@requires_numba
+def test_extraradiation_nrel_numba():
+    irradiance.extraradiation(times, method='nrel', how='numba', numthreads=8)
 
 
 def test_extraradiation_invalid():
@@ -307,7 +326,7 @@ def test_erbs():
 
     out = irradiance.erbs(ghi, zenith, doy)
 
-    assert_frame_equal(out, expected)
+    assert_frame_equal(np.round(out, 0), np.round(expected, 0))
 
 
 def test_erbs_all_scalar():

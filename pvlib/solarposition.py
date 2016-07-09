@@ -771,3 +771,49 @@ def pyephem_earthsun_distance(time):
         earthsun.append(sun.earth_distance)
 
     return pd.Series(earthsun, index=time)
+
+
+def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
+    """
+    Calculates the distance from the earth to the sun using pyephem.
+
+    Parameters
+    ----------
+    time : pd.DatetimeIndex
+
+    how : str, optional
+        Options are 'numpy' or 'numba'. If numba >= 0.17.0
+        is installed, how='numba' will compile the spa functions
+        to machine code and run them multithreaded.
+
+    delta_t : float, optional
+        Difference between terrestrial time and UT1.
+        By default, use USNO historical data and predictions
+
+    numthreads : int, optional
+        Number of threads to use if how == 'numba'.
+
+    Returns
+    -------
+    R : pd.Series
+        Earth-sun distance in AU.
+    """
+    delta_t = delta_t or 67.0
+
+    if not isinstance(time, pd.DatetimeIndex):
+        try:
+            time = pd.DatetimeIndex(time)
+        except (TypeError, ValueError):
+            time = pd.DatetimeIndex([time, ])
+
+    # must convert to midnight UTC on day of interest
+    utcday = pd.DatetimeIndex(time.date).tz_localize('UTC')
+    unixtime = utcday.astype(np.int64)/10**9
+
+    spa = _spa_python_import(how)
+
+    R = spa.earthsun_distance(unixtime, delta_t, numthreads)
+
+    R = pd.Series(R, index=time)
+
+    return R

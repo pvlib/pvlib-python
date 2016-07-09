@@ -3,7 +3,8 @@ import datetime
 import numpy as np
 import pandas as pd
 
-from pandas.util.testing import assert_frame_equal, assert_index_equal
+from pandas.util.testing import (assert_frame_equal, assert_series_equal,
+                                 assert_index_equal)
 from numpy.testing import assert_allclose
 import pytest
 
@@ -320,3 +321,19 @@ def test_get_solarposition_no_kwargs(expected_solpos):
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+
+
+def test_nrel_earthsun_distance():
+    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
+                              datetime.datetime(2015, 8, 2),]
+                             ).tz_localize('MST')
+    result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
+    expected = pd.Series(np.array([0.983293144266, 1.01489789116]),
+                         index=times)
+    assert_series_equal(expected, result)
+
+    times = datetime.datetime(2015, 1, 2)
+    result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
+    expected = pd.Series(np.array([0.983293144266]),
+                         index=pd.DatetimeIndex([times, ]))
+    assert_series_equal(expected, result)

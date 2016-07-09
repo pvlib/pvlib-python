@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import numpy as np
 import pandas as pd
 
@@ -140,6 +142,7 @@ def test_perez():
                      ephem_data['azimuth'], am)
     assert not out.isnull().any()
 
+
 # klutcher (misspelling) will be removed in 0.3
 def test_total_irrad():
     models = ['isotropic', 'klutcher', 'klucher',
@@ -159,6 +162,24 @@ def test_total_irrad():
         assert total.columns.tolist() == ['poa_global', 'poa_direct',
                                           'poa_diffuse', 'poa_sky_diffuse',
                                           'poa_ground_diffuse']
+
+
+@pytest.mark.parametrize('model', ['isotropic', 'klucher',
+                                   'haydavies', 'reindl', 'king'])
+def test_total_irrad_scalars(model):
+    total = irradiance.total_irrad(
+        32, 180,
+        10, 180,
+        dni=1000, ghi=1100,
+        dhi=100,
+        dni_extra=1400, airmass=1,
+        model=model,
+        surface_type='urban')
+
+    assert list(total.keys()) == ['poa_global', 'poa_direct',
+                                  'poa_diffuse', 'poa_sky_diffuse',
+                                  'poa_ground_diffuse']
+    assert np.isnan(np.array(list(total.values()))).sum() == 0
 
 
 def test_globalinplane():
@@ -270,10 +291,13 @@ def test_erbs_all_scalar():
     ghi = 1000
     zenith = 10
     doy = 180
-    expected = pd.DataFrame(np.
-        array([[  8.42358014e+02,   1.70439297e+02,   7.68919470e-01]]),
-        columns=['dni', 'dhi', 'kt'])
+
+    expected = OrderedDict()
+    expected['dni'] = 8.42358014e+02
+    expected['dhi'] = 1.70439297e+02
+    expected['kt'] = 7.68919470e-01
 
     out = irradiance.erbs(ghi, zenith, doy)
 
-    assert_frame_equal(out, expected)
+    for k, v in out.items():
+        assert_allclose(v, expected[k], 5)

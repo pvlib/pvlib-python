@@ -203,7 +203,9 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     Sandia Report, (2012).
     '''
 
-    z = zenith
+    # need to filter first because python 2.7 does not support raising a
+    # negative number to a negative power.
+    z = np.where(zenith > 90, np.nan, zenith)
     zenith_rad = np.radians(z)
 
     model = model.lower()
@@ -233,10 +235,8 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     else:
         raise ValueError('%s is not a valid model for relativeairmass', model)
 
-    if isinstance(am, pd.Series):
-        am[z > 90] = np.nan
-    else:
-        am = np.where(z > 90, np.nan, am)
+    if isinstance(zenith, pd.Series):
+        am = pd.Series(am, index=zenith.index)
 
     return am
 

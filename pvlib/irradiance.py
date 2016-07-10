@@ -1079,16 +1079,16 @@ def disc(ghi, zenith, times, pressure=101325):
 
     Parameters
     ----------
-    ghi : array-like
+    ghi : numeric
         Global horizontal irradiance in W/m^2.
 
-    solar_zenith : array-like
+    solar_zenith : numeric
         True (not refraction-corrected) solar zenith angles in decimal
         degrees.
 
     times : DatetimeIndex
 
-    pressure : float or array-like
+    pressure : numeric
         Site pressure in Pascal.
 
     Returns
@@ -1140,18 +1140,20 @@ def disc(ghi, zenith, times, pressure=101325):
 
     kt = ghi / I0h
     kt = np.maximum(kt, 0)
-    kt[kt > 2] = np.nan
+    # powers of kt will be used repeatedly, so compute only once
+    kt2 = kt * kt  # about the same as kt ** 2
+    kt3 = kt2 * kt  # 5-10x faster than kt ** 3
 
     bools = (kt <= 0.6)
     a = np.where(bools,
-                 0.512 - 1.56*kt + 2.286*kt**2 - 2.222*kt**3,
-                 -5.743 + 21.77*kt - 27.49*kt**2 + 11.56*kt**3)
+                 0.512 - 1.56*kt + 2.286*kt2 - 2.222*kt3,
+                 -5.743 + 21.77*kt - 27.49*kt2 + 11.56*kt3)
     b = np.where(bools,
                  0.37 + 0.962*kt,
-                 41.4 - 118.5*kt + 66.05*kt**2 + 31.9*kt**3)
+                 41.4 - 118.5*kt + 66.05*kt2 + 31.9*kt3)
     c = np.where(bools,
-                 -0.28 + 0.932*kt - 2.048*kt**2,
-                 -47.01 + 184.2*kt - 222.0*kt**2 + 73.81*kt**3)
+                 -0.28 + 0.932*kt - 2.048*kt2,
+                 -47.01 + 184.2*kt - 222.0*kt2 + 73.81*kt3)
 
     delta_kn = a + b * np.exp(c*am)
 
@@ -1160,15 +1162,15 @@ def disc(ghi, zenith, times, pressure=101325):
 
     dni = Kn * I0
 
-    dni[(zenith > 87) | (ghi < 0) | (dni < 0)] = 0
+    dni = np.where((zenith > 87) | (ghi < 0) | (dni < 0), 0, dni)
 
     output = OrderedDict()
     output['dni'] = dni
     output['kt'] = kt
     output['airmass'] = am
 
-    if isinstance(dni, pd.Series):
-        output = pd.DataFrame(output)
+    if isinstance(times, pd.DatetimeIndex):
+        output = pd.DataFrame(output, index=times)
 
     return output
 
@@ -1319,9 +1321,9 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
                            delta_kt_prime_bin-1, w_bin-1]
     # convert unassigned bins to nan
-    # use where to avoid boolean indexing deprecation
-    dirint_coeffs[np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
-                           (w_bin == 0) | (delta_kt_prime_bin == 0))] = np.nan
+    dirint_coeffs = np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
+                             (w_bin == 0) | (delta_kt_prime_bin == 0),
+                             np.nan, dirint_coeffs)
 
     dni = disc_out['dni'] * dirint_coeffs
 

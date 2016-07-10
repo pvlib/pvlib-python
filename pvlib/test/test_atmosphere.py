@@ -12,16 +12,11 @@ from pvlib import solarposition
 from pvlib import atmosphere
 
 
-# setup times and location to be tested.
-times = pd.date_range(start=datetime.datetime(2014,6,24),
-                      end=datetime.datetime(2014,6,26), freq='1Min')
+latitude, longitude, tz, altitude = 32.2, -111, 'US/Arizona', 700
 
-tus = Location(32.2, -111, 'US/Arizona', 700)
+times = pd.date_range(start='20140626', end='20140626', freq='6h', tz=tz)
 
-times_localized = times.tz_localize(tus.tz)
-
-ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
-                                             tus.longitude)
+ephem_data = solarposition.get_solarposition(times, latitude, longitude)
 
 
 # need to add physical tests instead of just functional tests
@@ -38,7 +33,18 @@ def test_alt2press():
     ['simple', 'kasten1966', 'youngirvine1967', 'kastenyoung1989',
      'gueymard1993', 'young1994', 'pickering2002'])
 def test_airmass(model):
-    atmosphere.relativeairmass(ephem_data['zenith'], model)
+    out = atmosphere.relativeairmass(ephem_data['zenith'], model)
+    assert isinstance(out, pd.Series)
+    out = atmosphere.relativeairmass(ephem_data['zenith'].values, model)
+    assert isinstance(out, np.ndarray)
+
+
+def test_airmass_scalar():
+    assert not np.isnan(atmosphere.relativeairmass(10))
+
+
+def test_airmass_scalar_nan():
+    assert np.isnan(atmosphere.relativeairmass(100))
 
 
 def test_airmass_invalid():

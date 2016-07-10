@@ -1175,7 +1175,7 @@ def disc(ghi, zenith, times, pressure=101325):
     return output
 
 
-def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
+def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
            temp_dew=None):
     """
     Determine DNI from GHI using the DIRINT modification of the DISC
@@ -1212,7 +1212,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
         data only be used if the time between measured data points is
         less than 1.5 hours. If none of the input arguments are vectors,
         then time-series improvements are not used (because it's not a
-        time-series).
+        time-series). If True, input data must be Series.
 
     temp_dew : None, float, or array-like
         Surface dew point temperatures, in degrees C. Values of temp_dew
@@ -1243,19 +1243,10 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
 
-    pvl_logger.debug('clearsky.dirint')
-
     disc_out = disc(ghi, zenith, times, pressure=pressure)
+    dni = disc_out['dni']
     kt = disc_out['kt']
-
-    # Absolute Airmass, per the DISC model
-    # Note that we calculate the AM pressure correction slightly differently
-    # than Perez. He uses altitude, we use pressure (which we calculate
-    # slightly differently)
-    am = atmosphere.relativeairmass(zenith, model='kasten1966')
-    am = atmosphere.absoluteairmass(am, pressure)
-
-    coeffs = _get_dirint_coeffs()
+    am = disc_out['airmass']
 
     kt_prime = kt / (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
     kt_prime = np.minimum(kt_prime, 0.82)  # From SRRL code
@@ -1264,6 +1255,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     # the use_delta_kt_prime statement is a port of the MATLAB code.
     # I am confused by the abs() in the delta_kt_prime calculation.
     # It is not the absolute value of the central difference.
+    # current implementation requires that kt_prime is a Series
     if use_delta_kt_prime:
         delta_kt_prime = 0.5*((kt_prime - kt_prime.shift(1)).abs().add(
                               (kt_prime - kt_prime.shift(-1)).abs(),
@@ -1316,16 +1308,20 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
     delta_kt_prime_bin[(delta_kt_prime >= 0.3) & (delta_kt_prime <= 1)] = 6
     delta_kt_prime_bin[delta_kt_prime == -1] = 7
 
+    # get the coefficients
+    coeffs = _get_dirint_coeffs()
+
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.
     dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
                            delta_kt_prime_bin-1, w_bin-1]
+
     # convert unassigned bins to nan
     dirint_coeffs = np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
                              (w_bin == 0) | (delta_kt_prime_bin == 0),
                              np.nan, dirint_coeffs)
 
-    dni = disc_out['dni'] * dirint_coeffs
+    dni *= dirint_coeffs
 
     return dni
 

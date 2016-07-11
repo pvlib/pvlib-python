@@ -66,7 +66,7 @@ def test_get_clearsky():
                [   0.        ,    0.        ,    0.        ]]),
                             columns=['ghi', 'dni', 'dhi'],
                             index=times)
-    assert_frame_equal(expected, clearsky)
+    assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
 def test_get_clearsky_ineichen_supply_linke():
@@ -86,7 +86,7 @@ def test_get_clearsky_ineichen_supply_linke():
                             columns=['ghi', 'dni', 'dhi'],
                             index=times_localized)
     out = tus.get_clearsky(times_localized, linke_turbidity=3)
-    assert_frame_equal(expected, out)
+    assert_frame_equal(expected, out, check_less_precise=2)
 
 
 def test_get_clearsky_haurwitz():
@@ -121,7 +121,7 @@ def test_get_clearsky_simplified_solis():
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky)
+    assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
 def test_get_clearsky_simplified_solis_apparent_elevation():
@@ -142,7 +142,7 @@ def test_get_clearsky_simplified_solis_apparent_elevation():
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky)
+    assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
 def test_get_clearsky_simplified_solis_dni_extra():
@@ -180,7 +180,7 @@ def test_get_clearsky_simplified_solis_pressure():
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky)
+    assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
 def test_get_clearsky_simplified_solis_aod_pw():
@@ -199,7 +199,7 @@ def test_get_clearsky_simplified_solis_aod_pw():
                             columns=['dhi', 'dni', 'ghi'],
                             index=times)
     expected = expected[['ghi', 'dni', 'dhi']]
-    assert_frame_equal(expected, clearsky)
+    assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
 def test_get_clearsky_valueerror():

@@ -55,8 +55,8 @@ Other
 Requirements
 ~~~~~~~~~~~~
 
-* pvlib now requires pandas >= 0.14.1 and numpy >= 1.9.3, both
-  released in mid 2014. Most of pvlib will work with lesser versions.
+* pvlib now requires pandas >= 0.14.0 and numpy >= 1.9.0, both
+  released in 2014. Most of pvlib will work with lesser versions.
 
 
 Code Contributors

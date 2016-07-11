@@ -23,7 +23,7 @@ addons:
             - ccache
 
 cache:
-    - pip
+#    - pip
     - ccache
 
 # setup miniconda for numpy, scipy, pandas
@@ -49,8 +49,8 @@ install:
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         pip uninstall numpy --yes;
         pip uninstall pandas --yes;
-        pip install numpy==1.9.3;
-        pip install pandas==0.14.1;
+        pip install --no-cache-dir numpy==1.9.3;
+        pip install --no-cache-dir pandas==0.14.1;
       fi
     - conda list
     - echo $PATH

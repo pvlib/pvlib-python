@@ -52,6 +52,14 @@ Other
   line length was too long. (:issue:`207`)
 
 
+Requirements
+~~~~~~~~~~~~
+
+* pvlib now requires numpy >= 1.9.0, released in mid 2014.
+  This is needed to more easily support scalar input/output.
+  Most of pvlib will work with lesser versions.
+
+
 Code Contributors
 ~~~~~~~~~~~~~~~~~
 

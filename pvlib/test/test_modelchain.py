@@ -12,6 +12,7 @@ from pandas.util.testing import assert_series_equal, assert_frame_equal
 import pytest
 
 from test_pvsystem import sam_data
+from conftest import requires_scipy
 
 
 @pytest.fixture
@@ -58,6 +59,7 @@ def run_orientation_strategy(strategy, expected):
     assert system.surface_azimuth == expected[1]
 
 
+@requires_scipy
 def test_run_model(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
@@ -105,6 +107,7 @@ def test_run_model_gueymard_perez(system, location):
     assert_series_equal(ac, expected)
 
 
+@requires_scipy
 def test_run_model_with_weather(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
@@ -116,6 +119,7 @@ def test_run_model_with_weather(system, location):
     assert_series_equal(ac, expected)
 
 
+@requires_scipy
 def test_run_model_tracker(system, location):
     system = SingleAxisTracker(module_parameters=system.module_parameters,
                                inverter_parameters=system.inverter_parameters)
@@ -140,6 +144,7 @@ def test_bad_get_orientation():
         modelchain.get_orientation('bad value')
 
 
+@requires_scipy
 def test_basic_chain_required(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')
@@ -156,6 +161,7 @@ def test_basic_chain_required(sam_data):
                                         altitude=altitude)
 
 
+@requires_scipy
 def test_basic_chain_alt_az(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')
@@ -179,6 +185,7 @@ def test_basic_chain_alt_az(sam_data):
     assert_series_equal(ac, expected)
 
 
+@requires_scipy
 def test_basic_chain_strategy(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')
@@ -200,6 +207,7 @@ def test_basic_chain_strategy(sam_data):
     assert_series_equal(ac, expected)
 
 
+@requires_scipy
 def test_basic_chain_altitude_pressure(sam_data):
     times = pd.DatetimeIndex(start='20160101 1200-0700',
                              end='20160101 1800-0700', freq='6H')

@@ -18,7 +18,7 @@ from pvlib import atmosphere
 from pvlib import solarposition
 from pvlib.location import Location
 
-from conftest import needs_numpy_1_10
+from conftest import needs_numpy_1_10, requires_scipy
 
 latitude = 32.2
 longitude = -111
@@ -234,21 +234,25 @@ def test_PVSystem_calcparams_desoto(sam_data):
     assert_allclose(nNsVth, 0.473)
 
 
+@requires_scipy
 def test_v_from_i():
     output = pvsystem.v_from_i(20, .1, .5, 3, 6e-7, 7)
     assert_allclose(7.5049875193450521, output, 5)
 
 
+@requires_scipy
 def test_v_from_i_big():
     output = pvsystem.v_from_i(500, 10, 4.06, 0, 6e-10, 1.2)
     assert_allclose(86.320000493521079, output, 5)
 
 
+@requires_scipy
 def test_i_from_v():
     output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
     assert_allclose(-299.746389916, output, 5)
 
 
+@requires_scipy
 def test_PVSystem_i_from_v(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
@@ -258,6 +262,7 @@ def test_PVSystem_i_from_v(sam_data):
     assert_allclose(-299.746389916, output, 5)
 
 
+@requires_scipy
 def test_singlediode_series(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
@@ -274,6 +279,7 @@ def test_singlediode_series(sam_data):
     assert isinstance(out, pd.DataFrame)
 
 
+@requires_scipy
 def test_singlediode_floats(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
@@ -290,6 +296,7 @@ def test_singlediode_floats(sam_data):
         assert_allclose(expected[k], v, atol=3)
 
 
+@requires_scipy
 def test_PVSystem_singlediode_floats(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]

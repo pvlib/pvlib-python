@@ -48,7 +48,7 @@ install:
     - source activate test_env # all envs are named test_env in the yml files
     # needed to make sure that pandas is compiled against the right
     # version of numpy
-    - if [[ "$CONDA_ENV" == "2.7" ]]; then
+    - if [[ "$CONDA_ENV" == "py27-min" ]]; then
         pip uninstall numpy --yes;
         pip uninstall pandas --yes;
         pip install --no-cache-dir numpy==1.9.0;

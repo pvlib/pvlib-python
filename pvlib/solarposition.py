@@ -775,7 +775,8 @@ def pyephem_earthsun_distance(time):
 
 def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
     """
-    Calculates the distance from the earth to the sun using pyephem.
+    Calculates the distance from the earth to the sun using the
+    NREL SPA algorithm described in [1].
 
     Parameters
     ----------
@@ -797,6 +798,12 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
     -------
     R : pd.Series
         Earth-sun distance in AU.
+
+    References
+    ----------
+    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+    USA, http://www.nrel.gov.
     """
     delta_t = delta_t or 67.0
 

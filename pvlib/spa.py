@@ -1267,8 +1267,8 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
 
 def earthsun_distance(unixtime, delta_t, numthreads):
     """
-    Calculate the sun transit, sunrise, and sunset
-    for a set of dates at a given location.
+    Calculates the distance from the earth to the sun using the
+    NREL SPA algorithm described in [1].
 
     Parameters
     ----------
@@ -1285,6 +1285,12 @@ def earthsun_distance(unixtime, delta_t, numthreads):
     -------
     R : array
         Earth-Sun distance in AU.
+
+    References
+    ----------
+    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+    USA, http://www.nrel.gov.
     """
 
     R = solar_position(unixtime, 0, 0, 0, 0, 0, delta_t,

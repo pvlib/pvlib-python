@@ -165,7 +165,7 @@ def test_total_irrad():
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king'])
+                                   'haydavies', 'reindl', 'king', 'perez'])
 def test_total_irrad_scalars(model):
     total = irradiance.total_irrad(
         32, 180,

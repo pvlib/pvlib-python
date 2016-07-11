@@ -26,6 +26,7 @@ Enhancements
 * Adds the First Solar spectral correction model. (:issue:`115`)
 * Adds the Gueymard 1994 integrated precipitable water model. (:issue:`115`)
 * Adds the PVWatts DC, AC, and system losses model. (:issue:`195`)
+* Improve PEP8 conformity in irradiance module.
 * irradiance.disc is up to 10x faster. (:issue:``)
 
 

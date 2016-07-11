@@ -930,35 +930,35 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Parameters
     ----------
-    surface_tilt : float or Series
+    surface_tilt : numeric
         Surface tilt angles in decimal degrees. surface_tilt must be >=0
         and <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surface_azimuth : float or Series
+    surface_azimuth : numeric
         Surface azimuth angles in decimal degrees. surface_azimuth must
-        be >=0 and <=360. The Azimuth convention is defined as degrees
+        be >=0 and <=360. The azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    dhi : float or Series
+    dhi : numeric
         Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
 
-    dni : float or Series
+    dni : numeric
         Direct normal irradiance in W/m^2. DNI must be >=0.
 
-    dni_extra : float or Series
+    dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
 
-    solar_zenith : float or Series
+    solar_zenith : numeric
         apparent (refraction-corrected) zenith angles in decimal
         degrees. solar_zenith must be >=0 and <=180.
 
-    solar_azimuth : float or Series
+    solar_azimuth : numeric
         Sun azimuth angles in decimal degrees. solar_azimuth must be >=0
-        and <=360. The Azimuth convention is defined as degrees east of
+        and <=360. The azimuth convention is defined as degrees east of
         north (e.g. North = 0, East = 90, West = 270).
 
-    airmass : float or Series
+    airmass : numeric
         Relative (not pressure-corrected) airmass values. If AM is a
         DataFrame it must be of the same size as all other DataFrame
         inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
@@ -986,7 +986,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     --------
     sky_diffuse : float or Series
         The sky diffuse component of the solar radiation on a tilted
-        surface.
+        surface. Array input is currently converted to Series output.
 
     References
     ----------
@@ -1007,7 +1007,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     '''
 
     kappa = 1.041  # for solar_zenith in radians
-    z = np.radians(solar_zenith)  # convert to radians
+    z = pd.Series(np.radians(solar_zenith))  # convert to radians
 
     # epsilon is the sky's "clearness"
     eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
@@ -1026,13 +1026,14 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     ebin[(eps >= 4.5) & (eps < 6.2)] = 7
     ebin[eps >= 6.2] = 8
 
-    ebin = ebin - 1  # correct for 0 indexing in coeffecient lookup
+    ebin -= 1  # correct for 0 indexing in coeffecient lookup
 
     # remove night time values
     ebin = ebin.dropna().astype(int)
 
     # delta is the sky's "brightness"
     delta = dhi * airmass / dni_extra
+    delta = pd.Series(delta)
 
     # The various possible sets of Perez coefficients are contained
     # in a subfunction to clean up the code.
@@ -1050,9 +1051,11 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     A = aoi_projection(surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth)
+    A = pd.Series(A)
     A[A < 0] = 0
 
     B = tools.cosd(solar_zenith)
+    B = pd.Series(B)
     B[B < tools.cosd(85)] = tools.cosd(85)
 
     # Calculate Diffuse POA from sky dome
@@ -1063,7 +1066,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     sky_diffuse = dhi * (term1 + term2 + term3)
     sky_diffuse[sky_diffuse < 0] = 0
-    sky_diffuse[airmass.isnull()] = 0
+    sky_diffuse[np.isnan(airmass)] = 0
+
+    # ideally, we'd check to see if any of the inputs are arrays
+    # or series.
+    if len(sky_diffuse) == 1:
+        sky_diffuse = np.asscalar(sky_diffuse)
 
     return sky_diffuse
 

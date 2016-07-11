@@ -46,6 +46,9 @@ install:
     - echo "install"
     - conda env create --file ci/requirements-$CONDA_ENV.yml
     - source activate test_env # all envs are named test_env in the yml files
+    - if [[ "$CONDA_ENV" == "py27-min" ]]; then
+        conda uninstall scipy --force;
+      fi
     - conda list
     - echo $PATH
     - ls -l /home/travis/miniconda/envs/test_env/lib

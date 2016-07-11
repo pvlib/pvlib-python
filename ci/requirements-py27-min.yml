@@ -2,7 +2,7 @@ name: test_env
 dependencies:
     - python=2.7
     - numpy=1.9.0
-    - pandas=0.14.0
+    - pandas=0.14.1
     - pytz
     - pytest
     - pytest-cov

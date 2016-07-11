@@ -14,6 +14,10 @@ API Changes
 * Remove unneeded module argument from singlediode function. (:issue:`200`)
 * In ``pvlib.irradiance.perez``, renamed argument ``modelt`` to ``model``.
   (:issue:`196`)
+* Most functions in the irradiance module now work with scalar inputs
+  in addition to arrays and Series. Furthermore, these functions no
+  longer promote scalar or array input to Series output.
+  Also applies to atmosphere.relativeairmass. (:issue:`201`)
 
 
 Enhancements
@@ -22,6 +26,7 @@ Enhancements
 * Adds the First Solar spectral correction model. (:issue:`115`)
 * Adds the Gueymard 1994 integrated precipitable water model. (:issue:`115`)
 * Adds the PVWatts DC, AC, and system losses model. (:issue:`195`)
+* irradiance.disc is up to 10x faster. (:issue:``)
 
 
 Bug fixes

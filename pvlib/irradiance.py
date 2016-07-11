@@ -1470,7 +1470,7 @@ def dirint(ghi, zenith, times, pressure=101325, use_delta_kt_prime=True,
 
     pvl_logger.debug('clearsky.dirint')
 
-    disc_out = disc(ghi, zenith, times)
+    disc_out = disc(ghi, zenith, times, pressure=pressure)
     kt = disc_out['kt']
 
     # Absolute Airmass, per the DISC model

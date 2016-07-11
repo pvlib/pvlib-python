@@ -8,4 +8,4 @@ dependencies:
     - pip:
         - coveralls
         - numpy==1.9.0
-        - pandas==0.13.1
+        - pandas==0.14.1

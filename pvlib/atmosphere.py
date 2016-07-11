@@ -345,7 +345,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     Pwat where:
 
        * 0.5 cm <= Pwat <= 5 cm
-       * 1.0 <= AMa <= 5.0 
+       * 1.0 <= AMa <= 5.0
        * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
        * spectrum simulated on a plane normal to the sun
        * All other parameters fixed at G173 standard
@@ -404,8 +404,8 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
        radiative transfer of sunshine: algorithms and performance
        assessment. Cocoa, FL: Florida Solar Energy Center, 1995.
     .. [2] Lee, Mitchell, and Panchula, Alex. "Spectral Correction for
-       Photovoltaic Module Performance Based on Air Mass and Precipitable 
-       Water." IEEE Photovoltaic Specialists Conference, Portland, 2016 
+       Photovoltaic Module Performance Based on Air Mass and Precipitable
+       Water." IEEE Photovoltaic Specialists Conference, Portland, 2016
     .. [3] Marion, William F., et al. User's Manual for Data for Validating
        Models for PV Module Performance. National Renewable Energy
        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
@@ -419,30 +419,29 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     if np.min(pw) < 0.1:
         pw = np.maximum(pw, 0.1)
-        warn('Exceptionally low Pwat values replaced with 0.1 cm to prevent'+
-        ' model divergence')
+        warn('Exceptionally low Pwat values replaced with 0.1 cm to prevent' +
+             ' model divergence')
 
 
     # Warn user about Pwat data that is exceptionally high
     if np.max(pw) > 8:
         warn('Exceptionally high Pwat values. Check input data:' +
-        ' model may diverge in this range')
+             ' model may diverge in this range')
 
 
     # *** AMa ***
     # Replace Extremely High AM with AM 10 to prevent model divergence
     # AM > 10 will only occur very close to sunset
-    if np.max(airmass_absolute) > 10: 
-      airmass_absolute = np.minimum(airmass_absolute,10)
-    
+    if np.max(airmass_absolute) > 10:
+      airmass_absolute = np.minimum(airmass_absolute, 10)
+
     # Warn user about AMa data that is exceptionally low
     if np.min(airmass_absolute) < 0.58:
        warn('Exceptionally low air mass: ' +
-           'model not intended for extra-terrestrial use')
-       # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58
-       # Elevation of Mina Pirquita, Argentian = 4340 m. Highest elevation city
-       # with population over 50,000.
-    
+            'model not intended for extra-terrestrial use')
+       # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
+       # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
+       # population over 50,000.
 
     _coefficients = {}
     _coefficients['cdte'] = (
@@ -464,9 +463,9 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     # Evaluate Spectral Shift
     coeff = coefficients
-    AMa = airmass_absolute
+    ama = airmass_absolute
     modifier = (
-        coeff[0] + coeff[1]*AMa  + coeff[2]*pw  + coeff[3]*np.sqrt(AMa) +
-        + coeff[4]*np.sqrt(pw) + coeff[5]*AMa/np.sqrt(pw))
+        coeff[0] + coeff[1]*ama  + coeff[2]*pw  + coeff[3]*np.sqrt(ama) +
+        coeff[4]*np.sqrt(pw) + coeff[5]*ama/np.sqrt(pw))
 
     return modifier

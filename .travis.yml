@@ -47,6 +47,8 @@ install:
     - conda env create --file ci/requirements-$CONDA_ENV.yml
     - source activate test_env # all envs are named test_env in the yml files
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+        pip uninstall numpy --yes;
+        pip uninstall pandas --yes;
         pip install numpy==1.9.3;
         pip install pandas==0.14.1;
       fi

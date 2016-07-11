@@ -23,8 +23,8 @@ addons:
             - ccache
 
 cache:
-    directories:
-        - $HOME/.ccache
+    - pip
+    - ccache
 
 # setup miniconda for numpy, scipy, pandas
 before_install:

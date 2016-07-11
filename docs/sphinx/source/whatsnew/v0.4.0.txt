@@ -27,6 +27,8 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
+* dirint function yielded the wrong results for non-sea-level pressures.
+  Fixed. (:issue:`212`)
 
 
 Documentation

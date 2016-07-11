@@ -984,7 +984,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Returns
     --------
-    sky_diffuse : float or Series
+    sky_diffuse : numeric
         The sky diffuse component of the solar radiation on a tilted
         surface. Array input is currently converted to Series output.
 
@@ -1007,17 +1007,24 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     '''
 
     kappa = 1.041  # for solar_zenith in radians
-    z = pd.Series(np.radians(solar_zenith))  # convert to radians
+    z = np.radians(solar_zenith)  # convert to radians
+
+    # delta is the sky's "brightness"
+    delta = dhi * airmass / dni_extra
 
     # epsilon is the sky's "clearness"
     eps = ((dhi + dni) / dhi + kappa * (z ** 3)) / (1 + kappa * (z ** 3))
+
+    # numpy indexing below will not work with a Series
+    if isinstance(eps, pd.Series):
+        eps = eps.values
 
     # Perez et al define clearness bins according to the following
     # rules. 1 = overcast ... 8 = clear (these names really only make
     # sense for small zenith angles, but...) these values will
     # eventually be used as indicies for coeffecient look ups
-    ebin = eps.copy()
-    ebin[(eps < 1.065)] = 1
+    ebin = np.zeros_like(eps, dtype=np.int8)
+    ebin[eps < 1.065] = 1
     ebin[(eps >= 1.065) & (eps < 1.23)] = 2
     ebin[(eps >= 1.23) & (eps < 1.5)] = 3
     ebin[(eps >= 1.5) & (eps < 1.95)] = 4
@@ -1026,52 +1033,44 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     ebin[(eps >= 4.5) & (eps < 6.2)] = 7
     ebin[eps >= 6.2] = 8
 
-    ebin -= 1  # correct for 0 indexing in coeffecient lookup
-
-    # remove night time values
-    ebin = ebin.dropna().astype(int)
-
-    # delta is the sky's "brightness"
-    delta = dhi * airmass / dni_extra
-    delta = pd.Series(delta)
+    # correct for 0 indexing in coeffecient lookup
+    # later, ebin = -1 will yield nan coefficients
+    ebin -= 1
 
     # The various possible sets of Perez coefficients are contained
     # in a subfunction to clean up the code.
     F1c, F2c = _get_perez_coefficients(model)
 
-    F1 = (F1c[ebin, 0] + F1c[ebin, 1] * delta[ebin.index] +
-          F1c[ebin, 2] * z[ebin.index])
-    F1[F1 < 0] = 0
-    F1 = F1.astype(float)
+    # results in invalid eps (ebin = -1) being mapped to nans
+    nans = np.array([np.nan, np.nan, np.nan])
+    F1c = np.vstack((F1c, nans))
+    F2c = np.vstack((F2c, nans))
 
-    F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta[ebin.index] +
-          F2c[ebin, 2] * z[ebin.index])
-    F2[F2 < 0] = 0
-    F2 = F2.astype(float)
+    F1 = (F1c[ebin, 0] + F1c[ebin, 1] * delta + F1c[ebin, 2] * z)
+    F1 = np.maximum(F1, 0)
+
+    F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z)
+    F2 = np.maximum(F2, 0)
 
     A = aoi_projection(surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth)
-    A = pd.Series(A)
-    A[A < 0] = 0
+    A = np.maximum(A, 0)
 
     B = tools.cosd(solar_zenith)
-    B = pd.Series(B)
-    B[B < tools.cosd(85)] = tools.cosd(85)
+    B = np.maximum(B, tools.cosd(85))
 
     # Calculate Diffuse POA from sky dome
-
     term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))
-    term2 = F1 * A[ebin.index] / B[ebin.index]
+    term2 = F1 * A / B
     term3 = F2 * tools.sind(surface_tilt)
 
-    sky_diffuse = dhi * (term1 + term2 + term3)
-    sky_diffuse[sky_diffuse < 0] = 0
-    sky_diffuse[np.isnan(airmass)] = 0
+    sky_diffuse = np.maximum(dhi * (term1 + term2 + term3), 0)
 
-    # ideally, we'd check to see if any of the inputs are arrays
-    # or series.
-    if len(sky_diffuse) == 1:
-        sky_diffuse = np.asscalar(sky_diffuse)
+    # we've preserved the input type until now, so don't ruin it!
+    if isinstance(sky_diffuse, pd.Series):
+        sky_diffuse[np.isnan(airmass)] = 0
+    else:
+        sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
 
     return sky_diffuse
 
@@ -1577,8 +1576,8 @@ def _get_perez_coefficients(perezmodel):
 
     array = np.array(coeffdict[perezmodel])
 
-    F1coeffs = array.T[0:3].T
-    F2coeffs = array.T[3:7].T
+    F1coeffs = array[:, 0:3]
+    F2coeffs = array[:, 3:7]
 
     return F1coeffs, F2coeffs
 

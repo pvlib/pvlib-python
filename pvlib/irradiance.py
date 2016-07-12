@@ -11,6 +11,7 @@ import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import datetime
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -2043,6 +2044,12 @@ def liujordan(zenith, transmittance, airmass, pressure=101325.,
     dhi = 0.3 * (1.0 - tao**airmass) * dni_extra * np.cos(np.radians(zenith))
     ghi = dhi + dni * np.cos(np.radians(zenith))
 
-    irrads = pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi})
+    irrads = OrderedDict()
+    irrads['ghi'] = ghi
+    irrads['dni'] = dni
+    irrads['dhi'] = dhi
+
+    if isinstance(ghi, pd.Series):
+        irrads = pd.DataFrame(irrads)
 
     return irrads

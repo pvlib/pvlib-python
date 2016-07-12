@@ -142,8 +142,14 @@ def test_perez():
 
 
 def test_liujordan():
-    cloud_prct = np.array([40]*len(ephem_data['apparent_zenith']))
-    irradiance.liujordan(ephem_data['apparent_zenith'], cloud_prct)
+    expected = pd.DataFrame(np.
+        array([[863.859736967, 653.123094076, 220.65905025]]),
+        columns=['ghi', 'dni', 'dhi'],
+        index=[0])
+    out = irradiance.liujordan(
+        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]),
+        pressure=93000., dni_extra=1400)
+    assert_frame_equal(out, expected)
 
 
 # klutcher (misspelling) will be removed in 0.3

@@ -813,9 +813,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    # must convert to midnight UTC on day of interest
-    utcday = pd.DatetimeIndex(time.date).tz_localize('UTC')
-    unixtime = utcday.astype(np.int64)/10**9
+    unixtime = time.astype(np.int64)/10**9
 
     spa = _spa_python_import(how)
 

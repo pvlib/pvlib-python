@@ -164,7 +164,7 @@ class ForecastModel(object):
             self.lbox = False
             self.query.lonlat_point(self.longitude, self.latitude)
 
-    def set_location(self, time):
+    def set_location(self, time, latitude, longitude):
         '''
         Sets the location for the query.
 
@@ -179,9 +179,9 @@ class ForecastModel(object):
             tzinfo = time.tz
 
         if tzinfo is None:
-            self.location = Location(self.latitude, self.longitude)
+            self.location = Location(latitude, longitude)
         else:
-            self.location = Location(self.latitude, self.longitude, tz=tzinfo)
+            self.location = Location(latitude, longitude, tz=tzinfo)
 
     def get_data(self, latitude, longitude, start, end,
                  vert_level=None, query_variables=None,
@@ -224,7 +224,7 @@ class ForecastModel(object):
         self.latitude = latitude
         self.longitude = longitude
         self.set_query_latlon()  # modifies self.query
-        self.set_location(start)
+        self.set_location(start, latitude, longitude)
 
         self.start = start
         self.end = end
@@ -409,11 +409,12 @@ class ForecastModel(object):
 
         method = method.lower()
         if method == 'linear':
-            ghi = cloud_cover_to_ghi_linear(cloud_cover, cs['ghi'], **kwargs)
+            ghi = self.cloud_cover_to_ghi_linear(cloud_cover, cs['ghi'],
+                                                 **kwargs)
         else:
             raise ValueError('invalid method argument')
 
-        dni = disc(ghi, solpos['zenith'], times)['dni']
+        dni = disc(ghi, solpos['zenith'], cloud_cover.index)['dni']
         dhi = ghi - dni * np.cos(np.radians(solpos['zenith']))
 
         irrads = pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi}).fillna(0)
@@ -469,8 +470,8 @@ class ForecastModel(object):
         dni_extra = extraradiation(self.time.dayofyear)
         airmass = self.location.get_airmass(self.time)
 
-        transmittance = cloud_cover_to_transmittance_linear(cloud_cover,
-                                                            **kwargs)
+        transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,
+                                                                 **kwargs)
 
         irrads = liujordan(self.solar_position['apparent_zenith'],
                            transmittance, airmass['airmass_absolute'],

@@ -11,6 +11,8 @@ from numpy.testing import assert_allclose
 
 from conftest import requires_siphon, has_siphon
 
+pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
+
 from pvlib.location import Location
 
 if has_siphon:
@@ -34,6 +36,8 @@ if has_siphon:
                   'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi',]
     _nonnan_variables = ['temp_air', 'wind_speed', 'total_clouds', 'dni',
                          'dhi', 'ghi',]
+else:
+    _modelclasses = []
 
 
 # make a model object for each model class

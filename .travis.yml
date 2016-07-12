@@ -41,7 +41,7 @@ before_install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - conda info -a
-    
+
 install:
     - echo "install"
     - conda env create --file ci/requirements-$CONDA_ENV.yml
@@ -51,10 +51,10 @@ install:
     - ls -l /home/travis/miniconda/envs/test_env/lib
     #- pip install . # use pip to automatically install anything not in the yml files (i.e. numpy/scipy/pandas for py3*)
     #- pip install scipy # won't do anything if already installed
-    - python setup.py install
+    - pip install -e .
 
 script:
-    - nosetests -v --with-coverage --cover-package=pvlib pvlib
+    - py.test pvlib --cov=pvlib --cov-report term-missing
 
 after_success:
     coveralls

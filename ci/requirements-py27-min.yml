@@ -3,7 +3,9 @@ dependencies:
     - python=2.7
     - numpy==1.8.2
     - pandas==0.13.1
-    - nose
     - pytz
+    - pytest
+    - pytest-cov
+    - nose
     - pip:
         - coveralls

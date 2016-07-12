@@ -30,17 +30,23 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
+* dirint function yielded the wrong results for non-sea-level pressures.
+  Fixed. (:issue:`212`)
 
 
 Documentation
 ~~~~~~~~~~~~~
 
 * Added new terms to the variables documentation. (:issue:`195`)
+* Fix documentation build warnings. (:issue:`210`)
 
 
 Other
 ~~~~~
 
+* Switch to the py.test testing framework. (:issue:`204`)
+* Reconfigure Appveyor CI builds and resolve an issue in which the command
+  line length was too long. (:issue:`207`)
 
 
 Code Contributors

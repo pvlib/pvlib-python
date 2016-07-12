@@ -1,11 +1,8 @@
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import numpy as np
 import pandas as pd
 
-from nose.tools import raises, assert_almost_equals
-from numpy.testing import assert_almost_equal
+import pytest
+from numpy.testing import assert_almost_equal, assert_allclose
 
 from pandas.util.testing import assert_frame_equal
 
@@ -15,7 +12,7 @@ from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
 
-from . import requires_ephem
+from conftest import requires_ephem
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -27,9 +24,7 @@ times = pd.date_range(start='20140624', end='20140626', freq='1Min',
 ephem_data = solarposition.get_solarposition(
     times, tus.latitude, tus.longitude, method='nrel_numpy')
 
-irrad_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
-                               altitude=tus.altitude, linke_turbidity=3,
-                               solarposition_method='nrel_numpy')
+irrad_data = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
 
 dni_et = irradiance.extraradiation(times.dayofyear)
 
@@ -40,7 +35,7 @@ ghi = irrad_data['ghi']
 # need to add physical tests.
 
 def test_extraradiation():
-    assert_almost_equals(1382, irradiance.extraradiation(300), -1)
+    assert_allclose(1382, irradiance.extraradiation(300), atol=10)
 
 
 def test_extraradiation_dtindex():
@@ -52,13 +47,13 @@ def test_extraradiation_doyarray():
 
 
 def test_extraradiation_asce():
-    assert_almost_equals(
-        1382, irradiance.extraradiation(300, method='asce'), -1)
+    assert_allclose(
+        1382, irradiance.extraradiation(300, method='asce'), atol=10)
 
 
 def test_extraradiation_spencer():
-    assert_almost_equals(
-        1382, irradiance.extraradiation(300, method='spencer'), -1)
+    assert_allclose(
+        1382, irradiance.extraradiation(300, method='spencer'), atol=10)
 
 
 @requires_ephem
@@ -68,8 +63,9 @@ def test_extraradiation_ephem_dtindex():
 
 @requires_ephem
 def test_extraradiation_ephem_scalar():
-    assert_almost_equals(
-        1382, irradiance.extraradiation(300, method='pyephem').values[0], -1)
+    assert_allclose(
+        1382, irradiance.extraradiation(300, method='pyephem').values[0],
+        atol=10)
 
 
 @requires_ephem
@@ -91,9 +87,9 @@ def test_grounddiffuse_albedo_0():
     assert 0 == ground_irrad.all()
 
 
-@raises(KeyError)
 def test_grounddiffuse_albedo_invalid_surface():
-    irradiance.grounddiffuse(40, ghi, surface_type='invalid')
+    with pytest.raises(KeyError):
+        irradiance.grounddiffuse(40, ghi, surface_type='invalid')
 
 
 def test_grounddiffuse_albedo_surface():
@@ -185,8 +181,8 @@ def test_globalinplane():
 
 
 def test_disc_keys():
-    clearsky_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
-                                      linke_turbidity=3)
+    clearsky_data = tus.get_clearsky(times, model='ineichen',
+                                     linke_turbidity=3)
     disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'],
                                 ephem_data.index)
     assert 'dni' in disc_data.columns
@@ -205,8 +201,8 @@ def test_disc_value():
 
 
 def test_dirint():
-    clearsky_data = clearsky.ineichen(times, tus.latitude, tus.longitude,
-                                      linke_turbidity=3)
+    clearsky_data = tus.get_clearsky(times, model='ineichen',
+                                     linke_turbidity=3)
     pressure = 93193.
     dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'],
                                     ephem_data.index, pressure=pressure)
@@ -218,7 +214,7 @@ def test_dirint_value():
     pressure = 93193.
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure)
     assert_almost_equal(dirint_data.values,
-                        np.array([928.85, 688.26]), 1)
+                        np.array([ 888. ,  683.7]), 1)
 
 
 def test_dirint_nans():
@@ -230,7 +226,7 @@ def test_dirint_nans():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=temp_dew)
     assert_almost_equal(dirint_data.values,
-                        np.array([np.nan, np.nan, np.nan, np.nan, 934.2]), 1)
+                        np.array([np.nan, np.nan, np.nan, np.nan, 893.1]), 1)
 
 
 def test_dirint_tdew():
@@ -241,7 +237,7 @@ def test_dirint_tdew():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=10)
     assert_almost_equal(dirint_data.values,
-                        np.array([934.06, 640.67]), 1)
+                        np.array([892.9,  636.5]), 1)
 
 def test_dirint_no_delta_kt():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
@@ -251,7 +247,7 @@ def test_dirint_no_delta_kt():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     use_delta_kt_prime=False)
     assert_almost_equal(dirint_data.values,
-                        np.array([901.56, 674.87]), 1)
+                        np.array([861.9,  670.4]), 1)
 
 def test_dirint_coeffs():
     coeffs = irradiance._get_dirint_coeffs()

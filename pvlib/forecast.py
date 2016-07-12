@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.irradiance import liujordan, extraradiation
+from pvlib.irradiance import liujordan, extraradiation, disc, dirint
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
@@ -346,32 +346,170 @@ class ForecastModel(object):
         times = num2date(time[:].squeeze(), time.units)
         self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
 
-    def cloud_cover_to_irradiance(self, cloud_cover):
+    def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=20):
         """
+        Convert cloud cover to GHI using a linear relationship.
+
+        0% cloud cover returns ghi_clear.
+
+        100% cloud cover returns offset*ghi_clear.
+
         Parameters
         ----------
-        cloud_cover: Series
+        cloud_cover: numeric
+            Cloud cover in %.
+        ghi_clear: numeric
+            GHI under clear sky conditions.
+        offset: numeric
+            Determines the minimum GHI.
 
         Returns
         -------
-        irradiance: DataFrame
-            keys include ghi, dni, dhi
+        ghi: numeric
+            Estimated GHI.
+        """
+
+        offset = offset / 100.
+        cloud_cover = cloud_cover / 100.
+        ghi = (offset + (1 - offset) * (1 - cloud_cover)) * ghi_clear
+        return ghi
+
+    def cloud_cover_to_irradiance_clearsky_scaling(self, cloud_cover,
+                                                   method='linear',
+                                                   **kwargs):
+        """
+        Estimates irradiance from cloud cover in the following steps:
+
+        1. Determine clear sky GHI using Ineichen model and
+           climatological turbidity.
+        2. Estimate cloudy sky GHI using a function of
+           cloud_cover e.g.
+           :py:meth:`~ForecastModel.cloud_cover_to_ghi_linear`
+        3. Estimate cloudy sky DNI using the DISC model.
+        4. Calculate DHI from DNI and DHI.
+
+        Parameters
+        ----------
+        cloud_cover : Series
+            Cloud cover in %.
+        method : str
+            Method for converting cloud cover to GHI.
+            'linear' is currently the only option.
+        **kwargs
+            Passed to the method that does the conversion
+
+        Returns
+        -------
+        irrads : DataFrame
+            Estimated GHI, DNI, and DHI.
+        """
+        solpos = self.location.get_solarposition(cloud_cover.index)
+        cs = self.location.get_clearsky(cloud_cover.index, model='ineichen',
+                                        solar_position=solpos)
+
+        method = method.lower()
+        if method == 'linear':
+            ghi = cloud_cover_to_ghi_linear(cloud_cover, cs['ghi'], **kwargs)
+        else:
+            raise ValueError('invalid method argument')
+
+        dni = disc(ghi, solpos['zenith'], times)['dni']
+        dhi = ghi - dni * np.cos(np.radians(solpos['zenith']))
+
+        irrads = pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi}).fillna(0)
+        return irrads
+
+    def cloud_cover_to_transmittance_linear(self, cloud_cover, offset=0.75):
+        """
+        Convert cloud cover to atmospheric transmittance using a linear
+        model.
+
+        0% cloud cover returns offset.
+
+        100% cloud cover returns 0.
+
+        Parameters
+        ----------
+        cloud_cover : numeric
+            Cloud cover in %.
+        offset : numeric
+            Determines the maximum transmittance.
+
+        Returns
+        -------
+        ghi : numeric
+            Estimated GHI.
+        """
+        transmittance = ((100.0 - cloud_cover) / 100.0) * 0.75
+
+        return transmittance
+
+    def cloud_cover_to_irradiance_liujordan(self, cloud_cover):
+        """
+        Estimates irradiance from cloud cover in the following steps:
+
+        1. Determine transmittance using a function of cloud cover e.g.
+           :py:meth:`~ForecastModel.cloud_cover_to_transmittance_linear`
+        2. Calculate GHI, DNI, DHI using the
+           :py:func:`pvlib.irradiance.liujordan` model
+
+        Parameters
+        ----------
+        cloud_cover : Series
+
+        Returns
+        -------
+        irradiance : DataFrame
+            Columns include ghi, dni, dhi
         """
         # in principle, get_solarposition could use the forecast
         # pressure, temp, etc., but the cloud cover forecast is not
         # accurate enough to justify using these minor corrections
-        self.solar_position = self.location.get_solarposition(self.time)
+        solar_position = self.location.get_solarposition(self.time)
         dni_extra = extraradiation(self.time.dayofyear)
         airmass = self.location.get_airmass(self.time)
 
-        rads = ['dni', 'dhi', 'ghi']
-        transmittance = ((100.0 - cloud_cover) / 100.0) * 0.75
-        new_rads = liujordan(self.solar_position['apparent_zenith'],
-                             transmittance, airmass['airmass_absolute'],
-                             dni_extra=dni_extra)
-        new_rads = new_rads.fillna(0)
+        transmittance = cloud_cover_to_transmittance_linear(cloud_cover,
+                                                            **kwargs)
 
-        return new_rads
+        irrads = liujordan(self.solar_position['apparent_zenith'],
+                           transmittance, airmass['airmass_absolute'],
+                           dni_extra=dni_extra)
+        irrads = irrads.fillna(0)
+
+        return irrads
+
+    def cloud_cover_to_irradiance(self, cloud_cover, how='clearsky_scaling',
+                                  **kwargs):
+        """
+        Convert cloud cover to irradiance. A wrapper method.
+
+        Parameters
+        ----------
+        cloud_cover : Series
+        how : str
+            Selects the method for conversion. Can be one of
+            clearsky_scaling or liujordan.
+        **kwargs
+            Passed to the selected method.
+
+        Returns
+        -------
+        irradiance : DataFrame
+            Columns include ghi, dni, dhi
+        """
+
+        how = how.lower()
+        if how == 'clearsky_scaling':
+            irrads = self.cloud_cover_to_irradiance_clearsky_scaling(
+                cloud_cover, **kwargs)
+        elif how == 'liujordan':
+            irrads = self.cloud_cover_to_irradiance_liujordan(
+                cloud_cover, **kwargs)
+        else:
+            raise ValueError('invalid how argument')
+
+        return irrads
 
     def kelvin_to_celsius(self, temperature):
         """

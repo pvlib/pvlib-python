@@ -2047,4 +2047,6 @@ def liujordan(zenith, transmittance, airmass, pressure=101325.,
     dhi = 0.3 * (1.0 - tao**airmass) * dni_extra * np.cos(np.radians(zenith))
     ghi = dhi + dni * np.cos(np.radians(zenith))
 
-    return pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi})
+    irrads = pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi})
+
+    return irrads

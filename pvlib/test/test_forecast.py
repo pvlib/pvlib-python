@@ -120,3 +120,18 @@ def test_set_location():
     time = datetime.now(timezone('UTC'))
     amodel.set_location(time)
 
+
+def test_cloud_cover_to_transmittance_linear():
+    amodel = _working_models[0]
+    assert amodel.cloud_cover_to_transmittance_linear(0) == 0.75
+    assert amodel.cloud_cover_to_transmittance_linear(100) == 0.0
+
+
+def test_cloud_cover_to_ghi_linear():
+    amodel = _working_models[0]
+    ghi_clear = 1000
+    offset = 25
+    out = amodel.cloud_cover_to_ghi_linear(0, ghi_clear, offset=offset)
+    assert out == ghi_clear
+    out = amodel.cloud_cover_to_ghi_linear(100, ghi_clear, offset=offset)
+    assert out == 0.0

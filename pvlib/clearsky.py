@@ -536,34 +536,26 @@ def _calc_d(w, aod700, p):
 
 
 def detect_clearsky(ghi, clearsky_ghi, window_length,
-                    sample_interval, mean_diff=75, max_diff=75,
+                    mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8):
     """
     Detects clear sky times by comparing statistics for a regular GHI
-    time series to the Ineichen clear sky model.  Statistics are calculated
-    using a sliding time window (e.g., 10 minutes). An iterative algorithm
-    identifies clear periods, uses the identified periods to estimate bias
-    in the clear sky model and/or GHI data, adjusts the clear sky model and
-    repeats.  Code handles GHI data with some irregularities, i.e., missing
-    values or unequal data spacing, but execution is significantly faster
-    if data are equally spaced and without missing values.
-
-    Clear times are identified by meeting 5 criteria, thresholds
-    for which are hardcoded in this version.  Values for these thresholds
-    are appropriate for 10 minute windows of 1 minute GHI data.
+    time series to the given clear sky timeseries.  Statistics are calculated
+    using a sliding time window (e.g., 10 minutes). Clear times are identified
+    by meeting 5 criteria. Default values for these thresholds are appropriate
+    for 10 minute windows of 1 minute GHI data.
 
     Parameters
     ----------
     ghi : Series
-        Time-series of measured GHI values localized to the appropriate timezone
+        Time-series of measured GHI values localized to the appropriate
+        timezone. The frequency attribute of the index must be defined.
     clearsky_ghi : Series
         Time-series of the expected clearsky GHI values. Must have the same
-        index as ghi
+        index as ghi.
     window_length : int
         length of sliding time window in minutes
-    sample_interval : int
-        nominal minutes between each GHI sample time
     mean_diff : float
         threshold value in W/m**2 for agreement between mean values of GHI
         in each interval, see Eq. 6 in [1]
@@ -611,10 +603,24 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
 
     if not ghi.index.equals(clearsky_ghi.index):
         raise ValueError('ghi and clearsky_ghi must have the same index')
-    # assuming only equal time spacing for now
+
+    # help enforce equal time spacing
+    if ghi.index.freq is None:
+        raise ValueError('The ghi index must have a defined freq')
+    sample_interval = ghi.index.freq.delta.seconds / 60
 
     min_samples_per_window = int((0.8 * window_length) // sample_interval)
     samples_per_window = int(window_length / sample_interval)
+    meas_mean = pd.rolling_mean(ghi, samples_per_window,
+                                min_samples_per_window)
+    meas_max = pd.rolling_max(ghi, samples_per_window, min_samples_per_window)
+    meas_slope = ghi.diff()
+    meas_max_slope = pd.rolling_max(meas_slope.abs(), samples_per_window,
+                                    min_samples_per_window)
+    meas_line_length = pd.rolling_mean(np.sqrt(
+        meas_slope**2 + (sample_interval * np.ones(meas_slope.shape))**2),
+                                       samples_per_window,
+                                       min_samples_per_window)
 
     clear_mean = pd.rolling_mean(clearsky_ghi, samples_per_window,
                                  min_samples_per_window)
@@ -628,16 +634,6 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
     clear_max_slope = pd.rolling_max(clear_slope.abs(), samples_per_window,
                                      min_samples_per_window)
 
-    meas_mean = pd.rolling_mean(ghi, samples_per_window,
-                                min_samples_per_window)
-    meas_max = pd.rolling_max(ghi, samples_per_window, min_samples_per_window)
-    meas_slope = ghi.diff()
-    meas_max_slope = pd.rolling_max(meas_slope.abs(), samples_per_window,
-                                    min_samples_per_window)
-    meas_line_length = pd.rolling_mean(np.sqrt(
-        meas_slope**2 + (sample_interval * np.ones(meas_slope.shape))**2),
-                                       samples_per_window,
-                                       min_samples_per_window)
     line_diff = meas_line_length - clear_line_length
 
     c1 = np.abs(meas_mean - clear_mean) < mean_diff
@@ -646,6 +642,6 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
     c4 = (pd.rolling_std(meas_slope, samples_per_window,
                          min_samples_per_window) / meas_mean) < var_diff
     c5 = (meas_max_slope - clear_max_slope) < slope_dev
-    c6 = (clear_mean != 0) &  ~np.isnan(clear_mean)
+    c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
     clear_times = c1 & c2 & c3 & c4 & c5 & c6
     return clear_times

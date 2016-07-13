@@ -328,12 +328,12 @@ def test_nrel_earthsun_distance():
                               datetime.datetime(2015, 8, 2),]
                              ).tz_localize('MST')
     result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
-    expected = pd.Series(np.array([0.983293144266, 1.01489789116]),
+    expected = pd.Series(np.array([0.983289204601, 1.01486146446]),
                          index=times)
     assert_series_equal(expected, result)
 
     times = datetime.datetime(2015, 1, 2)
     result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
-    expected = pd.Series(np.array([0.983293144266]),
+    expected = pd.Series(np.array([0.983289204601]),
                          index=pd.DatetimeIndex([times, ]))
     assert_series_equal(expected, result)

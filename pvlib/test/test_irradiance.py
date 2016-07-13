@@ -14,7 +14,7 @@ from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
 
-from conftest import requires_ephem, requires_numba
+from conftest import requires_ephem, requires_numba, needs_numpy_1_10
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -168,10 +168,10 @@ def test_perez():
     expected = pd.Series(np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877]),
         index=times)
-    assert_series_equal(out, expected)
+    assert_series_equal(out, expected, check_less_precise=2)
 
 
-
+@needs_numpy_1_10
 def test_perez_arrays():
     am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     dni = irrad_data['dni'].copy()
@@ -181,7 +181,7 @@ def test_perez_arrays():
                      ephem_data['azimuth'].values, am.values)
     expected = np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877])
-    assert_allclose(out, expected)
+    assert_allclose(out, expected, atol=1e-2)
 
 
 # klutcher (misspelling) will be removed in 0.3

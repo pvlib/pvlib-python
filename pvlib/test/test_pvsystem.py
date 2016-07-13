@@ -469,9 +469,7 @@ def test_PVSystem_get_irradiance():
                                      'poa_ground_diffuse'],
                             index=times)
 
-    irradiance = np.round(irradiance, 4)
-    expected = np.round(expected, 4)
-    assert_frame_equal(irradiance, expected)
+    assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 
 def test_PVSystem_localize_with_location():

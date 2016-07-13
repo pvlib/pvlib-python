@@ -35,32 +35,35 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'dirty steel': 0.08}
 
 
-def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
+def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
+                   **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
 
     Parameters
     ----------
     datetime_or_doy : int, float, array, pd.DatetimeIndex
-        Day of year, array of days of year e.g. pd.DatetimeIndex.dayofyear,
-        or pd.DatetimeIndex.
+        Day of year, array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
     solar_constant : float
         The solar constant.
 
     method : string
         The method by which the ET radiation should be calculated.
-        Options include ``'pyephem', 'spencer', 'asce'``.
+        Options include ``'pyephem', 'spencer', 'asce', 'nrel'``.
+
+    kwargs :
+        Passed to solarposition.nrel_earthsun_distance
 
     Returns
     -------
-    float or Series
-
+    dni_extra : float, array, or Series
         The extraterrestrial radiation present in watts per square meter
-        on a surface which is normal to the sun. Ea is of the same size as the
-        input doy.
+        on a surface which is normal to the sun. Ea is of the same size
+        as the input doy.
 
-        'pyephem' always returns a series.
+        'pyephem' and 'nrel' always return a Series.
 
     Notes
     -----
@@ -69,8 +72,8 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
 
     References
     ----------
-    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-    Sky Models: Implementation and Analysis", Sandia National
+    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+    Clear Sky Models: Implementation and Analysis", Sandia National
     Laboratories, SAND2012-2389, 2012.
 
     [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>,
@@ -102,8 +105,9 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
         doy = datetime_or_doy
         input_to_datetimeindex = _array_to_datetimeindex
 
-    B = (2 * np.pi / 365) * doy
+    B = (2. * np.pi / 365.) * (doy - 1)
 
+    method = method.lower()
     if method == 'asce':
         pvl_logger.debug('Calculating ET rad using ASCE method')
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
@@ -115,6 +119,12 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer'):
         pvl_logger.debug('Calculating ET rad using pyephem method')
         times = input_to_datetimeindex(datetime_or_doy)
         RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
+    elif method == 'nrel':
+        times = input_to_datetimeindex(datetime_or_doy)
+        RoverR0sqrd = \
+            solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
+    else:
+        raise ValueError('Invalid method: %s', method)
 
     Ea = solar_constant * RoverR0sqrd
 
@@ -1075,7 +1085,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     return sky_diffuse
 
 
-def disc(ghi, zenith, times, pressure=101325):
+def disc(ghi, zenith, datetime_or_doy, pressure=101325):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1093,7 +1103,9 @@ def disc(ghi, zenith, times, pressure=101325):
         True (not refraction-corrected) solar zenith angles in decimal
         degrees.
 
-    times : DatetimeIndex
+    datetime_or_doy : int, float, array, pd.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
     pressure : numeric
         Site pressure in Pascal.
@@ -1128,18 +1140,8 @@ def disc(ghi, zenith, times, pressure=101325):
     dirint
     """
 
-    # in principle, the dni_extra calculation could be done by
-    # pvlib's function. However, this is the algorithm used in
-    # the DISC paper
-
-    doy = times.dayofyear
-
-    dayangle = 2. * np.pi*(doy - 1) / 365
-
-    re = (1.00011 + 0.034221*np.cos(dayangle) + 0.00128*np.sin(dayangle) +
-          0.000719*np.cos(2.*dayangle) + 7.7e-5*np.sin(2.*dayangle))
-
-    I0 = re * 1370.
+    # this is the I0 calculation from the reference
+    I0 = extraradiation(datetime_or_doy, 1370, 'spencer')
     I0h = I0 * np.cos(np.radians(zenith))
 
     am = atmosphere.relativeairmass(zenith, model='kasten1966')
@@ -1176,8 +1178,8 @@ def disc(ghi, zenith, times, pressure=101325):
     output['kt'] = kt
     output['airmass'] = am
 
-    if isinstance(times, pd.DatetimeIndex):
-        output = pd.DataFrame(output, index=times)
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        output = pd.DataFrame(output, index=datetime_or_doy)
 
     return output
 

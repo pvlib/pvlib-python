@@ -10,7 +10,7 @@ import pytest
 from pvlib.location import Location
 from pvlib import solarposition
 
-from conftest import (requires_ephem, incompatible_pandas_0131,
+from conftest import (requires_ephem, needs_pandas_0_17,
                       requires_spa_c, requires_numba)
 
 
@@ -116,7 +116,7 @@ def test_spa_python_numba_physical_dst(expected_solpos):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-@incompatible_pandas_0131
+@needs_pandas_0_17
 def test_get_sun_rise_set_transit():
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),

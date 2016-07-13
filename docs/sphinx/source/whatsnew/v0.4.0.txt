@@ -14,6 +14,10 @@ API Changes
 * Remove unneeded module argument from singlediode function. (:issue:`200`)
 * In ``pvlib.irradiance.perez``, renamed argument ``modelt`` to ``model``.
   (:issue:`196`)
+* Functions in the irradiance module now work with scalar inputs
+  in addition to arrays and Series. Furthermore, these functions no
+  longer promote scalar or array input to Series output.
+  Also applies to atmosphere.relativeairmass. (:issue:`201`, :issue:`214`)
 
 
 Enhancements
@@ -22,6 +26,8 @@ Enhancements
 * Adds the First Solar spectral correction model. (:issue:`115`)
 * Adds the Gueymard 1994 integrated precipitable water model. (:issue:`115`)
 * Adds the PVWatts DC, AC, and system losses model. (:issue:`195`)
+* Improve PEP8 conformity in irradiance module. (:issue:`214`)
+* irradiance.disc is up to 10x faster. (:issue:`214`)
 
 
 Bug fixes
@@ -44,6 +50,17 @@ Other
 * Switch to the py.test testing framework. (:issue:`204`)
 * Reconfigure Appveyor CI builds and resolve an issue in which the command
   line length was too long. (:issue:`207`)
+* Manually build numpy and pandas for the min requirements test.
+  This is needed to avoid Continuum's bad practice of bundling scipy
+  with pandas. (:issue:`214`)
+
+
+Requirements
+~~~~~~~~~~~~
+
+* pvlib now requires pandas >= 0.14.0 and numpy >= 1.9.0, both
+  released in 2014. Most of pvlib will work with lesser versions.
+  (:issue:`214`)
 
 
 Code Contributors

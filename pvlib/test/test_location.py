@@ -12,6 +12,7 @@ from pandas.util.testing import assert_series_equal, assert_frame_equal
 from pvlib.location import Location
 
 from test_solarposition import expected_solpos
+from conftest import requires_scipy
 
 aztz = pytz.timezone('US/Arizona')
 
@@ -50,6 +51,7 @@ def test_location_print_pytz():
     assert tus.__str__() == expected_str
 
 
+@requires_scipy
 def test_get_clearsky():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='20160101T0600-0700',

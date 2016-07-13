@@ -122,7 +122,10 @@ class ForecastModel(object):
         try:
             self.model = TDSCatalog(model_url)
         except HTTPError:
-            raise HTTPError(self.model_name + ' model may be unavailable.')
+            try:
+                self.model = TDSCatalog(model_url)
+            except HTTPError:
+                raise HTTPError(self.model_name + ' model may be unavailable.')
 
         self.datasets_list = list(self.model.datasets.keys())
         self.set_dataset()
@@ -346,7 +349,8 @@ class ForecastModel(object):
         times = num2date(time[:].squeeze(), time.units)
         self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
 
-    def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=20):
+    def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=20,
+                                  **kwargs):
         """
         Convert cloud cover to GHI using a linear relationship.
 
@@ -362,6 +366,8 @@ class ForecastModel(object):
             GHI under clear sky conditions.
         offset: numeric
             Determines the minimum GHI.
+        kwargs
+            Not used.
 
         Returns
         -------
@@ -420,7 +426,8 @@ class ForecastModel(object):
         irrads = pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi}).fillna(0)
         return irrads
 
-    def cloud_cover_to_transmittance_linear(self, cloud_cover, offset=0.75):
+    def cloud_cover_to_transmittance_linear(self, cloud_cover, offset=0.75,
+                                            **kwargs):
         """
         Convert cloud cover to atmospheric transmittance using a linear
         model.
@@ -435,6 +442,8 @@ class ForecastModel(object):
             Cloud cover in %.
         offset : numeric
             Determines the maximum transmittance.
+        kwargs
+            Not used.
 
         Returns
         -------
@@ -445,7 +454,7 @@ class ForecastModel(object):
 
         return transmittance
 
-    def cloud_cover_to_irradiance_liujordan(self, cloud_cover):
+    def cloud_cover_to_irradiance_liujordan(self, cloud_cover, **kwargs):
         """
         Estimates irradiance from cloud cover in the following steps:
 
@@ -466,14 +475,14 @@ class ForecastModel(object):
         # in principle, get_solarposition could use the forecast
         # pressure, temp, etc., but the cloud cover forecast is not
         # accurate enough to justify using these minor corrections
-        solar_position = self.location.get_solarposition(self.time)
-        dni_extra = extraradiation(self.time.dayofyear)
-        airmass = self.location.get_airmass(self.time)
+        solar_position = self.location.get_solarposition(cloud_cover.index)
+        dni_extra = extraradiation(cloud_cover.index)
+        airmass = self.location.get_airmass(cloud_cover.index)
 
         transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,
                                                                  **kwargs)
 
-        irrads = liujordan(self.solar_position['apparent_zenith'],
+        irrads = liujordan(solar_position['apparent_zenith'],
                            transmittance, airmass['airmass_absolute'],
                            dni_extra=dni_extra)
         irrads = irrads.fillna(0)
@@ -679,8 +688,8 @@ class GFS(ForecastModel):
         data = super(GFS, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.uv_to_speed(data)
-        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
-                         how='outer')
+        irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
+        data = data.join(irrads, how='outer')
         return data.ix[:, self.output_variables]
 
 
@@ -765,8 +774,8 @@ class HRRR_ESRL(ForecastModel):
         data = super(HRRR_ESRL, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
-        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
-                         how='outer')
+        irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
+        data = data.join(irrads, how='outer')
         return data.ix[:, self.output_variables]
 
 
@@ -846,8 +855,8 @@ class NAM(ForecastModel):
         data = super(NAM, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
-        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
-                         how='outer')
+        irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
+        data = data.join(irrads, how='outer')
         return data.ix[:, self.output_variables]
 
 
@@ -930,8 +939,8 @@ class HRRR(ForecastModel):
         data['temp_air'] = self.isobaric_to_ambient_temperature(data)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
-        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
-                         how='outer')
+        irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
+        data = data.join(irrads, how='outer')
         return data.ix[:, self.output_variables]
 
 
@@ -999,8 +1008,8 @@ class NDFD(ForecastModel):
         cloud_cover = 'total_clouds'
         data = super(NDFD, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
-        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
-                         how='outer')
+        irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
+        data = data.join(irrads, how='outer')
         return data.ix[:, self.output_variables]
 
 
@@ -1084,6 +1093,6 @@ class RAP(ForecastModel):
         data = super(RAP, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
-        data = data.join(self.cloud_cover_to_irradiance(data[cloud_cover]),
-                         how='outer')
+        irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
+        data = data.join(irrads, how='outer')
         return data.ix[:, self.output_variables]

@@ -47,15 +47,17 @@ else:
 @pytest.fixture(scope='module', params=_modelclasses)
 def model(request):
     amodel = request.param()
-    amodel.data = \
-        amodel.get_processed_data(_latitude, _longitude, _start, _end)
+    amodel.raw_data = \
+        amodel.get_data(_latitude, _longitude, _start, _end)
     return amodel
 
 
 @requires_siphon
-def test_dataframe_variables(model):
-    for variable in _nonnan_variables:
-        assert not model.data[variable].isnull().values.any()
+def test_process_data(model):
+    for how in ['liujordan', 'clearsky_scaling']:
+        data = model.process_data(model.raw_data, how=how)
+        for variable in _nonnan_variables:
+            assert not data[variable].isnull().values.any()
 
 
 @requires_siphon

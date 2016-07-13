@@ -6,6 +6,7 @@ absolute airmass and to determine pressure from altitude or vice versa.
 from __future__ import division
 
 import numpy as np
+import pandas as pd
 from warnings import warn
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
@@ -20,12 +21,12 @@ def pres2alt(pressure):
 
     Parameters
     ----------
-    pressure : scalar or Series
+    pressure : numeric
         Atmospheric pressure (Pascals)
 
     Returns
     -------
-    altitude : scalar or Series
+    altitude : numeric
         Altitude in meters above sea level
 
     Notes
@@ -45,12 +46,12 @@ def pres2alt(pressure):
 
     References
     -----------
-
-    "A Quick Derivation relating altitude to air pressure" from Portland
-    State Aerospace Society, Version 1.03, 12/22/2004.
+    [1] "A Quick Derivation relating altitude to air pressure" from
+    Portland State Aerospace Society, Version 1.03, 12/22/2004.
     '''
 
     alt = 44331.5 - 4946.62 * pressure ** (0.190263)
+
     return alt
 
 
@@ -60,12 +61,12 @@ def alt2pres(altitude):
 
     Parameters
     ----------
-    Altitude : scalar or Series
+    altitude : numeric
         Altitude in meters above sea level
 
     Returns
     -------
-    Pressure : scalar or Series
+    pressure : numeric
         Atmospheric pressure (Pascals)
 
     Notes
@@ -85,9 +86,8 @@ def alt2pres(altitude):
 
     References
     -----------
-
-    "A Quick Derivation relating altitude to air pressure" from Portland
-    State Aerospace Society, Version 1.03, 12/22/2004.
+    [1] "A Quick Derivation relating altitude to air pressure" from
+    Portland State Aerospace Society, Version 1.03, 12/22/2004.
     '''
 
     press = 100 * ((44331.514 - altitude) / 11880.516) ** (1 / 0.1902632)
@@ -111,16 +111,15 @@ def absoluteairmass(airmass_relative, pressure=101325.):
 
     Parameters
     ----------
-
-    airmass_relative : scalar or Series
+    airmass_relative : numeric
         The airmass at sea-level.
 
-    pressure : scalar or Series
+    pressure : numeric
         The site pressure in Pascal.
 
     Returns
     -------
-    scalar or Series
+    airmass_absolute : numeric
         Absolute (pressure corrected) airmass
 
     References
@@ -128,7 +127,6 @@ def absoluteairmass(airmass_relative, pressure=101325.):
     [1] C. Gueymard, "Critical analysis and performance assessment of
     clear sky solar irradiance models using theoretical and measured
     data," Solar Energy, vol. 51, pp. 121-138, 1993.
-
     '''
 
     airmass_absolute = airmass_relative * pressure / 101325.
@@ -147,15 +145,14 @@ def relativeairmass(zenith, model='kastenyoung1989'):
 
     Parameters
     ----------
-
-    zenith : float or Series
+    zenith : numeric
         Zenith angle of the sun in degrees. Note that some models use
         the apparent (refraction corrected) zenith angle, and some
         models use the true (not refraction-corrected) zenith angle. See
         model descriptions to determine which type of zenith angle is
         required. Apparent zenith angles must be calculated at sea level.
 
-    model : String
+    model : string
         Available models include the following:
 
         * 'simple' - secant(apparent zenith angle) -
@@ -175,13 +172,12 @@ def relativeairmass(zenith, model='kastenyoung1989'):
 
     Returns
     -------
-    airmass_relative : float or Series
-        Relative airmass at sea level.  Will return NaN values for any
+    airmass_relative : numeric
+        Relative airmass at sea level. Will return NaN values for any
         zenith angle greater than 90 degrees.
 
     References
     ----------
-
     [1] Fritz Kasten. "A New Table and Approximation Formula for the
     Relative Optical Air Mass". Technical Report 136, Hanover, N.H.:
     U.S. Army Material Command, CRREL.
@@ -207,7 +203,9 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     Sandia Report, (2012).
     '''
 
-    z = zenith
+    # need to filter first because python 2.7 does not support raising a
+    # negative number to a negative power.
+    z = np.where(zenith > 90, np.nan, zenith)
     zenith_rad = np.radians(z)
 
     model = model.lower()
@@ -237,10 +235,8 @@ def relativeairmass(zenith, model='kastenyoung1989'):
     else:
         raise ValueError('%s is not a valid model for relativeairmass', model)
 
-    try:
-        am[z > 90] = np.nan
-    except TypeError:
-        am = np.nan if z > 90 else am
+    if isinstance(zenith, pd.Series):
+        am = pd.Series(am, index=zenith.index)
 
     return am
 
@@ -282,14 +278,14 @@ def gueymard94_pw(temp_air, relative_humidity):
 
     Parameters
     ----------
-    temp_air : array-like
+    temp_air : numeric
         ambient air temperature at the surface (C)
-    relative_humidity : array-like
+    relative_humidity : numeric
         relative humidity at the surface (%)
 
     Returns
     -------
-    pw : array-like
+    pw : numeric
         precipitable water (cm)
 
     References
@@ -349,7 +345,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     Pwat where:
 
        * 0.5 cm <= Pwat <= 5 cm
-       * 1.0 <= AMa <= 5.0 
+       * 1.0 <= AMa <= 5.0
        * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
        * spectrum simulated on a plane normal to the sun
        * All other parameters fixed at G173 standard
@@ -408,8 +404,8 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
        radiative transfer of sunshine: algorithms and performance
        assessment. Cocoa, FL: Florida Solar Energy Center, 1995.
     .. [2] Lee, Mitchell, and Panchula, Alex. "Spectral Correction for
-       Photovoltaic Module Performance Based on Air Mass and Precipitable 
-       Water." IEEE Photovoltaic Specialists Conference, Portland, 2016 
+       Photovoltaic Module Performance Based on Air Mass and Precipitable
+       Water." IEEE Photovoltaic Specialists Conference, Portland, 2016
     .. [3] Marion, William F., et al. User's Manual for Data for Validating
        Models for PV Module Performance. National Renewable Energy
        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
@@ -423,30 +419,29 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     if np.min(pw) < 0.1:
         pw = np.maximum(pw, 0.1)
-        warn('Exceptionally low Pwat values replaced with 0.1 cm to prevent'+
-        ' model divergence')
+        warn('Exceptionally low Pwat values replaced with 0.1 cm to prevent' +
+             ' model divergence')
 
 
     # Warn user about Pwat data that is exceptionally high
     if np.max(pw) > 8:
         warn('Exceptionally high Pwat values. Check input data:' +
-        ' model may diverge in this range')
+             ' model may diverge in this range')
 
 
     # *** AMa ***
     # Replace Extremely High AM with AM 10 to prevent model divergence
     # AM > 10 will only occur very close to sunset
-    if np.max(airmass_absolute) > 10: 
-      airmass_absolute = np.minimum(airmass_absolute,10)
-    
+    if np.max(airmass_absolute) > 10:
+      airmass_absolute = np.minimum(airmass_absolute, 10)
+
     # Warn user about AMa data that is exceptionally low
     if np.min(airmass_absolute) < 0.58:
        warn('Exceptionally low air mass: ' +
-           'model not intended for extra-terrestrial use')
-       # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58
-       # Elevation of Mina Pirquita, Argentian = 4340 m. Highest elevation city
-       # with population over 50,000.
-    
+            'model not intended for extra-terrestrial use')
+       # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
+       # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
+       # population over 50,000.
 
     _coefficients = {}
     _coefficients['cdte'] = (
@@ -468,9 +463,9 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     # Evaluate Spectral Shift
     coeff = coefficients
-    AMa = airmass_absolute
+    ama = airmass_absolute
     modifier = (
-        coeff[0] + coeff[1]*AMa  + coeff[2]*pw  + coeff[3]*np.sqrt(AMa) +
-        + coeff[4]*np.sqrt(pw) + coeff[5]*AMa/np.sqrt(pw))
+        coeff[0] + coeff[1]*ama  + coeff[2]*pw  + coeff[3]*np.sqrt(ama) +
+        coeff[4]*np.sqrt(pw) + coeff[5]*ama/np.sqrt(pw))
 
     return modifier

@@ -23,8 +23,8 @@ addons:
             - ccache
 
 cache:
-    directories:
-        - $HOME/.ccache
+#    - pip
+    - ccache
 
 # setup miniconda for numpy, scipy, pandas
 before_install:
@@ -46,6 +46,14 @@ install:
     - echo "install"
     - conda env create --file ci/requirements-$CONDA_ENV.yml
     - source activate test_env # all envs are named test_env in the yml files
+    # needed to make sure that pandas is compiled against the right
+    # version of numpy
+    - if [[ "$CONDA_ENV" == "py27-min" ]]; then
+        pip uninstall numpy --yes;
+        pip uninstall pandas --yes;
+        pip install --no-cache-dir numpy==1.9.0;
+        pip install --no-cache-dir pandas==0.14.0;
+      fi
     - conda list
     - echo $PATH
     - ls -l /home/travis/miniconda/envs/test_env/lib

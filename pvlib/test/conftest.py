@@ -24,8 +24,15 @@ except ImportError:
 requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
 
 
-incompatible_pandas_0131 = pytest.mark.skipif(
-    pd.__version__ == '0.13.1', reason='requires numpy 1.10 or greater')
+def pandas_0_17():
+    version = tuple(map(int, pd.__version__.split('.')))
+    if version[0] <= 0 and version[1] < 17:
+        return False
+    else:
+        return True
+
+needs_pandas_0_17 = pytest.mark.skipif(
+    not pandas_0_17(), reason='requires pandas 0.17 or greater')
 
 
 def numpy_1_10():

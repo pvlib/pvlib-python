@@ -1,10 +1,12 @@
+from collections import OrderedDict
+
 import numpy as np
 import pandas as pd
 
 import pytest
 from numpy.testing import assert_almost_equal, assert_allclose
 
-from pandas.util.testing import assert_frame_equal
+from pandas.util.testing import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
 from pvlib import clearsky
@@ -12,14 +14,13 @@ from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
 
-from conftest import requires_ephem
+from conftest import requires_ephem, requires_numba, needs_numpy_1_10
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
 
 # must include night values
-times = pd.date_range(start='20140624', end='20140626', freq='1Min',
-                      tz=tus.tz)
+times = pd.date_range(start='20140624', freq='6H', periods=4, tz=tus.tz)
 
 ephem_data = solarposition.get_solarposition(
     times, tus.latitude, tus.longitude, method='nrel_numpy')
@@ -71,6 +72,30 @@ def test_extraradiation_ephem_scalar():
 @requires_ephem
 def test_extraradiation_ephem_doyarray():
     irradiance.extraradiation(times.dayofyear, method='pyephem')
+
+
+def test_extraradiation_nrel_dtindex():
+    irradiance.extraradiation(times, method='nrel')
+
+
+def test_extraradiation_nrel_scalar():
+    assert_allclose(
+        1382, irradiance.extraradiation(300, method='nrel').values[0],
+        atol=10)
+
+
+def test_extraradiation_nrel_doyarray():
+    irradiance.extraradiation(times.dayofyear, method='nrel')
+
+
+@requires_numba
+def test_extraradiation_nrel_numba():
+    irradiance.extraradiation(times, method='nrel', how='numba', numthreads=8)
+
+
+def test_extraradiation_invalid():
+    with pytest.raises(ValueError):
+        irradiance.extraradiation(times.dayofyear, method='invalid')
 
 
 def test_grounddiffuse_simple_float():
@@ -135,10 +160,29 @@ def test_king():
 
 def test_perez():
     am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
-    out = irradiance.perez(40, 180, irrad_data['dhi'], irrad_data['dni'],
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out = irradiance.perez(40, 180, irrad_data['dhi'], dni,
                      dni_et, ephem_data['apparent_zenith'],
                      ephem_data['azimuth'], am)
-    assert not out.isnull().any()
+    expected = pd.Series(np.array(
+        [   0.        ,   31.46046871,  np.nan,   45.45539877]),
+        index=times)
+    assert_series_equal(out, expected, check_less_precise=2)
+
+
+@needs_numpy_1_10
+def test_perez_arrays():
+    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out = irradiance.perez(40, 180, irrad_data['dhi'].values, dni.values,
+                     dni_et, ephem_data['apparent_zenith'].values,
+                     ephem_data['azimuth'].values, am.values)
+    expected = np.array(
+        [   0.        ,   31.46046871,  np.nan,   45.45539877])
+    assert_allclose(out, expected, atol=1e-2)
+
 
 
 def test_liujordan():
@@ -171,6 +215,25 @@ def test_total_irrad():
         assert total.columns.tolist() == ['poa_global', 'poa_direct',
                                           'poa_diffuse', 'poa_sky_diffuse',
                                           'poa_ground_diffuse']
+
+
+@pytest.mark.parametrize('model', ['isotropic', 'klucher',
+                                   'haydavies', 'reindl', 'king', 'perez'])
+def test_total_irrad_scalars(model):
+    total = irradiance.total_irrad(
+        32, 180,
+        10, 180,
+        dni=1000, ghi=1100,
+        dhi=100,
+        dni_extra=1400, airmass=1,
+        model=model,
+        surface_type='urban')
+
+    assert list(total.keys()) == ['poa_global', 'poa_direct',
+                                  'poa_diffuse', 'poa_sky_diffuse',
+                                  'poa_ground_diffuse']
+    # test that none of the values are nan
+    assert np.isnan(np.array(list(total.values()))).sum() == 0
 
 
 def test_globalinplane():
@@ -275,17 +338,20 @@ def test_erbs():
 
     out = irradiance.erbs(ghi, zenith, doy)
 
-    assert_frame_equal(out, expected)
+    assert_frame_equal(np.round(out, 0), np.round(expected, 0))
 
 
 def test_erbs_all_scalar():
     ghi = 1000
     zenith = 10
     doy = 180
-    expected = pd.DataFrame(np.
-        array([[  8.42358014e+02,   1.70439297e+02,   7.68919470e-01]]),
-        columns=['dni', 'dhi', 'kt'])
+
+    expected = OrderedDict()
+    expected['dni'] = 8.42358014e+02
+    expected['dhi'] = 1.70439297e+02
+    expected['kt'] = 7.68919470e-01
 
     out = irradiance.erbs(ghi, zenith, doy)
 
-    assert_frame_equal(out, expected)
+    for k, v in out.items():
+        assert_allclose(v, expected[k], 5)

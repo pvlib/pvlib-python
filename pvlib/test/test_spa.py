@@ -240,7 +240,6 @@ class SpaBase(object):
         assert_almost_equal(eot, self.spa.equation_of_time(
             M, alpha, dPsi, epsilon), 2)
 
-
     def test_transit_sunrise_sunset(self):
         # tests at greenwich
         times = pd.DatetimeIndex([dt.datetime(1996, 7, 5, 0),
@@ -310,7 +309,12 @@ class SpaBase(object):
         assert_almost_equal(sunrise/1e3, result[1]/1e3, 1)
         assert_almost_equal(sunset/1e3, result[2]/1e3, 1)
 
-
+    def test_earthsun_distance(self):
+        times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
+           .tz_localize('MST'))
+        unixtimes = times.tz_convert('UTC').astype(np.int64)*1.0/10**9
+        result = self.spa.earthsun_distance(unixtimes, 64.0, 1)
+        assert_almost_equal(R, result, 6)
 
 class NumpySpaTest(unittest.TestCase, SpaBase):
     """Import spa without compiling to numba then run tests"""

@@ -3,14 +3,15 @@ import datetime
 import numpy as np
 import pandas as pd
 
-from pandas.util.testing import assert_frame_equal, assert_index_equal
+from pandas.util.testing import (assert_frame_equal, assert_series_equal,
+                                 assert_index_equal)
 from numpy.testing import assert_allclose
 import pytest
 
 from pvlib.location import Location
 from pvlib import solarposition
 
-from conftest import (requires_ephem, incompatible_pandas_0131,
+from conftest import (requires_ephem, needs_pandas_0_17,
                       requires_spa_c, requires_numba)
 
 
@@ -116,7 +117,7 @@ def test_spa_python_numba_physical_dst(expected_solpos):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-@incompatible_pandas_0131
+@needs_pandas_0_17
 def test_get_sun_rise_set_transit():
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
@@ -320,3 +321,19 @@ def test_get_solarposition_no_kwargs(expected_solpos):
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+
+
+def test_nrel_earthsun_distance():
+    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
+                              datetime.datetime(2015, 8, 2),]
+                             ).tz_localize('MST')
+    result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
+    expected = pd.Series(np.array([0.983289204601, 1.01486146446]),
+                         index=times)
+    assert_series_equal(expected, result)
+
+    times = datetime.datetime(2015, 1, 2)
+    result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
+    expected = pd.Series(np.array([0.983289204601]),
+                         index=pd.DatetimeIndex([times, ]))
+    assert_series_equal(expected, result)

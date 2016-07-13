@@ -1085,7 +1085,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     return sky_diffuse
 
 
-def disc(ghi, zenith, times, pressure=101325):
+def disc(ghi, zenith, datetime_or_doy, pressure=101325):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1103,7 +1103,9 @@ def disc(ghi, zenith, times, pressure=101325):
         True (not refraction-corrected) solar zenith angles in decimal
         degrees.
 
-    times : DatetimeIndex
+    datetime_or_doy : int, float, array, pd.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
     pressure : numeric
         Site pressure in Pascal.
@@ -1138,18 +1140,7 @@ def disc(ghi, zenith, times, pressure=101325):
     dirint
     """
 
-    # in principle, the dni_extra calculation could be done by
-    # pvlib's function. However, this is the algorithm used in
-    # the DISC paper
-
-    doy = times.dayofyear
-
-    dayangle = 2. * np.pi*(doy - 1) / 365
-
-    re = (1.00011 + 0.034221*np.cos(dayangle) + 0.00128*np.sin(dayangle) +
-          0.000719*np.cos(2.*dayangle) + 7.7e-5*np.sin(2.*dayangle))
-
-    I0 = re * 1370.
+    I0 = extraradiation(datetime_or_doy, 1370, 'spencer')
     I0h = I0 * np.cos(np.radians(zenith))
 
     am = atmosphere.relativeairmass(zenith, model='kasten1966')
@@ -1186,8 +1177,8 @@ def disc(ghi, zenith, times, pressure=101325):
     output['kt'] = kt
     output['airmass'] = am
 
-    if isinstance(times, pd.DatetimeIndex):
-        output = pd.DataFrame(output, index=times)
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        output = pd.DataFrame(output, index=datetime_or_doy)
 
     return output
 

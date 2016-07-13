@@ -1140,6 +1140,7 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
     dirint
     """
 
+    # this is the I0 calculation from the reference
     I0 = extraradiation(datetime_or_doy, 1370, 'spencer')
     I0h = I0 * np.cos(np.radians(zenith))
 

@@ -18,6 +18,11 @@ API Changes
   in addition to arrays and Series. Furthermore, these functions no
   longer promote scalar or array input to Series output.
   Also applies to atmosphere.relativeairmass. (:issue:`201`, :issue:`214`)
+* Updated to pvsystem.sapm to be consistent with the PVLIB MATLAB API.
+  pvsystem.sapm now takes an effective irradiance argument instead of
+  POA irradiances, airmass, and AOI. Implements closely related
+  sapm_spectral_loss, sapm_aoi_loss, and sapm_effective_irradiance
+  functions, as well as PVSystem methods. (:issue:`198`, :issue:`205`)
 
 
 Enhancements

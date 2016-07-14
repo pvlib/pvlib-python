@@ -193,6 +193,18 @@ def test_PVSystem_sapm(sam_data):
     assert_frame_equal(sapm, expected)
 
 
+def test_sapm_spectral_loss(sam_data):
+    assert False
+
+
+def test_sapm_aoi_loss(sam_data):
+    assert False
+
+
+def test_sapm_effective_irradiance(sam_data):
+    assert False
+
+
 def test_calcparams_desoto(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]

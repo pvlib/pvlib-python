@@ -14,6 +14,13 @@ from pvlib.irradiance import liujordan, extraradiation, disc, dirint
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
+import warnings
+
+warnings.warn(
+    'The forecast module algorithms and features are highly experimental. ' +
+    'The API may change, the functionality may be consolidated into an io ' +
+    'module, or the module may be separated into its own package.')
+
 
 class ForecastModel(object):
     """
@@ -63,7 +70,8 @@ class ForecastModel(object):
     lbox: boolean
         Indicates the use of a location bounding box.
     ncss: NCSS object
-        NCSS    model_name: string
+        NCSS
+    model_name: string
         Name of the UNIDATA forecast model.
     model: Dataset
         A dictionary of Dataset object, whose keys are the name of the

@@ -27,6 +27,12 @@ master/docs/tutorials/forecast.ipynb>`_ and `forecast_to_power
 master/docs/tutorials/forecast_to_power.ipynb>`_ Jupyter notebooks
 provide additional example code.
 
+.. warning::
+
+    The forecast module algorithms and features are highly experimental.
+    The API may change, the functionality may be consolidated into an io
+    module, or the module may be separated into its own package.
+
 
 Accessing Forecast Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -82,6 +82,8 @@ then set the location and time range data.
     start = pd.Timestamp(datetime.date.today(), tz=tz)
     end = start + pd.Timedelta(days=7)
 
+    irrad_vars = ['ghi', 'dni', 'dhi']
+
 
 Next, we instantiate a GFS model object and get the forecast data
 from Unidata.
@@ -118,7 +120,8 @@ problems.
     data['wind_speed'] = model.uv_to_speed(data)
 
     # calculate irradiance estimates from cloud cover.
-    # uses Location.get_solarposition and irradiance.liujordan
+    # uses a cloud_cover to ghi to dni model or a
+    # uses a cloud cover to transmittance to irradiance model.
     # this step is discussed in more detail in the next section
     irrad_data = model.cloud_cover_to_irradiance(data['total_clouds'])
     data = data.join(irrad_data, how='outer')
@@ -185,22 +188,71 @@ poor solar position or radiative transfer algorithms. It is often more
 accurate to create empirically derived radiation forecasts from the
 weather models' cloud cover forecasts.
 
-PVLIB-Python currently uses the Liu-Jordan [Liu60]_ model to convert
-total cloud cover forecasts to irradiance forecasts. We encourage pvlib
-users to implement new cloud cover to irradiance algorithms. The figure
-below shows the result of the Liu-Jordan total cloud cover to irradiance
-conversion.
+PVLIB-Python provides two basic ways to convert cloud cover forecasts to
+irradiance forecasts. One method assumes a linear relationship between
+cloud cover and GHI, applies the scaling to a clear sky climatology, and
+then uses the DISC model to calculate DNI. The second method assumes a
+linear relationship between cloud cover and atmospheric transmittance,
+and then uses the Liu-Jordan [Liu60]_ model to calculate GHI, DNI, and
+DHI.
+
+*Caveat emptor*: these algorithms are not rigorously verified! The
+purpose of the forecast module is to provide a few exceedingly simple
+options for users to play with before they develop their own models. We
+strongly encourage pvlib users first read the source code and second
+to implement new cloud cover to irradiance algorithms.
+
+The essential parts of the clear sky scaling algorithm are as follows.
+
+.. code-block:: python
+
+    solpos = location.get_solarposition(cloud_cover.index)
+    cs = location.get_clearsky(cloud_cover.index, model='ineichen')
+    # offset and cloud cover in decimal units here
+    ghi = (offset + (1 - offset) * (1 - cloud_cover)) * ghi_clear
+    dni = disc(ghi, solpos['zenith'], cloud_cover.index)['dni']
+    dhi = ghi - dni * np.cos(np.radians(solpos['zenith']))
+
+The figure below shows the result of the total cloud cover to
+irradiance conversion using the clear sky scaling algorithm.
 
 .. ipython:: python
 
     # plot irradiance data
-    irrad_vars = ['dni', 'ghi', 'dhi']
-    data[irrad_vars].plot();
+    data = model.rename(raw_data)
+    irrads = model.cloud_cover_to_irradiance(data['total_clouds'], how='clearsky_scaling')
+    irrads.plot();
     plt.ylabel('Irradiance ($W/m^2$)');
     plt.xlabel('Forecast Time ({})'.format(tz));
-    plt.title('GFS 0.5 deg forecast for lat={}, lon={}'
+    plt.title('GFS 0.5 deg forecast for lat={}, lon={} using "clearsky_scaling"'
               .format(latitude, longitude));
-    @savefig gfs_irrad.png width=6in
+    @savefig gfs_irrad_cs.png width=6in
+    plt.legend();
+
+
+The essential parts of the Liu-Jordan cloud cover to irradiance algorithm
+are as follows.
+
+.. code-block:: python
+
+    # cloud cover in percentage units here
+    transmittance = ((100.0 - cloud_cover) / 100.0) * 0.75
+    # irrads is a DataFrame containing ghi, dni, dhi
+    irrads = liujordan(apparent_zenith, transmittance, airmass_absolute)
+
+The figure below shows the result of the Liu-Jordan total cloud cover to
+irradiance conversion.
+
+.. ipython:: python
+
+    # plot irradiance data
+    irrads = model.cloud_cover_to_irradiance(data['total_clouds'], how='liujordan')
+    irrads.plot();
+    plt.ylabel('Irradiance ($W/m^2$)');
+    plt.xlabel('Forecast Time ({})'.format(tz));
+    plt.title('GFS 0.5 deg forecast for lat={}, lon={} using "liujordan"'
+              .format(latitude, longitude));
+    @savefig gfs_irrad_lj.png width=6in
     plt.legend();
 
 
@@ -212,18 +264,18 @@ recalculate the irradiance.
 
 .. ipython:: python
 
-    from pvlib import irradiance
-    total_clouds = data['total_clouds'].resample('5min').interpolate()
-    solar_position = model.location.get_solarposition(total_clouds.index)
-    irrad_data = irradiance.liujordan(solar_position['apparent_zenith'], total_clouds)
-    irrad_data[irrad_vars].plot();
+    resampled_data = data.resample('5min').interpolate()
+    resampled_irrads = model.cloud_cover_to_irradiance(resampled_data['total_clouds'], how='clearsky_scaling')
+    resampled_irrads.plot();
     plt.ylabel('Irradiance ($W/m^2$)');
     plt.xlabel('Forecast Time ({})'.format(tz));
-    plt.title('GFS 0.5 deg forecast for lat={}, lon={}'
+    plt.title('GFS 0.5 deg forecast for lat={}, lon={} resampled'
               .format(latitude, longitude));
     @savefig gfs_irrad_high_res.png width=6in
     plt.legend();
 
+Users may then recombine resampled_irrads and resampled_data using
+slicing :py:func:`pandas.concat` or :py:meth:`pandas.DataFrame.join`.
 
 We reiterate that the open source code enables users to customize the
 model processing to their liking.

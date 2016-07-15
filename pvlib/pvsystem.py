@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib import tools
+from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
 
@@ -227,6 +228,8 @@ class PVSystem(object):
         ``self.module_parameters['b']``, ``aoi``,
         and the :py:func:`ashraeiam` function.
 
+        Uses default arguments if keys not in module_parameters.
+
         Parameters
         ----------
         aoi : numeric
@@ -237,30 +240,34 @@ class PVSystem(object):
         modifier : numeric
             The AOI modifier.
         """
-        b = self.module_parameters['b']
-        return ashraeiam(b, aoi)
+        kwargs = _build_kwargs(['b'], self.module_parameters)
+
+        return ashraeiam(aoi, **kwargs)
 
     def physicaliam(self, aoi):
         """
-        Determine the incidence angle modifier using
+        Determine the incidence angle modifier using ``aoi``,
         ``self.module_parameters['K']``,
         ``self.module_parameters['L']``,
         ``self.module_parameters['n']``,
-        ``aoi``, and the
+        and the
         :py:func:`physicaliam` function.
+
+        Uses default arguments if keys not in module_parameters.
 
         Parameters
         ----------
-        See pvsystem.physicaliam for details
+        aoi : numeric
+            The angle of incidence in degrees.
 
         Returns
         -------
-        See pvsystem.physicaliam for details
+        modifier : numeric
+            The AOI modifier.
         """
-        K = self.module_parameters['K']
-        L = self.module_parameters['L']
-        n = self.module_parameters['n']
-        return physicaliam(K, L, n, aoi)
+        kwargs = _build_kwargs(['K', 'L', 'n'], self.module_parameters)
+
+        return physicaliam(aoi, **kwargs)
 
     def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
         """
@@ -807,7 +814,7 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
     iam = tau / tau0
 
-    iam = np.where(np.abs(aoi) >= 90 | iam < 0, np.nan, iam)
+    iam = np.where((np.abs(aoi) >= 90) | (iam < 0), np.nan, iam)
 
     if isinstance(aoi, pd.Series):
         iam = pd.Series(iam, index=aoi.index)

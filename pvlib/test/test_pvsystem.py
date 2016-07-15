@@ -94,40 +94,38 @@ def test_systemdef_dict():
 
 def test_ashraeiam():
     thetas = np.linspace(-90, 90, 9)
-    iam = pvsystem.ashraeiam(.05, thetas)
+    iam = pvsystem.ashraeiam(thetas, .05)
     expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
         0.99588039,  0.97928932,  0.9193437 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
 def test_PVSystem_ashraeiam():
     module_parameters = pd.Series({'b': 0.05})
-    system = pvsystem.PVSystem(module='blah', inverter='blarg',
-                               module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = np.linspace(-90, 90, 9)
     iam = system.ashraeiam(thetas)
     expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
         0.99588039,  0.97928932,  0.9193437 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
 def test_physicaliam():
     thetas = np.linspace(-90, 90, 9)
-    iam = pvsystem.physicaliam(4, 0.002, 1.526, thetas)
+    iam = pvsystem.physicaliam(thetas, 1.526, 0.002, 4)
     expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
         0.99926198,  0.98797788,  0.8893998 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
 def test_PVSystem_physicaliam():
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
-    system = pvsystem.PVSystem(module='blah', inverter='blarg',
-                               module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = np.linspace(-90, 90, 9)
     iam = system.physicaliam(thetas)
     expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
         0.99926198,  0.98797788,  0.8893998 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
 # if this completes successfully we'll be able to do more tests below.

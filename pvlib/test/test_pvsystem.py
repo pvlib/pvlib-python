@@ -227,7 +227,7 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
 
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
-    (np.array([[45, 100, np.nan]]), np.array([[0.997504, 0, np.nan]])),
+    (np.array([[-30, 30, 100, np.nan]]), np.array([[np.nan, 1., 0, np.nan]])),
     (pd.Series([80]), pd.Series([0.597472]))
 ])
 def test_sapm_aoi_loss(sapm_module_params, aoi, expected):

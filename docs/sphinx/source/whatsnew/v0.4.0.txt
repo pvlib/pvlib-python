@@ -3,9 +3,10 @@
 v0.4.0 (July xx, 2016)
 -----------------------
 
-This is a major release from 0.3.3.
-We recommend that all users upgrade to this version after reviewing
-the API changes.
+This is a major release from 0.3.3. We recommend that all users upgrade
+to this version after reviewing the API Changes. Please see the Bug
+Fixes for changes that will result in slightly different modeling
+results.
 
 
 API Changes
@@ -22,7 +23,8 @@ API Changes
   pvsystem.sapm now takes an effective irradiance argument instead of
   POA irradiances, airmass, and AOI. Implements closely related
   sapm_spectral_loss, sapm_aoi_loss, and sapm_effective_irradiance
-  functions, as well as PVSystem methods. (:issue:`198`, :issue:`205`)
+  functions, as well as PVSystem methods.
+  (:issue:`198`, :issue:`205`, :issue:`218`)
 
 
 Enhancements
@@ -48,6 +50,10 @@ Bug fixes
   by less than 1 part in 1000. (:issue:`211`)
 * irradiance.extraradiation now raises a ValueError for invalid method
   input. It previously failed silently. (:issue:`215`)
+* The sapm_aoi_loss function (previously internal to sapm) now clips the
+  output to be between 0 and 1. Previous output could be up to ~1% larger
+  than 1 for AOI of ~30 degrees. Therefore, power calculations with the
+  SAPM model chain will also change. (:issue:`218`)
 
 
 Documentation

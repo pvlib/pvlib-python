@@ -1384,7 +1384,8 @@ def sapm_spectral_loss(module, airmass_absolute):
     ----------
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more details.
+        parameters. See the :py:func:`sapm` notes section for more
+        details.
 
     airmass_absolute : numeric
         Absolute airmass
@@ -1420,10 +1421,12 @@ def sapm_aoi_loss(module, aoi):
     ----------
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more details.
+        parameters. See the :py:func:`sapm` notes section for more
+        details.
 
     aoi : numeric
-        Angle of incidence in degrees.
+        Angle of incidence in degrees. Negative input angles will return
+        nan values.
 
     Returns
     -------
@@ -1436,6 +1439,7 @@ def sapm_aoi_loss(module, aoi):
 
     aoi_loss = np.polyval(aoi_coeff, aoi)
     aoi_loss = np.clip(aoi_loss, 0, 1)
+    aoi_loss = np.where(aoi < 0, np.nan, aoi_loss)
 
     if isinstance(aoi, pd.Series):
         aoi_loss = pd.Series(aoi_loss, aoi.index)
@@ -1447,14 +1451,15 @@ def sapm_effective_irradiance(module, poa_direct, poa_diffuse,
                               airmass_absolute, aoi,
                               reference_irradiance=1000):
     """
-    Calculates the SAPM effective irradiance using the SAPM
-    spectral loss and SAPM angle of incidence loss functions.
+    Calculates the SAPM effective irradiance using the SAPM spectral
+    loss and SAPM angle of incidence loss functions.
 
     Parameters
     ----------
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more details.
+        parameters. See the :py:func:`sapm` notes section for more
+        details.
 
     poa_direct : numeric
         The direct irradiance incident upon the module.

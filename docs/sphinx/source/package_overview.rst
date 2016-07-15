@@ -104,9 +104,10 @@ to accomplish our system modeling goal:
                                                    model='haydavies')
         temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'],
                                              wind_speed, temp_air)
-        dc = pvlib.pvsystem.sapm(module, total_irrad['poa_direct'],
-                                 total_irrad['poa_diffuse'], temps['temp_cell'],
-                                 am_abs, aoi)
+        effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
+            module, total_irrad['poa_direct'], total_irrad['poa_diffuse'],
+            am_abs, aoi)
+        dc = pvlib.pvsystem.sapm(module, effective_irradiance, temps['temp_cell'])
         ac = pvlib.pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
         annual_energy = ac.sum()
         energies[name] = annual_energy
@@ -240,11 +241,10 @@ object to accomplish our modeling goal:
         aoi = localized_system.get_aoi(solar_position['apparent_zenith'],
                                        solar_position['azimuth'])
         airmass = localized_system.get_airmass(solar_position=solar_position)
-        dc = localized_system.sapm(total_irrad['poa_direct'],
-                                   total_irrad['poa_diffuse'],
-                                   temps['temp_cell'],
-                                   airmass['airmass_absolute'],
-                                   aoi)
+        effective_irradiance = localized_system.sapm_effective_irradiance(
+            total_irrad['poa_direct'], total_irrad['poa_diffuse'],
+            airmass['airmass_absolute'], aoi)
+        dc = localized_system.sapm(effective_irradiance, temps['temp_cell'])
         ac = localized_system.snlinverter(dc['v_mp'], dc['p_mp'])
         annual_energy = ac.sum()
         energies[name] = annual_energy

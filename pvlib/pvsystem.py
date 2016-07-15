@@ -455,7 +455,7 @@ class PVSystem(object):
         -------
         See pvsystem.snlinverter for details
         """
-        return snlinverter(self.inverter_parameters, v_dc, p_dc)
+        return snlinverter(v_dc, p_dc, self.inverter_parameters)
 
     def scale_voltage_current_power(self, data):
         """
@@ -1891,7 +1891,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     return I.real
 
 
-def snlinverter(inverter, v_dc, p_dc):
+def snlinverter(v_dc, p_dc, inverter):
     '''
     Converts DC power and voltage to AC power using Sandia's
     Grid-Connected PV Inverter model.
@@ -1906,6 +1906,14 @@ def snlinverter(inverter, v_dc, p_dc):
 
     Parameters
     ----------
+    v_dc : numeric
+        DC voltages, in volts, which are provided as input to the
+        inverter. Vdc must be >= 0.
+
+    p_dc : numeric
+        A scalar or DataFrame of DC powers, in watts, which are provided
+        as input to the inverter. Pdc must be >= 0.
+
     inverter : dict-like
         A dict-like object defining the inverter to be used, giving the
         inverter performance parameters according to the Sandia
@@ -1941,13 +1949,6 @@ def snlinverter(inverter, v_dc, p_dc):
         Pnt      AC-power consumed by inverter at night (night tare) to
                  maintain circuitry required to sense PV array voltage (W)
         ======   ============================================================
-
-    v_dc : numeric
-        DC voltages, in volts, which are provided as input to the
-        inverter. Vdc must be >= 0.
-    p_dc : numeric
-        A scalar or DataFrame of DC powers, in watts, which are provided
-        as input to the inverter. Pdc must be >= 0.
 
     Returns
     -------

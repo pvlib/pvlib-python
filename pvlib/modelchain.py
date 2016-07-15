@@ -176,7 +176,7 @@ def basic_chain(times, latitude, longitude,
     dc = pvsystem.sapm(module_parameters, effective_irradiance,
                        temps['temp_cell'])
 
-    ac = pvsystem.snlinverter(inverter_parameters, dc['v_mp'], dc['p_mp'])
+    ac = pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter_parameters)
 
     return dc, ac
 

@@ -498,7 +498,7 @@ def test_snlinverter(sam_data):
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
@@ -522,7 +522,7 @@ def test_snlinverter_float(sam_data):
     idcs = 5.5
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_allclose(pacs, 132.004278, 5)
 
 
@@ -533,7 +533,7 @@ def test_snlinverter_Pnt_micro(sam_data):
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_series_equal(pacs, pd.Series([-0.043000, 132.545914746, 240.000000]))
 
 

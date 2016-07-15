@@ -19,6 +19,9 @@ API Changes
   in addition to arrays and Series. Furthermore, these functions no
   longer promote scalar or array input to Series output.
   Also applies to atmosphere.relativeairmass. (:issue:`201`, :issue:`214`)
+* Reorder the ashraeiam, physicaliam, and snlinverter arguments to put
+  the most variable arguments first. Adds default arguments for the IAM
+  functions. (:issue:`197`)
 * The irradiance.extraradiation function input/output type consistency
   across different methods has been dramatically improved.
   (:issue:`217`, :issue:`219`)

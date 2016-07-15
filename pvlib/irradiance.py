@@ -65,11 +65,6 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
 
         'pyephem' and 'nrel' always return a Series.
 
-    Notes
-    -----
-    The Spencer method contains a minus sign discrepancy between
-    equation 12 of [1]. It's unclear what the correct formula is.
-
     References
     ----------
     [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance

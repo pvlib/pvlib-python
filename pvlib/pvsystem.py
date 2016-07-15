@@ -1393,12 +1393,18 @@ def sapm_spectral_loss(module, airmass_absolute):
     -------
     F1 : numeric
         The SAPM spectral loss coefficient.
+
+    Notes
+    -----
+    nan airmass values will result in 0 output.
     """
 
     am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],
                 module['A0']]
 
     spectral_loss = np.maximum(0, np.polyval(am_coeff, airmass_absolute))
+
+    spectral_loss = np.where(np.isnan(spectral_loss), 0, spectral_loss)
 
     if isinstance(airmass_absolute, pd.Series):
         spectral_loss = pd.Series(spectral_loss, airmass_absolute.index)

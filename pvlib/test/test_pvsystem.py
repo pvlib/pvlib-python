@@ -203,7 +203,7 @@ def test_PVSystem_sapm(sapm_module_params):
 
 @pytest.mark.parametrize('airmass,expected', [
     (1.5, 1.00028714375),
-    (np.array([[10, np.nan]]), np.array([[0.999535, np.nan]])),
+    (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),
     (pd.Series([5]), pd.Series([1.0387675]))
 ])
 def test_sapm_spectral_loss(sapm_module_params, airmass, expected):

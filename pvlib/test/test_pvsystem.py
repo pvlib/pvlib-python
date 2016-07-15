@@ -240,6 +240,14 @@ def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
         assert_allclose(out, expected, atol=1e-4)
 
 
+def test_sapm_aoi_loss_limits():
+    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 1
+
+    module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 0
+
+
 def test_PVSystem_sapm_aoi_loss(sapm_module_params):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
 

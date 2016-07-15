@@ -1434,7 +1434,8 @@ def sapm_aoi_loss(module, aoi):
     aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
                  module['B1'], module['B0']]
 
-    aoi_loss = np.maximum(0, np.polyval(aoi_coeff, aoi))
+    aoi_loss = np.polyval(aoi_coeff, aoi)
+    aoi_loss = np.clip(aoi_loss, 0, 1)
 
     if isinstance(aoi, pd.Series):
         aoi_loss = pd.Series(aoi_loss, aoi.index)

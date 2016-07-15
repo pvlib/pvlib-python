@@ -5,6 +5,7 @@ performance of PV modules and inverters.
 
 from __future__ import division
 
+from collections import OrderedDict
 import io
 try:
     from urllib2 import urlopen
@@ -1240,6 +1241,8 @@ def sapm(module, effective_irradiance, temp_cell):
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
     E0 = 1000
 
+    Ee = effective_irradiance
+
     Bvmpo = module['Bvmpo'] + module['Mbvmp']*(1 - Ee)
     Bvoco = module['Bvoco'] + module['Mbvoc']*(1 - Ee)
     delta = module['N'] * kb * (temp_cell + 273.15) / q
@@ -1263,7 +1266,7 @@ def sapm(module, effective_irradiance, temp_cell):
         module['C3']*module['Cells_in_Series']*((delta*np.log(Ee)) ** 2) +
         Bvmpo*(temp_cell - T0)))
 
-    out['p_mp'] = dfout['i_mp'] * dfout['v_mp']
+    out['p_mp'] = out['i_mp'] * out['v_mp']
 
     out['i_x'] = (
         module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
@@ -1397,6 +1400,9 @@ def sapm_spectral_loss(module, airmass_absolute):
 
     spectral_loss = np.maximum(0, np.polyval(am_coeff, airmass_absolute))
 
+    if isinstance(airmass_absolute, pd.Series):
+        spectral_loss = pd.Series(spectral_loss, airmass_absolute.index)
+
     return spectral_loss
 
 
@@ -1423,6 +1429,9 @@ def sapm_aoi_loss(module, aoi):
                  module['B1'], module['B0']]
 
     aoi_loss = np.maximum(0, np.polyval(aoi_coeff, aoi))
+
+    if isinstance(aoi, pd.Series):
+        aoi_loss = pd.Series(aoi_loss, aoi.index)
 
     return aoi_loss
 
@@ -1468,7 +1477,7 @@ def sapm_effective_irradiance(module, poa_direct, poa_diffuse,
 
     Ee = F1 * (poa_direct*F2 + module['FD']*poa_diffuse) / E0
 
-    return aoi_loss
+    return Ee
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,

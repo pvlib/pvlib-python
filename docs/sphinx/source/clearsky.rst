@@ -29,6 +29,8 @@ We'll need these imports for the examples below.
 .. ipython:: python
 
     import itertools
+    import matplotlib
+    matplotlib.use('Agg')
     import pandas as pd
     import matplotlib.pyplot as plt
 

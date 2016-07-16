@@ -26,7 +26,7 @@ clear sky algorithms and input data.
 
 We'll need these imports for the examples below.
 
-.. ipython:: python
+.. ipython::
     :okexcept:
     :okwarning:
 
@@ -59,7 +59,7 @@ only specify the most important parameters: time and atmospheric
 attenuation. The time input must be a :py:class:`pandas.DatetimeIndex`,
 while the atmospheric attenuation inputs may be constants or arrays.
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
@@ -75,7 +75,7 @@ The :py:meth:`~pvlib.location.Location.get_clearsky` method accepts a
 model keyword argument and propagates additional arguments to the
 functions that do the computation.
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     cs = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
@@ -84,7 +84,7 @@ functions that do the computation.
     @savefig location-ineichen.png width=6in
     plt.ylabel('Irradiance $W/m^2$');
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     cs = tus.get_clearsky(times, model='simplified_solis',
@@ -114,7 +114,7 @@ pvlib includes a file with monthly climatological turbidity values for
 the globe. The code below creates turbidity maps for a few months of
 the year. You could run it in a loop to create plots for all months.
 
-.. ipython:: python
+.. ipython::
 
     import calendar
     import os
@@ -135,7 +135,7 @@ the year. You could run it in a loop to create plots for all months.
     @savefig turbidity-1.png width=10in
     plt.show();
 
-.. ipython:: python
+.. ipython::
 
     month = 7
     plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
@@ -155,7 +155,7 @@ Southwest U.S. with and without interpolation. We chose points that are
 relatively close so that you can get a better sense of the spatial
 variability of the data set.
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
@@ -168,7 +168,7 @@ variability of the data set.
     @savefig turbidity-no-interp.png width=6in
     plt.ylabel('Linke Turbidity');
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
@@ -185,7 +185,7 @@ Examples
 
 A clear sky time series using basic pvlib functions.
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
@@ -213,7 +213,7 @@ DataFrame output. The keys are 'ghi', 'dni', and 'dhi'.
 
 Grid with a clear sky irradiance for a few turbidity values.
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
@@ -295,7 +295,7 @@ Examples
 
 A clear sky time series using basic pvlib functions.
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
@@ -323,7 +323,7 @@ DataFrame output. The keys are 'ghi', 'dni', and 'dhi'.
 
 Irradiance as a function of solar elevation.
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     apparent_elevation = pd.Series(np.linspace(-10, 90, 101))
@@ -344,7 +344,7 @@ Irradiance as a function of solar elevation.
 
 Grid with a clear sky irradiance for a few PW and AOD values.
 
-.. ipython:: python
+.. ipython::
     :verbatim:
 
     times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
@@ -366,7 +366,7 @@ Grid with a clear sky irradiance for a few PW and AOD values.
 
 Contour plots of irradiance as a function of both PW and AOD.
 
-.. ipython:: python
+.. ipython::
 
     aod700 = np.linspace(0, 0.5, 101)
     precipitable_water = np.linspace(0, 10, 101)
@@ -396,7 +396,7 @@ Contour plots of irradiance as a function of both PW and AOD.
         fig.colorbar(imf, label='{} (W/m**2)'.format(key))
         ax.set_title('{}, elevation={}'.format(key, apparent_elevation))
 
-.. ipython:: python
+.. ipython::
 
     plot_solis('ghi')
     @savefig solis-ghi.png width=10in

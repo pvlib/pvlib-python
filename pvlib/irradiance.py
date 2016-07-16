@@ -95,7 +95,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
         to_doy = _pandas_to_doy
         to_datetimeindex = \
             _datetimelike_scalar_to_datetimeindex
-        output = partial(pd.Series, index=[datetime_or_doy])
+        output = _scalar_out
     elif isinstance(datetime_or_doy,
                     (datetime.date, datetime.datetime, np.datetime64)):
         to_doy = _datetimelike_scalar_to_doy

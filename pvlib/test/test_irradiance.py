@@ -51,7 +51,7 @@ value = 1383.636203
     (np.array([doy]), np.array([value])),
     (pd.Series([doy]), np.array([value])),
     (dt_index, pd.Series([value], index=dt_index)),
-    (timestamp, pd.Series([value], index=dt_index))
+    (timestamp, value)
 ])
 @pytest.mark.parametrize('method', [
     'asce', 'spencer', 'nrel', requires_ephem('pyephem')])

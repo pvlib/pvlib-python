@@ -29,10 +29,12 @@ class Mock(MagicMock):
 MOCK_MODULES = []
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+ipython_mplbackend = None
+
 # builds the font cache if it does not already exist.
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+# import matplotlib
+# matplotlib.use('Agg')
+# import matplotlib.pyplot as plt
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

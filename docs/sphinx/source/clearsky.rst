@@ -27,6 +27,8 @@ clear sky algorithms and input data.
 We'll need these imports for the examples below.
 
 .. ipython:: python
+    :okexcept:
+    :okwarning:
 
     import itertools
     print('pre mpl import')

@@ -31,20 +31,13 @@ We'll need these imports for the examples below.
     :okwarning:
 
     import itertools
-    print('pre mpl import')
-    import matplotlib
-    print('pre use agg')
-    matplotlib.use('Agg')
-    print('pre pandas')
-    import pandas as pd
-    print('pre pyplot')
     import matplotlib.pyplot as plt
+    import pandas as pd
 
     # seaborn makes the plots look nicer
-    import seaborn as sns
-    sns.set_color_codes()
+    #import seaborn as sns
+    #sns.set_color_codes()
 
-    print('importing pvlib')
     import pvlib
     from pvlib import clearsky
     from pvlib import atmosphere

@@ -27,8 +27,6 @@ clear sky algorithms and input data.
 We'll need these imports for the examples below.
 
 .. ipython::
-    :okexcept:
-    :okwarning:
 
     import itertools
     import matplotlib.pyplot as plt
@@ -60,7 +58,6 @@ attenuation. The time input must be a :py:class:`pandas.DatetimeIndex`,
 while the atmospheric attenuation inputs may be constants or arrays.
 
 .. ipython::
-    :verbatim:
 
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='2016-07-01', end='2016-07-04',
@@ -76,7 +73,6 @@ model keyword argument and propagates additional arguments to the
 functions that do the computation.
 
 .. ipython::
-    :verbatim:
 
     cs = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
     cs.plot()
@@ -85,7 +81,6 @@ functions that do the computation.
     plt.ylabel('Irradiance $W/m^2$');
 
 .. ipython::
-    :verbatim:
 
     cs = tus.get_clearsky(times, model='simplified_solis',
                           aod700=0.2, precipitable_water=3)
@@ -156,7 +151,6 @@ relatively close so that you can get a better sense of the spatial
 variability of the data set.
 
 .. ipython::
-    :verbatim:
 
     times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
     plt.figure();
@@ -169,7 +163,6 @@ variability of the data set.
     plt.ylabel('Linke Turbidity');
 
 .. ipython::
-    :verbatim:
 
     times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
     pvlib.clearsky.lookup_linke_turbidity(times, 32, -111).plot(label='Tucson1')
@@ -186,7 +179,6 @@ Examples
 A clear sky time series using basic pvlib functions.
 
 .. ipython::
-    :verbatim:
 
     latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
     times = pd.date_range(start='2014-01-01', end='2014-01-02', freq='1Min', tz=tz)
@@ -214,7 +206,6 @@ DataFrame output. The keys are 'ghi', 'dni', and 'dhi'.
 Grid with a clear sky irradiance for a few turbidity values.
 
 .. ipython::
-    :verbatim:
 
     times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
     solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
@@ -296,7 +287,6 @@ Examples
 A clear sky time series using basic pvlib functions.
 
 .. ipython::
-    :verbatim:
 
     latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
     times = pd.date_range(start='2014-01-01', end='2014-01-02', freq='1Min', tz=tz)
@@ -324,7 +314,6 @@ DataFrame output. The keys are 'ghi', 'dni', and 'dhi'.
 Irradiance as a function of solar elevation.
 
 .. ipython::
-    :verbatim:
 
     apparent_elevation = pd.Series(np.linspace(-10, 90, 101))
     aod700 = 0.1
@@ -345,7 +334,6 @@ Irradiance as a function of solar elevation.
 Grid with a clear sky irradiance for a few PW and AOD values.
 
 .. ipython::
-    :verbatim:
 
     times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
     solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)

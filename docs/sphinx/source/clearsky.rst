@@ -59,10 +59,10 @@ while the atmospheric attenuation inputs may be constants or arrays.
 
 .. ipython::
 
-    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='2016-07-01', end='2016-07-04',
+    In [1]: tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    In [1]: times = pd.DatetimeIndex(start='2016-07-01', end='2016-07-04',
                              freq='1min', tz=tus.tz)
-    cs = tus.get_clearsky(times)  # ineichen with climatology table by default
+    In [1]: cs = tus.get_clearsky(times)  # ineichen with climatology table by default
     cs.plot()
     plt.ylabel('Irradiance $W/m^2$');
     @savefig location-basic.png width=6in

@@ -39,13 +39,11 @@ We'll need these imports for the examples below.
 
     In [1]: sns.set_color_codes()
 
-    In [2]: import pvlib
+    In [1]: import pvlib
 
-    In [3]: import pvlib.clearsky as clearsky
+    In [1]: from pvlib import clearsky, atmosphere
 
-    In [4]: from pvlib import atmosphere
-
-    In [5]: from pvlib.location import Location
+    In [1]: from pvlib.location import Location
 
 
 .. _location:
@@ -65,14 +63,13 @@ while the atmospheric attenuation inputs may be constants or arrays.
 
 .. ipython::
 
-    In [5]: tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    In [1]: tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
-    In [1]: times = pd.DatetimeIndex(start='2016-07-01', end='2016-07-04',
-                             freq='1min', tz=tus.tz)
+    In [1]: times = pd.DatetimeIndex(start='2016-07-01', end='2016-07-04', freq='1min', tz=tus.tz)
 
     In [1]: cs = tus.get_clearsky(times)  # ineichen with climatology table by default
 
-    In [1]: cs.plot()
+    In [1]: cs.plot();
 
     In [1]: plt.ylabel('Irradiance $W/m^2$');
 
@@ -85,20 +82,25 @@ functions that do the computation.
 
 .. ipython::
 
-    cs = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
-    cs.plot()
-    plt.title('Ineichen, linke_turbidity=3');
+    In [1]: cs = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
+
+    In [1]: cs.plot();
+
+    In [1]: plt.title('Ineichen, linke_turbidity=3');
+
     @savefig location-ineichen.png width=6in
-    plt.ylabel('Irradiance $W/m^2$');
+    In [1]: plt.ylabel('Irradiance $W/m^2$');
 
 .. ipython::
 
-    cs = tus.get_clearsky(times, model='simplified_solis',
-                          aod700=0.2, precipitable_water=3)
-    cs.plot()
-    plt.title('Simplfied Solis, aod700=0.2, precipitable_water=3');
+    In [1]: cs = tus.get_clearsky(times, model='simplified_solis', aod700=0.2, precipitable_water=3)
+
+    In [1]: cs.plot();
+
+    In [1]: plt.title('Simplfied Solis, aod700=0.2, precipitable_water=3');
+
     @savefig location-solis.png width=6in
-    plt.ylabel('Irradiance $W/m^2$');
+    In [1]: plt.ylabel('Irradiance $W/m^2$');
 
 
 See the sections below for more detail on the clear sky models.

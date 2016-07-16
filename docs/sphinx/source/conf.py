@@ -29,7 +29,7 @@ class Mock(MagicMock):
 MOCK_MODULES = []
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-ipython_mplbackend = None
+ipython_mplbackend = 'Agg'
 
 # builds the font cache if it does not already exist.
 # import matplotlib

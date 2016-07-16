@@ -28,18 +28,18 @@ We'll need these imports for the examples below.
 
 .. ipython::
 
-    import itertools
-    import matplotlib.pyplot as plt
-    import pandas as pd
+    In [1]: import itertools
+    In [1]: import matplotlib.pyplot as plt
+    In [1]: import pandas as pd
 
     # seaborn makes the plots look nicer
-    #import seaborn as sns
-    #sns.set_color_codes()
+    In [1]: import seaborn as sns
+    In [1]: sns.set_color_codes()
 
-    import pvlib
-    from pvlib import clearsky
-    from pvlib import atmosphere
-    from pvlib.location import Location
+    In [1]: import pvlib
+    In [1]: from pvlib import clearsky
+    In [1]: from pvlib import atmosphere
+    In [1]: from pvlib.location import Location
 
 
 .. _location:

@@ -29,17 +29,23 @@ We'll need these imports for the examples below.
 .. ipython::
 
     In [1]: import itertools
+
     In [1]: import matplotlib.pyplot as plt
+
     In [1]: import pandas as pd
 
     # seaborn makes the plots look nicer
     In [1]: import seaborn as sns
+
     In [1]: sns.set_color_codes()
 
-    In [1]: import pvlib
-    In [1]: from pvlib import clearsky
-    In [1]: from pvlib import atmosphere
-    In [1]: from pvlib.location import Location
+    In [2]: import pvlib
+
+    In [3]: import pvlib.clearsky as clearsky
+
+    In [4]: from pvlib import atmosphere
+
+    In [5]: from pvlib.location import Location
 
 
 .. _location:
@@ -59,14 +65,19 @@ while the atmospheric attenuation inputs may be constants or arrays.
 
 .. ipython::
 
-    In [1]: tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    In [5]: tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+
     In [1]: times = pd.DatetimeIndex(start='2016-07-01', end='2016-07-04',
                              freq='1min', tz=tus.tz)
+
     In [1]: cs = tus.get_clearsky(times)  # ineichen with climatology table by default
-    cs.plot()
-    plt.ylabel('Irradiance $W/m^2$');
+
+    In [1]: cs.plot()
+
+    In [1]: plt.ylabel('Irradiance $W/m^2$');
+
     @savefig location-basic.png width=6in
-    plt.title('Ineichen, climatological turbidity');
+    In [1]: plt.title('Ineichen, climatological turbidity');
 
 The :py:meth:`~pvlib.location.Location.get_clearsky` method accepts a
 model keyword argument and propagates additional arguments to the

@@ -822,3 +822,18 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
     R = pd.Series(R, index=time)
 
     return R
+
+
+def _calculate_simple_day_angle(dayofyear):
+    """
+    Calculates the day angle for the Earth's orbit around the Sun.
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    day_angle : numeric
+    """
+    return (2. * np.pi / 365.) * (dayofyear - 1)

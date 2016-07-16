@@ -5,14 +5,10 @@ import logging
 pvl_logger = logging.getLogger('pvlib')
 
 import datetime as dt
-import pdb
-import ast
-import re
-from six import string_types
 
-import numpy as np 
+import numpy as np
+import pandas as pd
 import pytz
-
 
 
 def cosd(angle):
@@ -36,7 +32,6 @@ def cosd(angle):
     return res
 
 
-
 def sind(angle):
     """
     Sine with angle input in degrees
@@ -58,7 +53,6 @@ def sind(angle):
     return res
 
 
-
 def tand(angle):
     """
     Tan with angle input in degrees
@@ -78,7 +72,6 @@ def tand(angle):
 
     res = np.tan(np.radians(angle))
     return res
-
 
 
 def asind(number):
@@ -106,13 +99,13 @@ def asind(number):
 def localize_to_utc(time, location):
     """
     Converts or localizes a time series to UTC.
-    
+
     Parameters
     ----------
-    time : datetime.datetime, pandas.DatetimeIndex, 
+    time : datetime.datetime, pandas.DatetimeIndex,
            or pandas.Series/DataFrame with a DatetimeIndex.
     location : pvlib.Location object
-    
+
     Returns
     -------
     pandas object localized to UTC.
@@ -132,8 +125,7 @@ def localize_to_utc(time, location):
             time_utc = time.tz_localize(location.tz).tz_convert('UTC')
             pvl_logger.debug('tz_localize to %s and then tz_convert to UTC',
                              location.tz)
-        
-        
+
     return time_utc
 
 
@@ -143,12 +135,12 @@ def datetime_to_djd(time):
 
     Parameters
     ----------
-    time : datetime.datetime 
+    time : datetime.datetime
         time to convert
 
     Returns
     -------
-    float 
+    float
         fractional days since 12/31/1899+0000
     """
 
@@ -156,7 +148,7 @@ def datetime_to_djd(time):
         time_utc = pytz.utc.localize(time)
     else:
         time_utc = time.astimezone(pytz.utc)
-        
+
     djd_start = pytz.utc.localize(dt.datetime(1899, 12, 31, 12))
     djd = (time_utc - djd_start).total_seconds() * 1.0/(60 * 60 * 24)
 
@@ -176,13 +168,106 @@ def djd_to_datetime(djd, tz='UTC'):
 
     Returns
     -------
-    datetime.datetime 
+    datetime.datetime
        The resultant datetime localized to tz
     """
-    
+
     djd_start = pytz.utc.localize(dt.datetime(1899, 12, 31, 12))
 
     utc_time = djd_start + dt.timedelta(days=djd)
     return utc_time.astimezone(pytz.timezone(tz))
-    
-    
+
+
+def _pandas_to_doy(pd_object):
+    """
+    Finds the day of year for a pandas datetime-like object.
+
+    Useful for delayed evaluation of the dayofyear attribute.
+
+    Parameters
+    ----------
+    pd_object : DatetimeIndex or Timestamp
+
+    Returns
+    -------
+    dayofyear
+    """
+    return pd_object.dayofyear
+
+
+def _doy_scalar_to_datetimeindex(doy_scalar):
+    """
+    Convert a scalar day of year number to a pd.DatetimeIndex.
+
+    Parameters
+    ----------
+    doy_array : int or float
+        Contains days of the year
+
+    Returns
+    -------
+    pd.DatetimeIndex
+    """
+    return pd.DatetimeIndex([_doy_to_timestamp(doy_scalar)])
+
+
+def _doy_array_to_datetimeindex(doy_array):
+    """
+    Convert an array of day of year numbers to a pd.DatetimeIndex.
+
+    Parameters
+    ----------
+    doy_array : Iterable
+        Contains days of the year
+
+    Returns
+    -------
+    pd.DatetimeIndex
+    """
+    return pd.DatetimeIndex(list(map(_doy_to_timestamp, doy_array)))
+
+
+def _doy_to_timestamp(doy, epoch='2013-12-31'):
+    """
+    Convert a numeric day of the year to a pd.Timestamp.
+
+    Parameters
+    ----------
+    doy : int or float.
+        Numeric day of year.
+    epoch : pd.Timestamp compatible object.
+        Date to which to add the day of year to.
+
+    Returns
+    -------
+    pd.Timestamp
+    """
+    return pd.Timestamp(epoch) + datetime.timedelta(days=float(doy))
+
+
+def _datetimelike_scalar_to_doy(time):
+    return pd.DatetimeIndex([pd.Timestamp(time)]).dayofyear
+
+
+def _datetimelike_scalar_to_datetimeindex(time):
+    return pd.DatetimeIndex([pd.Timestamp(time)])
+
+
+def _scalar_out(input):
+    if np.isscalar(input):
+        output = input
+    else:  #
+        # works if it's a 1 length array and
+        # will throw a ValueError otherwise
+        output = np.asscalar(input)
+
+    return output
+
+
+def _array_out(input):
+    if isinstance(input, pd.Series):
+        output = input.values
+    else:
+        output = input
+
+    return output

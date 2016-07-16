@@ -88,35 +88,35 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     # and the different algorithms need different types. Maybe you have
     # a better way to do it.
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
-        to_doy = _pandas_to_doy  # won't be evaluated unless necessary
+        to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
         to_datetimeindex = lambda x: datetime_or_doy
         output = partial(pd.Series, index=datetime_or_doy)
     elif isinstance(datetime_or_doy, pd.Timestamp):
-        to_doy = _pandas_to_doy
+        to_doy = tools._pandas_to_doy
         to_datetimeindex = \
-            _datetimelike_scalar_to_datetimeindex
-        output = _scalar_out
+            tools._datetimelike_scalar_to_datetimeindex
+        output = tools._scalar_out
     elif isinstance(datetime_or_doy,
                     (datetime.date, datetime.datetime, np.datetime64)):
-        to_doy = _datetimelike_scalar_to_doy
+        to_doy = tools._datetimelike_scalar_to_doy
         to_datetimeindex = \
-            _datetimelike_scalar_to_datetimeindex
-        output = _scalar_out
+            tools._datetimelike_scalar_to_datetimeindex
+        output = tools._scalar_out
     elif np.isscalar(datetime_or_doy):  # ints and floats of various types
         to_doy = lambda x: datetime_or_doy
-        to_datetimeindex = _doy_scalar_to_datetimeindex
-        output = _scalar_out
+        to_datetimeindex = tools._doy_scalar_to_datetimeindex
+        output = tools._scalar_out
     else:  # assume that we have an array-like object of doy
         to_doy = lambda x: datetime_or_doy
-        to_datetimeindex = _doy_array_to_datetimeindex
-        output = _array_out
+        to_datetimeindex = tools._doy_array_to_datetimeindex
+        output = tools._array_out
 
     method = method.lower()
     if method == 'asce':
-        B = _calculate_day_angle(to_doy(datetime_or_doy))
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
     elif method == 'spencer':
-        B = _calculate_day_angle(to_doy(datetime_or_doy))
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
         RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
                        0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
     elif method == 'pyephem':
@@ -134,116 +134,6 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     Ea = output(Ea)
 
     return Ea
-
-
-def _calculate_day_angle(dayofyear):
-    """
-    Calculates the day angle for the Earth's orbit around the Sun.
-
-    Parameters
-    ----------
-    dayofyear : numeric
-
-    Returns
-    -------
-    day_angle : numeric
-    """
-    return (2. * np.pi / 365.) * (dayofyear - 1)
-
-
-def _pandas_to_doy(pd_object):
-    """
-    Finds the day of year for a pandas datetime-like object.
-
-    Useful for delayed evaluation of the dayofyear attribute.
-
-    Parameters
-    ----------
-    pd_object : DatetimeIndex or Timestamp
-
-    Returns
-    -------
-    dayofyear
-    """
-    return pd_object.dayofyear
-
-
-def _doy_scalar_to_datetimeindex(doy_scalar):
-    """
-    Convert a scalar day of year number to a pd.DatetimeIndex.
-
-    Parameters
-    ----------
-    doy_array : int or float
-        Contains days of the year
-
-    Returns
-    -------
-    pd.DatetimeIndex
-    """
-    return pd.DatetimeIndex([_doy_to_timestamp(doy_scalar)])
-
-
-def _doy_array_to_datetimeindex(doy_array):
-    """
-    Convert an array of day of year numbers to a pd.DatetimeIndex.
-
-    Parameters
-    ----------
-    doy_array : Iterable
-        Contains days of the year
-
-    Returns
-    -------
-    pd.DatetimeIndex
-    """
-    return pd.DatetimeIndex(list(map(_doy_to_timestamp, doy_array)))
-
-
-def _doy_to_timestamp(doy, epoch='2013-12-31'):
-    """
-    Convert a numeric day of the year to a pd.Timestamp.
-
-    Parameters
-    ----------
-    doy : int or float.
-        Numeric day of year.
-    epoch : pd.Timestamp compatible object.
-        Date to which to add the day of year to.
-
-    Returns
-    -------
-    pd.Timestamp
-    """
-    return pd.Timestamp(epoch) + datetime.timedelta(days=float(doy))
-
-
-def _datetimelike_scalar_to_doy(time):
-    return pd.DatetimeIndex([pd.Timestamp(time)]).dayofyear
-
-
-def _datetimelike_scalar_to_datetimeindex(time):
-    return pd.DatetimeIndex([pd.Timestamp(time)])
-
-
-def _scalar_out(input):
-    if np.isscalar(input):
-        output = input
-    else:  #
-        # works if it's a 1 length array and
-        # will throw a ValueError otherwise
-        output = np.asscalar(input)
-
-    return output
-
-
-def _array_out(input):
-    if isinstance(input, pd.Series):
-        output = input.values
-    else:
-        output = input
-
-    return output
 
 
 def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):

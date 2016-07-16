@@ -36,7 +36,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-print(matplotlib.get_backend())
+print('mpl backend: ', matplotlib.get_backend())
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

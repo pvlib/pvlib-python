@@ -65,7 +65,7 @@ while the atmospheric attenuation inputs may be constants or arrays.
     times = pd.DatetimeIndex(start='2016-07-01', end='2016-07-04',
                              freq='1min', tz=tus.tz)
     cs = tus.get_clearsky(times)  # ineichen with climatology table by default
-    cs.plot();
+    cs.plot()
     plt.ylabel('Irradiance $W/m^2$');
     @savefig location-basic.png width=6in
     plt.title('Ineichen, climatological turbidity');
@@ -77,7 +77,7 @@ functions that do the computation.
 .. ipython:: python
 
     cs = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
-    cs.plot();
+    cs.plot()
     plt.title('Ineichen, linke_turbidity=3');
     @savefig location-ineichen.png width=6in
     plt.ylabel('Irradiance $W/m^2$');
@@ -86,7 +86,7 @@ functions that do the computation.
 
     cs = tus.get_clearsky(times, model='simplified_solis',
                           aod700=0.2, precipitable_water=3)
-    cs.plot();
+    cs.plot()
     plt.title('Simplfied Solis, aod700=0.2, precipitable_water=3');
     @savefig location-solis.png width=6in
     plt.ylabel('Irradiance $W/m^2$');
@@ -156,10 +156,10 @@ variability of the data set.
 
     times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
     plt.figure();
-    pvlib.clearsky.lookup_linke_turbidity(times, 32, -111, interp_turbidity=False).plot(label='Tucson1');
-    pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9, interp_turbidity=False).plot(label='Tucson2');
-    pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1, interp_turbidity=False).plot(label='Phoenix');
-    pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6, interp_turbidity=False).plot(label='Albuquerque');
+    pvlib.clearsky.lookup_linke_turbidity(times, 32, -111, interp_turbidity=False).plot(label='Tucson1')
+    pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9, interp_turbidity=False).plot(label='Tucson2')
+    pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1, interp_turbidity=False).plot(label='Phoenix')
+    pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6, interp_turbidity=False).plot(label='Albuquerque')
     plt.legend();
     @savefig turbidity-no-interp.png width=6in
     plt.ylabel('Linke Turbidity');
@@ -167,10 +167,10 @@ variability of the data set.
 .. ipython:: python
 
     times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
-    pvlib.clearsky.lookup_linke_turbidity(times, 32, -111).plot(label='Tucson1');
-    pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9).plot(label='Tucson2');
-    pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1).plot(label='Phoenix');
-    pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6).plot(label='Albuquerque');
+    pvlib.clearsky.lookup_linke_turbidity(times, 32, -111).plot(label='Tucson1')
+    pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9).plot(label='Tucson2')
+    pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1).plot(label='Phoenix')
+    pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6).plot(label='Albuquerque')
     plt.legend();
     @savefig turbidity-yes-interp.png width=6in
     plt.ylabel('Linke Turbidity');
@@ -195,7 +195,7 @@ A clear sky time series using basic pvlib functions.
 
     # an input is a pandas Series, so solis is a DataFrame
     ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
-    ax = ineichen.plot();
+    ax = ineichen.plot()
     ax.set_ylabel('Irradiance $W/m^2$');
     ax.legend(loc=2);
     @savefig ineichen-vs-time-climo.png width=6in
@@ -303,7 +303,7 @@ A clear sky time series using basic pvlib functions.
     # an input is a Series, so solis is a DataFrame
     solis = clearsky.simplified_solis(apparent_elevation, aod700, precipitable_water,
                                       pressure, dni_extra)
-    ax = solis.plot();
+    ax = solis.plot()
     ax.set_ylabel('Irradiance $W/m^2$');
     ax.legend(loc=2);
     @savefig solis-vs-time-0.1-1.png width=6in
@@ -349,7 +349,7 @@ Grid with a clear sky irradiance for a few PW and AOD values.
     fig, axes = plt.subplots(ncols=2, nrows=2, sharex=True, sharey=True, squeeze=True)
     axes = axes.flatten()
 
-    [clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra).plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw)) for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes)];
+    [clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra).plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw)) for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes)]
 
     @savefig solis-grid.png width=10in
     plt.show();

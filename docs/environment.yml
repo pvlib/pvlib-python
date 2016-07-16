@@ -8,7 +8,7 @@ dependencies:
     - pytz
     - ephem
     - numba
-    - ipython=4.0.1
+    - ipython  #=4.0.1
     - ipywidgets
     - numpydoc
     - matplotlib

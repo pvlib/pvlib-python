@@ -3,9 +3,8 @@ dependencies:
     - python=2.7
     - mock  # needed for local python 2.7 builds
     - numpy
-    - scipy
+    - scipy=0.16.0
     - pandas
-    - nomkl
     - pytz
     - ephem
     - numba

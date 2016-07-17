@@ -138,9 +138,9 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: mat['LinkeTurbidity']
 
-    In [1]: np.array(mat['LinkeTurbidity'], dtype='float')
-
 .. code-block:: python
+
+    In [1]: mat['LinkeTurbidity'].astype('float')
 
     # data is in units of 20 x turbidity
     In [1]: linke_turbidity_table = mat['LinkeTurbidity'] / 20.

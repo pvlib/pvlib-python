@@ -138,6 +138,8 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: mat
 
+    In [1]: mat['LinkeTurbidity']
+
 .. code-block:: python
 
     # data is in units of 20 x turbidity

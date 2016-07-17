@@ -122,7 +122,7 @@ pvlib includes a file with monthly climatological turbidity values for
 the globe. The code below creates turbidity maps for a few months of
 the year. You could run it in a loop to create plots for all months.
 
-.. code-block:: python
+.. ipython::
 
     In [1]: import calendar
 
@@ -135,6 +135,8 @@ the year. You could run it in a loop to create plots for all months.
     In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
 
     In [1]: mat = scipy.io.loadmat(filepath)
+
+.. code-block:: python
 
     # data is in units of 20 x turbidity
     In [1]: linke_turbidity_table = mat['LinkeTurbidity'] / 20.

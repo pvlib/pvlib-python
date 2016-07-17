@@ -136,6 +136,8 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: mat = scipy.io.loadmat(filepath)
 
+    In [1]: mat
+
 .. code-block:: python
 
     # data is in units of 20 x turbidity

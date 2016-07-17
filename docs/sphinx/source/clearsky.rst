@@ -141,6 +141,8 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: month = 1
 
+.. code-block:: python
+
     In [1]: linke_turbidity_table
 
 .. code-block:: python

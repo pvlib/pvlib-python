@@ -139,7 +139,7 @@ the year. You could run it in a loop to create plots for all months.
     # data is in units of 20 x turbidity
     In [1]: linke_turbidity_table = mat['LinkeTurbidity']  # / 20.   # crashes on rtd
 
-    In [1]: months = 1
+    In [1]: month = 1
 
     In [1]: plt.figure();
 

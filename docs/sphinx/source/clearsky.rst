@@ -136,6 +136,8 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: mat = scipy.io.loadmat(filepath)
 
+.. code-block:: python
+
     # data is in units of 20 x turbidity
     In [1]: linke_turbidity_table = mat['LinkeTurbidity'] / 20.
 
@@ -181,38 +183,31 @@ Southwest U.S. with and without interpolation. We chose points that are
 relatively close so that you can get a better sense of the spatial
 variability of the data set.
 
-.. code-block:: python
+.. ipython::
 
     In [1]: times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
 
+    In [1]: sites = [(32, -111, 'Tucson1'), (32.2, -110.9, 'Tucson2'),
+       ...:          (33.5, -112.1, 'Phoenix'), (35.1, -106.6, 'Albuquerque')]
+
     In [1]: plt.figure();
 
-    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 32, -111, interp_turbidity=False).plot(label='Tucson1');
-
-    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9, interp_turbidity=False).plot(label='Tucson2');
-
-    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1, interp_turbidity=False).plot(label='Phoenix');
-
-    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6, interp_turbidity=False).plot(label='Albuquerque');
+    In [1]: for lat, lon, name in sites:
+       ...:     turbidity = pvlib.clearsky.lookup_linke_turbidity(times, lat, lon, interp_turbidity=False)
+       ...:     turbidity.plot(label=name)
 
     In [1]: plt.legend();
 
     @savefig turbidity-no-interp.png width=6in
     In [1]: plt.ylabel('Linke Turbidity');
 
-.. code-block:: python
-
-    In [1]: times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
+.. ipython::
 
     In [1]: plt.figure();
 
-    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 32, -111).plot(label='Tucson1');
-
-    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9).plot(label='Tucson2');
-
-    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1).plot(label='Phoenix');
-
-    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6).plot(label='Albuquerque');
+    In [1]: for lat, lon, name in sites:
+       ...:     turbidity = pvlib.clearsky.lookup_linke_turbidity(times, lat, lon)
+       ...:     turbidity.plot(label=name)
 
     In [1]: plt.legend();
 

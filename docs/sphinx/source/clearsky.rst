@@ -32,6 +32,8 @@ We'll need these imports for the examples below.
 
     In [1]: import matplotlib.pyplot as plt
 
+    In [1]: import numpy as np
+
     In [1]: import pandas as pd
 
     # seaborn makes the plots look nicer
@@ -138,7 +140,7 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: mat['LinkeTurbidity']
 
-    In [1]: mat['LinkeTurbidity'] / 20.
+    In [1]: mat['LinkeTurbidity'].astype(np.float64) / 20.
 
 .. code-block:: python
 

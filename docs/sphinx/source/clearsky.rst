@@ -122,7 +122,7 @@ pvlib includes a file with monthly climatological turbidity values for
 the globe. The code below creates turbidity maps for a few months of
 the year. You could run it in a loop to create plots for all months.
 
-.. ipython::
+.. code-block:: python
 
     In [1]: import calendar
 
@@ -154,7 +154,7 @@ the year. You could run it in a loop to create plots for all months.
     @savefig turbidity-1.png width=10in
     In [1]: plt.show();
 
-.. ipython::
+.. code-block:: python
 
     In [1]: month = 7
 
@@ -181,7 +181,7 @@ Southwest U.S. with and without interpolation. We chose points that are
 relatively close so that you can get a better sense of the spatial
 variability of the data set.
 
-.. ipython::
+.. code-block:: python
 
     In [1]: times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
 
@@ -200,7 +200,7 @@ variability of the data set.
     @savefig turbidity-no-interp.png width=6in
     In [1]: plt.ylabel('Linke Turbidity');
 
-.. ipython::
+.. code-block:: python
 
     In [1]: times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
 

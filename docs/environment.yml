@@ -4,6 +4,7 @@ dependencies:
     - mock  # needed for local python 2.7 builds
     - numpy
     - scipy=0.16.0
+    - nomkl
     - pandas
     - pytz
     - ephem

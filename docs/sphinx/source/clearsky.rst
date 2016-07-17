@@ -143,15 +143,17 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: linke_turbidity_table
 
+.. code-block:: python
+
     In [1]: plt.figure();
 
-    #In [1]: plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
+    In [1]: plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
 
-    #In [1]: plt.title('Linke turbidity, ' + calendar.month_name[month]);
+    In [1]: plt.title('Linke turbidity, ' + calendar.month_name[month]);
 
-    #In [1]: plt.colorbar(shrink=0.5);
+    In [1]: plt.colorbar(shrink=0.5);
 
-    #In [1]: plt.tight_layout();
+    In [1]: plt.tight_layout();
 
     @savefig turbidity-jan.png width=10in
     In [1]: plt.show();

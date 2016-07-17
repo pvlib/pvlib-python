@@ -286,7 +286,7 @@ Grid with a clear sky irradiance for a few turbidity values.
 
     In [1]: linke_turbidities = [linke_turbidity.mean(), 2, 4]
 
-    In [1]: fig, axes = plt.subplots(ncols=3, nrows=1, sharex=True, sharey=True, squeeze=True, figsize=(12, 6))
+    In [1]: fig, axes = plt.subplots(ncols=3, nrows=1, sharex=True, sharey=True, squeeze=True, figsize=(12, 4))
 
     In [1]: axes = axes.flatten()
 
@@ -294,7 +294,7 @@ Grid with a clear sky irradiance for a few turbidity values.
        ...:     ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
        ...:     ineichen.plot(ax=ax, title='Linke turbidity = {:0.1f}'.format(linke_turbidity));
 
-    In [1]: ax.legend(loc=1)
+    In [1]: ax.legend(loc=1);
 
     @savefig ineichen-grid.png width=10in
     In [1]: plt.show();
@@ -373,7 +373,7 @@ A clear sky time series using basic pvlib functions.
 
     # an input is a Series, so solis is a DataFrame
     In [1]: solis = clearsky.simplified_solis(apparent_elevation, aod700, precipitable_water,
-                                      pressure, dni_extra)
+       ...:                                   pressure, dni_extra)
 
     In [1]: ax = solis.plot();
 
@@ -439,7 +439,7 @@ Grid with a clear sky irradiance for a few PW and AOD values.
 
     In [1]: axes = axes.flatten()
 
-    In [1]: [clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra).plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw)) for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes)]
+    In [1]: [clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra).plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw)) for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes)];
 
     @savefig solis-grid.png width=10in
     In [1]: plt.show();

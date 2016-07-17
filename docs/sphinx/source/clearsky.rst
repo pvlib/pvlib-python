@@ -136,9 +136,9 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: mat = scipy.io.loadmat(filepath)
 
-    In [1]: mat
-
     In [1]: mat['LinkeTurbidity']
+
+    In [1]: mat['LinkeTurbidity'] / 20.
 
 .. code-block:: python
 

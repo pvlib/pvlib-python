@@ -141,7 +141,7 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: month = 1
 
-    In [1]: linke_turbidity_table[:, :, month-1]
+    In [1]: linke_turbidity_table
 
     In [1]: plt.figure();
 

@@ -124,34 +124,52 @@ the year. You could run it in a loop to create plots for all months.
 
 .. ipython::
 
-    import calendar
-    import os
-    import scipy.io
+    In [1]: import calendar
 
-    pvlib_path = os.path.dirname(os.path.abspath(pvlib.clearsky.__file__))
-    filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
+    In [1]: import os
 
-    mat = scipy.io.loadmat(filepath)
+    In [1]: import scipy.io
+
+    In [1]: pvlib_path = os.path.dirname(os.path.abspath(pvlib.clearsky.__file__))
+
+    In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
+
+    In [1]: mat = scipy.io.loadmat(filepath)
+
     # data is in units of 20 x turbidity
-    linke_turbidity_table = mat['LinkeTurbidity'] / 20.
+    In [1]: linke_turbidity_table = mat['LinkeTurbidity'] / 20.
 
-    month = 1
-    plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
-    plt.title('Linke turbidity, ' + calendar.month_name[1+month]);
-    plt.colorbar(shrink=0.5);
-    plt.tight_layout();
+    In [1]: month = 1
+
+    In [1]: plt.figure();
+
+    In [1]: plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
+
+    In [1]: plt.title('Linke turbidity, ' + calendar.month_name[1+month]);
+
+    In [1]: plt.colorbar(shrink=0.5);
+
+    In [1]: plt.tight_layout();
+
     @savefig turbidity-1.png width=10in
-    plt.show();
+    In [1]: plt.show();
 
 .. ipython::
 
-    month = 7
-    plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
-    plt.title('Linke turbidity, ' + calendar.month_name[month]);
-    plt.colorbar(shrink=0.5);
-    plt.tight_layout();
+    In [1]: month = 7
+
+    In [1]: plt.figure();
+
+    In [1]: plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=5);
+
+    In [1]: plt.title('Linke turbidity, ' + calendar.month_name[month]);
+
+    In [1]: plt.colorbar(shrink=0.5);
+
+    In [1]: plt.tight_layout();
+
     @savefig turbidity-7.png width=10in
-    plt.show();
+    In [1]: plt.show();
 
 The :py:func:`~pvlib.clearsky.lookup_linke_turbidity` function takes a
 time, latitude, and longitude and gets the corresponding climatological
@@ -165,26 +183,41 @@ variability of the data set.
 
 .. ipython::
 
-    times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
-    plt.figure();
-    pvlib.clearsky.lookup_linke_turbidity(times, 32, -111, interp_turbidity=False).plot(label='Tucson1')
-    pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9, interp_turbidity=False).plot(label='Tucson2')
-    pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1, interp_turbidity=False).plot(label='Phoenix')
-    pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6, interp_turbidity=False).plot(label='Albuquerque')
-    plt.legend();
+    In [1]: times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
+
+    In [1]: plt.figure();
+
+    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 32, -111, interp_turbidity=False).plot(label='Tucson1');
+
+    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9, interp_turbidity=False).plot(label='Tucson2');
+
+    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1, interp_turbidity=False).plot(label='Phoenix');
+
+    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6, interp_turbidity=False).plot(label='Albuquerque');
+
+    In [1]: plt.legend();
+
     @savefig turbidity-no-interp.png width=6in
-    plt.ylabel('Linke Turbidity');
+    In [1]: plt.ylabel('Linke Turbidity');
 
 .. ipython::
 
-    times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
-    pvlib.clearsky.lookup_linke_turbidity(times, 32, -111).plot(label='Tucson1')
-    pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9).plot(label='Tucson2')
-    pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1).plot(label='Phoenix')
-    pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6).plot(label='Albuquerque')
-    plt.legend();
+    In [1]: times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
+
+    In [1]: plt.figure();
+
+    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 32, -111).plot(label='Tucson1');
+
+    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 32.2, -110.9).plot(label='Tucson2');
+
+    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 33.5, -112.1).plot(label='Phoenix');
+
+    In [1]: pvlib.clearsky.lookup_linke_turbidity(times, 35.1, -106.6).plot(label='Albuquerque');
+
+    In [1]: plt.legend();
+
     @savefig turbidity-yes-interp.png width=6in
-    plt.ylabel('Linke Turbidity');
+    In [1]: plt.ylabel('Linke Turbidity');
 
 Examples
 ^^^^^^^^
@@ -193,24 +226,37 @@ A clear sky time series using basic pvlib functions.
 
 .. ipython::
 
-    latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
-    times = pd.date_range(start='2014-01-01', end='2014-01-02', freq='1Min', tz=tz)
-    solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+    In [1]: latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
 
-    apparent_zenith = solpos['apparent_zenith']
-    airmass = pvlib.atmosphere.relativeairmass(apparent_zenith)
-    pressure = pvlib.atmosphere.alt2pres(altitude)
-    airmass = pvlib.atmosphere.absoluteairmass(airmass, pressure)
-    linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
-    dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
+    In [1]: times = pd.date_range(start='2014-01-01', end='2014-01-02', freq='1Min', tz=tz)
+
+    In [1]: solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+
+    In [1]: apparent_zenith = solpos['apparent_zenith']
+
+    In [1]: airmass = pvlib.atmosphere.relativeairmass(apparent_zenith)
+
+    In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
+
+    In [1]: airmass = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+
+    In [1]: linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
+
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
 
     # an input is a pandas Series, so solis is a DataFrame
-    ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
-    ax = ineichen.plot()
-    ax.set_ylabel('Irradiance $W/m^2$');
-    ax.legend(loc=2);
+    In [1]: ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
+
+    In [1]: plt.figure();
+
+    In [1]: ax = ineichen.plot()
+
+    In [1]: ax.set_ylabel('Irradiance $W/m^2$');
+
+    In [1]: ax.legend(loc=2);
+
     @savefig ineichen-vs-time-climo.png width=6in
-    plt.show();
+    In [1]: plt.show();
 
 The input data types determine the returned output type. Array input
 results in an OrderedDict of array output, and Series input results in a
@@ -220,30 +266,38 @@ Grid with a clear sky irradiance for a few turbidity values.
 
 .. ipython::
 
-    times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
-    solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+    In [1]: times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
 
-    apparent_zenith = solpos['apparent_zenith']
-    airmass = pvlib.atmosphere.relativeairmass(apparent_zenith)
-    pressure = pvlib.atmosphere.alt2pres(altitude)
-    airmass = pvlib.atmosphere.absoluteairmass(airmass, pressure)
-    linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
-    print('climatological linke_turbidity = {}'.format(linke_turbidity.mean()))
-    dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
+    In [1]: solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
 
-    linke_turbidities = [linke_turbidity.mean(), 2, 4]
+    In [1]: apparent_zenith = solpos['apparent_zenith']
 
-    fig, axes = plt.subplots(ncols=3, nrows=1, sharex=True, sharey=True, squeeze=True)
-    axes = axes.flatten()
+    In [1]: airmass = pvlib.atmosphere.relativeairmass(apparent_zenith)
 
-    for linke_turbidity, ax in zip(linke_turbidities, axes):
-        ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity,
-                                     altitude, dni_extra)
-        ineichen.plot(ax=ax, title='Linke turbidity = {:0.1f}'.format(linke_turbidity))
-        ax.legend(loc=1)
+    In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
+
+    In [1]: airmass = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+
+    In [1]: linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
+
+    In [1]: print('climatological linke_turbidity = {}'.format(linke_turbidity.mean()))
+
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
+
+    In [1]: linke_turbidities = [linke_turbidity.mean(), 2, 4]
+
+    In [1]: fig, axes = plt.subplots(ncols=3, nrows=1, sharex=True, sharey=True, squeeze=True, figsize=(12, 6))
+
+    In [1]: axes = axes.flatten()
+
+    In [1]: for linke_turbidity, ax in zip(linke_turbidities, axes):
+       ...:     ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
+       ...:     ineichen.plot(ax=ax, title='Linke turbidity = {:0.1f}'.format(linke_turbidity));
+
+    In [1]: ax.legend(loc=1)
 
     @savefig ineichen-grid.png width=10in
-    plt.show();
+    In [1]: plt.show();
 
 
 
@@ -301,24 +355,34 @@ A clear sky time series using basic pvlib functions.
 
 .. ipython::
 
-    latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
-    times = pd.date_range(start='2014-01-01', end='2014-01-02', freq='1Min', tz=tz)
-    solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+    In [1]: latitude, longitude, tz, altitude, name = 32.2, -111, 'US/Arizona', 700, 'Tucson'
 
-    apparent_elevation = solpos['apparent_elevation']
-    aod700 = 0.1
-    precipitable_water = 1
-    pressure = pvlib.atmosphere.alt2pres(altitude)
-    dni_extra = pvlib.irradiance.extraradiation(apparent_elevation.index.dayofyear)
+    In [1]: times = pd.date_range(start='2014-01-01', end='2014-01-02', freq='1Min', tz=tz)
+
+    In [1]: solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+
+    In [1]: apparent_elevation = solpos['apparent_elevation']
+
+    In [1]: aod700 = 0.1
+
+    In [1]: precipitable_water = 1
+
+    In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
+
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(apparent_elevation.index.dayofyear)
 
     # an input is a Series, so solis is a DataFrame
-    solis = clearsky.simplified_solis(apparent_elevation, aod700, precipitable_water,
+    In [1]: solis = clearsky.simplified_solis(apparent_elevation, aod700, precipitable_water,
                                       pressure, dni_extra)
-    ax = solis.plot()
-    ax.set_ylabel('Irradiance $W/m^2$');
-    ax.legend(loc=2);
+
+    In [1]: ax = solis.plot();
+
+    In [1]: ax.set_ylabel('Irradiance $W/m^2$');
+
+    In [1]: ax.legend(loc=2);
+
     @savefig solis-vs-time-0.1-1.png width=6in
-    plt.show();
+    In [1]: plt.show();
 
 The input data types determine the returned output type. Array input
 results in an OrderedDict of array output, and Series input results in a
@@ -328,88 +392,114 @@ Irradiance as a function of solar elevation.
 
 .. ipython::
 
-    apparent_elevation = pd.Series(np.linspace(-10, 90, 101))
-    aod700 = 0.1
-    precipitable_water = 1
-    pressure = 101325
-    dni_extra = 1364
+    In [1]: apparent_elevation = pd.Series(np.linspace(-10, 90, 101))
 
-    solis = clearsky.simplified_solis(apparent_elevation, aod700,
-                                      precipitable_water, pressure, dni_extra)
-    ax = solis.plot()
-    ax.set_xlabel('Apparent elevation (deg)');
-    ax.set_ylabel('Irradiance $W/m^2$');
-    ax.set_title('Irradiance vs Solar Elevation')
+    In [1]: aod700 = 0.1
+
+    In [1]: precipitable_water = 1
+
+    In [1]: pressure = 101325
+
+    In [1]: dni_extra = 1364
+
+    In [1]: solis = clearsky.simplified_solis(apparent_elevation, aod700,
+       ...:                                   precipitable_water, pressure, dni_extra)
+
+    In [1]: ax = solis.plot();
+
+    In [1]: ax.set_xlabel('Apparent elevation (deg)');
+
+    In [1]: ax.set_ylabel('Irradiance $W/m^2$');
+
+    In [1]: ax.set_title('Irradiance vs Solar Elevation')
+
     @savefig solis-vs-elevation.png width=6in
-    ax.legend(loc=2);
+    In [1]: ax.legend(loc=2);
 
 
 Grid with a clear sky irradiance for a few PW and AOD values.
 
 .. ipython::
 
-    times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
-    solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+    In [1]: times = pd.date_range(start='2014-09-01', end='2014-09-02', freq='1Min', tz=tz)
 
-    apparent_elevation = solpos['apparent_elevation']
-    pressure = pvlib.atmosphere.alt2pres(altitude)
-    dni_extra = pvlib.irradiance.extraradiation(apparent_elevation.index.dayofyear)
-    aod700 = [0.01, 0.1]
-    precipitable_water = [0.5, 5]
+    In [1]: solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
 
-    fig, axes = plt.subplots(ncols=2, nrows=2, sharex=True, sharey=True, squeeze=True)
-    axes = axes.flatten()
+    In [1]: apparent_elevation = solpos['apparent_elevation']
 
-    [clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra).plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw)) for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes)]
+    In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
+
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(apparent_elevation.index.dayofyear)
+
+    In [1]: aod700 = [0.01, 0.1]
+
+    In [1]: precipitable_water = [0.5, 5]
+
+    In [1]: fig, axes = plt.subplots(ncols=2, nrows=2, sharex=True, sharey=True, squeeze=True)
+
+    In [1]: axes = axes.flatten()
+
+    In [1]: [clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra).plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw)) for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes)]
 
     @savefig solis-grid.png width=10in
-    plt.show();
+    In [1]: plt.show();
 
 Contour plots of irradiance as a function of both PW and AOD.
 
 .. ipython::
 
-    aod700 = np.linspace(0, 0.5, 101)
-    precipitable_water = np.linspace(0, 10, 101)
-    apparent_elevation = 70
-    pressure = 101325
-    dni_extra = 1364
+    In [1]: aod700 = np.linspace(0, 0.5, 101)
 
-    aod700, precipitable_water = np.meshgrid(aod700, precipitable_water)
+    In [1]: precipitable_water = np.linspace(0, 10, 101)
+
+    In [1]: apparent_elevation = 70
+
+    In [1]: pressure = 101325
+
+    In [1]: dni_extra = 1364
+
+    In [1]: aod700, precipitable_water = np.meshgrid(aod700, precipitable_water)
 
     # inputs are arrays, so solis is an OrderedDict
-    solis = clearsky.simplified_solis(apparent_elevation, aod700,
-                                      precipitable_water, pressure,
-                                      dni_extra)
-    cmap = plt.get_cmap('viridis')
-    n = 15
-    vmin = None
-    vmax = None
+    In [1]: solis = clearsky.simplified_solis(apparent_elevation, aod700,
+       ...:                                   precipitable_water, pressure,
+       ...:                                   dni_extra)
 
-    def plot_solis(key):
-        irrad = solis[key]
-        fig, ax = plt.subplots()
-        im = ax.contour(aod700, precipitable_water, irrad[:, :], n, cmap=cmap, vmin=vmin, vmax=vmax)
-        imf = ax.contourf(aod700, precipitable_water, irrad[:, :], n, cmap=cmap, vmin=vmin, vmax=vmax)
-        ax.set_xlabel('AOD')
-        ax.set_ylabel('Precipitable water (cm)')
-        ax.clabel(im, colors='k', fmt='%.0f')
-        fig.colorbar(imf, label='{} (W/m**2)'.format(key))
-        ax.set_title('{}, elevation={}'.format(key, apparent_elevation))
+    In [1]: cmap = plt.get_cmap('viridis')
+
+    In [1]: n = 15
+
+    In [1]: vmin = None
+
+    In [1]: vmax = None
+
+    In [1]: def plot_solis(key):
+       ...:     irrad = solis[key]
+       ...:     fig, ax = plt.subplots()
+       ...:     im = ax.contour(aod700, precipitable_water, irrad[:, :], n, cmap=cmap, vmin=vmin, vmax=vmax)
+       ...:     imf = ax.contourf(aod700, precipitable_water, irrad[:, :], n, cmap=cmap, vmin=vmin, vmax=vmax)
+       ...:     ax.set_xlabel('AOD')
+       ...:     ax.set_ylabel('Precipitable water (cm)')
+       ...:     ax.clabel(im, colors='k', fmt='%.0f')
+       ...:     fig.colorbar(imf, label='{} (W/m**2)'.format(key))
+       ...:     ax.set_title('{}, elevation={}'.format(key, apparent_elevation))
 
 .. ipython::
 
-    plot_solis('ghi')
+    In [1]: plot_solis('ghi')
+
     @savefig solis-ghi.png width=10in
-    plt.show()
+    In [1]: plt.show()
 
-    plot_solis('dni')
+    In [1]: plot_solis('dni')
+
     @savefig solis-dni.png width=10in
-    plt.show()
+    In [1]: plt.show()
 
-    plot_solis('dhi')
+    In [1]: plot_solis('dhi')
+
     @savefig solis-dhi.png width=10in
-    plt.show()
+    In [1]: plt.show()
 
 
 Validation

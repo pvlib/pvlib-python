@@ -5,6 +5,7 @@ dependencies:
     - numpy
     - scipy
     - pandas
+    - nomkl
     - pytz
     - ephem
     - numba

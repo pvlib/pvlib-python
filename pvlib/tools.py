@@ -1,6 +1,7 @@
 """
 Collection of functions used in pvlib_python
 """
+
 import logging
 pvl_logger = logging.getLogger('pvlib')
 
@@ -17,15 +18,13 @@ def cosd(angle):
 
     Parameters
     ----------
-
     angle : float
-                Angle in degrees
+        Angle in degrees
 
     Returns
     -------
-
     result : float
-                Cosine of the angle
+        Cosine of the angle
     """
 
     res = np.cos(np.radians(angle))
@@ -38,15 +37,13 @@ def sind(angle):
 
     Parameters
     ----------
-
     angle : float
-                Angle in degrees
+        Angle in degrees
 
     Returns
     -------
-
     result : float
-                Sin of the angle
+        Sin of the angle
     """
 
     res = np.sin(np.radians(angle))
@@ -59,15 +56,13 @@ def tand(angle):
 
     Parameters
     ----------
-
     angle : float
-                Angle in degrees
+        Angle in degrees
 
     Returns
     -------
-
     result : float
-                Tan of the angle
+        Tan of the angle
     """
 
     res = np.tan(np.radians(angle))
@@ -80,16 +75,13 @@ def asind(number):
 
     Parameters
     ----------
-
     number : float
-            Input number
+        Input number
 
     Returns
     -------
-
     result : float
-            arcsin result
-
+        arcsin result
     """
 
     res = np.degrees(np.arcsin(number))
@@ -195,54 +187,23 @@ def _pandas_to_doy(pd_object):
     return pd_object.dayofyear
 
 
-def _doy_scalar_to_datetimeindex(doy_scalar):
+def _doy_to_datetimeindex(doy, epoch_year=2014):
     """
-    Convert a scalar day of year number to a pd.DatetimeIndex.
+    Convert a day of year scalar or array to a pd.DatetimeIndex.
 
     Parameters
     ----------
-    doy_array : int or float
+    doy : numeric
         Contains days of the year
 
     Returns
     -------
     pd.DatetimeIndex
     """
-    return pd.DatetimeIndex([_doy_to_timestamp(doy_scalar)])
-
-
-def _doy_array_to_datetimeindex(doy_array):
-    """
-    Convert an array of day of year numbers to a pd.DatetimeIndex.
-
-    Parameters
-    ----------
-    doy_array : Iterable
-        Contains days of the year
-
-    Returns
-    -------
-    pd.DatetimeIndex
-    """
-    return pd.DatetimeIndex(list(map(_doy_to_timestamp, doy_array)))
-
-
-def _doy_to_timestamp(doy, epoch='2013-12-31'):
-    """
-    Convert a numeric day of the year to a pd.Timestamp.
-
-    Parameters
-    ----------
-    doy : int or float.
-        Numeric day of year.
-    epoch : pd.Timestamp compatible object.
-        Date to which to add the day of year to.
-
-    Returns
-    -------
-    pd.Timestamp
-    """
-    return pd.Timestamp(epoch) + datetime.timedelta(days=float(doy))
+    doy = np.atleast_1d(doy).astype('float')
+    epoch = pd.Timestamp('{}-12-31'.format(epoch_year - 1))
+    timestamps = [epoch + dt.timedelta(days=adoy) for adoy in doy]
+    return pd.DatetimeIndex(timestamps)
 
 
 def _datetimelike_scalar_to_doy(time):

@@ -65,6 +65,11 @@ def test_extraradiation_nrel_numba():
     irradiance.extraradiation(times, method='nrel', how='numba', numthreads=8)
 
 
+def test_extraradiation_epoch_year():
+    out = irradiance.extraradiation(doy, method='nrel', epoch_year=2012)
+    assert_allclose(out, 1382.4926804890767, atol=0.1)
+
+
 def test_extraradiation_invalid():
     with pytest.raises(ValueError):
         irradiance.extraradiation(300, method='invalid')

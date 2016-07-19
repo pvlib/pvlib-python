@@ -37,7 +37,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
-                   **kwargs):
+                   epoch_year=2014, **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
 
@@ -53,6 +53,11 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     method : string
         The method by which the ET radiation should be calculated.
         Options include ``'pyephem', 'spencer', 'asce', 'nrel'``.
+
+    epoch_year : int
+        The year in which a day of year input will be calculated. Only
+        applies to day of year input used with the pyephem or nrel
+        methods.
 
     kwargs :
         Passed to solarposition.nrel_earthsun_distance
@@ -90,26 +95,28 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
         to_datetimeindex = lambda x: datetime_or_doy
-        output = partial(pd.Series, index=datetime_or_doy)
+        to_output = partial(pd.Series, index=datetime_or_doy)
     elif isinstance(datetime_or_doy, pd.Timestamp):
         to_doy = tools._pandas_to_doy
         to_datetimeindex = \
             tools._datetimelike_scalar_to_datetimeindex
-        output = tools._scalar_out
+        to_output = tools._scalar_out
     elif isinstance(datetime_or_doy,
                     (datetime.date, datetime.datetime, np.datetime64)):
         to_doy = tools._datetimelike_scalar_to_doy
         to_datetimeindex = \
             tools._datetimelike_scalar_to_datetimeindex
-        output = tools._scalar_out
+        to_output = tools._scalar_out
     elif np.isscalar(datetime_or_doy):  # ints and floats of various types
         to_doy = lambda x: datetime_or_doy
-        to_datetimeindex = tools._doy_scalar_to_datetimeindex
-        output = tools._scalar_out
+        to_datetimeindex = partial(tools._doy_to_datetimeindex,
+                                   epoch_year=epoch_year)
+        to_output = tools._scalar_out
     else:  # assume that we have an array-like object of doy
         to_doy = lambda x: datetime_or_doy
-        to_datetimeindex = tools._doy_array_to_datetimeindex
-        output = tools._array_out
+        to_datetimeindex = partial(tools._doy_to_datetimeindex,
+                                   epoch_year=epoch_year)
+        to_output = tools._array_out
 
     method = method.lower()
     if method == 'asce':
@@ -131,7 +138,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
 
     Ea = solar_constant * RoverR0sqrd
 
-    Ea = output(Ea)
+    Ea = to_output(Ea)
 
     return Ea
 

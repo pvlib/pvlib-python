@@ -10,19 +10,20 @@ pvlib-python supports two ways to generate clear sky irradiance:
 
 1. A :py:class:`~pvlib.location.Location` object's
    :py:meth:`~pvlib.location.Location.get_clearsky` method.
-2. The functions contained within the :py:mod:`~pvlib.clearsky` module,
+2. The functions contained in the :py:mod:`~pvlib.clearsky` module,
    including :py:func:`~pvlib.clearsky.ineichen` and
    :py:func:`~pvlib.clearsky.simplified_solis`.
 
 Users that work with simple time series data may prefer to use
 :py:meth:`~pvlib.location.Location.get_clearsky`, while users
 that want finer control, more explicit code, or work with
-multidimensional data may prefer to use the basic functions.
+multidimensional data may prefer to use the basic functions in the
+:py:mod:`~pvlib.clearsky` module.
 
-The :ref:`location` subsection demonstrates the easiest
-way to obtain a time series of clear sky data for a location.
-The :ref:`ineichen` and :ref:`simplified_solis` subsections detail the
-clear sky algorithms and input data.
+The :ref:`location` subsection demonstrates the easiest way to obtain a
+time series of clear sky data for a location. The :ref:`ineichen` and
+:ref:`simplified_solis` subsections detail the clear sky algorithms and
+input data.
 
 We'll need these imports for the examples below.
 
@@ -60,6 +61,8 @@ airmass, and atmospheric pressure, as appropriate, leaving the user to
 only specify the most important parameters: time and atmospheric
 attenuation. The time input must be a :py:class:`pandas.DatetimeIndex`,
 while the atmospheric attenuation inputs may be constants or arrays.
+The :py:meth:`~pvlib.location.Location.get_clearsky` method always
+returns a :py:class:`pandas.DataFrame`.
 
 .. ipython::
 
@@ -139,45 +142,30 @@ the year. You could run it in a loop to create plots for all months.
     # data is in units of 20 x turbidity
     In [1]: linke_turbidity_table = mat['LinkeTurbidity']  # / 20.   # crashes on rtd
 
-    In [1]: month = 1
-
-    In [1]: plt.figure();
-
-    In [1]: plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=100);
-
-    In [1]: plt.title('Linke turbidity x 20, ' + calendar.month_name[month]);
-
-    In [1]: plt.colorbar(shrink=0.5);
-
-    In [1]: plt.tight_layout();
+    In [1]: def plot_turbidity_map(month, vmin=1, vmax=100):
+       ...:     plt.figure();
+       ...:     plt.imshow(linke_turbidity_table[:, :, month-1], vmin=vmin, vmax=vmax);
+       ...:     plt.title('Linke turbidity x 20, ' + calendar.month_name[month]);
+       ...:     plt.colorbar(shrink=0.5);
+       ...:     plt.tight_layout();
 
     @savefig turbidity-1.png width=10in
-    In [1]: plt.show();
-
-    In [1]: month = 7
-
-    In [1]: plt.figure();
-
-    In [1]: plt.imshow(linke_turbidity_table[:, :, month-1], vmin=1, vmax=100);
-
-    In [1]: plt.title('Linke turbidity x 20, ' + calendar.month_name[month]);
-
-    In [1]: plt.colorbar(shrink=0.5);
-
-    In [1]: plt.tight_layout();
+    In [1]: plot_turbidity_map(1)
 
     @savefig turbidity-7.png width=10in
-    In [1]: plt.show();
+    In [1]: plot_turbidity_map(7)
 
 The :py:func:`~pvlib.clearsky.lookup_linke_turbidity` function takes a
 time, latitude, and longitude and gets the corresponding climatological
 turbidity value for that time at those coordinates. By default, the
 :py:func:`~pvlib.clearsky.lookup_linke_turbidity` function will linearly
-interpolate turbidity from month to month. This removes discontinuities
+interpolate turbidity from month to month, assuming that the raw data is
+valid on 15th of each month. This interpolation removes discontinuities
 in multi-month PV models. Here's a plot of a few locations in the
 Southwest U.S. with and without interpolation. We chose points that are
-relatively close so that you can get a better sense of the spatial
-variability of the data set.
+relatively close so that you can get a better sense of the spatial noise
+and variability of the data set. Note that the altitude of these sites
+varies from 300 m to 1500 m.
 
 .. ipython::
 
@@ -194,10 +182,10 @@ variability of the data set.
 
     In [1]: plt.legend();
 
+    In [1]: plt.title('Raw data (no interpolation)');
+
     @savefig turbidity-no-interp.png width=6in
     In [1]: plt.ylabel('Linke Turbidity');
-
-.. ipython::
 
     In [1]: plt.figure();
 
@@ -207,13 +195,15 @@ variability of the data set.
 
     In [1]: plt.legend();
 
+    In [1]: plt.title('Interpolated to the day');
+
     @savefig turbidity-yes-interp.png width=6in
     In [1]: plt.ylabel('Linke Turbidity');
 
 Examples
 ^^^^^^^^
 
-A clear sky time series using basic pvlib functions.
+A clear sky time series using only basic pvlib functions.
 
 .. ipython::
 
@@ -233,7 +223,7 @@ A clear sky time series using basic pvlib functions.
 
     In [1]: linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(times.dayofyear)
 
     # an input is a pandas Series, so solis is a DataFrame
     In [1]: ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
@@ -243,6 +233,8 @@ A clear sky time series using basic pvlib functions.
     In [1]: ax = ineichen.plot()
 
     In [1]: ax.set_ylabel('Irradiance $W/m^2$');
+
+    In [1]: ax.set_title('Ineichen Clear Sky Model');
 
     In [1]: ax.legend(loc=2);
 
@@ -273,7 +265,7 @@ Grid with a clear sky irradiance for a few turbidity values.
 
     In [1]: print('climatological linke_turbidity = {}'.format(linke_turbidity.mean()))
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(apparent_zenith.index.dayofyear)
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(times.dayofyear)
 
     In [1]: linke_turbidities = [linke_turbidity.mean(), 2, 4]
 
@@ -342,7 +334,7 @@ different wavelengths, as well as convert Linke turbidity to AOD and PW
 Examples
 ^^^^^^^^
 
-A clear sky time series using basic pvlib functions.
+A clear sky time series using only basic pvlib functions.
 
 .. ipython::
 
@@ -360,7 +352,7 @@ A clear sky time series using basic pvlib functions.
 
     In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(apparent_elevation.index.dayofyear)
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(times.dayofyear)
 
     # an input is a Series, so solis is a DataFrame
     In [1]: solis = clearsky.simplified_solis(apparent_elevation, aod700, precipitable_water,
@@ -369,6 +361,8 @@ A clear sky time series using basic pvlib functions.
     In [1]: ax = solis.plot();
 
     In [1]: ax.set_ylabel('Irradiance $W/m^2$');
+
+    In [1]: ax.set_title('Simplified Solis Clear Sky Model');
 
     In [1]: ax.legend(loc=2);
 
@@ -420,7 +414,7 @@ Grid with a clear sky irradiance for a few PW and AOD values.
 
     In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(apparent_elevation.index.dayofyear)
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(times.dayofyear)
 
     In [1]: aod700 = [0.01, 0.1]
 
@@ -430,7 +424,9 @@ Grid with a clear sky irradiance for a few PW and AOD values.
 
     In [1]: axes = axes.flatten()
 
-    In [1]: [clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra).plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw)) for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes)];
+    In [1]: for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes):
+       ...:     cs = clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra)
+       ...:     cs.plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw))
 
     @savefig solis-grid.png width=10in
     In [1]: plt.show();

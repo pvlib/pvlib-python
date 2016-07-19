@@ -65,7 +65,7 @@ def test_run_model(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([180.865917827,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  1.82033564e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -77,7 +77,7 @@ def test_run_model_with_irradiance(system, location):
                               index=times)
     ac = mc.run_model(times, irradiance=irradiance).ac
 
-    expected = pd.Series(np.array([188.973621919,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -89,7 +89,7 @@ def test_run_model_perez(system, location):
                               index=times)
     ac = mc.run_model(times, irradiance=irradiance).ac
 
-    expected = pd.Series(np.array([189.113386374,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  190.194545796,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -102,7 +102,7 @@ def test_run_model_gueymard_perez(system, location):
                               index=times)
     ac = mc.run_model(times, irradiance=irradiance).ac
 
-    expected = pd.Series(np.array([189.11359739,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  190.194760203,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -114,7 +114,7 @@ def test_run_model_with_weather(system, location):
     weather = pd.DataFrame({'wind_speed':5, 'temp_air':10}, index=times)
     ac = mc.run_model(times, weather=weather).ac
 
-    expected = pd.Series(np.array([198.675352078,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  1.99952400e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -127,7 +127,7 @@ def test_run_model_tracker(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([120.623924959,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  121.421719,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -202,7 +202,7 @@ def test_basic_chain_strategy(sam_data):
                                     orientation_strategy='south_at_latitude_tilt',
                                     altitude=altitude)
 
-    expected = pd.Series(np.array([180.865917827,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  1.82033563543e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 

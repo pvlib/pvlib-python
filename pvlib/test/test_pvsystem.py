@@ -227,7 +227,8 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
 
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
-    (np.array([[-30, 30, 100, np.nan]]), np.array([[np.nan, 1., 0, np.nan]])),
+    (np.array([[-30, 30, 100, np.nan]]),
+     np.array([[np.nan, 1.007572, 0, np.nan]])),
     (pd.Series([80]), pd.Series([0.597472]))
 ])
 def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
@@ -242,7 +243,10 @@ def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
 
 def test_sapm_aoi_loss_limits():
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 1
+    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 5
+
+    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(module_parameters, 1, upper=1) == 1
 
     module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
     assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 0

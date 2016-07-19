@@ -1413,7 +1413,7 @@ def sapm_spectral_loss(module, airmass_absolute):
     return spectral_loss
 
 
-def sapm_aoi_loss(module, aoi):
+def sapm_aoi_loss(module, aoi, upper=None):
     """
     Calculates the SAPM angle of incidence loss coefficient, F2.
 
@@ -1428,17 +1428,41 @@ def sapm_aoi_loss(module, aoi):
         Angle of incidence in degrees. Negative input angles will return
         nan values.
 
+    upper : None or float
+        Upper limit on the results.
+
     Returns
     -------
     F2 : numeric
         The SAPM angle of incidence loss coefficient.
+
+    Notes
+    -----
+    The SAPM traditionally does not define an upper limit on the AOI
+    loss function and values slightly exceeding 1 may exist for moderate
+    angles of incidence (15-40 degrees). However, users may consider
+    imposing an upper limit of 1.
+
+    References
+    ----------
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
+    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
+    NM.
+
+    [2] B.H. King et al, "Procedure to Determine Coefficients for the
+    Sandia Array Performance Model (SAPM)," SAND2016-5284, Sandia
+    National Laboratories (2016).
+
+    [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
+    Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
+    DOI: 10.1109/PVSC.2015.7355849
     """
 
     aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
                  module['B1'], module['B0']]
 
     aoi_loss = np.polyval(aoi_coeff, aoi)
-    aoi_loss = np.clip(aoi_loss, 0, 1)
+    aoi_loss = np.clip(aoi_loss, 0, upper)
     aoi_loss = np.where(aoi < 0, np.nan, aoi_loss)
 
     if isinstance(aoi, pd.Series):

@@ -49,6 +49,7 @@ Documentation
 ~~~~~~~~~~~~~
 
 * Added new terms to the variables documentation. (:issue:`195`)
+* Added clear sky documentation page.
 * Fix documentation build warnings. (:issue:`210`)
 
 

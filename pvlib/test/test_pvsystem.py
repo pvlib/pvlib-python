@@ -1,6 +1,7 @@
 import inspect
 import os
 import datetime
+from collections import OrderedDict
 
 import numpy as np
 from numpy import nan
@@ -139,58 +140,161 @@ def sam_data():
     return data
 
 
-def test_sapm(sam_data):
-    modules = sam_data['sandiamod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    irrad_data = pd.DataFrame({'dni':[0,1000], 'ghi':[0,600], 'dhi':[0,100]},
-                              index=times)
-    am = pd.Series([0, 2.25], index=times)
-    aoi = pd.Series([180, 30], index=times)
-
-    sapm = pvsystem.sapm(module_parameters, irrad_data['dni'],
-                         irrad_data['dhi'], 25, am, aoi)
-
-    expected = pd.DataFrame(np.array(
-    [[   0.        ,    0.        ,    0.        ,    0.        ,
-           0.        ,    0.        ,    0.        ,    0.        ],
-       [   5.74526799,    5.12194115,   59.67914031,   48.41924255,
-         248.00051089,    5.61787615,    3.52581308,    1.12848138]]),
-        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx',
-                 'effective_irradiance'],
-        index=times)
-
-    assert_frame_equal(sapm, expected)
-
-    # just make sure it works with a dict input
-    sapm = pvsystem.sapm(module_parameters.to_dict(), irrad_data['dni'],
-                         irrad_data['dhi'], 25, am, aoi)
-
-
-def test_PVSystem_sapm(sam_data):
+@pytest.fixture(scope="session")
+def sapm_module_params(sam_data):
     modules = sam_data['sandiamod']
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = modules[module]
-    system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    irrad_data = pd.DataFrame({'dni':[0,1000], 'ghi':[0,600], 'dhi':[0,100]},
-                              index=times)
-    am = pd.Series([0, 2.25], index=times)
-    aoi = pd.Series([180, 30], index=times)
+    return module_parameters
 
-    sapm = system.sapm(irrad_data['dni'], irrad_data['dhi'], 25, am, aoi)
+
+def test_sapm(sapm_module_params):
+
+    times = pd.DatetimeIndex(start='2015-01-01', periods=5, freq='12H')
+    effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
+    temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
+
+    out = pvsystem.sapm(sapm_module_params, effective_irradiance, temp_cell)
 
     expected = pd.DataFrame(np.array(
-    [[   0.        ,    0.        ,    0.        ,    0.        ,
-           0.        ,    0.        ,    0.        ,    0.        ],
-       [   5.74526799,    5.12194115,   59.67914031,   48.41924255,
-         248.00051089,    5.61787615,    3.52581308,    1.12848138]]),
-        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx',
-                 'effective_irradiance'],
+      [[  -5.0608322 ,   -4.65037767,           nan,           nan,
+                  nan,   -4.91119927,   -4.15367716],
+       [   2.545575  ,    2.28773882,   56.86182059,   47.21121608,
+         108.00693168,    2.48357383,    1.71782772],
+       [   5.65584763,    5.01709903,   54.1943277 ,   42.51861718,
+         213.32011294,    5.52987899,    3.48660728],
+       [          nan,           nan,           nan,           nan,
+                  nan,           nan,           nan],
+       [          nan,           nan,           nan,           nan,
+                  nan,           nan,           nan]]),
+        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=times)
 
-    assert_frame_equal(sapm, expected)
+    assert_frame_equal(out, expected, check_less_precise=4)
+
+    out = pvsystem.sapm(sapm_module_params, 1, 25)
+
+    expected = OrderedDict()
+    expected['i_sc'] = 5.09115
+    expected['i_mp'] = 4.5462909092579995
+    expected['v_oc'] = 59.260800000000003
+    expected['v_mp'] = 48.315600000000003
+    expected['p_mp'] = 219.65677305534581
+    expected['i_x'] = 4.9759899999999995
+    expected['i_xx'] = 3.1880204359100004
+
+    for k, v in expected.items():
+        assert_allclose(out[k], v, atol=1e-4)
+
+    # just make sure it works with a dict input
+    pvsystem.sapm(sapm_module_params.to_dict(), effective_irradiance,
+                  temp_cell)
+
+
+def test_PVSystem_sapm(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+
+    times = pd.DatetimeIndex(start='2015-01-01', periods=5, freq='12H')
+    effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
+    temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
+
+    out = system.sapm(effective_irradiance, temp_cell)
+
+
+@pytest.mark.parametrize('airmass,expected', [
+    (1.5, 1.00028714375),
+    (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),
+    (pd.Series([5]), pd.Series([1.0387675]))
+])
+def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
+
+    out = pvsystem.sapm_spectral_loss(sapm_module_params, airmass)
+
+    if isinstance(airmass, pd.Series):
+        assert_series_equal(out, expected, check_less_precise=4)
+    else:
+        assert_allclose(out, expected, atol=1e-4)
+
+
+def test_PVSystem_sapm_spectral_loss(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+
+    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
+    airmass = pd.Series([1, 10], index=times)
+
+    out = system.sapm_spectral_loss(airmass)
+
+
+@pytest.mark.parametrize('aoi,expected', [
+    (45, 0.9975036250000002),
+    (np.array([[-30, 30, 100, np.nan]]),
+     np.array([[np.nan, 1.007572, 0, np.nan]])),
+    (pd.Series([80]), pd.Series([0.597472]))
+])
+def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
+
+    out = pvsystem.sapm_aoi_loss(sapm_module_params, aoi)
+
+    if isinstance(aoi, pd.Series):
+        assert_series_equal(out, expected, check_less_precise=4)
+    else:
+        assert_allclose(out, expected, atol=1e-4)
+
+
+def test_sapm_aoi_loss_limits():
+    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 5
+
+    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(module_parameters, 1, upper=1) == 1
+
+    module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 0
+
+
+def test_PVSystem_sapm_aoi_loss(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+
+    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
+    aoi = pd.Series([45, 10], index=times)
+
+    out = system.sapm_aoi_loss(aoi)
+
+
+@pytest.mark.parametrize('test_input,expected', [
+    ([1000, 100, 5, 45, 1000], 1.1400510967821877),
+    ([np.array([np.nan, 1000, 1000]),
+      np.array([100, np.nan, 100]),
+      np.array([1.1, 1.1, 1.1]),
+      np.array([10, 10, 10]),
+      1000],
+     np.array([np.nan, np.nan, 1.081157])),
+    ([pd.Series([1000]), pd.Series([100]), pd.Series([1.1]),
+      pd.Series([10]), 1370],
+     pd.Series([0.789166]))
+])
+def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
+
+    out = pvsystem.sapm_effective_irradiance(sapm_module_params, *test_input)
+
+    if isinstance(test_input, pd.Series):
+        assert_series_equal(out, expected, check_less_precise=4)
+    else:
+        assert_allclose(out, expected, atol=1e-4)
+
+
+def test_PVSystem_sapm_effective_irradiance(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+
+    poa_direct = np.array([np.nan, 1000, 1000])
+    poa_diffuse = np.array([100, np.nan, 100])
+    airmass_absolute = np.array([1.1, 1.1, 1.1])
+    aoi = np.array([10, 10, 10])
+    reference_irradiance = 1000
+
+    out = system.sapm_effective_irradiance(
+        poa_direct, poa_diffuse, airmass_absolute,
+        aoi, reference_irradiance=reference_irradiance)
 
 
 def test_calcparams_desoto(sam_data):

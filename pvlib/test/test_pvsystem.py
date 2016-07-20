@@ -92,6 +92,7 @@ def test_systemdef_dict():
     assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
 
 
+@needs_numpy_1_10
 def test_ashraeiam():
     thetas = np.linspace(-90, 90, 9)
     iam = pvsystem.ashraeiam(thetas, .05)
@@ -100,6 +101,7 @@ def test_ashraeiam():
     assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_PVSystem_ashraeiam():
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
@@ -110,6 +112,7 @@ def test_PVSystem_ashraeiam():
     assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_physicaliam():
     thetas = np.linspace(-90, 90, 9)
     iam = pvsystem.physicaliam(thetas, 1.526, 0.002, 4)
@@ -118,6 +121,7 @@ def test_physicaliam():
     assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_PVSystem_physicaliam():
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
     system = pvsystem.PVSystem(module_parameters=module_parameters)

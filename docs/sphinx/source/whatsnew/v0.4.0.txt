@@ -19,6 +19,9 @@ API Changes
   in addition to arrays and Series. Furthermore, these functions no
   longer promote scalar or array input to Series output.
   Also applies to atmosphere.relativeairmass. (:issue:`201`, :issue:`214`)
+* The irradiance.extraradiation function input/output type consistency
+  across different methods has been dramatically improved.
+  (:issue:`217`, :issue:`219`)
 * Updated to pvsystem.sapm to be consistent with the PVLIB MATLAB API.
   pvsystem.sapm now takes an effective irradiance argument instead of
   POA irradiances, airmass, and AOI. Implements closely related
@@ -60,6 +63,7 @@ Documentation
 * Added new terms to the variables documentation. (:issue:`195`)
 * Added clear sky documentation page.
 * Fix documentation build warnings. (:issue:`210`)
+* Removed an unneeded note in irradiance.extraradiation. (:issue:`216`)
 
 
 Other

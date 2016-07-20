@@ -10,6 +10,7 @@ import logging
 
 import datetime
 from collections import OrderedDict
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -36,15 +37,15 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
-                   **kwargs):
+                   epoch_year=2014, **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
 
     Parameters
     ----------
-    datetime_or_doy : int, float, array, pd.DatetimeIndex
-        Day of year, array of days of year e.g.
-        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+    datetime_or_doy : int, float, array, date, datetime, datetime64,
+                      Timestamp, DatetimeIndex
+        Day of year, array of days of year, or datetime-like object
 
     solar_constant : float
         The solar constant.
@@ -53,6 +54,11 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
         The method by which the ET radiation should be calculated.
         Options include ``'pyephem', 'spencer', 'asce', 'nrel'``.
 
+    epoch_year : int
+        The year in which a day of year input will be calculated. Only
+        applies to day of year input used with the pyephem or nrel
+        methods.
+
     kwargs :
         Passed to solarposition.nrel_earthsun_distance
 
@@ -60,15 +66,9 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     -------
     dni_extra : float, array, or Series
         The extraterrestrial radiation present in watts per square meter
-        on a surface which is normal to the sun. Ea is of the same size
-        as the input doy.
-
-        'pyephem' and 'nrel' always return a Series.
-
-    Notes
-    -----
-    The Spencer method contains a minus sign discrepancy between
-    equation 12 of [1]. It's unclear what the correct formula is.
+        on a surface which is normal to the sun. Pandas Timestamp and
+        DatetimeIndex inputs will yield a Pandas TimeSeries. All other
+        inputs will yield a float or an array of floats.
 
     References
     ----------
@@ -76,51 +76,61 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     Clear Sky Models: Implementation and Analysis", Sandia National
     Laboratories, SAND2012-2389, 2012.
 
-    [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>,
-    Eqs. SR1 and SR2
+    [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
+    SR1 and SR2
 
-    [3] Partridge, G. W. and Platt, C. M. R. 1976.
-    Radiative Processes in Meteorology and Climatology.
+    [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
+    in Meteorology and Climatology.
 
-    [4] Duffie, J. A. and Beckman, W. A. 1991.
-    Solar Engineering of Thermal Processes,
-    2nd edn. J. Wiley and Sons, New York.
-
-    See Also
-    --------
-    pvlib.clearsky.disc
+    [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
+    Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
     """
 
-    pvl_logger.debug('irradiance.extraradiation()')
-
-    method = method.lower()
-
+    # This block will set the functions that can be used to convert the
+    # inputs to either day of year or pandas DatetimeIndex, and the
+    # functions that will yield the appropriate output type. It's
+    # complicated because there are many day-of-year-like input types,
+    # and the different algorithms need different types. Maybe you have
+    # a better way to do it.
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
-        doy = datetime_or_doy.dayofyear
-        input_to_datetimeindex = lambda x: datetime_or_doy
-    elif isinstance(datetime_or_doy, (int, float)):
-        doy = datetime_or_doy
-        input_to_datetimeindex = _scalar_to_datetimeindex
-    else:  # assume that we have an array-like object of doy. danger?
-        doy = datetime_or_doy
-        input_to_datetimeindex = _array_to_datetimeindex
-
-    B = (2. * np.pi / 365.) * (doy - 1)
+        to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
+        to_datetimeindex = lambda x: datetime_or_doy
+        to_output = partial(pd.Series, index=datetime_or_doy)
+    elif isinstance(datetime_or_doy, pd.Timestamp):
+        to_doy = tools._pandas_to_doy
+        to_datetimeindex = \
+            tools._datetimelike_scalar_to_datetimeindex
+        to_output = tools._scalar_out
+    elif isinstance(datetime_or_doy,
+                    (datetime.date, datetime.datetime, np.datetime64)):
+        to_doy = tools._datetimelike_scalar_to_doy
+        to_datetimeindex = \
+            tools._datetimelike_scalar_to_datetimeindex
+        to_output = tools._scalar_out
+    elif np.isscalar(datetime_or_doy):  # ints and floats of various types
+        to_doy = lambda x: datetime_or_doy
+        to_datetimeindex = partial(tools._doy_to_datetimeindex,
+                                   epoch_year=epoch_year)
+        to_output = tools._scalar_out
+    else:  # assume that we have an array-like object of doy
+        to_doy = lambda x: datetime_or_doy
+        to_datetimeindex = partial(tools._doy_to_datetimeindex,
+                                   epoch_year=epoch_year)
+        to_output = tools._array_out
 
     method = method.lower()
     if method == 'asce':
-        pvl_logger.debug('Calculating ET rad using ASCE method')
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
     elif method == 'spencer':
-        pvl_logger.debug('Calculating ET rad using Spencer method')
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
         RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
                        0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
     elif method == 'pyephem':
-        pvl_logger.debug('Calculating ET rad using pyephem method')
-        times = input_to_datetimeindex(datetime_or_doy)
+        times = to_datetimeindex(datetime_or_doy)
         RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
     elif method == 'nrel':
-        times = input_to_datetimeindex(datetime_or_doy)
+        times = to_datetimeindex(datetime_or_doy)
         RoverR0sqrd = \
             solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
     else:
@@ -128,57 +138,9 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
 
     Ea = solar_constant * RoverR0sqrd
 
+    Ea = to_output(Ea)
+
     return Ea
-
-
-def _scalar_to_datetimeindex(doy_scalar):
-    """
-    Convert a scalar day of year number to a pd.DatetimeIndex.
-
-    Parameters
-    ----------
-    doy_array : int or float
-        Contains days of the year
-
-    Returns
-    -------
-    pd.DatetimeIndex
-    """
-    return pd.DatetimeIndex([_doy_to_timestamp(doy_scalar)])
-
-
-def _array_to_datetimeindex(doy_array):
-    """
-    Convert an array of day of year numbers to a pd.DatetimeIndex.
-
-    Parameters
-    ----------
-    doy_array : Iterable
-        Contains days of the year
-
-    Returns
-    -------
-    pd.DatetimeIndex
-    """
-    return pd.DatetimeIndex(list(map(_doy_to_timestamp, doy_array)))
-
-
-def _doy_to_timestamp(doy, epoch='2013-12-31'):
-    """
-    Convert a numeric day of the year to a pd.Timestamp.
-
-    Parameters
-    ----------
-    doy : int or float.
-        Numeric day of year.
-    epoch : pd.Timestamp compatible object.
-        Date to which to add the day of year to.
-
-    Returns
-    -------
-    pd.Timestamp
-    """
-    return pd.Timestamp('2013-12-31') + datetime.timedelta(days=float(doy))
 
 
 def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):

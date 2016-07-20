@@ -8,10 +8,7 @@ pvl_logger = logging.getLogger('pvlib')
 import datetime as dt
 
 import numpy as np
-<<<<<<< 8bad8eb9fde7fadb0a6262d9321068f0b96b87c8
 import pandas as pd
-=======
->>>>>>> update tests
 import pytz
 
 
@@ -120,11 +117,6 @@ def localize_to_utc(time, location):
             time_utc = time.tz_localize(location.tz).tz_convert('UTC')
             pvl_logger.debug('tz_localize to %s and then tz_convert to UTC',
                              location.tz)
-
-<<<<<<< 8bad8eb9fde7fadb0a6262d9321068f0b96b87c8
-=======
-
->>>>>>> update tests
     return time_utc
 
 
@@ -177,7 +169,6 @@ def djd_to_datetime(djd, tz='UTC'):
     return utc_time.astimezone(pytz.timezone(tz))
 
 
-<<<<<<< 8bad8eb9fde7fadb0a6262d9321068f0b96b87c8
 def _pandas_to_doy(pd_object):
     """
     Finds the day of year for a pandas datetime-like object.
@@ -240,7 +231,8 @@ def _array_out(input):
         output = input
 
     return output
-=======
+
+
 def _build_kwargs(keys, input_dict):
     """
     Parameters
@@ -264,4 +256,3 @@ def _build_kwargs(keys, input_dict):
             pass
 
     return kwargs
->>>>>>> update tests

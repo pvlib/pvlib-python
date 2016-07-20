@@ -69,6 +69,8 @@ Documentation
 Other
 ~~~~~
 
+* pvlib-python is now available on the conda-forge channel:
+  conda install pvlib-python -c conda-forge (:issue:`154`)
 * Switch to the py.test testing framework. (:issue:`204`)
 * Reconfigure Appveyor CI builds and resolve an issue in which the command
   line length was too long. (:issue:`207`)
@@ -90,3 +92,4 @@ Code Contributors
 
 * Will Holmgren
 * Jonathan Chambers
+* Mitchell Lee

@@ -413,7 +413,8 @@ class PVSystem(object):
             self.module_parameters, reference_irradiance=reference_irradiance)
 
     def singlediode(self, photocurrent, saturation_current,
-                    resistance_series, resistance_shunt, nNsVth):
+                    resistance_series, resistance_shunt, nNsVth,
+                    ivcurve_pnts=None):
         """Wrapper around the :py:func:`singlediode` function.
 
         Parameters
@@ -425,7 +426,8 @@ class PVSystem(object):
         See pvsystem.singlediode for details
         """
         return singlediode(photocurrent, saturation_current,
-                           resistance_series, resistance_shunt, nNsVth)
+                           resistance_series, resistance_shunt, nNsVth,
+                           ivcurve_pnts=ivcurve_pnts)
 
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
@@ -1533,7 +1535,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth):
+                resistance_shunt, nNsVth, ivcurve_pnts=None):
     r'''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -1580,13 +1582,18 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
 
+    ivcurve_pnts : None or int
+        Number of points in the desired IV curve. If None or 0, no
+        IV curves will be produced.
+
     Returns
     -------
-    If ``photocurrent`` is a Series, a DataFrame with the following
-    columns. All columns have the same number of rows as the largest
-    input DataFrame.
+    If photocurrent is a Series and ivcurve_pnts is None, a DataFrame
+    with the columns described below. All columns have the same number
+    of rows as the largest input DataFrame.
 
-    If ``photocurrent`` is a scalar, a dict with the following keys.
+    If photocurrent is a scalar or ivcurve_pnts is not None, an
+    OrderedDict with the following keys.
 
     * i_sc -  short circuit current in amperes.
     * v_oc -  open circuit voltage in volts.
@@ -1595,6 +1602,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     * p_mp -  power at maximum power point in watts.
     * i_x -  current, in amperes, at ``v = 0.5*v_oc``.
     * i_xx -  current, in amperes, at ``V = 0.5*(v_oc+v_mp)``.
+    * i - None or iv curve current.
+    * v - None or iv curve voltage.
 
     Notes
     -----
@@ -1648,37 +1657,32 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
                     0.5*(v_oc+v_mp), saturation_current, photocurrent)
 
-    # @wholmgren: need to move this stuff to a different function
-#     If the user says they want a curve of with number of points equal to
-#     NumPoints (must be >=2), then create a voltage array where voltage is
-#     zero in the first column, and Voc in the last column. Number of columns
-#     must equal NumPoints. Each row represents the voltage for one IV curve.
-#     Then create a current array where current is Isc in the first column, and
-#     zero in the last column, and each row represents the current in one IV
-#     curve. Thus the nth (V,I) point of curve m would be found as follows:
-#     (Result.V(m,n),Result.I(m,n)).
-#     if NumPoints >= 2
-#        s = ones(1,NumPoints);  # shaping DataFrame to shape the column
-#                                # DataFrame parameters into 2-D matrices
-#        Result.V = (Voc)*(0:1/(NumPoints-1):1);
-#        Result.I = I_from_V(Rsh*s, Rs*s, nNsVth*s, Result.V, I0*s, IL*s);
-#     end
+    # create ivcurve
+    if ivcurve_pnts:
+        ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
+                     np.linspace(0, 1, ivcurve_pnts))
+        ivcurve_i = i_from_v(
+            resistance_shunt, resistance_series, nNsVth, ivcurve_v.T,
+            saturation_current, photocurrent).T
+    else:
+        ivcurve_v = None
+        ivcurve_i = None
 
-    dfout = {}
-    dfout['i_sc'] = i_sc
-    dfout['i_mp'] = i_mp
-    dfout['v_oc'] = v_oc
-    dfout['v_mp'] = v_mp
-    dfout['p_mp'] = p_mp
-    dfout['i_x'] = i_x
-    dfout['i_xx'] = i_xx
+    out = OrderedDict()
+    out['i_sc'] = i_sc
+    out['i_mp'] = i_mp
+    out['v_oc'] = v_oc
+    out['v_mp'] = v_mp
+    out['p_mp'] = p_mp
+    out['i_x'] = i_x
+    out['i_xx'] = i_xx
+    out['i'] = ivcurve_i
+    out['v'] = ivcurve_v
 
-    try:
-        dfout = pd.DataFrame(dfout, index=photocurrent.index)
-    except AttributeError:
-        pass
+    if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
+        out = pd.DataFrame(out, index=photocurrent.index)
 
-    return dfout
+    return out
 
 
 # Created April,2014
@@ -1879,11 +1883,13 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     except ImportError:
         raise ImportError('This function requires scipy')
 
-    Rsh = resistance_shunt
-    Rs = resistance_series
-    I0 = saturation_current
-    IL = photocurrent
-    V = voltage
+    # asarray turns Series into arrays so that we don't have to worry
+    # about multidimensional broadcasting failing
+    Rsh = np.asarray(resistance_shunt)
+    Rs = np.asarray(resistance_series)
+    I0 = np.asarray(saturation_current)
+    IL = np.asarray(photocurrent)
+    V = np.asarray(voltage)
 
     argW = (Rs*I0*Rsh *
             np.exp(Rsh*(Rs*(IL+I0)+V) / (nNsVth*(Rs+Rsh))) /

@@ -43,6 +43,7 @@ Enhancements
 * Add solarposition.nrel_earthsun_distance function and option to
   calculate extraterrestrial radiation using the NREL solar position
   algorithm. (:issue:`211`, :issue:`215`)
+* Includes SAM data files in the distribution. (:issue:`52`)
 
 
 Bug fixes

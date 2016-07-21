@@ -48,10 +48,11 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
-* Fixed a problem with singlediode i_mp, v_mp, and p_mp calculations when
-  using array or Series input. The function wrongly returned solutions
-  when any single point is within the error tolerance, rather than
-  requiring that the solution for all points be close enough.
+* Fixed an error in pvsystem.singlediode's i_mp, v_mp, and p_mp
+  calculations when using array or Series input. The function wrongly
+  returned solutions when any single point is within the error tolerance,
+  rather than requiring that the solution for all points be within the
+  error tolerance. Results in test scenarios changed by 1-10%.
   (:issue:`221`)
 * dirint function yielded the wrong results for non-sea-level pressures.
   Fixed. (:issue:`212`)

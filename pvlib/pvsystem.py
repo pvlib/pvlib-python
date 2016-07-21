@@ -326,7 +326,7 @@ class PVSystem(object):
         -------
         See pvsystem.sapm for details
         """
-        return sapm(self.module_parameters, effective_irradiance, temp_cell)
+        return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
     def sapm_celltemp(self, irrad, wind, temp):
         """Uses :py:func:`sapm_celltemp` to calculate module and cell
@@ -358,7 +358,7 @@ class PVSystem(object):
         F1 : numeric
             The SAPM spectral loss coefficient.
         """
-        return sapm_spectral_loss(self.module_parameters, airmass_absolute)
+        return sapm_spectral_loss(airmass_absolute, self.module_parameters)
 
     def sapm_aoi_loss(self, aoi):
         """
@@ -375,7 +375,7 @@ class PVSystem(object):
         F2 : numeric
             The SAPM angle of incidence loss coefficient.
         """
-        return sapm_aoi_loss(self.module_parameters, aoi)
+        return sapm_aoi_loss(aoi, self.module_parameters)
 
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
@@ -407,10 +407,9 @@ class PVSystem(object):
         effective_irradiance : numeric
             The SAPM effective irradiance.
         """
-        return sapm_effective_irradiance(self.module_parameters,
-                                         poa_direct, poa_diffuse,
-                                         airmass_absolute, aoi,
-                                         reference_irradiance)
+        return sapm_effective_irradiance(
+            poa_direct, poa_diffuse, airmass_absolute, aoi,
+            self.module_parameters, reference_irradiance=reference_irradiance)
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth):
@@ -1162,7 +1161,7 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(module, effective_irradiance, temp_cell):
+def sapm(effective_irradiance, temp_cell, module):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
@@ -1170,15 +1169,15 @@ def sapm(module, effective_irradiance, temp_cell):
 
     Parameters
     ----------
-    module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the notes section for more details.
-
     effective_irradiance : numeric
         Effective irradiance (suns).
 
     temp_cell : numeric
         The cell temperature (degrees C).
+
+    module : dict-like
+        A dict, Series, or DataFrame defining the SAPM performance
+        parameters. See the notes section for more details.
 
     Returns
     -------
@@ -1387,19 +1386,19 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
-def sapm_spectral_loss(module, airmass_absolute):
+def sapm_spectral_loss(airmass_absolute, module):
     """
     Calculates the SAPM spectral loss coefficient, F1.
 
     Parameters
     ----------
+    airmass_absolute : numeric
+        Absolute airmass
+
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the :py:func:`sapm` notes section for more
         details.
-
-    airmass_absolute : numeric
-        Absolute airmass
 
     Returns
     -------
@@ -1424,20 +1423,20 @@ def sapm_spectral_loss(module, airmass_absolute):
     return spectral_loss
 
 
-def sapm_aoi_loss(module, aoi, upper=None):
+def sapm_aoi_loss(aoi, module, upper=None):
     """
     Calculates the SAPM angle of incidence loss coefficient, F2.
 
     Parameters
     ----------
+    aoi : numeric
+        Angle of incidence in degrees. Negative input angles will return
+        nan values.
+
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the :py:func:`sapm` notes section for more
         details.
-
-    aoi : numeric
-        Angle of incidence in degrees. Negative input angles will return
-        nan values.
 
     upper : None or float
         Upper limit on the results.
@@ -1482,20 +1481,14 @@ def sapm_aoi_loss(module, aoi, upper=None):
     return aoi_loss
 
 
-def sapm_effective_irradiance(module, poa_direct, poa_diffuse,
-                              airmass_absolute, aoi,
-                              reference_irradiance=1000):
+def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
+                              module, reference_irradiance=1000):
     """
     Calculates the SAPM effective irradiance using the SAPM spectral
     loss and SAPM angle of incidence loss functions.
 
     Parameters
     ----------
-    module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more
-        details.
-
     poa_direct : numeric
         The direct irradiance incident upon the module.
 
@@ -1508,6 +1501,11 @@ def sapm_effective_irradiance(module, poa_direct, poa_diffuse,
     aoi : numeric
         Angle of incidence in degrees.
 
+    module : dict-like
+        A dict, Series, or DataFrame defining the SAPM performance
+        parameters. See the :py:func:`sapm` notes section for more
+        details.
+
     reference_irradiance : numeric
         Reference irradiance by which to divide the input irradiance.
 
@@ -1517,8 +1515,8 @@ def sapm_effective_irradiance(module, poa_direct, poa_diffuse,
         The SAPM effective irradiance.
     """
 
-    F1 = sapm_spectral_loss(module, airmass_absolute)
-    F2 = sapm_aoi_loss(module, aoi)
+    F1 = sapm_spectral_loss(airmass_absolute, module)
+    F2 = sapm_aoi_loss(aoi, module)
 
     E0 = reference_irradiance
 

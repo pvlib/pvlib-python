@@ -156,7 +156,7 @@ def test_sapm(sapm_module_params):
     effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
     temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
 
-    out = pvsystem.sapm(sapm_module_params, effective_irradiance, temp_cell)
+    out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
     expected = pd.DataFrame(np.array(
       [[  -5.0608322 ,   -4.65037767,           nan,           nan,
@@ -174,7 +174,7 @@ def test_sapm(sapm_module_params):
 
     assert_frame_equal(out, expected, check_less_precise=4)
 
-    out = pvsystem.sapm(sapm_module_params, 1, 25)
+    out = pvsystem.sapm(1, 25, sapm_module_params)
 
     expected = OrderedDict()
     expected['i_sc'] = 5.09115
@@ -189,8 +189,8 @@ def test_sapm(sapm_module_params):
         assert_allclose(out[k], v, atol=1e-4)
 
     # just make sure it works with a dict input
-    pvsystem.sapm(sapm_module_params.to_dict(), effective_irradiance,
-                  temp_cell)
+    pvsystem.sapm(effective_irradiance, temp_cell,
+                  sapm_module_params.to_dict())
 
 
 def test_PVSystem_sapm(sapm_module_params):
@@ -210,7 +210,7 @@ def test_PVSystem_sapm(sapm_module_params):
 ])
 def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
 
-    out = pvsystem.sapm_spectral_loss(sapm_module_params, airmass)
+    out = pvsystem.sapm_spectral_loss(airmass, sapm_module_params)
 
     if isinstance(airmass, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
@@ -235,7 +235,7 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
 ])
 def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
 
-    out = pvsystem.sapm_aoi_loss(sapm_module_params, aoi)
+    out = pvsystem.sapm_aoi_loss(aoi, sapm_module_params)
 
     if isinstance(aoi, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
@@ -245,13 +245,13 @@ def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
 
 def test_sapm_aoi_loss_limits():
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 5
+    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 5
 
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(module_parameters, 1, upper=1) == 1
+    assert pvsystem.sapm_aoi_loss(1, module_parameters, upper=1) == 1
 
     module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 0
+    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 0
 
 
 def test_PVSystem_sapm_aoi_loss(sapm_module_params):
@@ -277,7 +277,14 @@ def test_PVSystem_sapm_aoi_loss(sapm_module_params):
 ])
 def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
 
-    out = pvsystem.sapm_effective_irradiance(sapm_module_params, *test_input)
+    try:
+        kwargs = {'reference_irradiance': test_input[4]}
+        test_input = test_input[:-1]
+    except IndexError:
+        kwargs = {}
+
+    out = pvsystem.sapm_effective_irradiance(*test_input, sapm_module_params,
+                                             **kwargs)
 
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)

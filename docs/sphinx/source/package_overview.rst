@@ -105,10 +105,10 @@ to accomplish our system modeling goal:
         temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'],
                                              wind_speed, temp_air)
         effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
-            module, total_irrad['poa_direct'], total_irrad['poa_diffuse'],
-            am_abs, aoi)
-        dc = pvlib.pvsystem.sapm(module, effective_irradiance, temps['temp_cell'])
-        ac = pvlib.pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
+            total_irrad['poa_direct'], total_irrad['poa_diffuse'],
+            am_abs, aoi, module)
+        dc = pvlib.pvsystem.sapm(effective_irradiance, temps['temp_cell'], module)
+        ac = pvlib.pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter)
         annual_energy = ac.sum()
         energies[name] = annual_energy
 

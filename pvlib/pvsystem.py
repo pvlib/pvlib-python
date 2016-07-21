@@ -1557,23 +1557,23 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     Parameters
     ----------
-    photocurrent : float or Series
+    photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
 
-    saturation_current : float or Series
+    saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
 
-    resistance_series : float or Series
+    resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
 
-    resistance_shunt : float or Series
+    resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
 
-    nNsVth : float or Series
+    nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
         (n), 2) the number of cells in series (Ns), and 3) the cell
         thermal voltage under the desired IV curve conditions (Vth). The
@@ -1588,22 +1588,29 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     Returns
     -------
-    If photocurrent is a Series and ivcurve_pnts is None, a DataFrame
-    with the columns described below. All columns have the same number
-    of rows as the largest input DataFrame.
+    OrderedDict or DataFrame
 
-    If photocurrent is a scalar or ivcurve_pnts is not None, an
-    OrderedDict with the following keys.
+    The returned dict-like object always contains the keys/columns:
 
-    * i_sc -  short circuit current in amperes.
-    * v_oc -  open circuit voltage in volts.
-    * i_mp -  current at maximum power point in amperes.
-    * v_mp -  voltage at maximum power point in volts.
-    * p_mp -  power at maximum power point in watts.
-    * i_x -  current, in amperes, at ``v = 0.5*v_oc``.
-    * i_xx -  current, in amperes, at ``V = 0.5*(v_oc+v_mp)``.
-    * i - None or iv curve current.
-    * v - None or iv curve voltage.
+        * i_sc - short circuit current in amperes.
+        * v_oc - open circuit voltage in volts.
+        * i_mp - current at maximum power point in amperes.
+        * v_mp - voltage at maximum power point in volts.
+        * p_mp - power at maximum power point in watts.
+        * i_x - current, in amperes, at ``v = 0.5*v_oc``.
+        * i_xx - current, in amperes, at ``V = 0.5*(v_oc+v_mp)``.
+
+    If ivcurve_pnts is greater than 0, the output dictionary will also
+    include the keys:
+
+        * i - IV curve current in amperes.
+        * v - IV curve voltage in volts.
+
+    The output will be an OrderedDict if photocurrent is a scalar,
+    array, or ivcurve_pnts is not None.
+
+    The output will be a DataFrame if photocurrent is a Series and
+    ivcurve_pnts is None.
 
     Notes
     -----
@@ -1657,6 +1664,15 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
                     0.5*(v_oc+v_mp), saturation_current, photocurrent)
 
+    out = OrderedDict()
+    out['i_sc'] = i_sc
+    out['v_oc'] = v_oc
+    out['i_mp'] = i_mp
+    out['v_mp'] = v_mp
+    out['p_mp'] = p_mp
+    out['i_x'] = i_x
+    out['i_xx'] = i_xx
+
     # create ivcurve
     if ivcurve_pnts:
         ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
@@ -1664,20 +1680,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         ivcurve_i = i_from_v(
             resistance_shunt, resistance_series, nNsVth, ivcurve_v.T,
             saturation_current, photocurrent).T
-    else:
-        ivcurve_v = None
-        ivcurve_i = None
-
-    out = OrderedDict()
-    out['i_sc'] = i_sc
-    out['i_mp'] = i_mp
-    out['v_oc'] = v_oc
-    out['v_mp'] = v_mp
-    out['p_mp'] = p_mp
-    out['i_x'] = i_x
-    out['i_xx'] = i_xx
-    out['i'] = ivcurve_i
-    out['v'] = ivcurve_v
+        out['v'] = ivcurve_v
+        out['i'] = ivcurve_i
 
     if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
         out = pd.DataFrame(out, index=photocurrent.index)

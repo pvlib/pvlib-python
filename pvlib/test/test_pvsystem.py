@@ -283,8 +283,9 @@ def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
     except IndexError:
         kwargs = {}
 
-    out = pvsystem.sapm_effective_irradiance(*test_input, sapm_module_params,
-                                             **kwargs)
+    test_input.append(sapm_module_params)
+
+    out = pvsystem.sapm_effective_irradiance(*test_input, **kwargs)
 
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)

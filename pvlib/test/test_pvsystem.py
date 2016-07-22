@@ -4,7 +4,7 @@ import datetime
 from collections import OrderedDict
 
 import numpy as np
-from numpy import nan
+from numpy import nan, array
 import pandas as pd
 
 import pytest
@@ -146,6 +146,14 @@ def sam_data():
 def sapm_module_params(sam_data):
     modules = sam_data['sandiamod']
     module = 'Canadian_Solar_CS5P_220M___2009_'
+    module_parameters = modules[module]
+    return module_parameters
+
+
+@pytest.fixture(scope="session")
+def cec_module_params(sam_data):
+    modules = sam_data['cecmod']
+    module = 'Example_Module'
     module_parameters = modules[module]
     return module_parameters
 
@@ -307,17 +315,15 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params):
         aoi, reference_irradiance=reference_irradiance)
 
 
-def test_calcparams_desoto(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
+def test_calcparams_desoto(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   poa_data,
                                   temp_cell=25,
-                                  alpha_isc=module_parameters['alpha_sc'],
-                                  module_parameters=module_parameters,
+                                  alpha_isc=cec_module_params['alpha_sc'],
+                                  module_parameters=cec_module_params,
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
@@ -328,13 +334,11 @@ def test_calcparams_desoto(sam_data):
     assert_allclose(nNsVth, 0.473)
 
 
-def test_PVSystem_calcparams_desoto(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module].copy()
+def test_PVSystem_calcparams_desoto(cec_module_params):
+    module_parameters = cec_module_params.copy()
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
-    system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)
     temp_cell = 25
@@ -367,26 +371,21 @@ def test_i_from_v():
 
 
 @requires_scipy
-def test_PVSystem_i_from_v(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
-    system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)
+def test_PVSystem_i_from_v():
+    system = pvsystem.PVSystem()
     output = system.i_from_v(20, .1, .5, 40, 6e-7, 7)
     assert_allclose(-299.746389916, output, 5)
 
 
 @requires_scipy
-def test_singlediode_series(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
+def test_singlediode_series(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                          poa_data,
                                          temp_cell=25,
-                                         alpha_isc=module_parameters['alpha_sc'],
-                                         module_parameters=module_parameters,
+                                         alpha_isc=cec_module_params['alpha_sc'],
+                                         module_parameters=cec_module_params,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth)
@@ -424,29 +423,66 @@ def test_singlediode_floats(sam_data):
                 'p_mp': 38.194165464983037,
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
-                'v_mp': 6.221535886625464}
+                'v_mp': 6.221535886625464,
+                'i': None,
+                'v': None}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_allclose(expected[k], v, atol=3)
+        if k in ['i', 'v']:
+            assert v is None
+        else:
+            assert_allclose(expected[k], v, atol=3)
 
 
 @requires_scipy
-def test_PVSystem_singlediode_floats(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
-    system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)
-    out = system.singlediode(7, 6e-7, .1, 20, .5)
+def test_singlediode_floats_ivcurve():
+    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3)
     expected = {'i_xx': 4.2685798754011426,
                 'i_mp': 6.1390251797935704,
                 'v_oc': 8.1063001465863085,
                 'p_mp': 38.194165464983037,
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
-                'v_mp': 6.221535886625464}
+                'v_mp': 6.221535886625464,
+                'i': np.array([6.965172e+00,   6.755882e+00,   2.575717e-14]),
+                'v': np.array([0.     ,  4.05315,  8.1063])}
     assert isinstance(out, dict)
     for k, v in out.items():
         assert_allclose(expected[k], v, atol=3)
+
+
+@requires_scipy
+def test_singlediode_series_ivcurve(cec_module_params):
+    times = pd.DatetimeIndex(start='2015-06-01', periods=3, freq='6H')
+    poa_data = pd.Series([0, 400, 800], index=times)
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
+                                         poa_data,
+                                         temp_cell=25,
+                                         alpha_isc=cec_module_params['alpha_sc'],
+                                         module_parameters=cec_module_params,
+                                         EgRef=1.121,
+                                         dEgdT=-0.0002677)
+
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+
+    expected = OrderedDict([('i_sc', array([        nan,  3.01054475,  6.00675648])),
+             ('v_oc', array([         nan,   9.96886962,  10.29530483])),
+             ('i_mp', array([        nan,  2.65191983,  5.28594672])),
+             ('v_mp', array([        nan,  8.33392491,  8.4159707 ])),
+             ('p_mp', array([         nan,  22.10090078,  44.48637274])),
+             ('i_x', array([        nan,  2.88414114,  5.74622046])),
+             ('i_xx', array([        nan,  2.04340914,  3.90007956])),
+             ('v',
+              array([[         nan,          nan,          nan],
+       [  0.        ,   4.98443481,   9.96886962],
+       [  0.        ,   5.14765242,  10.29530483]])),
+             ('i',
+              array([[             nan,              nan,              nan],
+       [  3.01079860e+00,   2.88414114e+00,   3.10862447e-14],
+       [  6.00726296e+00,   5.74622046e+00,   0.00000000e+00]]))])
+
+    for k, v in out.items():
+        assert_allclose(expected[k], v, atol=1e-2)
 
 
 def test_scale_voltage_current_power(sam_data):

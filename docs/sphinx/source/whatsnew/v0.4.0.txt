@@ -51,6 +51,8 @@ Enhancements
 * Add solarposition.nrel_earthsun_distance function and option to
   calculate extraterrestrial radiation using the NREL solar position
   algorithm. (:issue:`211`, :issue:`215`)
+* pvsystem.singlediode can now calculate IV curves if a user supplies
+  an ivcurve_pnts keyword argument. (:issue:`83`)
 * Includes SAM data files in the distribution. (:issue:`52`)
 
 

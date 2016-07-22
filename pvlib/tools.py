@@ -117,7 +117,6 @@ def localize_to_utc(time, location):
             time_utc = time.tz_localize(location.tz).tz_convert('UTC')
             pvl_logger.debug('tz_localize to %s and then tz_convert to UTC',
                              location.tz)
-
     return time_utc
 
 
@@ -232,3 +231,28 @@ def _array_out(input):
         output = input
 
     return output
+
+
+def _build_kwargs(keys, input_dict):
+    """
+    Parameters
+    ----------
+    keys : iterable
+        Typically a list of strings.
+    adict : dict-like
+        A dictionary from which to attempt to pull each key.
+
+    Returns
+    -------
+    kwargs : dict
+        A dictionary with only the keys that were in input_dict
+    """
+
+    kwargs = {}
+    for key in keys:
+        try:
+            kwargs[key] = input_dict[key]
+        except KeyError:
+            pass
+
+    return kwargs

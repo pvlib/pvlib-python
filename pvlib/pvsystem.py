@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib import tools
+from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
 
@@ -227,6 +228,8 @@ class PVSystem(object):
         ``self.module_parameters['b']``, ``aoi``,
         and the :py:func:`ashraeiam` function.
 
+        Uses default arguments if keys not in module_parameters.
+
         Parameters
         ----------
         aoi : numeric
@@ -237,30 +240,34 @@ class PVSystem(object):
         modifier : numeric
             The AOI modifier.
         """
-        b = self.module_parameters['b']
-        return ashraeiam(b, aoi)
+        kwargs = _build_kwargs(['b'], self.module_parameters)
+
+        return ashraeiam(aoi, **kwargs)
 
     def physicaliam(self, aoi):
         """
-        Determine the incidence angle modifier using
+        Determine the incidence angle modifier using ``aoi``,
         ``self.module_parameters['K']``,
         ``self.module_parameters['L']``,
         ``self.module_parameters['n']``,
-        ``aoi``, and the
+        and the
         :py:func:`physicaliam` function.
+
+        Uses default arguments if keys not in module_parameters.
 
         Parameters
         ----------
-        See pvsystem.physicaliam for details
+        aoi : numeric
+            The angle of incidence in degrees.
 
         Returns
         -------
-        See pvsystem.physicaliam for details
+        modifier : numeric
+            The AOI modifier.
         """
-        K = self.module_parameters['K']
-        L = self.module_parameters['L']
-        n = self.module_parameters['n']
-        return physicaliam(K, L, n, aoi)
+        kwargs = _build_kwargs(['K', 'L', 'n'], self.module_parameters)
+
+        return physicaliam(aoi, **kwargs)
 
     def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
         """
@@ -319,7 +326,7 @@ class PVSystem(object):
         -------
         See pvsystem.sapm for details
         """
-        return sapm(self.module_parameters, effective_irradiance, temp_cell)
+        return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
     def sapm_celltemp(self, irrad, wind, temp):
         """Uses :py:func:`sapm_celltemp` to calculate module and cell
@@ -351,7 +358,7 @@ class PVSystem(object):
         F1 : numeric
             The SAPM spectral loss coefficient.
         """
-        return sapm_spectral_loss(self.module_parameters, airmass_absolute)
+        return sapm_spectral_loss(airmass_absolute, self.module_parameters)
 
     def sapm_aoi_loss(self, aoi):
         """
@@ -368,7 +375,7 @@ class PVSystem(object):
         F2 : numeric
             The SAPM angle of incidence loss coefficient.
         """
-        return sapm_aoi_loss(self.module_parameters, aoi)
+        return sapm_aoi_loss(aoi, self.module_parameters)
 
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
@@ -400,10 +407,9 @@ class PVSystem(object):
         effective_irradiance : numeric
             The SAPM effective irradiance.
         """
-        return sapm_effective_irradiance(self.module_parameters,
-                                         poa_direct, poa_diffuse,
-                                         airmass_absolute, aoi,
-                                         reference_irradiance)
+        return sapm_effective_irradiance(
+            poa_direct, poa_diffuse, airmass_absolute, aoi,
+            self.module_parameters, reference_irradiance=reference_irradiance)
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth):
@@ -448,7 +454,7 @@ class PVSystem(object):
         -------
         See pvsystem.snlinverter for details
         """
-        return snlinverter(self.inverter_parameters, v_dc, p_dc)
+        return snlinverter(v_dc, p_dc, self.inverter_parameters)
 
     def scale_voltage_current_power(self, data):
         """
@@ -656,7 +662,7 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
     return system
 
 
-def ashraeiam(b, aoi):
+def ashraeiam(aoi, b=0.05):
     '''
     Determine the incidence angle modifier using the ASHRAE transmission
     model.
@@ -671,27 +677,26 @@ def ashraeiam(b, aoi):
 
     Parameters
     ----------
-    b : float
-        A parameter to adjust the modifier as a function of angle of
-        incidence. Typical values are on the order of 0.05 [3].
-    aoi : Series
+    aoi : numeric
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees.
 
+    b : float
+        A parameter to adjust the modifier as a function of angle of
+        incidence. Typical values are on the order of 0.05 [3].
+
     Returns
     -------
-    IAM : Series
-
+    IAM : numeric
         The incident angle modifier calculated as 1-b*(sec(aoi)-1) as
         described in [2,3].
 
-        Returns nan for all abs(aoi) >= 90 and for all IAM values
-        that would be less than 0.
+        Returns nan for all abs(aoi) >= 90 and for all IAM values that
+        would be less than 0.
 
     References
     ----------
-
-    [1] Souka A.F., Safwat H.H., "Determindation of the optimum
+    [1] Souka A.F., Safwat H.H., "Determination of the optimum
     orientations for the double exposure flat-plate collector and its
     reflections". Solar Energy vol .10, pp 170-174. 1966.
 
@@ -707,15 +712,18 @@ def ashraeiam(b, aoi):
     physicaliam
     '''
 
-    IAM = 1 - b*((1/np.cos(np.radians(aoi)) - 1))
+    iam = 1 - b*((1/np.cos(np.radians(aoi)) - 1))
 
-    IAM[abs(aoi) >= 90] = np.nan
-    IAM[IAM < 0] = np.nan
+    iam = np.where(np.abs(aoi) >= 90, np.nan, iam)
+    iam = np.maximum(0, iam)
 
-    return IAM
+    if isinstance(iam, pd.Series):
+        iam = pd.Series(iam, index=aoi.index)
+
+    return iam
 
 
-def physicaliam(K, L, n, aoi):
+def physicaliam(aoi, n=1.526, K=4., L=0.002):
     '''
     Determine the incidence angle modifier using refractive index,
     glazing thickness, and extinction coefficient
@@ -733,33 +741,33 @@ def physicaliam(K, L, n, aoi):
 
     Parameters
     ----------
-    K : float
+    aoi : numeric
+        The angle of incidence between the module normal vector and the
+        sun-beam vector in degrees.
+
+    n : numeric
+        The effective index of refraction (unitless). Reference [1]
+        indicates that a value of 1.526 is acceptable for glass. n must
+        be a numeric scalar or vector with all values >=0. If n is a
+        vector, it must be the same size as all other input vectors.
+
+    K : numeric
         The glazing extinction coefficient in units of 1/meters.
         Reference [1] indicates that a value of  4 is reasonable for
         "water white" glass. K must be a numeric scalar or vector with
         all values >=0. If K is a vector, it must be the same size as
         all other input vectors.
 
-    L : float
+    L : numeric
         The glazing thickness in units of meters. Reference [1]
         indicates that 0.002 meters (2 mm) is reasonable for most
         glass-covered PV panels. L must be a numeric scalar or vector
         with all values >=0. If L is a vector, it must be the same size
         as all other input vectors.
 
-    n : float
-        The effective index of refraction (unitless). Reference [1]
-        indicates that a value of 1.526 is acceptable for glass. n must
-        be a numeric scalar or vector with all values >=0. If n is a
-        vector, it must be the same size as all other input vectors.
-
-    aoi : Series
-        The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
-
     Returns
     -------
-    IAM : float or Series
+    IAM : numeric
         The incident angle modifier as specified in eqns. 14-16 of [1].
         IAM is a column vector with the same number of elements as the
         largest input vector.
@@ -803,12 +811,14 @@ def physicaliam(K, L, n, aoi):
              ((tools.tand(thetar_deg0 - zeroang)) ** 2) /
              ((tools.tand(thetar_deg0 + zeroang)) ** 2))))))
 
-    IAM = tau / tau0
+    iam = tau / tau0
 
-    IAM[abs(aoi) >= 90] = np.nan
-    IAM[IAM < 0] = np.nan
+    iam = np.where((np.abs(aoi) >= 90) | (iam < 0), np.nan, iam)
 
-    return IAM
+    if isinstance(aoi, pd.Series):
+        iam = pd.Series(iam, index=aoi.index)
+
+    return iam
 
 
 def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
@@ -826,10 +836,10 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
 
     Parameters
     ----------
-    poa_global : float or Series
+    poa_global : numeric
         The irradiance (in W/m^2) absorbed by the module.
 
-    temp_cell : float or Series
+    temp_cell : numeric
         The average cell temperature of cells within a module in C.
 
     alpha_isc : float
@@ -869,7 +879,7 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
         condition (this may be useful if dEgdT is a function of
         temperature).
 
-    M : float or Series (optional, default=1)
+    M : numeric (optional, default=1)
         An optional airmass modifier, if omitted, M is given a value of
         1, which assumes absolute (pressure corrected) airmass = 1.5. In
         this code, M is equal to M/Mref as described in [1] (i.e. Mref
@@ -891,11 +901,11 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
     -------
     Tuple of the following results:
 
-    photocurrent : float or Series
+    photocurrent : numeric
         Light-generated current in amperes at irradiance=S and
         cell temperature=Tcell.
 
-    saturation_current : float or Series
+    saturation_current : numeric
         Diode saturation curent in amperes at irradiance
         S and cell temperature Tcell.
 
@@ -903,11 +913,11 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
         Series resistance in ohms at irradiance S and cell temperature
         Tcell.
 
-    resistance_shunt : float or Series
+    resistance_shunt : numeric
         Shunt resistance in ohms at irradiance S and cell temperature
         Tcell.
 
-    nNsVth : float or Series
+    nNsVth : numeric
         Modified diode ideality factor at irradiance S and cell
         temperature Tcell. Note that in source [1] nNsVth = a (equation
         2). nNsVth is the product of the usual diode ideality factor
@@ -1001,7 +1011,7 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
          Source: [4]
     '''
 
-    M = np.max(M, 0)
+    M = np.maximum(M, 0)
     a_ref = module_parameters['a_ref']
     IL_ref = module_parameters['I_L_ref']
     I0_ref = module_parameters['I_o_ref']
@@ -1151,7 +1161,7 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(module, effective_irradiance, temp_cell):
+def sapm(effective_irradiance, temp_cell, module):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
@@ -1159,15 +1169,15 @@ def sapm(module, effective_irradiance, temp_cell):
 
     Parameters
     ----------
-    module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the notes section for more details.
-
     effective_irradiance : numeric
         Effective irradiance (suns).
 
     temp_cell : numeric
         The cell temperature (degrees C).
+
+    module : dict-like
+        A dict, Series, or DataFrame defining the SAPM performance
+        parameters. See the notes section for more details.
 
     Returns
     -------
@@ -1376,19 +1386,19 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
-def sapm_spectral_loss(module, airmass_absolute):
+def sapm_spectral_loss(airmass_absolute, module):
     """
     Calculates the SAPM spectral loss coefficient, F1.
 
     Parameters
     ----------
+    airmass_absolute : numeric
+        Absolute airmass
+
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the :py:func:`sapm` notes section for more
         details.
-
-    airmass_absolute : numeric
-        Absolute airmass
 
     Returns
     -------
@@ -1413,20 +1423,20 @@ def sapm_spectral_loss(module, airmass_absolute):
     return spectral_loss
 
 
-def sapm_aoi_loss(module, aoi, upper=None):
+def sapm_aoi_loss(aoi, module, upper=None):
     """
     Calculates the SAPM angle of incidence loss coefficient, F2.
 
     Parameters
     ----------
+    aoi : numeric
+        Angle of incidence in degrees. Negative input angles will return
+        nan values.
+
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the :py:func:`sapm` notes section for more
         details.
-
-    aoi : numeric
-        Angle of incidence in degrees. Negative input angles will return
-        nan values.
 
     upper : None or float
         Upper limit on the results.
@@ -1471,20 +1481,14 @@ def sapm_aoi_loss(module, aoi, upper=None):
     return aoi_loss
 
 
-def sapm_effective_irradiance(module, poa_direct, poa_diffuse,
-                              airmass_absolute, aoi,
-                              reference_irradiance=1000):
+def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
+                              module, reference_irradiance=1000):
     """
     Calculates the SAPM effective irradiance using the SAPM spectral
     loss and SAPM angle of incidence loss functions.
 
     Parameters
     ----------
-    module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more
-        details.
-
     poa_direct : numeric
         The direct irradiance incident upon the module.
 
@@ -1497,6 +1501,11 @@ def sapm_effective_irradiance(module, poa_direct, poa_diffuse,
     aoi : numeric
         Angle of incidence in degrees.
 
+    module : dict-like
+        A dict, Series, or DataFrame defining the SAPM performance
+        parameters. See the :py:func:`sapm` notes section for more
+        details.
+
     reference_irradiance : numeric
         Reference irradiance by which to divide the input irradiance.
 
@@ -1506,8 +1515,8 @@ def sapm_effective_irradiance(module, poa_direct, poa_diffuse,
         The SAPM effective irradiance.
     """
 
-    F1 = sapm_spectral_loss(module, airmass_absolute)
-    F2 = sapm_aoi_loss(module, aoi)
+    F1 = sapm_spectral_loss(airmass_absolute, module)
+    F2 = sapm_aoi_loss(aoi, module)
 
     E0 = reference_irradiance
 
@@ -1754,15 +1763,15 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
     Parameters
     ----------
-    resistance_shunt : float or Series
+    resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
 
-    resistance_series : float or Series
+    resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
 
-    nNsVth : float or Series
+    nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
         (n), 2) the number of cells in series (Ns), and 3) the cell
         thermal voltage under the desired IV curve conditions (Vth). The
@@ -1771,14 +1780,14 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
 
-    current : float or Series
+    current : numeric
         The current in amperes under desired IV curve conditions.
 
-    saturation_current : float or Series
+    saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
 
-    photocurrent : float or Series
+    photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
 
@@ -1820,15 +1829,15 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
     Parameters
     ----------
-    resistance_shunt : float or Series
+    resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
 
-    resistance_series : float or Series
+    resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
 
-    nNsVth : float or Series
+    nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
         (n), 2) the number of cells in series (Ns), and 3) the cell
         thermal voltage under the desired IV curve conditions (Vth). The
@@ -1837,14 +1846,14 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
 
-    voltage : float or Series
+    voltage : numeric
         The voltage in Volts under desired IV curve conditions.
 
-    saturation_current : float or Series
+    saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
 
-    photocurrent : float or Series
+    photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
 
@@ -1880,7 +1889,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     return I.real
 
 
-def snlinverter(inverter, v_dc, p_dc):
+def snlinverter(v_dc, p_dc, inverter):
     '''
     Converts DC power and voltage to AC power using Sandia's
     Grid-Connected PV Inverter model.
@@ -1895,7 +1904,15 @@ def snlinverter(inverter, v_dc, p_dc):
 
     Parameters
     ----------
-    inverter : dict or Series
+    v_dc : numeric
+        DC voltages, in volts, which are provided as input to the
+        inverter. Vdc must be >= 0.
+
+    p_dc : numeric
+        A scalar or DataFrame of DC powers, in watts, which are provided
+        as input to the inverter. Pdc must be >= 0.
+
+    inverter : dict-like
         A dict-like object defining the inverter to be used, giving the
         inverter performance parameters according to the Sandia
         Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1].
@@ -1931,16 +1948,9 @@ def snlinverter(inverter, v_dc, p_dc):
                  maintain circuitry required to sense PV array voltage (W)
         ======   ============================================================
 
-    v_dc : float or Series
-        DC voltages, in volts, which are provided as input to the
-        inverter. Vdc must be >= 0.
-    p_dc : float or Series
-        A scalar or DataFrame of DC powers, in watts, which are provided
-        as input to the inverter. Pdc must be >= 0.
-
     Returns
     -------
-    ac_power : float or Series
+    ac_power : numeric
         Modeled AC power output given the input DC voltage, Vdc, and
         input DC power, Pdc. When ac_power would be greater than Pac0,
         it is set to Pac0 to represent inverter "clipping". When
@@ -1978,15 +1988,12 @@ def snlinverter(inverter, v_dc, p_dc):
     B = Pso * (1 + C2*(v_dc - Vdco))
     C = C0 * (1 + C3*(v_dc - Vdco))
 
-    # ensures that function works with scalar or Series input
-    p_dc = pd.Series(p_dc)
-
     ac_power = (Paco/(A-B) - C*(A-B)) * (p_dc-B) + C*((p_dc-B)**2)
-    ac_power[ac_power > Paco] = Paco
-    ac_power[p_dc < Pso] = - 1.0 * abs(Pnt)
+    ac_power = np.minimum(Paco, ac_power)
+    ac_power = np.where(p_dc < Pso, -1.0 * abs(Pnt), ac_power)
 
-    if len(ac_power) == 1:
-        ac_power = ac_power.ix[0]
+    if isinstance(p_dc, pd.Series):
+        ac_power = pd.Series(ac_power, index=p_dc.index)
 
     return ac_power
 

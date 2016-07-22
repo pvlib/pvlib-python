@@ -92,42 +92,44 @@ def test_systemdef_dict():
     assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
 
 
+@needs_numpy_1_10
 def test_ashraeiam():
     thetas = np.linspace(-90, 90, 9)
-    iam = pvsystem.ashraeiam(.05, thetas)
+    iam = pvsystem.ashraeiam(thetas, .05)
     expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
         0.99588039,  0.97928932,  0.9193437 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_PVSystem_ashraeiam():
     module_parameters = pd.Series({'b': 0.05})
-    system = pvsystem.PVSystem(module='blah', inverter='blarg',
-                               module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = np.linspace(-90, 90, 9)
     iam = system.ashraeiam(thetas)
     expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
         0.99588039,  0.97928932,  0.9193437 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_physicaliam():
     thetas = np.linspace(-90, 90, 9)
-    iam = pvsystem.physicaliam(4, 0.002, 1.526, thetas)
+    iam = pvsystem.physicaliam(thetas, 1.526, 0.002, 4)
     expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
         0.99926198,  0.98797788,  0.8893998 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_PVSystem_physicaliam():
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
-    system = pvsystem.PVSystem(module='blah', inverter='blarg',
-                               module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = np.linspace(-90, 90, 9)
     iam = system.physicaliam(thetas)
     expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
         0.99926198,  0.98797788,  0.8893998 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
 # if this completes successfully we'll be able to do more tests below.
@@ -154,7 +156,7 @@ def test_sapm(sapm_module_params):
     effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
     temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
 
-    out = pvsystem.sapm(sapm_module_params, effective_irradiance, temp_cell)
+    out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
     expected = pd.DataFrame(np.array(
       [[  -5.0608322 ,   -4.65037767,           nan,           nan,
@@ -172,7 +174,7 @@ def test_sapm(sapm_module_params):
 
     assert_frame_equal(out, expected, check_less_precise=4)
 
-    out = pvsystem.sapm(sapm_module_params, 1, 25)
+    out = pvsystem.sapm(1, 25, sapm_module_params)
 
     expected = OrderedDict()
     expected['i_sc'] = 5.09115
@@ -187,8 +189,8 @@ def test_sapm(sapm_module_params):
         assert_allclose(out[k], v, atol=1e-4)
 
     # just make sure it works with a dict input
-    pvsystem.sapm(sapm_module_params.to_dict(), effective_irradiance,
-                  temp_cell)
+    pvsystem.sapm(effective_irradiance, temp_cell,
+                  sapm_module_params.to_dict())
 
 
 def test_PVSystem_sapm(sapm_module_params):
@@ -208,7 +210,7 @@ def test_PVSystem_sapm(sapm_module_params):
 ])
 def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
 
-    out = pvsystem.sapm_spectral_loss(sapm_module_params, airmass)
+    out = pvsystem.sapm_spectral_loss(airmass, sapm_module_params)
 
     if isinstance(airmass, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
@@ -233,7 +235,7 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
 ])
 def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
 
-    out = pvsystem.sapm_aoi_loss(sapm_module_params, aoi)
+    out = pvsystem.sapm_aoi_loss(aoi, sapm_module_params)
 
     if isinstance(aoi, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
@@ -243,13 +245,13 @@ def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
 
 def test_sapm_aoi_loss_limits():
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 5
+    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 5
 
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(module_parameters, 1, upper=1) == 1
+    assert pvsystem.sapm_aoi_loss(1, module_parameters, upper=1) == 1
 
     module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(module_parameters, 1) == 0
+    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 0
 
 
 def test_PVSystem_sapm_aoi_loss(sapm_module_params):
@@ -275,7 +277,15 @@ def test_PVSystem_sapm_aoi_loss(sapm_module_params):
 ])
 def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
 
-    out = pvsystem.sapm_effective_irradiance(sapm_module_params, *test_input)
+    try:
+        kwargs = {'reference_irradiance': test_input[4]}
+        test_input = test_input[:-1]
+    except IndexError:
+        kwargs = {}
+
+    test_input.append(sapm_module_params)
+
+    out = pvsystem.sapm_effective_irradiance(*test_input, **kwargs)
 
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
@@ -500,7 +510,7 @@ def test_snlinverter(sam_data):
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
@@ -524,7 +534,7 @@ def test_snlinverter_float(sam_data):
     idcs = 5.5
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_allclose(pacs, 132.004278, 5)
 
 
@@ -535,7 +545,7 @@ def test_snlinverter_Pnt_micro(sam_data):
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_series_equal(pacs, pd.Series([-0.043000, 132.545914746, 240.000000]))
 
 

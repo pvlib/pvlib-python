@@ -170,13 +170,13 @@ def basic_chain(times, latitude, longitude,
                                    weather['temp_air'])
 
     effective_irradiance = pvsystem.sapm_effective_irradiance(
-        module_parameters, total_irrad['poa_direct'],
-        total_irrad['poa_diffuse'], airmass, aoi)
+        total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,
+        module_parameters)
 
-    dc = pvsystem.sapm(module_parameters, effective_irradiance,
-                       temps['temp_cell'])
+    dc = pvsystem.sapm(effective_irradiance, temps['temp_cell'],
+                       module_parameters)
 
-    ac = pvsystem.snlinverter(inverter_parameters, dc['v_mp'], dc['p_mp'])
+    ac = pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter_parameters)
 
     return dc, ac
 

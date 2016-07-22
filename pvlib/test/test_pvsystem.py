@@ -466,12 +466,12 @@ def test_singlediode_series_ivcurve(cec_module_params):
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 
     expected = OrderedDict([('i_sc', array([        nan,  6.00675648])),
-             ('i_mp', array([       nan,  5.6129056])),
+             ('i_mp', array([       nan,  5.285947])),
              ('v_oc', array([         nan,  10.29530483])),
-             ('v_mp', array([        nan,  7.25364707])),
-             ('p_mp', array([         nan,  40.71403625])),
+             ('v_mp', array([        nan,  8.415971])),
+             ('p_mp', array([         nan,  44.486373])),
              ('i_x', array([        nan,  5.74622046])),
-             ('i_xx', array([        nan,  4.97138154])),
+             ('i_xx', array([        nan,  3.90008])),
              ('i',
               array([[        nan,         nan,         nan],
        [ 6.00726296,  5.74622046,  0.        ]])),
@@ -480,7 +480,7 @@ def test_singlediode_series_ivcurve(cec_module_params):
        [  0.        ,   5.14765242,  10.29530483]]))])
 
     for k, v in out.items():
-        assert_allclose(expected[k], v, atol=3)
+        assert_allclose(expected[k], v, atol=1e-2)
 
 
 def test_scale_voltage_current_power(sam_data):

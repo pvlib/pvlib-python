@@ -72,7 +72,8 @@ def basic_chain(times, latitude, longitude,
     orientation_strategy : None or str
         The strategy for aligning the modules.
         If not None, sets the ``surface_azimuth`` and ``surface_tilt``
-        properties of the ``system``.
+        properties of the ``system``. Allowed strategies include 'flat',
+        'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
     transposition_model : str
         Passed to system.get_irradiance.
@@ -141,13 +142,15 @@ def basic_chain(times, latitude, longitude,
                                solar_position['azimuth'])
 
     if irradiance is None:
+        linke_turbidity = clearsky.lookup_linke_turbidity(
+            solar_position.index, latitude, longitude)
         irradiance = clearsky.ineichen(
-            solar_position.index,
-            latitude,
-            longitude,
-            zenith_data=solar_position['apparent_zenith'],
-            airmass_data=airmass,
-            altitude=altitude)
+            solar_position['apparent_zenith'],
+            airmass,
+            linke_turbidity,
+            altitude=altitude,
+            dni_extra=dni_extra
+            )
 
     total_irrad = pvlib.irradiance.total_irrad(
         surface_tilt,
@@ -167,13 +170,14 @@ def basic_chain(times, latitude, longitude,
                                    weather['wind_speed'],
                                    weather['temp_air'])
 
-    dc = pvsystem.sapm(module_parameters, total_irrad['poa_direct'],
-                       total_irrad['poa_diffuse'],
-                       temps['temp_cell'],
-                       airmass,
-                       aoi)
+    effective_irradiance = pvsystem.sapm_effective_irradiance(
+        total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,
+        module_parameters)
 
-    ac = pvsystem.snlinverter(inverter_parameters, dc['v_mp'], dc['p_mp'])
+    dc = pvsystem.sapm(effective_irradiance, temps['temp_cell'],
+                       module_parameters)
+
+    ac = pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter_parameters)
 
     return dc, ac
 
@@ -381,18 +385,22 @@ class ModelChain(object):
         elif set(['temp_co']) <= params:
             return self.pvwatts_dc
         else:
-            raise ValueError('could not infer DC model from system.module_parameters')
+            raise ValueError('could not infer DC model from ' +
+                             'system.module_parameters')
 
     def sapm(self):
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
                                                self.weather['wind_speed'],
                                                self.weather['temp_air'])
 
-        self.dc = self.system.sapm(self.total_irrad['poa_direct'],
-                                   self.total_irrad['poa_diffuse'],
-                                   self.temps['temp_cell'],
-                                   self.airmass['airmass_absolute'],
-                                   self.aoi)
+        self.effective_irradiance = self.system.sapm_effective_irradiance(
+            self.total_irrad['poa_direct'],
+            self.total_irrad['poa_diffuse'],
+            self.airmass['airmass_absolute'],
+            self.aoi)
+
+        self.dc = self.system.sapm(self.effective_irradiance,
+                                   self.temps['temp_cell'])
 
         self.dc = self.system.scale_voltage_current_power(self.dc)
 
@@ -456,7 +464,8 @@ class ModelChain(object):
         if set(['C0', 'C1', 'C2']) <= params:
             return self.snlinverter
         else:
-            raise ValueError('could not infer AC model from system.inverter_parameters')
+            raise ValueError('could not infer AC model from ' +
+                             'system.inverter_parameters')
 
     def snlinverter(self):
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
@@ -538,13 +547,18 @@ class ModelChain(object):
             self.irradiance['dni'],
             self.irradiance['ghi'],
             self.irradiance['dhi'],
+            airmass=self.airmass['airmass_relative'],
             model=self.transposition_model)
+
+        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
+                                       self.solar_position['azimuth'])
 
         if weather is None:
             weather = {'wind_speed': 0, 'temp_air': 20}
         self.weather = weather
 
         return self
+
 
     def run_model(self, times, irradiance=None, weather=None):
         """

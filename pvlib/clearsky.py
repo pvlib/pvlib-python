@@ -5,9 +5,6 @@ to calculate clear sky GHI, DNI, and DHI.
 
 from __future__ import division
 
-import logging
-logger = logging.getLogger('pvlib')
-
 import os
 from collections import OrderedDict
 
@@ -15,74 +12,56 @@ import numpy as np
 import pandas as pd
 
 from pvlib import tools
-from pvlib import irradiance
-from pvlib import atmosphere
-from pvlib import solarposition
 
 
-def ineichen(time, latitude, longitude, altitude=0, linke_turbidity=None,
-             solarposition_method='nrel_numpy', zenith_data=None,
-             airmass_model='young1994', airmass_data=None,
-             interp_turbidity=True):
+def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
+             altitude=0, dni_extra=1364.):
     '''
-    Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model
+    Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
 
-    Implements the Ineichen and Perez clear sky model for global horizontal
-    irradiance (GHI), direct normal irradiance (DNI), and calculates
-    the clear-sky diffuse horizontal (DHI) component as the difference
-    between GHI and DNI*cos(zenith) as presented in [1, 2]. A report on clear
-    sky models found the Ineichen/Perez model to have excellent performance
-    with a minimal input data set [3].
+    Implements the Ineichen and Perez clear sky model for global
+    horizontal irradiance (GHI), direct normal irradiance (DNI), and
+    calculates the clear-sky diffuse horizontal (DHI) component as the
+    difference between GHI and DNI*cos(zenith) as presented in [1, 2]. A
+    report on clear sky models found the Ineichen/Perez model to have
+    excellent performance with a minimal input data set [3].
 
-    Default values for montly Linke turbidity provided by SoDa [4, 5].
+    Default values for monthly Linke turbidity provided by SoDa [4, 5].
 
     Parameters
     -----------
-    time : pandas.DatetimeIndex
+    apparent_zenith: numeric
+        Refraction corrected solar zenith angle in degrees.
 
-    latitude : float
+    airmass_absolute: numeric
+        Pressure corrected airmass.
 
-    longitude : float
+    linke_turbidity: numeric
+        Linke Turbidity.
 
-    altitude : float
+    altitude: numeric
+        Altitude above sea level in meters.
 
-    linke_turbidity : None or float
-        If None, uses ``LinkeTurbidities.mat`` lookup table.
-
-    solarposition_method : string
-        Sets the solar position algorithm.
-        See solarposition.get_solarposition()
-
-    zenith_data : None or Series
-        If None, ephemeris data will be calculated using ``solarposition_method``.
-
-    airmass_model : string
-        See pvlib.airmass.relativeairmass().
-
-    airmass_data : None or Series
-        If None, absolute air mass data will be calculated using
-        ``airmass_model`` and location.alitude.
-
-    interp_turbidity : bool
-        If ``True``, interpolates the monthly Linke turbidity values
-        found in ``LinkeTurbidities.mat`` to daily values.
+    dni_extra: numeric
+        Extraterrestrial irradiance. The units of ``dni_extra``
+        determine the units of the output.
 
     Returns
-    --------
-    DataFrame with the following columns: ``ghi, dni, dhi``.
+    -------
+    clearsky : DataFrame (if Series input) or OrderedDict of arrays
+        DataFrame/OrderedDict contains the columns/keys
+        ``'dhi', 'dni', 'ghi'``.
 
-    Notes
-    -----
-    If you are using this function
-    in a loop, it may be faster to load LinkeTurbidities.mat outside of
-    the loop and feed it in as a keyword argument, rather than
-    having the function open and process the file each time it is called.
+    See also
+    --------
+    lookup_linke_turbidity
+    pvlib.location.Location.get_clearsky
 
     References
     ----------
-
     [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
-        the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157, 2002.
+        the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157,
+        2002.
 
     [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
         Irradiances: Description and Validation", Solar Energy, vol 73, pp.
@@ -98,97 +77,76 @@ def ineichen(time, latitude, longitude, altitude=0, linke_turbidity=None,
     [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
         ISES Solar World Congress, June 2003. Goteborg, Sweden.
     '''
-    # Initial implementation of this algorithm by Matthew Reno.
-    # Ported to python by Rob Andrews
-    # Added functionality by Will Holmgren (@wholmgren)
 
-    I0 = irradiance.extraradiation(time.dayofyear)
+    # Dan's note on the TL correction: By my reading of the publication
+    # on pages 151-157, Ineichen and Perez introduce (among other
+    # things) three things. 1) Beam model in eqn. 8, 2) new turbidity
+    # factor in eqn 9 and appendix A, and 3) Global horizontal model in
+    # eqn. 11. They do NOT appear to use the new turbidity factor (item
+    # 2 above) in either the beam or GHI models. The phrasing of
+    # appendix A seems as if there are two separate corrections, the
+    # first correction is used to correct the beam/GHI models, and the
+    # second correction is used to correct the revised turibidity
+    # factor. In my estimation, there is no need to correct the
+    # turbidity factor used in the beam/GHI models.
 
-    if zenith_data is None:
-        ephem_data = solarposition.get_solarposition(time,
-                                                     latitude=latitude,
-                                                     longitude=longitude,
-                                                     altitude=altitude,
-                                                     method=solarposition_method)
-        time = ephem_data.index # fixes issue with time possibly not being tz-aware
-        try:
-            ApparentZenith = ephem_data['apparent_zenith']
-        except KeyError:
-            ApparentZenith = ephem_data['zenith']
-            logger.warning('could not find apparent_zenith. using zenith')
-    else:
-        ApparentZenith = zenith_data
-    #ApparentZenith[ApparentZenith >= 90] = 90 # can cause problems in edge cases
+    # Create the corrected TL for TL < 2
+    # TLcorr = TL;
+    # TLcorr(TL < 2) = TLcorr(TL < 2) - 0.25 .* (2-TLcorr(TL < 2)) .^ (0.5);
 
+    # This equation is found in Solar Energy 73, pg 311. Full ref: Perez
+    # et. al., Vol. 73, pp. 307-317 (2002). It is slightly different
+    # than the equation given in Solar Energy 73, pg 156. We used the
+    # equation from pg 311 because of the existence of known typos in
+    # the pg 156 publication (notably the fh2-(TL-1) should be fh2 *
+    # (TL-1)).
 
-    if linke_turbidity is None:
-        TL = lookup_linke_turbidity(time, latitude, longitude,
-                                    interp_turbidity=interp_turbidity)
-    else:
-        TL = linke_turbidity
+    # The NaN handling is a little subtle. The AM input is likely to
+    # have NaNs that we'll want to map to 0s in the output. However, we
+    # want NaNs in other inputs to propagate through to the output. This
+    # is accomplished by judicious use and placement of np.maximum,
+    # np.minimum, and np.fmax
 
-    # Get the absolute airmass assuming standard local pressure (per
-    # alt2pres) using Kasten and Young's 1989 formula for airmass.
+    # use max so that nighttime values will result in 0s instead of
+    # negatives. propagates nans.
+    cos_zenith = np.maximum(tools.cosd(apparent_zenith), 0)
 
-    if airmass_data is None:
-        AMabsolute = atmosphere.absoluteairmass(airmass_relative=atmosphere.relativeairmass(ApparentZenith, airmass_model),
-                                                pressure=atmosphere.alt2pres(altitude))
-    else:
-        AMabsolute = airmass_data
+    tl = linke_turbidity
 
     fh1 = np.exp(-altitude/8000.)
     fh2 = np.exp(-altitude/1250.)
     cg1 = 5.09e-05 * altitude + 0.868
     cg2 = 3.92e-05 * altitude + 0.0387
-    logger.debug('fh1=%s, fh2=%s, cg1=%s, cg2=%s', fh1, fh2, cg1, cg2)
 
-    #  Dan's note on the TL correction: By my reading of the publication on
-    #  pages 151-157, Ineichen and Perez introduce (among other things) three
-    #  things. 1) Beam model in eqn. 8, 2) new turbidity factor in eqn 9 and
-    #  appendix A, and 3) Global horizontal model in eqn. 11. They do NOT appear
-    #  to use the new turbidity factor (item 2 above) in either the beam or GHI
-    #  models. The phrasing of appendix A seems as if there are two separate
-    #  corrections, the first correction is used to correct the beam/GHI models,
-    #  and the second correction is used to correct the revised turibidity
-    #  factor. In my estimation, there is no need to correct the turbidity
-    #  factor used in the beam/GHI models.
+    ghi = (np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1))) *
+           np.exp(0.01*airmass_absolute**1.8))
+    # use fmax to map airmass nans to 0s. multiply and divide by tl to
+    # reinsert tl nans
+    ghi = cg1 * dni_extra * cos_zenith * tl / tl * np.fmax(ghi, 0)
 
-    #  Create the corrected TL for TL < 2
-    #  TLcorr = TL;
-    #  TLcorr(TL < 2) = TLcorr(TL < 2) - 0.25 .* (2-TLcorr(TL < 2)) .^ (0.5);
-
-    #  This equation is found in Solar Energy 73, pg 311.
-    #  Full ref: Perez et. al., Vol. 73, pp. 307-317 (2002).
-    #  It is slightly different than the equation given in Solar Energy 73, pg 156.
-    #  We used the equation from pg 311 because of the existence of known typos
-    #  in the pg 156 publication (notably the fh2-(TL-1) should be fh2 * (TL-1)).
-
-    cos_zenith = tools.cosd(ApparentZenith)
-
-    clearsky_GHI = ( cg1 * I0 * cos_zenith *
-                     np.exp(-cg2*AMabsolute*(fh1 + fh2*(TL - 1))) *
-                     np.exp(0.01*AMabsolute**1.8) )
-    clearsky_GHI[clearsky_GHI < 0] = 0
-
-    # BncI == "normal beam clear sky radiation"
+    # BncI = "normal beam clear sky radiation"
     b = 0.664 + 0.163/fh1
-    BncI = b * I0 * np.exp( -0.09 * AMabsolute * (TL - 1) )
-    logger.debug('b=%s', b)
+    bnci = b * np.exp(-0.09 * airmass_absolute * (tl - 1))
+    bnci = dni_extra * np.fmax(bnci, 0)
 
     # "empirical correction" SE 73, 157 & SE 73, 312.
-    BncI_2 = ( clearsky_GHI *
-               ( 1 - (0.1 - 0.2*np.exp(-TL))/(0.1 + 0.882/fh1) ) /
-               cos_zenith )
+    bnci_2 = ((1 - (0.1 - 0.2*np.exp(-tl))/(0.1 + 0.882/fh1)) /
+              cos_zenith)
+    bnci_2 = ghi * np.fmin(np.fmax(bnci_2, 0), 1e20)
 
-    clearsky_DNI = np.minimum(BncI, BncI_2)
+    dni = np.minimum(bnci, bnci_2)
 
-    clearsky_DHI = clearsky_GHI - clearsky_DNI*cos_zenith
+    dhi = ghi - dni*cos_zenith
 
-    df_out = pd.DataFrame({'ghi':clearsky_GHI, 'dni':clearsky_DNI,
-                           'dhi':clearsky_DHI})
-    df_out.fillna(0, inplace=True)
+    irrads = OrderedDict()
+    irrads['ghi'] = ghi
+    irrads['dni'] = dni
+    irrads['dhi'] = dhi
 
-    return df_out
+    if isinstance(dni, pd.Series):
+        irrads = pd.DataFrame.from_dict(irrads)
+
+    return irrads
 
 
 def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
@@ -242,14 +200,17 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     mat = scipy.io.loadmat(filepath)
     linke_turbidity_table = mat['LinkeTurbidity']
 
-    latitude_index = np.around(_linearly_scale(latitude, 90, -90, 1, 2160)).astype(np.int64)
-    longitude_index = np.around(_linearly_scale(longitude, -180, 180, 1, 4320)).astype(np.int64)
+    latitude_index = (
+        np.around(_linearly_scale(latitude, 90, -90, 1, 2160))
+        .astype(np.int64))
+    longitude_index = (
+        np.around(_linearly_scale(longitude, -180, 180, 1, 4320))
+        .astype(np.int64))
 
     g = linke_turbidity_table[latitude_index][longitude_index]
 
     if interp_turbidity:
-        logger.info('interpolating turbidity to the day')
-        # Cata covers 1 year.
+        # Data covers 1 year.
         # Assume that data corresponds to the value at
         # the middle of each month.
         # This means that we need to add previous Dec and next Jan
@@ -262,10 +223,9 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         linke_turbidity = pd.Series(np.interp(time.dayofyear, days, g2),
                                     index=time)
     else:
-        logger.info('using monthly turbidity')
-        apply_month = lambda x: g[x[0]-1]
         linke_turbidity = pd.DataFrame(time.month, index=time)
-        linke_turbidity = linke_turbidity.apply(apply_month, axis=1)
+        # apply monthly data
+        linke_turbidity = linke_turbidity.apply(lambda x: g[x[0]-1], axis=1)
 
     linke_turbidity /= 20.
 
@@ -312,11 +272,11 @@ def haurwitz(apparent_zenith):
 
     cos_zenith = tools.cosd(apparent_zenith)
 
-    clearsky_GHI = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
+    clearsky_ghi = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
 
-    clearsky_GHI[clearsky_GHI < 0] = 0
+    clearsky_ghi[clearsky_ghi < 0] = 0
 
-    df_out = pd.DataFrame({'ghi':clearsky_GHI})
+    df_out = pd.DataFrame({'ghi': clearsky_ghi})
 
     return df_out
 
@@ -326,8 +286,8 @@ def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
 
     inputrange = inputmax - inputmin
     outputrange = outputmax - outputmin
-    OutputMatrix = (inputmatrix-inputmin) * outputrange/inputrange + outputmin
-    return OutputMatrix
+    outputmatrix = (inputmatrix-inputmin) * outputrange/inputrange + outputmin
+    return outputmatrix
 
 
 def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
@@ -360,15 +320,14 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
         or 101325 and 41000 Pascals.
 
     dni_extra: numeric
-        Extraterrestrial irradiance.
+        Extraterrestrial irradiance. The units of ``dni_extra``
+        determine the units of the output.
 
     Returns
-    --------
+    -------
     clearsky : DataFrame (if Series input) or OrderedDict of arrays
         DataFrame/OrderedDict contains the columns/keys
         ``'dhi', 'dni', 'ghi'``.
-
-        The units of ``dni_extra`` determine the units of the output.
 
     References
     ----------

@@ -907,6 +907,7 @@ def solar_position_loop(unixtime, loc_args, out):
     delta_t = loc_args[5]
     atmos_refract = loc_args[6]
     sst = loc_args[7]
+    esd = loc_args[8]
 
     for i in range(unixtime.shape[0]):
         utime = unixtime[i]
@@ -915,9 +916,12 @@ def solar_position_loop(unixtime, loc_args, out):
         jc = julian_century(jd)
         jce = julian_ephemeris_century(jde)
         jme = julian_ephemeris_millennium(jce)
+        R = heliocentric_radius_vector(jme)
+        if esd:
+            out[0, i] = R
+            continue
         L = heliocentric_longitude(jme)
         B = heliocentric_latitude(jme)
-        R = heliocentric_radius_vector(jme)
         Theta = geocentric_longitude(L)
         beta = geocentric_latitude(B)
         x0 = mean_elongation(jce)
@@ -970,14 +974,24 @@ def solar_position_loop(unixtime, loc_args, out):
 
 
 def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
-                         atmos_refract, numthreads, sst=False):
+                         atmos_refract, numthreads, sst=False, esd=False):
     """Calculate the solar position using the numba compiled functions
     and multiple threads. Very slow if functions are not numba compiled.
     """
+    # these args are the same for each thread
     loc_args = np.array([lat, lon, elev, pressure, temp, delta_t,
-                         atmos_refract, sst])
+                         atmos_refract, sst, esd])
+
+    # construct dims x ulength array to put the results in
     ulength = unixtime.shape[0]
-    result = np.empty((6, ulength), dtype=np.float64)
+    if sst:
+        dims = 3
+    elif esd:
+        dims = 1
+    else:
+        dims = 6
+    result = np.empty((dims, ulength), dtype=np.float64)
+
     if unixtime.dtype != np.float64:
         unixtime = unixtime.astype(np.float64)
 
@@ -992,6 +1006,7 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
         solar_position_loop(unixtime, loc_args, result)
         return result
 
+    # split the input and output arrays into numthreads chunks
     split0 = np.array_split(unixtime, numthreads)
     split2 = np.array_split(result, numthreads, axis=1)
     chunks = [[a0, loc_args, split2[i]] for i, a0 in enumerate(split0)]
@@ -1006,7 +1021,7 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
 
 def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
-                         atmos_refract, numthreads, sst=False):
+                         atmos_refract, numthreads, sst=False, esd=False):
     """Calculate the solar position assuming unixtime is a numpy array. Note
     this function will not work if the solar position functions were
     compiled with numba.
@@ -1017,9 +1032,11 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     jc = julian_century(jd)
     jce = julian_ephemeris_century(jde)
     jme = julian_ephemeris_millennium(jce)
+    R = heliocentric_radius_vector(jme)
+    if esd:
+        return (R, )
     L = heliocentric_longitude(jme)
     B = heliocentric_latitude(jme)
-    R = heliocentric_radius_vector(jme)
     Theta = geocentric_longitude(L)
     beta = geocentric_latitude(B)
     x0 = mean_elongation(jce)
@@ -1063,7 +1080,7 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
 
 def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
-                   atmos_refract, numthreads=8, sst=False):
+                   atmos_refract, numthreads=8, sst=False, esd=False):
 
     """
     Calculate the solar position using the
@@ -1100,6 +1117,11 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     numthreads: int, optional
         Number of threads to use for computation if numba>=0.17
         is installed.
+    sst : bool
+        If True, return only data needed for sunrise, sunset, and transit
+        calculations.
+    esd : bool
+        If True, return only Earth-Sun distance in AU
 
     Returns
     -------
@@ -1126,7 +1148,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     result = do_calc(unixtime, lat, lon, elev, pressure,
                      temp, delta_t, atmos_refract, numthreads,
-                     sst)
+                     sst, esd)
 
     if not isinstance(result, np.ndarray):
         try:
@@ -1241,3 +1263,37 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     sunset = S + utday
 
     return transit, sunrise, sunset
+
+
+def earthsun_distance(unixtime, delta_t, numthreads):
+    """
+    Calculates the distance from the earth to the sun using the
+    NREL SPA algorithm described in [1].
+
+    Parameters
+    ----------
+    unixtime : numpy array
+        Array of unix/epoch timestamps to calculate solar position for.
+        Unixtime is the number of seconds since Jan. 1, 1970 00:00:00 UTC.
+        A pandas.DatetimeIndex is easily converted using .astype(np.int64)/10**9
+    delta_t : float
+        Difference between terrestrial time and UT. USNO has tables.
+    numthreads : int
+        Number to threads to use for calculation (if using numba)
+
+    Returns
+    -------
+    R : array
+        Earth-Sun distance in AU.
+
+    References
+    ----------
+    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+    USA, http://www.nrel.gov.
+    """
+
+    R = solar_position(unixtime, 0, 0, 0, 0, 0, delta_t,
+                       0, numthreads, esd=True)[0]
+
+    return R

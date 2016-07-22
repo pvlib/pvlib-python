@@ -1734,7 +1734,7 @@ def _golden_sect_DataFrame(params, VL, VH, func):
 
         err = df['V1'] - df['V2']
         try:
-            errflag = (abs(err) > .01).all()
+            errflag = (abs(err) > .01).any()
         except ValueError:
             errflag = (abs(err) > .01)
 

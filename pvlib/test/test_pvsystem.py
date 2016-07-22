@@ -394,6 +394,26 @@ def test_singlediode_series(sam_data):
 
 
 @requires_scipy
+def test_singlediode_array():
+    # github issue 221
+    photocurrent = np.linspace(0, 10, 11)
+    resistance_shunt = 16
+    resistance_series = 0.094
+    nNsVth = 0.473
+    saturation_current = 1.943e-09
+
+    sd = pvsystem.singlediode(photocurrent, saturation_current,
+                              resistance_series, resistance_shunt, nNsVth)
+
+    expected = np.array([
+        0.        ,  0.54538398,  1.43273966,  2.36328163,  3.29255606,
+        4.23101358,  5.16177031,  6.09368251,  7.02197553,  7.96846051,
+        8.88220557])
+
+    assert_allclose(sd['i_mp'], expected, atol=0.01)
+
+
+@requires_scipy
 def test_singlediode_floats(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]

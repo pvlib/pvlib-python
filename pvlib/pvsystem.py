@@ -6,6 +6,7 @@ performance of PV modules and inverters.
 from __future__ import division
 
 from collections import OrderedDict
+import os
 import io
 try:
     from urllib2 import urlopen
@@ -1035,9 +1036,10 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
     return IL, I0, Rs, Rsh, nNsVth
 
 
-def retrieve_sam(name=None, samfile=None):
+def retrieve_sam(name=None, path=None):
     '''
-    Retrieve latest module and inverter info from SAM website.
+    Retrieve latest module and inverter info from a local file or the
+    SAM website.
 
     This function will retrieve either:
 
@@ -1045,41 +1047,42 @@ def retrieve_sam(name=None, samfile=None):
         * Sandia Module database
         * CEC Inverter database
 
-    and return it as a pandas dataframe.
+    and return it as a pandas DataFrame.
 
     Parameters
     ----------
-
-    name : String
+    name : None or string
         Name can be one of:
 
         * 'CECMod' - returns the CEC module database
         * 'CECInverter' - returns the CEC Inverter database
         * 'SandiaInverter' - returns the CEC Inverter database
-          (CEC is only current inverter db available; tag kept for backwards
-          compatibility)
+          (CEC is only current inverter db available; tag kept for
+          backwards compatibility)
         * 'SandiaMod' - returns the Sandia Module database
 
-    samfile : String
-        Absolute path to the location of local versions of the SAM file.
-        If file is specified, the latest versions of the SAM database
-        will not be downloaded. The selected file must be in .csv
-        format.
+    path : None or string
+        Path to the SAM file. May also be a URL.
 
-        If set to 'select', a dialogue will open allowing the user to
-        navigate to the appropriate page.
+    If both name and path are None, a dialogue will open allowing the
+    user to select a file.
 
     Returns
     -------
-    A DataFrame containing all the elements of the desired database.
-    Each column represents a module or inverter, and a specific dataset
-    can be retrieved by the command
+    samfile : DataFrame
+        A DataFrame containing all the elements of the desired database.
+        Each column represents a module or inverter, and a specific
+        dataset can be retrieved by the command
+
+    Notes
+    -----
+    Files available at https://sam.nrel.gov/sites/default/files/
 
     Examples
     --------
 
     >>> from pvlib import pvsystem
-    >>> invdb = pvsystem.retrieve_sam(name='CECInverter')
+    >>> invdb = pvsystem.retrieve_sam('CECInverter')
     >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
     >>> inverter
     Vac           277.000000
@@ -1099,27 +1102,33 @@ def retrieve_sam(name=None, samfile=None):
     Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
     '''
 
+    pvlib_path = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
+
     if name is not None:
         name = name.lower()
-        base_url = 'https://sam.nrel.gov/sites/default/files/'
+        data_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'data')
         if name == 'cecmod':
-            url = base_url + 'sam-library-cec-modules-2015-6-30.csv'
+            csvdata = os.path.join(
+                data_path, 'sam-library-cec-modules-2015-6-30.csv')
         elif name == 'sandiamod':
-            url = base_url + 'sam-library-sandia-modules-2015-6-30.csv'
+            csvdata = os.path.join(
+                data_path, 'sam-library-sandia-modules-2015-6-30.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
-            url = base_url + 'sam-library-cec-inverters-2015-6-30.csv'
-        elif samfile is None:
+            csvdata = os.path.join(
+                data_path, 'sam-library-cec-inverters-2015-6-30.csv')
+        else:
             raise ValueError('invalid name {}'.format(name))
-
-    if name is None and samfile is None:
-        raise ValueError('must supply name or samfile')
-
-    if samfile is None:
-        response = urlopen(url)
-        csvdata = io.StringIO(response.read().decode(errors='ignore'))
-    elif samfile == 'select':
+    elif path is not None:
+        if path.startswith('http'):
+            response = urlopen(path)
+            csvdata = io.StringIO(response.read().decode(errors='ignore'))
+        else:
+            csvdata = path
+    elif name is None and path is None:
         try:
             # python 2
             import Tkinter as tkinter
@@ -1131,8 +1140,6 @@ def retrieve_sam(name=None, samfile=None):
 
         tkinter.Tk().withdraw()
         csvdata = askopenfilename()
-    else:
-        csvdata = samfile
 
     return _parse_raw_sam_df(csvdata)
 

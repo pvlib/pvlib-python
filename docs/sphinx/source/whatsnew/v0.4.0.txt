@@ -33,6 +33,11 @@ API Changes
   includes an optional argument to apply an upper limit to the output
   (output can be ~1% larger than 1 for AOI of ~30 degrees).
   (:issue:`198`, :issue:`205`, :issue:`218`)
+* The pvsystem.retrieve_sam keyword argument ``samfile`` has been
+  replaced with ``path``. A selection dialog window is now activated
+  by not supplying any arguments to the function. The API for typical
+  usage remains unchanged, however, the data will be loaded from a
+  local file rather than the SAM website. (:issue:`52`)
 
 
 Enhancements
@@ -46,6 +51,7 @@ Enhancements
 * Add solarposition.nrel_earthsun_distance function and option to
   calculate extraterrestrial radiation using the NREL solar position
   algorithm. (:issue:`211`, :issue:`215`)
+* Includes SAM data files in the distribution. (:issue:`52`)
 
 
 Bug fixes

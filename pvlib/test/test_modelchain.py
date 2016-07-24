@@ -169,7 +169,7 @@ def test_run_model_tracker(system, location):
 @requires_scipy
 @pytest.mark.parametrize('dc_model,expected', [
     ('sapm', [180.13735116, -2.00000000e-02]),
-    ('singlediode', [43.8263217701, -2.00000000e-02]),
+    ('singlediode', [179.7178188, -2.00000000e-02]),
     ('pvwatts', [188.400994862, 0])
 ])
 def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,

@@ -587,7 +587,7 @@ class ModelChain(object):
         raise NotImplementedError
 
     def pvwatts_losses(self):
-        self.losses = self.system.pvwatts_losses()
+        self.losses = (100 - self.system.pvwatts_losses()) / 100.
         self.ac *= self.losses
         return self
 

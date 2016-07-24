@@ -264,6 +264,40 @@ def test_spectral_models(system, location, spectral_model, expected):
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
+def constant_losses(mc):
+    mc.losses = 0.9
+    mc.ac *= mc.losses
+
+@pytest.mark.parametrize('losses_model,expected', [
+    ('pvwatts', [161.882310092, 0]),
+    ('no_loss', [188.400994862, 0]),
+    (constant_losses, [169.560895376, 0])
+])
+def test_losses_models(pvwatts_dc_pvwatts_ac_system, location, losses_model,
+                       expected):
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model=losses_model)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+@pytest.mark.parametrize('model', [
+    'dc_model', 'ac_model', 'aoi_model', 'spectral_model', 'losses_model',
+    'temp_model', 'losses_model'
+])
+def test_invalid_models(model, system, location):
+    kwargs = {'dc_model': 'pvwatts', 'ac_model': 'pvwatts',
+              'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
+              'temp_model': 'sapm', 'losses_model': 'no_loss'}
+    kwargs[model] = 'invalid'
+    with pytest.raises(ValueError):
+        mc = ModelChain(system, location, **kwargs)
+
+
 def test_bad_get_orientation():
     with pytest.raises(ValueError):
         modelchain.get_orientation('bad value')

@@ -276,11 +276,13 @@ class ModelChain(object):
         instance will be passed as the first argument to a user-defined
         function.
 
-    temp_model: None, str, or function
-        If None, the model will be inferred from the contents of
-        system.module_parameters. Valid strings are 'sapm'.
-        The ModelChain instance will be passed
+    temp_model: str or function
+        Valid strings are 'sapm'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
+
+    losses_model: str or function
+        Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
+        will be passed as the first argument to a user-defined function.
 
     **kwargs
         Arbitrary keyword arguments. Included for compatibility, but not
@@ -295,6 +297,7 @@ class ModelChain(object):
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temp_model='sapm',
+                 losses_model='no_loss',
                  **kwargs):
 
         self.system = system
@@ -310,6 +313,7 @@ class ModelChain(object):
         self.aoi_model = aoi_model
         self.spectral_model = spectral_model
         self.temp_model = temp_model
+        self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
 
     def __repr__(self):
@@ -350,7 +354,7 @@ class ModelChain(object):
             elif model == 'singlediode':
                 self._dc_model = self.singlediode
             elif model == 'pvwatts':
-                self._dc_model = self.pvwatts
+                self._dc_model = self.pvwatts_dc
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
@@ -389,7 +393,7 @@ class ModelChain(object):
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
 
-        self.dc = self.system.scale_voltage_current_power(self.dc)
+        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
 
         return self
 
@@ -420,10 +424,11 @@ class ModelChain(object):
             self._ac_model = partial(model, self)
 
     def infer_ac_model(self):
-        params = set(self.system.inverter_parameters.keys())
-        if set(['C0', 'C1', 'C2']) <= params:
+        inverter_params = set(self.system.inverter_parameters.keys())
+        module_params = set(self.system.module_parameters.keys())
+        if set(['C0', 'C1', 'C2']) <= inverter_params:
             return self.snlinverter
-        elif set(['pdc0', 'eta_inv_nom']) <= params:
+        elif set(['pdc0']) <= module_params:
             return self.pvwatts_inverter
         else:
             raise ValueError('could not infer AC model from ' +
@@ -438,7 +443,7 @@ class ModelChain(object):
         return self
 
     def pvwatts_inverter(self):
-        self.ac = self.system(self.dc)
+        self.ac = self.system.pvwatts_ac(self.dc).fillna(0)
         return self
 
     @property
@@ -477,7 +482,7 @@ class ModelChain(object):
                              'system.module_parameters')
 
     def ashrae_aoi_loss(self):
-        self.aoi_modifer = self.system.ashraeiam(self.aoi)
+        self.aoi_modifier = self.system.ashraeiam(self.aoi)
         return self
 
     def physical_aoi_loss(self):
@@ -540,7 +545,7 @@ class ModelChain(object):
     @temp_model.setter
     def temp_model(self, model):
         if model is None:
-            self._temp_model = self.infer_temp_model(self.system)
+            self._temp_model = self.infer_temp_model()
         elif isinstance(model, str):
             model = model.lower()
             if model == 'sapm':
@@ -557,6 +562,37 @@ class ModelChain(object):
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
                                                self.weather['wind_speed'],
                                                self.weather['temp_air'])
+        return self
+
+    @property
+    def losses_model(self):
+        return self._losses_model
+
+    @losses_model.setter
+    def losses_model(self, model):
+        if model is None:
+            self._losses_model = self.infer_losses_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'pvwatts':
+                self._losses_model = self.pvwatts_losses
+            elif model == 'no_loss':
+                self._losses_model = self.no_extra_losses
+            else:
+                raise ValueError(model + ' is not a valid losses model')
+        else:
+            self._losses_model = partial(model, self)
+
+    def infer_losses_model(self):
+        raise NotImplementedError
+
+    def pvwatts_losses(self):
+        self.losses = self.system.pvwatts_losses()
+        self.ac *= self.losses
+        return self
+
+    def no_extra_losses(self):
+        self.losses = 1
         return self
 
     def effective_irradiance_model(self):
@@ -586,6 +622,7 @@ class ModelChain(object):
         Returns
         -------
         self
+
         Assigns attributes: times, solar_position, airmass, irradiance,
         total_irrad, weather, aoi
         """
@@ -639,15 +676,11 @@ class ModelChain(object):
             airmass=self.airmass['airmass_relative'],
             model=self.transposition_model)
 
-        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
-                                       self.solar_position['azimuth'])
-
         if weather is None:
             weather = {'wind_speed': 0, 'temp_air': 20}
         self.weather = weather
 
         return self
-
 
     def run_model(self, times, irradiance=None, weather=None):
         """
@@ -673,7 +706,7 @@ class ModelChain(object):
 
         Assigns attributes: times, solar_position, airmass, irradiance,
         total_irrad, effective_irradiance, weather, temps, aoi,
-        aoi_modifier, spectral_modifier, dc, ac.
+        aoi_modifier, spectral_modifier, dc, ac, losses.
         """
 
         self.prepare_inputs(times, irradiance, weather)
@@ -683,5 +716,6 @@ class ModelChain(object):
         self.temp_model()
         self.dc_model()
         self.ac_model()
+        self.losses_model()
 
         return self

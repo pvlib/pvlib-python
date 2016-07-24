@@ -17,14 +17,45 @@ from conftest import requires_scipy
 
 @pytest.fixture
 def system(sam_data):
-
     modules = sam_data['sandiamod']
-    module = modules['Canadian_Solar_CS5P_220M___2009_'].copy()
+    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_'].copy()
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-
-    system = PVSystem(module_parameters=module,
+    system = PVSystem(module_parameters=module_parameters,
                       inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
+def cec_dc_snl_ac_system(sam_data):
+    modules = sam_data['cecmod']
+    module_parameters = modules['Canadian_Solar_CS5P_220M'].copy()
+    module_parameters['b'] = 0.05
+    module_parameters['EgRef'] = 1.121
+    module_parameters['dEgdT'] = -0.0002677
+    inverters = sam_data['cecinverter']
+    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
+def pvwatts_dc_snl_ac_system(sam_data):
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    inverters = sam_data['cecinverter']
+    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
+def pvwatts_dc_pvwatts_ac_system(sam_data):
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    inverter_parameters = {'eta_inv_nom': 0.95}
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter_parameters)
     return system
 
 
@@ -40,6 +71,7 @@ def test_ModelChain_creation(system, location):
 def test_orientation_strategy(system, location):
     strategies = {}
 
+
 @pytest.mark.parametrize('strategy,expected', [
     (None, (0, 180)), ('None', (0, 180)), ('flat', (0, 180)),
     ('south_at_latitude_tilt', (32.2, 180))
@@ -49,7 +81,7 @@ def test_orientation_strategy(strategy, expected, system, location):
 
     # the || accounts for the coercion of 'None' to None
     assert (mc.orientation_strategy == strategy or
-            mc.orientation_strategy == None)
+            mc.orientation_strategy is None)
     assert system.surface_tilt == expected[0]
     assert system.surface_azimuth == expected[1]
 
@@ -132,6 +164,45 @@ def test_run_model_tracker(system, location):
         columns=['aoi', 'surface_azimuth', 'surface_tilt', 'tracker_theta'],
         index=times)
     assert_frame_equal(mc.tracking, expected, check_less_precise=2)
+
+
+@requires_scipy
+@pytest.mark.parametrize('dc_model,expected', [
+    ('sapm', [180.13735116, -2.00000000e-02]),
+    ('singlediode', [43.8263217701, -2.00000000e-02]),
+    ('pvwatts', [188.400994862, 0])
+])
+def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
+                   location, dc_model, expected):
+
+    dc_systems = {'sapm': system, 'singlediode': cec_dc_snl_ac_system,
+                  'pvwatts': pvwatts_dc_pvwatts_ac_system}
+
+    system = dc_systems[dc_model]
+
+    mc = ModelChain(system, location, dc_model=dc_model,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+@pytest.mark.parametrize('aoi_model,expected', [
+    ('sapm', [181.297862126, -2.00000000e-02]),
+    ('ashrae', [179.371460714, -2.00000000e-02]),
+    ('physical', [179.98844351, -2.00000000e-02]),
+    ('no_loss', [180.13735116, -2.00000000e-02])
+])
+def test_aoi_models(system, location, aoi_model, expected):
+    mc = ModelChain(system, location, dc_model='sapm',
+                    aoi_model=aoi_model, spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
 
 
 def test_bad_get_orientation():

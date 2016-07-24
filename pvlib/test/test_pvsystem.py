@@ -366,8 +366,9 @@ def test_v_from_i_big():
 
 @requires_scipy
 def test_v_from_i_bigger():
-    output = pvsystem.v_from_i(380, 1.065, 2.76, 0, 9e-9, 5.2)
-    assert_allclose(55.603393370545305, output, atol=1e-5)
+    # 1000 W/m^2 on a Canadian Solar 220M with 20 C ambient temp
+    output = pvsystem.v_from_i(190, 1.065, 2.89, 0, 7.05196029e-08, 10.491262)
+    assert_allclose(54.303958833791455, output, atol=1e-5)
 
 
 @requires_scipy

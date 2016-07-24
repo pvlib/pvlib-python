@@ -1843,8 +1843,8 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         w = w * (1 - np.log(w) + logargW) / (1 + w)
     lambertwterm_log = w
 
-    lambertwterm = np.where(np.isinf(lambertwterm), lambertwterm_log,
-                            lambertwterm)
+    lambertwterm = np.where(np.isfinite(lambertwterm), lambertwterm,
+                            lambertwterm_log)
 
     # Eqn. 3 in Jain and Kapoor, 2004
     V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh

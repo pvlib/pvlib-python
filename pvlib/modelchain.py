@@ -258,10 +258,10 @@ class ModelChain(object):
 
     ac_model: None, str, or function
         If None, the model will be inferred from the contents of
-        system.inverter_parameters. Valid strings are 'snlinverter',
-        'adrinverter' (not implemented), 'pvwatts'. The ModelChain
-        instance will be passed as the first argument to a user-defined
-        function.
+        system.inverter_parameters and system.module_parameters. Valid
+        strings are 'snlinverter', 'adrinverter' (not implemented),
+        'pvwatts'. The ModelChain instance will be passed as the first
+        argument to a user-defined function.
 
     aoi_model: None, str, or function
         If None, the model will be inferred from the contents of
@@ -417,7 +417,7 @@ class ModelChain(object):
             elif model == 'adrinverter':
                 raise NotImplementedError
             elif model == 'pvwatts':
-                raise NotImplementedError
+                self._ac_model = self.pvwatts_inverter
             else:
                 raise ValueError(model + ' is not a valid AC power model')
         else:

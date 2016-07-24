@@ -166,17 +166,23 @@ def test_run_model_tracker(system, location):
     assert_frame_equal(mc.tracking, expected, check_less_precise=2)
 
 
+def poadc(mc):
+    mc.dc = mc.total_irrad['poa_global'] * 0.2
+    mc.dc.name = None  # assert_series_equal will fail without this
+
 @requires_scipy
 @pytest.mark.parametrize('dc_model,expected', [
     ('sapm', [180.13735116, -2.00000000e-02]),
     ('singlediode', [179.7178188, -2.00000000e-02]),
-    ('pvwatts', [188.400994862, 0])
+    ('pvwatts', [188.400994862, 0]),
+    (poadc, [187.361841505, 0])  # user supplied function
 ])
 def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
                    location, dc_model, expected):
 
     dc_systems = {'sapm': system, 'singlediode': cec_dc_snl_ac_system,
-                  'pvwatts': pvwatts_dc_pvwatts_ac_system}
+                  'pvwatts': pvwatts_dc_pvwatts_ac_system,
+                  poadc: pvwatts_dc_pvwatts_ac_system}
 
     system = dc_systems[dc_model]
 
@@ -189,15 +195,68 @@ def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
+def acdc(mc):
+    mc.ac = mc.dc
+
+@requires_scipy
+@pytest.mark.parametrize('ac_model,expected', [
+    ('snlinverter', [180.13735116, -2.00000000e-02]),
+    pytest.mark.xfail(raises=NotImplementedError)
+    (('adrinverter', [179.7178188, -2.00000000e-02])),
+    ('pvwatts', [188.400994862, 0]),
+    (acdc, [198.11956073, 0])  # user supplied function
+])
+def test_ac_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
+                   location, ac_model, expected):
+
+    ac_systems = {'snlinverter': system, 'adrinverter': cec_dc_snl_ac_system,
+                  'pvwatts': pvwatts_dc_pvwatts_ac_system,
+                  acdc: pvwatts_dc_pvwatts_ac_system}
+
+    system = ac_systems[ac_model]
+
+    mc = ModelChain(system, location, ac_model=ac_model,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+def constant_aoi_loss(mc):
+    mc.aoi_modifier = 0.9
+
 @pytest.mark.parametrize('aoi_model,expected', [
     ('sapm', [181.297862126, -2.00000000e-02]),
     ('ashrae', [179.371460714, -2.00000000e-02]),
     ('physical', [179.98844351, -2.00000000e-02]),
-    ('no_loss', [180.13735116, -2.00000000e-02])
+    ('no_loss', [180.13735116, -2.00000000e-02]),
+    (constant_aoi_loss, [163.800168358, -2e-2])
 ])
 def test_aoi_models(system, location, aoi_model, expected):
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model=aoi_model, spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+def constant_spectral_loss(mc):
+    mc.spectral_modifier = 0.9
+
+@pytest.mark.parametrize('spectral_model,expected', [
+    ('sapm', [180.865917827, -2.00000000e-02]),
+    pytest.mark.xfail(raises=NotImplementedError)
+    (('first_solar', [179.371460714, -2.00000000e-02])),
+    ('no_loss', [180.13735116, -2.00000000e-02]),
+    (constant_spectral_loss, [161.732659674, -2e-2])
+])
+def test_spectral_models(system, location, spectral_model, expected):
+    mc = ModelChain(system, location, dc_model='sapm',
+                    aoi_model='no_loss', spectral_model=spectral_model)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     ac = mc.run_model(times).ac
 

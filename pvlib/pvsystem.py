@@ -1827,11 +1827,26 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     IL = photocurrent
     I = current
 
-    argW = I0 * Rsh / nNsVth * np.exp(Rsh *(-I + IL + I0) / nNsVth)
+    argW = I0 * Rsh / nNsVth * np.exp(Rsh * (-I + IL + I0) / nNsVth)
     lambertwterm = lambertw(argW)
 
-    # Eqn. 3 in Jain and Kapoor, 2004
+    # Calculate using log(argW) in case argW is really big
+    logargW = (np.log(I0) + np.log(Rsh) - np.log(nNsVth) +
+               Rsh * (-I + IL + I0) / nNsVth)
 
+    # Three iterations of Newton-Raphson method to solve
+    # w+log(w)=logargW. The initial guess is w=logargW. Where direct
+    # evaluation (above) results in NaN from overflow, 3 iterations
+    # of Newton's method gives approximately 8 digits of precision.
+    w = logargW
+    for i in range(0, 3):
+        w = w * (1 - np.log(w) + logargW) / (1 + w)
+    lambertwterm_log = w
+
+    lambertwterm = np.where(np.isinf(lambertwterm), lambertwterm_log,
+                            lambertwterm)
+
+    # Eqn. 3 in Jain and Kapoor, 2004
     V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh
 
     return V.real

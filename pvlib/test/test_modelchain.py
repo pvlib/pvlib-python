@@ -227,6 +227,7 @@ def test_ac_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
 def constant_aoi_loss(mc):
     mc.aoi_modifier = 0.9
 
+@requires_scipy
 @pytest.mark.parametrize('aoi_model,expected', [
     ('sapm', [181.297862126, -2.00000000e-02]),
     ('ashrae', [179.371460714, -2.00000000e-02]),
@@ -247,6 +248,7 @@ def test_aoi_models(system, location, aoi_model, expected):
 def constant_spectral_loss(mc):
     mc.spectral_modifier = 0.9
 
+@requires_scipy
 @pytest.mark.parametrize('spectral_model,expected', [
     ('sapm', [180.865917827, -2.00000000e-02]),
     pytest.mark.xfail(raises=NotImplementedError)
@@ -268,6 +270,7 @@ def constant_losses(mc):
     mc.losses = 0.9
     mc.ac *= mc.losses
 
+@requires_scipy
 @pytest.mark.parametrize('losses_model,expected', [
     ('pvwatts', [161.882310092, 0]),
     ('no_loss', [188.400994862, 0]),

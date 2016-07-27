@@ -17,14 +17,45 @@ from conftest import requires_scipy
 
 @pytest.fixture
 def system(sam_data):
-
     modules = sam_data['sandiamod']
-    module = modules['Canadian_Solar_CS5P_220M___2009_'].copy()
+    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_'].copy()
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-
-    system = PVSystem(module_parameters=module,
+    system = PVSystem(module_parameters=module_parameters,
                       inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
+def cec_dc_snl_ac_system(sam_data):
+    modules = sam_data['cecmod']
+    module_parameters = modules['Canadian_Solar_CS5P_220M'].copy()
+    module_parameters['b'] = 0.05
+    module_parameters['EgRef'] = 1.121
+    module_parameters['dEgdT'] = -0.0002677
+    inverters = sam_data['cecinverter']
+    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
+def pvwatts_dc_snl_ac_system(sam_data):
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    inverters = sam_data['cecinverter']
+    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
+def pvwatts_dc_pvwatts_ac_system(sam_data):
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    inverter_parameters = {'eta_inv_nom': 0.95}
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter_parameters)
     return system
 
 
@@ -37,24 +68,20 @@ def test_ModelChain_creation(system, location):
     mc = ModelChain(system, location)
 
 
-def test_orientation_strategy():
-    strategies = {None: (0, 180), 'None': (0, 180),
-                  'south_at_latitude_tilt': (32.2, 180),
-                  'flat': (0, 180)}
-
-    for strategy, expected in strategies.items():
-        yield run_orientation_strategy, strategy, expected
+def test_orientation_strategy(system, location):
+    strategies = {}
 
 
-def run_orientation_strategy(strategy, expected):
-    system = PVSystem()
-    location = Location(32.2, -111, altitude=700)
-
+@pytest.mark.parametrize('strategy,expected', [
+    (None, (0, 180)), ('None', (0, 180)), ('flat', (0, 180)),
+    ('south_at_latitude_tilt', (32.2, 180))
+])
+def test_orientation_strategy(strategy, expected, system, location):
     mc = ModelChain(system, location, orientation_strategy=strategy)
 
     # the || accounts for the coercion of 'None' to None
     assert (mc.orientation_strategy == strategy or
-            mc.orientation_strategy == None)
+            mc.orientation_strategy is None)
     assert system.surface_tilt == expected[0]
     assert system.surface_azimuth == expected[1]
 
@@ -137,6 +164,141 @@ def test_run_model_tracker(system, location):
         columns=['aoi', 'surface_azimuth', 'surface_tilt', 'tracker_theta'],
         index=times)
     assert_frame_equal(mc.tracking, expected, check_less_precise=2)
+
+
+def poadc(mc):
+    mc.dc = mc.total_irrad['poa_global'] * 0.2
+    mc.dc.name = None  # assert_series_equal will fail without this
+
+@requires_scipy
+@pytest.mark.parametrize('dc_model,expected', [
+    ('sapm', [180.13735116, -2.00000000e-02]),
+    ('singlediode', [179.7178188, -2.00000000e-02]),
+    ('pvwatts', [188.400994862, 0]),
+    (poadc, [187.361841505, 0])  # user supplied function
+])
+def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
+                   location, dc_model, expected):
+
+    dc_systems = {'sapm': system, 'singlediode': cec_dc_snl_ac_system,
+                  'pvwatts': pvwatts_dc_pvwatts_ac_system,
+                  poadc: pvwatts_dc_pvwatts_ac_system}
+
+    system = dc_systems[dc_model]
+
+    mc = ModelChain(system, location, dc_model=dc_model,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+def acdc(mc):
+    mc.ac = mc.dc
+
+@requires_scipy
+@pytest.mark.parametrize('ac_model,expected', [
+    ('snlinverter', [180.13735116, -2.00000000e-02]),
+    pytest.mark.xfail(raises=NotImplementedError)
+    (('adrinverter', [179.7178188, -2.00000000e-02])),
+    ('pvwatts', [188.400994862, 0]),
+    (acdc, [198.11956073, 0])  # user supplied function
+])
+def test_ac_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
+                   location, ac_model, expected):
+
+    ac_systems = {'snlinverter': system, 'adrinverter': cec_dc_snl_ac_system,
+                  'pvwatts': pvwatts_dc_pvwatts_ac_system,
+                  acdc: pvwatts_dc_pvwatts_ac_system}
+
+    system = ac_systems[ac_model]
+
+    mc = ModelChain(system, location, ac_model=ac_model,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+def constant_aoi_loss(mc):
+    mc.aoi_modifier = 0.9
+
+@requires_scipy
+@pytest.mark.parametrize('aoi_model,expected', [
+    ('sapm', [181.297862126, -2.00000000e-02]),
+    ('ashrae', [179.371460714, -2.00000000e-02]),
+    ('physical', [179.98844351, -2.00000000e-02]),
+    ('no_loss', [180.13735116, -2.00000000e-02]),
+    (constant_aoi_loss, [163.800168358, -2e-2])
+])
+def test_aoi_models(system, location, aoi_model, expected):
+    mc = ModelChain(system, location, dc_model='sapm',
+                    aoi_model=aoi_model, spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+def constant_spectral_loss(mc):
+    mc.spectral_modifier = 0.9
+
+@requires_scipy
+@pytest.mark.parametrize('spectral_model,expected', [
+    ('sapm', [180.865917827, -2.00000000e-02]),
+    pytest.mark.xfail(raises=NotImplementedError)
+    (('first_solar', [179.371460714, -2.00000000e-02])),
+    ('no_loss', [180.13735116, -2.00000000e-02]),
+    (constant_spectral_loss, [161.732659674, -2e-2])
+])
+def test_spectral_models(system, location, spectral_model, expected):
+    mc = ModelChain(system, location, dc_model='sapm',
+                    aoi_model='no_loss', spectral_model=spectral_model)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+def constant_losses(mc):
+    mc.losses = 0.9
+    mc.ac *= mc.losses
+
+@requires_scipy
+@pytest.mark.parametrize('losses_model,expected', [
+    ('pvwatts', [161.882310092, 0]),
+    ('no_loss', [188.400994862, 0]),
+    (constant_losses, [169.560895376, 0])
+])
+def test_losses_models(pvwatts_dc_pvwatts_ac_system, location, losses_model,
+                       expected):
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model=losses_model)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    ac = mc.run_model(times).ac
+
+    expected = pd.Series(np.array(expected), index=times)
+    assert_series_equal(ac, expected, check_less_precise=2)
+
+
+@pytest.mark.parametrize('model', [
+    'dc_model', 'ac_model', 'aoi_model', 'spectral_model', 'losses_model',
+    'temp_model', 'losses_model'
+])
+def test_invalid_models(model, system, location):
+    kwargs = {'dc_model': 'pvwatts', 'ac_model': 'pvwatts',
+              'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
+              'temp_model': 'sapm', 'losses_model': 'no_loss'}
+    kwargs[model] = 'invalid'
+    with pytest.raises(ValueError):
+        mc = ModelChain(system, location, **kwargs)
 
 
 def test_bad_get_orientation():
@@ -242,16 +404,14 @@ def test_basic_chain_altitude_pressure(sam_data):
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
-def test_ModelChain___repr__():
-    system = PVSystem()
-    location = Location(32.2, -111, altitude=700)
+def test_ModelChain___repr__(system, location):
+
     strategy = 'south_at_latitude_tilt'
 
     mc = ModelChain(system, location, orientation_strategy=strategy)
 
-    # the || accounts for the coercion of 'None' to None
     assert mc.__repr__() == ('ModelChain for: PVSystem with tilt:32.2 and '+
     'azimuth: 180 with Module: None and Inverter: None '+
     'orientation_startegy: south_at_latitude_tilt clearsky_model: '+
-    'ineichentransposition_model: haydavies solar_position_method: '+
-    'nrel_numpyairmass_model: kastenyoung1989')
+    'ineichen transposition_model: haydavies solar_position_method: '+
+    'nrel_numpy airmass_model: kastenyoung1989')

@@ -681,22 +681,20 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
 
-    solar_zenith : None, float or Series
-        Solar apparent (refraction-corrected) zenith
-        angles in decimal degrees.
-        Must supply ``solar_zenith`` and ``solar_azimuth`` or supply
+    solar_zenith : None or numeric
+        Solar apparent (refraction-corrected) zenith angles in decimal
+        degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
+        supply ``projection_ratio``.
+
+    solar_azimuth : None or numeric
+        Solar azimuth angles in decimal degrees. Must supply
+        ``solar_zenith`` and ``solar_azimuth`` or supply
         ``projection_ratio``.
 
-    solar_azimuth : None, float or Series
-        Solar azimuth angles in decimal degrees.
-        Must supply ``solar_zenith`` and ``solar_azimuth`` or supply
-        ``projection_ratio``.
-
-    projection_ratio : None, float or Series
-        Ratio of angle of incidence projection to solar zenith
-        angle projection.
-        Must supply ``solar_zenith`` and ``solar_azimuth`` or supply
-        ``projection_ratio``.
+    projection_ratio : None or numeric
+        Ratio of angle of incidence projection to solar zenith angle
+        projection. Must supply ``solar_zenith`` and ``solar_azimuth``
+        or supply ``projection_ratio``.
 
     Returns
     --------
@@ -764,19 +762,12 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         defined as degrees from horizontal (e.g. surface facing up = 0,
         surface facing horizon = 90)
 
-    surface_tilt : float or Series.
-        Surface tilt angles in decimal degrees.
-        The tilt angle is defined as
-        degrees from horizontal (e.g. surface facing up = 0, surface facing
-        horizon = 90)
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. The azimuth
+        convention is defined as degrees east of north (e.g. North = 0,
+        South=180 East = 90, West = 270).
 
-    surface_azimuth : float or Series.
-        Surface azimuth angles in decimal degrees.
-        The Azimuth convention is defined
-        as degrees east of north (e.g. North = 0, South=180 East = 90,
-        West = 270).
-
-    dhi : float or Series.
+    dhi : numeric
         diffuse horizontal irradiance in W/m^2.
 
     dni : numeric

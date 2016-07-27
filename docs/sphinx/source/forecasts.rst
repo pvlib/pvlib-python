@@ -209,7 +209,8 @@ strongly encourage pvlib users first read the source code and second
 to implement new cloud cover to irradiance algorithms.
 
 The essential parts of the clear sky scaling algorithm are as follows.
-Clear sky scaling of GHI is also used in Larson et. al. [Lar16]_.
+Clear sky scaling of climatological GHI is also used in Larson et. al.
+[Lar16]_.
 
 .. code-block:: python
 

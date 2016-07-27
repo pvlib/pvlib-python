@@ -1828,7 +1828,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     I = current
 
     argW = I0 * Rsh / nNsVth * np.exp(Rsh * (-I + IL + I0) / nNsVth)
-    lambertwterm = lambertw(argW)
+    lambertwterm = lambertw(argW).real
 
     # Calculate using log(argW) in case argW is really big
     logargW = (np.log(I0) + np.log(Rsh) - np.log(nNsVth) +
@@ -1849,7 +1849,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     # Eqn. 3 in Jain and Kapoor, 2004
     V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh
 
-    return V.real
+    return V
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
@@ -1913,12 +1913,12 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     argW = (Rs*I0*Rsh *
             np.exp(Rsh*(Rs*(IL+I0)+V) / (nNsVth*(Rs+Rsh))) /
             (nNsVth*(Rs + Rsh)))
-    lambertwterm = lambertw(argW)
+    lambertwterm = lambertw(argW).real
 
     # Eqn. 4 in Jain and Kapoor, 2004
     I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
 
-    return I.real
+    return I
 
 
 def snlinverter(v_dc, p_dc, inverter):

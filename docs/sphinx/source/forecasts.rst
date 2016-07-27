@@ -33,6 +33,12 @@ provide additional example code.
     The API may change, the functionality may be consolidated into an io
     module, or the module may be separated into its own package.
 
+.. note::
+
+    This documentation is difficult to reliably build on readthedocs.
+    If you do not see images, try building the documentation on your
+    own machine.
+
 
 Accessing Forecast Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

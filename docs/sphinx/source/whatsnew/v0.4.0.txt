@@ -54,6 +54,11 @@ Enhancements
 * pvsystem.singlediode can now calculate IV curves if a user supplies
   an ivcurve_pnts keyword argument. (:issue:`83`)
 * Includes SAM data files in the distribution. (:issue:`52`)
+* ModelChain now implements SAPM, PVWatts, Single Diode and user-defined
+  modeling options. See Will Holmgren's
+  `ModelChain refactor gist <https://gist.github.com/wholmgren/3fabacd3003c2a549b420b5e79f55e95>`_
+  for more discussion about new features in ModelChain.
+  (:issue:`143`, :issue:`194`)
 * Added ``forecast.py`` module for solar power forecasts.
   (:issue:`86`, :issue:`124`, :issue:`180`)
 

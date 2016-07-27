@@ -16,7 +16,7 @@ dependencies:
     - numpydoc
     - matplotlib
     - seaborn
-    - siphon
+#    - siphon
     - sphinx=1.3.5  # same versions as rtd
     - sphinx_rtd_theme=0.1.7
     - docutils=0.12

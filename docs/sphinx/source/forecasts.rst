@@ -209,12 +209,14 @@ strongly encourage pvlib users first read the source code and second
 to implement new cloud cover to irradiance algorithms.
 
 The essential parts of the clear sky scaling algorithm are as follows.
+Clear sky scaling of GHI is also used in Larson et. al. [Lar16]_.
 
 .. code-block:: python
 
     solpos = location.get_solarposition(cloud_cover.index)
     cs = location.get_clearsky(cloud_cover.index, model='ineichen')
     # offset and cloud cover in decimal units here
+    # larson et. al. use offset = 0.35
     ghi = (offset + (1 - offset) * (1 - cloud_cover)) * ghi_clear
     dni = disc(ghi, solpos['zenith'], cloud_cover.index)['dni']
     dhi = ghi - dni * np.cos(np.radians(solpos['zenith']))
@@ -285,6 +287,10 @@ slicing :py:func:`pandas.concat` or :py:meth:`pandas.DataFrame.join`.
 
 We reiterate that the open source code enables users to customize the
 model processing to their liking.
+
+.. [Lar16] Larson et. al. "Day-ahead forecasting of solar power output
+    from photovoltaic plants in the American Southwest" Renewable
+    Energy 91, 11-20 (2016).
 
 .. [Liu60] B. Y. Liu and R. C. Jordan, The interrelationship and
     characteristic distribution of direct, diffuse, and total solar

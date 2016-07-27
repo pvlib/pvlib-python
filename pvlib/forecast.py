@@ -357,7 +357,7 @@ class ForecastModel(object):
         times = num2date(time[:].squeeze(), time.units)
         self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
 
-    def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=20,
+    def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=35,
                                   **kwargs):
         """
         Convert cloud cover to GHI using a linear relationship.
@@ -381,6 +381,12 @@ class ForecastModel(object):
         -------
         ghi: numeric
             Estimated GHI.
+
+        References
+        ----------
+        Larson et. al. "Day-ahead forecasting of solar power output from
+        photovoltaic plants in the American Southwest" Renewable Energy
+        91, 11-20 (2016).
         """
 
         offset = offset / 100.

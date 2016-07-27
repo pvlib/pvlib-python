@@ -75,6 +75,7 @@ Contents
    installation
    contributing
    timetimezones
+   clearsky
    modules
    classes
    comparison_pvlib_matlab

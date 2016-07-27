@@ -1,3 +1,4 @@
+import datetime
 from collections import OrderedDict
 
 import numpy as np
@@ -32,60 +33,31 @@ dni_et = irradiance.extraradiation(times.dayofyear)
 ghi = irrad_data['ghi']
 
 
-# the test functions. these are almost all functional tests.
-# need to add physical tests.
+# setup for et rad test. put it here for readability
+timestamp = pd.Timestamp('20161026')
+dt_index = pd.DatetimeIndex([timestamp])
+doy = timestamp.dayofyear
+dt_date = timestamp.date()
+dt_datetime = datetime.datetime.combine(dt_date, datetime.time(0))
+dt_np64 = np.datetime64(dt_datetime)
+value = 1383.636203
 
-def test_extraradiation():
-    assert_allclose(1382, irradiance.extraradiation(300), atol=10)
-
-
-def test_extraradiation_dtindex():
-    irradiance.extraradiation(times)
-
-
-def test_extraradiation_doyarray():
-    irradiance.extraradiation(times.dayofyear)
-
-
-def test_extraradiation_asce():
-    assert_allclose(
-        1382, irradiance.extraradiation(300, method='asce'), atol=10)
-
-
-def test_extraradiation_spencer():
-    assert_allclose(
-        1382, irradiance.extraradiation(300, method='spencer'), atol=10)
-
-
-@requires_ephem
-def test_extraradiation_ephem_dtindex():
-    irradiance.extraradiation(times, method='pyephem')
-
-
-@requires_ephem
-def test_extraradiation_ephem_scalar():
-    assert_allclose(
-        1382, irradiance.extraradiation(300, method='pyephem').values[0],
-        atol=10)
-
-
-@requires_ephem
-def test_extraradiation_ephem_doyarray():
-    irradiance.extraradiation(times.dayofyear, method='pyephem')
-
-
-def test_extraradiation_nrel_dtindex():
-    irradiance.extraradiation(times, method='nrel')
-
-
-def test_extraradiation_nrel_scalar():
-    assert_allclose(
-        1382, irradiance.extraradiation(300, method='nrel').values[0],
-        atol=10)
-
-
-def test_extraradiation_nrel_doyarray():
-    irradiance.extraradiation(times.dayofyear, method='nrel')
+@pytest.mark.parametrize('input, expected', [
+    (doy, value),
+    (np.float64(doy), value),
+    (dt_date, value),
+    (dt_datetime, value),
+    (dt_np64, value),
+    (np.array([doy]), np.array([value])),
+    (pd.Series([doy]), np.array([value])),
+    (dt_index, pd.Series([value], index=dt_index)),
+    (timestamp, value)
+])
+@pytest.mark.parametrize('method', [
+    'asce', 'spencer', 'nrel', requires_ephem('pyephem')])
+def test_extraradiation(input, expected, method):
+    out = irradiance.extraradiation(input)
+    assert_allclose(out, expected, atol=1)
 
 
 @requires_numba
@@ -93,9 +65,14 @@ def test_extraradiation_nrel_numba():
     irradiance.extraradiation(times, method='nrel', how='numba', numthreads=8)
 
 
+def test_extraradiation_epoch_year():
+    out = irradiance.extraradiation(doy, method='nrel', epoch_year=2012)
+    assert_allclose(out, 1382.4926804890767, atol=0.1)
+
+
 def test_extraradiation_invalid():
     with pytest.raises(ValueError):
-        irradiance.extraradiation(times.dayofyear, method='invalid')
+        irradiance.extraradiation(300, method='invalid')
 
 
 def test_grounddiffuse_simple_float():

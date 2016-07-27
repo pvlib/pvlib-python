@@ -169,13 +169,14 @@ def basic_chain(times, latitude, longitude,
                                    weather['wind_speed'],
                                    weather['temp_air'])
 
-    dc = pvsystem.sapm(module_parameters, total_irrad['poa_direct'],
-                       total_irrad['poa_diffuse'],
-                       temps['temp_cell'],
-                       airmass,
-                       aoi)
+    effective_irradiance = pvsystem.sapm_effective_irradiance(
+        total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,
+        module_parameters)
 
-    ac = pvsystem.snlinverter(inverter_parameters, dc['v_mp'], dc['p_mp'])
+    dc = pvsystem.sapm(effective_irradiance, temps['temp_cell'],
+                       module_parameters)
+
+    ac = pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter_parameters)
 
     return dc, ac
 
@@ -365,6 +366,9 @@ class ModelChain(object):
             model=self.transposition_model,
             airmass=self.airmass['airmass_relative'])
 
+        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
+                                       self.solar_position['azimuth'])
+
         if weather is None:
             weather = {'wind_speed': 0, 'temp_air': 20}
         self.weather = weather
@@ -373,14 +377,14 @@ class ModelChain(object):
                                                self.weather['wind_speed'],
                                                self.weather['temp_air'])
 
-        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
-                                       self.solar_position['azimuth'])
+        self.effective_irradiance = self.system.sapm_effective_irradiance(
+            self.total_irrad['poa_direct'],
+            self.total_irrad['poa_diffuse'],
+            self.airmass['airmass_absolute'],
+            self.aoi)
 
-        self.dc = self.system.sapm(self.total_irrad['poa_direct'],
-                                   self.total_irrad['poa_diffuse'],
-                                   self.temps['temp_cell'],
-                                   self.airmass['airmass_absolute'],
-                                   self.aoi)
+        self.dc = self.system.sapm(self.effective_irradiance,
+                                   self.temps['temp_cell'])
 
         self.dc = self.system.scale_voltage_current_power(self.dc)
 

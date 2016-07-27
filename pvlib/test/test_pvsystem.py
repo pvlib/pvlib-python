@@ -1,9 +1,10 @@
 import inspect
 import os
 import datetime
+from collections import OrderedDict
 
 import numpy as np
-from numpy import nan
+from numpy import nan, array
 import pandas as pd
 
 import pytest
@@ -91,42 +92,44 @@ def test_systemdef_dict():
     assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
 
 
+@needs_numpy_1_10
 def test_ashraeiam():
     thetas = np.linspace(-90, 90, 9)
-    iam = pvsystem.ashraeiam(.05, thetas)
+    iam = pvsystem.ashraeiam(thetas, .05)
     expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
         0.99588039,  0.97928932,  0.9193437 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_PVSystem_ashraeiam():
     module_parameters = pd.Series({'b': 0.05})
-    system = pvsystem.PVSystem(module='blah', inverter='blarg',
-                               module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = np.linspace(-90, 90, 9)
     iam = system.ashraeiam(thetas)
     expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
         0.99588039,  0.97928932,  0.9193437 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_physicaliam():
     thetas = np.linspace(-90, 90, 9)
-    iam = pvsystem.physicaliam(4, 0.002, 1.526, thetas)
+    iam = pvsystem.physicaliam(thetas, 1.526, 0.002, 4)
     expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
         0.99926198,  0.98797788,  0.8893998 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
+@needs_numpy_1_10
 def test_PVSystem_physicaliam():
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
-    system = pvsystem.PVSystem(module='blah', inverter='blarg',
-                               module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = np.linspace(-90, 90, 9)
     iam = system.physicaliam(thetas)
     expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
         0.99926198,  0.98797788,  0.8893998 ,         nan])
-    assert np.isclose(iam, expected, equal_nan=True).all()
+    assert_allclose(iam, expected, equal_nan=True)
 
 
 # if this completes successfully we'll be able to do more tests below.
@@ -139,71 +142,188 @@ def sam_data():
     return data
 
 
-def test_sapm(sam_data):
-    modules = sam_data['sandiamod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    irrad_data = pd.DataFrame({'dni':[0,1000], 'ghi':[0,600], 'dhi':[0,100]},
-                              index=times)
-    am = pd.Series([0, 2.25], index=times)
-    aoi = pd.Series([180, 30], index=times)
-
-    sapm = pvsystem.sapm(module_parameters, irrad_data['dni'],
-                         irrad_data['dhi'], 25, am, aoi)
-
-    expected = pd.DataFrame(np.array(
-    [[   0.        ,    0.        ,    0.        ,    0.        ,
-           0.        ,    0.        ,    0.        ,    0.        ],
-       [   5.74526799,    5.12194115,   59.67914031,   48.41924255,
-         248.00051089,    5.61787615,    3.52581308,    1.12848138]]),
-        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx',
-                 'effective_irradiance'],
-        index=times)
-
-    assert_frame_equal(sapm, expected)
-
-    # just make sure it works with a dict input
-    sapm = pvsystem.sapm(module_parameters.to_dict(), irrad_data['dni'],
-                         irrad_data['dhi'], 25, am, aoi)
-
-
-def test_PVSystem_sapm(sam_data):
+@pytest.fixture(scope="session")
+def sapm_module_params(sam_data):
     modules = sam_data['sandiamod']
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = modules[module]
-    system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    irrad_data = pd.DataFrame({'dni':[0,1000], 'ghi':[0,600], 'dhi':[0,100]},
-                              index=times)
-    am = pd.Series([0, 2.25], index=times)
-    aoi = pd.Series([180, 30], index=times)
+    return module_parameters
 
-    sapm = system.sapm(irrad_data['dni'], irrad_data['dhi'], 25, am, aoi)
+
+@pytest.fixture(scope="session")
+def cec_module_params(sam_data):
+    modules = sam_data['cecmod']
+    module = 'Example_Module'
+    module_parameters = modules[module]
+    return module_parameters
+
+
+def test_sapm(sapm_module_params):
+
+    times = pd.DatetimeIndex(start='2015-01-01', periods=5, freq='12H')
+    effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
+    temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
+
+    out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
     expected = pd.DataFrame(np.array(
-    [[   0.        ,    0.        ,    0.        ,    0.        ,
-           0.        ,    0.        ,    0.        ,    0.        ],
-       [   5.74526799,    5.12194115,   59.67914031,   48.41924255,
-         248.00051089,    5.61787615,    3.52581308,    1.12848138]]),
-        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx',
-                 'effective_irradiance'],
+      [[  -5.0608322 ,   -4.65037767,           nan,           nan,
+                  nan,   -4.91119927,   -4.15367716],
+       [   2.545575  ,    2.28773882,   56.86182059,   47.21121608,
+         108.00693168,    2.48357383,    1.71782772],
+       [   5.65584763,    5.01709903,   54.1943277 ,   42.51861718,
+         213.32011294,    5.52987899,    3.48660728],
+       [          nan,           nan,           nan,           nan,
+                  nan,           nan,           nan],
+       [          nan,           nan,           nan,           nan,
+                  nan,           nan,           nan]]),
+        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=times)
 
-    assert_frame_equal(sapm, expected)
+    assert_frame_equal(out, expected, check_less_precise=4)
+
+    out = pvsystem.sapm(1, 25, sapm_module_params)
+
+    expected = OrderedDict()
+    expected['i_sc'] = 5.09115
+    expected['i_mp'] = 4.5462909092579995
+    expected['v_oc'] = 59.260800000000003
+    expected['v_mp'] = 48.315600000000003
+    expected['p_mp'] = 219.65677305534581
+    expected['i_x'] = 4.9759899999999995
+    expected['i_xx'] = 3.1880204359100004
+
+    for k, v in expected.items():
+        assert_allclose(out[k], v, atol=1e-4)
+
+    # just make sure it works with a dict input
+    pvsystem.sapm(effective_irradiance, temp_cell,
+                  sapm_module_params.to_dict())
 
 
-def test_calcparams_desoto(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
+def test_PVSystem_sapm(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+
+    times = pd.DatetimeIndex(start='2015-01-01', periods=5, freq='12H')
+    effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
+    temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
+
+    out = system.sapm(effective_irradiance, temp_cell)
+
+
+@pytest.mark.parametrize('airmass,expected', [
+    (1.5, 1.00028714375),
+    (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),
+    (pd.Series([5]), pd.Series([1.0387675]))
+])
+def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
+
+    out = pvsystem.sapm_spectral_loss(airmass, sapm_module_params)
+
+    if isinstance(airmass, pd.Series):
+        assert_series_equal(out, expected, check_less_precise=4)
+    else:
+        assert_allclose(out, expected, atol=1e-4)
+
+
+def test_PVSystem_sapm_spectral_loss(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+
+    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
+    airmass = pd.Series([1, 10], index=times)
+
+    out = system.sapm_spectral_loss(airmass)
+
+
+@pytest.mark.parametrize('aoi,expected', [
+    (45, 0.9975036250000002),
+    (np.array([[-30, 30, 100, np.nan]]),
+     np.array([[np.nan, 1.007572, 0, np.nan]])),
+    (pd.Series([80]), pd.Series([0.597472]))
+])
+def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
+
+    out = pvsystem.sapm_aoi_loss(aoi, sapm_module_params)
+
+    if isinstance(aoi, pd.Series):
+        assert_series_equal(out, expected, check_less_precise=4)
+    else:
+        assert_allclose(out, expected, atol=1e-4)
+
+
+def test_sapm_aoi_loss_limits():
+    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 5
+
+    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(1, module_parameters, upper=1) == 1
+
+    module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 0
+
+
+def test_PVSystem_sapm_aoi_loss(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+
+    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
+    aoi = pd.Series([45, 10], index=times)
+
+    out = system.sapm_aoi_loss(aoi)
+
+
+@pytest.mark.parametrize('test_input,expected', [
+    ([1000, 100, 5, 45, 1000], 1.1400510967821877),
+    ([np.array([np.nan, 1000, 1000]),
+      np.array([100, np.nan, 100]),
+      np.array([1.1, 1.1, 1.1]),
+      np.array([10, 10, 10]),
+      1000],
+     np.array([np.nan, np.nan, 1.081157])),
+    ([pd.Series([1000]), pd.Series([100]), pd.Series([1.1]),
+      pd.Series([10]), 1370],
+     pd.Series([0.789166]))
+])
+def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
+
+    try:
+        kwargs = {'reference_irradiance': test_input[4]}
+        test_input = test_input[:-1]
+    except IndexError:
+        kwargs = {}
+
+    test_input.append(sapm_module_params)
+
+    out = pvsystem.sapm_effective_irradiance(*test_input, **kwargs)
+
+    if isinstance(test_input, pd.Series):
+        assert_series_equal(out, expected, check_less_precise=4)
+    else:
+        assert_allclose(out, expected, atol=1e-4)
+
+
+def test_PVSystem_sapm_effective_irradiance(sapm_module_params):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+
+    poa_direct = np.array([np.nan, 1000, 1000])
+    poa_diffuse = np.array([100, np.nan, 100])
+    airmass_absolute = np.array([1.1, 1.1, 1.1])
+    aoi = np.array([10, 10, 10])
+    reference_irradiance = 1000
+
+    out = system.sapm_effective_irradiance(
+        poa_direct, poa_diffuse, airmass_absolute,
+        aoi, reference_irradiance=reference_irradiance)
+
+
+def test_calcparams_desoto(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   poa_data,
                                   temp_cell=25,
-                                  alpha_isc=module_parameters['alpha_sc'],
-                                  module_parameters=module_parameters,
+                                  alpha_isc=cec_module_params['alpha_sc'],
+                                  module_parameters=cec_module_params,
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
@@ -214,13 +334,11 @@ def test_calcparams_desoto(sam_data):
     assert_allclose(nNsVth, 0.473)
 
 
-def test_PVSystem_calcparams_desoto(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module].copy()
+def test_PVSystem_calcparams_desoto(cec_module_params):
+    module_parameters = cec_module_params.copy()
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
-    system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)
     temp_cell = 25
@@ -237,46 +355,69 @@ def test_PVSystem_calcparams_desoto(sam_data):
 @requires_scipy
 def test_v_from_i():
     output = pvsystem.v_from_i(20, .1, .5, 3, 6e-7, 7)
-    assert_allclose(7.5049875193450521, output, 5)
+    assert_allclose(7.5049875193450521, output, atol=1e-5)
 
 
 @requires_scipy
 def test_v_from_i_big():
     output = pvsystem.v_from_i(500, 10, 4.06, 0, 6e-10, 1.2)
-    assert_allclose(86.320000493521079, output, 5)
+    assert_allclose(86.320000493521079, output, atol=1e-5)
+
+
+@requires_scipy
+def test_v_from_i_bigger():
+    # 1000 W/m^2 on a Canadian Solar 220M with 20 C ambient temp
+    # github issue 225
+    output = pvsystem.v_from_i(190, 1.065, 2.89, 0, 7.05196029e-08, 10.491262)
+    assert_allclose(54.303958833791455, output, atol=1e-5)
 
 
 @requires_scipy
 def test_i_from_v():
     output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_allclose(-299.746389916, output, 5)
+    assert_allclose(-299.746389916, output, atol=1e-5)
 
 
 @requires_scipy
-def test_PVSystem_i_from_v(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
-    system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)
+def test_PVSystem_i_from_v():
+    system = pvsystem.PVSystem()
     output = system.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_allclose(-299.746389916, output, 5)
+    assert_allclose(-299.746389916, output, atol=1e-5)
 
 
 @requires_scipy
-def test_singlediode_series(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
+def test_singlediode_series(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                          poa_data,
                                          temp_cell=25,
-                                         alpha_isc=module_parameters['alpha_sc'],
-                                         module_parameters=module_parameters,
+                                         alpha_isc=cec_module_params['alpha_sc'],
+                                         module_parameters=cec_module_params,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth)
     assert isinstance(out, pd.DataFrame)
+
+
+@requires_scipy
+def test_singlediode_array():
+    # github issue 221
+    photocurrent = np.linspace(0, 10, 11)
+    resistance_shunt = 16
+    resistance_series = 0.094
+    nNsVth = 0.473
+    saturation_current = 1.943e-09
+
+    sd = pvsystem.singlediode(photocurrent, saturation_current,
+                              resistance_series, resistance_shunt, nNsVth)
+
+    expected = np.array([
+        0.        ,  0.54538398,  1.43273966,  2.36328163,  3.29255606,
+        4.23101358,  5.16177031,  6.09368251,  7.02197553,  7.96846051,
+        8.88220557])
+
+    assert_allclose(sd['i_mp'], expected, atol=0.01)
 
 
 @requires_scipy
@@ -290,29 +431,66 @@ def test_singlediode_floats(sam_data):
                 'p_mp': 38.194165464983037,
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
-                'v_mp': 6.221535886625464}
+                'v_mp': 6.221535886625464,
+                'i': None,
+                'v': None}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_allclose(expected[k], v, atol=3)
+        if k in ['i', 'v']:
+            assert v is None
+        else:
+            assert_allclose(expected[k], v, atol=3)
 
 
 @requires_scipy
-def test_PVSystem_singlediode_floats(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
-    system = pvsystem.PVSystem(module=module,
-                               module_parameters=module_parameters)
-    out = system.singlediode(7, 6e-7, .1, 20, .5)
+def test_singlediode_floats_ivcurve():
+    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3)
     expected = {'i_xx': 4.2685798754011426,
                 'i_mp': 6.1390251797935704,
                 'v_oc': 8.1063001465863085,
                 'p_mp': 38.194165464983037,
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
-                'v_mp': 6.221535886625464}
+                'v_mp': 6.221535886625464,
+                'i': np.array([6.965172e+00,   6.755882e+00,   2.575717e-14]),
+                'v': np.array([0.     ,  4.05315,  8.1063])}
     assert isinstance(out, dict)
     for k, v in out.items():
         assert_allclose(expected[k], v, atol=3)
+
+
+@requires_scipy
+def test_singlediode_series_ivcurve(cec_module_params):
+    times = pd.DatetimeIndex(start='2015-06-01', periods=3, freq='6H')
+    poa_data = pd.Series([0, 400, 800], index=times)
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
+                                         poa_data,
+                                         temp_cell=25,
+                                         alpha_isc=cec_module_params['alpha_sc'],
+                                         module_parameters=cec_module_params,
+                                         EgRef=1.121,
+                                         dEgdT=-0.0002677)
+
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+
+    expected = OrderedDict([('i_sc', array([        nan,  3.01054475,  6.00675648])),
+             ('v_oc', array([         nan,   9.96886962,  10.29530483])),
+             ('i_mp', array([        nan,  2.65191983,  5.28594672])),
+             ('v_mp', array([        nan,  8.33392491,  8.4159707 ])),
+             ('p_mp', array([         nan,  22.10090078,  44.48637274])),
+             ('i_x', array([        nan,  2.88414114,  5.74622046])),
+             ('i_xx', array([        nan,  2.04340914,  3.90007956])),
+             ('v',
+              array([[         nan,          nan,          nan],
+       [  0.        ,   4.98443481,   9.96886962],
+       [  0.        ,   5.14765242,  10.29530483]])),
+             ('i',
+              array([[             nan,              nan,              nan],
+       [  3.01079860e+00,   2.88414114e+00,   3.10862447e-14],
+       [  6.00726296e+00,   5.74622046e+00,   0.00000000e+00]]))])
+
+    for k, v in out.items():
+        assert_allclose(expected[k], v, atol=1e-2)
 
 
 def test_scale_voltage_current_power(sam_data):
@@ -396,7 +574,7 @@ def test_snlinverter(sam_data):
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
@@ -420,7 +598,7 @@ def test_snlinverter_float(sam_data):
     idcs = 5.5
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_allclose(pacs, 132.004278, 5)
 
 
@@ -431,7 +609,7 @@ def test_snlinverter_Pnt_micro(sam_data):
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(inverters[testinv], vdcs, pdcs)
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_series_equal(pacs, pd.Series([-0.043000, 132.545914746, 240.000000]))
 
 

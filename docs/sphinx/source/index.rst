@@ -76,10 +76,10 @@ Contents
    contributing
    timetimezones
    clearsky
+   forecasts
    modules
    classes
    comparison_pvlib_matlab
-   forecasts
    variables_style_rules
 
 

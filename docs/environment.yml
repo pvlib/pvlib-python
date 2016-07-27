@@ -1,7 +1,7 @@
 name: pvlibdocs
 channels:
     - defaults
-#    - conda-forge
+#    - conda-forge  # needed for siphon, but causes path too short problems on rtd
 dependencies:
     - python=2.7
     - mock  # needed for local python 2.7 builds

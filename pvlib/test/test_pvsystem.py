@@ -355,26 +355,34 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
 @requires_scipy
 def test_v_from_i():
     output = pvsystem.v_from_i(20, .1, .5, 3, 6e-7, 7)
-    assert_allclose(7.5049875193450521, output, 5)
+    assert_allclose(7.5049875193450521, output, atol=1e-5)
 
 
 @requires_scipy
 def test_v_from_i_big():
     output = pvsystem.v_from_i(500, 10, 4.06, 0, 6e-10, 1.2)
-    assert_allclose(86.320000493521079, output, 5)
+    assert_allclose(86.320000493521079, output, atol=1e-5)
+
+
+@requires_scipy
+def test_v_from_i_bigger():
+    # 1000 W/m^2 on a Canadian Solar 220M with 20 C ambient temp
+    # github issue 225
+    output = pvsystem.v_from_i(190, 1.065, 2.89, 0, 7.05196029e-08, 10.491262)
+    assert_allclose(54.303958833791455, output, atol=1e-5)
 
 
 @requires_scipy
 def test_i_from_v():
     output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_allclose(-299.746389916, output, 5)
+    assert_allclose(-299.746389916, output, atol=1e-5)
 
 
 @requires_scipy
 def test_PVSystem_i_from_v():
     system = pvsystem.PVSystem()
     output = system.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_allclose(-299.746389916, output, 5)
+    assert_allclose(-299.746389916, output, atol=1e-5)
 
 
 @requires_scipy

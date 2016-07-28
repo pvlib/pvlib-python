@@ -1,6 +1,6 @@
 .. _whatsnew_0400:
 
-v0.4.0 (July xx, 2016)
+v0.4.0 (July 28, 2016)
 -----------------------
 
 This is a major release from 0.3.3. We recommend that all users upgrade

@@ -1386,6 +1386,65 @@ def erbs(ghi, zenith, doy):
     return data
 
 
+def liujordan(zenith, transmittance, airmass, pressure=101325.,
+              dni_extra=1367.0):
+    '''
+    Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
+    and optical air mass number.
+
+    Liu and Jordan, 1960, developed a simplified direct radiation model.
+    DHI is from an empirical equation for diffuse radiation from Liu and
+    Jordan, 1960.
+
+    Parameters
+    ----------
+    zenith: pd.Series
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. If Z is a vector it must be of the same size as all
+        other vector inputs. Z must be >=0 and <=180.
+
+    transmittance: float
+        Atmospheric transmittance between 0 and 1.
+
+    pressure: float
+        Air pressure
+
+    dni_extra: float
+        Direct irradiance incident at the top of the atmosphere.
+
+    Returns
+    -------
+    irradiance: DataFrame
+        Modeled direct normal irradiance, direct horizontal irradiance,
+        and global horizontal irradiance in W/m^2
+
+    References
+    ----------
+    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
+    Environmental Biophysics. 2nd Ed. New York: Springer.
+
+    [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
+    characteristic distribution of direct, diffuse, and total solar
+    radiation".  Solar Energy 4:1-19
+    '''
+
+    tao = transmittance
+
+    dni = dni_extra*tao**airmass
+    dhi = 0.3 * (1.0 - tao**airmass) * dni_extra * np.cos(np.radians(zenith))
+    ghi = dhi + dni * np.cos(np.radians(zenith))
+
+    irrads = OrderedDict()
+    irrads['ghi'] = ghi
+    irrads['dni'] = dni
+    irrads['dhi'] = dhi
+
+    if isinstance(ghi, pd.Series):
+        irrads = pd.DataFrame(irrads)
+
+    return irrads
+
+
 def _get_perez_coefficients(perezmodel):
     '''
     Find coefficients for the Perez model

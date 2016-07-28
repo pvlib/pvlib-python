@@ -161,6 +161,18 @@ def test_perez_arrays():
     assert_allclose(out, expected, atol=1e-2)
 
 
+
+def test_liujordan():
+    expected = pd.DataFrame(np.
+        array([[863.859736967, 653.123094076, 220.65905025]]),
+        columns=['ghi', 'dni', 'dhi'],
+        index=[0])
+    out = irradiance.liujordan(
+        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]),
+        pressure=93000., dni_extra=1400)
+    assert_frame_equal(out, expected)
+
+
 # klutcher (misspelling) will be removed in 0.3
 def test_total_irrad():
     models = ['isotropic', 'klutcher', 'klucher',

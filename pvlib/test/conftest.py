@@ -69,3 +69,12 @@ def has_numba():
             return True
 
 requires_numba = pytest.mark.skipif(not has_numba(), reason="requires numba")
+
+try:
+    import siphon
+    has_siphon = True
+except ImportError:
+    has_siphon = False
+
+requires_siphon = pytest.mark.skipif(not has_siphon,
+                                     reason='requires siphon')

@@ -37,7 +37,7 @@ provide additional example code.
 
     This documentation is difficult to reliably build on readthedocs.
     If you do not see images, try building the documentation on your
-    own machine.
+    own machine or see the notebooks linked to above.
 
 
 Accessing Forecast Data

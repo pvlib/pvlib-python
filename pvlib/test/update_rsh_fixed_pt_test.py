@@ -1,4 +1,4 @@
-from PAN_File.scripts import update_rsh_fixed_pt
+from pvlib import update_rsh_fixed_pt
 import numpy as np
 
 outrsh = update_rsh_fixed_pt.update_rsh_fixed_pt(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]),

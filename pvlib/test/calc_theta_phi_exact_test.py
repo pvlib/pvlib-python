@@ -1,4 +1,4 @@
-from PAN_File.scripts import calc_theta_phi_exact
+from pvlib import calc_theta_phi_exact
 import numpy as np
 
 theta, phi = calc_theta_phi_exact.calc_theta_phi_exact(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]),

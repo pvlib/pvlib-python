@@ -1,4 +1,4 @@
-from PAN_File.scripts import update_io_known_n
+from pvlib import update_io_known_n
 import numpy as np
 
 v = update_io_known_n.v_from_i(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]),

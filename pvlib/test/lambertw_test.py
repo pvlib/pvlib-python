@@ -1,4 +1,4 @@
-from PAN_File.scripts import lambertw
+from pvlib import lambertw
 import numpy as np
 
 w = np.array([0])

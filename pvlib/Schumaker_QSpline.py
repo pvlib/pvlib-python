@@ -69,17 +69,17 @@ def schumaker_qspline(x, y):
     s[u] = pdelta[u] / (.5 * left[u] + .5 * right[u])  # fix tuning parameters in [2], Eq 9 at chi = .5 and eta = .5
 
     # [3], Eq. 7 for left endpoint
-    if delta[0.] * (2. * delta[0] - s[1]) > 0.:
-        s[0.] = 2. * delta[0.] - s[1.]
+    if delta[0] * (2. * delta[0] - s[1]) > 0.:
+        s[0] = 2. * delta[0] - s[1]
 
     # [3], Eq. 8 for right endpoint
-    if delta[n - 2.] * (2. * delta[n - 2.] - s[n - 2.]) > 0.:
-        s[n - 1.] = 2. * delta[n - 2.] - s[n - 2.]
+    if delta[n - 2] * (2. * delta[n - 2] - s[n - 2]) > 0.:
+        s[n - 1] = 2. * delta[n - 2] - s[n - 2]
 
     # determine knots. Start with initial pointsx
     # [2], Algorithm 4.1 first 'if' condition of step 5 defines intervals which won't get internal knots
-    tests = s[0.:(n - 1.)] + s[1.:n]
-    u = np.abs(tests - 2. * delta[0:(n - 1.)]) <= eps
+    tests = s[0.:(n - 1)] + s[1:n]
+    u = np.abs(tests - 2. * delta[0:(n - 1)]) <= eps
     # u = true for an interval which will not get an internal knot
 
     k = n + sum(~u)  # total number of knots = original data + inserted knots
@@ -92,100 +92,102 @@ def schumaker_qspline(x, y):
 
     # structures needed to compute coefficients, have to be maintained in association with each knot
 
-    tmpx = x[0.:(n - 1.)]
-    tmpy = y[0.:(n - 1.)]
-    tmpx2 = x[1.:n]
-    tmps = s[0.:(n - 1.)]
-    tmps2 = s[1.:n]
+    tmpx = x[0:(n - 1)]
+    tmpy = y[0:(n - 1)]
+    tmpx2 = x[1:n]
+    tmps = s[0.:(n - 1)]
+    tmps2 = s[1:n]
     diffs = np.diff(s)
 
     # structure to contain information associated with each knot, used to calculate coefficients
     uu = np.zeros((k, 6.))
 
-    uu[0:(n - 1.), :] = [tmpx, tmpx2, tmpy, tmps, tmps2, delta]
+    uu[0:(n - 1), :] = np.array([tmpx, tmpx2, tmpy, tmps, tmps2, delta]).T
 
     # [2], Algorithm 4.1 subpart 1 of Step 5
     xk[u] = tmpx[u]  # original x values that are left points of intervals without internal knots
     yk[u] = tmpy[u]
-    a[u, 2.] = tmpy[u]  # constant term for each polynomial for intervals without knots
-    a[u, 1.] = s[u]
-    a[u, 0.] = .5 * diffs[u] / delx[u]  # leading coefficients
+    a[u, 2] = tmpy[u]  # constant term for each polynomial for intervals without knots
+    a[u, 1] = s[u]
+    a[u, 0] = .5 * diffs[u] / delx[u]  # leading coefficients
 
     # [2], Algorithm 4.1 subpart 2 of Step 5
     xk[~u] = tmpx[~u]  # original x values that are left points of intervals with internal knots
     yk[~u] = tmpy[~u]
 
-    aa = s[0.:(n - 1.)] - delta[0:(n - 1.)]
-    b = s[1.:n] - delta[0:(n - 1.)]
+    aa = s[0:(n - 1)] - delta[0:(n - 1)]
+    b = s[1:n] - delta[0:(n - 1)]
 
     sbar = np.zeros(k)
-    eta = sbar
+    eta = np.zeros(k)
     xi = np.zeros(k)  # will contain mapping from the left points of intervals containing an added knot to each
     # inverval's internal knot value
 
-    v = ~u and (aa * b >= 0.)  # first 'else' in Algorithm 4.1 Step 5
+    t0 = aa * b >= 0
+    v = np.logical_and(~u, t0[0:len(u)])  # first 'else' in Algorithm 4.1 Step 5
     q = np.sum(v)  # number of this type of knot to add
 
     if q > 0.:
-        xk[(n - 1.):(n + q - 1.)] = .5 * (tmpx[v] + tmpx2[v])  # knot location
-        uu[(n - 1.):(n + q - 1.), :] = [tmpx[v], tmpx2[v], tmpy[v], tmps[v], tmps2[v], delta[v]]
-        xi[v] = xk[(n - 1.):(n + q - 1.)]
+        xk[(n - 1):(n + q - 1)] = .5 * (tmpx[v] + tmpx2[v])  # knot location
+        uu[(n - 1):(n + q - 1), :] = np.array([tmpx[v], tmpx2[v], tmpy[v], tmps[v], tmps2[v], delta[v]]).T
+        xi[v] = xk[(n - 1):(n + q - 1)]
 
-    w = ~u and ~v and (np.abs(aa) > np.abs(b))  # second 'else' in Algorithm 4.1 Step 5
+    t1 = np.abs(aa) > np.abs(b)
+    w = np.logical_and(~u, ~v)  # second 'else' in Algorithm 4.1 Step 5
+    w = np.logical_and(w, t1)
     r = np.sum(w)
 
     if r > 0.:
-        xk[(n + q - 1.):(n + q + r - 1.)] = tmpx2[w] + aa[w] * delx[w] / diffs[w]
-        uu[(n + q - 1.):(n + q + r - 1.), :] = [tmpx[w], tmpx2[w], tmpy[w], tmps[w], tmps2[w], delta[w]]
-        xi[w] = xk[(n + q - 1.):(n + q + r - 1.)]
+        xk[(n + q - 1):(n + q + r - 1)] = tmpx2[w] + aa[w] * delx[w] / diffs[w]
+        uu[(n + q - 1):(n + q + r - 1), :] = np.array([tmpx[w], tmpx2[w], tmpy[w], tmps[w], tmps2[w], delta[w]]).T
+        xi[w] = xk[(n + q - 1):(n + q + r - 1)]
 
-    z = ~u and ~v and ~w  # last 'else' in Algorithm 4.1 Step 5
+    z = np.logical_and(~u, ~v)  # last 'else' in Algorithm 4.1 Step 5
+    z = np.logical_and(z, ~w)
     ss = np.sum(z)
 
     if ss > 0.:
-        xk[(n + q + r - 1.):(n + q + r + ss - 1.)] = tmpx[z] + b[z] * delx[z] / diffs[z]
-        uu[(n + q + r - 1.):(n + q + r + ss - 1.), :] = [tmpx[z], tmpx2[z], tmpy[z], tmps[z], tmps2[z], delta[z]]
-        xi[z] = xk[(n + q + r - 1.):(n + q + r + s - 1.)]
+        xk[(n + q + r - 1):(n + q + r + ss - 1)] = tmpx[z] + b[z] * delx[z] / diffs[z]
+        uu[(n + q + r - 1):(n + q + r + ss - 1), :] = np.array([tmpx[z], tmpx2[z], tmpy[z], tmps[z], tmps2[z],
+                                                                delta[z]]).T
+        xi[z] = xk[(n + q + r - 1):(n + q + r + s - 1)]
 
     # define polynomial coefficients for intervals with added knots
     ff = ~u
     sbar[ff] = (2 * uu[ff, 5] - uu[ff, 4]) + (uu[ff, 4] - uu[ff, 3]) * (xi[ff] - uu[ff, 0]) / (uu[ff, 1] - uu[ff, 0])
     eta[ff] = (sbar[ff] - uu[ff, 3]) / (xi[ff] - uu[ff, 0])
 
-    sbar[(n - 1.):(n + q + r + ss - 1.)] = (2 * uu[(n - 1.):(n + q + r + ss - 1.), 5] -
-                                            uu[(n - 1.):(n + q + r + ss - 1.), 4]) + \
-                                           (uu[(n - 1.):(n + q + r + ss - 1.), 4] -
-                                            uu[(n - 1.):(n + q + r + ss - 1.), 3]) * \
-                                           (xk[(n - 1.):(n + q + r + ss - 1.)] - uu[(n - 1.):(n + q + r + ss - 1.), 0])\
-                                           / (uu[(n - 1.):(n + q + r + ss - 1.), 1] -
-                                              uu[(n - 1.):(n + q + r + ss - 1.), 0])
-    eta[(n - 1.):(n + q + r + ss - 1.)] = (sbar[(n - 1.):(n + q + r + ss - 1.)] - uu[(n - 1.):(n + q + r + ss - 1.), 3])\
-                                          / (xk[(n - 1.):(n + q + r + ss - 1.)] - uu[(n - 1.):(n + q + r + ss - 1.), 0])
+    sbar[(n - 1):(n + q + r + ss - 1)] = (2 * uu[(n - 1):(n + q + r + ss - 1), 5] -
+                                          uu[(n - 1):(n + q + r + ss - 1), 4]) + \
+                                         (uu[(n - 1):(n + q + r + ss - 1), 4] -
+                                          uu[(n - 1):(n + q + r + ss - 1), 3]) * \
+                                         (xk[(n - 1):(n + q + r + ss - 1)] - uu[(n - 1):(n + q + r + ss - 1), 0]) / \
+                                         (uu[(n - 1):(n + q + r + ss - 1), 1] - uu[(n - 1):(n + q + r + ss - 1), 0])
+    eta[(n - 1):(n + q + r + ss - 1)] = (sbar[(n - 1):(n + q + r + ss - 1)] - uu[(n - 1):(n + q + r + ss - 1), 3]) / \
+                                        (xk[(n - 1):(n + q + r + ss - 1)] - uu[(n - 1):(n + q + r + ss - 1), 0])
 
     a[~u, 2] = uu[~u, 2]  # constant term for polynomial for intervals with internal knots
     a[~u, 1] = uu[~u, 3]
     a[~u, 0] = .5 * eta[~u]  # leading coefficient
 
-    a[(n - 1.):(n + q + r + ss - 1.), 2] = uu[(n - 1.):(n + q + r + ss - 1.), 2] + \
-                                           uu[(n - 1.):(n + q + r + ss - 1.), 3] * \
-                                           (xk[(n - 1.):(n + q + r + ss - 1.)] - uu[(n - 1.):(n + q + r + ss - 1.), 0]) \
-                                           + .5 * eta[(n - 1.):(n + q + r + ss - 1.)] * \
-                                             (xk[(n - 1.):(n + q + r + ss - 1.)] - uu[(n - 1.):(n + q + r + ss - 1.),
-                                                                                   0]) ** 2.
-    a[(n - 1.):(n + q + r + ss - 1.), 1] = sbar[(n - 1.):(n + q + r + ss - 1.)]
-    a[(n - 1.):(n + q + r + ss - 1.), 0] = .5 * (uu[(n - 1.):(n + q + r + ss - 1.), 4] -
-                                                 sbar[(n - 1.):(n + q + r + ss - 1.)]) / \
-                                           (uu[(n - 1.):(n + q + r + ss - 1.), 1] -
-                                            uu[(n - 1.):(n + q + r + ss - 1.), 0])
+    a[(n - 1):(n + q + r + ss - 1), 2] = uu[(n - 1):(n + q + r + ss - 1), 2] + uu[(n - 1):(n + q + r + ss - 1), 3] * \
+                                                                               (xk[(n - 1):(n + q + r + ss - 1)] -
+                                                                                uu[(n - 1):(n + q + r + ss - 1), 0]) + \
+                                         .5 * eta[(n - 1):(n + q + r + ss - 1)] * \
+                                         (xk[(n - 1):(n + q + r + ss - 1)] - uu[(n - 1):(n + q + r + ss - 1), 0]) ** 2.
+    a[(n - 1):(n + q + r + ss - 1), 1] = sbar[(n - 1):(n + q + r + ss - 1)]
+    a[(n - 1):(n + q + r + ss - 1), 0] = .5 * (uu[(n - 1):(n + q + r + ss - 1), 4] -
+                                               sbar[(n - 1):(n + q + r + ss - 1)]) / \
+                                         (uu[(n - 1):(n + q + r + ss - 1), 1] - uu[(n - 1):(n + q + r + ss - 1), 0])
 
-    yk[(n - 1.):(n + q + r + ss - 1.)] = a[(n - 1.):(n + q + r + ss - 1.), 2]
+    yk[(n - 1):(n + q + r + ss - 1)] = a[(n - 1):(n + q + r + ss - 1), 2]
 
-    xk[n + q + r + ss - 1.] = x[n - 1.]
-    yk[n + q + r + ss - 1.] = y[n - 1.]
-    flag[(n - 1.):(n + q + r + ss - 1.)] = True  # these are all inserted knots
+    xk[n + q + r + ss - 1] = x[n - 1]
+    yk[n + q + r + ss - 1] = y[n - 1]
+    flag[(n - 1):(n + q + r + ss - 1)] = True  # these are all inserted knots
 
-    tmp = [xk, a, yk, flag]
-    tmp2 = np.sort(tmp, axis=0)  # sort output in terms of increasing x (original plus added knots)
+    tmp = np.vstack((xk, a.T, yk, flag)).T
+    tmp2 = tmp[tmp[:, 0].argsort(kind='mergesort')]  # sort output in terms of increasing x (original plus added knots)
     outxk = tmp2[:, 0]
     outn = len(outxk)
     outa = tmp2[0:(outn - 1), 1:4]

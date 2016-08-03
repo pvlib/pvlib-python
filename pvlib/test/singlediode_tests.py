@@ -1,5 +1,6 @@
 import numpy as np
 from pvlib.singlediode import singlediode, i_from_v, g, calc_imp_bisect, calc_pmp_bisect
+from nose.tools import assert_raises
 
 y = g(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]))
 
@@ -317,3 +318,73 @@ def test_answer38():
     assert np.isnan(ixx4)
     np.testing.assert_array_almost_equal(v4, np.array([]), 4)
     np.testing.assert_array_almost_equal(ii4, np.array([]), 4)
+
+isc5, voc5, im5, vm5, pm5, ix5, ixx5, v5, ii5 = singlediode(np.array([1., 2.]), np.array([1., 2.]), np.array([2.]),
+                                                            np.array([2.]), np.array([2.]))
+
+
+def test_answer39():
+    np.testing.assert_array_almost_equal(isc5, np.array([.3149, .4429]), 4)
+    np.testing.assert_array_almost_equal(voc5, np.array([.8857, 1.0926]), 4)
+    np.testing.assert_array_almost_equal(im5, np.array([.1579, .2218]), 4)
+    np.testing.assert_array_almost_equal(vm5, np.array([.4441, .5473]), 4)
+    np.testing.assert_array_almost_equal(pm5, np.array([.0701, .1214]), 4)
+    np.testing.assert_array_almost_equal(ix5, np.array([.1583, .2223]), 4)
+    np.testing.assert_array_almost_equal(ixx5, np.array([.0792, .1111]), 4)
+    np.testing.assert_array_almost_equal(v5, np.array([]), 4)
+    np.testing.assert_array_almost_equal(ii5, np.array([]), 4)
+
+isc6, voc6, im6, vm6, pm6, ix6, ixx6, v6, ii6 = singlediode(np.array([1.5, .5, 3.]), np.array([4., .2, .8]),
+                                                            np.array([2.5, 7., 1.]), np.array([2.]), np.array([2.]),
+                                                            np.array([3.]))
+
+
+def test_answer40():
+    np.testing.assert_array_almost_equal(isc6, np.array([.19, .0938, 1.4385]), 4)
+    np.testing.assert_array_almost_equal(voc6, np.array([.5368, .8025, 2.3691]), 4)
+    np.testing.assert_array_almost_equal(im6, np.array([.095, .0469, .7308]), 4)
+    np.testing.assert_array_almost_equal(vm6, np.array([.2685, .4014, 1.2019]), 4)
+    np.testing.assert_array_almost_equal(pm6, np.array([.0255, .0188, .8784]), 4)
+    np.testing.assert_array_almost_equal(ix6, np.array([.0951, .047, .7414]), 4)
+    np.testing.assert_array_almost_equal(ixx6, np.array([.0475, .0235, .3706]), 4)
+    np.testing.assert_array_almost_equal(v6, np.array([[0., .2684, .5368], [0., .4013, .8025],
+                                                       [0., 1.1846, 2.3691]]), 4)
+    np.testing.assert_array_almost_equal(ii6, np.array([[.19, .0951, 0.], [.0938, .047, 0.], [1.4385, .7414, 0.]]), 4)
+
+isc7, voc7, im7, vm7, pm7, ix7, ixx7, v7, ii7 = singlediode(np.array([1.5]), np.array([4.]), np.array([1.]),
+                                                            np.array([2.]), np.array([2.]), np.array([10.]))
+
+
+def test_answer41():
+    np.testing.assert_array_almost_equal(isc7, np.array([.4036]), 4)
+    np.testing.assert_array_almost_equal(voc7, np.array([.5368]), 4)
+    np.testing.assert_array_almost_equal(im7, np.array([.2022]), 4)
+    np.testing.assert_array_almost_equal(vm7, np.array([.2689]), 4)
+    np.testing.assert_array_almost_equal(pm7, np.array([.0544]), 4)
+    np.testing.assert_array_almost_equal(ix7, np.array([.2025]), 4)
+    np.testing.assert_array_almost_equal(ixx7, np.array([.1013]), 4)
+    np.testing.assert_array_almost_equal(v7, np.array([0., .0596, .1193, .1789, .2386, .2982, .3579, .4175, .4772,
+                                                       .5368]), 4)
+    np.testing.assert_array_almost_equal(ii7, np.array([.4036, .3591, .3144, .2697, .2249, .1801, .1352, .0902, .0451,
+                                                        0.]), 4)
+
+def test_answer42():
+    assert_raises(ValueError, singlediode, np.array([-1.5]), np.array([4.]), np.array([1.]), np.array([2.]),
+                  np.array([2.]))
+
+def test_answer43():
+    assert_raises(ValueError, singlediode, np.array([1.5]), np.array([4.]), np.array([1.]), np.array([2.]),
+                  np.array([-2.]))
+
+def test_answer44():
+    assert_raises(ValueError, singlediode, np.array([1.5]), np.array([4.]), np.array([1.]), np.array([2.]),
+                  np.array([2.]), np.array([2. ,2.]))
+
+def test_answer45():
+    a = float("inf")
+    assert_raises(ValueError, singlediode, np.array([1.5]), np.array([4.]), np.array([1.]), np.array([2.]),
+                  np.array([2.]), np.array([a]))
+
+def test_answer46():
+    assert_raises(ValueError, singlediode, np.array([1.5, 2.5]), np.array([4.]), np.array([1.]), np.array([2.]),
+                  np.array([2., 2., 2.5]))

@@ -161,7 +161,9 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=np.array([0])):
     # Vth is the thermal voltage of the cell in volts. n is the usual diode ideality factor, assumed to be linear.
     # nnsvth is n * Ns * Vth
 
-    if any([il < 0, io < 0, rsh < 0, nnsvth < 0, numpoints < 0]):
+    t0 = np.append(il < 0, np.append(io < 0, np.append(rs < 0, np.append(rsh < 0, np.append(nnsvth < 0,
+                                                                                            numpoints < 0)))))
+    if t0.any():
         raise ValueError("All Input Values Should be Greater Than 0")
     if len(numpoints) != 1:
         raise ValueError("numpoints should be numpy array of length 1")
@@ -174,7 +176,7 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=np.array([0])):
     t1 = vectorsizes == maxvectorsize
     t2 = vectorsizes == 1
 
-    if ~(t1.all() or t2.all()):
+    if not all(np.logical_or(t1, t2)):
         raise ValueError("Input vectors il, io, rs, rsh and nnsvth must be numpy arrays of the same length or of "
                          "length 1")
 
@@ -220,15 +222,15 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=np.array([0])):
     v = np.array([])
     i = np.array([])
     if numpoints >= 2:
-        for i in range(maxvectorsize):
-            vc = np.arange(0., voc[i], voc[i] / (numpoints - 1.))
-            vc = np.append(vc, voc[i])
-            if u[i]:
-                ic = i_from_v(rsh[i], rs[i], nnsvth[i], vc, io[i], il[i])
-                ic[len(ic) - 1.] = isc
+        for j in range(maxvectorsize):
+            vc = np.arange(0., voc[j], voc[j] / (numpoints - 1.))
+            vc = np.append(vc, voc[j])
+            if u[j]:
+                ic = i_from_v(rsh[j], rs[j], nnsvth[j], vc, io[j], il[j])
+                ic[len(ic) - 1.] = 0.
             else:
                 ic = np.zeros(len(vc))
-            if i == 0:
+            if j == 0:
                 v = vc
                 i = ic
             else:

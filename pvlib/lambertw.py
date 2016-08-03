@@ -36,6 +36,7 @@ def lambertw(z):
         for i in z:
             if np.isnan(i) or np.isinf(i):
                 f.append(float("NaN"))
+                continue
 
             # Use a series expansion when close to the branch point -1/e
             k = (np.abs(i + 0.3678794411714423216) <= 1.5)

@@ -10,7 +10,7 @@ def i_from_v(rsh, rs, nnsvth, v, io, iphi):
     # Rsh, nVth, V, Io, Iphi can all be vectors
     # Rs can be a numpy array with size greater than 1 but it should have only 1 value
 
-    argw = rs * io * rsh * np.exp(rsh * (rs * (iphi * io) + v) / (nnsvth * (rs + rsh))) / (nnsvth * (rs + rsh))
+    argw = rs * io * rsh * np.exp(rsh * (rs * (iphi + io) + v) / (nnsvth * (rs + rsh))) / (nnsvth * (rs + rsh))
     inputterm = lambertw(argw)
 
     # Eqn. 4 in Jain and Kapoor, 2004
@@ -22,7 +22,7 @@ def g(i, iph, io, a, rs, rsh):
     # calculates dP / dV exactly, using p = I * V = I * V(I), where V = V(I) uses the Lambert's W function W(phi)
     # ([3], Eq. 3)
 
-    x, z = calc_theta_phi_exact(i, iph, 0, io, a, rs, rsh)
+    x, z = calc_theta_phi_exact(i, iph, np.array([0.]), io, a, rs, rsh)
     z = np.transpose(z)
 
     # calculate dP / dV
@@ -51,7 +51,7 @@ def calc_imp_bisect(iph, io, a, rs, rsh):
         A[errorvalues] = float("NaN")
 
     # midpoint is initial guess for Imp
-    p = (A + B) / 2
+    p = (A + B) / 2.
     err = g(p, iph, io, a, rs, rsh)  # value of dP / dV at initial guess p
 
     while max(abs(B - A)) > 1e-6:  # set precision of estimate of Imp to 1e-6 (A)
@@ -59,7 +59,7 @@ def calc_imp_bisect(iph, io, a, rs, rsh):
         u = (gA * err) < 0
         B[u] = p[u]
         A[~u] = p[~u]
-        p = (A + B) / 2
+        p = (A + B) / 2.
         err = g(p, iph, io, a, rs, rsh)
 
     imp = p
@@ -70,15 +70,15 @@ def calc_pmp_bisect(iph, io, a, rs, rsh):
     # Returns Imp, Vmp, Pmp for the IV curve described by input parameters. Vectorized.
 
     imp = calc_imp_bisect(iph, io, a, rs, rsh)  # find imp
-    x, z = calc_theta_phi_exact(imp, iph, 0, io, a, rs, rsh)  # calculate W(phi) at Imp, where W is Lambert's W function
-                                                              # and phi is its argument ([3], Eq. 3)
+    x, z = calc_theta_phi_exact(imp, iph, np.array([0.]), io, a, rs, rsh)  # calculate W(phi) at Imp, where W is
+    # Lambert's W function and phi is its argument ([3], Eq. 3)
     z = np.transpose(z)
     vmp = (iph + io - imp) * rsh - imp * rs - a * z  # compute V from Imp and W(phi)
     pmp = vmp * imp
     return imp, vmp, pmp
 
 
-def singlediode(il, io, rs, rsh, nnsvth, numpoints=0):
+def singlediode(il, io, rs, rsh, nnsvth, numpoints=np.array([0])):
     """
     single diode solves the single-diode model to obtain a photovoltaic IV curve
 
@@ -162,22 +162,21 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=0):
     # nnsvth is n * Ns * Vth
 
     if any([il < 0, io < 0, rsh < 0, nnsvth < 0, numpoints < 0]):
-        print "All Input Values Should be Greater Than 0"
-        return
+        raise ValueError("All Input Values Should be Greater Than 0")
     if len(numpoints) != 1:
-        print "numpoints should be numpy array of length 1"
-        return
+        raise ValueError("numpoints should be numpy array of length 1")
     if ~np.isfinite(numpoints):
-        print "numpoints should be finite"
-        return
+        raise ValueError("numpoints should be finite")
 
     # Ensure that all input values are either numpy arrays of length 1 or are all numpy arrays of the same length.
     vectorsizes = np.array([len(il), len(io), len(rs), len(rsh), len(nnsvth)])
     maxvectorsize = max(vectorsizes)
+    t1 = vectorsizes == maxvectorsize
+    t2 = vectorsizes == 1
 
-    if ~all(vectorsizes == maxvectorsize or vectorsizes == 1):
-        print "Input vectors il, io, rs, rsh and nnsvth must be numpy arrays of the same length or of length 1"
-        return
+    if ~(t1.all() or t2.all()):
+        raise ValueError("Input vectors il, io, rs, rsh and nnsvth must be numpy arrays of the same length or of "
+                         "length 1")
 
     if maxvectorsize > 1 and any(vectorsizes == 1.):
         il = il * np.ones(maxvectorsize)
@@ -200,10 +199,10 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=0):
     numpoints = np.ceil(numpoints)
 
     # Find isc using lambert W
-    isc[u] = i_from_v(rsh[u], rs[u], nnsvth[u], 0, io[u], il[u])
+    isc[u] = i_from_v(rsh[u], rs[u], nnsvth[u], np.array([0.]), io[u], il[u])
 
     # Find voc using lambert W
-    voc[u] = v_from_i(rsh[u], rs[u], nnsvth[u], 0, io[u], il[u])
+    voc[u] = v_from_i(rsh[u], rs[u], nnsvth[u], np.array([0.]), io[u], il[u])
 
     # Calculate I, V and P at the maximum power point
     imax[u], vmax[u], pmp[u] = calc_pmp_bisect(il[u], io[u], nnsvth[u], rs[u], rsh[u])
@@ -222,11 +221,11 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=0):
     i = np.array([])
     if numpoints >= 2:
         for i in range(maxvectorsize):
-            vc = np.arange(0, voc[i], voc[i] / (numpoints - 1.))
+            vc = np.arange(0., voc[i], voc[i] / (numpoints - 1.))
             vc = np.append(vc, voc[i])
             if u[i]:
                 ic = i_from_v(rsh[i], rs[i], nnsvth[i], vc, io[i], il[i])
-                ic[len(ic) - 1] = isc
+                ic[len(ic) - 1.] = isc
             else:
                 ic = np.zeros(len(vc))
             if i == 0:
@@ -236,6 +235,6 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=0):
                 v = np.vstack((v, vc))
                 i = np.vstack((i, ic))
 
-    imp = vmax
-    vmp = imax
+    imp = imax
+    vmp = vmax
     return isc, voc, imp, vmp, pmp, ix, ixx, v, i

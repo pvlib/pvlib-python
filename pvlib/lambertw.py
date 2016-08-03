@@ -34,6 +34,9 @@ def lambertw(z):
     if any(z < 0):
         f = []
         for i in z:
+            if np.isnan(i) or np.isinf(i):
+                f.append(float("NaN"))
+
             # Use a series expansion when close to the branch point -1/e
             k = (np.abs(i + 0.3678794411714423216) <= 1.5)
             tmp = np.sqrt(complex(5.43656365691809047 * i + 2.)) - 1  # [2], Eq. 4.22 and text

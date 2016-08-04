@@ -368,22 +368,27 @@ def test_answer41():
     np.testing.assert_array_almost_equal(ii7, np.array([.4036, .3591, .3144, .2697, .2249, .1801, .1352, .0902, .0451,
                                                         0.]), 4)
 
+
 def test_answer42():
     assert_raises(ValueError, singlediode, np.array([-1.5]), np.array([4.]), np.array([1.]), np.array([2.]),
                   np.array([2.]))
+
 
 def test_answer43():
     assert_raises(ValueError, singlediode, np.array([1.5]), np.array([4.]), np.array([1.]), np.array([2.]),
                   np.array([-2.]))
 
+
 def test_answer44():
     assert_raises(ValueError, singlediode, np.array([1.5]), np.array([4.]), np.array([1.]), np.array([2.]),
-                  np.array([2.]), np.array([2. ,2.]))
+                  np.array([2.]), np.array([2., 2.]))
+
 
 def test_answer45():
     a = float("inf")
     assert_raises(ValueError, singlediode, np.array([1.5]), np.array([4.]), np.array([1.]), np.array([2.]),
                   np.array([2.]), np.array([a]))
+
 
 def test_answer46():
     assert_raises(ValueError, singlediode, np.array([1.5, 2.5]), np.array([4.]), np.array([1.]), np.array([2.]),

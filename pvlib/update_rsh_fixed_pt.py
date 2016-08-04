@@ -1,5 +1,5 @@
 import numpy as np
-import calc_theta_phi_exact
+from pvlib.calc_theta_phi_exact import calc_theta_phi_exact
 
 
 def update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
@@ -34,7 +34,7 @@ def update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
     x1 = np.transpose(rsh)
 
     for i in range(niter):
-        y, z = calc_theta_phi_exact.calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, x1)
+        y, z = calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, x1)
         next_x1 = (1 + z) / z * ((il + io) * x1 / imp - nnsvth * z / imp - 2 * vmp / imp)
         x1 = next_x1
 

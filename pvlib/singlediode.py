@@ -1,7 +1,7 @@
 import numpy as np
-from update_io_known_n import v_from_i
-from calc_theta_phi_exact import calc_theta_phi_exact
-from lambertw import lambertw
+from pvlib.update_io_known_n import v_from_i
+from pvlib.calc_theta_phi_exact import calc_theta_phi_exact
+from pvlib.lambertw import lambertw
 
 
 def i_from_v(rsh, rs, nnsvth, v, io, iphi):
@@ -46,8 +46,8 @@ def calc_imp_bisect(iph, io, a, rs, rsh):
         # Where gA * gB > 0, then there is a problem with the IV curve parameters. In the event where gA and gB have the
         # same sign, alert the user with a warning and replace erroneous cases with NaN
         errorvalues = gA * gB > 0
-        print "Warning: singlediode has found at least one case where the singlediode parameters are such that dP/dV" \
-              "may not have a zero. A NaN value has been reported for all such cases."
+        print("Warning: singlediode has found at least one case where the singlediode parameters are such that dP/dV "
+              "may not have a zero. A NaN value has been reported for all such cases.")
         A[errorvalues] = float("NaN")
 
     # midpoint is initial guess for Imp

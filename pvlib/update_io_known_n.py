@@ -1,5 +1,5 @@
 import numpy as np
-import lambertw
+from pvlib.lambertw import lambertw
 
 
 def v_from_i(rsh, rs, nnsvth, i, io, iphi):
@@ -33,7 +33,7 @@ def v_from_i(rsh, rs, nnsvth, i, io, iphi):
 
     # Generate the argument of the LambertW function
     argw = (io * rsh / nnsvth) * np.exp(rsh * (-i + iphi + io) / nnsvth)
-    inputterm = lambertw.lambertw(argw)  # Get the LambertW output
+    inputterm = lambertw(argw)  # Get the LambertW output
     f = np.isnan(inputterm)  # If argw is too big, the LambertW result will be NaN and we have to go to logspace
 
     # Where f = NaN then the input argument (argW) is too large. It is necessary to go to logspace

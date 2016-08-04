@@ -1,5 +1,5 @@
 import numpy as np
-import lambertw
+from pvlib.lambertw import lambertw
 
 
 def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
@@ -41,7 +41,7 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
     u = argw > 0
     w = np.zeros(len(u))
     w[~u] = float("Nan")
-    tmp = lambertw.lambertw(argw[u])
+    tmp = lambertw(argw[u])
     ff = np.isnan(tmp)
 
     # NaN where argw overflows. Switch to log space to evaluate
@@ -62,7 +62,7 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
     u = argw > 0
     w = np.zeros(len(u))
     w[~u] = float("Nan")
-    tmp = lambertw.lambertw(argw[u])
+    tmp = lambertw(argw[u])
     ff = np.isnan(tmp)
 
     # NaN where argw overflows. Switch to log space to evaluate

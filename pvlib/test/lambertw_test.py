@@ -30,10 +30,10 @@ def test_answer3():
     np.testing.assert_array_almost_equal(z3, np.array([np.complex(.4670, 1.8217), np.complex(.6788, 1.9120),
                                                        np.complex(.8448, 1.9750)]), 4)
 
-w4 = np.array([-5, 0, .5, -.5, 1, 2, -1.5, 3])
+w4 = np.array([-5, 0, .5, 1, 2, -1.5, 3])
 z4 = lambertw.lambertw(w4)
 
 
 def test_answer4():
-    np.testing.assert_array_almost_equal(z4, np.array([np.complex(.8448, 1.9750), 0, .3517, np.complex(-.7940, .7701),
-                                                       .5671, .8526, np.complex(-.0328, 1.5496), 1.0499]), 4)
+    np.testing.assert_array_almost_equal(z4, np.array([np.complex(.8448, 1.9750), 0, .3517, .5671, .8526,
+                                                       np.complex(-.0328, 1.5496), 1.0499]), 4)

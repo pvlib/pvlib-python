@@ -628,7 +628,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                             solar_zenith, solar_azimuth)
 
-    F = 1 - ((ghi / ghi) ** 2)
+    F = 1 - ((dhi / ghi) ** 2)
     try:
         # fails with single point input
         F.fillna(0, inplace=True)

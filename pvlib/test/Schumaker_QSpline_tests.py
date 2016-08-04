@@ -4,7 +4,7 @@ from pvlib.Schumaker_QSpline import schumaker_qspline
 x = np.array([0., 1., 2., 3., 4., 1., 2., 3., 4., 5.])
 y = np.array([2., 1., 0., 1., 2., 3., 2., 1., 2., 3.])
 
-outa, outxk, outy, kflag = schumaker_qspline(x, y)
+[outa, outxk, outy, kflag] = schumaker_qspline(x, y)
 
 
 def test_answer():
@@ -21,10 +21,11 @@ def test_answer():
     np.testing.assert_array_almost_equal(kflag, np.array([0., 0., 0., 1., 1., 0., 0., 1., 1., 0., 0., 1., 1., 1., 0.,
                                                           0., 0.]), 4)
 
+
 x1 = np.array([1., 2., 3., 4., 5.])
 y1 = np.array([-2., -1., 0., 1., 2.])
 
-outa1, outxk1, outy1, kflag1 = schumaker_qspline(x1, y1)
+[outa1, outxk1, outy1, kflag1] = schumaker_qspline(x1, y1)
 
 
 def test_answer1():
@@ -37,7 +38,7 @@ def test_answer1():
 x2 = np.array([-.5, -.1, 0., .2, .3])
 y2 = np.array([-5., -1., .2, .5, 2.])
 
-outa2, outxk2, outy2, kflag2 = schumaker_qspline(x2, y2)
+[outa2, outxk2, outy2, kflag2] = schumaker_qspline(x2, y2)
 
 
 def test_answer2():

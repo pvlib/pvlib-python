@@ -59,3 +59,40 @@ def rectify_iv_curve(ti, tv, voc, isc):
         voltage = u
         current = np.array(v)
     return current, voltage
+
+
+def estrsh(x, rshexp, g, go):
+    # computes rsh for PVsyst model where the parameters are in vector xL
+    # x[0] = Rsh0
+    # x[1] = Rshref
+
+    rsho = x[0]
+    rshref = x[1]
+
+    rshb = np.max((rshref - rsho * np.exp(-rshexp)) / (1. - np.exp(-rshexp)), 0.)
+    prsh = rshb + (rsho - rshb) * np.exp(-rshexp * g / go)
+    return prsh
+
+
+def filter_params(io, rsh, rs, ee, isc):
+    # Function filter_params identifies bad parameter sets. A bad set contains Nan, non-positive or imaginary values for
+    # parameters; Rs > Rsh; or data where effective irradiance Ee differs by more than 5% from a linear fit to Isc vs.
+    # Ee
+
+    badrsh = rsh < 0. or np.isnan(rsh)
+    negrs = rs < 0.
+    badrs = rs > rsh or np.isnan(rs)
+    imagrs = ~(np.isreal(rs))
+    badio = ~(np.isreal(rs)) or io <= 0
+    goodr = np.logical_and(~badrsh, ~imagrs)
+    goodr = np.logical_and(goodr, ~negrs)
+    goodr = np.logical_and(goodr, ~badrs)
+    goodr = np.logical_and(goodr, ~badio)
+
+    eff = np.linalg.lstsq(ee / 1000, isc)[0]
+    pisc = eff * ee / 1000
+    pisc_error = np.abs(pisc - isc) / isc
+    badiph = pisc_error > .05  # check for departure from linear relation between Isc and Ee
+
+    u = np.logical_and(goodr, ~badiph)
+    return u

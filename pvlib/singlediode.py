@@ -66,6 +66,25 @@ def calc_imp_bisect(iph, io, a, rs, rsh):
     return imp
 
 
+class Results:
+    def __init__(self):
+        self.voc = 0.
+        self.vmp = 0.
+        self.imp = 0.
+        self.ix = 0.
+        self.ixx = 0.
+        self.pmp = 0.
+        self.isc = 0.
+
+    def __str__(self):
+        return "Results: \n Voc = %s \n Vmp = %s \n Imp = %s \n Ix = %s \n Ixx = %s \n Pmp = %s \n Isc = %s" \
+               % (self.voc, self.vmp, self.imp, self.ix, self.ixx, self.pmp, self.isc)
+
+    def __repr__(self):
+        return "<\nResults: \n Voc = %s \n Vmp = %s \n Imp = %s \n Ix = %s \n Ixx = %s \n Pmp = %s \n Isc = %s \n>" \
+               % (self.voc, self.vmp, self.imp, self.ix, self.ixx, self.pmp, self.isc)
+
+
 def calc_pmp_bisect(iph, io, a, rs, rsh):
     # Returns Imp, Vmp, Pmp for the IV curve described by input parameters. Vectorized.
 
@@ -237,6 +256,15 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=np.array([0])):
                 v = np.vstack((v, vc))
                 i = np.vstack((i, ic))
 
-    imp = imax
-    vmp = vmax
-    return isc, voc, imp, vmp, pmp, ix, ixx, v, i
+    # Wrap answers in Results Class
+    result = Results()
+
+    result.imp = imax
+    result.vmp = vmax
+    result.isc = isc
+    result.voc = voc
+    result.pmp = pmp
+    result.ix = ix
+    result.ixx = ixx
+
+    return result, v, i

@@ -96,3 +96,67 @@ def filter_params(io, rsh, rs, ee, isc):
 
     u = np.logical_and(goodr, ~badiph)
     return u
+
+
+class ConvergeParam:
+    def __init__(self):
+        self.imperrmax = 0.
+        self.imperrmin = 0.
+        self.imperrabsmax = 0.
+        self.imperrmean = 0.
+        self.imperrstd = 0.
+
+        self.vmperrmax = 0.
+        self.vmperrmin = 0.
+        self.vmperrabsmax = 0.
+        self.vmperrmean = 0.
+        self.vmperrstd = 0.
+
+        self.pmperrmax = 0.
+        self.pmperrmin = 0.
+        self.pmperrabsmax = 0.
+        self.pmperrmean = 0.
+        self.pmperrstd = 0.
+
+        self.imperrabsmaxchange = 0.
+        self.vmperrabsmaxchange = 0.
+        self.pmperrabsmaxchange = 0.
+        self.imperrmeanchange = 0.
+        self.vmperrmeanchange = 0.
+        self.pmperrmeanchange = 0.
+        self.imperrstdchange = 0.
+        self.vmperrstdchange = 0.
+        self.pmperrstdchange = 0.
+
+        self.state = 0.
+
+    def __str__(self):
+        return "ConvergeParam: \n Max Imp Error = %s \n Min Imp Error = %s \n Absolute Max Imp Error = %s \n " \
+               "Mean Imp Error = %s \n Standard Deviation of Imp Error = %s \n\n Max Vmp Error = %s \n Min Vmp " \
+               "Error = %s \n Absolute Max Vmp Error = %s \n Mean Vmp Error = %s \n Standard Deviation of Vmp Error " \
+               "= %s \n\n Max Pmp Error = %s \n Min Pmp Error = %s \n Absolute Max Pmp Error = %s \n Mean Pmp " \
+               "Error = %s \n Standard Deviation of Pmp Error = %s \n\n Imp Changes: \n Absolute Max Error: %s \n " \
+               "Mean Error: %s \n Standard Deviation: %s \n\n Vmp Changes: \n Absolute Max Error: %s \n Mean " \
+               "Error: %s \n Standard Deviation: %s \n\n Pmp Changes: \n Absolute Max Error: %s \n Mean Error: %s \n " \
+               "Standard Deviation: %s \n State = %s" \
+               % (self.imperrmax, self.imperrmin, self.imperrabsmax, self.imperrmean, self.imperrstd, self.vmperrmax,
+                  self.vmperrmin, self.vmperrabsmax, self.vmperrmean, self.vmperrstd, self.pmperrmax, self.pmperrmin,
+                  self.pmperrabsmax, self.pmperrmean, self.pmperrstd, self.imperrabsmaxchange, self. imperrmeanchange,
+                  self.imperrstdchange, self.vmperrabsmaxchange, self.vmperrmeanchange, self.vmperrstdchange,
+                  self.pmperrabsmaxchange, self.pmperrmeanchange, self.pmperrstdchange, self.state)
+
+    def __repr__(self):
+        return "<\nConvergeParam: \n Max Imp Error = %s \n Min Imp Error = %s \n Absolute Max Imp Error = %s \n " \
+               "Mean Imp Error = %s \n Standard Deviation of Imp Error = %s \n\n Max Vmp Error = %s \n Min Vmp " \
+               "Error = %s \n Absolute Max Vmp Error = %s \n Mean Vmp Error = %s \n Standard Deviation of Vmp Error " \
+               "= %s \n\n Max Pmp Error = %s \n Min Pmp Error = %s \n Absolute Max Pmp Error = %s \n Mean Pmp " \
+               "Error = %s \n Standard Deviation of Pmp Error = %s \n\n Imp Changes: \n Absolute Max Error: %s \n " \
+               "Mean Error: %s \n Standard Deviation: %s \n\n Vmp Changes: \n Absolute Max Error: %s \n Mean " \
+               "Error: %s \n Standard Deviation: %s \n\n Pmp Changes: \n Absolute Max Error: %s \n Mean Error: %s \n " \
+               "Standard Deviation: %s \n State = %s \n>" \
+               % (self.imperrmax, self.imperrmin, self.imperrabsmax, self.imperrmean, self.imperrstd, self.vmperrmax,
+                  self.vmperrmin, self.vmperrabsmax, self.vmperrmean, self.vmperrstd, self.pmperrmax, self.pmperrmin,
+                  self.pmperrabsmax, self.pmperrmean, self.pmperrstd, self.imperrabsmaxchange, self. imperrmeanchange,
+                  self.imperrstdchange, self.vmperrabsmaxchange, self.vmperrmeanchange, self.vmperrstdchange,
+                  self.pmperrabsmaxchange, self.pmperrmeanchange, self.pmperrstdchange, self.state)
+

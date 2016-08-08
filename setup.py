@@ -45,6 +45,7 @@ INSTALL_REQUIRES = ['numpy >= 1.9.0',
                     'pytz',
                     'six',
                     'matplotlib',
+                    'scipy',
                     ]
 SETUP_REQUIRES = ['pytest-runner']
 TESTS_REQUIRE = ['pytest', 'nose']

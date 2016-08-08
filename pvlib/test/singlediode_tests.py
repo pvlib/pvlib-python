@@ -244,122 +244,122 @@ i8 = i_from_v(np.array([.1, .2, -.1]), np.array([1., .5, -.3]), np.array([1.5, 2
 def test_answer33():
     np.testing.assert_array_almost_equal(i8, np.array([-.3560, -.2032, -.1983]), 4)
 
-result, v, ii = singlediode(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]))
+result = singlediode(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]))
 
 
 def test_answer34():
-    np.testing.assert_array_almost_equal(result.isc, np.array([.4429]), 4)
-    np.testing.assert_array_almost_equal(result.voc, np.array([1.0926]), 4)
-    np.testing.assert_array_almost_equal(result.imp, np.array([.2218]), 4)
-    np.testing.assert_array_almost_equal(result.vmp, np.array([.5473]), 4)
-    np.testing.assert_array_almost_equal(result.pmp, np.array([.1214]), 4)
-    np.testing.assert_array_almost_equal(result.ix, np.array([.2223]), 4)
-    np.testing.assert_array_almost_equal(result.ixx, np.array([.1111]), 4)
-    np.testing.assert_array_almost_equal(v, np.array([]), 4)
-    np.testing.assert_array_almost_equal(ii, np.array([]), 4)
+    np.testing.assert_array_almost_equal(result['isc'], np.array([.4429]), 4)
+    np.testing.assert_array_almost_equal(result['voc'], np.array([1.0926]), 4)
+    np.testing.assert_array_almost_equal(result['imp'], np.array([.2218]), 4)
+    np.testing.assert_array_almost_equal(result['vmp'], np.array([.5473]), 4)
+    np.testing.assert_array_almost_equal(result['pmp'], np.array([.1214]), 4)
+    np.testing.assert_array_almost_equal(result['ix'], np.array([.2223]), 4)
+    np.testing.assert_array_almost_equal(result['ixx'], np.array([.1111]), 4)
+    np.testing.assert_array_almost_equal(result['v'], np.array([]), 4)
+    np.testing.assert_array_almost_equal(result['i'], np.array([]), 4)
 
-result1, v1, ii1 = singlediode(np.array([2.]), np.array([0.]), np.array([2.]), np.array([2.]), np.array([2.]))
+result1 = singlediode(np.array([2.]), np.array([0.]), np.array([2.]), np.array([2.]), np.array([2.]))
 
 
 def test_answer35():
-    np.testing.assert_array_almost_equal(result1.isc, np.array([1]), 4)
-    np.testing.assert_array_almost_equal(result1.voc, np.array([4]), 4)
-    np.testing.assert_array_almost_equal(result1.imp, np.array([2]), 4)
-    assert np.isnan(result1.vmp)
-    assert np.isnan(result1.pmp)
-    np.testing.assert_array_almost_equal(result1.ix, np.array([.5]), 4)
-    assert np.isnan(result1.ixx)
-    np.testing.assert_array_almost_equal(v1, np.array([]), 4)
-    np.testing.assert_array_almost_equal(ii1, np.array([]), 4)
+    np.testing.assert_array_almost_equal(result1['isc'], np.array([1]), 4)
+    np.testing.assert_array_almost_equal(result1['voc'], np.array([4]), 4)
+    np.testing.assert_array_almost_equal(result1['imp'], np.array([2]), 4)
+    assert np.isnan(result1['vmp'])
+    assert np.isnan(result1['pmp'])
+    np.testing.assert_array_almost_equal(result1['ix'], np.array([.5]), 4)
+    assert np.isnan(result1['ixx'])
+    np.testing.assert_array_almost_equal(result1['v'], np.array([]), 4)
+    np.testing.assert_array_almost_equal(result1['i'], np.array([]), 4)
 
-result2, v2, ii2 = singlediode(np.array([2.]), np.array([2.]), np.array([0.]), np.array([2.]), np.array([2.]))
+result2 = singlediode(np.array([2.]), np.array([2.]), np.array([0.]), np.array([2.]), np.array([2.]))
 
 
 def test_answer36():
-    assert np.isnan(result2.isc)
-    np.testing.assert_array_almost_equal(result2.voc, np.array([1.0926]), 4)
-    np.testing.assert_array_almost_equal(result2.imp, np.array([1.0498]), 4)
-    np.testing.assert_array_almost_equal(result2.vmp, np.array([.5731]), 4)
-    np.testing.assert_array_almost_equal(result2.pmp, np.array([.6016]), 4)
-    assert np.isnan(result2.ix)
-    assert np.isnan(result2.ixx)
-    np.testing.assert_array_almost_equal(v2, np.array([]), 4)
-    np.testing.assert_array_almost_equal(ii2, np.array([]), 4)
+    assert np.isnan(result2['isc'])
+    np.testing.assert_array_almost_equal(result2['voc'], np.array([1.0926]), 4)
+    np.testing.assert_array_almost_equal(result2['imp'], np.array([1.0498]), 4)
+    np.testing.assert_array_almost_equal(result2['vmp'], np.array([.5731]), 4)
+    np.testing.assert_array_almost_equal(result2['pmp'], np.array([.6016]), 4)
+    assert np.isnan(result2['ix'])
+    assert np.isnan(result2['ixx'])
+    np.testing.assert_array_almost_equal(result2['v'], np.array([]), 4)
+    np.testing.assert_array_almost_equal(result2['i'], np.array([]), 4)
 
-result3, v3, ii3 = singlediode(np.array([2.]), np.array([2.]), np.array([2.]), np.array([0.]), np.array([2.]))
+result3 = singlediode(np.array([2.]), np.array([2.]), np.array([2.]), np.array([0.]), np.array([2.]))
 
 
 def test_answer37():
-    np.testing.assert_array_almost_equal(result3.isc, np.array([0]), 4)
-    np.testing.assert_array_almost_equal(result3.voc, np.array([0]), 4)
-    np.testing.assert_array_almost_equal(result3.imp, np.array([4]), 4)
-    assert np.isnan(result3.vmp)
-    assert np.isnan(result3.pmp)
-    np.testing.assert_array_almost_equal(result3.ix, np.array([0]), 4)
-    assert np.isnan(result3.ixx)
-    np.testing.assert_array_almost_equal(v3, np.array([]), 4)
-    np.testing.assert_array_almost_equal(ii3, np.array([]), 4)
+    np.testing.assert_array_almost_equal(result3['isc'], np.array([0]), 4)
+    np.testing.assert_array_almost_equal(result3['voc'], np.array([0]), 4)
+    np.testing.assert_array_almost_equal(result3['imp'], np.array([4]), 4)
+    assert np.isnan(result3['vmp'])
+    assert np.isnan(result3['pmp'])
+    np.testing.assert_array_almost_equal(result3['ix'], np.array([0]), 4)
+    assert np.isnan(result3['ixx'])
+    np.testing.assert_array_almost_equal(result3['v'], np.array([]), 4)
+    np.testing.assert_array_almost_equal(result3['i'], np.array([]), 4)
 
-result4, v4, ii4 = singlediode(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([0.]))
+result4 = singlediode(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([0.]))
 
 
 def test_answer38():
-    assert np.isnan(result4.isc)
-    assert np.isnan(result4.voc)
-    np.testing.assert_array_almost_equal(result4.imp, np.array([4]), 4)
-    assert np.isnan(result4.vmp)
-    assert np.isnan(result4.pmp)
-    assert np.isnan(result4.ix)
-    assert np.isnan(result4.ixx)
-    np.testing.assert_array_almost_equal(v4, np.array([]), 4)
-    np.testing.assert_array_almost_equal(ii4, np.array([]), 4)
+    assert np.isnan(result4['isc'])
+    assert np.isnan(result4['voc'])
+    np.testing.assert_array_almost_equal(result4['imp'], np.array([4]), 4)
+    assert np.isnan(result4['vmp'])
+    assert np.isnan(result4['pmp'])
+    assert np.isnan(result4['ix'])
+    assert np.isnan(result4['ixx'])
+    np.testing.assert_array_almost_equal(result4['v'], np.array([]), 4)
+    np.testing.assert_array_almost_equal(result4['i'], np.array([]), 4)
 
-result5, v5, ii5 = singlediode(np.array([1., 2.]), np.array([1., 2.]), np.array([2.]), np.array([2.]), np.array([2.]))
+result5 = singlediode(np.array([1., 2.]), np.array([1., 2.]), np.array([2.]), np.array([2.]), np.array([2.]))
 
 
 def test_answer39():
-    np.testing.assert_array_almost_equal(result5.isc, np.array([.3149, .4429]), 4)
-    np.testing.assert_array_almost_equal(result5.voc, np.array([.8857, 1.0926]), 4)
-    np.testing.assert_array_almost_equal(result5.imp, np.array([.1579, .2218]), 4)
-    np.testing.assert_array_almost_equal(result5.vmp, np.array([.4441, .5473]), 4)
-    np.testing.assert_array_almost_equal(result5.pmp, np.array([.0701, .1214]), 4)
-    np.testing.assert_array_almost_equal(result5.ix, np.array([.1583, .2223]), 4)
-    np.testing.assert_array_almost_equal(result5.ixx, np.array([.0792, .1111]), 4)
-    np.testing.assert_array_almost_equal(v5, np.array([]), 4)
-    np.testing.assert_array_almost_equal(ii5, np.array([]), 4)
+    np.testing.assert_array_almost_equal(result5['isc'], np.array([.3149, .4429]), 4)
+    np.testing.assert_array_almost_equal(result5['voc'], np.array([.8857, 1.0926]), 4)
+    np.testing.assert_array_almost_equal(result5['imp'], np.array([.1579, .2218]), 4)
+    np.testing.assert_array_almost_equal(result5['vmp'], np.array([.4441, .5473]), 4)
+    np.testing.assert_array_almost_equal(result5['pmp'], np.array([.0701, .1214]), 4)
+    np.testing.assert_array_almost_equal(result5['ix'], np.array([.1583, .2223]), 4)
+    np.testing.assert_array_almost_equal(result5['ixx'], np.array([.0792, .1111]), 4)
+    np.testing.assert_array_almost_equal(result5['v'], np.array([]), 4)
+    np.testing.assert_array_almost_equal(result5['i'], np.array([]), 4)
 
-result6, v6, ii6 = singlediode(np.array([1.5, .5, 3.]), np.array([4., .2, .8]), np.array([2.5, 7., 1.]), np.array([2.]),
-                               np.array([2.]), np.array([3.]))
+result6 = singlediode(np.array([1.5, .5, 3.]), np.array([4., .2, .8]), np.array([2.5, 7., 1.]), np.array([2.]),
+                      np.array([2.]), np.array([3.]))
 
 
 def test_answer40():
-    np.testing.assert_array_almost_equal(result6.isc, np.array([.19, .0938, 1.4385]), 4)
-    np.testing.assert_array_almost_equal(result6.voc, np.array([.5368, .8025, 2.3691]), 4)
-    np.testing.assert_array_almost_equal(result6.imp, np.array([.095, .0469, .7308]), 4)
-    np.testing.assert_array_almost_equal(result6.vmp, np.array([.2685, .4014, 1.2019]), 4)
-    np.testing.assert_array_almost_equal(result6.pmp, np.array([.0255, .0188, .8784]), 4)
-    np.testing.assert_array_almost_equal(result6.ix, np.array([.0951, .047, .7414]), 4)
-    np.testing.assert_array_almost_equal(result6.ixx, np.array([.0475, .0235, .3706]), 4)
-    np.testing.assert_array_almost_equal(v6, np.array([[0., .2684, .5368], [0., .4013, .8025],
-                                                       [0., 1.1846, 2.3691]]), 4)
-    np.testing.assert_array_almost_equal(ii6, np.array([[.19, .0951, 0.], [.0938, .047, 0.], [1.4385, .7414, 0.]]), 4)
+    np.testing.assert_array_almost_equal(result6['isc'], np.array([.19, .0938, 1.4385]), 4)
+    np.testing.assert_array_almost_equal(result6['voc'], np.array([.5368, .8025, 2.3691]), 4)
+    np.testing.assert_array_almost_equal(result6['imp'], np.array([.095, .0469, .7308]), 4)
+    np.testing.assert_array_almost_equal(result6['vmp'], np.array([.2685, .4014, 1.2019]), 4)
+    np.testing.assert_array_almost_equal(result6['pmp'], np.array([.0255, .0188, .8784]), 4)
+    np.testing.assert_array_almost_equal(result6['ix'], np.array([.0951, .047, .7414]), 4)
+    np.testing.assert_array_almost_equal(result6['ixx'], np.array([.0475, .0235, .3706]), 4)
+    np.testing.assert_array_almost_equal(result6['v'], np.array([[0., .2684, .5368], [0., .4013, .8025],
+                                                                 [0., 1.1846, 2.3691]]), 4)
+    np.testing.assert_array_almost_equal(result6['i'], np.array([[.19, .0951, 0.], [.0938, .047, 0.],
+                                                                 [1.4385, .7414, 0.]]), 4)
 
-result7, v7, ii7 = singlediode(np.array([1.5]), np.array([4.]), np.array([1.]), np.array([2.]), np.array([2.]),
-                               np.array([10.]))
+result7 = singlediode(np.array([1.5]), np.array([4.]), np.array([1.]), np.array([2.]), np.array([2.]), np.array([10.]))
 
 
 def test_answer41():
-    np.testing.assert_array_almost_equal(result7.isc, np.array([.4036]), 4)
-    np.testing.assert_array_almost_equal(result7.voc, np.array([.5368]), 4)
-    np.testing.assert_array_almost_equal(result7.imp, np.array([.2022]), 4)
-    np.testing.assert_array_almost_equal(result7.vmp, np.array([.2689]), 4)
-    np.testing.assert_array_almost_equal(result7.pmp, np.array([.0544]), 4)
-    np.testing.assert_array_almost_equal(result7.ix, np.array([.2025]), 4)
-    np.testing.assert_array_almost_equal(result7.ixx, np.array([.1013]), 4)
-    np.testing.assert_array_almost_equal(v7, np.array([0., .0596, .1193, .1789, .2386, .2982, .3579, .4175, .4772,
-                                                       .5368]), 4)
-    np.testing.assert_array_almost_equal(ii7, np.array([.4036, .3591, .3144, .2697, .2249, .1801, .1352, .0902, .0451,
-                                                        0.]), 4)
+    np.testing.assert_array_almost_equal(result7['isc'], np.array([.4036]), 4)
+    np.testing.assert_array_almost_equal(result7['voc'], np.array([.5368]), 4)
+    np.testing.assert_array_almost_equal(result7['imp'], np.array([.2022]), 4)
+    np.testing.assert_array_almost_equal(result7['vmp'], np.array([.2689]), 4)
+    np.testing.assert_array_almost_equal(result7['pmp'], np.array([.0544]), 4)
+    np.testing.assert_array_almost_equal(result7['ix'], np.array([.2025]), 4)
+    np.testing.assert_array_almost_equal(result7['ixx'], np.array([.1013]), 4)
+    np.testing.assert_array_almost_equal(result7['v'], np.array([0., .0596, .1193, .1789, .2386, .2982, .3579, .4175,
+                                                                 .4772, .5368]), 4)
+    np.testing.assert_array_almost_equal(result7['i'], np.array([.4036, .3591, .3144, .2697, .2249, .1801, .1352, .0902,
+                                                                 .0451, 0.]), 4)
 
 
 def test_answer42():

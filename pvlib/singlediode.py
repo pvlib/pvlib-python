@@ -1,4 +1,5 @@
 import numpy as np
+from collections import OrderedDict
 from pvlib.update_io_known_n import v_from_i
 from pvlib.calc_theta_phi_exact import calc_theta_phi_exact
 from pvlib.lambertw import lambertw
@@ -64,25 +65,6 @@ def calc_imp_bisect(iph, io, a, rs, rsh):
 
     imp = p
     return imp
-
-
-class Results:
-    def __init__(self):
-        self.voc = 0.
-        self.vmp = 0.
-        self.imp = 0.
-        self.ix = 0.
-        self.ixx = 0.
-        self.pmp = 0.
-        self.isc = 0.
-
-    def __str__(self):
-        return "Results: \n Voc = %s \n Vmp = %s \n Imp = %s \n Ix = %s \n Ixx = %s \n Pmp = %s \n Isc = %s" \
-               % (self.voc, self.vmp, self.imp, self.ix, self.ixx, self.pmp, self.isc)
-
-    def __repr__(self):
-        return "<\nResults: \n Voc = %s \n Vmp = %s \n Imp = %s \n Ix = %s \n Ixx = %s \n Pmp = %s \n Isc = %s \n>" \
-               % (self.voc, self.vmp, self.imp, self.ix, self.ixx, self.pmp, self.isc)
 
 
 def calc_pmp_bisect(iph, io, a, rs, rsh):
@@ -257,14 +239,16 @@ def singlediode(il, io, rs, rsh, nnsvth, numpoints=np.array([0])):
                 i = np.vstack((i, ic))
 
     # Wrap answers in Results Class
-    result = Results()
+    result = OrderedDict()
 
-    result.imp = imax
-    result.vmp = vmax
-    result.isc = isc
-    result.voc = voc
-    result.pmp = pmp
-    result.ix = ix
-    result.ixx = ixx
+    result['imp'] = imax
+    result['vmp'] = vmax
+    result['isc'] = isc
+    result['voc'] = voc
+    result['pmp'] = pmp
+    result['ix'] = ix
+    result['ixx'] = ixx
+    result['v'] = v
+    result['i'] = i
 
-    return result, v, i
+    return result

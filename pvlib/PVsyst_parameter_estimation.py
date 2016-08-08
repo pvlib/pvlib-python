@@ -1,4 +1,5 @@
 from scipy import optimize
+import statsmodels.api as sm
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import OrderedDict
@@ -629,7 +630,9 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5,
         tok = const['T0'] + 273.15  # convert to to K
         x = const['q'] / const['k'] * (1. / tok - 1. / tck[u]) / gamma[u]
         y = np.log(io[u]) - 3. * np.log(tck[u] / tok)
-        beta = phi  # CHANGE HERE
+        new_x = sm.add_constant(x)
+        res = sm.RLM(y, new_x).fit()
+        beta = res.params
         io0 = np.exp(beta[0])
         eg = beta[1]
 

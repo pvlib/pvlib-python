@@ -7,7 +7,7 @@ from pvlib.est_single_diode_param import est_single_diode_param
 from pvlib.update_io_known_n import update_io_known_n
 from pvlib.update_rsh_fixed_pt import update_rsh_fixed_pt
 from pvlib.calc_theta_phi_exact import calc_theta_phi_exact
-from pvlib.singlediode import singlediode
+from pvlib.pvsystem import singlediode
 plt.ion()
 
 
@@ -230,9 +230,9 @@ def check_converge(prevparams, result, vmp, imp, graphic, convergeparamsfig, i):
     """
     convergeparam = OrderedDict()
 
-    imperror = (result.imp - imp) / imp * 100.
-    vmperror = (result.vmp - vmp) / vmp * 100.
-    pmperror = (result.pmp - (imp * vmp)) / (imp * vmp) * 100.
+    imperror = (result['i_mp'] - imp) / imp * 100.
+    vmperror = (result['v_mp'] - vmp) / vmp * 100.
+    pmperror = (result['p_mp'] - (imp * vmp)) / (imp * vmp) * 100.
 
     convergeparam['imperrmax'] = max(imperror)  # max of the error in Imp
     convergeparam['imperrmin'] = min(imperror)  # min of the error in Imp
@@ -596,7 +596,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5,
             u = filter_params(io, rsh, rs, ee, isc)
 
             # compute the IV curve from the current parameter values
-            [result, b, c] = singlediode(iph[u], io[u], rs[u], rsh[u], nnsvth[u])
+            result = singlediode(iph[u], io[u], rs[u], rsh[u], nnsvth[u])
 
             # check convergence criteria
             # [5] Step 3d

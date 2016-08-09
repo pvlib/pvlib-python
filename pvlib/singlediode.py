@@ -2,7 +2,7 @@ import numpy as np
 from collections import OrderedDict
 from pvlib.update_io_known_n import v_from_i
 from pvlib.calc_theta_phi_exact import calc_theta_phi_exact
-from pvlib.lambertw import lambertw
+from scipy.special import lambertw
 
 
 def i_from_v(rsh, rs, nnsvth, v, io, iphi):

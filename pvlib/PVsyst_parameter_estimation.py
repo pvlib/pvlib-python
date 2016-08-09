@@ -59,7 +59,7 @@ def numdiff(x, f):
     # Rest of points. Take reference point to be the middle of each group of 5 points. Calculate displacements
     ff = np.vstack((f[0:(n - 4)], f[1:(n - 3)], f[2:(n - 2)], f[3:(n - 1)], f[4:n])).T
 
-    a = np.vstack((x[0:(n - 4)], x[1:(n - 3)], x[2:(n - 2)], x[3:(n - 1)], x[4:n])).T - np.tile(x[2:(n - 2)], [1, 5])
+    a = np.vstack((x[0:(n - 4)], x[1:(n - 3)], x[2:(n - 2)], x[3:(n - 1)], x[4:n])).T - np.tile(x[2:(n - 2)], [5, 1]).T
 
     u = np.zeros(a.shape)
     l = np.zeros(a.shape)
@@ -178,17 +178,18 @@ def filter_params(io, rsh, rs, ee, isc):
     # parameters; Rs > Rsh; or data where effective irradiance Ee differs by more than 5% from a linear fit to Isc vs.
     # Ee
 
-    badrsh = rsh < 0. or np.isnan(rsh)
+    badrsh = np.logical_or(rsh < 0., np.isnan(rsh))
     negrs = rs < 0.
-    badrs = rs > rsh or np.isnan(rs)
+    badrs = np.logical_or(rs > rsh, np.isnan(rs))
     imagrs = ~(np.isreal(rs))
-    badio = ~(np.isreal(rs)) or io <= 0
+    badio = np.logical_or(~(np.isreal(rs)), io <= 0)
     goodr = np.logical_and(~badrsh, ~imagrs)
     goodr = np.logical_and(goodr, ~negrs)
     goodr = np.logical_and(goodr, ~badrs)
     goodr = np.logical_and(goodr, ~badio)
 
-    eff = np.linalg.lstsq(ee / 1000, isc)[0]
+    A = np.vstack((ee / 1000., np.zeros(len(ee)))).T
+    eff = np.linalg.lstsq(A, isc)[0][0]
     pisc = eff * ee / 1000
     pisc_error = np.abs(pisc - isc) / isc
     badiph = pisc_error > .05  # check for departure from linear relation between Isc and Ee
@@ -366,10 +367,10 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5,
         ivcurves['ee'][j] - effective irradiance (W / m^2), i.e., POA broadband irradiance adjusted by solar spectrum
                          modifier
         ivcurves['tc'][j] - cell temperature (C)
-        ivcurves['isc'] - short circuit current of IV curve (A)
-        ivcurves['voc'] - open circuit voltage of IV curve (V)
-        ivcurves['imp'] - current at max power point of IV curve (A)
-        ivcurves['vmp'] - voltage at max power point of IV curve (V)
+        ivcurves['isc'][j] - short circuit current of IV curve (A)
+        ivcurves['voc'][j] - open circuit voltage of IV curve (V)
+        ivcurves['imp'][j] - current at max power point of IV curve (A)
+        ivcurves['vmp'][j] - voltage at max power point of IV curve (V)
 
     specs - a dict containing module-level values
         specs['ns'] - number of cells in series
@@ -479,7 +480,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5,
     else:
         badgamma = False
 
-    pvsyst = OrderedDict
+    pvsyst = OrderedDict()
 
     if ~badgamma:
         gamma = gamma_ref + mugamma * (tc - const['T0'])

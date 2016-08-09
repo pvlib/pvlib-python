@@ -1,5 +1,5 @@
 import numpy as np
-from pvlib.lambertw import lambertw
+from scipy.special import lambertw
 
 
 def v_from_i(rsh, rs, nnsvth, i, io, iphi):
@@ -88,11 +88,11 @@ def update_io_known_n(rsh, rs, nnsvth, io, il, voc):
     k = 1
     maxerr = 1
 
-    tio = np.transpose(io)  # Current Estimate of Io
+    tio = io  # Current Estimate of Io
 
     while maxerr > eps and k < niter:
         # Predict Voc
-        pvoc = v_from_i(rsh, rs, nnsvth, 0, tio, il)
+        pvoc = v_from_i(rsh, rs, nnsvth, 0., tio, il)
 
         # Difference in Voc
         dvoc = pvoc - voc

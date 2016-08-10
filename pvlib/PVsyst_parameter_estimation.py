@@ -238,19 +238,19 @@ def check_converge(prevparams, result, vmp, imp, graphic, convergeparamsfig, i):
     convergeparam['imperrmin'] = min(imperror)  # min of the error in Imp
     convergeparam['imperrabsmax'] = max(abs(imperror))  # max of the absolute error in Imp
     convergeparam['imperrmean'] = np.mean(imperror, axis=0)  # mean of the error in Imp
-    convergeparam['imperrorstd'] = np.std(imperror, axis=0, ddof=1)  # std of the error in Imp
+    convergeparam['imperrstd'] = np.std(imperror, axis=0, ddof=1)  # std of the error in Imp
 
     convergeparam['vmperrmax'] = max(vmperror)  # max of the error in Vmp
     convergeparam['vmperrmin'] = min(vmperror)  # min of the error in Vmp
     convergeparam['vmperrabsmax'] = max(abs(vmperror))  # max of the absolute error in Vmp
     convergeparam['vmperrmean'] = np.mean(vmperror, axis=0)  # mean of the error in Vmp
-    convergeparam['vmperrorstd'] = np.std(vmperror, axis=0, ddof=1)  # std of the error in Vmp
+    convergeparam['vmperrstd'] = np.std(vmperror, axis=0, ddof=1)  # std of the error in Vmp
 
     convergeparam['pmperrmax'] = max(pmperror)  # max of the error in Pmp
     convergeparam['pmperrmin'] = min(pmperror)  # min of the error in Pmp
     convergeparam['pmperrabsmax'] = max(abs(pmperror))  # max of the abs err. in Pmp
     convergeparam['pmperrmean'] = np.mean(pmperror, axis=0)  # mean error in Pmp
-    convergeparam['pmperrorstd'] = np.std(pmperror, axis=0, ddof=1)  # std error Pmp
+    convergeparam['pmperrstd'] = np.std(pmperror, axis=0, ddof=1)  # std error Pmp
 
     if prevparams['state'] != 0.:
         convergeparam['imperrstdchange'] = np.abs((convergeparam['imperrstd'] - prevparams['imperrstd']) /
@@ -258,11 +258,11 @@ def check_converge(prevparams, result, vmp, imp, graphic, convergeparamsfig, i):
         convergeparam['vmperrstdchange'] = np.abs((convergeparam['vmperrstd'] - prevparams['vmperrstd']) /
                                                   prevparams['vmperrstd'])
         convergeparam['pmperrstdchange'] = np.abs((convergeparam['pmperrstd'] - prevparams['pmperrstd']) /
-                                                  prevparams['PmpErrStd'])
+                                                  prevparams['pmperrstd'])
         convergeparam['imperrmeanchange'] = np.abs((convergeparam['imperrmean'] - prevparams['imperrmean']) /
                                                    prevparams['imperrmean'])
         convergeparam['vmperrmeanchange'] = np.abs((convergeparam['vmperrmean'] - prevparams['vmperrmean']) /
-                                                   prevparams.vmperrmean)
+                                                   prevparams['vmperrmean'])
         convergeparam['pmperrmeanchange'] = np.abs((convergeparam['pmperrmean'] - prevparams['pmperrmean']) /
                                                    prevparams['pmperrmean'])
         convergeparam['imperrabsmaxchange'] = np.abs((convergeparam['imperrabsmax'] - prevparams['imperrabsmax']) /
@@ -563,7 +563,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5,
 
         t14 = np.array([True])
 
-        while any(t14) and counter <= maxiter:
+        while t14.any() and counter <= maxiter:
             # update rsh to match max power point using a fixed point method.
             tmprsh = update_rsh_fixed_pt(rsh[u], rs[u], io[u], iph[u], nnsvth[u], imp[u], vmp[u])
 
@@ -743,7 +743,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5,
         # Here we use a nonlinear least squares technique. Lsqnonlin minimizes the sum of squares of the objective
         # function (here, tf).
         x0 = np.array([grsh0, grshref])
-        beta = optimize.fmin(fun_rsh(x, rshexp, ee[u], const['E0'], rsh[u]), x0)
+        beta = optimize.fmin(fun_rsh, x0, args=(rshexp, ee[u], const['E0'], rsh[u]))
 
         # Extract PVsyst parameter values
         rsh0 = beta[0]

@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.special import lambertw
+from pvlib.lambertw import lambertw
 
 
 def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):

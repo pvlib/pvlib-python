@@ -31,7 +31,7 @@ def update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
         Report SAND2015-XXXX
     """
     niter = 500
-    x1 = np.transpose(rsh)
+    x1 = rsh
 
     for i in range(niter):
         y, z = calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, x1)

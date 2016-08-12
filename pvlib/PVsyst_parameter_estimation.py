@@ -344,7 +344,7 @@ const_default['q'] = 1.60218e-19
 
 
 def fun_rsh(x, rshexp, ee, e0, rsh):
-    tf = np.sum((np.log10(estrsh(x, rshexp, ee, e0)) - np.log10(rsh)) ** 2.)
+    tf = np.log10(estrsh(x, rshexp, ee, e0)) - np.log10(rsh)
     return tf
 
 
@@ -743,11 +743,12 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5,
         # Here we use a nonlinear least squares technique. Lsqnonlin minimizes the sum of squares of the objective
         # function (here, tf).
         x0 = np.array([grsh0, grshref])
-        beta = optimize.fmin(fun_rsh, x0, args=(rshexp, ee[u], const['E0'], rsh[u]))
+        beta = optimize.least_squares(fun_rsh, x0, args=(rshexp, ee[u], const['E0'], rsh[u]),
+                                      bounds=np.array([[1., 1.], [1.e7, 1.e6]]))
 
         # Extract PVsyst parameter values
-        rsh0 = beta[0]
-        rshref = beta[1]
+        rsh0 = beta.x[0]
+        rshref = beta.x[1]
 
         if graphic:
             # Predict Rsh

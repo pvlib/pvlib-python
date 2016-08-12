@@ -1138,7 +1138,7 @@ def retrieve_sam(name=None, path=None):
         except ImportError:
             # python 3
             import tkinter
-            from Tkinter.filedialog import askopenfilename
+            from tkinter.filedialog import askopenfilename
 
         tkinter.Tk().withdraw()
         csvdata = askopenfilename()

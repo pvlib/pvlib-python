@@ -1,5 +1,5 @@
 import numpy as np
-from pvsystem import v_from_i
+from pvlib.pvsystem import v_from_i
 
 
 def update_io_known_n(rsh, rs, nnsvth, io, il, voc):

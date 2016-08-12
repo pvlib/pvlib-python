@@ -1,54 +1,6 @@
-from pvlib.update_io_known_n import update_io_known_n, v_from_i
+from pvlib.update_io_known_n import update_io_known_n
 import numpy as np
 
-v = v_from_i(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]))
-
-
-def test_answer():
-    np.testing.assert_array_almost_equal(v, np.array([-4]), 4)
-
-v1 = v_from_i(np.array([0.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]))
-
-
-def test_answer1():
-    np.testing.assert_array_almost_equal(v1, np.array([-4]), 4)
-
-v2 = v_from_i(np.array([2.]), np.array([0.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]))
-
-
-def test_answer2():
-    np.testing.assert_array_almost_equal(v2, np.array([0]), 4)
-
-v3 = v_from_i(np.array([2.]), np.array([2.]), np.array([0.]), np.array([2.]), np.array([2.]), np.array([2.]))
-
-
-def test_answer3():
-    assert np.isnan(v3)
-
-v4 = v_from_i(np.array([2.]), np.array([2.]), np.array([2.]), np.array([0.]), np.array([2.]), np.array([2.]))
-
-
-def test_answer4():
-    np.testing.assert_array_almost_equal(v4, np.array([1.0926]), 4)
-
-v5 = v_from_i(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([0.]), np.array([2.]))
-
-
-def test_answer5():
-    np.testing.assert_array_almost_equal(v5, np.array([-4]), 4)
-
-v6 = v_from_i(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([0.]))
-
-
-def test_answer6():
-    np.testing.assert_array_almost_equal(v6, np.array([-5.7052]), 4)
-
-v8 = v_from_i(np.array([-1., 1.]), np.array([1., -1.]), np.array([-1., 1.]), np.array([1., -1.]), np.array([-1., 1.]),
-              np.array([1., -1.]))
-
-
-def test_answer8():
-    np.testing.assert_array_almost_equal(v8, np.array([-1, -1]), 4)
 
 outio = update_io_known_n(np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]), np.array([2.]),
                           np.array([2.]))

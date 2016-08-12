@@ -348,7 +348,7 @@ def fun_rsh(x, rshexp, ee, e0, rsh):
     return tf
 
 
-def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5, eps1=1e-3, graphic=False):
+def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5, eps1=1.e-3, graphic=False):
     """
     pvsyst_parameter_estimation estimates parameters fro the PVsyst module performance model
 

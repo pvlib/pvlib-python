@@ -641,7 +641,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default, maxiter=5,
             # Predict Io and Eg
             pio = io0 * ((tc[u] + 273.15) / const['T0'] + 273.15) ** 3. * \
                   np.exp((const['q'] / const['k']) * (eg / gamma[u]) *
-                         (1. / (const['to'] + 273.15) - 1. / (tc[u] + 273.15)))
+                         (1. / (const['T0'] + 273.15) - 1. / (tc[u] + 273.15)))
 
             iofig = plt.figure()
             ax12 = iofig.add_subplot(311)

@@ -1193,7 +1193,7 @@ def sapm(effective_irradiance, temp_cell, module):
     A DataFrame with the columns:
 
         * i_sc : Short-circuit current (A)
-        * I_mp : Current at the maximum-power point (A)
+        * i_mp : Current at the maximum-power point (A)
         * v_oc : Open-circuit voltage (V)
         * v_mp : Voltage at maximum-power point (V)
         * p_mp : Power at maximum-power point (W)

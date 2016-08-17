@@ -10,14 +10,20 @@ def update_io_known_n(rsh, rs, nnsvth, io, il, voc):
         outio = update_io_known_n(rsh, rs, nnsvth, io, il, voc)
 
     Description
-        update_io_known_n adjusts io to match voc using other parameter values, i.e., Rsh (shunt resistance), Rs
-        (Series Resistance), n (diode factor), and IL (Light Current). Io is updated iteratively 10 times or until
-        successive values are less than 0.000001 % different. The updating is similar to Newton's method.
+        update_io_known_n adjusts io to match voc using other parameter values,
+        i.e., Rsh (shunt resistance), Rs (Series Resistance), n (diode factor),
+        and IL (Light Current). Io is updated iteratively 10 times or until
+        successive values are less than 0.000001 % different. The updating is
+        similar to Newton's method.
 
-    :param rsh: a numpy array of length N of values for the shunt resistance (ohm)
-    :param rs: a numpy array of length N of values for the series resistance (ohm)
-    :param nnsvth: a numpy array of length N of values for the diode factor x thermal voltage for the module, equal to
-                   Ns (number of cells in series) x Vth (thermal voltage per cell).
+    :param rsh: a numpy array of length N of values for the shunt resistance
+                (ohm)
+    :param rs: a numpy array of length N of values for the series resistance
+               (ohm)
+    :param nnsvth: a numpy array of length N of values for the diode factor x
+                   thermal voltage for the module, equal to Ns
+                   (number of cells in series) x Vth
+                   (thermal voltage per cell).
     :param io: a numpy array of length N of initial values for Io (A)
     :param il: a numpy array of length N of values for lighbt current IL (A)
     :param voc: a numpy array of length N of values for Voc (V)
@@ -26,10 +32,11 @@ def update_io_known_n(rsh, rs, nnsvth, io, il, voc):
 
     Sources:
         [1] PVLib MATLAB
-        [2] C. Hansen, Parameter Estimation for Single Diode Models of Photovoltaic Modules, Sandia National
-            Laboratories Report SAND2015-XXXX
-        [3] C. Hansen, Estimation of Parameteres for Single Diode Models using Measured IV Curves, Proc. of the 39th
-            IEEE PVSC, June 2013.
+        [2] C. Hansen, Parameter Estimation for Single Diode Models of
+            Photovoltaic Modules, Sandia National Laboratories Report
+            SAND2015-XXXX
+        [3] C. Hansen, Estimation of Parameteres for Single Diode Models using
+            Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
     """
 
     eps = 1e-6

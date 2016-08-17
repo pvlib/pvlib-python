@@ -8,38 +8,40 @@ def est_single_diode_param(i, v, nsvth):
     equation to data for a single IV curve
 
     Syntax
-        io, iph, rs, rsh, n = est_single_diode_param(i, v, nsvth)
+    ------
+    io, iph, rs, rsh, n = est_single_diode_param(i, v, nsvth)
 
     Description
-        est_single_diode_param uses a regression technique based on [2] to fit
-        the single diode equation to data for a single IV curve. Although
-        values for each of the five parameters are returned, testing has shown
-        only Rsh to be stable. The other parameters, Rs, Io and n may be
-        negative or imaginary even for IV curve data without obvious flaws.
-        Method coded here uses a principal component transformation of (V, I)
-        prior to regression to attempt to overcome effects of strong
-        colinearity between v and i over much of the I-V curve.
+    -----------
+    est_single_diode_param uses a regression technique based on [2] to fit the
+    single diode equation to data for a single IV curve. Although values for
+    each of the five parameters are returned, testing has shown only Rsh to be
+    stable. The other parameters, Rs, Io and n may be negative or imaginary
+    even for IV curve data without obvious flaws. Method coded here uses a
+    principal component transformation of (V, I) prior to regression to attempt
+    to overcome effects of strong colinearity between v and i over much of the
+    I-V curve.
 
     Parameters
     ----------
-    i - a numpy array of length N of current for the IV curve. The first value
-        is taken as Isc, the last value must be 0.
-    v - a numpy array of length N of voltage for the IV curve corresponding to
-        the current values in the input vector i. The first value must be 0,
-        the last value is taken as voc.
-    nsvth - the thermal voltage for the module, equal to Ns
-            (number of cells in series) x Vth (thermal voltage per cell)
+    i: a numpy array of length N of current for the IV curve. The first value
+       is taken as Isc, the last value must be 0.
+    v: a numpy array of length N of voltage for the IV curve corresponding to
+       the current values in the input vector i. The first value must be 0,
+       the last value is taken as voc.
+    nsvth: the thermal voltage for the module, equal to Ns
+           (number of cells in series) x Vth (thermal voltage per cell)
 
     Returns
     -------
-    io - the dark current value (A) for the IV curve
-    iph - the light current value (A) for the IV curve
-    rs - series resistance (ohm) for the IV curve
-    rsh - shunt resistance (ohm) for the IV curve
-    n - diode (ideality) factor (unitless) for the IV curve
+    io: the dark current value (A) for the IV curve
+    iph: the light current value (A) for the IV curve
+    rs: series resistance (ohm) for the IV curve
+    rsh: shunt resistance (ohm) for the IV curve
+    n: diode (ideality) factor (unitless) for the IV curve
 
-    Sources
-    -------
+    References
+    ----------
     [1] PVLib MATLAB
     [2] A. Ortiz-Conde, F. Garci'a Sa'nchez, J. Murci, "New method to extract
         the model parameters of solar cells from the explicit analytic

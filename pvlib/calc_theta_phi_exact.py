@@ -8,42 +8,46 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
     solutions to the single diode equation for the max power point.
 
     Syntax
-        theta, phi = calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh)
+    ------
+    theta, phi = calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh)
 
     Description
-        calc_theta_phi_exact calculates values for the Lambert W function which
-        are used in the analytic solutions for the single diode equation at the
-        maximum power point. For V=V(I),
-        phi = W(Io*Rsh/n*Vth * exp((IL + Io - Imp)*Rsh/n*Vth)). For I=I(V),
-        theta = W(Rs*Io/n*Vth *
-                Rsh/ (Rsh+Rs) * exp(Rsh/ (Rsh+Rs)*((Rs(IL+Io) + V)/n*Vth))
+    -----------
+    calc_theta_phi_exact calculates values for the Lambert W function which
+    are used in the analytic solutions for the single diode equation at the
+    maximum power point. For V=V(I),
+    phi = W(Io*Rsh/n*Vth * exp((IL + Io - Imp)*Rsh/n*Vth)). For I=I(V),
+    theta = W(Rs*Io/n*Vth *
+    Rsh/ (Rsh+Rs) * exp(Rsh/ (Rsh+Rs)*((Rs(IL+Io) + V)/n*Vth))
 
-    :param imp: a numpy array of length N of values for Imp (A)
-    :param il: a numpy array of length N of values for the light current IL (A)
-    :param vmp: a numpy array of length N of values for Vmp (V)
-    :param io: a numpy array of length N of values for Io (A)
-    :param nnsvth: a numpy array of length N of values for the diode factor x
-                   thermal voltage for the module, equal to Ns
-                   (number of cells in series) x Vth
-                   (thermal voltage per cell).
-    :param rs: a numpy array of length N of values for the series resistance
-               (ohm)
-    :param rsh: a numpy array of length N of values for the shunt resistance
-                (ohm)
-    :return:
-        theta - a numpy array of values for the Lamber W function for solving
-                I = I(V)
-        phi - a numpy array of values for the Lambert W function for solving
-              V = V(I)
+    Parameters
+    ----------
+    imp: a numpy array of length N of values for Imp (A)
+    il: a numpy array of length N of values for the light current IL (A)
+    vmp: a numpy array of length N of values for Vmp (V)
+    io: a numpy array of length N of values for Io (A)
+    nnsvth: a numpy array of length N of values for the diode factor x
+            thermal voltage for the module, equal to Ns
+            (number of cells in series) x Vth
+            (thermal voltage per cell).
+    rs: a numpy array of length N of values for the series resistance (ohm)
+    rsh: a numpy array of length N of values for the shunt resistance (ohm)
 
-    Sources:
-        [1] PVLib MATLAB
-        [2] C. Hansen, Parameter Estimation for Single Diode Models of
-            Photovoltaic Modules, Sandia National Laboratories Report
-            SAND2015-XXXX
-        [3] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters
-            of real solar cells using Lambert W-function", Solar Energy
-            Materials and Solar Cells, 81 (2004) 269-277.
+    Returns
+    -------
+    theta: a numpy array of values for the Lamber W function for solving
+           I = I(V)
+    phi: a numpy array of values for the Lambert W function for solving
+         V = V(I)
+
+    References
+    ----------
+    [1] PVLib MATLAB
+    [2] C. Hansen, Parameter Estimation for Single Diode Models of Photovoltaic
+        Modules, Sandia National Laboratories Report SAND2015-XXXX
+    [3] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of
+        real solar cells using Lambert W-function", Solar Energy Materials and
+        Solar Cells, 81 (2004) 269-277.
     """
 
     # Argument for Lambert W function involved in V = V(I) [2] Eq. 12; [3]

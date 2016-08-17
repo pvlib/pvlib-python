@@ -13,34 +13,35 @@ plt.ion()
 
 def numdiff(x, f):
     """
-    NUMDIFF: compute first and second order derivative using possibly unequally
-             spaced data.
+    NUMDIFF computes first and second order derivative using possibly unequally
+    spaced data.
 
     Syntax
-        df, df2 = numdiff(x,f)
+    ------
+    df, df2 = numdiff(x,f)
 
     Description
-        numdiff computes first and second order derivatives using a 5th order
-        formula that accounts for possibly unequally spaced data. Because a 5th
-        order centered difference formula is used, numdiff returns NaNs for the
-        first 2 and last 2 points in the input vector for x.
+    -----------
+    numdiff computes first and second order derivatives using a 5th order
+    formula that accounts for possibly unequally spaced data. Because a 5th
+    order centered difference formula is used, numdiff returns NaNs for the
+    first 2 and last 2 points in the input vector for x.
 
     Parameters
     ----------
-    x - a numpy array of values of x
-    f - a numpy array of values of the function f for which derivatives are to
-        be computed. Must be the same length as
-        x.
+    x: a numpy array of values of x
+    f: a numpy array of values of the function f for which derivatives are to
+       be computed. Must be the same length as x.
 
     Returns
     -------
-    df - a numpy array of len(x) containing the first derivative of f at each
-         point x except at the first 2 and last 2 points
-    df2 - a numpy array of len(x) containing the second derivative of f at each
-          point x except at the first 2 and last 2 points.
+    df: a numpy array of len(x) containing the first derivative of f at each
+        point x except at the first 2 and last 2 points
+    df2: a numpy array of len(x) containing the second derivative of f at each
+         point x except at the first 2 and last 2 points.
 
-    Sources
-    -------
+    References
+    ----------
     [1] PVLib MATLAB
     [2] M. K. Bowen, R. Smith, "Derivative formulae and errors for
         non-uniformly spaced points", Proceedings of the Royal Society A, vol.
@@ -117,23 +118,32 @@ def rectify_iv_curve(ti, tv, voc, isc):
     rectify_IV_curve ensures that Isc and Voc are included in a IV curve and
     removes duplicate voltage and current points.
 
-    Syntax: I, V = rectify_IV_curve(ti, tv, voc, isc)
+    Syntax
+    ------
+    I, V = rectify_IV_curve(ti, tv, voc, isc)
 
     Description
-        rectify_IV_curve ensures that the IV curve data
-            * increases in voltage
-            * contain no negative current or voltage values
-            * have the first data point as (0, Isc)
-            * have the last data point as (Voc, 0)
-            * contain no duplicate voltage values. Where voltage values are
-              repeated, a single data point is substituted with current equal
-              to the average of current at each repeated voltage.
-    :param ti: a numpy array of length N containing the current data
-    :param tv: a numpy array of length N containing the voltage data
-    :param voc: a int or float containing the open circuit voltage
-    :param isc: a int or float containing the short circuit current
-    :return: I, V: numpy arrays of equal length containing the current and
-                   voltage respectively
+    -----------
+    rectify_IV_curve ensures that the IV curve data
+        * increases in voltage
+        * contain no negative current or voltage values
+        * have the first data point as (0, Isc)
+        * have the last data point as (Voc, 0)
+        * contain no duplicate voltage values. Where voltage values are
+          repeated, a single data point is substituted with current equal to
+          the average of current at each repeated voltage.
+
+    Parameters
+    ----------
+    ti: a numpy array of length N containing the current data
+    tv: a numpy array of length N containing the voltage data
+    voc: a int or float containing the open circuit voltage
+    isc: a int or float containing the short circuit current
+
+    Returns
+    -------
+    I, V: numpy arrays of equal length containing the current and voltage
+          respectively
     """
     # Filter out negative voltage and current values
     data_filter = []
@@ -234,7 +244,7 @@ def check_converge(prevparams, result, vmp, imp, graphic, convergeparamsfig,
 
     Returns
     -------
-    convergeparam - a class containing the following for Imp, Vmp and Pmp:
+    convergeparam: a class containing the following for Imp, Vmp and Pmp.
         - maximum percent difference between measured and modeled values
         - minimum percent difference between measured and modeled values
         - maximum absolute percent difference between measured and modeled
@@ -395,17 +405,18 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
     performance model
 
     Syntax
-        PVsyst, oflag = pvsyst_paramter_estimation(ivcurves, specs, const,
-        maxiter, eps1, graphic)
+    ------
+    PVsyst, oflag = pvsyst_paramter_estimation(ivcurves, specs, const, maxiter,
+                                               eps1, graphic)
 
     Description
-        pvsyst_paramter_estimation estimates parameters for the PVsyst module
-        performance model [2,3,4]. Estimation methods are documented in
-        [5,6,7].
+    -----------
+    pvsyst_paramter_estimation estimates parameters for the PVsyst module
+    performance model [2,3,4]. Estimation methods are documented in [5,6,7].
 
     Parameters
     ----------
-    ivcurves - a dict containing IV curve data in the following fields where j
+    ivcurves: a dict containing IV curve data in the following fields where j
     denotes the jth data set
         ivcurves['i'][j] - a numpy array of current (A) (same length as v)
         ivcurves['v'][j] - a numpy array of voltage (V) (same length as i)
@@ -417,32 +428,32 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         ivcurves['imp'][j] - current at max power point of IV curve (A)
         ivcurves['vmp'][j] - voltage at max power point of IV curve (V)
 
-    specs - a dict containing module-level values
+    specs: a dict containing module-level values
         specs['ns'] - number of cells in series
         specs['aisc'] - temperature coefficeint of isc (A/C)
 
-    const - an optional OrderedDict containing physical and other constants
+    const: an optional OrderedDict containing physical and other constants
         const['E0'] - effective irradiance at STC, normally 1000 W/m2
         constp['T0'] - cell temperature at STC, normally 25 C
         const['k'] - 1.38066E-23 J/K (Boltzmann's constant)
         const['q'] - 1.60218E-19 Coulomb (elementary charge)
 
-    maxiter - an optional numpy array input that sets the maximum number of
-              iterations for the parameter updating part of the algorithm.
-              Default value is 5.
+    maxiter: an optional numpy array input that sets the maximum number of
+             iterations for the parameter updating part of the algorithm.
+             Default value is 5.
 
-    eps1 - the desired tolerance for the IV curve fitting. The iterative
-           parameter updating stops when absolute values of the percent change
-           in mean, max and standard deviation of Imp, Vmp and Pmp between
-           iterations are all less than eps1, or when the number of iterations
-           exceeds maxiter. Default value is 1e-3 (.0001%).
+    eps1: the desired tolerance for the IV curve fitting. The iterative
+          parameter updating stops when absolute values of the percent change
+          in mean, max and standard deviation of Imp, Vmp and Pmp between
+          iterations are all less than eps1, or when the number of iterations
+          exceeds maxiter. Default value is 1e-3 (.0001%).
 
-    graphic - a boolean, if true then plots are produced during the parameter
-              estimation process. Default is false
+    graphic: a boolean, if true then plots are produced during the parameter
+             estimation process. Default is false
 
     Returns
     -------
-    pvsyst - a OrderedDict containing the model parameters
+    pvsyst: a OrderedDict containing the model parameters
         pvsyst['IL_ref'] - light current (A) at STC
         pvsyst['Io_ref'] - dark current (A) at STC
         pvsyst['eG'] - effective band gap (eV) at STC
@@ -464,11 +475,12 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         pvsyst.u - filter indicating IV curves with parameter values deemed
                    reasonable by the private function filter_params
 
-    oflag - Boolean indicating success or failure of estimation of the diode
-            (ideality) factor parameter. If failure, then no parameter values
-            are returned
+    oflag: Boolean indicating success or failure of estimation of the diode
+           (ideality) factor parameter. If failure, then no parameter values
+           are returned
 
-    Sources:
+    References
+    ----------
     [1] PVLib MATLAB
     [2] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
         Temperature Dependence of Photovoltaic Modules in PVsyst, IEEE Journal

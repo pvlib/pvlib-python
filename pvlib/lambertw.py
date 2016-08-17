@@ -6,31 +6,37 @@ def lambertw(z):
     LAMBERTW computes values for the Lambert W Function W(z).
 
     Syntax
-        w = lambertw(z)
+    ------
+    w = lambertw(z)
 
     Description
-        w = lambertw(z) computes the principal value of the Lambert W Function,
-            the solution of z = w * exp(w). Z may be a complex scalar or array.
-            For real z, the result is real on the principal branch for
-            z >= -1/e.
+    -----------
+    w = lambertw(z) computes the principal value of the Lambert W Function, the
+    solution of z = w * exp(w). Z may be a complex scalar or array. For real z,
+    the result is real on the principal branch for z >= -1/e.
 
-        The algorithm uses series approximations as initializations and
-        Halley's method as developed in Corless, Gonnet, Hare, Jeffrey, Knuth,
-        "On the Lambert W Function", Advances in Computational Mathematics,
-        volume 5, 1996 pp. 329-359
+    The algorithm uses series approximations as initializations and Halley's
+    method as developed in Corless, Gonnet, Hare, Jeffrey, Knuth, "On the
+    Lambert W Function", Advances in Computational Mathematics, volume 5, 1996
+    pp. 329-359
 
-        Original code by Pasca Getreuer 2005 - 2006, modified by Didier
-        Clamond, 2005. Code downloaded from
-        http://www.getreuer.info/home/lambertw and modified for inclusion in
-        PVLib.
+    Original code by Pasca Getreuer 2005 - 2006, modified by Didier Clamond,
+    2005. Code downloaded from http://www.getreuer.info/home/lambertw and
+    modified for inclusion in PVLib.
 
-        Matlab includes a lambertw.m function using a very similar algorithm in
-        the Symbolic Math Toolbox.
+    Matlab includes a lambertw.m function using a very similar algorithm in the
+    Symbolic Math Toolbox.
 
-    :param z: A numpy array of values at which w(z) will be evaluated.
-    :return: w - A numpy array of values of w(z) on the principal branch.
+    Parameters
+    ----------
+    z: A numpy array of values at which w(z) will be evaluated.
 
-    Sources:
+    Returns
+    -------
+    w: A numpy array of values of w(z) on the principal branch.
+
+    References
+    ----------
     [1] PVLib MATLAB
     [2] R.M. Corless, G.H. Gonnet, D.E.G. Hare, G.J. Jeffery, and D.E. Knuth.
         "On the Lambert W Function." Advances in Computational Mathematics,

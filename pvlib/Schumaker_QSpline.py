@@ -7,36 +7,38 @@ def schumaker_qspline(x, y):
     convexity in the data.
 
     Syntax
-        outa, outxk, outy, kflag = schumaker_qspline(x, y)
+    ------
+    outa, outxk, outy, kflag = schumaker_qspline(x, y)
 
     Description
-        Calculates coefficients for C1 quadratic spline interpolating data X, Y
-        where length(x) = N and length(y) = N, which preserves monotonicity and
-        convexity in the data.
+    -----------
+    Calculates coefficients for C1 quadratic spline interpolating data X, Y
+    where length(x) = N and length(y) = N, which preserves monotonicity and
+    convexity in the data.
 
     Parameters
     ----------
-    x, y - numpy arrays of length N containing (x, y) points between which the
-    spline will interpolate.
+    x, y: numpy arrays of length N containing (x, y) points between which the
+          spline will interpolate.
 
     Returns
     -------
-    outa - a Nx3 matrix of coefficients where the ith row defines the quadratic
-           interpolant between xk_i to xk_(i+1), i.e., y = A[i, 0] *
-           (x - xk[i]] ** 2 + A[i, 1] * (x - xk[i]) + A[i, 2]
-    outxk - an ordered vector of knots, i.e., values xk_i where the spline
-            changes coefficients. All values in x are used as knots. However
-            the algorithm may insert additional knots between data points in x
-            where changes in convexity are indicated by the (numerical)
-            derivative. Consequently output outxk has length >= length(x).
-    outy - y values corresponding to the knots in outxk. Contains the original
-           data points, y, and also y-values estimated from the spline at the
-           inserted knots.
-    kflag - a vector of length(outxk) of logicals, which are set to true for
-            elements of outxk that are knots inserted by the algorithm.
+    outa: a Nx3 matrix of coefficients where the ith row defines the quadratic
+          interpolant between xk_i to xk_(i+1), i.e., y = A[i, 0] *
+          (x - xk[i]] ** 2 + A[i, 1] * (x - xk[i]) + A[i, 2]
+    outxk: an ordered vector of knots, i.e., values xk_i where the spline
+           changes coefficients. All values in x are used as knots. However
+           the algorithm may insert additional knots between data points in x
+           where changes in convexity are indicated by the (numerical)
+           derivative. Consequently output outxk has length >= length(x).
+    outy: y values corresponding to the knots in outxk. Contains the original
+          data points, y, and also y-values estimated from the spline at the
+          inserted knots.
+    kflag: a vector of length(outxk) of logicals, which are set to true for
+           elements of outxk that are knots inserted by the algorithm.
 
-    Sources
-    -------
+    References
+    ----------
     [1] PVLib MATLAB
     [2] L. L. Schumaker, "On Shape Preserving Quadratic Spline Interpolation",
         SIAM Journal on Numerical Analysis 20(4), August 1983, pp 854 - 864

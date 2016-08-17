@@ -25,13 +25,13 @@ import warnings
 import numpy as np
 import pandas as pd
 
-
+from pvlib import atmosphere
 from pvlib.tools import localize_to_utc, datetime_to_djd, djd_to_datetime
 
 
 def get_solarposition(time, latitude, longitude,
-                      altitude=0,
-                      method='nrel_numpy', pressure=101325,
+                      altitude=None, pressure=None,
+                      method='nrel_numpy',
                       temperature=12, **kwargs):
     """
     A convenience wrapper for the solar position calculators.
@@ -42,6 +42,11 @@ def get_solarposition(time, latitude, longitude,
     latitude : float
     longitude : float
     altitude : None or float
+        If None, computed from pressure. Assumed to be 0 m
+        if pressure is also None.
+    pressure : None or float
+        If None, computed from altitude. Assumed to be 101325 Pa
+        if altitude is also None.
     method : string
         'pyephem' uses the PyEphem package: :func:`pyephem`
 
@@ -54,8 +59,6 @@ def get_solarposition(time, latitude, longitude,
         described in [1], but also compiles the code first: :func:`spa_python`
 
         'ephemeris' uses the pvlib ephemeris code: :func:`ephemeris`
-    pressure : float
-        Pascals.
     temperature : float
         Degrees C.
 
@@ -71,7 +74,15 @@ def get_solarposition(time, latitude, longitude,
 
     [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
     """
-    
+
+    if altitude is None and pressure is None:
+        altitude = 0.
+        pressure = 101325.
+    elif altitude is None:
+        altitude = atmosphere.pres2alt(pressure)
+    elif pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
+
     method = method.lower()
     if isinstance(time, dt.datetime):
         time = pd.DatetimeIndex([time, ])
@@ -163,7 +174,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     pvl_logger.debug('using built-in spa code to calculate solar position')
 
     time_utc = time
-    
+
     spa_out = []
 
     for date in time_utc:
@@ -228,7 +239,7 @@ def _spa_python_import(how):
 
 def spa_python(time, latitude, longitude,
                altitude=0, pressure=101325, temperature=12, delta_t=None,
-               atmos_refract=None, how='numpy', numthreads=4):
+               atmos_refract=None, how='numpy', numthreads=4, **kwargs):
     """
     Calculate the solar position using a python implementation of the
     NREL SPA algorithm described in [1].
@@ -387,11 +398,11 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
         unixtime, lat, lon, delta_t, numthreads)
 
     # arrays are in seconds since epoch format, need to conver to timestamps
-    transit = pd.to_datetime(transit, unit='s', utc=True).tz_convert(
+    transit = pd.to_datetime(transit*1e9, unit='ns', utc=True).tz_convert(
         time.tz).tolist()
-    sunrise = pd.to_datetime(sunrise, unit='s', utc=True).tz_convert(
+    sunrise = pd.to_datetime(sunrise*1e9, unit='ns', utc=True).tz_convert(
         time.tz).tolist()
-    sunset = pd.to_datetime(sunset, unit='s', utc=True).tz_convert(
+    sunset = pd.to_datetime(sunset*1e9, unit='ns', utc=True).tz_convert(
         time.tz).tolist()
 
     result = pd.DataFrame({'transit': transit,
@@ -760,3 +771,69 @@ def pyephem_earthsun_distance(time):
         earthsun.append(sun.earth_distance)
 
     return pd.Series(earthsun, index=time)
+
+
+def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
+    """
+    Calculates the distance from the earth to the sun using the
+    NREL SPA algorithm described in [1].
+
+    Parameters
+    ----------
+    time : pd.DatetimeIndex
+
+    how : str, optional
+        Options are 'numpy' or 'numba'. If numba >= 0.17.0
+        is installed, how='numba' will compile the spa functions
+        to machine code and run them multithreaded.
+
+    delta_t : float, optional
+        Difference between terrestrial time and UT1.
+        By default, use USNO historical data and predictions
+
+    numthreads : int, optional
+        Number of threads to use if how == 'numba'.
+
+    Returns
+    -------
+    R : pd.Series
+        Earth-sun distance in AU.
+
+    References
+    ----------
+    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+    USA, http://www.nrel.gov.
+    """
+    delta_t = delta_t or 67.0
+
+    if not isinstance(time, pd.DatetimeIndex):
+        try:
+            time = pd.DatetimeIndex(time)
+        except (TypeError, ValueError):
+            time = pd.DatetimeIndex([time, ])
+
+    unixtime = time.astype(np.int64)/10**9
+
+    spa = _spa_python_import(how)
+
+    R = spa.earthsun_distance(unixtime, delta_t, numthreads)
+
+    R = pd.Series(R, index=time)
+
+    return R
+
+
+def _calculate_simple_day_angle(dayofyear):
+    """
+    Calculates the day angle for the Earth's orbit around the Sun.
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    day_angle : numeric
+    """
+    return (2. * np.pi / 365.) * (dayofyear - 1)

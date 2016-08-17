@@ -1,0 +1,122 @@
+.. _whatsnew_0400:
+
+v0.4.0 (July 28, 2016)
+-----------------------
+
+This is a major release from 0.3.3. We recommend that all users upgrade
+to this version after reviewing the API Changes. Please see the Bug
+Fixes for changes that will result in slightly different modeling
+results.
+
+
+API Changes
+~~~~~~~~~~~
+
+* Remove unneeded module argument from singlediode function. (:issue:`200`)
+* In ``pvlib.irradiance.perez``, renamed argument ``modelt`` to ``model``.
+  (:issue:`196`)
+* Functions in the irradiance module now work with scalar inputs
+  in addition to arrays and Series. Furthermore, these functions no
+  longer promote scalar or array input to Series output.
+  Also applies to atmosphere.relativeairmass. (:issue:`201`, :issue:`214`)
+* Reorder the ashraeiam, physicaliam, and snlinverter arguments to put
+  the most variable arguments first. Adds default arguments for the IAM
+  functions. (:issue:`197`)
+* The irradiance.extraradiation function input/output type consistency
+  across different methods has been dramatically improved.
+  (:issue:`217`, :issue:`219`)
+* Updated to pvsystem.sapm to be consistent with the PVLIB MATLAB API.
+  pvsystem.sapm now takes an effective irradiance argument instead of
+  POA irradiances, airmass, and AOI. Implements closely related
+  sapm_spectral_loss, sapm_aoi_loss, and sapm_effective_irradiance
+  functions, as well as PVSystem methods. The sapm_aoi_loss function
+  includes an optional argument to apply an upper limit to the output
+  (output can be ~1% larger than 1 for AOI of ~30 degrees).
+  (:issue:`198`, :issue:`205`, :issue:`218`)
+* The pvsystem.retrieve_sam keyword argument ``samfile`` has been
+  replaced with ``path``. A selection dialog window is now activated
+  by not supplying any arguments to the function. The API for typical
+  usage remains unchanged, however, the data will be loaded from a
+  local file rather than the SAM website. (:issue:`52`)
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adds the First Solar spectral correction model. (:issue:`115`)
+* Adds the Gueymard 1994 integrated precipitable water model. (:issue:`115`)
+* Adds the PVWatts DC, AC, and system losses model. (:issue:`195`)
+* Improve PEP8 conformity in irradiance module. (:issue:`214`)
+* irradiance.disc is up to 10x faster. (:issue:`214`)
+* Add solarposition.nrel_earthsun_distance function and option to
+  calculate extraterrestrial radiation using the NREL solar position
+  algorithm. (:issue:`211`, :issue:`215`)
+* pvsystem.singlediode can now calculate IV curves if a user supplies
+  an ivcurve_pnts keyword argument. (:issue:`83`)
+* Includes SAM data files in the distribution. (:issue:`52`)
+* ModelChain now implements SAPM, PVWatts, Single Diode and user-defined
+  modeling options. See Will Holmgren's
+  `ModelChain refactor gist <https://gist.github.com/wholmgren/3fabacd3003c2a549b420b5e79f55e95>`_
+  for more discussion about new features in ModelChain.
+  (:issue:`143`, :issue:`194`)
+* Added ``forecast.py`` module for solar power forecasts.
+  (:issue:`86`, :issue:`124`, :issue:`180`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fixed an error in pvsystem.singlediode's i_mp, v_mp, and p_mp
+  calculations when using array or Series input. The function wrongly
+  returned solutions when any single point is within the error tolerance,
+  rather than requiring that the solution for all points be within the
+  error tolerance. Results in test scenarios changed by 1-10%.
+  (:issue:`221`)
+* Fixed a numerical overflow error in pvsystem.singlediode's v_oc
+  determination for some combinations of parameters. (:issue:`225`)
+* dirint function yielded the wrong results for non-sea-level pressures.
+  Fixed. (:issue:`212`)
+* Fixed a bug in the day angle calculation used by the 'spencer' and 'asce'
+  extraterrestrial radiation options. Most modeling results will be changed
+  by less than 1 part in 1000. (:issue:`211`)
+* irradiance.extraradiation now raises a ValueError for invalid method
+  input. It previously failed silently. (:issue:`215`)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+* Added new terms to the variables documentation. (:issue:`195`)
+* Added clear sky documentation page.
+* Fix documentation build warnings. (:issue:`210`)
+* Removed an unneeded note in irradiance.extraradiation. (:issue:`216`)
+
+
+Other
+~~~~~
+
+* pvlib-python is now available on the conda-forge channel:
+  conda install pvlib-python -c conda-forge (:issue:`154`)
+* Switch to the py.test testing framework. (:issue:`204`)
+* Reconfigure Appveyor CI builds and resolve an issue in which the command
+  line length was too long. (:issue:`207`)
+* Manually build numpy and pandas for the min requirements test.
+  This is needed to avoid Continuum's bad practice of bundling scipy
+  with pandas. (:issue:`214`)
+
+
+Requirements
+~~~~~~~~~~~~
+
+* pvlib now requires pandas >= 0.14.0 and numpy >= 1.9.0, both
+  released in 2014. Most of pvlib will work with lesser versions.
+  (:issue:`214`)
+
+
+Code Contributors
+~~~~~~~~~~~~~~~~~
+
+* Will Holmgren
+* Jonathan Chambers
+* Mitchell Lee
+* Derek Groenendyk

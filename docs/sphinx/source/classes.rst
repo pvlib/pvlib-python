@@ -1,3 +1,5 @@
+.. _classes:
+
 Classes
 =======
 
@@ -15,6 +17,7 @@ Location
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 PVSystem
 --------
@@ -22,20 +25,15 @@ PVSystem
     :members:
     :undoc-members:
     :show-inheritance:
-    
+    :noindex:
+
 ModelChain
 ----------
 .. autoclass:: pvlib.modelchain.ModelChain
     :members:
     :undoc-members:
     :show-inheritance:
-    
-MoreSpecificModelChain
-----------
-.. autoclass:: pvlib.modelchain.MoreSpecificModelChain
-    :members:
-    :undoc-members:
-    :show-inheritance:
+    :noindex:
 
 LocalizedPVSystem
 -----------------
@@ -43,6 +41,7 @@ LocalizedPVSystem
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 SingleAxisTracker
 -----------------
@@ -50,4 +49,13 @@ SingleAxisTracker
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
+
+LocalizedSingleAxisTracker
+--------------------------
+.. autoclass:: pvlib.tracking.LocalizedSingleAxisTracker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :noindex:
 

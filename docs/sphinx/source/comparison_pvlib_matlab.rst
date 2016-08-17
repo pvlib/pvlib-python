@@ -1,66 +1,90 @@
 .. _comparison_pvlib_matlab:
 
 ****************************
-Comparison with PVLIB_MATLAB
+Comparison with PVLIB MATLAB
 ****************************
 
-This document is under construction.
-Please see our 
-`PVSC 2014 paper <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`_
-and
-`PVSC 2015 abstract <https://github.com/UARENForecasting/pvlib-pvsc2015/blob/master/pvlib_pvsc_42.pdf?raw=true>`_ 
-for more information.
+PVLIB was originally developed as a library for MATLAB at Sandia
+National Lab, and Sandia remains the official maintainer of the MATLAB
+library. Sandia supported the initial Python port and
+then released further project maintenance and development to the
+`pvlib-python maintainers <https://github.com/orgs/pvlib/people>`_.
 
-The pvlib-python license is BSD 3-clause,
-the PVLIB\_MATLAB license is ??.
+The pvlib-python maintainers collaborate with the PVLIB MATLAB
+maintainers but operate independently. We'd all like to keep the core
+functionality of the Python and MATLAB projects synchronized, but this
+will require the efforts of the larger pvlib-python community, not just
+the maintainers. Therefore, do not expect feature parity between the
+libaries, only similarity.
 
-We want to keep developing the core functionality and algorithms 
-of the Python and MATLAB projects roughly in parallel, 
-but we're not making any promises at this point.
-The PVLIB\_MATLAB and pvlib-python projects are currently developed 
-by different teams that do not regularly work together. 
-We hope to grow this collaboration in the future.
-Do not expect feature parity between the libaries, only similarity.
+The `PV_LIB Matlab help webpage <https://pvpmc.sandia.gov/PVLIB_Matlab_Help/>`_
+is a good reference for this comparison.
 
-Here are some of the major differences between the latest pvlib-python build 
-and the original Sandia PVLIB\_Python project, but many of these
-comments apply to the difference between pvlib-python and PVLIB\_MATLAB.
+Missing functions
+~~~~~~~~~~~~~~~~~
 
+See pvlib-python GitHub `issue #2
+<https://github.com/pvlib/pvlib-python/issues/2>`_ for a list of
+functions missing from the Python version of the library.
 
-Library wide changes
-~~~~~~~~~~~~~~~~~~~~
+Major differences
+~~~~~~~~~~~~~~~~~
 
-* Remove ``pvl_`` from module names.
-* Consolidation of similar modules. For example, functions from ``pvl_clearsky_ineichen.py`` and ``pvl_clearsky_haurwitz.py`` have been consolidated into ``clearsky.py``. 
-* Removed ``Vars=Locals(); Expect...; var=pvl\_tools.Parse(Vars,Expect);`` pattern. Very few tests of input validitity remain. Garbage in, garbage or ``nan`` out.
-* Removing unnecssary and sometimes undesired behavior such as setting maximum zenith=90 or airmass=0. Instead, we make extensive use of ``nan`` values.
-* Changing function and module names so that they do not conflict.
-* Added ``/pvlib/data`` for lookup tables, test, and tutorial data.
+* pvlib-python uses git version control to track all changes
+  to the code. A summary of changes is included in the whatsnew file
+  for each release. PVLIB MATLAB documents changes in Changelog.docx
+* pvlib-python has a comprehensive test suite, whereas PVLIB MATLAB does
+  not have a test suite at all. Specifically, pvlib-python
 
+    * Uses TravisCI for automated testing on Linux.
+    * Uses Appveyor for automated testing on Windows.
+    * Uses Coveralls to measure test coverage.
 
-More specific changes
-~~~~~~~~~~~~~~~~~~~~~
+* Using readthedocs for automated documentation building and hosting.
+* Removed ``pvl_`` from module/function names.
+* Consolidated similar functions into topical modules.
+  For example, functions from ``pvl_clearsky_ineichen.m`` and
+  ``pvl_clearsky_haurwitz.m`` have been consolidated into ``clearsky.py``.
+* PVLIB MATLAB uses ``location`` structs as the input to some functions.
+  pvlib-python just uses the lat, lon, etc. as inputs to the functions.
+  Furthermore, pvlib-python replaces the structs with classes, and these classes
+  have methods, such as :py:func:`~pvlib.location.Location.get_solarposition`,
+  that automatically reference the appropriate data.
+  See :ref:`modeling-paradigms` for more information.
+* pvlib-python implements a handful of class designed to simplify the
+  PV modeling process. These include :py:class:`~pvlib.location.Location`,
+  :py:class:`~pvlib.pvsystem.PVSystem`,
+  :py:class:`~pvlib.pvsystem.LocalizedPVSystem`,
+  :py:class:`~pvlib.tracking.SingleAxisTracker`,
+  and
+  :py:class:`~pvlib.modelchain.ModelChain`.
 
-* Add PyEphem option to solar position calculations. 
-* ``irradiance.py`` has more AOI, projection, and irradiance sum and calculation functions
-* Locations are now ``pvlib.location.Location`` objects, not structs.
-* Specify time zones using a string from the standard IANA Time Zone Database naming conventions or using a pytz.timezone instead of an integer GMT offset. We may add dateutils support in the future.
-* ``clearsky.ineichen`` supports interpolating monthly Linke Turbidities to daily resolution.
+Other differences
+~~~~~~~~~~~~~~~~~
+
+* Very few tests of input validitity exist in the Python code.
+  We believe that the vast majority of these tests were not necessary.
+  We also make use of Python's robust support for raising and catching
+  exceptions.
+* Removed unnecessary and sometimes undesired behavior such as setting
+  maximum zenith=90 or airmass=0. Instead, we make extensive use of
+  ``nan`` values in returned arrays.
+* Implemented the NREL solar position calculation algorithm.
+  Also added a PyEphem option to solar position calculations.
+* Specify time zones using a string from the standard IANA Time Zone
+  Database naming conventions or using a pytz.timezone instead of an
+  integer GMT offset.
+* ``clearsky.ineichen`` supports interpolating monthly
+  Linke Turbidities to daily resolution.
 * Instead of requiring effective irradiance as an input, ``pvsystem.sapm``
   calculates and returns it based on input POA irradiance, AM, and AOI.
+* pvlib-python does not come with as much example data.
+* pvlib-python does not currently implement as many algorithms as
+  PVLIB MATLAB.
 
 Documentation
 ~~~~~~~~~~~~~
 
-* Using readthedocs for documentation hosting.
-* Many typos and formatting errors corrected.
-* Documentation source code and tutorials live in ``/`` rather than ``/pvlib/docs``.
-* Additional tutorials in ``/docs/tutorials``.
-
-Testing
-~~~~~~~
-
-* Tests are cleaner and more thorough. They are still no where near complete.
-* Using Coveralls to measure test coverage. 
-* Using TravisCI for automated testing.
-* Using ``nosetests`` for more concise test code. 
+* Using Sphinx to build the documentation,
+  including dynamically created inline examples.
+* Additional Jupyter tutorials in ``/docs/tutorials``.

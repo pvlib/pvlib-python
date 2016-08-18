@@ -1,0 +1,27 @@
+.. _whatsnew_0410:
+
+v0.4.1 (August xx, 2016)
+------------------------
+
+This is a minor release from 0.4.0. We recommend that all users upgrade
+to this version.
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fixed an error in the irradiance.klucher transposition model.
+  The error was introduced in version 0.4.0. (:issue:`228`)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+* Fixed a typo in the pvsystem.sapm returns description. (:issue:`234`)
+
+
+Code Contributors
+~~~~~~~~~~~~~~~~~
+
+* Mark Mikofski
+* Johannes Dollinger

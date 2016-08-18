@@ -62,7 +62,8 @@ def test_extraradiation(input, expected, method):
 
 @requires_numba
 def test_extraradiation_nrel_numba():
-    irradiance.extraradiation(times, method='nrel', how='numba', numthreads=8)
+    result = irradiance.extraradiation(times, method='nrel', how='numba', numthreads=8)
+    assert_allclose(result, [1322.332316, 1322.296282, 1322.261205, 1322.227091])
 
 
 def test_extraradiation_epoch_year():
@@ -76,7 +77,8 @@ def test_extraradiation_invalid():
 
 
 def test_grounddiffuse_simple_float():
-    irradiance.grounddiffuse(40, 900)
+    result = irradiance.grounddiffuse(40, 900)
+    assert_allclose(result, 26.32000014911496)
 
 
 def test_grounddiffuse_simple_series():
@@ -95,44 +97,52 @@ def test_grounddiffuse_albedo_invalid_surface():
 
 
 def test_grounddiffuse_albedo_surface():
-    irradiance.grounddiffuse(40, ghi, surface_type='sand')
+    result = irradiance.grounddiffuse(40, ghi, surface_type='sand')
+    assert_allclose(result, [0, 3.731058, 48.778813, 12.035025])
 
 
 def test_isotropic_float():
-    irradiance.isotropic(40, 100)
+    result = irradiance.isotropic(40, 100)
+    assert_allclose(result, 88.30222215594891)
 
 
 def test_isotropic_series():
-    irradiance.isotropic(40, irrad_data['dhi'])
+    result = irradiance.isotropic(40, irrad_data['dhi'])
+    assert_allclose(result, [0, 35.728402, 104.601328, 54.777191])
 
 
 def test_klucher_series_float():
-    irradiance.klucher(40, 180, 100, 900, 20, 180)
+    result = irradiance.klucher(40, 180, 100, 900, 20, 180)
+    assert_allclose(result, 88.3022221559)
 
 
 def test_klucher_series():
-    irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
+    result = irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
                        ephem_data['apparent_zenith'],
                        ephem_data['azimuth'])
+    assert_allclose(result, [0, 37.446276, 109.209347, 56.965916])
 
 
 def test_haydavies():
-    irradiance.haydavies(40, 180, irrad_data['dhi'], irrad_data['dni'],
+    result = irradiance.haydavies(40, 180, irrad_data['dhi'], irrad_data['dni'],
                          dni_et,
                          ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
+    assert_allclose(result, [0, 14.967008, 102.994862, 33.190865])
 
 
 def test_reindl():
-    irradiance.reindl(40, 180, irrad_data['dhi'], irrad_data['dni'],
+    result = irradiance.reindl(40, 180, irrad_data['dhi'], irrad_data['dni'],
                       irrad_data['ghi'], dni_et,
                       ephem_data['apparent_zenith'],
                       ephem_data['azimuth'])
+    assert_allclose(result, [np.nan, 15.730664, 104.131724, 34.166258])
 
 
 def test_king():
-    irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
+    result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
                     ephem_data['apparent_zenith'])
+    assert_allclose(result, [0, 44.629352, 115.182626, 79.719855])
 
 
 def test_perez():

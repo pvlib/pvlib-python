@@ -637,12 +637,16 @@ class ModelChain(object):
         self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
                                        self.solar_position['azimuth'])
 
-        if irradiance is None:
-            irradiance = self.location.get_clearsky(
+        if irradiance:
+            self.irradiance = irradiance
+        else:
+            self.irradiance = weather
+
+        if not self.irradiance:
+            self.irradiance = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 zenith_data=self.solar_position['apparent_zenith'],
                 airmass_data=self.airmass['airmass_absolute'])
-        self.irradiance = irradiance
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # have different method signatures, so use partial to handle

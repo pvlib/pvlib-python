@@ -10,7 +10,8 @@ from functools import partial
 
 import pandas as pd
 
-from pvlib import solarposition, pvsystem, clearsky, atmosphere
+from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools,
+                   irradiance)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 
@@ -602,7 +603,54 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def prepare_inputs(self, times, irradiance=None, weather=None):
+    def prepare_irradiance(self, dni_determination_method='dirint'):
+        """
+
+        Parameters
+        ----------
+        dni_determination_method : string
+            something....
+
+        Returns
+        -------
+
+        """
+        if tools.check_df(self.irradiance, ['ghi'], not_exist=['dhi', 'dni']):
+            if dni_determination_method == 'dirint':
+                return_value = irradiance.dirint(self.irradiance.ghi,
+                                                 self.solar_position.zenith,
+                                                 self.times)
+                self.irradiance['dhi'] = return_value
+            elif dni_determination_method == 'disc':
+                return_value = irradiance.disc(self.irradiance.ghi,
+                                               self.solar_position.zenith,
+                                               self.times)
+                self.irradiance['dni'] = return_value.dni
+            elif dni_determination_method == 'erbs':
+                return_value = irradiance.erbs(self.irradiance.ghi,
+                                               self.solar_position.zenith,
+                                               self.times)
+                self.irradiance['dni'] = return_value.dni
+                self.irradiance['dhi'] = return_value.dhi
+
+
+        if tools.check_df(self.irradiance, ['ghi', 'dhi'], not_exist=['dni']):
+            self.irradiance['dni'] = ((self.irradiance.ghi -
+                                       self.irradiance.dhi) /
+                                      tools.cosd(self.solar_position.zenith))
+
+        elif tools.check_df(self.irradiance, ['dni', 'dhi'], not_exist=['ghi']):
+            self.irradiance['ghi'] = (self.irradiance.dni *
+                                      tools.cosd(self.solar_position.zenith) +
+                                      self.irradiance.dhi)
+        elif tools.check_df(self.irradiance, ['dni', 'ghi'], not_exist=['dhi']):
+            self.irradiance['dhi'] = (self.irradiance.ghi -
+                                      self.irradiance.dni *
+                                      tools.cosd(self.solar_position.zenith))
+        else:
+            self.irradiance = None
+
+    def prepare_inputs(self, times, irradiance=None, weather=None, **kwargs):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
@@ -641,6 +689,9 @@ class ModelChain(object):
             self.irradiance = irradiance
         else:
             self.irradiance = weather
+
+        if self.irradiance:
+            self.prepare_irradiance(**kwargs)
 
         if not self.irradiance:
             self.irradiance = self.location.get_clearsky(

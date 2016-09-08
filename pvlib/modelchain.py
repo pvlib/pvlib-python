@@ -711,6 +711,10 @@ class ModelChain(object):
                 zenith_data=self.solar_position['apparent_zenith'],
                 airmass_data=self.airmass['airmass_absolute'])
 
+        if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
+            ValueError(
+                "Uncompleted irradiance data set. Please check you input data")
+
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # have different method signatures, so use partial to handle
         # the differences.

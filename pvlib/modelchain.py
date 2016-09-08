@@ -682,7 +682,7 @@ class ModelChain(object):
         if irradiance is not None:
             warnings.warn(wrn_txt, FutureWarning)
             for column in irradiance.columns:
-                weather[column] = irradiance.pop(column)
+                self.weather[column] = irradiance.pop(column)
         # **** End ****
 
         # Add columns that does not exist and overwrite existing columns

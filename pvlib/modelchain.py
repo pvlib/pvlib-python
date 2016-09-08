@@ -676,7 +676,7 @@ class ModelChain(object):
         # The following part could be removed together with the irradiance
         # parameter at version v0.5 or v0.6.
         # **** Begin ****
-        wrn_txt = "The irradiance parameter will be removed soon."
+        wrn_txt = "The irradiance parameter will be removed soon.\n"
         wrn_txt += "Please use the weather parameter to pass a DataFrame with "
         wrn_txt += "irradiance (ghi, dni, dhi), wind speed and temp_air"
         if irradiance is not None:
@@ -702,7 +702,6 @@ class ModelChain(object):
                                        self.solar_position['azimuth'])
 
         if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
-            print('any is True')
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 zenith_data=self.solar_position['apparent_zenith'],

@@ -685,14 +685,6 @@ class ModelChain(object):
         self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
                                        self.solar_position['azimuth'])
 
-        if irradiance:
-            self.irradiance = irradiance
-        else:
-            self.irradiance = weather
-
-        if self.irradiance:
-            self.prepare_irradiance(**kwargs)
-
         if not self.irradiance:
             self.irradiance = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,

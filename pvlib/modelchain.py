@@ -7,7 +7,7 @@ the time to read the source code for the module.
 """
 
 from functools import partial
-
+import warnings
 import pandas as pd
 
 from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools,
@@ -316,6 +316,8 @@ class ModelChain(object):
         self.temp_model = temp_model
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
+
+        self.weather = pd.DataFrame()
 
     def __repr__(self):
         return ('ModelChain for: ' + str(self.system) +
@@ -650,7 +652,7 @@ class ModelChain(object):
         else:
             self.irradiance = None
 
-    def prepare_inputs(self, times, irradiance=None, weather=None, **kwargs):
+    def prepare_inputs(self, times, irradiance=None, weather=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
@@ -674,6 +676,19 @@ class ModelChain(object):
         Assigns attributes: times, solar_position, airmass, irradiance,
         total_irrad, weather, aoi
         """
+        # The following part could be removed together with the irradiance
+        # parameter at version v0.5 or v0.6.
+        # **** Begin ****
+        if irradiance is not None:
+            for column in irradiance.columns:
+                weather[column] = irradiance.pop(column)
+        # **** End ****
+
+        # Add columns that does not exist and overwrite existing columns
+        # Maybe there is a more elegant way to do this. Any ideas?
+        if weather is not None:
+            self.weather = self.weather.combine_first(weather)
+            self.weather.update(weather)
 
         self.times = times
 
@@ -685,8 +700,9 @@ class ModelChain(object):
         self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
                                        self.solar_position['azimuth'])
 
-        if not self.irradiance:
-            self.irradiance = self.location.get_clearsky(
+        if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
+            print('any is True')
+            self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 zenith_data=self.solar_position['apparent_zenith'],
                 airmass_data=self.airmass['airmass_absolute'])
@@ -717,16 +733,16 @@ class ModelChain(object):
                 self.solar_position['azimuth'])
 
         self.total_irrad = get_irradiance(
-            self.irradiance['dni'],
-            self.irradiance['ghi'],
-            self.irradiance['dhi'],
+            self.weather['dni'],
+            self.weather['ghi'],
+            self.weather['dhi'],
             airmass=self.airmass['airmass_relative'],
             model=self.transposition_model)
 
-        if weather is None:
-            weather = {'wind_speed': 0, 'temp_air': 20}
-        self.weather = weather
-
+        if self.weather.get('wind_speed') is None:
+            self.weather['wind_speed'] = 0
+        if self.weather.get('temp_air') is None:
+            self.weather['temp_air'] = 20
         return self
 
     def run_model(self, times, irradiance=None, weather=None):

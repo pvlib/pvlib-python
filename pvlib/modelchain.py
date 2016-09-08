@@ -605,7 +605,7 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def prepare_irradiance(self, dni_determination_method='dirint'):
+    def complete_irradiance(self, dni_determination_method='dirint'):
         """
 
         Parameters

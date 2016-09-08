@@ -617,40 +617,38 @@ class ModelChain(object):
         -------
 
         """
-        if tools.check_df(self.irradiance, ['ghi'], not_exist=['dhi', 'dni']):
+        icolumns = self.weather.columns
+
+        if {'ghi'} <= icolumns and not {'dhi', 'dni'} <= icolumns:
             if dni_determination_method == 'dirint':
-                return_value = irradiance.dirint(self.irradiance.ghi,
+                return_value = irradiance.dirint(self.weather.ghi,
                                                  self.solar_position.zenith,
                                                  self.times)
-                self.irradiance['dhi'] = return_value
+                self.weather['dhi'] = return_value
             elif dni_determination_method == 'disc':
-                return_value = irradiance.disc(self.irradiance.ghi,
+                return_value = irradiance.disc(self.weather.ghi,
                                                self.solar_position.zenith,
                                                self.times)
-                self.irradiance['dni'] = return_value.dni
+                self.weather['dni'] = return_value.dni
             elif dni_determination_method == 'erbs':
-                return_value = irradiance.erbs(self.irradiance.ghi,
+                return_value = irradiance.erbs(self.weather.ghi,
                                                self.solar_position.zenith,
                                                self.times)
-                self.irradiance['dni'] = return_value.dni
-                self.irradiance['dhi'] = return_value.dhi
+                self.weather['dni'] = return_value.dni
+                self.weather['dhi'] = return_value.dhi
 
-
-        if tools.check_df(self.irradiance, ['ghi', 'dhi'], not_exist=['dni']):
-            self.irradiance['dni'] = ((self.irradiance.ghi -
-                                       self.irradiance.dhi) /
-                                      tools.cosd(self.solar_position.zenith))
-
-        elif tools.check_df(self.irradiance, ['dni', 'dhi'], not_exist=['ghi']):
-            self.irradiance['ghi'] = (self.irradiance.dni *
-                                      tools.cosd(self.solar_position.zenith) +
-                                      self.irradiance.dhi)
-        elif tools.check_df(self.irradiance, ['dni', 'ghi'], not_exist=['dhi']):
-            self.irradiance['dhi'] = (self.irradiance.ghi -
-                                      self.irradiance.dni *
-                                      tools.cosd(self.solar_position.zenith))
-        else:
-            self.irradiance = None
+        if {'ghi', 'dhi'} <= icolumns and not {'dni'} <= icolumns:
+            self.weather['dni'] = ((self.weather.ghi -
+                                    self.weather.dhi) /
+                                   tools.cosd(self.solar_position.zenith))
+        elif {'dni', 'dhi'} <= icolumns and not {'ghi'} <= icolumns:
+            self.weather['ghi'] = (self.weather.dni *
+                                   tools.cosd(self.solar_position.zenith) +
+                                   self.weather.dhi)
+        elif {'dni', 'ghi'} <= icolumns and not {'dhi'} <= icolumns:
+            self.weather['dhi'] = (self.weather.ghi -
+                                   self.weather.dni *
+                                   tools.cosd(self.solar_position.zenith))
 
     def prepare_inputs(self, times, irradiance=None, weather=None):
         """

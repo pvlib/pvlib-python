@@ -679,7 +679,11 @@ class ModelChain(object):
         # The following part could be removed together with the irradiance
         # parameter at version v0.5 or v0.6.
         # **** Begin ****
+        wrn_txt = "The irradiance parameter will be removed soon."
+        wrn_txt += "Please use the weather parameter to pass a DataFrame with "
+        wrn_txt += "irradiance (ghi, dni, dhi), wind speed and temp_air"
         if irradiance is not None:
+            warnings.warn(wrn_txt, FutureWarning)
             for column in irradiance.columns:
                 weather[column] = irradiance.pop(column)
         # **** End ****

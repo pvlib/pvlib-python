@@ -671,8 +671,7 @@ class ModelChain(object):
         -------
         self
 
-        Assigns attributes: times, solar_position, airmass, irradiance,
-        total_irrad, weather, aoi
+        Assigns attributes: times, solar_position, airmass, total_irrad, aoi
         """
         # The following part could be removed together with the irradiance
         # parameter at version v0.5 or v0.6.

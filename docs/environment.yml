@@ -11,12 +11,12 @@ dependencies:
     - pytz
     - ephem
     - numba
-    - ipython=4.0.1
+    - ipython #=4.0.1
     - ipywidgets
     - numpydoc
     - matplotlib
     - seaborn
     - siphon
-    - sphinx=1.3.5  # same versions as rtd
-    - sphinx_rtd_theme=0.1.7
-    - docutils=0.12
+    - sphinx #=1.3.5  # same versions as rtd
+    - sphinx_rtd_theme #=0.1.7
+    - docutils #=0.12

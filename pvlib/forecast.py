@@ -1070,7 +1070,7 @@ class RAP(ForecastModel):
         self.variables = {
             'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
-            'total_clouds': 'Total_cloud_cover_entire_atmosphere_single_layer',
+            'total_clouds': 'Total_cloud_cover_entire_atmosphere',
             'low_clouds': 'Low_cloud_cover_low_cloud',
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
             'high_clouds': 'High_cloud_cover_high_cloud', }

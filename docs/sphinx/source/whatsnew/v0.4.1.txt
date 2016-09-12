@@ -12,6 +12,7 @@ Bug fixes
 
 * Fixed an error in the irradiance.klucher transposition model.
   The error was introduced in version 0.4.0. (:issue:`228`)
+* Update RAP forecast model variable names. (:issue:`241`)
 
 
 Documentation
@@ -26,3 +27,4 @@ Code Contributors
 
 * Mark Mikofski
 * Johannes Dollinger
+* Will Holmgren

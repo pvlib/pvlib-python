@@ -55,7 +55,7 @@ same quantity (or a very similar one), and not all variables are present
 in all models. For example, on the THREDDS server, the GFS has a field
 named
 ``Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average``,
-while the RAP has a field named
+while the NAM has a field named
 ``Total_cloud_cover_entire_atmosphere_single_layer``, and a
 similar field in the HRRR is named
 ``Total_cloud_cover_entire_atmosphere``.

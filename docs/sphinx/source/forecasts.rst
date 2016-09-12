@@ -17,7 +17,10 @@ state-of-the-art of solar power forecasting.
 pvlib-python uses Unidata's `Siphon
 <http://siphon.readthedocs.org/en/latest/>`_ library to simplify access
 to forecast data hosted on the Unidata `THREDDS catalog
-<http://thredds.ucar.edu/thredds/catalog.html>`_.
+<http://thredds.ucar.edu/thredds/catalog.html>`_. Siphon is great for
+programatic access of THREDDS data, but we also recommend using tools
+such as `Panoply <http://www.giss.nasa.gov/tools/panoply/>`_
+to easily browse the catalog and become more familiar with its contents.
 
 This document demonstrates how to use pvlib-python to create a PV power
 forecast using these tools. The `forecast

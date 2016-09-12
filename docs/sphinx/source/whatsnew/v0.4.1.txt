@@ -18,6 +18,7 @@ Documentation
 ~~~~~~~~~~~~~
 
 * Fixed a typo in the pvsystem.sapm returns description. (:issue:`234`)
+* Replaced nosetests references with py.test. (:issue:`232`)
 
 
 Code Contributors

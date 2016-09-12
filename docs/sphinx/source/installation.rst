@@ -154,7 +154,7 @@ referred to as *conda environments*, but they're the same for our purposes.
    ``conda create --name pvlibdev python pandas scipy``
 #. **Activate** the new conda environment: ``source activate pvlibdev``
 #. **Install** additional packages into your development environment:
-   ``conda install jupyter ipython matplotlib seaborn nose flake8``
+   ``conda install jupyter ipython matplotlib seaborn pytest nose flake8``
 
 The `conda documentation
 <http://conda.pydata.org/docs/using/index.html>`_ has more information

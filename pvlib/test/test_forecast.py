@@ -29,7 +29,7 @@ if has_siphon:
     _start = pd.Timestamp.now(tz=_tz)
     _end = _start + pd.Timedelta(days=1)
     _modelclasses = [
-        GFS, NAM, HRRR, RAP, NDFD,
+        GFS, NAM, HRRR, NDFD, RAP,
         pytest.mark.xfail(HRRR_ESRL, reason="HRRR_ESRL is unreliable")]
     _working_models = []
     _variables = ['temp_air', 'wind_speed', 'total_clouds', 'low_clouds',
@@ -62,14 +62,14 @@ def test_process_data(model):
 
 @requires_siphon
 def test_vert_level():
-    amodel = RAP()
+    amodel = NAM()
     vert_level = 5000
     data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
                                      vert_level=vert_level)
 
 @requires_siphon
 def test_datetime():
-    amodel = RAP()
+    amodel = NAM()
     start = datetime.now()
     end = start + timedelta(days=1)
     data = amodel.get_processed_data(_latitude, _longitude , start, end)

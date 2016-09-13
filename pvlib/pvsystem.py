@@ -1922,7 +1922,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
 
 def snlinverter(v_dc, p_dc, inverter):
-    '''
+    r'''
     Converts DC power and voltage to AC power using Sandia's
     Grid-Connected PV Inverter model.
 
@@ -1950,35 +1950,7 @@ def snlinverter(v_dc, p_dc, inverter):
         Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1].
         A set of inverter performance parameters are provided with
         pvlib, or may be generated from a System Advisor Model (SAM) [2]
-        library using retrievesam.
-
-        Required DataFrame columns are:
-
-        ======   ============================================================
-        Column   Description
-        ======   ============================================================
-        Pac0     AC-power output from inverter based on input power
-                 and voltage (W)
-        Pdc0     DC-power input to inverter, typically assumed to be equal
-                 to the PV array maximum power (W)
-        Vdc0     DC-voltage level at which the AC-power rating is achieved
-                 at the reference operating condition (V)
-        Ps0      DC-power required to start the inversion process, or
-                 self-consumption by inverter, strongly influences inverter
-                 efficiency at low power levels (W)
-        C0       Parameter defining the curvature (parabolic) of the
-                 relationship between ac-power and dc-power at the reference
-                 operating condition, default value of zero gives a
-                 linear relationship (1/W)
-        C1       Empirical coefficient allowing Pdco to vary linearly
-                 with dc-voltage input, default value is zero (1/V)
-        C2       Empirical coefficient allowing Pso to vary linearly with
-                 dc-voltage input, default value is zero (1/V)
-        C3       Empirical coefficient allowing Co to vary linearly with
-                 dc-voltage input, default value is zero (1/V)
-        Pnt      AC-power consumed by inverter at night (night tare) to
-                 maintain circuitry required to sense PV array voltage (W)
-        ======   ============================================================
+        library using retrievesam. See Notes for required keys.
 
     Returns
     -------
@@ -1991,6 +1963,37 @@ def snlinverter(v_dc, p_dc, inverter):
         losses. ac_power is not adjusted for maximum power point
         tracking (MPPT) voltage windows or maximum current limits of the
         inverter.
+
+    Notes
+    -----
+
+    Required inverter keys are:
+
+    ======   ============================================================
+    Column   Description
+    ======   ============================================================
+    Pac0     AC-power output from inverter based on input power
+             and voltage (W)
+    Pdc0     DC-power input to inverter, typically assumed to be equal
+             to the PV array maximum power (W)
+    Vdc0     DC-voltage level at which the AC-power rating is achieved
+             at the reference operating condition (V)
+    Ps0      DC-power required to start the inversion process, or
+             self-consumption by inverter, strongly influences inverter
+             efficiency at low power levels (W)
+    C0       Parameter defining the curvature (parabolic) of the
+             relationship between ac-power and dc-power at the reference
+             operating condition, default value of zero gives a
+             linear relationship (1/W)
+    C1       Empirical coefficient allowing Pdco to vary linearly
+             with dc-voltage input, default value is zero (1/V)
+    C2       Empirical coefficient allowing Pso to vary linearly with
+             dc-voltage input, default value is zero (1/V)
+    C3       Empirical coefficient allowing Co to vary linearly with
+             dc-voltage input, default value is zero (1/V)
+    Pnt      AC-power consumed by inverter at night (night tare) to
+             maintain circuitry required to sense PV array voltage (W)
+    ======   ============================================================
 
     References
     ----------

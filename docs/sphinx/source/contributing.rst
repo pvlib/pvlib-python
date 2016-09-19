@@ -83,14 +83,14 @@ changes, such as fixing documentation typos.
 Testing
 -------
 
-pvlib's unit tests can easily be run by executing ``nosetests`` on the
+pvlib's unit tests can easily be run by executing ``py.test`` on the
 pvlib directory:
 
-``nosetests -v pvlib``
+``py.test pvlib``
 
 or, for a single module:
 
-``nosetests -v pvlib/tests/test_clearsky.py``
+``py.test pvlib/test/test_clearsky.py``
 
 While copy/paste coding should generally be avoided, it's a great way
 to learn how to write unit tests!

@@ -12,12 +12,15 @@ Bug fixes
 
 * Fixed an error in the irradiance.klucher transposition model.
   The error was introduced in version 0.4.0. (:issue:`228`)
+* Update RAP forecast model variable names. (:issue:`241`)
 
 
 Documentation
 ~~~~~~~~~~~~~
 
 * Fixed a typo in the pvsystem.sapm returns description. (:issue:`234`)
+* Replaced nosetests references with py.test. (:issue:`232`)
+* Improve the rendering of the snlinverter doc string. (:issue:`242`)
 
 
 Code Contributors
@@ -25,3 +28,4 @@ Code Contributors
 
 * Mark Mikofski
 * Johannes Dollinger
+* Will Holmgren

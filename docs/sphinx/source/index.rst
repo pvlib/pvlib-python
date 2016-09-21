@@ -76,8 +76,15 @@ Contents
    installation
    contributing
    timetimezones
+   solarposition
+   transposition
    clearsky
+   io
+   system
    forecasts
+   statistics
+   plotting
+   reporting
    modules
    classes
    comparison_pvlib_matlab

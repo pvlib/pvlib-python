@@ -77,3 +77,8 @@ coverage.xml
 #Ignore some notebooks
 *.ipynb
 !docs/tutorials/*.ipynb
+
+#Ignore during development:
+pvlib_ToC_structure.txt
+make.bat
+*.png

@@ -1306,10 +1306,10 @@ def calculate_deltat(year, month):
           +' are not intended to be used for these years.'
 
     try:
-        if np.any((year > 3000) | (year < -500)):
+        if np.any((year > 3000) | (year < -1999)):
             pvl_logger.warning(plw)
     except ValueError:
-        if (year > 3000) | (year < -500):
+        if (year > 3000) | (year < -1999):
             pvl_logger.warning(plw)
 
     #Equations taken from http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html

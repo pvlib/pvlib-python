@@ -1301,7 +1301,7 @@ def earthsun_distance(unixtime, delta_t, numthreads):
 
 def calculate_deltat(year, month):
 
-    plw = 'Delta is unknown for years before -1999 and after 3000.'\
+    plw = ' Deltat is unknown for years before -1999 and after 3000.'\
           +' Delta values will be calculated, but the calculations'\
           +' are not intended to be used for these years.'
 

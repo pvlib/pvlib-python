@@ -81,7 +81,7 @@ def test_spa_python_numpy_physical(expected_solpos):
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
                                           golden_mst.longitude,
                                           pressure=82000,
-                                          temperature=11, delta_t=67,
+                                          temperature=11,
                                           atmos_refract=0.5667,
                                           how='numpy')
     expected_solpos.index = times

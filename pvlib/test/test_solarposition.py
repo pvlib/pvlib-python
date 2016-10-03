@@ -76,6 +76,16 @@ def test_spa_python_numpy_physical(expected_solpos):
     expected_solpos.index = times
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
+                          periods=1, freq='D', tz=golden_mst.tz)
+    ephem_data = solarposition.spa_python(times, golden_mst.latitude,
+                                          golden_mst.longitude,
+                                          pressure=82000,
+                                          temperature=11, delta_t=67,
+                                          atmos_refract=0.5667,
+                                          how='numpy')
+    expected_solpos.index = times
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 def test_spa_python_numpy_physical_dst(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),

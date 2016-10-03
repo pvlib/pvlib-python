@@ -261,6 +261,9 @@ def spa_python(time, latitude, longitude,
     temperature : int or float, optional
         avg. yearly air temperature in degrees C.
     delta_t : float, optional
+        If delta_t is None, uses spa.calculate_deltat
+        using time.year and time.month from pandas.DatetimeIndex.
+        For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         The USNO has historical and forecasted delta_t [3].
     atmos_refrac : float, optional
@@ -308,7 +311,7 @@ def spa_python(time, latitude, longitude,
     lon = longitude
     elev = altitude
     pressure = pressure / 100  # pressure must be in millibars for calculation
-    delta_t = delta_t or 67.0
+
     atmos_refract = atmos_refract or 0.5667
 
     if not isinstance(time, pd.DatetimeIndex):
@@ -320,6 +323,8 @@ def spa_python(time, latitude, longitude,
     unixtime = time.astype(np.int64)/10**9
 
     spa = _spa_python_import(how)
+
+    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 
     app_zenith, zenith, app_elevation, elevation, azimuth, eot = spa.solar_position(
         unixtime, lat, lon, elev, pressure, temperature, delta_t,
@@ -353,6 +358,9 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
     latitude : float
     longitude : float
     delta_t : float, optional
+        If delta_t is None, uses spa.calculate_deltat
+        using time.year and time.month from pandas.DatetimeIndex.
+        For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         By default, use USNO historical data and predictions
     how : str, optional
@@ -380,7 +388,6 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
 
     lat = latitude
     lon = longitude
-    delta_t = delta_t or 67.0
 
     if not isinstance(time, pd.DatetimeIndex):
         try:
@@ -393,6 +400,8 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
     unixtime = utcday.astype(np.int64)/10**9
 
     spa = _spa_python_import(how)
+
+    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
         unixtime, lat, lon, delta_t, numthreads)
@@ -788,6 +797,9 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
         to machine code and run them multithreaded.
 
     delta_t : float, optional
+        If delta_t is None, uses spa.calculate_deltat
+        using time.year and time.month from pandas.DatetimeIndex.
+        For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         By default, use USNO historical data and predictions
 
@@ -805,7 +817,6 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
     radiation applications. Technical report: NREL/TP-560- 34302. Golden,
     USA, http://www.nrel.gov.
     """
-    delta_t = delta_t or 67.0
 
     if not isinstance(time, pd.DatetimeIndex):
         try:
@@ -816,6 +827,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
     unixtime = time.astype(np.int64)/10**9
 
     spa = _spa_python_import(how)
+
+    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 
     R = spa.earthsun_distance(unixtime, delta_t, numthreads)
 

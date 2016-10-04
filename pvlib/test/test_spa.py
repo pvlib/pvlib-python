@@ -29,11 +29,7 @@ except ImportError:
 
 times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
            .tz_localize('MST'))
-try:
-    # pandas 0.19 and greater
-    unixtimes = times.tz_convert('UTC').astype(np.int64).values*1.0/10**9
-except AttributeError:
-    unixtimes = times.tz_convert('UTC').astype(np.int64)*1.0/10**9
+unixtimes = np.array(times.tz_convert('UTC').astype(np.int64)*1.0/10**9)
 
 lat = 39.742476
 lon = -105.1786

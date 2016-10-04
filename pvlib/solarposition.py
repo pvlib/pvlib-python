@@ -317,7 +317,7 @@ def spa_python(time, latitude, longitude,
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = time.astype(np.int64)/10**9
+    unixtime = np.array(time.astype(np.int64)/10**9)
 
     spa = _spa_python_import(how)
 
@@ -390,7 +390,7 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
 
     # must convert to midnight UTC on day of interest
     utcday = pd.DatetimeIndex(time.date).tz_localize('UTC')
-    unixtime = utcday.astype(np.int64)/10**9
+    unixtime = np.array(utcday.astype(np.int64)/10**9)
 
     spa = _spa_python_import(how)
 
@@ -813,7 +813,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = time.astype(np.int64)/10**9
+    unixtime = np.array(time.astype(np.int64)/10**9)
 
     spa = _spa_python_import(how)
 

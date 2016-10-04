@@ -24,7 +24,7 @@ def test_location_all():
 
 
 @pytest.mark.parametrize('tz', [
-    aztz, 'America/Phoenix',  -7, -7.0,
+    aztz, 'America/Phoenix',  -7, -7.0, u'Etc/GMT+7',
 ])
 def test_location_tz(tz):
     Location(32.2, -111, tz)

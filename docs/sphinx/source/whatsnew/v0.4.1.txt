@@ -1,10 +1,11 @@
 .. _whatsnew_0410:
 
-v0.4.1 (August xx, 2016)
+v0.4.1 (October 5, 2016)
 ------------------------
 
 This is a minor release from 0.4.0. We recommend that all users upgrade
-to this version.
+to this version, especially if they want to use the latest versions of
+pandas.
 
 
 Bug fixes

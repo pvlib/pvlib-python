@@ -1,10 +1,11 @@
 .. _whatsnew_0410:
 
-v0.4.1 (August xx, 2016)
+v0.4.1 (October 5, 2016)
 ------------------------
 
 This is a minor release from 0.4.0. We recommend that all users upgrade
-to this version.
+to this version, especially if they want to use the latest versions of
+pandas.
 
 
 Bug fixes
@@ -13,6 +14,8 @@ Bug fixes
 * Fixed an error in the irradiance.klucher transposition model.
   The error was introduced in version 0.4.0. (:issue:`228`)
 * Update RAP forecast model variable names. (:issue:`241`)
+* Fix incompatibility with pandas 0.19 and solar position calculations.
+  (:issue:`246`)
 
 
 Documentation

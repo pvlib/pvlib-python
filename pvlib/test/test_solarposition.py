@@ -63,7 +63,6 @@ def test_spa_c_physical_dst(expected_solpos):
     expected_solpos.index = times
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
-
 def test_spa_python_numpy_physical(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
@@ -71,17 +70,6 @@ def test_spa_python_numpy_physical(expected_solpos):
                                           golden_mst.longitude,
                                           pressure=82000,
                                           temperature=11, delta_t=67,
-                                          atmos_refract=0.5667,
-                                          how='numpy')
-    expected_solpos.index = times
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
-
-    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
-                          periods=1, freq='D', tz=golden_mst.tz)
-    ephem_data = solarposition.spa_python(times, golden_mst.latitude,
-                                          golden_mst.longitude,
-                                          pressure=82000,
-                                          temperature=11,
                                           atmos_refract=0.5667,
                                           how='numpy')
     expected_solpos.index = times
@@ -321,6 +309,26 @@ def test_get_solarposition_altitude(altitude, expected):
     ephem_data = np.round(ephem_data, 5)
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
+
+@pytest.mark.parametrize(
+    "delta_t, expected", [
+    (None, expected_solpos()),
+    (67.0, expected_solpos())
+    ])
+def test_get_solarposition_deltat(delta_t,expected):
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
+                          periods=1, freq='D', tz=golden.tz)
+    ephem_data = solarposition.get_solarposition(times, golden.latitude,
+                                                 golden.longitude,
+                                                 pressure=82000,
+                                                 delta_t=delta_t,
+                                                 temperature=11)
+    this_expected = expected.copy()
+    this_expected.index = times
+    this_expected = np.round(this_expected, 5)
+    ephem_data = np.round(ephem_data, 5)
+    assert_frame_equal(this_expected, ephem_data[this_expected.columns])
+   
 
 def test_get_solarposition_no_kwargs(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),

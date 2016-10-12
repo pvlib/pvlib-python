@@ -43,8 +43,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
 
     Parameters
     ----------
-    datetime_or_doy : int, float, array, date, datetime, datetime64,
-                      Timestamp, DatetimeIndex
+    datetime_or_doy : numeric, array, date, datetime, Timestamp, DatetimeIndex
         Day of year, array of days of year, or datetime-like object
 
     solar_constant : float

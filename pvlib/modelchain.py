@@ -673,6 +673,12 @@ class ModelChain(object):
 
         Assigns attributes: times, solar_position, airmass, total_irrad, aoi
         """
+        # Add columns that does not exist and overwrite existing columns
+        # Maybe there is a more elegant way to do this. Any ideas?
+        if weather is not None:
+            self.weather = self.weather.combine_first(weather)
+            self.weather.update(weather)
+
         # The following part could be removed together with the irradiance
         # parameter at version v0.5 or v0.6.
         # **** Begin ****

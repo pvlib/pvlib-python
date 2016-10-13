@@ -102,7 +102,7 @@ def test_run_model_with_irradiance(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
                               index=times)
-    ac = mc.run_model(times, irradiance=irradiance).ac
+    ac = mc.run_model(times, weather=irradiance).ac
 
     expected = pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]),
                          index=times)
@@ -114,7 +114,7 @@ def test_run_model_perez(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
                               index=times)
-    ac = mc.run_model(times, irradiance=irradiance).ac
+    ac = mc.run_model(times, weather=irradiance).ac
 
     expected = pd.Series(np.array([  190.194545796,  -2.00000000e-02]),
                          index=times)
@@ -127,7 +127,7 @@ def test_run_model_gueymard_perez(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
                               index=times)
-    ac = mc.run_model(times, irradiance=irradiance).ac
+    ac = mc.run_model(times, weather=irradiance).ac
 
     expected = pd.Series(np.array([  190.194760203,  -2.00000000e-02]),
                          index=times)

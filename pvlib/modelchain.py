@@ -660,14 +660,16 @@ class ModelChain(object):
         Parameters
         ----------
         times : DatetimeIndex
-            Times at which to evaluate the model.
-        irradiance : None or DataFrame
-            If None, calculates clear sky data.
-            Columns must be 'dni', 'ghi', 'dhi'.
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
         weather : None or DataFrame
-            If None, assumes air temperature is 20 C and
-            wind speed is 0 m/s.
-            Columns must be 'wind_speed', 'temp_air'.
+            If None, assumes air temperature is 20 C, wind speed is 0 m/s and
+            irradiation calculated from clear sky data.
+            Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
+            Do not pass incomplete irradiation data.
+            Use method
+            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+            instead.
 
         Returns
         -------
@@ -765,15 +767,14 @@ class ModelChain(object):
         ----------
         times : DatetimeIndex
             Times at which to evaluate the model.
-
-        irradiance : None or DataFrame
-            If None, calculates clear sky data.
-            Columns must be 'dni', 'ghi', 'dhi'.
-
         weather : None or DataFrame
-            If None, assumes air temperature is 20 C and
-            wind speed is 0 m/s.
-            Columns must be 'wind_speed', 'temp_air'.
+            If None, assumes air temperature is 20 C, wind speed is 0 m/s and
+            irradiation calculated from clear sky data.
+            Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
+            Do not pass incomplete irradiation data.
+            Use method
+            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+            instead.
 
         Returns
         -------

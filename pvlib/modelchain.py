@@ -7,6 +7,7 @@ the time to read the source code for the module.
 """
 
 from functools import partial
+import logging
 import warnings
 import pandas as pd
 
@@ -607,50 +608,54 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def complete_irradiance(self, dni_determination_method='dirint'):
+    def complete_irradiance(self, times, weather):
         """
+        Determine the missing irradiation columns. Only two of the following
+        data columns (dni, ghi, dhi) are needed to calculate the missing data.
+
+        This function is not save at the moment. Results can be too high or
+        negative. Please contribute and help to improve this function on
+        https://github.com/pvlib/pvlib-python
 
         Parameters
         ----------
-        dni_determination_method : string
-            something....
+        times : datetime index
+            Date and time index of the irradiation data
+        weather : pandas.DataFrame
+            Table with at least two columns containing one of the following data
+            sets: dni, dhi, ghi
 
         Returns
         -------
+        pandas.DataFrame
+            Containing the missing column of the data sets passed with the
+            weather DataFrame.
 
         """
-        icolumns = self.weather.columns
-
-        if {'ghi'} <= icolumns and not {'dhi', 'dni'} <= icolumns:
-            if dni_determination_method == 'dirint':
-                return_value = irradiance.dirint(self.weather.ghi,
-                                                 self.solar_position.zenith,
-                                                 self.times)
-                self.weather['dhi'] = return_value
-            elif dni_determination_method == 'disc':
-                return_value = irradiance.disc(self.weather.ghi,
-                                               self.solar_position.zenith,
-                                               self.times)
-                self.weather['dni'] = return_value.dni
-            elif dni_determination_method == 'erbs':
-                return_value = irradiance.erbs(self.weather.ghi,
-                                               self.solar_position.zenith,
-                                               self.times)
-                self.weather['dni'] = return_value.dni
-                self.weather['dhi'] = return_value.dhi
-
-        if {'ghi', 'dhi'} <= icolumns and not {'dni'} <= icolumns:
-            self.weather['dni'] = ((self.weather.ghi -
-                                    self.weather.dhi) /
-                                   tools.cosd(self.solar_position.zenith))
-        elif {'dni', 'dhi'} <= icolumns and not {'ghi'} <= icolumns:
-            self.weather['ghi'] = (self.weather.dni *
-                                   tools.cosd(self.solar_position.zenith) +
-                                   self.weather.dhi)
-        elif {'dni', 'ghi'} <= icolumns and not {'dhi'} <= icolumns:
-            self.weather['dhi'] = (self.weather.ghi -
-                                   self.weather.dni *
-                                   tools.cosd(self.solar_position.zenith))
+        self.weather = weather
+        self.times = times
+        self.solar_position = self.location.get_solarposition(self.times)
+        icolumns = set(self.weather.columns)
+        wrn_txt = "This function is not save at the moment.\n"
+        wrn_txt += "Results can be too high or negative.\n"
+        wrn_txt += "Help to improve this function on github."
+        wrn_txt += "https://github.com/pvlib/pvlib-python"
+        warnings.warn(wrn_txt, UserWarning)
+        if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
+            logging.debug('Estimate dni from ghi and dhi')
+            self.weather.loc[:, 'dni'] = (
+                (self.weather.loc[:, 'ghi'] - self.weather.loc[:, 'dhi']) /
+                tools.cosd(self.solar_position.loc[:, 'zenith']))
+        elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
+            logging.debug('Estimate ghi from dni and dhi')
+            self.weather.loc[:, 'ghi'] = (
+                self.weather.dni * tools.cosd(self.solar_position.zenith) +
+                self.weather.dhi)
+        elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
+            logging.debug('Estimate dhi from dni and ghi')
+            self.weather.loc[:, 'dhi'] = (
+                self.weather.ghi - self.weather.dni *
+                tools.cosd(self.solar_position.zenith))
 
     def prepare_inputs(self, times=None, irradiance=None, weather=None):
         """

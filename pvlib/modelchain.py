@@ -652,7 +652,7 @@ class ModelChain(object):
                                    self.weather.dni *
                                    tools.cosd(self.solar_position.zenith))
 
-    def prepare_inputs(self, times, irradiance=None, weather=None):
+    def prepare_inputs(self, times=None, irradiance=None, weather=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
@@ -695,13 +695,8 @@ class ModelChain(object):
                 self.weather[column] = irradiance.pop(column)
         # **** End ****
 
-        # Add columns that does not exist and overwrite existing columns
-        # Maybe there is a more elegant way to do this. Any ideas?
-        if weather is not None:
-            self.weather = self.weather.combine_first(weather)
-            self.weather.update(weather)
-
-        self.times = times
+        if times is not None:
+            self.times = times
 
         self.solar_position = self.location.get_solarposition(self.times)
 

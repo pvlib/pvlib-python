@@ -318,6 +318,8 @@ class ModelChain(object):
         self.orientation_strategy = orientation_strategy
 
         self.weather = pd.DataFrame()
+        self.times = None
+        self.solar_position = None
 
     def __repr__(self):
         return ('ModelChain for: ' + str(self.system) +

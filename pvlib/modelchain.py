@@ -667,7 +667,8 @@ class ModelChain(object):
             Times at which to evaluate the model. Can be None if attribute
             `times` is already set.
         weather : None or DataFrame
-            If None, assumes air temperature is 20 C, wind speed is 0 m/s and
+            If None, the weather attribute is used. If the weather attribute is
+            also None assumes air temperature is 20 C, wind speed is 0 m/s and
             irradiation calculated from clear sky data.
             Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
             Do not pass incomplete irradiation data.

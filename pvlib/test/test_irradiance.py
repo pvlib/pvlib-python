@@ -98,7 +98,7 @@ def test_grounddiffuse_albedo_invalid_surface():
 
 def test_grounddiffuse_albedo_surface():
     result = irradiance.grounddiffuse(40, ghi, surface_type='sand')
-    assert_allclose(result, [0, 3.731058, 48.778813, 12.035025])
+    assert_allclose(result, [0, 3.731058, 48.778813, 12.035025], atol=1e-4)
 
 
 def test_isotropic_float():
@@ -108,7 +108,7 @@ def test_isotropic_float():
 
 def test_isotropic_series():
     result = irradiance.isotropic(40, irrad_data['dhi'])
-    assert_allclose(result, [0, 35.728402, 104.601328, 54.777191])
+    assert_allclose(result, [0, 35.728402, 104.601328, 54.777191], atol=1e-4)
 
 
 def test_klucher_series_float():
@@ -120,7 +120,7 @@ def test_klucher_series():
     result = irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
                        ephem_data['apparent_zenith'],
                        ephem_data['azimuth'])
-    assert_allclose(result, [0, 37.446276, 109.209347, 56.965916])
+    assert_allclose(result, [0, 37.446276, 109.209347, 56.965916], atol=1e-4)
 
 
 def test_haydavies():
@@ -128,7 +128,7 @@ def test_haydavies():
                          dni_et,
                          ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
-    assert_allclose(result, [0, 14.967008, 102.994862, 33.190865])
+    assert_allclose(result, [0, 14.967008, 102.994862, 33.190865], atol=1e-4)
 
 
 def test_reindl():
@@ -136,13 +136,13 @@ def test_reindl():
                       irrad_data['ghi'], dni_et,
                       ephem_data['apparent_zenith'],
                       ephem_data['azimuth'])
-    assert_allclose(result, [np.nan, 15.730664, 104.131724, 34.166258])
+    assert_allclose(result, [np.nan, 15.730664, 104.131724, 34.166258], atol=1e-4)
 
 
 def test_king():
     result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
                     ephem_data['apparent_zenith'])
-    assert_allclose(result, [0, 44.629352, 115.182626, 79.719855])
+    assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
 def test_perez():

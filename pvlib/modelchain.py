@@ -11,8 +11,7 @@ import logging
 import warnings
 import pandas as pd
 
-from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools,
-                   irradiance)
+from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 

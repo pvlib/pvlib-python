@@ -607,7 +607,7 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def complete_irradiance(self, times, weather):
+    def complete_irradiance(self, times=None, weather=None):
         """
         Determine the missing irradiation columns. Only two of the following
         data columns (dni, ghi, dhi) are needed to calculate the missing data.
@@ -619,10 +619,12 @@ class ModelChain(object):
         Parameters
         ----------
         times : DatetimeIndex
-            Date and time index of the irradiation data
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
         weather : pandas.DataFrame
             Table with at least two columns containing one of the following data
-            sets: dni, dhi, ghi
+            sets: dni, dhi, ghi. Can be None if attribute `weather` is already
+            set.
 
         Returns
         -------
@@ -630,8 +632,10 @@ class ModelChain(object):
             Containing the missing column of the data sets passed with the
             weather DataFrame.
         """
-        self.weather = weather
-        self.times = times
+        if weather is not None:
+            self.weather = weather
+        if times is not None:
+            self.times = times
         self.solar_position = self.location.get_solarposition(self.times)
         icolumns = set(self.weather.columns)
         wrn_txt = ("This function is not safe at the moment.\n" +

@@ -18,12 +18,12 @@ def cosd(angle):
 
     Parameters
     ----------
-    angle : float
+    angle : float or array-like
         Angle in degrees
 
     Returns
     -------
-    result : float
+    result : float or array-like
         Cosine of the angle
     """
 

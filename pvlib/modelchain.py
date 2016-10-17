@@ -645,9 +645,9 @@ class ModelChain(object):
         warnings.warn(wrn_txt, UserWarning)
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             logging.debug('Estimate dni from ghi and dhi')
-            self.weather.loc[:, 'dni'] = (
-                (self.weather.loc[:, 'ghi'] - self.weather.loc[:, 'dhi']) /
-                tools.cosd(self.solar_position.loc[:, 'zenith']))
+            self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
+                self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
+                self.solar_position.loc[:, 'zenith'])
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             logging.debug('Estimate ghi from dni and dhi')
             self.weather.loc[:, 'ghi'] = (

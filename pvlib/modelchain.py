@@ -666,6 +666,8 @@ class ModelChain(object):
         times : DatetimeIndex
             Times at which to evaluate the model. Can be None if attribute
             `times` is already set.
+        irradiance : None or DataFrame
+            This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame
             If None, the weather attribute is used. If the weather attribute is
             also None assumes air temperature is 20 C, wind speed is 0 m/s and

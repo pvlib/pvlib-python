@@ -1945,3 +1945,34 @@ def _get_dirint_coeffs():
         [0.743440, 0.592190, 0.603060, 0.316930, 0.794390]]
 
     return coeffs[1:, 1:, :, :]
+
+
+def dni(ghi, dhi, zenith):
+    """
+    Determine DNI from GHI and DHI.
+
+    Parameters
+    ----------
+    ghi : array-like
+        Global horizontal irradiance in W/m^2.
+
+    dhi : array-like
+        Diffuse horizontal irradiance in W/m^2.
+
+    zenith : array-like
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. If Z is a vector it must be of the same size as all
+        other vector inputs. Z must be >=0 and <=180.
+
+    Returns
+    -------
+    dni : array-like
+        The modeled direct normal irradiance in W/m^2
+
+    Notes
+    -----
+    Something
+    """
+    tmp_dni = (ghi - dhi) / tools.cosd(zenith)
+
+    return tmp_dni

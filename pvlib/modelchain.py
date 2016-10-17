@@ -317,7 +317,7 @@ class ModelChain(object):
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
 
-        self.weather = pd.DataFrame()
+        self.weather = None
         self.times = None
         self.solar_position = None
 
@@ -687,8 +687,11 @@ class ModelChain(object):
         # Add columns that does not exist and overwrite existing columns
         # Maybe there is a more elegant way to do this. Any ideas?
         if weather is not None:
-            self.weather = self.weather.combine_first(weather)
-            self.weather.update(weather)
+            if self.weather is None:
+                self.weather = weather
+            else:
+                self.weather = self.weather.combine_first(weather)
+                self.weather.update(weather)
 
         # The following part could be removed together with the irradiance
         # parameter at version v0.5 or v0.6.
@@ -713,7 +716,15 @@ class ModelChain(object):
         self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
                                        self.solar_position['azimuth'])
 
-        if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
+        use_clearsky = False
+        if self.weather is None:
+            use_clearsky = True
+            self.weather = pd.DataFrame()
+        else:
+            if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
+                use_clearsky = True
+
+        if use_clearsky:
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 zenith_data=self.solar_position['apparent_zenith'],

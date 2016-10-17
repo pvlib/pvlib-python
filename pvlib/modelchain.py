@@ -323,7 +323,7 @@ class ModelChain(object):
 
     def __repr__(self):
         return ('ModelChain for: ' + str(self.system) +
-                ' orientation_startegy: ' + str(self.orientation_strategy) +
+                ' orientation_strategy: ' + str(self.orientation_strategy) +
                 ' clearsky_model: ' + str(self.clearsky_model) +
                 ' transposition_model: ' + str(self.transposition_model) +
                 ' solar_position_method: ' + str(self.solar_position_method) +

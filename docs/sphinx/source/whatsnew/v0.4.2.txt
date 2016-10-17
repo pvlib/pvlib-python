@@ -1,0 +1,24 @@
+.. _whatsnew_0420:
+
+v0.4.2 ()
+------------------------
+
+This is a minor release from 0.4.0. ....
+
+
+API Changes
+~~~~~~~~~~~
+
+* The run_model method of the ModelChain will use the weather parameter of all weather data instead of splitting it to irradiation and weather. The irradiation parameter still works but will be removed soon.(:issue:`239`)
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adding a complete_irradiance method to the ModelChain to make it possible to calculate missing irradiation data from the existing columns [beta] (:issue:`239`)
+
+
+Code Contributors
+~~~~~~~~~~~~~~~~~
+
+* Uwe Krien

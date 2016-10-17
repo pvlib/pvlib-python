@@ -612,13 +612,13 @@ class ModelChain(object):
         Determine the missing irradiation columns. Only two of the following
         data columns (dni, ghi, dhi) are needed to calculate the missing data.
 
-        This function is not save at the moment. Results can be too high or
+        This function is not safe at the moment. Results can be too high or
         negative. Please contribute and help to improve this function on
         https://github.com/pvlib/pvlib-python
 
         Parameters
         ----------
-        times : datetime index
+        times : DatetimeIndex
             Date and time index of the irradiation data
         weather : pandas.DataFrame
             Table with at least two columns containing one of the following data
@@ -629,16 +629,15 @@ class ModelChain(object):
         pandas.DataFrame
             Containing the missing column of the data sets passed with the
             weather DataFrame.
-
         """
         self.weather = weather
         self.times = times
         self.solar_position = self.location.get_solarposition(self.times)
         icolumns = set(self.weather.columns)
-        wrn_txt = "This function is not save at the moment.\n"
-        wrn_txt += "Results can be too high or negative.\n"
-        wrn_txt += "Help to improve this function on github."
-        wrn_txt += "https://github.com/pvlib/pvlib-python"
+        wrn_txt = ("This function is not safe at the moment.\n" +
+                   "Results can be too high or negative.\n" +
+                   "Help to improve this function on github:\n" +
+                   "https://github.com/pvlib/pvlib-python \n")
         warnings.warn(wrn_txt, UserWarning)
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             logging.debug('Estimate dni from ghi and dhi')
@@ -696,9 +695,10 @@ class ModelChain(object):
         # The following part could be removed together with the irradiance
         # parameter at version v0.5 or v0.6.
         # **** Begin ****
-        wrn_txt = "The irradiance parameter will be removed soon.\n"
-        wrn_txt += "Please use the weather parameter to pass a DataFrame with "
-        wrn_txt += "irradiance (ghi, dni, dhi), wind speed and temp_air"
+        wrn_txt = ("The irradiance parameter will be removed soon.\n" +
+                   "Please use the weather parameter to pass a DataFrame " +
+                   "with irradiance (ghi, dni, dhi), wind speed and " +
+                   "temp_air.\n")
         if irradiance is not None:
             warnings.warn(wrn_txt, FutureWarning)
             for column in irradiance.columns:

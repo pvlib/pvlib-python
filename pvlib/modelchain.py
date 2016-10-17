@@ -768,14 +768,17 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, times, irradiance=None, weather=None):
+    def run_model(self, times=None, irradiance=None, weather=None):
         """
         Run the model.
 
         Parameters
         ----------
         times : DatetimeIndex
-            Times at which to evaluate the model.
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
+        irradiance : None or DataFrame
+            This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame
             If None, assumes air temperature is 20 C, wind speed is 0 m/s and
             irradiation calculated from clear sky data.

@@ -686,11 +686,7 @@ class ModelChain(object):
         # Add columns that does not exist and overwrite existing columns
         # Maybe there is a more elegant way to do this. Any ideas?
         if weather is not None:
-            if self.weather is None:
-                self.weather = weather
-            else:
-                self.weather = self.weather.combine_first(weather)
-                self.weather.update(weather)
+            self.weather = weather
 
         # The following part could be removed together with the irradiance
         # parameter at version v0.5 or v0.6.

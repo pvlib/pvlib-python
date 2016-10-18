@@ -628,9 +628,10 @@ class ModelChain(object):
 
         Returns
         -------
-        pandas.DataFrame
-            Containing the missing column of the data sets passed with the
-            weather DataFrame.
+        self
+
+        Assigns attributes: times, weather
+
         Examples
         --------
         This example does not work until the parameters `my_system`,
@@ -674,6 +675,8 @@ class ModelChain(object):
             self.weather.loc[:, 'dhi'] = (
                 self.weather.ghi - self.weather.dni *
                 tools.cosd(self.solar_position.zenith))
+
+        return self
 
     def prepare_inputs(self, times=None, irradiance=None, weather=None):
         """

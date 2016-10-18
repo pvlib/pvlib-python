@@ -1109,6 +1109,9 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
         avg. yearly temperature at location in
         degrees C; used for atmospheric correction
     delta_t : float, optional
+        If delta_t is None, uses spa.calculate_deltat
+        using time.year and time.month from pandas.DatetimeIndex.
+        For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         By default, use USNO historical data and predictions
     atmos_refrac : float, optional
@@ -1300,6 +1303,14 @@ def earthsun_distance(unixtime, delta_t, numthreads):
 
 
 def calculate_deltat(year, month):
+    """Calculate the difference between Terrestrial Dynamical Time (TD)
+    and Universal Time (UT).
+
+    Note: This function is not yet compatible for calculations using
+    Numba.
+
+    Equations taken from http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
+    """
 
     plw = ' Deltat is unknown for years before -1999 and after 3000.'\
           + ' Delta values will be calculated, but the calculations'\
@@ -1313,8 +1324,6 @@ def calculate_deltat(year, month):
             pvl_logger.warning(plw)
     except TypeError:
         return 0
-
-    # Equations taken from http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
 
     y = year + (month - 0.5)/12
 

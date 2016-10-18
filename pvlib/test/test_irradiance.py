@@ -61,6 +61,7 @@ def test_extraradiation(input, expected, method):
 
 
 @requires_numba
+@pytest.mark.xfail(raises=ValueError, reason = 'spa.calculate_deltat not implemented for numba yet')
 def test_extraradiation_nrel_numba():
     result = irradiance.extraradiation(times, method='nrel', how='numba', numthreads=8)
     assert_allclose(result, [1322.332316, 1322.296282, 1322.261205, 1322.227091])

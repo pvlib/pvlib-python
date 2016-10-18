@@ -742,8 +742,10 @@ class ModelChain(object):
                 airmass_data=self.airmass['airmass_absolute'])
 
         if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
-            ValueError(
-                "Uncompleted irradiance data set. Please check you input data")
+            raise ValueError(
+                "Uncompleted irradiance data set. Please check you input " +
+                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n" +
+                "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # have different method signatures, so use partial to handle

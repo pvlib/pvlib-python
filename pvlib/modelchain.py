@@ -628,9 +628,26 @@ class ModelChain(object):
 
         Returns
         -------
-        pandas.DataFrame
-            Containing the missing column of the data sets passed with the
-            weather DataFrame.
+        self
+
+        Assigns attributes: times, weather
+
+        Examples
+        --------
+        This example does not work until the parameters `my_system`,
+        `my_location`, `my_datetime` and `my_weather` are not defined properly
+        but shows the basic idea how this method can be used.
+
+        >>> from pvlib.modelchain import ModelChain
+
+        >>> # my_weather containing 'dhi' and 'ghi'.
+        >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
+        >>> mc.complete_irradiance(my_datetime, my_weather)  # doctest: +SKIP
+        >>> mc.run_model()  # doctest: +SKIP
+
+        >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
+        >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
+        >>> mc.run_model(my_datetime, my_weather)  # doctest: +SKIP
         """
         if weather is not None:
             self.weather = weather
@@ -658,6 +675,8 @@ class ModelChain(object):
             self.weather.loc[:, 'dhi'] = (
                 self.weather.ghi - self.weather.dni *
                 tools.cosd(self.solar_position.zenith))
+
+        return self
 
     def prepare_inputs(self, times=None, irradiance=None, weather=None):
         """
@@ -687,10 +706,10 @@ class ModelChain(object):
 
         Assigns attributes: times, solar_position, airmass, total_irrad, aoi
         """
-        # Add columns that does not exist and overwrite existing columns
-        # Maybe there is a more elegant way to do this. Any ideas?
         if weather is not None:
             self.weather = weather
+        if self.weather is None:
+            self.weather = pd.DataFrame()
 
         # The following part could be removed together with the irradiance
         # parameter at version v0.5 or v0.6.
@@ -716,23 +735,17 @@ class ModelChain(object):
         self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
                                        self.solar_position['azimuth'])
 
-        use_clearsky = False
-        if self.weather is None:
-            use_clearsky = True
-            self.weather = pd.DataFrame()
-        else:
-            if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
-                use_clearsky = True
-
-        if use_clearsky:
+        if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 zenith_data=self.solar_position['apparent_zenith'],
                 airmass_data=self.airmass['airmass_absolute'])
 
         if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
-            ValueError(
-                "Uncompleted irradiance data set. Please check you input data")
+            raise ValueError(
+                "Uncompleted irradiance data set. Please check you input " +
+                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n" +
+                "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # have different method signatures, so use partial to handle

@@ -6,6 +6,12 @@ v0.4.2 ()
 This is a minor release from 0.4.0. ....
 
 
+Bug fixes
+~~~~~~~~~
+
+* Fixed typo in __repr__ method of ModelChain and in its regarding test. (commit: b691358b)
+
+
 API Changes
 ~~~~~~~~~~~
 

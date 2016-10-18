@@ -631,6 +631,22 @@ class ModelChain(object):
         pandas.DataFrame
             Containing the missing column of the data sets passed with the
             weather DataFrame.
+        Examples
+        --------
+        This example does not work until the parameters `my_system`,
+        `my_location`, `my_datetime` and `my_weather` are not defined properly
+        but shows the basic idea how this method can be used.
+
+        >>> from pvlib.modelchain import ModelChain
+
+        >>> # my_weather containing 'dhi' and 'ghi'.
+        >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
+        >>> mc.complete_irradiance(my_datetime, my_weather)  # doctest: +SKIP
+        >>> mc.run_model()  # doctest: +SKIP
+
+        >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
+        >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
+        >>> mc.run_model(my_datetime, my_weather)  # doctest: +SKIP
         """
         if weather is not None:
             self.weather = weather

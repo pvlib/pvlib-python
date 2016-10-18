@@ -102,7 +102,7 @@ def test_run_model_with_irradiance(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
                               index=times)
-    ac = mc.run_model(times, irradiance=irradiance).ac
+    ac = mc.run_model(times, weather=irradiance).ac
 
     expected = pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]),
                          index=times)
@@ -114,7 +114,7 @@ def test_run_model_perez(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
                               index=times)
-    ac = mc.run_model(times, irradiance=irradiance).ac
+    ac = mc.run_model(times, weather=irradiance).ac
 
     expected = pd.Series(np.array([  190.194545796,  -2.00000000e-02]),
                          index=times)
@@ -127,7 +127,7 @@ def test_run_model_gueymard_perez(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
                               index=times)
-    ac = mc.run_model(times, irradiance=irradiance).ac
+    ac = mc.run_model(times, weather=irradiance).ac
 
     expected = pd.Series(np.array([  190.194760203,  -2.00000000e-02]),
                          index=times)
@@ -412,6 +412,63 @@ def test_ModelChain___repr__(system, location):
 
     assert mc.__repr__() == ('ModelChain for: PVSystem with tilt:32.2 and '+
     'azimuth: 180 with Module: None and Inverter: None '+
-    'orientation_startegy: south_at_latitude_tilt clearsky_model: '+
+    'orientation_strategy: south_at_latitude_tilt clearsky_model: '+
     'ineichen transposition_model: haydavies solar_position_method: '+
     'nrel_numpy airmass_model: kastenyoung1989')
+
+
+@requires_scipy
+def test_weather_irradiance_input(system, location):
+    """Test will raise a warning and should be removed in future versions."""
+    mc = ModelChain(system, location)
+    times = pd.date_range('2012-06-01 12:00:00', periods=2, freq='H')
+    i = pd.DataFrame({'dni': [2, 3], 'dhi': [4, 6], 'ghi': [9, 5]}, index=times)
+    w = pd.DataFrame({'wind_speed': [11, 5], 'temp_air': [30, 32]}, index=times)
+    mc.run_model(times, irradiance=i, weather=w)
+
+    assert_series_equal(mc.weather['dni'],
+                        pd.Series([2, 3], index=times, name='dni'))
+    assert_series_equal(mc.weather['wind_speed'],
+                        pd.Series([11, 5], index=times, name='wind_speed'))
+
+
+@requires_scipy
+def test_complete_irradiance_clean_run(system, location):
+    """The DataFrame should not change if all columns are passed"""
+    mc = ModelChain(system, location)
+    times = pd.date_range('2010-07-05 9:00:00', periods=2, freq='H')
+    i = pd.DataFrame({'dni': [2, 3], 'dhi': [4, 6], 'ghi': [9, 5]}, index=times)
+
+    mc.complete_irradiance(times, weather=i)
+
+    assert_series_equal(mc.weather['dni'],
+                        pd.Series([2, 3], index=times, name='dni'))
+    assert_series_equal(mc.weather['dhi'],
+                        pd.Series([4, 6], index=times, name='dhi'))
+    assert_series_equal(mc.weather['ghi'],
+                        pd.Series([9, 5], index=times, name='ghi'))
+
+
+@requires_scipy
+def test_complete_irradiance(system, location):
+    """Check calculations"""
+    mc = ModelChain(system, location)
+    times = pd.date_range('2010-07-05 9:00:00', periods=2, freq='H')
+    i = pd.DataFrame({'dni': [30.354455, 77.22822],
+                      'dhi': [372.103976116, 497.087579068],
+                      'ghi': [356.543700, 465.44400]}, index=times)
+
+    mc.complete_irradiance(times, weather=i[['ghi', 'dni']])
+    assert_series_equal(mc.weather['dhi'],
+                        pd.Series([372.103976116, 497.087579068],
+                                  index=times, name='dhi'))
+
+    mc.complete_irradiance(times, weather=i[['dhi', 'dni']])
+    assert_series_equal(mc.weather['ghi'],
+                        pd.Series([356.543700, 465.44400],
+                                  index=times, name='ghi'))
+
+    mc.complete_irradiance(times, weather=i[['dhi', 'ghi']])
+    assert_series_equal(mc.weather['dni'],
+                        pd.Series([30.354455, 77.22822],
+                                  index=times, name='dni'))

@@ -7,10 +7,11 @@ the time to read the source code for the module.
 """
 
 from functools import partial
-
+import logging
+import warnings
 import pandas as pd
 
-from pvlib import solarposition, pvsystem, clearsky, atmosphere
+from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 
@@ -316,9 +317,13 @@ class ModelChain(object):
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
 
+        self.weather = None
+        self.times = None
+        self.solar_position = None
+
     def __repr__(self):
         return ('ModelChain for: ' + str(self.system) +
-                ' orientation_startegy: ' + str(self.orientation_strategy) +
+                ' orientation_strategy: ' + str(self.orientation_strategy) +
                 ' clearsky_model: ' + str(self.clearsky_model) +
                 ' transposition_model: ' + str(self.transposition_model) +
                 ' solar_position_method: ' + str(self.solar_position_method) +
@@ -602,7 +607,78 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def prepare_inputs(self, times, irradiance=None, weather=None):
+    def complete_irradiance(self, times=None, weather=None):
+        """
+        Determine the missing irradiation columns. Only two of the following
+        data columns (dni, ghi, dhi) are needed to calculate the missing data.
+
+        This function is not safe at the moment. Results can be too high or
+        negative. Please contribute and help to improve this function on
+        https://github.com/pvlib/pvlib-python
+
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
+        weather : pandas.DataFrame
+            Table with at least two columns containing one of the following data
+            sets: dni, dhi, ghi. Can be None if attribute `weather` is already
+            set.
+
+        Returns
+        -------
+        self
+
+        Assigns attributes: times, weather
+
+        Examples
+        --------
+        This example does not work until the parameters `my_system`,
+        `my_location`, `my_datetime` and `my_weather` are not defined properly
+        but shows the basic idea how this method can be used.
+
+        >>> from pvlib.modelchain import ModelChain
+
+        >>> # my_weather containing 'dhi' and 'ghi'.
+        >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
+        >>> mc.complete_irradiance(my_datetime, my_weather)  # doctest: +SKIP
+        >>> mc.run_model()  # doctest: +SKIP
+
+        >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
+        >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
+        >>> mc.run_model(my_datetime, my_weather)  # doctest: +SKIP
+        """
+        if weather is not None:
+            self.weather = weather
+        if times is not None:
+            self.times = times
+        self.solar_position = self.location.get_solarposition(self.times)
+        icolumns = set(self.weather.columns)
+        wrn_txt = ("This function is not safe at the moment.\n" +
+                   "Results can be too high or negative.\n" +
+                   "Help to improve this function on github:\n" +
+                   "https://github.com/pvlib/pvlib-python \n")
+        warnings.warn(wrn_txt, UserWarning)
+        if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
+            logging.debug('Estimate dni from ghi and dhi')
+            self.weather.loc[:, 'dni'] = (
+                (self.weather.loc[:, 'ghi'] - self.weather.loc[:, 'dhi']) /
+                tools.cosd(self.solar_position.loc[:, 'zenith']))
+        elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
+            logging.debug('Estimate ghi from dni and dhi')
+            self.weather.loc[:, 'ghi'] = (
+                self.weather.dni * tools.cosd(self.solar_position.zenith) +
+                self.weather.dhi)
+        elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
+            logging.debug('Estimate dhi from dni and ghi')
+            self.weather.loc[:, 'dhi'] = (
+                self.weather.ghi - self.weather.dni *
+                tools.cosd(self.solar_position.zenith))
+
+        return self
+
+    def prepare_inputs(self, times=None, irradiance=None, weather=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
@@ -610,24 +686,46 @@ class ModelChain(object):
         Parameters
         ----------
         times : DatetimeIndex
-            Times at which to evaluate the model.
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
         irradiance : None or DataFrame
-            If None, calculates clear sky data.
-            Columns must be 'dni', 'ghi', 'dhi'.
+            This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame
-            If None, assumes air temperature is 20 C and
-            wind speed is 0 m/s.
-            Columns must be 'wind_speed', 'temp_air'.
+            If None, the weather attribute is used. If the weather attribute is
+            also None assumes air temperature is 20 C, wind speed is 0 m/s and
+            irradiation calculated from clear sky data.
+            Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
+            Do not pass incomplete irradiation data.
+            Use method
+            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+            instead.
 
         Returns
         -------
         self
 
-        Assigns attributes: times, solar_position, airmass, irradiance,
-        total_irrad, weather, aoi
+        Assigns attributes: times, solar_position, airmass, total_irrad, aoi
         """
+        if weather is not None:
+            self.weather = weather
+        if self.weather is None:
+            self.weather = pd.DataFrame()
 
-        self.times = times
+        # The following part could be removed together with the irradiance
+        # parameter at version v0.5 or v0.6.
+        # **** Begin ****
+        wrn_txt = ("The irradiance parameter will be removed soon.\n" +
+                   "Please use the weather parameter to pass a DataFrame " +
+                   "with irradiance (ghi, dni, dhi), wind speed and " +
+                   "temp_air.\n")
+        if irradiance is not None:
+            warnings.warn(wrn_txt, FutureWarning)
+            for column in irradiance.columns:
+                self.weather[column] = irradiance[column]
+        # **** End ****
+
+        if times is not None:
+            self.times = times
 
         self.solar_position = self.location.get_solarposition(self.times)
 
@@ -637,12 +735,17 @@ class ModelChain(object):
         self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
                                        self.solar_position['azimuth'])
 
-        if irradiance is None:
-            irradiance = self.location.get_clearsky(
+        if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
+            self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 zenith_data=self.solar_position['apparent_zenith'],
                 airmass_data=self.airmass['airmass_absolute'])
-        self.irradiance = irradiance
+
+        if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
+            raise ValueError(
+                "Uncompleted irradiance data set. Please check you input " +
+                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n" +
+                "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # have different method signatures, so use partial to handle
@@ -670,35 +773,37 @@ class ModelChain(object):
                 self.solar_position['azimuth'])
 
         self.total_irrad = get_irradiance(
-            self.irradiance['dni'],
-            self.irradiance['ghi'],
-            self.irradiance['dhi'],
+            self.weather['dni'],
+            self.weather['ghi'],
+            self.weather['dhi'],
             airmass=self.airmass['airmass_relative'],
             model=self.transposition_model)
 
-        if weather is None:
-            weather = {'wind_speed': 0, 'temp_air': 20}
-        self.weather = weather
-
+        if self.weather.get('wind_speed') is None:
+            self.weather['wind_speed'] = 0
+        if self.weather.get('temp_air') is None:
+            self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, times, irradiance=None, weather=None):
+    def run_model(self, times=None, irradiance=None, weather=None):
         """
         Run the model.
 
         Parameters
         ----------
         times : DatetimeIndex
-            Times at which to evaluate the model.
-
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
         irradiance : None or DataFrame
-            If None, calculates clear sky data.
-            Columns must be 'dni', 'ghi', 'dhi'.
-
+            This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame
-            If None, assumes air temperature is 20 C and
-            wind speed is 0 m/s.
-            Columns must be 'wind_speed', 'temp_air'.
+            If None, assumes air temperature is 20 C, wind speed is 0 m/s and
+            irradiation calculated from clear sky data.
+            Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
+            Do not pass incomplete irradiation data.
+            Use method
+            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+            instead.
 
         Returns
         -------

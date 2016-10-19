@@ -489,9 +489,12 @@ class PVSystem(object):
 
         See :py:func:`pvwatts_dc` for details.
         """
+        kwargs = _build_kwargs(['temp_ref'], self.module_parameters)
+
         return pvwatts_dc(g_poa_effective, temp_cell,
                           self.module_parameters['pdc0'],
-                          self.module_parameters['gamma_pdc'])
+                          self.module_parameters['gamma_pdc'],
+                          **kwargs)
 
     def pvwatts_losses(self, **kwargs):
         """
@@ -512,8 +515,10 @@ class PVSystem(object):
 
         See :py:func:`pvwatts_ac` for details.
         """
-        return pvwatts_ac(pdc, self.module_parameters['pdc0'],
-                          eta_inv_nom=self.inverter_parameters['eta_inv_nom'])
+        kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
+                               self.inverter_parameters)
+
+        return pvwatts_ac(pdc, self.module_parameters['pdc0'], **kwargs)
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):

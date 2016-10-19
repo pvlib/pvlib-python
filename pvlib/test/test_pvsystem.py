@@ -786,25 +786,38 @@ def test_pvwatts_losses_series():
     assert_series_equal(expected, out)
 
 
-def make_pvwatts_system():
+def make_pvwatts_system_defaults():
     module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003}
-    inverter_parameters = {'eta_inv_nom': 0.95}
+    inverter_parameters = {}
+    system = pvsystem.PVSystem(module_parameters=module_parameters,
+                               inverter_parameters=inverter_parameters)
+    return system
+
+
+def make_pvwatts_system_kwargs():
+    module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003, 'temp_ref': 20}
+    inverter_parameters = {'eta_inv_nom': 0.95, 'eta_inv_ref': 1.0}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
     return system
 
 
 def test_PVSystem_pvwatts_dc():
-    system = make_pvwatts_system()
+    system = make_pvwatts_system_defaults()
     irrad_trans = pd.Series([np.nan, 900, 900])
     temp_cell = pd.Series([30, np.nan, 30])
     expected = pd.Series(np.array([   nan,    nan,  88.65]))
     out = system.pvwatts_dc(irrad_trans, temp_cell)
     assert_series_equal(expected, out)
 
+    system = make_pvwatts_system_kwargs()
+    expected = pd.Series(np.array([   nan,    nan,  87.3]))
+    out = system.pvwatts_dc(irrad_trans, temp_cell)
+    assert_series_equal(expected, out)
+
 
 def test_PVSystem_pvwatts_losses():
-    system = make_pvwatts_system()
+    system = make_pvwatts_system_defaults()
     expected = pd.Series([nan, 14.934904])
     age = pd.Series([nan, 1])
     out = system.pvwatts_losses(age=age)
@@ -812,8 +825,13 @@ def test_PVSystem_pvwatts_losses():
 
 
 def test_PVSystem_pvwatts_ac():
-    system = make_pvwatts_system()
+    system = make_pvwatts_system_defaults()
     pdc = pd.Series([np.nan, 50, 100])
-    expected = pd.Series(np.array([       nan,  47.608436,  95.      ]))
+    expected = pd.Series(np.array([       nan,  48.1095776694, 96.0]))
+    out = system.pvwatts_ac(pdc)
+    assert_series_equal(expected, out)
+
+    system = make_pvwatts_system_kwargs()
+    expected = pd.Series(np.array([       nan,  45.88025, 91.5515]))
     out = system.pvwatts_ac(pdc)
     assert_series_equal(expected, out)

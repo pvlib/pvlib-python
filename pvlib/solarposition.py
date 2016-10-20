@@ -238,7 +238,7 @@ def _spa_python_import(how):
 
 
 def spa_python(time, latitude, longitude,
-               altitude=0, pressure=101325, temperature=12, delta_t=None,
+               altitude=0, pressure=101325, temperature=12, delta_t=67.0,
                atmos_refract=None, how='numpy', numthreads=4, **kwargs):
     """
     Calculate the solar position using a python implementation of the
@@ -265,6 +265,8 @@ def spa_python(time, latitude, longitude,
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.
         The USNO has historical and forecasted delta_t [3].
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
@@ -340,7 +342,7 @@ def spa_python(time, latitude, longitude,
 
 
 def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
-                             delta_t=None,
+                             delta_t=67.0,
                              numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
@@ -362,6 +364,8 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.
         By default, use USNO historical data and predictions
     how : str, optional
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
@@ -782,7 +786,7 @@ def pyephem_earthsun_distance(time):
     return pd.Series(earthsun, index=time)
 
 
-def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
+def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     """
     Calculates the distance from the earth to the sun using the
     NREL SPA algorithm described in [1].
@@ -801,6 +805,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=None, numthreads=4):
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.
         By default, use USNO historical data and predictions
 
     numthreads : int, optional

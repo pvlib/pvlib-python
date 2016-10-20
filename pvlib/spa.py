@@ -1113,6 +1113,8 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.
         By default, use USNO historical data and predictions
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)

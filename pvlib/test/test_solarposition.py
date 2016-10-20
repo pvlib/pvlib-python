@@ -318,12 +318,12 @@ def test_get_solarposition_altitude(altitude, expected):
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
 
-@pytest.mark.xfail(raises=ValueError, reason = 'spa.calculate_deltat not implemented for numba yet')
 @pytest.mark.parametrize(
     "delta_t, method, expected", [
     (None, 'nrel_numpy', expected_solpos_multi()),
     (67.0, 'nrel_numpy', expected_solpos_multi()),
-    (None, 'nrel_numba', expected_solpos_multi()),
+    pytest.mark.xfail(raises=ValueError, reason = 'spa.calculate_deltat not implemented for numba yet')
+    ((None, 'nrel_numba', expected_solpos_multi())),
     (67.0, 'nrel_numba', expected_solpos_multi())
     ])
 def test_get_solarposition_deltat(delta_t, method, expected):

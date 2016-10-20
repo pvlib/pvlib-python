@@ -23,7 +23,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Adding a complete_irradiance method to the ModelChain to make it possible to calculate missing irradiation data from the existing columns [beta] (:issue:`239`)
-* Added calculate_deltat method to the spa module to calculate the time difference between terrestrial time and UT1. Specfiying a scalar is sufficient for most calculations. (:issue:`165`)
+* Added calculate_deltat method to the spa module to calculate the time difference between terrestrial time and UT1. Specifying a scalar is sufficient for most calculations. (:issue:`165`)
 
 Code Contributors
 ~~~~~~~~~~~~~~~~~

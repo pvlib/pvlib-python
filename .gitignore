@@ -52,10 +52,12 @@ coverage.xml
 # Translations
 *.mo
 
-# Mr Developer
+# IDE's (Mr Developer, pydev, pycharm...)
 .mr.developer.cfg
 .project
 .pydevproject
+.spyderproject
+.idea/
 
 # Rope
 .ropeproject

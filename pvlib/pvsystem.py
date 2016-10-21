@@ -144,10 +144,10 @@ class PVSystem(object):
         super(PVSystem, self).__init__(**kwargs)
 
     def __repr__(self):
-        return ('PVSystem with tilt:' + str(self.surface_tilt) +
-                ' and azimuth: ' + str(self.surface_azimuth) +
-                ' with Module: ' + str(self.module) +
-                ' and Inverter: ' + str(self.inverter))
+        attrs = ['surface_tilt', 'surface_azimuth', 'module', 'inverter',
+                 'albedo', 'racking_model']
+        return ('PVSystem: \n  ' + '\n  '.join(
+            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.

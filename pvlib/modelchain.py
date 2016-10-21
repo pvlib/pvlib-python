@@ -325,8 +325,7 @@ class ModelChain(object):
         attrs = [
             'orientation_strategy', 'clearsky_model', 'transposition_model',
             'solar_position_method', 'airmass_model', 'dc_model', 'ac_model',
-            'aoi_model', 'spectral_model', 'temp_model', 'losses_model'
-            ]
+            'aoi_model', 'spectral_model', 'temp_model', 'losses_model']
 
         def getmcattr(self, attr):
             """needed to avoid recursion in property lookups"""

@@ -528,7 +528,7 @@ class ModelChain(object):
         if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
             return self.sapm_spectral_loss
         else:
-            raise ValueError('could not infer temp model from ' +
+            raise ValueError('could not infer spectral model from ' +
                              'system.module_parameters')
 
     def first_solar_spectral_loss(self):

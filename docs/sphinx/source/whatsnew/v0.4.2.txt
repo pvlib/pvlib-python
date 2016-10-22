@@ -12,6 +12,8 @@ Bug fixes
 * Fixed typo in __repr__ method of ModelChain and in its regarding test. (commit: b691358b)
 * PVSystem.pvwatts_ac could not use the eta_inv_ref kwarg and
   PVSystem.pvwatts_dc could not use the temp_ref kwarg. Fixed. (:issue:`252`)
+* Fixed typo in ModelChain.infer_spectral_model error message. (:issue:`251`)
+
 
 API Changes
 ~~~~~~~~~~~

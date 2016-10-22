@@ -6,3 +6,6 @@ autodetect: yes
 ignore-paths:
     - ci
     - docs
+pep257:
+    disable:
+        - D202

@@ -6,6 +6,7 @@ pvlib-python
 [![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
 [![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=latest)](http://pvlib-python.readthedocs.org/en/latest/)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.50141.svg)](http://dx.doi.org/10.5281/zenodo.50141)
+[![Code Health](https://landscape.io/github/pvlib/pvlib-python/master/landscape.svg?style=flat)](https://landscape.io/github/pvlib/pvlib-python/master)
 
 
 PVLIB Python is a community supported tool that provides a set of

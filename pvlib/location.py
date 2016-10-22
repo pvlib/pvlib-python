@@ -88,7 +88,6 @@ class Location(object):
                 .format(self.name, self.latitude, self.longitude,
                         self.tz, self.altitude))
 
-
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):
         """
@@ -133,7 +132,6 @@ class Location(object):
 
         return new_object
 
-
     def get_solarposition(self, times, pressure=None, temperature=12,
                           **kwargs):
         """
@@ -165,7 +163,6 @@ class Location(object):
                                                pressure=pressure,
                                                temperature=temperature,
                                                **kwargs)
-
 
     def get_clearsky(self, times, model='ineichen', solar_position=None,
                      dni_extra=None, **kwargs):
@@ -238,7 +235,6 @@ class Location(object):
                              .format(model))
 
         return cs
-
 
     def get_airmass(self, times=None, solar_position=None,
                     model='kastenyoung1989'):

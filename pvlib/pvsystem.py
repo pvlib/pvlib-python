@@ -1109,9 +1109,6 @@ def retrieve_sam(name=None, path=None):
     Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
     '''
 
-    pvlib_path = os.path.dirname(os.path.abspath(__file__))
-    filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
-
     if name is not None:
         name = name.lower()
         data_path = os.path.join(
@@ -1263,7 +1260,6 @@ def sapm(effective_irradiance, temp_cell, module):
     T0 = 25
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
-    E0 = 1000
 
     Ee = effective_irradiance
 

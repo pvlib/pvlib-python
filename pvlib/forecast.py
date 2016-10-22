@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.irradiance import liujordan, extraradiation, disc, dirint
+from pvlib.irradiance import liujordan, extraradiation, disc
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
@@ -166,7 +166,7 @@ class ForecastModel(object):
         '''
 
         if (isinstance(self.longitude, list) and
-            isinstance(self.latitude, list)):
+                isinstance(self.latitude, list)):
             self.lbox = True
             # west, east, south, north
             self.query.lonlat_box(self.latitude[0], self.latitude[1],
@@ -678,7 +678,7 @@ class GFS(ForecastModel):
             'total_clouds',
             'low_clouds',
             'mid_clouds',
-            'high_clouds',]
+            'high_clouds']
 
         super(GFS, self).__init__(model_type, model, set_type)
 
@@ -763,7 +763,7 @@ class HRRR_ESRL(ForecastModel):
             'total_clouds',
             'low_clouds',
             'mid_clouds',
-            'high_clouds',]
+            'high_clouds']
 
         super(HRRR_ESRL, self).__init__(model_type, model, set_type)
 
@@ -844,7 +844,7 @@ class NAM(ForecastModel):
             'total_clouds',
             'low_clouds',
             'mid_clouds',
-            'high_clouds',]
+            'high_clouds']
 
         super(NAM, self).__init__(model_type, model, set_type)
 

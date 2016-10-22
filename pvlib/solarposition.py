@@ -9,8 +9,6 @@ Calculate the solar position using a variety of methods/packages.
 
 from __future__ import division
 import os
-import logging
-pvl_logger = logging.getLogger('pvlib')
 import datetime as dt
 try:
     from importlib import reload
@@ -20,13 +18,14 @@ except ImportError:
     except ImportError:
         pass
 
-import warnings
-
 import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere
-from pvlib.tools import localize_to_utc, datetime_to_djd, djd_to_datetime
+from pvlib.tools import datetime_to_djd, djd_to_datetime
+
+import logging
+pvl_logger = logging.getLogger('pvlib')
 
 
 def get_solarposition(time, latitude, longitude,
@@ -154,7 +153,8 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     ----------
     NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
 
-    USNO delta T: http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+    USNO delta T:
+    http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
 
     See also
     --------
@@ -184,7 +184,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
                                 hour=date.hour,
                                 minute=date.minute,
                                 second=date.second,
-                                timezone=0,  # must input localized or utc times
+                                timezone=0,  # must input localized or utc time
                                 latitude=latitude,
                                 longitude=longitude,
                                 elevation=altitude,
@@ -298,7 +298,8 @@ def spa_python(time, latitude, longitude,
     [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
     solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
 
-    [3] USNO delta T: http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+    [3] USNO delta T:
+    http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
 
     See also
     --------
@@ -328,9 +329,9 @@ def spa_python(time, latitude, longitude,
 
     delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 
-    app_zenith, zenith, app_elevation, elevation, azimuth, eot = spa.solar_position(
-        unixtime, lat, lon, elev, pressure, temperature, delta_t,
-        atmos_refract, numthreads)
+    app_zenith, zenith, app_elevation, elevation, azimuth, eot = \
+        spa.solar_position(unixtime, lat, lon, elev, pressure, temperature,
+                           delta_t, atmos_refract, numthreads)
 
     result = pd.DataFrame({'apparent_zenith': app_zenith, 'zenith': zenith,
                            'apparent_elevation': app_elevation,
@@ -814,7 +815,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     Returns
     -------
-    R : pd.Series
+    dist : pd.Series
         Earth-sun distance in AU.
 
     References
@@ -836,11 +837,11 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 
-    R = spa.earthsun_distance(unixtime, delta_t, numthreads)
+    dist = spa.earthsun_distance(unixtime, delta_t, numthreads)
 
-    R = pd.Series(R, index=time)
+    dist = pd.Series(dist, index=time)
 
-    return R
+    return dist
 
 
 def _calculate_simple_day_angle(dayofyear):

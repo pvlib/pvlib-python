@@ -422,26 +422,24 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         warn('Exceptionally low Pwat values replaced with 0.1 cm to prevent' +
              ' model divergence')
 
-
     # Warn user about Pwat data that is exceptionally high
     if np.max(pw) > 8:
         warn('Exceptionally high Pwat values. Check input data:' +
              ' model may diverge in this range')
 
-
     # *** AMa ***
     # Replace Extremely High AM with AM 10 to prevent model divergence
     # AM > 10 will only occur very close to sunset
     if np.max(airmass_absolute) > 10:
-      airmass_absolute = np.minimum(airmass_absolute, 10)
+        airmass_absolute = np.minimum(airmass_absolute, 10)
 
     # Warn user about AMa data that is exceptionally low
     if np.min(airmass_absolute) < 0.58:
-       warn('Exceptionally low air mass: ' +
-            'model not intended for extra-terrestrial use')
-       # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
-       # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
-       # population over 50,000.
+        warn('Exceptionally low air mass: ' +
+             'model not intended for extra-terrestrial use')
+        # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
+        # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
+        # population over 50,000.
 
     _coefficients = {}
     _coefficients['cdte'] = (
@@ -465,7 +463,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     coeff = coefficients
     ama = airmass_absolute
     modifier = (
-        coeff[0] + coeff[1]*ama  + coeff[2]*pw  + coeff[3]*np.sqrt(ama) +
+        coeff[0] + coeff[1]*ama + coeff[2]*pw + coeff[3]*np.sqrt(ama) +
         coeff[4]*np.sqrt(pw) + coeff[5]*ama/np.sqrt(pw))
 
     return modifier

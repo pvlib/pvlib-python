@@ -6,9 +6,12 @@ library. With great power comes great responsibility: users should take
 the time to read the source code for the module.
 """
 
+from functools import partial
+
 import pandas as pd
 
 from pvlib import solarposition, pvsystem, clearsky, atmosphere
+from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 
 
@@ -41,10 +44,10 @@ def basic_chain(times, latitude, longitude,
         Use decimal degrees notation.
 
     module_parameters : None, dict or Series
-        Module parameters as defined by the SAPM, CEC, or other.
+        Module parameters as defined by the SAPM.
 
     inverter_parameters : None, dict or Series
-        Inverter parameters as defined by the SAPM, CEC, or other.
+        Inverter parameters as defined by the CEC.
 
     irradiance : None or DataFrame
         If None, calculates clear sky data.
@@ -210,7 +213,10 @@ class ModelChain(object):
     """
     An experimental class that represents all of the modeling steps
     necessary for calculating power or energy for a PV system at a given
-    location.
+    location using the SAPM.
+
+    CEC module specifications and the single diode model are not yet
+    supported.
 
     Parameters
     ----------
@@ -317,9 +323,32 @@ class ModelChain(object):
                 airmass_data=self.airmass['airmass_absolute'])
         self.irradiance = irradiance
 
-        self.total_irrad = self.system.get_irradiance(
-            self.solar_position['apparent_zenith'],
-            self.solar_position['azimuth'],
+        # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
+        # have different method signatures, so use partial to handle
+        # the differences.
+        if isinstance(self.system, SingleAxisTracker):
+            self.tracking = self.system.singleaxis(
+                self.solar_position['apparent_zenith'],
+                self.solar_position['azimuth'])
+            self.tracking['surface_tilt'] = (
+                self.tracking['surface_tilt']
+                    .fillna(self.system.axis_tilt))
+            self.tracking['surface_azimuth'] = (
+                self.tracking['surface_azimuth']
+                    .fillna(self.system.axis_azimuth))
+            get_irradiance = partial(
+                self.system.get_irradiance,
+                surface_tilt=self.tracking['surface_tilt'],
+                surface_azimuth=self.tracking['surface_azimuth'],
+                solar_zenith=self.solar_position['apparent_zenith'],
+                solar_azimuth=self.solar_position['azimuth'])
+        else:
+            get_irradiance = partial(
+                self.system.get_irradiance,
+                self.solar_position['apparent_zenith'],
+                self.solar_position['azimuth'])
+
+        self.total_irrad = get_irradiance(
             self.irradiance['dni'],
             self.irradiance['ghi'],
             self.irradiance['dhi'],
@@ -341,6 +370,8 @@ class ModelChain(object):
                                    self.temps['temp_cell'],
                                    self.airmass['airmass_absolute'],
                                    self.aoi)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc)
 
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
 

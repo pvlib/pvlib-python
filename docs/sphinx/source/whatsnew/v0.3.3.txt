@@ -1,0 +1,31 @@
+.. _whatsnew_0330:
+
+v0.3.3 (May xx, 2016)
+-----------------------
+
+This is a minor release from 0.3.2.
+We recommend that all users upgrade to this version.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adds the Erbs model. (:issue:`2`)
+* Adds the ``scale_voltage_current_power`` function and ``PVSystem`` method
+  to support simple array modeling. (:issue:`159`)
+* Adds support for ``SingleAxisTracker`` objects in ``ModelChain``.
+  (:issue:`169`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fix another bug with the Appveyor continuous integration builds.
+  (:issue:`170`)
+* Clarify that ``ModelChain`` and ``basic_chain`` currently only
+  supports SAPM. (:issue:`177`)
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren

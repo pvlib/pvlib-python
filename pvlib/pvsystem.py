@@ -35,6 +35,15 @@ class PVSystem(object):
     See the :py:class:`LocalizedPVSystem` class for an object model that
     describes an installed PV system.
 
+    The class supports basic system topologies consisting of:
+
+        * `N` total modules arranged in series
+          (`series_modules=N`, `parallel_modules=1`).
+        * `M` total modules arranged in parallel
+          (`series_modules=1`, `parallel_modules=M`).
+        * `NxM` total modules arranged in `M` strings of `N` modules each
+          (`series_modules=N`, `parallel_modules=M`).
+
     The class is complementary to the module-level functions.
 
     The attributes should generally be things that don't change about
@@ -69,6 +78,12 @@ class PVSystem(object):
     module_parameters : None, dict or Series
         Module parameters as defined by the SAPM, CEC, or other.
 
+    series_modules: int or float
+        See system topology discussion above.
+
+    parallel_modules: int or float
+        See system topology discussion above.
+
     inverter : None, string
         The model name of the inverters.
         May be used to look up the inverter_parameters dictionary
@@ -95,7 +110,7 @@ class PVSystem(object):
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
                  module=None, module_parameters=None,
-                 series_modules=None, parallel_modules=None,
+                 series_modules=1, parallel_modules=1,
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
                  **kwargs):
@@ -362,6 +377,27 @@ class PVSystem(object):
         See pvsystem.snlinverter for details
         """
         return snlinverter(self.inverter_parameters, v_dc, p_dc)
+
+    def scale_voltage_current_power(self, data):
+        """
+        Scales the voltage, current, and power of the DataFrames
+        returned by :py:func:`singlediode` and :py:func:`sapm`
+        by `self.series_modules` and `self.parallel_modules`.
+
+        Parameters
+        ----------
+        data: DataFrame
+            Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
+            'i_sc', 'p_mp'`.
+
+        Returns
+        -------
+        scaled_data: DataFrame
+            A scaled copy of the input data.
+        """
+
+        return scale_voltage_current_power(data, voltage=self.series_modules,
+                                           current=self.parallel_modules)
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
@@ -940,7 +976,7 @@ def retrieve_sam(name=None, samfile=None):
 
     if name is not None:
         name = name.lower()
-        base_url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/'
+        base_url = 'https://sam.nrel.gov/sites/default/files/'
         if name == 'cecmod':
             url = base_url + 'sam-library-cec-modules-2015-6-30.csv'
         elif name == 'sandiamod':
@@ -1668,3 +1704,37 @@ def snlinverter(inverter, v_dc, p_dc):
         ac_power = ac_power.ix[0]
 
     return ac_power
+
+
+def scale_voltage_current_power(data, voltage=1, current=1):
+    """
+    Scales the voltage, current, and power of the DataFrames
+    returned by :py:func:`singlediode` and :py:func:`sapm`.
+
+    Parameters
+    ----------
+    data: DataFrame
+        Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
+        'i_sc', 'p_mp'`.
+    voltage: numeric
+        The amount by which to multiply the voltages.
+    current: numeric
+        The amount by which to multiply the currents.
+
+    Returns
+    -------
+    scaled_data: DataFrame
+        A scaled copy of the input data.
+        `'p_mp'` is scaled by `voltage * current`.
+    """
+
+    # as written, only works with a DataFrame
+    # could make it work with a dict, but it would be more verbose
+    data = data.copy()
+    voltages = ['v_mp', 'v_oc']
+    currents = ['i_mp' ,'i_x', 'i_xx', 'i_sc']
+    data[voltages] *= voltage
+    data[currents] *= current
+    data['p_mp'] *= voltage * current
+
+    return data

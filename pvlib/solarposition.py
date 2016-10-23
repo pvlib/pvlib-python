@@ -398,11 +398,11 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
         unixtime, lat, lon, delta_t, numthreads)
 
     # arrays are in seconds since epoch format, need to conver to timestamps
-    transit = pd.to_datetime(transit, unit='s', utc=True).tz_convert(
+    transit = pd.to_datetime(transit*1e9, unit='ns', utc=True).tz_convert(
         time.tz).tolist()
-    sunrise = pd.to_datetime(sunrise, unit='s', utc=True).tz_convert(
+    sunrise = pd.to_datetime(sunrise*1e9, unit='ns', utc=True).tz_convert(
         time.tz).tolist()
-    sunset = pd.to_datetime(sunset, unit='s', utc=True).tz_convert(
+    sunset = pd.to_datetime(sunset*1e9, unit='ns', utc=True).tz_convert(
         time.tz).tolist()
 
     result = pd.DataFrame({'transit': transit,

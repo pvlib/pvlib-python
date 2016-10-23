@@ -36,7 +36,7 @@ pvlib/spa_c_files/spa.h
 pvlib/spa_c_files/spa_tester.c
 
 # generated documentation
-# pvlib/sphinx/Docs/build/
+docs/sphinx/source/generated/
 
 # Installer logs
 pip-log.txt

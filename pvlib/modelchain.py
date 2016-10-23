@@ -609,22 +609,23 @@ class ModelChain(object):
 
     def complete_irradiance(self, times=None, weather=None):
         """
-        Determine the missing irradiation columns. Only two of the following
-        data columns (dni, ghi, dhi) are needed to calculate the missing data.
+        Determine the missing irradiation columns. Only two of the
+        following data columns (dni, ghi, dhi) are needed to calculate
+        the missing data.
 
-        This function is not safe at the moment. Results can be too high or
-        negative. Please contribute and help to improve this function on
-        https://github.com/pvlib/pvlib-python
+        This function is not safe at the moment. Results can be too high
+        or negative. Please contribute and help to improve this function
+        on https://github.com/pvlib/pvlib-python
 
         Parameters
         ----------
         times : DatetimeIndex
-            Times at which to evaluate the model. Can be None if attribute
-            `times` is already set.
+            Times at which to evaluate the model. Can be None if
+            attribute `times` is already set.
         weather : pandas.DataFrame
-            Table with at least two columns containing one of the following data
-            sets: dni, dhi, ghi. Can be None if attribute `weather` is already
-            set.
+            Table with at least two columns containing one of the
+            following data sets: dni, dhi, ghi. Can be None if attribute
+            `weather` is already set.
 
         Returns
         -------
@@ -635,8 +636,8 @@ class ModelChain(object):
         Examples
         --------
         This example does not work until the parameters `my_system`,
-        `my_location`, `my_datetime` and `my_weather` are not defined properly
-        but shows the basic idea how this method can be used.
+        `my_location`, `my_datetime` and `my_weather` are not defined
+        properly but shows the basic idea how this method can be used.
 
         >>> from pvlib.modelchain import ModelChain
 
@@ -686,17 +687,17 @@ class ModelChain(object):
         Parameters
         ----------
         times : DatetimeIndex
-            Times at which to evaluate the model. Can be None if attribute
-            `times` is already set.
+            Times at which to evaluate the model. Can be None if
+            attribute `times` is already set.
         irradiance : None or DataFrame
             This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame
-            If None, the weather attribute is used. If the weather attribute is
-            also None assumes air temperature is 20 C, wind speed is 0 m/s and
-            irradiation calculated from clear sky data.
-            Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
-            Do not pass incomplete irradiation data.
-            Use method
+            If None, the weather attribute is used. If the weather
+            attribute is also None assumes air temperature is 20 C, wind
+            speed is 0 m/s and irradiation calculated from clear sky
+            data. Column names must be 'wind_speed', 'temp_air', 'dni',
+            'ghi', 'dhi'. Do not pass incomplete irradiation data. Use
+            method
             :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
             instead.
 
@@ -704,7 +705,8 @@ class ModelChain(object):
         -------
         self
 
-        Assigns attributes: times, solar_position, airmass, total_irrad, aoi
+        Assigns attributes: times, solar_position, airmass, total_irrad,
+        aoi
         """
         if weather is not None:
             self.weather = weather
@@ -792,16 +794,15 @@ class ModelChain(object):
         Parameters
         ----------
         times : DatetimeIndex
-            Times at which to evaluate the model. Can be None if attribute
-            `times` is already set.
+            Times at which to evaluate the model. Can be None if
+            attribute `times` is already set.
         irradiance : None or DataFrame
             This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame
-            If None, assumes air temperature is 20 C, wind speed is 0 m/s and
-            irradiation calculated from clear sky data.
-            Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
-            Do not pass incomplete irradiation data.
-            Use method
+            If None, assumes air temperature is 20 C, wind speed is 0
+            m/s and irradiation calculated from clear sky data. Column
+            names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
+            Do not pass incomplete irradiation data. Use method
             :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
             instead.
 

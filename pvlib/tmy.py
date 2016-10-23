@@ -2,9 +2,6 @@
 Import functions for TMY2 and TMY3 data files.
 """
 
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import re
 import datetime
 import dateutil
@@ -15,9 +12,6 @@ except ImportError:
     from urllib.request import urlopen
 
 import pandas as pd
-import numpy as np
-
-from pvlib import tools
 
 
 def readtmy3(filename=None, coerce_year=None, recolumn=True):
@@ -164,7 +158,9 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
         try:
             filename = _interactive_load()
         except:
-            raise Exception('Interactive load failed. Tkinter not supported on this system. Try installing X-Quartz and reloading')
+            raise Exception('Interactive load failed. Tkinter not supported ' +
+                            'on this system. Try installing X-Quartz and ' +
+                            'reloading')
 
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
@@ -184,24 +180,24 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     meta['TZ'] = float(meta['TZ'])
     meta['USAF'] = int(meta['USAF'])
 
-    TMYData = pd.read_csv(
+    data = pd.read_csv(
         filename, header=1,
-        parse_dates={'datetime':['Date (MM/DD/YYYY)','Time (HH:MM)']},
+        parse_dates={'datetime': ['Date (MM/DD/YYYY)', 'Time (HH:MM)']},
         date_parser=lambda *x: _parsedate(*x, year=coerce_year),
         index_col='datetime')
 
     if recolumn:
-        _recolumn(TMYData) #rename to standard column names
+        _recolumn(data)  # rename to standard column names
 
-    TMYData = TMYData.tz_localize(int(meta['TZ']*3600))
+    data = data.tz_localize(int(meta['TZ']*3600))
 
-    return TMYData, meta
+    return data, meta
 
 
 def _interactive_load():
     import Tkinter
     from tkFileDialog import askopenfilename
-    Tkinter.Tk().withdraw() #Start interactive file input
+    Tkinter.Tk().withdraw()  # Start interactive file input
     return askopenfilename()
 
 
@@ -233,20 +229,25 @@ def _recolumn(tmy3_dataframe, inplace=True):
     """
     raw_columns = 'ETR (W/m^2),ETRN (W/m^2),GHI (W/m^2),GHI source,GHI uncert (%),DNI (W/m^2),DNI source,DNI uncert (%),DHI (W/m^2),DHI source,DHI uncert (%),GH illum (lx),GH illum source,Global illum uncert (%),DN illum (lx),DN illum source,DN illum uncert (%),DH illum (lx),DH illum source,DH illum uncert (%),Zenith lum (cd/m^2),Zenith lum source,Zenith lum uncert (%),TotCld (tenths),TotCld source,TotCld uncert (code),OpqCld (tenths),OpqCld source,OpqCld uncert (code),Dry-bulb (C),Dry-bulb source,Dry-bulb uncert (code),Dew-point (C),Dew-point source,Dew-point uncert (code),RHum (%),RHum source,RHum uncert (code),Pressure (mbar),Pressure source,Pressure uncert (code),Wdir (degrees),Wdir source,Wdir uncert (code),Wspd (m/s),Wspd source,Wspd uncert (code),Hvis (m),Hvis source,Hvis uncert (code),CeilHgt (m),CeilHgt source,CeilHgt uncert (code),Pwat (cm),Pwat source,Pwat uncert (code),AOD (unitless),AOD source,AOD uncert (code),Alb (unitless),Alb source,Alb uncert (code),Lprecip depth (mm),Lprecip quantity (hr),Lprecip source,Lprecip uncert (code),PresWth (METAR code),PresWth source,PresWth uncert (code)'
 
-    new_columns = ['ETR','ETRN','GHI','GHISource','GHIUncertainty',
-    'DNI','DNISource','DNIUncertainty','DHI','DHISource','DHIUncertainty',
-    'GHillum','GHillumSource','GHillumUncertainty','DNillum','DNillumSource',
-    'DNillumUncertainty','DHillum','DHillumSource','DHillumUncertainty',
-    'Zenithlum','ZenithlumSource','ZenithlumUncertainty','TotCld','TotCldSource',
-    'TotCldUnertainty','OpqCld','OpqCldSource','OpqCldUncertainty','DryBulb',
-    'DryBulbSource','DryBulbUncertainty','DewPoint','DewPointSource',
-    'DewPointUncertainty','RHum','RHumSource','RHumUncertainty','Pressure',
-    'PressureSource','PressureUncertainty','Wdir','WdirSource','WdirUncertainty',
-    'Wspd','WspdSource','WspdUncertainty','Hvis','HvisSource','HvisUncertainty',
-    'CeilHgt','CeilHgtSource','CeilHgtUncertainty','Pwat','PwatSource',
-    'PwatUncertainty','AOD','AODSource','AODUncertainty','Alb','AlbSource',
-    'AlbUncertainty','Lprecipdepth','Lprecipquantity','LprecipSource',
-    'LprecipUncertainty','PresWth','PresWthSource','PresWthUncertainty']
+    new_columns = [
+        'ETR', 'ETRN', 'GHI', 'GHISource', 'GHIUncertainty',
+        'DNI', 'DNISource', 'DNIUncertainty', 'DHI', 'DHISource',
+        'DHIUncertainty', 'GHillum', 'GHillumSource', 'GHillumUncertainty',
+        'DNillum', 'DNillumSource', 'DNillumUncertainty', 'DHillum',
+        'DHillumSource', 'DHillumUncertainty', 'Zenithlum',
+        'ZenithlumSource', 'ZenithlumUncertainty', 'TotCld', 'TotCldSource',
+        'TotCldUnertainty', 'OpqCld', 'OpqCldSource', 'OpqCldUncertainty',
+        'DryBulb', 'DryBulbSource', 'DryBulbUncertainty', 'DewPoint',
+        'DewPointSource', 'DewPointUncertainty', 'RHum', 'RHumSource',
+        'RHumUncertainty', 'Pressure', 'PressureSource',
+        'PressureUncertainty', 'Wdir', 'WdirSource', 'WdirUncertainty',
+        'Wspd', 'WspdSource', 'WspdUncertainty', 'Hvis', 'HvisSource',
+        'HvisUncertainty', 'CeilHgt', 'CeilHgtSource', 'CeilHgtUncertainty',
+        'Pwat', 'PwatSource', 'PwatUncertainty', 'AOD', 'AODSource',
+        'AODUncertainty', 'Alb', 'AlbSource', 'AlbUncertainty',
+        'Lprecipdepth', 'Lprecipquantity', 'LprecipSource',
+        'LprecipUncertainty', 'PresWth', 'PresWthSource',
+        'PresWthUncertainty']
 
     mapping = dict(zip(raw_columns.split(','), new_columns))
 
@@ -395,7 +396,7 @@ def readtmy2(filename):
     columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'
     hdr_columns = 'WBAN,City,State,TZ,latitude,longitude,altitude'
 
-    TMY2, TMY2_meta = _readTMY2(string, columns, hdr_columns, filename)
+    TMY2, TMY2_meta = _read_tmy2(string, columns, hdr_columns, filename)
 
     return TMY2, TMY2_meta
 
@@ -405,7 +406,6 @@ def _parsemeta_tmy2(columns, line):
 
     Parameters
     ----------
-
     columns : string
         String of column headings in the header
 
@@ -414,86 +414,91 @@ def _parsemeta_tmy2(columns, line):
 
     Returns
     -------
-
     meta : Dict of metadata contained in the header string
-
     """
-    rawmeta=" ".join(line.split()).split(" ") #Remove sduplicated spaces, and read in each element
-    meta=rawmeta[:3] #take the first string entries
+    # Remove duplicated spaces, and read in each element
+    rawmeta = " ".join(line.split()).split(" ")
+    meta = rawmeta[:3]  # take the first string entries
     meta.append(int(rawmeta[3]))
-    longitude=(float(rawmeta[5])+float(rawmeta[6])/60)*(2*(rawmeta[4]=='N')-1)#Convert to decimal notation with S negative
-    latitude=(float(rawmeta[8])+float(rawmeta[9])/60)*(2*(rawmeta[7]=='E')-1) #Convert to decimal notation with W negative
+    # Convert to decimal notation with S negative
+    longitude = (
+        float(rawmeta[5]) + float(rawmeta[6])/60) * (2*(rawmeta[4] == 'N') - 1)
+    # Convert to decimal notation with W negative
+    latitude = (
+        float(rawmeta[8]) + float(rawmeta[9])/60) * (2*(rawmeta[7] == 'E') - 1)
     meta.append(longitude)
     meta.append(latitude)
     meta.append(float(rawmeta[10]))
 
-    meta_dict = dict(zip(columns.split(','),meta)) #Creates a dictionary of metadata
-    pvl_logger.debug('meta: %s', meta_dict)
-
+    # Creates a dictionary of metadata
+    meta_dict = dict(zip(columns.split(','), meta))
     return meta_dict
 
 
-def _readTMY2(string, columns, hdr_columns, fname):
-    head=1
-    date=[]
+def _read_tmy2(string, columns, hdr_columns, fname):
+    head = 1
+    date = []
     with open(fname) as infile:
-        fline=0
+        fline = 0
         for line in infile:
-            #Skip the header
-            if head!=0:
-                meta = _parsemeta_tmy2(hdr_columns,line)
-                head-=1
+            # Skip the header
+            if head != 0:
+                meta = _parsemeta_tmy2(hdr_columns, line)
+                head -= 1
                 continue
-            #Reset the cursor and array for each line
-            cursor=1
-            part=[]
+            # Reset the cursor and array for each line
+            cursor = 1
+            part = []
             for marker in string.split('%'):
-                #Skip the first line of markers
-                if marker=='':
+                # Skip the first line of markers
+                if marker == '':
                     continue
 
-                #Read the next increment from the marker list
-                increment=int(re.findall('\d+',marker)[0])
+                # Read the next increment from the marker list
+                increment = int(re.findall('\d+', marker)[0])
 
-                #Extract the value from the line in the file
-                val=(line[cursor:cursor+increment])
-                #increment the cursor by the length of the read value
-                cursor=cursor+increment
-
+                # Extract the value from the line in the file
+                val = (line[cursor:cursor+increment])
+                # increment the cursor by the length of the read value
+                cursor = cursor+increment
 
                 # Determine the datatype from the marker string
-                if marker[-1]=='d':
+                if marker[-1] == 'd':
                     try:
-                        val=float(val)
+                        val = float(val)
                     except:
-                        raise Exception('WARNING: In'+__name__+' Read value is not an integer" '+val+' " ')
-                elif marker[-1]=='s':
+                        raise Exception('WARNING: In' + fname +
+                                        ' Read value is not an integer " ' +
+                                        val + ' " ')
+                elif marker[-1] == 's':
                     try:
-                        val=str(val)
+                        val = str(val)
                     except:
-                        raise Exception('WARNING: In'+__name__+' Read value is not a string" '+val+' " ')
+                        raise Exception('WARNING: In' + fname +
+                                        ' Read value is not a string" ' +
+                                        val + ' " ')
                 else:
-                    raise Exception('WARNING: In'+__name__+'Improper column DataFrameure " %'+marker+' " ')
+                    raise Exception('WARNING: In' + __name__ +
+                                    'Improper column DataFrame " %' +
+                                    marker + ' " ')
 
                 part.append(val)
 
-            if fline==0:
-                axes=[part]
-                year=part[0]+1900
-                fline=1
+            if fline == 0:
+                axes = [part]
+                year = part[0]+1900
+                fline = 1
             else:
                 axes.append(part)
 
-            #Create datetime objects from read data
+            # Create datetime objects from read data
             date.append(datetime.datetime(year=int(year),
                                           month=int(part[1]),
                                           day=int(part[2]),
                                           hour=int(part[3])-1))
 
-    TMYData = pd.DataFrame(
+    data = pd.DataFrame(
         axes, index=date,
         columns=columns.split(',')).tz_localize(int(meta['TZ']*3600))
 
-    return TMYData, meta
-
-
+    return data, meta

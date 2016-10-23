@@ -2,9 +2,6 @@
 Collection of functions used in pvlib_python
 """
 
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import datetime as dt
 
 import numpy as np
@@ -112,11 +109,9 @@ def localize_to_utc(time, location):
     else:
         try:
             time_utc = time.tz_convert('UTC')
-            pvl_logger.debug('tz_convert to UTC')
         except TypeError:
             time_utc = time.tz_localize(location.tz).tz_convert('UTC')
-            pvl_logger.debug('tz_localize to %s and then tz_convert to UTC',
-                             location.tz)
+
     return time_utc
 
 

@@ -1,6 +1,10 @@
-name: pvlib
+name: pvlibdocs
+channels:
+    - defaults
+#    - conda-forge  # needed for siphon, but causes path too short problems on rtd
 dependencies:
     - python=2.7
+    - mock  # needed for local python 2.7 builds
     - numpy
     - scipy
     - pandas
@@ -8,7 +12,11 @@ dependencies:
     - ephem
     - numba
     - ipython=4.0.1
-    - sphinx
+    - ipywidgets
     - numpydoc
     - matplotlib
     - seaborn
+#    - siphon
+    - sphinx=1.3.5  # same versions as rtd
+    - sphinx_rtd_theme=0.1.7
+    - docutils=0.12

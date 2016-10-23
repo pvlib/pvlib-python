@@ -80,10 +80,32 @@ commits to the main repo. Exceptions may be made for extremely minor
 changes, such as fixing documentation typos.
 
 
+Testing
+-------
+
+pvlib's unit tests can easily be run by executing ``py.test`` on the
+pvlib directory:
+
+``py.test pvlib``
+
+or, for a single module:
+
+``py.test pvlib/test/test_clearsky.py``
+
+While copy/paste coding should generally be avoided, it's a great way
+to learn how to write unit tests!
+
+Unit test code should be placed in the corresponding test module in the
+pvlib/test directory.
+
+Developers **must** include comprehensive tests for any additions or
+modifications to pvlib.
+
+
 This documentation
 ------------------
+
 If this documentation is unclear, help us improve it! Consider looking
-at `IPython <https://github.com/ipython/ipython/wiki/Dev:-Index>`_,
-`pandas <https://github.com/pydata/pandas/wiki>`_, and
-`Sandia-Labs/PVLIB_Python#33 <https://github.com/Sandia-Labs/
-PVLIB_Python/issues/33>`_ for inspiration.
+at the `pandas
+documentation <http://pandas.pydata.org/pandas-docs/version/0.18.1/
+contributing.html>`_ for inspiration.

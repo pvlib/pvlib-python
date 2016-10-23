@@ -238,8 +238,8 @@ def _spa_python_import(how):
 
 
 def spa_python(time, latitude, longitude,
-               altitude=0, pressure=101325, temperature=12, delta_t=None,
-               atmos_refract=None, how='numpy', numthreads=4):
+               altitude=0, pressure=101325, temperature=12, delta_t=67.0,
+               atmos_refract=None, how='numpy', numthreads=4, **kwargs):
     """
     Calculate the solar position using a python implementation of the
     NREL SPA algorithm described in [1].
@@ -261,7 +261,12 @@ def spa_python(time, latitude, longitude,
     temperature : int or float, optional
         avg. yearly air temperature in degrees C.
     delta_t : float, optional
+        If delta_t is None, uses spa.calculate_deltat
+        using time.year and time.month from pandas.DatetimeIndex.
+        For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.
         The USNO has historical and forecasted delta_t [3].
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
@@ -308,7 +313,7 @@ def spa_python(time, latitude, longitude,
     lon = longitude
     elev = altitude
     pressure = pressure / 100  # pressure must be in millibars for calculation
-    delta_t = delta_t or 67.0
+
     atmos_refract = atmos_refract or 0.5667
 
     if not isinstance(time, pd.DatetimeIndex):
@@ -317,9 +322,11 @@ def spa_python(time, latitude, longitude,
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = time.astype(np.int64)/10**9
+    unixtime = np.array(time.astype(np.int64)/10**9)
 
     spa = _spa_python_import(how)
+
+    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 
     app_zenith, zenith, app_elevation, elevation, azimuth, eot = spa.solar_position(
         unixtime, lat, lon, elev, pressure, temperature, delta_t,
@@ -335,7 +342,7 @@ def spa_python(time, latitude, longitude,
 
 
 def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
-                             delta_t=None,
+                             delta_t=67.0,
                              numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
@@ -353,7 +360,12 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
     latitude : float
     longitude : float
     delta_t : float, optional
+        If delta_t is None, uses spa.calculate_deltat
+        using time.year and time.month from pandas.DatetimeIndex.
+        For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.
         By default, use USNO historical data and predictions
     how : str, optional
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
@@ -380,7 +392,6 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
 
     lat = latitude
     lon = longitude
-    delta_t = delta_t or 67.0
 
     if not isinstance(time, pd.DatetimeIndex):
         try:
@@ -390,9 +401,11 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
 
     # must convert to midnight UTC on day of interest
     utcday = pd.DatetimeIndex(time.date).tz_localize('UTC')
-    unixtime = utcday.astype(np.int64)/10**9
+    unixtime = np.array(utcday.astype(np.int64)/10**9)
 
     spa = _spa_python_import(how)
+
+    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
         unixtime, lat, lon, delta_t, numthreads)
@@ -771,3 +784,75 @@ def pyephem_earthsun_distance(time):
         earthsun.append(sun.earth_distance)
 
     return pd.Series(earthsun, index=time)
+
+
+def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
+    """
+    Calculates the distance from the earth to the sun using the
+    NREL SPA algorithm described in [1].
+
+    Parameters
+    ----------
+    time : pd.DatetimeIndex
+
+    how : str, optional
+        Options are 'numpy' or 'numba'. If numba >= 0.17.0
+        is installed, how='numba' will compile the spa functions
+        to machine code and run them multithreaded.
+
+    delta_t : float, optional
+        If delta_t is None, uses spa.calculate_deltat
+        using time.year and time.month from pandas.DatetimeIndex.
+        For most simulations specifing delta_t is sufficient.
+        Difference between terrestrial time and UT1.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.
+        By default, use USNO historical data and predictions
+
+    numthreads : int, optional
+        Number of threads to use if how == 'numba'.
+
+    Returns
+    -------
+    R : pd.Series
+        Earth-sun distance in AU.
+
+    References
+    ----------
+    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+    USA, http://www.nrel.gov.
+    """
+
+    if not isinstance(time, pd.DatetimeIndex):
+        try:
+            time = pd.DatetimeIndex(time)
+        except (TypeError, ValueError):
+            time = pd.DatetimeIndex([time, ])
+
+    unixtime = np.array(time.astype(np.int64)/10**9)
+
+    spa = _spa_python_import(how)
+
+    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
+
+    R = spa.earthsun_distance(unixtime, delta_t, numthreads)
+
+    R = pd.Series(R, index=time)
+
+    return R
+
+
+def _calculate_simple_day_angle(dayofyear):
+    """
+    Calculates the day angle for the Earth's orbit around the Sun.
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    day_angle : numeric
+    """
+    return (2. * np.pi / 365.) * (dayofyear - 1)

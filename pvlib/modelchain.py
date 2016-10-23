@@ -7,10 +7,11 @@ the time to read the source code for the module.
 """
 
 from functools import partial
-
+import logging
+import warnings
 import pandas as pd
 
-from pvlib import solarposition, pvsystem, clearsky, atmosphere
+from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 
@@ -72,7 +73,8 @@ def basic_chain(times, latitude, longitude,
     orientation_strategy : None or str
         The strategy for aligning the modules.
         If not None, sets the ``surface_azimuth`` and ``surface_tilt``
-        properties of the ``system``.
+        properties of the ``system``. Allowed strategies include 'flat',
+        'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
     transposition_model : str
         Passed to system.get_irradiance.
@@ -141,13 +143,15 @@ def basic_chain(times, latitude, longitude,
                                solar_position['azimuth'])
 
     if irradiance is None:
+        linke_turbidity = clearsky.lookup_linke_turbidity(
+            solar_position.index, latitude, longitude)
         irradiance = clearsky.ineichen(
-            solar_position.index,
-            latitude,
-            longitude,
-            zenith_data=solar_position['apparent_zenith'],
-            airmass_data=airmass,
-            altitude=altitude)
+            solar_position['apparent_zenith'],
+            airmass,
+            linke_turbidity,
+            altitude=altitude,
+            dni_extra=dni_extra
+            )
 
     total_irrad = pvlib.irradiance.total_irrad(
         surface_tilt,
@@ -167,13 +171,14 @@ def basic_chain(times, latitude, longitude,
                                    weather['wind_speed'],
                                    weather['temp_air'])
 
-    dc = pvsystem.sapm(module_parameters, total_irrad['poa_direct'],
-                       total_irrad['poa_diffuse'],
-                       temps['temp_cell'],
-                       airmass,
-                       aoi)
+    effective_irradiance = pvsystem.sapm_effective_irradiance(
+        total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,
+        module_parameters)
 
-    ac = pvsystem.snlinverter(inverter_parameters, dc['v_mp'], dc['p_mp'])
+    dc = pvsystem.sapm(effective_irradiance, temps['temp_cell'],
+                       module_parameters)
+
+    ac = pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter_parameters)
 
     return dc, ac
 
@@ -232,7 +237,7 @@ class ModelChain(object):
         The strategy for aligning the modules. If not None, sets the
         ``surface_azimuth`` and ``surface_tilt`` properties of the
         ``system``. Allowed strategies include 'flat',
-        'south_at_latitude_tilt'.
+        'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
     clearsky_model : str
         Passed to location.get_clearsky.
@@ -246,9 +251,43 @@ class ModelChain(object):
     airmass_model : str
         Passed to location.get_airmass.
 
+    dc_model: None, str, or function
+        If None, the model will be inferred from the contents of
+        system.module_parameters. Valid strings are 'sapm',
+        'singlediode', 'pvwatts'. The ModelChain instance will be passed
+        as the first argument to a user-defined function.
+
+    ac_model: None, str, or function
+        If None, the model will be inferred from the contents of
+        system.inverter_parameters and system.module_parameters. Valid
+        strings are 'snlinverter', 'adrinverter' (not implemented),
+        'pvwatts'. The ModelChain instance will be passed as the first
+        argument to a user-defined function.
+
+    aoi_model: None, str, or function
+        If None, the model will be inferred from the contents of
+        system.module_parameters. Valid strings are 'physical',
+        'ashrae', 'sapm', 'no_loss'. The ModelChain instance will be
+        passed as the first argument to a user-defined function.
+
+    spectral_model: None, str, or function
+        If None, the model will be inferred from the contents of
+        system.module_parameters. Valid strings are 'sapm',
+        'first_solar' (not implemented), 'no_loss'. The ModelChain
+        instance will be passed as the first argument to a user-defined
+        function.
+
+    temp_model: str or function
+        Valid strings are 'sapm'. The ModelChain instance will be passed
+        as the first argument to a user-defined function.
+
+    losses_model: str or function
+        Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
+        will be passed as the first argument to a user-defined function.
+
     **kwargs
-        Arbitrary keyword arguments.
-        Included for compatibility, but not used.
+        Arbitrary keyword arguments. Included for compatibility, but not
+        used.
     """
 
     def __init__(self, system, location,
@@ -257,6 +296,9 @@ class ModelChain(object):
                  transposition_model='haydavies',
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
+                 dc_model=None, ac_model=None, aoi_model=None,
+                 spectral_model=None, temp_model='sapm',
+                 losses_model='no_loss',
                  **kwargs):
 
         self.system = system
@@ -266,8 +308,26 @@ class ModelChain(object):
         self.solar_position_method = solar_position_method
         self.airmass_model = airmass_model
 
-        # calls setter
+        # calls setters
+        self.dc_model = dc_model
+        self.ac_model = ac_model
+        self.aoi_model = aoi_model
+        self.spectral_model = spectral_model
+        self.temp_model = temp_model
+        self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
+
+        self.weather = None
+        self.times = None
+        self.solar_position = None
+
+    def __repr__(self):
+        return ('ModelChain for: ' + str(self.system) +
+                ' orientation_strategy: ' + str(self.orientation_strategy) +
+                ' clearsky_model: ' + str(self.clearsky_model) +
+                ' transposition_model: ' + str(self.transposition_model) +
+                ' solar_position_method: ' + str(self.solar_position_method) +
+                ' airmass_model: ' + str(self.airmass_model))
 
     @property
     def orientation_strategy(self):
@@ -284,44 +344,408 @@ class ModelChain(object):
 
         self._orientation_strategy = strategy
 
-    def run_model(self, times, irradiance=None, weather=None):
+    @property
+    def dc_model(self):
+        return self._dc_model
+
+    @dc_model.setter
+    def dc_model(self, model):
+        if model is None:
+            self._dc_model = self.infer_dc_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'sapm':
+                self._dc_model = self.sapm
+            elif model == 'singlediode':
+                self._dc_model = self.singlediode
+            elif model == 'pvwatts':
+                self._dc_model = self.pvwatts_dc
+            else:
+                raise ValueError(model + ' is not a valid DC power model')
+        else:
+            self._dc_model = partial(model, self)
+
+    def infer_dc_model(self):
+        params = set(self.system.module_parameters.keys())
+        if set(['A0', 'A1', 'C7']) <= params:
+            return self.sapm
+        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
+            return self.singlediode
+        elif set(['pdc0', 'gamma_pdc']) <= params:
+            return self.pvwatts_dc
+        else:
+            raise ValueError('could not infer DC model from ' +
+                             'system.module_parameters')
+
+    def sapm(self):
+        self.dc = self.system.sapm(self.effective_irradiance/1000.,
+                                   self.temps['temp_cell'])
+
+        self.dc = self.system.scale_voltage_current_power(self.dc)
+
+        return self
+
+    def singlediode(self):
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_desoto(self.effective_irradiance,
+                                          self.temps['temp_cell']))
+
+        self.desoto = (photocurrent, saturation_current, resistance_series,
+                       resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
+
+        return self
+
+    def pvwatts_dc(self):
+        self.dc = self.system.pvwatts_dc(self.effective_irradiance,
+                                         self.temps['temp_cell'])
+        return self
+
+    @property
+    def ac_model(self):
+        return self._ac_model
+
+    @ac_model.setter
+    def ac_model(self, model):
+        if model is None:
+            self._ac_model = self.infer_ac_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'snlinverter':
+                self._ac_model = self.snlinverter
+            elif model == 'adrinverter':
+                raise NotImplementedError
+            elif model == 'pvwatts':
+                self._ac_model = self.pvwatts_inverter
+            else:
+                raise ValueError(model + ' is not a valid AC power model')
+        else:
+            self._ac_model = partial(model, self)
+
+    def infer_ac_model(self):
+        inverter_params = set(self.system.inverter_parameters.keys())
+        module_params = set(self.system.module_parameters.keys())
+        if set(['C0', 'C1', 'C2']) <= inverter_params:
+            return self.snlinverter
+        elif set(['pdc0']) <= module_params:
+            return self.pvwatts_inverter
+        else:
+            raise ValueError('could not infer AC model from ' +
+                             'system.inverter_parameters')
+
+    def snlinverter(self):
+        self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
+        return self
+
+    def adrinverter(self):
+        raise NotImplementedError
+        return self
+
+    def pvwatts_inverter(self):
+        self.ac = self.system.pvwatts_ac(self.dc).fillna(0)
+        return self
+
+    @property
+    def aoi_model(self):
+        return self._aoi_model
+
+    @aoi_model.setter
+    def aoi_model(self, model):
+        if model is None:
+            self._aoi_model = self.infer_aoi_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'ashrae':
+                self._aoi_model = self.ashrae_aoi_loss
+            elif model == 'physical':
+                self._aoi_model = self.physical_aoi_loss
+            elif model == 'sapm':
+                self._aoi_model = self.sapm_aoi_loss
+            elif model == 'no_loss':
+                self._aoi_model = self.no_aoi_loss
+            else:
+                raise ValueError(model + ' is not a valid aoi loss model')
+        else:
+            self._aoi_model = partial(model, self)
+
+    def infer_aoi_model(self):
+        params = set(self.system.module_parameters.keys())
+        if set(['K', 'L', 'n']) <= params:
+            return self.physical_aoi_loss
+        elif set(['B5', 'B4', 'B3', 'B2', 'B1', 'B0']) <= params:
+            return self.sapm_aoi_loss
+        elif set(['b']) <= params:
+            return self.ashrae_aoi_loss
+        else:
+            raise ValueError('could not infer AOI model from ' +
+                             'system.module_parameters')
+
+    def ashrae_aoi_loss(self):
+        self.aoi_modifier = self.system.ashraeiam(self.aoi)
+        return self
+
+    def physical_aoi_loss(self):
+        self.aoi_modifier = self.system.physicaliam(self.aoi)
+        return self
+
+    def sapm_aoi_loss(self):
+        self.aoi_modifier = self.system.sapm_aoi_loss(self.aoi)
+        return self
+
+    def no_aoi_loss(self):
+        self.aoi_modifier = 1
+        return self
+
+    @property
+    def spectral_model(self):
+        return self._spectral_model
+
+    @spectral_model.setter
+    def spectral_model(self, model):
+        if model is None:
+            self._spectral_model = self.infer_spectral_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'first_solar':
+                raise NotImplementedError
+            elif model == 'sapm':
+                self._spectral_model = self.sapm_spectral_loss
+            elif model == 'no_loss':
+                self._spectral_model = self.no_spectral_loss
+            else:
+                raise ValueError(model + ' is not a valid spectral loss model')
+        else:
+            self._spectral_model = partial(model, self)
+
+    def infer_spectral_model(self):
+        params = set(self.system.module_parameters.keys())
+        if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
+            return self.sapm_spectral_loss
+        else:
+            raise ValueError('could not infer spectral model from ' +
+                             'system.module_parameters')
+
+    def first_solar_spectral_loss(self):
+        raise NotImplementedError
+
+    def sapm_spectral_loss(self):
+        self.spectral_modifier = self.system.sapm_spectral_loss(
+            self.airmass['airmass_absolute'])
+        return self
+
+    def no_spectral_loss(self):
+        self.spectral_modifier = 1
+        return self
+
+    @property
+    def temp_model(self):
+        return self._temp_model
+
+    @temp_model.setter
+    def temp_model(self, model):
+        if model is None:
+            self._temp_model = self.infer_temp_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'sapm':
+                self._temp_model = self.sapm_temp
+            else:
+                raise ValueError(model + ' is not a valid temp model')
+        else:
+            self._temp_model = partial(model, self)
+
+    def infer_temp_model(self):
+        raise NotImplementedError
+
+    def sapm_temp(self):
+        self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
+                                               self.weather['wind_speed'],
+                                               self.weather['temp_air'])
+        return self
+
+    @property
+    def losses_model(self):
+        return self._losses_model
+
+    @losses_model.setter
+    def losses_model(self, model):
+        if model is None:
+            self._losses_model = self.infer_losses_model()
+        elif isinstance(model, str):
+            model = model.lower()
+            if model == 'pvwatts':
+                self._losses_model = self.pvwatts_losses
+            elif model == 'no_loss':
+                self._losses_model = self.no_extra_losses
+            else:
+                raise ValueError(model + ' is not a valid losses model')
+        else:
+            self._losses_model = partial(model, self)
+
+    def infer_losses_model(self):
+        raise NotImplementedError
+
+    def pvwatts_losses(self):
+        self.losses = (100 - self.system.pvwatts_losses()) / 100.
+        self.ac *= self.losses
+        return self
+
+    def no_extra_losses(self):
+        self.losses = 1
+        return self
+
+    def effective_irradiance_model(self):
+        fd = self.system.module_parameters.get('FD', 1.)
+        self.effective_irradiance = self.spectral_modifier * (
+            self.total_irrad['poa_direct']*self.aoi_modifier +
+            fd*self.total_irrad['poa_diffuse'])
+        return self
+
+    def complete_irradiance(self, times=None, weather=None):
         """
-        Run the model.
+        Determine the missing irradiation columns. Only two of the following
+        data columns (dni, ghi, dhi) are needed to calculate the missing data.
+
+        This function is not safe at the moment. Results can be too high or
+        negative. Please contribute and help to improve this function on
+        https://github.com/pvlib/pvlib-python
 
         Parameters
         ----------
         times : DatetimeIndex
-            Times at which to evaluate the model.
-
-        irradiance : None or DataFrame
-            If None, calculates clear sky data.
-            Columns must be 'dni', 'ghi', 'dhi'.
-
-        weather : None or DataFrame
-            If None, assumes air temperature is 20 C and
-            wind speed is 0 m/s.
-            Columns must be 'wind_speed', 'temp_air'.
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
+        weather : pandas.DataFrame
+            Table with at least two columns containing one of the following data
+            sets: dni, dhi, ghi. Can be None if attribute `weather` is already
+            set.
 
         Returns
         -------
         self
 
-        Assigns attributes: times, solar_position, airmass, irradiance,
-        total_irrad, weather, temps, aoi, dc, ac
+        Assigns attributes: times, weather
+
+        Examples
+        --------
+        This example does not work until the parameters `my_system`,
+        `my_location`, `my_datetime` and `my_weather` are not defined properly
+        but shows the basic idea how this method can be used.
+
+        >>> from pvlib.modelchain import ModelChain
+
+        >>> # my_weather containing 'dhi' and 'ghi'.
+        >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
+        >>> mc.complete_irradiance(my_datetime, my_weather)  # doctest: +SKIP
+        >>> mc.run_model()  # doctest: +SKIP
+
+        >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
+        >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
+        >>> mc.run_model(my_datetime, my_weather)  # doctest: +SKIP
         """
-        self.times = times
+        if weather is not None:
+            self.weather = weather
+        if times is not None:
+            self.times = times
+        self.solar_position = self.location.get_solarposition(self.times)
+        icolumns = set(self.weather.columns)
+        wrn_txt = ("This function is not safe at the moment.\n" +
+                   "Results can be too high or negative.\n" +
+                   "Help to improve this function on github:\n" +
+                   "https://github.com/pvlib/pvlib-python \n")
+        warnings.warn(wrn_txt, UserWarning)
+        if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
+            logging.debug('Estimate dni from ghi and dhi')
+            self.weather.loc[:, 'dni'] = (
+                (self.weather.loc[:, 'ghi'] - self.weather.loc[:, 'dhi']) /
+                tools.cosd(self.solar_position.loc[:, 'zenith']))
+        elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
+            logging.debug('Estimate ghi from dni and dhi')
+            self.weather.loc[:, 'ghi'] = (
+                self.weather.dni * tools.cosd(self.solar_position.zenith) +
+                self.weather.dhi)
+        elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
+            logging.debug('Estimate dhi from dni and ghi')
+            self.weather.loc[:, 'dhi'] = (
+                self.weather.ghi - self.weather.dni *
+                tools.cosd(self.solar_position.zenith))
+
+        return self
+
+    def prepare_inputs(self, times=None, irradiance=None, weather=None):
+        """
+        Prepare the solar position, irradiance, and weather inputs to
+        the model.
+
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
+        irradiance : None or DataFrame
+            This parameter is deprecated. Please use `weather` instead.
+        weather : None or DataFrame
+            If None, the weather attribute is used. If the weather attribute is
+            also None assumes air temperature is 20 C, wind speed is 0 m/s and
+            irradiation calculated from clear sky data.
+            Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
+            Do not pass incomplete irradiation data.
+            Use method
+            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+            instead.
+
+        Returns
+        -------
+        self
+
+        Assigns attributes: times, solar_position, airmass, total_irrad, aoi
+        """
+        if weather is not None:
+            self.weather = weather
+        if self.weather is None:
+            self.weather = pd.DataFrame()
+
+        # The following part could be removed together with the irradiance
+        # parameter at version v0.5 or v0.6.
+        # **** Begin ****
+        wrn_txt = ("The irradiance parameter will be removed soon.\n" +
+                   "Please use the weather parameter to pass a DataFrame " +
+                   "with irradiance (ghi, dni, dhi), wind speed and " +
+                   "temp_air.\n")
+        if irradiance is not None:
+            warnings.warn(wrn_txt, FutureWarning)
+            for column in irradiance.columns:
+                self.weather[column] = irradiance[column]
+        # **** End ****
+
+        if times is not None:
+            self.times = times
 
         self.solar_position = self.location.get_solarposition(self.times)
 
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)
 
-        if irradiance is None:
-            irradiance = self.location.get_clearsky(
+        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
+                                       self.solar_position['azimuth'])
+
+        if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
+            self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 zenith_data=self.solar_position['apparent_zenith'],
                 airmass_data=self.airmass['airmass_absolute'])
-        self.irradiance = irradiance
+
+        if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
+            raise ValueError(
+                "Uncompleted irradiance data set. Please check you input " +
+                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n" +
+                "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # have different method signatures, so use partial to handle
@@ -349,30 +773,54 @@ class ModelChain(object):
                 self.solar_position['azimuth'])
 
         self.total_irrad = get_irradiance(
-            self.irradiance['dni'],
-            self.irradiance['ghi'],
-            self.irradiance['dhi'],
+            self.weather['dni'],
+            self.weather['ghi'],
+            self.weather['dhi'],
+            airmass=self.airmass['airmass_relative'],
             model=self.transposition_model)
 
-        if weather is None:
-            weather = {'wind_speed': 0, 'temp_air': 20}
-        self.weather = weather
+        if self.weather.get('wind_speed') is None:
+            self.weather['wind_speed'] = 0
+        if self.weather.get('temp_air') is None:
+            self.weather['temp_air'] = 20
+        return self
 
-        self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
-                                               self.weather['wind_speed'],
-                                               self.weather['temp_air'])
+    def run_model(self, times=None, irradiance=None, weather=None):
+        """
+        Run the model.
 
-        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
-                                       self.solar_position['azimuth'])
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
+        irradiance : None or DataFrame
+            This parameter is deprecated. Please use `weather` instead.
+        weather : None or DataFrame
+            If None, assumes air temperature is 20 C, wind speed is 0 m/s and
+            irradiation calculated from clear sky data.
+            Column names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
+            Do not pass incomplete irradiation data.
+            Use method
+            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+            instead.
 
-        self.dc = self.system.sapm(self.total_irrad['poa_direct'],
-                                   self.total_irrad['poa_diffuse'],
-                                   self.temps['temp_cell'],
-                                   self.airmass['airmass_absolute'],
-                                   self.aoi)
+        Returns
+        -------
+        self
 
-        self.dc = self.system.scale_voltage_current_power(self.dc)
+        Assigns attributes: times, solar_position, airmass, irradiance,
+        total_irrad, effective_irradiance, weather, temps, aoi,
+        aoi_modifier, spectral_modifier, dc, ac, losses.
+        """
 
-        self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
+        self.prepare_inputs(times, irradiance, weather)
+        self.aoi_model()
+        self.spectral_model()
+        self.effective_irradiance_model()
+        self.temp_model()
+        self.dc_model()
+        self.ac_model()
+        self.losses_model()
 
         return self

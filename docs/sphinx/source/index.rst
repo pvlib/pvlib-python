@@ -1,12 +1,14 @@
 pvlib-python
 ========================================
 
-pvlib-python provides a set of documented functions for simulating the
-performance of photovoltaic energy systems. The toolbox was originally
-developed in MATLAB at Sandia National Laboratories and it implements
-many of the models and methods developed at the Labs. More information
-on Sandia Labs PV performance modeling programs can be found at
-https://pvpmc.sandia.gov/.
+PVLIB Python is a community supported tool that provides a set of
+functions and classes for simulating the performance of photovoltaic
+energy systems. PVLIB Python was originally ported from the PVLIB MATLAB
+toolbox developed at Sandia National Laboratories and it implements many
+of the models and methods developed at the Labs. More information on
+Sandia Labs PV performance modeling programs can be found at
+https://pvpmc.sandia.gov/. We collaborate with the PVLIB MATLAB project,
+but operate independently of it.
 
 The source code for pvlib-python is hosted on `github
 <https://github.com/pvlib/pvlib-python>`_.
@@ -44,11 +46,11 @@ of:
   modelling package,” in 40th IEEE Photovoltaic Specialist
   Conference, 2014.
   (`paper
-  <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`_)
+  <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`__)
 * W.F. Holmgren, R.W. Andrews, A.T. Lorenzo, and J.S. Stein,
   “PVLIB Python 2015,” in 42nd Photovoltaic Specialists Conference, 2015.
   (`paper
-  <https://github.com/pvlib/pvsc2015/blob/master/pvlib_pvsc_42.pdf>`_ and
+  <https://github.com/pvlib/pvsc2015/blob/master/pvlib_pvsc_42.pdf>`__ and
   the `notebook to reproduce the figures
   <http://nbviewer.ipython.org/github/pvlib/pvsc2015/blob/master/paper.ipynb>`_)
 * J.S. Stein, W.F. Holmgren, J. Forbess, and C.W. Hansen,
@@ -73,6 +75,8 @@ Contents
    installation
    contributing
    timetimezones
+   clearsky
+   forecasts
    modules
    classes
    comparison_pvlib_matlab

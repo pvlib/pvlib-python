@@ -16,6 +16,7 @@ poa_direct;direct/beam irradiation in plane
 poa_diffuse;total diffuse irradiation in plane. sum of ground and sky diffuse.
 poa_global;global irradiation in plane. sum of diffuse and beam projection.
 poa_sky_diffuse;diffuse irradiation in plane from scattered light in the atmosphere (without ground reflected irradiation)
+g_poa_effective;broadband plane of array effective irradiance.
 surface_tilt;tilt angle of the surface
 surface_azimuth;azimuth angle of the surface
 solar_zenith;zenith angle of the sun in degrees
@@ -36,3 +37,10 @@ saturation_current;diode saturation current
 resistance_series;series resistance
 resistance_shunt;shunt resistance
 transposition_factor; the gain ratio of the radiation on inclined plane to global horizontal irradiation: :math:`\frac{poa\_global}{ghi}`
+pdc0; nameplate DC rating
+pdc, dc; dc power
+gamma_pdc; module temperature coefficient. Typically in units of 1/C.
+pac, ac; ac powe.
+eta_inv; inverter efficiency
+eta_inv_ref; reference inverter efficiency
+eta_inv_nom; nominal inverter efficiency

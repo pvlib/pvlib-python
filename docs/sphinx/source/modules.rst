@@ -7,6 +7,7 @@ Modules
 
     pvlib.atmosphere
     pvlib.clearsky
+    pvlib.forecast
     pvlib.irradiance
     pvlib.location
     pvlib.modelchain

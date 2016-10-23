@@ -43,20 +43,20 @@ configuration at a handful of sites listed below.
     import seaborn as sns
     sns.set_color_codes()
 
-    times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
+    naive_times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
 
     # very approximate
-    # latitude, longitude, name, altitude
-    coordinates = [(30, -110, 'Tucson', 700),
-                   (35, -105, 'Albuquerque', 1500),
-                   (40, -120, 'San Francisco', 10),
-                   (50, 10, 'Berlin', 34)]
+    # latitude, longitude, name, altitude, timezone
+    coordinates = [(30, -110, 'Tucson', 700, 'Etc/GMT+7'),
+                   (35, -105, 'Albuquerque', 1500, 'Etc/GMT+7'),
+                   (40, -120, 'San Francisco', 10, 'Etc/GMT+8'),
+                   (50, 10, 'Berlin', 34, 'Etc/GMT-1')]
 
     import pvlib
 
     # get the module and inverter specifications from SAM
     sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
-    sapm_inverters = pvlib.pvsystem.retrieve_sam('sandiainverter')
+    sapm_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
     inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
@@ -80,15 +80,19 @@ to accomplish our system modeling goal:
               'surface_azimuth': 180}
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
+
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        times = naive_times.tz_localize(timezone)
         system['surface_tilt'] = latitude
-        cs = pvlib.clearsky.ineichen(times, latitude, longitude, altitude=altitude)
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
         dni_extra = pvlib.irradiance.extraradiation(times)
         dni_extra = pd.Series(dni_extra, index=times)
         airmass = pvlib.atmosphere.relativeairmass(solpos['apparent_zenith'])
         pressure = pvlib.atmosphere.alt2pres(altitude)
         am_abs = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+        tl = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
+        cs = pvlib.clearsky.ineichen(solpos['apparent_zenith'], am_abs, tl,
+                                     dni_extra=dni_extra, altitude=altitude)
         aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'],
                                    solpos['apparent_zenith'], solpos['azimuth'])
         total_irrad = pvlib.irradiance.total_irrad(system['surface_tilt'],
@@ -100,10 +104,11 @@ to accomplish our system modeling goal:
                                                    model='haydavies')
         temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'],
                                              wind_speed, temp_air)
-        dc = pvlib.pvsystem.sapm(module, total_irrad['poa_direct'],
-                                 total_irrad['poa_diffuse'], temps['temp_cell'],
-                                 am_abs, aoi)
-        ac = pvlib.pvsystem.snlinverter(inverter, dc['v_mp'], dc['p_mp'])
+        effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
+            total_irrad['poa_direct'], total_irrad['poa_diffuse'],
+            am_abs, aoi, module)
+        dc = pvlib.pvsystem.sapm(effective_irradiance, temps['temp_cell'], module)
+        ac = pvlib.pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter)
         annual_energy = ac.sum()
         energies[name] = annual_energy
 
@@ -125,8 +130,9 @@ a full understanding of what it is doing internally!
     from pvlib.modelchain import basic_chain
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
-        dc, ac = basic_chain(times, latitude, longitude,
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        dc, ac = basic_chain(naive_times.tz_localize(timezone),
+                             latitude, longitude,
                              module, inverter,
                              altitude=altitude,
                              orientation_strategy='south_at_latitude_tilt')
@@ -173,14 +179,15 @@ objects to accomplish our system modeling goal:
                       inverter_parameters=inverter)
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
-        location = Location(latitude, longitude, name=name, altitude=altitude)
+    for latitude, longitude, name, altitude, timezone in coordinates:
+        location = Location(latitude, longitude, name=name, altitude=altitude,
+                            tz=timezone)
         # very experimental
         mc = ModelChain(system, location,
                         orientation_strategy='south_at_latitude_tilt')
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
-        mc.run_model(times)
+        mc.run_model(naive_times.tz_localize(timezone))
         annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 
@@ -192,6 +199,10 @@ objects to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig modelchain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+
+See Will Holmgren's
+`ModelChain gist <https://gist.github.com/wholmgren/3fabacd3003c2a549b420b5e79f55e95>`_
+for more discussion about new features in ModelChain.
 
 
 Object oriented (LocalizedPVSystem)
@@ -211,7 +222,7 @@ object to accomplish our modeling goal:
     from pvlib.pvsystem import LocalizedPVSystem
 
     energies = {}
-    for latitude, longitude, name, altitude in coordinates:
+    for latitude, longitude, name, altitude, timezone in coordinates:
         localized_system = LocalizedPVSystem(module_parameters=module,
                                              inverter_parameters=inverter,
                                              surface_tilt=latitude,
@@ -219,7 +230,9 @@ object to accomplish our modeling goal:
                                              latitude=latitude,
                                              longitude=longitude,
                                              name=name,
-                                             altitude=altitude)
+                                             altitude=altitude,
+                                             tz=timezone)
+        times = naive_times.tz_localize(timezone)
         clearsky = localized_system.get_clearsky(times)
         solar_position = localized_system.get_solarposition(times)
         total_irrad = localized_system.get_irradiance(solar_position['apparent_zenith'],
@@ -232,11 +245,10 @@ object to accomplish our modeling goal:
         aoi = localized_system.get_aoi(solar_position['apparent_zenith'],
                                        solar_position['azimuth'])
         airmass = localized_system.get_airmass(solar_position=solar_position)
-        dc = localized_system.sapm(total_irrad['poa_direct'],
-                                   total_irrad['poa_diffuse'],
-                                   temps['temp_cell'],
-                                   airmass['airmass_absolute'],
-                                   aoi)
+        effective_irradiance = localized_system.sapm_effective_irradiance(
+            total_irrad['poa_direct'], total_irrad['poa_diffuse'],
+            airmass['airmass_absolute'], aoi)
+        dc = localized_system.sapm(effective_irradiance, temps['temp_cell'])
         ac = localized_system.snlinverter(dc['v_mp'], dc['p_mp'])
         annual_energy = ac.sum()
         energies[name] = annual_energy
@@ -283,4 +295,3 @@ The pvlib-python maintainers thank all of pvlib's contributors of issues
 and especially pull requests.
 The pvlib-python community thanks all of the
 maintainers and contributors to the PyData stack.
-

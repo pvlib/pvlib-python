@@ -63,8 +63,6 @@ of:
 Specific released versions of pvlib-python can be cited using their
 `Zenodo DOI <https://zenodo.org/search?ln=en&p=pvlib&action_search=>`_.
 
-   modules
-   classes
 
 Contents
 ========

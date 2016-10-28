@@ -42,12 +42,12 @@ def test_location_invalid_tz_type():
 
 def test_location_print_all():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    expected_str = 'Tucson: latitude=32.2, longitude=-111, tz=US/Arizona, altitude=700'
+    expected_str = 'Location: \n  name: Tucson\n  latitude: 32.2\n  longitude: -111\n  altitude: 700\n  tz: US/Arizona'
     assert tus.__str__() == expected_str
 
 def test_location_print_pytz():
     tus = Location(32.2, -111, aztz, 700, 'Tucson')
-    expected_str = 'Tucson: latitude=32.2, longitude=-111, tz=US/Arizona, altitude=700'
+    expected_str = 'Location: \n  name: Tucson\n  latitude: 32.2\n  longitude: -111\n  altitude: 700\n  tz: US/Arizona'
     assert tus.__str__() == expected_str
 
 
@@ -283,5 +283,6 @@ def test_get_airmass_valueerror():
 
 def test_Location___repr__():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    assert tus.__repr__()==('Tucson: latitude=32.2, longitude=-111, '+
-    'tz=US/Arizona, altitude=700')
+
+    expected = 'Location: \n  name: Tucson\n  latitude: 32.2\n  longitude: -111\n  altitude: 700\n  tz: US/Arizona'
+    assert tus.__repr__() == expected

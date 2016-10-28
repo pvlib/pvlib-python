@@ -165,12 +165,11 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
         super(LocalizedSingleAxisTracker, self).__init__(**new_kwargs)
 
     def __repr__(self):
+        attrs = ['latitude', 'longitude', 'altitude', 'tz']
         return ('Localized' +
-                super(LocalizedSingleAxisTracker, self).__repr__() +
-                ' at Location: ' +
-                ('{}: latitude={}, longitude={}, tz={}, altitude={}'
-                    .format(self.name, self.latitude, self.longitude,
-                            self.tz, self.altitude)))
+            super(LocalizedSingleAxisTracker, self).__repr__() + '\n  ' +
+            '\n  '.join(
+                (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,

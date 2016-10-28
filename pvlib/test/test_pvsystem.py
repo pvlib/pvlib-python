@@ -672,19 +672,21 @@ def test_PVSystem_localize_with_latlon():
 
 
 def test_PVSystem___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
 
-    assert system.__repr__()==('PVSystem with tilt:0 and azimuth:'+
-    ' 180 with Module: blah and Inverter: blarg')
+    expected = 'PVSystem: \n  name: pv ftw\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+
+    assert system.__repr__() == expected
 
 
 def test_PVSystem_localize___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
     localized_system = system.localize(latitude=32, longitude=-111)
 
-    assert localized_system.__repr__()==('LocalizedPVSystem with tilt:0 and'+
-    ' azimuth: 180 with Module: blah and Inverter: blarg at '+
-    'Latitude: 32 and Longitude: -111')
+    expected = 'LocalizedPVSystem: \n  name: None\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+
+    assert localized_system.__repr__() == expected
+
 
 # we could retest each of the models tested above
 # when they are attached to LocalizedPVSystem, but
@@ -707,11 +709,12 @@ def test_LocalizedPVSystem___repr__():
     localized_system = pvsystem.LocalizedPVSystem(latitude=32,
                                                   longitude=-111,
                                                   module='blah',
-                                                  inverter='blarg')
+                                                  inverter='blarg',
+                                                  name='my name')
 
-    assert localized_system.__repr__()==('LocalizedPVSystem with tilt:0 and'+
-    ' azimuth: 180 with Module: blah and Inverter: blarg at Latitude: 32 ' +
-    'and Longitude: -111')
+    expected = 'LocalizedPVSystem: \n  name: None\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+
+    assert localized_system.__repr__() == expected
 
 
 def test_pvwatts_dc_scalars():

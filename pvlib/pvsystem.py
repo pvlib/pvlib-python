@@ -116,7 +116,10 @@ class PVSystem(object):
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
+                 name=None,
                  **kwargs):
+
+        self.name = name
 
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
@@ -144,8 +147,8 @@ class PVSystem(object):
         super(PVSystem, self).__init__(**kwargs)
 
     def __repr__(self):
-        attrs = ['surface_tilt', 'surface_azimuth', 'module', 'inverter',
-                 'albedo', 'racking_model']
+        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
+                 'inverter', 'albedo', 'racking_model']
         return ('PVSystem: \n  ' + '\n  '.join(
             (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
 
@@ -575,12 +578,12 @@ class LocalizedPVSystem(PVSystem, Location):
         super(LocalizedPVSystem, self).__init__(**new_kwargs)
 
     def __repr__(self):
-        return ('LocalizedPVSystem with tilt:' + str(self.surface_tilt) +
-                ' and azimuth: ' + str(self.surface_azimuth) +
-                ' with Module: ' + str(self.module) +
-                ' and Inverter: ' + str(self.inverter) +
-                ' at Latitude: ' + str(self.latitude) +
-                ' and Longitude: ' + str(self.longitude))
+        attrs = [
+            'name', 'latitude', 'longitude', 'altitude', 'tz', 'surface_tilt',
+            'surface_azimuth', 'module', 'inverter', 'albedo', 'racking_model'
+                 ]
+        return ('LocalizedPVSystem: \n  ' + '\n  '.join(
+            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,

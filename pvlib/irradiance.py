@@ -1045,13 +1045,16 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         component_keys = ('isotropic', 'circumsolar', 'horizon')
-        diffuse_components = dict.fromkeys(component_keys, np.zeros(np.shape(sky_diffuse)))
+        diffuse_components = dict.fromkeys(component_keys)
 
-        # Calculate the different components for positive values
-        mask_positive_values = np.where(sky_diffuse != 0)
-        diffuse_components['isotropic'][mask_positive_values] = (dhi * term1)[mask_positive_values]
-        diffuse_components['circumsolar'][mask_positive_values] = (dhi * term2)[mask_positive_values]
-        diffuse_components['horizon'][mask_positive_values] = (dhi * term3)[mask_positive_values]
+        # Calculate the different components
+        diffuse_components['isotropic'] = dhi * term1
+        diffuse_components['circumsolar'] = dhi * term2
+        diffuse_components['horizon'] = dhi * term3
+
+        # Set values of components to 0 when sky_diffuse is 0
+        for k in diffuse_components.keys():
+            diffuse_components[k][sky_diffuse == 0] = 0
 
         return sky_diffuse, diffuse_components
 

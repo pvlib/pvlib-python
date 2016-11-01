@@ -886,7 +886,7 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 
 def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
           solar_zenith, solar_azimuth, airmass,
-          model='allsitescomposite1990'):
+          model='allsitescomposite1990', return_components=False):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
     one of the Perez models.
@@ -1043,7 +1043,20 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     else:
         sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
 
-    return sky_diffuse
+    if return_components:
+        component_keys = ('isotropic', 'circumsolar', 'horizon')
+        diffuse_components = dict.fromkeys(component_keys, np.zeros(np.shape(sky_diffuse)))
+
+        # Calculate the different components for positive values
+        mask_positive_values = np.where(sky_diffuse != 0)
+        diffuse_components['isotropic'][mask_positive_values] = (dhi * term1)[mask_positive_values]
+        diffuse_components['circumsolar'][mask_positive_values] = (dhi * term2)[mask_positive_values]
+        diffuse_components['horizon'][mask_positive_values] = (dhi * term3)[mask_positive_values]
+
+        return sky_diffuse, diffuse_components
+
+    else:
+        return sky_diffuse
 
 
 def disc(ghi, zenith, datetime_or_doy, pressure=101325):

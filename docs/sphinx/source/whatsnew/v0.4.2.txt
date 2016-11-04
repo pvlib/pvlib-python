@@ -39,6 +39,9 @@ Enhancements
 * Added more attributes to ModelChain, PVSystem, and Location printed
   representations. (:issue:`254`)
 * Added name attribute to ModelChain and PVSystem. (:issue:`254`)
+* Restructured API section of the documentation so that there are
+  separate pages for each function, class, or method. (:issue:`258`)
+
 
 Code Contributors
 ~~~~~~~~~~~~~~~~~

@@ -408,13 +408,12 @@ def test_ModelChain___repr__(system, location):
 
     strategy = 'south_at_latitude_tilt'
 
-    mc = ModelChain(system, location, orientation_strategy=strategy)
+    mc = ModelChain(system, location, orientation_strategy=strategy,
+                    name='my mc')
 
-    assert mc.__repr__() == ('ModelChain for: PVSystem with tilt:32.2 and '+
-    'azimuth: 180 with Module: None and Inverter: None '+
-    'orientation_strategy: south_at_latitude_tilt clearsky_model: '+
-    'ineichen transposition_model: haydavies solar_position_method: '+
-    'nrel_numpy airmass_model: kastenyoung1989')
+    expected = 'ModelChain: \n  name: my mc\n  orientation_strategy: south_at_latitude_tilt\n  clearsky_model: ineichen\n  transposition_model: haydavies\n  solar_position_method: nrel_numpy\n  airmass_model: kastenyoung1989\n  dc_model: sapm\n  ac_model: snlinverter\n  aoi_model: sapm_aoi_loss\n  spectral_model: sapm_spectral_loss\n  temp_model: sapm_temp\n  losses_model: no_extra_losses'
+
+    assert mc.__repr__() == expected
 
 
 @requires_scipy

@@ -299,8 +299,10 @@ class ModelChain(object):
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temp_model='sapm',
                  losses_model='no_loss',
+                 name=None,
                  **kwargs):
 
+        self.name = name
         self.system = system
         self.location = location
         self.clearsky_model = clearsky_model
@@ -322,12 +324,24 @@ class ModelChain(object):
         self.solar_position = None
 
     def __repr__(self):
-        return ('ModelChain for: ' + str(self.system) +
-                ' orientation_strategy: ' + str(self.orientation_strategy) +
-                ' clearsky_model: ' + str(self.clearsky_model) +
-                ' transposition_model: ' + str(self.transposition_model) +
-                ' solar_position_method: ' + str(self.solar_position_method) +
-                ' airmass_model: ' + str(self.airmass_model))
+        attrs = [
+            'name', 'orientation_strategy', 'clearsky_model',
+            'transposition_model', 'solar_position_method',
+            'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
+            'spectral_model', 'temp_model', 'losses_model'
+            ]
+
+        def getmcattr(self, attr):
+            """needed to avoid recursion in property lookups"""
+            out = getattr(self, attr)
+            try:
+                out = out.__name__
+            except AttributeError:
+                pass
+            return out
+
+        return ('ModelChain: \n  ' + '\n  '.join(
+            (attr + ': ' + getmcattr(self, attr) for attr in attrs)))
 
     @property
     def orientation_strategy(self):

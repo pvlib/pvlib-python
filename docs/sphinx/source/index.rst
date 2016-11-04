@@ -68,7 +68,7 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
 
    package_overview
    whatsnew
@@ -77,8 +77,7 @@ Contents
    timetimezones
    clearsky
    forecasts
-   modules
-   classes
+   api
    comparison_pvlib_matlab
    variables_style_rules
 

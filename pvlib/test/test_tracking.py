@@ -292,9 +292,10 @@ def test_LocalizedSingleAxisTracker___repr__():
     localized_system = tracking.LocalizedSingleAxisTracker(latitude=32,
                                                            longitude=-111,
                                                            module='blah',
-                                                           inverter='blarg')
+                                                           inverter='blarg',
+                                                           gcr=0.25)
 
-    expected = 'LocalizedSingleAxisTracker: \n  axis_tilt: 0\n  axis_azimuth: 0\n  max_angle: 90\n  backtrack: True\n  gcr: 0.2857142857142857\n  name: None\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC'
+    expected = 'LocalizedSingleAxisTracker: \n  axis_tilt: 0\n  axis_azimuth: 0\n  max_angle: 90\n  backtrack: True\n  gcr: 0.25\n  name: None\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC'
 
     assert localized_system.__repr__() == expected
 

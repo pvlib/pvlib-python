@@ -5,6 +5,8 @@ to calculate clear sky GHI, DNI, and DHI.
 
 from __future__ import division
 
+import logging
+
 import os
 from collections import OrderedDict
 
@@ -12,6 +14,9 @@ import numpy as np
 import pandas as pd
 
 from pvlib import tools
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -186,6 +191,12 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # so divide the number from the file by 20 to get the
     # turbidity.
 
+    # The nodes of the grid are 5' (1/12=0.0833[arcdeg]) apart.
+    # From Section 8 of Aerosol optical depth and Linke turbidity climatology
+    # http://www.meteonorm.com/images/uploads/downloads/ieashc36_report_TL_AOD_climatologies.pdf
+    # 1st row: 89.9583 S, 2nd row: 89.875 S
+    # 1st column: 179.9583 W, 2nd column: 179.875 W
+
     try:
         import scipy.io
     except ImportError:
@@ -201,10 +212,10 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     linke_turbidity_table = mat['LinkeTurbidity']
 
     latitude_index = (
-        np.around(_linearly_scale(latitude, 90, -90, 1, 2160))
+        np.around(_linearly_scale(latitude, 90, -90, 0, 2160))
         .astype(np.int64))
     longitude_index = (
-        np.around(_linearly_scale(longitude, -180, 180, 1, 4320))
+        np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
         .astype(np.int64))
 
     g = linke_turbidity_table[latitude_index][longitude_index]
@@ -230,6 +241,33 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     linke_turbidity /= 20.
 
     return linke_turbidity
+
+
+def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
+    """
+    Used by linke turbidity lookup function.
+    """
+    inputrange = inputmax - inputmin
+    outputrange = outputmax - outputmin
+    delta = outputrange/inputrange  # number of indices per input unit
+    inputmin = inputmin + 1.0 / delta / 2.0  # shift index to center
+    outputmax = outputmax - 1
+    outputmatrix = (inputmatrix - inputmin) * delta + outputmin
+    LOGGER.debug('outputmatrix: %g', outputmatrix)
+    # TODO: allow wrapping for longitude
+    err = IndexError('Input, %g, is out of range (%g, %g).' %
+                     (inputmatrix, inputmax - inputrange, inputmax))
+    if outputmatrix > outputmax:
+        if np.around(outputmatrix - outputmax, 1) <= 0.5:
+            outputmatrix = outputmax
+        else:
+            raise err
+    elif outputmatrix < outputmin:
+        if np.around(outputmin - outputmatrix, 1) <= 0.5:
+            outputmatrix = outputmin
+        else:
+            raise err
+    return outputmatrix
 
 
 def haurwitz(apparent_zenith):
@@ -279,15 +317,6 @@ def haurwitz(apparent_zenith):
     df_out = pd.DataFrame({'ghi': clearsky_ghi})
 
     return df_out
-
-
-def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
-    """ used by linke turbidity lookup function """
-
-    inputrange = inputmax - inputmin
-    outputrange = outputmax - outputmin
-    outputmatrix = (inputmatrix-inputmin) * outputrange/inputrange + outputmin
-    return outputmatrix
 
 
 def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,

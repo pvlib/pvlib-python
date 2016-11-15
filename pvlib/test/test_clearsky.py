@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+import logging
+
 import numpy as np
 import pandas as pd
 
@@ -13,6 +15,9 @@ from pvlib import solarposition
 from pvlib import atmosphere
 
 from conftest import requires_scipy
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
 
 
 def test_ineichen_series():
@@ -440,3 +445,46 @@ def test_simplified_solis_nans_series():
                                     precipitable_water, pressure, dni_extra)
 
     assert_frame_equal(expected, out)
+
+
+def test_linke_turbidity_corners():
+    """
+    Test Linke turbidity corners out of bounds
+    """
+    time = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))
+    # Northwest
+    assert np.allclose(
+        clearsky.lookup_linke_turbidity(time, 90, -180, interp_turbidity=False),
+        [1.9, 1.9, 1.9, 2.0, 2.05, 2.05, 2.1, 2.1, 2.0, 1.95, 1.9, 1.9])
+    # Southwest
+    assert np.allclose(
+        clearsky.lookup_linke_turbidity(time, -90, -180, interp_turbidity=False),
+        [1.35, 1.3, 1.45, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.4, 1.4, 1.3])
+    # Northeast
+    assert np.allclose(
+        clearsky.lookup_linke_turbidity(time, 90, 180, interp_turbidity=False),
+        [1.9, 1.9, 1.9, 2.0, 2.05, 2.05, 2.1, 2.1, 2.0, 1.95, 1.9, 1.9])
+    # Southeast
+    assert np.allclose(
+        clearsky.lookup_linke_turbidity(time, -90, 180, interp_turbidity=False),
+        [1.35, 1.7, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.7])
+    try:
+        clearsky.lookup_linke_turbidity(time, 91, -122, interp_turbidity=False)
+    except IndexError as err:
+        LOGGER.exception(err)
+        assert isinstance(err, IndexError)
+    try:
+        clearsky.lookup_linke_turbidity(time, 38.2, 181, interp_turbidity=False)
+    except IndexError as err:
+        LOGGER.exception(err)
+        assert isinstance(err, IndexError)
+    try:
+        clearsky.lookup_linke_turbidity(time, -91, -122, interp_turbidity=False)
+    except IndexError as err:
+        LOGGER.exception(err)
+        assert isinstance(err, IndexError)
+    try:
+        clearsky.lookup_linke_turbidity(time, 38.2, -181, interp_turbidity=False)
+    except IndexError as err:
+        LOGGER.exception(err)
+        assert isinstance(err, IndexError)

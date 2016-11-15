@@ -5,8 +5,6 @@ to calculate clear sky GHI, DNI, and DHI.
 
 from __future__ import division
 
-import logging
-
 import os
 from collections import OrderedDict
 
@@ -14,9 +12,6 @@ import numpy as np
 import pandas as pd
 
 from pvlib import tools
-
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.CRITICAL)
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -244,19 +239,16 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
 
 
 def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
-    """
-    Used by linke turbidity lookup function.
-    """
+    """Used by linke turbidity lookup function."""
     inputrange = inputmax - inputmin
     outputrange = outputmax - outputmin
     delta = outputrange/inputrange  # number of indices per input unit
-    inputmin = inputmin + 1.0 / delta / 2.0  # shift index to center
-    outputmax = outputmax - 1
+    inputmin = inputmin + 1.0 / delta / 2.0  # shift to center of index
+    outputmax = outputmax - 1  # shift index to zero indexing
     outputmatrix = (inputmatrix - inputmin) * delta + outputmin
-    LOGGER.debug('outputmatrix: %g', outputmatrix)
-    # TODO: allow wrapping for longitude
     err = IndexError('Input, %g, is out of range (%g, %g).' %
                      (inputmatrix, inputmax - inputrange, inputmax))
+    # round down if input is within half an index or else raise index error
     if outputmatrix > outputmax:
         if np.around(outputmatrix - outputmax, 1) <= 0.5:
             outputmatrix = outputmax

@@ -1,7 +1,5 @@
 from collections import OrderedDict
 
-import logging
-
 import numpy as np
 import pandas as pd
 
@@ -15,9 +13,6 @@ from pvlib import solarposition
 from pvlib import atmosphere
 
 from conftest import requires_scipy
-
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
 
 
 def test_ineichen_series():
@@ -448,43 +443,37 @@ def test_simplified_solis_nans_series():
 
 
 def test_linke_turbidity_corners():
-    """
-    Test Linke turbidity corners out of bounds
-    """
-    time = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))
+    """Test Linke turbidity corners out of bounds."""
+    months = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))
+
+    def monthly_lt_nointerp(lat, lon, time=months):
+        """monthly Linke turbidity factor without time interpolation"""
+        return clearsky.lookup_linke_turbidity(
+            time, lat, lon, interp_turbidity=False
+        )
+
     # Northwest
     assert np.allclose(
-        clearsky.lookup_linke_turbidity(time, 90, -180, interp_turbidity=False),
+        monthly_lt_nointerp(90, -180),
         [1.9, 1.9, 1.9, 2.0, 2.05, 2.05, 2.1, 2.1, 2.0, 1.95, 1.9, 1.9])
     # Southwest
     assert np.allclose(
-        clearsky.lookup_linke_turbidity(time, -90, -180, interp_turbidity=False),
+        monthly_lt_nointerp(-90, -180),
         [1.35, 1.3, 1.45, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.4, 1.4, 1.3])
     # Northeast
     assert np.allclose(
-        clearsky.lookup_linke_turbidity(time, 90, 180, interp_turbidity=False),
+        monthly_lt_nointerp(90, 180),
         [1.9, 1.9, 1.9, 2.0, 2.05, 2.05, 2.1, 2.1, 2.0, 1.95, 1.9, 1.9])
     # Southeast
     assert np.allclose(
-        clearsky.lookup_linke_turbidity(time, -90, 180, interp_turbidity=False),
+        monthly_lt_nointerp(-90, 180),
         [1.35, 1.7, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.7])
-    try:
-        clearsky.lookup_linke_turbidity(time, 91, -122, interp_turbidity=False)
-    except IndexError as err:
-        LOGGER.exception(err)
-        assert isinstance(err, IndexError)
-    try:
-        clearsky.lookup_linke_turbidity(time, 38.2, 181, interp_turbidity=False)
-    except IndexError as err:
-        LOGGER.exception(err)
-        assert isinstance(err, IndexError)
-    try:
-        clearsky.lookup_linke_turbidity(time, -91, -122, interp_turbidity=False)
-    except IndexError as err:
-        LOGGER.exception(err)
-        assert isinstance(err, IndexError)
-    try:
-        clearsky.lookup_linke_turbidity(time, 38.2, -181, interp_turbidity=False)
-    except IndexError as err:
-        LOGGER.exception(err)
-        assert isinstance(err, IndexError)
+    # test out of range exceptions at corners
+    with pytest.raises(IndexError):
+        monthly_lt_nointerp(91, -122)  # exceeds max latitude
+    with pytest.raises(IndexError):
+        monthly_lt_nointerp(38.2, 181)  # exceeds max longitude
+    with pytest.raises(IndexError):
+        monthly_lt_nointerp(-91, -122)  # exceeds min latitude
+    with pytest.raises(IndexError):
+        monthly_lt_nointerp(38.2, -181)  # exceeds min longitude

@@ -16,7 +16,7 @@ import pandas as pd
 from pvlib import tools
 
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
+LOGGER.setLevel(logging.CRITICAL)
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,

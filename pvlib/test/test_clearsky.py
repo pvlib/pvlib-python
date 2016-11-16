@@ -160,8 +160,22 @@ def test_lookup_linke_turbidity():
                           freq='12h', tz='America/Phoenix')
     # expect same value on 2014-06-24 0000 and 1200, and
     # diff value on 2014-06-25
-    expected = pd.Series(np.array([3.10126582, 3.10126582, 3.11443038]),
-                         index=times)
+    expected = pd.Series(
+        np.array([3.11803278689, 3.11803278689, 3.13114754098]), index=times
+    )
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
+    assert_series_equal(expected, out)
+
+
+@requires_scipy
+def test_lookup_linke_turbidity_leapyear():
+    times = pd.date_range(start='2016-06-24', end='2016-06-25',
+                          freq='12h', tz='America/Phoenix')
+    # expect same value on 2016-06-24 0000 and 1200, and
+    # diff value on 2016-06-25
+    expected = pd.Series(
+        np.array([3.11803278689, 3.11803278689, 3.13114754098]), index=times
+    )
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
     assert_series_equal(expected, out)
 
@@ -181,8 +195,20 @@ def test_lookup_linke_turbidity_nointerp():
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
                           freq='1M', tz='America/Phoenix')
-    expected = pd.Series(np.array([2.8943038, 2.97316456, 3.18025316]),
-                         index=times)
+    expected = pd.Series(
+        np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
+    )
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
+    assert_series_equal(expected, out)
+
+
+@requires_scipy
+def test_lookup_linke_turbidity_months_leapyear():
+    times = pd.date_range(start='2016-04-01', end='2016-07-01',
+                          freq='1M', tz='America/Phoenix')
+    expected = pd.Series(
+        np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
+    )
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
     assert_series_equal(expected, out)
 

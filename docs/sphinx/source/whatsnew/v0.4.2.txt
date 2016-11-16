@@ -41,6 +41,7 @@ Enhancements
 * Added name attribute to ModelChain and PVSystem. (:issue:`254`)
 * Restructured API section of the documentation so that there are
   separate pages for each function, class, or method. (:issue:`258`)
+* Improved convergence of lambertw function (:issue: '260')
 
 
 Code Contributors
@@ -49,3 +50,4 @@ Code Contributors
 * Uwe Krien
 * Will Holmgren
 * Volker Beutner
+* Cliff Hansen

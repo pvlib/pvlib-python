@@ -1843,7 +1843,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     # evaluation (above) results in NaN from overflow, 3 iterations
     # of Newton's method gives approximately 8 digits of precision.
     w = logargW
-    order = np.log10(w)
+    order = np.ceil(np.log10(w)).astype(int)
     for i in range(0, 3*order):
         w = w * (1 - np.log(w) + logargW) / (1 + w)
     lambertwterm_log = w

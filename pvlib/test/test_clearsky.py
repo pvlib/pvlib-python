@@ -162,7 +162,7 @@ def test_lookup_linke_turbidity():
     # diff value on 2014-06-25
     expected = pd.Series(np.array([3.10126582, 3.10126582, 3.11443038]),
                          index=times)
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111)
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
     assert_series_equal(expected, out)
 
 
@@ -172,7 +172,7 @@ def test_lookup_linke_turbidity_nointerp():
                           freq='12h', tz='America/Phoenix')
     # expect same value for all days
     expected = pd.Series(np.array([3., 3., 3.]), index=times)
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111,
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
     assert_series_equal(expected, out)
 
@@ -183,7 +183,7 @@ def test_lookup_linke_turbidity_months():
                           freq='1M', tz='America/Phoenix')
     expected = pd.Series(np.array([2.8943038, 2.97316456, 3.18025316]),
                          index=times)
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111)
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
     assert_series_equal(expected, out)
 
 
@@ -192,13 +192,13 @@ def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
                           freq='1M', tz='America/Phoenix')
     expected = pd.Series(np.array([2.85, 2.95, 3.]), index=times)
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111,
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
     assert_series_equal(expected, out)
     # changing the dates shouldn't matter if interp=False
     times = pd.date_range(start='2014-04-05', end='2014-07-05',
                           freq='1M', tz='America/Phoenix')
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111,
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
     assert_series_equal(expected, out)
 

@@ -168,7 +168,7 @@ def test_perez_components():
     expected = pd.Series(np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877]),
         index=times)
-    sum_components = pd.Series(np.sum(components.values(), axis=0), index=times)
+    sum_components = pd.Series(np.sum(list(components.values()), axis=0), index=times)
     assert_series_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected, check_less_precise=2)
 

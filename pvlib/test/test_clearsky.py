@@ -468,6 +468,7 @@ def test_simplified_solis_nans_series():
     assert_frame_equal(expected, out)
 
 
+@requires_scipy
 def test_linke_turbidity_corners():
     """Test Linke turbidity corners out of bounds."""
     months = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))

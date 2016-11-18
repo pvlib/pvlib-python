@@ -160,9 +160,23 @@ def test_lookup_linke_turbidity():
                           freq='12h', tz='America/Phoenix')
     # expect same value on 2014-06-24 0000 and 1200, and
     # diff value on 2014-06-25
-    expected = pd.Series(np.array([3.10126582, 3.10126582, 3.11443038]),
-                         index=times)
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111)
+    expected = pd.Series(
+        np.array([3.11803278689, 3.11803278689, 3.13114754098]), index=times
+    )
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
+    assert_series_equal(expected, out)
+
+
+@requires_scipy
+def test_lookup_linke_turbidity_leapyear():
+    times = pd.date_range(start='2016-06-24', end='2016-06-25',
+                          freq='12h', tz='America/Phoenix')
+    # expect same value on 2016-06-24 0000 and 1200, and
+    # diff value on 2016-06-25
+    expected = pd.Series(
+        np.array([3.11803278689, 3.11803278689, 3.13114754098]), index=times
+    )
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
     assert_series_equal(expected, out)
 
 
@@ -172,7 +186,7 @@ def test_lookup_linke_turbidity_nointerp():
                           freq='12h', tz='America/Phoenix')
     # expect same value for all days
     expected = pd.Series(np.array([3., 3., 3.]), index=times)
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111,
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
     assert_series_equal(expected, out)
 
@@ -181,9 +195,21 @@ def test_lookup_linke_turbidity_nointerp():
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
                           freq='1M', tz='America/Phoenix')
-    expected = pd.Series(np.array([2.8943038, 2.97316456, 3.18025316]),
-                         index=times)
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111)
+    expected = pd.Series(
+        np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
+    )
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
+    assert_series_equal(expected, out)
+
+
+@requires_scipy
+def test_lookup_linke_turbidity_months_leapyear():
+    times = pd.date_range(start='2016-04-01', end='2016-07-01',
+                          freq='1M', tz='America/Phoenix')
+    expected = pd.Series(
+        np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
+    )
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
     assert_series_equal(expected, out)
 
 
@@ -192,13 +218,13 @@ def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
                           freq='1M', tz='America/Phoenix')
     expected = pd.Series(np.array([2.85, 2.95, 3.]), index=times)
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111,
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
     assert_series_equal(expected, out)
     # changing the dates shouldn't matter if interp=False
     times = pd.date_range(start='2014-04-05', end='2014-07-05',
                           freq='1M', tz='America/Phoenix')
-    out = clearsky.lookup_linke_turbidity(times, 32.2, -111,
+    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
                                           interp_turbidity=False)
     assert_series_equal(expected, out)
 
@@ -440,3 +466,41 @@ def test_simplified_solis_nans_series():
                                     precipitable_water, pressure, dni_extra)
 
     assert_frame_equal(expected, out)
+
+
+@requires_scipy
+def test_linke_turbidity_corners():
+    """Test Linke turbidity corners out of bounds."""
+    months = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))
+
+    def monthly_lt_nointerp(lat, lon, time=months):
+        """monthly Linke turbidity factor without time interpolation"""
+        return clearsky.lookup_linke_turbidity(
+            time, lat, lon, interp_turbidity=False
+        )
+
+    # Northwest
+    assert np.allclose(
+        monthly_lt_nointerp(90, -180),
+        [1.9, 1.9, 1.9, 2.0, 2.05, 2.05, 2.1, 2.1, 2.0, 1.95, 1.9, 1.9])
+    # Southwest
+    assert np.allclose(
+        monthly_lt_nointerp(-90, -180),
+        [1.35, 1.3, 1.45, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.4, 1.4, 1.3])
+    # Northeast
+    assert np.allclose(
+        monthly_lt_nointerp(90, 180),
+        [1.9, 1.9, 1.9, 2.0, 2.05, 2.05, 2.1, 2.1, 2.0, 1.95, 1.9, 1.9])
+    # Southeast
+    assert np.allclose(
+        monthly_lt_nointerp(-90, 180),
+        [1.35, 1.7, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.35, 1.7])
+    # test out of range exceptions at corners
+    with pytest.raises(IndexError):
+        monthly_lt_nointerp(91, -122)  # exceeds max latitude
+    with pytest.raises(IndexError):
+        monthly_lt_nointerp(38.2, 181)  # exceeds max longitude
+    with pytest.raises(IndexError):
+        monthly_lt_nointerp(-91, -122)  # exceeds min latitude
+    with pytest.raises(IndexError):
+        monthly_lt_nointerp(38.2, -181)  # exceeds min longitude

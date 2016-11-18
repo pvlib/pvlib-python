@@ -7,6 +7,7 @@ from __future__ import division
 
 import os
 from collections import OrderedDict
+import calendar
 
 import numpy as np
 import pandas as pd
@@ -186,6 +187,12 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # so divide the number from the file by 20 to get the
     # turbidity.
 
+    # The nodes of the grid are 5' (1/12=0.0833[arcdeg]) apart.
+    # From Section 8 of Aerosol optical depth and Linke turbidity climatology
+    # http://www.meteonorm.com/images/uploads/downloads/ieashc36_report_TL_AOD_climatologies.pdf
+    # 1st row: 89.9583 S, 2nd row: 89.875 S
+    # 1st column: 179.9583 W, 2nd column: 179.875 W
+
     try:
         import scipy.io
     except ImportError:
@@ -201,27 +208,37 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     linke_turbidity_table = mat['LinkeTurbidity']
 
     latitude_index = (
-        np.around(_linearly_scale(latitude, 90, -90, 1, 2160))
+        np.around(_linearly_scale(latitude, 90, -90, 0, 2160))
         .astype(np.int64))
     longitude_index = (
-        np.around(_linearly_scale(longitude, -180, 180, 1, 4320))
+        np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
         .astype(np.int64))
 
     g = linke_turbidity_table[latitude_index][longitude_index]
 
     if interp_turbidity:
-        # Data covers 1 year.
-        # Assume that data corresponds to the value at
-        # the middle of each month.
-        # This means that we need to add previous Dec and next Jan
-        # to the array so that the interpolation will work for
+        # Data covers 1 year. Assume that data corresponds to the value at the
+        # middle of each month. This means that we need to add previous Dec and
+        # next Jan to the array so that the interpolation will work for
         # Jan 1 - Jan 15 and Dec 16 - Dec 31.
-        # Then we map the month value to the day of year value.
-        # This is approximate and could be made more accurate.
         g2 = np.concatenate([[g[-1]], g, [g[0]]])
-        days = np.linspace(-15, 380, num=14)
-        linke_turbidity = pd.Series(np.interp(time.dayofyear, days, g2),
-                                    index=time)
+        # Then we map the month value to the day of year value.
+        isleap = [calendar.isleap(t.year) for t in time]
+        if all(isleap):
+            days = _calendar_month_middles(2016)  # all years are leap
+        elif not any(isleap):
+            days = _calendar_month_middles(2015)  # none of the years are leap
+        else:
+            days = None  # some of the years are leap years and some are not
+        if days is None:
+            # Loop over different years, might be slow for large timeserires
+            linke_turbidity = pd.Series([
+                np.interp(t.dayofyear, _calendar_month_middles(t.year), g2)
+                for t in time
+            ], index=time)
+        else:
+            linke_turbidity = pd.Series(np.interp(time.dayofyear, days, g2),
+                                        index=time)
     else:
         linke_turbidity = pd.DataFrame(time.month, index=time)
         # apply monthly data
@@ -230,6 +247,45 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     linke_turbidity /= 20.
 
     return linke_turbidity
+
+
+def _calendar_month_middles(year):
+    """list of middle day of each month, used by Linke turbidity lookup"""
+    # remove mdays[0] since January starts at mdays[1]
+    # make local copy of mdays since we need to change February for leap years
+    mdays = np.array(calendar.mdays[1:])  
+    ydays = 365
+    # handle leap years
+    if calendar.isleap(year):
+        mdays[1] = mdays[1] + 1
+        ydays = 366
+    return np.concatenate([[-calendar.mdays[-1] / 2.0],  # Dec last year
+                           np.cumsum(mdays) - np.array(mdays) / 2.,  # this year
+                           [ydays + calendar.mdays[1] / 2.0]])  # Jan next year
+
+
+def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
+    """linearly scale input to output, used by Linke turbidity lookup"""
+    inputrange = inputmax - inputmin
+    outputrange = outputmax - outputmin
+    delta = outputrange/inputrange  # number of indices per input unit
+    inputmin = inputmin + 1.0 / delta / 2.0  # shift to center of index
+    outputmax = outputmax - 1  # shift index to zero indexing
+    outputmatrix = (inputmatrix - inputmin) * delta + outputmin
+    err = IndexError('Input, %g, is out of range (%g, %g).' %
+                     (inputmatrix, inputmax - inputrange, inputmax))
+    # round down if input is within half an index or else raise index error
+    if outputmatrix > outputmax:
+        if np.around(outputmatrix - outputmax, 1) <= 0.5:
+            outputmatrix = outputmax
+        else:
+            raise err
+    elif outputmatrix < outputmin:
+        if np.around(outputmin - outputmatrix, 1) <= 0.5:
+            outputmatrix = outputmin
+        else:
+            raise err
+    return outputmatrix
 
 
 def haurwitz(apparent_zenith):
@@ -279,15 +335,6 @@ def haurwitz(apparent_zenith):
     df_out = pd.DataFrame({'ghi': clearsky_ghi})
 
     return df_out
-
-
-def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
-    """ used by linke turbidity lookup function """
-
-    inputrange = inputmax - inputmin
-    outputrange = outputmax - outputmin
-    outputmatrix = (inputmatrix-inputmin) * outputrange/inputrange + outputmin
-    return outputmatrix
 
 
 def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,

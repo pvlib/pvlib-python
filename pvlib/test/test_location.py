@@ -42,12 +42,26 @@ def test_location_invalid_tz_type():
 
 def test_location_print_all():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    expected_str = 'Location: \n  name: Tucson\n  latitude: 32.2\n  longitude: -111\n  altitude: 700\n  tz: US/Arizona'
+    expected_str = '\n'.join([
+        'Location: ',
+        '  name: Tucson',
+        '  latitude: 32.2',
+        '  longitude: -111',
+        '  altitude: 700',
+        '  tz: US/Arizona'
+])
     assert tus.__str__() == expected_str
 
 def test_location_print_pytz():
     tus = Location(32.2, -111, aztz, 700, 'Tucson')
-    expected_str = 'Location: \n  name: Tucson\n  latitude: 32.2\n  longitude: -111\n  altitude: 700\n  tz: US/Arizona'
+    expected_str = '\n'.join([
+        'Location: ',
+        '  name: Tucson',
+        '  latitude: 32.2',
+        '  longitude: -111',
+        '  altitude: 700',
+        '  tz: US/Arizona'
+])
     assert tus.__str__() == expected_str
 
 
@@ -58,14 +72,13 @@ def test_get_clearsky():
                              end='20160101T1800-0700',
                              freq='3H')
     clearsky = tus.get_clearsky(times)
-    expected = pd.DataFrame(data=np.
-        array([[   0.        ,    0.        ,    0.        ],
-               [ 258.60422702,  761.57329257,   50.1235982 ],
-               [ 611.96347869,  956.95353414,   70.8232806 ],
-               [ 415.10904044,  878.52649603,   59.07820922],
-               [   0.        ,    0.        ,    0.        ]]),
-                            columns=['ghi', 'dni', 'dhi'],
-                            index=times)
+    expected = pd.DataFrame(data=np.array([
+        (  0.0,                0.0,              0.0),
+        (262.77734276159333, 791.1972825869296, 46.18714900637892),
+        (616.764693938387,   974.9610353623959, 65.44157429054201),
+        (419.6512657626518,  901.6234995035793, 54.26016437839348),
+        (  0.0,                0.0,              0.0)],
+        dtype=[('ghi', '<f8'), ('dni', '<f8'), ('dhi', '<f8')]), index=times)
     assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
@@ -284,5 +297,12 @@ def test_get_airmass_valueerror():
 def test_Location___repr__():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
-    expected = 'Location: \n  name: Tucson\n  latitude: 32.2\n  longitude: -111\n  altitude: 700\n  tz: US/Arizona'
+    expected = '\n'.join([
+        'Location: ',
+        '  name: Tucson',
+        '  latitude: 32.2',
+        '  longitude: -111',
+        '  altitude: 700',
+        '  tz: US/Arizona'
+])
     assert tus.__repr__() == expected

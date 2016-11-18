@@ -72,7 +72,7 @@ def test_orientation_strategy(system, location):
     strategies = {}
 
 
-@pytest.mark.parametrize('strategy,expected', [
+@pytest.mark.parametrize('strategy, expected', [
     (None, (0, 180)), ('None', (0, 180)), ('flat', (0, 180)),
     ('south_at_latitude_tilt', (32.2, 180))
 ])
@@ -92,7 +92,7 @@ def test_run_model(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([  1.82033564e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -141,7 +141,7 @@ def test_run_model_with_weather(system, location):
     weather = pd.DataFrame({'wind_speed':5, 'temp_air':10}, index=times)
     ac = mc.run_model(times, weather=weather).ac
 
-    expected = pd.Series(np.array([  1.99952400e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  201.691634921,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -154,7 +154,7 @@ def test_run_model_tracker(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([  121.421719,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  122.333764454,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -171,11 +171,11 @@ def poadc(mc):
     mc.dc.name = None  # assert_series_equal will fail without this
 
 @requires_scipy
-@pytest.mark.parametrize('dc_model,expected', [
-    ('sapm', [180.13735116, -2.00000000e-02]),
-    ('singlediode', [179.7178188, -2.00000000e-02]),
-    ('pvwatts', [188.400994862, 0]),
-    (poadc, [187.361841505, 0])  # user supplied function
+@pytest.mark.parametrize('dc_model, expected', [
+    ('sapm', [181.604438144, -2.00000000e-02]),
+    ('singlediode', [181.044109596, -2.00000000e-02]),
+    ('pvwatts', [190.028186986, 0]),
+    (poadc, [189.183065667, 0])  # user supplied function
 ])
 def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
                    location, dc_model, expected):
@@ -199,12 +199,12 @@ def acdc(mc):
     mc.ac = mc.dc
 
 @requires_scipy
-@pytest.mark.parametrize('ac_model,expected', [
-    ('snlinverter', [180.13735116, -2.00000000e-02]),
+@pytest.mark.parametrize('ac_model, expected', [
+    ('snlinverter', [181.604438144, -2.00000000e-02]),
     pytest.mark.xfail(raises=NotImplementedError)
     (('adrinverter', [179.7178188, -2.00000000e-02])),
-    ('pvwatts', [188.400994862, 0]),
-    (acdc, [198.11956073, 0])  # user supplied function
+    ('pvwatts', [190.028186986, 0]),
+    (acdc, [199.845296258, 0])  # user supplied function
 ])
 def test_ac_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
                    location, ac_model, expected):
@@ -228,12 +228,12 @@ def constant_aoi_loss(mc):
     mc.aoi_modifier = 0.9
 
 @requires_scipy
-@pytest.mark.parametrize('aoi_model,expected', [
-    ('sapm', [181.297862126, -2.00000000e-02]),
-    ('ashrae', [179.371460714, -2.00000000e-02]),
-    ('physical', [179.98844351, -2.00000000e-02]),
-    ('no_loss', [180.13735116, -2.00000000e-02]),
-    (constant_aoi_loss, [163.800168358, -2e-2])
+@pytest.mark.parametrize('aoi_model, expected', [
+    ('sapm', [182.784057666, -2.00000000e-02]),
+    ('ashrae', [180.825930547, -2.00000000e-02]),
+    ('physical', [181.453077805, -2.00000000e-02]),
+    ('no_loss', [181.604438144, -2.00000000e-02]),
+    (constant_aoi_loss, [164.997043305, -2e-2])
 ])
 def test_aoi_models(system, location, aoi_model, expected):
     mc = ModelChain(system, location, dc_model='sapm',
@@ -249,12 +249,12 @@ def constant_spectral_loss(mc):
     mc.spectral_modifier = 0.9
 
 @requires_scipy
-@pytest.mark.parametrize('spectral_model,expected', [
-    ('sapm', [180.865917827, -2.00000000e-02]),
+@pytest.mark.parametrize('spectral_model, expected', [
+    ('sapm', [182.338436597, -2.00000000e-02]),
     pytest.mark.xfail(raises=NotImplementedError)
     (('first_solar', [179.371460714, -2.00000000e-02])),
-    ('no_loss', [180.13735116, -2.00000000e-02]),
-    (constant_spectral_loss, [161.732659674, -2e-2])
+    ('no_loss', [181.604438144, -2.00000000e-02]),
+    (constant_spectral_loss, [163.061569511, -2e-2])
 ])
 def test_spectral_models(system, location, spectral_model, expected):
     mc = ModelChain(system, location, dc_model='sapm',
@@ -271,10 +271,10 @@ def constant_losses(mc):
     mc.ac *= mc.losses
 
 @requires_scipy
-@pytest.mark.parametrize('losses_model,expected', [
-    ('pvwatts', [161.882310092, 0]),
-    ('no_loss', [188.400994862, 0]),
-    (constant_losses, [169.560895376, 0])
+@pytest.mark.parametrize('losses_model, expected', [
+    ('pvwatts', [163.280464174, 0]),
+    ('no_loss', [190.028186986, 0]),
+    (constant_losses, [171.025368287, 0])
 ])
 def test_losses_models(pvwatts_dc_pvwatts_ac_system, location, losses_model,
                        expected):
@@ -342,7 +342,7 @@ def test_basic_chain_alt_az(sam_data):
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth)
 
-    expected = pd.Series(np.array([  1.14490928477e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  115.40352679,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -364,7 +364,7 @@ def test_basic_chain_strategy(sam_data):
                                     orientation_strategy='south_at_latitude_tilt',
                                     altitude=altitude)
 
-    expected = pd.Series(np.array([  1.82033563543e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -389,7 +389,7 @@ def test_basic_chain_altitude_pressure(sam_data):
                                     surface_azimuth=surface_azimuth,
                                     pressure=93194)
 
-    expected = pd.Series(np.array([  1.15771428788e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  116.595664887,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -399,7 +399,7 @@ def test_basic_chain_altitude_pressure(sam_data):
                                     surface_azimuth=surface_azimuth,
                                     altitude=altitude)
 
-    expected = pd.Series(np.array([  1.15771428788e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([  116.595664887,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -411,7 +411,21 @@ def test_ModelChain___repr__(system, location):
     mc = ModelChain(system, location, orientation_strategy=strategy,
                     name='my mc')
 
-    expected = 'ModelChain: \n  name: my mc\n  orientation_strategy: south_at_latitude_tilt\n  clearsky_model: ineichen\n  transposition_model: haydavies\n  solar_position_method: nrel_numpy\n  airmass_model: kastenyoung1989\n  dc_model: sapm\n  ac_model: snlinverter\n  aoi_model: sapm_aoi_loss\n  spectral_model: sapm_spectral_loss\n  temp_model: sapm_temp\n  losses_model: no_extra_losses'
+    expected = '\n'.join([
+        'ModelChain: ',
+        '  name: my mc',
+        '  orientation_strategy: south_at_latitude_tilt',
+        '  clearsky_model: ineichen',
+        '  transposition_model: haydavies',
+        '  solar_position_method: nrel_numpy',
+        '  airmass_model: kastenyoung1989',
+        '  dc_model: sapm',
+        '  ac_model: snlinverter',
+        '  aoi_model: sapm_aoi_loss',
+        '  spectral_model: sapm_spectral_loss',
+        '  temp_model: sapm_temp',
+        '  losses_model: no_extra_losses'
+    ])
 
     assert mc.__repr__() == expected
 

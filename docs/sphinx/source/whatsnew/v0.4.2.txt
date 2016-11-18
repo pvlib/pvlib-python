@@ -46,6 +46,7 @@ Enhancements
   separate pages for each function, class, or method. (:issue:`258`)
 * Improved Linke turbidity factor time interpolation with Python `calendar`
   month days and leap years (:issue:`265`)
+* Added option to return diffuse components from Perez transposition model.
 
 
 Other
@@ -61,3 +62,4 @@ Code Contributors
 * Will Holmgren
 * Volker Beutner
 * Mark Mikofski
+* Marc Anoma

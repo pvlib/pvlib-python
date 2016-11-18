@@ -1048,8 +1048,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
 
     if return_components:
-        component_keys = ('isotropic', 'circumsolar', 'horizon')
-        diffuse_components = dict.fromkeys(component_keys)
+        diffuse_components = OrderedDict()
 
         # Calculate the different components
         diffuse_components['isotropic'] = dhi * term1
@@ -1057,8 +1056,12 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         diffuse_components['horizon'] = dhi * term3
 
         # Set values of components to 0 when sky_diffuse is 0
-        for k in diffuse_components.keys():
-            diffuse_components[k][sky_diffuse == 0] = 0
+        mask = sky_diffuse == 0
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+            diffuse_components.ix[mask] = 0
+        else:
+            diffuse_components = {k: np.where(mask, 0, v) for k, v in diffuse_components.items()}
 
         return sky_diffuse, diffuse_components
 

@@ -177,9 +177,11 @@ def test_perez_components():
         index=times
     )
     df_components = pd.DataFrame(components)
-    sum_components = pd.Series(np.sum(list(components.values()), axis=0), index=times)
+    sum_components = df_components.sum(axis=1)
+
+    columns = df_components.columns
     assert_series_equal(out, expected, check_less_precise=2)
-    assert_frame_equal(df_components, expected_components)
+    assert_frame_equal(df_components[columns], expected_components[columns])
     assert_series_equal(sum_components, expected, check_less_precise=2)
 
 @needs_numpy_1_10

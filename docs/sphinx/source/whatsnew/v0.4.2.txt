@@ -13,6 +13,9 @@ Bug fixes
 * PVSystem.pvwatts_ac could not use the eta_inv_ref kwarg and
   PVSystem.pvwatts_dc could not use the temp_ref kwarg. Fixed. (:issue:`252`)
 * Fixed typo in ModelChain.infer_spectral_model error message. (:issue:`251`)
+* Fixed Linke turbdity factor out of bounds error at 90-degree latitude or at
+  180-degree longitude (:issue:`262`)
+* Fixed Linke turbidity factor grid spacing and centers (:issue:`263`)
 
 
 API Changes
@@ -41,7 +44,18 @@ Enhancements
 * Added name attribute to ModelChain and PVSystem. (:issue:`254`)
 * Restructured API section of the documentation so that there are
   separate pages for each function, class, or method. (:issue:`258`)
+<<<<<<< HEAD
 * Improved convergence of lambertw function (:issue: '260')
+=======
+* Improved Linke turbidity factor time interpolation with Python `calendar`
+  month days and leap years (:issue:`265`)
+
+
+Other
+~~~~~
+* Typical modeling results could change by ~1%, depending on location, if they
+  depend on the turbidity table
+>>>>>>> refs/remotes/pvlib/master
 
 
 Code Contributors
@@ -50,4 +64,8 @@ Code Contributors
 * Uwe Krien
 * Will Holmgren
 * Volker Beutner
+<<<<<<< HEAD
 * Cliff Hansen
+=======
+* Mark Mikofski
+>>>>>>> refs/remotes/pvlib/master

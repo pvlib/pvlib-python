@@ -25,7 +25,7 @@ build/
 
 *.egg-info/
 .installed.cfg
-*.egg
+*.egg*
 
 # spa_c_files builds
 pvlib/spa_c_files/build*
@@ -52,10 +52,12 @@ coverage.xml
 # Translations
 *.mo
 
-# Mr Developer
+# IDE's (Mr Developer, pydev, pycharm...)
 .mr.developer.cfg
 .project
 .pydevproject
+.spyderproject
+.idea/
 
 # Rope
 .ropeproject

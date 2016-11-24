@@ -1,0 +1,34 @@
+.. _whatsnew_0410:
+
+v0.4.1 (October 5, 2016)
+------------------------
+
+This is a minor release from 0.4.0. We recommend that all users upgrade
+to this version, especially if they want to use the latest versions of
+pandas.
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fixed an error in the irradiance.klucher transposition model.
+  The error was introduced in version 0.4.0. (:issue:`228`)
+* Update RAP forecast model variable names. (:issue:`241`)
+* Fix incompatibility with pandas 0.19 and solar position calculations.
+  (:issue:`246`)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+* Fixed a typo in the pvsystem.sapm returns description. (:issue:`234`)
+* Replaced nosetests references with py.test. (:issue:`232`)
+* Improve the rendering of the snlinverter doc string. (:issue:`242`)
+
+
+Code Contributors
+~~~~~~~~~~~~~~~~~
+
+* Mark Mikofski
+* Johannes Dollinger
+* Will Holmgren

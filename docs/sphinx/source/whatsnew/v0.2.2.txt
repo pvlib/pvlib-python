@@ -1,7 +1,7 @@
 .. _whatsnew_0220:
 
 v0.2.2 (November 13, 2015)
------------------------
+--------------------------
 
 This is a minor release from 0.2.1.
 We recommend that all users upgrade to this version.

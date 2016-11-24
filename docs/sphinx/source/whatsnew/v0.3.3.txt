@@ -1,0 +1,86 @@
+.. _whatsnew_0330:
+
+v0.3.3 (June 15, 2016)
+-----------------------
+
+This is a minor release from 0.3.2.
+We recommend that all users upgrade to this version.
+
+
+API Changes
+~~~~~~~~~~~
+
+* Renamed ``series_modules`` to ``modules_per_string`` and
+  ``parallel_modules`` to ``strings_per_inverter``. (:issue:`176`)
+* Changed two of the TMY3 data reader fields for consistency with
+  the rest of the fields and with PVLIB MATLAB. Changed
+  'PresWth source' to 'PresWthSource', and 'PresWth uncert' to
+  'PresWthUncertainty'. (:issue:`193`)
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adds the Erbs model. (:issue:`2`)
+* Adds the ``scale_voltage_current_power`` function and ``PVSystem`` method
+  to support simple array modeling. (:issue:`159`)
+* Adds support for ``SingleAxisTracker`` objects in ``ModelChain``.
+  (:issue:`169`)
+* Add ``__repr__`` method to PVSystem, LocalizedPVSystem, ModelChain,
+  SingleAxisTracker, Location. (:issue:`142`)
+* Add ``v_from_i`` function for solving the single diode model.
+  (:issue:`190`)
+* Improve speed of ``singlediode`` function by using ``v_from_i`` to
+  determine ``v_oc``. Speed is ~2x faster. (:issue:`190`)
+* Adds the Simplified Solis clear sky model. (:issue:`148`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fix another bug with the Appveyor continuous integration builds.
+  (:issue:`170`)
+* Add classifiers to setup.py. (:issue:`181`)
+* Fix snlinverter and singlediode documentation. They incorrectly said that
+  inverter/module must be a DataFrame, when in reality they can be any
+  dict-like object. (:issue:`157`)
+* Fix numpy 1.11 deprecation warnings caused by some functions using
+  non-integer indices.
+* Propagate airmass data through ModelChain's get_irradiance call so that
+  the perez model can use it, if necessary. (:issue:`172`)
+* Fix problem in which the perez function dropped nighttime values.
+  Nighttime values are now set to 0.
+  (:issue:`191`)
+
+
+
+Documentation
+~~~~~~~~~~~~~
+
+* Localize datetime indices in package overview examples.
+  (:issue:`156`)
+* Clarify that ``ModelChain`` and ``basic_chain`` currently only
+  supports SAPM. (:issue:`177`)
+* Fix version number in 0.3.2 whatsnew file.
+* Shorten README.md file and move information to official documentation.
+  (:issue:`182`)
+* Change authors to *PVLIB Python Developers* and clean up setup.py.
+  (:issue:`184`)
+* Document the PresWth, PresWthSource, and PresWthUncertainty fields in
+  the TMY3 data reader. (:issue:`193`)
+
+
+Other
+~~~~~
+
+* Removed test skip decorator functions for Linux + Python 3 and for
+  pandas 0.18.0. (:issue:`187`)
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren
+* Mark Mikofski
+* Johannes Oos
+* Tony Lorenzo

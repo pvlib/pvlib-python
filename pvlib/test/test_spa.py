@@ -1,7 +1,6 @@
 import os
 import datetime as dt
-import logging
-pvl_logger = logging.getLogger('pvlib')
+
 try:
     from importlib import reload
 except ImportError:
@@ -11,12 +10,11 @@ except ImportError:
         pass
 
 import numpy as np
-import numpy.testing as npt
+from numpy.testing import assert_almost_equal
 import pandas as pd
 
 import unittest
-from nose.tools import raises, assert_almost_equals
-from nose.plugins.skip import SkipTest
+import pytest
 
 from pvlib.location import Location
 
@@ -29,8 +27,10 @@ except ImportError:
     numba_version_int = 0
 
 
-times = pd.date_range('2003-10-17 12:30:30', periods=1, freq='D').tz_localize('MST')
-unixtimes = times.tz_convert('UTC').astype(np.int64)*1.0/10**9
+times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
+           .tz_localize('MST'))
+unixtimes = np.array(times.tz_convert('UTC').astype(np.int64)*1.0/10**9)
+
 lat = 39.742476
 lon = -105.1786
 elev = 1830.14
@@ -77,7 +77,19 @@ theta = 50.11162
 theta0 = 90 - e0
 Gamma = 14.340241
 Phi = 194.340241
-
+year = 1985 
+month = 2
+year_array = np.array([-499, 500, 1000, 1500, 1800, 1900, 1950, 1970, 1985, 1990, 2000, 2005])
+month_array = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+dt_actual = 54.413442486
+dt_actual_array = np.array([1.7184831e+04, 5.7088051e+03, 1.5730419e+03,
+                          1.9801820e+02, 1.3596506e+01, -2.1171894e+00,
+                          2.9289261e+01, 4.0824887e+01, 5.4724581e+01,
+                          5.7426651e+01, 6.4108015e+01, 6.5038015e+01])
+mix_year_array = np.full((10), year)
+mix_month_array = np.full((10), month)
+mix_year_actual = np.full((10), dt_actual)
+mix_month_actual = mix_year_actual 
 
 class SpaBase(object):
     """Test functions common to numpy and numba spa"""
@@ -90,105 +102,105 @@ class SpaBase(object):
         minute = dt.minute
         second = dt.second
         microsecond = dt.microsecond
-        assert_almost_equals(JD,
-                             self.spa.julian_day_dt(year, month, day, hour, 
+        assert_almost_equal(JD,
+                             self.spa.julian_day_dt(year, month, day, hour,
                                            minute, second, microsecond), 6)
 
     def test_julian_ephemeris_day(self):
-        assert_almost_equals(JDE, self.spa.julian_ephemeris_day(JD, delta_t), 5)
+        assert_almost_equal(JDE, self.spa.julian_ephemeris_day(JD, delta_t), 5)
 
     def test_julian_century(self):
-        assert_almost_equals(JC, self.spa.julian_century(JD), 6)
+        assert_almost_equal(JC, self.spa.julian_century(JD), 6)
 
     def test_julian_ephemeris_century(self):
-        assert_almost_equals(JCE, self.spa.julian_ephemeris_century(JDE), 10)
+        assert_almost_equal(JCE, self.spa.julian_ephemeris_century(JDE), 10)
 
     def test_julian_ephemeris_millenium(self):
-        assert_almost_equals(JME, self.spa.julian_ephemeris_millennium(JCE), 10)
+        assert_almost_equal(JME, self.spa.julian_ephemeris_millennium(JCE), 10)
 
     def test_heliocentric_longitude(self):
-        assert_almost_equals(L, self.spa.heliocentric_longitude(JME), 6)
+        assert_almost_equal(L, self.spa.heliocentric_longitude(JME), 6)
 
     def test_heliocentric_latitude(self):
-        assert_almost_equals(B, self.spa.heliocentric_latitude(JME), 6)
+        assert_almost_equal(B, self.spa.heliocentric_latitude(JME), 6)
 
     def test_heliocentric_radius_vector(self):
-        assert_almost_equals(R, self.spa.heliocentric_radius_vector(JME), 6)
+        assert_almost_equal(R, self.spa.heliocentric_radius_vector(JME), 6)
 
     def test_geocentric_longitude(self):
-        assert_almost_equals(Theta, self.spa.geocentric_longitude(L), 6)
+        assert_almost_equal(Theta, self.spa.geocentric_longitude(L), 6)
 
     def test_geocentric_latitude(self):
-        assert_almost_equals(beta, self.spa.geocentric_latitude(B), 6)
+        assert_almost_equal(beta, self.spa.geocentric_latitude(B), 6)
 
     def test_mean_elongation(self):
-        assert_almost_equals(X0, self.spa.mean_elongation(JCE), 5)
+        assert_almost_equal(X0, self.spa.mean_elongation(JCE), 5)
 
     def test_mean_anomaly_sun(self):
-        assert_almost_equals(X1, self.spa.mean_anomaly_sun(JCE), 5)
+        assert_almost_equal(X1, self.spa.mean_anomaly_sun(JCE), 5)
 
     def test_mean_anomaly_moon(self):
-        assert_almost_equals(X2, self.spa.mean_anomaly_moon(JCE), 5)
+        assert_almost_equal(X2, self.spa.mean_anomaly_moon(JCE), 5)
 
     def test_moon_argument_latitude(self):
-        assert_almost_equals(X3, self.spa.moon_argument_latitude(JCE), 5)
+        assert_almost_equal(X3, self.spa.moon_argument_latitude(JCE), 5)
 
     def test_moon_ascending_longitude(self):
-        assert_almost_equals(X4, self.spa.moon_ascending_longitude(JCE), 6)
+        assert_almost_equal(X4, self.spa.moon_ascending_longitude(JCE), 6)
 
     def test_longitude_nutation(self):
-        assert_almost_equals(dPsi, self.spa.longitude_nutation(JCE, X0, X1, X2,
+        assert_almost_equal(dPsi, self.spa.longitude_nutation(JCE, X0, X1, X2,
                                                                X3, X4), 6)
 
     def test_obliquity_nutation(self):
-        assert_almost_equals(dEpsilon, self.spa.obliquity_nutation(JCE, X0, X1, 
-                                                                   X2, X3, X4), 
+        assert_almost_equal(dEpsilon, self.spa.obliquity_nutation(JCE, X0, X1,
+                                                                   X2, X3, X4),
                              6)
 
     def test_mean_ecliptic_obliquity(self):
-        assert_almost_equals(epsilon0, self.spa.mean_ecliptic_obliquity(JME), 6)
+        assert_almost_equal(epsilon0, self.spa.mean_ecliptic_obliquity(JME), 6)
 
     def test_true_ecliptic_obliquity(self):
-        assert_almost_equals(epsilon, self.spa.true_ecliptic_obliquity(
+        assert_almost_equal(epsilon, self.spa.true_ecliptic_obliquity(
             epsilon0, dEpsilon), 6)
 
     def test_aberration_correction(self):
-        assert_almost_equals(dTau, self.spa.aberration_correction(R), 6)
+        assert_almost_equal(dTau, self.spa.aberration_correction(R), 6)
 
     def test_apparent_sun_longitude(self):
-        assert_almost_equals(lamd, self.spa.apparent_sun_longitude(
+        assert_almost_equal(lamd, self.spa.apparent_sun_longitude(
             Theta, dPsi, dTau), 6)
 
     def test_mean_sidereal_time(self):
-        assert_almost_equals(v0, self.spa.mean_sidereal_time(JD, JC), 3)
+        assert_almost_equal(v0, self.spa.mean_sidereal_time(JD, JC), 3)
 
     def test_apparent_sidereal_time(self):
-        assert_almost_equals(v, self.spa.apparent_sidereal_time(
+        assert_almost_equal(v, self.spa.apparent_sidereal_time(
             v0, dPsi, epsilon), 5)
 
     def test_geocentric_sun_right_ascension(self):
-        assert_almost_equals(alpha, self.spa.geocentric_sun_right_ascension(
+        assert_almost_equal(alpha, self.spa.geocentric_sun_right_ascension(
             lamd, epsilon, beta), 6)
 
     def test_geocentric_sun_declination(self):
-        assert_almost_equals(delta, self.spa.geocentric_sun_declination(
+        assert_almost_equal(delta, self.spa.geocentric_sun_declination(
             lamd, epsilon, beta), 6)
 
     def test_local_hour_angle(self):
-        assert_almost_equals(H, self.spa.local_hour_angle(v, lon, alpha), 4)
+        assert_almost_equal(H, self.spa.local_hour_angle(v, lon, alpha), 4)
 
     def test_equatorial_horizontal_parallax(self):
-        assert_almost_equals(xi, self.spa.equatorial_horizontal_parallax(R), 6)
+        assert_almost_equal(xi, self.spa.equatorial_horizontal_parallax(R), 6)
 
     def test_parallax_sun_right_ascension(self):
         u = self.spa.uterm(lat)
         x = self.spa.xterm(u, lat, elev)
         y = self.spa.yterm(u, lat, elev)
-        assert_almost_equals(dAlpha, self.spa.parallax_sun_right_ascension(
+        assert_almost_equal(dAlpha, self.spa.parallax_sun_right_ascension(
             x, xi, H, delta), 4)
 
     def test_topocentric_sun_right_ascension(self):
-        assert_almost_equals(alpha_prime, 
+        assert_almost_equal(alpha_prime,
                              self.spa.topocentric_sun_right_ascension(
                                  alpha, dAlpha), 5)
 
@@ -196,51 +208,50 @@ class SpaBase(object):
         u = self.spa.uterm(lat)
         x = self.spa.xterm(u, lat, elev)
         y = self.spa.yterm(u, lat, elev)
-        assert_almost_equals(delta_prime, self.spa.topocentric_sun_declination(
+        assert_almost_equal(delta_prime, self.spa.topocentric_sun_declination(
             delta, x, y, xi, dAlpha,H), 5)
 
     def test_topocentric_local_hour_angle(self):
-        assert_almost_equals(H_prime, self.spa.topocentric_local_hour_angle(
+        assert_almost_equal(H_prime, self.spa.topocentric_local_hour_angle(
             H, dAlpha), 5)
 
     def test_topocentric_elevation_angle_without_atmosphere(self):
-        assert_almost_equals(
+        assert_almost_equal(
             e0, self.spa.topocentric_elevation_angle_without_atmosphere(
                 lat, delta_prime, H_prime), 6)
 
     def test_atmospheric_refraction_correction(self):
-        assert_almost_equals(de, self.spa.atmospheric_refraction_correction(
+        assert_almost_equal(de, self.spa.atmospheric_refraction_correction(
             pressure, temp, e0, atmos_refract), 6)
 
     def test_topocentric_elevation_angle(self):
-        assert_almost_equals(e, self.spa.topocentric_elevation_angle(e0, de), 6)
+        assert_almost_equal(e, self.spa.topocentric_elevation_angle(e0, de), 6)
 
     def test_topocentric_zenith_angle(self):
-        assert_almost_equals(theta, self.spa.topocentric_zenith_angle(e), 5)
+        assert_almost_equal(theta, self.spa.topocentric_zenith_angle(e), 5)
 
     def test_topocentric_astronomers_azimuth(self):
-        assert_almost_equals(Gamma, self.spa.topocentric_astronomers_azimuth(
+        assert_almost_equal(Gamma, self.spa.topocentric_astronomers_azimuth(
             H_prime, delta_prime, lat), 5)
 
     def test_topocentric_azimuth_angle(self):
-        assert_almost_equals(Phi, self.spa.topocentric_azimuth_angle(Gamma), 5)
+        assert_almost_equal(Phi, self.spa.topocentric_azimuth_angle(Gamma), 5)
 
     def test_solar_position(self):
-        npt.assert_almost_equal(
+        assert_almost_equal(
             np.array([[theta, theta0, e, e0, Phi]]).T, self.spa.solar_position(
-                unixtimes, lat, lon, elev, pressure, temp, delta_t, 
+                unixtimes, lat, lon, elev, pressure, temp, delta_t,
                 atmos_refract)[:-1], 5)
-        npt.assert_almost_equal(
+        assert_almost_equal(
             np.array([[v, alpha, delta]]).T, self.spa.solar_position(
-                unixtimes, lat, lon, elev, pressure, temp, delta_t, 
+                unixtimes, lat, lon, elev, pressure, temp, delta_t,
                 atmos_refract, sst=True)[:3], 5)
 
     def test_equation_of_time(self):
         eot = 14.64
         M = self.spa.sun_mean_longitude(JME)
-        assert_almost_equals(eot, self.spa.equation_of_time(
+        assert_almost_equal(eot, self.spa.equation_of_time(
             M, alpha, dPsi, epsilon), 2)
-        
 
     def test_transit_sunrise_sunset(self):
         # tests at greenwich
@@ -253,9 +264,12 @@ class SpaBase(object):
         sunset = pd.DatetimeIndex([dt.datetime(1996, 7, 5, 17, 1, 4),
                                    dt.datetime(2004, 12, 4, 19, 2, 2)]
                                   ).tz_localize('UTC').astype(np.int64)*1.0/10**9
+        times = np.array(times)
+        sunrise = np.array(sunrise)
+        sunset = np.array(sunset)
         result = self.spa.transit_sunrise_sunset(times, -35.0, 0.0, 64.0, 1)
-        npt.assert_almost_equal(sunrise/1e3, result[1]/1e3, 3)
-        npt.assert_almost_equal(sunset/1e3, result[2]/1e3, 3)
+        assert_almost_equal(sunrise/1e3, result[1]/1e3, 3)
+        assert_almost_equal(sunset/1e3, result[2]/1e3, 3)
 
 
         times = pd.DatetimeIndex([dt.datetime(1994, 1, 2),]
@@ -264,9 +278,12 @@ class SpaBase(object):
                                   ).tz_localize('UTC').astype(np.int64)*1.0/10**9
         sunrise = pd.DatetimeIndex([dt.datetime(1994, 1, 2, 7, 8, 12),]
                                    ).tz_localize('UTC').astype(np.int64)*1.0/10**9
+        times = np.array(times)
+        sunrise = np.array(sunrise)
+        sunset = np.array(sunset)
         result = self.spa.transit_sunrise_sunset(times, 35.0, 0.0, 64.0, 1)
-        npt.assert_almost_equal(sunrise/1e3, result[1]/1e3, 3)
-        npt.assert_almost_equal(sunset/1e3, result[2]/1e3, 3)
+        assert_almost_equal(sunrise/1e3, result[1]/1e3, 3)
+        assert_almost_equal(sunset/1e3, result[2]/1e3, 3)
 
         # tests from USNO
         # Golden
@@ -285,10 +302,13 @@ class SpaBase(object):
                                    dt.datetime(2015, 8, 2, 19, 10),
                                    dt.datetime(2015, 12, 2, 16, 38),],
                                   ).tz_localize('MST').astype(np.int64)*1.0/10**9
+        times = np.array(times)
+        sunrise = np.array(sunrise)
+        sunset = np.array(sunset)
         result = self.spa.transit_sunrise_sunset(times, 39.0, -105.0, 64.0, 1)
-        npt.assert_almost_equal(sunrise/1e3, result[1]/1e3, 1)
-        npt.assert_almost_equal(sunset/1e3, result[2]/1e3, 1)
-        
+        assert_almost_equal(sunrise/1e3, result[1]/1e3, 1)
+        assert_almost_equal(sunset/1e3, result[2]/1e3, 1)
+
         # Beijing
         times = pd.DatetimeIndex([dt.datetime(2015, 1, 2),
                                   dt.datetime(2015, 4, 2),
@@ -307,11 +327,33 @@ class SpaBase(object):
                                    dt.datetime(2015, 12, 2, 16, 50),],
                                   ).tz_localize('Asia/Shanghai'
                                   ).astype(np.int64)*1.0/10**9
+        times = np.array(times)
+        sunrise = np.array(sunrise)
+        sunset = np.array(sunset)
         result = self.spa.transit_sunrise_sunset(times, 39.917, 116.383, 64.0,1)
-        npt.assert_almost_equal(sunrise/1e3, result[1]/1e3, 1)
-        npt.assert_almost_equal(sunset/1e3, result[2]/1e3, 1)
-                
+        assert_almost_equal(sunrise/1e3, result[1]/1e3, 1)
+        assert_almost_equal(sunset/1e3, result[2]/1e3, 1)
 
+    def test_earthsun_distance(self):
+        times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
+           .tz_localize('MST'))
+        unixtimes = times.tz_convert('UTC').astype(np.int64)*1.0/10**9
+        unixtimes = np.array(unixtimes)
+        result = self.spa.earthsun_distance(unixtimes, 64.0, 1)
+        assert_almost_equal(R, result, 6)
+
+    def test_calculate_deltat(self):
+        result_mix_year = self.spa.calculate_deltat(mix_year_array, month)
+        assert_almost_equal(mix_year_actual, result_mix_year)
+
+        result_mix_month = self.spa.calculate_deltat(year, mix_month_array)
+        assert_almost_equal(mix_month_actual, result_mix_month)
+
+        result_array = self.spa.calculate_deltat(year_array, month_array)
+        assert_almost_equal(dt_actual_array, result_array, 3)
+
+        result_scalar = self.spa.calculate_deltat(year,month)
+        assert_almost_equal(dt_actual, result_scalar)
 
 class NumpySpaTest(unittest.TestCase, SpaBase):
     """Import spa without compiling to numba then run tests"""
@@ -324,14 +366,14 @@ class NumpySpaTest(unittest.TestCase, SpaBase):
 
     @classmethod
     def tearDownClass(self):
-        del os.environ['PVLIB_USE_NUMBA'] 
+        del os.environ['PVLIB_USE_NUMBA']
 
     def test_julian_day(self):
-        assert_almost_equals(JD, self.spa.julian_day(unixtimes)[0], 6)
+        assert_almost_equal(JD, self.spa.julian_day(unixtimes)[0], 6)
 
 
-@unittest.skipIf(numba_version_int < 17, 
-                 'Numba not installed or version not >= 0.17.0')
+@pytest.mark.skipif(numba_version_int < 17,
+                    reason='Numba not installed or version not >= 0.17.0')
 class NumbaSpaTest(unittest.TestCase, SpaBase):
     """Import spa, compiling to numba, and run tests"""
     @classmethod
@@ -347,32 +389,32 @@ class NumbaSpaTest(unittest.TestCase, SpaBase):
         del os.environ['PVLIB_USE_NUMBA']
 
     def test_julian_day(self):
-        assert_almost_equals(JD, self.spa.julian_day(unixtimes[0]), 6)
+        assert_almost_equal(JD, self.spa.julian_day(unixtimes[0]), 6)
 
     def test_solar_position_singlethreaded(self):
-        npt.assert_almost_equal(
+        assert_almost_equal(
             np.array([[theta, theta0, e, e0, Phi]]).T, self.spa.solar_position(
-                unixtimes, lat, lon, elev, pressure, temp, delta_t, 
+                unixtimes, lat, lon, elev, pressure, temp, delta_t,
                 atmos_refract, numthreads=1)[:-1], 5)
-        npt.assert_almost_equal(
+        assert_almost_equal(
             np.array([[v, alpha, delta]]).T, self.spa.solar_position(
-                unixtimes, lat, lon, elev, pressure, temp, delta_t, 
+                unixtimes, lat, lon, elev, pressure, temp, delta_t,
                 atmos_refract, numthreads=1, sst=True)[:3], 5)
 
     def test_solar_position_multithreaded(self):
         result = np.array([theta, theta0, e, e0, Phi])
         nresult = np.array([result, result, result]).T
         times = np.array([unixtimes[0], unixtimes[0], unixtimes[0]])
-        npt.assert_almost_equal(
+        assert_almost_equal(
             nresult
             , self.spa.solar_position(
-                times, lat, lon, elev, pressure, temp, delta_t, 
+                times, lat, lon, elev, pressure, temp, delta_t,
                 atmos_refract, numthreads=8)[:-1], 5)
         result = np.array([v, alpha, delta])
         nresult = np.array([result, result, result]).T
-        npt.assert_almost_equal(
+        assert_almost_equal(
             nresult
             , self.spa.solar_position(
-                times, lat, lon, elev, pressure, temp, delta_t, 
-                atmos_refract, numthreads=8, sst=True)[:3], 5)        
-                                                                  
+                times, lat, lon, elev, pressure, temp, delta_t,
+                atmos_refract, numthreads=8, sst=True)[:3], 5)
+

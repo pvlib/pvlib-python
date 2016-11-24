@@ -907,6 +907,7 @@ def solar_position_loop(unixtime, loc_args, out):
     delta_t = loc_args[5]
     atmos_refract = loc_args[6]
     sst = loc_args[7]
+    esd = loc_args[8]
 
     for i in range(unixtime.shape[0]):
         utime = unixtime[i]
@@ -915,9 +916,12 @@ def solar_position_loop(unixtime, loc_args, out):
         jc = julian_century(jd)
         jce = julian_ephemeris_century(jde)
         jme = julian_ephemeris_millennium(jce)
+        R = heliocentric_radius_vector(jme)
+        if esd:
+            out[0, i] = R
+            continue
         L = heliocentric_longitude(jme)
         B = heliocentric_latitude(jme)
-        R = heliocentric_radius_vector(jme)
         Theta = geocentric_longitude(L)
         beta = geocentric_latitude(B)
         x0 = mean_elongation(jce)
@@ -970,14 +974,24 @@ def solar_position_loop(unixtime, loc_args, out):
 
 
 def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
-                         atmos_refract, numthreads, sst=False):
+                         atmos_refract, numthreads, sst=False, esd=False):
     """Calculate the solar position using the numba compiled functions
     and multiple threads. Very slow if functions are not numba compiled.
     """
+    # these args are the same for each thread
     loc_args = np.array([lat, lon, elev, pressure, temp, delta_t,
-                         atmos_refract, sst])
+                         atmos_refract, sst, esd])
+
+    # construct dims x ulength array to put the results in
     ulength = unixtime.shape[0]
-    result = np.empty((6, ulength), dtype=np.float64)
+    if sst:
+        dims = 3
+    elif esd:
+        dims = 1
+    else:
+        dims = 6
+    result = np.empty((dims, ulength), dtype=np.float64)
+
     if unixtime.dtype != np.float64:
         unixtime = unixtime.astype(np.float64)
 
@@ -992,6 +1006,7 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
         solar_position_loop(unixtime, loc_args, result)
         return result
 
+    # split the input and output arrays into numthreads chunks
     split0 = np.array_split(unixtime, numthreads)
     split2 = np.array_split(result, numthreads, axis=1)
     chunks = [[a0, loc_args, split2[i]] for i, a0 in enumerate(split0)]
@@ -1006,7 +1021,7 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
 
 def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
-                         atmos_refract, numthreads, sst=False):
+                         atmos_refract, numthreads, sst=False, esd=False):
     """Calculate the solar position assuming unixtime is a numpy array. Note
     this function will not work if the solar position functions were
     compiled with numba.
@@ -1017,9 +1032,11 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     jc = julian_century(jd)
     jce = julian_ephemeris_century(jde)
     jme = julian_ephemeris_millennium(jce)
+    R = heliocentric_radius_vector(jme)
+    if esd:
+        return (R, )
     L = heliocentric_longitude(jme)
     B = heliocentric_latitude(jme)
-    R = heliocentric_radius_vector(jme)
     Theta = geocentric_longitude(L)
     beta = geocentric_latitude(B)
     x0 = mean_elongation(jce)
@@ -1063,7 +1080,7 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
 
 def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
-                   atmos_refract, numthreads=8, sst=False):
+                   atmos_refract, numthreads=8, sst=False, esd=False):
 
     """
     Calculate the solar position using the
@@ -1092,7 +1109,12 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
         avg. yearly temperature at location in
         degrees C; used for atmospheric correction
     delta_t : float, optional
+        If delta_t is None, uses spa.calculate_deltat
+        using time.year and time.month from pandas.DatetimeIndex.
+        For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.
         By default, use USNO historical data and predictions
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
@@ -1100,6 +1122,11 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     numthreads: int, optional
         Number of threads to use for computation if numba>=0.17
         is installed.
+    sst : bool
+        If True, return only data needed for sunrise, sunset, and transit
+        calculations.
+    esd : bool
+        If True, return only Earth-Sun distance in AU
 
     Returns
     -------
@@ -1126,7 +1153,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
 
     result = do_calc(unixtime, lat, lon, elev, pressure,
                      temp, delta_t, atmos_refract, numthreads,
-                     sst)
+                     sst, esd)
 
     if not isinstance(result, np.ndarray):
         try:
@@ -1241,3 +1268,168 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
     sunset = S + utday
 
     return transit, sunrise, sunset
+
+
+def earthsun_distance(unixtime, delta_t, numthreads):
+    """
+    Calculates the distance from the earth to the sun using the
+    NREL SPA algorithm described in [1].
+
+    Parameters
+    ----------
+    unixtime : numpy array
+        Array of unix/epoch timestamps to calculate solar position for.
+        Unixtime is the number of seconds since Jan. 1, 1970 00:00:00 UTC.
+        A pandas.DatetimeIndex is easily converted using .astype(np.int64)/10**9
+    delta_t : float
+        Difference between terrestrial time and UT. USNO has tables.
+    numthreads : int
+        Number to threads to use for calculation (if using numba)
+
+    Returns
+    -------
+    R : array
+        Earth-Sun distance in AU.
+
+    References
+    ----------
+    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+    USA, http://www.nrel.gov.
+    """
+
+    R = solar_position(unixtime, 0, 0, 0, 0, 0, delta_t,
+                       0, numthreads, esd=True)[0]
+
+    return R
+
+
+def calculate_deltat(year, month):
+    """Calculate the difference between Terrestrial Dynamical Time (TD)
+    and Universal Time (UT).
+
+    Note: This function is not yet compatible for calculations using
+    Numba.
+
+    Equations taken from http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
+    """
+
+    plw = ' Deltat is unknown for years before -1999 and after 3000.'\
+          + ' Delta values will be calculated, but the calculations'\
+          + ' are not intended to be used for these years.'
+
+    try:
+        if np.any((year > 3000) | (year < -1999)):
+            pvl_logger.warning(plw)
+    except ValueError:
+        if (year > 3000) | (year < -1999):
+            pvl_logger.warning(plw)
+    except TypeError:
+        return 0
+
+    y = year + (month - 0.5)/12
+
+    deltat = np.where(year < -500,
+
+                      -20+32*((y-1820)/100)**2, 0)
+
+    deltat = np.where((-500 <= year) & (year < 500),
+
+                      10583.6-1014.41*(y/100)
+                      + 33.78311*(y/100)**2
+                      - 5.952053*(y/100)**3
+                      - 0.1798452*(y/100)**4
+                      + 0.022174192*(y/100)**5
+                      + 0.0090316521*(y/100)**6, deltat)
+
+    deltat = np.where((500 <= year) & (year < 1600),
+
+                      1574.2-556.01*((y-1000)/100)
+                      + 71.23472*((y-1000)/100)**2
+                      + 0.319781*((y-1000)/100)**3
+                      - 0.8503463*((y-1000)/100)**4
+                      - 0.005050998*((y-1000)/100)**5
+                      + 0.0083572073*((y-1000)/100)**6, deltat)
+
+    deltat = np.where((1600 <= year) & (year < 1700),
+
+                      120-0.9808*(y-1600)
+                      - 0.01532*(y-1600)**2
+                      + (y-1600)**3/7129, deltat)
+
+    deltat = np.where((1700 <= year) & (year < 1800),
+
+                      8.83+0.1603*(y-1700)
+                      - 0.0059285*(y-1700)**2
+                      + 0.00013336*(y-1700)**3
+                      - (y-1700)**4/1174000, deltat)
+
+    deltat = np.where((1800 <= year) & (year < 1860),
+
+                      13.72-0.332447*(y-1800)
+                      + 0.0068612*(y-1800)**2
+                      + 0.0041116*(y-1800)**3
+                      - 0.00037436*(y-1800)**4
+                      + 0.0000121272*(y-1800)**5
+                      - 0.0000001699*(y-1800)**6
+                      + 0.000000000875*(y-1800)**7, deltat)
+
+    deltat = np.where((1860 <= year) & (year < 1900),
+
+                      7.6+0.5737*(y-1860)
+                      - 0.251754*(y-1860)**2
+                      + 0.01680668*(y-1860)**3
+                      - 0.0004473624*(y-1860)**4
+                      + (y-1860)**5/233174, deltat)
+
+    deltat = np.where((1900 <= year) & (year < 1920),
+
+                      -2.79+1.494119*(y-1900)
+                      - 0.0598939*(y-1900)**2
+                      + 0.0061966*(y-1900)**3
+                      - 0.000197*(y-1900)**4, deltat)
+
+    deltat = np.where((1920 <= year) & (year < 1941),
+
+                      21.20+0.84493*(y-1920)
+                      - 0.076100*(y-1920)**2
+                      + 0.0020936*(y-1920)**3, deltat)
+
+    deltat = np.where((1941 <= year) & (year < 1961),
+
+                      29.07+0.407*(y-1950)
+                      - (y-1950)**2/233
+                      + (y-1950)**3/2547, deltat)
+
+    deltat = np.where((1961 <= year) & (year < 1986),
+
+                      45.45+1.067*(y-1975)
+                      - (y-1975)**2/260
+                      - (y-1975)**3/718, deltat)
+
+    deltat = np.where((1986 <= year) & (year < 2005),
+
+                      63.86+0.3345*(y-2000)
+                      - 0.060374*(y-2000)**2
+                      + 0.0017275*(y-2000)**3
+                      + 0.000651814*(y-2000)**4
+                      + 0.00002373599*(y-2000)**5, deltat)
+
+    deltat = np.where((2005 <= year) & (year < 2050),
+
+                      62.92+0.32217*(y-2000)
+                      + 0.005589*(y-2000)**2, deltat)
+
+    deltat = np.where((2050 <= year) & (year < 2150),
+
+                      -20+32*((y-1820)/100)**2
+                      - 0.5628*(2150-y), deltat)
+
+    deltat = np.where(year > 2150,
+
+                      -20+32*((y-1820)/100)**2, deltat)
+
+    deltat = np.asscalar(deltat) if np.isscalar(year) & np.isscalar(month)\
+        else deltat
+
+    return deltat

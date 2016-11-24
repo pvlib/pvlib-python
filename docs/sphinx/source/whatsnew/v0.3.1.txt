@@ -1,0 +1,40 @@
+.. _whatsnew_0310:
+
+v0.3.1 (April 19, 2016)
+-----------------------
+
+This is a minor release from 0.3.0.
+We recommend that all users upgrade to this version.
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* Added versioneer to keep track of version changes instead
+  of manually updating pvlib/version.py. This will aid
+  developers because the version string includes the specific
+  git commit of the library code currently imported. (issue:`150`)
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fixes night tare issue in snlinverter. When the DC input power (p_dc)
+  to an inverter is below the inversion startup power (Ps0), the model
+  should set the AC output (ac_power) to the night tare value (Pnt).
+  The night tare power indicates the power consumed by the inverter to
+  sense PV array voltage. The model was erroneously comparing Ps0 with
+  the AC output power (ac_power), rather than the DC input power (p_dc).
+  (:issue:`140`)
+
+* Fixed the azimuth calculation of rotated PV panel in function
+  pvlib.tracking.singleaxis(...) so that the results are consistent
+  with PVsyst. (:issue:`144`)
+
+Contributors
+~~~~~~~~~~~~
+
+* ejmiller2
+* Yudong Ma
+* Tony Lorenzo
+* Will Holmgren

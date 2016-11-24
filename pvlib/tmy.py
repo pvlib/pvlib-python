@@ -2,9 +2,6 @@
 Import functions for TMY2 and TMY3 data files.
 """
 
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 import re
 import datetime
 import dateutil
@@ -15,44 +12,42 @@ except ImportError:
     from urllib.request import urlopen
 
 import pandas as pd
-import numpy as np
-
-from pvlib import tools
-
 
 
 def readtmy3(filename=None, coerce_year=None, recolumn=True):
     '''
     Read a TMY3 file in to a pandas dataframe.
 
-    Note that values contained in the metadata dictionary are 
-    unchanged from the TMY3 file (i.e. units 
-    are retained). In the case of any discrepencies between this
-    documentation and the TMY3 User's Manual [1], the TMY3 User's Manual
-    takes precedence.
+    Note that values contained in the metadata dictionary are unchanged
+    from the TMY3 file (i.e. units are retained). In the case of any
+    discrepencies between this documentation and the TMY3 User's Manual
+    [1], the TMY3 User's Manual takes precedence.
+
+    The TMY3 files were updated in Jan. 2015. This function requires the
+    use of the updated files.
 
     Parameters
     ----------
     filename : None or string
-        If None, attempts to use a Tkinter file browser.
-        A string can be a relative file path, absolute file path,
-        or url.
-    
+        If None, attempts to use a Tkinter file browser. A string can be
+        a relative file path, absolute file path, or url.
+
     coerce_year : None or int
         If supplied, the year of the data will be set to this value.
-    
+
     recolumn : bool
-        If True, apply standard names to TMY3 columns.
-        Typically this results in stripping the units from the column name.
-        
+        If True, apply standard names to TMY3 columns. Typically this
+        results in stripping the units from the column name.
+
     Returns
     -------
     Tuple of the form (data, metadata).
-    
+
     data : DataFrame
-        A pandas dataframe with the columns described in the table below. 
-        For more detailed descriptions of each component, please consult
-        the TMY3 User's Manual ([1]), especially tables 1-1 through 1-6. 
+        A pandas dataframe with the columns described in the table
+        below. For more detailed descriptions of each component, please
+        consult the TMY3 User's Manual ([1]), especially tables 1-1
+        through 1-6.
 
     metadata : dict
         The site metadata available in the file.
@@ -61,10 +56,10 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     -----
 
     The returned structures have the following fields.
-    
-    ===============   ======  ===================  
+
+    ===============   ======  ===================
     key               format  description
-    ===============   ======  ===================  
+    ===============   ======  ===================
     altitude          Float   site elevation
     latitude          Float   site latitudeitude
     longitude         Float   site longitudeitude
@@ -72,7 +67,7 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     State             String  state
     TZ                Float   UTC offset
     USAF              Int     USAF identifier
-    ===============   ======  ===================  
+    ===============   ======  ===================
 
     =============================       ======================================================================================================================================================
     TMYData field                       description
@@ -119,7 +114,7 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     TMYData.Pressure                    Station pressure at the time indicated, 1 mbar
     TMYData.PressureSource              See [1], Table 1-5, 8760x1 cell array of strings
     TMYData.PressureUncertainty         See [1], Table 1-6
-    TMYData.Wdir                        Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm) 
+    TMYData.Wdir                        Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm)
     TMYData.WdirSource                  See [1], Table 1-5, 8760x1 cell array of strings
     TMYData.WdirUncertainty             See [1], Table 1-6
     TMYData.Wspd                        Wind speed at the time indicated, meter/second
@@ -144,7 +139,10 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     TMYData.Lprecipquantity             The period of accumulatitudeion for the liquid precipitation depth field, hour
     TMYData.LprecipSource               See [1], Table 1-5, 8760x1 cell array of strings
     TMYData.LprecipUncertainty          See [1], Table 1-6
-    =============================       ======================================================================================================================================================  
+    TMYData.PresWth                     Present weather code, see [2].
+    TMYData.PresWthSource               Present weather code source, see [2].
+    TMYData.PresWthUncertainty          Present weather code uncertainty, see [2].
+    =============================       ======================================================================================================================================================
 
     References
     ----------
@@ -152,27 +150,29 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     [1] Wilcox, S and Marion, W. "Users Manual for TMY3 Data Sets".
     NREL/TP-581-43156, Revised May 2008.
 
-    [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005 
+    [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005
     Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
     '''
-    
+
     if filename is None:
         try:
             filename = _interactive_load()
         except:
-            raise Exception('Interactive load failed. Tkinter not supported on this system. Try installing X-Quartz and reloading')
+            raise Exception('Interactive load failed. Tkinter not supported ' +
+                            'on this system. Try installing X-Quartz and ' +
+                            'reloading')
 
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
-    
+
     try:
         csvdata = open(filename, 'r')
     except IOError:
         response = urlopen(filename)
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
-    
+
     # read in file metadata
     meta = dict(zip(head, csvdata.readline().rstrip('\n').split(",")))
-    
+
     # convert metadata strings to numeric types
     meta['altitude'] = float(meta['altitude'])
     meta['latitude'] = float(meta['latitude'])
@@ -180,31 +180,30 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     meta['TZ'] = float(meta['TZ'])
     meta['USAF'] = int(meta['USAF'])
 
-    TMYData = pd.read_csv(filename, header=1,
-                          parse_dates={'datetime':['Date (MM/DD/YYYY)','Time (HH:MM)']},
-                          date_parser=lambda *x: _parsedate(*x, year=coerce_year), 
-                          index_col='datetime')
-    
+    data = pd.read_csv(
+        filename, header=1,
+        parse_dates={'datetime': ['Date (MM/DD/YYYY)', 'Time (HH:MM)']},
+        date_parser=lambda *x: _parsedate(*x, year=coerce_year),
+        index_col='datetime')
+
     if recolumn:
-        _recolumn(TMYData) #rename to standard column names
+        _recolumn(data)  # rename to standard column names
 
-    TMYData = TMYData.tz_localize(int(meta['TZ']*3600))
+    data = data.tz_localize(int(meta['TZ']*3600))
 
-    return TMYData, meta
-
+    return data, meta
 
 
 def _interactive_load():
-    import Tkinter 
+    import Tkinter
     from tkFileDialog import askopenfilename
-    Tkinter.Tk().withdraw() #Start interactive file input
-    return askopenfilename() 
-
+    Tkinter.Tk().withdraw()  # Start interactive file input
+    return askopenfilename()
 
 
 def _parsedate(ymd, hour, year=None):
     # stupidly complicated due to TMY3's usage of hour 24
-    # and dateutil's inability to handle that. 
+    # and dateutil's inability to handle that.
     offset_hour = int(hour[:2]) - 1
     offset_datetime = '{} {}:00'.format(ymd, offset_hour)
     offset_date = dateutil.parser.parse(offset_datetime)
@@ -214,72 +213,75 @@ def _parsedate(ymd, hour, year=None):
     return true_date
 
 
-
 def _recolumn(tmy3_dataframe, inplace=True):
     """
     Rename the columns of the TMY3 DataFrame.
-    
+
     Parameters
     ----------
     tmy3_dataframe : DataFrame
     inplace : bool
         passed to DataFrame.rename()
-    
+
     Returns
     -------
     Recolumned DataFrame.
     """
     raw_columns = 'ETR (W/m^2),ETRN (W/m^2),GHI (W/m^2),GHI source,GHI uncert (%),DNI (W/m^2),DNI source,DNI uncert (%),DHI (W/m^2),DHI source,DHI uncert (%),GH illum (lx),GH illum source,Global illum uncert (%),DN illum (lx),DN illum source,DN illum uncert (%),DH illum (lx),DH illum source,DH illum uncert (%),Zenith lum (cd/m^2),Zenith lum source,Zenith lum uncert (%),TotCld (tenths),TotCld source,TotCld uncert (code),OpqCld (tenths),OpqCld source,OpqCld uncert (code),Dry-bulb (C),Dry-bulb source,Dry-bulb uncert (code),Dew-point (C),Dew-point source,Dew-point uncert (code),RHum (%),RHum source,RHum uncert (code),Pressure (mbar),Pressure source,Pressure uncert (code),Wdir (degrees),Wdir source,Wdir uncert (code),Wspd (m/s),Wspd source,Wspd uncert (code),Hvis (m),Hvis source,Hvis uncert (code),CeilHgt (m),CeilHgt source,CeilHgt uncert (code),Pwat (cm),Pwat source,Pwat uncert (code),AOD (unitless),AOD source,AOD uncert (code),Alb (unitless),Alb source,Alb uncert (code),Lprecip depth (mm),Lprecip quantity (hr),Lprecip source,Lprecip uncert (code),PresWth (METAR code),PresWth source,PresWth uncert (code)'
-    
-    new_columns = ['ETR','ETRN','GHI','GHISource','GHIUncertainty',
-    'DNI','DNISource','DNIUncertainty','DHI','DHISource','DHIUncertainty',
-    'GHillum','GHillumSource','GHillumUncertainty','DNillum','DNillumSource',
-    'DNillumUncertainty','DHillum','DHillumSource','DHillumUncertainty',
-    'Zenithlum','ZenithlumSource','ZenithlumUncertainty','TotCld','TotCldSource',
-    'TotCldUnertainty','OpqCld','OpqCldSource','OpqCldUncertainty','DryBulb',
-    'DryBulbSource','DryBulbUncertainty','DewPoint','DewPointSource',
-    'DewPointUncertainty','RHum','RHumSource','RHumUncertainty','Pressure',
-    'PressureSource','PressureUncertainty','Wdir','WdirSource','WdirUncertainty',
-    'Wspd','WspdSource','WspdUncertainty','Hvis','HvisSource','HvisUncertainty',
-    'CeilHgt','CeilHgtSource','CeilHgtUncertainty','Pwat','PwatSource',
-    'PwatUncertainty','AOD','AODSource','AODUncertainty','Alb','AlbSource',
-    'AlbUncertainty','Lprecipdepth','Lprecipquantity','LprecipSource',
-    'LprecipUncertainty','PresWth','PresWth source','PresWth uncert']
-    
+
+    new_columns = [
+        'ETR', 'ETRN', 'GHI', 'GHISource', 'GHIUncertainty',
+        'DNI', 'DNISource', 'DNIUncertainty', 'DHI', 'DHISource',
+        'DHIUncertainty', 'GHillum', 'GHillumSource', 'GHillumUncertainty',
+        'DNillum', 'DNillumSource', 'DNillumUncertainty', 'DHillum',
+        'DHillumSource', 'DHillumUncertainty', 'Zenithlum',
+        'ZenithlumSource', 'ZenithlumUncertainty', 'TotCld', 'TotCldSource',
+        'TotCldUnertainty', 'OpqCld', 'OpqCldSource', 'OpqCldUncertainty',
+        'DryBulb', 'DryBulbSource', 'DryBulbUncertainty', 'DewPoint',
+        'DewPointSource', 'DewPointUncertainty', 'RHum', 'RHumSource',
+        'RHumUncertainty', 'Pressure', 'PressureSource',
+        'PressureUncertainty', 'Wdir', 'WdirSource', 'WdirUncertainty',
+        'Wspd', 'WspdSource', 'WspdUncertainty', 'Hvis', 'HvisSource',
+        'HvisUncertainty', 'CeilHgt', 'CeilHgtSource', 'CeilHgtUncertainty',
+        'Pwat', 'PwatSource', 'PwatUncertainty', 'AOD', 'AODSource',
+        'AODUncertainty', 'Alb', 'AlbSource', 'AlbUncertainty',
+        'Lprecipdepth', 'Lprecipquantity', 'LprecipSource',
+        'LprecipUncertainty', 'PresWth', 'PresWthSource',
+        'PresWthUncertainty']
+
     mapping = dict(zip(raw_columns.split(','), new_columns))
-    
+
     return tmy3_dataframe.rename(columns=mapping, inplace=True)
-    
-    
+
 
 def readtmy2(filename):
     '''
     Read a TMY2 file in to a DataFrame.
 
-    Note that values contained in the DataFrame are unchanged from the TMY2 
-    file (i.e. units  are retained). Time/Date and location data imported from the 
-    TMY2 file have been modified to a "friendlier" form conforming to modern
-    conventions (e.g. N latitude is postive, E longitude is positive, the
-    "24th" hour of any day is technically the "0th" hour of the next day).
-    In the case of any discrepencies between this documentation and the 
-    TMY2 User's Manual [1], the TMY2 User's Manual takes precedence.
+    Note that values contained in the DataFrame are unchanged from the
+    TMY2 file (i.e. units  are retained). Time/Date and location data
+    imported from the TMY2 file have been modified to a "friendlier"
+    form conforming to modern conventions (e.g. N latitude is postive, E
+    longitude is positive, the "24th" hour of any day is technically the
+    "0th" hour of the next day). In the case of any discrepencies
+    between this documentation and the TMY2 User's Manual [1], the TMY2
+    User's Manual takes precedence.
 
     Parameters
     ----------
     filename : None or string
-        If None, attempts to use a Tkinter file browser.
-        A string can be a relative file path, absolute file path,
-        or url.
+        If None, attempts to use a Tkinter file browser. A string can be
+        a relative file path, absolute file path, or url.
 
     Returns
     -------
     Tuple of the form (data, metadata).
-    
-    data : DataFrame 
-        A dataframe with the columns described in the table below.
-        For a more detailed descriptions of each component, please consult
-        the TMY2 User's Manual ([1]), especially tables 3-1 through 3-6, and 
-        Appendix B. 
+
+    data : DataFrame
+        A dataframe with the columns described in the table below. For a
+        more detailed descriptions of each component, please consult the
+        TMY2 User's Manual ([1]), especially tables 3-1 through 3-6, and
+        Appendix B.
 
     metadata : dict
         The site metadata available in the file.
@@ -292,22 +294,22 @@ def readtmy2(filename):
     =============    ==================================
     key              description
     =============    ==================================
-    SiteID           Site identifier code (WBAN number)
-    StationName      Station name
-    StationState     Station state 2 letter designator
-    SiteTimeZone     Hours from Greenwich
+    WBAN             Site identifier code (WBAN number)
+    City             Station name
+    State            Station state 2 letter designator
+    TZ               Hours from Greenwich
     latitude         Latitude in decimal degrees
     longitude        Longitude in decimal degrees
-    SiteElevation    Site elevation in meters
+    altitude         Site elevation in meters
     =============    ==================================
 
     ============================   ==========================================================================================================================================================================
     TMYData field                   description
     ============================   ==========================================================================================================================================================================
     index                           Pandas timeseries object containing timestamps
-    year                              
-    month                            
-    day                   
+    year
+    month
+    day
     hour
     ETR                             Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
     ETRN                            Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
@@ -350,7 +352,7 @@ def readtmy2(filename):
     Pressure                        Station pressure at the time indicated, 1 mbar
     PressureSource                  See [1], Table 3-5, 8760x1 cell array of strings
     PressureUncertainty             See [1], Table 3-6
-    Wdir                            Wind direction at time indicated, degrees from east of north (360 = 0 = north; 90 = East; 0 = undefined,calm) 
+    Wdir                            Wind direction at time indicated, degrees from east of north (360 = 0 = north; 90 = East; 0 = undefined,calm)
     WdirSource                      See [1], Table 3-5, 8760x1 cell array of strings
     WdirUncertainty                 See [1], Table 3-6
     Wspd                            Wind speed at the time indicated, in tenths of meters/second (e.g. 212 = 21.2 m/s)
@@ -383,7 +385,7 @@ def readtmy2(filename):
     [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
     for TMY2s". NREL 1995.
     '''
-    
+
     if filename is None:
         try:
             filename = _interactive_load()
@@ -394,10 +396,9 @@ def readtmy2(filename):
     columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'
     hdr_columns = 'WBAN,City,State,TZ,latitude,longitude,altitude'
 
-    TMY2, TMY2_meta = _readTMY2(string, columns, hdr_columns, filename)	
+    TMY2, TMY2_meta = _read_tmy2(string, columns, hdr_columns, filename)
 
     return TMY2, TMY2_meta
-
 
 
 def _parsemeta_tmy2(columns, line):
@@ -405,7 +406,6 @@ def _parsemeta_tmy2(columns, line):
 
     Parameters
     ----------
-
     columns : string
         String of column headings in the header
 
@@ -414,82 +414,91 @@ def _parsemeta_tmy2(columns, line):
 
     Returns
     -------
-
     meta : Dict of metadata contained in the header string
-
     """
-    rawmeta=" ".join(line.split()).split(" ") #Remove sduplicated spaces, and read in each element
-    meta=rawmeta[:3] #take the first string entries
+    # Remove duplicated spaces, and read in each element
+    rawmeta = " ".join(line.split()).split(" ")
+    meta = rawmeta[:3]  # take the first string entries
     meta.append(int(rawmeta[3]))
-    longitude=(float(rawmeta[5])+float(rawmeta[6])/60)*(2*(rawmeta[4]=='N')-1)#Convert to decimal notation with S negative
-    latitude=(float(rawmeta[8])+float(rawmeta[9])/60)*(2*(rawmeta[7]=='E')-1) #Convert to decimal notation with W negative
+    # Convert to decimal notation with S negative
+    longitude = (
+        float(rawmeta[5]) + float(rawmeta[6])/60) * (2*(rawmeta[4] == 'N') - 1)
+    # Convert to decimal notation with W negative
+    latitude = (
+        float(rawmeta[8]) + float(rawmeta[9])/60) * (2*(rawmeta[7] == 'E') - 1)
     meta.append(longitude)
     meta.append(latitude)
-    meta.append(float(rawmeta[10]))	
-    
-    meta_dict = dict(zip(columns.split(','),meta)) #Creates a dictionary of metadata
-    pvl_logger.debug('meta: %s', meta_dict)
-    
+    meta.append(float(rawmeta[10]))
+
+    # Creates a dictionary of metadata
+    meta_dict = dict(zip(columns.split(','), meta))
     return meta_dict
 
 
-
-def _readTMY2(string, columns, hdr_columns, fname):
-    head=1
-    date=[]
+def _read_tmy2(string, columns, hdr_columns, fname):
+    head = 1
+    date = []
     with open(fname) as infile:
-        fline=0
+        fline = 0
         for line in infile:
-            #Skip the header
-            if head!=0:
-                meta = _parsemeta_tmy2(hdr_columns,line)
-                head-=1
+            # Skip the header
+            if head != 0:
+                meta = _parsemeta_tmy2(hdr_columns, line)
+                head -= 1
                 continue
-            #Reset the cursor and array for each line    
-            cursor=1
-            part=[]
+            # Reset the cursor and array for each line
+            cursor = 1
+            part = []
             for marker in string.split('%'):
-                #Skip the first line of markers
-                if marker=='':
+                # Skip the first line of markers
+                if marker == '':
                     continue
-            
-                #Read the next increment from the marker list    
-                increment=int(re.findall('\d+',marker)[0])
 
-                #Extract the value from the line in the file
-                val=(line[cursor:cursor+increment])
-                #increment the cursor by the length of the read value
-                cursor=cursor+increment
-         
+                # Read the next increment from the marker list
+                increment = int(re.findall('\d+', marker)[0])
+
+                # Extract the value from the line in the file
+                val = (line[cursor:cursor+increment])
+                # increment the cursor by the length of the read value
+                cursor = cursor+increment
 
                 # Determine the datatype from the marker string
-                if marker[-1]=='d':
+                if marker[-1] == 'd':
                     try:
-                        val=float(val)
+                        val = float(val)
                     except:
-                        raise Exception('WARNING: In'+__name__+' Read value is not an integer" '+val+' " ')
-                elif marker[-1]=='s':
+                        raise Exception('WARNING: In' + fname +
+                                        ' Read value is not an integer " ' +
+                                        val + ' " ')
+                elif marker[-1] == 's':
                     try:
-                        val=str(val)
+                        val = str(val)
                     except:
-                        raise Exception('WARNING: In'+__name__+' Read value is not a string" '+val+' " ')
-                else: 
-                    raise Exception('WARNING: In'+__name__+'Improper column DataFrameure " %'+marker+' " ')
-                
+                        raise Exception('WARNING: In' + fname +
+                                        ' Read value is not a string" ' +
+                                        val + ' " ')
+                else:
+                    raise Exception('WARNING: In' + __name__ +
+                                    'Improper column DataFrame " %' +
+                                    marker + ' " ')
+
                 part.append(val)
-            
-            if fline==0:
-                axes=[part]
-                year=part[0]+1900
-                fline=1
+
+            if fline == 0:
+                axes = [part]
+                year = part[0]+1900
+                fline = 1
             else:
                 axes.append(part)
-            
-            #Create datetime objects from read data
-            date.append(datetime.datetime(year=int(year),month=int(part[1]),day=int(part[2]),hour=int(part[3])-1))
 
-    TMYData = pd.DataFrame(axes, index=date, columns=columns.split(',')).tz_localize(int(meta['TZ']*3600))
+            # Create datetime objects from read data
+            date.append(datetime.datetime(year=int(year),
+                                          month=int(part[1]),
+                                          day=int(part[2]),
+                                          hour=int(part[3])-1))
 
-    return TMYData, meta
-        
+    data = pd.DataFrame(
+        axes, index=date,
+        columns=columns.split(',')).tz_localize(int(meta['TZ']*3600))
 
+    return data, meta

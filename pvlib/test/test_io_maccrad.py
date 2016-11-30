@@ -10,84 +10,81 @@ maccrad_url_full = maccrad_url_base + maccrad_csv
 maccrad_csv_dir = os.path.join("..", "..", "..", "pvlib_data", "MACC-RAD", "carpentras")
 maccrad_csv_path = os.path.join(maccrad_csv_dir, maccrad_csv)
                                
-#data_maccrad = read_maccrad(maccrad_csv, output='loc')
+data_maccrad = read_maccrad(maccrad_csv_path, output='loc')
 
+maccrad_loc = data_maccrad[0]
+maccrad_df = data_maccrad[1]
 
-## if data is on remotely on github
+def test_location_coord():
+    assert (44.0830, 5.0590, 97.00) == (maccrad_loc.latitude, maccrad_loc.longitude, 
+                             maccrad_loc.altitude)
+    
 
-import urllib
+def test_location_tz():
+    assert 'Europe/Paris' == maccrad_loc.tz
+    
+    
+def test_maccrad_recolumn():
+    assert 'Clear sky GHI' in maccrad_df.columns
+    
+def test_maccrad_norecolumn():
+    assert 'Clear sky GHI' in maccrad_df.columns
+    
+def test_maccrad_coerce_year():
+    coerce_year = 2010
+    assert (maccrad_df.index.year[0] == coerce_year)
+    
+    
+def test_maccrad():
+    read_maccrad(maccrad_csv_path)
 
-#f = urllib.request.urlopen(maccrad_url_full)
-
-#from urllib.parse import urlparse
-#response = urlparse(maccrad_url_full)
-
-
-from urllib.request import urlopen
-response = urlopen(maccrad_url_full)
-response = response.decode('utf-8')
-
-
-
-
-req=urllib.request.urlopen(maccrad_url_full)
-charset=req.info().get_content_charset()
-content=req.read().decode(charset)
-
-data = urllib.request.urlopen(maccrad_url_full).read()
-
-lines = data.splitlines(True)
-# http://stackoverflow.com/questions/23131227/how-to-readlines-from-urllib
-
-
-
-import requests
-
-response = requests.get(maccrad_url_full).text
-
-for line in response:
-#    print (line)
-    if line.startswith( "# Latitude"):
-#        lat_line = line
-#        lat = float(lat_line.split(':')[1])
-        lat = float(line.split(':')[1])
-    if line.startswith( "# Longitude"):
-#        lon_line = line
-#        lon = float(lon_line.split(':')[1])
-        lon = float(line.split(':')[1])
-#    if line.startswith( "# Altitude"):
-    if "Altitude" in line:
-        alt_line = line
-        alt = float(alt_line.split(':')[1])
-#        alt = float(line.split(':')[1])
-
-
-## if file is on local drive
-f = open(maccrad_csv_path)
-for line in f:
-    if "Latitude" in line:
-#    print (line)
+##FIXME: this still crashes
+### if data is on remotely on github
+#
+#
+#import urllib
+#
+##f = urllib.request.urlopen(maccrad_url_full)
+#
+##from urllib.parse import urlparse
+##response = urlparse(maccrad_url_full)
+#
+#
+##from urllib.request import urlopen
+##response = urlopen(maccrad_url_full)
+##response = response.decode('utf-8')
+#
+#
+#
+## http://stackoverflow.com/questions/4981977/how-to-handle-response-encoding-from-urllib-request-urlopen
+#req=urllib.request.urlopen(maccrad_url_full)
+#charset=req.info().get_content_charset()
+#response=req.read().decode(charset)
+#
+##data = urllib.request.urlopen(maccrad_url_full).read()
+#
+#lines = response.splitlines(True)
+## http://stackoverflow.com/questions/23131227/how-to-readlines-from-urllib
+#
+#
+#
+##import requests
+##response = requests.get(maccrad_url_full).text
+#
+#for line in response:
+##    print (line)
 #    if line.startswith( "# Latitude"):
-        lat_line = line
-        lat = float(lat_line.split(':')[1])
+##        lat_line = line
+##        lat = float(lat_line.split(':')[1])
 #        lat = float(line.split(':')[1])
-    if "Longitude" in line:
 #    if line.startswith( "# Longitude"):
-        lon_line = line
-        lon = float(lon_line.split(':')[1])
-        lon = float(line.split(':')[1])
+##        lon_line = line
+##        lon = float(lon_line.split(':')[1])
+#        lon = float(line.split(':')[1])
 #    if line.startswith( "# Altitude"):
-    if "Altitude" in line:
-        alt_line = line
-        alt = float(alt_line.split(':')[1])
-#        alt = float(line.split(':')[1])
+##    if "Altitude" in line:
+#        alt_line = line
+#        alt = float(alt_line.split(':')[1])
+##        alt = float(line.split(':')[1])
 
 
-from timezonefinder import TimezoneFinder
-tf = TimezoneFinder()
-tz = tf.timezone_at(lng=lon, lat=lat)
-
-from pvlib.location import Location
-
-location = Location(lat, lon, name=maccrad_csv.split('.')[0], altitude=alt,
-                       tz=tz)

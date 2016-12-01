@@ -15,7 +15,7 @@ def get_loc_latlon(lat, lon):
     
     return tz
     
-def localise_df(df_notz, tz_source_str='UTC', tz_target_str):
+def localise_df(df_notz, tz_source_str='UTC', tz_target_str=None):
     """
     localises a pandas.DataFrame (df) to the target time zone of the pvlib-Location    
     
@@ -23,9 +23,11 @@ def localise_df(df_notz, tz_source_str='UTC', tz_target_str):
     
     """
     
-    tz_source_str = pytz.timezone(tz_source_str)
+    tz_source = pytz.timezone(tz_source_str)
     tz_target = pytz.timezone(tz_target_str)
     
-    df_tz_target = df_notz.tz_convert(tz_source)
+    df_tz_source = df_notz.tz_localize(tz_source)
+    df_tz_target = df_tz_source.tz_convert(tz_target)
+    
     
     return df_tz_target

@@ -34,6 +34,9 @@ def read_maccrad_metadata(file_csv, name='maccrad'):
     ## if file is on local drive
     f = open(file_csv)
     for line in f:
+        if "Title" in line:
+            title = line.split(':')[1].split('(')[0].strip()
+            name = title
         if "Latitude" in line:
     #    print (line)
     #    if line.startswith( "# Latitude"):
@@ -66,20 +69,26 @@ def read_maccrad_metadata(file_csv, name='maccrad'):
                            tz=tz_loc)
     
     return tz_raw, location
-    
+
+
 def maccrad_df_to_pvlib(df_raw, tz_raw, loc, localise=True):
     """Change some properties of the dataframe to be more compliant with pvlib
     
     * localisation
     * column renaming
+    * setting dataframe name description according to datasource
     
     """
 
     if localise:
         # timezone localisations
-        df_pvlib = localise_df(df_raw, tz_source_str=tz_raw, loc.tz)
+        df_pvlib = localise_df(df_raw, tz_source_str=tz_raw, 
+                               tz_target_str=loc.tz)
     # column renaming
     df_pvlib.index.name = 'datetime'
+    
+    # name the dataframe according to data source 
+    df_pvlib.df_name = loc.name
   
     return df_pvlib
     
@@ -118,13 +127,15 @@ def read_maccrad(file_csv, loc_name=None, skiprows=40, output='all'):
 #TODO: add loc_name
 #TODO: add reformat needs loc!
 #TODO: add simplify output options raw or all
+    print (output)
     if output == 'df_raw':
         res = df_raw
-    if output == 'test':
-        res = df_pvlib
-    else:
+    if output == 'all':
         tz_raw, loc = read_maccrad_metadata(file_csv)
+        loc.name = (loc.name + ' @ ' + 'lat (deg. N), lon (deg. E): ' + 
+                    str(loc.latitude) + ', ' + str(loc.longitude))
         df_pvlib = maccrad_df_to_pvlib(df_raw, tz_raw, loc, localise=True)
+#        res = df_pvlib
         res = (df_raw, df_pvlib, loc)
 #    if output == 'loc':
 #        

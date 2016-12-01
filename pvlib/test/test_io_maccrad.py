@@ -13,10 +13,12 @@ maccrad_csv_dir = os.path.join("..", "..", "..", "pvlib_data", "MACC-RAD", "carp
 maccrad_csv_path = os.path.join(maccrad_csv_dir, maccrad_csv)
                                
 data_maccrad = read_maccrad(maccrad_csv_path, output='all')
-data_maccrad = read_maccrad(maccrad_csv_path, output='test')
+#data_maccrad = read_maccrad(maccrad_csv_path, output='test')
 
-maccrad_loc = data_maccrad[0]
-maccrad_df = data_maccrad[1]
+maccrad_raw = data_maccrad[0]
+maccrad_pvlib = data_maccrad[1]
+maccrad_loc = data_maccrad[2]
+
 
 def test_location_coord():
     assert (44.0830, 5.0590, 97.00) == (maccrad_loc.latitude, 
@@ -27,12 +29,14 @@ def test_location_coord():
 def test_location_tz():
     assert 'Europe/Paris' == maccrad_loc.tz
     
+def test_tz_convert():
+    assert maccrad_pvlib.index.tzinfo.zone == maccrad_loc.tz
     
 def test_maccrad_recolumn():
-    assert 'Clear sky GHI' in maccrad_df.columns
+    assert 'Clear sky GHI' in maccrad_pvlib.columns
     
 def test_maccrad_norecolumn():
-    assert 'Clear sky GHI' in maccrad_df.columns
+    assert 'Clear sky GHI' in maccrad_pvlib.columns
     
 def test_maccrad_coerce_year():
     coerce_year = 2010

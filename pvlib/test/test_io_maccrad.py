@@ -1,5 +1,7 @@
+# standard library imports 
 import os
 
+# local application/library specific imports 
 from pvlib.io.maccrad import read_maccrad
 
 
@@ -10,14 +12,16 @@ maccrad_url_full = maccrad_url_base + maccrad_csv
 maccrad_csv_dir = os.path.join("..", "..", "..", "pvlib_data", "MACC-RAD", "carpentras")
 maccrad_csv_path = os.path.join(maccrad_csv_dir, maccrad_csv)
                                
-data_maccrad = read_maccrad(maccrad_csv_path, output='loc')
+data_maccrad = read_maccrad(maccrad_csv_path, output='all')
+data_maccrad = read_maccrad(maccrad_csv_path, output='test')
 
 maccrad_loc = data_maccrad[0]
 maccrad_df = data_maccrad[1]
 
 def test_location_coord():
-    assert (44.0830, 5.0590, 97.00) == (maccrad_loc.latitude, maccrad_loc.longitude, 
-                             maccrad_loc.altitude)
+    assert (44.0830, 5.0590, 97.00) == (maccrad_loc.latitude, 
+                                        maccrad_loc.longitude, 
+                                        maccrad_loc.altitude)
     
 
 def test_location_tz():

@@ -8,7 +8,7 @@ from pvlib import clearsky
 from pvlib import irradiance
 from pvlib import location
 from pvlib import solarposition
-from pvlib import tmy
+from pvlib.iotools.api import *
 from pvlib import tracking
 from pvlib import pvsystem
 from pvlib import spa

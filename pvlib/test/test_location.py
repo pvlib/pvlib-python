@@ -226,7 +226,7 @@ def test_get_clearsky_valueerror():
 
 def test_from_tmy_3():
     from test_tmy import tmy3_testfile
-    from pvlib.tmy import readtmy3
+    from pvlib import readtmy3
     data, meta = readtmy3(tmy3_testfile)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
@@ -237,7 +237,7 @@ def test_from_tmy_3():
 
 def test_from_tmy_2():
     from test_tmy import tmy2_testfile
-    from pvlib.tmy import readtmy2
+    from pvlib import readtmy2
     data, meta = readtmy2(tmy2_testfile)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None

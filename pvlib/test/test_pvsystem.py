@@ -11,7 +11,6 @@ import pytest
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
-from pvlib import tmy
 from pvlib import pvsystem
 from pvlib import clearsky
 from pvlib import irradiance
@@ -44,15 +43,13 @@ meta = {'latitude': 37.8,
         'State': 'CA',
         'TZ': -8}
 
-pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
+pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvsystem)))
 
-tmy3_testfile = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
-tmy2_testfile = os.path.join(pvlib_abspath, 'data', '12839.tm2')
-
-tmy3_data, tmy3_metadata = tmy.readtmy3(tmy3_testfile)
-tmy2_data, tmy2_metadata = tmy.readtmy2(tmy2_testfile)
 
 def test_systemdef_tmy3():
+    from pvlib.iotools import tmy
+    tmy3_testfile = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
+    tmy3_data, tmy3_metadata = tmy.readtmy3(tmy3_testfile)
     expected = {'tz': -9.0,
                 'albedo': 0.1,
                 'altitude': 7.0,
@@ -66,6 +63,9 @@ def test_systemdef_tmy3():
     assert expected == pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5)
 
 def test_systemdef_tmy2():
+    from pvlib.iotools import tmy
+    tmy2_testfile = os.path.join(pvlib_abspath, 'data', '12839.tm2')
+    tmy2_data, tmy2_metadata = tmy.readtmy2(tmy2_testfile)
     expected = {'tz': -5,
                 'albedo': 0.1,
                 'altitude': 2.0,

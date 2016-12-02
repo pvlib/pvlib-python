@@ -10,6 +10,7 @@ maccrad_url_base = "https://raw.githubusercontent.com/dacoex/pvlib_data/master/M
 maccrad_csv = "irradiation-0e2a19f2-abe7-11e5-a880-5254002dbd9b.csv"
 maccrad_url_full = maccrad_url_base + maccrad_csv
 maccrad_csv_dir = os.path.join("..", "..", "..", "pvlib_data", "MACC-RAD", "carpentras")
+maccrad_csv_dir = os.path.join("..", "data", "iotools", "MACC-RAD", "carpentras")
 maccrad_csv_path = os.path.join(maccrad_csv_dir, maccrad_csv)
                                
 data_maccrad = read_maccrad(maccrad_csv_path, output='all')

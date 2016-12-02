@@ -1,3 +1,12 @@
+"""
+Common functions that support the different data readers / writers
+
+TODO: add a sanity checker
+* is the data between sunrise & sunset --> avoid timezone / timeshift errors
+
+"""
+
+
 import pytz
 # How to get a time zone from a location using 
 # latitude and longitude coordinates?

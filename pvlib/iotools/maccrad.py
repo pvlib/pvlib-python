@@ -7,7 +7,7 @@ import pytz
 
 # local application/library specific imports 
 from pvlib.location import Location
-from pvlib.io.iotools import get_loc_latlon, localise_df
+from pvlib.iotools.iotools import get_loc_latlon, localise_df
 
 # required dateconverters
 def dtp_soda_pro_macc_rad(date):
@@ -68,9 +68,12 @@ def read_maccrad_metadata(file_csv, name='maccrad'):
     location = Location(lat, lon, name=name, altitude=alt,
                            tz=tz_loc)
     
-    return tz_raw, location
+    #XXX
+    metadata = None
+    
+    return tz_raw, location, metadata
 
-
+#XXX convert to pvlib conventions
 def maccrad_df_to_pvlib(df_raw, tz_raw, loc, localise=True):
     """Change some properties of the dataframe to be more compliant with pvlib
     
@@ -127,11 +130,11 @@ def read_maccrad(file_csv, loc_name=None, skiprows=40, output='all'):
 #TODO: add loc_name
 #TODO: add reformat needs loc!
 #TODO: add simplify output options raw or all
-    print (output)
+#    print (output)
     if output == 'df_raw':
         res = df_raw
     if output == 'all':
-        tz_raw, loc = read_maccrad_metadata(file_csv)
+        tz_raw, loc, metadata = read_maccrad_metadata(file_csv)
         loc.name = (loc.name + ' @ ' + 'lat (deg. N), lon (deg. E): ' + 
                     str(loc.latitude) + ', ' + str(loc.longitude))
         df_pvlib = maccrad_df_to_pvlib(df_raw, tz_raw, loc, localise=True)

@@ -158,6 +158,29 @@ def test_perez():
     assert_series_equal(out, expected, check_less_precise=2)
 
 
+def test_perez_components():
+    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out, df_components = irradiance.perez(40, 180, irrad_data['dhi'], dni,
+                     dni_et, ephem_data['apparent_zenith'],
+                     ephem_data['azimuth'], am, return_components=True)
+    expected = pd.Series(np.array(
+        [   0.        ,   31.46046871,  np.nan,   45.45539877]),
+        index=times)
+    expected_components = pd.DataFrame(
+        np.array([[  0.        ,  26.84138589,          np.nan,  31.72696071],
+                 [ 0.        ,  0.        ,         np.nan,  4.47966439],
+                 [ 0.        ,  4.62212181,         np.nan,  9.25316454]]).T,
+        columns=['isotropic', 'circumsolar', 'horizon'],
+        index=times
+    )
+    sum_components = df_components.sum(axis=1)
+
+    assert_series_equal(out, expected, check_less_precise=2)
+    assert_frame_equal(df_components, expected_components)
+    assert_series_equal(sum_components, expected, check_less_precise=2)
+
 @needs_numpy_1_10
 def test_perez_arrays():
     am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])

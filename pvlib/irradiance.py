@@ -886,7 +886,7 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 
 def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
           solar_zenith, solar_azimuth, airmass,
-          model='allsitescomposite1990'):
+          model='allsitescomposite1990', return_components=False):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
     one of the Perez models.
@@ -952,6 +952,10 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         * 'albuquerque1988'
         * 'capecanaveral1988'
         * 'albany1988'
+
+    return_components: bool (optional, default=False)
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
 
     Returns
     --------
@@ -1043,7 +1047,26 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     else:
         sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
 
-    return sky_diffuse
+    if return_components:
+        diffuse_components = OrderedDict()
+
+        # Calculate the different components
+        diffuse_components['isotropic'] = dhi * term1
+        diffuse_components['circumsolar'] = dhi * term2
+        diffuse_components['horizon'] = dhi * term3
+
+        # Set values of components to 0 when sky_diffuse is 0
+        mask = sky_diffuse == 0
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+            diffuse_components.ix[mask] = 0
+        else:
+            diffuse_components = {k: np.where(mask, 0, v) for k, v in diffuse_components.items()}
+
+        return sky_diffuse, diffuse_components
+
+    else:
+        return sky_diffuse
 
 
 def disc(ghi, zenith, datetime_or_doy, pressure=101325):

@@ -2,7 +2,7 @@
 import os
 
 # local application/library specific imports 
-from pvlib.io.maccrad import read_maccrad
+from pvlib.iotools.maccrad import read_maccrad
 
 
 maccrad_url_base = "https://raw.githubusercontent.com/dacoex/pvlib_data/master/MACC-RAD/carpentras/"

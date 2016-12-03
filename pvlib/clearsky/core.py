@@ -201,7 +201,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
                           'supply your own turbidities.')
 
     if filepath is None:
-        pvlib_path = os.path.dirname(os.path.abspath(__file__))
+        clearsky_path = os.path.dirname(os.path.abspath(__file__))
+        pvlib_path = os.path.dirname(clearsky_path)
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
 
     mat = scipy.io.loadmat(filepath)

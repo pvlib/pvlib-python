@@ -7,7 +7,7 @@ import pytz
 
 # local application/library specific imports 
 from pvlib.location import Location
-from pvlib.iotools.iotools import get_loc_latlon, localise_df
+from pvlib.iotools.util import get_loc_latlon, localise_df
 
 # required dateconverters
 def dtp_soda_pro_macc_rad(date):

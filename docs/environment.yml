@@ -5,18 +5,18 @@ channels:
 dependencies:
     - python=2.7
     - mock  # needed for local python 2.7 builds
-    - numpy
+    - numpy=1.11.2
     - scipy
-    - pandas
+    - pandas=0.19.1
     - pytz
     - ephem
     - numba
     - ipython=4.0.1
     - ipywidgets
     - numpydoc
-    - matplotlib
-    - seaborn
-    - siphon
+    - matplotlib=1.5.3
+    - seaborn=0.7.1
+    - siphon=0.4.0
     - sphinx=1.4.8
     - netCDF4=1.2.4
     - hdf4=4.2.12

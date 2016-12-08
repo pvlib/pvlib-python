@@ -541,10 +541,11 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
                     var_diff=0.005, slope_dev=8):
     """
     Detects clear sky times by comparing statistics for a regular GHI
-    time series to the given clear sky timeseries.  Statistics are calculated
-    using a sliding time window (e.g., 10 minutes). Clear times are identified
-    by meeting 5 criteria. Default values for these thresholds are appropriate
-    for 10 minute windows of 1 minute GHI data.
+    time series to the given clear sky timeseries. Statistics are
+    calculated using a sliding time window (e.g., 10 minutes). Clear
+    times are identified by meeting 5 criteria. Default values for these
+    thresholds are appropriate for 10 minute windows of 1 minute GHI
+    data.
 
     Parameters
     ----------
@@ -552,28 +553,28 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
         Time-series of measured GHI values localized to the appropriate
         timezone. The frequency attribute of the index must be defined.
     clearsky_ghi : Series
-        Time-series of the expected clearsky GHI values. Must have the same
-        index as ghi.
+        Time-series of the expected clearsky GHI values. Must have the
+        same index as ghi.
     window_length : int
-        length of sliding time window in minutes
+        Length of sliding time window in minutes
     mean_diff : float
-        threshold value in W/m**2 for agreement between mean values of GHI
-        in each interval, see Eq. 6 in [1]
+        Threshold value in W/m**2 for agreement between mean values of
+        GHI in each interval, see Eq. 6 in [1]
     max_diff : float
-        threshold value in W/m**2 for agreement between maxima of GHI values
-        in each interval, see Eq. 7 in [1]
+        Threshold value in W/m**2 for agreement between maxima of GHI
+        values in each interval, see Eq. 7 in [1]
     lower_line_length : float
-        lower limit of line length criterion from Eq. 8 in [1].
+        Lower limit of line length criterion from Eq. 8 in [1].
         Criterion satisfied when
         lower_line_length < line length difference < upper_line_length
     upper_line_length : float
-        upper limit of line length criterion from Eq. 8 in [1]
+        Upper limit of line length criterion from Eq. 8 in [1]
     var_diff : float
-        threshold value in Hz for the agreement between normalized
-        standard deviations of rate of change in irradiance, see
-        Eqs. 9 through 11 in [1]
+        Threshold value in Hz for the agreement between normalized
+        standard deviations of rate of change in irradiance, see Eqs. 9
+        through 11 in [1]
     slope_dev : float
-        threshold value in W/m**2 for agreement between the largest
+        Threshold value in W/m**2 for agreement between the largest
         magnitude of change in successive GHI values, see Eqs. 12
         through 14 in [1]
 
@@ -584,9 +585,9 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
 
     References
     ----------
-    [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear sky
-    irradiance in time series of GHI measurements" Renewable Energy, v90,
-    p. 520-531, 2016.
+    [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+    sky irradiance in time series of GHI measurements" Renewable Energy,
+    v90, p. 520-531, 2016.
 
     Notes
     -----
@@ -594,8 +595,7 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
     computational efficiency by Joshua Patrick and Curtis Martin. Ported
     to Python by Tony Lorenzo.
     """
-    # assert that inputs are series otherwise rolling things get
-    # screwy
+    # assert that inputs are series otherwise rolling things get screwy
     if not isinstance(ghi, pd.Series):
         raise TypeError('ghi must be a Pandas Series')
     if not isinstance(clearsky_ghi, pd.Series):

@@ -253,7 +253,7 @@ def _calendar_month_middles(year):
     """list of middle day of each month, used by Linke turbidity lookup"""
     # remove mdays[0] since January starts at mdays[1]
     # make local copy of mdays since we need to change February for leap years
-    mdays = np.array(calendar.mdays[1:])  
+    mdays = np.array(calendar.mdays[1:])
     ydays = 365
     # handle leap years
     if calendar.isleap(year):
@@ -538,7 +538,8 @@ def _calc_d(w, aod700, p):
 def detect_clearsky(ghi, clearsky_ghi, window_length,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
-                    var_diff=0.005, slope_dev=8):
+                    var_diff=0.005, slope_dev=8, min_samples_per_window=None,
+                    return_components=False, center=False):
     """
     Detects clear sky times by comparing statistics for a regular GHI
     time series to the given clear sky timeseries. Statistics are
@@ -595,6 +596,7 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
     computational efficiency by Joshua Patrick and Curtis Martin. Ported
     to Python by Tony Lorenzo.
     """
+
     # assert that inputs are series otherwise rolling things get screwy
     if not isinstance(ghi, pd.Series):
         raise TypeError('ghi must be a Pandas Series')
@@ -607,41 +609,104 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
     # help enforce equal time spacing
     if ghi.index.freq is None:
         raise ValueError('The ghi index must have a defined freq')
+
+    # convert to minutes to match input window_length units
     sample_interval = ghi.index.freq.delta.seconds / 60
 
-    min_samples_per_window = int((0.8 * window_length) // sample_interval)
-    samples_per_window = int(window_length / sample_interval)
-    meas_mean = pd.rolling_mean(ghi, samples_per_window,
-                                min_samples_per_window)
-    meas_max = pd.rolling_max(ghi, samples_per_window, min_samples_per_window)
-    meas_slope = ghi.diff()
-    meas_max_slope = pd.rolling_max(meas_slope.abs(), samples_per_window,
-                                    min_samples_per_window)
-    meas_line_length = pd.rolling_mean(np.sqrt(
-        meas_slope**2 + (sample_interval * np.ones(meas_slope.shape))**2),
-                                       samples_per_window,
-                                       min_samples_per_window)
+    if min_samples_per_window is None:
+        min_samples_per_window = int((0.8 * window_length) // sample_interval)
 
-    clear_mean = pd.rolling_mean(clearsky_ghi, samples_per_window,
-                                 min_samples_per_window)
-    clear_max = pd.rolling_max(clearsky_ghi, samples_per_window,
-                               min_samples_per_window)
-    clear_slope = clearsky_ghi.diff()
-    clear_line_length = pd.rolling_mean(np.sqrt(
-        clear_slope**2 + (sample_interval * np.ones(clear_slope.shape))**2),
-                                        samples_per_window,
-                                        min_samples_per_window)
-    clear_max_slope = pd.rolling_max(clear_slope.abs(), samples_per_window,
-                                     min_samples_per_window)
+    samples_per_window = int(window_length / sample_interval)
+
+    # try/except for pandas rolling api changes in 0.18
+
+    # calculate measurement statistics
+    try:
+        meas_rolled = ghi.rolling(samples_per_window, center=center,
+                             min_periods=min_samples_per_window)
+    except AttributeError:
+        meas_mean = pd.rolling_mean(ghi, samples_per_window,
+                                    min_samples_per_window, center=center)
+        meas_max = pd.rolling_max(ghi, samples_per_window,
+                                  min_samples_per_window, center=center)
+        # looks like the matlab implementation might be a centered
+        # difference, so try that instead...
+        meas_slope = ghi.diff()
+        meas_slope = (2*ghi - ghi.shift(1) - ghi.shift(-1))/2
+        meas_max_slope = pd.rolling_max(meas_slope.abs(), samples_per_window,
+                                        min_samples_per_window, center=center)
+        meas_line_length = pd.rolling_mean(np.sqrt(
+            meas_slope**2 + (sample_interval * np.ones(meas_slope.shape))**2),
+                                           samples_per_window,
+                                           min_samples_per_window, center=center)
+        meas_slope_nstd = pd.rolling_std(meas_slope, samples_per_window,
+                                         min_samples_per_window,
+                                         center=center) / meas_mean
+    else:
+        meas_mean = meas_rolled.mean()
+        meas_max = meas_rolled.max()
+        meas_slope = ghi.diff()
+        meas_slope = (2*ghi - ghi.shift(1) - ghi.shift(-1))/2
+        meas_max_slope = meas_slope.abs().rolling(samples_per_window,
+            center=center, min_periods=min_samples_per_window).max()
+        line_length = np.sqrt(
+            meas_slope**2 + (sample_interval * np.ones(meas_slope.shape))**2)
+        meas_line_length = line_length.rolling(
+            samples_per_window, center=center,
+            min_periods=min_samples_per_window).mean()
+        meas_slope_nstd = meas_slope.rolling(samples_per_window,
+            center=center, min_periods=min_samples_per_window).std() / meas_mean
+
+    # calculate clear sky statistics
+    try:
+        clear_rolled = clearsky_ghi.rolling(samples_per_window, center=center,
+                                            min_periods=min_samples_per_window)
+    except AttributeError:
+        clear_mean = pd.rolling_mean(clearsky_ghi, samples_per_window,
+                                     min_samples_per_window, center=center)
+        clear_max = pd.rolling_max(clearsky_ghi, samples_per_window,
+                                   min_samples_per_window, center=center)
+        clear_slope = clearsky_ghi.diff()
+        clear_slope = (2*clearsky_ghi - clearsky_ghi.shift(1) - clearsky_ghi.shift(-1))/2
+        clear_max_slope = pd.rolling_max(clear_slope.abs(), samples_per_window,
+                                         min_samples_per_window, center=center)
+        clear_line_length = pd.rolling_mean(np.sqrt(
+            clear_slope**2 + (sample_interval * np.ones(clear_slope.shape))**2),
+                                            samples_per_window,
+                                            min_samples_per_window,
+                                            center=center)
+    else:
+        clear_mean = clear_rolled.mean()
+        clear_max = clear_rolled.max()
+        clear_slope = clearsky_ghi.diff()
+        clear_slope = (2*clearsky_ghi - clearsky_ghi.shift(1) - clearsky_ghi.shift(-1))/2
+        clear_max_slope = clear_slope.abs().rolling(samples_per_window,
+            center=center, min_periods=min_samples_per_window).max()
+        line_length = np.sqrt(
+            clear_slope**2 + (sample_interval * np.ones(clear_slope.shape))**2)
+        clear_line_length = line_length.rolling(
+            samples_per_window, center=center,
+            min_periods=min_samples_per_window).mean()
 
     line_diff = meas_line_length - clear_line_length
 
+    # evaluate comparison criteria
     c1 = np.abs(meas_mean - clear_mean) < mean_diff
     c2 = np.abs(meas_max - clear_max) < max_diff
     c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
-    c4 = (pd.rolling_std(meas_slope, samples_per_window,
-                         min_samples_per_window) / meas_mean) < var_diff
+    c4 = meas_slope_nstd < var_diff
     c5 = (meas_max_slope - clear_max_slope) < slope_dev
     c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
     clear_times = c1 & c2 & c3 & c4 & c5 & c6
-    return clear_times
+
+    if return_components:
+        components = OrderedDict()
+        components['mean_diff'] = c1
+        components['max_diff'] = c2
+        components['line_length'] = c3
+        components['slope_nstd'] = c4
+        components['slope_max'] = c5
+        components['mean_nan'] = c6
+        return clear_times, components
+    else:
+        return clear_times

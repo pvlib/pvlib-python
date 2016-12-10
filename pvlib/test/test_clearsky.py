@@ -504,3 +504,7 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(-91, -122)  # exceeds min latitude
     with pytest.raises(IndexError):
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
+
+
+def test_detect_clearsky():
+    clearsky.detect_clearsky()

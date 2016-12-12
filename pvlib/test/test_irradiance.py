@@ -371,11 +371,17 @@ def test_erbs_all_scalar():
 
 
 def test_dirindex():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
-    ghi = pd.Series([1038.62, 254.53], index=times)
-    zenith = pd.Series([10.567, 72.469], index=times)
+    clearsky_data = tus.get_clearsky(times, model='ineichen',
+                                     linke_turbidity=3)
+    ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
+    ghi_clearsky = clearsky_data['ghi']
+    dni_clearsky = clearsky_data['dni']
+    zenith = ephem_data['apparent_zenith']
     pressure = 93193.
-    dirindex_data = irradiance.dirindex(ghi, zenith, times, pressure=pressure,
-                                        temp_dew=10)
+    tdew = 10.
+    dirindex_data = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky,
+                                        zenith, times, pressure=pressure,
+                                        temp_dew=tdew)
 
-    print 'DIRINDEX data: ', dirindex_data
+    print 'DIRINDEX data: '
+    print dirindex_data

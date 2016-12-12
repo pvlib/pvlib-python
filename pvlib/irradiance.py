@@ -1223,7 +1223,7 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     Notes
     -----
     DIRINT model requires time series data (ie. one of the inputs must
-    be a vector of length > 2.
+    be a vector of length > 2).
 
     References
     ----------
@@ -1319,14 +1319,84 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     return dni
 
 
-def dirindex(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
-             temp_dew=None):
+def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
+             use_delta_kt_prime=True, temp_dew=None):
+    """
+    Determine DNI from GHI using the DIRINDEX model, which is a modification of
+    the DIRINT model with information from a clear sky model.
 
-    dirint_data = dirint(ghi, zenith, times, pressure=pressure,
-                         use_delta_kt_prime=use_delta_kt_prime,
-                         temp_dew=temp_dew)
+    DIRINDEX [1] improves upon the DIRINT model by taking into account turbidity
+    when used with the Ineichen clear sky model results.
 
-    return dirint_data
+    Parameters
+    ----------
+    ghi : array-like
+        Global horizontal irradiance in W/m^2.
+
+    ghi_clearsky : array-like
+        Global horizontal irradiance from clear sky model, in W/m^2.
+
+    dni_clearsky : array-like
+        Direct normal irradiance from clear sky model, in W/m^2.
+
+    zenith : array-like
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. If Z is a vector it must be of the same size as all
+        other vector inputs. Z must be >=0 and <=180.
+
+    times : DatetimeIndex
+
+    pressure : float or array-like
+        The site pressure in Pascal. Pressure may be measured or an
+        average pressure may be calculated from site altitude.
+
+    use_delta_kt_prime : bool
+        Indicates if the user would like to utilize the time-series
+        nature of the GHI measurements. A value of ``False`` will not
+        use the time-series improvements, any other numeric value will
+        use time-series improvements. It is recommended that time-series
+        data only be used if the time between measured data points is
+        less than 1.5 hours. If none of the input arguments are vectors,
+        then time-series improvements are not used (because it's not a
+        time-series). If True, input data must be Series.
+
+    temp_dew : None, float, or array-like
+        Surface dew point temperatures, in degrees C. Values of temp_dew
+        may be numeric or NaN. Any single time period point with a
+        DewPtTemp=NaN does not have dew point improvements applied. If
+        DewPtTemp is not provided, then dew point improvements are not
+        applied.
+
+    Returns
+    -------
+    dni : array-like
+        The modeled direct normal irradiance in W/m^2.
+
+    Notes
+    -----
+    DIRINDEX model requires time series data (ie. one of the inputs must
+    be a vector of length > 2).
+
+    References
+    ----------
+    [1] Perez, R., Ineichen, P., Moore, K., Kmiecik, M., Chain, C., George, R.,
+    & Vignola, F. (2002). A new operational model for satellite-derived
+    irradiances: description and validation. Solar Energy, 73(5), 307-317.
+    """
+
+    dni_dirint = dirint(ghi, zenith, times, pressure=pressure,
+                        use_delta_kt_prime=use_delta_kt_prime,
+                        temp_dew=temp_dew)
+
+    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times, pressure=pressure,
+                                 use_delta_kt_prime=use_delta_kt_prime,
+                                 temp_dew=temp_dew)
+
+    dni_dirindex = dni_clearsky * dni_dirint / dni_dirint_clearsky
+
+    dni_dirindex[dni_dirindex < 0] = 0.
+
+    return dni_dirindex
 
 
 def erbs(ghi, zenith, doy):

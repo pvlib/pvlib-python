@@ -42,6 +42,7 @@ dt_datetime = datetime.datetime.combine(dt_date, datetime.time(0))
 dt_np64 = np.datetime64(dt_datetime)
 value = 1383.636203
 
+
 @pytest.mark.parametrize('input, expected', [
     (doy, value),
     (np.float64(doy), value),
@@ -194,7 +195,6 @@ def test_perez_arrays():
     assert_allclose(out, expected, atol=1e-2)
 
 
-
 def test_liujordan():
     expected = pd.DataFrame(np.
         array([[863.859736967, 653.123094076, 220.65905025]]),
@@ -286,6 +286,7 @@ def test_dirint():
     dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'],
                                     ephem_data.index, pressure=pressure)
 
+
 def test_dirint_value():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
@@ -318,6 +319,7 @@ def test_dirint_tdew():
     assert_almost_equal(dirint_data.values,
                         np.array([892.9,  636.5]), 1)
 
+
 def test_dirint_no_delta_kt():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
@@ -327,6 +329,7 @@ def test_dirint_no_delta_kt():
                                     use_delta_kt_prime=False)
     assert_almost_equal(dirint_data.values,
                         np.array([861.9,  670.4]), 1)
+
 
 def test_dirint_coeffs():
     coeffs = irradiance._get_dirint_coeffs()
@@ -365,3 +368,14 @@ def test_erbs_all_scalar():
 
     for k, v in out.items():
         assert_allclose(v, expected[k], 5)
+
+
+def test_dirindex():
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
+    ghi = pd.Series([1038.62, 254.53], index=times)
+    zenith = pd.Series([10.567, 72.469], index=times)
+    pressure = 93193.
+    dirindex_data = irradiance.dirindex(ghi, zenith, times, pressure=pressure,
+                                        temp_dew=10)
+
+    print 'DIRINDEX data: ', dirindex_data

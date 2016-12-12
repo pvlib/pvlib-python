@@ -1319,6 +1319,16 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     return dni
 
 
+def dirindex(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
+             temp_dew=None):
+
+    dirint_data = dirint(ghi, zenith, times, pressure=pressure,
+                         use_delta_kt_prime=use_delta_kt_prime,
+                         temp_dew=temp_dew)
+
+    return dirint_data
+
+
 def erbs(ghi, zenith, doy):
     r"""
     Estimate DNI and DHI from GHI using the Erbs model.

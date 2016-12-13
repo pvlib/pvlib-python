@@ -535,11 +535,11 @@ def _calc_d(w, aod700, p):
     return d
 
 
-def detect_clearsky(ghi, clearsky_ghi, window_length,
+def detect_clearsky(ghi, clearsky_ghi, times, window_length,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, min_samples_per_window=None,
-                    return_components=False, center=False):
+                    return_components=False):
     """
     Detects clear sky times by comparing statistics for a regular GHI
     time series to the given clear sky timeseries. Statistics are
@@ -550,12 +550,14 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
 
     Parameters
     ----------
-    ghi : Series
+    ghi : array or Series
         Time-series of measured GHI values localized to the appropriate
         timezone. The frequency attribute of the index must be defined.
-    clearsky_ghi : Series
+    clearsky_ghi : array or Series
         Time-series of the expected clearsky GHI values. Must have the
         same index as ghi.
+    times : DatetimeIndex
+        Times of ghi and ghi clearsky values.
     window_length : int
         Length of sliding time window in minutes
     mean_diff : float
@@ -581,8 +583,13 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
 
     Returns
     -------
-    clear_times : Series
-        Boolean series of whether or not the given time is clear
+    clear_samples : array or Series
+        Boolean array or Series of whether or not the given time is
+        clear.
+
+    components : OrderedDict, optional
+        Dict of arrays of whether or not the given time window is clear
+        for each condition. Only provided if return_components is True.
 
     References
     ----------
@@ -594,99 +601,58 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
     -----
     Initial implementation in MATLAB by Matthew Reno. Modifications for
     computational efficiency by Joshua Patrick and Curtis Martin. Ported
-    to Python by Tony Lorenzo.
+    to Python by Will Holmgren, Tony Lorenzo, and Cliff Hansen.
+
+    Differences from MATLAB version:
+
+        * no support for unequal times
+        * automatically determines sample_interval
+        * requires a clear sky series instead of a location and UTCoffset
+        * does not iterate over clear sky scaling values
+        * parameters are controllable via keyword arguments
+        * option to return individual test components
     """
 
-    # assert that inputs are series otherwise rolling things get screwy
-    if not isinstance(ghi, pd.Series):
-        raise TypeError('ghi must be a Pandas Series')
-    if not isinstance(clearsky_ghi, pd.Series):
-        raise TypeError('clearsky_ghi must be a Pandas Series')
+    # calculate deltas in units of minutes (matches input window_length units)
+    deltas = np.diff(times) / np.timedelta64(1, '60s')
 
-    if not ghi.index.equals(clearsky_ghi.index):
-        raise ValueError('ghi and clearsky_ghi must have the same index')
+    # determine the unique deltas and if we can proceed
+    unique_deltas = np.unique(deltas)
+    if len(unique_deltas) == 1:
+        sample_interval = unique_deltas[0]
+    else:
+        raise NotImplementedError('algorithm does not yet support unequal ' \
+                                  'times. consider resampling your data.')
 
-    # help enforce equal time spacing
-    if ghi.index.freq is None:
-        raise ValueError('The ghi index must have a defined freq')
-
-    # convert to minutes to match input window_length units
-    sample_interval = ghi.index.freq.delta.seconds / 60
+    samples_per_window = int(window_length / sample_interval)
 
     if min_samples_per_window is None:
         min_samples_per_window = int((0.8 * window_length) // sample_interval)
 
-    samples_per_window = int(window_length / sample_interval)
+    # generate matrix of integers for creating windows with indexing
+    from scipy.linalg import hankel
+    H = hankel(np.arange(samples_per_window),
+               np.arange(samples_per_window-1, len(times)))
 
-    # try/except for pandas rolling api changes in 0.18
+    clear_mean = np.mean(clearsky_ghi[H], axis=0)
+    clear_max = np.max(clearsky_ghi[H], axis=0)
+    clear_slope = np.diff(clearsky_ghi[H], n=1, axis=0)
 
-    # calculate measurement statistics
-    try:
-        meas_rolled = ghi.rolling(samples_per_window, center=center,
-                             min_periods=min_samples_per_window)
-    except AttributeError:
-        meas_mean = pd.rolling_mean(ghi, samples_per_window,
-                                    min_samples_per_window, center=center)
-        meas_max = pd.rolling_max(ghi, samples_per_window,
-                                  min_samples_per_window, center=center)
-        # looks like the matlab implementation might be a centered
-        # difference, so try that instead...
-        meas_slope = ghi.diff()
-        #meas_slope = (2*ghi - ghi.shift(1) - ghi.shift(-1))/2
-        meas_max_slope = pd.rolling_max(meas_slope.abs(), samples_per_window,
-                                        min_samples_per_window, center=center)
-        meas_line_length = pd.rolling_mean(np.sqrt(
-            meas_slope**2 + (sample_interval * np.ones(meas_slope.shape))**2),
-                                           samples_per_window,
-                                           min_samples_per_window, center=center)
-        meas_slope_nstd = pd.rolling_std(meas_slope, samples_per_window,
-                                         min_samples_per_window,
-                                         center=center) / meas_mean
-    else:
-        meas_mean = meas_rolled.mean()
-        meas_max = meas_rolled.max()
-        meas_slope = ghi.diff()
-        #meas_slope = (2*ghi - ghi.shift(1) - ghi.shift(-1))/2
-        meas_max_slope = meas_slope.abs().rolling(samples_per_window,
-            center=center, min_periods=min_samples_per_window).max()
-        line_length = np.sqrt(
-            meas_slope**2 + (sample_interval * np.ones(meas_slope.shape))**2)
-        meas_line_length = line_length.rolling(
-            samples_per_window, center=center,
-            min_periods=min_samples_per_window).mean()
-        meas_slope_nstd = meas_slope.rolling(samples_per_window,
-            center=center, min_periods=min_samples_per_window).std() / meas_mean
+    meas_mean = np.mean(ghi[H], axis=0)
+    meas_max = np.max(ghi[H], axis=0)
+    meas_slope = np.diff(ghi[H], n=1, axis=0)
 
-    # calculate clear sky statistics
-    try:
-        clear_rolled = clearsky_ghi.rolling(samples_per_window, center=center,
-                                            min_periods=min_samples_per_window)
-    except AttributeError:
-        clear_mean = pd.rolling_mean(clearsky_ghi, samples_per_window,
-                                     min_samples_per_window, center=center)
-        clear_max = pd.rolling_max(clearsky_ghi, samples_per_window,
-                                   min_samples_per_window, center=center)
-        clear_slope = clearsky_ghi.diff()
-        #clear_slope = (2*clearsky_ghi - clearsky_ghi.shift(1) - clearsky_ghi.shift(-1))/2
-        clear_max_slope = pd.rolling_max(clear_slope.abs(), samples_per_window,
-                                         min_samples_per_window, center=center)
-        clear_line_length = pd.rolling_mean(np.sqrt(
-            clear_slope**2 + (sample_interval * np.ones(clear_slope.shape))**2),
-                                            samples_per_window,
-                                            min_samples_per_window,
-                                            center=center)
-    else:
-        clear_mean = clear_rolled.mean()
-        clear_max = clear_rolled.max()
-        clear_slope = clearsky_ghi.diff()
-        #clear_slope = (2*clearsky_ghi - clearsky_ghi.shift(1) - clearsky_ghi.shift(-1))/2
-        clear_max_slope = clear_slope.abs().rolling(samples_per_window,
-            center=center, min_periods=min_samples_per_window).max()
-        line_length = np.sqrt(
-            clear_slope**2 + (sample_interval * np.ones(clear_slope.shape))**2)
-        clear_line_length = line_length.rolling(
-            samples_per_window, center=center,
-            min_periods=min_samples_per_window).mean()
+    clear_max_slope = np.max(np.abs(clear_slope), axis=0)
+    meas_max_slope = np.max(np.abs(meas_slope), axis=0)
+
+    # matlab std function normalizes by N-1, so set ddof=1 here
+    meas_slope_nstd = np.std(meas_slope, axis=0, ddof=1) / meas_mean
+
+    # a*a faster than a**2
+    clear_line_length = np.sum(np.sqrt(
+        clear_slope*clear_slope + sample_interval*sample_interval), axis=0)
+    meas_line_length = np.sum(np.sqrt(
+        meas_slope*meas_slope + sample_interval*sample_interval), axis=0)
 
     line_diff = meas_line_length - clear_line_length
 
@@ -697,10 +663,16 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
     c4 = meas_slope_nstd < var_diff
     c5 = (meas_max_slope - clear_max_slope) < slope_dev
     c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
-    clear_times = c1 & c2 & c3 & c4 & c5 & c6
+    clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
-    for i in range(samples_per_window):
-        clear_times = clear_times | clear_times.shift(-i)
+    # create array to return
+    clear_samples = np.full_like(ghi, False, dtype='bool')
+    # find the samples contained in any window classified as clear
+    clear_samples[np.unique(H[:, clear_windows])] = True
+
+    # be polite about returning the same type as was input
+    if isinstance(ghi, pd.Series):
+        clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:
         components = OrderedDict()
@@ -710,6 +682,8 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
         components['slope_nstd'] = c4
         components['slope_max'] = c5
         components['mean_nan'] = c6
-        return clear_times, components
+        components['windows'] = clear_windows
+        # components['H'] = H
+        return clear_samples, components
     else:
-        return clear_times
+        return clear_samples

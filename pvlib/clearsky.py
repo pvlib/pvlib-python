@@ -538,7 +538,7 @@ def _calc_d(w, aod700, p):
 def detect_clearsky(ghi, clearsky_ghi, times, window_length,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
-                    var_diff=0.005, slope_dev=8, min_samples_per_window=None,
+                    var_diff=0.005, slope_dev=8, max_iterations=20,
                     return_components=False):
     """
     Detects clear sky times by comparing statistics for a regular GHI
@@ -580,6 +580,12 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
         Threshold value in W/m**2 for agreement between the largest
         magnitude of change in successive GHI values, see Eqs. 12
         through 14 in [1]
+    max_iterations : int
+        Maximum number of times to apply a different scaling factor to
+        the clearsky_ghi and redetermine clear_samples. Must be 1 or
+        larger.
+    return_components : bool
+        Controls if additional output should be returned. See below.
 
     Returns
     -------
@@ -590,6 +596,11 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
     components : OrderedDict, optional
         Dict of arrays of whether or not the given time window is clear
         for each condition. Only provided if return_components is True.
+
+    alpha : scalar, optional
+        Scaling factor applied to the clearsky_ghi to obtain the
+        detected clear_samples. Only provided if return_components is
+        True.
 
     References
     ----------
@@ -607,8 +618,8 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
 
         * no support for unequal times
         * automatically determines sample_interval
-        * requires a clear sky series instead of a location and UTCoffset
-        * does not iterate over clear sky scaling values
+        * requires a reference clear sky series instead calculating one
+          from a user supplied location and UTCoffset
         * parameters are controllable via keyword arguments
         * option to return individual test components
     """
@@ -626,49 +637,64 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
 
     samples_per_window = int(window_length / sample_interval)
 
-    if min_samples_per_window is None:
-        min_samples_per_window = int((0.8 * window_length) // sample_interval)
-
     # generate matrix of integers for creating windows with indexing
     from scipy.linalg import hankel
     H = hankel(np.arange(samples_per_window),
                np.arange(samples_per_window-1, len(times)))
 
-    clear_mean = np.mean(clearsky_ghi[H], axis=0)
-    clear_max = np.max(clearsky_ghi[H], axis=0)
-    clear_slope = np.diff(clearsky_ghi[H], n=1, axis=0)
-
+    # calculate measurement statistics
     meas_mean = np.mean(ghi[H], axis=0)
     meas_max = np.max(ghi[H], axis=0)
     meas_slope = np.diff(ghi[H], n=1, axis=0)
-
-    clear_max_slope = np.max(np.abs(clear_slope), axis=0)
-    meas_max_slope = np.max(np.abs(meas_slope), axis=0)
-
     # matlab std function normalizes by N-1, so set ddof=1 here
     meas_slope_nstd = np.std(meas_slope, axis=0, ddof=1) / meas_mean
-
-    # a*a faster than a**2
-    clear_line_length = np.sum(np.sqrt(
-        clear_slope*clear_slope + sample_interval*sample_interval), axis=0)
+    meas_slope_max = np.max(np.abs(meas_slope), axis=0)
     meas_line_length = np.sum(np.sqrt(
         meas_slope*meas_slope + sample_interval*sample_interval), axis=0)
 
-    line_diff = meas_line_length - clear_line_length
+    # calculate clear sky statistics
+    clear_mean = np.mean(clearsky_ghi[H], axis=0)
+    clear_max = np.max(clearsky_ghi[H], axis=0)
+    clear_slope = np.diff(clearsky_ghi[H], n=1, axis=0)
+    clear_slope_max = np.max(np.abs(clear_slope), axis=0)
 
-    # evaluate comparison criteria
-    c1 = np.abs(meas_mean - clear_mean) < mean_diff
-    c2 = np.abs(meas_max - clear_max) < max_diff
-    c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
-    c4 = meas_slope_nstd < var_diff
-    c5 = (meas_max_slope - clear_max_slope) < slope_dev
-    c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
-    clear_windows = c1 & c2 & c3 & c4 & c5 & c6
+    from scipy.optimize import minimize_scalar
 
-    # create array to return
-    clear_samples = np.full_like(ghi, False, dtype='bool')
-    # find the samples contained in any window classified as clear
-    clear_samples[np.unique(H[:, clear_windows])] = True
+    alpha = 1
+    for iteration in range(max_iterations):
+        clear_line_length = np.sum(np.sqrt(
+            alpha*alpha*clear_slope*clear_slope +
+            sample_interval*sample_interval), axis=0)
+
+        line_diff = meas_line_length - clear_line_length
+
+        # evaluate comparison criteria
+        c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
+        c2 = np.abs(meas_max - alpha*clear_max) < max_diff
+        c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
+        c4 = meas_slope_nstd < var_diff
+        c5 = (meas_slope_max - alpha*clear_slope_max) < slope_dev
+        c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
+        clear_windows = c1 & c2 & c3 & c4 & c5 & c6
+
+        # create array to return
+        clear_samples = np.full_like(ghi, False, dtype='bool')
+        # find the samples contained in any window classified as clear
+        clear_samples[np.unique(H[:, clear_windows])] = True
+
+        # find a new alpha
+        previous_alpha = alpha
+        clear_meas = ghi[clear_samples]
+        clear_clear = clearsky_ghi[clear_samples]
+        def rmse(alpha):
+            return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+        alpha = minimize_scalar(rmse).x
+        if round(alpha*10000) == round(previous_alpha*10000):
+            break
+    else:
+        import warnings
+        warnings.warn('failed to converge after %s iterations' \
+                      % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
     if isinstance(ghi, pd.Series):
@@ -683,7 +709,6 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
         components['slope_max'] = c5
         components['mean_nan'] = c6
         components['windows'] = clear_windows
-        # components['H'] = H
-        return clear_samples, components
+        return clear_samples, components, alpha
     else:
         return clear_samples

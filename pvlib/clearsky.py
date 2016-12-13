@@ -632,7 +632,7 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
         # looks like the matlab implementation might be a centered
         # difference, so try that instead...
         meas_slope = ghi.diff()
-        meas_slope = (2*ghi - ghi.shift(1) - ghi.shift(-1))/2
+        #meas_slope = (2*ghi - ghi.shift(1) - ghi.shift(-1))/2
         meas_max_slope = pd.rolling_max(meas_slope.abs(), samples_per_window,
                                         min_samples_per_window, center=center)
         meas_line_length = pd.rolling_mean(np.sqrt(
@@ -646,7 +646,7 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
         meas_mean = meas_rolled.mean()
         meas_max = meas_rolled.max()
         meas_slope = ghi.diff()
-        meas_slope = (2*ghi - ghi.shift(1) - ghi.shift(-1))/2
+        #meas_slope = (2*ghi - ghi.shift(1) - ghi.shift(-1))/2
         meas_max_slope = meas_slope.abs().rolling(samples_per_window,
             center=center, min_periods=min_samples_per_window).max()
         line_length = np.sqrt(
@@ -667,7 +667,7 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
         clear_max = pd.rolling_max(clearsky_ghi, samples_per_window,
                                    min_samples_per_window, center=center)
         clear_slope = clearsky_ghi.diff()
-        clear_slope = (2*clearsky_ghi - clearsky_ghi.shift(1) - clearsky_ghi.shift(-1))/2
+        #clear_slope = (2*clearsky_ghi - clearsky_ghi.shift(1) - clearsky_ghi.shift(-1))/2
         clear_max_slope = pd.rolling_max(clear_slope.abs(), samples_per_window,
                                          min_samples_per_window, center=center)
         clear_line_length = pd.rolling_mean(np.sqrt(
@@ -679,7 +679,7 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
         clear_mean = clear_rolled.mean()
         clear_max = clear_rolled.max()
         clear_slope = clearsky_ghi.diff()
-        clear_slope = (2*clearsky_ghi - clearsky_ghi.shift(1) - clearsky_ghi.shift(-1))/2
+        #clear_slope = (2*clearsky_ghi - clearsky_ghi.shift(1) - clearsky_ghi.shift(-1))/2
         clear_max_slope = clear_slope.abs().rolling(samples_per_window,
             center=center, min_periods=min_samples_per_window).max()
         line_length = np.sqrt(
@@ -698,6 +698,9 @@ def detect_clearsky(ghi, clearsky_ghi, window_length,
     c5 = (meas_max_slope - clear_max_slope) < slope_dev
     c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
     clear_times = c1 & c2 & c3 & c4 & c5 & c6
+
+    for i in range(samples_per_window):
+        clear_times = clear_times | clear_times.shift(-i)
 
     if return_components:
         components = OrderedDict()

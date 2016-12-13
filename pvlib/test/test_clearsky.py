@@ -1,3 +1,5 @@
+import inspect
+import os
 from collections import OrderedDict
 
 import numpy as np
@@ -506,5 +508,42 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
 
 
-def test_detect_clearsky():
-    clearsky.detect_clearsky()
+@pytest.fixture
+def detect_clearsky_data():
+    test_dir = os.path.dirname(os.path.abspath(
+        inspect.getfile(inspect.currentframe())))
+    file = os.path.join(test_dir, '..', 'data', 'detect_clearsky_data.csv')
+    expected = pd.read_csv(file, index_col=0, parse_dates=True, comment='#')
+    expected = expected.tz_localize('UTC').tz_convert('Etc/GMT+7')
+    metadata = {}
+    with open(file) as f:
+        for line in f:
+            if line.startswith('#'):
+                key, value = line.strip('# \n').split(':')
+                metadata[key] = float(value)
+            else:
+                break
+    metadata['window_length'] = int(metadata['window_length'])
+    loc = Location(metadata['latitude'], metadata['longitude'],
+                   altitude=metadata['elevation'])
+    cs = loc.get_clearsky(expected.index)
+    return expected, cs
+
+
+@requires_scipy
+def test_detect_clearsky(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 10)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+
+@requires_scipy
+def test_detect_clearsky_components(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples, components, alpha = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 10, return_components=True)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+    assert isinstance(components, OrderedDict)
+    assert np.allclose(alpha, 0.95345573579557108)

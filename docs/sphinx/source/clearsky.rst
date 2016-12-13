@@ -23,7 +23,8 @@ multidimensional data may prefer to use the basic functions in the
 The :ref:`location` subsection demonstrates the easiest way to obtain a
 time series of clear sky data for a location. The :ref:`ineichen` and
 :ref:`simplified_solis` subsections detail the clear sky algorithms and
-input data.
+input data. The :ref:`detect_clearsky` subsection demonstrates the use
+of the clear sky detection algorithm.
 
 We'll need these imports for the examples below.
 
@@ -496,6 +497,36 @@ See [Ine16]_.
 
 We encourage users to compare the pvlib implementation to Ineichen's
 `Excel tool <http://www.unige.ch/energie/fr/equipe/ineichen/solis-tool/>`_.
+
+
+.. _detect_clearsky:
+
+Detect Clearsky
+---------------
+
+The :py:func:`~pvlib.clearsky.detect_clearsky` function detects the clear
+and cloudy points of a time series.
+
+.. ipython::
+
+    abq = Location(35.04, -106.62, altitude=1619)
+    cs = abq.get_clearsky(times)
+    # synthetic measurement data for testing
+    ghi = cs['ghi']*.953
+    ghi['2012-04-01 10:42:00':'2012-04-01 10:44:00'] = [500, 300, 400]
+    ghi['2012-04-01 10:56:00'] = 950
+    clear_samples = clearsky.detect_clearsky(ghi, cs['ghi'], cs.index, 10)
+
+    fig, ax = plt.subplots()
+    ghi.plot(label='input');
+    cs['ghi'].plot(label='ineichen clear');
+    plt.legend(loc=4);
+    @savefig detect-clear-ghi.png width=10in
+    plt.show();
+
+    @savefig detect-clear-detected.png width=10in
+    detected.plot();
+
 
 
 References

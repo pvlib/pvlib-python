@@ -383,5 +383,5 @@ def test_dirindex():
                                         zenith, times, pressure=pressure,
                                         temp_dew=tdew)
 
-    print 'DIRINDEX data: '
-    print dirindex_data
+    print('DIRINDEX data: ')
+    print(dirindex_data)

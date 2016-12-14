@@ -559,7 +559,7 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
     times : DatetimeIndex
         Times of ghi and ghi clearsky values.
     window_length : int
-        Length of sliding time window in minutes
+        Length of sliding time window in minutes. Must be greater than 2.
     mean_diff : float
         Threshold value in W/m**2 for agreement between mean values of
         GHI in each interval, see Eq. 6 in [1]

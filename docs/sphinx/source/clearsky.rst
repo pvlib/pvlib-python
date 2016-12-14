@@ -504,29 +504,54 @@ We encourage users to compare the pvlib implementation to Ineichen's
 Detect Clearsky
 ---------------
 
-The :py:func:`~pvlib.clearsky.detect_clearsky` function detects the clear
-and cloudy points of a time series.
+The :py:func:`~pvlib.clearsky.detect_clearsky` function implements the
+[Ren16]_ algorithm to detect the clear and cloudy points of a time
+series.
 
-.. ipython::
+First we'll generate some clear sky data and a test measurement data set.
+
+.. ipython:: python
 
     abq = Location(35.04, -106.62, altitude=1619)
+
+    times = pd.DatetimeIndex(start='2012-04-01 10:30:00', tz='Etc/GMT+7', periods=30, freq='1min')
+
     cs = abq.get_clearsky(times)
-    # synthetic measurement data for testing
+
+    # scale clear sky data to account for possibility of different turbidity
     ghi = cs['ghi']*.953
+
+    # add a cloud event
     ghi['2012-04-01 10:42:00':'2012-04-01 10:44:00'] = [500, 300, 400]
+
+    # add an overirradiance event
     ghi['2012-04-01 10:56:00'] = 950
-    clear_samples = clearsky.detect_clearsky(ghi, cs['ghi'], cs.index, 10)
 
     fig, ax = plt.subplots()
+
     ghi.plot(label='input');
+
     cs['ghi'].plot(label='ineichen clear');
+
+    ax.set_ylabel('Irradiance $W/m^2$');
+
     plt.legend(loc=4);
     @savefig detect-clear-ghi.png width=10in
     plt.show();
 
-    @savefig detect-clear-detected.png width=10in
-    detected.plot();
+Now we run the synthetic data and clear sky estimate through the
+:py:func:`~pvlib.clearsky.detect_clearsky` function.
 
+.. ipython:: python
+
+    clear_samples = clearsky.detect_clearsky(ghi, cs['ghi'], cs.index, 10)
+
+    fig, ax = plt.subplots()
+
+    clear_samples.plot();
+
+    @savefig detect-clear-detected.png width=10in
+    ax.set_ylabel('Clear (1) or Cloudy (0)');
 
 
 References
@@ -550,3 +575,7 @@ References
 .. [Ren12] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
    Sky Models: Implementation and Analysis", Sandia National
    Laboratories, SAND2012-2389, 2012.
+
+.. [Ren16] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+   sky irradiance in time series of GHI measurements" Renewable Energy,
+   v90, p. 520-531, 2016.

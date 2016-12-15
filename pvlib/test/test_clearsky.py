@@ -3,6 +3,9 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
+import xlrd
+import os
+
 import pytest
 from numpy.testing import assert_almost_equal, assert_allclose
 from pandas.util.testing import assert_frame_equal, assert_series_equal
@@ -504,3 +507,75 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(-91, -122)  # exceeds min latitude
     with pytest.raises(IndexError):
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
+
+
+"""
+Richard E. Bird 
+        Clear Sky Broadband
+        Solar Radiation Model 
+From the publication "A Simplified Clear Sky model for Direct and Diffuse
+Insolation on Horizontal Surfaces" by R.E. Bird and R.L Hulstrom, SERI Technical
+Report SERI/TR-642-761, Feb 1991. Solar Energy Research Institute, Golden, CO.
+
+The model is based on comparisons with results from rigourous radiative transfer
+codes. It is composed of simple algebraic expressions with 10 User defined
+inputs (green cells to left). Model results should be expected to agree within
++/-10% with rigourous radiative transfer codes. The model computes solar
+radiation for every hour of the year, based on the 10 user input parameters.
+
+The graphical presentation includes diurnal clear sky radiation patterns for
+every day of the year. The user may copy cells of interest or the graph and
+paste it to an unprotected worksheet for manipulation.
+
+The workbook is PROTECTED using the password BIRD (all caps). To generate data
+for the entire year, choose TOOLS, PROTECTION, UNPROTECT and enter the password.
+Copy row 49 and paste it from row 50 all the way down to row 8761. 
+
+NOTE: Columns L to U contain intermediate calculations and have been collapsed
+down for convenient pressentation of model results.
+
+Contact:
+Daryl R. Myers,
+National Renewable Energy Laboratory,
+1617 Cole Blvd. MS 3411, Golden CO 80401
+(303)-384-6768 e-mail daryl_myers@nrel.gov
+
+http://rredc.nrel.gov/solar/models/clearsky/
+http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf
+http://rredc.nrel.gov/solar/models/clearsky/error_reports.html
+"""
+
+
+def test_bird():
+    dt = pd.DatetimeIndex(start='1/1/2015 0:00', end='12/31/2015 23:00', freq='H')
+    kwargs = {
+        'lat': 40, 'lon': -105, 'tz': -7,
+        'press_mB': 840,
+        'o3_cm': 0.3, 'h2o_cm': 1.5,
+        'aod_500nm':  0.1, 'aod_380nm':  0.15,
+        'b_a': 0.85,
+        'alb': 0.2
+    }
+    Eb, Ebh, Gh, Dh, tv = bird(dt.dayofyear, np.array(range(24)*365), **kwargs)
+    day_angle, declination, eqt, hour_angle, zenith, airmass = tv
+    clearsky_path = os.path.dirname(os.path.abspath(__file__))
+    pvlib_path = os.path.dirname(clearsky_path)
+    wb = xlrd.open_workbook(
+        os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012.xls')
+    )
+    sheet = wb.sheets()[0]
+    headers = [h.value for h in sheet.row(1)][4:]
+    testdata = pd.DataFrame({h: [c.value for c in sheet.col(n + 4, 2, 49)]
+                            for n, h in enumerate(headers)},
+                            index=dt[1:48])
+    assert np.allclose(testdata['Dangle'], day_angle[1:48])
+    assert np.allclose(testdata['DEC'], declination[1:48])
+    assert np.allclose(testdata['EQT'], eqt[1:48])
+    assert np.allclose(testdata['Hour Angle'], hour_angle[1:48])
+    assert np.allclose(testdata['Zenith Ang'], zenith[1:48])
+    assert np.allclose(testdata['Air Mass'], airmass[1:48])
+    assert np.allclose(testdata['Direct Beam'], Eb[1:48])
+    assert np.allclose(testdata['Direct Hz'], Ebh[1:48])
+    assert np.allclose(testdata['Global Hz'], Gh[1:48])
+    assert np.allclose(testdata['Dif Hz'], Dh[1:48])
+    return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=dt)

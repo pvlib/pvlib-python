@@ -22,6 +22,7 @@ var/
 Drafts/
 */build/
 build/
+venv/
 
 *.egg-info/
 .installed.cfg
@@ -58,6 +59,8 @@ coverage.xml
 .pydevproject
 .spyderproject
 .idea/
+*.sublime-project
+*.sublime-workspace
 
 # Rope
 .ropeproject
@@ -79,4 +82,3 @@ coverage.xml
 #Ignore some notebooks
 *.ipynb
 !docs/tutorials/*.ipynb
-venv/

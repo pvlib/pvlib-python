@@ -534,3 +534,105 @@ def _calc_d(w, aod700, p):
     d = -0.337*aod700**2 + 0.63*aod700 + 0.116 + dp*np.log(p/p0)
 
     return d
+
+
+def bird(doy, hr, lat, lon, tz, press_mB, o3_cm, h2o_cm, aod_500nm, aod_380nm,
+         b_a, alb, lyear=365.0, solar_constant=1367.0):
+    """
+    Bird Simple Clearsky Model
+
+    :param doy: day(s) of the year
+    :type doy: int
+    :param hr: hour
+    :param lat: latitude [degrees]
+    :param lon: longitude [degrees]
+    :param tz: time zone
+    :param press_mB: pressure [mBar]
+    :param o3_cm: atmospheric ozone [cm]
+    :param h2o_cm: precipital water [cm]
+    :param aod_500nm: aerosol optical depth [cm] measured at 500[nm]
+    :param aod_380nm: aerosol optical depth [cm] measured at 380[nm]
+    :param b_a: asymmetry factor
+    :param alb: albedo 
+    """
+    doy0 = doy - 1.0
+    patm = 1013.0
+    day_angle = 6.283185 * doy0 / lyear
+    # rad2deg = 180.0 / np.pi
+    dec_rad = (
+        0.006918 - 0.399912 * np.cos(day_angle) + 0.070257 * np.sin(day_angle) -
+        0.006758 * np.cos(2.0 * day_angle) +
+        0.000907 * np.sin(2.0 * day_angle) -
+        0.002697 * np.cos(3.0 * day_angle) + 0.00148 * np.sin(3.0 * day_angle)
+    )
+    declination = np.rad2deg(dec_rad)
+    # equation of time
+    eqt = 229.18 * (
+        0.0000075 + 0.001868 * np.cos(day_angle) -
+        0.032077 * np.sin(day_angle) - 0.014615 * np.cos(2.0 * day_angle) -
+        0.040849 * np.sin(2.0 * day_angle)
+    )
+    hour_angle = 15.0 * (hr - 12.5) + lon - tz * 15.0 + eqt / 4.0
+    lat_rad = np.deg2rad(lat)
+    ze_rad = np.arccos(
+        np.cos(dec_rad) * np.cos(lat_rad) * np.cos(np.deg2rad(hour_angle)) +
+        np.sin(dec_rad) * np.sin(lat_rad)
+    )
+    zenith = np.rad2deg(ze_rad)
+    airmass = np.where(zenith < 89,
+        1.0 / (np.cos(ze_rad) + 0.15 / (93.885 - zenith) ** 1.25), 0.0
+    )
+    pstar = press_mB / patm
+    am_press = pstar*airmass
+    t_rayliegh = np.where(airmass > 0,
+        np.exp(-0.0903 * am_press ** 0.84 * (
+            1.0 + am_press - am_press ** 1.01
+        )), 0.0
+    )
+    am_o3 = o3_cm*airmass
+    t_ozone = np.where(airmass > 0,
+        1.0 - 0.1611 * am_o3 * (1.0 + 139.48 * am_o3) ** -0.3034 -
+        0.002715 * am_o3 / (1.0 + 0.044 * am_o3 + 0.0003 * am_o3 ** 2.0), 0.0)
+    t_gases = np.where(airmass > 0, np.exp(-0.0127 * am_press ** 0.26), 0.0)
+    am_h2o = airmass * h2o_cm
+    t_water = np.where(airmass > 0,
+        1.0 - 2.4959 * am_h2o / (
+            (1.0 + 79.034 * am_h2o) ** 0.6828 + 6.385 * am_h2o
+        ), 0.0
+    )
+    bird_huldstrom = 0.2758 * aod_380nm + 0.35 * aod_500nm
+    t_aerosol = np.where(airmass > 0, np.exp(
+        -(bird_huldstrom ** 0.873) *
+        (1.0 + bird_huldstrom - bird_huldstrom ** 0.7088) * airmass ** 0.9108
+    ), 0.0)
+    taa = np.where(airmass > 0,
+        1.0 - 0.1 * (1.0 - airmass + airmass ** 1.06) * (1.0 - t_aerosol), 0.0
+    )
+    rs = np.where(airmass > 0,
+        0.0685 + (1.0 - b_a) * (1.0 - t_aerosol / taa), 0.0
+    )
+    etr_ = etr(doy, lyear, solar_constant)
+    id_ = np.where(airmass > 0,
+        0.9662 * etr_ * t_aerosol * t_water * t_gases * t_ozone * t_rayliegh,
+        0.0
+    )
+    id_nh = np.where(zenith < 90, id_ * np.cos(ze_rad), 0.0)
+    ias = np.where(airmass > 0,
+        etr_ * np.cos(ze_rad) * 0.79 * t_ozone * t_gases * t_water * taa *
+        (0.5 * (1.0 - t_rayliegh) + b_a * (1.0 - (t_aerosol / taa))) / (
+            1.0 - airmass + airmass ** 1.02
+        ), 0.0
+    )
+    gh = np.where(airmass > 0, (id_nh + ias) / (1.0 - alb * rs), 0.0)
+    testvalues = (day_angle, declination, eqt, hour_angle, zenith, airmass)
+    return id_, id_nh, gh, gh - id_nh, testvalues
+
+
+def etr(doy, lyear=365.0, solar_constant=1367.0):
+    a0 = 1.00011
+    doy0 = doy - 1.0
+    a1 = 0.034221 * np.cos(2.0 * np.pi * doy0 / lyear)
+    a2 = 0.00128 * np.sin(2.0 * np.pi * doy0 / lyear)
+    a3 = 0.000719 * np.cos(2.0 * (2.0 * np.pi * doy0 / lyear))
+    a4 = 0.000077 * np.sin(2.0 * (2.0 * np.pi * doy0 / lyear))
+    return solar_constant * (a0 + a1 + a2 + a3 + a4)

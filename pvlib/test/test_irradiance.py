@@ -379,9 +379,18 @@ def test_dirindex():
     zenith = ephem_data['apparent_zenith']
     pressure = 93193.
     tdew = 10.
-    dirindex_data = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky,
-                                        zenith, times, pressure=pressure,
-                                        temp_dew=tdew)
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky,
+                              zenith, times, pressure=pressure,
+                              temp_dew=tdew)
+    dirint_close_values = irradiance.dirint(ghi, zenith, times,
+                                            pressure=pressure,
+                                            use_delta_kt_prime=True,
+                                            temp_dew=tdew).values
+    expected_out = np.array([np.nan, 0., 748.31562753, 630.72592644])
 
-    print('DIRINDEX data: ')
-    print(dirindex_data)
+    tolerance = 1e-8
+    assert np.allclose(out, expected_out, rtol=tolerance, atol=0,
+                       equal_nan=True)
+    tol_dirint = 0.2
+    assert np.allclose(out.values, dirint_close_values, rtol=tol_dirint, atol=0,
+                       equal_nan=True)

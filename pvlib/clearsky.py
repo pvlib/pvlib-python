@@ -535,55 +535,59 @@ def _calc_d(w, aod700, p):
     return d
 
 
-def detect_clearsky(ghi, clearsky_ghi, times, window_length,
+def detect_clearsky(measured, clearsky, times, window_length,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
                     return_components=False):
     """
-    Detects clear sky times by comparing statistics for a regular GHI
-    time series to the given clear sky timeseries. Statistics are
-    calculated using a sliding time window (e.g., 10 minutes). Clear
-    times are identified by meeting 5 criteria. Default values for these
-    thresholds are appropriate for 10 minute windows of 1 minute GHI
-    data.
+    Detects clear sky times by comparing statistics for a measured time
+    series to the given clear sky time series as described in [1].
+    Statistics are calculated using a sliding time window (e.g., 10
+    minutes). An iterative algorithm identifies clear periods, uses the
+    identified periods to estimate bias in the clearsky data, scales the
+    clearsky data and repeats.
+
+    Clear times are identified by meeting 5 criteria. Default values for
+    these thresholds are appropriate for 10 minute windows of 1 minute
+    GHI data.
+
+    The algorithm was developed for analyzing GHI time series, but users
+    may apply it to other types of time series data with varying degrees
+    of success.
 
     Parameters
     ----------
-    ghi : array or Series
-        Time-series of measured GHI values localized to the appropriate
-        timezone. The frequency attribute of the index must be defined.
-    clearsky_ghi : array or Series
-        Time-series of the expected clearsky GHI values. Must have the
-        same index as ghi.
+    measured : array or Series
+        Time series of measured values.
+    clearsky : array or Series
+        Time series of the expected clearsky values.
     times : DatetimeIndex
-        Times of ghi and ghi clearsky values.
+        Times of measured and clearsky values.
     window_length : int
         Length of sliding time window in minutes. Must be greater than 2.
     mean_diff : float
-        Threshold value in W/m**2 for agreement between mean values of
-        GHI in each interval, see Eq. 6 in [1]
+        Threshold value for agreement between mean values of measured
+        and clearsky in each interval, see Eq. 6 in [1].
     max_diff : float
-        Threshold value in W/m**2 for agreement between maxima of GHI
-        values in each interval, see Eq. 7 in [1]
+        Threshold value for agreement between maxima of measured and
+        clearsky values in each interval, see Eq. 7 in [1].
     lower_line_length : float
         Lower limit of line length criterion from Eq. 8 in [1].
         Criterion satisfied when
         lower_line_length < line length difference < upper_line_length
     upper_line_length : float
-        Upper limit of line length criterion from Eq. 8 in [1]
+        Upper limit of line length criterion from Eq. 8 in [1].
     var_diff : float
         Threshold value in Hz for the agreement between normalized
         standard deviations of rate of change in irradiance, see Eqs. 9
-        through 11 in [1]
+        through 11 in [1].
     slope_dev : float
-        Threshold value in W/m**2 for agreement between the largest
-        magnitude of change in successive GHI values, see Eqs. 12
-        through 14 in [1]
+        Threshold value for agreement between the largest magnitude of
+        change in successive values, see Eqs. 12 through 14 in [1].
     max_iterations : int
         Maximum number of times to apply a different scaling factor to
-        the clearsky_ghi and redetermine clear_samples. Must be 1 or
-        larger.
+        the clearsky and redetermine clear_samples. Must be 1 or larger.
     return_components : bool
         Controls if additional output should be returned. See below.
 
@@ -591,7 +595,7 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
     -------
     clear_samples : array or Series
         Boolean array or Series of whether or not the given time is
-        clear.
+        clear. Return type is the same as the input type.
 
     components : OrderedDict, optional
         Dict of arrays of whether or not the given time window is clear
@@ -621,7 +625,8 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
         * requires a reference clear sky series instead calculating one
           from a user supplied location and UTCoffset
         * parameters are controllable via keyword arguments
-        * option to return individual test components
+        * option to return individual test components and clearsky scaling
+          parameter
     """
 
     # calculate deltas in units of minutes (matches input window_length units)
@@ -643,9 +648,9 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
                np.arange(samples_per_window-1, len(times)))
 
     # calculate measurement statistics
-    meas_mean = np.mean(ghi[H], axis=0)
-    meas_max = np.max(ghi[H], axis=0)
-    meas_slope = np.diff(ghi[H], n=1, axis=0)
+    meas_mean = np.mean(measured[H], axis=0)
+    meas_max = np.max(measured[H], axis=0)
+    meas_slope = np.diff(measured[H], n=1, axis=0)
     # matlab std function normalizes by N-1, so set ddof=1 here
     meas_slope_nstd = np.std(meas_slope, axis=0, ddof=1) / meas_mean
     meas_slope_max = np.max(np.abs(meas_slope), axis=0)
@@ -653,9 +658,9 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
         meas_slope*meas_slope + sample_interval*sample_interval), axis=0)
 
     # calculate clear sky statistics
-    clear_mean = np.mean(clearsky_ghi[H], axis=0)
-    clear_max = np.max(clearsky_ghi[H], axis=0)
-    clear_slope = np.diff(clearsky_ghi[H], n=1, axis=0)
+    clear_mean = np.mean(clearsky[H], axis=0)
+    clear_max = np.max(clearsky[H], axis=0)
+    clear_slope = np.diff(clearsky[H], n=1, axis=0)
     clear_slope_max = np.max(np.abs(clear_slope), axis=0)
 
     from scipy.optimize import minimize_scalar
@@ -678,14 +683,14 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
         # create array to return
-        clear_samples = np.full_like(ghi, False, dtype='bool')
+        clear_samples = np.full_like(measured, False, dtype='bool')
         # find the samples contained in any window classified as clear
         clear_samples[np.unique(H[:, clear_windows])] = True
 
         # find a new alpha
         previous_alpha = alpha
-        clear_meas = ghi[clear_samples]
-        clear_clear = clearsky_ghi[clear_samples]
+        clear_meas = measured[clear_samples]
+        clear_clear = clearsky[clear_samples]
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
         alpha = minimize_scalar(rmse).x
@@ -697,7 +702,7 @@ def detect_clearsky(ghi, clearsky_ghi, times, window_length,
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
-    if isinstance(ghi, pd.Series):
+    if isinstance(measured, pd.Series):
         clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:

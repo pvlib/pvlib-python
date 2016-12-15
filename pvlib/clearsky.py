@@ -541,8 +541,14 @@ def detect_clearsky(measured, clearsky, times, window_length,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
                     return_components=False):
     """
-    Detects clear sky times by comparing statistics for a measured time
-    series to the given clear sky time series as described in [1].
+    Detects clear sky times according to the algorithm developed by Reno
+    and Hansen for GHI measurements [1]. The algorithm was designed and
+    validated for analyzing GHI time series only. Users may attempt to
+    apply it to other types of time series data using different filter
+    settings, but should be skeptical of the results.
+
+    The algorithm detects clear sky times by comparing statistics for a
+    measured time series and an expected clearsky time series.
     Statistics are calculated using a sliding time window (e.g., 10
     minutes). An iterative algorithm identifies clear periods, uses the
     identified periods to estimate bias in the clearsky data, scales the
@@ -551,10 +557,6 @@ def detect_clearsky(measured, clearsky, times, window_length,
     Clear times are identified by meeting 5 criteria. Default values for
     these thresholds are appropriate for 10 minute windows of 1 minute
     GHI data.
-
-    The algorithm was developed for analyzing GHI time series, but users
-    may apply it to other types of time series data with varying degrees
-    of success.
 
     Parameters
     ----------

@@ -506,16 +506,21 @@ Detect Clearsky
 
 The :py:func:`~pvlib.clearsky.detect_clearsky` function implements the
 [Ren16]_ algorithm to detect the clear and cloudy points of a time
-series. Statistics are calculated using a sliding time window (e.g., 10
-minutes). An iterative algorithm identifies clear periods, uses the
-identified periods to estimate bias in the clearsky data, scales the
-clearsky data and repeats.
+series. The algorithm was designed and validated for analyzing GHI time
+series only. Users may attempt to apply it to other types of time series
+data using different filter settings, but should be skeptical of the
+results.
+
+The algorithm detects clear sky times by comparing statistics for a
+measured time series and an expected clearsky time series. Statistics
+are calculated using a sliding time window (e.g., 10 minutes). An
+iterative algorithm identifies clear periods, uses the identified
+periods to estimate bias in the clearsky data, scales the clearsky data
+and repeats.
 
 Clear times are identified by meeting 5 criteria. Default values for
 these thresholds are appropriate for 10 minute windows of 1 minute GHI
-data. The algorithm was developed for analyzing GHI time series, but
-users may apply it to other types of time series data with varying
-degrees of success.
+data.
 
 Next, we show a simple example of applying the algorithm to synthetic
 GHI data. We first generate and plot the clear sky and measured data.

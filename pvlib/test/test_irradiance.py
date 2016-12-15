@@ -369,14 +369,23 @@ def test_erbs_all_scalar():
     for k, v in out.items():
         assert_allclose(v, expected[k], 5)
 
-
+@needs_numpy_1_10
 def test_dirindex():
     clearsky_data = tus.get_clearsky(times, model='ineichen',
                                      linke_turbidity=3)
     ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
-    ghi_clearsky = clearsky_data['ghi']
-    dni_clearsky = clearsky_data['dni']
-    zenith = ephem_data['apparent_zenith']
+    ghi_clearsky = pd.Series(
+        np.array([0., 79.73860422, 1042.48031487, 257.20751138]),
+        index=times
+    )
+    dni_clearsky = pd.Series(
+        np.array([0., 316.1949056, 939.95469881, 646.22886049]),
+        index=times
+    )
+    zenith = pd.Series(
+        np.array([124.0390863, 82.85457044, 10.56413562, 72.41687122]),
+        index=times
+    )
     pressure = 93193.
     tdew = 10.
     out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky,

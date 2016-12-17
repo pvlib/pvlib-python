@@ -557,7 +557,7 @@ def bird(doy, hr, lat, lon, tz, press_mB, o3_cm, h2o_cm, aod_500nm, aod_380nm,
     """
     doy0 = doy - 1.0
     patm = 1013.0
-    day_angle = 6.283185 * doy0 / lyear
+    day_angle = 2.0 * np.pi * doy0 / lyear
     # rad2deg = 180.0 / np.pi
     dec_rad = (
         0.006918 - 0.399912 * np.cos(day_angle) + 0.070257 * np.sin(day_angle) -

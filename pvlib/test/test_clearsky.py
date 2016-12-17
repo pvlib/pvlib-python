@@ -556,7 +556,7 @@ def test_bird():
         'b_a': 0.85,
         'alb': 0.2
     }
-    Eb, Ebh, Gh, Dh, tv = bird(dt.dayofyear, np.array(range(24)*365), **kwargs)
+    Eb, Ebh, Gh, Dh, tv = clearsky.bird(dt.dayofyear, np.array(range(24)*365), **kwargs)
     day_angle, declination, eqt, hour_angle, zenith, airmass = tv
     clearsky_path = os.path.dirname(os.path.abspath(__file__))
     pvlib_path = os.path.dirname(clearsky_path)

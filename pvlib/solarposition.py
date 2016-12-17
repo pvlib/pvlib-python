@@ -857,3 +857,45 @@ def _calculate_simple_day_angle(dayofyear):
     day_angle : numeric
     """
     return (2. * np.pi / 365.) * (dayofyear - 1)
+
+
+def equation_of_time_Spencer71(dayofyear):
+    """
+    Equation of time from Duffie & Beckman, 3rd Edition (2006), pp. 9-11
+    attributed to Spencer (1971) and Iqbal (1983).
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    equation_of_time : numeric
+        Difference in time between solar time and mean solar time in minutes.
+    """
+    day_angle = _calculate_simple_day_angle(dayofyear)
+    return 229.2 * (0.000075 +
+        0.001868 * np.cos(day_angle) - 0.032077 * np.sin(day_angle) -
+        0.014615 * np.cos(2.0 * day_angle) - 0.04089 * np.sin(2.0 * day_angle)
+    )
+
+
+def equation_of_time_pvcdrom(dayofyear):
+    """
+    Equation of time from Solar Energy Engineering Processes and Systems,
+    2nd Edition by Soteris A. Kalogirou, Elselvier/Academic Press (2009).
+    http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    equation_of_time : numeric
+        Difference in time between solar time and mean solar time in minutes.
+    """
+    # day angle relative to Vernal Equinox, typically March 21
+    bday = _calculate_simple_day_angle(dayofyear) - np.pi * 160.0 / 365.0
+    # same value but about 2x faster than Spencer (1971)
+    return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)

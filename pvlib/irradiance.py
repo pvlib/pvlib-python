@@ -1986,5 +1986,8 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
         clearsky_df = location.get_clearsky(times=ghi.index)
         # cut DNI for zenith angles between 88° to 89.5° to maximum value given by the clearsky DNI
         dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_df.dni)] = clearsky_df.dni
+    elif method == 'cutoff':
+        dni_2 = dni_tmp.copy()
+        dni_2[zenith > 88] = 0
 
     return dni

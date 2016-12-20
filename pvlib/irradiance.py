@@ -1949,7 +1949,8 @@ def _get_dirint_coeffs():
 
 def dni(ghi, dhi, location, method='clearsky', **kwargs):
     """
-    Determine DNI from GHI and DHI.
+    Determine DNI from GHI and DHI. For zenith angles close to 90° (sunrise/sunset transitions) the calculated DNI
+    may be unreasonably high or negative and is therefore corrected.
 
     Parameters
     ----------
@@ -1959,19 +1960,18 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
     dhi : array-like
         Diffuse horizontal irradiance in W/m^2.
 
-    zenith : array-like
-        True (not refraction-corrected) zenith angles in decimal
-        degrees. If Z is a vector it must be of the same size as all
-        other vector inputs. Z must be >=0 and <=180.
+    location : Location
+        A :py:class:`~pvlib.location.Location` object that represents
+        the physical location at which to evaluate the model.
+
+    method : str
+        The method used to correct the calculated DNI. Must be one of 'clearsky', 'cutoff'.
 
     Returns
     -------
     dni : array-like
         The modeled direct normal irradiance in W/m^2
 
-    Notes
-    -----
-    Something
     """
     tmp_dni = (ghi - dhi) / tools.cosd(zenith)
 

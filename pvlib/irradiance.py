@@ -18,6 +18,7 @@ import pandas as pd
 from pvlib import tools
 from pvlib import solarposition
 from pvlib import atmosphere
+from pvlib import clearsky
 
 pvl_logger = logging.getLogger('pvlib')
 
@@ -1973,6 +1974,17 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
         The modeled direct normal irradiance in W/m^2
 
     """
-    tmp_dni = (ghi - dhi) / tools.cosd(zenith)
+
+    zenith = location.get_solarposition(times=ghi.index).zenith
+    # calculate DNI
+    dni_tmp = (ghi - dhi) / tools.cosd(zenith)
+    if method == 'clearsky':
+        dni = dni_tmp.copy()
+        # set DNI for zenith angles close to 90° (sunrise/sunset transitions) and above 90° to zero
+        dni[zenith > 89.5] = 0
+        # get clearsky irradiance as upper bound for DNI
+        clearsky_df = location.get_clearsky(times=ghi.index)
+        # cut DNI for zenith angles between 88° to 89.5° to maximum value given by the clearsky DNI
+        dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_df.dni)] = clearsky_df.dni
 
     return dni

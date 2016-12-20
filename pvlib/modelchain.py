@@ -678,8 +678,7 @@ class ModelChain(object):
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             logging.debug('Estimate dni from ghi and dhi')
             self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
-                self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
-                self.solar_position.loc[:, 'zenith'])
+                self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'], self.location)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             logging.debug('Estimate ghi from dni and dhi')

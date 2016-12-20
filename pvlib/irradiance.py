@@ -1947,7 +1947,7 @@ def _get_dirint_coeffs():
     return coeffs[1:, 1:, :, :]
 
 
-def dni(ghi, dhi, zenith):
+def dni(ghi, dhi, location, method='clearsky', **kwargs):
     """
     Determine DNI from GHI and DHI.
 
@@ -1975,4 +1975,4 @@ def dni(ghi, dhi, zenith):
     """
     tmp_dni = (ghi - dhi) / tools.cosd(zenith)
 
-    return tmp_dni
+    return dni

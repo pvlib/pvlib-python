@@ -1952,9 +1952,9 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
     Determine DNI from GHI and DHI.
 
     When calculating the DNI from GHI and DHI the calculated DNI may be
-    unreasonably high or negative for zenith angles close to 90° (sunrise/
-    sunset transitions). This function offers different methods to correct
-    those values.
+    unreasonably high or negative for zenith angles close to 90 degrees
+    (sunrise/sunset transitions). This function offers different methods
+    to correct those values.
 
     Parameters
     ----------
@@ -1984,12 +1984,12 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
     dni_tmp = (ghi - dhi) / tools.cosd(zenith)
     if method == 'clearsky':
         dni = dni_tmp.copy()
-        # set DNI for zenith angles close to 90° (sunrise/sunset transitions)
-        # and above 90° to zero
+        # set DNI for zenith angles close to 90 degrees (sunrise/sunset
+        # transitions) and above 90 degrees to zero
         dni[zenith > 89.5] = 0
         # get clearsky irradiance as upper bound for DNI
         clearsky_df = location.get_clearsky(times=ghi.index)
-        # cut DNI for zenith angles between 88° to 89.5° to maximum value
+        # cut DNI for zenith angles between 88-89.5 degrees to maximum value
         # given by the clearsky DNI
         dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_df.dni)] = \
             clearsky_df.dni

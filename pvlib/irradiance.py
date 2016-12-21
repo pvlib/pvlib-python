@@ -18,7 +18,6 @@ import pandas as pd
 from pvlib import tools
 from pvlib import solarposition
 from pvlib import atmosphere
-from pvlib import clearsky
 
 pvl_logger = logging.getLogger('pvlib')
 
@@ -1950,8 +1949,12 @@ def _get_dirint_coeffs():
 
 def dni(ghi, dhi, location, method='clearsky', **kwargs):
     """
-    Determine DNI from GHI and DHI. For zenith angles close to 90° (sunrise/sunset transitions) the calculated DNI
-    may be unreasonably high or negative and is therefore corrected.
+    Determine DNI from GHI and DHI.
+
+    When calculating the DNI from GHI and DHI the calculated DNI may be
+    unreasonably high or negative for zenith angles close to 90° (sunrise/
+    sunset transitions). This function offers different methods to correct
+    those values.
 
     Parameters
     ----------
@@ -1966,7 +1969,8 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
         the physical location at which to evaluate the model.
 
     method : str
-        The method used to correct the calculated DNI. Must be one of 'clearsky', 'cutoff'.
+        The method used to correct the calculated DNI.
+        Must be one of 'clearsky', 'cutoff'.
 
     Returns
     -------
@@ -1980,12 +1984,15 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
     dni_tmp = (ghi - dhi) / tools.cosd(zenith)
     if method == 'clearsky':
         dni = dni_tmp.copy()
-        # set DNI for zenith angles close to 90° (sunrise/sunset transitions) and above 90° to zero
+        # set DNI for zenith angles close to 90° (sunrise/sunset transitions)
+        # and above 90° to zero
         dni[zenith > 89.5] = 0
         # get clearsky irradiance as upper bound for DNI
         clearsky_df = location.get_clearsky(times=ghi.index)
-        # cut DNI for zenith angles between 88° to 89.5° to maximum value given by the clearsky DNI
-        dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_df.dni)] = clearsky_df.dni
+        # cut DNI for zenith angles between 88° to 89.5° to maximum value
+        # given by the clearsky DNI
+        dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_df.dni)] = \
+            clearsky_df.dni
     elif method == 'cutoff':
         dni_2 = dni_tmp.copy()
         dni_2[zenith > 88] = 0
@@ -1993,16 +2000,31 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
     # if correction of DNI was necessary
     if (dni_tmp - dni)[(dni_tmp - dni) != 0].count() != 0:
         count = (dni_tmp - dni)[(dni_tmp - dni) != 0].count()
-        count_sunrise = (dni_tmp - dni)[((dni_tmp - dni).index.hour < 12) & ((dni_tmp - dni) != 0)].count()
-        logging.debug("The DNI was corrected for %d out of %d timesteps", count, dni.shape[0])
+        count_sunrise = (dni_tmp - dni)[((dni_tmp - dni).index.hour < 12) &
+                                        ((dni_tmp - dni) != 0)].count()
+        logging.debug("The DNI was corrected for %d out of %d timesteps",
+            count, dni.shape[0])
         if (count_sunrise / count) < 0.02:
-            logging.warning("Your weather dataset seems to be buggy. Most corrections of the calculated DNI " +
-                            "were necessary for sunset hours. One possible source of error is that your dataset " +
-                            "is behind local time.")
+            logging.warning(
+                "Your weather dataset seems to be buggy. Most corrections " +
+                "of the calculated DNI were necessary for sunset hours. " +
+                "One possible source of error is that your dataset " +
+                "is behind local time.")
         if (count_sunrise / count) > 0.98:
-            logging.warning("Your weather dataset seems to be buggy. Most corrections of the calculated DNI " +
-                            "were necessary for sunset hours. One possible source of error is that your dataset " +
-                            "is ahead of the local time.")
+            logging.warning(
+                "Your weather dataset seems to be buggy. Most corrections "
+                "of the calculated DNI were necessary for sunset hours. " +
+                "One possible source of error is that your dataset " +
+                "is ahead of the local time.")
     else:
         logging.debug("No correction of the calculated DNI was necessary.")
+
+    # # plot
+    # dni.plot(legend=True)
+    # clearsky_df.dni.plot(legend=True)
+    # zenith_copy = zenith.copy()
+    # zenith_copy = (90 - zenith) * 4
+    # import matplotlib.pyplot as plt
+    # plt.show()
+
     return dni

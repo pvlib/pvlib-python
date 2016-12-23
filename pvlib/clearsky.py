@@ -567,7 +567,8 @@ def detect_clearsky(measured, clearsky, times, window_length,
     times : DatetimeIndex
         Times of measured and clearsky values.
     window_length : int
-        Length of sliding time window in minutes. Must be greater than 2.
+        Length of sliding time window in minutes. Must be greater than 2
+        periods.
     mean_diff : float
         Threshold value for agreement between mean values of measured
         and clearsky in each interval, see Eq. 6 in [1].

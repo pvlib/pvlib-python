@@ -253,7 +253,7 @@ def _calendar_month_middles(year):
     """list of middle day of each month, used by Linke turbidity lookup"""
     # remove mdays[0] since January starts at mdays[1]
     # make local copy of mdays since we need to change February for leap years
-    mdays = np.array(calendar.mdays[1:])  
+    mdays = np.array(calendar.mdays[1:])
     ydays = 365
     # handle leap years
     if calendar.isleap(year):
@@ -533,3 +533,190 @@ def _calc_d(w, aod700, p):
     d = -0.337*aod700**2 + 0.63*aod700 + 0.116 + dp*np.log(p/p0)
 
     return d
+
+
+def detect_clearsky(measured, clearsky, times, window_length,
+                    mean_diff=75, max_diff=75,
+                    lower_line_length=-5, upper_line_length=10,
+                    var_diff=0.005, slope_dev=8, max_iterations=20,
+                    return_components=False):
+    """
+    Detects clear sky times according to the algorithm developed by Reno
+    and Hansen for GHI measurements [1]. The algorithm was designed and
+    validated for analyzing GHI time series only. Users may attempt to
+    apply it to other types of time series data using different filter
+    settings, but should be skeptical of the results.
+
+    The algorithm detects clear sky times by comparing statistics for a
+    measured time series and an expected clearsky time series.
+    Statistics are calculated using a sliding time window (e.g., 10
+    minutes). An iterative algorithm identifies clear periods, uses the
+    identified periods to estimate bias in the clearsky data, scales the
+    clearsky data and repeats.
+
+    Clear times are identified by meeting 5 criteria. Default values for
+    these thresholds are appropriate for 10 minute windows of 1 minute
+    GHI data.
+
+    Parameters
+    ----------
+    measured : array or Series
+        Time series of measured values.
+    clearsky : array or Series
+        Time series of the expected clearsky values.
+    times : DatetimeIndex
+        Times of measured and clearsky values.
+    window_length : int
+        Length of sliding time window in minutes. Must be greater than 2
+        periods.
+    mean_diff : float
+        Threshold value for agreement between mean values of measured
+        and clearsky in each interval, see Eq. 6 in [1].
+    max_diff : float
+        Threshold value for agreement between maxima of measured and
+        clearsky values in each interval, see Eq. 7 in [1].
+    lower_line_length : float
+        Lower limit of line length criterion from Eq. 8 in [1].
+        Criterion satisfied when
+        lower_line_length < line length difference < upper_line_length
+    upper_line_length : float
+        Upper limit of line length criterion from Eq. 8 in [1].
+    var_diff : float
+        Threshold value in Hz for the agreement between normalized
+        standard deviations of rate of change in irradiance, see Eqs. 9
+        through 11 in [1].
+    slope_dev : float
+        Threshold value for agreement between the largest magnitude of
+        change in successive values, see Eqs. 12 through 14 in [1].
+    max_iterations : int
+        Maximum number of times to apply a different scaling factor to
+        the clearsky and redetermine clear_samples. Must be 1 or larger.
+    return_components : bool
+        Controls if additional output should be returned. See below.
+
+    Returns
+    -------
+    clear_samples : array or Series
+        Boolean array or Series of whether or not the given time is
+        clear. Return type is the same as the input type.
+
+    components : OrderedDict, optional
+        Dict of arrays of whether or not the given time window is clear
+        for each condition. Only provided if return_components is True.
+
+    alpha : scalar, optional
+        Scaling factor applied to the clearsky_ghi to obtain the
+        detected clear_samples. Only provided if return_components is
+        True.
+
+    References
+    ----------
+    [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+    sky irradiance in time series of GHI measurements" Renewable Energy,
+    v90, p. 520-531, 2016.
+
+    Notes
+    -----
+    Initial implementation in MATLAB by Matthew Reno. Modifications for
+    computational efficiency by Joshua Patrick and Curtis Martin. Ported
+    to Python by Will Holmgren, Tony Lorenzo, and Cliff Hansen.
+
+    Differences from MATLAB version:
+
+        * no support for unequal times
+        * automatically determines sample_interval
+        * requires a reference clear sky series instead calculating one
+          from a user supplied location and UTCoffset
+        * parameters are controllable via keyword arguments
+        * option to return individual test components and clearsky scaling
+          parameter
+    """
+
+    # calculate deltas in units of minutes (matches input window_length units)
+    deltas = np.diff(times) / np.timedelta64(1, '60s')
+
+    # determine the unique deltas and if we can proceed
+    unique_deltas = np.unique(deltas)
+    if len(unique_deltas) == 1:
+        sample_interval = unique_deltas[0]
+    else:
+        raise NotImplementedError('algorithm does not yet support unequal ' \
+                                  'times. consider resampling your data.')
+
+    samples_per_window = int(window_length / sample_interval)
+
+    # generate matrix of integers for creating windows with indexing
+    from scipy.linalg import hankel
+    H = hankel(np.arange(samples_per_window),
+               np.arange(samples_per_window-1, len(times)))
+
+    # calculate measurement statistics
+    meas_mean = np.mean(measured[H], axis=0)
+    meas_max = np.max(measured[H], axis=0)
+    meas_slope = np.diff(measured[H], n=1, axis=0)
+    # matlab std function normalizes by N-1, so set ddof=1 here
+    meas_slope_nstd = np.std(meas_slope, axis=0, ddof=1) / meas_mean
+    meas_slope_max = np.max(np.abs(meas_slope), axis=0)
+    meas_line_length = np.sum(np.sqrt(
+        meas_slope*meas_slope + sample_interval*sample_interval), axis=0)
+
+    # calculate clear sky statistics
+    clear_mean = np.mean(clearsky[H], axis=0)
+    clear_max = np.max(clearsky[H], axis=0)
+    clear_slope = np.diff(clearsky[H], n=1, axis=0)
+    clear_slope_max = np.max(np.abs(clear_slope), axis=0)
+
+    from scipy.optimize import minimize_scalar
+
+    alpha = 1
+    for iteration in range(max_iterations):
+        clear_line_length = np.sum(np.sqrt(
+            alpha*alpha*clear_slope*clear_slope +
+            sample_interval*sample_interval), axis=0)
+
+        line_diff = meas_line_length - clear_line_length
+
+        # evaluate comparison criteria
+        c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
+        c2 = np.abs(meas_max - alpha*clear_max) < max_diff
+        c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
+        c4 = meas_slope_nstd < var_diff
+        c5 = (meas_slope_max - alpha*clear_slope_max) < slope_dev
+        c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
+        clear_windows = c1 & c2 & c3 & c4 & c5 & c6
+
+        # create array to return
+        clear_samples = np.full_like(measured, False, dtype='bool')
+        # find the samples contained in any window classified as clear
+        clear_samples[np.unique(H[:, clear_windows])] = True
+
+        # find a new alpha
+        previous_alpha = alpha
+        clear_meas = measured[clear_samples]
+        clear_clear = clearsky[clear_samples]
+        def rmse(alpha):
+            return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+        alpha = minimize_scalar(rmse).x
+        if round(alpha*10000) == round(previous_alpha*10000):
+            break
+    else:
+        import warnings
+        warnings.warn('failed to converge after %s iterations' \
+                      % max_iterations, RuntimeWarning)
+
+    # be polite about returning the same type as was input
+    if isinstance(measured, pd.Series):
+        clear_samples = pd.Series(clear_samples, index=times)
+
+    if return_components:
+        components = OrderedDict()
+        components['mean_diff'] = c1
+        components['max_diff'] = c2
+        components['line_length'] = c3
+        components['slope_nstd'] = c4
+        components['slope_max'] = c5
+        components['mean_nan'] = c6
+        components['windows'] = clear_windows
+        return clear_samples, components, alpha
+    else:
+        return clear_samples

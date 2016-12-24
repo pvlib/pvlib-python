@@ -1,3 +1,5 @@
+import inspect
+import os
 from collections import OrderedDict
 
 import numpy as np
@@ -504,3 +506,102 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(-91, -122)  # exceeds min latitude
     with pytest.raises(IndexError):
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
+
+
+@pytest.fixture
+def detect_clearsky_data():
+    test_dir = os.path.dirname(os.path.abspath(
+        inspect.getfile(inspect.currentframe())))
+    file = os.path.join(test_dir, '..', 'data', 'detect_clearsky_data.csv')
+    expected = pd.read_csv(file, index_col=0, parse_dates=True, comment='#')
+    expected = expected.tz_localize('UTC').tz_convert('Etc/GMT+7')
+    metadata = {}
+    with open(file) as f:
+        for line in f:
+            if line.startswith('#'):
+                key, value = line.strip('# \n').split(':')
+                metadata[key] = float(value)
+            else:
+                break
+    metadata['window_length'] = int(metadata['window_length'])
+    loc = Location(metadata['latitude'], metadata['longitude'],
+                   altitude=metadata['elevation'])
+    # specify turbidity to guard against future lookup changes
+    cs = loc.get_clearsky(expected.index, linke_turbidity=2.658197)
+    return expected, cs
+
+
+@requires_scipy
+def test_detect_clearsky(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 10)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+@requires_scipy
+def test_detect_clearsky_components(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples, components, alpha = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 10, return_components=True)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+    assert isinstance(components, OrderedDict)
+    assert np.allclose(alpha, 0.95345573579557108)
+
+
+@requires_scipy
+def test_detect_clearsky_iterations(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    alpha = 1.0348
+    with pytest.warns(RuntimeWarning):
+        clear_samples = clearsky.detect_clearsky(
+            expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=1)
+    assert (clear_samples[:'2012-04-01 10:39:00'] == True).all()
+    assert (clear_samples['2012-04-01 10:40:00':] == False).all()
+    clear_samples = clearsky.detect_clearsky(
+            expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=20)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+@requires_scipy
+def test_detect_clearsky_kwargs(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 10,
+        mean_diff=1000, max_diff=1000, lower_line_length=-1000,
+        upper_line_length=1000, var_diff=10, slope_dev=1000)
+    assert clear_samples.all()
+
+
+@requires_scipy
+def test_detect_clearsky_window(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 3)
+    expected = expected['Clear or not'].copy()
+    expected.iloc[-3:] = True
+    assert_series_equal(expected, clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+@requires_scipy
+def test_detect_clearsky_arrays(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'].values, cs['ghi'].values, cs.index, 10)
+    assert isinstance(clear_samples, np.ndarray)
+    assert (clear_samples == expected['Clear or not'].values).all()
+
+
+@requires_scipy
+def test_detect_clearsky_irregular_times(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    times = cs.index.values.copy()
+    times[0] += 10**9
+    times = pd.DatetimeIndex(times)
+    with pytest.raises(NotImplementedError):
+        clear_samples = clearsky.detect_clearsky(
+            expected['GHI'].values, cs['ghi'].values, times, 10)

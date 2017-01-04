@@ -462,6 +462,9 @@ class PVSystem(object):
         """
         return snlinverter(v_dc, p_dc, self.inverter_parameters)
 
+    def adrinverter(self, v_dc, p_dc):
+        return adrinverter(v_dc, p_dc, self.inverter_parameters)
+
     def scale_voltage_current_power(self, data):
         """
         Scales the voltage, current, and power of the DataFrames
@@ -1122,6 +1125,9 @@ def retrieve_sam(name=None, path=None):
         elif name == 'sandiamod':
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
+        elif name == 'adrinverter':
+            csvdata = os.path.join(
+                data_path, 'adr-library.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
@@ -2033,6 +2039,37 @@ def snlinverter(v_dc, p_dc, inverter):
 
     if isinstance(p_dc, pd.Series):
         ac_power = pd.Series(ac_power, index=p_dc.index)
+
+    return ac_power
+
+
+def adrinverter(v_dc, p_dc, inverter):
+
+    ce_clean = [','.join(inverter['ADRCoefficients'][1:-1].split())]
+    ce_list = np.array([float(s) for s in ce_clean[0].split(',')])
+
+    p_nom = inverter['Pnom']
+    v_nom = inverter['Vnom']
+    pac_max = inverter['Pacmax']
+    p_nt = inverter['Pnt']
+
+    pdc = p_dc/p_nom
+    vdc = v_dc/v_nom
+    poly = np.array([pdc**0, pdc, pdc**2, vdc-1, pdc*(vdc-1),
+                     pdc**2*(vdc-1), 1/vdc-1, pdc*(1./vdc-1),
+                     pdc**2*(1./vdc-1)])
+
+    p_loss = np.dot(ce_list, poly)
+    ac_power = p_nom * (pdc-p_loss)
+
+    p_nt = -1*np.absolute(p_nt)
+
+    ac_power = np.where((ac_power < p_nt) | (vdc == 0), p_nt, ac_power)
+
+    ac_power = np.where(ac_power > pac_max, pac_max, ac_power)
+
+    if isinstance(p_dc, pd.Series):
+        ac_power = pd.Series(ac_power, index=pdc.index)
 
     return ac_power
 

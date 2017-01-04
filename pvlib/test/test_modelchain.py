@@ -33,8 +33,8 @@ def cec_dc_snl_ac_system(sam_data):
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    inverters = sam_data['adrinverter']
+    inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
     system = PVSystem(module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
@@ -173,7 +173,7 @@ def poadc(mc):
 @requires_scipy
 @pytest.mark.parametrize('dc_model, expected', [
     ('sapm', [181.604438144, -2.00000000e-02]),
-    ('singlediode', [181.044109596, -2.00000000e-02]),
+    ('singlediode', [154.61940956, -25.00000000e-02]),
     ('pvwatts', [190.028186986, 0]),
     (poadc, [189.183065667, 0])  # user supplied function
 ])
@@ -201,8 +201,7 @@ def acdc(mc):
 @requires_scipy
 @pytest.mark.parametrize('ac_model, expected', [
     ('snlinverter', [181.604438144, -2.00000000e-02]),
-    pytest.mark.xfail(raises=NotImplementedError)
-    (('adrinverter', [179.7178188, -2.00000000e-02])),
+    ('adrinverter', [154.61940956, -25.00000000e-02]),
     ('pvwatts', [190.028186986, 0]),
     (acdc, [199.845296258, 0])  # user supplied function
 ])

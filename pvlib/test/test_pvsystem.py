@@ -139,6 +139,7 @@ def sam_data():
     data['cecmod'] = pvsystem.retrieve_sam('cecmod')
     data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
     data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
+    data['adrinverter'] = pvsystem.retrieve_sam('adrinverter')
     return data
 
 
@@ -576,6 +577,16 @@ def test_snlinverter(sam_data):
 
     pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+
+def test_adrinverter(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Zigor__Sunzet_3_TL_US_240V__CEC_2011_'
+    vdcs = pd.Series(np.linspace(0,50,3))
+    idcs = pd.Series(np.linspace(0,11,3))
+    pdcs = idcs * vdcs
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
+    assert_series_equal(pacs, pd.Series([-0.25000, 105.635043, 503.769061]))
 
 
 def test_PVSystem_snlinverter(sam_data):

@@ -1126,8 +1126,7 @@ def retrieve_sam(name=None, path=None):
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
         elif name == 'adrinverter':
-            csvdata = os.path.join(
-                data_path, 'adr-library.csv')
+            csvdata = os.path.join(data_path, 'adr-library.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
@@ -1177,6 +1176,15 @@ def _parse_raw_sam_df(csvdata):
 
     df.index = parsedindex
     df = df.transpose()
+    if 'ADRCoefficients' in df.index:
+        ad_ce = 'ADRCoefficients'
+        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x:
+                                          np.array([float(s) for s in
+                                                    [','.join(x[1:-1]
+                                                              .split())]
+                                                    [0].split(',')]))
+    else:
+        pass
 
     return df
 
@@ -2045,13 +2053,11 @@ def snlinverter(v_dc, p_dc, inverter):
 
 def adrinverter(v_dc, p_dc, inverter):
 
-    ce_clean = [','.join(inverter['ADRCoefficients'][1:-1].split())]
-    ce_list = np.array([float(s) for s in ce_clean[0].split(',')])
-
     p_nom = inverter['Pnom']
     v_nom = inverter['Vnom']
     pac_max = inverter['Pacmax']
     p_nt = inverter['Pnt']
+    ce_list = inverter['ADRCoefficients']
 
     pdc = p_dc/p_nom
     vdc = v_dc/v_nom

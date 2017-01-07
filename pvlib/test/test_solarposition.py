@@ -367,3 +367,15 @@ def test_nrel_earthsun_distance():
     expected = pd.Series(np.array([0.983289204601]),
                          index=pd.DatetimeIndex([times, ]))
     assert_series_equal(expected, result)
+
+
+def test_equation_of_time():
+    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                             freq="H")
+    output = solarposition.spa_python(times, 37.8, -122.25, 100)
+    eot = output['equation_of_time']
+    eot_rng = eot.max() - eot.min()  # range of values, around 30 minutes
+    eot_1 = solarposition.equation_of_time_Spencer71(times.dayofyear)
+    eot_2 = solarposition.equation_of_time_pvcdrom(times.dayofyear)
+    assert np.allclose((eot_1 - eot) / eot_rng, 0, atol=0.3)
+    assert np.allclose((eot_2 - eot) / eot_rng, 0, atol=0.4)

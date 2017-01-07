@@ -862,7 +862,26 @@ def _calculate_simple_day_angle(dayofyear):
 def equation_of_time_Spencer71(dayofyear):
     """
     Equation of time from Duffie & Beckman, 3rd Edition (2006), pp. 9-11
-    attributed to Spencer (1971) and Iqbal (1983).
+    attributed to Spencer (1971) and Iqbal (1983). Also cited in "Solar And
+    Infrared Radiation Measurements" by Frank Vignola et al., CRC Press (2012)
+    p. 13 and in "Solar Resources" by Roland Hulstrom, MIT Press (1989) p. 66.
+
+    The coefficients are those from the Bird Clearsky model and reflect the only
+    available copy of "Fourier series representation of the position of the sun"
+    by J. W. Spencer published in 1971 in Search 2 (5), p. 172, in the Sundial
+    in 1998 by Macquarie University Prof. John Pickard with the following note
+    added.
+
+        In the early 1970s, I contacted Dr Spencer about this method because I
+        was trying to use a hand calculator for calculating solar positions,
+        etc. He was extremely helpful and gave me a reprint of this paper. He
+        also pointed out an error in the original: in the series for E, the
+        constant was printed as 0.000075 rather than 0.0000075. I have corrected
+        the error in this version.
+
+    Apparently there's another typo in both Duffie & Beckman nad Frank Vignola
+    in which the coefficient 0.04089 is printed instead of 0.040849 from the
+    Bird Clearksky model, the Hulstrom book and Sundial version of the original.
 
     Parameters
     ----------
@@ -874,9 +893,10 @@ def equation_of_time_Spencer71(dayofyear):
         Difference in time between solar time and mean solar time in minutes.
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
-    return 229.2 * (0.000075 +
+    # convert from radians to minutes per day = 24[h/day] * 60[min/h] / 2 / pi
+    return (1440.0 / 2 / np.pi) * (0.0000075 +
         0.001868 * np.cos(day_angle) - 0.032077 * np.sin(day_angle) -
-        0.014615 * np.cos(2.0 * day_angle) - 0.04089 * np.sin(2.0 * day_angle)
+        0.014615 * np.cos(2.0 * day_angle) - 0.040849 * np.sin(2.0 * day_angle)
     )
 
 
@@ -895,7 +915,7 @@ def equation_of_time_pvcdrom(dayofyear):
     equation_of_time : numeric
         Difference in time between solar time and mean solar time in minutes.
     """
-    # day angle relative to Vernal Equinox, typically March 21
-    bday = _calculate_simple_day_angle(dayofyear) - np.pi * 160.0 / 365.0
+    # day angle relative to Vernal Equinox, typically March 22 (day number 81)
+    bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
     # same value but about 2x faster than Spencer (1971)
     return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)

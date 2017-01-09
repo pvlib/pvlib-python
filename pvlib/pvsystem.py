@@ -1178,13 +1178,8 @@ def _parse_raw_sam_df(csvdata):
     df = df.transpose()
     if 'ADRCoefficients' in df.index:
         ad_ce = 'ADRCoefficients'
-        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x:
-                                          np.array([float(s) for s in
-                                                    [','.join(x[1:-1]
-                                                              .split())]
-                                                    [0].split(',')]))
-    else:
-        pass
+        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x:list(
+            map(float, x.strip(' []').split())))
 
     return df
 
@@ -2052,6 +2047,57 @@ def snlinverter(v_dc, p_dc, inverter):
 
 
 def adrinverter(v_dc, p_dc, inverter):
+    r'''
+    Converts DC power and voltage to AC power using Sandia's
+    Grid-Connected PV Inverter model.
+
+    Parameters
+    ----------
+    v_dc : numeric
+        DC voltages, in volts, which are provided as input to the
+        inverter. Vdc must be >= 0.
+
+    p_dc : numeric
+        A scalar or DataFrame of DC powers, in watts, which are provided
+        as input to the inverter. Pdc must be >= 0.
+
+    inverter : dict-like
+        A dict-like object defining the inverter to be used.
+        A set of inverter performance parameters are provided with
+        pvlib, or may be generated from the library using retrievesam. 
+        See Notes for required keys.
+
+    Returns
+    -------
+    ac_power : numeric
+        Modeled AC power output given the input DC voltage, v_dc, and
+        input DC power, p_dc.
+
+    Notes
+    -----
+
+    Required inverter keys are:
+
+    ======   ============================================================
+    Column   Description
+    ======   ============================================================
+    p_nom
+            
+    v_nom
+          
+    pac_max
+         
+    ce_list
+      
+    p_nt     AC-power consumed by inverter at night (night tare) to
+             maintain circuitry required to sense PV array voltage (W)
+    ======   ============================================================
+
+    References
+    ----------
+
+    '''
+
 
     p_nom = inverter['Pnom']
     v_nom = inverter['Vnom']
@@ -2065,7 +2111,7 @@ def adrinverter(v_dc, p_dc, inverter):
                      pdc**2*(vdc-1), 1/vdc-1, pdc*(1./vdc-1),
                      pdc**2*(1./vdc-1)])
 
-    p_loss = np.dot(ce_list, poly)
+    p_loss = np.dot(np.array(ce_list), poly)
     ac_power = p_nom * (pdc-p_loss)
 
     p_nt = -1*np.absolute(p_nt)

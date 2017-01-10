@@ -1059,6 +1059,7 @@ def retrieve_sam(name=None, path=None):
         * CEC module database
         * Sandia Module database
         * CEC Inverter database
+        * Antone Driesse Inverter database 
 
     and return it as a pandas DataFrame.
 
@@ -1073,6 +1074,7 @@ def retrieve_sam(name=None, path=None):
           (CEC is only current inverter db available; tag kept for
           backwards compatibility)
         * 'SandiaMod' - returns the Sandia Module database
+        * 'ADRInverter' - returns the ADR Inverter database
 
     path : None or string
         Path to the SAM file. May also be a URL.
@@ -1178,7 +1180,8 @@ def _parse_raw_sam_df(csvdata):
     df = df.transpose()
     if 'ADRCoefficients' in df.index:
         ad_ce = 'ADRCoefficients'
-        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x:list(
+        # parses string into list containing floats:
+        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x: list(
             map(float, x.strip(' []').split())))
 
     return df
@@ -2048,30 +2051,40 @@ def snlinverter(v_dc, p_dc, inverter):
 
 def adrinverter(v_dc, p_dc, inverter):
     r'''
-    Converts DC power and voltage to AC power using Sandia's
-    Grid-Connected PV Inverter model.
+    PVL_ADRINVERTER Converts DC power and voltage to AC power
+    using Anton Driesse's Grid-Connected PV Inverter efficiency model
 
     Parameters
     ----------
     v_dc : numeric
-        DC voltages, in volts, which are provided as input to the
-        inverter. Vdc must be >= 0.
+        A scalar or pandas series of DC voltages, in volts, which are provided
+        as input to the inverter. If Vdc and Pdc are vectors, they must be
+        of the same size. v_dc must be >= 0. (V)
 
     p_dc : numeric
-        A scalar or DataFrame of DC powers, in watts, which are provided
-        as input to the inverter. Pdc must be >= 0.
+         A scalar or pandas series of DC powers, in watts, which are provided
+         as input to the inverter. If Vdc and Pdc are vectors, they must be
+         of the same size. p_dc must be >= 0. (W)
 
     inverter : dict-like
-        A dict-like object defining the inverter to be used.
+        A struct defining the inverter to be used, giving the
+        inverter performance parameters according to the model
+        developed by Anton Driesse[1].
         A set of inverter performance parameters are provided with
-        pvlib, or may be generated from the library using retrievesam. 
+        pvlib, or may be generated from the library using retrievesam.
         See Notes for required keys.
 
     Returns
     -------
     ac_power : numeric
-        Modeled AC power output given the input DC voltage, v_dc, and
-        input DC power, p_dc.
+        A numpy array of modeled AC power output given the input
+        DC voltage, v_dc, and input DC power, p_dc. When ac_power would be
+        greater than pac_max, it is set to p_max to represent inverter
+        "clipping". When ac_power would be less than -p_nt (energy consumed rather
+        than produced) then ac_power is set to -p_nt to represent nightly
+        power losses. ac_power is not adjusted for maximum power point
+        tracking (MPPT) voltage windows or maximum current limits of the
+        inverter.
 
     Notes
     -----
@@ -2081,23 +2094,31 @@ def adrinverter(v_dc, p_dc, inverter):
     ======   ============================================================
     Column   Description
     ======   ============================================================
-    p_nom
+    p_nom    The nominal power value used to normalize all power values,
+             typically the DC power needed to produce maximum AC power output, (W).
             
-    v_nom
+    v_nom    The nominal DC voltage value used to normalize DC voltage values,
+             typically the level at which the highest efficiency is achieved, (V).
           
-    pac_max
+    pac_max  The maximum AC output power value, used to clip the output if needed,(W).
          
-    ce_list
+    ce_list  This is a list of 9 coefficients that capture the influence
+             of input voltage and power on inverter losses, and thereby efficiency.
       
-    p_nt     AC-power consumed by inverter at night (night tare) to
-             maintain circuitry required to sense PV array voltage (W)
+    p_nt     ac-power consumed by inverter at night (night tare) to maintain
+             circuitry required to sense PV array voltage, (W).
     ======   ============================================================
 
     References
     ----------
+    [1] Beyond the Curves: Modeling the Electrical Efficiency
+        of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
 
+    See also
+    --------
+    sapm
+    singlediode
     '''
-
 
     p_nom = inverter['Pnom']
     v_nom = inverter['Vnom']

@@ -935,3 +935,62 @@ def equation_of_time_pvcdrom(dayofyear):
     bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
     # same value but about 2x faster than Spencer (1971)
     return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)
+
+
+def declination_spencer71(dayofyear):
+    """
+    Solar declination from Duffie & Beckman [1] and attributed to Spencer (1971)
+    and Iqbal (1983).
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    declination : numeric
+        Angular position of the sun at solar noon relative to the plane of the
+        equator, approximately between -23.45 and 23.45.
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" (2006), pp. 13-14 J. Wiley and Sons, New York.
+    """
+    day_angle = _calculate_simple_day_angle(dayofyear)
+    return (0.006918 -
+        0.399912 * np.cos(day_angle) + 0.070257 * np.sin(day_angle) -
+        0.006758 * np.cos(2. * day_angle) + 0.000907 * np.sin(2. * day_angle) -
+        0.002697 * np.cos(3. * day_angle) + 0.00148 * np.sin(3. * day_angle)
+    )
+
+
+def declination_cooper69(dayofyear):
+    """
+    Solar declination from Duffie & Beckman [1] and attributed to Cooper (1969)
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    declination : numeric
+        Angular position of the sun at solar noon relative to the plane of the
+        equator, approximately between -23.45 and 23.45.
+
+    Declination can be expressed using either sine or cosine:
+
+    .. math::
+        \delta &= 23.45 \sin \left( \frac{2 \pi}{365} \left(n_{day} + 284
+            \right) \right) \\
+            &= -23.45 \cos \left( \frac{2 \pi}{365} \left(n_{day} + 10 \right)
+            \right)
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" (2006), pp. 13-14 J. Wiley and Sons, New York.
+    """
+    day_angle = _calculate_simple_day_angle(dayofyear)
+    return 23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0)

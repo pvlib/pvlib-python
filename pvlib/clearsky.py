@@ -12,8 +12,7 @@ import calendar
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
-from pvlib import atmosphere
+from pvlib import tools, atmosphere, solarposition
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -575,21 +574,23 @@ def bird(apparent_zenith, airmass_relative, aod380=0.1, aod500=0.1, precipitable
     """
     doy0 = doy - 1.0
     patm = 1013.0
-    day_angle = 2.0 * np.pi * doy0 / lyear
-    # rad2deg = 180.0 / np.pi
-    dec_rad = (
-        0.006918 - 0.399912 * np.cos(day_angle) + 0.070257 * np.sin(day_angle) -
-        0.006758 * np.cos(2.0 * day_angle) +
-        0.000907 * np.sin(2.0 * day_angle) -
-        0.002697 * np.cos(3.0 * day_angle) + 0.00148 * np.sin(3.0 * day_angle)
-    )
+    #day_angle = 2.0 * np.pi * doy0 / lyear
+    day_angle = solarposition._calculate_simple_day_angle(dayofyear)
+    # dec_rad = (
+    #     0.006918 - 0.399912 * np.cos(day_angle) + 0.070257 * np.sin(day_angle) -
+    #     0.006758 * np.cos(2.0 * day_angle) +
+    #     0.000907 * np.sin(2.0 * day_angle) -
+    #     0.002697 * np.cos(3.0 * day_angle) + 0.00148 * np.sin(3.0 * day_angle)
+    # )
+    dec_rad = solarposition.declination_spencer71(dayofyear)
     declination = np.rad2deg(dec_rad)
     # equation of time
-    eqt = 229.18 * (
-        0.0000075 + 0.001868 * np.cos(day_angle) -
-        0.032077 * np.sin(day_angle) - 0.014615 * np.cos(2.0 * day_angle) -
-        0.040849 * np.sin(2.0 * day_angle)
-    )
+    # eqt = 229.18 * (
+    #     0.0000075 + 0.001868 * np.cos(day_angle) -
+    #     0.032077 * np.sin(day_angle) - 0.014615 * np.cos(2.0 * day_angle) -
+    #     0.040849 * np.sin(2.0 * day_angle)
+    # )
+    eqt = solarposition.equation_of_time_Spencer71(dayofyear)
     hour_angle = 15.0 * (hr - 12.5) + lon - tz * 15.0 + eqt / 4.0
     lat_rad = np.deg2rad(lat)
     ze_rad = np.arccos(
@@ -619,7 +620,7 @@ def bird(apparent_zenith, airmass_relative, aod380=0.1, aod500=0.1, precipitable
             (1.0 + 79.034 * am_h2o) ** 0.6828 + 6.385 * am_h2o
         ), 0.0
     )
-    bird_huldstrom = 0.2758 * aod380nm + 0.35 * aod500nm
+    bird_huldstrom = 0.2758 * aod380 + 0.35 * aod500
     t_aerosol = np.where(airmass > 0, np.exp(
         -(bird_huldstrom ** 0.873) *
         (1.0 + bird_huldstrom - bird_huldstrom ** 0.7088) * airmass ** 0.9108

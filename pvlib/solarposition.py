@@ -861,27 +861,8 @@ def _calculate_simple_day_angle(dayofyear):
 
 def equation_of_time_Spencer71(dayofyear):
     """
-    Equation of time from Duffie & Beckman, 3rd Edition (2006), pp. 9-11
-    attributed to Spencer (1971) and Iqbal (1983). Also cited in "Solar And
-    Infrared Radiation Measurements" by Frank Vignola et al., CRC Press (2012)
-    p. 13 and in "Solar Resources" by Roland Hulstrom, MIT Press (1989) p. 66.
-
-    The coefficients are those from the Bird Clearsky model and reflect the only
-    available copy of "Fourier series representation of the position of the sun"
-    by J. W. Spencer published in 1971 in Search 2 (5), p. 172, in the Sundial
-    in 1998 by Macquarie University Prof. John Pickard with the following note
-    added.
-
-        In the early 1970s, I contacted Dr Spencer about this method because I
-        was trying to use a hand calculator for calculating solar positions,
-        etc. He was extremely helpful and gave me a reprint of this paper. He
-        also pointed out an error in the original: in the series for E, the
-        constant was printed as 0.000075 rather than 0.0000075. I have corrected
-        the error in this version.
-
-    Apparently there's another typo in both Duffie & Beckman nad Frank Vignola
-    in which the coefficient 0.04089 is printed instead of 0.040849 from the
-    Bird Clearksky model, the Hulstrom book and Sundial version of the original.
+    Equation of time from Duffie & Beckman [1] and attributed to Spencer (1971)
+    and Iqbal (1983).
 
     Parameters
     ----------
@@ -891,6 +872,36 @@ def equation_of_time_Spencer71(dayofyear):
     -------
     equation_of_time : numeric
         Difference in time between solar time and mean solar time in minutes.
+
+    The coefficients are from the Bird Clear Sky model and correspond to the
+    coefficients from the online copy of the `Fourier paper`_ [4] in the Sundial
+    Mailing list that was posted in 1998 by Mac Oglesby from his correspondence
+    with Macquarie University Prof. John Pickard who added the following note.
+
+        In the early 1970s, I contacted Dr Spencer about this method because I
+        was trying to use a hand calculator for calculating solar positions,
+        etc. He was extremely helpful and gave me a reprint of this paper. He
+        also pointed out an error in the original: in the series for E, the
+        constant was printed as 0.000075 rather than 0.0000075. I have corrected
+        the error in this version.
+
+    There appears to be another error in formula as printed in both Duffie &
+    Beckman's and Frank Vignola's books in which the coefficient 0.04089 is
+    printed instead of 0.040849, corresponding to the value used in the Bird
+    Clear Sky model implemented by Daryl Myers and printed in both the Fourier
+    paper from the Sundial Mailing List and R. Hulstrom's book.
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" (2006), pp. 9-11 J. Wiley and Sons, New York.
+    [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements" p. 13,
+    CRC Press (2012)
+    [3] Roland Hulstrom, "Solar Resources" p. 66, MIT Press (1989)
+    [4] J. W. Spencer, "Fourier series representation of the position of the
+    sun" in Search 2 (5), p. 172 (1971)
+
+    .. _Fourier paper: http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     # convert from radians to minutes per day = 24[h/day] * 60[min/h] / 2 / pi
@@ -902,9 +913,7 @@ def equation_of_time_Spencer71(dayofyear):
 
 def equation_of_time_pvcdrom(dayofyear):
     """
-    Equation of time from Solar Energy Engineering Processes and Systems,
-    2nd Edition by Soteris A. Kalogirou, Elselvier/Academic Press (2009).
-    http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
+    Equation of time from `PVCDROM`_.
 
     Parameters
     ----------
@@ -914,6 +923,13 @@ def equation_of_time_pvcdrom(dayofyear):
     -------
     equation_of_time : numeric
         Difference in time between solar time and mean solar time in minutes.
+
+    References
+    ----------
+    [1] Soteris A. Kalogirou, "Solar Energy Engineering Processes and Systems,
+    2nd Edition" Elselvier/Academic Press (2009).
+
+    .. PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
     """
     # day angle relative to Vernal Equinox, typically March 22 (day number 81)
     bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0

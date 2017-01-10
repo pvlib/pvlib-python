@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib import tools
+from pvlib import atmosphere
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -31,19 +32,19 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     Parameters
     -----------
-    apparent_zenith: numeric
+    apparent_zenith : numeric
         Refraction corrected solar zenith angle in degrees.
 
-    airmass_absolute: numeric
+    airmass_absolute : numeric
         Pressure corrected airmass.
 
-    linke_turbidity: numeric
+    linke_turbidity : numeric
         Linke Turbidity.
 
-    altitude: numeric
+    altitude : numeric
         Altitude above sea level in meters.
 
-    dni_extra: numeric
+    dni_extra : numeric
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
 
@@ -201,8 +202,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
                           'supply your own turbidities.')
 
     if filepath is None:
-        clearsky_path = os.path.dirname(os.path.abspath(__file__))
-        pvlib_path = os.path.dirname(clearsky_path)
+        pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
 
     mat = scipy.io.loadmat(filepath)
@@ -350,24 +350,24 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
 
     Parameters
     ----------
-    apparent_elevation: numeric
+    apparent_elevation : numeric
         The apparent elevation of the sun above the horizon (deg).
 
-    aod700: numeric
+    aod700 : numeric
         The aerosol optical depth at 700 nm (unitless).
         Algorithm derived for values between 0 and 0.45.
 
-    precipitable_water: numeric
+    precipitable_water : numeric
         The precipitable water of the atmosphere (cm).
         Algorithm derived for values between 0.2 and 10 cm.
         Values less than 0.2 will be assumed to be equal to 0.2.
 
-    pressure: numeric
+    pressure : numeric
         The atmospheric pressure (Pascals).
         Algorithm derived for altitudes between sea level and 7000 m,
         or 101325 and 41000 Pascals.
 
-    dni_extra: numeric
+    dni_extra : numeric
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
 
@@ -536,24 +536,42 @@ def _calc_d(w, aod700, p):
     return d
 
 
-def bird(doy, hr, lat, lon, tz, press_mB, o3_cm, h2o_cm, aod_500nm, aod_380nm,
-         b_a, alb, lyear=365.0, solar_constant=1367.0):
+#bird(doy, hr, lat, lon, tz, press_mB, o3_cm, h2o_cm, aod_500nm, aod_380nm,
+#     b_a, alb, lyear=365.0, solar_constant=1367.0)
+#
+#     :param doy: day(s) of the year
+#     :type doy: int
+#     :param hr: hour
+#     :param lat: latitude [degrees]
+#     :param lon: longitude [degrees]
+#     :param tz: time zone
+#     :param press_mB: pressure [mBar]
+#     :param o3_cm: atmospheric ozone [cm]
+#     :param h2o_cm: precipital water [cm]
+#     :param aod500nm: aerosol optical depth [cm] measured at 500[nm]
+#     :param aod380nm: aerosol optical depth [cm] measured at 380[nm]
+#     :param b_a: asymmetry factor
+#     :param alb: albedo
+def bird(apparent_zenith, airmass_relative, aod380=0.1, aod500=0.1, precipitable_water=1., ozone=0.3, pressure=101325., dni_extra=1364., asymmetry=0.85, albedo=0.2)
     """
-    Bird Simple Clearsky Model
+    NREL Bird Simple Clear Sky Broadband Solar Radiation Model
 
-    :param doy: day(s) of the year
-    :type doy: int
-    :param hr: hour
-    :param lat: latitude [degrees]
-    :param lon: longitude [degrees]
-    :param tz: time zone
-    :param press_mB: pressure [mBar]
-    :param o3_cm: atmospheric ozone [cm]
-    :param h2o_cm: precipital water [cm]
-    :param aod_500nm: aerosol optical depth [cm] measured at 500[nm]
-    :param aod_380nm: aerosol optical depth [cm] measured at 380[nm]
-    :param b_a: asymmetry factor
-    :param alb: albedo 
+    Parameters
+    ----------
+    apparent_zenith : numeric
+            Refraction corrected solar zenith angle in degrees.
+
+    Original implementation written by Daryl R. Myers at NREL.
+
+    http://rredc.nrel.gov/solar/models/clearsky/
+    http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf
+    http://rredc.nrel.gov/solar/models/clearsky/error_reports.html
+
+    References
+    ----------
+    [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for Direct
+    and Diffuse Insolation on Horizontal Surfaces" SERI Technical Report
+    SERI/TR-642-761, Feb 1981. Solar Energy Research Institute, Golden, CO.
     """
     doy0 = doy - 1.0
     patm = 1013.0
@@ -579,9 +597,10 @@ def bird(doy, hr, lat, lon, tz, press_mB, o3_cm, h2o_cm, aod_500nm, aod_380nm,
         np.sin(dec_rad) * np.sin(lat_rad)
     )
     zenith = np.rad2deg(ze_rad)
-    airmass = np.where(zenith < 89,
-        1.0 / (np.cos(ze_rad) + 0.15 / (93.885 - zenith) ** 1.25), 0.0
-    )
+    airmass = atmosphere.relativeairmass(zenith, model='kasten1966')
+    #np.where(zenith < 89,
+    #    1.0 / (np.cos(ze_rad) + 0.15 / (93.885 - zenith) ** 1.25), 0.0
+    #)
     pstar = press_mB / patm
     am_press = pstar*airmass
     t_rayliegh = np.where(airmass > 0,
@@ -600,7 +619,7 @@ def bird(doy, hr, lat, lon, tz, press_mB, o3_cm, h2o_cm, aod_500nm, aod_380nm,
             (1.0 + 79.034 * am_h2o) ** 0.6828 + 6.385 * am_h2o
         ), 0.0
     )
-    bird_huldstrom = 0.2758 * aod_380nm + 0.35 * aod_500nm
+    bird_huldstrom = 0.2758 * aod380nm + 0.35 * aod500nm
     t_aerosol = np.where(airmass > 0, np.exp(
         -(bird_huldstrom ** 0.873) *
         (1.0 + bird_huldstrom - bird_huldstrom ** 0.7088) * airmass ** 0.9108

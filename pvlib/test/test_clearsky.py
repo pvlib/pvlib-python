@@ -509,44 +509,8 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
 
 
-"""
-Richard E. Bird 
-        Clear Sky Broadband
-        Solar Radiation Model 
-From the publication "A Simplified Clear Sky model for Direct and Diffuse
-Insolation on Horizontal Surfaces" by R.E. Bird and R.L Hulstrom, SERI Technical
-Report SERI/TR-642-761, Feb 1991. Solar Energy Research Institute, Golden, CO.
-
-The model is based on comparisons with results from rigourous radiative transfer
-codes. It is composed of simple algebraic expressions with 10 User defined
-inputs (green cells to left). Model results should be expected to agree within
-+/-10% with rigourous radiative transfer codes. The model computes solar
-radiation for every hour of the year, based on the 10 user input parameters.
-
-The graphical presentation includes diurnal clear sky radiation patterns for
-every day of the year. The user may copy cells of interest or the graph and
-paste it to an unprotected worksheet for manipulation.
-
-The workbook is PROTECTED using the password BIRD (all caps). To generate data
-for the entire year, choose TOOLS, PROTECTION, UNPROTECT and enter the password.
-Copy row 49 and paste it from row 50 all the way down to row 8761. 
-
-NOTE: Columns L to U contain intermediate calculations and have been collapsed
-down for convenient pressentation of model results.
-
-Contact:
-Daryl R. Myers,
-National Renewable Energy Laboratory,
-1617 Cole Blvd. MS 3411, Golden CO 80401
-(303)-384-6768 e-mail daryl_myers@nrel.gov
-
-http://rredc.nrel.gov/solar/models/clearsky/
-http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf
-http://rredc.nrel.gov/solar/models/clearsky/error_reports.html
-"""
-
-
 def test_bird():
+    """Test Bird/Hulstrom Clearsky Model"""
     dt = pd.DatetimeIndex(start='1/1/2015 0:00', end='12/31/2015 23:00', freq='H')
     kwargs = {
         'lat': 40, 'lon': -105, 'tz': -7,

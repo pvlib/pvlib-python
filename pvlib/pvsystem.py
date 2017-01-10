@@ -2064,9 +2064,9 @@ def adrinverter(v_dc, p_dc, inverter):
         of the same size. v_dc must be >= 0. (V)
 
     p_dc : numeric
-         A scalar or pandas series of DC powers, in watts, which are provided
-         as input to the inverter. If Vdc and Pdc are vectors, they must be
-         of the same size. p_dc must be >= 0. (W)
+        A scalar or pandas series of DC powers, in watts, which are provided
+        as input to the inverter. If Vdc and Pdc are vectors, they must be
+        of the same size. p_dc must be >= 0. (W)
 
     inverter : dict-like
         A dict-like object defining the inverter to be used, giving the

@@ -894,7 +894,7 @@ def equation_of_time_Spencer71(dayofyear):
     References
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" (2006), pp. 9-11 J. Wiley and Sons, New York.
+    Processes, 3rd Edition" pp. 9-11, J. Wiley and Sons, New York (2006)
     [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements" p. 13,
     CRC Press (2012)
     [3] Roland Hulstrom, "Solar Resources" p. 66, MIT Press (1989)
@@ -955,7 +955,7 @@ def declination_spencer71(dayofyear):
     References
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" (2006), pp. 13-14 J. Wiley and Sons, New York.
+    Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     return (0.006918 -
@@ -990,7 +990,64 @@ def declination_cooper69(dayofyear):
     References
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" (2006), pp. 13-14 J. Wiley and Sons, New York.
+    Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     return 23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0)
+
+
+def solar_zenith_analytical(latitude, hour_angle, declination):
+    """
+    Analytical expression of solar zenith angle based on spherical trigonometry.
+
+    Parameters
+    ----------
+    latitude : numeric
+        Latitude of location in radians.
+    hour_angle : numeric
+        Hour angle in the local solar time in radians.
+    declination : numeric
+        Declination of the sun in radians.
+
+    Returns
+    -------
+    zenith : numeric
+        Solar zenith angle in radians.
+
+    .. warning::
+        The analytic form neglects the effect of atmospheric refraction.
+
+    Links
+    -----
+    https://en.wikipedia.org/wiki/Solar_zenith_angle
+    http://www.pveducation.org/pvcdrom/2-properties-sunlight/suns-position
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
+    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+    p. 132, J. Wiley (1998)
+    """
+    return np.arccos(
+        np.cos(declination) * np.cos(latitude) * np.cos(hour_angle) +
+        np.sin(declination) * np.sin(latitude)
+    )
+
+
+def hour_angle(times, longitude, timezone, equation_of_time):
+    """
+    Hour angle in local solar time.
+
+    Parameters
+    ----------
+    times : :class:`pandas.DatetimeIndex`
+        Corresponding timestamps.
+    longitude : numeric
+
+    timezone :
+    equation_of_time :
+    :return:
+    """
+    hours = times.
+    return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.

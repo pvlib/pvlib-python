@@ -551,22 +551,45 @@ def _calc_d(w, aod700, p):
 #     :param aod380nm: aerosol optical depth [cm] measured at 380[nm]
 #     :param b_a: asymmetry factor
 #     :param alb: albedo
-def bird(times, zenith, airmass_relative, aod380=0.1, aod500=0.1,
-         precipitable_water=1., ozone=0.3, pressure=101325., dni_extra=1364.,
-         asymmetry=0.85, albedo=0.2):
+def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
+         ozone=0.3, pressure=101325., dni_extra=1364., asymmetry=0.85,
+         albedo=0.2):
     """
     NREL Bird Simple Clear Sky Broadband Solar Radiation Model
 
     Parameters
     ----------
-    times : pandas.DatetimeIndex
-        Corresponding timestamps.
     zenith : numeric
         Solar zenith angle in degrees.
     airmass_relative : numeric
         Relative airmass.
+    aod380 : numeric
+        Aerosol optical depth [cm] measured at 380[nm].
+    aod500 : numeric
+        Aerosol optical depth [cm] measured at 500[nm].
+    precipitable_water : numeric
+        Precipitable water [cm]
+    ozone : numeric
+        Atmospheric ozone [cm], defaults to 0.3[cm]
+    pressure : numeric
+        Ambient pressure [Pa], defaults to 101325[Pa]
+    dni_extra : numeric
+        Extraterrestrial radiation [W/m^2], defaults to 1364[W/m^2]
+    asymmetry : numeric
+        Asymmetry factor, defaults to 0.85
+    albedo : numeric
+        Albedo, defaults to 0.2
 
-
+    Returns
+    -------
+    direct_beam : numeric
+        Direct beam [W/m^2]
+    direct_horiz : numeric
+        Direct horizontal [W/m^2]
+    global_horiz : numeric
+        Global horizontal [W/m^2]
+    diffuse_horiz : numeric
+        Diffuse horizontal [W/m^2]
 
     Original implementation written by Daryl R. Myers at NREL.
 
@@ -582,9 +605,8 @@ def bird(times, zenith, airmass_relative, aod380=0.1, aod500=0.1,
     and Diffuse Insolation on Horizontal Surfaces" SERI Technical Report
     SERI/TR-642-761, Feb 1981. Solar Energy Research Institute, Golden, CO.
     """
-    dayofyear = times.dayofyear
+    etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians
-    # airmass = atmosphere.relativeairmass(zenith, model='kasten1966')
     airmass = airmass_relative
     # Bird clear sky model
     am_press = atmosphere.absoluteairmass(airmass, pressure)
@@ -615,14 +637,13 @@ def bird(times, zenith, airmass_relative, aod380=0.1, aod500=0.1,
     rs = np.where(airmass > 0,
         0.0685 + (1.0 - asymmetry) * (1.0 - t_aerosol / taa), 0.0
     )
-    etr_ = irradiance.extraradiation(dayofyear, method='spencer')
     id_ = np.where(airmass > 0,
-        0.9662 * etr_ * t_aerosol * t_water * t_gases * t_ozone * t_rayliegh,
+        0.9662 * etr * t_aerosol * t_water * t_gases * t_ozone * t_rayliegh,
         0.0
     )
     id_nh = np.where(zenith < 90, id_ * np.cos(ze_rad), 0.0)
     ias = np.where(airmass > 0,
-        etr_ * np.cos(ze_rad) * 0.79 * t_ozone * t_gases * t_water * taa *
+        etr * np.cos(ze_rad) * 0.79 * t_ozone * t_gases * t_water * taa *
         (0.5 * (1.0 - t_rayliegh) + asymmetry * (1.0 - (t_aerosol / taa))) / (
             1.0 - airmass + airmass ** 1.02
         ), 0.0

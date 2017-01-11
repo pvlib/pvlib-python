@@ -20,6 +20,7 @@ except ImportError:
 
 import numpy as np
 import pandas as pd
+import datetime
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
@@ -991,6 +992,8 @@ def declination_cooper69(dayofyear):
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
     Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
+    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+    p. 129, J. Wiley (1998)
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     return 23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0)
@@ -1035,19 +1038,26 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     )
 
 
-def hour_angle(times, longitude, timezone, equation_of_time):
+def hour_angle(times, longitude, equation_of_time):
     """
-    Hour angle in local solar time.
+    Hour angle in local solar time. Zero at local solar noon.
 
     Parameters
     ----------
     times : :class:`pandas.DatetimeIndex`
-        Corresponding timestamps.
+        Corresponding timestamps, must be timezone aware.
     longitude : numeric
+        Longitude in degrees
+    equation_of_time : numeric
+        Equation of time in minutes.
 
-    timezone :
-    equation_of_time :
-    :return:
+    Returns
+    -------
+    hour_angle : numeric
+        Hour angle in local solar time in degrees.
     """
-    hours = times.
+    hours = np.array([(t - t.tz.localize(
+        datetime.datetime(t.year, t.month, t.day)
+    )).total_seconds() / 3600. for t in times])
+    timezone = times.tz.utcoffset(times).total_seconds() / 3600.
     return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.

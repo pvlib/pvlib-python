@@ -610,43 +610,43 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     airmass = airmass_relative
     # Bird clear sky model
     am_press = atmosphere.absoluteairmass(airmass, pressure)
-    t_rayliegh = np.where(airmass > 0,
+    t_rayliegh = (
         np.exp(-0.0903 * am_press ** 0.84 * (
             1.0 + am_press - am_press ** 1.01
-        )), 0.0
+        ))
     )
     am_o3 = ozone*airmass
-    t_ozone = np.where(airmass > 0,
+    t_ozone = (
         1.0 - 0.1611 * am_o3 * (1.0 + 139.48 * am_o3) ** -0.3034 -
-        0.002715 * am_o3 / (1.0 + 0.044 * am_o3 + 0.0003 * am_o3 ** 2.0), 0.0)
-    t_gases = np.where(airmass > 0, np.exp(-0.0127 * am_press ** 0.26), 0.0)
+        0.002715 * am_o3 / (1.0 + 0.044 * am_o3 + 0.0003 * am_o3 ** 2.0)
+    )
+    t_gases = np.exp(-0.0127 * am_press ** 0.26)
     am_h2o = airmass * precipitable_water
-    t_water = np.where(airmass > 0,
+    t_water = (
         1.0 - 2.4959 * am_h2o / (
             (1.0 + 79.034 * am_h2o) ** 0.6828 + 6.385 * am_h2o
-        ), 0.0
+        )
     )
     bird_huldstrom = 0.2758 * aod380 + 0.35 * aod500
-    t_aerosol = np.where(airmass > 0, np.exp(
+    t_aerosol = (np.exp(
         -(bird_huldstrom ** 0.873) *
         (1.0 + bird_huldstrom - bird_huldstrom ** 0.7088) * airmass ** 0.9108
-    ), 0.0)
-    taa = np.where(airmass > 0,
-        1.0 - 0.1 * (1.0 - airmass + airmass ** 1.06) * (1.0 - t_aerosol), 0.0
+    ))
+    taa = (
+        1.0 - 0.1 * (1.0 - airmass + airmass ** 1.06) * (1.0 - t_aerosol)
     )
-    rs = np.where(airmass > 0,
-        0.0685 + (1.0 - asymmetry) * (1.0 - t_aerosol / taa), 0.0
+    rs = (
+        0.0685 + (1.0 - asymmetry) * (1.0 - t_aerosol / taa)
     )
-    id_ = np.where(airmass > 0,
-        0.9662 * etr * t_aerosol * t_water * t_gases * t_ozone * t_rayliegh,
-        0.0
+    id_ = (
+        0.9662 * etr * t_aerosol * t_water * t_gases * t_ozone * t_rayliegh
     )
     id_nh = np.where(zenith < 90, id_ * np.cos(ze_rad), 0.0)
-    ias = np.where(airmass > 0,
+    ias = (
         etr * np.cos(ze_rad) * 0.79 * t_ozone * t_gases * t_water * taa *
         (0.5 * (1.0 - t_rayliegh) + asymmetry * (1.0 - (t_aerosol / taa))) / (
             1.0 - airmass + airmass ** 1.02
-        ), 0.0
+        )
     )
-    gh = np.where(airmass > 0, (id_nh + ias) / (1.0 - albedo * rs), 0.0)
+    gh = (id_nh + ias) / (1.0 - albedo * rs)
     return id_, id_nh, gh, gh - id_nh

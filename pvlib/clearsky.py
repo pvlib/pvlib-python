@@ -644,4 +644,5 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
         )
     )
     gh = (id_nh + ias) / (1.0 - albedo * rs)
-    return id_, id_nh, gh, gh - id_nh
+    diffuse_horiz = gh - id_nh
+    return id_, id_nh, gh, diffuse_horiz

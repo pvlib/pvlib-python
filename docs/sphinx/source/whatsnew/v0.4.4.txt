@@ -1,0 +1,19 @@
+.. _whatsnew_0440:
+
+v0.4.4 (January xx, 2017)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+* Fixes the Forecasting page's broken links to the tutorials.
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren

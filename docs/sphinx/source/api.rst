@@ -40,6 +40,13 @@ Functions and methods for calculating solar position.
    solarposition.ephemeris
    solarposition.pyephem
    solarposition.spa_c
+   solarposition.solar_zenith_analytical
+   solarposition.declination_spencer71
+   solarposition.declination_cooper69
+   solarposition.equation_of_time_Spencer71
+   solarposition.equation_of_time_pvcdrom
+   solarposition.hour_angle
+
 
 Additional functions for quantities closely related to solar position.
 
@@ -72,6 +79,7 @@ Clear sky
    clearsky.simplified_solis
    clearsky.haurwitz
    clearsky.detect_clearsky
+   clearsky.bird
 
 
 Airmass and atmospheric models

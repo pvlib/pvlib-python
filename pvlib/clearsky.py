@@ -764,17 +764,17 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     Original implementation written by Daryl R. Myers at NREL.
 
-    Links
-    -----
-    http://rredc.nrel.gov/solar/models/clearsky/
-    http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf
-    http://rredc.nrel.gov/solar/models/clearsky/error_reports.html
-
     References
     ----------
     [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for Direct
     and Diffuse Insolation on Horizontal Surfaces" SERI Technical Report
     SERI/TR-642-761, Feb 1981. Solar Energy Research Institute, Golden, CO.
+
+    `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/clearsky/>`_
+
+    `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf>`_
+
+    `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians

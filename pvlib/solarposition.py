@@ -892,17 +892,24 @@ def equation_of_time_Spencer71(dayofyear):
     Clear Sky model implemented by Daryl Myers and printed in both the Fourier
     paper from the Sundial Mailing List and R. Hulstrom's book.
 
+    .. _Fourier paper: http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html
+
     References
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
     Processes, 3rd Edition" pp. 9-11, J. Wiley and Sons, New York (2006)
+
     [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements" p. 13,
     CRC Press (2012)
+
     [3] Roland Hulstrom, "Solar Resources" p. 66, MIT Press (1989)
+
     [4] J. W. Spencer, "Fourier series representation of the position of the
     sun" in Search 2 (5), p. 172 (1971)
 
-    .. _Fourier paper: http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html
+    See Also
+    --------
+    equation_of_time_pvcdrom
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     # convert from radians to minutes per day = 24[h/day] * 60[min/h] / 2 / pi
@@ -915,6 +922,8 @@ def equation_of_time_Spencer71(dayofyear):
 def equation_of_time_pvcdrom(dayofyear):
     """
     Equation of time from `PVCDROM`_.
+
+    .. _PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
 
     Parameters
     ----------
@@ -930,7 +939,9 @@ def equation_of_time_pvcdrom(dayofyear):
     [1] Soteris A. Kalogirou, "Solar Energy Engineering Processes and Systems,
     2nd Edition" Elselvier/Academic Press (2009).
 
-    .. PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
+    See Also
+    --------
+    equation_of_time_Spencer71
     """
     # day angle relative to Vernal Equinox, typically March 22 (day number 81)
     bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
@@ -957,6 +968,10 @@ def declination_spencer71(dayofyear):
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
     Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
+
+    See Also
+    --------
+    declination_cooper69
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     return (0.006918 -
@@ -983,17 +998,22 @@ def declination_cooper69(dayofyear):
     Declination can be expressed using either sine or cosine:
 
     .. math::
-        \delta &= 23.45 \sin \left( \frac{2 \pi}{365} \left(n_{day} + 284
-            \right) \right) \\
-            &= -23.45 \cos \left( \frac{2 \pi}{365} \left(n_{day} + 10 \right)
-            \right)
+
+       \\delta = 23.45 \\sin \\left( \\frac{2 \\pi}{365} \\left(n_{day} + 284
+       \\right) \\right) = -23.45 \\cos \\left( \\frac{2 \\pi}{365}
+       \\left(n_{day} + 10 \\right) \\right)
 
     References
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
     Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
+
     [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
     p. 129, J. Wiley (1998)
+
+    See Also
+    --------
+    declination_spencer71
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     return 23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0)
@@ -1020,17 +1040,23 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     .. warning::
         The analytic form neglects the effect of atmospheric refraction.
 
-    Links
-    -----
-    https://en.wikipedia.org/wiki/Solar_zenith_angle
-    http://www.pveducation.org/pvcdrom/2-properties-sunlight/suns-position
-
     References
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
     Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
+
     [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
     p. 132, J. Wiley (1998)
+
+    `Wikipedia: Solar Zenith Angle <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
+
+    `PVCDROM: Sun's Position <http://www.pveducation.org/pvcdrom/2-properties-sunlight/suns-position>`_
+
+    See Also
+    --------
+    declination_spencer71
+    declination_cooper69
+    hour_angle
     """
     return np.arccos(
         np.cos(declination) * np.cos(latitude) * np.cos(hour_angle) +
@@ -1055,6 +1081,11 @@ def hour_angle(times, longitude, equation_of_time):
     -------
     hour_angle : numeric
         Hour angle in local solar time in degrees.
+
+    See Also
+    --------
+    equation_of_time_Spencer71
+    equation_of_time_pvcdrom
     """
     hours = np.array([(t - t.tz.localize(
         datetime.datetime(t.year, t.month, t.day)

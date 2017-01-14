@@ -6,6 +6,7 @@ v0.4.4 (January xx, 2017)
 Enhancements
 ~~~~~~~~~~~~
 
+* Added NREL Bird clear sky model. (:issue:`276`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -17,3 +18,4 @@ Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* Mark Mikofski

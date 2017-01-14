@@ -1,0 +1,15 @@
+.. _whatsnew_0430:
+
+v0.4.3 (December 13, 2016)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adding implementation of Perez's DIRINDEX model based on existing DIRINT
+  model implementation. (:issue:`282`)
+
+Code Contributors
+~~~~~~~~~~~~~~~~~
+
+* Marc Anoma

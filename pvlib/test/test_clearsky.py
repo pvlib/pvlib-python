@@ -2,8 +2,9 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-
 import xlrd
+import pytz
+
 import os
 
 import pytest
@@ -14,6 +15,7 @@ from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
 from pvlib import atmosphere
+from pvlib import irradiance
 
 from conftest import requires_scipy
 
@@ -511,17 +513,32 @@ def test_linke_turbidity_corners():
 
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""
-    dt = pd.DatetimeIndex(start='1/1/2015 0:00', end='12/31/2015 23:00', freq='H')
-    kwargs = {
-        'lat': 40, 'lon': -105, 'tz': -7,
-        'press_mB': 840,
-        'o3_cm': 0.3, 'h2o_cm': 1.5,
-        'aod_500nm':  0.1, 'aod_380nm':  0.15,
-        'b_a': 0.85,
-        'alb': 0.2
-    }
-    Eb, Ebh, Gh, Dh, tv = clearsky.bird(dt.dayofyear, np.array(range(24)*365), **kwargs)
-    day_angle, declination, eqt, hour_angle, zenith, airmass = tv
+    times = pd.DatetimeIndex(start='1/1/2015 0:00', end='12/31/2015 23:00',
+                             freq='H')
+    tz = -7  # test timezone
+    gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
+    times = times.tz_localize(gmt_tz)  # set timezone
+    latitude = 40.
+    longitude = -105.
+    press_mB = 840.
+    o3_cm = 0.3
+    h2o_cm = 1.5
+    aod_500nm = 0.1
+    aod_380nm = 0.15
+    b_a = 0.85
+    alb = 0.2
+    eot = solarposition.equation_of_time_Spencer71(times.dayofyear)
+    hour_angle = solarposition.hour_angle(times, longitude, eot) - 0.5 * 15.
+    declination = solarposition.declination_spencer71(times.dayofyear)
+    zenith = solarposition.solar_zenith_analytical(
+        np.deg2rad(latitude), np.deg2rad(hour_angle), declination
+    )
+    airmass = atmosphere.relativeairmass(np.rad2deg(zenith), model='kasten1966')
+    etr = irradiance.extraradiation(times)
+    Eb, Ebh, Gh, Dh = clearsky.bird(
+        np.rad2deg(zenith), airmass, aod_380nm, aod_500nm, h2o_cm, o3_cm,
+        press_mB * 100., etr, b_a, alb
+    )
     clearsky_path = os.path.dirname(os.path.abspath(__file__))
     pvlib_path = os.path.dirname(clearsky_path)
     wb = xlrd.open_workbook(
@@ -531,15 +548,31 @@ def test_bird():
     headers = [h.value for h in sheet.row(1)][4:]
     testdata = pd.DataFrame({h: [c.value for c in sheet.col(n + 4, 2, 49)]
                             for n, h in enumerate(headers)},
-                            index=dt[1:48])
-    assert np.allclose(testdata['Dangle'], day_angle[1:48])
-    assert np.allclose(testdata['DEC'], declination[1:48])
-    assert np.allclose(testdata['EQT'], eqt[1:48])
+                            index=times[1:48])
+    assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:48]))
+    assert np.allclose(testdata['EQT'], eot[1:48], rtol=1e-4)
     assert np.allclose(testdata['Hour Angle'], hour_angle[1:48])
-    assert np.allclose(testdata['Zenith Ang'], zenith[1:48])
-    assert np.allclose(testdata['Air Mass'], airmass[1:48])
-    assert np.allclose(testdata['Direct Beam'], Eb[1:48])
-    assert np.allclose(testdata['Direct Hz'], Ebh[1:48])
-    assert np.allclose(testdata['Global Hz'], Gh[1:48])
-    assert np.allclose(testdata['Dif Hz'], Dh[1:48])
-    return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=dt)
+    assert np.allclose(testdata['Zenith Ang'], np.rad2deg(zenith[1:48]))
+    dawn = zenith < np.pi * 22. / 45.
+    dusk = testdata['Zenith Ang'] < 88.
+    am = pd.Series(np.where(dawn, airmass, 0.), index=times).fillna(0.0)
+    assert np.allclose(
+        testdata['Air Mass'].where(dusk, 0.), am[1:48], rtol=1e-3
+    )
+    direct_beam = pd.Series(np.where(dawn, Eb, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:48], rtol=1e-3
+    )
+    direct_horz = pd.Series(np.where(dawn, Ebh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:48], rtol=1e-3
+    )
+    global_horz = pd.Series(np.where(dawn, Gh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Global Hz'].where(dusk, 0.), global_horz[1:48], rtol=1e-3
+    )
+    diffuse_horz = pd.Series(np.where(dawn, Dh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
+    )
+    return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=times)

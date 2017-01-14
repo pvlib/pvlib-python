@@ -535,22 +535,6 @@ def _calc_d(w, aod700, p):
     return d
 
 
-#bird(doy, hr, lat, lon, tz, press_mB, o3_cm, h2o_cm, aod_500nm, aod_380nm,
-#     b_a, alb, lyear=365.0, solar_constant=1367.0)
-#
-#     :param doy: day(s) of the year
-#     :type doy: int
-#     :param hr: hour
-#     :param lat: latitude [degrees]
-#     :param lon: longitude [degrees]
-#     :param tz: time zone
-#     :param press_mB: pressure [mBar]
-#     :param o3_cm: atmospheric ozone [cm]
-#     :param h2o_cm: precipital water [cm]
-#     :param aod500nm: aerosol optical depth [cm] measured at 500[nm]
-#     :param aod380nm: aerosol optical depth [cm] measured at 380[nm]
-#     :param b_a: asymmetry factor
-#     :param alb: albedo
 def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
          ozone=0.3, pressure=101325., dni_extra=1364., asymmetry=0.85,
          albedo=0.2):

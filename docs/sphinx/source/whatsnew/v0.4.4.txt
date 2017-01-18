@@ -11,6 +11,8 @@ Documentation
 ~~~~~~~~~~~~~
 
 * Fixes the Forecasting page's broken links to the tutorials.
+* Fixes the Forecasting page's broken examples. (:issue:`299`)
+* Fixes broken Classes link in the v0.3.0 documentation.
 
 
 Contributors

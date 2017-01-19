@@ -2051,7 +2051,7 @@ def snlinverter(v_dc, p_dc, inverter):
     return ac_power
 
 
-def adrinverter(v_dc, p_dc, inverter):
+def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
     r'''
     Converts DC power and voltage to AC power using Anton Driesse's
     Grid-Connected PV Inverter efficiency model
@@ -2131,20 +2131,27 @@ def adrinverter(v_dc, p_dc, inverter):
     pac_max = inverter['Pacmax']
     p_nt = inverter['Pnt']
     ce_list = inverter['ADRCoefficients']
+    v_max = inverter['Vmax']
+    v_min = inverter['Vmin']
+    vdc_max = inverter['Vdcmax']
+    mppt_hi = inverter['MPPTHi']
+    mppt_low = inverter['MPPTLow']
+
+    v_lim_upper = np.nanmax([v_max, vdc_max, mppt_hi])*(1+vtol)
+    v_lim_lower = np.nanmax([v_min, mppt_low])*(1-vtol)
 
     pdc = p_dc/p_nom
     vdc = v_dc/v_nom
     poly = np.array([pdc**0, pdc, pdc**2, vdc-1, pdc*(vdc-1),
                      pdc**2*(vdc-1), 1/vdc-1, pdc*(1./vdc-1),
                      pdc**2*(1./vdc-1)])
-
     p_loss = np.dot(np.array(ce_list), poly)
     ac_power = p_nom * (pdc-p_loss)
-
     p_nt = -1*np.absolute(p_nt)
 
+    ac_power = np.where((v_lim_upper < v_dc) | (v_dc < v_lim_lower),
+                        np.nan, ac_power)
     ac_power = np.where((ac_power < p_nt) | (vdc == 0), p_nt, ac_power)
-
     ac_power = np.where(ac_power > pac_max, pac_max, ac_power)
 
     if isinstance(p_dc, pd.Series):

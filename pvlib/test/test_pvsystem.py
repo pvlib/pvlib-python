@@ -583,12 +583,13 @@ def test_adrinverter(sam_data):
     inverters = sam_data['adrinverter']
     testinv = 'Ablerex_Electronics_Co___Ltd___' + \
               'ES_2200_US_240__240_Vac__240V__CEC_2011_'
-    vdcs = pd.Series([154, 390, 420])
-    idcs = pd.Series([8, 3, 1])
+    vdcs = pd.Series([135, 154, 390, 420, 551])
+    idcs = pd.Series([1, 8, 3, 1, 1])
     pdcs = idcs * vdcs
 
     pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
-    assert_series_equal(pacs, pd.Series([1161.5745, 1116.4459, 382.6679]))
+    assert_series_equal(pacs, pd.Series([np.nan, 1161.5745, 1116.4459,
+                                         382.6679, np.nan]))
 
 
 def test_PVSystem_snlinverter(sam_data):

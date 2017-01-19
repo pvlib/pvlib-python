@@ -2076,6 +2076,11 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
         supplied data table using retrievesam.
         See Notes for required keys.
 
+    vtol : numeric
+        A unit-less fraction that determines how far the efficiency model is allowed
+        to extrapolate beyond the inverter's normal input voltage operating range.
+        0.0 <= vtol <= 1.0
+
     Returns
     -------
     ac_power : numeric

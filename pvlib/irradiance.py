@@ -2000,8 +2000,6 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None, **kwargs):
     # if correction of DNI was necessary
     if (dni_tmp - dni)[(dni_tmp - dni) != 0].count() != 0:
         count = (dni_tmp - dni)[(dni_tmp - dni) != 0].count()
-        count_sunrise = (dni_tmp - dni)[((dni_tmp - dni).index.hour < 12) &
-                                        ((dni_tmp - dni) != 0)].count()
         logging.debug("The DNI was corrected for %d out of %d timesteps",
             count, dni.shape[0])
     else:

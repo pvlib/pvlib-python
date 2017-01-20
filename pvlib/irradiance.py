@@ -1947,7 +1947,8 @@ def _get_dirint_coeffs():
     return coeffs[1:, 1:, :, :]
 
 
-def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None, **kwargs):
+def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
+        set_to_nan=False, **kwargs):
     """
     Determine DNI from GHI and DHI.
 
@@ -1974,6 +1975,11 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None, **kwargs):
     
     clearsky_dni : array-like
         Clearsky direct normal irradiance.
+    
+    set_to_nan : boolean
+        If True the values of the calculated DNI that need correction will be
+        replaced by NaN. Otherwise they will be replaced by the calculated 
+        value depending on the specified method.
 
     Returns
     -------
@@ -1984,8 +1990,15 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None, **kwargs):
 
     # calculate DNI
     dni_tmp = (ghi - dhi) / tools.cosd(zenith)
+    dni = dni_tmp.copy()
+    
+    # cutoff negative values
+    if set_to_nan:
+        dni[dni < 0] = float('nan')
+    else:
+        dni[dni < 0] = 0
+    
     if method == 'clearsky':
-        dni = dni_tmp.copy()
         # set DNI for zenith angles close to 90 degrees (sunrise/sunset
         # transitions) and above 90 degrees to zero
         dni[zenith > 89.5] = 0
@@ -1994,8 +2007,7 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None, **kwargs):
         dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_dni)] = \
             clearsky_dni
     elif method == 'cutoff':
-        dni_2 = dni_tmp.copy()
-        dni_2[zenith > 88] = 0
+        dni[zenith > 88] = 0
 
     # if correction of DNI was necessary
     if (dni_tmp - dni)[(dni_tmp - dni) != 0].count() != 0:

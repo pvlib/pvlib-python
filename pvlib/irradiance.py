@@ -2004,18 +2004,6 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
                                         ((dni_tmp - dni) != 0)].count()
         logging.debug("The DNI was corrected for %d out of %d timesteps",
             count, dni.shape[0])
-        if (count_sunrise / count) < 0.02:
-            logging.warning(
-                "Your weather dataset seems to be buggy. Most corrections " +
-                "of the calculated DNI were necessary for sunset hours. " +
-                "One possible source of error is that your dataset " +
-                "is behind local time.")
-        if (count_sunrise / count) > 0.98:
-            logging.warning(
-                "Your weather dataset seems to be buggy. Most corrections "
-                "of the calculated DNI were necessary for sunset hours. " +
-                "One possible source of error is that your dataset " +
-                "is ahead of the local time.")
     else:
         logging.debug("No correction of the calculated DNI was necessary.")
 

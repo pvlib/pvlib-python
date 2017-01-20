@@ -1947,7 +1947,7 @@ def _get_dirint_coeffs():
     return coeffs[1:, 1:, :, :]
 
 
-def dni(ghi, dhi, location, method='clearsky', **kwargs):
+def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None, **kwargs):
     """
     Determine DNI from GHI and DHI.
 
@@ -1964,22 +1964,24 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
     dhi : array-like
         Diffuse horizontal irradiance in W/m^2.
 
-    location : Location
-        A :py:class:`~pvlib.location.Location` object that represents
-        the physical location at which to evaluate the model.
+    zenith : array-like
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. Angles must be >=0 and <=180.
 
     method : str
         The method used to correct the calculated DNI.
         Must be one of 'clearsky', 'cutoff'.
+    
+    clearsky_dni : array-like
+        Clearsky direct normal irradiance.
 
     Returns
     -------
     dni : array-like
-        The modeled direct normal irradiance in W/m^2
+        The modeled direct normal irradiance.
 
     """
 
-    zenith = location.get_solarposition(times=ghi.index).zenith
     # calculate DNI
     dni_tmp = (ghi - dhi) / tools.cosd(zenith)
     if method == 'clearsky':
@@ -1987,12 +1989,10 @@ def dni(ghi, dhi, location, method='clearsky', **kwargs):
         # set DNI for zenith angles close to 90 degrees (sunrise/sunset
         # transitions) and above 90 degrees to zero
         dni[zenith > 89.5] = 0
-        # get clearsky irradiance as upper bound for DNI
-        clearsky_df = location.get_clearsky(times=ghi.index)
         # cut DNI for zenith angles between 88-89.5 degrees to maximum value
         # given by the clearsky DNI
-        dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_df.dni)] = \
-            clearsky_df.dni
+        dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_dni)] = \
+            clearsky_dni
     elif method == 'cutoff':
         dni_2 = dni_tmp.copy()
         dni_2[zenith > 88] = 0

@@ -1959,10 +1959,10 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None, **kwargs):
     Parameters
     ----------
     ghi : array-like
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance.
 
     dhi : array-like
-        Diffuse horizontal irradiance in W/m^2.
+        Diffuse horizontal irradiance.
 
     zenith : array-like
         True (not refraction-corrected) zenith angles in decimal

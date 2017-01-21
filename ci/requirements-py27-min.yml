@@ -5,6 +5,5 @@ dependencies:
     - pytest
     - pytest-cov
     - nose
-    - xlrd
     - pip:
         - coveralls

@@ -4,10 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-import xlrd
 import pytz
-
-import os
 
 import pytest
 from numpy.testing import assert_almost_equal, assert_allclose
@@ -642,14 +639,9 @@ def test_bird():
     )
     clearsky_path = os.path.dirname(os.path.abspath(__file__))
     pvlib_path = os.path.dirname(clearsky_path)
-    wb = xlrd.open_workbook(
-        os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012.xls')
-    )
-    sheet = wb.sheets()[0]
-    headers = [h.value for h in sheet.row(1)][4:]
-    testdata = pd.DataFrame({h: [c.value for c in sheet.col(n + 4, 2, 49)]
-                            for n, h in enumerate(headers)},
-                            index=times[1:48])
+    data_path = os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012.csv')
+    testdata = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
+    testdata.index = times[1:48]
     assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:48]))
     assert np.allclose(testdata['EQT'], eot[1:48], rtol=1e-4)
     assert np.allclose(testdata['Hour Angle'], hour_angle[1:48])

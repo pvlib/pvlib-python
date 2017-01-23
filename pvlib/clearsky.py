@@ -770,6 +770,9 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     and Diffuse Insolation on Horizontal Surfaces" SERI Technical Report
     SERI/TR-642-761, Feb 1981. Solar Energy Research Institute, Golden, CO.
 
+    [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", pp. 46-51 CRC Press (2013)
+
     `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/clearsky/>`_
 
     `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf>`_

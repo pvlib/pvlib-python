@@ -40,12 +40,6 @@ Functions and methods for calculating solar position.
    solarposition.ephemeris
    solarposition.pyephem
    solarposition.spa_c
-   solarposition.solar_zenith_analytical
-   solarposition.declination_spencer71
-   solarposition.declination_cooper69
-   solarposition.equation_of_time_Spencer71
-   solarposition.equation_of_time_pvcdrom
-   solarposition.hour_angle
 
 
 Additional functions for quantities closely related to solar position.
@@ -66,6 +60,19 @@ algorithm.
 
    spa
 
+
+Correlations and analytical expressions for low precision solar position
+calculations.
+
+.. autosummary::
+   :toctree: generated/
+
+   solarposition.solar_zenith_analytical
+   solarposition.declination_spencer71
+   solarposition.declination_cooper69
+   solarposition.equation_of_time_Spencer71
+   solarposition.equation_of_time_pvcdrom
+   solarposition.hour_angle
 
 Clear sky
 =========

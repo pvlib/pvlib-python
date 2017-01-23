@@ -266,7 +266,7 @@ def spa_python(time, latitude, longitude,
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
-        *Note: delta_t = None will break code using nrel_numba,
+        *Note*: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.
         The USNO has historical and forecasted delta_t [3].
     atmos_refrac : float, optional
@@ -791,7 +791,7 @@ def pyephem_earthsun_distance(time):
 def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     """
     Calculates the distance from the earth to the sun using the
-    NREL SPA algorithm described in [1].
+    NREL SPA algorithm described in [1]_.
 
     Parameters
     ----------
@@ -807,7 +807,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
-        *Note: delta_t = None will break code using nrel_numba,
+        *Note*: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.
         By default, use USNO historical data and predictions
 
@@ -821,9 +821,9 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     References
     ----------
-    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-    USA, http://www.nrel.gov.
+    .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+       USA, http://www.nrel.gov.
     """
 
     if not isinstance(time, pd.DatetimeIndex):
@@ -862,8 +862,8 @@ def _calculate_simple_day_angle(dayofyear):
 
 def equation_of_time_Spencer71(dayofyear):
     """
-    Equation of time from Duffie & Beckman [1] and attributed to Spencer (1971)
-    and Iqbal (1983).
+    Equation of time from Duffie & Beckman and attributed to Spencer (1971) and
+    Iqbal (1983).
 
     Parameters
     ----------
@@ -874,10 +874,10 @@ def equation_of_time_Spencer71(dayofyear):
     equation_of_time : numeric
         Difference in time between solar time and mean solar time in minutes.
 
-    The coefficients are from the Bird Clear Sky model and correspond to the
-    coefficients from the online copy of the `Fourier paper`_ [4] in the Sundial
-    Mailing list that was posted in 1998 by Mac Oglesby from his correspondence
-    with Macquarie University Prof. John Pickard who added the following note.
+    The coefficients correspond to the online copy of the `Fourier paper`_ [1]_
+    in the Sundial Mailing list that was posted in 1998 by Mac Oglesby from his
+    correspondence with Macquarie University Prof. John Pickard who added the
+    following note.
 
         In the early 1970s, I contacted Dr Spencer about this method because I
         was trying to use a hand calculator for calculating solar positions,
@@ -887,25 +887,28 @@ def equation_of_time_Spencer71(dayofyear):
         the error in this version.
 
     There appears to be another error in formula as printed in both Duffie &
-    Beckman's and Frank Vignola's books in which the coefficient 0.04089 is
-    printed instead of 0.040849, corresponding to the value used in the Bird
-    Clear Sky model implemented by Daryl Myers and printed in both the Fourier
-    paper from the Sundial Mailing List and R. Hulstrom's book.
+    Beckman's [2]_ and Frank Vignola's [3]_ books in which the coefficient
+    0.04089 is printed instead of 0.040849, corresponding to the value used in
+    the Bird Clear Sky model implemented by Daryl Myers [4]_ and printed in both
+    the Fourier paper from the Sundial Mailing List and R. Hulstrom's [5]_ book.
 
     .. _Fourier paper: http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html
 
     References
     ----------
-    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" pp. 9-11, J. Wiley and Sons, New York (2006)
+    .. [1] J. W. Spencer, "Fourier series representation of the position of the
+       sun" in Search 2 (5), p. 172 (1971)
 
-    [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements" p. 13,
-    CRC Press (2012)
+    .. [2] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+       Processes, 3rd Edition" pp. 9-11, J. Wiley and Sons, New York (2006)
 
-    [3] Roland Hulstrom, "Solar Resources" p. 66, MIT Press (1989)
+    .. [3] Frank Vignola et al., "Solar And Infrared Radiation Measurements",
+       p. 13, CRC Press (2012)
 
-    [4] J. W. Spencer, "Fourier series representation of the position of the
-    sun" in Search 2 (5), p. 172 (1971)
+    .. [5] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+       Energy Applications", p. 5 CRC Press (2013)
+
+    .. [4] Roland Hulstrom, "Solar Resources" p. 66, MIT Press (1989)
 
     See Also
     --------
@@ -921,7 +924,9 @@ def equation_of_time_Spencer71(dayofyear):
 
 def equation_of_time_pvcdrom(dayofyear):
     """
-    Equation of time from `PVCDROM`_.
+    Equation of time from PVCDROM.
+
+    `PVCDROM`_ is a website by Solar Power Lab at Arizona State University (ASU)
 
     .. _PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
 
@@ -969,6 +974,12 @@ def declination_spencer71(dayofyear):
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
     Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
 
+    [2] J. W. Spencer, "Fourier series representation of the position of the
+    sun" in Search 2 (5), p. 172 (1971)
+
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", p. 4 CRC Press (2013)
+
     See Also
     --------
     declination_cooper69
@@ -1011,6 +1022,9 @@ def declination_cooper69(dayofyear):
     [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
     p. 129, J. Wiley (1998)
 
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", p. 4 CRC Press (2013)
+
     See Also
     --------
     declination_spencer71
@@ -1048,6 +1062,9 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
     p. 132, J. Wiley (1998)
 
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", p. 5 CRC Press (2013)
+
     `Wikipedia: Solar Zenith Angle <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
 
     `PVCDROM: Sun's Position <http://www.pveducation.org/pvcdrom/2-properties-sunlight/suns-position>`_
@@ -1081,6 +1098,17 @@ def hour_angle(times, longitude, equation_of_time):
     -------
     hour_angle : numeric
         Hour angle in local solar time in degrees.
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" pp. 13, J. Wiley and Sons, New York (2006)
+
+    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+    p. 132, J. Wiley (1998)
+
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", p. 5 CRC Press (2013)
 
     See Also
     --------

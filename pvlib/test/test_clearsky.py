@@ -696,4 +696,14 @@ def test_bird():
     assert np.allclose(
         testdata2['Dif Hz'].where(dusk, 0.), diffuse_horz2[1:48], rtol=1e-3
     )
+    # test scalars just at noon
+    # XXX: calculations start at 12am so noon is at index = 12
+    Eb3, Ebh3, Gh3, Dh3 = clearsky.bird(
+        zenith[12], airmass[12], aod_380nm, aod_500nm, h2o_cm, dni_extra=etr[12]
+    )
+    # XXX: testdata starts at 1am so noon is at index = 11
+    np.allclose(
+        [Eb3, Ebh3, Gh3, Dh3],
+        testdata2.ix[11, ['Direct Beam', 'Direct Hz', 'Global Hz', 'Dif Hz']],
+        rtol=1e-3)
     return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=times)

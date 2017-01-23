@@ -865,15 +865,6 @@ def equation_of_time_Spencer71(dayofyear):
     Equation of time from Duffie & Beckman and attributed to Spencer (1971) and
     Iqbal (1983).
 
-    Parameters
-    ----------
-    dayofyear : numeric
-
-    Returns
-    -------
-    equation_of_time : numeric
-        Difference in time between solar time and mean solar time in minutes.
-
     The coefficients correspond to the online copy of the `Fourier paper`_ [1]_
     in the Sundial Mailing list that was posted in 1998 by Mac Oglesby from his
     correspondence with Macquarie University Prof. John Pickard who added the
@@ -893,6 +884,15 @@ def equation_of_time_Spencer71(dayofyear):
     the Fourier paper from the Sundial Mailing List and R. Hulstrom's [5]_ book.
 
     .. _Fourier paper: http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    equation_of_time : numeric
+        Difference in time between solar time and mean solar time in minutes.
 
     References
     ----------
@@ -996,6 +996,14 @@ def declination_cooper69(dayofyear):
     """
     Solar declination from Duffie & Beckman [1] and attributed to Cooper (1969)
 
+    Declination can be expressed using either sine or cosine:
+
+    .. math::
+
+       \\delta = 23.45 \\sin \\left( \\frac{2 \\pi}{365} \\left(n_{day} + 284
+       \\right) \\right) = -23.45 \\cos \\left( \\frac{2 \\pi}{365}
+       \\left(n_{day} + 10 \\right) \\right)
+
     Parameters
     ----------
     dayofyear : numeric
@@ -1005,14 +1013,6 @@ def declination_cooper69(dayofyear):
     declination : numeric
         Angular position of the sun at solar noon relative to the plane of the
         equator, approximately between -23.45 and 23.45.
-
-    Declination can be expressed using either sine or cosine:
-
-    .. math::
-
-       \\delta = 23.45 \\sin \\left( \\frac{2 \\pi}{365} \\left(n_{day} + 284
-       \\right) \\right) = -23.45 \\cos \\left( \\frac{2 \\pi}{365}
-       \\left(n_{day} + 10 \\right) \\right)
 
     References
     ----------
@@ -1037,6 +1037,9 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     """
     Analytical expression of solar zenith angle based on spherical trigonometry.
 
+    .. warning::
+        The analytic form neglects the effect of atmospheric refraction.
+
     Parameters
     ----------
     latitude : numeric
@@ -1050,9 +1053,6 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     -------
     zenith : numeric
         Solar zenith angle in radians.
-
-    .. warning::
-        The analytic form neglects the effect of atmospheric refraction.
 
     References
     ----------

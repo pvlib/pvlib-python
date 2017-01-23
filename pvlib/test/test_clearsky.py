@@ -616,6 +616,7 @@ def test_bird():
     tz = -7  # test timezone
     gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone
+    # match test data from BIRD_08_16_2012.xls
     latitude = 40.
     longitude = -105.
     press_mB = 840.
@@ -631,11 +632,13 @@ def test_bird():
     zenith = solarposition.solar_zenith_analytical(
         np.deg2rad(latitude), np.deg2rad(hour_angle), declination
     )
-    airmass = atmosphere.relativeairmass(np.rad2deg(zenith), model='kasten1966')
+    zenith = np.rad2deg(zenith)
+    airmass = atmosphere.relativeairmass(zenith, model='kasten1966')
     etr = irradiance.extraradiation(times)
+    # test Bird with time series data
     Eb, Ebh, Gh, Dh = clearsky.bird(
-        np.rad2deg(zenith), airmass, aod_380nm, aod_500nm, h2o_cm, o3_cm,
-        press_mB * 100., etr, b_a, alb
+        zenith, airmass, aod_380nm, aod_500nm, h2o_cm, o3_cm, press_mB * 100.,
+        etr, b_a, alb
     )
     clearsky_path = os.path.dirname(os.path.abspath(__file__))
     pvlib_path = os.path.dirname(clearsky_path)
@@ -645,8 +648,8 @@ def test_bird():
     assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:48]))
     assert np.allclose(testdata['EQT'], eot[1:48], rtol=1e-4)
     assert np.allclose(testdata['Hour Angle'], hour_angle[1:48])
-    assert np.allclose(testdata['Zenith Ang'], np.rad2deg(zenith[1:48]))
-    dawn = zenith < np.pi * 22. / 45.
+    assert np.allclose(testdata['Zenith Ang'], zenith[1:48])
+    dawn = zenith < 88.
     dusk = testdata['Zenith Ang'] < 88.
     am = pd.Series(np.where(dawn, airmass, 0.), index=times).fillna(0.0)
     assert np.allclose(
@@ -667,5 +670,30 @@ def test_bird():
     diffuse_horz = pd.Series(np.where(dawn, Dh, 0.), index=times).fillna(0.)
     assert np.allclose(
         testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
+    )
+    # test keyword parameters
+    Eb2, Ebh2, Gh2, Dh2 = clearsky.bird(
+        zenith, airmass, aod_380nm, aod_500nm, h2o_cm, dni_extra=etr
+    )
+    clearsky_path = os.path.dirname(os.path.abspath(__file__))
+    pvlib_path = os.path.dirname(clearsky_path)
+    data_path = os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012_patm.csv')
+    testdata2 = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
+    testdata2.index = times[1:48]
+    direct_beam2 = pd.Series(np.where(dawn, Eb2, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata2['Direct Beam'].where(dusk, 0.), direct_beam2[1:48], rtol=1e-3
+    )
+    direct_horz2 = pd.Series(np.where(dawn, Ebh2, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata2['Direct Hz'].where(dusk, 0.), direct_horz2[1:48], rtol=1e-3
+    )
+    global_horz2 = pd.Series(np.where(dawn, Gh2, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata2['Global Hz'].where(dusk, 0.), global_horz2[1:48], rtol=1e-3
+    )
+    diffuse_horz2 = pd.Series(np.where(dawn, Dh2, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata2['Dif Hz'].where(dusk, 0.), diffuse_horz2[1:48], rtol=1e-3
     )
     return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=times)

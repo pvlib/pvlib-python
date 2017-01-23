@@ -728,6 +728,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     """
     NREL Bird Simple Clear Sky Broadband Solar Radiation Model
 
+    Based on original implementation by Daryl R. Myers at NREL.
+
     Parameters
     ----------
     zenith : numeric
@@ -761,8 +763,6 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
         Global horizontal [W/m^2]
     diffuse_horiz : numeric
         Diffuse horizontal [W/m^2]
-
-    Original implementation written by Daryl R. Myers at NREL.
 
     References
     ----------

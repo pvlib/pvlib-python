@@ -113,3 +113,59 @@ def test_first_solar_spectral_correction_supplied():
 def test_first_solar_spectral_correction_ambiguous():
     with pytest.raises(TypeError):
         atmosphere.first_solar_spectral_correction(1, 1)
+
+
+def test_linke_turbidity_kasten_pyrheliometric_formula():
+    # Linke turbidity factor calculated from AOD, Pwat and AM
+
+    # from datetime import datetime
+    # import pvlib
+    # from solar_utils import *
+    # from matplotlib import pyplot as plt
+    # import seaborn as sns
+    # import os
+    #
+    # plt.ion()
+    # sns.set_context(rc={'figure.figsize': (12, 8)})
+
+    def demo_kasten_96lt():
+        atmos_path = os.path.dirname(os.path.abspath(__file__))
+        pvlib_path = os.path.dirname(atmos_path)
+        melbourne_fl = pvlib.tmy.readtmy3(os.path.join(
+            pvlib_path, 'data', '722040TYA.CSV')
+        )
+        aod700 = melbourne_fl[0]['AOD']
+        pwat_cm = melbourne_fl[0]['Pwat']
+        press_mbar = melbourne_fl[0]['Pressure']
+        dry_temp = melbourne_fl[0]['DryBulb']
+        timestamps = melbourne_fl[0].index
+        location = (melbourne_fl[1]['latitude'],
+                    melbourne_fl[1]['longitude'],
+                    melbourne_fl[1]['TZ'])
+        _, airmass = zip(*[solposAM(
+            location, d.timetuple()[:6], (press_mbar.loc[d], dry_temp.loc[d])
+        ) for d in timestamps])
+        _, amp = zip(*airmass)
+        amp = np.array(amp)
+        filter = amp < 0
+        amp[filter] = np.nan
+        lt_molineaux = kasten_96lt(aod=[(700.0, aod700)], am=amp, pwat=pwat_cm)
+        lt_bird_huldstrom = kasten_96lt(aod=[(700.0, aod700)], am=amp,
+                                        pwat=pwat_cm,
+                                        method='Bird-Huldstrom')
+        t = pd.DatetimeIndex(
+            [datetime.replace(d, year=2016) for d in timestamps])
+        lt_molineaux.index = t
+        lt_bird_huldstrom.index = t
+        pvlib.clearsky.lookup_linke_turbidity(t, *location[:2]).plot()
+        lt_molineaux.resample('D').mean().plot()
+        lt_bird_huldstrom.resample('D').mean().plot()
+        title = [
+            'Linke turbidity factor comparison at Melbourne, FL (722040TYA),',
+            'calculated using Kasten Pyrheliometric formula']
+        plt.title(' '.join(title))
+        plt.ylabel('Linke turbidity factor')
+        plt.legend(['Linke Turbidity', 'Molineaux', 'Bird-Huldstrom'])
+        return lt_molineaux, lt_bird_huldstrom
+
+    lt_molineaux, lt_bird_huldstrom = demo_kasten_96lt()

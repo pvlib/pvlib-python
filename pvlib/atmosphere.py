@@ -4,6 +4,7 @@ absolute airmass and to determine pressure from altitude or vice versa.
 """
 
 from __future__ import division
+from six.moves import xrange
 
 import numpy as np
 import pandas as pd
@@ -467,21 +468,9 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         coeff[4]*np.sqrt(pw) + coeff[5]*ama/np.sqrt(pw))
 
     return modifier
-"""Linke turbidity factor calculated from AOD, Pwat and AM"""
 
-from datetime import datetime
-import pandas as pd
-import numpy as np
-import pvlib
-from solar_utils import *
-from matplotlib import pyplot as plt
-import seaborn as sns
-import os
 
-plt.ion()
-sns.set_context(rc={'figure.figsize': (12, 8)})
-
-def kasten_96lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
+def kasten_80lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     """
     Calculate Linke turbidity factor using Kasten pyrheliometric formula (1980).
 
@@ -563,7 +552,7 @@ def kasten_96lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
 
 def get_aod_at_lambda(aod, alpha, lambda0=700.0):
     """
-    Get AOD at specified wavelenth.
+    Get AOD at specified wavelength using Angstrom turbidity model.
 
     :param aod: sequence of (wavelength, aod) in ascending order by wavelength
     :param alpha: sequence of Angstrom alpha corresponding to wavelength in aod
@@ -576,45 +565,3 @@ def get_aod_at_lambda(aod, alpha, lambda0=700.0):
     if idx == 0:
         idx = 1
     return aod[idx - 1] * ((lambda0 / lambda1[idx - 1]) ** (-alpha[idx - 1]))
-
-
-def demo_kasten_96lt():
-    atmos_path = os.path.dirname(os.path.abspath(__file__))
-    pvlib_path = os.path.dirname(atmos_path)
-    melbourne_fl = pvlib.tmy.readtmy3(os.path.join(
-        pvlib_path, 'data', '722040TYA.CSV')
-    )
-    aod700 = melbourne_fl[0]['AOD']
-    pwat_cm = melbourne_fl[0]['Pwat']
-    press_mbar = melbourne_fl[0]['Pressure']
-    dry_temp = melbourne_fl[0]['DryBulb']
-    timestamps = melbourne_fl[0].index
-    location = (melbourne_fl[1]['latitude'],
-                melbourne_fl[1]['longitude'],
-                melbourne_fl[1]['TZ'])
-    _, airmass = zip(*[solposAM(
-        location, d.timetuple()[:6], (press_mbar.loc[d], dry_temp.loc[d])
-    ) for d in timestamps])
-    _, amp = zip(*airmass)
-    amp = np.array(amp)
-    filter = amp < 0
-    amp[filter] = np.nan
-    lt_molineaux = kasten_96lt(aod=[(700.0, aod700)], am=amp, pwat=pwat_cm)
-    lt_bird_huldstrom = kasten_96lt(aod=[(700.0, aod700)], am=amp, pwat=pwat_cm,
-                                    method='Bird-Huldstrom')
-    t = pd.DatetimeIndex([datetime.replace(d, year=2016) for d in timestamps])
-    lt_molineaux.index = t
-    lt_bird_huldstrom.index = t
-    pvlib.clearsky.lookup_linke_turbidity(t, *location[:2]).plot()
-    lt_molineaux.resample('D').mean().plot()
-    lt_bird_huldstrom.resample('D').mean().plot()
-    title = ['Linke turbidity factor comparison at Melbourne, FL (722040TYA),',
-             'calculated using Kasten Pyrheliometric formula']
-    plt.title(' '.join(title))
-    plt.ylabel('Linke turbidity factor')
-    plt.legend(['Linke Turbidity', 'Molineaux', 'Bird-Huldstrom'])
-    return lt_molineaux, lt_bird_huldstrom
-
-
-if __name__ == '__main__':
-    lt_molineaux, lt_bird_huldstrom = demo_kasten_96lt()

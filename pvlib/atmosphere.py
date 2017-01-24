@@ -4,7 +4,6 @@ absolute airmass and to determine pressure from altitude or vice versa.
 """
 
 from __future__ import division
-from six.moves import xrange
 
 import numpy as np
 import pandas as pd
@@ -470,16 +469,9 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     return modifier
 
 
-def kasten_80lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
+def kasten80_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     """
     Calculate Linke turbidity factor using Kasten pyrheliometric formula (1980).
-
-    :param aod: aerosol optical depth table or value at 500
-    :param am: airmass, pressure corrected in atmospheres
-    :param pwat: precipitable water or total column water vapor in centimeters
-    :param alpha0: Angstrom turbidity alpha exponent, default is 1.14
-    :param method: Molineaux (default) or Bird-Huldstrom
-    :return: Linke turbidity
 
     Aerosol optical depth can be given as a list of tuples with wavelength in
     nanometers as the first item in each tuple and values as AOD as the second
@@ -489,15 +481,38 @@ def kasten_80lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     alpha is calculated from the given wavelength and aod.
 
     Method can be either ``'Molineaux'`` or ``'Bird-Huldstrom'``. Airmass less
-    than 1 or greater than 6 will return ``NaN``. Precipitable water less than zero
-    or greater than 5[cm] will also return ``NaN``.
+    than 1 or greater than 6 will return ``NaN``. Precipitable water less than
+    zero or greater than 5[cm] will also return ``NaN``.
+
+    Parameters
+    ----------
+    aod : numeric
+        aerosol optical depth table or value at 500
+    am : numeric
+        airmass, pressure corrected in atmospheres
+    pwat : numeric
+        precipitable water or total column water vapor in centimeters
+    alpha0 : numeric
+        Angstrom turbidity alpha exponent, default is 1.14
+    method : str
+        Molineaux (default) or Bird-Huldstrom
+
+    Returns
+    -------
+        Linke turbidity
+
+    References
+    ----------
+    [1] Linke F., "Transmissions-Koeffizient und Trubungsfaktor", Beitraege
+    zur Physik der Atmosphaere, Vol 10, pp. 91-103 (1922)
     """
     # calculate Angstrom turbidity alpha exponent if not known, from AOD at two
     # wavelengths, lambda1 and lambda2
     alpha = []
     try:
         # xrange(0) means iterate zero times, xrange(negative) == xrange(0)
-        for idx in xrange(len(aod) - 1):
+        # use `range` for Python 3 compatibility, small loop no Python 2 impact
+        for idx in range(len(aod) - 1):
             lambda1, aod1 = aod[idx]
             lambda2, aod2 = aod[idx + 1]
             alpha.append(-np.log(aod1 / aod2) / np.log(lambda1 / lambda2))

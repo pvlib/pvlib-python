@@ -469,7 +469,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     return modifier
 
 
-def kasten80_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
+def kasten96_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     """
     Calculate Linke turbidity factor using Kasten pyrheliometric formula (1980).
 
@@ -483,6 +483,8 @@ def kasten80_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     Method can be either ``'Molineaux'`` or ``'Bird-Huldstrom'``. Airmass less
     than 1 or greater than 6 will return ``NaN``. Precipitable water less than
     zero or greater than 5[cm] will also return ``NaN``.
+
+    Based on originam implementation by Armel Oumbe.
 
     Parameters
     ----------
@@ -503,8 +505,40 @@ def kasten80_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
 
     References
     ----------
-    [1] Linke F., "Transmissions-Koeffizient und Trubungsfaktor", Beitraege
-    zur Physik der Atmosphaere, Vol 10, pp. 91-103 (1922)
+    [1] F. Linke, "Transmissions-Koeffizient und Trubungsfaktor", Beitrage
+    zur Physik der Atmosphare, Vol 10, pp. 91-103 (1922)
+
+    [2] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
+    and monochromatic aerosol optical depths at a single key wavelength,"
+    Appl.ied Optics 37, 7008-7018 (1998)
+    `DOI: 10.1364/AO.37.007008 <https://doi.org/10.1364/AO.37.007008>`_
+
+    [3] F. Kasten, "A simple parameterization of the pyrheliometric formula for
+    determining the Linke turbidity factor", Meteorologische Rundschau 33,
+    pp. 124-127(1980)
+
+    [4] P. Ineichen, "Conversion function between the Linke turbidity and the
+    atmospheric water vapor and aerosol content", Solar Energy 82,
+    pp. 1095-1097 (2008)
+    `DOI: 10.1016/j.solener.2008.04.010 <http://dx.doi.org/10.1016/j.solener.2008.04.010>`_
+
+    [5] Bird and Hulstrom, "Direct Insolation Models" (1980)
+    `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
+
+    [6] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement of
+    Direct Irradiance Models" Journal of Solar Energy Engineering 103(3),
+    pp. 182-192 (1981)
+    `DOI: 10.1115/1.3266239 <https://doi.org/10.1115/1.3266239>`_
+
+    [7] Kasten, "The Linke turbidity factor based on improved valuse of the
+    integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
+    pp. 239-244 (1996)
+    `DOI: 10.1016/0038-092X(95)00114-7 <http://dx.doi.org/10.1016/0038-092X(95)00114-7>`_
+
+    [8] P. Ineichen and R. Perez, "A new aiermass independent formulation for
+    the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3, pp. 151-157
+    (2002)
+    `DOI: 10.1016/S0038-092X(02)00045-2 <http://dx.doi.org/10.1016/S0038-092X(02)00045-2>`_
     """
     # calculate Angstrom turbidity alpha exponent if not known, from AOD at two
     # wavelengths, lambda1 and lambda2
@@ -533,29 +567,33 @@ def kasten80_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     # make sure aod has lambda
     try:
         # case 3: len(aod) == 1 and aod == [aod]
-        lambda1, aod1 = zip(*aod)
+        _, _ = zip(*aod)
     except TypeError:
         aod = [(500.0, aod)]
-    # From numerically integrated spectral simulations done with Modtran (Berk,
-    # 1996), Molineaux (1998) obtained for the broadband optical depth of a
-    # clean and dry atmopshere (fictious atmosphere that comprises only the
+    # "From numerically integrated spectral simulations done with Modtran (Berk,
+    # 1989), Molineaux (1998) obtained for the broadband optical depth of a
+    # clean and dry atmospshere (fictitious atmosphere that comprises only the
     # effects of Rayleigh scattering and absorption by the atmosphere gases
-    # other than the water vapor) the following expression where am is airmass.
+    # other than the water vapor) the following expression" - P. Ineichen (2008)
     delta_cda = -0.101 + 0.235 * am ** (-0.16)
-    # The broadband water vapor optical depth where pwat is the precipitable
-    # water vapor content of the atmosphere in [cm]. The precision of these fits
-    # is better than 1% when compared with Modtran simulations in the range
-    # 1 < am < 6 and 0 < pwat < 5 cm.
+    # "and the broadband water vapor optical depth where pwat is the integrated
+    # precipitable water vapor content of the atmosphere expressed in cm and am
+    # the optical air mass. The precision of these fits is better than 1% when
+    # compared with Modtran simulations in the range 1 < am < 5 and
+    # 0 < pwat < 5 cm at sea level" - P. Ineichen (2008)
     delta_w = 0.112 * am ** (-0.55) * pwat ** (0.34)
     if method == 'Molineaux':
         # get aod at 700[nm] from alpha for Molineaux (1998)
-        delta_a = get_aod_at_lambda(aod, alpha)
+        delta_a = angstrom_aod_at_lambda(aod, alpha)
     else:
         # using (Bird-Hulstrom 1980)
-        aod380 = get_aod_at_lambda(aod, alpha, 380.0)
-        aod500 = get_aod_at_lambda(aod, alpha, 500.0)
+        aod380 = angstrom_aod_at_lambda(aod, alpha, 380.0)
+        aod500 = angstrom_aod_at_lambda(aod, alpha, 500.0)
         delta_a = 0.27583 * aod380 + 0.35 * aod500
-    # the Linke turbidity at am using the Kasten pyrheliometric formula (1980)
+    # "Then using the Kasten pyrheliometric formula (1980, 1996), the Linke
+    # turbidity at am = 2 can be written. The extension of the Linke turbidity
+    # coefficient to other values of air mass was published by Ineichen and
+    # Perez (2002)" - P. Ineichen (2008)
     lt = -(9.4 + 0.9 * am) * np.log(
         np.exp(-am * (delta_cda + delta_w + delta_a))
     ) / am
@@ -565,13 +603,29 @@ def kasten80_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     return lt
 
 
-def get_aod_at_lambda(aod, alpha, lambda0=700.0):
+def angstrom_aod_at_lambda(aod, alpha, lambda0=700.0):
     """
     Get AOD at specified wavelength using Angstrom turbidity model.
 
-    :param aod: sequence of (wavelength, aod) in ascending order by wavelength
-    :param alpha: sequence of Angstrom alpha corresponding to wavelength in aod
-    :param lambda0: desired wavelength in nanometers, defaults to 700[nm]
+    Parameters
+    ----------
+    aod : sequence
+        tuples of ``(wavelength[nm], aod)`` in ascending order by wavelength
+    alpha : sequence
+        Angstrom :math:`\\alpha` exponent corresponding to wavelength in ``aod``
+    lambda0 : numeric
+        desired wavelength in nanometers, defaults to 700[nm]
+
+    References
+    ----------
+    [1] Anders Angstrom, "On the Atmospheric Transmission of Sun Radiation and
+    On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (192) JSTOR
+    `DOI: 10.2307/519399 <http://dx.doi.org/10.2307/519399>`_
+
+    [2] Anders Angstrom, "Techniques of Determining the Turbidity of the
+    Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis or Wiley
+    `DOI: 10.3402/tellusa.v13i2.9493 <http://dx.doi.org/10.3402/tellusa.v13i2.9493>`_
+    `DOI: 10.1111/j.2153-3490.1961.tb00078.x <http://dx.doi.org/10.1111/j.2153-3490.1961.tb00078.x>`_
     """
     lambda1, aod = zip(*aod)
     # lambda0 is between (idx - 1) and idx

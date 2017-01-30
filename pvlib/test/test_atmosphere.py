@@ -125,29 +125,28 @@ def test_kasten96_lt():
     )
     aod700 = melbourne_fl[0]['AOD']
     pwat_cm = melbourne_fl[0]['Pwat']
-    press_mbar = melbourne_fl[0]['Pressure']
+    pressure = melbourne_fl[0]['Pressure'] * 100.0  # Pa per millibars
     dry_temp = melbourne_fl[0]['DryBulb']
     timestamps = melbourne_fl[0].index
     latitude = melbourne_fl[1]['latitude']
     longitude = melbourne_fl[1]['longitude']
     altitude = melbourne_fl[1]['altitude']
     sp = solarposition.get_solarposition(
-        timestamps, latitude, longitude, altitude, pressure=(press_mbar*100),
+        timestamps, latitude, longitude, altitude, pressure=pressure,
         temperature=dry_temp
     )
-    am = atmosphere.relativeairmass(sp.zenith)
-    amp = atmosphere.absoluteairmass(am, pressure=(press_mbar*100))
-    filter = amp < 0
-    amp[filter] = np.nan
+    am = atmosphere.relativeairmass(sp.apparent_zenith)
+    amp = atmosphere.absoluteairmass(am, pressure=pressure)
+    # Kasten only valid for am < 5.0 and pwat < 5.0[cm]
     lt_molineaux = atmosphere.kasten96_lt(
         aod=[(700.0, aod700)], am=amp, pwat=pwat_cm
-    )
+    ).where(am > 1.).where(am < 5.).where(pwat_cm > 0.).where(pwat_cm < 5.)
     lt_bird_huldstrom = atmosphere.kasten96_lt(
         aod=[(700.0, aod700)], am=amp, pwat=pwat_cm, method='Bird-Huldstrom'
-    )
+    ).where(am > 1.).where(am < 5.).where(pwat_cm > 0.).where(pwat_cm < 5.)
     lt = clearsky.lookup_linke_turbidity(timestamps, latitude, longitude)
-    assert np.allclose(lt.where(~np.isnan(lt_molineaux), np.nan),
+    assert np.allclose(lt.where(~np.isnan(lt_molineaux)),
                        lt_molineaux, rtol=0.3, equal_nan=True)
-    assert np.allclose(lt.where(~np.isnan(lt_bird_huldstrom), np.nan),
-                       lt_bird_huldstrom, rtol=0.28, equal_nan=True)
+    assert np.allclose(lt.where(~np.isnan(lt_bird_huldstrom)),
+                       lt_bird_huldstrom, rtol=0.3, equal_nan=True)
     return lt, lt_molineaux, lt_bird_huldstrom

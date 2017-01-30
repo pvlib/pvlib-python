@@ -544,15 +544,16 @@ def kasten96_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     # wavelengths, lambda1 and lambda2
     alpha = []
     try:
-        # xrange(0) means iterate zero times, xrange(negative) == xrange(0)
-        # use `range` for Python 3 compatibility, small loop no Python 2 impact
-        for idx in range(len(aod) - 1):
-            lambda1, aod1 = aod[idx]
-            lambda2, aod2 = aod[idx + 1]
+        for lambda_aod in aod:
+            if not alpha:
+                lambda1, aod1 = lambda_aod
+                continue
+            lambda2, aod2 = lambda1, aod1
+            lambda1, aod1 = lambda_aod
             alpha.append(-np.log(aod1 / aod2) / np.log(lambda1 / lambda2))
     except TypeError:
-        # case 1: aod is a float, so len(aod) raises TypeError
-        # case 2: aod is an array of float, so (lambda1, aod1) = aod[idx] raises
+        # case 1: aod is a float, so iter(aod) raises TypeError
+        # case 2: aod is an array of float, so (lambda1, aod1) = aod raises
         # TypeError
         aod = [(500.0, aod)]
     else:
@@ -598,8 +599,6 @@ def kasten96_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
         np.exp(-am * (delta_cda + delta_w + delta_a))
     ) / am
     # filter out of extrapolated values
-    filter = (am < 1.0) | (am > 6.0) | (pwat < 0) | (pwat > 5.0)
-    lt[filter] = np.nan  # set out of range to NaN
     return lt
 
 

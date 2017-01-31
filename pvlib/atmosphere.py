@@ -605,3 +605,30 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
     `DOI: 10.1111/j.2153-3490.1961.tb00078.x <http://dx.doi.org/10.1111/j.2153-3490.1961.tb00078.x>`_
     """
     return aod0 * ((lambda1 / lambda0) ** (-alpha))
+
+
+def angstrom_alpha(aod1, lambda1, aod2, lambda2):
+    """
+    Calculate Angstrom alpha exponent.
+
+    Parameters
+    ----------
+    aod1 : numeric
+        first aerosol optical depth
+    lambda1 : numeric
+        wavelength in nanometers corresponding to ``aod1``
+    aod2 : numeric
+        second aerosol optical depth
+    lambda2 : numeric
+        wavelength in nanometers corresponding to ``aod2``
+
+    Returns
+    -------
+    alpha : numeric
+        Angstrom :math:`\\alpha` exponent for AOD in ``(lambda1, lambda2)``
+
+    See also
+    --------
+    angstrom_aod_at_lambda
+    """
+    return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)

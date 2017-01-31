@@ -137,16 +137,21 @@ def test_kasten96_lt():
     )
     am = atmosphere.relativeairmass(sp.apparent_zenith)
     amp = atmosphere.absoluteairmass(am, pressure=pressure)
+    # assume alpha = 1.14, Bird and Riordan (1984)
+    aod380 = atmosphere.angstrom_aod_at_lambda(aod700, 700.0, 1.14, 380.0)
+    aod500 = atmosphere.angstrom_aod_at_lambda(aod700, 700.0, 1.14, 500.0)
     # Kasten only valid for am < 5.0 and pwat < 5.0[cm]
     lt_molineaux = atmosphere.kasten96_lt(
-        aod=[(700.0, aod700)], am=amp, pwat=pwat_cm
+        aod=aod700, am=amp, pwat=pwat_cm
     ).where(am > 1.).where(am < 5.).where(pwat_cm > 0.).where(pwat_cm < 5.)
     lt_bird_huldstrom = atmosphere.kasten96_lt(
-        aod=[(700.0, aod700)], am=amp, pwat=pwat_cm, method='Bird-Huldstrom'
+        aod=[aod380, aod500], am=amp, pwat=pwat_cm, method='Bird-Hulstrom'
     ).where(am > 1.).where(am < 5.).where(pwat_cm > 0.).where(pwat_cm < 5.)
     lt = clearsky.lookup_linke_turbidity(timestamps, latitude, longitude)
-    assert np.allclose(lt.where(~np.isnan(lt_molineaux)),
-                       lt_molineaux, rtol=0.3, equal_nan=True)
+    assert np.allclose(lt.where(~np.isnan(lt_molineaux)), lt_molineaux,
+                       rtol=0.3, equal_nan=True)
     assert np.allclose(lt.where(~np.isnan(lt_bird_huldstrom)),
                        lt_bird_huldstrom, rtol=0.3, equal_nan=True)
+    assert np.allclose(lt_molineaux, lt_bird_huldstrom, rtol=0.05,
+                       equal_nan=True)
     return lt, lt_molineaux, lt_bird_huldstrom

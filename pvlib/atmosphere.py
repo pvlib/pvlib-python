@@ -469,22 +469,21 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     return modifier
 
 
-def kasten96_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
+def kasten96_lt(aod, am, pwat, method='Molineaux'):
     """
-    Calculate Linke turbidity factor using Kasten pyrheliometric formula (1980).
+    Calculate Linke turbidity factor using Kasten pyrheliometric formula (1996).
 
-    Aerosol optical depth can be given as a list of tuples with wavelength in
-    nanometers as the first item in each tuple and values as AOD as the second
-    item. The list must be in ascending order by wavelength. If ``aod`` is given
-    as a sequence of floats or as a float then a wavelength of 500[nm] will be
-    used and alpha will default to 1.14, unless alpha is also given. Otherwise
-    alpha is calculated from the given wavelength and aod.
+    Method can be either ``'Molineaux'`` or ``'Bird-Huldstrom'`` corresponding
+    to different approximations for broadband AOD. If Molineaux method is used,
+    then AOD at 700[nm] is expected, and if Bird-Hulstrom method is used, then
+    AOD should be a sequence ``(aod380, aod500)`` where ``aod380`` is the AOD at
+    380[nm] and ``aod500`` is AOD at 500[nm].
 
-    Method can be either ``'Molineaux'`` or ``'Bird-Huldstrom'``. Airmass less
-    than 1 or greater than 6 will return ``NaN``. Precipitable water less than
-    zero or greater than 5[cm] will also return ``NaN``.
+    Based on original implementation by Armel Oumbe.
 
-    Based on originam implementation by Armel Oumbe.
+    .. warning::
+        These calculations are only valid for air mass less than 5[atm] and
+        precipitable water less than 5[cm].
 
     Parameters
     ----------
@@ -494,14 +493,16 @@ def kasten96_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
         airmass, pressure corrected in atmospheres
     pwat : numeric
         precipitable water or total column water vapor in centimeters
-    alpha0 : numeric
-        Angstrom turbidity alpha exponent, default is 1.14
     method : str
         Molineaux (default) or Bird-Huldstrom
 
     Returns
     -------
         Linke turbidity
+
+    See also
+    --------
+    angstrom_aod_at_lambda
 
     References
     ----------
@@ -540,37 +541,6 @@ def kasten96_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     (2002)
     `DOI: 10.1016/S0038-092X(02)00045-2 <http://dx.doi.org/10.1016/S0038-092X(02)00045-2>`_
     """
-    # calculate Angstrom turbidity alpha exponent if not known, from AOD at two
-    # wavelengths, lambda1 and lambda2
-    alpha = []
-    try:
-        for lambda_aod in aod:
-            if not alpha:
-                lambda1, aod1 = lambda_aod
-                continue
-            lambda2, aod2 = lambda1, aod1
-            lambda1, aod1 = lambda_aod
-            alpha.append(-np.log(aod1 / aod2) / np.log(lambda1 / lambda2))
-    except TypeError:
-        # case 1: aod is a float, so iter(aod) raises TypeError
-        # case 2: aod is an array of float, so (lambda1, aod1) = aod raises
-        # TypeError
-        aod = [(500.0, aod)]
-    else:
-        # case 3: len(aod) == 1, then alpha == []
-        if len(alpha) > 1:
-            alpha0 = alpha
-    # make sure alpha can be indexed
-    try:
-        alpha = list(alpha0)
-    except TypeError:
-        alpha = [alpha0]
-    # make sure aod has lambda
-    try:
-        # case 3: len(aod) == 1 and aod == [aod]
-        _, _ = zip(*aod)
-    except TypeError:
-        aod = [(500.0, aod)]
     # "From numerically integrated spectral simulations done with Modtran (Berk,
     # 1989), Molineaux (1998) obtained for the broadband optical depth of a
     # clean and dry atmospshere (fictitious atmosphere that comprises only the
@@ -584,13 +554,14 @@ def kasten96_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     # 0 < pwat < 5 cm at sea level" - P. Ineichen (2008)
     delta_w = 0.112 * am ** (-0.55) * pwat ** (0.34)
     if method == 'Molineaux':
-        # get aod at 700[nm] from alpha for Molineaux (1998)
-        delta_a = angstrom_aod_at_lambda(aod, alpha)
-    else:
+        # approximate broadband from AOD @ 700[nm] Molineaux (1998)
+        delta_a = aod
+    elif method == 'Bird-Hulstrom':
         # using (Bird-Hulstrom 1980)
-        aod380 = angstrom_aod_at_lambda(aod, alpha, 380.0)
-        aod500 = angstrom_aod_at_lambda(aod, alpha, 500.0)
+        aod380, aod500 = aod
         delta_a = 0.27583 * aod380 + 0.35 * aod500
+    else:
+        raise ValueError('Invalid "method" for broadband AOD approximation.')
     # "Then using the Kasten pyrheliometric formula (1980, 1996), the Linke
     # turbidity at am = 2 can be written. The extension of the Linke turbidity
     # coefficient to other values of air mass was published by Ineichen and
@@ -602,18 +573,25 @@ def kasten96_lt(aod, am, pwat, alpha0=1.14, method='Molineaux'):
     return lt
 
 
-def angstrom_aod_at_lambda(aod, alpha, lambda0=700.0):
+def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
     """
     Get AOD at specified wavelength using Angstrom turbidity model.
 
     Parameters
     ----------
-    aod : sequence
-        tuples of ``(wavelength[nm], aod)`` in ascending order by wavelength
-    alpha : sequence
-        Angstrom :math:`\\alpha` exponent corresponding to wavelength in ``aod``
+    aod0 : numeric
+        aerosol optical depth (AOD) measured at known wavelength
     lambda0 : numeric
+        wavelength in nanometers corresponding to ``aod0``
+    alpha : numeric
+        Angstrom :math:`\\alpha` exponent corresponding to ``aod0``
+    lambda1 : numeric
         desired wavelength in nanometers, defaults to 700[nm]
+
+    Returns
+    -------
+    aod1 : numeric
+        AOD at desired wavelength, ``lambda1``
 
     References
     ----------
@@ -626,10 +604,4 @@ def angstrom_aod_at_lambda(aod, alpha, lambda0=700.0):
     `DOI: 10.3402/tellusa.v13i2.9493 <http://dx.doi.org/10.3402/tellusa.v13i2.9493>`_
     `DOI: 10.1111/j.2153-3490.1961.tb00078.x <http://dx.doi.org/10.1111/j.2153-3490.1961.tb00078.x>`_
     """
-    lambda1, aod = zip(*aod)
-    # lambda0 is between (idx - 1) and idx
-    idx = np.searchsorted(lambda1, lambda0)
-    # unless idx is zero
-    if idx == 0:
-        idx = 1
-    return aod[idx - 1] * ((lambda0 / lambda1[idx - 1]) ** (-alpha[idx - 1]))
+    return aod0 * ((lambda1 / lambda0) ** (-alpha))

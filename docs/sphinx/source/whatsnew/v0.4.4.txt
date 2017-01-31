@@ -6,6 +6,9 @@ v0.4.4 (January xx, 2017)
 Enhancements
 ~~~~~~~~~~~~
 
+* Added Kasten pyrheliometric formula to calculate Linke turbidity factors with
+  improvements by Ineichen and Perez to extend range of air mass (:issue:`278`)
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -19,3 +22,4 @@ Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* Mark Mikofski

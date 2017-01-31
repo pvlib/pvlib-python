@@ -474,7 +474,7 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     """
     Calculate Linke turbidity factor using Kasten pyrheliometric formula (1996).
 
-    Method can be either ``'Molineaux'`` or ``'Bird-Huldstrom'`` corresponding
+    Method can be either ``'Molineaux'`` or ``'Bird-Hulstrom'`` corresponding
     to different approximations for broadband aerosol optical depth (AOD). If
     Molineaux method is used, then the ``aod700`` argument is expected, and if
     Bird-Hulstrom method is used, then both ``aod380`` and ``aod500`` arguments
@@ -499,7 +499,7 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     aod500 : numeric
         AOD measured at 500[nm]
     method : str
-        Molineaux (default) or Bird-Huldstrom
+        Molineaux (default) or Bird-Hulstrom
 
     Returns
     -------
@@ -515,13 +515,13 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     zur Physik der Atmosphare, Vol 10, pp. 91-103 (1922)
 
     [2] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
-    and monochromatic aerosol optical depths at a single key wavelength,"
-    Appl.ied Optics 37, 7008-7018 (1998)
+    and monochromatic aerosol optical depths at a single key wavelength",
+    Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
     `DOI: 10.1364/AO.37.007008 <https://doi.org/10.1364/AO.37.007008>`_
 
     [3] F. Kasten, "A simple parameterization of the pyrheliometric formula for
     determining the Linke turbidity factor", Meteorologische Rundschau 33,
-    pp. 124-127(1980)
+    pp. 124-127 (1980)
 
     [4] P. Ineichen, "Conversion function between the Linke turbidity and the
     atmospheric water vapor and aerosol content", Solar Energy 82,
@@ -532,16 +532,16 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
 
     [6] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement of
-    Direct Irradiance Models" Journal of Solar Energy Engineering 103(3),
+    Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
     pp. 182-192 (1981)
     `DOI: 10.1115/1.3266239 <https://doi.org/10.1115/1.3266239>`_
 
-    [7] Kasten, "The Linke turbidity factor based on improved valuse of the
+    [7] Kasten, "The Linke turbidity factor based on improved values of the
     integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
     pp. 239-244 (1996)
     `DOI: 10.1016/0038-092X(95)00114-7 <http://dx.doi.org/10.1016/0038-092X(95)00114-7>`_
 
-    [8] P. Ineichen and R. Perez, "A new aiermass independent formulation for
+    [8] P. Ineichen and R. Perez, "A new airmass independent formulation for
     the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3, pp. 151-157
     (2002)
     `DOI: 10.1016/S0038-092X(02)00045-2 <http://dx.doi.org/10.1016/S0038-092X(02)00045-2>`_
@@ -597,10 +597,14 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
     aod1 : numeric
         AOD at desired wavelength, ``lambda1``
 
+    See also
+    --------
+    angstrom_alpha
+
     References
     ----------
     [1] Anders Angstrom, "On the Atmospheric Transmission of Sun Radiation and
-    On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (192) JSTOR
+    On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (1929) JSTOR
     `DOI: 10.2307/519399 <http://dx.doi.org/10.2307/519399>`_
 
     [2] Anders Angstrom, "Techniques of Determining the Turbidity of the

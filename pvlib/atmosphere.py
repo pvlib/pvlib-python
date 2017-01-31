@@ -469,15 +469,16 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     return modifier
 
 
-def kasten96_lt(aod, am, pwat, method='Molineaux'):
+def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
+                method='Molineaux'):
     """
     Calculate Linke turbidity factor using Kasten pyrheliometric formula (1996).
 
     Method can be either ``'Molineaux'`` or ``'Bird-Huldstrom'`` corresponding
-    to different approximations for broadband AOD. If Molineaux method is used,
-    then AOD at 700[nm] is expected, and if Bird-Hulstrom method is used, then
-    AOD should be a sequence ``(aod380, aod500)`` where ``aod380`` is the AOD at
-    380[nm] and ``aod500`` is AOD at 500[nm].
+    to different approximations for broadband aerosol optical depth (AOD). If
+    Molineaux method is used, then the ``aod700`` argument is expected, and if
+    Bird-Hulstrom method is used, then both ``aod380`` and ``aod500`` arguments
+    are expected and ``aod700`` is ignored.
 
     Based on original implementation by Armel Oumbe.
 
@@ -487,12 +488,16 @@ def kasten96_lt(aod, am, pwat, method='Molineaux'):
 
     Parameters
     ----------
-    aod : numeric
-        aerosol optical depth table or value at 500
     am : numeric
         airmass, pressure corrected in atmospheres
     pwat : numeric
         precipitable water or total column water vapor in centimeters
+    aod700 : numeric
+        broadband AOD or AOD measured at 700[nm]
+    aod380 : numeric
+        AOD measured at 380[nm]
+    aod500 : numeric
+        AOD measured at 500[nm]
     method : str
         Molineaux (default) or Bird-Huldstrom
 
@@ -553,12 +558,11 @@ def kasten96_lt(aod, am, pwat, method='Molineaux'):
     # compared with Modtran simulations in the range 1 < am < 5 and
     # 0 < pwat < 5 cm at sea level" - P. Ineichen (2008)
     delta_w = 0.112 * am ** (-0.55) * pwat ** (0.34)
-    if method == 'Molineaux':
+    if method.lower() == 'molineaux':
         # approximate broadband from AOD @ 700[nm] Molineaux (1998)
-        delta_a = aod
-    elif method == 'Bird-Hulstrom':
+        delta_a = aod700
+    elif method.lower() == 'bird-hulstrom':
         # using (Bird-Hulstrom 1980)
-        aod380, aod500 = aod
         delta_a = 0.27583 * aod380 + 0.35 * aod500
     else:
         raise ValueError('Invalid "method" for broadband AOD approximation.')

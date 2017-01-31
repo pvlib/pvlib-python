@@ -86,6 +86,9 @@ Airmass and atmospheric models
    atmosphere.alt2pres
    atmosphere.gueymard94_pw
    atmosphere.first_solar_spectral_correction
+   atmosphere.kasten96_lt
+   atmosphere.angstrom_aod_at_lambda
+   atmosphere.angstrom_alpha
 
 
 Irradiance

@@ -42,6 +42,7 @@ dt_datetime = datetime.datetime.combine(dt_date, datetime.time(0))
 dt_np64 = np.datetime64(dt_datetime)
 value = 1383.636203
 
+
 @pytest.mark.parametrize('input, expected', [
     (doy, value),
     (np.float64(doy), value),
@@ -194,7 +195,6 @@ def test_perez_arrays():
     assert_allclose(out, expected, atol=1e-2)
 
 
-
 def test_liujordan():
     expected = pd.DataFrame(np.
         array([[863.859736967, 653.123094076, 220.65905025]]),
@@ -286,6 +286,7 @@ def test_dirint():
     dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'],
                                     ephem_data.index, pressure=pressure)
 
+
 def test_dirint_value():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
@@ -318,6 +319,7 @@ def test_dirint_tdew():
     assert_almost_equal(dirint_data.values,
                         np.array([892.9,  636.5]), 1)
 
+
 def test_dirint_no_delta_kt():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
@@ -327,6 +329,7 @@ def test_dirint_no_delta_kt():
                                     use_delta_kt_prime=False)
     assert_almost_equal(dirint_data.values,
                         np.array([861.9,  670.4]), 1)
+
 
 def test_dirint_coeffs():
     coeffs = irradiance._get_dirint_coeffs()
@@ -365,3 +368,38 @@ def test_erbs_all_scalar():
 
     for k, v in out.items():
         assert_allclose(v, expected[k], 5)
+
+@needs_numpy_1_10
+def test_dirindex():
+    clearsky_data = tus.get_clearsky(times, model='ineichen',
+                                     linke_turbidity=3)
+    ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
+    ghi_clearsky = pd.Series(
+        np.array([0., 79.73860422, 1042.48031487, 257.20751138]),
+        index=times
+    )
+    dni_clearsky = pd.Series(
+        np.array([0., 316.1949056, 939.95469881, 646.22886049]),
+        index=times
+    )
+    zenith = pd.Series(
+        np.array([124.0390863, 82.85457044, 10.56413562, 72.41687122]),
+        index=times
+    )
+    pressure = 93193.
+    tdew = 10.
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky,
+                              zenith, times, pressure=pressure,
+                              temp_dew=tdew)
+    dirint_close_values = irradiance.dirint(ghi, zenith, times,
+                                            pressure=pressure,
+                                            use_delta_kt_prime=True,
+                                            temp_dew=tdew).values
+    expected_out = np.array([np.nan, 0., 748.31562753, 630.72592644])
+
+    tolerance = 1e-8
+    assert np.allclose(out, expected_out, rtol=tolerance, atol=0,
+                       equal_nan=True)
+    tol_dirint = 0.2
+    assert np.allclose(out.values, dirint_close_values, rtol=tol_dirint, atol=0,
+                       equal_nan=True)

@@ -71,6 +71,7 @@ Clear sky
    clearsky.lookup_linke_turbidity
    clearsky.simplified_solis
    clearsky.haurwitz
+   clearsky.detect_clearsky
 
 
 Airmass and atmospheric models
@@ -140,6 +141,7 @@ DNI estimation models
 
    irradiance.disc
    irradiance.dirint
+   irradiance.dirindex
    irradiance.erbs
    irradiance.liujordan
 

@@ -48,7 +48,7 @@ Enhancements
     * :ref:`contributing` (:issue:`46`)
     * :ref:`timetimezones` (:issue:`47`)
     * :ref:`variables_style_rules` (:issue:`102`)
-    * :ref:`classes` (:issue:`93`)
+    * Classes (:issue:`93`) (Moved to :ref:`api` in :issue:`258`)
 
 * Adds support for Appveyor, a Windows continuous integration service.
   (:issue:`111`)

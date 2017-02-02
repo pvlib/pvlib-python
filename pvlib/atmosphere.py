@@ -578,7 +578,7 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
 
 
 def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
-    """
+    r"""
     Get AOD at specified wavelength using Angstrom turbidity model.
 
     Parameters
@@ -588,7 +588,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
     lambda0 : numeric
         wavelength in nanometers corresponding to ``aod0``
     alpha : numeric
-        Angstrom :math:`\\alpha` exponent corresponding to ``aod0``
+        Angstrom :math:`\alpha` exponent corresponding to ``aod0``
     lambda1 : numeric
         desired wavelength in nanometers, defaults to 700[nm]
 
@@ -608,15 +608,15 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
     :doi:`10.2307/519399`
 
     [2] Anders Angstrom, "Techniques of Determining the Turbidity of the
-    Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis or Wiley
-    :doi:`10.3402/tellusa.v13i2.9493`
+    Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis
+    :doi:`10.3402/tellusa.v13i2.9493` and Co-Action Publishing
     :doi:`10.1111/j.2153-3490.1961.tb00078.x`
     """
     return aod0 * ((lambda1 / lambda0) ** (-alpha))
 
 
 def angstrom_alpha(aod1, lambda1, aod2, lambda2):
-    """
+    r"""
     Calculate Angstrom alpha exponent.
 
     Parameters
@@ -633,7 +633,7 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     Returns
     -------
     alpha : numeric
-        Angstrom :math:`\\alpha` exponent for AOD in ``(lambda1, lambda2)``
+        Angstrom :math:`\alpha` exponent for AOD in ``(lambda1, lambda2)``
 
     See also
     --------

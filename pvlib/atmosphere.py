@@ -292,7 +292,7 @@ def gueymard94_pw(temp_air, relative_humidity):
     ----------
     .. [1] W. M. Keogh and A. W. Blakers, Accurate Measurement, Using Natural
        Sunlight, of Silicon Solar Cells, Prog. in Photovoltaics: Res.
-       and Appl. 2004, vol 12, pp. 1-19 (DOI: 10.1002/pip.517)
+       and Appl. 2004, vol 12, pp. 1-19 (:doi:`10.1002/pip.517`)
 
     .. [2] C. Gueymard, Analysis of Monthly Average Atmospheric Precipitable
        Water and Turbidity in Canada and Northern United States,
@@ -517,7 +517,7 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     [2] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
     and monochromatic aerosol optical depths at a single key wavelength",
     Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
-    `DOI: 10.1364/AO.37.007008 <https://doi.org/10.1364/AO.37.007008>`_
+    :doi:`10.1364/AO.37.007008`
 
     [3] F. Kasten, "A simple parameterization of the pyrheliometric formula for
     determining the Linke turbidity factor", Meteorologische Rundschau 33,
@@ -526,7 +526,7 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     [4] P. Ineichen, "Conversion function between the Linke turbidity and the
     atmospheric water vapor and aerosol content", Solar Energy 82,
     pp. 1095-1097 (2008)
-    `DOI: 10.1016/j.solener.2008.04.010 <http://dx.doi.org/10.1016/j.solener.2008.04.010>`_
+    :doi:`10.1016/j.solener.2008.04.010`
 
     [5] Bird and Hulstrom, "Direct Insolation Models" (1980)
     `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
@@ -534,17 +534,17 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     [6] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement of
     Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
     pp. 182-192 (1981)
-    `DOI: 10.1115/1.3266239 <https://doi.org/10.1115/1.3266239>`_
+    :doi:`10.1115/1.3266239`
 
     [7] Kasten, "The Linke turbidity factor based on improved values of the
     integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
     pp. 239-244 (1996)
-    `DOI: 10.1016/0038-092X(95)00114-7 <http://dx.doi.org/10.1016/0038-092X(95)00114-7>`_
+    :doi:`10.1016/0038-092X(95)00114-7`
 
     [8] P. Ineichen and R. Perez, "A new airmass independent formulation for
     the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3, pp. 151-157
     (2002)
-    `DOI: 10.1016/S0038-092X(02)00045-2 <http://dx.doi.org/10.1016/S0038-092X(02)00045-2>`_
+    :doi:`10.1016/S0038-092X(02)00045-2`
     """
     # "From numerically integrated spectral simulations done with Modtran (Berk,
     # 1989), Molineaux (1998) obtained for the broadband optical depth of a
@@ -605,12 +605,12 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
     ----------
     [1] Anders Angstrom, "On the Atmospheric Transmission of Sun Radiation and
     On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (1929) JSTOR
-    `DOI: 10.2307/519399 <http://dx.doi.org/10.2307/519399>`_
+    :doi:`10.2307/519399`
 
     [2] Anders Angstrom, "Techniques of Determining the Turbidity of the
     Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis or Wiley
-    `DOI: 10.3402/tellusa.v13i2.9493 <http://dx.doi.org/10.3402/tellusa.v13i2.9493>`_
-    `DOI: 10.1111/j.2153-3490.1961.tb00078.x <http://dx.doi.org/10.1111/j.2153-3490.1961.tb00078.x>`_
+    :doi:`10.3402/tellusa.v13i2.9493`
+    :doi:`10.1111/j.2153-3490.1961.tb00078.x`
     """
     return aod0 * ((lambda1 / lambda0) ** (-alpha))
 

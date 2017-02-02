@@ -173,7 +173,11 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 
     pvl_logger.debug('using built-in spa code to calculate solar position')
 
-    time_utc = time
+    # if localized, convert to UTC. otherwise, assume UTC.
+    try:
+        time_utc = time.tz_convert('UTC')
+    except TypeError:
+        time_utc = time
 
     spa_out = []
 
@@ -184,7 +188,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
                                 hour=date.hour,
                                 minute=date.minute,
                                 second=date.second,
-                                timezone=0,  # must input localized or utc time
+                                timezone=0,  # date uses utc time
                                 latitude=latitude,
                                 longitude=longitude,
                                 elevation=altitude,
@@ -193,7 +197,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
                                 delta_t=delta_t
                                 ))
 
-    spa_df = pd.DataFrame(spa_out, index=time_utc)
+    spa_df = pd.DataFrame(spa_out, index=time)
 
     if raw_spa_output:
         return spa_df

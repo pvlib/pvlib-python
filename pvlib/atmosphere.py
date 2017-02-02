@@ -472,7 +472,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
                 method='Molineaux'):
     """
-    Calculate Linke turbidity factor using Kasten pyrheliometric formula (1996).
+    Calculate Linke turbidity factor using Kasten pyrheliometric formula.
 
     Method can be either ``'Molineaux'`` or ``'Bird-Hulstrom'`` corresponding
     to different approximations for broadband aerosol optical depth (AOD). If
@@ -546,11 +546,11 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     (2002)
     :doi:`10.1016/S0038-092X(02)00045-2`
     """
-    # "From numerically integrated spectral simulations done with Modtran (Berk,
-    # 1989), Molineaux (1998) obtained for the broadband optical depth of a
-    # clean and dry atmospshere (fictitious atmosphere that comprises only the
-    # effects of Rayleigh scattering and absorption by the atmosphere gases
-    # other than the water vapor) the following expression" - P. Ineichen (2008)
+    # "From numerically integrated spectral simulations done with Modtran
+    # (Berk, 1989), Molineaux (1998) obtained for the broadband optical depth
+    # of a clean and dry atmospshere (fictitious atmosphere that comprises only
+    # the effects of Rayleigh scattering and absorption by the atmosphere gases
+    # other than the water vapor) the following expression" P. Ineichen (2008)
     delta_cda = -0.101 + 0.235 * am ** (-0.16)
     # "and the broadband water vapor optical depth where pwat is the integrated
     # precipitable water vapor content of the atmosphere expressed in cm and am

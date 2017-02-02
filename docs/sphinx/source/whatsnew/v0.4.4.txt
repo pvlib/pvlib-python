@@ -13,9 +13,11 @@ Documentation
 * Fixes the Forecasting page's broken links to the tutorials.
 * Fixes the Forecasting page's broken examples. (:issue:`299`)
 * Fixes broken Classes link in the v0.3.0 documentation.
+* Fixes timezone issue in solarposition spa_c function (:issue:`237`)
 
 
 Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* Marc Anoma

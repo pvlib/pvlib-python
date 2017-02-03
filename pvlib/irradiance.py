@@ -1998,14 +1998,22 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
     else:
         dni[dni < 0] = 0
     
+    # correct unreasonable values
     if method == 'clearsky':
-        # set DNI for zenith angles close to 90 degrees (sunrise/sunset
-        # transitions) and above 90 degrees to zero
-        dni[zenith > 89.5] = 0
-        # cut DNI for zenith angles between 88-89.5 degrees to maximum value
-        # given by the clearsky DNI
-        dni[(zenith <= 89.5) & (zenith > 88) & (dni > clearsky_dni)] = \
-            clearsky_dni
+        if set_to_nan:
+            # set non-zero DNI values for zenith angles >= 90.0 to NaN
+            dni[(zenith >= 90.0) & (dni != 0)] = float('nan')
+            # set DNI values for zenith angles between 80.0 and 90.0 degrees
+            # that are greater than the calculated clearsky DNI to NaN
+            dni[(zenith >= 80.0) & (zenith <= 90.0) & (dni > clearsky_dni)] = \
+                float('nan')
+        else:
+            # set DNI for zenith angles >= 90.0 degrees to zero
+            dni[(zenith >= 90.0)] = 0
+            # cut DNI for zenith angles between 80.0 and 90.0 degrees to maximum value
+            # given by the clearsky DNI
+            dni[(zenith >= 80.0) & (zenith < 90.0) & (dni > clearsky_dni)] = \
+                clearsky_dni
     elif method == 'cutoff':
         dni[zenith > 88] = 0
 

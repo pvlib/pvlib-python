@@ -123,7 +123,7 @@ def test_kasten96_lt():
     melbourne_fl = tmy.readtmy3(os.path.join(
         pvlib_path, 'data', '722040TYA.CSV')
     )
-    aod700 = melbourne_fl[0]['AOD']
+    aod_bb = melbourne_fl[0]['AOD']
     pwat_cm = melbourne_fl[0]['Pwat']
     pressure = melbourne_fl[0]['Pressure'] * 100.0  # Pa per millibars
     dry_temp = melbourne_fl[0]['DryBulb']
@@ -138,19 +138,18 @@ def test_kasten96_lt():
     am = atmosphere.relativeairmass(sp.apparent_zenith)
     amp = atmosphere.absoluteairmass(am, pressure=pressure)
     # assume alpha = 1.14, Bird and Riordan (1984)
-    aod380 = atmosphere.angstrom_aod_at_lambda(aod700, 700.0, 1.14, 380.0)
-    aod500 = atmosphere.angstrom_aod_at_lambda(aod700, 700.0, 1.14, 500.0)
+    aod380 = atmosphere.angstrom_aod_at_lambda(aod_bb, 700.0, 1.14, 380.0)
+    aod500 = atmosphere.angstrom_aod_at_lambda(aod_bb, 700.0, 1.14, 500.0)
+    # estimate broadband AOD from Bird & Hulstrom (1980)
+    bird_hulstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
     # Kasten only valid for am < 5.0 and pwat < 5.0[cm]
     lt_molineaux = atmosphere.kasten96_lt(
-        am=amp, pwat=pwat_cm, aod700=aod700
+        airmass_absolute=amp, precipitable_water=pwat_cm, aod_bb=aod_bb
     ).where(am > 1.).where(am < 5.).where(pwat_cm > 0.).where(pwat_cm < 5.)
     lt_bird_hulstrom = atmosphere.kasten96_lt(
-        am=amp, pwat=pwat_cm, aod380=aod380, aod500=aod500,
-        method='Bird-Hulstrom'
+        airmass_absolute=amp, precipitable_water=pwat_cm, aod_bb=bird_hulstrom
     ).where(am > 1.).where(am < 5.).where(pwat_cm > 0.).where(pwat_cm < 5.)
     # test that bad method raises value error
-    with pytest.raises(ValueError):
-        atmosphere.kasten96_lt(amp, pwat_cm, aod700, method='bird-huldstrom')
     lt = clearsky.lookup_linke_turbidity(timestamps, latitude, longitude)
     assert np.allclose(lt.where(~np.isnan(lt_molineaux)), lt_molineaux,
                        rtol=0.3, equal_nan=True)
@@ -163,9 +162,16 @@ def test_kasten96_lt():
 
 def test_angstrom_aod():
     """Test Angstrom turbidity model functions."""
-    aod550 = 0.1
-    aod1240 = 0.15
+    aod550 = 0.15
+    aod1240 = 0.05
     alpha = atmosphere.angstrom_alpha(aod550, 550, aod1240, 1240)
-    np.isclose(alpha, -0.49875873782089797)
+    np.isclose(alpha, 1.3513924317859232)
     aod700 = atmosphere.angstrom_aod_at_lambda(aod550, 550, alpha)
-    np.isclose(aod700, 0.11278144930870247)
+    np.isclose(aod700, 0.10828110997681031)
+
+
+def test_bird_hulstrom80_aod_bb():
+    """Test Bird_Hulstrom broadband AOD."""
+    aod380, aod500 = 0.22072480948195175, 0.1614279181106312
+    bird_hulstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
+    np.isclose(0.09823143641608373, bird_hulstrom)

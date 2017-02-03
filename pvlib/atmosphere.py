@@ -469,44 +469,74 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     return modifier
 
 
-def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
-                method='Molineaux'):
+def bird_hulstrom80_aod_bb(aod380, aod500):
+    """
+    Approximate broadband aerosol optical depth.
+
+    Bird and Hulstrom developed a correlation for broadband aerosol optical
+    depth (AOD) using two wavelengths, 380 nm and 500 nm.
+
+    Parameters
+    ----------
+    aod380 : numeric
+        AOD measured at 380 nm
+    aod500 : numeric
+        AOD measured at 500 nm
+
+    Returns
+    -------
+    aod_bb : numeric
+        broadband AOD
+
+    See also
+    --------
+    kasten96_lt
+
+    References
+    ----------
+    [1] Bird and Hulstrom, "Direct Insolation Models" (1980)
+    `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
+
+    [2] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement of
+    Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
+    pp. 182-192 (1981)
+    :doi:`10.1115/1.3266239`
+    """
+    # approximate broadband AOD using (Bird-Hulstrom 1980)
+    return 0.27583 * aod380 + 0.35 * aod500
+
+
+def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     """
     Calculate Linke turbidity factor using Kasten pyrheliometric formula.
 
-    Method can be either ``'Molineaux'`` or ``'Bird-Hulstrom'`` corresponding
-    to different approximations for broadband aerosol optical depth (AOD). If
-    Molineaux method is used, then the ``aod700`` argument is expected, and if
-    Bird-Hulstrom method is used, then both ``aod380`` and ``aod500`` arguments
-    are expected and ``aod700`` is ignored.
+    Note that broadband aerosol optical depth (AOD) can be approximated by AOD
+    measured at 700 nm according to Molineaux [4] . Bird and Hulstrom offer an
+    alternate approximation using AOD measured at 380 nm and 500 nm.
 
     Based on original implementation by Armel Oumbe.
 
     .. warning::
-        These calculations are only valid for air mass less than 5[atm] and
-        precipitable water less than 5[cm].
+        These calculations are only valid for air mass less than 5 atm and
+        precipitable water less than 5 cm.
 
     Parameters
     ----------
-    am : numeric
+    airmass_absolute : numeric
         airmass, pressure corrected in atmospheres
-    pwat : numeric
+    precipitable_water : numeric
         precipitable water or total column water vapor in centimeters
-    aod700 : numeric
-        broadband AOD or AOD measured at 700[nm]
-    aod380 : numeric
-        AOD measured at 380[nm]
-    aod500 : numeric
-        AOD measured at 500[nm]
-    method : str
-        Molineaux (default) or Bird-Hulstrom
+    aod_bb : numeric
+        broadband AOD
 
     Returns
     -------
+    lt : numeric
         Linke turbidity
 
     See also
     --------
+    bird_hulstrom80_aod_bb
     angstrom_aod_at_lambda
 
     References
@@ -514,34 +544,26 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     [1] F. Linke, "Transmissions-Koeffizient und Trubungsfaktor", Beitrage
     zur Physik der Atmosphare, Vol 10, pp. 91-103 (1922)
 
-    [2] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
-    and monochromatic aerosol optical depths at a single key wavelength",
-    Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
-    :doi:`10.1364/AO.37.007008`
-
-    [3] F. Kasten, "A simple parameterization of the pyrheliometric formula for
+    [2] F. Kasten, "A simple parameterization of the pyrheliometric formula for
     determining the Linke turbidity factor", Meteorologische Rundschau 33,
     pp. 124-127 (1980)
 
-    [4] P. Ineichen, "Conversion function between the Linke turbidity and the
-    atmospheric water vapor and aerosol content", Solar Energy 82,
-    pp. 1095-1097 (2008)
-    :doi:`10.1016/j.solener.2008.04.010`
-
-    [5] Bird and Hulstrom, "Direct Insolation Models" (1980)
-    `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
-
-    [6] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement of
-    Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
-    pp. 182-192 (1981)
-    :doi:`10.1115/1.3266239`
-
-    [7] Kasten, "The Linke turbidity factor based on improved values of the
+    [3] Kasten, "The Linke turbidity factor based on improved values of the
     integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
     pp. 239-244 (1996)
     :doi:`10.1016/0038-092X(95)00114-7`
 
-    [8] P. Ineichen and R. Perez, "A new airmass independent formulation for
+    [4] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
+    and monochromatic aerosol optical depths at a single key wavelength",
+    Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
+    :doi:`10.1364/AO.37.007008`
+
+    [5] P. Ineichen, "Conversion function between the Linke turbidity and the
+    atmospheric water vapor and aerosol content", Solar Energy 82,
+    pp. 1095-1097 (2008)
+    :doi:`10.1016/j.solener.2008.04.010`
+
+    [6] P. Ineichen and R. Perez, "A new airmass independent formulation for
     the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3, pp. 151-157
     (2002)
     :doi:`10.1016/S0038-092X(02)00045-2`
@@ -550,29 +572,24 @@ def kasten96_lt(am, pwat, aod700=None, aod380=None, aod500=None,
     # (Berk, 1989), Molineaux (1998) obtained for the broadband optical depth
     # of a clean and dry atmospshere (fictitious atmosphere that comprises only
     # the effects of Rayleigh scattering and absorption by the atmosphere gases
-    # other than the water vapor) the following expression" P. Ineichen (2008)
-    delta_cda = -0.101 + 0.235 * am ** (-0.16)
+    # other than the water vapor) the following expression"
+    # - P. Ineichen (2008)
+    delta_cda = -0.101 + 0.235 * airmass_absolute ** (-0.16)
     # "and the broadband water vapor optical depth where pwat is the integrated
     # precipitable water vapor content of the atmosphere expressed in cm and am
     # the optical air mass. The precision of these fits is better than 1% when
     # compared with Modtran simulations in the range 1 < am < 5 and
     # 0 < pwat < 5 cm at sea level" - P. Ineichen (2008)
-    delta_w = 0.112 * am ** (-0.55) * pwat ** (0.34)
-    if method.lower() == 'molineaux':
-        # approximate broadband from AOD @ 700[nm] Molineaux (1998)
-        delta_a = aod700
-    elif method.lower() == 'bird-hulstrom':
-        # using (Bird-Hulstrom 1980)
-        delta_a = 0.27583 * aod380 + 0.35 * aod500
-    else:
-        raise ValueError('Invalid "method" for broadband AOD approximation.')
+    delta_w = 0.112 * airmass_absolute ** (-0.55) * precipitable_water ** 0.34
+    # broadband AOD
+    delta_a = aod_bb
     # "Then using the Kasten pyrheliometric formula (1980, 1996), the Linke
     # turbidity at am = 2 can be written. The extension of the Linke turbidity
     # coefficient to other values of air mass was published by Ineichen and
     # Perez (2002)" - P. Ineichen (2008)
-    lt = -(9.4 + 0.9 * am) * np.log(
-        np.exp(-am * (delta_cda + delta_w + delta_a))
-    ) / am
+    lt = -(9.4 + 0.9 * airmass_absolute) * np.log(
+        np.exp(-airmass_absolute * (delta_cda + delta_w + delta_a))
+    ) / airmass_absolute
     # filter out of extrapolated values
     return lt
 
@@ -590,7 +607,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
     alpha : numeric
         Angstrom :math:`\alpha` exponent corresponding to ``aod0``
     lambda1 : numeric
-        desired wavelength in nanometers, defaults to 700[nm]
+        desired wavelength in nanometers, defaults to 700 nm
 
     Returns
     -------

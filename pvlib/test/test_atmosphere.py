@@ -115,25 +115,25 @@ def test_first_solar_spectral_correction_ambiguous():
 
 def test_kasten96_lt():
     """Test Linke turbidity factor calculated from AOD, Pwat and AM"""
-    timestamps = pd.DatetimeIndex(MELBOURNE_FL[0])
-    timestamps = timestamps.tz_localize('UTC').tz_convert('Etc/GMT+5')
-    melbourne_fl = pd.DataFrame(MELBOURNE_FL[1], index=timestamps)
-    aod_bb = melbourne_fl['AOD']
-    pwat_cm = melbourne_fl['Pwat']
-    pressure = melbourne_fl['Pressure']
-    dry_temp = melbourne_fl['DryBulb']
-    lat, lon, alt = 28.117, -80.65, 11.0
-    sp = solarposition.get_solarposition(
-        timestamps, lat, lon, alt, pressure=pressure, temperature=dry_temp
+    amp = np.array([1, 3, 5])
+    pwat = np.array([0, 2.5, 5])
+    aod_bb = np.array([0, 0.1, 1])
+    lt_expected = np.array(
+        [[[1.3802, 2.4102, 11.6802],
+          [1.16303976, 2.37303976, 13.26303976],
+          [1.12101907, 2.51101907, 15.02101907]],
+
+         [[2.95546945, 3.98546945, 13.25546945],
+          [2.17435443, 3.38435443, 14.27435443],
+          [1.99821967, 3.38821967, 15.89821967]],
+
+         [[3.37410769, 4.40410769, 13.67410769],
+          [2.44311797, 3.65311797, 14.54311797],
+          [2.23134152, 3.62134152, 16.13134152]]]
     )
-    am = atmosphere.relativeairmass(sp.apparent_zenith)
-    amp = atmosphere.absoluteairmass(am, pressure=pressure)
-    lt_kasten = atmosphere.kasten96_lt(
-        airmass_absolute=amp, precipitable_water=pwat_cm, aod_bb=aod_bb
-    )
-    lt = clearsky.lookup_linke_turbidity(timestamps, lat, lon)
-    assert np.allclose(lt, lt_kasten, 1e-3)
-    return lt, lt_kasten
+    lt = atmosphere.kasten96_lt(*np.meshgrid(amp, pwat, aod_bb))
+    assert np.allclose(lt, lt_expected, 1e-3)
+    return lt
 
 
 def test_angstrom_aod():
@@ -141,16 +141,16 @@ def test_angstrom_aod():
     aod550 = 0.15
     aod1240 = 0.05
     alpha = atmosphere.angstrom_alpha(aod550, 550, aod1240, 1240)
-    np.isclose(alpha, [1.3513924317859232])
+    np.isclose(alpha, 1.3513924317859232)
     aod700 = atmosphere.angstrom_aod_at_lambda(aod550, 550, alpha)
-    np.isclose(aod700, [0.10828110997681031])
+    np.isclose(aod700, 0.10828110997681031)
 
 
 def test_bird_hulstrom80_aod_bb():
     """Test Bird_Hulstrom broadband AOD."""
     aod380, aod500 = 0.22072480948195175, 0.1614279181106312
     bird_hulstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
-    np.isclose([0.09823143641608373], bird_hulstrom)
+    np.isclose(0.09823143641608373, bird_hulstrom)
 
 
 MELBOURNE_FL = (

@@ -6,7 +6,6 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
-from pvlib import clearsky
 from pvlib import atmosphere
 from pvlib import solarposition
 

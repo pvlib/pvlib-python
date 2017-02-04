@@ -118,46 +118,25 @@ def test_first_solar_spectral_correction_ambiguous():
 
 def test_kasten96_lt():
     """Test Linke turbidity factor calculated from AOD, Pwat and AM"""
-    atmos_path = os.path.dirname(os.path.abspath(__file__))
-    pvlib_path = os.path.dirname(atmos_path)
-    melbourne_fl = tmy.readtmy3(os.path.join(
-        pvlib_path, 'data', '722040TYA.CSV')
-    )
-    aod_bb = melbourne_fl[0]['AOD']
-    pwat_cm = melbourne_fl[0]['Pwat']
-    pressure = melbourne_fl[0]['Pressure'] * 100.0  # Pa per millibars
-    dry_temp = melbourne_fl[0]['DryBulb']
-    timestamps = melbourne_fl[0].index
-    latitude = melbourne_fl[1]['latitude']
-    longitude = melbourne_fl[1]['longitude']
-    altitude = melbourne_fl[1]['altitude']
+    timestamps = pd.DatetimeIndex(MELBOURNE_FL[0])
+    timestamps = timestamps.tz_localize('UTC').tz_convert('Etc/GMT+5')
+    melbourne_fl = pd.DataFrame(MELBOURNE_FL[1], index=timestamps)
+    aod_bb = melbourne_fl['AOD']
+    pwat_cm = melbourne_fl['Pwat']
+    pressure = melbourne_fl['Pressure']
+    dry_temp = melbourne_fl['DryBulb']
+    lat, lon, alt = 28.117, -80.65, 11.0
     sp = solarposition.get_solarposition(
-        timestamps, latitude, longitude, altitude, pressure=pressure,
-        temperature=dry_temp
+        timestamps, lat, lon, alt, pressure=pressure, temperature=dry_temp
     )
     am = atmosphere.relativeairmass(sp.apparent_zenith)
     amp = atmosphere.absoluteairmass(am, pressure=pressure)
-    # assume alpha = 1.14, Bird and Riordan (1984)
-    aod380 = atmosphere.angstrom_aod_at_lambda(aod_bb, 700.0, 1.14, 380.0)
-    aod500 = atmosphere.angstrom_aod_at_lambda(aod_bb, 700.0, 1.14, 500.0)
-    # estimate broadband AOD from Bird & Hulstrom (1980)
-    bird_hulstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
-    # Kasten only valid for am < 5.0 and pwat < 5.0[cm]
-    lt_molineaux = atmosphere.kasten96_lt(
+    lt_kasten = atmosphere.kasten96_lt(
         airmass_absolute=amp, precipitable_water=pwat_cm, aod_bb=aod_bb
-    ).where(am > 1.).where(am < 5.).where(pwat_cm > 0.).where(pwat_cm < 5.)
-    lt_bird_hulstrom = atmosphere.kasten96_lt(
-        airmass_absolute=amp, precipitable_water=pwat_cm, aod_bb=bird_hulstrom
-    ).where(am > 1.).where(am < 5.).where(pwat_cm > 0.).where(pwat_cm < 5.)
-    # test that bad method raises value error
-    lt = clearsky.lookup_linke_turbidity(timestamps, latitude, longitude)
-    assert np.allclose(lt.where(~np.isnan(lt_molineaux)), lt_molineaux,
-                       rtol=0.3, equal_nan=True)
-    assert np.allclose(lt.where(~np.isnan(lt_bird_hulstrom)),
-                       lt_bird_hulstrom, rtol=0.3, equal_nan=True)
-    assert np.allclose(lt_molineaux, lt_bird_hulstrom, rtol=0.05,
-                       equal_nan=True)
-    return lt, lt_molineaux, lt_bird_hulstrom
+    )
+    lt = clearsky.lookup_linke_turbidity(timestamps, lat, lon)
+    assert np.allclose(lt, lt_kasten, 1e-3)
+    return lt, lt_kasten
 
 
 def test_angstrom_aod():
@@ -165,13 +144,52 @@ def test_angstrom_aod():
     aod550 = 0.15
     aod1240 = 0.05
     alpha = atmosphere.angstrom_alpha(aod550, 550, aod1240, 1240)
-    np.isclose(alpha, 1.3513924317859232)
+    np.isclose(alpha, [1.3513924317859232])
     aod700 = atmosphere.angstrom_aod_at_lambda(aod550, 550, alpha)
-    np.isclose(aod700, 0.10828110997681031)
+    np.isclose(aod700, [0.10828110997681031])
 
 
 def test_bird_hulstrom80_aod_bb():
     """Test Bird_Hulstrom broadband AOD."""
     aod380, aod500 = 0.22072480948195175, 0.1614279181106312
     bird_hulstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
-    np.isclose(0.09823143641608373, bird_hulstrom)
+    np.isclose([0.09823143641608373], bird_hulstrom)
+
+
+MELBOURNE_FL = (
+    ['1999-01-31T12:00:00-05:00', '2000-02-20T15:00:00-05:00',
+     '2000-02-22T13:00:00-05:00', '2000-02-24T15:00:00-05:00',
+     '1995-03-02T14:00:00-05:00', '1995-03-11T12:00:00-05:00',
+     '1995-03-12T13:00:00-05:00', '1995-03-20T11:00:00-05:00',
+     '1995-03-20T14:00:00-05:00', '1995-03-22T11:00:00-05:00',
+     '1995-03-22T14:00:00-05:00', '1995-04-07T09:00:00-05:00',
+     '1995-04-10T09:00:00-05:00', '1995-04-21T09:00:00-05:00',
+     '2004-05-01T08:00:00-05:00', '2004-05-03T08:00:00-05:00',
+     '2004-05-05T13:00:00-05:00', '2004-05-16T09:00:00-05:00',
+     '2004-05-21T15:00:00-05:00', '2004-05-24T11:00:00-05:00',
+     '2004-05-31T09:00:00-05:00', '2002-06-04T16:00:00-05:00',
+     '2002-06-16T17:00:00-05:00', '2002-06-17T08:00:00-05:00',
+     '2000-07-01T08:00:00-05:00', '2000-07-05T07:00:00-05:00',
+     '2000-07-06T07:00:00-05:00', '2000-07-06T17:00:00-05:00',
+     '2000-07-25T15:00:00-05:00', '2001-10-14T13:00:00-05:00',
+     '2001-10-15T11:00:00-05:00', '2003-11-04T14:00:00-05:00',
+     '1999-12-20T13:00:00-05:00'],
+    {'AOD': [0.062,  0.082,  0.084,  0.087,  0.097,  0.110,  0.111,  0.119,
+             0.119,  0.121,  0.121,  0.128,  0.129,  0.137,  0.150,  0.152,
+             0.154,  0.164,  0.167,  0.169,  0.171,  0.173,  0.188,  0.191,
+             0.237,  0.248,  0.251,  0.251,  0.244,  0.119,  0.118,  0.101,
+             0.085],
+     'Pwat': [2.7,  2.2,  1.6,  2.3,  1.9,  1.9,  1.9,  2.0,  2.0,  1.9,  1.9,
+              2.6,  2.5,  2.6,  4.0,  4.1,  1.8,  3.6,  3.0,  2.3,  3.7,  4.1,
+              4.9,  4.6,  4.2,  4.3,  4.3,  4.3,  4.6,  4.8,  4.9,  4.7,  2.7],
+     'Pressure': [101500.,  101700.,  101200.,  101900.,  101700.,  102900.,
+                  102800.,  101600.,  101400.,  101400.,  101200.,  101200.,
+                  101400.,  101700.,  101700.,  101500.,  101900.,  102200.,
+                  102000.,  101800.,  101500.,  101500.,  101200.,  101400.,
+                  101800.,  102000.,  101900.,  101700.,  101700.,  101300.,
+                  101700.,  101500.,  101400.],
+     'DryBulb': [23.0,  19.0,  24.0,  23.0,  18.3,  21.6,  23.3,  22.7,  24.4,
+                 24.4,  28.3,  19.4,  25.0,  27.2,  25.0,  25.0,  25.0,  25.0,
+                 28.0,  28.0,  31.0,  29.0,  24.0,  24.0,  25.0,  26.0,  23.0,
+                 32.0,  29.0,  29.0,  28.0,  26.6,  20.0]}
+)

@@ -30,7 +30,9 @@ if has_siphon:
     _end = _start + pd.Timedelta(days=1)
     _modelclasses = [
         GFS, NAM, HRRR, NDFD, RAP,
-        pytest.mark.xfail(HRRR_ESRL, reason="HRRR_ESRL is unreliable")]
+        pytest.mark.xfail(
+            pytest.mark.timeout(HRRR_ESRL, timeout=60),
+            reason="HRRR_ESRL is unreliable")]
     _working_models = []
     _variables = ['temp_air', 'wind_speed', 'total_clouds', 'low_clouds',
                   'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi',]

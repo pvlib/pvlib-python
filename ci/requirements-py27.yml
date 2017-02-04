@@ -16,3 +16,4 @@ dependencies:
     - nose
     - pip:
         - coveralls
+        - pytest-timeout

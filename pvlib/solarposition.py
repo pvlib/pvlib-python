@@ -860,7 +860,7 @@ def _calculate_simple_day_angle(dayofyear):
     return (2. * np.pi / 365.) * (dayofyear - 1)
 
 
-def equation_of_time_Spencer71(dayofyear):
+def equation_of_time_spencer71(dayofyear):
     """
     Equation of time from Duffie & Beckman and attributed to Spencer (1971) and
     Iqbal (1983).

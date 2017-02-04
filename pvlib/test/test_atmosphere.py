@@ -1,6 +1,4 @@
-import datetime
 import itertools
-import os
 
 import numpy as np
 import pandas as pd
@@ -11,7 +9,6 @@ from numpy.testing import assert_allclose
 from pvlib import clearsky
 from pvlib import atmosphere
 from pvlib import solarposition
-from pvlib import tmy
 
 latitude, longitude, tz, altitude = 32.2, -111, 'US/Arizona', 700
 

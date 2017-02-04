@@ -1,7 +1,7 @@
 name: test_env
 channels:
-    - defaults
     - conda-forge
+    - defaults
 dependencies:
     - python=3.4
     - numpy

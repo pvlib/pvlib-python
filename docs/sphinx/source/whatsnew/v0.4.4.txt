@@ -15,6 +15,15 @@ Documentation
 * Fixes broken Classes link in the v0.3.0 documentation.
 
 
+Bug fixes
+~~~~~~~~~
+
+* Resolved several issues with the forecast module tests. Library import
+  errors were resolved by prioritizing the conda-forge channel over the
+  default channel. Stalled ci runs were resolved by adding a timeout to
+  the HRRR_ESRL test. (:issue:`293`)
+
+
 Contributors
 ~~~~~~~~~~~~
 

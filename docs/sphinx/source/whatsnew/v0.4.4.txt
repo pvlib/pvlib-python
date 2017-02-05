@@ -10,6 +10,14 @@ Enhancements
   improvements by Ineichen and Perez to extend range of air mass (:issue:`278`)
 
 
+API Changes
+~~~~~~~~~~~
+
+* Change PVSystem default module_parameters and inverter_parameters to
+  empty dict. Code that relied on these attributes being None or raising
+  a TypeError will need to be updated. (issue:`294`)
+
+
 Documentation
 ~~~~~~~~~~~~~
 

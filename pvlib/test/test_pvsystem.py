@@ -615,6 +615,9 @@ def test_snlinverter_Pnt_micro(sam_data):
 
 def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    # ensure that parameter attributes are dict-like. GH 294
+    pv_system.module_parameters['pdc0'] = 1
+    pv_system.inverter_parameters['Paco'] = 1
 
 
 def test_PVSystem_get_aoi():

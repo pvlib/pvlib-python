@@ -1948,7 +1948,7 @@ def _get_dirint_coeffs():
 
 
 def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
-        set_to_nan=False, **kwargs):
+        set_to_nan=False, clearsky_tolerance=1, **kwargs):
     """
     Determine DNI from GHI and DHI.
 
@@ -1981,6 +1981,11 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
         replaced by NaN. Otherwise they will be replaced by the calculated 
         value depending on the specified method.
 
+    clearsky_tolerance : float
+        If method 'clearsky' is chosen this parameter can be used to allow a
+        tolerance by how much the calculated DNI value can be greater than
+        the clearsky value before it is identified as an unreasonable value.
+
     Returns
     -------
     dni : array-like
@@ -2010,10 +2015,11 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
         else:
             # set DNI for zenith angles >= 90.0 degrees to zero
             dni[(zenith >= 90.0)] = 0
-            # cut DNI for zenith angles between 80.0 and 90.0 degrees to maximum value
-            # given by the clearsky DNI
-            dni[(zenith >= 80.0) & (zenith < 90.0) & (dni > clearsky_dni)] = \
-                clearsky_dni
+            # cut DNI for zenith angles between 80.0 and 90.0 degrees to
+            # maximum value given by the clearsky DNI
+            dni[(zenith >= 80.0) & (zenith < 90.0) &
+                (dni > (clearsky_dni * clearsky_tolerance))] = \
+                    (clearsky_dni * clearsky_tolerance)
     elif method == 'cutoff':
         dni[zenith > 88] = 0
 

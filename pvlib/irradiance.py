@@ -2025,6 +2025,8 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
             dni[(zenith > 88) & (dni != 0)] = float('nan')
         else:
             dni[zenith > 88] = 0
+    else:
+        raise ValueError('Invalid method: %s', method)
 
     # if correction of DNI was necessary
     if (dni_tmp - dni)[(dni_tmp - dni) != 0].count() != 0:

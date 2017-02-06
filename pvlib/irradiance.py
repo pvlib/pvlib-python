@@ -2028,13 +2028,16 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
     else:
         raise ValueError('Invalid method: %s', method)
 
-    # if correction of DNI was necessary
-    if (dni_tmp - dni)[(dni_tmp - dni) != 0].count() != 0:
-        count = (dni_tmp - dni)[(dni_tmp - dni) != 0].count()
-        logging.debug("The DNI was corrected for %d out of %d timesteps",
-            count, dni.shape[0])
+    # debugging info how many values were corrected
+    if set_to_nan:
+        count = dni.isnull().sum()
     else:
+        count = (dni_tmp - dni)[(dni_tmp - dni) != 0].count()
+    if count == 0:
         logging.debug("No correction of the calculated DNI was necessary.")
+    else:
+        logging.debug("The DNI was corrected for %d out of %d timesteps",
+                      count, dni.shape[0])
 
     # # plot
     # dni.plot(legend=True)

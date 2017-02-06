@@ -1959,13 +1959,13 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
 
     Parameters
     ----------
-    ghi : array-like
+    ghi : Series
         Global horizontal irradiance.
 
-    dhi : array-like
+    dhi : Series
         Diffuse horizontal irradiance.
 
-    zenith : array-like
+    zenith : Series
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
 
@@ -1973,7 +1973,7 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
         The method used to correct the calculated DNI.
         Must be one of 'clearsky', 'cutoff'.
     
-    clearsky_dni : array-like
+    clearsky_dni : None or Series
         Clearsky direct normal irradiance.
     
     set_to_nan : boolean
@@ -1988,7 +1988,7 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
 
     Returns
     -------
-    dni : array-like
+    dni : Series
         The modeled direct normal irradiance.
 
     """

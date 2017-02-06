@@ -452,22 +452,22 @@ def test_complete_irradiance_clean_run(system, location):
 def test_complete_irradiance(system, location):
     """Check calculations"""
     mc = ModelChain(system, location)
-    times = pd.date_range('2010-07-05 9:00:00', periods=2, freq='H')
-    i = pd.DataFrame({'dni': [30.354455, 77.22822],
-                      'dhi': [372.103976116, 497.087579068],
-                      'ghi': [356.543700, 465.44400]}, index=times)
+    times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
+    i = pd.DataFrame({'dni': [49.756966, 62.153947],
+                      'ghi': [372.103976116, 497.087579068],
+                      'dhi': [356.543700, 465.44400]}, index=times)
 
     mc.complete_irradiance(times, weather=i[['ghi', 'dni']])
     assert_series_equal(mc.weather['dhi'],
-                        pd.Series([372.103976116, 497.087579068],
+                        pd.Series([356.543700, 465.44400],
                                   index=times, name='dhi'))
 
     mc.complete_irradiance(times, weather=i[['dhi', 'dni']])
     assert_series_equal(mc.weather['ghi'],
-                        pd.Series([356.543700, 465.44400],
+                        pd.Series([372.103976116, 497.087579068],
                                   index=times, name='ghi'))
 
     mc.complete_irradiance(times, weather=i[['dhi', 'ghi']])
     assert_series_equal(mc.weather['dni'],
-                        pd.Series([30.354455, 77.22822],
+                        pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))

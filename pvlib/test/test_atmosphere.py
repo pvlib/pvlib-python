@@ -140,16 +140,16 @@ def test_angstrom_aod():
     aod550 = 0.15
     aod1240 = 0.05
     alpha = atmosphere.angstrom_alpha(aod550, 550, aod1240, 1240)
-    np.isclose(alpha, 1.3513924317859232)
+    assert np.isclose(alpha, 1.3513924317859232)
     aod700 = atmosphere.angstrom_aod_at_lambda(aod550, 550, alpha)
-    np.isclose(aod700, 0.10828110997681031)
+    assert np.isclose(aod700, 0.10828110997681031)
 
 
 def test_bird_hulstrom80_aod_bb():
     """Test Bird_Hulstrom broadband AOD."""
     aod380, aod500 = 0.22072480948195175, 0.1614279181106312
     bird_hulstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
-    np.isclose(0.09823143641608373, bird_hulstrom)
+    assert np.isclose(0.09823143641608373, bird_hulstrom)
 
 
 MELBOURNE_FL = (

@@ -2021,7 +2021,10 @@ def dni(ghi, dhi, zenith, method='clearsky', clearsky_dni=None,
                 (dni > (clearsky_dni * clearsky_tolerance))] = \
                     (clearsky_dni * clearsky_tolerance)
     elif method == 'cutoff':
-        dni[zenith > 88] = 0
+        if set_to_nan:
+            dni[(zenith > 88) & (dni != 0)] = float('nan')
+        else:
+            dni[zenith > 88] = 0
 
     # if correction of DNI was necessary
     if (dni_tmp - dni)[(dni_tmp - dni) != 0].count() != 0:

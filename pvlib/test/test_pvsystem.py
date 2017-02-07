@@ -580,6 +580,18 @@ def test_adrinverter(sam_data):
                                          382.6679, np.nan]))
 
 
+def test_adrinverter_vtol(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
+    vdcs = pd.Series([135, 154, 390, 420, 551])
+    pdcs = pd.Series([135, 1232, 1170, 420, 551])
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv], vtol=0.20)
+    assert_series_equal(pacs, pd.Series([104.8223, 1161.5745, 1116.4459,
+                                         382.6679, 513.3385]))
+
+
 def test_adrinverter_float(sam_data):
     inverters = sam_data['adrinverter']
     testinv = 'Ablerex_Electronics_Co___Ltd___' + \

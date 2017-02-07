@@ -173,7 +173,7 @@ def poadc(mc):
 @requires_scipy
 @pytest.mark.parametrize('dc_model, expected', [
     ('sapm', [181.604438144, -2.00000000e-02]),
-    ('singlediode', [154.61940956, -25.00000000e-02]),
+    ('singlediode', [np.nan, -25.00000000e-02]),
     ('pvwatts', [190.028186986, 0]),
     (poadc, [189.183065667, 0])  # user supplied function
 ])
@@ -201,7 +201,7 @@ def acdc(mc):
 @requires_scipy
 @pytest.mark.parametrize('ac_model, expected', [
     ('snlinverter', [181.604438144, -2.00000000e-02]),
-    ('adrinverter', [154.61940956, -25.00000000e-02]),
+    ('adrinverter', [np.nan, -25.00000000e-02]),
     ('pvwatts', [190.028186986, 0]),
     (acdc, [199.845296258, 0])  # user supplied function
 ])

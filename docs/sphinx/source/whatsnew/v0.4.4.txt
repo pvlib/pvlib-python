@@ -7,6 +7,9 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Added NREL Bird clear sky model. (:issue:`276`)
+* Added Kasten pyrheliometric formula to calculate Linke turbidity factors with
+  improvements by Ineichen and Perez to extend range of air mass (:issue:`278`)
+
 
 Documentation
 ~~~~~~~~~~~~~

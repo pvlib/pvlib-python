@@ -133,13 +133,19 @@ class PVSystem(object):
 
         # could tie these together with @property
         self.module = module
-        self.module_parameters = module_parameters
+        if module_parameters is None:
+            self.module_parameters = {}
+        else:
+            self.module_parameters = module_parameters
 
         self.modules_per_string = modules_per_string
         self.strings_per_inverter = strings_per_inverter
 
         self.inverter = inverter
-        self.inverter_parameters = inverter_parameters
+        if inverter_parameters is None:
+            self.inverter_parameters = {}
+        else:
+            self.inverter_parameters = inverter_parameters
 
         self.racking_model = racking_model
 

@@ -2077,9 +2077,9 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
         See Notes for required keys.
 
     vtol : numeric
-        A unit-less fraction that determines how far the efficiency model is allowed
-        to extrapolate beyond the inverter's normal input voltage operating range.
-        0.0 <= vtol <= 1.0
+        A unit-less fraction that determines how far the efficiency model is 
+        allowed to extrapolate beyond the inverter's normal input voltage 
+        operating range. 0.0 <= vtol <= 1.0
 
     Returns
     -------
@@ -2098,27 +2098,27 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
 
     Required inverter keys are:
 
-    ======   ============================================================
-    Column   Description
-    ======   ============================================================
-    p_nom    The nominal power value used to normalize all power values,
-             typically the DC power needed to produce maximum AC power output,
-             (W).
+    =======   ============================================================
+    Column    Description
+    =======   ============================================================
+    p_nom     The nominal power value used to normalize all power values,
+              typically the DC power needed to produce maximum AC power 
+              output, (W).
 
-    v_nom    The nominal DC voltage value used to normalize DC voltage values,
-             typically the level at which the highest efficiency is achieved,
-             (V).
+    v_nom     The nominal DC voltage value used to normalize DC voltage 
+              values, typically the level at which the highest efficiency 
+              is achieved, (V).
 
-    pac_max  The maximum AC output power value, used to clip the output if
-             needed, (W).
+    pac_max   The maximum AC output power value, used to clip the output 
+              if needed, (W).
 
-    ce_list  This is a list of 9 coefficients that capture the influence
-             of input voltage and power on inverter losses, and thereby
-             efficiency.
+    ce_list   This is a list of 9 coefficients that capture the influence
+              of input voltage and power on inverter losses, and thereby
+              efficiency.
 
-    p_nt     ac-power consumed by inverter at night (night tare) to maintain
-             circuitry required to sense PV array voltage, (W).
-    ======   ============================================================
+    p_nt      ac-power consumed by inverter at night (night tare) to 
+              maintain circuitry required to sense PV array voltage, (W).
+    =======   ============================================================
 
     References
     ----------

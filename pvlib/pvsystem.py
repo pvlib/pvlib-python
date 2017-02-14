@@ -468,6 +468,9 @@ class PVSystem(object):
         """
         return snlinverter(v_dc, p_dc, self.inverter_parameters)
 
+    def adrinverter(self, v_dc, p_dc):
+        return adrinverter(v_dc, p_dc, self.inverter_parameters)
+
     def scale_voltage_current_power(self, data):
         """
         Scales the voltage, current, and power of the DataFrames
@@ -1062,6 +1065,7 @@ def retrieve_sam(name=None, path=None):
         * CEC module database
         * Sandia Module database
         * CEC Inverter database
+        * Anton Driesse Inverter database
 
     and return it as a pandas DataFrame.
 
@@ -1076,6 +1080,7 @@ def retrieve_sam(name=None, path=None):
           (CEC is only current inverter db available; tag kept for
           backwards compatibility)
         * 'SandiaMod' - returns the Sandia Module database
+        * 'ADRInverter' - returns the ADR Inverter database
 
     path : None or string
         Path to the SAM file. May also be a URL.
@@ -1128,6 +1133,8 @@ def retrieve_sam(name=None, path=None):
         elif name == 'sandiamod':
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
+        elif name == 'adrinverter':
+            csvdata = os.path.join(data_path, 'adr-library-2013-10-01.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
@@ -1177,6 +1184,13 @@ def _parse_raw_sam_df(csvdata):
 
     df.index = parsedindex
     df = df.transpose()
+    if 'ADRCoefficients' in df.index:
+        ad_ce = 'ADRCoefficients'
+        # for each inverter, parses a string of coefficients like
+        # ' 1.33, 2.11, 3.12' into a list containing floats:
+        # [1.33, 2.11, 3.12]
+        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x: list(
+            map(float, x.strip(' []').split())))
 
     return df
 
@@ -2039,6 +2053,120 @@ def snlinverter(v_dc, p_dc, inverter):
 
     if isinstance(p_dc, pd.Series):
         ac_power = pd.Series(ac_power, index=p_dc.index)
+
+    return ac_power
+
+
+def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
+    r'''
+    Converts DC power and voltage to AC power using Anton Driesse's
+    Grid-Connected PV Inverter efficiency model
+
+    Parameters
+    ----------
+    v_dc : numeric
+        A scalar or pandas series of DC voltages, in volts, which are provided
+        as input to the inverter. If Vdc and Pdc are vectors, they must be
+        of the same size. v_dc must be >= 0. (V)
+
+    p_dc : numeric
+        A scalar or pandas series of DC powers, in watts, which are provided
+        as input to the inverter. If Vdc and Pdc are vectors, they must be
+        of the same size. p_dc must be >= 0. (W)
+
+    inverter : dict-like
+        A dict-like object defining the inverter to be used, giving the
+        inverter performance parameters according to the model
+        developed by Anton Driesse [1].
+        A set of inverter performance parameters may be loaded from the
+        supplied data table using retrievesam.
+        See Notes for required keys.
+
+    vtol : numeric
+        A unit-less fraction that determines how far the efficiency model is 
+        allowed to extrapolate beyond the inverter's normal input voltage 
+        operating range. 0.0 <= vtol <= 1.0
+
+    Returns
+    -------
+    ac_power : numeric
+        A numpy array or pandas series of modeled AC power output given the
+        input DC voltage, v_dc, and input DC power, p_dc. When ac_power would
+        be greater than pac_max, it is set to p_max to represent inverter
+        "clipping". When ac_power would be less than -p_nt (energy consumed
+        rather  than produced) then ac_power is set to -p_nt to represent
+        nightly power losses. ac_power is not adjusted for maximum power point
+        tracking (MPPT) voltage windows or maximum current limits of the
+        inverter.
+
+    Notes
+    -----
+
+    Required inverter keys are:
+
+    =======   ============================================================
+    Column    Description
+    =======   ============================================================
+    p_nom     The nominal power value used to normalize all power values,
+              typically the DC power needed to produce maximum AC power 
+              output, (W).
+
+    v_nom     The nominal DC voltage value used to normalize DC voltage 
+              values, typically the level at which the highest efficiency 
+              is achieved, (V).
+
+    pac_max   The maximum AC output power value, used to clip the output 
+              if needed, (W).
+
+    ce_list   This is a list of 9 coefficients that capture the influence
+              of input voltage and power on inverter losses, and thereby
+              efficiency.
+
+    p_nt      ac-power consumed by inverter at night (night tare) to 
+              maintain circuitry required to sense PV array voltage, (W).
+    =======   ============================================================
+
+    References
+    ----------
+    [1] Beyond the Curves: Modeling the Electrical Efficiency
+        of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
+
+    See also
+    --------
+    sapm
+    singlediode
+    '''
+
+    p_nom = inverter['Pnom']
+    v_nom = inverter['Vnom']
+    pac_max = inverter['Pacmax']
+    p_nt = inverter['Pnt']
+    ce_list = inverter['ADRCoefficients']
+    v_max = inverter['Vmax']
+    v_min = inverter['Vmin']
+    vdc_max = inverter['Vdcmax']
+    mppt_hi = inverter['MPPTHi']
+    mppt_low = inverter['MPPTLow']
+
+    v_lim_upper = np.nanmax([v_max, vdc_max, mppt_hi])*(1+vtol)
+    v_lim_lower = np.nanmax([v_min, mppt_low])*(1-vtol)
+
+    pdc = p_dc/p_nom
+    vdc = v_dc/v_nom
+    poly = np.array([pdc**0, pdc, pdc**2, vdc-1, pdc*(vdc-1),
+                     pdc**2*(vdc-1), 1/vdc-1, pdc*(1./vdc-1),
+                     pdc**2*(1./vdc-1)])
+    p_loss = np.dot(np.array(ce_list), poly)
+    ac_power = p_nom * (pdc-p_loss)
+    p_nt = -1*np.absolute(p_nt)
+
+    ac_power = np.where((v_lim_upper < v_dc) | (v_dc < v_lim_lower),
+                        np.nan, ac_power)
+    ac_power = np.where((ac_power < p_nt) | (vdc == 0), p_nt, ac_power)
+    ac_power = np.where(ac_power > pac_max, pac_max, ac_power)
+
+    if isinstance(p_dc, pd.Series):
+        ac_power = pd.Series(ac_power, index=pdc.index)
 
     return ac_power
 

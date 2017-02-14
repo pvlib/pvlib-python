@@ -41,6 +41,20 @@ def cec_dc_snl_ac_system(sam_data):
 
 
 @pytest.fixture
+def cec_dc_adr_ac_system(sam_data):
+    modules = sam_data['cecmod']
+    module_parameters = modules['Canadian_Solar_CS5P_220M'].copy()
+    module_parameters['b'] = 0.05
+    module_parameters['EgRef'] = 1.121
+    module_parameters['dEgdT'] = -0.0002677
+    inverters = sam_data['adrinverter']
+    inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
+    system = PVSystem(module_parameters=module_parameters,
+                      inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
 def pvwatts_dc_snl_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     inverters = sam_data['cecinverter']
@@ -201,15 +215,14 @@ def acdc(mc):
 @requires_scipy
 @pytest.mark.parametrize('ac_model, expected', [
     ('snlinverter', [181.604438144, -2.00000000e-02]),
-    pytest.mark.xfail(raises=NotImplementedError)
-    (('adrinverter', [179.7178188, -2.00000000e-02])),
+    ('adrinverter', [np.nan, -25.00000000e-02]),
     ('pvwatts', [190.028186986, 0]),
     (acdc, [199.845296258, 0])  # user supplied function
 ])
-def test_ac_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
+def test_ac_models(system, cec_dc_adr_ac_system, pvwatts_dc_pvwatts_ac_system,
                    location, ac_model, expected):
 
-    ac_systems = {'snlinverter': system, 'adrinverter': cec_dc_snl_ac_system,
+    ac_systems = {'snlinverter': system, 'adrinverter': cec_dc_adr_ac_system,
                   'pvwatts': pvwatts_dc_pvwatts_ac_system,
                   acdc: pvwatts_dc_pvwatts_ac_system}
 

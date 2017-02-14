@@ -187,7 +187,7 @@ def poadc(mc):
 @requires_scipy
 @pytest.mark.parametrize('dc_model, expected', [
     ('sapm', [181.604438144, -2.00000000e-02]),
-    ('singlediode', [181.604438144, -2.00000000e-02]),
+    ('singlediode', [181.044109596, -2.00000000e-02]),
     ('pvwatts', [190.028186986, 0]),
     (poadc, [189.183065667, 0])  # user supplied function
 ])

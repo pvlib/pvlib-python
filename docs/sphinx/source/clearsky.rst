@@ -26,6 +26,10 @@ time series of clear sky data for a location. The :ref:`ineichen` and
 input data. The :ref:`detect_clearsky` subsection demonstrates the use
 of the clear sky detection algorithm.
 
+The :py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`, and
+:py:func:`~pvlib.atmosphere.kasten96_lt` functions are useful for
+calculating inputs to the clear sky functions.
+
 We'll need these imports for the examples below.
 
 .. ipython::
@@ -497,7 +501,6 @@ See [Ine16]_.
 
 We encourage users to compare the pvlib implementation to Ineichen's
 `Excel tool <http://www.unige.ch/energie/fr/equipe/ineichen/solis-tool/>`_.
-
 
 .. _detect_clearsky:
 

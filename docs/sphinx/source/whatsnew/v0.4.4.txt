@@ -6,6 +6,20 @@ v0.4.4 (January xx, 2017)
 Enhancements
 ~~~~~~~~~~~~
 
+* Added Anton Driesse Inverter database and made compatible with 
+  pvsystem.retrieve_sam. (:issue:`169`)
+* Ported Anton Driesse Inverter model from PV_LIB Toolbox. (:issue:`160`)
+* Added Kasten pyrheliometric formula to calculate Linke turbidity factors with
+  improvements by Ineichen and Perez to extend range of air mass (:issue:`278`)
+
+
+API Changes
+~~~~~~~~~~~
+
+* Change PVSystem default module_parameters and inverter_parameters to
+  empty dict. Code that relied on these attributes being None or raising
+  a TypeError will need to be updated. (issue:`294`)
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -15,7 +29,18 @@ Documentation
 * Fixes broken Classes link in the v0.3.0 documentation.
 
 
+Bug fixes
+~~~~~~~~~
+
+* Resolved several issues with the forecast module tests. Library import
+  errors were resolved by prioritizing the conda-forge channel over the
+  default channel. Stalled ci runs were resolved by adding a timeout to
+  the HRRR_ESRL test. (:issue:`293`)
+
+
 Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* Volker Beutner
+* Mark Mikofski

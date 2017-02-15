@@ -272,7 +272,17 @@ community via issues and pull requests.
 
 Getting support
 ---------------
-The best way to get support is to make an issue on our
+
+pvlib usage questions can be asked on
+`Stack Overflow  <http://stackoverflow.com>`_ and tagged with
+the `pvlib <http://stackoverflow.com/questions/tagged/pvlib>`_ tag.
+
+The `pvlib-python google group <https://groups.google.com/forum/#!forum/pvlib-python>`_
+is used for discussing various topics of interest to the pvlib-python
+community. We also make new version announcements on the google group.
+
+If you suspect that you may have discovered a bug or if you'd like to
+change something about pvlib, then please make an issue on our
 `GitHub issues page <https://github.com/pvlib/pvlib-python/issues>`_ .
 
 

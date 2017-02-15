@@ -3,7 +3,7 @@ channels:
     - conda-forge
     - defaults
 dependencies:
-    - python=2.7
+    - python=3.5
     - mock  # needed for local python 2.7 builds
     - numpy=1.11.2
     - scipy
@@ -11,14 +11,14 @@ dependencies:
     - pytz
     - ephem
     - numba
-    - ipython=4.0.1
+    - ipython=5.2.2
     - ipywidgets
     - numpydoc
-    - matplotlib=1.5.3
+    - matplotlib=2.0.0
     - seaborn=0.7.1
     - siphon=0.4.0
-    - sphinx=1.4.8
-    - netCDF4=1.2.4
+    - sphinx=1.5
+    - netCDF4=1.2.5
     - hdf4=4.2.12
     - sphinx_rtd_theme
     - docutils

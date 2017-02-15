@@ -31,6 +31,11 @@ Solar Position
 
 Functions and methods for calculating solar position.
 
+The :py:meth:`location.Location.get_solarposition` method and the
+:py:func:`solarposition.get_solarposition` function with default
+parameters are fast and accurate. We recommend using these functions
+unless you know that you need a different function.
+
 .. autosummary::
    :toctree: generated/
 

@@ -375,7 +375,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
             * 'monosi', 'xsi' - First Solar TetraSun modules.
             * 'multisi', 'polysi' - multi-crystalline silicon modules.
             * 'cigs' - anonymous copper indium gallium selenide PV module
-	    * 'asi' - anonymous amorphous silicon PV module
+            * 'asi' - anonymous amorphous silicon PV module
 
         The module used to calculate the spectral correction
         coefficients corresponds to the Mult-crystalline silicon

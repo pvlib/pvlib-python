@@ -6,7 +6,7 @@ v0.4.4 (January xx, 2017)
 Enhancements
 ~~~~~~~~~~~~
 
-* Added Anton Driesse Inverter database and made compatible with 
+* Added Anton Driesse Inverter database and made compatible with
   pvsystem.retrieve_sam. (:issue:`169`)
 * Ported Anton Driesse Inverter model from PV_LIB Toolbox. (:issue:`160`)
 * Added Kasten pyrheliometric formula to calculate Linke turbidity factors with
@@ -36,6 +36,7 @@ Bug fixes
   errors were resolved by prioritizing the conda-forge channel over the
   default channel. Stalled ci runs were resolved by adding a timeout to
   the HRRR_ESRL test. (:issue:`293`)
+* Fixed issue with irradiance jupyter notebook tutorial. (:issue:`309`)
 
 
 Contributors

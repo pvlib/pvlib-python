@@ -1,6 +1,6 @@
 .. _whatsnew_0440:
 
-v0.4.4 (January xx, 2017)
+v0.4.4 (February 18, 2017)
 --------------------------
 
 Enhancements
@@ -11,6 +11,8 @@ Enhancements
 * Ported Anton Driesse Inverter model from PV_LIB Toolbox. (:issue:`160`)
 * Added Kasten pyrheliometric formula to calculate Linke turbidity factors with
   improvements by Ineichen and Perez to extend range of air mass (:issue:`278`)
+* Added coefficients for CIGS and a-Si modules types to the
+  first_solar_spectral_correction function (:issue:`308`)
 
 
 API Changes
@@ -45,3 +47,5 @@ Contributors
 * Will Holmgren
 * Volker Beutner
 * Mark Mikofski
+* Anton Driesse
+* Mitchell Lee

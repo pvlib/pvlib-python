@@ -1954,8 +1954,9 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
 
     When calculating the DNI from GHI and DHI the calculated DNI may be
     unreasonably high or negative for zenith angles close to 90 degrees
-    (sunrise/sunset transitions). This function offers different methods
-    to correct those values.
+    (sunrise/sunset transitions). This function identifies unreasonable DNI
+    values and sets them to NaN. If the clearsky DNI is given unreasonably high
+    values are cut off.
 
     Parameters
     ----------
@@ -1969,22 +1970,23 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
 
-    method : str
-        The method used to correct the calculated DNI.
-        Must be one of 'clearsky', 'cutoff'.
-    
     clearsky_dni : None or Series
-        Clearsky direct normal irradiance.
-    
-    set_to_nan : boolean
-        If True the values of the calculated DNI that need correction will be
-        replaced by NaN. Otherwise they will be replaced by the calculated 
-        value depending on the specified method.
+        Clearsky direct normal irradiance. Default: None.
 
     clearsky_tolerance : float
-        If method 'clearsky' is chosen this parameter can be used to allow a
+        If 'clearsky_dni' is given this parameter can be used to allow a
         tolerance by how much the calculated DNI value can be greater than
         the clearsky value before it is identified as an unreasonable value.
+        Default: 1.
+
+    upper_cutoff_zenith : float
+        Zenith angle above which nonzero DNI values are set to NaN.
+        Default: 88.
+
+    lower_cutoff_zenith : float
+        Zenith angle above which DNI values greater the clearsky DNI (plus
+        allowed tolerance) are corrected. Only applies if 'clearsky_dni' is not
+        None. Default: 80.
 
     Returns
     -------

@@ -2011,13 +2011,4 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
         dni[(zenith >= lower_cutoff_zenith) & (zenith <= upper_cutoff_zenith) &
             (dni > (clearsky_dni * clearsky_tolerance))] = (clearsky_dni *
                                                             clearsky_tolerance)
-
-    # # plot
-    # dni.plot(legend=True)
-    # clearsky_df.dni.plot(legend=True)
-    # zenith_copy = zenith.copy()
-    # zenith_copy = (90 - zenith) * 4
-    # import matplotlib.pyplot as plt
-    # plt.show()
-
     return dni

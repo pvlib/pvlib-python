@@ -886,7 +886,7 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 
 def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
           solar_zenith, solar_azimuth, airmass,
-          model='allsitescomposite1990'):
+          model='allsitescomposite1990', return_components=False):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
     one of the Perez models.
@@ -952,6 +952,10 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         * 'albuquerque1988'
         * 'capecanaveral1988'
         * 'albany1988'
+
+    return_components: bool (optional, default=False)
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
 
     Returns
     --------
@@ -1043,7 +1047,26 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     else:
         sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
 
-    return sky_diffuse
+    if return_components:
+        diffuse_components = OrderedDict()
+
+        # Calculate the different components
+        diffuse_components['isotropic'] = dhi * term1
+        diffuse_components['circumsolar'] = dhi * term2
+        diffuse_components['horizon'] = dhi * term3
+
+        # Set values of components to 0 when sky_diffuse is 0
+        mask = sky_diffuse == 0
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+            diffuse_components.ix[mask] = 0
+        else:
+            diffuse_components = {k: np.where(mask, 0, v) for k, v in diffuse_components.items()}
+
+        return sky_diffuse, diffuse_components
+
+    else:
+        return sky_diffuse
 
 
 def disc(ghi, zenith, datetime_or_doy, pressure=101325):
@@ -1200,7 +1223,7 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     Notes
     -----
     DIRINT model requires time series data (ie. one of the inputs must
-    be a vector of length > 2.
+    be a vector of length > 2).
 
     References
     ----------
@@ -1294,6 +1317,86 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     dni *= dirint_coeffs
 
     return dni
+
+
+def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
+             use_delta_kt_prime=True, temp_dew=None):
+    """
+    Determine DNI from GHI using the DIRINDEX model, which is a modification of
+    the DIRINT model with information from a clear sky model.
+
+    DIRINDEX [1] improves upon the DIRINT model by taking into account turbidity
+    when used with the Ineichen clear sky model results.
+
+    Parameters
+    ----------
+    ghi : array-like
+        Global horizontal irradiance in W/m^2.
+
+    ghi_clearsky : array-like
+        Global horizontal irradiance from clear sky model, in W/m^2.
+
+    dni_clearsky : array-like
+        Direct normal irradiance from clear sky model, in W/m^2.
+
+    zenith : array-like
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. If Z is a vector it must be of the same size as all
+        other vector inputs. Z must be >=0 and <=180.
+
+    times : DatetimeIndex
+
+    pressure : float or array-like
+        The site pressure in Pascal. Pressure may be measured or an
+        average pressure may be calculated from site altitude.
+
+    use_delta_kt_prime : bool
+        Indicates if the user would like to utilize the time-series
+        nature of the GHI measurements. A value of ``False`` will not
+        use the time-series improvements, any other numeric value will
+        use time-series improvements. It is recommended that time-series
+        data only be used if the time between measured data points is
+        less than 1.5 hours. If none of the input arguments are vectors,
+        then time-series improvements are not used (because it's not a
+        time-series). If True, input data must be Series.
+
+    temp_dew : None, float, or array-like
+        Surface dew point temperatures, in degrees C. Values of temp_dew
+        may be numeric or NaN. Any single time period point with a
+        DewPtTemp=NaN does not have dew point improvements applied. If
+        DewPtTemp is not provided, then dew point improvements are not
+        applied.
+
+    Returns
+    -------
+    dni : array-like
+        The modeled direct normal irradiance in W/m^2.
+
+    Notes
+    -----
+    DIRINDEX model requires time series data (ie. one of the inputs must
+    be a vector of length > 2).
+
+    References
+    ----------
+    [1] Perez, R., Ineichen, P., Moore, K., Kmiecik, M., Chain, C., George, R.,
+    & Vignola, F. (2002). A new operational model for satellite-derived
+    irradiances: description and validation. Solar Energy, 73(5), 307-317.
+    """
+
+    dni_dirint = dirint(ghi, zenith, times, pressure=pressure,
+                        use_delta_kt_prime=use_delta_kt_prime,
+                        temp_dew=temp_dew)
+
+    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times, pressure=pressure,
+                                 use_delta_kt_prime=use_delta_kt_prime,
+                                 temp_dew=temp_dew)
+
+    dni_dirindex = dni_clearsky * dni_dirint / dni_dirint_clearsky
+
+    dni_dirindex[dni_dirindex < 0] = 0.
+
+    return dni_dirindex
 
 
 def erbs(ghi, zenith, doy):

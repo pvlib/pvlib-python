@@ -23,7 +23,12 @@ multidimensional data may prefer to use the basic functions in the
 The :ref:`location` subsection demonstrates the easiest way to obtain a
 time series of clear sky data for a location. The :ref:`ineichen` and
 :ref:`simplified_solis` subsections detail the clear sky algorithms and
-input data.
+input data. The :ref:`detect_clearsky` subsection demonstrates the use
+of the clear sky detection algorithm.
+
+The :py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`, and
+:py:func:`~pvlib.atmosphere.kasten96_lt` functions are useful for
+calculating inputs to the clear sky functions.
 
 We'll need these imports for the examples below.
 
@@ -497,6 +502,77 @@ See [Ine16]_.
 We encourage users to compare the pvlib implementation to Ineichen's
 `Excel tool <http://www.unige.ch/energie/fr/equipe/ineichen/solis-tool/>`_.
 
+.. _detect_clearsky:
+
+Detect Clearsky
+---------------
+
+The :py:func:`~pvlib.clearsky.detect_clearsky` function implements the
+[Ren16]_ algorithm to detect the clear and cloudy points of a time
+series. The algorithm was designed and validated for analyzing GHI time
+series only. Users may attempt to apply it to other types of time series
+data using different filter settings, but should be skeptical of the
+results.
+
+The algorithm detects clear sky times by comparing statistics for a
+measured time series and an expected clearsky time series. Statistics
+are calculated using a sliding time window (e.g., 10 minutes). An
+iterative algorithm identifies clear periods, uses the identified
+periods to estimate bias in the clearsky data, scales the clearsky data
+and repeats.
+
+Clear times are identified by meeting 5 criteria. Default values for
+these thresholds are appropriate for 10 minute windows of 1 minute GHI
+data.
+
+Next, we show a simple example of applying the algorithm to synthetic
+GHI data. We first generate and plot the clear sky and measured data.
+
+.. ipython:: python
+
+    abq = Location(35.04, -106.62, altitude=1619)
+
+    times = pd.DatetimeIndex(start='2012-04-01 10:30:00', tz='Etc/GMT+7', periods=30, freq='1min')
+
+    cs = abq.get_clearsky(times)
+
+    # scale clear sky data to account for possibility of different turbidity
+    ghi = cs['ghi']*.953
+
+    # add a cloud event
+    ghi['2012-04-01 10:42:00':'2012-04-01 10:44:00'] = [500, 300, 400]
+
+    # add an overirradiance event
+    ghi['2012-04-01 10:56:00'] = 950
+
+    fig, ax = plt.subplots()
+
+    ghi.plot(label='input');
+
+    cs['ghi'].plot(label='ineichen clear');
+
+    ax.set_ylabel('Irradiance $W/m^2$');
+
+    plt.legend(loc=4);
+    @savefig detect-clear-ghi.png width=10in
+    plt.show();
+
+Now we run the synthetic data and clear sky estimate through the
+:py:func:`~pvlib.clearsky.detect_clearsky` function.
+
+.. ipython:: python
+
+    clear_samples = clearsky.detect_clearsky(ghi, cs['ghi'], cs.index, 10)
+
+    fig, ax = plt.subplots()
+
+    clear_samples.plot();
+
+    @savefig detect-clear-detected.png width=10in
+    ax.set_ylabel('Clear (1) or Cloudy (0)');
+
+The algorithm detected the cloud event and the overirradiance event.
+
 
 References
 ----------
@@ -519,3 +595,7 @@ References
 .. [Ren12] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
    Sky Models: Implementation and Analysis", Sandia National
    Laboratories, SAND2012-2389, 2012.
+
+.. [Ren16] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+   sky irradiance in time series of GHI measurements" Renewable Energy,
+   v90, p. 520-531, 2016.

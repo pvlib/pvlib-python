@@ -38,26 +38,33 @@ def get_solarposition(time, latitude, longitude,
     Parameters
     ----------
     time : pandas.DatetimeIndex
+
     latitude : float
+
     longitude : float
+
     altitude : None or float
         If None, computed from pressure. Assumed to be 0 m
         if pressure is also None.
+
     pressure : None or float
         If None, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
+
     method : string
-        'pyephem' uses the PyEphem package: :func:`pyephem`
-
-        'nrel_c' uses the NREL SPA C code [3]: :func:`spa_c`
-
         'nrel_numpy' uses an implementation of the NREL SPA algorithm
-        described in [1] (default): :func:`spa_python`
+        described in [1] (default, recommended): :py:func:`spa_python`
 
         'nrel_numba' uses an implementation of the NREL SPA algorithm
-        described in [1], but also compiles the code first: :func:`spa_python`
+        described in [1], but also compiles the code first:
+        :py:func:`spa_python`
 
-        'ephemeris' uses the pvlib ephemeris code: :func:`ephemeris`
+        'pyephem' uses the PyEphem package: :py:func:`pyephem`
+
+        'ephemeris' uses the pvlib ephemeris code: :py:func:`ephemeris`
+
+        'nrel_c' uses the NREL SPA C code [3]: :py:func:`spa_c`
+
     temperature : float
         Degrees C.
 
@@ -114,12 +121,14 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
           raw_spa_output=False):
     """
     Calculate the solar position using the C implementation of the NREL
-    SPA code
+    SPA code.
 
     The source files for this code are located in './spa_c_files/', along with
     a README file which describes how the C code is wrapped in Python.
     Due to license restrictions, the C code must be downloaded seperately
     and used in accordance with it's license.
+
+    This function is slower and no more accurate than :py:func:`spa_python`.
 
     Parameters
     ----------
@@ -266,7 +275,7 @@ def spa_python(time, latitude, longitude,
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.
+        this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3].
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
@@ -807,7 +816,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.
+        this will be fixed in a future version.*
         By default, use USNO historical data and predictions
 
     numthreads : int, optional

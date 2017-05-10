@@ -1,10 +1,14 @@
 import sys
 import platform
 
+from pkg_resources import parse_version
 import pandas as pd
 import numpy as np
 import pytest
 
+
+skip_windows = pytest.mark.skipif('win' in sys.platform,
+                                  reason='does not run on windows')
 
 try:
     import scipy
@@ -25,22 +29,14 @@ requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
 
 
 def pandas_0_17():
-    version = tuple(map(int, pd.__version__.split('.')))
-    if version[0] <= 0 and version[1] < 17:
-        return False
-    else:
-        return True
+    return parse_version(pd.__version__) >= parse_version('0.17.0')
 
 needs_pandas_0_17 = pytest.mark.skipif(
     not pandas_0_17(), reason='requires pandas 0.17 or greater')
 
 
 def numpy_1_10():
-    version = tuple(map(int, np.__version__.split('.')))
-    if version[0] <= 1 and version[1] < 10:
-        return False
-    else:
-        return True
+    return parse_version(np.__version__) >= parse_version('1.10.0')
 
 needs_numpy_1_10 = pytest.mark.skipif(
     not numpy_1_10(), reason='requires numpy 1.10 or greater')

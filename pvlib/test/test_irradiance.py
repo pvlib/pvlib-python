@@ -42,6 +42,7 @@ dt_datetime = datetime.datetime.combine(dt_date, datetime.time(0))
 dt_np64 = np.datetime64(dt_datetime)
 value = 1383.636203
 
+
 @pytest.mark.parametrize('input, expected', [
     (doy, value),
     (np.float64(doy), value),
@@ -158,6 +159,29 @@ def test_perez():
     assert_series_equal(out, expected, check_less_precise=2)
 
 
+def test_perez_components():
+    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out, df_components = irradiance.perez(40, 180, irrad_data['dhi'], dni,
+                     dni_et, ephem_data['apparent_zenith'],
+                     ephem_data['azimuth'], am, return_components=True)
+    expected = pd.Series(np.array(
+        [   0.        ,   31.46046871,  np.nan,   45.45539877]),
+        index=times)
+    expected_components = pd.DataFrame(
+        np.array([[  0.        ,  26.84138589,          np.nan,  31.72696071],
+                 [ 0.        ,  0.        ,         np.nan,  4.47966439],
+                 [ 0.        ,  4.62212181,         np.nan,  9.25316454]]).T,
+        columns=['isotropic', 'circumsolar', 'horizon'],
+        index=times
+    )
+    sum_components = df_components.sum(axis=1)
+
+    assert_series_equal(out, expected, check_less_precise=2)
+    assert_frame_equal(df_components, expected_components)
+    assert_series_equal(sum_components, expected, check_less_precise=2)
+
 @needs_numpy_1_10
 def test_perez_arrays():
     am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
@@ -169,7 +193,6 @@ def test_perez_arrays():
     expected = np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877])
     assert_allclose(out, expected, atol=1e-2)
-
 
 
 def test_liujordan():
@@ -263,6 +286,7 @@ def test_dirint():
     dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'],
                                     ephem_data.index, pressure=pressure)
 
+
 def test_dirint_value():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
@@ -295,6 +319,7 @@ def test_dirint_tdew():
     assert_almost_equal(dirint_data.values,
                         np.array([892.9,  636.5]), 1)
 
+
 def test_dirint_no_delta_kt():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
@@ -304,6 +329,7 @@ def test_dirint_no_delta_kt():
                                     use_delta_kt_prime=False)
     assert_almost_equal(dirint_data.values,
                         np.array([861.9,  670.4]), 1)
+
 
 def test_dirint_coeffs():
     coeffs = irradiance._get_dirint_coeffs()
@@ -360,3 +386,39 @@ def test_dni():
     assert_series_equal(dni,
                         pd.Series([float('nan'), float('nan'), 573.685662283,
                                    146.190220008, 573.685662283]))
+
+
+@needs_numpy_1_10
+def test_dirindex():
+    clearsky_data = tus.get_clearsky(times, model='ineichen',
+                                     linke_turbidity=3)
+    ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
+    ghi_clearsky = pd.Series(
+        np.array([0., 79.73860422, 1042.48031487, 257.20751138]),
+        index=times
+    )
+    dni_clearsky = pd.Series(
+        np.array([0., 316.1949056, 939.95469881, 646.22886049]),
+        index=times
+    )
+    zenith = pd.Series(
+        np.array([124.0390863, 82.85457044, 10.56413562, 72.41687122]),
+        index=times
+    )
+    pressure = 93193.
+    tdew = 10.
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky,
+                              zenith, times, pressure=pressure,
+                              temp_dew=tdew)
+    dirint_close_values = irradiance.dirint(ghi, zenith, times,
+                                            pressure=pressure,
+                                            use_delta_kt_prime=True,
+                                            temp_dew=tdew).values
+    expected_out = np.array([np.nan, 0., 748.31562753, 630.72592644])
+
+    tolerance = 1e-8
+    assert np.allclose(out, expected_out, rtol=tolerance, atol=0,
+                       equal_nan=True)
+    tol_dirint = 0.2
+    assert np.allclose(out.values, dirint_close_values, rtol=tol_dirint, atol=0,
+                       equal_nan=True)

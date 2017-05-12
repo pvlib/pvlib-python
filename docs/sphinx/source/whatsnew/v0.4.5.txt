@@ -8,7 +8,7 @@ Bug fixes
 ~~~~~~~~~
 
 * Fix pandas 0.20 incompatibilities in Location.get_clearsky,
-  solarposition.ephemeris (:issue:`293`)
+  solarposition.ephemeris (:issue:`325`)
 
 
 Contributors

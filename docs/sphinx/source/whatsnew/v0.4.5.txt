@@ -1,0 +1,19 @@
+.. _whatsnew_0450:
+
+v0.4.5 (May xx, 2017)
+---------------------
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fix pandas 0.20 incompatibilities in Location.get_clearsky,
+  solarposition.ephemeris (:issue:`325`)
+* Fixes timezone issue in solarposition spa_c function (:issue:`237`)
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren
+* Marc Anoma

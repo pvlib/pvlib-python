@@ -616,10 +616,11 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     DecHours = (time_utc.hour + time_utc.minute/60. + time_utc.second/3600. +
                 time_utc.microsecond/3600.e6)
 
-    UnivDate = DayOfYear
-    UnivHr = DecHours
+    # np.array needed for pandas > 0.20
+    UnivDate = np.array(DayOfYear)
+    UnivHr = np.array(DecHours)
 
-    Yr = time_utc.year - 1900
+    Yr = np.array(time_utc.year) - 1900
     YrBegin = 365 * Yr + np.floor((Yr - 1) / 4.) - 0.5
 
     Ezero = YrBegin + UnivDate

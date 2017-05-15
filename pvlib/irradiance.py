@@ -2087,7 +2087,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
         Default: 88.
 
     lower_cutoff_zenith : float
-        Zenith angle above which DNI values greater the clearsky DNI (plus
+        Zenith angle above which DNI values greater the clearsky DNI (times
         allowed tolerance) are corrected. Only applies if 'clearsky_dni' is not
         None. Default: 80.
 

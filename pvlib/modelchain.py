@@ -623,7 +623,7 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def complete_irradiance(self, times=None, weather=None, **kwargs):
+    def complete_irradiance(self, times=None, weather=None):
         """
         Determine the missing irradiation columns. Only two of the
         following data columns (dni, ghi, dhi) are needed to calculate
@@ -682,9 +682,8 @@ class ModelChain(object):
             self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
                 self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
                 self.solar_position.zenith,
-                clearsky_dni=kwargs.get('clearsky_dni',
-                                        self.location.get_clearsky(times).dni),
-                clearsky_tolerance=kwargs.get('clearsky_tolerance', 1))
+                clearsky_dni=self.location.get_clearsky(times).dni,
+                clearsky_tolerance=1.1)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             logging.debug('Estimate ghi from dni and dhi')

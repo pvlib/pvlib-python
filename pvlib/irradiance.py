@@ -2099,8 +2099,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
     """
 
     # calculate DNI
-    dni_tmp = (ghi - dhi) / tools.cosd(zenith)
-    dni = dni_tmp.copy()
+    dni = (ghi - dhi) / tools.cosd(zenith)
 
     # cutoff negative values
     dni[dni < 0] = float('nan')

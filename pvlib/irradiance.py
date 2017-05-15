@@ -2051,7 +2051,7 @@ def _get_dirint_coeffs():
 
 
 def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
-        upper_cutoff_zenith=88.0, lower_cutoff_zenith=80.0, **kwargs):
+        upper_cutoff_zenith=88.0, lower_cutoff_zenith=80.0):
     """
     Determine DNI from GHI and DHI.
 

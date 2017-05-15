@@ -2095,7 +2095,6 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
     -------
     dni : Series
         The modeled direct normal irradiance.
-
     """
 
     # calculate DNI

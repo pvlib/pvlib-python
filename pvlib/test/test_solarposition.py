@@ -375,7 +375,7 @@ def test_equation_of_time():
     output = solarposition.spa_python(times, 37.8, -122.25, 100)
     eot = output['equation_of_time']
     eot_rng = eot.max() - eot.min()  # range of values, around 30 minutes
-    eot_1 = solarposition.equation_of_time_Spencer71(times.dayofyear)
+    eot_1 = solarposition.equation_of_time_spencer71(times.dayofyear)
     eot_2 = solarposition.equation_of_time_pvcdrom(times.dayofyear)
     assert np.allclose((eot_1 - eot) / eot_rng, 0, atol=0.3)
     assert np.allclose((eot_2 - eot) / eot_rng, 0, atol=0.4)

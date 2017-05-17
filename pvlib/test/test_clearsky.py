@@ -626,7 +626,7 @@ def test_bird():
     aod_380nm = 0.15
     b_a = 0.85
     alb = 0.2
-    eot = solarposition.equation_of_time_Spencer71(times.dayofyear)
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
     hour_angle = solarposition.hour_angle(times, longitude, eot) - 0.5 * 15.
     declination = solarposition.declination_spencer71(times.dayofyear)
     zenith = solarposition.solar_zenith_analytical(

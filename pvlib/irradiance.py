@@ -2050,7 +2050,7 @@ def _get_dirint_coeffs():
     return coeffs[1:, 1:, :, :]
 
 
-def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
+def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
         upper_cutoff_zenith=88.0, lower_cutoff_zenith=80.0):
     """
     Determine DNI from GHI and DHI.

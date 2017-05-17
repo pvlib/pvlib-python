@@ -764,6 +764,10 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     diffuse_horiz : numeric
         Diffuse horizontal [W/m^2]
 
+    See also
+    --------
+    atmosphere.bird_hulstrom80_aod_bb
+
     References
     ----------
     [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for Direct
@@ -801,7 +805,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
             (1.0 + 79.034 * am_h2o) ** 0.6828 + 6.385 * am_h2o
         )
     )
-    bird_huldstrom = 0.2758 * aod380 + 0.35 * aod500
+    bird_huldstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
     t_aerosol = np.exp(
         -(bird_huldstrom ** 0.873) *
         (1.0 + bird_huldstrom - bird_huldstrom ** 0.7088) * airmass ** 0.9108
@@ -819,4 +823,13 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     )
     gh = (id_nh + ias) / (1.0 - albedo * rs)
     diffuse_horiz = gh - id_nh
-    return id_, id_nh, gh, diffuse_horiz
+    # TODO: be DRY, use decorator to wrap methods that need to return either
+    # OrderedDict or DataFrame instead of repeating this boilerplate code
+    irrads = OrderedDict()
+    irrads['direct_horizontal'] = id_nh
+    irrads['ghi'] = gh
+    irrads['dni'] = id_
+    irrads['dhi'] = diffuse_horiz
+    if isinstance(irrads['dni'], pd.Series):
+        irrads = pd.DataFrame.from_dict(irrads)
+    return irrads

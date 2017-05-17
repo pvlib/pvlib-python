@@ -636,10 +636,12 @@ def test_bird():
     airmass = atmosphere.relativeairmass(zenith, model='kasten1966')
     etr = irradiance.extraradiation(times)
     # test Bird with time series data
-    Eb, Ebh, Gh, Dh = clearsky.bird(
+    field_names = ('dni', 'direct_horizontal', 'ghi', 'dhi')
+    irrads = clearsky.bird(
         zenith, airmass, aod_380nm, aod_500nm, h2o_cm, o3_cm, press_mB * 100.,
         etr, b_a, alb
     )
+    Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
     clearsky_path = os.path.dirname(os.path.abspath(__file__))
     pvlib_path = os.path.dirname(clearsky_path)
     data_path = os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012.csv')
@@ -672,9 +674,10 @@ def test_bird():
         testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
     )
     # test keyword parameters
-    Eb2, Ebh2, Gh2, Dh2 = clearsky.bird(
+    irrads2 = clearsky.bird(
         zenith, airmass, aod_380nm, aod_500nm, h2o_cm, dni_extra=etr
     )
+    Eb2, Ebh2, Gh2, Dh2 = (irrads2[_] for _ in field_names)
     clearsky_path = os.path.dirname(os.path.abspath(__file__))
     pvlib_path = os.path.dirname(clearsky_path)
     data_path = os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012_patm.csv')
@@ -698,9 +701,10 @@ def test_bird():
     )
     # test scalars just at noon
     # XXX: calculations start at 12am so noon is at index = 12
-    Eb3, Ebh3, Gh3, Dh3 = clearsky.bird(
+    irrads3 = clearsky.bird(
         zenith[12], airmass[12], aod_380nm, aod_500nm, h2o_cm, dni_extra=etr[12]
     )
+    Eb3, Ebh3, Gh3, Dh3 = (irrads3[_] for _ in field_names)
     # XXX: testdata starts at 1am so noon is at index = 11
     np.allclose(
         [Eb3, Ebh3, Gh3, Dh3],

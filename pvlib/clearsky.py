@@ -766,7 +766,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     See also
     --------
-    atmosphere.bird_hulstrom80_aod_bb
+    pvlib.atmosphere.bird_hulstrom80_aod_bb
 
     References
     ----------

@@ -2083,13 +2083,15 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1,
         Default: 1.
 
     upper_cutoff_zenith : float
-        Zenith angle above which nonzero DNI values are set to NaN.
+        Zenith angles greater than or equal to upper_cutoff_zenith will be set
+        to NaN.
         Default: 88.
 
     lower_cutoff_zenith : float
-        Zenith angle above which DNI values greater the clearsky DNI (times
-        allowed tolerance) are corrected. Only applies if 'clearsky_dni' is not
-        None. Default: 80.
+        DNI values for zenith angles greater than or equal to
+        lower_cutoff_zenith and smaller the upper_cutoff_zenith that are
+        greater than the clearsky DNI (times allowed tolerance) will be
+        corrected. Only applies if 'clearsky_dni' is not None. Default: 80.
 
     Returns
     -------

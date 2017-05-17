@@ -20,7 +20,6 @@ except ImportError:
 
 import numpy as np
 import pandas as pd
-import datetime
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
@@ -39,26 +38,33 @@ def get_solarposition(time, latitude, longitude,
     Parameters
     ----------
     time : pandas.DatetimeIndex
+
     latitude : float
+
     longitude : float
+
     altitude : None or float
         If None, computed from pressure. Assumed to be 0 m
         if pressure is also None.
+
     pressure : None or float
         If None, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
+
     method : string
-        'pyephem' uses the PyEphem package: :func:`pyephem`
-
-        'nrel_c' uses the NREL SPA C code [3]: :func:`spa_c`
-
         'nrel_numpy' uses an implementation of the NREL SPA algorithm
-        described in [1] (default): :func:`spa_python`
+        described in [1] (default, recommended): :py:func:`spa_python`
 
         'nrel_numba' uses an implementation of the NREL SPA algorithm
-        described in [1], but also compiles the code first: :func:`spa_python`
+        described in [1], but also compiles the code first:
+        :py:func:`spa_python`
 
-        'ephemeris' uses the pvlib ephemeris code: :func:`ephemeris`
+        'pyephem' uses the PyEphem package: :py:func:`pyephem`
+
+        'ephemeris' uses the pvlib ephemeris code: :py:func:`ephemeris`
+
+        'nrel_c' uses the NREL SPA C code [3]: :py:func:`spa_c`
+
     temperature : float
         Degrees C.
 
@@ -115,12 +121,14 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
           raw_spa_output=False):
     """
     Calculate the solar position using the C implementation of the NREL
-    SPA code
+    SPA code.
 
     The source files for this code are located in './spa_c_files/', along with
     a README file which describes how the C code is wrapped in Python.
     Due to license restrictions, the C code must be downloaded seperately
     and used in accordance with it's license.
+
+    This function is slower and no more accurate than :py:func:`spa_python`.
 
     Parameters
     ----------
@@ -266,8 +274,8 @@ def spa_python(time, latitude, longitude,
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
-        *Note*: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3].
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
@@ -608,10 +616,11 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     DecHours = (time_utc.hour + time_utc.minute/60. + time_utc.second/3600. +
                 time_utc.microsecond/3600.e6)
 
-    UnivDate = DayOfYear
-    UnivHr = DecHours
+    # np.array needed for pandas > 0.20
+    UnivDate = np.array(DayOfYear)
+    UnivHr = np.array(DecHours)
 
-    Yr = time_utc.year - 1900
+    Yr = np.array(time_utc.year) - 1900
     YrBegin = 365 * Yr + np.floor((Yr - 1) / 4.) - 0.5
 
     Ezero = YrBegin + UnivDate
@@ -807,8 +816,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
-        *Note*: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.*
         By default, use USNO historical data and predictions
 
     numthreads : int, optional
@@ -1116,7 +1125,7 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_pvcdrom
     """
     hours = np.array([(t - t.tz.localize(
-        datetime.datetime(t.year, t.month, t.day)
+        dt.datetime(t.year, t.month, t.day)
     )).total_seconds() / 3600. for t in times])
     timezone = times.tz.utcoffset(times).total_seconds() / 3600.
     return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.

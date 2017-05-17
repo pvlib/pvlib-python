@@ -374,10 +374,13 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
             * 'cdte' - First Solar Series 4-2 CdTe modules.
             * 'monosi', 'xsi' - First Solar TetraSun modules.
             * 'multisi', 'polysi' - multi-crystalline silicon modules.
+            * 'cigs' - anonymous copper indium gallium selenide PV module
+            * 'asi' - anonymous amorphous silicon PV module
 
         The module used to calculate the spectral correction
         coefficients corresponds to the Mult-crystalline silicon
-        Manufacturer 2 Model C from [3]_.
+        Manufacturer 2 Model C from [3]_. Spectral Response (SR) of CIGS
+        and a-Si modules used to derive coefficients can be found in [4]_ 
 
     coefficients : array-like
         allows for entry of user defined spectral correction
@@ -409,6 +412,10 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     .. [3] Marion, William F., et al. User's Manual for Data for Validating
        Models for PV Module Performance. National Renewable Energy
        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
+    .. [4] Schweiger, M. and Hermann, W, Influence of Spectral Effects
+        on Energy Yield of Different PV Modules: Comparison of Pwat and
+        MMF Approach, TUV Rheinland Energy GmbH report 21237296.003,
+        January 2017
     """
 
     # --- Screen Input Data ---
@@ -443,13 +450,17 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     _coefficients = {}
     _coefficients['cdte'] = (
-       0.86273, -0.038948, -0.012506, 0.098871, 0.084658, -0.0042948)
+        0.86273, -0.038948, -0.012506, 0.098871, 0.084658, -0.0042948)
     _coefficients['monosi'] = (
         0.85914, -0.020880, -0.0058853, 0.12029, 0.026814, -0.0017810)
     _coefficients['xsi'] = _coefficients['monosi']
     _coefficients['polysi'] = (
         0.84090, -0.027539, -0.0079224, 0.13570, 0.038024, -0.0021218)
     _coefficients['multisi'] = _coefficients['polysi']
+    _coefficients['cigs'] = (
+        0.85252, -0.022314, -0.0047216, 0.13666, 0.013342, -0.0008945)
+    _coefficients['asi'] = (
+        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382,-0.0033818)
 
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]

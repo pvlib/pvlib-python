@@ -434,7 +434,7 @@ class ModelChain(object):
             if model == 'snlinverter':
                 self._ac_model = self.snlinverter
             elif model == 'adrinverter':
-                raise NotImplementedError
+                self._ac_model = self.adrinverter
             elif model == 'pvwatts':
                 self._ac_model = self.pvwatts_inverter
             else:
@@ -447,6 +447,8 @@ class ModelChain(object):
         module_params = set(self.system.module_parameters.keys())
         if set(['C0', 'C1', 'C2']) <= inverter_params:
             return self.snlinverter
+        elif set(['ADRCoefficients']) <= inverter_params:
+            return self.adrinverter
         elif set(['pdc0']) <= module_params:
             return self.pvwatts_inverter
         else:
@@ -458,7 +460,7 @@ class ModelChain(object):
         return self
 
     def adrinverter(self):
-        raise NotImplementedError
+        self.ac = self.system.adrinverter(self.dc['v_mp'], self.dc['p_mp'])
         return self
 
     def pvwatts_inverter(self):

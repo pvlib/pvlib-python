@@ -191,7 +191,7 @@ class Location(object):
             Column names are: ``ghi, dni, dhi``.
         """
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(times.dayofyear)
+            dni_extra = irradiance.extraradiation(times)
 
         try:
             pressure = kwargs.pop('pressure')

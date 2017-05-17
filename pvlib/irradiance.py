@@ -2051,7 +2051,8 @@ def _get_dirint_coeffs():
 
 
 def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
-        upper_cutoff_zenith=88.0, lower_cutoff_zenith=80.0):
+        zenith_threshold_for_zero_dni=88.0,
+        zenith_threshold_for_clearsky_limit=80.0):
     """
     Determine DNI from GHI and DHI.
 
@@ -2080,18 +2081,18 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
         If 'clearsky_dni' is given this parameter can be used to allow a
         tolerance by how much the calculated DNI value can be greater than
         the clearsky value before it is identified as an unreasonable value.
-        Default: 1.
+        Default: 1.1.
 
-    upper_cutoff_zenith : float
-        Zenith angles greater than or equal to upper_cutoff_zenith will be set
-        to NaN.
-        Default: 88.
+    zenith_threshold_for_zero_dni : float
+        Non-zero DNI values for zenith angles greater than or equal to
+        'zenith_threshold_for_zero_dni' will be set to NaN. Default: 88.
 
-    lower_cutoff_zenith : float
+    zenith_threshold_for_clearsky_limit : float
         DNI values for zenith angles greater than or equal to
-        lower_cutoff_zenith and smaller the upper_cutoff_zenith that are
-        greater than the clearsky DNI (times allowed tolerance) will be
-        corrected. Only applies if 'clearsky_dni' is not None. Default: 80.
+        'zenith_threshold_for_clearsky_limit' and smaller the
+        'zenith_threshold_for_zero_dni' that are greater than the clearsky DNI
+        (times allowed tolerance) will be corrected. Only applies if
+        'clearsky_dni' is not None. Default: 80.
 
     Returns
     -------
@@ -2105,14 +2106,17 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
     # cutoff negative values
     dni[dni < 0] = float('nan')
 
-    # set non-zero DNI values for zenith angles >= upper_cutoff_zenith to NaN
-    dni[(zenith >= upper_cutoff_zenith) & (dni != 0)] = float('nan')
+    # set non-zero DNI values for zenith angles >=
+    # zenith_threshold_for_zero_dni to NaN
+    dni[(zenith >= zenith_threshold_for_zero_dni) & (dni != 0)] = float('nan')
 
     # correct DNI values for zenith angles greater or equal to the
-    # lower_cutoff_zenith and smaller than the upper_cutoff_zenith that are
-    # greater than the clearsky DNI (times clearsky_tolerance)
+    # zenith_threshold_for_clearsky_limit and smaller than the
+    # upper_cutoff_zenith that are greater than the clearsky DNI (times
+    # clearsky_tolerance)
     if clearsky_dni is not None:
         max_dni = clearsky_dni * clearsky_tolerance
-        dni[(zenith >= lower_cutoff_zenith) & (zenith < upper_cutoff_zenith) &
+        dni[(zenith >= zenith_threshold_for_clearsky_limit) &
+            (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
     return dni

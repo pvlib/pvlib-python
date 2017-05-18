@@ -755,14 +755,9 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     Returns
     -------
-    direct_beam : numeric
-        Direct beam [W/m^2]
-    direct_horiz : numeric
-        Direct horizontal [W/m^2]
-    global_horiz : numeric
-        Global horizontal [W/m^2]
-    diffuse_horiz : numeric
-        Diffuse horizontal [W/m^2]
+    clearsky : DataFrame (if Series input) or OrderedDict of arrays
+        DataFrame/OrderedDict contains the columns/keys
+        ``'dhi', 'dni', 'ghi', direct_horizontal`` in  [W/m^2].
 
     See also
     --------

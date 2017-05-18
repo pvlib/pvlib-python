@@ -726,20 +726,32 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
          ozone=0.3, pressure=101325., dni_extra=1364., asymmetry=0.85,
          albedo=0.2):
     """
-    NREL Bird Simple Clear Sky Broadband Solar Radiation Model
+    Bird Simple Clear Sky Broadband Solar Radiation Model
 
-    Based on original implementation by Daryl R. Myers at NREL.
+    Based on NREL Excel implementation by Daryl R. Myers [1, 2].
+
+    Bird and Hulstrom define the zenith as the "angle between a line to the sun
+    and the local zenith". There is no distinction in the paper between solar
+    zenith and apparent (or refracted) zenith, but the relative airmass is
+    defined using the Kasten 1966 expression, which requires apparent zenith.
+    Although the formulation for calculated zenith is never explicitly defined
+    in the report, since the purpose was to compare existing clear sky models
+    with "rigorous radiative transfer models" (RTM) it is possible that apparent
+    zenith was obtained as output from the RTM. However, the implentation
+    presented in PVLIB is tested against the NREL Excel implementation by Daryl
+    Myers which uses an analytical expression for solar zenith instead of
+    apparent zenith.
 
     Parameters
     ----------
     zenith : numeric
-        Solar zenith angle in degrees.
+        Solar or apparent zenith angle in degrees - see note above
     airmass_relative : numeric
-        Relative airmass.
+        Relative airmass
     aod380 : numeric
-        Aerosol optical depth [cm] measured at 380[nm].
+        Aerosol optical depth [cm] measured at 380[nm]
     aod500 : numeric
-        Aerosol optical depth [cm] measured at 500[nm].
+        Aerosol optical depth [cm] measured at 500[nm]
     precipitable_water : numeric
         Precipitable water [cm]
     ozone : numeric
@@ -762,6 +774,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     See also
     --------
     pvlib.atmosphere.bird_hulstrom80_aod_bb
+    pvlib.atmosphere.relativeairmass
 
     References
     ----------

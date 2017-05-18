@@ -769,7 +769,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     -------
     clearsky : DataFrame (if Series input) or OrderedDict of arrays
         DataFrame/OrderedDict contains the columns/keys
-        ``'dhi', 'dni', 'ghi', direct_horizontal`` in  [W/m^2].
+        ``'dhi', 'dni', 'ghi', 'direct_horizontal'`` in  [W/m^2].
 
     See also
     --------

@@ -6,7 +6,6 @@ v0.4.4 (February 18, 2017)
 Enhancements
 ~~~~~~~~~~~~
 
-* Added NREL Bird clear sky model. (:issue:`276`)
 * Added Anton Driesse Inverter database and made compatible with
   pvsystem.retrieve_sam. (:issue:`169`)
 * Ported Anton Driesse Inverter model from PV_LIB Toolbox. (:issue:`160`)

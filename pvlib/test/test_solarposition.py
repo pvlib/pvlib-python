@@ -1,3 +1,4 @@
+import calendar
 import datetime
 
 import numpy as np
@@ -9,7 +10,7 @@ from numpy.testing import assert_allclose
 import pytest
 
 from pvlib.location import Location
-from pvlib import solarposition
+from pvlib import solarposition, spa
 
 from conftest import (requires_ephem, needs_pandas_0_17,
                       requires_spa_c, requires_numba)
@@ -377,5 +378,45 @@ def test_equation_of_time():
     eot_rng = eot.max() - eot.min()  # range of values, around 30 minutes
     eot_1 = solarposition.equation_of_time_spencer71(times.dayofyear)
     eot_2 = solarposition.equation_of_time_pvcdrom(times.dayofyear)
-    assert np.allclose((eot_1 - eot) / eot_rng, 0, atol=0.3)
-    assert np.allclose((eot_2 - eot) / eot_rng, 0, atol=0.4)
+    assert np.allclose(eot_1 / eot_rng, eot / eot_rng, atol=0.3)  # spencer
+    assert np.allclose(eot_2 / eot_rng, eot / eot_rng, atol=0.4)  # pvcdrom
+
+
+def test_declination():
+    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                             freq="H")
+    atmos_refract = 0.5667
+    delta_t = spa.calculate_deltat(times.year, times.month)
+    unixtime = np.array([calendar.timegm(t.timetuple()) for t in times])
+    _, _, declination = spa.solar_position(unixtime, 37.8, -122.25, 100,
+                                           1013.25, 25, delta_t, atmos_refract,
+                                           sst=True)
+    declination = np.deg2rad(declination)
+    declination_rng = declination.max() - declination.min()
+    declination_1 = solarposition.declination_cooper69(times.dayofyear)
+    declination_2 = solarposition.declination_spencer71(times.dayofyear)
+    a, b = declination_1 / declination_rng, declination / declination_rng
+    assert np.allclose(a, b, atol=0.03)  # cooper
+    a, b = declination_2 / declination_rng, declination / declination_rng
+    assert np.allclose(a, b, atol=0.02)  # spencer
+
+
+def test_analytical_zenith():
+    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                             freq="H").tz_localize('Etc/GMT+8')
+    lat, lon = 37.8, -122.25
+    lat_rad = np.deg2rad(lat)
+    output = solarposition.spa_python(times, lat, lon, 100)
+    solar_zenith = np.deg2rad(output['zenith'])  # spa
+    # spencer
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
+    hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
+    decl = solarposition.declination_spencer71(times.dayofyear)
+    zenith_1 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
+    # pvcdrom and cooper
+    eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)
+    hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
+    decl = solarposition.declination_cooper69(times.dayofyear)
+    zenith_2 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
+    assert np.allclose(zenith_1, solar_zenith, atol=0.015)
+    assert np.allclose(zenith_2, solar_zenith, atol=0.025)

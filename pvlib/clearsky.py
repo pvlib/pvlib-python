@@ -796,7 +796,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     airmass = airmass_relative
     # Bird clear sky model
     am_press = atmosphere.absoluteairmass(airmass, pressure)
-    t_rayliegh = (
+    t_rayleigh = (
         np.exp(-0.0903 * am_press ** 0.84 * (
             1.0 + am_press - am_press ** 1.01
         ))
@@ -820,12 +820,12 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     )
     taa = 1.0 - 0.1 * (1.0 - airmass + airmass ** 1.06) * (1.0 - t_aerosol)
     rs = 0.0685 + (1.0 - asymmetry) * (1.0 - t_aerosol / taa)
-    id_ = 0.9662 * etr * t_aerosol * t_water * t_gases * t_ozone * t_rayliegh
+    id_ = 0.9662 * etr * t_aerosol * t_water * t_gases * t_ozone * t_rayleigh
     ze_cos = np.where(zenith < 90, np.cos(ze_rad), 0.0)
     id_nh = id_ * ze_cos
     ias = (
         etr * ze_cos * 0.79 * t_ozone * t_gases * t_water * taa *
-        (0.5 * (1.0 - t_rayliegh) + asymmetry * (1.0 - (t_aerosol / taa))) / (
+        (0.5 * (1.0 - t_rayleigh) + asymmetry * (1.0 - (t_aerosol / taa))) / (
             1.0 - airmass + airmass ** 1.02
         )
     )

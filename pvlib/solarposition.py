@@ -968,15 +968,18 @@ def declination_spencer71(dayofyear):
     Solar declination from Duffie & Beckman [1] and attributed to Spencer (1971)
     and Iqbal (1983).
 
+    .. warning::
+        Return units are radians, not degrees.
+
     Parameters
     ----------
     dayofyear : numeric
 
     Returns
     -------
-    declination : numeric
+    declination (radians) : numeric
         Angular position of the sun at solar noon relative to the plane of the
-        equator, approximately between -23.45 and 23.45.
+        equator, approximately between +/-23.45 (degrees).
 
     References
     ----------
@@ -1005,6 +1008,9 @@ def declination_cooper69(dayofyear):
     """
     Solar declination from Duffie & Beckman [1] and attributed to Cooper (1969)
 
+    .. warning::
+        Return units are radians, not degrees.
+
     Declination can be expressed using either sine or cosine:
 
     .. math::
@@ -1019,9 +1025,9 @@ def declination_cooper69(dayofyear):
 
     Returns
     -------
-    declination : numeric
+    declination (radians) : numeric
         Angular position of the sun at solar noon relative to the plane of the
-        equator, approximately between -23.45 and 23.45.
+        equator, approximately between +/-23.45 (degrees).
 
     References
     ----------
@@ -1039,7 +1045,7 @@ def declination_cooper69(dayofyear):
     declination_spencer71
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
-    return 23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0)
+    return np.deg2rad(23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0))
 
 
 def solar_zenith_analytical(latitude, hour_angle, declination):

@@ -1103,7 +1103,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     elev : float
         Elevation of location in meters
     pressure : int or float
-        avg. yearly pressure at location in Pascals;
+        avg. yearly pressure at location in millibars;
         used for atmospheric correction
     temp : int or float
         avg. yearly temperature at location in

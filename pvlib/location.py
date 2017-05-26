@@ -63,7 +63,7 @@ class Location(object):
         self.latitude = latitude
         self.longitude = longitude
 
-        if isinstance(tz, str):
+        if isinstance(tz, basestring):
             self.tz = tz
             self.pytz = pytz.timezone(tz)
         elif isinstance(tz, datetime.tzinfo):

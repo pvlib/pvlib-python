@@ -13,9 +13,16 @@ Bug fixes
 * Added lower accuracy formulas for equation of time, declination, hour angle
   and solar zenith.
 
+Enhancements
+~~~~~~~~~~~~~
+
+* Added irradiance.dni method that determines DNI from GHI and DHI and corrects
+  unreasonable DNI values during sunrise/sunset transitions
+
 
 Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
 * Mark Mikofski
+* Birgit Schachler

@@ -1,0 +1,21 @@
+.. _whatsnew_0450:
+
+v0.4.5 (May xx, 2017)
+---------------------
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fix pandas 0.20 incompatibilities in Location.get_clearsky,
+  solarposition.ephemeris (:issue:`325`)
+* Added NREL Bird clear sky model. (:issue:`276`)
+* Added lower accuracy formulas for equation of time, declination, hour angle
+  and solar zenith.
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren
+* Mark Mikofski

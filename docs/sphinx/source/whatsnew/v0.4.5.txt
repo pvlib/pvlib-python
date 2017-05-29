@@ -12,6 +12,8 @@ Bug fixes
 * Added NREL Bird clear sky model. (:issue:`276`)
 * Added lower accuracy formulas for equation of time, declination, hour angle
   and solar zenith.
+* Remove all instances of .ix (:issue:`322`)
+
 
 Enhancements
 ~~~~~~~~~~~~~

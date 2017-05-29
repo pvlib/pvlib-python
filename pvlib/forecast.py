@@ -704,7 +704,7 @@ class GFS(ForecastModel):
         data['wind_speed'] = self.uv_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class HRRR_ESRL(ForecastModel):
@@ -790,7 +790,7 @@ class HRRR_ESRL(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class NAM(ForecastModel):
@@ -871,7 +871,7 @@ class NAM(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class HRRR(ForecastModel):
@@ -955,7 +955,7 @@ class HRRR(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class NDFD(ForecastModel):
@@ -1024,7 +1024,7 @@ class NDFD(ForecastModel):
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class RAP(ForecastModel):
@@ -1109,4 +1109,4 @@ class RAP(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]

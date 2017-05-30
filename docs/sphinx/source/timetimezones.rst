@@ -286,7 +286,7 @@ print just a few of the rows and columns of the large dataframe.
 
     tmy3_data.index.tz
 
-    tmy3_data.ix[0:3, ['GHI', 'DNI', 'AOD']]
+    tmy3_data.loc[tmy3_data.index[0:3], ['GHI', 'DNI', 'AOD']]
 
 The :py:func:`~pvlib.tmy.readtmy2` function also returns a DataFrame
 with a localized DatetimeIndex.
@@ -309,7 +309,7 @@ DataFrame's index since the index has been localized.
                                                            tmy3_metadata['latitude'],
                                                            tmy3_metadata['longitude'])
 
-    ax = solar_position.ix[0:24, ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
+    ax = solar_position.loc[solar_position.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset
@@ -340,7 +340,7 @@ below? The solar position calculator will assume UTC time.
                                                                 tmy3_metadata['latitude'],
                                                                 tmy3_metadata['longitude'])
 
-    ax = solar_position_notz.ix[0:24, ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
+    ax = solar_position_notz.loc[solar_position_notz.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset
@@ -365,7 +365,7 @@ UTC, and then convert it to the desired time zone.
 
     solar_position_hack.index
 
-    ax = solar_position_hack.ix[0:24, ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
+    ax = solar_position_hack.loc[solar_position_hack.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset

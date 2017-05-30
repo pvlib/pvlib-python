@@ -1059,9 +1059,10 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         mask = sky_diffuse == 0
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
-            diffuse_components.ix[mask] = 0
+            diffuse_components.loc[mask] = 0
         else:
-            diffuse_components = {k: np.where(mask, 0, v) for k, v in diffuse_components.items()}
+            diffuse_components = {k: np.where(mask, 0, v) for k, v in
+                                  diffuse_components.items()}
 
         return sky_diffuse, diffuse_components
 

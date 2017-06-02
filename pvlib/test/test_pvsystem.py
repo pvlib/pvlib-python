@@ -521,16 +521,16 @@ def test_PVSystem_scale_voltage_current_power():
 
 def test_sapm_celltemp():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(43.509, default.ix[0, 'temp_cell'], 3)
-    assert_allclose(40.809, default.ix[0, 'temp_module'], 3)
+    assert_allclose(43.509, default['temp_cell'], 3)
+    assert_allclose(40.809, default['temp_module'], 3)
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20,
                                                        [-3.47, -.0594, 3]))
 
 
 def test_sapm_celltemp_dict_like():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(43.509, default.ix[0, 'temp_cell'], 3)
-    assert_allclose(40.809, default.ix[0, 'temp_module'], 3)
+    assert_allclose(43.509, default['temp_cell'], 3)
+    assert_allclose(40.809, default['temp_module'], 3)
     model = {'a':-3.47, 'b':-.0594, 'deltaT':3}
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
     model = pd.Series(model)

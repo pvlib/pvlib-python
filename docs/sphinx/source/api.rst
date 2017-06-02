@@ -46,6 +46,7 @@ unless you know that you need a different function.
    solarposition.pyephem
    solarposition.spa_c
 
+
 Additional functions for quantities closely related to solar position.
 
 .. autosummary::
@@ -65,6 +66,19 @@ algorithm.
    spa
 
 
+Correlations and analytical expressions for low precision solar position
+calculations.
+
+.. autosummary::
+   :toctree: generated/
+
+   solarposition.solar_zenith_analytical
+   solarposition.declination_spencer71
+   solarposition.declination_cooper69
+   solarposition.equation_of_time_spencer71
+   solarposition.equation_of_time_pvcdrom
+   solarposition.hour_angle
+
 Clear sky
 =========
 
@@ -77,6 +91,7 @@ Clear sky
    clearsky.simplified_solis
    clearsky.haurwitz
    clearsky.detect_clearsky
+   clearsky.bird
 
 
 Airmass and atmospheric models

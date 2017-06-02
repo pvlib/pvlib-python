@@ -150,7 +150,7 @@ class PVSystem(object):
         self.racking_model = racking_model
 
         # needed for tying together Location and PVSystem in LocalizedPVSystem
-        super(PVSystem, self).__init__()
+        super(PVSystem, self).__init__(**kwargs)
 
     def __repr__(self):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',

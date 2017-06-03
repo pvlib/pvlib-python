@@ -139,6 +139,7 @@ def sam_data():
     data['cecmod'] = pvsystem.retrieve_sam('cecmod')
     data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
     data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
+    data['adrinverter'] = pvsystem.retrieve_sam('adrinverter')
     return data
 
 
@@ -520,16 +521,16 @@ def test_PVSystem_scale_voltage_current_power():
 
 def test_sapm_celltemp():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(43.509, default.ix[0, 'temp_cell'], 3)
-    assert_allclose(40.809, default.ix[0, 'temp_module'], 3)
+    assert_allclose(43.509, default['temp_cell'], 3)
+    assert_allclose(40.809, default['temp_module'], 3)
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20,
                                                        [-3.47, -.0594, 3]))
 
 
 def test_sapm_celltemp_dict_like():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(43.509, default.ix[0, 'temp_cell'], 3)
-    assert_allclose(40.809, default.ix[0, 'temp_module'], 3)
+    assert_allclose(43.509, default['temp_cell'], 3)
+    assert_allclose(40.809, default['temp_module'], 3)
     model = {'a':-3.47, 'b':-.0594, 'deltaT':3}
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
     model = pd.Series(model)
@@ -565,6 +566,41 @@ def test_PVSystem_sapm_celltemp():
                             index=times)
 
     assert_frame_equal(expected, pvtemps)
+
+
+def test_adrinverter(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
+    vdcs = pd.Series([135, 154, 390, 420, 551])
+    pdcs = pd.Series([135, 1232, 1170, 420, 551])
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
+    assert_series_equal(pacs, pd.Series([np.nan, 1161.5745, 1116.4459,
+                                         382.6679, np.nan]))
+
+
+def test_adrinverter_vtol(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
+    vdcs = pd.Series([135, 154, 390, 420, 551])
+    pdcs = pd.Series([135, 1232, 1170, 420, 551])
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv], vtol=0.20)
+    assert_series_equal(pacs, pd.Series([104.8223, 1161.5745, 1116.4459,
+                                         382.6679, 513.3385]))
+
+
+def test_adrinverter_float(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
+    vdcs = 154.
+    pdcs = 1232.
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
+    assert_allclose(pacs, 1161.5745)
 
 
 def test_snlinverter(sam_data):
@@ -615,6 +651,9 @@ def test_snlinverter_Pnt_micro(sam_data):
 
 def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    # ensure that parameter attributes are dict-like. GH 294
+    pv_system.module_parameters['pdc0'] = 1
+    pv_system.inverter_parameters['Paco'] = 1
 
 
 def test_PVSystem_get_aoi():

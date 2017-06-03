@@ -38,26 +38,33 @@ def get_solarposition(time, latitude, longitude,
     Parameters
     ----------
     time : pandas.DatetimeIndex
+
     latitude : float
+
     longitude : float
+
     altitude : None or float
         If None, computed from pressure. Assumed to be 0 m
         if pressure is also None.
+
     pressure : None or float
         If None, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
+
     method : string
-        'pyephem' uses the PyEphem package: :func:`pyephem`
-
-        'nrel_c' uses the NREL SPA C code [3]: :func:`spa_c`
-
         'nrel_numpy' uses an implementation of the NREL SPA algorithm
-        described in [1] (default): :func:`spa_python`
+        described in [1] (default, recommended): :py:func:`spa_python`
 
         'nrel_numba' uses an implementation of the NREL SPA algorithm
-        described in [1], but also compiles the code first: :func:`spa_python`
+        described in [1], but also compiles the code first:
+        :py:func:`spa_python`
 
-        'ephemeris' uses the pvlib ephemeris code: :func:`ephemeris`
+        'pyephem' uses the PyEphem package: :py:func:`pyephem`
+
+        'ephemeris' uses the pvlib ephemeris code: :py:func:`ephemeris`
+
+        'nrel_c' uses the NREL SPA C code [3]: :py:func:`spa_c`
+
     temperature : float
         Degrees C.
 
@@ -114,12 +121,14 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
           raw_spa_output=False):
     """
     Calculate the solar position using the C implementation of the NREL
-    SPA code
+    SPA code.
 
     The source files for this code are located in './spa_c_files/', along with
     a README file which describes how the C code is wrapped in Python.
     Due to license restrictions, the C code must be downloaded seperately
     and used in accordance with it's license.
+
+    This function is slower and no more accurate than :py:func:`spa_python`.
 
     Parameters
     ----------
@@ -270,7 +279,7 @@ def spa_python(time, latitude, longitude,
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.
+        this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3].
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
@@ -611,10 +620,11 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     DecHours = (time_utc.hour + time_utc.minute/60. + time_utc.second/3600. +
                 time_utc.microsecond/3600.e6)
 
-    UnivDate = DayOfYear
-    UnivHr = DecHours
+    # np.array needed for pandas > 0.20
+    UnivDate = np.array(DayOfYear)
+    UnivHr = np.array(DecHours)
 
-    Yr = time_utc.year - 1900
+    Yr = np.array(time_utc.year) - 1900
     YrBegin = 365 * Yr + np.floor((Yr - 1) / 4.) - 0.5
 
     Ezero = YrBegin + UnivDate
@@ -794,7 +804,7 @@ def pyephem_earthsun_distance(time):
 def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     """
     Calculates the distance from the earth to the sun using the
-    NREL SPA algorithm described in [1].
+    NREL SPA algorithm described in [1]_.
 
     Parameters
     ----------
@@ -811,7 +821,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.
+        this will be fixed in a future version.*
         By default, use USNO historical data and predictions
 
     numthreads : int, optional
@@ -824,9 +834,9 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     References
     ----------
-    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-    USA, http://www.nrel.gov.
+    .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+       USA, http://www.nrel.gov.
     """
 
     if not isinstance(time, pd.DatetimeIndex):
@@ -861,3 +871,271 @@ def _calculate_simple_day_angle(dayofyear):
     day_angle : numeric
     """
     return (2. * np.pi / 365.) * (dayofyear - 1)
+
+
+def equation_of_time_spencer71(dayofyear):
+    """
+    Equation of time from Duffie & Beckman and attributed to Spencer (1971) and
+    Iqbal (1983).
+
+    The coefficients correspond to the online copy of the `Fourier paper`_ [1]_
+    in the Sundial Mailing list that was posted in 1998 by Mac Oglesby from his
+    correspondence with Macquarie University Prof. John Pickard who added the
+    following note.
+
+        In the early 1970s, I contacted Dr Spencer about this method because I
+        was trying to use a hand calculator for calculating solar positions,
+        etc. He was extremely helpful and gave me a reprint of this paper. He
+        also pointed out an error in the original: in the series for E, the
+        constant was printed as 0.000075 rather than 0.0000075. I have corrected
+        the error in this version.
+
+    There appears to be another error in formula as printed in both Duffie &
+    Beckman's [2]_ and Frank Vignola's [3]_ books in which the coefficient
+    0.04089 is printed instead of 0.040849, corresponding to the value used in
+    the Bird Clear Sky model implemented by Daryl Myers [4]_ and printed in both
+    the Fourier paper from the Sundial Mailing List and R. Hulstrom's [5]_ book.
+
+    .. _Fourier paper: http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    equation_of_time : numeric
+        Difference in time between solar time and mean solar time in minutes.
+
+    References
+    ----------
+    .. [1] J. W. Spencer, "Fourier series representation of the position of the
+       sun" in Search 2 (5), p. 172 (1971)
+
+    .. [2] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+       Processes, 3rd Edition" pp. 9-11, J. Wiley and Sons, New York (2006)
+
+    .. [3] Frank Vignola et al., "Solar And Infrared Radiation Measurements",
+       p. 13, CRC Press (2012)
+
+    .. [5] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+       Energy Applications", p. 5 CRC Press (2013)
+
+    .. [4] Roland Hulstrom, "Solar Resources" p. 66, MIT Press (1989)
+
+    See Also
+    --------
+    equation_of_time_pvcdrom
+    """
+    day_angle = _calculate_simple_day_angle(dayofyear)
+    # convert from radians to minutes per day = 24[h/day] * 60[min/h] / 2 / pi
+    return (1440.0 / 2 / np.pi) * (0.0000075 +
+        0.001868 * np.cos(day_angle) - 0.032077 * np.sin(day_angle) -
+        0.014615 * np.cos(2.0 * day_angle) - 0.040849 * np.sin(2.0 * day_angle)
+    )
+
+
+def equation_of_time_pvcdrom(dayofyear):
+    """
+    Equation of time from PVCDROM.
+
+    `PVCDROM`_ is a website by Solar Power Lab at Arizona State University (ASU)
+
+    .. _PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    equation_of_time : numeric
+        Difference in time between solar time and mean solar time in minutes.
+
+    References
+    ----------
+    [1] Soteris A. Kalogirou, "Solar Energy Engineering Processes and Systems,
+    2nd Edition" Elselvier/Academic Press (2009).
+
+    See Also
+    --------
+    equation_of_time_Spencer71
+    """
+    # day angle relative to Vernal Equinox, typically March 22 (day number 81)
+    bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
+    # same value but about 2x faster than Spencer (1971)
+    return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)
+
+
+def declination_spencer71(dayofyear):
+    """
+    Solar declination from Duffie & Beckman [1] and attributed to Spencer (1971)
+    and Iqbal (1983).
+
+    .. warning::
+        Return units are radians, not degrees.
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    declination (radians) : numeric
+        Angular position of the sun at solar noon relative to the plane of the
+        equator, approximately between +/-23.45 (degrees).
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
+
+    [2] J. W. Spencer, "Fourier series representation of the position of the
+    sun" in Search 2 (5), p. 172 (1971)
+
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", p. 4 CRC Press (2013)
+
+    See Also
+    --------
+    declination_cooper69
+    """
+    day_angle = _calculate_simple_day_angle(dayofyear)
+    return (0.006918 -
+        0.399912 * np.cos(day_angle) + 0.070257 * np.sin(day_angle) -
+        0.006758 * np.cos(2. * day_angle) + 0.000907 * np.sin(2. * day_angle) -
+        0.002697 * np.cos(3. * day_angle) + 0.00148 * np.sin(3. * day_angle)
+    )
+
+
+def declination_cooper69(dayofyear):
+    """
+    Solar declination from Duffie & Beckman [1] and attributed to Cooper (1969)
+
+    .. warning::
+        Return units are radians, not degrees.
+
+    Declination can be expressed using either sine or cosine:
+
+    .. math::
+
+       \\delta = 23.45 \\sin \\left( \\frac{2 \\pi}{365} \\left(n_{day} + 284
+       \\right) \\right) = -23.45 \\cos \\left( \\frac{2 \\pi}{365}
+       \\left(n_{day} + 10 \\right) \\right)
+
+    Parameters
+    ----------
+    dayofyear : numeric
+
+    Returns
+    -------
+    declination (radians) : numeric
+        Angular position of the sun at solar noon relative to the plane of the
+        equator, approximately between +/-23.45 (degrees).
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
+
+    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+    p. 129, J. Wiley (1998)
+
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", p. 4 CRC Press (2013)
+
+    See Also
+    --------
+    declination_spencer71
+    """
+    day_angle = _calculate_simple_day_angle(dayofyear)
+    return np.deg2rad(23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0))
+
+
+def solar_zenith_analytical(latitude, hour_angle, declination):
+    """
+    Analytical expression of solar zenith angle based on spherical trigonometry.
+
+    .. warning::
+        The analytic form neglects the effect of atmospheric refraction.
+
+    Parameters
+    ----------
+    latitude : numeric
+        Latitude of location in radians.
+    hour_angle : numeric
+        Hour angle in the local solar time in radians.
+    declination : numeric
+        Declination of the sun in radians.
+
+    Returns
+    -------
+    zenith : numeric
+        Solar zenith angle in radians.
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
+
+    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+    p. 132, J. Wiley (1998)
+
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", p. 5 CRC Press (2013)
+
+    `Wikipedia: Solar Zenith Angle <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
+
+    `PVCDROM: Sun's Position <http://www.pveducation.org/pvcdrom/2-properties-sunlight/suns-position>`_
+
+    See Also
+    --------
+    declination_spencer71
+    declination_cooper69
+    hour_angle
+    """
+    return np.arccos(
+        np.cos(declination) * np.cos(latitude) * np.cos(hour_angle) +
+        np.sin(declination) * np.sin(latitude)
+    )
+
+
+def hour_angle(times, longitude, equation_of_time):
+    """
+    Hour angle in local solar time. Zero at local solar noon.
+
+    Parameters
+    ----------
+    times : :class:`pandas.DatetimeIndex`
+        Corresponding timestamps, must be timezone aware.
+    longitude : numeric
+        Longitude in degrees
+    equation_of_time : numeric
+        Equation of time in minutes.
+
+    Returns
+    -------
+    hour_angle : numeric
+        Hour angle in local solar time in degrees.
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" pp. 13, J. Wiley and Sons, New York (2006)
+
+    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+    p. 132, J. Wiley (1998)
+
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", p. 5 CRC Press (2013)
+
+    See Also
+    --------
+    equation_of_time_Spencer71
+    equation_of_time_pvcdrom
+    """
+    hours = np.array([(t - t.tz.localize(
+        dt.datetime(t.year, t.month, t.day)
+    )).total_seconds() / 3600. for t in times])
+    timezone = times.tz.utcoffset(times).total_seconds() / 3600.
+    return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.

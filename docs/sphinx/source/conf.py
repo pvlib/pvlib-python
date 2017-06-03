@@ -270,7 +270,8 @@ latex_documents = [
 extlinks = {'issue': ('https://github.com/pvlib/pvlib-python/issues/%s',
                       'GH'),
             'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s',
-                     'wiki ')}
+                     'wiki '),
+            'doi': ('http://dx.doi.org/%s', 'DOI: ')}
 
 # -- Options for manual page output ---------------------------------------
 

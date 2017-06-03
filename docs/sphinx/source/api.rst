@@ -31,6 +31,11 @@ Solar Position
 
 Functions and methods for calculating solar position.
 
+The :py:meth:`location.Location.get_solarposition` method and the
+:py:func:`solarposition.get_solarposition` function with default
+parameters are fast and accurate. We recommend using these functions
+unless you know that you need a different function.
+
 .. autosummary::
    :toctree: generated/
 
@@ -40,6 +45,7 @@ Functions and methods for calculating solar position.
    solarposition.ephemeris
    solarposition.pyephem
    solarposition.spa_c
+
 
 Additional functions for quantities closely related to solar position.
 
@@ -60,6 +66,19 @@ algorithm.
    spa
 
 
+Correlations and analytical expressions for low precision solar position
+calculations.
+
+.. autosummary::
+   :toctree: generated/
+
+   solarposition.solar_zenith_analytical
+   solarposition.declination_spencer71
+   solarposition.declination_cooper69
+   solarposition.equation_of_time_spencer71
+   solarposition.equation_of_time_pvcdrom
+   solarposition.hour_angle
+
 Clear sky
 =========
 
@@ -72,6 +91,7 @@ Clear sky
    clearsky.simplified_solis
    clearsky.haurwitz
    clearsky.detect_clearsky
+   clearsky.bird
 
 
 Airmass and atmospheric models
@@ -87,6 +107,10 @@ Airmass and atmospheric models
    atmosphere.alt2pres
    atmosphere.gueymard94_pw
    atmosphere.first_solar_spectral_correction
+   atmosphere.bird_hulstrom80_aod_bb
+   atmosphere.kasten96_lt
+   atmosphere.angstrom_aod_at_lambda
+   atmosphere.angstrom_alpha
 
 
 Irradiance

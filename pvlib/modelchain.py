@@ -434,7 +434,7 @@ class ModelChain(object):
             if model == 'snlinverter':
                 self._ac_model = self.snlinverter
             elif model == 'adrinverter':
-                raise NotImplementedError
+                self._ac_model = self.adrinverter
             elif model == 'pvwatts':
                 self._ac_model = self.pvwatts_inverter
             else:
@@ -447,6 +447,8 @@ class ModelChain(object):
         module_params = set(self.system.module_parameters.keys())
         if set(['C0', 'C1', 'C2']) <= inverter_params:
             return self.snlinverter
+        elif set(['ADRCoefficients']) <= inverter_params:
+            return self.adrinverter
         elif set(['pdc0']) <= module_params:
             return self.pvwatts_inverter
         else:
@@ -458,7 +460,7 @@ class ModelChain(object):
         return self
 
     def adrinverter(self):
-        raise NotImplementedError
+        self.ac = self.system.adrinverter(self.dc['v_mp'], self.dc['p_mp'])
         return self
 
     def pvwatts_inverter(self):
@@ -674,18 +676,22 @@ class ModelChain(object):
                    "Results can be too high or negative.\n" +
                    "Help to improve this function on github:\n" +
                    "https://github.com/pvlib/pvlib-python \n")
-        warnings.warn(wrn_txt, UserWarning)
+
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             logging.debug('Estimate dni from ghi and dhi')
-            self.weather.loc[:, 'dni'] = (
-                (self.weather.loc[:, 'ghi'] - self.weather.loc[:, 'dhi']) /
-                tools.cosd(self.solar_position.loc[:, 'zenith']))
+            self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
+                self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
+                self.solar_position.zenith,
+                clearsky_dni=self.location.get_clearsky(times).dni,
+                clearsky_tolerance=1.1)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
+            warnings.warn(wrn_txt, UserWarning)
             logging.debug('Estimate ghi from dni and dhi')
             self.weather.loc[:, 'ghi'] = (
                 self.weather.dni * tools.cosd(self.solar_position.zenith) +
                 self.weather.dhi)
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
+            warnings.warn(wrn_txt, UserWarning)
             logging.debug('Estimate dhi from dni and ghi')
             self.weather.loc[:, 'dhi'] = (
                 self.weather.ghi - self.weather.dni *

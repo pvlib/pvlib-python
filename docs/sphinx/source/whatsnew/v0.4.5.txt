@@ -26,6 +26,9 @@ Enhancements
 
 * Added irradiance.dni method that determines DNI from GHI and DHI and corrects
   unreasonable DNI values during sunrise/sunset transitions
+* ForecastModel will now only connect to the Unidata server when necessary,
+  rather than when the object is created. This supports offline work
+  and speeds up analysis of previously downloaded data.
 
 
 Contributors

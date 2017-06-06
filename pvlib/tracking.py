@@ -162,7 +162,8 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
                           list(loc_dict.items()) +
                           list(kwargs.items()))
 
-        super(LocalizedSingleAxisTracker, self).__init__(**new_kwargs)
+        SingleAxisTracker.__init__(self, **new_kwargs)
+        Location.__init__(self, **new_kwargs)
 
     def __repr__(self):
         attrs = ['latitude', 'longitude', 'altitude', 'tz']

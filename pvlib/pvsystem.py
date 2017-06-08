@@ -57,8 +57,9 @@ class PVSystem(object):
     Parameters
     ----------
     surface_tilt: float or array-like
-        Tilt angle of the module surface.
-        Up=0, horizon=90.
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth: float or array-like
         Azimuth angle of the module surface.

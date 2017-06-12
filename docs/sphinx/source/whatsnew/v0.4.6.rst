@@ -1,0 +1,26 @@
+.. _whatsnew_0460:
+
+v0.4.6 ()
+---------
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+API Changes
+~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren

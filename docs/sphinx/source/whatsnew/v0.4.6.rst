@@ -7,6 +7,9 @@ v0.4.6 ()
 Bug fixes
 ~~~~~~~~~
 
+* Method of multi-inheritance has changed to make it possible to use kwargs in
+  the parent class (:issue:`330`)
+
 
 Enhancements
 ~~~~~~~~~~~~
@@ -24,3 +27,4 @@ Contributors
 ~~~~~~~~~~~~
 
 * Will Holmgren
+* Uwe Krien

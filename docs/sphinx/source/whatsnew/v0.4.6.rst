@@ -1,0 +1,31 @@
+.. _whatsnew_0460:
+
+v0.4.6 ()
+---------
+
+
+Bug fixes
+~~~~~~~~~
+
+* Method of multi-inheritance has changed to make it possible to use kwargs in
+  the parent classes of LocalizedPVSystem and LocalizedSingleAxisTracker
+  (:issue:`330`)
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+API Changes
+~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren
+* Uwe Krien

@@ -38,7 +38,6 @@ class SingleAxisTracker(PVSystem):
         pvsystem_repr = '\n'.join(pvsystem_repr.split('\n')[1:])
         return sat_repr + '\n' + pvsystem_repr
 
-
     def singleaxis(self, apparent_zenith, apparent_azimuth):
         tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
                                    self.axis_tilt, self.axis_azimuth,
@@ -168,9 +167,9 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
     def __repr__(self):
         attrs = ['latitude', 'longitude', 'altitude', 'tz']
         return ('Localized' +
-            super(LocalizedSingleAxisTracker, self).__repr__() + '\n  ' +
-            '\n  '.join(
-                (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+                super(LocalizedSingleAxisTracker, self).__repr__() + '\n  ' +
+                '\n  '.join(
+                    (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,

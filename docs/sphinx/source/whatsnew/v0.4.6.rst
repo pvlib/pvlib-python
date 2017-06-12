@@ -8,7 +8,8 @@ Bug fixes
 ~~~~~~~~~
 
 * Method of multi-inheritance has changed to make it possible to use kwargs in
-  the parent class (:issue:`330`)
+  the parent classes of LocalizedPVSystem and LocalizedSingleAxisTracker
+  (:issue:`330`)
 
 
 Enhancements

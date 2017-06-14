@@ -761,7 +761,8 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector in degrees. Angles of 0 are replaced with 1e-06
+        to ensure non-nan results.
 
     n : numeric
         The effective index of refraction (unitless). Reference [1]
@@ -811,6 +812,10 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     spa
     ashraeiam
     '''
+    zeroang = 1e-06
+
+    aoi = np.where(aoi == 0, zeroang, aoi)
+
     thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
 
     tau = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) *
@@ -818,8 +823,6 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
             ((tools.sind(thetar_deg + aoi)) ** 2) +
             ((tools.tand(thetar_deg - aoi)) ** 2) /
             ((tools.tand(thetar_deg + aoi)) ** 2))))))
-
-    zeroang = 1e-06
 
     thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
 

@@ -96,8 +96,8 @@ def test_systemdef_dict():
 def test_ashraeiam():
     thetas = np.linspace(-90, 90, 9)
     iam = pvsystem.ashraeiam(thetas, .05)
-    expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         nan])
+    expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
+        0.99588039,  0.97928932,  0.9193437 ,         0])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -107,8 +107,8 @@ def test_PVSystem_ashraeiam():
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = np.linspace(-90, 90, 9)
     iam = system.ashraeiam(thetas)
-    expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         nan])
+    expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
+        0.99588039,  0.97928932,  0.9193437 ,         0])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -116,8 +116,8 @@ def test_PVSystem_ashraeiam():
 def test_physicaliam():
     thetas = np.linspace(-90, 90, 9)
     iam = pvsystem.physicaliam(thetas, 1.526, 0.002, 4)
-    expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
-        0.99926198,  0.98797788,  0.8893998 ,         nan])
+    expected = np.array([        0,  0.8893998 ,  0.98797788,  0.99926198,         1,
+        0.99926198,  0.98797788,  0.8893998 ,         0])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -127,8 +127,8 @@ def test_PVSystem_physicaliam():
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = np.linspace(-90, 90, 9)
     iam = system.physicaliam(thetas)
-    expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
-        0.99926198,  0.98797788,  0.8893998 ,         nan])
+    expected = np.array([        0,  0.8893998 ,  0.98797788,  0.99926198,         1,
+        0.99926198,  0.98797788,  0.8893998 ,         0])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -239,7 +239,7 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
     (np.array([[-30, 30, 100, np.nan]]),
-     np.array([[np.nan, 1.007572, 0, np.nan]])),
+     np.array([[0, 1.007572, 0, np.nan]])),
     (pd.Series([80]), pd.Series([0.597472]))
 ])
 def test_sapm_aoi_loss(sapm_module_params, aoi, expected):

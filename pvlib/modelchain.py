@@ -299,6 +299,8 @@ class ModelChain(object):
         will be passed as the first argument to a user-defined function.
         (default 'no_loss')
 
+    name: None or str
+        Name of ModelChain instance. (default None)
 
     **kwargs
         Arbitrary keyword arguments. Included for compatibility, but not

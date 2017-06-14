@@ -53,45 +53,52 @@ def basic_chain(times, latitude, longitude,
     irradiance : None or DataFrame
         If None, calculates clear sky data.
         Columns must be 'dni', 'ghi', 'dhi'.
+        (default None)
 
     weather : None or DataFrame
         If None, assumes air temperature is 20 C and
         wind speed is 0 m/s.
         Columns must be 'wind_speed', 'temp_air'.
+        (default None)
 
     surface_tilt : float or Series
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
+        (default None)
 
     surface_azimuth : float or Series
         Surface azimuth angles in decimal degrees.
         The azimuth convention is defined
         as degrees east of north
         (North=0, South=180, East=90, West=270).
+        (default None)
 
     orientation_strategy : None or str
         The strategy for aligning the modules.
         If not None, sets the ``surface_azimuth`` and ``surface_tilt``
         properties of the ``system``. Allowed strategies include 'flat',
         'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
+        (default None)
 
     transposition_model : str
-        Passed to system.get_irradiance.
+        Passed to system.get_irradiance. (default 'haydavies')
 
     solar_position_method : str
-        Passed to location.get_solarposition.
+        Passed to location.get_solarposition. (default 'nrel_numpy')
 
     airmass_model : str
-        Passed to location.get_airmass.
+        Passed to location.get_airmass. (default 'kastenyoung1989')
 
     altitude : None or float
         If None, computed from pressure. Assumed to be 0 m
         if pressure is also None.
+        (default None)
 
     pressure : None or float
         If None, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
+        (default None)
 
     **kwargs
         Arbitrary keyword arguments.
@@ -238,24 +245,26 @@ class ModelChain(object):
         ``surface_azimuth`` and ``surface_tilt`` properties of the
         ``system``. Allowed strategies include 'flat',
         'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
+        (default 'south_at_latitude_tilt')
 
     clearsky_model : str
-        Passed to location.get_clearsky.
+        Passed to location.get_clearsky. (default 'ineichen')
 
     transposition_model : str
-        Passed to system.get_irradiance.
+        Passed to system.get_irradiance. (default 'haydavies')
 
     solar_position_method : str
-        Passed to location.get_solarposition.
+        Passed to location.get_solarposition. (default 'nrel_numpy')
 
     airmass_model : str
-        Passed to location.get_airmass.
+        Passed to location.get_airmass. (default 'nrel_numpy')
 
     dc_model: None, str, or function
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
         'singlediode', 'pvwatts'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
+        (default None)
 
     ac_model: None, str, or function
         If None, the model will be inferred from the contents of
@@ -263,12 +272,14 @@ class ModelChain(object):
         strings are 'snlinverter', 'adrinverter' (not implemented),
         'pvwatts'. The ModelChain instance will be passed as the first
         argument to a user-defined function.
+        (default None)
 
     aoi_model: None, str, or function
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'physical',
         'ashrae', 'sapm', 'no_loss'. The ModelChain instance will be
         passed as the first argument to a user-defined function.
+        (default None)
 
     spectral_model: None, str, or function
         If None, the model will be inferred from the contents of
@@ -276,14 +287,18 @@ class ModelChain(object):
         'first_solar' (not implemented), 'no_loss'. The ModelChain
         instance will be passed as the first argument to a user-defined
         function.
+        (default None)
 
     temp_model: str or function
         Valid strings are 'sapm'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
+        (default 'sapm')
 
     losses_model: str or function
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
         will be passed as the first argument to a user-defined function.
+        (default 'no_loss')
+
 
     **kwargs
         Arbitrary keyword arguments. Included for compatibility, but not
@@ -637,11 +652,11 @@ class ModelChain(object):
         ----------
         times : DatetimeIndex
             Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
+            attribute `times` is already set. (default None)
         weather : pandas.DataFrame
             Table with at least two columns containing one of the
             following data sets: dni, dhi, ghi. Can be None if attribute
-            `weather` is already set.
+            `weather` is already set. (default None)
 
         Returns
         -------
@@ -708,7 +723,7 @@ class ModelChain(object):
         ----------
         times : DatetimeIndex
             Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
+            attribute `times` is already set. (default None)
         irradiance : None or DataFrame
             This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame
@@ -720,6 +735,7 @@ class ModelChain(object):
             method
             :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
             instead.
+            (default None)
 
         Returns
         -------
@@ -815,7 +831,7 @@ class ModelChain(object):
         ----------
         times : DatetimeIndex
             Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
+            attribute `times` is already set. (default None)
         irradiance : None or DataFrame
             This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame
@@ -824,7 +840,7 @@ class ModelChain(object):
             names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
             Do not pass incomplete irradiation data. Use method
             :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
-            instead.
+            instead. (default None)
 
         Returns
         -------

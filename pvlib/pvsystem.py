@@ -709,7 +709,7 @@ def ashraeiam(aoi, b=0.05):
         The incident angle modifier calculated as 1-b*(sec(aoi)-1) as
         described in [2,3].
 
-        Returns nan for all abs(aoi) >= 90 and for all IAM values that
+        Returns zeros for all abs(aoi) >= 90 and for all IAM values that
         would be less than 0.
 
     References
@@ -1462,7 +1462,7 @@ def sapm_aoi_loss(aoi, module, upper=None):
     ----------
     aoi : numeric
         Angle of incidence in degrees. Negative input angles will return
-        nan values.
+        zeros.
 
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance

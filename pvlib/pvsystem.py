@@ -732,7 +732,7 @@ def ashraeiam(aoi, b=0.05):
 
     iam = 1 - b*((1/np.cos(np.radians(aoi)) - 1))
 
-    iam = np.where(np.abs(aoi) >= 90, np.nan, iam)
+    iam = np.where(np.abs(aoi) >= 90, 0, iam)
     iam = np.maximum(0, iam)
 
     if isinstance(iam, pd.Series):
@@ -831,7 +831,7 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
     iam = tau / tau0
 
-    iam = np.where((np.abs(aoi) >= 90) | (iam < 0), np.nan, iam)
+    iam = np.where((np.abs(aoi) >= 90) | (iam < 0), 0, iam)
 
     if isinstance(aoi, pd.Series):
         iam = pd.Series(iam, index=aoi.index)
@@ -1504,7 +1504,7 @@ def sapm_aoi_loss(aoi, module, upper=None):
 
     aoi_loss = np.polyval(aoi_coeff, aoi)
     aoi_loss = np.clip(aoi_loss, 0, upper)
-    aoi_loss = np.where(aoi < 0, np.nan, aoi_loss)
+    aoi_loss = np.where(aoi < 0, 0, aoi_loss)
 
     if isinstance(aoi, pd.Series):
         aoi_loss = pd.Series(aoi_loss, aoi.index)

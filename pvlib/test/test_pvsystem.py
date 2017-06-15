@@ -410,7 +410,7 @@ def test_i_from_v_alt():
     I = -299.746389916
     
     # Convergence criteria
-    atol = 1.e-12
+    atol = 1.e-11
     
     # Can handle all python scalar inputs
     I_out = pvsystem.i_from_v_alt(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=V, I0=I0, IL=IL)
@@ -588,10 +588,10 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                          module_parameters=cec_module_params,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)
-
+    
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
-
-    expected = OrderedDict([('i_sc', array([        nan,  3.01054475,  6.00675648])),
+    
+    expected = OrderedDict([('i_sc', array([        0.,  3.01054475,  6.00675648])),
              ('v_oc', array([         nan,   9.96886962,  10.29530483])),
              ('i_mp', array([        nan,  2.65191983,  5.28594672])),
              ('v_mp', array([        nan,  8.33392491,  8.4159707 ])),

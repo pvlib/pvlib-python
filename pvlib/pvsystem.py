@@ -1937,14 +1937,15 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     I0 = np.asarray(saturation_current, np.float64)
     IL = np.asarray(photocurrent, np.float64)
     
+    # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally more numerically stable
+    Gsh = 1./Rsh
+    
     # argW cannot be float128
-    argW = (Rs*I0*Rsh *
-            np.exp(Rsh*(Rs*(IL+I0)+V) / (nNsVth*(Rs+Rsh))) /
-            (nNsVth*(Rs + Rsh)))
+    argW = Rs*I0/(nNsVth*(Rs*Gsh + 1.))*np.exp((Rs*(IL + I0) + V)/(nNsVth*(Rs*Gsh + 1.)))
     lambertwterm = lambertw(argW).real
 
     # Eqn. 4 in Jain and Kapoor, 2004
-    I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
+    I = (IL + I0 - V*Gsh)/(Rs*Gsh + 1.) - (nNsVth/Rs)*lambertwterm
     
     return I
 

@@ -1913,7 +1913,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
     Returns
     -------
-    current : np.array
+    current : np.ndarray or np.float64
 
     References
     ----------
@@ -1928,12 +1928,14 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
     # asarray turns Series into arrays so that we don't have to worry
     # about multidimensional broadcasting failing
-    Rsh = np.asarray(resistance_shunt)
-    Rs = np.asarray(resistance_series)
-    I0 = np.asarray(saturation_current)
-    IL = np.asarray(photocurrent)
-    V = np.asarray(voltage)
-
+    Rsh = np.asarray(resistance_shunt, np.float64)
+    Rs = np.asarray(resistance_series, np.float64)
+    nNsVth = np.asarray(nNsVth, np.float64)
+    V = np.asarray(voltage, np.float64)
+    I0 = np.asarray(saturation_current, np.float64)
+    IL = np.asarray(photocurrent, np.float64)
+    
+    # argW cannot be float128
     argW = (Rs*I0*Rsh *
             np.exp(Rsh*(Rs*(IL+I0)+V) / (nNsVth*(Rs+Rsh))) /
             (nNsVth*(Rs + Rsh)))
@@ -1941,8 +1943,105 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
     # Eqn. 4 in Jain and Kapoor, 2004
     I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
-
+    
     return I
+
+
+def current_sum_at_diode_node(V=None, I=None, IL=None, I0=None, nNsVth=None, Rs=None, Rsh=None):
+    '''
+    Parameters
+    ----------
+    V : numpy.ndarray or numpy.float64 or python scalar
+        Device voltage [V]
+    I : numpy.ndarray or numpy.float64 or python scalar
+        Device current [A]
+    IL : numpy.ndarray or numpy.float64 or python scalar
+        Device photocurrent [A]
+    I0 : numpy.ndarray or numpy.float64 or python scalar
+        Device saturation current [A]
+    nNsVth : numpy.ndarray or numpy.float64 or python scalar
+        Device thermal voltage [V]
+    Rs : numpy.ndarray or numpy.float64 or python scalar
+        Device series resistance [Ohm]
+    Rsh : numpy.ndarray or numpy.float64 or python scalar
+        Device shunt resistance [Ohm]
+    
+    Returns
+    -------
+    current_sum_at_diode_node : numpy.ndarray or numpy.float64
+        Sum of currents at the diode node in equivalent circuit model [A]
+    '''
+    
+    # TODO Ensure that this qualifies as a numpy ufunc
+    
+    return IL - I0*np.expm1((V + I*Rs)/nNsVth) - (V + I*Rs)/Rsh - I # current_sum_at_diode_node
+
+
+def i_from_v_alt(V=None, IL=None, I0=None, nNsVth=None, Rs=None, Rsh=None, return_meta_dict=False):
+    '''
+    Parameters
+    ----------
+    V : numpy.ndarray or numpy.float64 or python scalar
+        Device voltage [V]
+    IL : numpy.ndarray or numpy.float64 or python scalar
+        Device photocurrent [A]
+    I0 : numpy.ndarray or numpy.float64 or python scalar
+        Device saturation current [A]
+    nNsVth : numpy.ndarray or numpy.float64 or python scalar
+        Device thermal voltage [V]
+    Rs : numpy.ndarray or numpy.float64 or python scalar
+        Device series resistance [Ohm]
+    Rsh : numpy.ndarray or numpy.float64 or python scalar
+        Device shunt resistance [Ohm]
+    return_meta_dict : boolean
+        Return additional computation metadata dictionary
+    
+    Returns
+    -------
+    I : numpy.ndarray or numpy.float64
+        Device current [A]
+    meta_dict : python dictionary (optional, returned when return_meta_dict=True)
+        Metadata for computation
+            meta_dict['current_sum_at_diode_node'] : numpy.ndarray or numpy.float64 like I
+                Sum of currents at the diode node in equivalent circuit model [A]
+            meta_dict['zero_Rs_idx'] : boolean like I
+                Indices where zero series resistance gives best solution
+    '''
+
+    # TODO Check if this qualifies as a numpy ufunc
+        
+    # Work with np.ndarray inputs
+    V = np.asarray(V)
+    IL = np.asarray(IL)
+    I0 = np.asarray(I0)
+    nNsVth = np.asarray(nNsVth)
+    Rs = np.asarray(Rs)
+    Rsh = np.asarray(Rsh)
+    
+    # Default computation of I using Rs=np.full_like(Rs, 0.), does not lose Rs shape or type info
+    I_times_Rs_zero = np.full_like(Rs, 0.)
+    I = IL - I0*np.expm1((V + I_times_Rs_zero)/nNsVth) - (V + I_times_Rs_zero)/Rsh
+    current_sum_at_diode_node_out = current_sum_at_diode_node(V=V, I=I, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    
+    # Computation of I using LambertW for provided Rs
+    I_LambertW = i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
+    current_sum_at_diode_node_LambertW = current_sum_at_diode_node(V=V, I=I_LambertW, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    
+    # Compute selection indices (may be a scalar boolean)
+    zero_Rs_idx = np.logical_and(np.isfinite(current_sum_at_diode_node_LambertW), np.absolute(current_sum_at_diode_node_LambertW) <= np.absolute(current_sum_at_diode_node_out))
+    
+    if np.isscalar(I):
+        if zero_Rs_idx:
+            I = I_LambertW
+            current_sum_at_diode_node_out = current_sum_at_diode_node_LambertW
+    else:
+        I[zero_Rs_idx] = I_LambertW[zero_Rs_idx]
+        current_sum_at_diode_node_out[zero_Rs_idx] = current_sum_at_diode_node_LambertW[zero_Rs_idx]
+    
+    if return_meta_dict:
+        return I, {'current_sum_at_diode_node' : current_sum_at_diode_node_out, 'zero_Rs_idx' : zero_Rs_idx}
+    else:
+        return I
 
 
 def snlinverter(v_dc, p_dc, inverter):

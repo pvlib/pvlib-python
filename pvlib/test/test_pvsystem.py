@@ -9,7 +9,7 @@ import pandas as pd
 
 import pytest
 from pandas.util.testing import assert_series_equal, assert_frame_equal
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 
 from pvlib import tmy
 from pvlib import pvsystem
@@ -351,6 +351,122 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
     assert_allclose(Rs, 0.094)
     assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65], index=times))
     assert_allclose(nNsVth, 0.473)
+
+
+def test_current_sum_at_diode_node():
+    V = np.array([40., 0. , 0])
+    I = np.array([0., 0., 3.])
+    IL = 7.
+    I0 = 6.e-7
+    nNsVth = 0.5 
+    Rs = 0.1
+    Rsh = 20.
+    
+    results_1 = np.full_like(V, np.nan)
+    results_2 = np.full_like(V, np.nan)
+    
+    results_1[0] = pvsystem.current_sum_at_diode_node(V=V[0], I=I[0], IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    results_2[0] = IL - I0*np.expm1(V[0]/nNsVth) - V[0]/Rsh
+    
+    results_1[1] = pvsystem.current_sum_at_diode_node(V=V[1], I=I[1], IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    results_2[1] = IL
+    
+    results_1[2] = pvsystem.current_sum_at_diode_node(V=V[2], I=I[2], IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    results_2[2] = IL - I0*np.expm1(I[2]*Rs/nNsVth) - I[2]*Rs/Rsh - I[2]
+    
+    assert_array_equal(results_1, results_2)
+    
+    results_vec = pvsystem.current_sum_at_diode_node(V=V, I=I, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    assert_array_equal(results_vec, results_2)
+
+    V = 0.
+    I = 0.
+    nNsVth = np.asarray([0.45, 0.5, 0.55])
+    results_vec = pvsystem.current_sum_at_diode_node(V=V, I=I, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    assert_array_equal(results_vec, np.asarray([IL, IL, IL]))
+
+    nNsVth = pd.Series([0.45, 0.5, 0.55])
+    results_series = pvsystem.current_sum_at_diode_node(V=V, I=I, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    assert_series_equal(results_series, pd.Series([IL, IL, IL]))    
+
+    V = 40.
+    I = 3.
+    nNsVth = 0.5
+    Rsh = np.inf
+    results_inf_Rsh_1 = pvsystem.current_sum_at_diode_node(V=V, I=I, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    results_inf_Rsh_2 = IL - I0*np.expm1((V + I*Rs)/nNsVth) - I
+    assert_array_equal(results_inf_Rsh_1, results_inf_Rsh_2)
+
+
+@requires_scipy
+def test_i_from_v_alt():
+    # Solution set of Python scalars
+    Rsh = 20.
+    Rs = 0.1
+    nNsVth = 0.5
+    V = 40.
+    I0 = 6.e-7
+    IL = 7.
+    I = -299.746389916
+    
+    # Convergence criteria
+    atol = 1.e-12
+    
+    # Can handle all python scalar inputs
+    I_out = pvsystem.i_from_v_alt(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=V, I0=I0, IL=IL)
+    I_expected = np.float64(I)
+    assert(isinstance(I_out, type(I_expected)))
+    assert_allclose(I_out, I_expected)
+    _, meta_dict = pvsystem.i_from_v_alt(Rsh=Rsh, Rs=Rs, nNsVth=nNsVth, V=V, I0=I0, IL=IL, return_meta_dict=True)
+    assert_allclose(meta_dict['current_sum_at_diode_node'], 0., atol=atol)
+
+    # Can handle all rank-0 array inputs
+    I_out = pvsystem.i_from_v_alt(Rsh=np.array(Rsh), Rs=np.array(Rs), nNsVth=np.array(nNsVth), V=np.array(V), I0=np.array(I0), IL=np.array(IL))
+    I_expected = np.float64(I)
+    assert(isinstance(I_out, type(I_expected)))
+    assert_allclose(I_out, I_expected)
+    _, meta_dict = pvsystem.i_from_v_alt(Rsh=np.array(Rsh), Rs=np.array(Rs), nNsVth=np.array(nNsVth), V=np.array(V), I0=np.array(I0), IL=np.array(IL), return_meta_dict=True)
+    assert_allclose(meta_dict['current_sum_at_diode_node'], 0., atol=atol)
+
+    # Can handle all rank-1 singleton array inputs
+    I_out = pvsystem.i_from_v_alt(Rsh=np.array([Rsh]), Rs=np.array([Rs]), nNsVth=np.array([nNsVth]), V=np.array([V]), I0=np.array([I0]), IL=np.array([IL]))
+    I_expected = np.array([I])
+    assert(isinstance(I_out, type(I_expected)))
+    assert_allclose(I_out, I_expected)
+    _, meta_dict = pvsystem.i_from_v_alt(Rsh=np.array([Rsh]), Rs=np.array([Rs]), nNsVth=np.array([nNsVth]), V=np.array([V]), I0=np.array([I0]), IL=np.array([IL]), return_meta_dict=True)
+    assert_allclose(meta_dict['current_sum_at_diode_node'], 0., atol=atol)
+
+    # Can handle all rank-1 non-singleton array inputs with a zero series resistance (Rs=0 gives I=IL=Isc at V=0)
+    I_out = pvsystem.i_from_v_alt(Rsh=np.array([Rsh, Rsh]), Rs=np.array([0., Rs]), nNsVth=np.array([nNsVth, nNsVth]), V=np.array([0., V]), I0=np.array([I0, I0]), IL=np.array([IL, IL]))
+    I_expected = np.array([IL, I])
+    assert(isinstance(I_out, type(I_expected)))
+    assert_allclose(I_out, I_expected)
+    _, meta_dict = pvsystem.i_from_v_alt(Rsh=np.array([Rsh, Rsh]), Rs=np.array([0., Rs]), nNsVth=np.array([nNsVth, nNsVth]), V=np.array([0., V]), I0=np.array([I0, I0]), IL=np.array([IL, IL]), return_meta_dict=True)    
+    assert_allclose(meta_dict['current_sum_at_diode_node'], 0., atol=atol)
+    
+    # Can handle mixed inputs with a rank-2 array with zero series resistance (Rs=0 gives I=IL=Isc at V=0)
+    I_out = pvsystem.i_from_v_alt(Rsh=np.array([Rsh]), Rs=np.array([[0., 0.], [0., 0.]]), nNsVth=np.array(nNsVth), V=np.array(0.), I0=np.array([I0]), IL=np.array([IL]))
+    I_expected = np.array([[IL, IL], [IL, IL]])
+    assert(isinstance(I_out, type(I_expected)))
+    assert_allclose(I_out, I_expected)
+    _, meta_dict = pvsystem.i_from_v_alt(Rsh=np.array([Rsh]), Rs=np.array([[0., 0.], [0., 0.]]), nNsVth=np.array(nNsVth), V=np.array(0.), I0=np.array([I0]), IL=np.array([IL]), return_meta_dict=True)
+    assert_allclose(meta_dict['current_sum_at_diode_node'], 0., atol=atol)
+    
+    # Can handle ideal series and shunt
+    V_oc = nNsVth*np.log(IL/I0 + 1.)
+    I_out = pvsystem.i_from_v_alt(Rsh=np.inf, Rs=0., nNsVth=nNsVth, V=np.array([0., V_oc/2., V_oc]), I0=I0, IL=IL)
+    I_expected = np.array([IL, IL - I0*np.expm1(V_oc/2./nNsVth), IL - I0*np.expm1(V_oc/nNsVth)])
+    assert(isinstance(I_out, type(I_expected)))
+    assert_allclose(I_out, I_expected)
+    _, meta_dict = pvsystem.i_from_v_alt(Rsh=np.inf, Rs=0., nNsVth=nNsVth, V=np.array([0., V_oc/2., V_oc]), I0=I0, IL=IL, return_meta_dict=True)
+    assert_allclose(meta_dict['current_sum_at_diode_node'], 0., atol=atol)
+    
+    # Can handle only ideal shunt
+    I_out = pvsystem.i_from_v_alt(Rsh=np.inf, Rs=Rs, nNsVth=nNsVth, V=V, I0=I0, IL=IL)
+    assert(isinstance(I_out, np.float64))
+    assert(np.isfinite(I_out)) # No exact expression to evaluate
+    _, meta_dict = pvsystem.i_from_v_alt(Rsh=np.inf, Rs=Rs, nNsVth=nNsVth, V=V, I0=I0, IL=IL, return_meta_dict=True)
+    assert_allclose(meta_dict['current_sum_at_diode_node'], 0., atol=atol)
 
 
 @requires_scipy

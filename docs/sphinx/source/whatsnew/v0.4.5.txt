@@ -1,0 +1,40 @@
+.. _whatsnew_0450:
+
+v0.4.5 (June 5, 2017)
+---------------------
+
+
+Bug fixes
+~~~~~~~~~
+
+* Fix pandas 0.20 incompatibilities in Location.get_clearsky,
+  solarposition.ephemeris (:issue:`325`)
+* Fixes timezone issue in solarposition spa_c function (:issue:`237`)
+* Added NREL Bird clear sky model. (:issue:`276`)
+* Added lower accuracy formulas for equation of time, declination, hour angle
+  and solar zenith.
+* Remove all instances of .ix (:issue:`322`)
+* Update docstring in `pvlib.spa.solar_position` - change units of pressure to
+  millibars. *NOTE*: units of pressure in `pvlib.solar_position.spa_python` and
+  `pvlib.solar_position.spa_c` are still Pascals. This update should have no
+  effect on most users, since it only applies to the low-level `spa.py` module.
+  (:issue:`327`)
+
+
+Enhancements
+~~~~~~~~~~~~~
+
+* Added irradiance.dni method that determines DNI from GHI and DHI and corrects
+  unreasonable DNI values during sunrise/sunset transitions
+* ForecastModel will now only connect to the Unidata server when necessary,
+  rather than when the object is created. This supports offline work
+  and speeds up analysis of previously downloaded data.
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Will Holmgren
+* Marc Anoma
+* Mark Mikofski
+* Birgit Schachler

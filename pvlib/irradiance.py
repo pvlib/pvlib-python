@@ -1059,9 +1059,10 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         mask = sky_diffuse == 0
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
-            diffuse_components.ix[mask] = 0
+            diffuse_components.loc[mask] = 0
         else:
-            diffuse_components = {k: np.where(mask, 0, v) for k, v in diffuse_components.items()}
+            diffuse_components = {k: np.where(mask, 0, v) for k, v in
+                                  diffuse_components.items()}
 
         return sky_diffuse, diffuse_components
 
@@ -2048,3 +2049,75 @@ def _get_dirint_coeffs():
         [0.743440, 0.592190, 0.603060, 0.316930, 0.794390]]
 
     return coeffs[1:, 1:, :, :]
+
+
+def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
+        zenith_threshold_for_zero_dni=88.0,
+        zenith_threshold_for_clearsky_limit=80.0):
+    """
+    Determine DNI from GHI and DHI.
+
+    When calculating the DNI from GHI and DHI the calculated DNI may be
+    unreasonably high or negative for zenith angles close to 90 degrees
+    (sunrise/sunset transitions). This function identifies unreasonable DNI
+    values and sets them to NaN. If the clearsky DNI is given unreasonably high
+    values are cut off.
+
+    Parameters
+    ----------
+    ghi : Series
+        Global horizontal irradiance.
+
+    dhi : Series
+        Diffuse horizontal irradiance.
+
+    zenith : Series
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. Angles must be >=0 and <=180.
+
+    clearsky_dni : None or Series
+        Clearsky direct normal irradiance. Default: None.
+
+    clearsky_tolerance : float
+        If 'clearsky_dni' is given this parameter can be used to allow a
+        tolerance by how much the calculated DNI value can be greater than
+        the clearsky value before it is identified as an unreasonable value.
+        Default: 1.1.
+
+    zenith_threshold_for_zero_dni : float
+        Non-zero DNI values for zenith angles greater than or equal to
+        'zenith_threshold_for_zero_dni' will be set to NaN. Default: 88.
+
+    zenith_threshold_for_clearsky_limit : float
+        DNI values for zenith angles greater than or equal to
+        'zenith_threshold_for_clearsky_limit' and smaller the
+        'zenith_threshold_for_zero_dni' that are greater than the clearsky DNI
+        (times allowed tolerance) will be corrected. Only applies if
+        'clearsky_dni' is not None. Default: 80.
+
+    Returns
+    -------
+    dni : Series
+        The modeled direct normal irradiance.
+    """
+
+    # calculate DNI
+    dni = (ghi - dhi) / tools.cosd(zenith)
+
+    # cutoff negative values
+    dni[dni < 0] = float('nan')
+
+    # set non-zero DNI values for zenith angles >=
+    # zenith_threshold_for_zero_dni to NaN
+    dni[(zenith >= zenith_threshold_for_zero_dni) & (dni != 0)] = float('nan')
+
+    # correct DNI values for zenith angles greater or equal to the
+    # zenith_threshold_for_clearsky_limit and smaller than the
+    # upper_cutoff_zenith that are greater than the clearsky DNI (times
+    # clearsky_tolerance)
+    if clearsky_dni is not None:
+        max_dni = clearsky_dni * clearsky_tolerance
+        dni[(zenith >= zenith_threshold_for_clearsky_limit) &
+            (zenith < zenith_threshold_for_zero_dni) &
+            (dni > max_dni)] = max_dni
+    return dni

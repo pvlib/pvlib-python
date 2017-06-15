@@ -118,12 +118,16 @@ class ForecastModel(object):
         self.model_type = model_type
         self.model_name = model_name
         self.set_type = set_type
+        self.connected = False
+
+    def connect_to_catalog(self):
         self.catalog = TDSCatalog(self.catalog_url)
-        self.fm_models = TDSCatalog(self.catalog.catalog_refs[model_type].href)
+        self.fm_models = TDSCatalog(
+            self.catalog.catalog_refs[self.model_type].href)
         self.fm_models_list = sorted(list(self.fm_models.catalog_refs.keys()))
 
         try:
-            model_url = self.fm_models.catalog_refs[model_name].href
+            model_url = self.fm_models.catalog_refs[self.model_name].href
         except ParseError:
             raise ParseError(self.model_name + ' model may be unavailable.')
 
@@ -137,6 +141,7 @@ class ForecastModel(object):
 
         self.datasets_list = list(self.model.datasets.keys())
         self.set_dataset()
+        self.connected = True
 
     def __repr__(self):
         return '{}, {}'.format(self.model_name, self.set_type)
@@ -224,6 +229,10 @@ class ForecastModel(object):
         forecast_data : DataFrame
             column names are the weather model's variable names.
         """
+
+        if not self.connected:
+            self.connect_to_catalog()
+
         if vert_level is not None:
             self.vert_level = vert_level
 
@@ -704,7 +713,7 @@ class GFS(ForecastModel):
         data['wind_speed'] = self.uv_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class HRRR_ESRL(ForecastModel):
@@ -790,7 +799,7 @@ class HRRR_ESRL(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class NAM(ForecastModel):
@@ -871,7 +880,7 @@ class NAM(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class HRRR(ForecastModel):
@@ -955,7 +964,7 @@ class HRRR(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class NDFD(ForecastModel):
@@ -1024,7 +1033,7 @@ class NDFD(ForecastModel):
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class RAP(ForecastModel):
@@ -1109,4 +1118,4 @@ class RAP(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]

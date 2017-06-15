@@ -142,7 +142,7 @@ problems.
     data = data.join(irrad_data, how='outer')
 
     # keep only the final data
-    data = data.ix[:, model.output_variables]
+    data = data[model.output_variables]
 
     print(data.head())
 

@@ -79,10 +79,6 @@ class Location(object):
 
         self.name = name
 
-        # needed for tying together Location and PVSystem in LocalizedPVSystem
-        # if LocalizedPVSystem signature is reversed
-        # super(Location, self).__init__(**kwargs)
-
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']
         return ('Location: \n  ' + '\n  '.join(
@@ -191,7 +187,7 @@ class Location(object):
             Column names are: ``ghi, dni, dhi``.
         """
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(times.dayofyear)
+            dni_extra = irradiance.extraradiation(times)
 
         try:
             pressure = kwargs.pop('pressure')

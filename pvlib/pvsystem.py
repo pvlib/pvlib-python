@@ -1830,7 +1830,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
     Returns
     -------
-    current : np.array
+    current : np.ndarray or np.float64
 
     References
     ----------
@@ -1843,12 +1843,16 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     except ImportError:
         raise ImportError('This function requires scipy')
 
-    Rsh = resistance_shunt
-    Rs = resistance_series
-    I0 = saturation_current
-    IL = photocurrent
-    I = current
-
+    # asarray turns Series into arrays so that we don't have to worry
+    # about multidimensional broadcasting failing
+    Rsh = np.asarray(resistance_shunt, np.float64)
+    Rs = np.asarray(resistance_series, np.float64)
+    nNsVth = np.asarray(nNsVth, np.float64)
+    I = np.asarray(current, np.float64)
+    I0 = np.asarray(saturation_current, np.float64)
+    IL = np.asarray(photocurrent, np.float64)
+    
+    # argW cannot be float128
     argW = I0 * Rsh / nNsVth * np.exp(Rsh * (-I + IL + I0) / nNsVth)
     lambertwterm = lambertw(argW).real
 
@@ -2008,13 +2012,13 @@ def i_from_v_alt(V=None, IL=None, I0=None, nNsVth=None, Rs=None, Rsh=None, retur
 
     # TODO Check if this qualifies as a numpy ufunc
         
-    # Work with np.ndarray inputs
-    V = np.asarray(V)
-    IL = np.asarray(IL)
-    I0 = np.asarray(I0)
-    nNsVth = np.asarray(nNsVth)
-    Rs = np.asarray(Rs)
-    Rsh = np.asarray(Rsh)
+    # Ensure inputs are all np.ndarray with np.float64 type
+    V = np.asarray(V, np.float64)
+    IL = np.asarray(IL, np.float64)
+    I0 = np.asarray(I0, np.float64)
+    nNsVth = np.asarray(nNsVth, np.float64)
+    Rs = np.asarray(Rs, np.float64)
+    Rsh = np.asarray(Rsh, np.float64)
     
     # Default computation of I using Rs=np.full_like(Rs, 0.), does not lose Rs shape or type info
     I_times_Rs_zero = np.full_like(Rs, 0.)

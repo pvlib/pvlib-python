@@ -461,6 +461,7 @@ def test_i_from_v_alt():
     _, meta_dict = pvsystem.i_from_v_alt(Rsh=np.inf, Rs=0., nNsVth=nNsVth, V=np.array([0., V_oc/2., V_oc]), I0=I0, IL=IL, return_meta_dict=True)
     assert_allclose(meta_dict['current_sum_at_diode_node'], 0., atol=atol)
     
+    # THIS FAILS: WE SHOULD PROBABLY USE SHUNT CONDUCTANCE INSTEAD OF SHUNT RESISTANCE
     # Can handle only ideal shunt
     I_out = pvsystem.i_from_v_alt(Rsh=np.inf, Rs=Rs, nNsVth=nNsVth, V=V, I0=I0, IL=IL)
     assert(isinstance(I_out, np.float64))

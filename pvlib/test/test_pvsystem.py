@@ -94,10 +94,10 @@ def test_systemdef_dict():
 
 @needs_numpy_1_10
 def test_ashraeiam():
-    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5, 89.,  90. , np.nan])
     iam = pvsystem.ashraeiam(thetas, .05)
     expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         0, np.nan])
+        0.99588039,  0.97928932,  0.9193437 ,         0, 0,  np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -105,10 +105,10 @@ def test_ashraeiam():
 def test_PVSystem_ashraeiam():
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  89., 90. , np.nan])
     iam = system.ashraeiam(thetas)
     expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         0, np.nan])
+        0.99588039,  0.97928932,  0.9193437 ,         0, 0,  np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 

@@ -697,7 +697,7 @@ def ashraeiam(aoi, b=0.05):
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector in degrees. Angles of nan will result in nan.
 
     b : float
         A parameter to adjust the modifier as a function of angle of
@@ -762,7 +762,7 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     aoi : numeric
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees. Angles of 0 are replaced with 1e-06
-        to ensure non-nan results.
+        to ensure non-nan results. Angles of nan will result in nan.
 
     n : numeric
         The effective index of refraction (unitless). Reference [1]

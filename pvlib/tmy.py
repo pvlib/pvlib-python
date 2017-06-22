@@ -28,14 +28,14 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
 
     Parameters
     ----------
-    filename : None or string
+    filename : None or string, default None
         If None, attempts to use a Tkinter file browser. A string can be
         a relative file path, absolute file path, or url.
 
-    coerce_year : None or int
+    coerce_year : None or int, default None
         If supplied, the year of the data will be set to this value.
 
-    recolumn : bool
+    recolumn : bool, default True
         If True, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
 

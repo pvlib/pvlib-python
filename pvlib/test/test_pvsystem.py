@@ -397,7 +397,7 @@ def test_current_sum_at_diode_node():
     results_inf_Rsh_2 = IL - I0*np.expm1((V + I*Rs)/nNsVth) - I
     assert_array_equal(results_inf_Rsh_1, results_inf_Rsh_2)
 
-
+@requires_scipy
 @pytest.fixture(params=[
     { # Can handle all python scalar inputs
      'Rsh' : 20.,
@@ -539,6 +539,7 @@ def test_v_from_i_alt(fixture_v_from_i_alt):
     # TODO Stability as Rs->0^+ and/or Rsh->inf
 
 
+@requires_scipy
 @pytest.fixture(params=[
     { # Can handle all python scalar inputs
      'Rsh' : 20.,

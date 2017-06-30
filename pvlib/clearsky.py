@@ -525,7 +525,7 @@ def _calc_taud(w, aod700, p):
     return taud
 
 
-def _calc_d(w, aod700, p):
+def _calc_d(aod700, p):
     """Calculate the d coefficient."""
 
     p0 = 101325.

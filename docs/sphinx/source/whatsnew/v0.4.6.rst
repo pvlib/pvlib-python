@@ -18,7 +18,7 @@ Enhancements
 
 API Changes
 ~~~~~~~~~~~
-
+* Removed parameter w from _calc_d (:issue:`344`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -29,3 +29,4 @@ Contributors
 
 * Will Holmgren
 * Uwe Krien
+* Alaina Kafkes

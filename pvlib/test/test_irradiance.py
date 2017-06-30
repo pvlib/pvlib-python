@@ -422,3 +422,22 @@ def test_dni():
     assert_series_equal(dni,
                         pd.Series([float('nan'), float('nan'), 573.685662283,
                                    146.190220008, 573.685662283]))
+
+
+@pytest.mark.parametrize(
+    'surface_tilt,surface_azimuth,solar_zenith,solar_azimuth,aoi_expected,aoi_proj_expected', [
+    (0, 0, 0, 0, 0, 1),
+    (30, 180, 30, 180, 0, 1),
+    (30, 180, 150, 0, 180, -1),
+    (90, 0, 30, 60, 75.52248781407006, 0.25),
+    (90, 0, 30, 170, 119.49870423110367, -0.49240387650610395)])
+def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
+                                solar_azimuth,  aoi_expected,
+                                aoi_proj_expected):
+    aoi = irradiance.aoi(surface_tilt, surface_azimuth, solar_zenith,
+                         solar_azimuth)
+    assert_allclose(aoi, aoi_expected, atol=1e-6)
+
+    aoi_projection = irradiance.aoi_projection(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    assert_allclose(aoi_projection, aoi_proj_expected, atol=1e-6)

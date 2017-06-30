@@ -411,7 +411,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     g = _calc_g(w, aod700)
 
     taud = _calc_taud(w, aod700, p)
-    d = _calc_d(w, aod700, p)
+    d = _calc_d(aod700, p)
 
     # this prevents the creation of nans at night instead of 0s
     # it's also friendly to scalar and series inputs

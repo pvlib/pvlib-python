@@ -40,10 +40,10 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     linke_turbidity : numeric
         Linke Turbidity.
 
-    altitude : numeric
+    altitude : numeric, default 0
         Altitude above sea level in meters.
 
-    dni_extra : numeric
+    dni_extra : numeric, default 1364
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
 
@@ -164,10 +164,10 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
 
     longitude : float
 
-    filepath : string
+    filepath : None or string, default None
         The path to the ``.mat`` file.
 
-    interp_turbidity : bool
+    interp_turbidity : bool, default True
         If ``True``, interpolates the monthly Linke turbidity values
         found in ``LinkeTurbidities.mat`` to daily values.
 
@@ -352,21 +352,21 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     apparent_elevation : numeric
         The apparent elevation of the sun above the horizon (deg).
 
-    aod700 : numeric
+    aod700 : numeric, default 0.1
         The aerosol optical depth at 700 nm (unitless).
         Algorithm derived for values between 0 and 0.45.
 
-    precipitable_water : numeric
+    precipitable_water : numeric, default 1.0
         The precipitable water of the atmosphere (cm).
         Algorithm derived for values between 0.2 and 10 cm.
         Values less than 0.2 will be assumed to be equal to 0.2.
 
-    pressure : numeric
+    pressure : numeric, default 101325.0
         The atmospheric pressure (Pascals).
         Algorithm derived for altitudes between sea level and 7000 m,
         or 101325 and 41000 Pascals.
 
-    dni_extra : numeric
+    dni_extra : numeric, default 1364.0
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
 
@@ -569,29 +569,29 @@ def detect_clearsky(measured, clearsky, times, window_length,
     window_length : int
         Length of sliding time window in minutes. Must be greater than 2
         periods.
-    mean_diff : float
+    mean_diff : float, default 75
         Threshold value for agreement between mean values of measured
         and clearsky in each interval, see Eq. 6 in [1].
-    max_diff : float
+    max_diff : float, default 75
         Threshold value for agreement between maxima of measured and
         clearsky values in each interval, see Eq. 7 in [1].
-    lower_line_length : float
+    lower_line_length : float, default -5
         Lower limit of line length criterion from Eq. 8 in [1].
         Criterion satisfied when
         lower_line_length < line length difference < upper_line_length
-    upper_line_length : float
+    upper_line_length : float, default 10
         Upper limit of line length criterion from Eq. 8 in [1].
-    var_diff : float
+    var_diff : float, default 0.005
         Threshold value in Hz for the agreement between normalized
         standard deviations of rate of change in irradiance, see Eqs. 9
         through 11 in [1].
-    slope_dev : float
+    slope_dev : float, default 8
         Threshold value for agreement between the largest magnitude of
         change in successive values, see Eqs. 12 through 14 in [1].
-    max_iterations : int
+    max_iterations : int, default 20
         Maximum number of times to apply a different scaling factor to
         the clearsky and redetermine clear_samples. Must be 1 or larger.
-    return_components : bool
+    return_components : bool, default False
         Controls if additional output should be returned. See below.
 
     Returns

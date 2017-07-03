@@ -149,7 +149,7 @@ def djd_to_datetime(djd, tz='UTC'):
     ----------
     djd : float
         fractional days since 12/31/1899+0000
-    tz : str
+    tz : str, default 'UTC'
         timezone to localize the result to
 
     Returns

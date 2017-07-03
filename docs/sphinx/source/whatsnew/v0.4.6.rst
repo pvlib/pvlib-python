@@ -14,7 +14,7 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added default values to docstrings of all functions (:issue:`336`)
 
 API Changes
 ~~~~~~~~~~~
@@ -30,3 +30,4 @@ Contributors
 * Will Holmgren
 * Uwe Krien
 * Alaina Kafkes
+* Birgit Schachler

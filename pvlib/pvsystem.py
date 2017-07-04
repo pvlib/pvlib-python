@@ -827,8 +827,6 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
     tau = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) * (1 - 0.5*(reflective_loss + absorption_loss)))
 
-    thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
-
     tau0 = (np.exp(- 1.0 * (K * L)) * (1 - (1 - n) ** 2 / (1 + n) ** 2))
 
     iam = tau / tau0
@@ -2083,8 +2081,8 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
         See Notes for required keys.
 
     vtol : numeric, default 0.1
-        A unit-less fraction that determines how far the efficiency model is 
-        allowed to extrapolate beyond the inverter's normal input voltage 
+        A unit-less fraction that determines how far the efficiency model is
+        allowed to extrapolate beyond the inverter's normal input voltage
         operating range. 0.0 <= vtol <= 1.0
 
     Returns

@@ -818,19 +818,15 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
     thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
 
-    tau = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) *
-           ((1 - 0.5*((((tools.sind(thetar_deg - aoi)) ** 2) /
-            ((tools.sind(thetar_deg + aoi)) ** 2) +
-            ((tools.tand(thetar_deg - aoi)) ** 2) /
-            ((tools.tand(thetar_deg + aoi)) ** 2))))))
+    reflective_loss = ((tools.sind(thetar_deg - aoi)) ** 2) / ((tools.sind(thetar_deg + aoi)) ** 2)
+
+    absorption_loss = ((tools.tand(thetar_deg - aoi)) ** 2) / ((tools.tand(thetar_deg + aoi)) ** 2)
+
+    tau = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) * (1 - 0.5*(reflective_loss + absorption_loss)))
 
     thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
 
-    tau0 = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg0))) *
-            ((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) /
-             ((tools.sind(thetar_deg0 + zeroang)) ** 2) +
-             ((tools.tand(thetar_deg0 - zeroang)) ** 2) /
-             ((tools.tand(thetar_deg0 + zeroang)) ** 2))))))
+    tau0 = (np.exp(- 1.0 * (K * L)) * (1 - (1 - n) ** 2 / (1 + n) ** 2))
 
     iam = tau / tau0
 
@@ -2084,8 +2080,8 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
         See Notes for required keys.
 
     vtol : numeric
-        A unit-less fraction that determines how far the efficiency model is 
-        allowed to extrapolate beyond the inverter's normal input voltage 
+        A unit-less fraction that determines how far the efficiency model is
+        allowed to extrapolate beyond the inverter's normal input voltage
         operating range. 0.0 <= vtol <= 1.0
 
     Returns
@@ -2109,21 +2105,21 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
     Column    Description
     =======   ============================================================
     p_nom     The nominal power value used to normalize all power values,
-              typically the DC power needed to produce maximum AC power 
+              typically the DC power needed to produce maximum AC power
               output, (W).
 
-    v_nom     The nominal DC voltage value used to normalize DC voltage 
-              values, typically the level at which the highest efficiency 
+    v_nom     The nominal DC voltage value used to normalize DC voltage
+              values, typically the level at which the highest efficiency
               is achieved, (V).
 
-    pac_max   The maximum AC output power value, used to clip the output 
+    pac_max   The maximum AC output power value, used to clip the output
               if needed, (W).
 
     ce_list   This is a list of 9 coefficients that capture the influence
               of input voltage and power on inverter losses, and thereby
               efficiency.
 
-    p_nt      ac-power consumed by inverter at night (night tare) to 
+    p_nt      ac-power consumed by inverter at night (night tare) to
               maintain circuitry required to sense PV array voltage, (W).
     =======   ============================================================
 

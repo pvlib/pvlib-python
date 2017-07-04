@@ -14,11 +14,11 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added default values to docstrings of all functions (:issue:`336`)
 
 API Changes
 ~~~~~~~~~~~
-
+* Removed parameter w from _calc_d (:issue:`344`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -29,3 +29,5 @@ Contributors
 
 * Will Holmgren
 * Uwe Krien
+* Alaina Kafkes
+* Birgit Schachler

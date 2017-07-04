@@ -216,11 +216,11 @@ class ForecastModel(object):
             The start time.
         end: datetime or timestamp
             The end time.
-        vert_level: None, float or integer
+        vert_level: None, float or integer, default None
             Vertical altitude of interest.
-        variables: None or list
+        query_variables: None or list, default None
             If None, uses self.variables.
-        close_netcdf_data: bool
+        close_netcdf_data: bool, default True
             Controls if the temporary netcdf data file should be closed.
             Set to False to access the raw data.
 
@@ -309,7 +309,7 @@ class ForecastModel(object):
         Parameters
         ----------
         data: DataFrame
-        variables: None or dict
+        variables: None or dict, default None
             If None, uses self.variables
 
         Returns
@@ -381,7 +381,7 @@ class ForecastModel(object):
             Cloud cover in %.
         ghi_clear: numeric
             GHI under clear sky conditions.
-        offset: numeric
+        offset: numeric, default 35
             Determines the minimum GHI.
         kwargs
             Not used.
@@ -421,7 +421,7 @@ class ForecastModel(object):
         ----------
         cloud_cover : Series
             Cloud cover in %.
-        method : str
+        method : str, default 'linear'
             Method for converting cloud cover to GHI.
             'linear' is currently the only option.
         **kwargs
@@ -463,7 +463,7 @@ class ForecastModel(object):
         ----------
         cloud_cover : numeric
             Cloud cover in %.
-        offset : numeric
+        offset : numeric, default 0.75
             Determines the maximum transmittance.
         kwargs
             Not used.
@@ -520,7 +520,7 @@ class ForecastModel(object):
         Parameters
         ----------
         cloud_cover : Series
-        how : str
+        how : str, default 'clearsky_scaling'
             Selects the method for conversion. Can be one of
             clearsky_scaling or liujordan.
         **kwargs
@@ -633,9 +633,9 @@ class GFS(ForecastModel):
 
     Parameters
     ----------
-    resolution: string
+    resolution: string, default 'half'
         Resolution of the model, either 'half' or 'quarter' degree.
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -700,7 +700,7 @@ class GFS(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -727,7 +727,7 @@ class HRRR_ESRL(ForecastModel):
 
     Parameters
     ----------
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -785,7 +785,7 @@ class HRRR_ESRL(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -812,7 +812,7 @@ class NAM(ForecastModel):
 
     Parameters
     ----------
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -866,7 +866,7 @@ class NAM(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -893,7 +893,7 @@ class HRRR(ForecastModel):
 
     Parameters
     ----------
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -949,7 +949,7 @@ class HRRR(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -976,7 +976,7 @@ class NDFD(ForecastModel):
 
     Parameters
     ----------
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -1045,9 +1045,9 @@ class RAP(ForecastModel):
 
     Parameters
     ----------
-    resolution: string or int
+    resolution: string or int, default '20'
         The model resolution, either '20' or '40' (km)
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -1104,7 +1104,7 @@ class RAP(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns

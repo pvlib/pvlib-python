@@ -43,15 +43,15 @@ def get_solarposition(time, latitude, longitude,
 
     longitude : float
 
-    altitude : None or float
+    altitude : None or float, default None
         If None, computed from pressure. Assumed to be 0 m
         if pressure is also None.
 
-    pressure : None or float
+    pressure : None or float, default None
         If None, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
 
-    method : string
+    method : string, default 'nrel_numpy'
         'nrel_numpy' uses an implementation of the NREL SPA algorithm
         described in [1] (default, recommended): :py:func:`spa_python`
 
@@ -65,7 +65,7 @@ def get_solarposition(time, latitude, longitude,
 
         'nrel_c' uses the NREL SPA C code [3]: :py:func:`spa_c`
 
-    temperature : float
+    temperature : float, default 12
         Degrees C.
 
     Other keywords are passed to the underlying solar position function.
@@ -136,16 +136,16 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
         Localized or UTC.
     latitude : float
     longitude : float
-    pressure : float
+    pressure : float, default 101325
         Pressure in Pascals
-    altitude : float
+    altitude : float, default 0
         Elevation above sea level.
-    temperature : float
+    temperature : float, default 12
         Temperature in C
-    delta_t : float
+    delta_t : float, default 67.0
         Difference between terrestrial time and UT1.
         USNO has previous values and predictions.
-    raw_spa_output : bool
+    raw_spa_output : bool, default False
         If true, returns the raw SPA output.
 
     Returns
@@ -268,12 +268,12 @@ def spa_python(time, latitude, longitude,
         Localized or UTC.
     latitude : float
     longitude : float
-    altitude : float
-    pressure : int or float, optional
+    altitude : float, default 0
+    pressure : int or float, optional, default 101325
         avg. yearly air pressure in Pascals.
-    temperature : int or float, optional
+    temperature : int or float, optional, default 12
         avg. yearly air temperature in degrees C.
-    delta_t : float, optional
+    delta_t : float, optional, default 67.0
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
@@ -281,14 +281,14 @@ def spa_python(time, latitude, longitude,
         *Note: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3].
-    atmos_refrac : float, optional
+    atmos_refrac : None or float, optional, default None
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
-    how : str, optional
+    how : str, optional, default 'numpy'
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
-    numthreads : int, optional
+    numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
 
     Returns
@@ -381,11 +381,11 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
         *Note: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.
         By default, use USNO historical data and predictions
-    how : str, optional
+    how : str, optional, default 'numpy'
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
-    numthreads : int, optional
+    numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
 
     Returns
@@ -465,11 +465,11 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
         Localized or UTC.
     latitude : float
     longitude : float
-    altitude : float
+    altitude : float, default 0
         distance above sea level.
-    pressure : int or float, optional
+    pressure : int or float, optional, default 101325
         air pressure in Pascals.
-    temperature : int or float, optional
+    temperature : int or float, optional, default 12
         air temperature in degrees C.
 
     Returns
@@ -549,9 +549,9 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     time : pandas.DatetimeIndex
     latitude : float
     longitude : float
-    pressure : float or Series
+    pressure : float or Series, default 101325
         Ambient pressure (Pascals)
-    temperature : float or Series
+    temperature : float or Series, default 12
         Ambient temperature (C)
 
     Returns
@@ -731,14 +731,14 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         and 'az' (which must be given in radians).
     value : int or float
         The value of the attribute to solve for
-    altitude : float
+    altitude : float, default 0
         Distance above sea level.
-    pressure : int or float, optional
+    pressure : int or float, optional, default 101325
         Air pressure in Pascals. Set to 0 for no
         atmospheric correction.
-    temperature : int or float, optional
+    temperature : int or float, optional, default 12
         Air temperature in degrees C.
-    xtol : float, optional
+    xtol : float, optional, default 1.0e-12
         The allowed error in the result from value
 
     Returns
@@ -810,12 +810,12 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     ----------
     time : pd.DatetimeIndex
 
-    how : str, optional
+    how : str, optional, default 'numpy'
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
 
-    delta_t : float, optional
+    delta_t : float, optional, default 67.0
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
@@ -824,7 +824,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         this will be fixed in a future version.*
         By default, use USNO historical data and predictions
 
-    numthreads : int, optional
+    numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
 
     Returns

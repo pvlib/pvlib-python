@@ -15,6 +15,34 @@ pvl_logger = logging.getLogger('pvlib')
 class SingleAxisTracker(PVSystem):
     """
     Inherits all of the PV modeling methods from PVSystem.
+
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation (i.e, the y-axis defined by
+        axis_azimuth) with respect to horizontal, in decimal degrees.
+
+    axis_azimuth : float, default 0
+        A value denoting the compass direction along which the axis of
+        rotation lies. Measured in decimal degrees East of North.
+
+    max_angle : float, default 90
+        A value denoting the maximum rotation angle, in decimal degrees,
+        of the one-axis tracker from its horizontal position (horizontal
+        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
+        to rotate to a vertical position to point the panel towards a
+        horizon. max_angle of 180 degrees allows for full rotation.
+
+    backtrack : bool, default True
+        Controls whether the tracker has the capability to "backtrack"
+        to avoid row-to-row shading. False denotes no backtrack
+        capability. True denotes backtrack capability.
+
+    gcr : float, default 2.0/7.0
+        A value denoting the ground coverage ratio of a tracker system
+        which utilizes backtracking; i.e. the ratio between the PV array
+        surface area to total ground area. A tracker system with modules
+        2 meters wide, centered on the tracking axis, with 6 meters
+        between the tracking axes has a gcr of 2/6=0.333. If gcr is not
+        provided, a gcr of 2/7 is default. gcr must be <=1.
     """
 
     def __init__(self, axis_tilt=0, axis_azimuth=0,
@@ -55,9 +83,9 @@ class SingleAxisTracker(PVSystem):
 
         Parameters
         ----------
-        location : None or Location
-        latitude : None or float
-        longitude : None or float
+        location : None or Location, default None
+        latitude : None or float, default None
+        longitude : None or float, default None
         **kwargs : see Location
 
         Returns
@@ -91,11 +119,11 @@ class SingleAxisTracker(PVSystem):
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance
-        dni_extra : float or Series
+        dni_extra : float or Series, default None
             Extraterrestrial direct normal irradiance
-        airmass : float or Series
+        airmass : float or Series, default None
             Airmass
-        model : String
+        model : String, default 'haydavies'
             Irradiance model.
 
         **kwargs
@@ -201,27 +229,27 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     apparent_azimuth : Series
         Solar apparent azimuth angles in decimal degrees.
 
-    axis_tilt : float
+    axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
         axis_azimuth) with respect to horizontal, in decimal degrees.
 
-    axis_azimuth : float
+    axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
         rotation lies. Measured in decimal degrees East of North.
 
-    max_angle : float
+    max_angle : float, default 90
         A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
         if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
         to rotate to a vertical position to point the panel towards a
         horizon. max_angle of 180 degrees allows for full rotation.
 
-    backtrack : bool
+    backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
         to avoid row-to-row shading. False denotes no backtrack
         capability. True denotes backtrack capability.
 
-    gcr : float
+    gcr : float, default 2.0/7.0
         A value denoting the ground coverage ratio of a tracker system
         which utilizes backtracking; i.e. the ratio between the PV array
         surface area to total ground area. A tracker system with modules

@@ -24,6 +24,12 @@ Documentation
 ~~~~~~~~~~~~~
 
 
+Testing
+~~~~~~~
+
+* Added explicit tests for aoi and aoi_projection functions.
+
+
 Contributors
 ~~~~~~~~~~~~
 

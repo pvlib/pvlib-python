@@ -129,6 +129,7 @@ def test_cloud_cover_to_transmittance_linear():
     amodel = GFS()
     assert_allclose(amodel.cloud_cover_to_transmittance_linear(0), 0.75)
     assert_allclose(amodel.cloud_cover_to_transmittance_linear(100), 0.0)
+    assert_allclose(amodel.cloud_cover_to_transmittance_linear(0, 0.5), 0.5)
 
 
 def test_cloud_cover_to_ghi_linear():

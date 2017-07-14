@@ -1052,6 +1052,50 @@ def declination_cooper69(dayofyear):
     return np.deg2rad(23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0))
 
 
+def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
+    """
+    Analytical expression of solar azimuth angle based on spherical
+    trigonometry.
+
+    Parameters
+    ----------
+    latitude : numeric
+        Latitude of location in radians.
+    hour_angle : numeric
+        Hour angle in the local solar time in radians.
+    declination : numeric
+        Declination of the sun in radians.
+    zenith : numeric
+        Solar zenith angle in radians.
+
+    Returns
+    -------
+    azimuth : numeric
+        Solar azimuth angle in radians.
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
+
+    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+    p. 132, J. Wiley (1998)
+
+    `Wikipedia: Solar Azimuth Angle <https://en.wikipedia.org/wiki/Solar_azimuth_angle>`_
+
+    `PVCDROM: Azimuth Angle <http://www.pveducation.org/pvcdrom/2-properties-sunlight/azimuth-angle>`_
+
+    See Also
+    --------
+    declination_spencer71
+    declination_cooper69
+    hour_angle
+    solar_zenith_analytical
+    """
+    return np.sign(hour_angle) * np.abs(np.arccos((np.cos(zenith) * np.sin(
+        latitude) - np.sin(declination)) / (np.sin(zenith) * np.cos(latitude))))
+
+
 def solar_zenith_analytical(latitude, hour_angle, declination):
     """
     Analytical expression of solar zenith angle based on spherical trigonometry.

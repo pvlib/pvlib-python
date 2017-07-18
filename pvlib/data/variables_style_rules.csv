@@ -6,7 +6,7 @@ dni;direct normal irradiance
 dni_extra;direct normal irradiance at top of atmosphere (extraterrestrial)
 dhi;diffuse horizontal irradiance
 ghi;global horizontal irradiance
-aoi;angle of incidence between :math:`90\def` and :math:`90\deg`
+aoi;angle of incidence between :math:`90\deg` and :math:`90\deg`
 aoi_projection;cos(aoi)
 airmass;airmass
 airmass_relative;relative airmass

@@ -819,19 +819,36 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
     aoi = np.where(aoi == 0, zeroang, aoi)
 
+    # angle of reflection
     thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
 
-    reflective_loss = ((tools.sind(thetar_deg - aoi)) ** 2) / ((tools.sind(thetar_deg + aoi)) ** 2)
+    # reflectance and transmittance for normal incidence light
+    rho_zero = ((1-n) / (1+n)) ** 2
+    tau_zero = np.exp(-K*L)
 
-    absorption_loss = ((tools.tand(thetar_deg - aoi)) ** 2) / ((tools.tand(thetar_deg + aoi)) ** 2)
+    # reflectance for parallel and perpendicular polarized light
+    rho_para = (tools.tand(thetar_deg - aoi) /
+                tools.tand(thetar_deg + aoi)) ** 2
+    rho_perp = (tools.sind(thetar_deg - aoi) /
+                tools.sind(thetar_deg + aoi)) ** 2
 
-    tau = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) * (1 - 0.5*(reflective_loss + absorption_loss)))
+    # transmittance for non-normal light
+    tau = np.exp(-K*L / tools.cosd(thetar_deg))
 
-    tau0 = (np.exp(- 1.0 * (K * L)) * (1 - (1 - n) ** 2 / (1 + n) ** 2))
+    # iam is ratio of non-normal to normal incidence transmitted light
+    # after deducting the reflected portion of each
+    iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
 
-    iam = tau / tau0
+    # angles near zero produce nan, but iam is defined as one
+    small_angle = 1e-06
+    iam = np.where(np.abs(aoi) < small_angle, 1.0, iam)
 
-    iam = np.where((np.abs(aoi) >= 90) | (iam < 0), 0, iam)
+    # angles at 90 degrees can produce tiny negative values, which should be zero
+    # this is a result of calculation precision rather than the physical model
+    iam = np.where(iam < 0, 0, iam)
+
+    # for light coming from behind the plane, none can enter the module
+    iam = np.where(aoi > 90, 0, iam)
 
     if isinstance(aoi, pd.Series):
         iam = pd.Series(iam, index=aoi.index)

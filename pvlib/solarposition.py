@@ -1095,7 +1095,8 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     solar_zenith_analytical
     """
     return np.sign(hour_angle) * np.abs(np.arccos((np.cos(zenith) * np.sin(
-        latitude) - np.sin(declination)) / (np.sin(zenith) * np.cos(latitude))))
+        latitude) - np.sin(declination)) / (np.sin(zenith) * np.cos(
+        latitude)))) + np.pi
 
 
 def solar_zenith_analytical(latitude, hour_angle, declination):

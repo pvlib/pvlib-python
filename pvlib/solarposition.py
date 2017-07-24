@@ -1081,9 +1081,11 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
     p. 132, J. Wiley (1998)
 
-    `Wikipedia: Solar Azimuth Angle <https://en.wikipedia.org/wiki/Solar_azimuth_angle>`_
+    [3] `Wikipedia: Solar Azimuth Angle
+    <https://en.wikipedia.org/wiki/Solar_azimuth_angle>`_
 
-    `PVCDROM: Azimuth Angle <http://www.pveducation.org/pvcdrom/2-properties-sunlight/azimuth-angle>`_
+    [4] `PVCDROM: Azimuth Angle <http://www.pveducation.org/pvcdrom/2-properties
+    -sunlight/azimuth-angle>`_
 
     See Also
     --------

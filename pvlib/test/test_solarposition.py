@@ -443,17 +443,18 @@ def test_analytical_azimuth():
     zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     azimuth_2 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
                                                        decl, zenith)
-    for idx, a in enumerate(azimuth_1):
-        if a < 0.7:
-            assert np.allclose(a, solar_azimuth[idx], atol=0.025) or \
-                   np.allclose(a + np.pi * 2, solar_azimuth[idx], atol=0.55)
-        else:
-            assert np.allclose(a, solar_azimuth[idx], atol=0.025)
+    idx = np.where(azimuth_1 > 0.3)
+    assert np.allclose(azimuth_1[idx], solar_azimuth.as_matrix()[idx],
+                       atol=0.025)
+    for idx, azi in enumerate(azimuth_1):
+        if azi < 0.3:
+            assert np.isclose(azi, solar_azimuth[idx], atol=0.025) or \
+                   np.isclose(azi + np.pi * 2, solar_azimuth[idx], atol=0.55)
 
-    for idx, a in enumerate(azimuth_2):
-        if a < 0.7:
-            assert np.allclose(a, solar_azimuth[idx], atol=0.025) or \
-                   np.allclose(a + np.pi * 2, solar_azimuth[idx], atol=0.55)
-        else:
-            assert np.allclose(a, solar_azimuth[idx], atol=0.025)
-
+    idx = np.where(azimuth_2 > 0.3)
+    assert np.allclose(azimuth_1[idx], solar_azimuth.as_matrix()[idx],
+                       atol=0.025)
+    for idx, azi in enumerate(azimuth_2):
+        if azi < 0.3:
+            assert np.isclose(azi, solar_azimuth[idx], atol=0.025) or \
+                   np.isclose(azi + np.pi * 2, solar_azimuth[idx], atol=0.55)

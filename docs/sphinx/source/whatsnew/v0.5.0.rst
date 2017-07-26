@@ -35,6 +35,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Added ModelChain documentation page
 * Added nbsphinx to documentation build configuration.
+* Added a pull request template file (:issue:`354`)
 
 Testing
 ~~~~~~~

@@ -168,7 +168,7 @@ def test_run_model_tracker(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([  119.067713606,  nan]),
+    expected = pd.Series(np.array([119.067713606,  nan]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 

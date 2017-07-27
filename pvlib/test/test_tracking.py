@@ -9,7 +9,6 @@ from pandas.util.testing import assert_frame_equal
 from numpy.testing import assert_allclose
 
 from pvlib.location import Location
-from pvlib import solarposition
 from pvlib import tracking
 
 
@@ -285,10 +284,8 @@ def test_get_irradiance():
                                        irrads['dhi'])
 
     expected = pd.DataFrame(data=np.array(
-        [[ 961.80070,   815.94490,   145.85580,   135.32820,
-          10.52757492],
-       [          nan,           nan,           nan,           nan,
-                  nan]]),
+        [[961.80070,   815.94490,   145.85580,   135.32820, 10.52757492],
+         [nan, nan, nan, nan, nan]]),
                             columns=['poa_global', 'poa_direct',
                                      'poa_diffuse', 'poa_sky_diffuse',
                                      'poa_ground_diffuse'],
@@ -314,4 +311,3 @@ def test_LocalizedSingleAxisTracker___repr__():
     expected = 'LocalizedSingleAxisTracker: \n  axis_tilt: 0\n  axis_azimuth: 0\n  max_angle: 90\n  backtrack: True\n  gcr: 0.25\n  name: None\n  surface_tilt: None\n  surface_azimuth: None\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC'
 
     assert localized_system.__repr__() == expected
-

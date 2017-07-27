@@ -101,7 +101,6 @@ class SingleAxisTracker(PVSystem):
 
         return LocalizedSingleAxisTracker(pvsystem=self, location=location)
 
-
     def get_aoi(self, surface_tilt, surface_azimuth, solar_zenith,
                 solar_azimuth):
         """Get the angle of incidence on the system.

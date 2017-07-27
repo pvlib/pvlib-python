@@ -437,18 +437,18 @@ class PVSystem(object):
 
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
-        """Wrapper around the :py:func:`i_from_v` function.
+        """Wrapper around the :py:func:`sdm_i_from_v` function.
 
         Parameters
         ----------
-        See pvsystem.i_from_v for details
+        See pvsystem.sdm_i_from_v for details
 
         Returns
         -------
-        See pvsystem.i_from_v for details
+        See pvsystem.sdm_i_from_v for details
         """
-        return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-                        saturation_current, photocurrent)
+        return sdm_i_from_v(voltage, photocurrent, saturation_current,
+                            nNsVth, resistance_series, resistance_shunt)
 
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
@@ -1790,12 +1790,14 @@ def _pwr_optfcn(df, loc):
 
     I = i_from_v(df['r_sh'], df['r_s'], df['nNsVth'],
                  df[loc], df['i_0'], df['i_l'])
-    return I*df[loc]
+    return I * df[loc]
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
              saturation_current, photocurrent):
     '''
+    DEPRECATED: Use sdm_v_from_i() instead.
+
     Calculates voltage from current per Eq 3 Jain and Kapoor 2004 [1].
 
     Parameters
@@ -1884,6 +1886,8 @@ np.where(np.isfinite(lambertwterm), lambertwterm, lambertwterm_log)
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
              saturation_current, photocurrent):
     '''
+    DEPRECATED: Use sdm_i_from_v() instead.
+
     Calculates current from voltage per Eq 2 Jain and Kapoor 2004 [1].
 
     Parameters
@@ -1996,8 +2000,8 @@ def sdm_current_sum(V, I, IL, I0, nNsVth, Rs, Rsh):
     Solar Cells, 81 (2004) 269-277.
     '''
 
-    # sdm_current_sum
-    return IL - I0*np.expm1((V + I*Rs)/nNsVth) - (V + I*Rs)/Rsh - I
+    VplusItimesRs = V + I * Rs
+    return IL - I0 * np.expm1(VplusItimesRs / nNsVth) - VplusItimesRs / Rsh - I
 
 
 def sdm_v_from_i(I, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
@@ -2031,7 +2035,7 @@ def sdm_v_from_i(I, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
     Rsh : numeric
         Device shunt resistance [Ohm]
 
-    return_meta_dict : boolean scalar
+    return_meta_dict : boolean scalar (default is False)
         Return additional computation metadata dictionary
 
     Returns
@@ -2063,29 +2067,28 @@ def sdm_v_from_i(I, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
     Rs = np.asarray(Rs, np.float64)
     Rsh = np.asarray(Rsh, np.float64)
 
-    # Default computation of V using zero_term keeps Rsh shape info
-    zero_term = np.zeros_like(I*Rs/Rsh)
-    V = nNsVth*(np.log(IL - I - zero_term + I0) - np.log(I0)) - I*Rs
-    sdm_current_sum_out = \
-sdm_current_sum(V=V, I=I, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    # Default computation of V using np.zeros_like keeps Rsh shape info
+    V = nNsVth * (np.log(IL - I - np.zeros_like(I * Rs / Rsh) + I0) -
+                  np.log(I0)) - I * Rs
+    sdm_current_sum_out = sdm_current_sum(V, I, IL, I0, nNsVth, Rs, Rsh)
 
     # Computation of V using LambertW for provided Rsh
-    V_LambertW = v_from_i(Rsh, Rs, nNsVth, I, I0, IL)
-    sdm_current_sum_LambertW = \
-sdm_current_sum(V=V_LambertW, I=I, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    V_lw = v_from_i(Rsh, Rs, nNsVth, I, I0, IL)
+    sdm_current_sum_lw = sdm_current_sum(V_lw, I, IL, I0, nNsVth, Rs, Rsh)
 
     # Compute selection indices (may be a scalar boolean)
-    finite_Rsh_idx = np.logical_and(np.isfinite(sdm_current_sum_LambertW), \
-np.absolute(sdm_current_sum_LambertW) <= np.absolute(sdm_current_sum_out))
+    finite_Rsh_idx = np.logical_and(np.isfinite(sdm_current_sum_lw),
+                                    np.absolute(sdm_current_sum_lw) <=
+                                    np.absolute(sdm_current_sum_out))
 
     # These are always np.ndarray
-    V = np.where(finite_Rsh_idx, V_LambertW, V)
-    sdm_current_sum_out = \
-np.where(finite_Rsh_idx, sdm_current_sum_LambertW, sdm_current_sum_out)
+    V = np.where(finite_Rsh_idx, V_lw, V)
+    sdm_current_sum_out = np.where(finite_Rsh_idx, sdm_current_sum_lw,
+                                   sdm_current_sum_out)
 
     if return_meta_dict:
-        return V, {'sdm_current_sum' : sdm_current_sum_out, \
-'inf_Rsh_idx' : np.array(np.logical_not(finite_Rsh_idx))}
+        return V, {'sdm_current_sum': sdm_current_sum_out,
+                   'inf_Rsh_idx': np.array(np.logical_not(finite_Rsh_idx))}
     else:
         return V
 
@@ -2121,7 +2124,7 @@ def sdm_i_from_v(V, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
     Rsh : numeric
         Device shunt resistance [Ohm]
 
-    return_meta_dict : boolean scalar
+    return_meta_dict : boolean scalar (default is False)
         Return additional computation metadata dictionary
 
     Returns
@@ -2155,27 +2158,26 @@ def sdm_i_from_v(V, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
 
     # Default computation of I using zero_term keeps Rs shape info
     zero_term = np.zeros_like(Rs)
-    I = IL - I0*np.expm1((V + zero_term)/nNsVth) - (V + zero_term)/Rsh
-    sdm_current_sum_out = \
-sdm_current_sum(V=V, I=I, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    I = IL - I0 * np.expm1((V + zero_term) / nNsVth) - (V + zero_term) / Rsh
+    sdm_current_sum_out = sdm_current_sum(V, I, IL, I0, nNsVth, Rs, Rsh)
 
     # Computation of I using LambertW for provided Rs
-    I_LambertW = i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
-    sdm_current_sum_LambertW = \
-sdm_current_sum(V=V, I=I_LambertW, IL=IL, I0=I0, nNsVth=nNsVth, Rs=Rs, Rsh=Rsh)
+    I_lw = i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
+    sdm_current_sum_lw = sdm_current_sum(V, I_lw, IL, I0, nNsVth, Rs, Rsh)
 
     # Compute selection indices (may be a scalar boolean)
-    nonzero_Rs_idx = np.logical_and(np.isfinite(sdm_current_sum_LambertW), \
-np.absolute(sdm_current_sum_LambertW) <= np.absolute(sdm_current_sum_out))
+    nonzero_Rs_idx = np.logical_and(np.isfinite(sdm_current_sum_lw),
+                                    np.absolute(sdm_current_sum_lw) <=
+                                    np.absolute(sdm_current_sum_out))
 
     # These are always np.ndarray
-    I = np.where(nonzero_Rs_idx, I_LambertW, I)
-    sdm_current_sum_out = \
-np.where(nonzero_Rs_idx, sdm_current_sum_LambertW, sdm_current_sum_out)
+    I = np.where(nonzero_Rs_idx, I_lw, I)
+    sdm_current_sum_out = np.where(nonzero_Rs_idx, sdm_current_sum_lw,
+                                   sdm_current_sum_out)
 
     if return_meta_dict:
-        return I, {'sdm_current_sum' : sdm_current_sum_out, \
-'zero_Rs_idx' : np.array(np.logical_not(nonzero_Rs_idx))}
+        return I, {'sdm_current_sum': sdm_current_sum_out,
+                   'zero_Rs_idx': np.array(np.logical_not(nonzero_Rs_idx))}
     else:
         return I
 

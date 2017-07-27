@@ -439,7 +439,7 @@ def fixture_sdm_current_sum(request):
     return request.param
 
 def test_sdm_current_sum(fixture_sdm_current_sum):
-    # Note: The computation of this function is so straight forward that we do
+    # Note: The computation of this function is so straightforward that we do
     #  NOT extensively verify ufunc behavior
     
     # Solution set loaded from fixture

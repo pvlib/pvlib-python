@@ -112,7 +112,7 @@ def basic_chain(times, latitude, longitude,
         surface_tilt, surface_azimuth = \
             get_orientation(orientation_strategy, latitude=latitude)
     else:
-        raise ValueError('orientation_strategy or surface_tilt and ' +
+        raise ValueError('orientation_strategy or surface_tilt and '
                          'surface_azimuth must be provided')
 
     times = times
@@ -208,7 +208,7 @@ def get_orientation(strategy, **kwargs):
         surface_azimuth = 180
         surface_tilt = 0
     else:
-        raise ValueError('invalid orientation strategy. strategy must ' +
+        raise ValueError('invalid orientation strategy. strategy must '
                          'be one of south_at_latitude, flat,')
 
     return surface_tilt, surface_azimuth
@@ -344,7 +344,7 @@ class ModelChain(object):
             return out
 
         return ('ModelChain: \n  ' + '\n  '.join(
-            (attr + ': ' + getmcattr(self, attr) for attr in attrs)))
+            ('{}: {}'.format(attr, getmcattr(self, attr)) for attr in attrs)))
 
     @property
     def orientation_strategy(self):
@@ -391,7 +391,7 @@ class ModelChain(object):
         elif set(['pdc0', 'gamma_pdc']) <= params:
             return self.pvwatts_dc
         else:
-            raise ValueError('could not infer DC model from ' +
+            raise ValueError('could not infer DC model from '
                              'system.module_parameters')
 
     def sapm(self):
@@ -455,7 +455,7 @@ class ModelChain(object):
         elif set(['pdc0']) <= module_params:
             return self.pvwatts_inverter
         else:
-            raise ValueError('could not infer AC model from ' +
+            raise ValueError('could not infer AC model from '
                              'system.inverter_parameters')
 
     def snlinverter(self):
@@ -502,7 +502,7 @@ class ModelChain(object):
         elif set(['b']) <= params:
             return self.ashrae_aoi_loss
         else:
-            raise ValueError('could not infer AOI model from ' +
+            raise ValueError('could not infer AOI model from '
                              'system.module_parameters')
 
     def ashrae_aoi_loss(self):
@@ -547,7 +547,7 @@ class ModelChain(object):
         if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
             return self.sapm_spectral_loss
         else:
-            raise ValueError('could not infer spectral model from ' +
+            raise ValueError('could not infer spectral model from '
                              'system.module_parameters')
 
     def first_solar_spectral_loss(self):

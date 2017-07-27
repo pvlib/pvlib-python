@@ -82,7 +82,7 @@ class Location(object):
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']
         return ('Location: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):
@@ -226,8 +226,8 @@ class Location(object):
                 apparent_elevation, pressure=pressure, dni_extra=dni_extra,
                 **kwargs)
         else:
-            raise ValueError(('{} is not a valid clear sky model. Must be ' +
-                              'one of ineichen, simplified_solis, haurwitz')
+            raise ValueError('{} is not a valid clear sky model. Must be '
+                             'one of ineichen, simplified_solis, haurwitz'
                              .format(model))
 
         return cs

@@ -570,7 +570,7 @@ def test_PVSystem_sapm_celltemp():
 
 def test_adrinverter(sam_data):
     inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
               'ES_2200_US_240__240_Vac__240V__CEC_2011_'
     vdcs = pd.Series([135, 154, 390, 420, 551])
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
@@ -582,7 +582,7 @@ def test_adrinverter(sam_data):
 
 def test_adrinverter_vtol(sam_data):
     inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
               'ES_2200_US_240__240_Vac__240V__CEC_2011_'
     vdcs = pd.Series([135, 154, 390, 420, 551])
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
@@ -594,7 +594,7 @@ def test_adrinverter_vtol(sam_data):
 
 def test_adrinverter_float(sam_data):
     inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
               'ES_2200_US_240__240_Vac__240V__CEC_2011_'
     vdcs = 154.
     pdcs = 1232.

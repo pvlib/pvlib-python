@@ -158,8 +158,8 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
         try:
             filename = _interactive_load()
         except:
-            raise Exception('Interactive load failed. Tkinter not supported ' +
-                            'on this system. Try installing X-Quartz and ' +
+            raise Exception('Interactive load failed. Tkinter not supported '
+                            'on this system. Try installing X-Quartz and '
                             'reloading')
 
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
@@ -467,20 +467,17 @@ def _read_tmy2(string, columns, hdr_columns, fname):
                     try:
                         val = float(val)
                     except:
-                        raise Exception('WARNING: In' + fname +
-                                        ' Read value is not an integer " ' +
-                                        val + ' " ')
+                        raise Exception('WARNING: In {} Read value is not an '
+                                        'integer " {} " '.format(fname, val))
                 elif marker[-1] == 's':
                     try:
                         val = str(val)
                     except:
-                        raise Exception('WARNING: In' + fname +
-                                        ' Read value is not a string" ' +
-                                        val + ' " ')
+                        raise Exception('WARNING: In {} Read value is not a '
+                                        'string " {} " '.format(fname, val))
                 else:
-                    raise Exception('WARNING: In' + __name__ +
-                                    'Improper column DataFrame " %' +
-                                    marker + ' " ')
+                    raise Exception('WARNING: In {} Improper column DataFrame '
+                                    '" %{} " '.format(__name__, marker))
 
                 part.append(val)
 

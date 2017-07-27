@@ -59,7 +59,7 @@ class SingleAxisTracker(PVSystem):
     def __repr__(self):
         attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr']
         sat_repr = ('SingleAxisTracker: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
         # get the parent PVSystem info
         pvsystem_repr = super(SingleAxisTracker, self).__repr__()
         # remove the first line (contains 'PVSystem: \n')
@@ -196,8 +196,8 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
         attrs = ['latitude', 'longitude', 'altitude', 'tz']
         return ('Localized' +
                 super(LocalizedSingleAxisTracker, self).__repr__() + '\n  ' +
-                '\n  '.join(
-                    (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+                '\n  '.join(('{}: {}'.format(attr, getattr(self, attr))
+                             for attr in attrs)))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,
@@ -280,7 +280,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     pvl_logger.debug('tracking.singleaxis')
 
-    pvl_logger.debug('axis_tilt=%s, axis_azimuth=%s, max_angle=%s, ' +
+    pvl_logger.debug('axis_tilt=%s, axis_azimuth=%s, max_angle=%s, '
                      'backtrack=%s, gcr=%.3f',
                      axis_tilt, axis_azimuth, max_angle, backtrack, gcr)
 
@@ -310,7 +310,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         pd.util.testing.assert_index_equal(apparent_azimuth.index,
                                            apparent_zenith.index)
     except AssertionError:
-        raise ValueError('apparent_azimuth.index and ' +
+        raise ValueError('apparent_azimuth.index and '
                          'apparent_zenith.index must match.')
 
     times = apparent_azimuth.index

@@ -28,14 +28,14 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
 
     Parameters
     ----------
-    filename : None or string
+    filename : None or string, default None
         If None, attempts to use a Tkinter file browser. A string can be
         a relative file path, absolute file path, or url.
 
-    coerce_year : None or int
+    coerce_year : None or int, default None
         If supplied, the year of the data will be set to this value.
 
-    recolumn : bool
+    recolumn : bool, default True
         If True, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
 
@@ -158,8 +158,8 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
         try:
             filename = _interactive_load()
         except:
-            raise Exception('Interactive load failed. Tkinter not supported ' +
-                            'on this system. Try installing X-Quartz and ' +
+            raise Exception('Interactive load failed. Tkinter not supported '
+                            'on this system. Try installing X-Quartz and '
                             'reloading')
 
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
@@ -467,20 +467,17 @@ def _read_tmy2(string, columns, hdr_columns, fname):
                     try:
                         val = float(val)
                     except:
-                        raise Exception('WARNING: In' + fname +
-                                        ' Read value is not an integer " ' +
-                                        val + ' " ')
+                        raise Exception('WARNING: In {} Read value is not an '
+                                        'integer " {} " '.format(fname, val))
                 elif marker[-1] == 's':
                     try:
                         val = str(val)
                     except:
-                        raise Exception('WARNING: In' + fname +
-                                        ' Read value is not a string" ' +
-                                        val + ' " ')
+                        raise Exception('WARNING: In {} Read value is not a '
+                                        'string " {} " '.format(fname, val))
                 else:
-                    raise Exception('WARNING: In' + __name__ +
-                                    'Improper column DataFrame " %' +
-                                    marker + ' " ')
+                    raise Exception('WARNING: In {} Improper column DataFrame '
+                                    '" %{} " '.format(__name__, marker))
 
                 part.append(val)
 

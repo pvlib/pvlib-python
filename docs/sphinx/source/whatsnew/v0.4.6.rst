@@ -10,18 +10,27 @@ Bug fixes
 * Method of multi-inheritance has changed to make it possible to use kwargs in
   the parent classes of LocalizedPVSystem and LocalizedSingleAxisTracker
   (:issue:`330`)
+* Fix the `__repr__` method of `ModelChain`, crashing when
+  `orientation_strategy` is set to `'None'` (:issue:`352`)
 
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added default values to docstrings of all functions (:issue:`336`)
 
 API Changes
 ~~~~~~~~~~~
-
+* Removed parameter w from _calc_d (:issue:`344`)
 
 Documentation
 ~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+* Added explicit tests for aoi and aoi_projection functions.
+* Update test of `ModelChain.__repr__` to take in account :issue:`352`
 
 
 Contributors
@@ -29,3 +38,6 @@ Contributors
 
 * Will Holmgren
 * Uwe Krien
+* Alaina Kafkes
+* Birgit Schachler
+* Jonathan Gaffiot

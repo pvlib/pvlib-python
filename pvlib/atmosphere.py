@@ -114,7 +114,7 @@ def absoluteairmass(airmass_relative, pressure=101325.):
     airmass_relative : numeric
         The airmass at sea-level.
 
-    pressure : numeric
+    pressure : numeric, default 101325
         The site pressure in Pascal.
 
     Returns
@@ -152,7 +152,7 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         model descriptions to determine which type of zenith angle is
         required. Apparent zenith angles must be calculated at sea level.
 
-    model : string
+    model : string, default 'kastenyoung1989'
         Available models include the following:
 
         * 'simple' - secant(apparent zenith angle) -
@@ -365,7 +365,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     airmass_absolute : array-like
         absolute (pressure corrected) airmass.
 
-    module_type : None or string
+    module_type : None or string, default None
         a string specifying a cell type. Can be lower or upper case
         letters. Admits values of 'cdte', 'monosi', 'xsi', 'multisi',
         'polysi'. If provided, this input selects coefficients for the
@@ -382,7 +382,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         Manufacturer 2 Model C from [3]_. Spectral Response (SR) of CIGS
         and a-Si modules used to derive coefficients can be found in [4]_ 
 
-    coefficients : array-like
+    coefficients : None or array-like, default None
         allows for entry of user defined spectral correction
         coefficients. Coefficients must be of length 6. Derivation of
         coefficients requires use of SMARTS and PV module quantum
@@ -617,8 +617,8 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
         wavelength in nanometers corresponding to ``aod0``
     alpha : numeric
         Angstrom :math:`\alpha` exponent corresponding to ``aod0``
-    lambda1 : numeric
-        desired wavelength in nanometers, defaults to 700 nm
+    lambda1 : numeric, default 700
+        desired wavelength in nanometers
 
     Returns
     -------

@@ -417,9 +417,10 @@ def test_basic_chain_altitude_pressure(sam_data):
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
-def test_ModelChain___repr__(system, location):
-
-    strategy = 'south_at_latitude_tilt'
+@pytest.mark.parametrize('strategy, strategy_str', [
+    ('south_at_latitude_tilt', 'south_at_latitude_tilt'),
+    (None, 'None')])  # GitHub issue 352
+def test_ModelChain___repr__(system, location, strategy, strategy_str):
 
     mc = ModelChain(system, location, orientation_strategy=strategy,
                     name='my mc')
@@ -427,7 +428,7 @@ def test_ModelChain___repr__(system, location):
     expected = '\n'.join([
         'ModelChain: ',
         '  name: my mc',
-        '  orientation_strategy: south_at_latitude_tilt',
+        '  orientation_strategy: ' + strategy_str,
         '  clearsky_model: ineichen',
         '  transposition_model: haydavies',
         '  solar_position_method: nrel_numpy',
@@ -441,7 +442,6 @@ def test_ModelChain___repr__(system, location):
     ])
 
     assert mc.__repr__() == expected
-
 
 @requires_scipy
 def test_weather_irradiance_input(system, location):

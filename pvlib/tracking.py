@@ -178,16 +178,15 @@ class SingleAxisTracker(PVSystem):
 
         # not needed for all models, but this is easier
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(solar_zenith.index)
-            dni_extra = pd.Series(dni_extra, index=solar_zenith.index)
+            dni_extra = irradiance.extraradiation(apparent_zenith.index)
 
         if airmass is None:
-            airmass = atmosphere.relativeairmass(solar_zenith)
+            airmass = atmosphere.relativeairmass(apparent_zenith)
 
         return irradiance.total_irrad(surface_tilt,
                                       surface_azimuth,
-                                      solar_zenith,
-                                      solar_azimuth,
+                                      apparent_zenith,
+                                      azimuth,
                                       dni, ghi, dhi,
                                       dni_extra=dni_extra, airmass=airmass,
                                       model=model,

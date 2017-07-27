@@ -783,12 +783,7 @@ class ModelChain(object):
             self.tracking['surface_azimuth'] = (
                 self.tracking['surface_azimuth']
                     .fillna(self.system.axis_azimuth))
-            get_aoi = partial(
-                self.system.get_aoi,
-                self.tracking['surface_tilt'],
-                self.tracking['surface_azimuth'],
-                self.solar_position['apparent_zenith'],
-                self.solar_position['azimuth'])
+            self.aoi = self.tracking['aoi']
             get_irradiance = partial(
                 self.system.get_irradiance,
                 self.tracking['surface_tilt'],
@@ -796,16 +791,13 @@ class ModelChain(object):
                 self.solar_position['apparent_zenith'],
                 self.solar_position['azimuth'])
         else:
-            get_aoi = partial(
-                self.system.get_aoi,
+            self.aoi = self.system.get_aoi(
                 self.solar_position['apparent_zenith'],
                 self.solar_position['azimuth'])
             get_irradiance = partial(
                 self.system.get_irradiance,
                 self.solar_position['apparent_zenith'],
                 self.solar_position['azimuth'])
-
-        self.aoi = get_aoi()
 
         self.total_irrad = get_irradiance(
             self.weather['dni'],

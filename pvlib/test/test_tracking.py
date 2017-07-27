@@ -6,6 +6,7 @@ import pandas as pd
 
 import pytest
 from pandas.util.testing import assert_frame_equal
+from numpy.testing import assert_allclose
 
 from pvlib.location import Location
 from pvlib import solarposition
@@ -244,6 +245,21 @@ def test_SingleAxisTracker_localize_location():
     assert localized_system.inverter == 'blarg'
     assert localized_system.latitude == 32
     assert localized_system.longitude == -111
+
+
+# see test_irradiance for more thorough testing
+def test_get_aoi():
+    system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
+                                        axis_azimuth=180, gcr=2.0/7.0,
+                                        backtrack=True)
+    surface_tilt = np.array([30, 0])
+    surface_azimuth = np.array([90, 270])
+    solar_zenith = np.array([70, 10])
+    solar_azimuth = np.array([100, 180])
+    out = system.get_aoi(surface_tilt, surface_azimuth,
+                         solar_zenith, solar_azimuth)
+    expected = np.array([40.632115, 10.])
+    assert_allclose(out, expected, atol=0.000001)
 
 
 def test_get_irradiance():

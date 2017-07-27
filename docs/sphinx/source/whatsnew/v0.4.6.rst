@@ -20,11 +20,13 @@ Enhancements
 ~~~~~~~~~~~~
 * Added default values to docstrings of all functions (:issue:`336`)
 
+
 API Changes
 ~~~~~~~~~~~
 * Removed parameter w from _calc_d (:issue:`344`)
-* SingleAxisTracker.get_aoi now requires surface_zenith and surface_azimuth
-  (:issue:`351`)
+* SingleAxisTracker.get_aoi and SingleAxisTracker.get_irradiance
+  now require surface_zenith and surface_azimuth (:issue:`351`)
+
 
 Documentation
 ~~~~~~~~~~~~~

@@ -108,7 +108,10 @@ class SingleAxisTracker(PVSystem):
 
         For a given set of solar zenith and azimuth angles, the
         surface tilt and azimuth parameters are typically determined
-        by :py:method:`~SingleAxisTracker.singleaxis`.
+        by :py:method:`~SingleAxisTracker.singleaxis`. The
+        :py:method:`~SingleAxisTracker.singleaxis` method also returns
+        the angle of incidence, so this method is only needed
+        if using a different tracking algorithm.
 
         Parameters
         ----------
@@ -124,15 +127,15 @@ class SingleAxisTracker(PVSystem):
         Returns
         -------
         aoi : Series
-            The angle of incidence
+            The angle of incidence in degrees from normal.
         """
 
         aoi = irradiance.aoi(surface_tilt, surface_azimuth,
                              solar_zenith, solar_azimuth)
-
+        return aoi
 
     def get_irradiance(self, surface_tilt, surface_azimuth,
-                       apparent_zenith, azimuth, dni, ghi, dhi,
+                       solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
@@ -178,15 +181,15 @@ class SingleAxisTracker(PVSystem):
 
         # not needed for all models, but this is easier
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(apparent_zenith.index)
+            dni_extra = irradiance.extraradiation(solar_zenith.index)
 
         if airmass is None:
-            airmass = atmosphere.relativeairmass(apparent_zenith)
+            airmass = atmosphere.relativeairmass(solar_zenith)
 
         return irradiance.total_irrad(surface_tilt,
                                       surface_azimuth,
-                                      apparent_zenith,
-                                      azimuth,
+                                      solar_zenith,
+                                      solar_azimuth,
                                       dni, ghi, dhi,
                                       dni_extra=dni_extra, airmass=airmass,
                                       model=model,

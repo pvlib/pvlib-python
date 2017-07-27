@@ -1661,12 +1661,12 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     '''
 
     # Find short circuit current using Lambert W
-    i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.01,
-                    saturation_current, photocurrent)
+    i_sc = sdm_i_from_v(0., photocurrent, saturation_current, nNsVth,
+                        resistance_series, resistance_shunt)
 
     # Find open circuit voltage using Lambert W
-    v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.0,
-                    saturation_current, photocurrent)
+    v_oc = sdm_v_from_i(0., photocurrent, saturation_current, nNsVth,
+                        resistance_series, resistance_shunt)
 
     params = {'r_sh': resistance_shunt,
               'r_s': resistance_series,
@@ -1674,19 +1674,19 @@ def singlediode(photocurrent, saturation_current, resistance_series,
               'i_0': saturation_current,
               'i_l': photocurrent}
 
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0, v_oc*1.14, _pwr_optfcn)
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
 
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is i_mp. Start the optimization at v_oc/2
-    i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
-                    saturation_current, photocurrent)
+    i_mp = sdm_i_from_v(v_mp, photocurrent, saturation_current, nNsVth,
+                        resistance_series, resistance_shunt)
 
     # Find Ix and Ixx using Lambert W
-    i_x = i_from_v(resistance_shunt, resistance_series, nNsVth,
-                   0.5*v_oc, saturation_current, photocurrent)
+    i_x = sdm_i_from_v(0.5 * v_oc, photocurrent, saturation_current, nNsVth,
+                       resistance_series, resistance_shunt)
 
-    i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
-                    0.5*(v_oc+v_mp), saturation_current, photocurrent)
+    i_xx = sdm_i_from_v(0.5 * (v_oc + v_mp), photocurrent, saturation_current,
+                        nNsVth, resistance_series, resistance_shunt)
 
     out = OrderedDict()
     out['i_sc'] = i_sc
@@ -1701,9 +1701,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     if ivcurve_pnts:
         ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
                      np.linspace(0, 1, ivcurve_pnts))
-        ivcurve_i = i_from_v(
-            resistance_shunt, resistance_series, nNsVth, ivcurve_v.T,
-            saturation_current, photocurrent).T
+        ivcurve_i = sdm_i_from_v(ivcurve_v.T, photocurrent, saturation_current,
+                                 nNsVth, resistance_series, resistance_shunt).T
         out['v'] = ivcurve_v
         out['i'] = ivcurve_i
 
@@ -1790,8 +1789,8 @@ def _pwr_optfcn(df, loc):
     Function to find power from ``i_from_v``.
     '''
 
-    I = i_from_v(df['r_sh'], df['r_s'], df['nNsVth'],
-                 df[loc], df['i_0'], df['i_l'])
+    I = sdm_i_from_v(df[loc], df['i_l'], df['i_0'], df['nNsVth'], df['r_s'],
+                     df['r_sh'])
     return I * df[loc]
 
 

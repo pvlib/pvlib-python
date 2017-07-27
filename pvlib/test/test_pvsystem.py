@@ -822,30 +822,28 @@ def test_singlediode_series_ivcurve(cec_module_params):
     times = pd.DatetimeIndex(start='2015-06-01', periods=3, freq='6H')
     poa_data = pd.Series([0, 400, 800], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                         poa_data,
-                                         temp_cell=25,
-                                         alpha_isc=cec_module_params['alpha_sc'],
-                                         module_parameters=cec_module_params,
-                                         EgRef=1.121,
-                                         dEgdT=-0.0002677)
-    
+                                  poa_data, temp_cell=25,
+                                  alpha_isc=cec_module_params['alpha_sc'],
+                                  module_parameters=cec_module_params,
+                                  EgRef=1.121, dEgdT=-0.0002677)
+
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
-    
-    expected = OrderedDict([('i_sc', array([        0.,  3.01054475,  6.00675648])),
-             ('v_oc', array([         nan,   9.96886962,  10.29530483])),
-             ('i_mp', array([        nan,  2.65191983,  5.28594672])),
-             ('v_mp', array([        nan,  8.33392491,  8.4159707 ])),
-             ('p_mp', array([         nan,  22.10090078,  44.48637274])),
-             ('i_x', array([        nan,  2.88414114,  5.74622046])),
-             ('i_xx', array([        nan,  2.04340914,  3.90007956])),
-             ('v',
-              array([[         nan,          nan,          nan],
-       [  0.        ,   4.98443481,   9.96886962],
-       [  0.        ,   5.14765242,  10.29530483]])),
-             ('i',
-              array([[             nan,              nan,              nan],
-       [  3.01079860e+00,   2.88414114e+00,   3.10862447e-14],
-       [  6.00726296e+00,   5.74622046e+00,   0.00000000e+00]]))])
+
+    expected = OrderedDict([('i_sc', array([0., 3.01054475, 6.00675648])),
+                            ('v_oc', array([0., 9.96886962, 10.29530483])),
+                            ('i_mp', array([0., 2.65191983, 5.28594672])),
+                            ('v_mp', array([0., 8.33392491, 8.4159707])),
+                            ('p_mp', array([0., 22.10090078, 44.48637274])),
+                            ('i_x', array([0., 2.88414114, 5.74622046])),
+                            ('i_xx', array([0., 2.04340914, 3.90007956])),
+                            ('v', array([[0., 0., 0.],
+                                         [0., 4.98443481, 9.96886962],
+                                         [0., 5.14765242, 10.29530483]])),
+                            ('i', array([[0., 0., 0.],
+                                         [3.01079860e+00, 2.88414114e+00,
+                                          3.10862447e-14],
+                                         [6.00726296e+00, 5.74622046e+00,
+                                          0.00000000e+00]]))])
 
     for k, v in out.items():
         assert_allclose(expected[k], v, atol=1e-2)

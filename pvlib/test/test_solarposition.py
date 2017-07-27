@@ -429,6 +429,7 @@ def test_analytical_azimuth():
     lat_rad = np.deg2rad(lat)
     output = solarposition.spa_python(times, lat, lon, 100)
     solar_azimuth = np.deg2rad(output['azimuth'])  # spa
+    solar_zenith = np.deg2rad(output['zenith'])
     # spencer
     eot = solarposition.equation_of_time_spencer71(times.dayofyear)
     hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
@@ -443,18 +444,9 @@ def test_analytical_azimuth():
     zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     azimuth_2 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
                                                        decl, zenith)
-    idx = np.where(azimuth_1 > 0.275)
-    assert np.allclose(azimuth_1[idx], solar_azimuth.as_matrix()[idx],
-                       atol=0.02)
-    for idx, azi in enumerate(azimuth_1):
-        if azi < 0.275:
-            assert np.isclose(azi, solar_azimuth[idx], atol=0.02) or \
-                   np.isclose(azi + np.pi * 2, solar_azimuth[idx], atol=0.55)
 
-    idx = np.where(azimuth_2 > 0.275)
+    idx = np.where(solar_zenith < np.pi/2)
     assert np.allclose(azimuth_1[idx], solar_azimuth.as_matrix()[idx],
-                       atol=0.02)
-    for idx, azi in enumerate(azimuth_2):
-        if azi < 0.275:
-            assert np.isclose(azi, solar_azimuth[idx], atol=0.02) or \
-                   np.isclose(azi + np.pi * 2, solar_azimuth[idx], atol=0.55)
+                       atol=0.01)
+    assert np.allclose(azimuth_2[idx], solar_azimuth.as_matrix()[idx],
+                       atol=0.017)

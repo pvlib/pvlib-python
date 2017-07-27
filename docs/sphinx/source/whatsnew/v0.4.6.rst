@@ -17,10 +17,22 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 * Added default values to docstrings of all functions (:issue:`336`)
+* Ideal devices supported in single diode model, e.g., 
+  resistance_series = 0 and/or resistance_shunt = numpy.inf (:issue:`340`)
+* Computations for very near ideal devices are more numerically stable in 
+  single diode model (:issue:`340`)
 
 API Changes
 ~~~~~~~~~~~
 * Removed parameter w from _calc_d (:issue:`344`)
+* Deprecated `pvsystem.v_from_i` and `pvsystem.i_from_v` functions, which will 
+  be removed in a future release. Instead use `pvsystem.sdm_v_from_i` and
+  `pvsystem.sdm_i_from_v`, which are ~2x slower but can handle ideal devices. 
+  Note that these functions always return a numpy.ndarray (:issue:`340`)
+* Added `pvsystem.sdm_current_sum` function, which computes the sum of currents 
+  at the diode node in the single diode model and is used to improve numerical 
+  stability in `pvsystem.sdm_v_from_i` and `pvsystem.sdm_i_from_v` for very 
+  near ideal devices (:issue:`340`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -31,6 +43,9 @@ Testing
 
 * Added explicit tests for aoi and aoi_projection functions.
 * Update test of `ModelChain.__repr__` to take in account :issue:`352`
+* Significant new test cases added for `pvsystem.sdm_v_from_i` and
+  `pvsystem.sdm_i_from_v`, beyond but including cases for deprecated 
+  `pvsystem.v_from_i` and `pvsystem.i_from_v` (:issue:`340`)
 
 
 Contributors
@@ -41,3 +56,4 @@ Contributors
 * Alaina Kafkes
 * Birgit Schachler
 * Jonathan Gaffiot
+* Mark Campanelli

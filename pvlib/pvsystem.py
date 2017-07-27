@@ -588,10 +588,9 @@ class LocalizedPVSystem(PVSystem, Location):
         Location.__init__(self, **new_kwargs)
 
     def __repr__(self):
-        attrs = [
-            'name', 'latitude', 'longitude', 'altitude', 'tz', 'surface_tilt',
-            'surface_azimuth', 'module', 'inverter', 'albedo', 'racking_model'
-                 ]
+        attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz',
+                 'surface_tilt', 'surface_azimuth', 'module', 'inverter',
+                 'albedo', 'racking_model']
         return ('LocalizedPVSystem: \n  ' + '\n  '.join(
             ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
@@ -2076,6 +2075,7 @@ def sdm_v_from_i(I, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
     sdm_current_sum_out = sdm_current_sum(V, I, IL, I0, nNsVth, Rs, Rsh)
 
     # Computation of V using LambertW for provided Rsh
+    # v_from_i is deprecated: move v_from_i code here when/if it is removed.
     V_lw = v_from_i(Rsh, Rs, nNsVth, I, I0, IL)
     sdm_current_sum_lw = sdm_current_sum(V_lw, I, IL, I0, nNsVth, Rs, Rsh)
 
@@ -2165,6 +2165,7 @@ def sdm_i_from_v(V, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
     sdm_current_sum_out = sdm_current_sum(V, I, IL, I0, nNsVth, Rs, Rsh)
 
     # Computation of I using LambertW for provided Rs
+    # i_from_v is deprecated: move i_from_v code here when/if it is removed.
     I_lw = i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
     sdm_current_sum_lw = sdm_current_sum(V, I_lw, IL, I0, nNsVth, Rs, Rsh)
 

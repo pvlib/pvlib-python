@@ -595,8 +595,6 @@ def test_sdm_v_from_i(fixture_sdm_v_from_i):
     assert(isinstance(meta_dict['inf_Rsh_idx'], type(V)))
     assert(isinstance(meta_dict['inf_Rsh_idx'].dtype, type(V.dtype)))
     assert_array_equal(meta_dict['inf_Rsh_idx'], inf_Rsh_idx_expected)
-    
-    # TODO Stability as Rs->0^+ and/or Rsh->inf and benchmarks
 
 
 @pytest.fixture(params=[
@@ -710,8 +708,6 @@ def test_sdm_i_from_v(fixture_sdm_i_from_v):
     assert(isinstance(meta_dict['zero_Rs_idx'], type(I)))
     assert(isinstance(meta_dict['zero_Rs_idx'].dtype, type(I.dtype)))
     assert_array_equal(meta_dict['zero_Rs_idx'], zero_Rs_idx_expected)
-    
-    # TODO Stability as Rs->0^+ and/or Rsh->inf and benchmarks
 
 
 @requires_scipy

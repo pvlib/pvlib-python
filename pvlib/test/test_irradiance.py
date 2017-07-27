@@ -432,7 +432,7 @@ def test_dni():
     (90, 0, 30, 60, 75.5224878, 0.25),
     (90, 0, 30, 170, 119.4987042, -0.4924038)])
 def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
-                                solar_azimuth,  aoi_expected,
+                                solar_azimuth, aoi_expected,
                                 aoi_proj_expected):
     aoi = irradiance.aoi(surface_tilt, surface_azimuth, solar_zenith,
                          solar_azimuth)

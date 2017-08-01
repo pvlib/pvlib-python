@@ -73,6 +73,7 @@ calculations.
    :toctree: generated/
 
    solarposition.solar_zenith_analytical
+   solarposition.solar_azimuth_analytical
    solarposition.declination_spencer71
    solarposition.declination_cooper69
    solarposition.equation_of_time_spencer71

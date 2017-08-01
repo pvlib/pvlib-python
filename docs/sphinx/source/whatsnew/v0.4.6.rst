@@ -17,6 +17,7 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 * Added default values to docstrings of all functions (:issue:`336`)
+* Added analytical method that calculates solar azimuth angle (:issue:`291`)
 
 API Changes
 ~~~~~~~~~~~
@@ -31,6 +32,7 @@ Testing
 
 * Added explicit tests for aoi and aoi_projection functions.
 * Update test of `ModelChain.__repr__` to take in account :issue:`352`
+* Added a test for solar_azimuth_analytical function.
 
 
 Contributors
@@ -41,3 +43,4 @@ Contributors
 * Alaina Kafkes
 * Birgit Schachler
 * Jonathan Gaffiot
+* Siyan (Veronica) Guo

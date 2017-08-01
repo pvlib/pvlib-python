@@ -1,0 +1,29 @@
+.. _whatsnew_0500:
+
+v0.5.0 ()
+---------
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+API Changes
+~~~~~~~~~~~
+
+* Changes calculation of the Incidence Angle Modifier to return 0 instead of np.nan for angles >= 90°.
+  This improves the calculation of effective irradiance close to sunrise and sunset. (:issue:`338`)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Johannes Kaufmann

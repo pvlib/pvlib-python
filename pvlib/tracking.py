@@ -14,7 +14,7 @@ pvl_logger = logging.getLogger('pvlib')
 
 class SingleAxisTracker(PVSystem):
     """
-    Inherits all of the PV modeling methods from PVSystem.
+    Inherits the PV modeling methods from :ref:PVSystem:.
 
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
@@ -53,6 +53,9 @@ class SingleAxisTracker(PVSystem):
         self.max_angle = max_angle
         self.backtrack = backtrack
         self.gcr = gcr
+
+        kwargs['surface_tilt'] = None
+        kwargs['surface_azimuth'] = None
 
         super(SingleAxisTracker, self).__init__(**kwargs)
 
@@ -98,20 +101,60 @@ class SingleAxisTracker(PVSystem):
 
         return LocalizedSingleAxisTracker(pvsystem=self, location=location)
 
-    def get_irradiance(self, dni, ghi, dhi,
+    def get_aoi(self, surface_tilt, surface_azimuth, solar_zenith,
+                solar_azimuth):
+        """Get the angle of incidence on the system.
+
+        For a given set of solar zenith and azimuth angles, the
+        surface tilt and azimuth parameters are typically determined
+        by :py:method:`~SingleAxisTracker.singleaxis`. The
+        :py:method:`~SingleAxisTracker.singleaxis` method also returns
+        the angle of incidence, so this method is only needed
+        if using a different tracking algorithm.
+
+        Parameters
+        ----------
+        surface_tilt : numeric
+            Panel tilt from horizontal.
+        surface_azimuth : numeric
+            Panel azimuth from north
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+
+        Returns
+        -------
+        aoi : Series
+            The angle of incidence in degrees from normal.
+        """
+
+        aoi = irradiance.aoi(surface_tilt, surface_azimuth,
+                             solar_zenith, solar_azimuth)
+        return aoi
+
+    def get_irradiance(self, surface_tilt, surface_azimuth,
+                       solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
         Uses the :func:`irradiance.total_irrad` function to calculate
         the plane of array irradiance components on a tilted surface
-        defined by ``self.surface_tilt``, ``self.surface_azimuth``, and
-        ``self.albedo``.
+        defined by the input data and ``self.albedo``.
+
+        For a given set of solar zenith and azimuth angles, the
+        surface tilt and azimuth parameters are typically determined
+        by :py:method:`~SingleAxisTracker.singleaxis`.
 
         Parameters
         ----------
-        solar_zenith : float or Series.
+        surface_tilt : numeric
+            Panel tilt from horizontal.
+        surface_azimuth : numeric
+            Panel azimuth from north
+        solar_zenith : numeric
             Solar zenith angle.
-        solar_azimuth : float or Series.
+        solar_azimuth : numeric
             Solar azimuth angle.
         dni : float or Series
             Direct Normal Irradiance
@@ -135,23 +178,9 @@ class SingleAxisTracker(PVSystem):
             Column names are: ``total, beam, sky, ground``.
         """
 
-        surface_tilt = kwargs.pop('surface_tilt', self.surface_tilt)
-        surface_azimuth = kwargs.pop('surface_azimuth', self.surface_azimuth)
-
-        try:
-            solar_zenith = kwargs['solar_zenith']
-        except KeyError:
-            solar_zenith = self.solar_zenith
-
-        try:
-            solar_azimuth = kwargs['solar_azimuth']
-        except KeyError:
-            solar_azimuth = self.solar_azimuth
-
         # not needed for all models, but this is easier
         if dni_extra is None:
             dni_extra = irradiance.extraradiation(solar_zenith.index)
-            dni_extra = pd.Series(dni_extra, index=solar_zenith.index)
 
         if airmass is None:
             airmass = atmosphere.relativeairmass(solar_zenith)

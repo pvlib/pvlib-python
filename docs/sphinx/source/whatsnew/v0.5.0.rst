@@ -11,6 +11,8 @@ API Changes
 * Changes calculation of the Incidence Angle Modifier to return 0
   instead of np.nan for angles >= 90°. This improves the calculation of
   effective irradiance close to sunrise and sunset. (:issue:`338`)
+* Change the default ModelChain orientation strategy from
+  'south_at_latitude_tilt' to ``None``. (:issue:`290`)
 
 Bug fixes
 ~~~~~~~~~

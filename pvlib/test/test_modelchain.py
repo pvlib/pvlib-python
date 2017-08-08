@@ -21,7 +21,8 @@ def system(sam_data):
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_'].copy()
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
@@ -35,7 +36,8 @@ def cec_dc_snl_ac_system(sam_data):
     module_parameters['dEgdT'] = -0.0002677
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
@@ -49,7 +51,8 @@ def cec_dc_adr_ac_system(sam_data):
     module_parameters['dEgdT'] = -0.0002677
     inverters = sam_data['adrinverter']
     inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
@@ -59,7 +62,8 @@ def pvwatts_dc_snl_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
@@ -68,7 +72,8 @@ def pvwatts_dc_snl_ac_system(sam_data):
 def pvwatts_dc_pvwatts_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     inverter_parameters = {'eta_inv_nom': 0.95}
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter_parameters)
     return system
 
@@ -82,12 +87,8 @@ def test_ModelChain_creation(system, location):
     mc = ModelChain(system, location)
 
 
-def test_orientation_strategy(system, location):
-    strategies = {}
-
-
 @pytest.mark.parametrize('strategy, expected', [
-    (None, (0, 180)), ('None', (0, 180)), ('flat', (0, 180)),
+    (None, (32.2, 180)), ('None', (32.2, 180)), ('flat', (0, 180)),
     ('south_at_latitude_tilt', (32.2, 180))
 ])
 def test_orientation_strategy(strategy, expected, system, location):

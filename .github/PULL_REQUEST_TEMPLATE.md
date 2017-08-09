@@ -12,4 +12,6 @@ You may submit a pull request with your code at any stage of completion, however
  - [ ] Updates entries to `docs/sphinx/source/api.rst` for API changes.
  - [ ] Adds description and name entries in the appropriate `docs/sphinx/source/whatsnew` file for all changes.
 
-Please don't hesitate to ask for help if you're unsure of how to accomplish any of the above.
+Please don't hesitate to ask for help if you're unsure of how to accomplish any of the above. You may delete all of these instructions except for the list above.
+
+Brief description of the problem and proposed solution (if not already fully described in the issue linked to above):

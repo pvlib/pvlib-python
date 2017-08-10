@@ -23,6 +23,8 @@ Bug fixes
   `orientation_strategy` is set to `'None'` (:issue:`352`)
 * Fix the `ModelChain`'s angle of incidence calculation for
   SingleAxisTracker objects (:issue:`351`)
+* Fix issue with ForecastModel.cloud_cover_to_transmittance_linear method of
+  forecast.py ignoring 'offset' parameter. (:issue:`343`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -48,3 +50,4 @@ Contributors
 * Birgit Schachler
 * Jonathan Gaffiot
 * Siyan (Veronica) Guo
+* KonstantinTr

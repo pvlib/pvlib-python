@@ -294,7 +294,7 @@ class ModelChain(object):
     """
 
     def __init__(self, system, location,
-                 orientation_strategy='south_at_latitude_tilt',
+                 orientation_strategy=None,
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
                  solar_position_method='nrel_numpy',

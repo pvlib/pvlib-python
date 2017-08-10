@@ -473,7 +473,7 @@ class ForecastModel(object):
         ghi : numeric
             Estimated GHI.
         """
-        transmittance = ((100.0 - cloud_cover) / 100.0) * 0.75
+        transmittance = ((100.0 - cloud_cover) / 100.0) * offset
 
         return transmittance
 

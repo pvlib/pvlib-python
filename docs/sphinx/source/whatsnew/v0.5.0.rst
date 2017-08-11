@@ -33,7 +33,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Added ModelChain documentation page
+* Added nbsphinx to documentation build configuration.
 
 Testing
 ~~~~~~~

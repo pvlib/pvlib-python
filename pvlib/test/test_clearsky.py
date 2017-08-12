@@ -234,24 +234,45 @@ def test_lookup_linke_turbidity_nointerp_months():
 
 
 def test_haurwitz():
-    tus = Location(32.2, -111, 'US/Arizona', 700)
-    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
-    times_localized = times.tz_localize(tus.tz)
-    ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
-                                                 tus.longitude)
+#    tus = Location(32.2, -111, 'US/Arizona', 700)
+#    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
+#    times_localized = times.tz_localize(tus.tz)
+#    ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
+#                                                 tus.longitude)
+    apparent_solar_elevation = np.array([[-20],
+                                         [-0.05],
+                                         [-0.001],
+                                         [5],
+                                         [30],
+                                         [90]])
+    apparent_zenith = 90 - apparent_solar_elevation
+    
+#    expected = pd.DataFrame(np.array([[0.],
+#                                      [0.],
+#                                      [82.85934048],
+#                                      [699.74514735],
+#                                      [1016.50198354],
+#                                      [838.32103769],
+#                                      [271.90853863],
+#                                      [0.],
+#                                      [0.]]),
+#                             columns=['ghi'],
+#                             index=times_localized)
+#    out = clearsky.haurwitz(ephem_data['zenith'])
+
     expected = pd.DataFrame(np.array([[0.],
                                       [0.],
-                                      [82.85934048],
-                                      [699.74514735],
-                                      [1016.50198354],
-                                      [838.32103769],
-                                      [271.90853863],
                                       [0.],
-                                      [0.]]),
-                             columns=['ghi'], index=times_localized)
-    out = clearsky.haurwitz(ephem_data['zenith'])
+                                      [48.6298687941956],
+                                      [135.741748091813],
+                                      [487.894132885425],
+                                      [271.90853863],
+                                      [778.766689344363],
+                                      [1035.09203253450]]),
+                             columns=['ghi'],
+                             index=apparent_zenith)
+    out = clearsky.haurwitz(apparent_zenith)
     assert_frame_equal(expected, out)
-
 
 def test_simplified_solis_series_elevation():
     tus = Location(32.2, -111, 'US/Arizona', 700)

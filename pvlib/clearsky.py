@@ -327,10 +327,9 @@ def haurwitz(apparent_zenith):
     '''
 
     cos_zenith = tools.cosd(apparent_zenith)
-
-    clearsky_ghi = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
-
-    clearsky_ghi[clearsky_ghi < 0] = 0
+    clearsky_ghi = np.where(cos_zenith>0, 
+                            1098.0 * cos_zenith * np.exp(-0.059/cos_zenith),
+                            0)
 
     df_out = pd.DataFrame({'ghi': clearsky_ghi})
 

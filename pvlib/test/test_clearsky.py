@@ -247,7 +247,12 @@ def test_haurwitz():
                                          [30],
                                          [50],
                                          [90]])
+    
     apparent_zenith = 90 - apparent_solar_elevation
+    
+    data_in = pd.DataFrame(data=apparent_zenith,
+                           index=apparent_zenith,
+                           columns=['apparent_zenith'])
     
 #    expected = pd.DataFrame(np.array([[0.],
 #                                      [0.],
@@ -272,7 +277,7 @@ def test_haurwitz():
                                       [1035.09203253450]]),
                              columns=['ghi'],
                              index=apparent_zenith)
-    out = clearsky.haurwitz(apparent_zenith)
+    out = clearsky.haurwitz(data_in['apparent_zenith'])
     assert_frame_equal(expected, out)
 
 def test_simplified_solis_series_elevation():

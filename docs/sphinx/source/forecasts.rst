@@ -142,7 +142,7 @@ problems.
     data = data.join(irrad_data, how='outer')
 
     # keep only the final data
-    data = data.ix[:, model.output_variables]
+    data = data[model.output_variables]
 
     print(data.head())
 
@@ -448,9 +448,7 @@ for details.
     mc = ModelChain(system, fx_model.location)
 
     # extract relevant data for model chain
-    irradiance = fx_data[['ghi', 'dni', 'dhi']]
-    weather = fx_data[['wind_speed', 'temp_air']]
-    mc.run_model(fx_data.index, irradiance=irradiance, weather=weather);
+    mc.run_model(fx_data.index, weather=fx_data);
 
 Now we plot a couple of modeling intermediates and the forecast power.
 Here's the forecast plane of array irradiance...

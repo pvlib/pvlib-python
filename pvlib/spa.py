@@ -1103,7 +1103,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     elev : float
         Elevation of location in meters
     pressure : int or float
-        avg. yearly pressure at location in Pascals;
+        avg. yearly pressure at location in millibars;
         used for atmospheric correction
     temp : int or float
         avg. yearly temperature at location in
@@ -1119,13 +1119,13 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
-    numthreads: int, optional
+    numthreads: int, optional, default 8
         Number of threads to use for computation if numba>=0.17
         is installed.
-    sst : bool
+    sst : bool, default False
         If True, return only data needed for sunrise, sunset, and transit
         calculations.
-    esd : bool
+    esd : bool, default False
         If True, return only Earth-Sun distance in AU
 
     Returns

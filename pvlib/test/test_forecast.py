@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
-from conftest import requires_siphon, has_siphon
+from conftest import requires_siphon, has_siphon, skip_windows
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 
@@ -30,7 +30,10 @@ if has_siphon:
     _end = _start + pd.Timedelta(days=1)
     _modelclasses = [
         GFS, NAM, HRRR, NDFD, RAP,
-        pytest.mark.xfail(HRRR_ESRL, reason="HRRR_ESRL is unreliable")]
+        skip_windows(
+            pytest.mark.xfail(
+                pytest.mark.timeout(HRRR_ESRL, timeout=60),
+                reason="HRRR_ESRL is unreliable"))]
     _working_models = []
     _variables = ['temp_air', 'wind_speed', 'total_clouds', 'low_clouds',
                   'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi',]
@@ -126,6 +129,7 @@ def test_cloud_cover_to_transmittance_linear():
     amodel = GFS()
     assert_allclose(amodel.cloud_cover_to_transmittance_linear(0), 0.75)
     assert_allclose(amodel.cloud_cover_to_transmittance_linear(100), 0.0)
+    assert_allclose(amodel.cloud_cover_to_transmittance_linear(0, 0.5), 0.5)
 
 
 def test_cloud_cover_to_ghi_linear():

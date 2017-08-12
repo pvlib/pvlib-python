@@ -149,6 +149,8 @@ a full understanding of what it is doing internally!
     plt.ylabel('Yearly energy yield (W hr)')
 
 
+.. _object-oriented:
+
 Object oriented (Location, PVSystem, ModelChain)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -199,10 +201,6 @@ objects to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig modelchain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
-
-See Will Holmgren's
-`ModelChain gist <https://gist.github.com/wholmgren/3fabacd3003c2a549b420b5e79f55e95>`_
-for more discussion about new features in ModelChain.
 
 
 Object oriented (LocalizedPVSystem)
@@ -272,7 +270,17 @@ community via issues and pull requests.
 
 Getting support
 ---------------
-The best way to get support is to make an issue on our
+
+pvlib usage questions can be asked on
+`Stack Overflow  <http://stackoverflow.com>`_ and tagged with
+the `pvlib <http://stackoverflow.com/questions/tagged/pvlib>`_ tag.
+
+The `pvlib-python google group <https://groups.google.com/forum/#!forum/pvlib-python>`_
+is used for discussing various topics of interest to the pvlib-python
+community. We also make new version announcements on the google group.
+
+If you suspect that you may have discovered a bug or if you'd like to
+change something about pvlib, then please make an issue on our
 `GitHub issues page <https://github.com/pvlib/pvlib-python/issues>`_ .
 
 

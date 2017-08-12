@@ -46,14 +46,14 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     datetime_or_doy : numeric, array, date, datetime, Timestamp, DatetimeIndex
         Day of year, array of days of year, or datetime-like object
 
-    solar_constant : float
+    solar_constant : float, default 1366.1
         The solar constant.
 
-    method : string
+    method : string, default 'spencer'
         The method by which the ET radiation should be calculated.
         Options include ``'pyephem', 'spencer', 'asce', 'nrel'``.
 
-    epoch_year : int
+    epoch_year : int, default 2014
         The year in which a day of year input will be calculated. Only
         applies to day of year input used with the pyephem or nrel
         methods.
@@ -318,17 +318,17 @@ def total_irrad(surface_tilt, surface_azimuth,
         Global horizontal irradiance
     dhi : numeric
         Diffuse horizontal irradiance
-    dni_extra : numeric
+    dni_extra : None or numeric, default None
         Extraterrestrial direct normal irradiance
-    airmass : numeric
+    airmass : None or numeric, default None
         Airmass
-    albedo : numeric
+    albedo : numeric, default 0.25
         Surface albedo
-    surface_type : String
+    surface_type : None or String, default None
         Surface type. See grounddiffuse.
-    model : String
+    model : String, default 'isotropic'
         Irradiance model.
-    model_perez : String
+    model_perez : String, default 'allsitescomposite1990'
         See perez.
 
     Returns
@@ -460,13 +460,13 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     ghi : numeric
         Global horizontal irradiance in W/m^2.
 
-    albedo : numeric
+    albedo : numeric, default 0.25
         Ground reflectance, typically 0.1-0.4 for surfaces on Earth
         (land), may increase over snow, ice, etc. May also be known as
         the reflection coefficient. Must be >=0 and <=1. Will be
         overridden if surface_type is supplied.
 
-    surface_type: None or string
+    surface_type: None or string, default None
         If not None, overrides albedo. String can be one of ``'urban',
         'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt',
         'concrete', 'aluminum', 'copper', 'fresh steel', 'dirty steel'``.
@@ -680,17 +680,17 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
 
-    solar_zenith : None or numeric
+    solar_zenith : None or numeric, default None
         Solar apparent (refraction-corrected) zenith angles in decimal
         degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
         supply ``projection_ratio``.
 
-    solar_azimuth : None or numeric
+    solar_azimuth : None or numeric, default None
         Solar azimuth angles in decimal degrees. Must supply
         ``solar_zenith`` and ``solar_azimuth`` or supply
         ``projection_ratio``.
 
-    projection_ratio : None or numeric
+    projection_ratio : None or numeric, default None
         Ratio of angle of incidence projection to solar zenith angle
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
@@ -1059,9 +1059,10 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         mask = sky_diffuse == 0
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
-            diffuse_components.ix[mask] = 0
+            diffuse_components.loc[mask] = 0
         else:
-            diffuse_components = {k: np.where(mask, 0, v) for k, v in diffuse_components.items()}
+            diffuse_components = {k: np.where(mask, 0, v) for k, v in
+                                  diffuse_components.items()}
 
         return sky_diffuse, diffuse_components
 
@@ -1091,7 +1092,7 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
-    pressure : numeric
+    pressure : numeric, default 101325
         Site pressure in Pascal.
 
     Returns
@@ -1193,11 +1194,11 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     times : DatetimeIndex
 
-    pressure : float or array-like
+    pressure : float or array-like, default 101325.0
         The site pressure in Pascal. Pressure may be measured or an
         average pressure may be calculated from site altitude.
 
-    use_delta_kt_prime : bool
+    use_delta_kt_prime : bool, default True
         Indicates if the user would like to utilize the time-series
         nature of the GHI measurements. A value of ``False`` will not
         use the time-series improvements, any other numeric value will
@@ -1207,7 +1208,7 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
         then time-series improvements are not used (because it's not a
         time-series). If True, input data must be Series.
 
-    temp_dew : None, float, or array-like
+    temp_dew : None, float, or array-like, default None
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         DewPtTemp=NaN does not have dew point improvements applied. If
@@ -1346,11 +1347,11 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
     times : DatetimeIndex
 
-    pressure : float or array-like
+    pressure : float or array-like, default 101325.0
         The site pressure in Pascal. Pressure may be measured or an
         average pressure may be calculated from site altitude.
 
-    use_delta_kt_prime : bool
+    use_delta_kt_prime : bool, default True
         Indicates if the user would like to utilize the time-series
         nature of the GHI measurements. A value of ``False`` will not
         use the time-series improvements, any other numeric value will
@@ -1360,7 +1361,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
         then time-series improvements are not used (because it's not a
         time-series). If True, input data must be Series.
 
-    temp_dew : None, float, or array-like
+    temp_dew : None, float, or array-like, default None
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         DewPtTemp=NaN does not have dew point improvements applied. If
@@ -1508,10 +1509,10 @@ def liujordan(zenith, transmittance, airmass, pressure=101325.,
     transmittance: float
         Atmospheric transmittance between 0 and 1.
 
-    pressure: float
+    pressure: float, default 101325.0
         Air pressure
 
-    dni_extra: float
+    dni_extra: float, default 1367.0
         Direct irradiance incident at the top of the atmosphere.
 
     Returns
@@ -2048,3 +2049,74 @@ def _get_dirint_coeffs():
         [0.743440, 0.592190, 0.603060, 0.316930, 0.794390]]
 
     return coeffs[1:, 1:, :, :]
+
+
+def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
+        zenith_threshold_for_zero_dni=88.0,
+        zenith_threshold_for_clearsky_limit=80.0):
+    """
+    Determine DNI from GHI and DHI.
+
+    When calculating the DNI from GHI and DHI the calculated DNI may be
+    unreasonably high or negative for zenith angles close to 90 degrees
+    (sunrise/sunset transitions). This function identifies unreasonable DNI
+    values and sets them to NaN. If the clearsky DNI is given unreasonably high
+    values are cut off.
+
+    Parameters
+    ----------
+    ghi : Series
+        Global horizontal irradiance.
+
+    dhi : Series
+        Diffuse horizontal irradiance.
+
+    zenith : Series
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. Angles must be >=0 and <=180.
+
+    clearsky_dni : None or Series, default None
+        Clearsky direct normal irradiance.
+
+    clearsky_tolerance : float, default 1.1
+        If 'clearsky_dni' is given this parameter can be used to allow a
+        tolerance by how much the calculated DNI value can be greater than
+        the clearsky value before it is identified as an unreasonable value.
+
+    zenith_threshold_for_zero_dni : float, default 88.0
+        Non-zero DNI values for zenith angles greater than or equal to
+        'zenith_threshold_for_zero_dni' will be set to NaN.
+
+    zenith_threshold_for_clearsky_limit : float, default 80.0
+        DNI values for zenith angles greater than or equal to
+        'zenith_threshold_for_clearsky_limit' and smaller the
+        'zenith_threshold_for_zero_dni' that are greater than the clearsky DNI
+        (times allowed tolerance) will be corrected. Only applies if
+        'clearsky_dni' is not None.
+
+    Returns
+    -------
+    dni : Series
+        The modeled direct normal irradiance.
+    """
+
+    # calculate DNI
+    dni = (ghi - dhi) / tools.cosd(zenith)
+
+    # cutoff negative values
+    dni[dni < 0] = float('nan')
+
+    # set non-zero DNI values for zenith angles >=
+    # zenith_threshold_for_zero_dni to NaN
+    dni[(zenith >= zenith_threshold_for_zero_dni) & (dni != 0)] = float('nan')
+
+    # correct DNI values for zenith angles greater or equal to the
+    # zenith_threshold_for_clearsky_limit and smaller than the
+    # upper_cutoff_zenith that are greater than the clearsky DNI (times
+    # clearsky_tolerance)
+    if clearsky_dni is not None:
+        max_dni = clearsky_dni * clearsky_tolerance
+        dni[(zenith >= zenith_threshold_for_clearsky_limit) &
+            (zenith < zenith_threshold_for_zero_dni) &
+            (dni > max_dni)] = max_dni
+    return dni

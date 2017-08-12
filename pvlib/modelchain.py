@@ -50,46 +50,46 @@ def basic_chain(times, latitude, longitude,
     inverter_parameters : None, dict or Series
         Inverter parameters as defined by the CEC.
 
-    irradiance : None or DataFrame
+    irradiance : None or DataFrame, default None
         If None, calculates clear sky data.
         Columns must be 'dni', 'ghi', 'dhi'.
 
-    weather : None or DataFrame
+    weather : None or DataFrame, default None
         If None, assumes air temperature is 20 C and
         wind speed is 0 m/s.
         Columns must be 'wind_speed', 'temp_air'.
 
-    surface_tilt : float or Series
+    surface_tilt : None, float or Series, default None
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surface_azimuth : float or Series
+    surface_azimuth : None, float or Series, default None
         Surface azimuth angles in decimal degrees.
         The azimuth convention is defined
         as degrees east of north
         (North=0, South=180, East=90, West=270).
 
-    orientation_strategy : None or str
+    orientation_strategy : None or str, default None
         The strategy for aligning the modules.
         If not None, sets the ``surface_azimuth`` and ``surface_tilt``
         properties of the ``system``. Allowed strategies include 'flat',
         'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
-    transposition_model : str
+    transposition_model : str, default 'haydavies'
         Passed to system.get_irradiance.
 
-    solar_position_method : str
+    solar_position_method : str, default 'nrel_numpy'
         Passed to location.get_solarposition.
 
-    airmass_model : str
+    airmass_model : str, default 'kastenyoung1989'
         Passed to location.get_airmass.
 
-    altitude : None or float
+    altitude : None or float, default None
         If None, computed from pressure. Assumed to be 0 m
         if pressure is also None.
 
-    pressure : None or float
+    pressure : None or float, default None
         If None, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
 
@@ -112,7 +112,7 @@ def basic_chain(times, latitude, longitude,
         surface_tilt, surface_azimuth = \
             get_orientation(orientation_strategy, latitude=latitude)
     else:
-        raise ValueError('orientation_strategy or surface_tilt and ' +
+        raise ValueError('orientation_strategy or surface_tilt and '
                          'surface_azimuth must be provided')
 
     times = times
@@ -208,7 +208,7 @@ def get_orientation(strategy, **kwargs):
         surface_azimuth = 180
         surface_tilt = 0
     else:
-        raise ValueError('invalid orientation strategy. strategy must ' +
+        raise ValueError('invalid orientation strategy. strategy must '
                          'be one of south_at_latitude, flat,')
 
     return surface_tilt, surface_azimuth
@@ -233,57 +233,60 @@ class ModelChain(object):
         A :py:class:`~pvlib.location.Location` object that represents
         the physical location at which to evaluate the model.
 
-    orientation_strategy : None or str
+    orientation_strategy : None or str, default 'south_at_latitude_tilt'
         The strategy for aligning the modules. If not None, sets the
         ``surface_azimuth`` and ``surface_tilt`` properties of the
         ``system``. Allowed strategies include 'flat',
         'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
-    clearsky_model : str
+    clearsky_model : str, default 'ineichen'
         Passed to location.get_clearsky.
 
-    transposition_model : str
+    transposition_model : str, default 'haydavies'
         Passed to system.get_irradiance.
 
-    solar_position_method : str
+    solar_position_method : str, default 'nrel_numpy'
         Passed to location.get_solarposition.
 
-    airmass_model : str
+    airmass_model : str, default 'kastenyoung1989'
         Passed to location.get_airmass.
 
-    dc_model: None, str, or function
+    dc_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
         'singlediode', 'pvwatts'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
 
-    ac_model: None, str, or function
+    ac_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.inverter_parameters and system.module_parameters. Valid
         strings are 'snlinverter', 'adrinverter' (not implemented),
         'pvwatts'. The ModelChain instance will be passed as the first
         argument to a user-defined function.
 
-    aoi_model: None, str, or function
+    aoi_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'physical',
         'ashrae', 'sapm', 'no_loss'. The ModelChain instance will be
         passed as the first argument to a user-defined function.
 
-    spectral_model: None, str, or function
+    spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
         'first_solar' (not implemented), 'no_loss'. The ModelChain
         instance will be passed as the first argument to a user-defined
         function.
 
-    temp_model: str or function
+    temp_model: str or function, default 'sapm'
         Valid strings are 'sapm'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
 
-    losses_model: str or function
+    losses_model: str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
         will be passed as the first argument to a user-defined function.
+
+    name: None or str, default None
+        Name of ModelChain instance.
 
     **kwargs
         Arbitrary keyword arguments. Included for compatibility, but not
@@ -291,7 +294,7 @@ class ModelChain(object):
     """
 
     def __init__(self, system, location,
-                 orientation_strategy='south_at_latitude_tilt',
+                 orientation_strategy=None,
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
                  solar_position_method='nrel_numpy',
@@ -341,7 +344,7 @@ class ModelChain(object):
             return out
 
         return ('ModelChain: \n  ' + '\n  '.join(
-            (attr + ': ' + getmcattr(self, attr) for attr in attrs)))
+            ('{}: {}'.format(attr, getmcattr(self, attr)) for attr in attrs)))
 
     @property
     def orientation_strategy(self):
@@ -388,7 +391,7 @@ class ModelChain(object):
         elif set(['pdc0', 'gamma_pdc']) <= params:
             return self.pvwatts_dc
         else:
-            raise ValueError('could not infer DC model from ' +
+            raise ValueError('could not infer DC model from '
                              'system.module_parameters')
 
     def sapm(self):
@@ -434,7 +437,7 @@ class ModelChain(object):
             if model == 'snlinverter':
                 self._ac_model = self.snlinverter
             elif model == 'adrinverter':
-                raise NotImplementedError
+                self._ac_model = self.adrinverter
             elif model == 'pvwatts':
                 self._ac_model = self.pvwatts_inverter
             else:
@@ -447,10 +450,12 @@ class ModelChain(object):
         module_params = set(self.system.module_parameters.keys())
         if set(['C0', 'C1', 'C2']) <= inverter_params:
             return self.snlinverter
+        elif set(['ADRCoefficients']) <= inverter_params:
+            return self.adrinverter
         elif set(['pdc0']) <= module_params:
             return self.pvwatts_inverter
         else:
-            raise ValueError('could not infer AC model from ' +
+            raise ValueError('could not infer AC model from '
                              'system.inverter_parameters')
 
     def snlinverter(self):
@@ -458,7 +463,7 @@ class ModelChain(object):
         return self
 
     def adrinverter(self):
-        raise NotImplementedError
+        self.ac = self.system.adrinverter(self.dc['v_mp'], self.dc['p_mp'])
         return self
 
     def pvwatts_inverter(self):
@@ -497,7 +502,7 @@ class ModelChain(object):
         elif set(['b']) <= params:
             return self.ashrae_aoi_loss
         else:
-            raise ValueError('could not infer AOI model from ' +
+            raise ValueError('could not infer AOI model from '
                              'system.module_parameters')
 
     def ashrae_aoi_loss(self):
@@ -542,7 +547,7 @@ class ModelChain(object):
         if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
             return self.sapm_spectral_loss
         else:
-            raise ValueError('could not infer spectral model from ' +
+            raise ValueError('could not infer spectral model from '
                              'system.module_parameters')
 
     def first_solar_spectral_loss(self):
@@ -633,10 +638,10 @@ class ModelChain(object):
 
         Parameters
         ----------
-        times : DatetimeIndex
+        times : None or DatetimeIndex, default None
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
-        weather : pandas.DataFrame
+        weather : None or pandas.DataFrame, default None
             Table with at least two columns containing one of the
             following data sets: dni, dhi, ghi. Can be None if attribute
             `weather` is already set.
@@ -674,18 +679,22 @@ class ModelChain(object):
                    "Results can be too high or negative.\n" +
                    "Help to improve this function on github:\n" +
                    "https://github.com/pvlib/pvlib-python \n")
-        warnings.warn(wrn_txt, UserWarning)
+
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             logging.debug('Estimate dni from ghi and dhi')
-            self.weather.loc[:, 'dni'] = (
-                (self.weather.loc[:, 'ghi'] - self.weather.loc[:, 'dhi']) /
-                tools.cosd(self.solar_position.loc[:, 'zenith']))
+            self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
+                self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
+                self.solar_position.zenith,
+                clearsky_dni=self.location.get_clearsky(times).dni,
+                clearsky_tolerance=1.1)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
+            warnings.warn(wrn_txt, UserWarning)
             logging.debug('Estimate ghi from dni and dhi')
             self.weather.loc[:, 'ghi'] = (
                 self.weather.dni * tools.cosd(self.solar_position.zenith) +
                 self.weather.dhi)
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
+            warnings.warn(wrn_txt, UserWarning)
             logging.debug('Estimate dhi from dni and ghi')
             self.weather.loc[:, 'dhi'] = (
                 self.weather.ghi - self.weather.dni *
@@ -700,12 +709,12 @@ class ModelChain(object):
 
         Parameters
         ----------
-        times : DatetimeIndex
+        times : None or DatetimeIndex, default None
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
         irradiance : None or DataFrame
             This parameter is deprecated. Please use `weather` instead.
-        weather : None or DataFrame
+        weather : None or DataFrame, default None
             If None, the weather attribute is used. If the weather
             attribute is also None assumes air temperature is 20 C, wind
             speed is 0 m/s and irradiation calculated from clear sky
@@ -748,9 +757,6 @@ class ModelChain(object):
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)
 
-        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
-                                       self.solar_position['azimuth'])
-
         if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
@@ -764,7 +770,8 @@ class ModelChain(object):
                 "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
-        # have different method signatures, so use partial to handle
+        # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
+        # have different method signatures. Use partial to handle
         # the differences.
         if isinstance(self.system, SingleAxisTracker):
             self.tracking = self.system.singleaxis(
@@ -776,13 +783,17 @@ class ModelChain(object):
             self.tracking['surface_azimuth'] = (
                 self.tracking['surface_azimuth']
                     .fillna(self.system.axis_azimuth))
+            self.aoi = self.tracking['aoi']
             get_irradiance = partial(
                 self.system.get_irradiance,
-                surface_tilt=self.tracking['surface_tilt'],
-                surface_azimuth=self.tracking['surface_azimuth'],
-                solar_zenith=self.solar_position['apparent_zenith'],
-                solar_azimuth=self.solar_position['azimuth'])
+                self.tracking['surface_tilt'],
+                self.tracking['surface_azimuth'],
+                self.solar_position['apparent_zenith'],
+                self.solar_position['azimuth'])
         else:
+            self.aoi = self.system.get_aoi(
+                self.solar_position['apparent_zenith'],
+                self.solar_position['azimuth'])
             get_irradiance = partial(
                 self.system.get_irradiance,
                 self.solar_position['apparent_zenith'],
@@ -807,12 +818,12 @@ class ModelChain(object):
 
         Parameters
         ----------
-        times : DatetimeIndex
+        times : None or DatetimeIndex, default None
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
         irradiance : None or DataFrame
             This parameter is deprecated. Please use `weather` instead.
-        weather : None or DataFrame
+        weather : None or DataFrame, default None
             If None, assumes air temperature is 20 C, wind speed is 0
             m/s and irradiation calculated from clear sky data. Column
             names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.

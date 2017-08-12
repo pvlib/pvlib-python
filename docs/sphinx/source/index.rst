@@ -68,12 +68,13 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 1
 
    package_overview
    whatsnew
    installation
    contributing
+   modelchain
    timetimezones
    clearsky
    forecasts

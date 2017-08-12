@@ -35,17 +35,17 @@ class Location(object):
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
-    tz : str, int, float, or pytz.timezone.
+    tz : str, int, float, or pytz.timezone, default 'UTC'.
         See
         http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         for a list of valid time zones.
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    alitude : float.
+    alitude : float, default 0.
         Altitude from sea level in meters.
 
-    name : None or string.
+    name : None or string, default None.
         Sets the name attribute of the Location object.
 
     **kwargs
@@ -79,14 +79,10 @@ class Location(object):
 
         self.name = name
 
-        # needed for tying together Location and PVSystem in LocalizedPVSystem
-        # if LocalizedPVSystem signature is reversed
-        # super(Location, self).__init__(**kwargs)
-
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']
         return ('Location: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):
@@ -98,7 +94,7 @@ class Location(object):
         ----------
         tmy_metadata : dict
             Returned from tmy.readtmy2 or tmy.readtmy3
-        tmy_data : None or DataFrame
+        tmy_data : None or DataFrame, default None
             Optionally attach the TMY data to this object.
 
         Returns
@@ -141,10 +137,10 @@ class Location(object):
         Parameters
         ----------
         times : DatetimeIndex
-        pressure : None, float, or array-like
+        pressure : None, float, or array-like, default None
             If None, pressure will be calculated using
             :py:func:`atmosphere.alt2pres` and ``self.altitude``.
-        temperature : None, float, or array-like
+        temperature : None, float, or array-like, default 12
 
         kwargs passed to :py:func:`solarposition.get_solarposition`
 
@@ -173,13 +169,13 @@ class Location(object):
         Parameters
         ----------
         times: DatetimeIndex
-        model: str
+        model: str, default 'ineichen'
             The clear sky model to use. Must be one of
             'ineichen', 'haurwitz', 'simplified_solis'.
-        solar_position : None or DataFrame
-            DataFrame with with columns 'apparent_zenith', 'zenith',
+        solar_position : None or DataFrame, default None
+            DataFrame with columns 'apparent_zenith', 'zenith',
             'apparent_elevation'.
-        dni_extra: None or numeric
+        dni_extra: None or numeric, default None
             If None, will be calculated from times.
 
         kwargs passed to the relevant functions. Climatological values
@@ -191,7 +187,7 @@ class Location(object):
             Column names are: ``ghi, dni, dhi``.
         """
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(times.dayofyear)
+            dni_extra = irradiance.extraradiation(times)
 
         try:
             pressure = kwargs.pop('pressure')
@@ -230,8 +226,8 @@ class Location(object):
                 apparent_elevation, pressure=pressure, dni_extra=dni_extra,
                 **kwargs)
         else:
-            raise ValueError(('{} is not a valid clear sky model. Must be ' +
-                              'one of ineichen, simplified_solis, haurwitz')
+            raise ValueError('{} is not a valid clear sky model. Must be '
+                             'one of ineichen, simplified_solis, haurwitz'
                              .format(model))
 
         return cs
@@ -246,11 +242,11 @@ class Location(object):
 
         Parameters
         ----------
-        times : None or DatetimeIndex
+        times : None or DatetimeIndex, default None
             Only used if solar_position is not provided.
-        solar_position : None or DataFrame
+        solar_position : None or DataFrame, default None
             DataFrame with with columns 'apparent_zenith', 'zenith'.
-        model : str
+        model : str, default 'kastenyoung1989'
             Relative airmass model
 
         Returns

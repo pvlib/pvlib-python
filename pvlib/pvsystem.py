@@ -56,47 +56,50 @@ class PVSystem(object):
 
     Parameters
     ----------
-    surface_tilt: float or array-like
-        Tilt angle of the module surface.
-        Up=0, horizon=90.
+    surface_tilt: float or array-like, default 0
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surface_azimuth: float or array-like
+    surface_azimuth: float or array-like, default 180
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
 
-    albedo : None, float
+    albedo : None or float, default None
         The ground albedo. If ``None``, will attempt to use
         ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
         to lookup albedo.
 
-    surface_type : None, string
+    surface_type : None or string, default None
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
         for valid values.
 
-    module : None, string
+    module : None or string, default None
         The model name of the modules.
         May be used to look up the module_parameters dictionary
         via some other method.
 
-    module_parameters : None, dict or Series
+    module_parameters : None, dict or Series, default None
         Module parameters as defined by the SAPM, CEC, or other.
 
-    modules_per_string: int or float
+    modules_per_string: int or float, default 1
         See system topology discussion above.
 
-    strings_per_inverter: int or float
+    strings_per_inverter: int or float, default 1
         See system topology discussion above.
 
-    inverter : None, string
+    inverter : None or string, default None
         The model name of the inverters.
         May be used to look up the inverter_parameters dictionary
         via some other method.
 
-    inverter_parameters : None, dict or Series
+    inverter_parameters : None, dict or Series, default None
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : None or string
+    racking_model : None or string, default 'open_rack_cell_glassback'
         Used for cell and module temperature calculations.
+
+    name : None or string, default None
 
     **kwargs
         Arbitrary keyword arguments.
@@ -133,24 +136,27 @@ class PVSystem(object):
 
         # could tie these together with @property
         self.module = module
-        self.module_parameters = module_parameters
+        if module_parameters is None:
+            self.module_parameters = {}
+        else:
+            self.module_parameters = module_parameters
 
         self.modules_per_string = modules_per_string
         self.strings_per_inverter = strings_per_inverter
 
         self.inverter = inverter
-        self.inverter_parameters = inverter_parameters
+        if inverter_parameters is None:
+            self.inverter_parameters = {}
+        else:
+            self.inverter_parameters = inverter_parameters
 
         self.racking_model = racking_model
-
-        # needed for tying together Location and PVSystem in LocalizedPVSystem
-        super(PVSystem, self).__init__(**kwargs)
 
     def __repr__(self):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
                  'inverter', 'albedo', 'racking_model']
         return ('PVSystem: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
@@ -193,11 +199,11 @@ class PVSystem(object):
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance
-        dni_extra : float or Series
+        dni_extra : None, float or Series, default None
             Extraterrestrial direct normal irradiance
-        airmass : float or Series
+        airmass : None, float or Series, default None
             Airmass
-        model : String
+        model : String, default 'haydavies'
             Irradiance model.
 
         **kwargs
@@ -403,7 +409,7 @@ class PVSystem(object):
         aoi : numeric
             Angle of incidence in degrees.
 
-        reference_irradiance : numeric
+        reference_irradiance : numeric, default 1000
             Reference irradiance by which to divide the input irradiance.
 
         Returns
@@ -461,6 +467,9 @@ class PVSystem(object):
         See pvsystem.snlinverter for details
         """
         return snlinverter(v_dc, p_dc, self.inverter_parameters)
+
+    def adrinverter(self, v_dc, p_dc):
+        return adrinverter(v_dc, p_dc, self.inverter_parameters)
 
     def scale_voltage_current_power(self, data):
         """
@@ -531,9 +540,9 @@ class PVSystem(object):
 
         Parameters
         ----------
-        location : None or Location
-        latitude : None or float
-        longitude : None or float
+        location : None or Location, default None
+        latitude : None or float, default None
+        longitude : None or float, default None
         **kwargs : see Location
 
         Returns
@@ -575,7 +584,8 @@ class LocalizedPVSystem(PVSystem, Location):
                           list(loc_dict.items()) +
                           list(kwargs.items()))
 
-        super(LocalizedPVSystem, self).__init__(**new_kwargs)
+        PVSystem.__init__(self, **new_kwargs)
+        Location.__init__(self, **new_kwargs)
 
     def __repr__(self):
         attrs = [
@@ -583,7 +593,7 @@ class LocalizedPVSystem(PVSystem, Location):
             'surface_azimuth', 'module', 'inverter', 'albedo', 'racking_model'
                  ]
         return ('LocalizedPVSystem: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
@@ -690,9 +700,9 @@ def ashraeiam(aoi, b=0.05):
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector in degrees. Angles of nan will result in nan.
 
-    b : float
+    b : float, default 0.05
         A parameter to adjust the modifier as a function of angle of
         incidence. Typical values are on the order of 0.05 [3].
 
@@ -702,7 +712,7 @@ def ashraeiam(aoi, b=0.05):
         The incident angle modifier calculated as 1-b*(sec(aoi)-1) as
         described in [2,3].
 
-        Returns nan for all abs(aoi) >= 90 and for all IAM values that
+        Returns zeros for all abs(aoi) >= 90 and for all IAM values that
         would be less than 0.
 
     References
@@ -725,7 +735,7 @@ def ashraeiam(aoi, b=0.05):
 
     iam = 1 - b*((1/np.cos(np.radians(aoi)) - 1))
 
-    iam = np.where(np.abs(aoi) >= 90, np.nan, iam)
+    iam = np.where(np.abs(aoi) >= 90, 0, iam)
     iam = np.maximum(0, iam)
 
     if isinstance(iam, pd.Series):
@@ -754,22 +764,23 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector in degrees. Angles of 0 are replaced with 1e-06
+        to ensure non-nan results. Angles of nan will result in nan.
 
-    n : numeric
+    n : numeric, default 1.526
         The effective index of refraction (unitless). Reference [1]
         indicates that a value of 1.526 is acceptable for glass. n must
         be a numeric scalar or vector with all values >=0. If n is a
         vector, it must be the same size as all other input vectors.
 
-    K : numeric
+    K : numeric, default 4.0
         The glazing extinction coefficient in units of 1/meters.
         Reference [1] indicates that a value of  4 is reasonable for
         "water white" glass. K must be a numeric scalar or vector with
         all values >=0. If K is a vector, it must be the same size as
         all other input vectors.
 
-    L : numeric
+    L : numeric, default 0.002
         The glazing thickness in units of meters. Reference [1]
         indicates that 0.002 meters (2 mm) is reasonable for most
         glass-covered PV panels. L must be a numeric scalar or vector
@@ -804,27 +815,40 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     spa
     ashraeiam
     '''
-    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
-
-    tau = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) *
-           ((1 - 0.5*((((tools.sind(thetar_deg - aoi)) ** 2) /
-            ((tools.sind(thetar_deg + aoi)) ** 2) +
-            ((tools.tand(thetar_deg - aoi)) ** 2) /
-            ((tools.tand(thetar_deg + aoi)) ** 2))))))
-
     zeroang = 1e-06
 
-    thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
+    aoi = np.where(aoi == 0, zeroang, aoi)
 
-    tau0 = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg0))) *
-            ((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) /
-             ((tools.sind(thetar_deg0 + zeroang)) ** 2) +
-             ((tools.tand(thetar_deg0 - zeroang)) ** 2) /
-             ((tools.tand(thetar_deg0 + zeroang)) ** 2))))))
+    # angle of reflection
+    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
 
-    iam = tau / tau0
+    # reflectance and transmittance for normal incidence light
+    rho_zero = ((1-n) / (1+n)) ** 2
+    tau_zero = np.exp(-K*L)
 
-    iam = np.where((np.abs(aoi) >= 90) | (iam < 0), np.nan, iam)
+    # reflectance for parallel and perpendicular polarized light
+    rho_para = (tools.tand(thetar_deg - aoi) /
+                tools.tand(thetar_deg + aoi)) ** 2
+    rho_perp = (tools.sind(thetar_deg - aoi) /
+                tools.sind(thetar_deg + aoi)) ** 2
+
+    # transmittance for non-normal light
+    tau = np.exp(-K*L / tools.cosd(thetar_deg))
+
+    # iam is ratio of non-normal to normal incidence transmitted light
+    # after deducting the reflected portion of each
+    iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
+
+    # angles near zero produce nan, but iam is defined as one
+    small_angle = 1e-06
+    iam = np.where(np.abs(aoi) < small_angle, 1.0, iam)
+
+    # angles at 90 degrees can produce tiny negative values, which should be zero
+    # this is a result of calculation precision rather than the physical model
+    iam = np.where(iam < 0, 0, iam)
+
+    # for light coming from behind the plane, none can enter the module
+    iam = np.where(aoi > 90, 0, iam)
 
     if isinstance(aoi, pd.Series):
         iam = pd.Series(iam, index=aoi.index)
@@ -1056,12 +1080,13 @@ def retrieve_sam(name=None, path=None):
         * CEC module database
         * Sandia Module database
         * CEC Inverter database
+        * Anton Driesse Inverter database
 
     and return it as a pandas DataFrame.
 
     Parameters
     ----------
-    name : None or string
+    name : None or string, default None
         Name can be one of:
 
         * 'CECMod' - returns the CEC module database
@@ -1070,8 +1095,9 @@ def retrieve_sam(name=None, path=None):
           (CEC is only current inverter db available; tag kept for
           backwards compatibility)
         * 'SandiaMod' - returns the Sandia Module database
+        * 'ADRInverter' - returns the ADR Inverter database
 
-    path : None or string
+    path : None or string, default None
         Path to the SAM file. May also be a URL.
 
     If both name and path are None, a dialogue will open allowing the
@@ -1122,6 +1148,8 @@ def retrieve_sam(name=None, path=None):
         elif name == 'sandiamod':
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
+        elif name == 'adrinverter':
+            csvdata = os.path.join(data_path, 'adr-library-2013-10-01.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
@@ -1171,6 +1199,13 @@ def _parse_raw_sam_df(csvdata):
 
     df.index = parsedindex
     df = df.transpose()
+    if 'ADRCoefficients' in df.index:
+        ad_ce = 'ADRCoefficients'
+        # for each inverter, parses a string of coefficients like
+        # ' 1.33, 2.11, 3.12' into a list containing floats:
+        # [1.33, 2.11, 3.12]
+        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x: list(
+            map(float, x.strip(' []').split())))
 
     return df
 
@@ -1325,7 +1360,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     temp_air : float or Series
         Ambient dry bulb temperature in degrees C.
 
-    model : string, list, or dict
+    model : string, list, or dict, default 'open_rack_cell_glassback'
         Model to be used.
 
         If string, can be:
@@ -1444,14 +1479,14 @@ def sapm_aoi_loss(aoi, module, upper=None):
     ----------
     aoi : numeric
         Angle of incidence in degrees. Negative input angles will return
-        nan values.
+        zeros.
 
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the :py:func:`sapm` notes section for more
         details.
 
-    upper : None or float
+    upper : None or float, default None
         Upper limit on the results.
 
     Returns
@@ -1486,7 +1521,7 @@ def sapm_aoi_loss(aoi, module, upper=None):
 
     aoi_loss = np.polyval(aoi_coeff, aoi)
     aoi_loss = np.clip(aoi_loss, 0, upper)
-    aoi_loss = np.where(aoi < 0, np.nan, aoi_loss)
+    aoi_loss = np.where(aoi < 0, 0, aoi_loss)
 
     if isinstance(aoi, pd.Series):
         aoi_loss = pd.Series(aoi_loss, aoi.index)
@@ -1519,7 +1554,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
         parameters. See the :py:func:`sapm` notes section for more
         details.
 
-    reference_irradiance : numeric
+    reference_irradiance : numeric, default 1000
         Reference irradiance by which to divide the input irradiance.
 
     Returns
@@ -1586,7 +1621,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
 
-    ivcurve_pnts : None or int
+    ivcurve_pnts : None or int, default None
         Number of points in the desired IV curve. If None or 0, no
         IV curves will be produced.
 
@@ -2037,6 +2072,120 @@ def snlinverter(v_dc, p_dc, inverter):
     return ac_power
 
 
+def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
+    r'''
+    Converts DC power and voltage to AC power using Anton Driesse's
+    Grid-Connected PV Inverter efficiency model
+
+    Parameters
+    ----------
+    v_dc : numeric
+        A scalar or pandas series of DC voltages, in volts, which are provided
+        as input to the inverter. If Vdc and Pdc are vectors, they must be
+        of the same size. v_dc must be >= 0. (V)
+
+    p_dc : numeric
+        A scalar or pandas series of DC powers, in watts, which are provided
+        as input to the inverter. If Vdc and Pdc are vectors, they must be
+        of the same size. p_dc must be >= 0. (W)
+
+    inverter : dict-like
+        A dict-like object defining the inverter to be used, giving the
+        inverter performance parameters according to the model
+        developed by Anton Driesse [1].
+        A set of inverter performance parameters may be loaded from the
+        supplied data table using retrievesam.
+        See Notes for required keys.
+
+    vtol : numeric, default 0.1
+        A unit-less fraction that determines how far the efficiency model is
+        allowed to extrapolate beyond the inverter's normal input voltage
+        operating range. 0.0 <= vtol <= 1.0
+
+    Returns
+    -------
+    ac_power : numeric
+        A numpy array or pandas series of modeled AC power output given the
+        input DC voltage, v_dc, and input DC power, p_dc. When ac_power would
+        be greater than pac_max, it is set to p_max to represent inverter
+        "clipping". When ac_power would be less than -p_nt (energy consumed
+        rather  than produced) then ac_power is set to -p_nt to represent
+        nightly power losses. ac_power is not adjusted for maximum power point
+        tracking (MPPT) voltage windows or maximum current limits of the
+        inverter.
+
+    Notes
+    -----
+
+    Required inverter keys are:
+
+    =======   ============================================================
+    Column    Description
+    =======   ============================================================
+    p_nom     The nominal power value used to normalize all power values,
+              typically the DC power needed to produce maximum AC power
+              output, (W).
+
+    v_nom     The nominal DC voltage value used to normalize DC voltage
+              values, typically the level at which the highest efficiency
+              is achieved, (V).
+
+    pac_max   The maximum AC output power value, used to clip the output
+              if needed, (W).
+
+    ce_list   This is a list of 9 coefficients that capture the influence
+              of input voltage and power on inverter losses, and thereby
+              efficiency.
+
+    p_nt      ac-power consumed by inverter at night (night tare) to
+              maintain circuitry required to sense PV array voltage, (W).
+    =======   ============================================================
+
+    References
+    ----------
+    [1] Beyond the Curves: Modeling the Electrical Efficiency
+        of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
+
+    See also
+    --------
+    sapm
+    singlediode
+    '''
+
+    p_nom = inverter['Pnom']
+    v_nom = inverter['Vnom']
+    pac_max = inverter['Pacmax']
+    p_nt = inverter['Pnt']
+    ce_list = inverter['ADRCoefficients']
+    v_max = inverter['Vmax']
+    v_min = inverter['Vmin']
+    vdc_max = inverter['Vdcmax']
+    mppt_hi = inverter['MPPTHi']
+    mppt_low = inverter['MPPTLow']
+
+    v_lim_upper = np.nanmax([v_max, vdc_max, mppt_hi])*(1+vtol)
+    v_lim_lower = np.nanmax([v_min, mppt_low])*(1-vtol)
+
+    pdc = p_dc/p_nom
+    vdc = v_dc/v_nom
+    poly = np.array([pdc**0, pdc, pdc**2, vdc-1, pdc*(vdc-1),
+                     pdc**2*(vdc-1), 1/vdc-1, pdc*(1./vdc-1),
+                     pdc**2*(1./vdc-1)])
+    p_loss = np.dot(np.array(ce_list), poly)
+    ac_power = p_nom * (pdc-p_loss)
+    p_nt = -1*np.absolute(p_nt)
+
+    ac_power = np.where((v_lim_upper < v_dc) | (v_dc < v_lim_lower),
+                        np.nan, ac_power)
+    ac_power = np.where((ac_power < p_nt) | (vdc == 0), p_nt, ac_power)
+    ac_power = np.where(ac_power > pac_max, pac_max, ac_power)
+
+    if isinstance(p_dc, pd.Series):
+        ac_power = pd.Series(ac_power, index=pdc.index)
+
+    return ac_power
+
+
 def scale_voltage_current_power(data, voltage=1, current=1):
     """
     Scales the voltage, current, and power of the DataFrames
@@ -2047,9 +2196,9 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     data: DataFrame
         Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
         'i_sc', 'p_mp'`.
-    voltage: numeric
+    voltage: numeric, default 1
         The amount by which to multiply the voltages.
-    current: numeric
+    current: numeric, default 1
         The amount by which to multiply the currents.
 
     Returns
@@ -2093,7 +2242,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     gamma_pdc: numeric
         The temperature coefficient in units of 1/C. Typically -0.002 to
         -0.005 per degree C.
-    temp_ref: numeric
+    temp_ref: numeric, default 25.0
         Cell reference temperature. PVWatts defines it to be 25 C and
         is included here for flexibility.
 
@@ -2130,17 +2279,17 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
     Parameters
     ----------
-    soiling: numeric
-    shading: numeric
-    snow: numeric
-    mismatch: numeric
-    wiring: numeric
-    connections: numeric
-    lid: numeric
+    soiling: numeric, default 2
+    shading: numeric, default 3
+    snow: numeric, default 0
+    mismatch: numeric, default 2
+    wiring: numeric, default 2
+    connections: numeric, default 0.5
+    lid: numeric, default 1.5
         Light induced degradation
-    nameplate_rating: numeric
-    age: numeric
-    availability: numeric
+    nameplate_rating: numeric, default 1
+    age: numeric, default 0
+    availability: numeric, default 3
 
     Returns
     -------
@@ -2188,9 +2337,9 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
         DC power.
     pdc0: numeric
         Nameplate DC rating.
-    eta_inv_nom: numeric
+    eta_inv_nom: numeric, default 0.96
         Nominal inverter efficiency.
-    eta_inv_ref: numeric
+    eta_inv_ref: numeric, default 0.9637
         Reference inverter efficiency. PVWatts defines it to be 0.9637
         and is included here for flexibility.
 

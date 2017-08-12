@@ -7,6 +7,9 @@ import numpy as np
 import pytest
 
 
+skip_windows = pytest.mark.skipif('win' in sys.platform,
+                                  reason='does not run on windows')
+
 try:
     import scipy
     has_scipy = True

@@ -12,7 +12,7 @@ import calendar
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
+from pvlib import tools, atmosphere, solarposition, irradiance
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -31,19 +31,19 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     Parameters
     -----------
-    apparent_zenith: numeric
+    apparent_zenith : numeric
         Refraction corrected solar zenith angle in degrees.
 
-    airmass_absolute: numeric
+    airmass_absolute : numeric
         Pressure corrected airmass.
 
-    linke_turbidity: numeric
+    linke_turbidity : numeric
         Linke Turbidity.
 
-    altitude: numeric
+    altitude : numeric, default 0
         Altitude above sea level in meters.
 
-    dni_extra: numeric
+    dni_extra : numeric, default 1364
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
 
@@ -164,10 +164,10 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
 
     longitude : float
 
-    filepath : string
+    filepath : None or string, default None
         The path to the ``.mat`` file.
 
-    interp_turbidity : bool
+    interp_turbidity : bool, default True
         If ``True``, interpolates the monthly Linke turbidity values
         found in ``LinkeTurbidities.mat`` to daily values.
 
@@ -349,24 +349,24 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
 
     Parameters
     ----------
-    apparent_elevation: numeric
+    apparent_elevation : numeric
         The apparent elevation of the sun above the horizon (deg).
 
-    aod700: numeric
+    aod700 : numeric, default 0.1
         The aerosol optical depth at 700 nm (unitless).
         Algorithm derived for values between 0 and 0.45.
 
-    precipitable_water: numeric
+    precipitable_water : numeric, default 1.0
         The precipitable water of the atmosphere (cm).
         Algorithm derived for values between 0.2 and 10 cm.
         Values less than 0.2 will be assumed to be equal to 0.2.
 
-    pressure: numeric
+    pressure : numeric, default 101325.0
         The atmospheric pressure (Pascals).
         Algorithm derived for altitudes between sea level and 7000 m,
         or 101325 and 41000 Pascals.
 
-    dni_extra: numeric
+    dni_extra : numeric, default 1364.0
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
 
@@ -411,7 +411,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     g = _calc_g(w, aod700)
 
     taud = _calc_taud(w, aod700, p)
-    d = _calc_d(w, aod700, p)
+    d = _calc_d(aod700, p)
 
     # this prevents the creation of nans at night instead of 0s
     # it's also friendly to scalar and series inputs
@@ -525,7 +525,7 @@ def _calc_taud(w, aod700, p):
     return taud
 
 
-def _calc_d(w, aod700, p):
+def _calc_d(aod700, p):
     """Calculate the d coefficient."""
 
     p0 = 101325.
@@ -569,29 +569,29 @@ def detect_clearsky(measured, clearsky, times, window_length,
     window_length : int
         Length of sliding time window in minutes. Must be greater than 2
         periods.
-    mean_diff : float
+    mean_diff : float, default 75
         Threshold value for agreement between mean values of measured
         and clearsky in each interval, see Eq. 6 in [1].
-    max_diff : float
+    max_diff : float, default 75
         Threshold value for agreement between maxima of measured and
         clearsky values in each interval, see Eq. 7 in [1].
-    lower_line_length : float
+    lower_line_length : float, default -5
         Lower limit of line length criterion from Eq. 8 in [1].
         Criterion satisfied when
         lower_line_length < line length difference < upper_line_length
-    upper_line_length : float
+    upper_line_length : float, default 10
         Upper limit of line length criterion from Eq. 8 in [1].
-    var_diff : float
+    var_diff : float, default 0.005
         Threshold value in Hz for the agreement between normalized
         standard deviations of rate of change in irradiance, see Eqs. 9
         through 11 in [1].
-    slope_dev : float
+    slope_dev : float, default 8
         Threshold value for agreement between the largest magnitude of
         change in successive values, see Eqs. 12 through 14 in [1].
-    max_iterations : int
+    max_iterations : int, default 20
         Maximum number of times to apply a different scaling factor to
         the clearsky and redetermine clear_samples. Must be 1 or larger.
-    return_components : bool
+    return_components : bool, default False
         Controls if additional output should be returned. See below.
 
     Returns
@@ -720,3 +720,124 @@ def detect_clearsky(measured, clearsky, times, window_length,
         return clear_samples, components, alpha
     else:
         return clear_samples
+
+
+def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
+         ozone=0.3, pressure=101325., dni_extra=1364., asymmetry=0.85,
+         albedo=0.2):
+    """
+    Bird Simple Clear Sky Broadband Solar Radiation Model
+
+    Based on NREL Excel implementation by Daryl R. Myers [1, 2].
+
+    Bird and Hulstrom define the zenith as the "angle between a line to the sun
+    and the local zenith". There is no distinction in the paper between solar
+    zenith and apparent (or refracted) zenith, but the relative airmass is
+    defined using the Kasten 1966 expression, which requires apparent zenith.
+    Although the formulation for calculated zenith is never explicitly defined
+    in the report, since the purpose was to compare existing clear sky models
+    with "rigorous radiative transfer models" (RTM) it is possible that apparent
+    zenith was obtained as output from the RTM. However, the implentation
+    presented in PVLIB is tested against the NREL Excel implementation by Daryl
+    Myers which uses an analytical expression for solar zenith instead of
+    apparent zenith.
+
+    Parameters
+    ----------
+    zenith : numeric
+        Solar or apparent zenith angle in degrees - see note above
+    airmass_relative : numeric
+        Relative airmass
+    aod380 : numeric
+        Aerosol optical depth [cm] measured at 380[nm]
+    aod500 : numeric
+        Aerosol optical depth [cm] measured at 500[nm]
+    precipitable_water : numeric
+        Precipitable water [cm]
+    ozone : numeric
+        Atmospheric ozone [cm], defaults to 0.3[cm]
+    pressure : numeric
+        Ambient pressure [Pa], defaults to 101325[Pa]
+    dni_extra : numeric
+        Extraterrestrial radiation [W/m^2], defaults to 1364[W/m^2]
+    asymmetry : numeric
+        Asymmetry factor, defaults to 0.85
+    albedo : numeric
+        Albedo, defaults to 0.2
+
+    Returns
+    -------
+    clearsky : DataFrame (if Series input) or OrderedDict of arrays
+        DataFrame/OrderedDict contains the columns/keys
+        ``'dhi', 'dni', 'ghi', 'direct_horizontal'`` in  [W/m^2].
+
+    See also
+    --------
+    pvlib.atmosphere.bird_hulstrom80_aod_bb
+    pvlib.atmosphere.relativeairmass
+
+    References
+    ----------
+    [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for Direct
+    and Diffuse Insolation on Horizontal Surfaces" SERI Technical Report
+    SERI/TR-642-761, Feb 1981. Solar Energy Research Institute, Golden, CO.
+
+    [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    Energy Applications", pp. 46-51 CRC Press (2013)
+
+    `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/clearsky/>`_
+
+    `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf>`_
+
+    `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
+    """
+    etr = dni_extra  # extraradiation
+    ze_rad = np.deg2rad(zenith)  # zenith in radians
+    airmass = airmass_relative
+    # Bird clear sky model
+    am_press = atmosphere.absoluteairmass(airmass, pressure)
+    t_rayleigh = (
+        np.exp(-0.0903 * am_press ** 0.84 * (
+            1.0 + am_press - am_press ** 1.01
+        ))
+    )
+    am_o3 = ozone*airmass
+    t_ozone = (
+        1.0 - 0.1611 * am_o3 * (1.0 + 139.48 * am_o3) ** -0.3034 -
+        0.002715 * am_o3 / (1.0 + 0.044 * am_o3 + 0.0003 * am_o3 ** 2.0)
+    )
+    t_gases = np.exp(-0.0127 * am_press ** 0.26)
+    am_h2o = airmass * precipitable_water
+    t_water = (
+        1.0 - 2.4959 * am_h2o / (
+            (1.0 + 79.034 * am_h2o) ** 0.6828 + 6.385 * am_h2o
+        )
+    )
+    bird_huldstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
+    t_aerosol = np.exp(
+        -(bird_huldstrom ** 0.873) *
+        (1.0 + bird_huldstrom - bird_huldstrom ** 0.7088) * airmass ** 0.9108
+    )
+    taa = 1.0 - 0.1 * (1.0 - airmass + airmass ** 1.06) * (1.0 - t_aerosol)
+    rs = 0.0685 + (1.0 - asymmetry) * (1.0 - t_aerosol / taa)
+    id_ = 0.9662 * etr * t_aerosol * t_water * t_gases * t_ozone * t_rayleigh
+    ze_cos = np.where(zenith < 90, np.cos(ze_rad), 0.0)
+    id_nh = id_ * ze_cos
+    ias = (
+        etr * ze_cos * 0.79 * t_ozone * t_gases * t_water * taa *
+        (0.5 * (1.0 - t_rayleigh) + asymmetry * (1.0 - (t_aerosol / taa))) / (
+            1.0 - airmass + airmass ** 1.02
+        )
+    )
+    gh = (id_nh + ias) / (1.0 - albedo * rs)
+    diffuse_horiz = gh - id_nh
+    # TODO: be DRY, use decorator to wrap methods that need to return either
+    # OrderedDict or DataFrame instead of repeating this boilerplate code
+    irrads = OrderedDict()
+    irrads['direct_horizontal'] = id_nh
+    irrads['ghi'] = gh
+    irrads['dni'] = id_
+    irrads['dhi'] = diffuse_horiz
+    if isinstance(irrads['dni'], pd.Series):
+        irrads = pd.DataFrame.from_dict(irrads)
+    return irrads

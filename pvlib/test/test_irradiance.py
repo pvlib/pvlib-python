@@ -369,6 +369,7 @@ def test_erbs_all_scalar():
     for k, v in out.items():
         assert_allclose(v, expected[k], 5)
 
+
 @needs_numpy_1_10
 def test_dirindex():
     clearsky_data = tus.get_clearsky(times, model='ineichen',
@@ -403,3 +404,40 @@ def test_dirindex():
     tol_dirint = 0.2
     assert np.allclose(out.values, dirint_close_values, rtol=tol_dirint, atol=0,
                        equal_nan=True)
+
+
+def test_dni():
+    ghi = pd.Series([90, 100, 100, 100, 100])
+    dhi = pd.Series([100, 90, 50, 50, 50])
+    zenith = pd.Series([80, 100, 85, 70, 85])
+    clearsky_dni = pd.Series([50, 50, 200, 50, 300])
+
+    dni = irradiance.dni(ghi, dhi, zenith,
+                         clearsky_dni=clearsky_dni, clearsky_tolerance=2)
+    assert_series_equal(dni,
+                        pd.Series([float('nan'), float('nan'), 400,
+                                   146.190220008, 573.685662283]))
+
+    dni = irradiance.dni(ghi, dhi, zenith)
+    assert_series_equal(dni,
+                        pd.Series([float('nan'), float('nan'), 573.685662283,
+                                   146.190220008, 573.685662283]))
+
+
+@pytest.mark.parametrize(
+    'surface_tilt,surface_azimuth,solar_zenith,solar_azimuth,aoi_expected,aoi_proj_expected', [
+    (0, 0, 0, 0, 0, 1),
+    (30, 180, 30, 180, 0, 1),
+    (30, 180, 150, 0, 180, -1),
+    (90, 0, 30, 60, 75.5224878, 0.25),
+    (90, 0, 30, 170, 119.4987042, -0.4924038)])
+def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
+                                solar_azimuth,  aoi_expected,
+                                aoi_proj_expected):
+    aoi = irradiance.aoi(surface_tilt, surface_azimuth, solar_zenith,
+                         solar_azimuth)
+    assert_allclose(aoi, aoi_expected, atol=1e-6)
+
+    aoi_projection = irradiance.aoi_projection(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    assert_allclose(aoi_projection, aoi_proj_expected, atol=1e-6)

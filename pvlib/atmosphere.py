@@ -114,7 +114,7 @@ def absoluteairmass(airmass_relative, pressure=101325.):
     airmass_relative : numeric
         The airmass at sea-level.
 
-    pressure : numeric
+    pressure : numeric, default 101325
         The site pressure in Pascal.
 
     Returns
@@ -152,7 +152,7 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         model descriptions to determine which type of zenith angle is
         required. Apparent zenith angles must be calculated at sea level.
 
-    model : string
+    model : string, default 'kastenyoung1989'
         Available models include the following:
 
         * 'simple' - secant(apparent zenith angle) -
@@ -292,7 +292,7 @@ def gueymard94_pw(temp_air, relative_humidity):
     ----------
     .. [1] W. M. Keogh and A. W. Blakers, Accurate Measurement, Using Natural
        Sunlight, of Silicon Solar Cells, Prog. in Photovoltaics: Res.
-       and Appl. 2004, vol 12, pp. 1-19 (DOI: 10.1002/pip.517)
+       and Appl. 2004, vol 12, pp. 1-19 (:doi:`10.1002/pip.517`)
 
     .. [2] C. Gueymard, Analysis of Monthly Average Atmospheric Precipitable
        Water and Turbidity in Canada and Northern United States,
@@ -365,7 +365,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     airmass_absolute : array-like
         absolute (pressure corrected) airmass.
 
-    module_type : None or string
+    module_type : None or string, default None
         a string specifying a cell type. Can be lower or upper case
         letters. Admits values of 'cdte', 'monosi', 'xsi', 'multisi',
         'polysi'. If provided, this input selects coefficients for the
@@ -374,12 +374,15 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
             * 'cdte' - First Solar Series 4-2 CdTe modules.
             * 'monosi', 'xsi' - First Solar TetraSun modules.
             * 'multisi', 'polysi' - multi-crystalline silicon modules.
+            * 'cigs' - anonymous copper indium gallium selenide PV module
+            * 'asi' - anonymous amorphous silicon PV module
 
         The module used to calculate the spectral correction
         coefficients corresponds to the Mult-crystalline silicon
-        Manufacturer 2 Model C from [3]_.
+        Manufacturer 2 Model C from [3]_. Spectral Response (SR) of CIGS
+        and a-Si modules used to derive coefficients can be found in [4]_ 
 
-    coefficients : array-like
+    coefficients : None or array-like, default None
         allows for entry of user defined spectral correction
         coefficients. Coefficients must be of length 6. Derivation of
         coefficients requires use of SMARTS and PV module quantum
@@ -409,6 +412,10 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     .. [3] Marion, William F., et al. User's Manual for Data for Validating
        Models for PV Module Performance. National Renewable Energy
        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
+    .. [4] Schweiger, M. and Hermann, W, Influence of Spectral Effects
+        on Energy Yield of Different PV Modules: Comparison of Pwat and
+        MMF Approach, TUV Rheinland Energy GmbH report 21237296.003,
+        January 2017
     """
 
     # --- Screen Input Data ---
@@ -443,13 +450,17 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     _coefficients = {}
     _coefficients['cdte'] = (
-       0.86273, -0.038948, -0.012506, 0.098871, 0.084658, -0.0042948)
+        0.86273, -0.038948, -0.012506, 0.098871, 0.084658, -0.0042948)
     _coefficients['monosi'] = (
         0.85914, -0.020880, -0.0058853, 0.12029, 0.026814, -0.0017810)
     _coefficients['xsi'] = _coefficients['monosi']
     _coefficients['polysi'] = (
         0.84090, -0.027539, -0.0079224, 0.13570, 0.038024, -0.0021218)
     _coefficients['multisi'] = _coefficients['polysi']
+    _coefficients['cigs'] = (
+        0.85252, -0.022314, -0.0047216, 0.13666, 0.013342, -0.0008945)
+    _coefficients['asi'] = (
+        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382,-0.0033818)
 
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]
@@ -467,3 +478,193 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         coeff[4]*np.sqrt(pw) + coeff[5]*ama/np.sqrt(pw))
 
     return modifier
+
+
+def bird_hulstrom80_aod_bb(aod380, aod500):
+    """
+    Approximate broadband aerosol optical depth.
+
+    Bird and Hulstrom developed a correlation for broadband aerosol optical
+    depth (AOD) using two wavelengths, 380 nm and 500 nm.
+
+    Parameters
+    ----------
+    aod380 : numeric
+        AOD measured at 380 nm
+    aod500 : numeric
+        AOD measured at 500 nm
+
+    Returns
+    -------
+    aod_bb : numeric
+        broadband AOD
+
+    See also
+    --------
+    kasten96_lt
+
+    References
+    ----------
+    [1] Bird and Hulstrom, "Direct Insolation Models" (1980)
+    `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
+
+    [2] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement of
+    Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
+    pp. 182-192 (1981)
+    :doi:`10.1115/1.3266239`
+    """
+    # approximate broadband AOD using (Bird-Hulstrom 1980)
+    return 0.27583 * aod380 + 0.35 * aod500
+
+
+def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
+    """
+    Calculate Linke turbidity factor using Kasten pyrheliometric formula.
+
+    Note that broadband aerosol optical depth (AOD) can be approximated by AOD
+    measured at 700 nm according to Molineaux [4] . Bird and Hulstrom offer an
+    alternate approximation using AOD measured at 380 nm and 500 nm.
+
+    Based on original implementation by Armel Oumbe.
+
+    .. warning::
+        These calculations are only valid for air mass less than 5 atm and
+        precipitable water less than 5 cm.
+
+    Parameters
+    ----------
+    airmass_absolute : numeric
+        airmass, pressure corrected in atmospheres
+    precipitable_water : numeric
+        precipitable water or total column water vapor in centimeters
+    aod_bb : numeric
+        broadband AOD
+
+    Returns
+    -------
+    lt : numeric
+        Linke turbidity
+
+    See also
+    --------
+    bird_hulstrom80_aod_bb
+    angstrom_aod_at_lambda
+
+    References
+    ----------
+    [1] F. Linke, "Transmissions-Koeffizient und Trubungsfaktor", Beitrage
+    zur Physik der Atmosphare, Vol 10, pp. 91-103 (1922)
+
+    [2] F. Kasten, "A simple parameterization of the pyrheliometric formula for
+    determining the Linke turbidity factor", Meteorologische Rundschau 33,
+    pp. 124-127 (1980)
+
+    [3] Kasten, "The Linke turbidity factor based on improved values of the
+    integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
+    pp. 239-244 (1996)
+    :doi:`10.1016/0038-092X(95)00114-7`
+
+    [4] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
+    and monochromatic aerosol optical depths at a single key wavelength",
+    Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
+    :doi:`10.1364/AO.37.007008`
+
+    [5] P. Ineichen, "Conversion function between the Linke turbidity and the
+    atmospheric water vapor and aerosol content", Solar Energy 82,
+    pp. 1095-1097 (2008)
+    :doi:`10.1016/j.solener.2008.04.010`
+
+    [6] P. Ineichen and R. Perez, "A new airmass independent formulation for
+    the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3, pp. 151-157
+    (2002)
+    :doi:`10.1016/S0038-092X(02)00045-2`
+    """
+    # "From numerically integrated spectral simulations done with Modtran
+    # (Berk, 1989), Molineaux (1998) obtained for the broadband optical depth
+    # of a clean and dry atmospshere (fictitious atmosphere that comprises only
+    # the effects of Rayleigh scattering and absorption by the atmosphere gases
+    # other than the water vapor) the following expression"
+    # - P. Ineichen (2008)
+    delta_cda = -0.101 + 0.235 * airmass_absolute ** (-0.16)
+    # "and the broadband water vapor optical depth where pwat is the integrated
+    # precipitable water vapor content of the atmosphere expressed in cm and am
+    # the optical air mass. The precision of these fits is better than 1% when
+    # compared with Modtran simulations in the range 1 < am < 5 and
+    # 0 < pwat < 5 cm at sea level" - P. Ineichen (2008)
+    delta_w = 0.112 * airmass_absolute ** (-0.55) * precipitable_water ** 0.34
+    # broadband AOD
+    delta_a = aod_bb
+    # "Then using the Kasten pyrheliometric formula (1980, 1996), the Linke
+    # turbidity at am = 2 can be written. The extension of the Linke turbidity
+    # coefficient to other values of air mass was published by Ineichen and
+    # Perez (2002)" - P. Ineichen (2008)
+    lt = -(9.4 + 0.9 * airmass_absolute) * np.log(
+        np.exp(-airmass_absolute * (delta_cda + delta_w + delta_a))
+    ) / airmass_absolute
+    # filter out of extrapolated values
+    return lt
+
+
+def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
+    r"""
+    Get AOD at specified wavelength using Angstrom turbidity model.
+
+    Parameters
+    ----------
+    aod0 : numeric
+        aerosol optical depth (AOD) measured at known wavelength
+    lambda0 : numeric
+        wavelength in nanometers corresponding to ``aod0``
+    alpha : numeric
+        Angstrom :math:`\alpha` exponent corresponding to ``aod0``
+    lambda1 : numeric, default 700
+        desired wavelength in nanometers
+
+    Returns
+    -------
+    aod1 : numeric
+        AOD at desired wavelength, ``lambda1``
+
+    See also
+    --------
+    angstrom_alpha
+
+    References
+    ----------
+    [1] Anders Angstrom, "On the Atmospheric Transmission of Sun Radiation and
+    On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (1929) JSTOR
+    :doi:`10.2307/519399`
+
+    [2] Anders Angstrom, "Techniques of Determining the Turbidity of the
+    Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis
+    :doi:`10.3402/tellusa.v13i2.9493` and Co-Action Publishing
+    :doi:`10.1111/j.2153-3490.1961.tb00078.x`
+    """
+    return aod0 * ((lambda1 / lambda0) ** (-alpha))
+
+
+def angstrom_alpha(aod1, lambda1, aod2, lambda2):
+    r"""
+    Calculate Angstrom alpha exponent.
+
+    Parameters
+    ----------
+    aod1 : numeric
+        first aerosol optical depth
+    lambda1 : numeric
+        wavelength in nanometers corresponding to ``aod1``
+    aod2 : numeric
+        second aerosol optical depth
+    lambda2 : numeric
+        wavelength in nanometers corresponding to ``aod2``
+
+    Returns
+    -------
+    alpha : numeric
+        Angstrom :math:`\alpha` exponent for AOD in ``(lambda1, lambda2)``
+
+    See also
+    --------
+    angstrom_aod_at_lambda
+    """
+    return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)

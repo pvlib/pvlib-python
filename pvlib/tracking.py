@@ -14,7 +14,35 @@ pvl_logger = logging.getLogger('pvlib')
 
 class SingleAxisTracker(PVSystem):
     """
-    Inherits all of the PV modeling methods from PVSystem.
+    Inherits the PV modeling methods from :ref:PVSystem:.
+
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation (i.e, the y-axis defined by
+        axis_azimuth) with respect to horizontal, in decimal degrees.
+
+    axis_azimuth : float, default 0
+        A value denoting the compass direction along which the axis of
+        rotation lies. Measured in decimal degrees East of North.
+
+    max_angle : float, default 90
+        A value denoting the maximum rotation angle, in decimal degrees,
+        of the one-axis tracker from its horizontal position (horizontal
+        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
+        to rotate to a vertical position to point the panel towards a
+        horizon. max_angle of 180 degrees allows for full rotation.
+
+    backtrack : bool, default True
+        Controls whether the tracker has the capability to "backtrack"
+        to avoid row-to-row shading. False denotes no backtrack
+        capability. True denotes backtrack capability.
+
+    gcr : float, default 2.0/7.0
+        A value denoting the ground coverage ratio of a tracker system
+        which utilizes backtracking; i.e. the ratio between the PV array
+        surface area to total ground area. A tracker system with modules
+        2 meters wide, centered on the tracking axis, with 6 meters
+        between the tracking axes has a gcr of 2/6=0.333. If gcr is not
+        provided, a gcr of 2/7 is default. gcr must be <=1.
     """
 
     def __init__(self, axis_tilt=0, axis_azimuth=0,
@@ -26,18 +54,20 @@ class SingleAxisTracker(PVSystem):
         self.backtrack = backtrack
         self.gcr = gcr
 
+        kwargs['surface_tilt'] = None
+        kwargs['surface_azimuth'] = None
+
         super(SingleAxisTracker, self).__init__(**kwargs)
 
     def __repr__(self):
         attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr']
         sat_repr = ('SingleAxisTracker: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
         # get the parent PVSystem info
         pvsystem_repr = super(SingleAxisTracker, self).__repr__()
         # remove the first line (contains 'PVSystem: \n')
         pvsystem_repr = '\n'.join(pvsystem_repr.split('\n')[1:])
         return sat_repr + '\n' + pvsystem_repr
-
 
     def singleaxis(self, apparent_zenith, apparent_azimuth):
         tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
@@ -56,9 +86,9 @@ class SingleAxisTracker(PVSystem):
 
         Parameters
         ----------
-        location : None or Location
-        latitude : None or float
-        longitude : None or float
+        location : None or Location, default None
+        latitude : None or float, default None
+        longitude : None or float, default None
         **kwargs : see Location
 
         Returns
@@ -71,20 +101,60 @@ class SingleAxisTracker(PVSystem):
 
         return LocalizedSingleAxisTracker(pvsystem=self, location=location)
 
-    def get_irradiance(self, dni, ghi, dhi,
+    def get_aoi(self, surface_tilt, surface_azimuth, solar_zenith,
+                solar_azimuth):
+        """Get the angle of incidence on the system.
+
+        For a given set of solar zenith and azimuth angles, the
+        surface tilt and azimuth parameters are typically determined
+        by :py:method:`~SingleAxisTracker.singleaxis`. The
+        :py:method:`~SingleAxisTracker.singleaxis` method also returns
+        the angle of incidence, so this method is only needed
+        if using a different tracking algorithm.
+
+        Parameters
+        ----------
+        surface_tilt : numeric
+            Panel tilt from horizontal.
+        surface_azimuth : numeric
+            Panel azimuth from north
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+
+        Returns
+        -------
+        aoi : Series
+            The angle of incidence in degrees from normal.
+        """
+
+        aoi = irradiance.aoi(surface_tilt, surface_azimuth,
+                             solar_zenith, solar_azimuth)
+        return aoi
+
+    def get_irradiance(self, surface_tilt, surface_azimuth,
+                       solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
         Uses the :func:`irradiance.total_irrad` function to calculate
         the plane of array irradiance components on a tilted surface
-        defined by ``self.surface_tilt``, ``self.surface_azimuth``, and
-        ``self.albedo``.
+        defined by the input data and ``self.albedo``.
+
+        For a given set of solar zenith and azimuth angles, the
+        surface tilt and azimuth parameters are typically determined
+        by :py:method:`~SingleAxisTracker.singleaxis`.
 
         Parameters
         ----------
-        solar_zenith : float or Series.
+        surface_tilt : numeric
+            Panel tilt from horizontal.
+        surface_azimuth : numeric
+            Panel azimuth from north
+        solar_zenith : numeric
             Solar zenith angle.
-        solar_azimuth : float or Series.
+        solar_azimuth : numeric
             Solar azimuth angle.
         dni : float or Series
             Direct Normal Irradiance
@@ -92,11 +162,11 @@ class SingleAxisTracker(PVSystem):
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance
-        dni_extra : float or Series
+        dni_extra : float or Series, default None
             Extraterrestrial direct normal irradiance
-        airmass : float or Series
+        airmass : float or Series, default None
             Airmass
-        model : String
+        model : String, default 'haydavies'
             Irradiance model.
 
         **kwargs
@@ -108,23 +178,9 @@ class SingleAxisTracker(PVSystem):
             Column names are: ``total, beam, sky, ground``.
         """
 
-        surface_tilt = kwargs.pop('surface_tilt', self.surface_tilt)
-        surface_azimuth = kwargs.pop('surface_azimuth', self.surface_azimuth)
-
-        try:
-            solar_zenith = kwargs['solar_zenith']
-        except KeyError:
-            solar_zenith = self.solar_zenith
-
-        try:
-            solar_azimuth = kwargs['solar_azimuth']
-        except KeyError:
-            solar_azimuth = self.solar_azimuth
-
         # not needed for all models, but this is easier
         if dni_extra is None:
             dni_extra = irradiance.extraradiation(solar_zenith.index)
-            dni_extra = pd.Series(dni_extra, index=solar_zenith.index)
 
         if airmass is None:
             airmass = atmosphere.relativeairmass(solar_zenith)
@@ -162,14 +218,15 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
                           list(loc_dict.items()) +
                           list(kwargs.items()))
 
-        super(LocalizedSingleAxisTracker, self).__init__(**new_kwargs)
+        SingleAxisTracker.__init__(self, **new_kwargs)
+        Location.__init__(self, **new_kwargs)
 
     def __repr__(self):
         attrs = ['latitude', 'longitude', 'altitude', 'tz']
         return ('Localized' +
-            super(LocalizedSingleAxisTracker, self).__repr__() + '\n  ' +
-            '\n  '.join(
-                (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+                super(LocalizedSingleAxisTracker, self).__repr__() + '\n  ' +
+                '\n  '.join(('{}: {}'.format(attr, getattr(self, attr))
+                             for attr in attrs)))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,
@@ -201,27 +258,27 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     apparent_azimuth : Series
         Solar apparent azimuth angles in decimal degrees.
 
-    axis_tilt : float
+    axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
         axis_azimuth) with respect to horizontal, in decimal degrees.
 
-    axis_azimuth : float
+    axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
         rotation lies. Measured in decimal degrees East of North.
 
-    max_angle : float
+    max_angle : float, default 90
         A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
         if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
         to rotate to a vertical position to point the panel towards a
         horizon. max_angle of 180 degrees allows for full rotation.
 
-    backtrack : bool
+    backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
         to avoid row-to-row shading. False denotes no backtrack
         capability. True denotes backtrack capability.
 
-    gcr : float
+    gcr : float, default 2.0/7.0
         A value denoting the ground coverage ratio of a tracker system
         which utilizes backtracking; i.e. the ratio between the PV array
         surface area to total ground area. A tracker system with modules
@@ -252,7 +309,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     pvl_logger.debug('tracking.singleaxis')
 
-    pvl_logger.debug('axis_tilt=%s, axis_azimuth=%s, max_angle=%s, ' +
+    pvl_logger.debug('axis_tilt=%s, axis_azimuth=%s, max_angle=%s, '
                      'backtrack=%s, gcr=%.3f',
                      axis_tilt, axis_azimuth, max_angle, backtrack, gcr)
 
@@ -282,7 +339,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         pd.util.testing.assert_index_equal(apparent_azimuth.index,
                                            apparent_zenith.index)
     except AssertionError:
-        raise ValueError('apparent_azimuth.index and ' +
+        raise ValueError('apparent_azimuth.index and '
                          'apparent_zenith.index must match.')
 
     times = apparent_azimuth.index

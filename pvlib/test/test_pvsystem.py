@@ -94,10 +94,10 @@ def test_systemdef_dict():
 
 @needs_numpy_1_10
 def test_ashraeiam():
-    thetas = np.linspace(-90, 90, 9)
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5, 89.,  90. , np.nan])
     iam = pvsystem.ashraeiam(thetas, .05)
-    expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         nan])
+    expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
+        0.99588039,  0.97928932,  0.9193437 ,         0, 0,  np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -105,19 +105,19 @@ def test_ashraeiam():
 def test_PVSystem_ashraeiam():
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    thetas = np.linspace(-90, 90, 9)
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  89., 90. , np.nan])
     iam = system.ashraeiam(thetas)
-    expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         nan])
+    expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
+        0.99588039,  0.97928932,  0.9193437 ,         0, 0,  np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
 @needs_numpy_1_10
 def test_physicaliam():
-    thetas = np.linspace(-90, 90, 9)
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
     iam = pvsystem.physicaliam(thetas, 1.526, 0.002, 4)
-    expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
-        0.99926198,  0.98797788,  0.8893998 ,         nan])
+    expected = np.array([        0,  0.8893998,  0.98797788,  0.99926198,         1,
+        0.99926198,  0.98797788,  0.8893998,         0, np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -125,10 +125,10 @@ def test_physicaliam():
 def test_PVSystem_physicaliam():
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    thetas = np.linspace(-90, 90, 9)
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
     iam = system.physicaliam(thetas)
-    expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
-        0.99926198,  0.98797788,  0.8893998 ,         nan])
+    expected = np.array([        0,  0.8893998 ,  0.98797788,  0.99926198,         1,
+        0.99926198,  0.98797788,  0.8893998 ,         0, np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -139,6 +139,7 @@ def sam_data():
     data['cecmod'] = pvsystem.retrieve_sam('cecmod')
     data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
     data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
+    data['adrinverter'] = pvsystem.retrieve_sam('adrinverter')
     return data
 
 
@@ -238,7 +239,7 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
     (np.array([[-30, 30, 100, np.nan]]),
-     np.array([[np.nan, 1.007572, 0, np.nan]])),
+     np.array([[0, 1.007572, 0, np.nan]])),
     (pd.Series([80]), pd.Series([0.597472]))
 ])
 def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
@@ -520,16 +521,16 @@ def test_PVSystem_scale_voltage_current_power():
 
 def test_sapm_celltemp():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(43.509, default.ix[0, 'temp_cell'], 3)
-    assert_allclose(40.809, default.ix[0, 'temp_module'], 3)
+    assert_allclose(43.509, default['temp_cell'], 3)
+    assert_allclose(40.809, default['temp_module'], 3)
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20,
                                                        [-3.47, -.0594, 3]))
 
 
 def test_sapm_celltemp_dict_like():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(43.509, default.ix[0, 'temp_cell'], 3)
-    assert_allclose(40.809, default.ix[0, 'temp_module'], 3)
+    assert_allclose(43.509, default['temp_cell'], 3)
+    assert_allclose(40.809, default['temp_module'], 3)
     model = {'a':-3.47, 'b':-.0594, 'deltaT':3}
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
     model = pd.Series(model)
@@ -565,6 +566,41 @@ def test_PVSystem_sapm_celltemp():
                             index=times)
 
     assert_frame_equal(expected, pvtemps)
+
+
+def test_adrinverter(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
+              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
+    vdcs = pd.Series([135, 154, 390, 420, 551])
+    pdcs = pd.Series([135, 1232, 1170, 420, 551])
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
+    assert_series_equal(pacs, pd.Series([np.nan, 1161.5745, 1116.4459,
+                                         382.6679, np.nan]))
+
+
+def test_adrinverter_vtol(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
+              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
+    vdcs = pd.Series([135, 154, 390, 420, 551])
+    pdcs = pd.Series([135, 1232, 1170, 420, 551])
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv], vtol=0.20)
+    assert_series_equal(pacs, pd.Series([104.8223, 1161.5745, 1116.4459,
+                                         382.6679, 513.3385]))
+
+
+def test_adrinverter_float(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
+              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
+    vdcs = 154.
+    pdcs = 1232.
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
+    assert_allclose(pacs, 1161.5745)
 
 
 def test_snlinverter(sam_data):
@@ -615,6 +651,9 @@ def test_snlinverter_Pnt_micro(sam_data):
 
 def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
+    # ensure that parameter attributes are dict-like. GH 294
+    pv_system.module_parameters['pdc0'] = 1
+    pv_system.inverter_parameters['Paco'] = 1
 
 
 def test_PVSystem_get_aoi():
@@ -712,7 +751,7 @@ def test_LocalizedPVSystem___repr__():
                                                   inverter='blarg',
                                                   name='my name')
 
-    expected = 'LocalizedPVSystem: \n  name: None\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+    expected = 'LocalizedPVSystem: \n  name: my name\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
 
     assert localized_system.__repr__() == expected
 

@@ -239,19 +239,12 @@ def test_haurwitz():
 #    times_localized = times.tz_localize(tus.tz)
 #    ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
 #                                                 tus.longitude)
-    apparent_solar_elevation = np.array([[-20],
-                                         [-0.05],
-                                         [-0.001],
-                                         [5],
-                                         [10],
-                                         [30],
-                                         [50],
-                                         [90]])
+    apparent_solar_elevation = np.array([-20, -0.05, -0.001, 5, 10, 30, 50, 90])
     
-    apparent_zenith = 90 - apparent_solar_elevation
+    apparent_solar_zenith = 90 - apparent_solar_elevation
     
-    data_in = pd.DataFrame(data=apparent_zenith,
-                           index=apparent_zenith,
+    data_in = pd.DataFrame(data=apparent_solar_zenith,
+                           index=apparent_solar_zenith,
                            columns=['apparent_zenith'])
     
 #    expected = pd.DataFrame(np.array([[0.],
@@ -267,16 +260,16 @@ def test_haurwitz():
 #                             index=times_localized)
 #    out = clearsky.haurwitz(ephem_data['zenith'])
 
-    expected = pd.DataFrame(np.array([[0.],
-                                      [0.],
-                                      [0.],
-                                      [48.6298687941956],
-                                      [135.741748091813],
-                                      [487.894132885425],
-                                      [778.766689344363],
-                                      [1035.09203253450]]),
+    expected = pd.DataFrame(np.array([0.,
+                                      0.,
+                                      0.,
+                                      48.6298687941956,
+                                      135.741748091813,
+                                      487.894132885425,
+                                      778.766689344363,
+                                      1035.09203253450]),
                              columns=['ghi'],
-                             index=apparent_zenith)
+                             index=apparent_solar_zenith)
     out = clearsky.haurwitz(data_in['apparent_zenith'])
     assert_frame_equal(expected, out)
 

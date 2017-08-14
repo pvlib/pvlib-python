@@ -1,0 +1,28 @@
+.. _whatsnew_0500:
+
+v0.5.0 (August 11, 2017)
+------------------------
+
+API Changes
+~~~~~~~~~~~
+* 
+
+Bug fixes
+~~~~~~~~~
+* Remove condition causing Overflow warning from clearsky.haurwitz
+
+Enhancements
+~~~~~~~~~~~~
+* 
+
+Documentation
+~~~~~~~~~~~~~
+* 
+
+Testing
+~~~~~~~
+* Changed test for clearsky.haurwitz to operate on zenith angles
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen

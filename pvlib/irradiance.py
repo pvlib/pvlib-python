@@ -1405,7 +1405,8 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
 
 def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
-               use_delta_kt_prime=True, temp_dew=None, albedo=.25):
+               use_delta_kt_prime=True, temp_dew=None, albedo=.25,
+               calculate_gt_90=True):
     """
     Determine GHI, DNI, DHI from POA global using the GTI DIRINT model.
 
@@ -1450,6 +1451,11 @@ def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
         DewPtTemp is not provided, then dew point improvements are not
         applied.
 
+    calculate_gt_90 : bool, default True
+        Controls if the algorithm evaluates inputs with AOI >= 90 degrees.
+        If False, returns nan for AOI >= 90 degrees. Significant speed ups
+        can be achieved by setting this parameter to False.
+
     Returns
     -------
     data : OrderedDict or DataFrame
@@ -1485,11 +1491,34 @@ def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
     ghi = disc_out['kt'] * I0h
     dhi = ghi - dni * cos_zenith
 
+    aoi_lt_90 = aoi < 90
     # for AOI greater than or equal to 90 degrees
+
+    if calculate_gt_90:
+        ghi_gte_90, dni_gte_90, dhi_gte_90 = gti_dirint_gte_90(
+            poa_global, aoi, zenith, surface_tilt, times, kt_prime,
+            pressure=pressure, temp_dew=temp_dew, albedo=albedo)
+    else:
+        ghi_gte_90, dni_gte_90, dhi_gte_90 = np.nan, np.nan, np.nan
+
+    # put the AOI < 90 and AOI >= 90 conditions together
+
+    output = OrderedDict()
+    output['ghi'] = ghi.where(aoi_lt_90, ghi_gte_90)
+    output['dni'] = dni.where(aoi_lt_90, dni_gte_90)
+    output['dhi'] = dhi.where(aoi_lt_90, dhi_gte_90)
+
+    output = pd.DataFrame(output, index=times)
+
+    return output
+
+
+def gti_dirint_gte_90(poa_global, aoi, zenith, surface_tilt, times, kt_prime,
+                      pressure=101325., temp_dew=None, albedo=.25,):
+
     # set the kt_prime for sunrise to AOI=90 to be equal to
     # the kt_prime for 65 < AOI < 80 during the morning.
     # similar for the afternoon. repeat for every day.
-
     aoi_gte_90 = aoi >= 90
     aoi_lt_90 = aoi < 90
     aoi_65_80 = (aoi > 65) & (aoi < 80)
@@ -1517,6 +1546,9 @@ def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
         poa_global, aoi, times, pressure=pressure,
         use_delta_kt_prime=False,
         temp_dew=temp_dew, kt_prime=kt_prime_90s)
+
+    cos_zenith = tools.cosd(zenith)
+
     dni_gte_90_proj = dni_gte_90 * cos_zenith
 
     cos_surface_tilt = tools.cosd(surface_tilt)
@@ -1527,16 +1559,7 @@ def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
 
     ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
 
-    # put the AOI < 90 and AOI >= 90 conditions together
-
-    output = OrderedDict()
-    output['ghi'] = ghi.where(aoi_lt_90, ghi_gte_90)
-    output['dni'] = dni.where(aoi_lt_90, dni_gte_90)
-    output['dhi'] = dhi.where(aoi_lt_90, dhi_gte_90)
-
-    output = pd.DataFrame(output, index=times)
-
-    return output
+    return ghi_gte_90, dni_gte_90, dhi_gte_90
 
 
 def erbs(ghi, zenith, doy):

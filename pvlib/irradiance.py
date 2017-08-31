@@ -1170,7 +1170,7 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
 
 
 def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
-           temp_dew=None):
+           temp_dew=None, kt_prime=None, return_kt_prime=False):
     """
     Determine DNI from GHI using the DIRINT modification of the DISC
     model.
@@ -1242,8 +1242,9 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     kt = disc_out['kt']
     am = disc_out['airmass']
 
-    kt_prime = kt / (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
-    kt_prime = np.minimum(kt_prime, 0.82)  # From SRRL code
+    if kt_prime is None:
+        kt_prime = kt / (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
+        kt_prime = np.minimum(kt_prime, 0.82)  # From SRRL code
 
     # wholmgren:
     # the use_delta_kt_prime statement is a port of the MATLAB code.
@@ -1317,7 +1318,10 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     dni *= dirint_coeffs
 
-    return dni
+    if return_kt_prime:
+        return dni, kt_prime
+    else:
+        return dni
 
 
 def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
@@ -1398,6 +1402,141 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     dni_dirindex[dni_dirindex < 0] = 0.
 
     return dni_dirindex
+
+
+def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
+               use_delta_kt_prime=True, temp_dew=None, albedo=.25):
+    """
+    Determine GHI, DNI, DHI from POA global using the GTI DIRINT model.
+
+    Parameters
+    ----------
+    poa_global : array-like
+        Plane of array global irradiance in W/m^2.
+
+    aoi : array-like
+        Angle of incidence of solar rays with respect to the module
+        surface normal.
+
+    zenith : array-like
+        True (not refraction-corrected) zenith angles in decimal
+        degrees.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. Tilt must be >=0 and
+        <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    times : DatetimeIndex
+
+    pressure : numeric, default 101325.0
+        The site pressure in Pascal. Pressure may be measured or an
+        average pressure may be calculated from site altitude.
+
+    use_delta_kt_prime : bool, default True
+        Indicates if the user would like to utilize the time-series
+        nature of the GHI measurements. A value of ``False`` will not
+        use the time-series improvements, any other numeric value will
+        use time-series improvements. It is recommended that time-series
+        data only be used if the time between measured data points is
+        less than 1.5 hours. If none of the input arguments are vectors,
+        then time-series improvements are not used (because it's not a
+        time-series). If True, input data must be Series.
+
+    temp_dew : numeric, default None
+        Surface dew point temperatures, in degrees C. Values of temp_dew
+        may be numeric or NaN. Any single time period point with a
+        DewPtTemp=NaN does not have dew point improvements applied. If
+        DewPtTemp is not provided, then dew point improvements are not
+        applied.
+
+    Returns
+    -------
+    data : OrderedDict or DataFrame
+        Contains the following keys/columns:
+
+            * ``ghi``: the modeled global horizontal irradiance in W/m^2.
+            * ``dni``: the modeled direct normal irradiance in W/m^2.
+            * ``dhi``: the modeled diffuse horizontal irradiance in
+              W/m^2.
+
+    References
+    ----------
+    .. [1] B. Marion, A model for deriving the direct normal and
+           diffuse horizontal irradiance from the global tilted
+           irradiance, Solar Energy 122, 1037-1046.
+           http://dx.doi.org/10.1016/j.solener.2015.10.024
+    """
+
+    # for AOI less than 90 degrees
+
+    disc_out = disc(poa_global, aoi, times, pressure=pressure)
+
+    dni_dirint, kt_prime = dirint(
+        poa_global, aoi, times, pressure=pressure,
+        use_delta_kt_prime=use_delta_kt_prime,
+        temp_dew=temp_dew, return_kt_prime=True)
+
+    I0 = extraradiation(times, 1370, 'spencer')
+    cos_zenith = tools.cosd(zenith)
+    I0h = I0 * cos_zenith
+
+    dni = dni_dirint
+    ghi = disc_out['kt'] * I0h
+    dhi = ghi - dni * cos_zenith
+
+    # for AOI greater than or equal to 90 degrees
+    # set the kt_prime for sunrise to AOI=90 to be equal to
+    # the kt_prime for 65 < AOI < 80 during the morning.
+    # similar for the afternoon. repeat for every day.
+
+    aoi_gte_90 = aoi >= 90
+    aoi_lt_90 = aoi < 90
+    aoi_65_80 = (aoi > 65) & (aoi < 80)
+    zenith_lt_90 = zenith < 90
+    zenith_grad = pd.Series(np.gradient(zenith), index=times)
+    morning = zenith_grad < 0
+    afternoon = zenith_grad > 0
+    aoi_65_80_morning = aoi_65_80 & morning
+    aoi_65_80_afternoon = aoi_65_80 & afternoon
+    zenith_lt_90_aoi_gte_90_morning = zenith_lt_90 & aoi_gte_90 & morning
+    zenith_lt_90_aoi_gte_90_afternoon = zenith_lt_90 & aoi_gte_90 & afternoon
+
+    kt_prime_90s = []
+    for date, data in kt_prime.groupby(times.date):
+        kt_prime_am_avg = data[aoi_65_80_morning].mean()
+        kt_prime_pm_avg = data[aoi_65_80_afternoon].mean()
+
+        kt_prime_90 = pd.Series(np.nan, index=data.index)
+        kt_prime_90[zenith_lt_90_aoi_gte_90_morning] = kt_prime_am_avg
+        kt_prime_90[zenith_lt_90_aoi_gte_90_afternoon] = kt_prime_pm_avg
+        kt_prime_90s.append(kt_prime_90)
+    kt_prime_90s = pd.concat(kt_prime_90s)
+
+    dni_gte_90 = dirint(
+        poa_global, aoi, times, pressure=pressure,
+        use_delta_kt_prime=False,
+        temp_dew=temp_dew, kt_prime=kt_prime_90s)
+    dni_gte_90_proj = dni_gte_90 * cos_zenith
+
+    cos_surface_tilt = tools.cosd(surface_tilt)
+    # isotropic sky plus ground diffuse
+    surface_factor = (albedo * (1 - cos_surface_tilt) /
+        (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt)))
+    dhi_gte_90 = 2 * poa_global - dni_gte_90_proj * surface_factor
+
+    ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
+
+    # put the AOI < 90 and AOI >= 90 conditions together
+
+    output = OrderedDict()
+    output['ghi'] = ghi.where(aoi_lt_90, ghi_gte_90)
+    output['dni'] = dni.where(aoi_lt_90, dni_gte_90)
+    output['dhi'] = dhi.where(aoi_lt_90, dhi_gte_90)
+
+    output = pd.DataFrame(output, index=times)
+
+    return output
 
 
 def erbs(ghi, zenith, doy):

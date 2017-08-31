@@ -1495,7 +1495,7 @@ def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
     # for AOI greater than or equal to 90 degrees
 
     if calculate_gt_90:
-        ghi_gte_90, dni_gte_90, dhi_gte_90 = gti_dirint_gte_90(
+        ghi_gte_90, dni_gte_90, dhi_gte_90 = _gti_dirint_gte_90(
             poa_global, aoi, zenith, surface_tilt, times, kt_prime,
             pressure=pressure, temp_dew=temp_dew, albedo=albedo)
     else:
@@ -1513,8 +1513,8 @@ def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
     return output
 
 
-def gti_dirint_gte_90(poa_global, aoi, zenith, surface_tilt, times, kt_prime,
-                      pressure=101325., temp_dew=None, albedo=.25,):
+def _gti_dirint_gte_90(poa_global, aoi, zenith, surface_tilt, times, kt_prime,
+                       pressure=101325., temp_dew=None, albedo=.25,):
 
     # set the kt_prime for sunrise to AOI=90 to be equal to
     # the kt_prime for 65 < AOI < 80 during the morning.

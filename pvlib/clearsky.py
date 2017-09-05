@@ -264,22 +264,26 @@ def _interpolate_turbidity(lts, time):
     # next Jan to the array so that the interpolation will work for
     # Jan 1 - Jan 15 and Dec 16 - Dec 31.
     lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
-    # Then we map the month value to the day of year value.
 
-    # use this for the real code
+    # handle leap years
     try:
         isleap = time.is_leap_year
     except AttributeError:
         year = time.year
-        isleap = _is_leap_year(time.year)
+        isleap = _is_leap_year(year)
 
     dayofyear = time.dayofyear
     days_leap = _calendar_month_middles(2016)
     days_no_leap = _calendar_month_middles(2015)
+
+    # Then we map the month value to the day of year value.
+    # Do it for both leap and non-leap years.
     lt_leap = np.interp(dayofyear, days_leap, lts_concat)
     lt_no_leap = np.interp(dayofyear, days_no_leap, lts_concat)
     linke_turbidity = np.where(isleap, lt_leap, lt_no_leap)
+
     linke_turbidity = pd.Series(linke_turbidity, index=time)
+
     return linke_turbidity
 
 

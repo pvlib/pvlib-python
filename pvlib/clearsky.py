@@ -196,8 +196,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     try:
         import scipy.io
     except ImportError:
-        raise ImportError('The Linke turbidity lookup table requires scipy. ' +
-                          'You can still use clearsky.ineichen if you ' +
+        raise ImportError('The Linke turbidity lookup table requires scipy. '
+                          'You can still use clearsky.ineichen if you '
                           'supply your own turbidities.')
 
     if filepath is None:
@@ -214,54 +214,91 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
         .astype(np.int64))
 
-    g = linke_turbidity_table[latitude_index][longitude_index]
+    lts = linke_turbidity_table[latitude_index][longitude_index]
 
     if interp_turbidity:
-        # Data covers 1 year. Assume that data corresponds to the value at the
-        # middle of each month. This means that we need to add previous Dec and
-        # next Jan to the array so that the interpolation will work for
-        # Jan 1 - Jan 15 and Dec 16 - Dec 31.
-        g2 = np.concatenate([[g[-1]], g, [g[0]]])
-        # Then we map the month value to the day of year value.
-        isleap = [calendar.isleap(t.year) for t in time]
-        if all(isleap):
-            days = _calendar_month_middles(2016)  # all years are leap
-        elif not any(isleap):
-            days = _calendar_month_middles(2015)  # none of the years are leap
-        else:
-            days = None  # some of the years are leap years and some are not
-        if days is None:
-            # Loop over different years, might be slow for large timeserires
-            linke_turbidity = pd.Series([
-                np.interp(t.dayofyear, _calendar_month_middles(t.year), g2)
-                for t in time
-            ], index=time)
-        else:
-            linke_turbidity = pd.Series(np.interp(time.dayofyear, days, g2),
-                                        index=time)
+        linke_turbidity = _interpolate_turbidity(lts, time)
     else:
-        linke_turbidity = pd.DataFrame(time.month, index=time)
-        # apply monthly data
-        linke_turbidity = linke_turbidity.apply(lambda x: g[x[0]-1], axis=1)
+        months = time.month - 1
+        linke_turbidity = pd.Series(lts[months], index=time)
 
     linke_turbidity /= 20.
 
     return linke_turbidity
 
 
+def _is_leap_year(year):
+    """Determine if a year is leap year.
+
+    Parameters
+    ----------
+    year : numeric
+
+    Returns
+    -------
+    isleap : array of bools
+    """
+    isleap = ((np.mod(year, 4) == 0) &
+              ((np.mod(year, 100) != 0) | (np.mod(year, 400) == 0)))
+    return isleap
+
+
+def _interpolate_turbidity(lts, time):
+    """
+    Interpolated monthly Linke turbidity onto daily values.
+
+    Parameters
+    ----------
+    lts : np.array
+        Monthly Linke turbidity values.
+    time : pd.DatetimeIndex
+        Times to be interpolated onto.
+
+    Returns
+    -------
+    linke_turbidity : pd.Series
+        The interpolated turbidity.
+    """
+    # Data covers 1 year. Assume that data corresponds to the value at the
+    # middle of each month. This means that we need to add previous Dec and
+    # next Jan to the array so that the interpolation will work for
+    # Jan 1 - Jan 15 and Dec 16 - Dec 31.
+    lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
+    # Then we map the month value to the day of year value.
+
+    # use this for the real code
+    try:
+        isleap = time.is_leap_year
+    except AttributeError:
+        year = time.year
+        isleap = _is_leap_year(time.year)
+
+    dayofyear = time.dayofyear
+    days_leap = _calendar_month_middles(2016)
+    days_no_leap = _calendar_month_middles(2015)
+    lt_leap = np.interp(dayofyear, days_leap, lts_concat)
+    lt_no_leap = np.interp(dayofyear, days_no_leap, lts_concat)
+    linke_turbidity = np.where(isleap, lt_leap, lt_no_leap)
+    linke_turbidity = pd.Series(linke_turbidity, index=time)
+    return linke_turbidity
+
+
 def _calendar_month_middles(year):
-    """list of middle day of each month, used by Linke turbidity lookup"""
+    """List of middle day of each month, used by Linke turbidity lookup"""
     # remove mdays[0] since January starts at mdays[1]
-    # make local copy of mdays since we need to change February for leap years
+    # make local copy of mdays since we need to change
+    # February for leap years
     mdays = np.array(calendar.mdays[1:])
     ydays = 365
     # handle leap years
     if calendar.isleap(year):
         mdays[1] = mdays[1] + 1
         ydays = 366
-    return np.concatenate([[-calendar.mdays[-1] / 2.0],  # Dec last year
-                           np.cumsum(mdays) - np.array(mdays) / 2.,  # this year
-                           [ydays + calendar.mdays[1] / 2.0]])  # Jan next year
+    middles = np.concatenate(
+        [[-calendar.mdays[-1] / 2.0],  # Dec last year
+         np.cumsum(mdays) - np.array(mdays) / 2.,  # this year
+         [ydays + calendar.mdays[1] / 2.0]])  # Jan next year
+    return middles
 
 
 def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
@@ -294,8 +331,8 @@ def haurwitz(apparent_zenith):
 
     Implements the Haurwitz clear sky model for global horizontal
     irradiance (GHI) as presented in [1, 2]. A report on clear
-    sky models found the Haurwitz model to have the best performance 
-    in terms of average monthly error among models which require only 
+    sky models found the Haurwitz model to have the best performance
+    in terms of average monthly error among models which require only
     zenith angle [3].
 
     Parameters

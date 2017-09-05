@@ -1,11 +1,11 @@
-.. _whatsnew_0500:
+.. _whatsnew_0510:
 
-v0.5.0 (August 11, 2017)
+v0.5.1 (?, 2017)
 ------------------------
 
 API Changes
 ~~~~~~~~~~~
-* 
+*
 
 Bug fixes
 ~~~~~~~~~
@@ -15,11 +15,11 @@ Bug fixes
 
 Enhancements
 ~~~~~~~~~~~~
-* 
+* Improve clearsky.lookup_linke_turbidity speed. (:issue:`368`)
 
 Documentation
 ~~~~~~~~~~~~~
-* 
+*
 
 Testing
 ~~~~~~~
@@ -29,3 +29,4 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen
 * KonstantinTr
+* Will Holmgren

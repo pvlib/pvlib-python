@@ -129,6 +129,7 @@ def basic_chain(times, latitude, longitude,
                                                      longitude,
                                                      altitude=altitude,
                                                      pressure=pressure,
+                                                     method=solar_position_method,
                                                      **kwargs)
 
     # possible error with using apparent zenith with some models

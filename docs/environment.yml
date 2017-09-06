@@ -22,3 +22,4 @@ dependencies:
     - hdf4=4.2.12
     - sphinx_rtd_theme
     - docutils
+    - nbsphinx

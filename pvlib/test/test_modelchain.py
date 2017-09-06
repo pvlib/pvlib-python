@@ -21,7 +21,8 @@ def system(sam_data):
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_'].copy()
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
@@ -35,7 +36,8 @@ def cec_dc_snl_ac_system(sam_data):
     module_parameters['dEgdT'] = -0.0002677
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
@@ -49,7 +51,8 @@ def cec_dc_adr_ac_system(sam_data):
     module_parameters['dEgdT'] = -0.0002677
     inverters = sam_data['adrinverter']
     inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
@@ -59,7 +62,8 @@ def pvwatts_dc_snl_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
@@ -68,7 +72,8 @@ def pvwatts_dc_snl_ac_system(sam_data):
 def pvwatts_dc_pvwatts_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     inverter_parameters = {'eta_inv_nom': 0.95}
-    system = PVSystem(module_parameters=module_parameters,
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
                       inverter_parameters=inverter_parameters)
     return system
 
@@ -82,12 +87,8 @@ def test_ModelChain_creation(system, location):
     mc = ModelChain(system, location)
 
 
-def test_orientation_strategy(system, location):
-    strategies = {}
-
-
 @pytest.mark.parametrize('strategy, expected', [
-    (None, (0, 180)), ('None', (0, 180)), ('flat', (0, 180)),
+    (None, (32.2, 180)), ('None', (32.2, 180)), ('flat', (0, 180)),
     ('south_at_latitude_tilt', (32.2, 180))
 ])
 def test_orientation_strategy(strategy, expected, system, location):
@@ -168,7 +169,7 @@ def test_run_model_tracker(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([  122.333764454,  -2.00000000e-02]),
+    expected = pd.Series(np.array([119.067713606,  nan]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
@@ -417,9 +418,10 @@ def test_basic_chain_altitude_pressure(sam_data):
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
-def test_ModelChain___repr__(system, location):
-
-    strategy = 'south_at_latitude_tilt'
+@pytest.mark.parametrize('strategy, strategy_str', [
+    ('south_at_latitude_tilt', 'south_at_latitude_tilt'),
+    (None, 'None')])  # GitHub issue 352
+def test_ModelChain___repr__(system, location, strategy, strategy_str):
 
     mc = ModelChain(system, location, orientation_strategy=strategy,
                     name='my mc')
@@ -427,7 +429,7 @@ def test_ModelChain___repr__(system, location):
     expected = '\n'.join([
         'ModelChain: ',
         '  name: my mc',
-        '  orientation_strategy: south_at_latitude_tilt',
+        '  orientation_strategy: ' + strategy_str,
         '  clearsky_model: ineichen',
         '  transposition_model: haydavies',
         '  solar_position_method: nrel_numpy',
@@ -441,7 +443,6 @@ def test_ModelChain___repr__(system, location):
     ])
 
     assert mc.__repr__() == expected
-
 
 @requires_scipy
 def test_weather_irradiance_input(system, location):

@@ -294,9 +294,9 @@ def haurwitz(apparent_zenith):
 
     Implements the Haurwitz clear sky model for global horizontal
     irradiance (GHI) as presented in [1, 2]. A report on clear
-    sky models found the Haurwitz model to have the best performance of
-    models which require only zenith angle [3]. Extreme care should
-    be taken in the interpretation of this result!
+    sky models found the Haurwitz model to have the best performance 
+    in terms of average monthly error among models which require only 
+    zenith angle [3].
 
     Parameters
     ----------
@@ -306,7 +306,7 @@ def haurwitz(apparent_zenith):
 
     Returns
     -------
-    pd.Series
+    pd.DataFrame
     The modeled global horizonal irradiance in W/m^2 provided
     by the Haurwitz clear-sky model.
 
@@ -326,13 +326,14 @@ def haurwitz(apparent_zenith):
      Laboratories, SAND2012-2389, 2012.
     '''
 
-    cos_zenith = tools.cosd(apparent_zenith)
+    cos_zenith = tools.cosd(apparent_zenith.values)
+    clearsky_ghi = np.zeros_like(apparent_zenith.values)
+    clearsky_ghi[cos_zenith>0] = 1098.0 * cos_zenith[cos_zenith>0] * \
+                                    np.exp(-0.059/cos_zenith[cos_zenith>0])
 
-    clearsky_ghi = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
-
-    clearsky_ghi[clearsky_ghi < 0] = 0
-
-    df_out = pd.DataFrame({'ghi': clearsky_ghi})
+    df_out = pd.DataFrame(index=apparent_zenith.index,
+                          data=clearsky_ghi,
+                          columns=['ghi'])
 
     return df_out
 

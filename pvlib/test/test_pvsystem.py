@@ -94,10 +94,10 @@ def test_systemdef_dict():
 
 @needs_numpy_1_10
 def test_ashraeiam():
-    thetas = np.linspace(-90, 90, 9)
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5, 89.,  90. , np.nan])
     iam = pvsystem.ashraeiam(thetas, .05)
-    expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         nan])
+    expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
+        0.99588039,  0.97928932,  0.9193437 ,         0, 0,  np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -105,19 +105,19 @@ def test_ashraeiam():
 def test_PVSystem_ashraeiam():
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    thetas = np.linspace(-90, 90, 9)
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  89., 90. , np.nan])
     iam = system.ashraeiam(thetas)
-    expected = np.array([        nan,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         nan])
+    expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
+        0.99588039,  0.97928932,  0.9193437 ,         0, 0,  np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
 @needs_numpy_1_10
 def test_physicaliam():
-    thetas = np.linspace(-90, 90, 9)
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
     iam = pvsystem.physicaliam(thetas, 1.526, 0.002, 4)
-    expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
-        0.99926198,  0.98797788,  0.8893998 ,         nan])
+    expected = np.array([        0,  0.8893998,  0.98797788,  0.99926198,         1,
+        0.99926198,  0.98797788,  0.8893998,         0, np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -125,10 +125,10 @@ def test_physicaliam():
 def test_PVSystem_physicaliam():
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    thetas = np.linspace(-90, 90, 9)
+    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
     iam = system.physicaliam(thetas)
-    expected = np.array([        nan,  0.8893998 ,  0.98797788,  0.99926198,         nan,
-        0.99926198,  0.98797788,  0.8893998 ,         nan])
+    expected = np.array([        0,  0.8893998 ,  0.98797788,  0.99926198,         1,
+        0.99926198,  0.98797788,  0.8893998 ,         0, np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
 
@@ -239,7 +239,7 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
     (np.array([[-30, 30, 100, np.nan]]),
-     np.array([[np.nan, 1.007572, 0, np.nan]])),
+     np.array([[0, 1.007572, 0, np.nan]])),
     (pd.Series([80]), pd.Series([0.597472]))
 ])
 def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
@@ -570,7 +570,7 @@ def test_PVSystem_sapm_celltemp():
 
 def test_adrinverter(sam_data):
     inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
               'ES_2200_US_240__240_Vac__240V__CEC_2011_'
     vdcs = pd.Series([135, 154, 390, 420, 551])
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
@@ -582,7 +582,7 @@ def test_adrinverter(sam_data):
 
 def test_adrinverter_vtol(sam_data):
     inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
               'ES_2200_US_240__240_Vac__240V__CEC_2011_'
     vdcs = pd.Series([135, 154, 390, 420, 551])
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
@@ -594,7 +594,7 @@ def test_adrinverter_vtol(sam_data):
 
 def test_adrinverter_float(sam_data):
     inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' + \
+    testinv = 'Ablerex_Electronics_Co___Ltd___' \
               'ES_2200_US_240__240_Vac__240V__CEC_2011_'
     vdcs = 154.
     pdcs = 1232.

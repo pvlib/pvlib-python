@@ -420,3 +420,33 @@ def test_analytical_zenith():
     zenith_2 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
     assert np.allclose(zenith_1, solar_zenith, atol=0.015)
     assert np.allclose(zenith_2, solar_zenith, atol=0.025)
+
+
+def test_analytical_azimuth():
+    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                             freq="H").tz_localize('Etc/GMT+8')
+    lat, lon = 37.8, -122.25
+    lat_rad = np.deg2rad(lat)
+    output = solarposition.spa_python(times, lat, lon, 100)
+    solar_azimuth = np.deg2rad(output['azimuth'])  # spa
+    solar_zenith = np.deg2rad(output['zenith'])
+    # spencer
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
+    hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
+    decl = solarposition.declination_spencer71(times.dayofyear)
+    zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
+    azimuth_1 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
+                                                       decl, zenith)
+    # pvcdrom and cooper
+    eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)
+    hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
+    decl = solarposition.declination_cooper69(times.dayofyear)
+    zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
+    azimuth_2 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
+                                                       decl, zenith)
+
+    idx = np.where(solar_zenith < np.pi/2)
+    assert np.allclose(azimuth_1[idx], solar_azimuth.as_matrix()[idx],
+                       atol=0.01)
+    assert np.allclose(azimuth_2[idx], solar_azimuth.as_matrix()[idx],
+                       atol=0.017)

@@ -149,6 +149,8 @@ a full understanding of what it is doing internally!
     plt.ylabel('Yearly energy yield (W hr)')
 
 
+.. _object-oriented:
+
 Object oriented (Location, PVSystem, ModelChain)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -199,10 +201,6 @@ objects to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig modelchain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
-
-See Will Holmgren's
-`ModelChain gist <https://gist.github.com/wholmgren/3fabacd3003c2a549b420b5e79f55e95>`_
-for more discussion about new features in ModelChain.
 
 
 Object oriented (LocalizedPVSystem)

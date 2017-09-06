@@ -156,7 +156,7 @@ class PVSystem(object):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
                  'inverter', 'albedo', 'racking_model']
         return ('PVSystem: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
@@ -593,7 +593,7 @@ class LocalizedPVSystem(PVSystem, Location):
             'surface_azimuth', 'module', 'inverter', 'albedo', 'racking_model'
                  ]
         return ('LocalizedPVSystem: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
@@ -700,7 +700,7 @@ def ashraeiam(aoi, b=0.05):
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector in degrees. Angles of nan will result in nan.
 
     b : float, default 0.05
         A parameter to adjust the modifier as a function of angle of
@@ -712,7 +712,7 @@ def ashraeiam(aoi, b=0.05):
         The incident angle modifier calculated as 1-b*(sec(aoi)-1) as
         described in [2,3].
 
-        Returns nan for all abs(aoi) >= 90 and for all IAM values that
+        Returns zeros for all abs(aoi) >= 90 and for all IAM values that
         would be less than 0.
 
     References
@@ -735,7 +735,7 @@ def ashraeiam(aoi, b=0.05):
 
     iam = 1 - b*((1/np.cos(np.radians(aoi)) - 1))
 
-    iam = np.where(np.abs(aoi) >= 90, np.nan, iam)
+    iam = np.where(np.abs(aoi) >= 90, 0, iam)
     iam = np.maximum(0, iam)
 
     if isinstance(iam, pd.Series):
@@ -764,7 +764,8 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector in degrees. Angles of 0 are replaced with 1e-06
+        to ensure non-nan results. Angles of nan will result in nan.
 
     n : numeric, default 1.526
         The effective index of refraction (unitless). Reference [1]
@@ -814,27 +815,40 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     spa
     ashraeiam
     '''
-    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
-
-    tau = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) *
-           ((1 - 0.5*((((tools.sind(thetar_deg - aoi)) ** 2) /
-            ((tools.sind(thetar_deg + aoi)) ** 2) +
-            ((tools.tand(thetar_deg - aoi)) ** 2) /
-            ((tools.tand(thetar_deg + aoi)) ** 2))))))
-
     zeroang = 1e-06
 
-    thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
+    aoi = np.where(aoi == 0, zeroang, aoi)
 
-    tau0 = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg0))) *
-            ((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) /
-             ((tools.sind(thetar_deg0 + zeroang)) ** 2) +
-             ((tools.tand(thetar_deg0 - zeroang)) ** 2) /
-             ((tools.tand(thetar_deg0 + zeroang)) ** 2))))))
+    # angle of reflection
+    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
 
-    iam = tau / tau0
+    # reflectance and transmittance for normal incidence light
+    rho_zero = ((1-n) / (1+n)) ** 2
+    tau_zero = np.exp(-K*L)
 
-    iam = np.where((np.abs(aoi) >= 90) | (iam < 0), np.nan, iam)
+    # reflectance for parallel and perpendicular polarized light
+    rho_para = (tools.tand(thetar_deg - aoi) /
+                tools.tand(thetar_deg + aoi)) ** 2
+    rho_perp = (tools.sind(thetar_deg - aoi) /
+                tools.sind(thetar_deg + aoi)) ** 2
+
+    # transmittance for non-normal light
+    tau = np.exp(-K*L / tools.cosd(thetar_deg))
+
+    # iam is ratio of non-normal to normal incidence transmitted light
+    # after deducting the reflected portion of each
+    iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
+
+    # angles near zero produce nan, but iam is defined as one
+    small_angle = 1e-06
+    iam = np.where(np.abs(aoi) < small_angle, 1.0, iam)
+
+    # angles at 90 degrees can produce tiny negative values, which should be zero
+    # this is a result of calculation precision rather than the physical model
+    iam = np.where(iam < 0, 0, iam)
+
+    # for light coming from behind the plane, none can enter the module
+    iam = np.where(aoi > 90, 0, iam)
 
     if isinstance(aoi, pd.Series):
         iam = pd.Series(iam, index=aoi.index)
@@ -1465,7 +1479,7 @@ def sapm_aoi_loss(aoi, module, upper=None):
     ----------
     aoi : numeric
         Angle of incidence in degrees. Negative input angles will return
-        nan values.
+        zeros.
 
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
@@ -1507,7 +1521,7 @@ def sapm_aoi_loss(aoi, module, upper=None):
 
     aoi_loss = np.polyval(aoi_coeff, aoi)
     aoi_loss = np.clip(aoi_loss, 0, upper)
-    aoi_loss = np.where(aoi < 0, np.nan, aoi_loss)
+    aoi_loss = np.where(aoi < 0, 0, aoi_loss)
 
     if isinstance(aoi, pd.Series):
         aoi_loss = pd.Series(aoi_loss, aoi.index)
@@ -2084,8 +2098,8 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
         See Notes for required keys.
 
     vtol : numeric, default 0.1
-        A unit-less fraction that determines how far the efficiency model is 
-        allowed to extrapolate beyond the inverter's normal input voltage 
+        A unit-less fraction that determines how far the efficiency model is
+        allowed to extrapolate beyond the inverter's normal input voltage
         operating range. 0.0 <= vtol <= 1.0
 
     Returns
@@ -2109,21 +2123,21 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
     Column    Description
     =======   ============================================================
     p_nom     The nominal power value used to normalize all power values,
-              typically the DC power needed to produce maximum AC power 
+              typically the DC power needed to produce maximum AC power
               output, (W).
 
-    v_nom     The nominal DC voltage value used to normalize DC voltage 
-              values, typically the level at which the highest efficiency 
+    v_nom     The nominal DC voltage value used to normalize DC voltage
+              values, typically the level at which the highest efficiency
               is achieved, (V).
 
-    pac_max   The maximum AC output power value, used to clip the output 
+    pac_max   The maximum AC output power value, used to clip the output
               if needed, (W).
 
     ce_list   This is a list of 9 coefficients that capture the influence
               of input voltage and power on inverter losses, and thereby
               efficiency.
 
-    p_nt      ac-power consumed by inverter at night (night tare) to 
+    p_nt      ac-power consumed by inverter at night (night tare) to
               maintain circuitry required to sense PV array voltage, (W).
     =======   ============================================================
 

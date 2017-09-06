@@ -74,6 +74,7 @@ Contents
    whatsnew
    installation
    contributing
+   modelchain
    timetimezones
    clearsky
    forecasts

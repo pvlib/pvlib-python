@@ -1404,9 +1404,12 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     return dni_dirindex
 
 
-def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
+def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth,
+               surface_tilt, surface_azimuth,
+               times, pressure=101325.,
                use_delta_kt_prime=True, temp_dew=None, albedo=.25,
-               calculate_gt_90=True):
+               model='perez', model_perez='allsitescomposite1990',
+               calculate_gt_90=True, max_iterations=30):
     """
     Determine GHI, DNI, DHI from POA global using the GTI DIRINT model.
 
@@ -1474,29 +1477,22 @@ def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
            http://dx.doi.org/10.1016/j.solener.2015.10.024
     """
 
+    aoi_lt_90 = aoi < 90
+
     # for AOI less than 90 degrees
 
-    disc_out = disc(poa_global, aoi, times, pressure=pressure)
+    ghi, dni, dhi, kt_prime = _gti_dirint_lt_90(
+        poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, times, pressure=pressure,
+        use_delta_kt_prime=use_delta_kt_prime, temp_dew=temp_dew,
+        albedo=albedo, model=model, model_perez=model_perez,
+        max_iterations=max_iterations)
 
-    dni_dirint, kt_prime = dirint(
-        poa_global, aoi, times, pressure=pressure,
-        use_delta_kt_prime=use_delta_kt_prime,
-        temp_dew=temp_dew, return_kt_prime=True)
-
-    I0 = extraradiation(times, 1370, 'spencer')
-    cos_zenith = tools.cosd(zenith)
-    I0h = I0 * cos_zenith
-
-    dni = dni_dirint
-    ghi = disc_out['kt'] * I0h
-    dhi = ghi - dni * cos_zenith
-
-    aoi_lt_90 = aoi < 90
     # for AOI greater than or equal to 90 degrees
 
     if calculate_gt_90:
         ghi_gte_90, dni_gte_90, dhi_gte_90 = _gti_dirint_gte_90(
-            poa_global, aoi, zenith, surface_tilt, times, kt_prime,
+            poa_global, aoi, solar_zenith, surface_tilt, times, kt_prime,
             pressure=pressure, temp_dew=temp_dew, albedo=albedo)
     else:
         ghi_gte_90, dni_gte_90, dhi_gte_90 = np.nan, np.nan, np.nan
@@ -1511,6 +1507,103 @@ def gti_dirint(poa_global, aoi, zenith, surface_tilt, times, pressure=101325.,
     output = pd.DataFrame(output, index=times)
 
     return output
+
+
+def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
+                      surface_tilt, surface_azimuth,
+                      times, pressure=101325.,
+                      use_delta_kt_prime=True, temp_dew=None, albedo=.25,
+                      model='perez', model_perez='allsitescomposite1990',
+                      max_iterations=30):
+
+    I0 = extraradiation(times, 1370, 'spencer')
+    cos_zenith = tools.cosd(solar_zenith)
+    I0h = I0 * cos_zenith
+
+    # these coeffs and diff variables and the loop below
+    # implement figure 1 of Marion 2015
+
+    # make coeffs that is at least 30 elements long
+    # for loop below will limit iterations if necessary
+    coeffs = np.empty(max(30, max_iterations))
+    coeffs[0:3] = 1
+    coeffs[3:10] = 0.5
+    coeffs[10:20] = 0.25
+    coeffs[20:] = 0.125
+
+    # initialize diff
+    diff = pd.Series(9999, index=times)
+    best_diff = diff
+
+    # initialize poa_global_i
+    poa_global_i = poa_global
+
+    for coeff in coeffs[:max_iterations]:
+        # use slightly > 1 for float errors
+        best_diff_lte_1 = best_diff <= 1.000001
+
+        # only test for aoi less than 90 deg
+        best_diff_lte_1_lt_90 = best_diff_lte_1[aoi_lt_90]
+        if best_diff_lte_1_lt_90.all():
+            break
+
+        # calculate kt and DNI using GTI and pvlib implementations
+        # of Marion eqn 2 and DIRINT
+        disc_out = disc(poa_global_i, aoi, times, pressure=pressure)
+        dni, kt_prime = dirint(
+            poa_global_i, aoi, times, pressure=pressure,
+            use_delta_kt_prime=use_delta_kt_prime,
+            temp_dew=temp_dew, return_kt_prime=True)
+
+        # calculate DHI using Marion eqn 3 (identify 1st term as GHI)
+        ghi = disc_out['kt'] * I0h
+        dhi = ghi - dni * cos_zenith
+
+        # use DNI and DHI to model GTI
+        all_irrad = total_irrad(
+            surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+            dni, ghi, dhi, dni_extra=I0, airmass=disc_out['airmass'],
+            albedo=albedo, model=model, model_perez=model_perez)
+
+        gti_model = all_irrad['poa_global']
+
+        # calculate new diff
+        diff = gti_model - poa_global
+
+        # determine if the new diff is smaller in magnitude
+        # than the old diff
+        diff_abs = diff.abs()
+        smallest_diff = diff_abs < best_diff
+
+        # save the best differences
+        best_diff = diff_abs.where(smallest_diff, best_diff)
+
+        # save DNI, DHI, DHI if they provide the best consistency
+        # otherwise use the older values.
+        # try/except accounts for first iteration
+        try:
+            best_ghi = ghi.where(smallest_diff, best_ghi)
+            best_dni = dni.where(smallest_diff, best_dni)
+            best_dhi = dhi.where(smallest_diff, best_dhi)
+            best_kt_prime = kt_prime.where(smallest_diff, best_kt_prime)
+        except UnboundLocalError:
+            best_ghi = ghi
+            best_dni = dni
+            best_dhi = dhi
+            best_kt_prime = kt_prime
+
+        # calculate adjusted inputs for next iteration
+        poa_global_i = np.maximum(1.0, poa_global_i - coeff * diff)
+    else:
+        import warnings
+        failed_points = best_diff[aoi_lt_90][best_diff_lte_1_lt_90 == False]
+        warnings.warn(
+            '%s points failed to converge after %s iterations.'
+            'best_diff:\n%s' %
+            (len(failed_points), max_iterations, failed_points),
+            RuntimeWarning)
+
+    return best_ghi, best_dni, best_dhi, best_kt_prime
 
 
 def _gti_dirint_gte_90(poa_global, aoi, zenith, surface_tilt, times, kt_prime,
@@ -1553,9 +1646,9 @@ def _gti_dirint_gte_90(poa_global, aoi, zenith, surface_tilt, times, kt_prime,
 
     cos_surface_tilt = tools.cosd(surface_tilt)
     # isotropic sky plus ground diffuse
-    surface_factor = (albedo * (1 - cos_surface_tilt) /
+    dhi_gte_90 = (
+        (2 * poa_global - dni_gte_90_proj * albedo * (1 - cos_surface_tilt)) /
         (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt)))
-    dhi_gte_90 = 2 * poa_global - dni_gte_90_proj * surface_factor
 
     ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
 

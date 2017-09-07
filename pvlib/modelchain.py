@@ -80,10 +80,10 @@ def basic_chain(times, latitude, longitude,
         Passed to system.get_irradiance.
 
     solar_position_method : str, default 'nrel_numpy'
-        Passed to location.get_solarposition.
+        Passed to solarposition.get_solarposition.
 
     airmass_model : str, default 'kastenyoung1989'
-        Passed to location.get_airmass.
+        Passed to atmosphere.relativeairmass.
 
     altitude : None or float, default None
         If None, computed from pressure. Assumed to be 0 m

@@ -1492,7 +1492,8 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth,
 
     if calculate_gt_90:
         ghi_gte_90, dni_gte_90, dhi_gte_90 = _gti_dirint_gte_90(
-            poa_global, aoi, solar_zenith, surface_tilt, times, kt_prime,
+            poa_global, aoi, solar_zenith, solar_azimuth,
+            surface_tilt, times, kt_prime,
             pressure=pressure, temp_dew=temp_dew, albedo=albedo)
     else:
         ghi_gte_90, dni_gte_90, dhi_gte_90 = np.nan, np.nan, np.nan
@@ -1606,7 +1607,8 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
     return best_ghi, best_dni, best_dhi, best_kt_prime
 
 
-def _gti_dirint_gte_90(poa_global, aoi, zenith, surface_tilt, times, kt_prime,
+def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
+                       surface_tilt, times, kt_prime,
                        pressure=101325., temp_dew=None, albedo=.25,):
 
     # set the kt_prime for sunrise to AOI=90 to be equal to
@@ -1615,10 +1617,9 @@ def _gti_dirint_gte_90(poa_global, aoi, zenith, surface_tilt, times, kt_prime,
     aoi_gte_90 = aoi >= 90
     aoi_lt_90 = aoi < 90
     aoi_65_80 = (aoi > 65) & (aoi < 80)
-    zenith_lt_90 = zenith < 90
-    zenith_grad = pd.Series(np.gradient(zenith), index=times)
-    morning = zenith_grad < 0
-    afternoon = zenith_grad > 0
+    zenith_lt_90 = solar_zenith < 90
+    morning = solar_azimuth < 180
+    afternoon = solar_azimuth > 180
     aoi_65_80_morning = aoi_65_80 & morning
     aoi_65_80_afternoon = aoi_65_80 & afternoon
     zenith_lt_90_aoi_gte_90_morning = zenith_lt_90 & aoi_gte_90 & morning
@@ -1640,7 +1641,7 @@ def _gti_dirint_gte_90(poa_global, aoi, zenith, surface_tilt, times, kt_prime,
         use_delta_kt_prime=False,
         temp_dew=temp_dew, kt_prime=kt_prime_90s)
 
-    cos_zenith = tools.cosd(zenith)
+    cos_zenith = tools.cosd(solar_zenith)
 
     dni_gte_90_proj = dni_gte_90 * cos_zenith
 

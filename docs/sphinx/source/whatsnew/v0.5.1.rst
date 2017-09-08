@@ -1,25 +1,26 @@
-.. _whatsnew_0500:
+.. _whatsnew_0510:
 
-v0.5.0 (August 11, 2017)
+v0.5.1 (?, 2017)
 ------------------------
 
 API Changes
 ~~~~~~~~~~~
-* 
+*
 
 Bug fixes
 ~~~~~~~~~
 * Remove condition causing Overflow warning from clearsky.haurwitz
-* modelchain.basic_chain now correctly passes 'solar_position_method' arg to solarposition.get_solarposition 
-* Doc string of modelchain.basic_chain was updated to describe args more accurately 
+* modelchain.basic_chain now correctly passes 'solar_position_method'
+  arg to solarposition.get_solarposition
 
 Enhancements
 ~~~~~~~~~~~~
-* 
+* Improve clearsky.lookup_linke_turbidity speed. (:issue:`368`)
 
 Documentation
 ~~~~~~~~~~~~~
-* 
+* Doc string of modelchain.basic_chain was updated to describe args
+  more accurately
 
 Testing
 ~~~~~~~
@@ -29,3 +30,4 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen
 * KonstantinTr
+* Will Holmgren

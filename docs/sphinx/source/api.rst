@@ -166,6 +166,7 @@ DNI estimation models
    irradiance.dirindex
    irradiance.erbs
    irradiance.liujordan
+   irradiance.gti_dirint
 
 
 PV Modeling

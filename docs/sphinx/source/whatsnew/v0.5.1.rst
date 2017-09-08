@@ -18,6 +18,10 @@ Enhancements
   devices are more numerically stable. However, very, very near ideal
   resistance_series and/or resistance_shunt may still cause issues with the
   implicit solver (:issue:`340`)
+* Add gti_dirint function.
+* Add kt and kt_prime keyword arguments to dirint function.
+* Add kt and min_cos_zenith keyword arguments to disc function.
+* Change the disc dni filter thresholds.
 
 Bug fixes
 ~~~~~~~~~
@@ -36,6 +40,12 @@ Bug fixes
   correctly pass the 'solar_position_method' argument to
   solarposition.get_solarposition (:issue:`377`)
 * Fixed usage of inplace parameter for tmy._recolumn (:issue:`342`)
+  arg to solarposition.get_solarposition
+
+Enhancements
+~~~~~~~~~~~~
+* Add GTI DIRINT algorithm.
+* Improve clearsky.lookup_linke_turbidity speed. (:issue:`368`)
 
 Documentation
 ~~~~~~~~~~~~~

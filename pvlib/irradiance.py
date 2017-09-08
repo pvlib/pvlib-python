@@ -1070,7 +1070,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def disc(ghi, zenith, datetime_or_doy, pressure=101325):
+def disc(ghi, zenith, datetime_or_doy, pressure=101325, min_cos_zenith=0.065):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1127,13 +1127,15 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
 
     # this is the I0 calculation from the reference
     I0 = extraradiation(datetime_or_doy, 1370, 'spencer')
-    I0h = I0 * np.cos(np.radians(zenith))
+    cos_zenith = np.maximum(min_cos_zenith, np.cos(np.radians(zenith)))
+    I0h = I0 * cos_zenith
 
     am = atmosphere.relativeairmass(zenith, model='kasten1966')
     am = atmosphere.absoluteairmass(am, pressure)
 
     kt = ghi / I0h
     kt = np.maximum(kt, 0)
+    kt = np.minimum(kt, 0.82)
     # powers of kt will be used repeatedly, so compute only once
     kt2 = kt * kt  # about the same as kt ** 2
     kt3 = kt2 * kt  # 5-10x faster than kt ** 3
@@ -1156,7 +1158,8 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
 
     dni = Kn * I0
 
-    dni = np.where((zenith > 87) | (ghi < 0) | (dni < 0), 0, dni)
+    dni = np.where((zenith > 90) | (ghi < 0) | (dni < 0) | (dni > I0*0.82),
+                   0, dni)
 
     output = OrderedDict()
     output['dni'] = dni
@@ -1518,6 +1521,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
                       max_iterations=30):
 
     I0 = extraradiation(times, 1370, 'spencer')
+    # cos_zenith = np.maximum(0.065, tools.cosd(solar_zenith))
     cos_zenith = tools.cosd(solar_zenith)
     I0h = I0 * cos_zenith
 
@@ -1557,8 +1561,13 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
             temp_dew=temp_dew, return_kt_prime=True)
 
         # calculate DHI using Marion eqn 3 (identify 1st term as GHI)
+        #ghi = np.minimum(disc_out['kt'], 0.82) * I0h
         ghi = disc_out['kt'] * I0h
         dhi = ghi - dni * cos_zenith
+        bad_values = (dhi < 0) | (dni < 0) | (ghi < 0)
+        dni[bad_values] = np.nan
+        ghi[bad_values] = np.nan
+        dhi[bad_values] = np.nan
 
         # use DNI and DHI to model GTI
         all_irrad = total_irrad(

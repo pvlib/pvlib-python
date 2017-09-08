@@ -1249,11 +1249,6 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
         kt_prime = kt / (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
         kt_prime = np.minimum(kt_prime, 0.82)  # From SRRL code
 
-    # wholmgren:
-    # the use_delta_kt_prime statement is a port of the MATLAB code.
-    # I am confused by the abs() in the delta_kt_prime calculation.
-    # It is not the absolute value of the central difference.
-    # current implementation requires that kt_prime is a Series
     if use_delta_kt_prime:
         delta_kt_prime = 0.5*((kt_prime - kt_prime.shift(1)).abs().add(
                               (kt_prime - kt_prime.shift(-1)).abs(),

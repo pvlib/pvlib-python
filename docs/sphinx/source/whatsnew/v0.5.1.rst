@@ -10,6 +10,8 @@ API Changes
 Bug fixes
 ~~~~~~~~~
 * Remove condition causing Overflow warning from clearsky.haurwitz
+* modelchain.basic_chain now correctly passes 'solar_position_method' arg to solarposition.get_solarposition 
+* Doc string of modelchain.basic_chain was updated to describe args more accurately 
 
 Enhancements
 ~~~~~~~~~~~~
@@ -26,3 +28,4 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen
+* KonstantinTr

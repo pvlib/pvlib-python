@@ -1070,7 +1070,8 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def disc(ghi, zenith, datetime_or_doy, pressure=101325, min_cos_zenith=0.065):
+def disc(ghi, zenith, datetime_or_doy, pressure=101325, min_cos_zenith=0.065,
+         kt=None):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1133,7 +1134,9 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325, min_cos_zenith=0.065):
     am = atmosphere.relativeairmass(zenith, model='kasten1966')
     am = atmosphere.absoluteairmass(am, pressure)
 
-    kt = ghi / I0h
+    if kt is None:
+        kt = ghi / I0h
+
     kt = np.maximum(kt, 0)
     kt = np.minimum(kt, 0.82)
     # powers of kt will be used repeatedly, so compute only once
@@ -1173,7 +1176,7 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325, min_cos_zenith=0.065):
 
 
 def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
-           temp_dew=None, kt_prime=None, return_kt_prime=False):
+           temp_dew=None, kt=None, kt_prime=None, return_kt_prime=False):
     """
     Determine DNI from GHI using the DIRINT modification of the DISC
     model.
@@ -1240,7 +1243,7 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
 
-    disc_out = disc(ghi, zenith, times, pressure=pressure)
+    disc_out = disc(ghi, zenith, times, pressure=pressure, kt=kt)
     dni = disc_out['dni']
     kt = disc_out['kt']
     am = disc_out['airmass']
@@ -1640,10 +1643,14 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
         kt_prime_90s.append(kt_prime_90)
     kt_prime_90s = pd.concat(kt_prime_90s)
 
+    am = atmosphere.relativeairmass(solar_zenith, model='kasten1966')
+    am = atmosphere.absoluteairmass(am, pressure)
+    kt = kt_prime_90s * (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
+
     dni_gte_90 = dirint(
-        poa_global, aoi, times, pressure=pressure,
+        poa_global, solar_zenith, times, pressure=pressure,
         use_delta_kt_prime=False,
-        temp_dew=temp_dew, kt_prime=kt_prime_90s)
+        temp_dew=temp_dew, kt=kt, kt_prime=kt_prime_90s)
 
     cos_zenith = tools.cosd(solar_zenith)
 

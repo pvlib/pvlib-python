@@ -80,10 +80,10 @@ def basic_chain(times, latitude, longitude,
         Passed to system.get_irradiance.
 
     solar_position_method : str, default 'nrel_numpy'
-        Passed to location.get_solarposition.
+        Passed to solarposition.get_solarposition.
 
     airmass_model : str, default 'kastenyoung1989'
-        Passed to location.get_airmass.
+        Passed to atmosphere.relativeairmass.
 
     altitude : None or float, default None
         If None, computed from pressure. Assumed to be 0 m
@@ -129,6 +129,7 @@ def basic_chain(times, latitude, longitude,
                                                      longitude,
                                                      altitude=altitude,
                                                      pressure=pressure,
+                                                     method=solar_position_method,
                                                      **kwargs)
 
     # possible error with using apparent zenith with some models
@@ -294,7 +295,7 @@ class ModelChain(object):
     """
 
     def __init__(self, system, location,
-                 orientation_strategy='south_at_latitude_tilt',
+                 orientation_strategy=None,
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
                  solar_position_method='nrel_numpy',
@@ -757,9 +758,6 @@ class ModelChain(object):
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)
 
-        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
-                                       self.solar_position['azimuth'])
-
         if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
@@ -773,7 +771,8 @@ class ModelChain(object):
                 "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
-        # have different method signatures, so use partial to handle
+        # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
+        # have different method signatures. Use partial to handle
         # the differences.
         if isinstance(self.system, SingleAxisTracker):
             self.tracking = self.system.singleaxis(
@@ -785,13 +784,17 @@ class ModelChain(object):
             self.tracking['surface_azimuth'] = (
                 self.tracking['surface_azimuth']
                     .fillna(self.system.axis_azimuth))
+            self.aoi = self.tracking['aoi']
             get_irradiance = partial(
                 self.system.get_irradiance,
-                surface_tilt=self.tracking['surface_tilt'],
-                surface_azimuth=self.tracking['surface_azimuth'],
-                solar_zenith=self.solar_position['apparent_zenith'],
-                solar_azimuth=self.solar_position['azimuth'])
+                self.tracking['surface_tilt'],
+                self.tracking['surface_azimuth'],
+                self.solar_position['apparent_zenith'],
+                self.solar_position['azimuth'])
         else:
+            self.aoi = self.system.get_aoi(
+                self.solar_position['apparent_zenith'],
+                self.solar_position['azimuth'])
             get_irradiance = partial(
                 self.system.get_irradiance,
                 self.solar_position['apparent_zenith'],

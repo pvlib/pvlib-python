@@ -1,22 +1,21 @@
-.. _whatsnew_0460:
+.. _whatsnew_0510:
 
-v0.4.6 ()
----------
+v0.5.1 (?, 2017)
+------------------------
 
+API Changes
+~~~~~~~~~~~
+*
 
 Bug fixes
 ~~~~~~~~~
-
-* Method of multi-inheritance has changed to make it possible to use kwargs in
-  the parent classes of LocalizedPVSystem and LocalizedSingleAxisTracker
-  (:issue:`330`)
-* Fix the `__repr__` method of `ModelChain`, crashing when
-  `orientation_strategy` is set to `'None'` (:issue:`352`)
-
+* Remove condition causing Overflow warning from clearsky.haurwitz
+* modelchain.basic_chain now correctly passes 'solar_position_method'
+  arg to solarposition.get_solarposition
 
 Enhancements
 ~~~~~~~~~~~~
-* Added default values to docstrings of all functions (:issue:`336`)
+* Improve clearsky.lookup_linke_turbidity speed. (:issue:`368`)
 * Ideal devices supported in single diode model, e.g., 
   resistance_series = 0 and/or resistance_shunt = numpy.inf (:issue:`340`)
 * Computations for very near ideal devices are more numerically stable in 
@@ -24,7 +23,6 @@ Enhancements
 
 API Changes
 ~~~~~~~~~~~
-* Removed parameter w from _calc_d (:issue:`344`)
 * Deprecated `pvsystem.v_from_i` and `pvsystem.i_from_v` functions, which will 
   be removed in a future release. Instead use `pvsystem.sdm_v_from_i` and
   `pvsystem.sdm_i_from_v`, which are ~2x slower but can handle ideal devices. 
@@ -36,24 +34,19 @@ API Changes
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Doc string of modelchain.basic_chain was updated to describe args
+  more accurately
 
 Testing
 ~~~~~~~
-
-* Added explicit tests for aoi and aoi_projection functions.
-* Update test of `ModelChain.__repr__` to take in account :issue:`352`
+* Changed test for clearsky.haurwitz to operate on zenith angles
 * Significant new test cases added for `pvsystem.sdm_v_from_i` and
   `pvsystem.sdm_i_from_v`, beyond but including cases for deprecated 
   `pvsystem.v_from_i` and `pvsystem.i_from_v` (:issue:`340`)
 
-
 Contributors
 ~~~~~~~~~~~~
-
+* Cliff Hansen
+* KonstantinTr
 * Will Holmgren
-* Uwe Krien
-* Alaina Kafkes
-* Birgit Schachler
-* Jonathan Gaffiot
 * Mark Campanelli

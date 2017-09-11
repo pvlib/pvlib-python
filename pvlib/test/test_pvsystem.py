@@ -455,6 +455,16 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
       'I0': 1.8739027472625636e-09,
       'IL': 5.1366949999999996,
       'V_expected': 58.19323124611128
+    },
+    {  # Verify mixed solution type indexing logic
+      'Rsh': np.array([np.inf, 190., 381.68]),
+      'Rs': 1.065,
+      'nNsVth': np.array([2.89, 2.89, 2.681527737715915]),
+      'I': 0.,
+      'I0': np.array([7.05196029e-08, 7.05196029e-08, 1.8739027472625636e-09]),
+      'IL': np.array([10.491262, 10.491262, 5.1366949999999996]),
+      'V_expected': np.array([2.89*np.log1p(10.491262/7.05196029e-08),
+                              54.303958833791455, 58.19323124611128])
     }])
 def fixture_v_from_i(request):
     return request.param

@@ -450,7 +450,7 @@ class PVSystem(object):
         -------
         See pvsystem.i_from_v for details
         """
-        return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage, \
+        return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                         saturation_current, photocurrent)
 
     # inverter now specified by self.inverter_parameters
@@ -1680,11 +1680,11 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     '''
 
     # Compute short circuit current
-    i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0., \
+    i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.,
                     saturation_current, photocurrent)
 
     # Compute open circuit voltage
-    v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0., \
+    v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
                     saturation_current, photocurrent)
 
     params = {'r_sh': resistance_shunt,
@@ -1697,14 +1697,14 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is i_mp. Start the optimization at v_oc/2
-    i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp, \
+    i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
                     saturation_current, photocurrent)
 
     # Find Ix and Ixx using Lambert W
-    i_x = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.5 * v_oc, \
+    i_x = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.5 * v_oc,
                    saturation_current, photocurrent)
 
-    i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth, \
+    i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
                     0.5 * (v_oc + v_mp), saturation_current, photocurrent)
 
     out = OrderedDict()
@@ -1722,7 +1722,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
                      np.linspace(0, 1, ivcurve_pnts))
         print(ivcurve_v)
-        ivcurve_i = i_from_v(resistance_shunt, resistance_series, nNsVth, \
+        ivcurve_i = i_from_v(resistance_shunt, resistance_series, nNsVth,
                              ivcurve_v.T, saturation_current, photocurrent).T
         print(ivcurve_i)
 
@@ -1812,7 +1812,7 @@ def _pwr_optfcn(df, loc):
     Function to find power from ``i_from_v``.
     '''
 
-    I = i_from_v(df['r_sh'], df['r_s'], df['nNsVth'], df[loc], df['i_0'], \
+    I = i_from_v(df['r_sh'], df['r_s'], df['nNsVth'], df[loc], df['i_0'],
                  df['i_l'])
 
     return I * df[loc]
@@ -1890,7 +1890,8 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     I0 = np.asarray(saturation_current, np.float64)
     IL = np.asarray(photocurrent, np.float64)
 
-    # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally more numerically stable
+    # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally
+    #  more numerically stable
     Gsh = 1./Rsh
 
     # Intitalize output V (including shape) by solving explicit model with
@@ -1921,8 +1922,8 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         IL = IL*np.ones_like(V)
 
         # LambertW argument, argW cannot be float128
-        argW = I0[idx]/(Gsh[idx]*nNsVth[idx])* \
-               np.exp((-I[idx] + IL[idx] + I0[idx])/(Gsh[idx]*nNsVth[idx]))
+        argW = I0[idx] / (Gsh[idx]*nNsVth[idx]) * \
+            np.exp((-I[idx] + IL[idx] + I0[idx]) / (Gsh[idx]*nNsVth[idx]))
 
         # lambertw typically returns complex value with zero imaginary part
         lambertwterm = lambertw(argW).real
@@ -1933,10 +1934,10 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         # Only re-compute LambertW if it overflowed
         if np.any(idx_w):
             # Calculate using log(argW) in case argW is really big
-            logargW = (np.log(I0[idx]) - np.log(Gsh[idx]) - \
-                      np.log(nNsVth[idx]) + \
-                      (-I[idx] + IL[idx] + I0[idx])/ \
-                      (Gsh[idx]*nNsVth[idx]))[idx_w]
+            logargW = (np.log(I0[idx]) - np.log(Gsh[idx]) -
+                       np.log(nNsVth[idx]) +
+                       (-I[idx] + IL[idx] + I0[idx]) /
+                       (Gsh[idx] * nNsVth[idx]))[idx_w]
 
             # Three iterations of Newton-Raphson method to solve
             #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
@@ -1951,7 +1952,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         #  V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh
         # Recasted in terms of Gsh=1/Rsh for better numerical stability.
         V[idx] = (IL[idx] + I0[idx] - I[idx])/Gsh[idx] - I[idx]*Rs[idx] - \
-                 nNsVth[idx]*lambertwterm
+            nNsVth[idx]*lambertwterm
 
     if output_is_scalar:
         return np.asscalar(V)
@@ -2031,7 +2032,8 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     I0 = np.asarray(saturation_current, np.float64)
     IL = np.asarray(photocurrent, np.float64)
 
-    # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally more numerically stable
+    # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally
+    #  more numerically stable
     Gsh = 1./Rsh
 
     # Intitalize output I (including shape) by solving explicit model with
@@ -2062,9 +2064,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         IL = IL*np.ones_like(I)
 
         # LambertW argument, argW cannot be float128
-        argW = Rs[idx]*I0[idx]/(nNsVth[idx]*(Rs[idx]*Gsh[idx] + 1.))* \
-               np.exp((Rs[idx]*(IL[idx] + I0[idx]) + V[idx])/ \
-               (nNsVth[idx]*(Rs[idx]*Gsh[idx] + 1.)))
+        argW = Rs[idx]*I0[idx]/(nNsVth[idx]*(Rs[idx]*Gsh[idx] + 1.)) * \
+            np.exp((Rs[idx]*(IL[idx] + I0[idx]) + V[idx]) /
+                   (nNsVth[idx]*(Rs[idx]*Gsh[idx] + 1.)))
 
         # lambertw typically returns complex value with zero imaginary part
         lambertwterm = lambertw(argW).real
@@ -2073,8 +2075,8 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         #  I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + \
         #      Rsh*(IL + I0)/(Rs + Rsh)
         # Recasted in terms of Gsh=1/Rsh for better numerical stability.
-        I[idx] = (IL[idx] + I0[idx] - V[idx]*Gsh[idx])/(Rs[idx]*Gsh[idx] + \
-                 1.) - (nNsVth[idx]/Rs[idx])*lambertwterm
+        I[idx] = (IL[idx] + I0[idx] - V[idx]*Gsh[idx]) / \
+            (Rs[idx]*Gsh[idx] + 1.) - (nNsVth[idx]/Rs[idx])*lambertwterm
 
     if output_is_scalar:
         return np.asscalar(I)

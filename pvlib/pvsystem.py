@@ -1613,7 +1613,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
-        0 <= resistance_shunt <= numpy.inf
+        0 < resistance_shunt <= numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -1835,7 +1835,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
-        0 <= resistance_shunt <= numpy.inf
+        0 < resistance_shunt <= numpy.inf
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
@@ -1863,7 +1863,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
-        0 < photocurrent
+        0 <= photocurrent
 
     Returns
     -------
@@ -1979,7 +1979,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
-        0 <= resistance_shunt <= numpy.inf
+        0 < resistance_shunt <= numpy.inf
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.

@@ -1823,6 +1823,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     '''
     Computes the device voltage at the given device current using the standard
      single diode model (SDM) as described in, e.g., Jain and Kapoor 2004 [1].
+
     The solution is per Eq 3 of [1] except when resistance_shunt=numpy.inf, in
      which case the explict solution for voltage is used.
     Inputs to this function can include scalars and pandas.Series, but it
@@ -1944,7 +1945,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
             #  evaluation (above) results in NaN from overflow, 3 iterations
             #  of Newton's method gives approximately 8 digits of precision.
             w = logargW
-            for i in range(0, 3):
+            for _ in range(0, 3):
                 w = w * (1 - np.log(w) + logargW) / (1 + w)
             lambertwterm[idx_w] = w
 
@@ -1965,6 +1966,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     '''
     Computes the device current at the given device voltage using the standard
      single diode model (SDM) as described in, e.g., Jain and Kapoor 2004 [1].
+
     The solution is per Eq 2 of [1] except when resistance_series=0, in
      which case the explict solution for current is used.
     Inputs to this function can include scalars and pandas.Series, but it

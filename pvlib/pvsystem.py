@@ -1718,13 +1718,11 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     # create ivcurve
     if ivcurve_pnts:
-        print(v_oc)
         ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
                      np.linspace(0, 1, ivcurve_pnts))
-        print(ivcurve_v)
+
         ivcurve_i = i_from_v(resistance_shunt, resistance_series, nNsVth,
                              ivcurve_v.T, saturation_current, photocurrent).T
-        print(ivcurve_i)
 
         out['v'] = ivcurve_v
         out['i'] = ivcurve_i

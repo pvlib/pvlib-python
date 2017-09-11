@@ -440,18 +440,18 @@ class PVSystem(object):
 
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
-        """Wrapper around the :py:func:`sdm_i_from_v` function.
+        """Wrapper around the :py:func:`i_from_v` function.
 
         Parameters
         ----------
-        See pvsystem.sdm_i_from_v for details
+        See pvsystem.i_from_v for details
 
         Returns
         -------
-        See pvsystem.sdm_i_from_v for details
+        See pvsystem.i_from_v for details
         """
-        return sdm_i_from_v(voltage, photocurrent, saturation_current,
-                            nNsVth, resistance_series, resistance_shunt)
+        return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage, \
+                        saturation_current, photocurrent)
 
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
@@ -1598,18 +1598,22 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
 
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
+        0 <= resistance_series < numpy.inf
 
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
+        0 <= resistance_shunt <= numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -1619,6 +1623,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
+        0 < nNsVth
 
     ivcurve_pnts : None or int, default None
         Number of points in the desired IV curve. If None or 0, no
@@ -1674,13 +1679,13 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     calcparams_desoto
     '''
 
-    # Find short circuit current using Lambert W
-    i_sc = sdm_i_from_v(0., photocurrent, saturation_current, nNsVth,
-                        resistance_series, resistance_shunt)
+    # Compute short circuit current
+    i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0., \
+                    saturation_current, photocurrent)
 
-    # Find open circuit voltage using Lambert W
-    v_oc = sdm_v_from_i(0., photocurrent, saturation_current, nNsVth,
-                        resistance_series, resistance_shunt)
+    # Compute open circuit voltage
+    v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0., \
+                    saturation_current, photocurrent)
 
     params = {'r_sh': resistance_shunt,
               'r_s': resistance_series,
@@ -1692,15 +1697,15 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     # Invert the Power-Current curve. Find the current where the inverted power
     # is minimized. This is i_mp. Start the optimization at v_oc/2
-    i_mp = sdm_i_from_v(v_mp, photocurrent, saturation_current, nNsVth,
-                        resistance_series, resistance_shunt)
+    i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp, \
+                    saturation_current, photocurrent)
 
     # Find Ix and Ixx using Lambert W
-    i_x = sdm_i_from_v(0.5 * v_oc, photocurrent, saturation_current, nNsVth,
-                       resistance_series, resistance_shunt)
+    i_x = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.5 * v_oc, \
+                   saturation_current, photocurrent)
 
-    i_xx = sdm_i_from_v(0.5 * (v_oc + v_mp), photocurrent, saturation_current,
-                        nNsVth, resistance_series, resistance_shunt)
+    i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth, \
+                    0.5 * (v_oc + v_mp), saturation_current, photocurrent)
 
     out = OrderedDict()
     out['i_sc'] = i_sc
@@ -1713,10 +1718,14 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     # create ivcurve
     if ivcurve_pnts:
+        print(v_oc)
         ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
                      np.linspace(0, 1, ivcurve_pnts))
-        ivcurve_i = sdm_i_from_v(ivcurve_v.T, photocurrent, saturation_current,
-                                 nNsVth, resistance_series, resistance_shunt).T
+        print(ivcurve_v)
+        ivcurve_i = i_from_v(resistance_shunt, resistance_series, nNsVth, \
+                             ivcurve_v.T, saturation_current, photocurrent).T
+        print(ivcurve_i)
+
         out['v'] = ivcurve_v
         out['i'] = ivcurve_i
 
@@ -1803,27 +1812,35 @@ def _pwr_optfcn(df, loc):
     Function to find power from ``i_from_v``.
     '''
 
-    I = sdm_i_from_v(df[loc], df['i_l'], df['i_0'], df['nNsVth'], df['r_s'],
-                     df['r_sh'])
+    I = i_from_v(df['r_sh'], df['r_s'], df['nNsVth'], df[loc], df['i_0'], \
+                 df['i_l'])
+
     return I * df[loc]
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
              saturation_current, photocurrent):
     '''
-    DEPRECATED: Use sdm_v_from_i() instead.
-
-    Calculates voltage from current per Eq 3 Jain and Kapoor 2004 [1].
+    Computes the device voltage at the given device current using the standard
+     single diode model (SDM) as described in, e.g., Jain and Kapoor 2004 [1].
+    The solution is per Eq 3 of [1] except when resistance_shunt=numpy.inf, in
+     which case the explict solution for voltage is used.
+    Inputs to this function can include scalars and pandas.Series, but it
+     always outputs a float64 numpy.ndarray regardless of input type(s).
+    Ideal device parameters are specified by resistance_shunt=np.inf and
+     resistance_series=0.
 
     Parameters
     ----------
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
+        0 <= resistance_shunt <= numpy.inf
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
+        0 <= resistance_series < numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -1833,6 +1850,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
+        0 < nNsVth
 
     current : numeric
         The current in amperes under desired IV curve conditions.
@@ -1840,14 +1858,16 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
+        0 < photocurrent
 
     Returns
     -------
-    current : np.ndarray or np.float64
+    current : np.ndarray or scalar
 
     References
     ----------
@@ -1861,7 +1881,8 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         raise ImportError('This function requires scipy')
 
     # asarray turns Series into arrays so that we don't have to worry
-    # about multidimensional broadcasting failing
+    #  about multidimensional broadcasting failing
+    # Note that lambertw function doesn't support float128
     Rsh = np.asarray(resistance_shunt, np.float64)
     Rs = np.asarray(resistance_series, np.float64)
     nNsVth = np.asarray(nNsVth, np.float64)
@@ -1872,48 +1893,95 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally more numerically stable
     Gsh = 1./Rsh
 
-    # argW cannot be float128
-    argW = I0/(Gsh*nNsVth)*np.exp((-I + IL + I0)/(Gsh*nNsVth))
-    lambertwterm = lambertw(argW).real
+    # Intitalize output V (including shape) by solving explicit model with
+    #   Gsh=0, multiplying by np.ones_like(Gsh) identity in order to also
+    #   capture shape of Gsh.
+    V = (nNsVth*np.log1p((IL - I)/I0) - I*Rs)*np.ones_like(Gsh)
 
-    # Calculate using log(argW) in case argW is really big
-    logargW = \
-(np.log(I0) - np.log(Gsh) - np.log(nNsVth) + (-I + IL + I0)/(Gsh*nNsVth))
+    # Record if inputs were all scalar
+    output_is_scalar = np.isscalar(V)
 
-    # Three iterations of Newton-Raphson method to solve
-    # w+log(w)=logargW. The initial guess is w=logargW. Where direct
-    # evaluation (above) results in NaN from overflow, 3 iterations
-    # of Newton's method gives approximately 8 digits of precision.
-    w = logargW
-    for i in range(0, 3):
-        w = w * (1 - np.log(w) + logargW) / (1 + w)
-    lambertwterm_log = w
+    # Multiply by np.atleast_1d in order to convert scalars to arrays, because
+    #  we need to guarantee the ability to index arrays
+    V = np.atleast_1d(V)
 
-    lambertwterm = \
-np.where(np.isfinite(lambertwterm), lambertwterm, lambertwterm_log)
+    # Expand Gsh input shape to match output V (if needed)
+    Gsh = Gsh*np.ones_like(V)
 
-    # Eqn. 3 in Jain and Kapoor, 2004
-    V = (IL + I0 - I)/Gsh - I*Rs - nNsVth*lambertwterm
+    # Determine indices where Gsh>0 requires implicit model solution
+    idx = 0. < Gsh
 
-    return V
+    # Only compute using LambertW if there are cases with Gsh>0
+    if np.any(idx):
+        # Expand remaining inputs to accomodate common indexing
+        Rs = Rs*np.ones_like(V)
+        nNsVth = nNsVth*np.ones_like(V)
+        I = I*np.ones_like(V)
+        I0 = I0*np.ones_like(V)
+        IL = IL*np.ones_like(V)
+
+        # LambertW argument, argW cannot be float128
+        argW = I0[idx]/(Gsh[idx]*nNsVth[idx])* \
+               np.exp((-I[idx] + IL[idx] + I0[idx])/(Gsh[idx]*nNsVth[idx]))
+
+        # lambertw typically returns complex value with zero imaginary part
+        lambertwterm = lambertw(argW).real
+
+        # Record indices where LambertW input overflowed output
+        idx_w = np.logical_not(np.isfinite(lambertwterm))
+
+        # Only re-compute LambertW if it overflowed
+        if np.any(idx_w):
+            # Calculate using log(argW) in case argW is really big
+            logargW = (np.log(I0[idx]) - np.log(Gsh[idx]) - \
+                      np.log(nNsVth[idx]) + \
+                      (-I[idx] + IL[idx] + I0[idx])/ \
+                      (Gsh[idx]*nNsVth[idx]))[idx_w]
+
+            # Three iterations of Newton-Raphson method to solve
+            #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
+            #  evaluation (above) results in NaN from overflow, 3 iterations
+            #  of Newton's method gives approximately 8 digits of precision.
+            w = logargW
+            for i in range(0, 3):
+                w = w * (1 - np.log(w) + logargW) / (1 + w)
+            lambertwterm[idx_w] = w
+
+        # Eqn. 3 in Jain and Kapoor, 2004
+        #  V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh
+        # Recasted in terms of Gsh=1/Rsh for better numerical stability.
+        V[idx] = (IL[idx] + I0[idx] - I[idx])/Gsh[idx] - I[idx]*Rs[idx] - \
+                 nNsVth[idx]*lambertwterm
+
+    if output_is_scalar:
+        return np.asscalar(V)
+    else:
+        return V
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
              saturation_current, photocurrent):
     '''
-    DEPRECATED: Use sdm_i_from_v() instead.
-
-    Calculates current from voltage per Eq 2 Jain and Kapoor 2004 [1].
+    Computes the device current at the given device voltage using the standard
+     single diode model (SDM) as described in, e.g., Jain and Kapoor 2004 [1].
+    The solution is per Eq 2 of [1] except when resistance_series=0, in
+     which case the explict solution for current is used.
+    Inputs to this function can include scalars and pandas.Series, but it
+     always outputs a float64 numpy.ndarray regardless of input type(s).
+    Ideal device parameters are specified by resistance_shunt=np.inf and
+     resistance_series=0.
 
     Parameters
     ----------
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
+        0 <= resistance_shunt <= numpy.inf
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
+        0 <= resistance_series < numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -1923,6 +1991,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
+        0 < nNsVth
 
     voltage : numeric
         The voltage in Volts under desired IV curve conditions.
@@ -1930,14 +1999,16 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
 
     Returns
     -------
-    current : np.ndarray or np.float64
+    current : np.ndarray or scalar
 
     References
     ----------
@@ -1951,7 +2022,8 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         raise ImportError('This function requires scipy')
 
     # asarray turns Series into arrays so that we don't have to worry
-    # about multidimensional broadcasting failing
+    #  about multidimensional broadcasting failing
+    # Note that lambertw function doesn't support float128
     Rsh = np.asarray(resistance_shunt, np.float64)
     Rs = np.asarray(resistance_series, np.float64)
     nNsVth = np.asarray(nNsVth, np.float64)
@@ -1962,239 +2034,50 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally more numerically stable
     Gsh = 1./Rsh
 
-    # argW cannot be float128
-    argW = \
-Rs*I0/(nNsVth*(Rs*Gsh + 1.))*np.exp((Rs*(IL + I0) + V)/(nNsVth*(Rs*Gsh + 1.)))
-    lambertwterm = lambertw(argW).real
+    # Intitalize output I (including shape) by solving explicit model with
+    #   Rs=0, multiplying by np.ones_like(Rs) identity in order to also
+    #   capture shape of Rs.
+    I = (IL - I0*np.expm1(V/nNsVth) - Gsh*V)*np.ones_like(Rs)
 
-    # Eqn. 4 in Jain and Kapoor, 2004
-    I = (IL + I0 - V*Gsh)/(Rs*Gsh + 1.) - (nNsVth/Rs)*lambertwterm
+    # Record if inputs were all scalar
+    output_is_scalar = np.isscalar(I)
 
-    return I
+    # Multiply by np.atleast_1d in order to convert scalars to arrays, because
+    #  we need to guarantee the ability to index arrays
+    I = np.atleast_1d(I)
 
+    # Expand Rs input shape to match output I (if needed)
+    Rs = Rs*np.ones_like(I)
 
-def sdm_current_sum(V, I, IL, I0, nNsVth, Rs, Rsh):
-    '''
-    Computes the sum of currents at the diode node at electrical steady state 
-    using the standard single diode model (SDM) as described in, e.g., Jain and
-    Kapoor 2004 [1]. An ideal device is specified by Rs=0 and Rsh=numpy.inf.
-    This function behaves as a numpy ufunc, including pandas.Series inputs.
+    # Determine indices where Rs>0 requires implicit model solution
+    idx = 0. < Rs
 
-    Parameters
-    ----------
-    V : numeric
-        Device voltage [V]
+    # Only compute using LambertW if there are cases with Rs>0
+    if np.any(idx):
+        # Expand remaining inputs to accomodate common indexing
+        Gsh = Gsh*np.ones_like(I)
+        nNsVth = nNsVth*np.ones_like(I)
+        V = V*np.ones_like(I)
+        I0 = I0*np.ones_like(I)
+        IL = IL*np.ones_like(I)
 
-    I : numeric
-        Device current [A]
+        # LambertW argument, argW cannot be float128
+        argW = Rs[idx]*I0[idx]/(nNsVth[idx]*(Rs[idx]*Gsh[idx] + 1.))* \
+               np.exp((Rs[idx]*(IL[idx] + I0[idx]) + V[idx])/ \
+               (nNsVth[idx]*(Rs[idx]*Gsh[idx] + 1.)))
 
-    IL : numeric
-        Device photocurrent [A]
+        # lambertw typically returns complex value with zero imaginary part
+        lambertwterm = lambertw(argW).real
 
-    I0 : numeric
-        Device saturation current [A]
+        # Eqn. 2 in Jain and Kapoor, 2004
+        #  I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + \
+        #      Rsh*(IL + I0)/(Rs + Rsh)
+        # Recasted in terms of Gsh=1/Rsh for better numerical stability.
+        I[idx] = (IL[idx] + I0[idx] - V[idx]*Gsh[idx])/(Rs[idx]*Gsh[idx] + \
+                 1.) - (nNsVth[idx]/Rs[idx])*lambertwterm
 
-    nNsVth : numeric
-        Device thermal voltage [V]
-
-    Rs : numeric
-        Device series resistance [Ohm]
-
-    Rsh : numeric
-        Device shunt resistance [Ohm]
-
-    Returns
-    -------
-    sdm_current_sum : numeric
-        Sum of currents at the diode node in equivalent circuit model [A]
-
-    References
-    ----------
-    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of 
-    real solar cells using Lambert W-function", Solar Energy Materials and 
-    Solar Cells, 81 (2004) 269-277.
-    '''
-
-    VplusItimesRs = V + I * Rs
-    return IL - I0 * np.expm1(VplusItimesRs / nNsVth) - VplusItimesRs / Rsh - I
-
-
-def sdm_v_from_i(I, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
-    '''
-    Computes the device voltage at the given device current using the standard 
-    single diode model (SDM) as described in, e.g., Jain and Kapoor 2004 [1].
-    An ideal device is specified by Rs=0 and Rsh=numpy.inf and the solution is 
-    per Eq 3 of [1] unless Rsh=numpy.inf gives a more accurate (closed form) 
-    solution as determined by the sum of currents at the diode node, which 
-    should be zero at electrical steady state.
-    Inputs to this function can include scalars and pandas.Series, but it
-    always outputs a float64 numpy.ndarray regardless of input type(s).
-
-    Parameters
-    ----------
-    I : numeric
-        Device current [A]
-
-    IL : numeric
-        Device photocurrent [A]
-
-    I0 : numeric
-        Device saturation current [A]
-
-    nNsVth : numeric
-        Device thermal voltage [V]
-
-    Rs : numeric
-        Device series resistance [Ohm]
-
-    Rsh : numeric
-        Device shunt resistance [Ohm]
-
-    return_meta_dict : boolean scalar (default is False)
-        Return additional computation metadata dictionary
-
-    Returns
-    -------
-    V : float64 numpy.ndarray
-        Device voltage [V]
-
-    meta_dict : dictionary (optional, returned when return_meta_dict=True)
-        Metadata for computation
-
-            meta_dict['sdm_current_sum'] : float64 numpy.ndarray like V
-                Sum of currents at diode node in equivalent circuit model [A]
-
-            meta_dict['inf_Rsh_idx'] : boolean numpy.ndarray like V
-                Indices where infinite shunt resistance gives best solution
-
-    References
-    ----------
-    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of 
-    real solar cells using Lambert W-function", Solar Energy Materials and 
-    Solar Cells, 81 (2004) 269-277.
-    '''
-
-    # Ensure inputs are all np.ndarray with np.float64 type
-    I = np.asarray(I, np.float64)
-    IL = np.asarray(IL, np.float64)
-    I0 = np.asarray(I0, np.float64)
-    nNsVth = np.asarray(nNsVth, np.float64)
-    Rs = np.asarray(Rs, np.float64)
-    Rsh = np.asarray(Rsh, np.float64)
-
-    # Default computation of V using np.zeros_like keeps Rsh shape info
-    V = nNsVth * (np.log(IL - I - np.zeros_like(I * Rs / Rsh) + I0) -
-                  np.log(I0)) - I * Rs
-    sdm_current_sum_out = sdm_current_sum(V, I, IL, I0, nNsVth, Rs, Rsh)
-
-    # Computation of V using LambertW for provided Rsh
-    # v_from_i is deprecated: move v_from_i code here when/if it is removed.
-    V_lw = v_from_i(Rsh, Rs, nNsVth, I, I0, IL)
-    sdm_current_sum_lw = sdm_current_sum(V_lw, I, IL, I0, nNsVth, Rs, Rsh)
-
-    # Compute selection indices (may be a scalar boolean)
-    finite_Rsh_idx = np.logical_and(np.isfinite(sdm_current_sum_lw),
-                                    np.absolute(sdm_current_sum_lw) <=
-                                    np.absolute(sdm_current_sum_out))
-
-    # These are always np.ndarray
-    V = np.where(finite_Rsh_idx, V_lw, V)
-    sdm_current_sum_out = np.where(finite_Rsh_idx, sdm_current_sum_lw,
-                                   sdm_current_sum_out)
-
-    if return_meta_dict:
-        return V, {'sdm_current_sum': sdm_current_sum_out,
-                   'inf_Rsh_idx': np.array(np.logical_not(finite_Rsh_idx))}
-    else:
-        return V
-
-
-def sdm_i_from_v(V, IL, I0, nNsVth, Rs, Rsh, return_meta_dict=False):
-    '''
-    Computes the device current at the given device voltage using the standard 
-    single diode model (SDM) as described in, e.g., Jain and Kapoor 2004 [1].
-    An ideal device is specified by Rs=0 and Rsh=numpy.inf and the solution is 
-    per Eq 2 of [1] unless Rs=0 gives a more accurate (closed form) 
-    solution as determined by the sum of currents at the diode node, which 
-    should be zero at electrical steady state.
-    Inputs to this function can include scalars and pandas.Series, but it
-    always outputs a float64 numpy.ndarray regardless of input type(s).
-
-    Parameters
-    ----------
-    V : numeric
-        Device voltage [V]
-
-    IL : numeric
-        Device photocurrent [A]
-
-    I0 : numeric
-        Device saturation current [A]
-
-    nNsVth : numeric
-        Device thermal voltage [V]
-
-    Rs : numeric
-        Device series resistance [Ohm]
-
-    Rsh : numeric
-        Device shunt resistance [Ohm]
-
-    return_meta_dict : boolean scalar (default is False)
-        Return additional computation metadata dictionary
-
-    Returns
-    -------
-    I : float64 numpy.ndarray
-        Device current [A]
-
-    meta_dict : dictionary (optional, returned when return_meta_dict=True)
-        Metadata for computation
-
-            meta_dict['sdm_current_sum'] : float64 numpy.ndarray like I
-                Sum of currents at diode node in equivalent circuit model [A]
-
-            meta_dict['zero_Rs_idx'] : boolean numpy.ndarray like I
-                Indices where zero series resistance gives best solution
-
-    References
-    ----------
-    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of 
-    real solar cells using Lambert W-function", Solar Energy Materials and 
-    Solar Cells, 81 (2004) 269-277.
-    '''
-
-    # Ensure inputs are all np.ndarray with np.float64 type
-    V = np.asarray(V, np.float64)
-    IL = np.asarray(IL, np.float64)
-    I0 = np.asarray(I0, np.float64)
-    nNsVth = np.asarray(nNsVth, np.float64)
-    Rs = np.asarray(Rs, np.float64)
-    Rsh = np.asarray(Rsh, np.float64)
-
-    # Default computation of I using zero_term keeps Rs shape info
-    zero_term = np.zeros_like(Rs)
-    I = IL - I0 * np.expm1((V + zero_term) / nNsVth) - (V + zero_term) / Rsh
-    sdm_current_sum_out = sdm_current_sum(V, I, IL, I0, nNsVth, Rs, Rsh)
-
-    # Computation of I using LambertW for provided Rs
-    # i_from_v is deprecated: move i_from_v code here when/if it is removed.
-    I_lw = i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
-    sdm_current_sum_lw = sdm_current_sum(V, I_lw, IL, I0, nNsVth, Rs, Rsh)
-
-    # Compute selection indices (may be a scalar boolean)
-    nonzero_Rs_idx = np.logical_and(np.isfinite(sdm_current_sum_lw),
-                                    np.absolute(sdm_current_sum_lw) <=
-                                    np.absolute(sdm_current_sum_out))
-
-    # These are always np.ndarray
-    I = np.where(nonzero_Rs_idx, I_lw, I)
-    sdm_current_sum_out = np.where(nonzero_Rs_idx, sdm_current_sum_lw,
-                                   sdm_current_sum_out)
-
-    if return_meta_dict:
-        return I, {'sdm_current_sum': sdm_current_sum_out,
-                   'zero_Rs_idx': np.array(np.logical_not(nonzero_Rs_idx))}
+    if output_is_scalar:
+        return np.asscalar(I)
     else:
         return I
 

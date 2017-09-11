@@ -16,33 +16,31 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 * Improve clearsky.lookup_linke_turbidity speed. (:issue:`368`)
-* Ideal devices supported in single diode model, e.g., 
+* Ideal devices supported in single diode model, e.g.,
   resistance_series = 0 and/or resistance_shunt = numpy.inf (:issue:`340`)
-* Computations for very near ideal devices are more numerically stable in 
-  single diode model (:issue:`340`)
+* `pvsystem.v_from_i` and `pvsystem.i_from_v` computations for near ideal
+  devices are more numerically stable. However, very, very near ideal
+  resistance_series and/or resistance_shunt may still cause issues with the
+  implicit solver (:issue:`340`)
 
 API Changes
 ~~~~~~~~~~~
-* Deprecated `pvsystem.v_from_i` and `pvsystem.i_from_v` functions, which will 
-  be removed in a future release. Instead use `pvsystem.sdm_v_from_i` and
-  `pvsystem.sdm_i_from_v`, which are ~2x slower but can handle ideal devices. 
-  Note that these functions always return a numpy.ndarray (:issue:`340`)
-* Added `pvsystem.sdm_current_sum` function, which computes the sum of currents 
-  at the diode node in the single diode model and is used to improve numerical 
-  stability in `pvsystem.sdm_v_from_i` and `pvsystem.sdm_i_from_v` for very 
-  near ideal devices (:issue:`340`)
+* `pvsystem.v_from_i` and `pvsystem.i_from_v` functions now accept
+  resistance_series = 0 and/or resistance_shunt = numpy.inf as inputs
+  (:issue:`340`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Doc string of modelchain.basic_chain was updated to describe args
   more accurately
+* Doc strings of `singlediode`, `pvsystem.v_from_i`, and `pvsystem.i_from_v`
+  were updated to describe acceptable input arg ranges
 
 Testing
 ~~~~~~~
 * Changed test for clearsky.haurwitz to operate on zenith angles
-* Significant new test cases added for `pvsystem.sdm_v_from_i` and
-  `pvsystem.sdm_i_from_v`, beyond but including cases for deprecated 
-  `pvsystem.v_from_i` and `pvsystem.i_from_v` (:issue:`340`)
+* Significant new test cases added for `pvsystem.v_from_i` and
+  `pvsystem.i_from_v` (:issue:`340`)
 
 Contributors
 ~~~~~~~~~~~~

@@ -436,7 +436,7 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
     },
     {  # Can handle all python scalar inputs with bigger LambertW arg
       #  1000 W/m^2 on a Canadian Solar 220M with 20 C ambient temp
-      #  github issue 225
+      #  github issue 225 (this appears to be from PR 226 not issue 225)
       'Rsh': 190.,
       'Rs': 1.065,
       'nNsVth': 2.89,
@@ -444,6 +444,17 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
       'I0': 7.05196029e-08,
       'IL': 10.491262,
       'V_expected': 54.303958833791455
+    },
+    {  # Can handle all python scalar inputs with bigger LambertW arg
+      #  1000 W/m^2 on a Canadian Solar 220M with 20 C ambient temp
+      #  github issue 225
+      'Rsh': 381.68,
+      'Rs': 1.065,
+      'nNsVth': 2.681527737715915,
+      'I': 0.,
+      'I0': 1.8739027472625636e-09,
+      'IL': 5.1366949999999996,
+      'V_expected': 58.19323124611128
     }])
 def fixture_v_from_i(request):
     return request.param

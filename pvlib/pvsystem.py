@@ -1819,11 +1819,12 @@ def _pwr_optfcn(df, loc):
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
              saturation_current, photocurrent):
     '''
-    Computes the device voltage at the given device current using the standard
-     single diode model (SDM) as described in, e.g., Jain and Kapoor 2004 [1].
+    Device voltage at the given device current for the single diode model.
 
-    The solution is per Eq 3 of [1] except when resistance_shunt=numpy.inf, in
-     which case the explict solution for voltage is used.
+    Uses the single diode model (SDM) as described in, e.g.,
+     Jain and Kapoor 2004 [1].
+    The solution is per Eq 3 of [1] except when resistance_shunt=numpy.inf,
+     in which case the explict solution for voltage is used.
     Inputs to this function can include scalars and pandas.Series, but it
      always outputs a float64 numpy.ndarray regardless of input type(s).
     Ideal device parameters are specified by resistance_shunt=np.inf and
@@ -1962,11 +1963,12 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
              saturation_current, photocurrent):
     '''
-    Computes the device current at the given device voltage using the standard
-     single diode model (SDM) as described in, e.g., Jain and Kapoor 2004 [1].
+    Device current at the given device voltage for the single diode model.
 
-    The solution is per Eq 2 of [1] except when resistance_series=0, in
-     which case the explict solution for current is used.
+    Uses the single diode model (SDM) as described in, e.g.,
+     Jain and Kapoor 2004 [1].
+    The solution is per Eq 2 of [1] except when resistance_series=0,
+     in which case the explict solution for current is used.
     Inputs to this function can include scalars and pandas.Series, but it
      always outputs a float64 numpy.ndarray regardless of input type(s).
     Ideal device parameters are specified by resistance_shunt=np.inf and

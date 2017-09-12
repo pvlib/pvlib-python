@@ -1889,13 +1889,11 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    Rsh, Rs, a, I, I0, IL = \
-        np.broadcast_arrays(resistance_shunt, resistance_series, nNsVth,
+    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+    #  is generally more numerically stable
+    Gsh, Rs, a, I, I0, IL = \
+        np.broadcast_arrays(1./resistance_shunt, resistance_series, nNsVth,
                             current, saturation_current, photocurrent)
-
-    # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally
-    #  more numerically stable
-    Gsh = 1./Rsh
 
     # Intitalize output V (I might not be float64)
     V = np.full_like(I, np.nan, dtype=np.float64)
@@ -1919,6 +1917,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
                    (Gsh[idx_p]*a[idx_p]))
 
         # lambertw typically returns complex value with zero imaginary part
+        # may overflow to np.inf
         lambertwterm = lambertw(argW).real
 
         # Record indices where lambertw input overflowed output
@@ -2026,13 +2025,11 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    Rsh, Rs, a, V, I0, IL = \
-        np.broadcast_arrays(resistance_shunt, resistance_series, nNsVth,
+    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+    #  is generally more numerically stable
+    Gsh, Rs, a, V, I0, IL = \
+        np.broadcast_arrays(1./resistance_shunt, resistance_series, nNsVth,
                             voltage, saturation_current, photocurrent)
-
-    # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally
-    #  more numerically stable
-    Gsh = 1./Rsh
 
     # Intitalize output I (V might not be float64)
     I = np.full_like(V, np.nan, dtype=np.float64)
@@ -2049,6 +2046,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
             Gsh[idx_z]*V[idx_z]
 
     # Only compute using LambertW if there are cases with Rs>0
+    # Does NOT handle possibility of overflow, github issue 298
     if np.any(idx_p):
         # LambertW argument, cannot be float128, may overflow to np.inf
         argW = Rs[idx_p]*I0[idx_p]/(a[idx_p]*(Rs[idx_p]*Gsh[idx_p] + 1.)) * \
@@ -2056,6 +2054,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                    (a[idx_p]*(Rs[idx_p]*Gsh[idx_p] + 1.)))
 
         # lambertw typically returns complex value with zero imaginary part
+        # may overflow to np.inf
         lambertwterm = lambertw(argW).real
 
         # Eqn. 2 in Jain and Kapoor, 2004

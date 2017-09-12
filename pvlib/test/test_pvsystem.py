@@ -370,7 +370,7 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
      'I': np.array(3.),
      'I0': np.array(6.e-7),
      'IL': np.array(7.),
-     'V_expected': 7.5049875193450521
+     'V_expected': np.array(7.5049875193450521)
     },
     {  # Can handle all rank-1 singleton array inputs
      'Rsh': np.array([20.]),
@@ -509,7 +509,7 @@ def test_v_from_i(fixture_v_from_i):
       'V': np.array(40.),
       'I0': np.array(6.e-7),
       'IL': np.array(7.),
-      'I_expected': -299.746389916
+      'I_expected': np.array(-299.746389916)
     },
     {  # Can handle all rank-1 singleton array inputs
       'Rsh': np.array([20.]),

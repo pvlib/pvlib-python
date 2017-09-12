@@ -1825,10 +1825,11 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
      Jain and Kapoor 2004 [1].
     The solution is per Eq 3 of [1] except when resistance_shunt=numpy.inf,
      in which case the explict solution for voltage is used.
-    Inputs to this function can include scalars and pandas.Series, but it
-     always outputs a float64 numpy.ndarray regardless of input type(s).
     Ideal device parameters are specified by resistance_shunt=np.inf and
      resistance_series=0.
+    Inputs to this function can include scalars and pandas.Series, but it is
+     the caller's responsibility to ensure that the arguments are all float64
+     and within the proper ranges.
 
     Parameters
     ----------
@@ -1880,64 +1881,56 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     except ImportError:
         raise ImportError('This function requires scipy')
 
-    # asarray turns Series into arrays so that we don't have to worry
-    #  about multidimensional broadcasting failing
-    # Note that lambertw function doesn't support float128
-    Rsh = np.asarray(resistance_shunt, np.float64)
-    Rs = np.asarray(resistance_series, np.float64)
-    nNsVth = np.asarray(nNsVth, np.float64)
-    I = np.asarray(current, np.float64)
-    I0 = np.asarray(saturation_current, np.float64)
-    IL = np.asarray(photocurrent, np.float64)
+    # Record if inputs were all scalar
+    output_is_scalar = all(map(np.isscalar,
+                               [resistance_shunt, resistance_series, nNsVth,
+                                current, saturation_current, photocurrent]))
+
+    # Ensure that we are working with read-only views of numpy arrays
+    # Turns Series into arrays so that we don't have to worry about
+    #  multidimensional broadcasting failing
+    Rsh, Rs, a, I, I0, IL = \
+        np.broadcast_arrays(resistance_shunt, resistance_series, nNsVth,
+                            current, saturation_current, photocurrent)
 
     # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally
     #  more numerically stable
     Gsh = 1./Rsh
 
-    # Intitalize output V (including shape) by solving explicit model with
-    #   Gsh=0, multiplying by np.ones_like(Gsh) identity in order to also
-    #   capture shape of Gsh.
-    V = (nNsVth*np.log1p((IL - I)/I0) - I*Rs)*np.ones_like(Gsh)
+    # Intitalize output V (I might not be float64)
+    V = np.full_like(I, np.nan, dtype=np.float64)
 
-    # Record if inputs were all scalar
-    output_is_scalar = np.isscalar(V)
+    # Determine indices where 0 < Gsh requires implicit model solution
+    idx_p = 0. < Gsh
 
-    # Multiply by np.atleast_1d in order to convert scalars to arrays, because
-    #  we need to guarantee the ability to index arrays
-    V = np.atleast_1d(V)
+    # Determine indices where 0 = Gsh allows explicit model solution
+    idx_z = 0. == Gsh
 
-    # Expand Gsh input shape to match output V (if needed)
-    Gsh = Gsh*np.ones_like(V)
-
-    # Determine indices where Gsh>0 requires implicit model solution
-    idx = 0. < Gsh
+    # Explicit solutions where Gsh=0
+    if np.any(idx_z):
+        V[idx_z] = a[idx_z]*np.log1p((IL[idx_z] - I[idx_z])/I0[idx_z]) - \
+            I[idx_z]*Rs[idx_z]
 
     # Only compute using LambertW if there are cases with Gsh>0
-    if np.any(idx):
-        # Expand remaining inputs to accomodate common indexing
-        Rs = Rs*np.ones_like(V)
-        nNsVth = nNsVth*np.ones_like(V)
-        I = I*np.ones_like(V)
-        I0 = I0*np.ones_like(V)
-        IL = IL*np.ones_like(V)
-
-        # LambertW argument, argW cannot be float128
-        argW = I0[idx] / (Gsh[idx]*nNsVth[idx]) * \
-            np.exp((-I[idx] + IL[idx] + I0[idx]) / (Gsh[idx]*nNsVth[idx]))
+    if np.any(idx_p):
+        # LambertW argument, cannot be float128, may overflow to np.inf
+        argW = I0[idx_p] / (Gsh[idx_p]*a[idx_p]) * \
+            np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
+                   (Gsh[idx_p]*a[idx_p]))
 
         # lambertw typically returns complex value with zero imaginary part
         lambertwterm = lambertw(argW).real
 
-        # Record indices where LambertW input overflowed output
-        idx_w = np.logical_not(np.isfinite(lambertwterm))
+        # Record indices where lambertw input overflowed output
+        idx_inf = np.logical_not(np.isfinite(lambertwterm))
 
         # Only re-compute LambertW if it overflowed
-        if np.any(idx_w):
+        if np.any(idx_inf):
             # Calculate using log(argW) in case argW is really big
-            logargW = (np.log(I0[idx]) - np.log(Gsh[idx]) -
-                       np.log(nNsVth[idx]) +
-                       (-I[idx] + IL[idx] + I0[idx]) /
-                       (Gsh[idx] * nNsVth[idx]))[idx_w]
+            logargW = (np.log(I0[idx_p]) - np.log(Gsh[idx_p]) -
+                       np.log(a[idx_p]) +
+                       (-I[idx_p] + IL[idx_p] + I0[idx_p]) /
+                       (Gsh[idx_p] * a[idx_p]))[idx_inf]
 
             # Three iterations of Newton-Raphson method to solve
             #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
@@ -1945,14 +1938,14 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
             #  of Newton's method gives approximately 8 digits of precision.
             w = logargW
             for _ in range(0, 3):
-                w = w * (1 - np.log(w) + logargW) / (1 + w)
-            lambertwterm[idx_w] = w
+                w = w * (1. - np.log(w) + logargW) / (1. + w)
+            lambertwterm[idx_inf] = w
 
         # Eqn. 3 in Jain and Kapoor, 2004
-        #  V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh
-        # Recasted in terms of Gsh=1/Rsh for better numerical stability.
-        V[idx] = (IL[idx] + I0[idx] - I[idx])/Gsh[idx] - I[idx]*Rs[idx] - \
-            nNsVth[idx]*lambertwterm
+        #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
+        # Recast in terms of Gsh=1/Rsh for better numerical stability.
+        V[idx_p] = (IL[idx_p] + I0[idx_p] - I[idx_p])/Gsh[idx_p] - \
+            I[idx_p]*Rs[idx_p] - a[idx_p]*lambertwterm
 
     if output_is_scalar:
         return np.asscalar(V)
@@ -1969,10 +1962,11 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
      Jain and Kapoor 2004 [1].
     The solution is per Eq 2 of [1] except when resistance_series=0,
      in which case the explict solution for current is used.
-    Inputs to this function can include scalars and pandas.Series, but it
-     always outputs a float64 numpy.ndarray regardless of input type(s).
     Ideal device parameters are specified by resistance_shunt=np.inf and
      resistance_series=0.
+    Inputs to this function can include scalars and pandas.Series, but it is
+     the caller's responsibility to ensure that the arguments are all float64
+     and within the proper ranges.
 
     Parameters
     ----------
@@ -2024,51 +2018,42 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     except ImportError:
         raise ImportError('This function requires scipy')
 
-    # asarray turns Series into arrays so that we don't have to worry
-    #  about multidimensional broadcasting failing
-    # Note that lambertw function doesn't support float128
-    Rsh = np.asarray(resistance_shunt, np.float64)
-    Rs = np.asarray(resistance_series, np.float64)
-    nNsVth = np.asarray(nNsVth, np.float64)
-    V = np.asarray(voltage, np.float64)
-    I0 = np.asarray(saturation_current, np.float64)
-    IL = np.asarray(photocurrent, np.float64)
+    # Record if inputs were all scalar
+    output_is_scalar = all(map(np.isscalar,
+                               [resistance_shunt, resistance_series, nNsVth,
+                                voltage, saturation_current, photocurrent]))
+
+    # Ensure that we are working with read-only views of numpy arrays
+    # Turns Series into arrays so that we don't have to worry about
+    #  multidimensional broadcasting failing
+    Rsh, Rs, a, V, I0, IL = \
+        np.broadcast_arrays(resistance_shunt, resistance_series, nNsVth,
+                            voltage, saturation_current, photocurrent)
 
     # This transforms any ideal Rsh=np.inf into Gsh=0., which is generally
     #  more numerically stable
     Gsh = 1./Rsh
 
-    # Intitalize output I (including shape) by solving explicit model with
-    #   Rs=0, multiplying by np.ones_like(Rs) identity in order to also
-    #   capture shape of Rs.
-    I = (IL - I0*np.expm1(V/nNsVth) - Gsh*V)*np.ones_like(Rs)
+    # Intitalize output I (V might not be float64)
+    I = np.full_like(V, np.nan, dtype=np.float64)
 
-    # Record if inputs were all scalar
-    output_is_scalar = np.isscalar(I)
+    # Determine indices where 0 < Rs requires implicit model solution
+    idx_p = 0. < Rs
 
-    # Multiply by np.atleast_1d in order to convert scalars to arrays, because
-    #  we need to guarantee the ability to index arrays
-    I = np.atleast_1d(I)
+    # Determine indices where 0 = Rs allows explicit model solution
+    idx_z = 0. == Rs
 
-    # Expand Rs input shape to match output I (if needed)
-    Rs = Rs*np.ones_like(I)
-
-    # Determine indices where Rs>0 requires implicit model solution
-    idx = 0. < Rs
+    # Explicit solutions where Rs=0
+    if np.any(idx_z):
+        I[idx_z] = IL[idx_z] - I0[idx_z]*np.expm1(V[idx_z]/a[idx_z]) - \
+            Gsh[idx_z]*V[idx_z]
 
     # Only compute using LambertW if there are cases with Rs>0
-    if np.any(idx):
-        # Expand remaining inputs to accomodate common indexing
-        Gsh = Gsh*np.ones_like(I)
-        nNsVth = nNsVth*np.ones_like(I)
-        V = V*np.ones_like(I)
-        I0 = I0*np.ones_like(I)
-        IL = IL*np.ones_like(I)
-
-        # LambertW argument, argW cannot be float128
-        argW = Rs[idx]*I0[idx]/(nNsVth[idx]*(Rs[idx]*Gsh[idx] + 1.)) * \
-            np.exp((Rs[idx]*(IL[idx] + I0[idx]) + V[idx]) /
-                   (nNsVth[idx]*(Rs[idx]*Gsh[idx] + 1.)))
+    if np.any(idx_p):
+        # LambertW argument, cannot be float128, may overflow to np.inf
+        argW = Rs[idx_p]*I0[idx_p]/(a[idx_p]*(Rs[idx_p]*Gsh[idx_p] + 1.)) * \
+            np.exp((Rs[idx_p]*(IL[idx_p] + I0[idx_p]) + V[idx_p]) /
+                   (a[idx_p]*(Rs[idx_p]*Gsh[idx_p] + 1.)))
 
         # lambertw typically returns complex value with zero imaginary part
         lambertwterm = lambertw(argW).real
@@ -2076,9 +2061,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # Eqn. 2 in Jain and Kapoor, 2004
         #  I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + \
         #      Rsh*(IL + I0)/(Rs + Rsh)
-        # Recasted in terms of Gsh=1/Rsh for better numerical stability.
-        I[idx] = (IL[idx] + I0[idx] - V[idx]*Gsh[idx]) / \
-            (Rs[idx]*Gsh[idx] + 1.) - (nNsVth[idx]/Rs[idx])*lambertwterm
+        # Recast in terms of Gsh=1/Rsh for better numerical stability.
+        I[idx_p] = (IL[idx_p] + I0[idx_p] - V[idx_p]*Gsh[idx_p]) / \
+            (Rs[idx_p]*Gsh[idx_p] + 1.) - (a[idx_p]/Rs[idx_p])*lambertwterm
 
     if output_is_scalar:
         return np.asscalar(I)

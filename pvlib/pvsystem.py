@@ -1886,13 +1886,15 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
                                [resistance_shunt, resistance_series, nNsVth,
                                 current, saturation_current, photocurrent]))
 
+    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+    #  is generally more numerically stable
+    conductance_shunt = 1./resistance_shunt
+
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
-    #  is generally more numerically stable
     Gsh, Rs, a, I, I0, IL = \
-        np.broadcast_arrays(1./resistance_shunt, resistance_series, nNsVth,
+        np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
                             current, saturation_current, photocurrent)
 
     # Intitalize output V (I might not be float64)
@@ -2022,13 +2024,15 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                                [resistance_shunt, resistance_series, nNsVth,
                                 voltage, saturation_current, photocurrent]))
 
+    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+    #  is generally more numerically stable
+    conductance_shunt = 1./resistance_shunt
+
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
-    #  is generally more numerically stable
     Gsh, Rs, a, V, I0, IL = \
-        np.broadcast_arrays(1./resistance_shunt, resistance_series, nNsVth,
+        np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
                             voltage, saturation_current, photocurrent)
 
     # Intitalize output I (V might not be float64)
@@ -2058,8 +2062,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         lambertwterm = lambertw(argW).real
 
         # Eqn. 2 in Jain and Kapoor, 2004
-        #  I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + \
-        #      Rsh*(IL + I0)/(Rs + Rsh)
+        #  I = -V/(Rs + Rsh) - (a/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
         # Recast in terms of Gsh=1/Rsh for better numerical stability.
         I[idx_p] = (IL[idx_p] + I0[idx_p] - V[idx_p]*Gsh[idx_p]) / \
             (Rs[idx_p]*Gsh[idx_p] + 1.) - (a[idx_p]/Rs[idx_p])*lambertwterm

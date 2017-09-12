@@ -105,8 +105,8 @@ def get_solarposition(time, latitude, longitude,
                               pressure, temperature,
                               how='numpy', **kwargs)
     elif method == 'pyephem':
-        ephem_df = pyephem(time, latitude, longitude, pressure, temperature,
-                           **kwargs)
+        ephem_df = pyephem(time, latitude, longitude, altitude, pressure,
+                           temperature, **kwargs)
     elif method == 'ephemeris':
         ephem_df = ephemeris(time, latitude, longitude, pressure, temperature,
                              **kwargs)

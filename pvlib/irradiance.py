@@ -334,7 +334,7 @@ def total_irrad(surface_tilt, surface_azimuth,
     Returns
     -------
     irradiance : OrderedDict or DataFrame
-        Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse', 
+        Contains keys/columns ``'poa_global', 'poa_direct',
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
     """
 

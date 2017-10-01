@@ -674,7 +674,8 @@ class ModelChain(object):
             self.weather = weather
         if times is not None:
             self.times = times
-        self.solar_position = self.location.get_solarposition(self.times)
+        self.solar_position = self.location.get_solarposition(
+            self.times, method=self.solar_position_method)
         icolumns = set(self.weather.columns)
         wrn_txt = ("This function is not safe at the moment.\n" +
                    "Results can be too high or negative.\n" +
@@ -683,10 +684,12 @@ class ModelChain(object):
 
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             logging.debug('Estimate dni from ghi and dhi')
+            clearsky = self.location.get_clearsky(
+                times, solar_position=self.solar_position)
             self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
                 self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
                 self.solar_position.zenith,
-                clearsky_dni=self.location.get_clearsky(times).dni,
+                clearsky_dni=clearsky['dni'],
                 clearsky_tolerance=1.1)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
@@ -753,7 +756,8 @@ class ModelChain(object):
         if times is not None:
             self.times = times
 
-        self.solar_position = self.location.get_solarposition(self.times)
+        self.solar_position = self.location.get_solarposition(
+            self.times, method=self.solar_position_method)
 
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)

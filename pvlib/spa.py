@@ -952,7 +952,6 @@ def solar_position_loop(unixtime, loc_args, out):
         x = xterm(u, lat, elev)
         y = yterm(u, lat, elev)
         delta_alpha = parallax_sun_right_ascension(x, xi, H, delta)
-        alpha_prime = topocentric_sun_right_ascension(alpha, delta_alpha)
         delta_prime = topocentric_sun_declination(delta, x, y, xi, delta_alpha,
                                                   H)
         H_prime = topocentric_local_hour_angle(H, delta_alpha)
@@ -1064,7 +1063,6 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     x = xterm(u, lat, elev)
     y = yterm(u, lat, elev)
     delta_alpha = parallax_sun_right_ascension(x, xi, H, delta)
-    alpha_prime = topocentric_sun_right_ascension(alpha, delta_alpha)
     delta_prime = topocentric_sun_declination(delta, x, y, xi, delta_alpha, H)
     H_prime = topocentric_local_hour_angle(H, delta_alpha)
     e0 = topocentric_elevation_angle_without_atmosphere(lat, delta_prime,

@@ -12,7 +12,7 @@ Bug fixes
 * Remove condition causing Overflow warning from clearsky.haurwitz
 * modelchain.basic_chain now correctly passes 'solar_position_method'
   arg to solarposition.get_solarposition
-
+* Fixed: `Variables and Symbols extra references not available <https://github.com/pvlib/pvlib-python/issues/380>`_
 Enhancements
 ~~~~~~~~~~~~
 * Improve clearsky.lookup_linke_turbidity speed. (:issue:`368`)

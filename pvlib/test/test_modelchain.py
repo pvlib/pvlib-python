@@ -444,6 +444,7 @@ def test_ModelChain___repr__(system, location, strategy, strategy_str):
 
     assert mc.__repr__() == expected
 
+
 @requires_scipy
 def test_weather_irradiance_input(system, location):
     """Test will raise a warning and should be removed in future versions."""

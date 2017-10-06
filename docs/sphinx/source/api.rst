@@ -201,10 +201,10 @@ Functions relevant for the single diode model.
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.singlediode
    pvsystem.calcparams_desoto
-   pvsystem.v_from_i
    pvsystem.i_from_v
+   pvsystem.singlediode
+   pvsystem.v_from_i
 
 SAPM model
 ----------

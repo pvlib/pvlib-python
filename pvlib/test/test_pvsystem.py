@@ -353,37 +353,245 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
     assert_allclose(nNsVth, 0.473)
 
 
-@requires_scipy
-def test_v_from_i():
-    output = pvsystem.v_from_i(20, .1, .5, 3, 6e-7, 7)
-    assert_allclose(7.5049875193450521, output, atol=1e-5)
+@pytest.fixture(params=[
+    {  # Can handle all python scalar inputs
+     'Rsh': 20.,
+     'Rs': 0.1,
+     'nNsVth': 0.5,
+     'I': 3.,
+     'I0': 6.e-7,
+     'IL': 7.,
+     'V_expected': 7.5049875193450521
+    },
+    {  # Can handle all rank-0 array inputs
+     'Rsh': np.array(20.),
+     'Rs': np.array(0.1),
+     'nNsVth': np.array(0.5),
+     'I': np.array(3.),
+     'I0': np.array(6.e-7),
+     'IL': np.array(7.),
+     'V_expected': np.array(7.5049875193450521)
+    },
+    {  # Can handle all rank-1 singleton array inputs
+     'Rsh': np.array([20.]),
+     'Rs': np.array([0.1]),
+     'nNsVth': np.array([0.5]),
+     'I': np.array([3.]),
+     'I0': np.array([6.e-7]),
+     'IL': np.array([7.]),
+     'V_expected': np.array([7.5049875193450521])
+    },
+    {  # Can handle all rank-1 non-singleton array inputs with infinite shunt
+      #  resistance, Rsh=inf gives V=Voc=nNsVth*(np.log(IL + I0) - np.log(I0)
+      #  at I=0
+      'Rsh': np.array([np.inf, 20.]),
+      'Rs': np.array([0.1, 0.1]),
+      'nNsVth': np.array([0.5, 0.5]),
+      'I': np.array([0., 3.]),
+      'I0': np.array([6.e-7, 6.e-7]),
+      'IL': np.array([7., 7.]),
+      'V_expected': np.array([0.5*(np.log(7. + 6.e-7) - np.log(6.e-7)),
+                             7.5049875193450521])
+    },
+    {  # Can handle mixed inputs with a rank-2 array with infinite shunt
+      #  resistance, Rsh=inf gives V=Voc=nNsVth*(np.log(IL + I0) - np.log(I0)
+      #  at I=0
+      'Rsh': np.array([[np.inf, np.inf], [np.inf, np.inf]]),
+      'Rs': np.array([0.1]),
+      'nNsVth': np.array(0.5),
+      'I': 0.,
+      'I0': np.array([6.e-7]),
+      'IL': np.array([7.]),
+      'V_expected': 0.5*(np.log(7. + 6.e-7) - np.log(6.e-7))*np.ones((2, 2))
+    },
+    {  # Can handle ideal series and shunt, Rsh=inf and Rs=0 give
+      #  V = nNsVth*(np.log(IL - I + I0) - np.log(I0))
+      'Rsh': np.inf,
+      'Rs': 0.,
+      'nNsVth': 0.5,
+      'I': np.array([7., 7./2., 0.]),
+      'I0': 6.e-7,
+      'IL': 7.,
+      'V_expected': np.array([0., 0.5*(np.log(7. - 7./2. + 6.e-7) -
+                              np.log(6.e-7)), 0.5*(np.log(7. + 6.e-7) -
+                              np.log(6.e-7))])
+    },
+    {  # Can handle only ideal series resistance, no closed form solution
+      'Rsh': 20.,
+      'Rs': 0.,
+      'nNsVth': 0.5,
+      'I': 3.,
+      'I0': 6.e-7,
+      'IL': 7.,
+      'V_expected': 7.804987519345062
+    },
+    {  # Can handle all python scalar inputs with big LambertW arg
+      'Rsh': 500.,
+      'Rs': 10.,
+      'nNsVth': 4.06,
+      'I': 0.,
+      'I0': 6.e-10,
+      'IL': 1.2,
+      'V_expected': 86.320000493521079
+    },
+    {  # Can handle all python scalar inputs with bigger LambertW arg
+      #  1000 W/m^2 on a Canadian Solar 220M with 20 C ambient temp
+      #  github issue 225 (this appears to be from PR 226 not issue 225)
+      'Rsh': 190.,
+      'Rs': 1.065,
+      'nNsVth': 2.89,
+      'I': 0.,
+      'I0': 7.05196029e-08,
+      'IL': 10.491262,
+      'V_expected': 54.303958833791455
+    },
+    {  # Can handle all python scalar inputs with bigger LambertW arg
+      #  1000 W/m^2 on a Canadian Solar 220M with 20 C ambient temp
+      #  github issue 225
+      'Rsh': 381.68,
+      'Rs': 1.065,
+      'nNsVth': 2.681527737715915,
+      'I': 0.,
+      'I0': 1.8739027472625636e-09,
+      'IL': 5.1366949999999996,
+      'V_expected': 58.19323124611128
+    },
+    {  # Verify mixed solution type indexing logic
+      'Rsh': np.array([np.inf, 190., 381.68]),
+      'Rs': 1.065,
+      'nNsVth': np.array([2.89, 2.89, 2.681527737715915]),
+      'I': 0.,
+      'I0': np.array([7.05196029e-08, 7.05196029e-08, 1.8739027472625636e-09]),
+      'IL': np.array([10.491262, 10.491262, 5.1366949999999996]),
+      'V_expected': np.array([2.89*np.log1p(10.491262/7.05196029e-08),
+                              54.303958833791455, 58.19323124611128])
+    }])
+def fixture_v_from_i(request):
+    return request.param
 
 
 @requires_scipy
-def test_v_from_i_big():
-    output = pvsystem.v_from_i(500, 10, 4.06, 0, 6e-10, 1.2)
-    assert_allclose(86.320000493521079, output, atol=1e-5)
+def test_v_from_i(fixture_v_from_i):
+    # Solution set loaded from fixture
+    Rsh = fixture_v_from_i['Rsh']
+    Rs = fixture_v_from_i['Rs']
+    nNsVth = fixture_v_from_i['nNsVth']
+    I = fixture_v_from_i['I']
+    I0 = fixture_v_from_i['I0']
+    IL = fixture_v_from_i['IL']
+    V_expected = fixture_v_from_i['V_expected']
+
+    # Convergence criteria
+    atol = 1.e-11
+
+    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL)
+    assert(isinstance(V, type(V_expected)))
+    if isinstance(V, type(np.ndarray)):
+        assert(isinstance(V.dtype, type(V_expected.dtype)))
+        assert(V.shape == V_expected.shape)
+    assert_allclose(V, V_expected, atol=atol)
+
+
+@pytest.fixture(params=[
+    {  # Can handle all python scalar inputs
+      'Rsh': 20.,
+      'Rs': 0.1,
+      'nNsVth': 0.5,
+      'V': 40.,
+      'I0': 6.e-7,
+      'IL': 7.,
+      'I_expected': -299.746389916
+    },
+    {  # Can handle all rank-0 array inputs
+      'Rsh': np.array(20.),
+      'Rs': np.array(0.1),
+      'nNsVth': np.array(0.5),
+      'V': np.array(40.),
+      'I0': np.array(6.e-7),
+      'IL': np.array(7.),
+      'I_expected': np.array(-299.746389916)
+    },
+    {  # Can handle all rank-1 singleton array inputs
+      'Rsh': np.array([20.]),
+      'Rs': np.array([0.1]),
+      'nNsVth': np.array([0.5]),
+      'V': np.array([40.]),
+      'I0': np.array([6.e-7]),
+      'IL': np.array([7.]),
+      'I_expected': np.array([-299.746389916])
+    },
+    {  # Can handle all rank-1 non-singleton array inputs with a zero
+      #  series resistance, Rs=0 gives I=IL=Isc at V=0
+      'Rsh': np.array([20., 20.]),
+      'Rs': np.array([0., 0.1]),
+      'nNsVth': np.array([0.5, 0.5]),
+      'V': np.array([0., 40.]),
+      'I0': np.array([6.e-7, 6.e-7]),
+      'IL': np.array([7., 7.]),
+      'I_expected': np.array([7., -299.746389916])
+    },
+    {  # Can handle mixed inputs with a rank-2 array with zero series
+      #  resistance, Rs=0 gives I=IL=Isc at V=0
+      'Rsh': np.array([20.]),
+      'Rs': np.array([[0., 0.], [0., 0.]]),
+      'nNsVth': np.array(0.5),
+      'V': 0.,
+      'I0': np.array([6.e-7]),
+      'IL': np.array([7.]),
+      'I_expected': np.array([[7., 7.], [7., 7.]])
+    },
+    {  # Can handle ideal series and shunt, Rsh=inf and Rs=0 give
+      #  V_oc = nNsVth*(np.log(IL + I0) - np.log(I0))
+      'Rsh': np.inf,
+      'Rs': 0.,
+      'nNsVth': 0.5,
+      'V': np.array([0., 0.5*(np.log(7. + 6.e-7) - np.log(6.e-7))/2.,
+                     0.5*(np.log(7. + 6.e-7) - np.log(6.e-7))]),
+      'I0': 6.e-7,
+      'IL': 7.,
+      'I_expected': np.array([7., 7. - 6.e-7*np.expm1((np.log(7. + 6.e-7) -
+                              np.log(6.e-7))/2.), 0.])
+    },
+    {  # Can handle only ideal shunt resistance, no closed form solution
+      'Rsh': np.inf,
+      'Rs': 0.1,
+      'nNsVth': 0.5,
+      'V': 40.,
+      'I0': 6.e-7,
+      'IL': 7.,
+      'I_expected': -299.7383436645412
+    }])
+def fixture_i_from_v(request):
+    return request.param
 
 
 @requires_scipy
-def test_v_from_i_bigger():
-    # 1000 W/m^2 on a Canadian Solar 220M with 20 C ambient temp
-    # github issue 225
-    output = pvsystem.v_from_i(190, 1.065, 2.89, 0, 7.05196029e-08, 10.491262)
-    assert_allclose(54.303958833791455, output, atol=1e-5)
+def test_i_from_v(fixture_i_from_v):
+    # Solution set loaded from fixture
+    Rsh = fixture_i_from_v['Rsh']
+    Rs = fixture_i_from_v['Rs']
+    nNsVth = fixture_i_from_v['nNsVth']
+    V = fixture_i_from_v['V']
+    I0 = fixture_i_from_v['I0']
+    IL = fixture_i_from_v['IL']
+    I_expected = fixture_i_from_v['I_expected']
 
+    # Convergence criteria
+    atol = 1.e-11
 
-@requires_scipy
-def test_i_from_v():
-    output = pvsystem.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_allclose(-299.746389916, output, atol=1e-5)
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
+    assert(isinstance(I, type(I_expected)))
+    if isinstance(I, type(np.ndarray)):
+        assert(isinstance(I.dtype, type(I_expected.dtype)))
+        assert(I.shape == I_expected.shape)
+    assert_allclose(I, I_expected, atol=atol)
 
 
 @requires_scipy
 def test_PVSystem_i_from_v():
     system = pvsystem.PVSystem()
     output = system.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_allclose(-299.746389916, output, atol=1e-5)
+    assert_allclose(output, -299.746389916, atol=1e-5)
 
 
 @requires_scipy
@@ -440,7 +648,7 @@ def test_singlediode_floats(sam_data):
         if k in ['i', 'v']:
             assert v is None
         else:
-            assert_allclose(expected[k], v, atol=3)
+            assert_allclose(v, expected[k], atol=3)
 
 
 @requires_scipy
@@ -453,11 +661,11 @@ def test_singlediode_floats_ivcurve():
                 'i_x': 6.7556075876880621,
                 'i_sc': 6.9646747613963198,
                 'v_mp': 6.221535886625464,
-                'i': np.array([6.965172e+00,   6.755882e+00,   2.575717e-14]),
-                'v': np.array([0.     ,  4.05315,  8.1063])}
+                'i': np.array([6.965172e+00, 6.755882e+00, 2.575717e-14]),
+                'v': np.array([0., 4.05315, 8.1063])}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_allclose(expected[k], v, atol=3)
+        assert_allclose(v, expected[k], atol=3)
 
 
 @requires_scipy
@@ -465,33 +673,31 @@ def test_singlediode_series_ivcurve(cec_module_params):
     times = pd.DatetimeIndex(start='2015-06-01', periods=3, freq='6H')
     poa_data = pd.Series([0, 400, 800], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                         poa_data,
-                                         temp_cell=25,
-                                         alpha_isc=cec_module_params['alpha_sc'],
-                                         module_parameters=cec_module_params,
-                                         EgRef=1.121,
-                                         dEgdT=-0.0002677)
+                                  poa_data, temp_cell=25,
+                                  alpha_isc=cec_module_params['alpha_sc'],
+                                  module_parameters=cec_module_params,
+                                  EgRef=1.121, dEgdT=-0.0002677)
 
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 
-    expected = OrderedDict([('i_sc', array([        nan,  3.01054475,  6.00675648])),
-             ('v_oc', array([         nan,   9.96886962,  10.29530483])),
-             ('i_mp', array([        nan,  2.65191983,  5.28594672])),
-             ('v_mp', array([        nan,  8.33392491,  8.4159707 ])),
-             ('p_mp', array([         nan,  22.10090078,  44.48637274])),
-             ('i_x', array([        nan,  2.88414114,  5.74622046])),
-             ('i_xx', array([        nan,  2.04340914,  3.90007956])),
-             ('v',
-              array([[         nan,          nan,          nan],
-       [  0.        ,   4.98443481,   9.96886962],
-       [  0.        ,   5.14765242,  10.29530483]])),
-             ('i',
-              array([[             nan,              nan,              nan],
-       [  3.01079860e+00,   2.88414114e+00,   3.10862447e-14],
-       [  6.00726296e+00,   5.74622046e+00,   0.00000000e+00]]))])
+    expected = OrderedDict([('i_sc', array([0., 3.01054475, 6.00675648])),
+                            ('v_oc', array([0., 9.96886962, 10.29530483])),
+                            ('i_mp', array([0., 2.65191983, 5.28594672])),
+                            ('v_mp', array([0., 8.33392491, 8.4159707])),
+                            ('p_mp', array([0., 22.10090078, 44.48637274])),
+                            ('i_x', array([0., 2.88414114, 5.74622046])),
+                            ('i_xx', array([0., 2.04340914, 3.90007956])),
+                            ('v', array([[0., 0., 0.],
+                                         [0., 4.98443481, 9.96886962],
+                                         [0., 5.14765242, 10.29530483]])),
+                            ('i', array([[0., 0., 0.],
+                                         [3.01079860e+00, 2.88414114e+00,
+                                          3.10862447e-14],
+                                         [6.00726296e+00, 5.74622046e+00,
+                                          0.00000000e+00]]))])
 
     for k, v in out.items():
-        assert_allclose(expected[k], v, atol=1e-2)
+        assert_allclose(v, expected[k], atol=1e-2)
 
 
 def test_scale_voltage_current_power(sam_data):
@@ -521,17 +727,17 @@ def test_PVSystem_scale_voltage_current_power():
 
 def test_sapm_celltemp():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(43.509, default['temp_cell'], 3)
-    assert_allclose(40.809, default['temp_module'], 3)
+    assert_allclose(default['temp_cell'], 43.509, 3)
+    assert_allclose(default['temp_module'], 40.809, 3)
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20,
                                                        [-3.47, -.0594, 3]))
 
 
 def test_sapm_celltemp_dict_like():
     default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(43.509, default['temp_cell'], 3)
-    assert_allclose(40.809, default['temp_module'], 3)
-    model = {'a':-3.47, 'b':-.0594, 'deltaT':3}
+    assert_allclose(default['temp_cell'], 43.509, 3)
+    assert_allclose(default['temp_module'], 40.809, 3)
+    model = {'a': -3.47, 'b': -.0594, 'deltaT': 3}
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
     model = pd.Series(model)
     assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
@@ -759,7 +965,7 @@ def test_LocalizedPVSystem___repr__():
 def test_pvwatts_dc_scalars():
     expected = 88.65
     out = pvsystem.pvwatts_dc(900, 30, 100, -0.003)
-    assert_allclose(expected, out)
+    assert_allclose(out, expected)
 
 
 @needs_numpy_1_10
@@ -767,11 +973,11 @@ def test_pvwatts_dc_arrays():
     irrad_trans = np.array([np.nan, 900, 900])
     temp_cell = np.array([30, np.nan, 30])
     irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
-    expected = np.array([[   nan,  88.65,  88.65],
-                         [   nan,    nan,    nan],
-                         [   nan,  88.65,  88.65]])
+    expected = np.array([[nan,  88.65,  88.65],
+                         [nan,    nan,    nan],
+                         [nan,  88.65,  88.65]])
     out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
-    assert_allclose(expected, out, equal_nan=True)
+    assert_allclose(out, expected, equal_nan=True)
 
 
 def test_pvwatts_dc_series():
@@ -785,18 +991,18 @@ def test_pvwatts_dc_series():
 def test_pvwatts_ac_scalars():
     expected = 85.58556604752516
     out = pvsystem.pvwatts_ac(90, 100, 0.95)
-    assert_allclose(expected, out)
+    assert_allclose(out, expected)
 
 
 @needs_numpy_1_10
 def test_pvwatts_ac_arrays():
     pdc = np.array([[np.nan], [50], [100]])
     pdc0 = 100
-    expected = np.array([[         nan],
-                         [ 47.60843624],
-                         [ 95.        ]])
+    expected = np.array([[nan],
+                         [47.60843624],
+                         [95.]])
     out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
-    assert_allclose(expected, out, equal_nan=True)
+    assert_allclose(out, expected, equal_nan=True)
 
 
 def test_pvwatts_ac_series():
@@ -810,7 +1016,7 @@ def test_pvwatts_ac_series():
 def test_pvwatts_losses_default():
     expected = 14.075660688264469
     out = pvsystem.pvwatts_losses()
-    assert_allclose(expected, out)
+    assert_allclose(out, expected)
 
 
 @needs_numpy_1_10
@@ -818,7 +1024,7 @@ def test_pvwatts_losses_arrays():
     expected = np.array([nan, 14.934904])
     age = np.array([nan, 1])
     out = pvsystem.pvwatts_losses(age=age)
-    assert_allclose(expected, out)
+    assert_allclose(out, expected)
 
 
 def test_pvwatts_losses_series():

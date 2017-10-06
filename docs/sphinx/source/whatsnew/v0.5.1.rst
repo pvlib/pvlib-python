@@ -12,6 +12,7 @@ Bug fixes
 * Remove condition causing Overflow warning from clearsky.haurwitz
 * modelchain.basic_chain now correctly passes 'solar_position_method'
   arg to solarposition.get_solarposition
+* Unnecessary calculations of alpha_prime was removed from two methods of spa.py
 
 Enhancements
 ~~~~~~~~~~~~

@@ -14,6 +14,8 @@ Bug fixes
   arg to solarposition.get_solarposition
 * Removed unnecessary calculations of alpha_prime in spa.solar_position_numpy
   and spa.solar_position_loop
+* Fixed args mismatch for solarposition.pyephem call 
+  from solarposition.get_solarposition with method='pyephem'
 
 Enhancements
 ~~~~~~~~~~~~

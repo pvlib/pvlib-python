@@ -17,6 +17,10 @@ Bug fixes
   and spa.solar_position_loop
 * Fixed args mismatch for solarposition.pyephem call 
   from solarposition.get_solarposition with method='pyephem'
+  arg to solarposition.get_solarposition (:issue:`370`)
+* ModelChain.prepare_inputs and ModelChain.complete_irradiance now
+  correctly pass the 'solar_position_method' argument to
+  solarposition.get_solarposition (:issue:`377`)
 
 Enhancements
 ~~~~~~~~~~~~

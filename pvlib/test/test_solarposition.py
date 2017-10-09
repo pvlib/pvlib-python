@@ -352,8 +352,9 @@ def test_get_solarposition_no_kwargs(expected_solpos):
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
-    
 
+
+@requires_ephem
 def test_get_solarposition_method_pyephem(expected_solpos):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=1, freq='D', tz=golden.tz)

@@ -380,7 +380,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         The module used to calculate the spectral correction
         coefficients corresponds to the Mult-crystalline silicon
         Manufacturer 2 Model C from [3]_. Spectral Response (SR) of CIGS
-        and a-Si modules used to derive coefficients can be found in [4]_ 
+        and a-Si modules used to derive coefficients can be found in [4]_
 
     coefficients : None or array-like, default None
         allows for entry of user defined spectral correction

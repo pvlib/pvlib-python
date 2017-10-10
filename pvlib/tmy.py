@@ -251,7 +251,7 @@ def _recolumn(tmy3_dataframe, inplace=True):
 
     mapping = dict(zip(raw_columns.split(','), new_columns))
 
-    return tmy3_dataframe.rename(columns=mapping, inplace=True)
+    return tmy3_dataframe.rename(columns=mapping, inplace=inplace)
 
 
 def readtmy2(filename):

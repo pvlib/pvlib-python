@@ -21,6 +21,7 @@ Bug fixes
 * ModelChain.prepare_inputs and ModelChain.complete_irradiance now
   correctly pass the 'solar_position_method' argument to
   solarposition.get_solarposition (:issue:`377`)
+* Fixed usage of inplace parameter for tmy._recolumn (:issue:`342`)
 
 Enhancements
 ~~~~~~~~~~~~

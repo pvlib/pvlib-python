@@ -187,7 +187,7 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
         index_col='datetime')
 
     if recolumn:
-        _recolumn(data)  # rename to standard column names
+        data = _recolumn(data)  # rename to standard column names
 
     data = data.tz_localize(int(meta['TZ']*3600))
 
@@ -213,7 +213,7 @@ def _parsedate(ymd, hour, year=None):
     return true_date
 
 
-def _recolumn(tmy3_dataframe, inplace=True):
+def _recolumn(tmy3_dataframe):
     """
     Rename the columns of the TMY3 DataFrame.
 
@@ -251,7 +251,7 @@ def _recolumn(tmy3_dataframe, inplace=True):
 
     mapping = dict(zip(raw_columns.split(','), new_columns))
 
-    return tmy3_dataframe.rename(columns=mapping, inplace=inplace)
+    return tmy3_dataframe.rename(columns=mapping)
 
 
 def readtmy2(filename):

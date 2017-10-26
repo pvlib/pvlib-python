@@ -28,6 +28,15 @@ except ImportError:
 requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
 
 
+try:
+    import pyephem
+    has_pyephem = True
+except ImportError:
+    has_pyephem = False
+
+requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
+
+
 def pandas_0_17():
     return parse_version(pd.__version__) >= parse_version('0.17.0')
 

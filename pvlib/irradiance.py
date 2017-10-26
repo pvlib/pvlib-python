@@ -1489,8 +1489,7 @@ def erbs(ghi, zenith, doy):
     return data
 
 
-def liujordan(zenith, transmittance, airmass, pressure=101325.,
-              dni_extra=1367.0):
+def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and optical air mass number.
@@ -1531,10 +1530,10 @@ def liujordan(zenith, transmittance, airmass, pressure=101325.,
     radiation".  Solar Energy 4:1-19
     '''
 
-    tao = transmittance
+    tau = transmittance
 
-    dni = dni_extra*tao**airmass
-    dhi = 0.3 * (1.0 - tao**airmass) * dni_extra * np.cos(np.radians(zenith))
+    dni = dni_extra*tau**airmass
+    dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * np.cos(np.radians(zenith))
     ghi = dhi + dni * np.cos(np.radians(zenith))
 
     irrads = OrderedDict()

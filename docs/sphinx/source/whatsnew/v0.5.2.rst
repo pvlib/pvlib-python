@@ -5,7 +5,7 @@ v0.5.2 (__, 2017)
 
 API Changes
 ~~~~~~~~~~~
-*
+* removed unused 'pressure' arg from irradiance.liujordan function (:issue:`386`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -14,7 +14,7 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * fixed redeclaration of test_simplified_solis_series_elevation (:issue:`387`)
-* removed unused 'pressure' arg from irradiance.liujordan function (:issue:`386`)
+
 
 Documentation
 ~~~~~~~~~~~~~

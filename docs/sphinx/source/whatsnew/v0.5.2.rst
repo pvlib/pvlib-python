@@ -15,7 +15,6 @@ Bug fixes
 ~~~~~~~~~
 * fixed redeclaration of test_simplified_solis_series_elevation (:issue:`387`)
 
-
 Documentation
 ~~~~~~~~~~~~~
 *

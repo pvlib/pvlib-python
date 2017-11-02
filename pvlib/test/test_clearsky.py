@@ -252,29 +252,6 @@ def test_haurwitz():
     out = clearsky.haurwitz(data_in['apparent_zenith'])
     assert_frame_equal(expected, out)
 
-def test_simplified_solis_series_elevation():
-    tus = Location(32.2, -111, 'US/Arizona', 700)
-    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
-    times_localized = times.tz_localize(tus.tz)
-    ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
-                                                 tus.longitude)
-    expected = pd.DataFrame(
-        np.array([[    0.        ,     0.        ,     0.        ],
-                  [    0.        ,     0.        ,     0.        ],
-                  [  377.80060035,    79.91931339,    42.77453223],
-                  [  869.47538184,   706.37903999,   110.05635962],
-                  [  958.89448856,  1062.44821373,   129.02349236],
-                  [  913.3209839 ,   860.48978599,   118.94598678],
-                  [  634.01066762,   256.00505836,    72.18396705],
-                  [    0.        ,     0.        ,     0.        ],
-                  [    0.        ,     0.        ,     0.        ]]),
-                            columns=['dni', 'ghi', 'dhi'],
-                            index=times_localized)
-    expected = expected[['dhi', 'dni', 'ghi']]
-
-    out = clearsky.simplified_solis(ephem_data['apparent_elevation'])
-    assert_frame_equal(expected, out)
-
 
 def test_simplified_solis_scalar_elevation():
     expected = OrderedDict()

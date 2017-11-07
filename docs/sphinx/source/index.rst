@@ -28,6 +28,8 @@ pvlib python
 that-use-pvlib-python>`_ page for inspiration and listing of your
 application.
 
+Usage related Q&A support: https://stackoverflow.com/questions/tagged/pvlib
+
 There is a :ref:`variable naming convention <variables_style_rules>` to
 ensure consistency throughout the library.
 

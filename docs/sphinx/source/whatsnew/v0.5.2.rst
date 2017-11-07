@@ -17,7 +17,7 @@ Bug fixes
 
 Documentation
 ~~~~~~~~~~~~~
-*
+* added link to `Stack Overflow <https://stackoverflow.com/questions/tagged/pvlib/>`_
 
 Testing
 ~~~~~~~

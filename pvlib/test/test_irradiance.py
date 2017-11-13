@@ -201,8 +201,7 @@ def test_liujordan():
         columns=['ghi', 'dni', 'dhi'],
         index=[0])
     out = irradiance.liujordan(
-        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]),
-        pressure=93000., dni_extra=1400)
+        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]), dni_extra=1400)
     assert_frame_equal(out, expected)
 
 

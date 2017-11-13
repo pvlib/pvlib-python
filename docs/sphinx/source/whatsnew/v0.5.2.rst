@@ -5,7 +5,7 @@ v0.5.2 (__, 2017)
 
 API Changes
 ~~~~~~~~~~~
-*
+* removed unused 'pressure' arg from irradiance.liujordan function (:issue:`386`)
 
 Enhancements
 ~~~~~~~~~~~~

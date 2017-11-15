@@ -120,6 +120,7 @@ def test_physicaliam():
         0.99926198,  0.98797788,  0.8893998,         0, np.nan])
     assert_allclose(iam, expected, equal_nan=True)
 
+    # GitHub issue 397
     aoi = pd.Series(aoi)
     iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
     expected = pd.Series(expected)

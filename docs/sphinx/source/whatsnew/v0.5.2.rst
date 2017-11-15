@@ -19,7 +19,7 @@ Bug fixes
 
 Documentation
 ~~~~~~~~~~~~~
-*
+* Improve physicaliam doc string. (:issue:`397`)
 
 Testing
 ~~~~~~~

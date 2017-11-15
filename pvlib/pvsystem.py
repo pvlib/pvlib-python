@@ -746,18 +746,17 @@ def ashraeiam(aoi, b=0.05):
 def physicaliam(aoi, n=1.526, K=4., L=0.002):
     '''
     Determine the incidence angle modifier using refractive index,
-    glazing thickness, and extinction coefficient
+    extinction coefficient, and glazing thickness.
 
     physicaliam calculates the incidence angle modifier as described in
     De Soto et al. "Improvement and validation of a model for
     photovoltaic array performance", section 3. The calculation is based
-    upon a physical model of absorbtion and transmission through a
-    cover. Required information includes, incident angle, cover
-    extinction coefficient, cover thickness
+    on a physical model of absorbtion and transmission through a
+    cover.
 
     Note: The authors of this function believe that eqn. 14 in [1] is
     incorrect. This function uses the following equation in its place:
-    theta_r = arcsin(1/n * sin(theta))
+    theta_r = arcsin(1/n * sin(aoi))
 
     Parameters
     ----------
@@ -788,14 +787,8 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
     Returns
     -------
-    IAM : numeric
-        The incident angle modifier as specified in eqns. 14-16 of [1].
-        IAM is a column vector with the same number of elements as the
-        largest input vector.
-
-        Theta must be a numeric scalar or vector. For any values of
-        theta where abs(aoi)>90, IAM is set to 0. For any values of aoi
-        where -90 < aoi < 0, theta is set to abs(aoi) and evaluated.
+    iam : numeric
+        The incident angle modifier
 
     References
     ----------

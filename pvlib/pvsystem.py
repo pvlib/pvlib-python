@@ -816,6 +816,11 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     '''
     zeroang = 1e-06
 
+    # hold a new reference to the input aoi object since we're going to
+    # overwrite the aoi reference below, but we'll need it for the
+    # series check at the end of the function
+    aoi_input = aoi
+
     aoi = np.where(aoi == 0, zeroang, aoi)
 
     # angle of reflection
@@ -849,8 +854,8 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     # for light coming from behind the plane, none can enter the module
     iam = np.where(aoi > 90, 0, iam)
 
-    if isinstance(aoi, pd.Series):
-        iam = pd.Series(iam, index=aoi.index)
+    if isinstance(aoi_input, pd.Series):
+        iam = pd.Series(iam, index=aoi_input.index)
 
     return iam
 

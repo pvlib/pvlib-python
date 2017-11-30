@@ -114,11 +114,17 @@ def test_PVSystem_ashraeiam():
 
 @needs_numpy_1_10
 def test_physicaliam():
-    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
-    iam = pvsystem.physicaliam(thetas, 1.526, 0.002, 4)
+    aoi = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
+    iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
     expected = np.array([        0,  0.8893998,  0.98797788,  0.99926198,         1,
         0.99926198,  0.98797788,  0.8893998,         0, np.nan])
     assert_allclose(iam, expected, equal_nan=True)
+
+    # GitHub issue 397
+    aoi = pd.Series(aoi)
+    iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
+    expected = pd.Series(expected)
+    assert_series_equal(iam, expected)
 
 
 @needs_numpy_1_10

@@ -14,10 +14,12 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * fixed redeclaration of test_simplified_solis_series_elevation (:issue:`387`)
+* physicaliam now returns a Series if called with a Series as an
+  argument. (:issue:`397`)
 
 Documentation
 ~~~~~~~~~~~~~
-*
+* Improve physicaliam doc string. (:issue:`397`)
 
 Testing
 ~~~~~~~

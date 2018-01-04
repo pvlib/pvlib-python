@@ -6,6 +6,12 @@
 language: python
 sudo: false # if false, use TravisCI's container based build
 
+# test multiple os
+# https://docs.travis-ci.com/user/multi-os/
+os:
+  - linux
+  - osx
+
 matrix:
     include:
     - python: 2.7

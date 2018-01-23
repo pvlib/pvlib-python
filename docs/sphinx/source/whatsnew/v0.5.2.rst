@@ -24,6 +24,7 @@ Documentation
 Testing
 ~~~~~~~
 * Test Python 3.6 on Windows with Appveyor instead of 3.4. (:issue:`392`)
+* Fix failing test on pandas 0.22 (:issue:`406`)
 
 Contributors
 ~~~~~~~~~~~~

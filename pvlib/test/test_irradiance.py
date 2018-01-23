@@ -177,7 +177,7 @@ def test_perez_components():
         columns=['isotropic', 'circumsolar', 'horizon'],
         index=times
     )
-    if pandas_0_22:
+    if pandas_0_22():
         expected_for_sum = expected.copy()
         expected_for_sum.iloc[2] = 0
     else:

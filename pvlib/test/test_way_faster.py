@@ -1,0 +1,73 @@
+"""
+testing way faster single-diode methods using JW Bishop 1988
+"""
+
+from time import clock
+import logging
+import numpy as np
+from pvlib import pvsystem
+from pvlib.way_faster import faster_way
+
+logging.basicConfig()
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
+
+POA = 888
+TCELL = 55
+CECMOD = pvsystem.retrieve_sam('cecmod')
+
+
+def test_spr_e20_327():
+    spr_e20_327 = CECMOD.SunPower_SPR_E20_327
+    x = pvsystem.calcparams_desoto(
+        poa_global=POA, temp_cell=TCELL,
+        alpha_isc=spr_e20_327.alpha_sc, module_parameters=spr_e20_327,
+        EgRef=1.121, dEgdT=-0.0002677)
+    il, io, rs, rsh, nnsvt = x
+    tstart = clock()
+    pvs = pvsystem.singlediode(*x)
+    tstop = clock()
+    LOGGER.debug('single diode elapsed time = %g[s]', tstop - tstart)
+    tstart = clock()
+    voc, isc, imp, vmp, pmp = faster_way(*x, log=False, test=False)
+    tstop = clock()
+    LOGGER.debug('way faster elapsed time = %g[s]', tstop - tstart)
+    assert np.isclose(pvs['i_sc'], isc)
+    assert np.isclose(pvs['v_oc'], voc)
+    # the singlediode method doesn't actually get the MPP correct
+    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il)
+    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il)
+    assert np.isclose(pvs_imp, imp)
+    assert np.isclose(pvs_vmp, vmp)
+    assert np.isclose(pvs['p_mp'], pmp)
+    return voc, isc, imp, vmp, pmp, pvs
+
+
+def test_fs_495():
+    fs_495 = CECMOD.First_Solar_FS_495
+    x = pvsystem.calcparams_desoto(
+        poa_global=POA, temp_cell=TCELL,
+        alpha_isc=fs_495.alpha_sc, module_parameters=fs_495,
+        EgRef=1.475, dEgdT=-0.0003)
+    il, io, rs, rsh, nnsvt = x
+    tstart = clock()
+    pvs = pvsystem.singlediode(*x)
+    tstop = clock()
+    LOGGER.debug('single diode elapsed time = %g[s]', tstop - tstart)
+    tstart = clock()
+    voc, isc, imp, vmp, pmp = faster_way(*x, log=False, test=False)
+    tstop = clock()
+    LOGGER.debug('way faster elapsed time = %g[s]', tstop - tstart)
+    assert np.isclose(pvs['i_sc'], isc)
+    assert np.isclose(pvs['v_oc'], voc)
+    # the singlediode method doesn't actually get the MPP correct
+    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il)
+    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il)
+    assert np.isclose(pvs_imp, imp)
+    assert np.isclose(pvs_vmp, vmp)
+    assert np.isclose(pvs['p_mp'], pmp)
+    return voc, isc, imp, vmp, pmp, pvs
+
+if __name__ == '__main__':
+    r_spr_e20_327 = test_spr_e20_327()
+    r_fs_495 = test_fs_495()

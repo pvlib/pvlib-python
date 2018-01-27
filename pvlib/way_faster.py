@@ -1,6 +1,7 @@
 """faster ways"""
 
 import logging
+from collections import OrderedDict
 import numpy as np
 
 logging.basicConfig()
@@ -58,9 +59,16 @@ def newton_solver(fjx, x0, x, tol=EPS, damp=DAMP, log=False, test=True):
     return x0, f, j
 
 
-def faster_way(il, io, rs, rsh, nnsvt,
+def faster_way(photocurrent, saturation_current, resistance_series,
+               resistance_shunt, nNsVth, ivcurve_pnts=None,
                tol=EPS, damp=DAMP, log=True, test=True):
     """a faster way"""
+    # FIXME: everything is named the wrong thing!
+    il = photocurrent
+    io = saturation_current
+    rs = resistance_series
+    rsh = resistance_shunt
+    nnsvt = nNsVth
     x = (il, io, rs, rsh, nnsvt)  # collect args
     # first estimate Voc
     voc_est = est_voc(il, io, nnsvt)
@@ -126,4 +134,21 @@ def faster_way(il, io, rs, rsh, nnsvt,
             _, _, _, _, _, grad_p2, _ = bishop88(vd_mp * (1.0 + delta), *x)
             LOGGER.debug('test_grad=%g', (grad_p2 - grad_p) / vd_mp / delta)
             LOGGER.debug('grad=%g', grad2p)
-    return voc_est, isc_est, imp_est, vmp_est, pmp_est
+    out = OrderedDict()
+    out['i_sc'] = isc_est
+    out['v_oc'] = voc_est
+    out['i_mp'] = imp_est
+    out['v_mp'] = vmp_est
+    out['p_mp'] = pmp_est
+    out['i_x'] = None
+    out['i_xx'] = None
+    # calculate the IV curve if requested using bishop88
+    if ivcurve_pnts:
+        vd = voc_est * (
+            (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
+        )
+        i, v, _, _, p, _, _ = bishop88(vd, *x)
+        out['i'] = i
+        out['v'] = v
+        out['p'] = p
+    return out

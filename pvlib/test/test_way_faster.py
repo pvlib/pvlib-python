@@ -30,7 +30,8 @@ def test_spr_e20_327():
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
-    voc, isc, imp, vmp, pmp = faster_way(*x, log=False, test=False)
+    out = faster_way(*x, log=False, test=False)
+    isc, voc, imp, vmp, pmp, _, _ = out.values()
     tstop = clock()
     dt_fast = tstop - tstart
     LOGGER.debug('way faster elapsed time = %g[s]', dt_fast)
@@ -43,7 +44,7 @@ def test_spr_e20_327():
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
-    return voc, isc, imp, vmp, pmp, pvs
+    return isc, voc, imp, vmp, pmp, pvs
 
 
 def test_fs_495():
@@ -53,13 +54,15 @@ def test_fs_495():
         alpha_isc=fs_495.alpha_sc, module_parameters=fs_495,
         EgRef=1.475, dEgdT=-0.0003)
     il, io, rs, rsh, nnsvt = x
+    x += (101, )
     tstart = clock()
     pvs = pvsystem.singlediode(*x)
     tstop = clock()
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
-    voc, isc, imp, vmp, pmp = faster_way(*x, log=False, test=False)
+    out = faster_way(*x, log=False, test=False)
+    isc, voc, imp, vmp, pmp, _, _, i, v, p = out.values()
     tstop = clock()
     dt_fast = tstop - tstart
     LOGGER.debug('way faster elapsed time = %g[s]', dt_fast)
@@ -72,7 +75,7 @@ def test_fs_495():
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
-    return voc, isc, imp, vmp, pmp, pvs
+    return isc, voc, imp, vmp, pmp, i, v, p, pvs
 
 if __name__ == '__main__':
     r_spr_e20_327 = test_spr_e20_327()

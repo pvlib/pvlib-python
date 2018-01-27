@@ -27,11 +27,14 @@ def test_spr_e20_327():
     tstart = clock()
     pvs = pvsystem.singlediode(*x)
     tstop = clock()
-    LOGGER.debug('single diode elapsed time = %g[s]', tstop - tstart)
+    dt_slow = tstop - tstart
+    LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
     voc, isc, imp, vmp, pmp = faster_way(*x, log=False, test=False)
     tstop = clock()
-    LOGGER.debug('way faster elapsed time = %g[s]', tstop - tstart)
+    dt_fast = tstop - tstart
+    LOGGER.debug('way faster elapsed time = %g[s]', dt_fast)
+    LOGGER.debug('spr_e20_327 speedup = %g', dt_slow / dt_fast)
     assert np.isclose(pvs['i_sc'], isc)
     assert np.isclose(pvs['v_oc'], voc)
     # the singlediode method doesn't actually get the MPP correct
@@ -53,11 +56,14 @@ def test_fs_495():
     tstart = clock()
     pvs = pvsystem.singlediode(*x)
     tstop = clock()
-    LOGGER.debug('single diode elapsed time = %g[s]', tstop - tstart)
+    dt_slow = tstop - tstart
+    LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
     voc, isc, imp, vmp, pmp = faster_way(*x, log=False, test=False)
     tstop = clock()
-    LOGGER.debug('way faster elapsed time = %g[s]', tstop - tstart)
+    dt_fast = tstop - tstart
+    LOGGER.debug('way faster elapsed time = %g[s]', dt_fast)
+    LOGGER.debug('fs_495 speedup = %g', dt_slow / dt_fast)
     assert np.isclose(pvs['i_sc'], isc)
     assert np.isclose(pvs['v_oc'], voc)
     # the singlediode method doesn't actually get the MPP correct

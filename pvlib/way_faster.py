@@ -6,7 +6,7 @@ methods from J.W. Bishop (Solar Cells, 1988).
 import logging
 from collections import OrderedDict
 import numpy as np
-from scipy.optimize import fminbound, newton
+from scipy.optimize import fminbound
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)
@@ -16,16 +16,24 @@ EPS = np.finfo(float).eps
 DAMP = 1.5
 DELTA = EPS**0.33
 
+# TODO: make fast_i_from_v, fast_v_from_i, fast_mppt using newton
+# TODO: remove grad calcs from bishop88
+# TODO: add new residual and f_prime calcs for fast_ methods to use newton
+# TODO: refactor singlediode to be a wrapper with a method argument
+# TODO: update pvsystem.singlediode to use slow_ methods by default
+# TODO: ditto for i_from_v and v_from_i
+# TODO: add new mppt function to pvsystem
+
 
 def est_voc(photocurrent, saturation_current, nNsVth):
     """
     Rough estimate of open circuit voltage useful for bounding searches for
     ``i`` of ``v`` when using :func:`~pvlib.way_faster`.
 
-    :param photocurrent: photo-generated current [A]
-    :param saturation_current: diode one reverse saturation current [A]
-    :param nNsVth: product of thermal voltage ``Vth`` [V], diode ideality
-        factor ``n``, and number of series cells ``Ns``
+    :param numeric photocurrent: photo-generated current [A]
+    :param numeric saturation_current: diode one reverse saturation current [A]
+    :param numeric nNsVth: product of thermal voltage ``Vth`` [V], diode
+        ideality factor ``n``, and number of series cells ``Ns``
     :returns: rough estimate of open circuit voltage [V]
     """
     # http://www.pveducation.org/pvcdrom/open-circuit-voltage
@@ -42,13 +50,13 @@ def bishop88(vd, photocurrent, saturation_current, resistance_series,
         photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
         https://doi.org/10.1016/0379-6787(88)90059-2
 
-    :param vd: diode voltages [V}]
-    :param photocurrent: photo-generated current [A]
-    :param saturation_current: diode one reverse saturation current [A]
-    :param resistance_series: series resitance [ohms]
-    :param resistance_shunt: shunt resitance [ohms]
-    :param nNsVth" product of thermal voltage ``Vth`` [V], diode ideality
-        factor ``n``, and number of series cells ``Ns``
+    :param numeric vd: diode voltages [V]
+    :param numeric photocurrent: photo-generated current [A]
+    :param numeric saturation_current: diode one reverse saturation current [A]
+    :param numeric resistance_series: series resitance [ohms]
+    :param numeric resistance_shunt: shunt resitance [ohms]
+    :param numeric nNsVth: product of thermal voltage ``Vth`` [V], diode
+        ideality factor ``n``, and number of series cells ``Ns``
     :returns: tuple containing currents [A], voltages [V], gradient ``di/dvd``,
         gradient ``dv/dvd``, power [W], gradient ``dp/dv``, and gradient
         ``d2p/dv/dvd``
@@ -169,9 +177,8 @@ def faster_way(photocurrent, saturation_current, resistance_series,
                 voc_est, newton_step, i_test, v_test, resnorm
             )
         if test:
-            delta = EPS**0.3
-            i_test2, _, _, _, _, _, _ = bishop88(voc_est * (1.0 + delta), *args)
-            LOGGER.debug('test_grad=%g', (i_test2 - i_test) / voc_est / delta)
+            i_test2, _, _, _, _, _, _ = bishop88(voc_est * (1.0 + DELTA), *args)
+            LOGGER.debug('test_grad=%g', (i_test2 - i_test) / voc_est / DELTA)
             LOGGER.debug('grad=%g', grad)
     # find isc too
     isc_est = 0.0
@@ -191,9 +198,8 @@ def faster_way(photocurrent, saturation_current, resistance_series,
                 vd_sc, newton_step, isc_est, v_test, resnorm
             )
         if test:
-            delta = EPS**0.3
-            _, v_test2, _, _, _, _, _ = bishop88(vd_sc * (1.0 + delta), *args)
-            LOGGER.debug('test_grad=%g', (v_test2 - v_test) / vd_sc / delta)
+            _, v_test2, _, _, _, _, _ = bishop88(vd_sc * (1.0 + DELTA), *args)
+            LOGGER.debug('test_grad=%g', (v_test2 - v_test) / vd_sc / DELTA)
             LOGGER.debug('grad=%g', grad)
     # find the mpp
     imp_est, vmp_est, pmp_est = 0.0, 0.0, 0.0
@@ -213,9 +219,8 @@ def faster_way(photocurrent, saturation_current, resistance_series,
                 vd_mp, newton_step, pmp_est, resnorm
             )
         if test:
-            delta = EPS**0.3
-            _, _, _, _, _, grad_p2, _ = bishop88(vd_mp * (1.0 + delta), *args)
-            LOGGER.debug('test_grad=%g', (grad_p2 - grad_p) / vd_mp / delta)
+            _, _, _, _, _, grad_p2, _ = bishop88(vd_mp * (1.0 + DELTA), *args)
+            LOGGER.debug('test_grad=%g', (grad_p2 - grad_p) / vd_mp / DELTA)
             LOGGER.debug('grad=%g', grad2p)
     out = OrderedDict()
     out['i_sc'] = isc_est

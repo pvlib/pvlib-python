@@ -1976,7 +1976,7 @@ def current_sum_diode_node(voltage, current, conductance_shunt, resistance_serie
     current_sum = photocurrent - saturation_current*np.expm1(v_plus_i_times_r_s/nNsVth) - conductance_shunt*v_plus_i_times_r_s - current
 
     # Make sure we return an np.ndarray if any input was that type (undoes any casting of rank-0 np.ndarray to np.float64)
-    if any(map(lambda x: isinstance(x, np.ndarray), [voltage, current, resistance_shunt, resistance_series, nNsVth, saturation_current, photocurrent])):
+    if any(map(lambda x: isinstance(x, np.ndarray), [voltage, current, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent])):
         current_sum = np.asarray(current_sum)
     
     return current_sum
@@ -2072,14 +2072,14 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     b = np.where(0. < current_ic, current_ic, 0.)
 
     # This allows us to make a ufunc out of optimize.brentq()
-    array_zero_func = np.frompyfunc(lambda current_ic, a, b, conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent: optimize.brentq(f, a, b, args=(conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent)), 10, 1)
+    array_zero_func = np.frompyfunc(lambda current_ic, a, b, conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent: brentq(f, a, b, args=(conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent), maxiter=1000), 9, 1)
 
     # Solve for output (brentq() throws if convergence flag is not true)
     current = array_zero_func(current_ic, a, b, conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent)
 
     # Make sure we return proper type outputs corresponding to inputs
     current = np.float64(current)
-    if rank0_output:
+    if not scalar_output:
         current = np.array(current)
 
     return current

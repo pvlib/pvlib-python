@@ -42,6 +42,10 @@ needs_numpy_1_10 = pytest.mark.skipif(
     not numpy_1_10(), reason='requires numpy 1.10 or greater')
 
 
+def pandas_0_22():
+    return parse_version(pd.__version__) >= parse_version('0.22.0')
+
+
 def has_spa_c():
     try:
         from pvlib.spa_c_files.spa_py import spa_calc

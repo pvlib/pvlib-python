@@ -15,7 +15,8 @@ from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
 
-from conftest import requires_ephem, requires_numba, needs_numpy_1_10
+from conftest import (requires_ephem, requires_numba, needs_numpy_1_10,
+                      pandas_0_22)
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -176,11 +177,16 @@ def test_perez_components():
         columns=['isotropic', 'circumsolar', 'horizon'],
         index=times
     )
+    if pandas_0_22():
+        expected_for_sum = expected.copy()
+        expected_for_sum.iloc[2] = 0
+    else:
+        expected_for_sum = expected
     sum_components = df_components.sum(axis=1)
 
     assert_series_equal(out, expected, check_less_precise=2)
     assert_frame_equal(df_components, expected_components)
-    assert_series_equal(sum_components, expected, check_less_precise=2)
+    assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 @needs_numpy_1_10
 def test_perez_arrays():
@@ -201,8 +207,7 @@ def test_liujordan():
         columns=['ghi', 'dni', 'dhi'],
         index=[0])
     out = irradiance.liujordan(
-        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]),
-        pressure=93000., dni_extra=1400)
+        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]), dni_extra=1400)
     assert_frame_equal(out, expected)
 
 

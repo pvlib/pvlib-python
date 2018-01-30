@@ -52,12 +52,17 @@ def test_numerical_precicion():
         data[vd] = test
         LOGGER.debug('expected = %r', expected)
         LOGGER.debug('test data = %r', data)
-        assert np.isclose(np.float(i.evalf(subs=data)), expected[0])
-        assert np.isclose(np.float(v.evalf(subs=data)), expected[1])
-        assert np.isclose(np.float(grad_i.evalf(subs=data)), expected[2])
-        assert np.isclose(np.float(grad_v.evalf(subs=data)), expected[3])
-        assert np.isclose(np.float(grad.evalf(subs=data)),
+        assert np.isclose(np.float64(i.evalf(subs=data)), expected[0])
+        assert np.isclose(np.float64(v.evalf(subs=data)), expected[1])
+        assert np.isclose(np.float64(grad_i.evalf(subs=data)), expected[2])
+        assert np.isclose(np.float64(grad_v.evalf(subs=data)), expected[3])
+        assert np.isclose(np.float64(grad.evalf(subs=data)),
                           expected[2] / expected[3])
-        assert np.isclose(np.float(p.evalf(subs=data)), expected[4])
-        assert np.isclose(np.float(grad_p.evalf(subs=data)), expected[5])
-        assert np.isclose(np.float(grad2p.evalf(subs=data)), expected[6])
+        assert np.isclose(np.float64(p.evalf(subs=data)), expected[4])
+        assert np.isclose(np.float64(grad_p.evalf(subs=data)), expected[5])
+        assert np.isclose(np.float64(grad2p.evalf(subs=data)), expected[6])
+    return i, v, grad_i, grad_v, grad, p, grad_p, grad2p
+
+
+if __name__ == '__main__':
+    syms = test_numerical_precicion()

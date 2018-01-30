@@ -122,12 +122,12 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
-    voc = slow_v_from_i(0.0, *args)
+    v_oc = slow_v_from_i(0.0, *args)
     i_sc = slow_i_from_v(0.0, *args)
     i_mp, v_mp, p_mp = slow_mppt(*args)
     out = OrderedDict()
     out['i_sc'] = i_sc
-    out['v_oc'] = voc
+    out['v_oc'] = v_oc
     out['i_mp'] = i_mp
     out['v_mp'] = v_mp
     out['p_mp'] = p_mp
@@ -135,7 +135,7 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     out['i_xx'] = None
     # calculate the IV curve if requested using bishop88
     if ivcurve_pnts:
-        vd = voc * (
+        vd = v_oc * (
             (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
         )
         i, v, _, _, p, _, _ = bishop88(vd, *args)

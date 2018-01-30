@@ -6,7 +6,7 @@ methods from J.W. Bishop (Solar Cells, 1988).
 import logging
 from collections import OrderedDict
 import numpy as np
-from scipy.optimize import fminbound
+from scipy.optimize import fminbound, newton
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)
@@ -17,22 +17,23 @@ DAMP = 1.5
 DELTA = EPS**0.33
 
 
-def est_voc(il, io, nnsvt):
+def est_voc(photocurrent, saturation_current, nNsVth):
     """
     Rough estimate of open circuit voltage useful for bounding searches for
     ``i`` of ``v`` when using :func:`~pvlib.way_faster`.
 
-    :param il: photo-generated current [A]
-    :param io: diode one reverse saturation or "dark" current [A]
-    :param nnsvt" product of thermal voltage ``Vt`` [V], ideality factor ``n``,
-        and number of series cells ``Ns``
+    :param photocurrent: photo-generated current [A]
+    :param saturation_current: diode one reverse saturation current [A]
+    :param nNsVth: product of thermal voltage ``Vth`` [V], diode ideality
+        factor ``n``, and number of series cells ``Ns``
     :returns: rough estimate of open circuit voltage [V]
     """
     # http://www.pveducation.org/pvcdrom/open-circuit-voltage
-    return nnsvt * np.log(il / io + 1.0)
+    return nNsVth * np.log(photocurrent / saturation_current + 1.0)
 
 
-def bishop88(vd, il, io, rs, rsh, nnsvt):
+def bishop88(vd, photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth):
     """
     Explicit calculation single-diode-model (SDM) currents and voltages using
     diode junction voltages [1].
@@ -42,54 +43,32 @@ def bishop88(vd, il, io, rs, rsh, nnsvt):
         https://doi.org/10.1016/0379-6787(88)90059-2
 
     :param vd: diode voltages [V}]
-    :param il: photo-generated current [A]
-    :param io: diode one reverse saturation or "dark" current [A]
-    :param rs: series resitance [ohms]
-    :param rsh: shunt resitance [ohms]
-    :param nnsvt" product of thermal voltage ``Vt`` [V], ideality factor ``n``,
-        and number of series cells ``Ns``
+    :param photocurrent: photo-generated current [A]
+    :param saturation_current: diode one reverse saturation current [A]
+    :param resistance_series: series resitance [ohms]
+    :param resistance_shunt: shunt resitance [ohms]
+    :param nNsVth" product of thermal voltage ``Vth`` [V], diode ideality
+        factor ``n``, and number of series cells ``Ns``
     :returns: tuple containing currents [A], voltages [V], gradient ``di/dvd``,
         gradient ``dv/dvd``, power [W], gradient ``dp/dv``, and gradient
         ``d2p/dv/dvd``
     """
-    a = np.exp(vd / nnsvt)
-    b = 1.0 / rsh
-    i = il - io * (a - 1.0) - vd * b
-    v = vd - i * rs
-    c = io * a / nnsvt
+    a = np.exp(vd / nNsVth)
+    b = 1.0 / resistance_shunt
+    i = photocurrent - saturation_current * (a - 1.0) - vd * b
+    v = vd - i * resistance_series
+    c = saturation_current * a / nNsVth
     grad_i = - c - b  # di/dvd
-    grad_v = 1.0 - grad_i * rs  # dv/dvd
+    grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
     # dp/dv = d(iv)/dv = v * di/dv + i
     grad = grad_i / grad_v  # di/dv
     grad_p = v * grad + i  # dp/dv
-    grad2i = -c / nnsvt
-    grad2v = -grad2i * rs
+    grad2i = -c / nNsVth
+    grad2v = -grad2i * resistance_series
     grad2p = (
         grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2) + grad_i
     )
     return i, v, grad_i, grad_v, i*v, grad_p, grad2p
-
-
-def newton_solver(fjx, x0, x, tol=EPS, damp=DAMP, log=False, test=True):
-    resnorm = np.inf  # nor of residuals
-    while resnorm > tol:
-        f, j = fjx(x0, *x)
-        newton_step = f / j
-        # don't let step get crazy
-        if np.abs(newton_step / x0) > damp:
-            break
-        x0 -= newton_step
-        resnorm = f**2
-        if log:
-            LOGGER.debug(
-                'x0=%g, newton step=%g, f=%g, resnorm=%g',
-                x0, newton_step, f, resnorm
-            )
-        if test:
-            f2, _ = fjx(x0 * (1.0 + DELTA), *x)
-            LOGGER.debug('test_grad=%g', (f2 - f) / x0 / DELTA)
-            LOGGER.debug('grad=%g', j)
-    return x0, f, j
 
 
 def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
@@ -97,17 +76,13 @@ def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
     """
     This is a slow but reliable way to find current given any voltage.
     """
-    # FIXME: everything is named the wrong thing!
-    il = photocurrent
-    io = saturation_current
-    rs = resistance_series
-    rsh = resistance_shunt
-    nnsvt = nNsVth
-    x = (il, io, rs, rsh, nnsvt)  # collect args
+    # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
     # first bound the search using voc
-    voc_est = est_voc(il, io, nnsvt)
-    vd = fminbound(lambda vd: (v - bishop88(vd, *x)[1])**2, 0.0, voc_est)
-    return bishop88(vd, il, io, rs, rsh, nnsvt)[0]
+    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    vd = fminbound(lambda x: (v - bishop88(x, *args)[1])**2, 0.0, voc_est)
+    return bishop88(vd, *args)[0]
 
 
 def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
@@ -115,34 +90,27 @@ def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
     """
     This is a slow but reliable way to find voltage given any current.
     """
-    # FIXME: everything is named the wrong thing!
-    il = photocurrent
-    io = saturation_current
-    rs = resistance_series
-    rsh = resistance_shunt
-    nnsvt = nNsVth
-    x = (il, io, rs, rsh, nnsvt)  # collect args
+    # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
     # first bound the search using voc
-    voc_est = est_voc(il, io, nnsvt)
-    vd = fminbound(lambda vd: (i - bishop88(vd, *x)[0])**2, 0.0, voc_est)
-    return bishop88(vd, il, io, rs, rsh, nnsvt)[1]
+    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    vd = fminbound(lambda x: (i - bishop88(x, *args)[0])**2, 0.0, voc_est)
+    return bishop88(vd, *args)[1]
+
 
 def slow_mppt(photocurrent, saturation_current, resistance_series,
               resistance_shunt, nNsVth):
     """
     This is a slow but reliable way to find mpp.
     """
-    # FIXME: everything is named the wrong thing!
-    il = photocurrent
-    io = saturation_current
-    rs = resistance_series
-    rsh = resistance_shunt
-    nnsvt = nNsVth
-    x = (il, io, rs, rsh, nnsvt)  # collect args
+    # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
     # first bound the search using voc
-    voc_est = est_voc(il, io, nnsvt)
-    vd = fminbound(lambda vd: -(bishop88(vd, *x)[4])**2, 0.0, voc_est)
-    i, v, _, _, p, _, _ = bishop88(vd, il, io, rs, rsh, nnsvt)
+    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    vd = fminbound(lambda x: -(bishop88(x, *args)[4])**2, 0.0, voc_est)
+    i, v, _, _, p, _, _ = bishop88(vd, *args)
     return i, v, p
 
 
@@ -151,16 +119,12 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     """
     This is the slow but reliable way.
     """
-    # FIXME: everything is named the wrong thing!
-    il = photocurrent
-    io = saturation_current
-    rs = resistance_series
-    rsh = resistance_shunt
-    nnsvt = nNsVth
-    x = (il, io, rs, rsh, nnsvt)  # collect args
-    voc = slow_v_from_i(0, *x)
-    i_sc = slow_i_from_v(0, *x)
-    i_mp, v_mp, p_mp = slow_mppt(*x)
+    # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+    voc = slow_v_from_i(0.0, *args)
+    i_sc = slow_i_from_v(0.0, *args)
+    i_mp, v_mp, p_mp = slow_mppt(*args)
     out = OrderedDict()
     out['i_sc'] = i_sc
     out['v_oc'] = voc
@@ -174,7 +138,7 @@ def slower_way(photocurrent, saturation_current, resistance_series,
         vd = voc * (
             (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
         )
-        i, v, _, _, p, _, _ = bishop88(vd, *x)
+        i, v, _, _, p, _, _ = bishop88(vd, *args)
         out['i'] = i
         out['v'] = v
         out['p'] = p
@@ -185,19 +149,14 @@ def faster_way(photocurrent, saturation_current, resistance_series,
                resistance_shunt, nNsVth, ivcurve_pnts=None,
                tol=EPS, damp=DAMP, log=True, test=True):
     """a faster way"""
-    # FIXME: everything is named the wrong thing!
-    il = photocurrent
-    io = saturation_current
-    rs = resistance_series
-    rsh = resistance_shunt
-    nnsvt = nNsVth
-    x = (il, io, rs, rsh, nnsvt)  # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)  # collect args
     # first estimate Voc
-    voc_est = est_voc(il, io, nnsvt)
+    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
     # find the real voc
     resnorm = np.inf  # nor of residuals
     while resnorm > tol:
-        i_test, v_test, grad, _, _, _, _ = bishop88(voc_est, *x)
+        i_test, v_test, grad, _, _, _, _ = bishop88(voc_est, *args)
         newton_step = i_test / grad
         # don't let step get crazy
         if np.abs(newton_step / voc_est) > damp:
@@ -211,14 +170,15 @@ def faster_way(photocurrent, saturation_current, resistance_series,
             )
         if test:
             delta = EPS**0.3
-            i_test2, _, _, _, _, _, _ = bishop88(voc_est * (1.0 + delta), *x)
+            i_test2, _, _, _, _, _, _ = bishop88(voc_est * (1.0 + delta), *args)
             LOGGER.debug('test_grad=%g', (i_test2 - i_test) / voc_est / delta)
             LOGGER.debug('grad=%g', grad)
     # find isc too
+    isc_est = 0.0
     vd_sc = 0.0
     resnorm = np.inf  # nor of residuals
     while resnorm > tol:
-        isc_est, v_test, _, grad, _, _, _ = bishop88(vd_sc, *x)
+        isc_est, v_test, _, grad, _, _, _ = bishop88(vd_sc, *args)
         newton_step = v_test / grad
         # don't let step get crazy
         if np.abs(newton_step / voc_est) > damp:
@@ -232,14 +192,15 @@ def faster_way(photocurrent, saturation_current, resistance_series,
             )
         if test:
             delta = EPS**0.3
-            _, v_test2, _, _, _, _, _ = bishop88(vd_sc * (1.0 + delta), *x)
+            _, v_test2, _, _, _, _, _ = bishop88(vd_sc * (1.0 + delta), *args)
             LOGGER.debug('test_grad=%g', (v_test2 - v_test) / vd_sc / delta)
             LOGGER.debug('grad=%g', grad)
     # find the mpp
+    imp_est, vmp_est, pmp_est = 0.0, 0.0, 0.0
     vd_mp = voc_est
     resnorm = np.inf  # nor of residuals
     while resnorm > tol:
-        imp_est, vmp_est, _, _, pmp_est, grad_p, grad2p = bishop88(vd_mp, *x)
+        imp_est, vmp_est, _, _, pmp_est, grad_p, grad2p = bishop88(vd_mp, *args)
         newton_step = grad_p / grad2p
         # don't let step get crazy
         if np.abs(newton_step / voc_est) > damp:
@@ -253,7 +214,7 @@ def faster_way(photocurrent, saturation_current, resistance_series,
             )
         if test:
             delta = EPS**0.3
-            _, _, _, _, _, grad_p2, _ = bishop88(vd_mp * (1.0 + delta), *x)
+            _, _, _, _, _, grad_p2, _ = bishop88(vd_mp * (1.0 + delta), *args)
             LOGGER.debug('test_grad=%g', (grad_p2 - grad_p) / vd_mp / delta)
             LOGGER.debug('grad=%g', grad2p)
     out = OrderedDict()
@@ -269,7 +230,7 @@ def faster_way(photocurrent, saturation_current, resistance_series,
         vd = voc_est * (
             (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
         )
-        i, v, _, _, p, _, _ = bishop88(vd, *x)
+        i, v, _, _, p, _, _ = bishop88(vd, *args)
         out['i'] = i
         out['v'] = v
         out['p'] = p

@@ -1630,7 +1630,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     method : str, default ''
         Determines the method used to calculate IV curve and points. If
-        'lambertw' then '`lambertw`'' is used. If 'fast' then ``newton`` is
+        'lambertw' then ``lambertw`` is used. If 'fast' then ``newton`` is
         used. Otherwise the problem is bounded between zero and open-circuit
         voltage and a bisection method, ``brentq``, is used, that guarantees
         convergence.
@@ -1681,13 +1681,13 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     .. math::
 
-        I = I_L - I_0 \left( \exp \left( \frac{V_{oc, est} }{ n Ns V_{th} } \right) - 1 \right) - \frac{V_{oc, est}}{R_{sh}
-        I = I_L - I_0 \left(\exp \left( \frac{ n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right) }{ n Ns V_{th} } \right) - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
-        I = I_L - I_0 \left(\exp \left( \log \left( \frac{I_L}{I_0} + 1 \right) \right)  - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
-        I = I_L - I_0 \left(\frac{I_L}{I_0} + 1  - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
-        I = I_L - I_0 \left(\frac{I_L}{I_0} \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
-        I = I_L - I_L - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
-        I = - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
+        I = I_L - I_0 \left( \exp \left( \frac{V_{oc, est} }{ n Ns V_{th} } \right) - 1 \right) - \frac{V_{oc, est}}{R_{sh}} \\
+        I = I_L - I_0 \left(\exp \left( \frac{ n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right) }{ n Ns V_{th} } \right) - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
+        I = I_L - I_0 \left(\exp \left( \log \left( \frac{I_L}{I_0} + 1 \right) \right)  - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
+        I = I_L - I_0 \left(\frac{I_L}{I_0} + 1  - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
+        I = I_L - I_0 \left(\frac{I_L}{I_0} \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
+        I = I_L - I_L - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
+        I = - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}}
 
     If ``method.lower() == 'fast'`` then a gradient descent method, ``newton``
     is used to solve the implicit diode equation. It should be safe for well
@@ -1700,7 +1700,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     voltages from zero to open-circuit voltage with a log spacing so that
     points get closer as they approach the open-circuit voltage.
 
-    If ``method.lower() == 'lambertw'`` then he solution employed to solve the
+    If ``method.lower() == 'lambertw'`` then the solution employed to solve the
     implicit diode equation utilizes the Lambert W function to obtain an
     explicit function of V=f(i) and I=f(V) as shown in [2].
 

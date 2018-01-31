@@ -175,8 +175,8 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     out['i_mp'] = i_mp
     out['v_mp'] = v_mp
     out['p_mp'] = p_mp
-    out['i_x'] = None
-    out['i_xx'] = None
+    out['i_x'] = slow_i_from_v(v_oc / 2.0, *args)
+    out['i_xx'] = slow_i_from_v((v_oc + v_mp) / 2.0, *args)
     # calculate the IV curve if requested using bishop88
     if ivcurve_pnts:
         vd = v_oc * (
@@ -194,31 +194,20 @@ def faster_way(photocurrent, saturation_current, resistance_series,
     """a faster way"""
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
-    # first estimate Voc
-    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
-    # find the real voc
-    vd = newton(func=lambda x, *a: bishop88(x, *a)[0], x0=voc_est,
-                fprime=lambda x, *a: bishop88(x, *a)[2], args=args)
-    voc_est = bishop88(vd, *args)[1]
-    # find isc too
-    vd = newton(func=lambda x, *a: bishop88(x, *a)[1], x0=0.0,
-                fprime=lambda x, *a: bishop88(x, *a)[3], args=args)
-    isc_est = bishop88(vd, *args)[0]
-    # find the mpp
-    vd = newton(func=lambda x, *a: bishop88(x, *a)[5], x0=voc_est,
-                fprime=lambda x, *a: bishop88(x, *a)[6], args=args)
-    imp_est, vmp_est, _, _, pmp_est, _, _ = bishop88(vd, *args)
+    v_oc = fast_v_from_i(0.0, *args)
+    i_sc = fast_i_from_v(0.0, *args)
+    i_mp, v_mp, p_mp = fast_mppt(*args)
     out = OrderedDict()
-    out['i_sc'] = isc_est
-    out['v_oc'] = voc_est
-    out['i_mp'] = imp_est
-    out['v_mp'] = vmp_est
-    out['p_mp'] = pmp_est
-    out['i_x'] = None
-    out['i_xx'] = None
+    out['i_sc'] = i_sc
+    out['v_oc'] = v_oc
+    out['i_mp'] = i_mp
+    out['v_mp'] = v_mp
+    out['p_mp'] = p_mp
+    out['i_x'] = fast_i_from_v(v_oc / 2.0, *args)
+    out['i_xx'] = fast_i_from_v((v_oc + v_mp) / 2.0, *args)
     # calculate the IV curve if requested using bishop88
     if ivcurve_pnts:
-        vd = voc_est * (
+        vd = v_oc * (
             (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
         )
         i, v, _, _, p, _, _ = bishop88(vd, *args)

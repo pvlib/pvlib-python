@@ -1753,13 +1753,16 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             else:
                 out_array = pd.DataFrame(out.tolist())
                 out = OrderedDict()
-                out['i_sc'] = out_array.i_sc
-                out['v_oc'] = out_array.v_oc
-                out['i_mp'] = out_array.i_mp
-                out['v_mp'] = out_array.v_mp
-                out['p_mp'] = out_array.p_mp
-                out['i_x'] = out_array.i_x
-                out['i_xx'] = out_array.i_xx
+                out['i_sc'] = out_array.i_sc.values
+                out['v_oc'] = out_array.v_oc.values
+                out['i_mp'] = out_array.i_mp.values
+                out['v_mp'] = out_array.v_mp.values
+                out['p_mp'] = out_array.p_mp.values
+                out['i_x'] = out_array.i_x.values
+                out['i_xx'] = out_array.i_xx.values
+                out['i'] = np.vstack(out_array.i.values)
+                out['v'] = np.vstack(out_array.v.values)
+                out['p'] = np.vstack(out_array.p.values)
 
     else:
         try:
@@ -1778,13 +1781,19 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             else:
                 out_array = pd.DataFrame(out.tolist())
                 out = OrderedDict()
-                out['i_sc'] = out_array.i_sc
-                out['v_oc'] = out_array.v_oc
-                out['i_mp'] = out_array.i_mp
-                out['v_mp'] = out_array.v_mp
-                out['p_mp'] = out_array.p_mp
-                out['i_x'] = out_array.i_x
-                out['i_xx'] = out_array.i_xx
+                out['i_sc'] = out_array.i_sc.values
+                out['v_oc'] = out_array.v_oc.values
+                out['i_mp'] = out_array.i_mp.values
+                out['v_mp'] = out_array.v_mp.values
+                out['p_mp'] = out_array.p_mp.values
+                out['i_x'] = out_array.i_x.values
+                out['i_xx'] = out_array.i_xx.values
+                out['i'] = np.vstack(out_array.i.values)
+                out['v'] = np.vstack(out_array.v.values)
+                out['p'] = np.vstack(out_array.p.values)
+
+    # FIXME: WET code, remove redudancy, last conditions are identical, only
+    #        the solver is different
 
     return out
 

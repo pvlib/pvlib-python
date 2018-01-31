@@ -93,16 +93,8 @@ def fast_i_from_v(v, photocurrent, saturation_current, resistance_series,
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
-
-    def func(x, *a):
-        _, vtest, _, grad_v, _, _, _ = bishop88(x, *a)
-        return vtest - v
-
-    def fprime(x, *a):
-        _, vtest, _, grad_v, _, _, _ = bishop88(x, *a)
-        return grad_v
-
-    vd = newton(func=func, x0=v, fprime=fprime, args=args)
+    vd = newton(func=lambda x, *a: bishop88(x, *a)[1] - v, x0=v,
+                fprime=lambda x, *a: bishop88(x, *a)[3], args=args)
     return bishop88(vd, *args)[0]
 
 

@@ -1733,29 +1733,58 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             out['v'] = ivcurve_v
             out['i'] = ivcurve_i
 
-    else:
-        size = 0
-        try:
-            size = len(photocurrent)
-        except TypeError:
-            my_func = way_faster.faster_way
-        else:
-            my_func = np.vectorize(way_faster.slower_way)
-        out = my_func(photocurrent, saturation_current, resistance_series,
-                      resistance_shunt, nNsVth, ivcurve_pnts)
-        if size:
-            out_array = pd.DataFrame(out.tolist())
-            out = OrderedDict()
-            out['i_sc'] = out_array.i_sc
-            out['v_oc'] = out_array.v_oc
-            out['i_mp'] = out_array.i_mp
-            out['v_mp'] = out_array.v_mp
-            out['p_mp'] = out_array.p_mp
-            out['i_x'] = out_array.i_x
-            out['i_xx'] = out_array.i_xx
+        if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
+            out = pd.DataFrame(out, index=photocurrent.index)
 
-    if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
-        out = pd.DataFrame(out, index=photocurrent.index)
+    elif method.lower() == 'fast':
+        try:
+            len(photocurrent)
+        except TypeError:
+            out = way_faster.faster_way(
+                photocurrent, saturation_current, resistance_series,
+                resistance_shunt, nNsVth, ivcurve_pnts
+            )
+        else:
+            vecfun = np.vectorize(way_faster.faster_way)
+            out = vecfun(photocurrent, saturation_current, resistance_series,
+                         resistance_shunt, nNsVth, ivcurve_pnts)
+            if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
+                out = pd.DataFrame(out.tolist(), index=photocurrent.index)
+            else:
+                out_array = pd.DataFrame(out.tolist())
+                out = OrderedDict()
+                out['i_sc'] = out_array.i_sc
+                out['v_oc'] = out_array.v_oc
+                out['i_mp'] = out_array.i_mp
+                out['v_mp'] = out_array.v_mp
+                out['p_mp'] = out_array.p_mp
+                out['i_x'] = out_array.i_x
+                out['i_xx'] = out_array.i_xx
+
+    else:
+        try:
+            len(photocurrent)
+        except TypeError:
+            out = way_faster.slower_way(
+                photocurrent, saturation_current, resistance_series,
+                resistance_shunt, nNsVth, ivcurve_pnts
+            )
+        else:
+            vecfun = np.vectorize(way_faster.slower_way)
+            out = vecfun(photocurrent, saturation_current, resistance_series,
+                         resistance_shunt, nNsVth, ivcurve_pnts)
+            if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
+                out = pd.DataFrame(out.tolist(), index=photocurrent.index)
+            else:
+                out_array = pd.DataFrame(out.tolist())
+                out = OrderedDict()
+                out['i_sc'] = out_array.i_sc
+                out['v_oc'] = out_array.v_oc
+                out['i_mp'] = out_array.i_mp
+                out['v_mp'] = out_array.v_mp
+                out['p_mp'] = out_array.p_mp
+                out['i_x'] = out_array.i_x
+                out['i_xx'] = out_array.i_xx
 
     return out
 

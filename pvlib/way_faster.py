@@ -112,6 +112,21 @@ def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
     return bishop88(vd, *args)[1]
 
 
+def fast_v_from_i(i, photocurrent, saturation_current, resistance_series,
+                  resistance_shunt, nNsVth):
+    """
+    This is a fast but unreliable way to find voltage given any current.
+    """
+    # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+    # first bound the search using voc
+    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    vd = newton(func=lambda x, *a: bishop88(x, *a)[0] - i, x0=voc_est,
+                fprime=lambda x, *a: bishop88(x, *a)[2], args=args)
+    return bishop88(vd, *args)[1]
+
+
 def slow_mppt(photocurrent, saturation_current, resistance_series,
               resistance_shunt, nNsVth):
     """

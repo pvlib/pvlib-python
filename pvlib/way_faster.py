@@ -167,10 +167,9 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     v_oc = slow_v_from_i(0.0, *args)
-    i_sc = slow_i_from_v(0.0, *args)
     i_mp, v_mp, p_mp = slow_mppt(*args)
     out = OrderedDict()
-    out['i_sc'] = i_sc
+    out['i_sc'] = slow_i_from_v(0.0, *args)
     out['v_oc'] = v_oc
     out['i_mp'] = i_mp
     out['v_mp'] = v_mp
@@ -195,10 +194,9 @@ def faster_way(photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
     v_oc = fast_v_from_i(0.0, *args)
-    i_sc = fast_i_from_v(0.0, *args)
     i_mp, v_mp, p_mp = fast_mppt(*args)
     out = OrderedDict()
-    out['i_sc'] = i_sc
+    out['i_sc'] = fast_i_from_v(0.0, *args)
     out['v_oc'] = v_oc
     out['i_mp'] = i_mp
     out['v_mp'] = v_mp

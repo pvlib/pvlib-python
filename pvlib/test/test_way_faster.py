@@ -32,7 +32,7 @@ def test_fast_spr_e20_327():
     tstart = clock()
     out = faster_way(*x)
     tstop = clock()
-    isc, voc, imp, vmp, pmp, _, _ = out.values()
+    isc, voc, imp, vmp, pmp, ix, ixx = out.values()
     dt_fast = tstop - tstart
     LOGGER.debug('way faster elapsed time = %g[s]', dt_fast)
     LOGGER.debug('spr_e20_327 speedup = %g', dt_slow / dt_fast)
@@ -44,6 +44,9 @@ def test_fast_spr_e20_327():
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
+    assert np.isclose(pvs['i_x'], ix)
+    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il)
+    assert np.isclose(pvs_ixx, ixx)
     return isc, voc, imp, vmp, pmp, pvs
 
 
@@ -63,7 +66,7 @@ def test_fast_fs_495():
     tstart = clock()
     out = faster_way(*x)
     tstop = clock()
-    isc, voc, imp, vmp, pmp, _, _, i, v, p = out.values()
+    isc, voc, imp, vmp, pmp, ix, ixx, i, v, p = out.values()
     dt_fast = tstop - tstart
     LOGGER.debug('way faster elapsed time = %g[s]', dt_fast)
     LOGGER.debug('fs_495 speedup = %g', dt_slow / dt_fast)
@@ -75,6 +78,9 @@ def test_fast_fs_495():
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
+    assert np.isclose(pvs['i_x'], ix)
+    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il)
+    assert np.isclose(pvs_ixx, ixx)
     return isc, voc, imp, vmp, pmp, i, v, p, pvs
 
 
@@ -93,7 +99,7 @@ def test_slow_spr_e20_327():
     tstart = clock()
     out = slower_way(*x)
     tstop = clock()
-    isc, voc, imp, vmp, pmp, _, _ = out.values()
+    isc, voc, imp, vmp, pmp, ix, ixx = out.values()
     dt_fast = tstop - tstart
     LOGGER.debug('way faster elapsed time = %g[s]', dt_fast)
     LOGGER.debug('spr_e20_327 speedup = %g', dt_slow / dt_fast)
@@ -105,6 +111,9 @@ def test_slow_spr_e20_327():
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
+    assert np.isclose(pvs['i_x'], ix)
+    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il)
+    assert np.isclose(pvs_ixx, ixx)
     return isc, voc, imp, vmp, pmp, pvs
 
 
@@ -124,7 +133,7 @@ def test_slow_fs_495():
     tstart = clock()
     out = slower_way(*x)
     tstop = clock()
-    isc, voc, imp, vmp, pmp, _, _, i, v, p = out.values()
+    isc, voc, imp, vmp, pmp, ix, ixx, i, v, p = out.values()
     dt_fast = tstop - tstart
     LOGGER.debug('way faster elapsed time = %g[s]', dt_fast)
     LOGGER.debug('fs_495 speedup = %g', dt_slow / dt_fast)
@@ -136,6 +145,9 @@ def test_slow_fs_495():
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
+    assert np.isclose(pvs['i_x'], ix)
+    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il)
+    assert np.isclose(pvs_ixx, ixx)
     return isc, voc, imp, vmp, pmp, i, v, p, pvs
 
 

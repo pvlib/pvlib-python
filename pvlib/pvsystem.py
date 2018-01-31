@@ -20,6 +20,7 @@ from pvlib import tools
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
+from pvlib import way_faster
 
 
 # not sure if this belongs in the pvsystem module.
@@ -1571,7 +1572,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts=None):
+                resistance_shunt, nNsVth, ivcurve_pnts=None, method=''):
     r'''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -1627,6 +1628,12 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         Number of points in the desired IV curve. If None or 0, no
         IV curves will be produced.
 
+    method : str, default 'slow'
+        Either 'slow', 'fast', or 'lambertw'. Determines the method used to
+        calculate IV curve and points. If 'slow' then ``brentq`` is used, if
+        'fast' then ``newton`` is used, and if 'lambertw' then `lambertw` is
+        used.
+
     Returns
     -------
     OrderedDict or DataFrame
@@ -1677,53 +1684,75 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     calcparams_desoto
     '''
 
-    # Compute short circuit current
-    i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.,
-                    saturation_current, photocurrent)
+    if method.lower() == 'lambertw':
+        # Compute short circuit current
+        i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.,
+                        saturation_current, photocurrent)
 
-    # Compute open circuit voltage
-    v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
-                    saturation_current, photocurrent)
+        # Compute open circuit voltage
+        v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
+                        saturation_current, photocurrent)
 
-    params = {'r_sh': resistance_shunt,
-              'r_s': resistance_series,
-              'nNsVth': nNsVth,
-              'i_0': saturation_current,
-              'i_l': photocurrent}
+        params = {'r_sh': resistance_shunt,
+                  'r_s': resistance_series,
+                  'nNsVth': nNsVth,
+                  'i_0': saturation_current,
+                  'i_l': photocurrent}
 
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
+        p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
 
-    # Invert the Power-Current curve. Find the current where the inverted power
-    # is minimized. This is i_mp. Start the optimization at v_oc/2
-    i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
-                    saturation_current, photocurrent)
+        # Invert the Power-Current curve. Find the current where the inverted power
+        # is minimized. This is i_mp. Start the optimization at v_oc/2
+        i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
+                        saturation_current, photocurrent)
 
-    # Find Ix and Ixx using Lambert W
-    i_x = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.5 * v_oc,
-                   saturation_current, photocurrent)
+        # Find Ix and Ixx using Lambert W
+        i_x = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.5 * v_oc,
+                       saturation_current, photocurrent)
 
-    i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
-                    0.5 * (v_oc + v_mp), saturation_current, photocurrent)
+        i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
+                        0.5 * (v_oc + v_mp), saturation_current, photocurrent)
 
-    out = OrderedDict()
-    out['i_sc'] = i_sc
-    out['v_oc'] = v_oc
-    out['i_mp'] = i_mp
-    out['v_mp'] = v_mp
-    out['p_mp'] = p_mp
-    out['i_x'] = i_x
-    out['i_xx'] = i_xx
+        out = OrderedDict()
+        out['i_sc'] = i_sc
+        out['v_oc'] = v_oc
+        out['i_mp'] = i_mp
+        out['v_mp'] = v_mp
+        out['p_mp'] = p_mp
+        out['i_x'] = i_x
+        out['i_xx'] = i_xx
 
-    # create ivcurve
-    if ivcurve_pnts:
-        ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
-                     np.linspace(0, 1, ivcurve_pnts))
+        # create ivcurve
+        if ivcurve_pnts:
+            ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
+                         np.linspace(0, 1, ivcurve_pnts))
 
-        ivcurve_i = i_from_v(resistance_shunt, resistance_series, nNsVth,
-                             ivcurve_v.T, saturation_current, photocurrent).T
+            ivcurve_i = i_from_v(resistance_shunt, resistance_series, nNsVth,
+                                 ivcurve_v.T, saturation_current, photocurrent).T
 
-        out['v'] = ivcurve_v
-        out['i'] = ivcurve_i
+            out['v'] = ivcurve_v
+            out['i'] = ivcurve_i
+
+    else:
+        size = 0
+        try:
+            size = len(photocurrent)
+        except TypeError:
+            my_func = way_faster.faster_way
+        else:
+            my_func = np.vectorize(way_faster.slower_way)
+        out = my_func(photocurrent, saturation_current, resistance_series,
+                      resistance_shunt, nNsVth, ivcurve_pnts)
+        if size:
+            out_array = pd.DataFrame(out.tolist())
+            out = OrderedDict()
+            out['i_sc'] = out_array.i_sc
+            out['v_oc'] = out_array.v_oc
+            out['i_mp'] = out_array.i_mp
+            out['v_mp'] = out_array.v_mp
+            out['p_mp'] = out_array.p_mp
+            out['i_x'] = out_array.i_x
+            out['i_xx'] = out_array.i_xx
 
     if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
         out = pd.DataFrame(out, index=photocurrent.index)

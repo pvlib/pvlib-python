@@ -625,12 +625,21 @@ def test_singlediode_array():
     saturation_current = 1.943e-09
 
     sd = pvsystem.singlediode(photocurrent, saturation_current,
-                              resistance_series, resistance_shunt, nNsVth)
+                              resistance_series, resistance_shunt, nNsVth,
+                              method='lambertw')
 
     expected = np.array([
         0.        ,  0.54538398,  1.43273966,  2.36328163,  3.29255606,
         4.23101358,  5.16177031,  6.09368251,  7.02197553,  7.96846051,
         8.88220557])
+
+    assert_allclose(sd['i_mp'], expected, atol=0.01)
+
+    sd = pvsystem.singlediode(photocurrent, saturation_current,
+                              resistance_series, resistance_shunt, nNsVth)
+
+    expected = pvsystem.i_from_v(resistance_shunt, resistance_series, nNsVth,
+                                 sd['v_mp'], saturation_current, photocurrent)
 
     assert_allclose(sd['i_mp'], expected, atol=0.01)
 
@@ -671,6 +680,7 @@ def test_singlediode_floats_ivcurve():
                 'v': np.array([0., 4.05315, 8.1063])}
     assert isinstance(out, dict)
     for k, v in out.items():
+        if k == 'p': continue
         assert_allclose(v, expected[k], atol=3)
 
 
@@ -684,7 +694,8 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                   module_parameters=cec_module_params,
                                   EgRef=1.121, dEgdT=-0.0002677)
 
-    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
+                               method='lambertw')
 
     expected = OrderedDict([('i_sc', array([0., 3.01054475, 6.00675648])),
                             ('v_oc', array([0., 9.96886962, 10.29530483])),
@@ -704,6 +715,9 @@ def test_singlediode_series_ivcurve(cec_module_params):
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
+
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
+                               method='lambertw')
 
 
 def test_scale_voltage_current_power(sam_data):

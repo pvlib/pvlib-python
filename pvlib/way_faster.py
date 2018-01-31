@@ -5,15 +5,12 @@ methods from J.W. Bishop (Solar Cells, 1988).
 
 from collections import OrderedDict
 import numpy as np
-from scipy.optimize import brentq, newton
+try:
+    from scipy.optimize import brentq, newton
+except ImportError:
+    raise ImportError('Thes function requires scipy')
 
-
-# TODO: remove grad calcs from bishop88
-# TODO: add new residual and f_prime calcs for fast_ methods to use newton
-# TODO: refactor singlediode to be a wrapper with a method argument
-# TODO: update pvsystem.singlediode to use slow_ methods by default
-# TODO: ditto for i_from_v and v_from_i
-# TODO: add new mppt function to pvsystem
+# TODO: update pvsystem.i_from_v and v_from_i to use "gold" method by default
 
 
 def est_voc(photocurrent, saturation_current, nNsVth):

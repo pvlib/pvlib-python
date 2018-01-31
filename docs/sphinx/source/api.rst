@@ -205,6 +205,7 @@ Functions relevant for the single diode model.
    pvsystem.i_from_v
    pvsystem.singlediode
    pvsystem.v_from_i
+   pvsystem.mppt
 
 SAPM model
 ----------

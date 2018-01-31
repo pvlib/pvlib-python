@@ -1628,11 +1628,12 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         Number of points in the desired IV curve. If None or 0, no
         IV curves will be produced.
 
-    method : str, default 'slow'
-        Either 'slow', 'fast', or 'lambertw'. Determines the method used to
-        calculate IV curve and points. If 'slow' then ``brentq`` is used, if
-        'fast' then ``newton`` is used, and if 'lambertw' then `lambertw` is
-        used.
+    method : str, default ''
+        Determines the method used to calculate IV curve and points. If
+        'lambertw' then '`lambertw`'' is used. If 'fast' then ``newton`` is
+        used. Otherwise the problem is bounded between zero and open-circuit
+        voltage and a bisection method, ``brentq``, is used, that guarantees
+        convergence.
 
     Returns
     -------
@@ -1662,9 +1663,46 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     Notes
     -----
-    The solution employed to solve the implicit diode equation utilizes
-    the Lambert W function to obtain an explicit function of V=f(i) and
-    I=f(V) as shown in [2].
+    The default method employed is an explicit solution using [4] to find an
+    arbitrary point on the IV curve as a function of the diode  voltage
+    :math:`V_d = V + I*Rs`. Then the voltage is backed out from :math:`V_d`.
+    A specific desired point, such as short circuit current or max power, is
+    located using the bisection search method, ``brentq``, bounded by a zero
+    diode voltage and an estimat of open circuit current given by
+
+    .. math::
+
+        V_{oc, est} = n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)
+
+    We know that :math:`V_d = 0` corresponds to a voltage less than zero, and
+    we can also show that when :math:`V_d = V_{oc, est}` that the resulting
+    current is also negative, meaning that the corresponding voltagge must be
+    in the 4th quadrant and therefore greater than the open circuit voltage.
+
+    .. math::
+
+        I = I_L - I_0 \left( \exp \left( \frac{V_{oc, est} }{ n Ns V_{th} } \right) - 1 \right) - \frac{V_{oc, est}}{R_{sh}
+        I = I_L - I_0 \left(\exp \left( \frac{ n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right) }{ n Ns V_{th} } \right) - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
+        I = I_L - I_0 \left(\exp \left( \log \left( \frac{I_L}{I_0} + 1 \right) \right)  - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
+        I = I_L - I_0 \left(\frac{I_L}{I_0} + 1  - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
+        I = I_L - I_0 \left(\frac{I_L}{I_0} \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
+        I = I_L - I_L - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
+        I = - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}
+
+    If ``method.lower() == 'fast'`` then a gradient descent method, ``newton``
+    is used to solve the implicit diode equation. It should be safe for well
+    behaved IV-curves, but the default method is recommended for reliability
+    and surprisingly it is just as fast. This method may be removed in future
+    versions.
+
+    If either the "fast" or default methods are indicated, then
+    :func:`pvlib.way_faster.bishop88` is used to calculate the points at diode
+    voltages from zero to open-circuit voltage with a log spacing so that
+    points get closer as they approach the open-circuit voltage.
+
+    If ``method.lower() == 'lambertw'`` then he solution employed to solve the
+    implicit diode equation utilizes the Lambert W function to obtain an
+    explicit function of V=f(i) and I=f(V) as shown in [2].
 
     References
     -----------
@@ -1677,6 +1715,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     [3] D. King et al, "Sandia Photovoltaic Array Performance Model",
     SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
+
+    [4] "Computer simulation of the effects of electrical mismatches in
+    photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+    https://doi.org/10.1016/0379-6787(88)90059-2
 
     See also
     --------
@@ -1736,45 +1778,20 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
             out = pd.DataFrame(out, index=photocurrent.index)
 
-    elif method.lower() == 'fast':
-        try:
-            len(photocurrent)
-        except TypeError:
-            out = way_faster.faster_way(
-                photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts
-            )
-        else:
-            vecfun = np.vectorize(way_faster.faster_way)
-            out = vecfun(photocurrent, saturation_current, resistance_series,
-                         resistance_shunt, nNsVth, ivcurve_pnts)
-            if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
-                out = pd.DataFrame(out.tolist(), index=photocurrent.index)
-            else:
-                out_array = pd.DataFrame(out.tolist())
-                out = OrderedDict()
-                out['i_sc'] = out_array.i_sc.values
-                out['v_oc'] = out_array.v_oc.values
-                out['i_mp'] = out_array.i_mp.values
-                out['v_mp'] = out_array.v_mp.values
-                out['p_mp'] = out_array.p_mp.values
-                out['i_x'] = out_array.i_x.values
-                out['i_xx'] = out_array.i_xx.values
-                if ivcurve_pnts:
-                    out['i'] = np.vstack(out_array.i.values)
-                    out['v'] = np.vstack(out_array.v.values)
-                    out['p'] = np.vstack(out_array.p.values)
-
     else:
+        if method.lower() == 'fast':
+            sdm_fun = way_faster.faster_way
+        else:
+            sdm_fun = way_faster.slower_way
         try:
             len(photocurrent)
         except TypeError:
-            out = way_faster.slower_way(
+            out = sdm_fun(
                 photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth, ivcurve_pnts
             )
         else:
-            vecfun = np.vectorize(way_faster.slower_way)
+            vecfun = np.vectorize(sdm_fun)
             out = vecfun(photocurrent, saturation_current, resistance_series,
                          resistance_shunt, nNsVth, ivcurve_pnts)
             if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
@@ -1793,10 +1810,51 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                     out['i'] = np.vstack(out_array.i.values)
                     out['v'] = np.vstack(out_array.v.values)
                     out['p'] = np.vstack(out_array.p.values)
+    return out
 
-    # FIXME: WET code, remove redudancy, last conditions are identical, only
-    #        the solver is different
 
+def mppt(photocurrent, saturation_current, resistance_series, resistance_shunt,
+         nNsVth, method=''):
+    """
+    Max power point tracker. Given the calculated DeSoto parameters calculates
+    the maximum power point (MPP).
+
+    :param numeric photocurrent: photo-generated current [A]
+    :param numeric saturation_current: diode one reverse saturation current [A]
+    :param numeric resistance_series: series resitance [ohms]
+    :param numeric resistance_shunt: shunt resitance [ohms]
+    :param numeric nNsVth: product of thermal voltage ``Vth`` [V], diode
+    :param str method: if "fast" then use Newton, otherwise use bisection
+    :returns: ``OrderedDict`` or ``pandas.Datafrane`` with ``i_mp``, ``v_mp``,
+        and ``p_mp``
+    """
+    if method.lower() == 'fast':
+        mppt_func = way_faster.fast_mppt
+    else:
+        mppt_func = way_faster.slow_mppt
+    try:
+        len(photocurrent)
+    except TypeError:
+        i_mp, v_mp, p_mp = mppt_func(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth
+        )
+        out = OrderedDict()
+        out['i_mp'] = i_mp
+        out['v_mp'] = v_mp
+        out['p_mp'] = p_mp
+    else:
+        vecfun = np.vectorize(mppt_func)
+        ivp = vecfun(photocurrent, saturation_current, resistance_series,
+                     resistance_shunt, nNsVth)
+        if isinstance(photocurrent, pd.Series):
+            ivp = {k: v for k, v in zip(('i_mp', 'v_mp', 'p_mp'), ivp)}
+            out = pd.DataFrame(ivp, index=photocurrent.index)
+        else:
+            out = OrderedDict()
+            out['i_mp'] = ivp[0]
+            out['v_mp'] = ivp[1]
+            out['p_mp'] = ivp[2]
     return out
 
 

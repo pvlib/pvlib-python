@@ -5,10 +5,9 @@ methods from J.W. Bishop (Solar Cells, 1988).
 
 from collections import OrderedDict
 import numpy as np
-from scipy.optimize import fminbound, newton
+from scipy.optimize import brentq, newton
 
 
-# TODO: make fast_i_from_v, fast_v_from_i, fast_mppt using newton
 # TODO: remove grad calcs from bishop88
 # TODO: add new residual and f_prime calcs for fast_ methods to use newton
 # TODO: refactor singlediode to be a wrapper with a method argument
@@ -33,7 +32,7 @@ def est_voc(photocurrent, saturation_current, nNsVth):
 
 
 def bishop88(vd, photocurrent, saturation_current, resistance_series,
-             resistance_shunt, nNsVth):
+             resistance_shunt, nNsVth, gradients=False):
     """
     Explicit calculation single-diode-model (SDM) currents and voltages using
     diode junction voltages [1].
@@ -49,26 +48,31 @@ def bishop88(vd, photocurrent, saturation_current, resistance_series,
     :param numeric resistance_shunt: shunt resitance [ohms]
     :param numeric nNsVth: product of thermal voltage ``Vth`` [V], diode
         ideality factor ``n``, and number of series cells ``Ns``
-    :returns: tuple containing currents [A], voltages [V], gradient ``di/dvd``,
-        gradient ``dv/dvd``, power [W], gradient ``dp/dv``, and gradient
-        ``d2p/dv/dvd``
+    :param bool gradients: default returns only i, v, and p, returns gradients
+        if true
+    :returns: tuple containing currents [A], voltages [V], power [W],
+        gradient ``di/dvd``, gradient ``dv/dvd``, gradient ``di/dv``,
+        gradient ``dp/dv``, and gradient ``d2p/dv/dvd``
     """
     a = np.exp(vd / nNsVth)
     b = 1.0 / resistance_shunt
     i = photocurrent - saturation_current * (a - 1.0) - vd * b
     v = vd - i * resistance_series
-    c = saturation_current * a / nNsVth
-    grad_i = - c - b  # di/dvd
-    grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
-    # dp/dv = d(iv)/dv = v * di/dv + i
-    grad = grad_i / grad_v  # di/dv
-    grad_p = v * grad + i  # dp/dv
-    grad2i = -c / nNsVth
-    grad2v = -grad2i * resistance_series
-    grad2p = (
-        grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2) + grad_i
-    )
-    return i, v, grad_i, grad_v, i*v, grad_p, grad2p
+    retval = (i, v, i*v)
+    if gradients:
+        c = saturation_current * a / nNsVth
+        grad_i = - c - b  # di/dvd
+        grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
+        # dp/dv = d(iv)/dv = v * di/dv + i
+        grad = grad_i / grad_v  # di/dv
+        grad_p = v * grad + i  # dp/dv
+        grad2i = -c / nNsVth  # d2i/dvd
+        grad2v = -grad2i * resistance_series  # d2v/dvd
+        grad2p = (
+            grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2) + grad_i
+        )  # d2p/dv/dvd
+        retval += (grad_i, grad_v, grad, grad_p, grad2p)
+    return retval
 
 
 def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
@@ -81,7 +85,7 @@ def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
     voc_est = est_voc(photocurrent, saturation_current, nNsVth)
-    vd = fminbound(lambda x: (v - bishop88(x, *args)[1])**2, 0.0, voc_est)
+    vd = brentq(lambda x, *a: v - bishop88(x, *a)[1], 0.0, voc_est, args)
     return bishop88(vd, *args)[0]
 
 
@@ -94,7 +98,8 @@ def fast_i_from_v(v, photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     vd = newton(func=lambda x, *a: bishop88(x, *a)[1] - v, x0=v,
-                fprime=lambda x, *a: bishop88(x, *a)[3], args=args)
+                fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
+                args=args)
     return bishop88(vd, *args)[0]
 
 
@@ -108,7 +113,7 @@ def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
     voc_est = est_voc(photocurrent, saturation_current, nNsVth)
-    vd = fminbound(lambda x: (i - bishop88(x, *args)[0])**2, 0.0, voc_est)
+    vd = brentq(lambda x, *a: i - bishop88(x, *a)[0], 0.0, voc_est, args)
     return bishop88(vd, *args)[1]
 
 
@@ -123,7 +128,8 @@ def fast_v_from_i(i, photocurrent, saturation_current, resistance_series,
     # first bound the search using voc
     voc_est = est_voc(photocurrent, saturation_current, nNsVth)
     vd = newton(func=lambda x, *a: bishop88(x, *a)[0] - i, x0=voc_est,
-                fprime=lambda x, *a: bishop88(x, *a)[2], args=args)
+                fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
+                args=args)
     return bishop88(vd, *args)[1]
 
 
@@ -137,9 +143,9 @@ def slow_mppt(photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
     voc_est = est_voc(photocurrent, saturation_current, nNsVth)
-    vd = fminbound(lambda x: -(bishop88(x, *args)[4])**2, 0.0, voc_est)
-    i, v, _, _, p, _, _ = bishop88(vd, *args)
-    return i, v, p
+    vd = brentq(lambda x, *a: bishop88(x, *a, gradients=True)[6], 0.0, voc_est,
+                args)
+    return bishop88(vd, *args)
 
 
 def fast_mppt(photocurrent, saturation_current, resistance_series,
@@ -152,10 +158,11 @@ def fast_mppt(photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
     voc_est = est_voc(photocurrent, saturation_current, nNsVth)
-    vd = newton(func=lambda x, *a: bishop88(x, *a)[5], x0=voc_est,
-                fprime=lambda x, *a: bishop88(x, *a)[6], args=args)
-    i, v, _, _, p, _, _ = bishop88(vd, *args)
-    return i, v, p
+    vd = newton(
+        func=lambda x, *a: bishop88(x, *a, gradients=True)[6], x0=voc_est,
+        fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args
+    )
+    return bishop88(vd, *args)
 
 
 def slower_way(photocurrent, saturation_current, resistance_series,
@@ -181,7 +188,7 @@ def slower_way(photocurrent, saturation_current, resistance_series,
         vd = v_oc * (
             (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
         )
-        i, v, _, _, p, _, _ = bishop88(vd, *args)
+        i, v, p = bishop88(vd, *args)
         out['i'] = i
         out['v'] = v
         out['p'] = p
@@ -208,7 +215,7 @@ def faster_way(photocurrent, saturation_current, resistance_series,
         vd = v_oc * (
             (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
         )
-        i, v, _, _, p, _, _ = bishop88(vd, *args)
+        i, v, p = bishop88(vd, *args)
         out['i'] = i
         out['v'] = v
         out['p'] = p

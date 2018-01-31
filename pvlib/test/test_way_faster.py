@@ -30,7 +30,7 @@ def test_fast_spr_e20_327():
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
-    out = faster_way(*x, log=False, test=False)
+    out = faster_way(*x)
     tstop = clock()
     isc, voc, imp, vmp, pmp, _, _ = out.values()
     dt_fast = tstop - tstart
@@ -61,7 +61,7 @@ def test_fast_fs_495():
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
-    out = faster_way(*x, log=False, test=False)
+    out = faster_way(*x)
     tstop = clock()
     isc, voc, imp, vmp, pmp, _, _, i, v, p = out.values()
     dt_fast = tstop - tstart

@@ -3,18 +3,10 @@ Faster ways to calculate single diode model currents and voltages using
 methods from J.W. Bishop (Solar Cells, 1988).
 """
 
-import logging
 from collections import OrderedDict
 import numpy as np
-from scipy.optimize import fminbound
+from scipy.optimize import fminbound, newton
 
-logging.basicConfig()
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
-
-EPS = np.finfo(float).eps
-DAMP = 1.5
-DELTA = EPS**0.33
 
 # TODO: make fast_i_from_v, fast_v_from_i, fast_mppt using newton
 # TODO: remove grad calcs from bishop88
@@ -93,6 +85,27 @@ def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
     return bishop88(vd, *args)[0]
 
 
+def fast_i_from_v(v, photocurrent, saturation_current, resistance_series,
+                  resistance_shunt, nNsVth):
+    """
+    This is a fast but unreliable way to find current given any voltage.
+    """
+    # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+    def func(x, *a):
+        _, vtest, _, grad_v, _, _, _ = bishop88(x, *a)
+        return vtest - v
+
+    def fprime(x, *a):
+        _, vtest, _, grad_v, _, _, _ = bishop88(x, *a)
+        return grad_v
+
+    vd = newton(func=func, x0=v, fprime=fprime, args=args)
+    return bishop88(vd, *args)[0]
+
+
 def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
                   resistance_shunt, nNsVth):
     """
@@ -154,74 +167,24 @@ def slower_way(photocurrent, saturation_current, resistance_series,
 
 
 def faster_way(photocurrent, saturation_current, resistance_series,
-               resistance_shunt, nNsVth, ivcurve_pnts=None,
-               tol=EPS, damp=DAMP, log=True, test=True):
+               resistance_shunt, nNsVth, ivcurve_pnts=None):
     """a faster way"""
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
     # first estimate Voc
     voc_est = est_voc(photocurrent, saturation_current, nNsVth)
     # find the real voc
-    resnorm = np.inf  # nor of residuals
-    while resnorm > tol:
-        i_test, v_test, grad, _, _, _, _ = bishop88(voc_est, *args)
-        newton_step = i_test / grad
-        # don't let step get crazy
-        if np.abs(newton_step / voc_est) > damp:
-            break
-        voc_est -= newton_step
-        resnorm = i_test**2
-        if log:
-            LOGGER.debug(
-                'voc_est=%g, step=%g, i_test=%g, v_test=%g, resnorm=%g',
-                voc_est, newton_step, i_test, v_test, resnorm
-            )
-        if test:
-            i_test2, _, _, _, _, _, _ = bishop88(voc_est * (1.0 + DELTA), *args)
-            LOGGER.debug('test_grad=%g', (i_test2 - i_test) / voc_est / DELTA)
-            LOGGER.debug('grad=%g', grad)
+    vd = newton(func=lambda x, *a: bishop88(x, *a)[0], x0=voc_est,
+                fprime=lambda x, *a: bishop88(x, *a)[2], args=args)
+    voc_est = bishop88(vd, *args)[1]
     # find isc too
-    isc_est = 0.0
-    vd_sc = 0.0
-    resnorm = np.inf  # nor of residuals
-    while resnorm > tol:
-        isc_est, v_test, _, grad, _, _, _ = bishop88(vd_sc, *args)
-        newton_step = v_test / grad
-        # don't let step get crazy
-        if np.abs(newton_step / voc_est) > damp:
-            break
-        vd_sc -= newton_step
-        resnorm = v_test**2
-        if log:
-            LOGGER.debug(
-                'vd_sc=%g, step=%g, isc_est=%g, v_test=%g, resnorm=%g',
-                vd_sc, newton_step, isc_est, v_test, resnorm
-            )
-        if test:
-            _, v_test2, _, _, _, _, _ = bishop88(vd_sc * (1.0 + DELTA), *args)
-            LOGGER.debug('test_grad=%g', (v_test2 - v_test) / vd_sc / DELTA)
-            LOGGER.debug('grad=%g', grad)
+    vd = newton(func=lambda x, *a: bishop88(x, *a)[1], x0=0.0,
+                fprime=lambda x, *a: bishop88(x, *a)[3], args=args)
+    isc_est = bishop88(vd, *args)[0]
     # find the mpp
-    imp_est, vmp_est, pmp_est = 0.0, 0.0, 0.0
-    vd_mp = voc_est
-    resnorm = np.inf  # nor of residuals
-    while resnorm > tol:
-        imp_est, vmp_est, _, _, pmp_est, grad_p, grad2p = bishop88(vd_mp, *args)
-        newton_step = grad_p / grad2p
-        # don't let step get crazy
-        if np.abs(newton_step / voc_est) > damp:
-            break
-        vd_mp -= newton_step
-        resnorm = grad_p**2
-        if log:
-            LOGGER.debug(
-                'vd_mp=%g, step=%g, pmp_est=%g, resnorm=%g',
-                vd_mp, newton_step, pmp_est, resnorm
-            )
-        if test:
-            _, _, _, _, _, grad_p2, _ = bishop88(vd_mp * (1.0 + DELTA), *args)
-            LOGGER.debug('test_grad=%g', (grad_p2 - grad_p) / vd_mp / DELTA)
-            LOGGER.debug('grad=%g', grad2p)
+    vd = newton(func=lambda x, *a: bishop88(x, *a)[5], x0=voc_est,
+                fprime=lambda x, *a: bishop88(x, *a)[6], args=args)
+    imp_est, vmp_est, _, _, pmp_est, _, _ = bishop88(vd, *args)
     out = OrderedDict()
     out['i_sc'] = isc_est
     out['v_oc'] = voc_est

@@ -142,6 +142,22 @@ def slow_mppt(photocurrent, saturation_current, resistance_series,
     return i, v, p
 
 
+def fast_mppt(photocurrent, saturation_current, resistance_series,
+              resistance_shunt, nNsVth):
+    """
+    This is a fast but unreliable way to find mpp.
+    """
+    # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+    # first bound the search using voc
+    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    vd = newton(func=lambda x, *a: bishop88(x, *a)[5], x0=voc_est,
+                fprime=lambda x, *a: bishop88(x, *a)[6], args=args)
+    i, v, _, _, p, _, _ = bishop88(vd, *args)
+    return i, v, p
+
+
 def slower_way(photocurrent, saturation_current, resistance_series,
                resistance_shunt, nNsVth, ivcurve_pnts=None):
     """

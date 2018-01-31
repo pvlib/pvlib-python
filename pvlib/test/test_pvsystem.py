@@ -680,7 +680,8 @@ def test_singlediode_floats_ivcurve():
                 'v': np.array([0., 4.05315, 8.1063])}
     assert isinstance(out, dict)
     for k, v in out.items():
-        if k == 'p': continue
+        if k == 'p':
+            continue
         assert_allclose(v, expected[k], atol=3)
 
 
@@ -720,8 +721,13 @@ def test_singlediode_series_ivcurve(cec_module_params):
 
     expected['i_mp'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v_mp'], I0, IL)
     expected['v_mp'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i_mp'], I0, IL)
+    expected['i'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v'].T, I0, IL).T
+    expected['v'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i'].T, I0, IL).T
 
     for k, v in out.items():
+        if k == 'p':
+            # skip power, only in way_faster output
+            continue
         assert_allclose(v, expected[k], atol=1e-2)
 
 

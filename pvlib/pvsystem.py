@@ -1760,9 +1760,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                 out['p_mp'] = out_array.p_mp.values
                 out['i_x'] = out_array.i_x.values
                 out['i_xx'] = out_array.i_xx.values
-                out['i'] = np.vstack(out_array.i.values)
-                out['v'] = np.vstack(out_array.v.values)
-                out['p'] = np.vstack(out_array.p.values)
+                if ivcurve_pnts:
+                    out['i'] = np.vstack(out_array.i.values)
+                    out['v'] = np.vstack(out_array.v.values)
+                    out['p'] = np.vstack(out_array.p.values)
 
     else:
         try:
@@ -1788,9 +1789,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                 out['p_mp'] = out_array.p_mp.values
                 out['i_x'] = out_array.i_x.values
                 out['i_xx'] = out_array.i_xx.values
-                out['i'] = np.vstack(out_array.i.values)
-                out['v'] = np.vstack(out_array.v.values)
-                out['p'] = np.vstack(out_array.p.values)
+                if ivcurve_pnts:
+                    out['i'] = np.vstack(out_array.i.values)
+                    out['v'] = np.vstack(out_array.v.values)
+                    out['p'] = np.vstack(out_array.p.values)
 
     # FIXME: WET code, remove redudancy, last conditions are identical, only
     #        the solver is different

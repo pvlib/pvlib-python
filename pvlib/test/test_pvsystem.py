@@ -716,8 +716,13 @@ def test_singlediode_series_ivcurve(cec_module_params):
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
 
-    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
-                               method='lambertw')
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+
+    expected['i_mp'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v_mp'], I0, IL)
+    expected['v_mp'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i_mp'], I0, IL)
+
+    for k, v in out.items():
+        assert_allclose(v, expected[k], atol=1e-2)
 
 
 def test_scale_voltage_current_power(sam_data):

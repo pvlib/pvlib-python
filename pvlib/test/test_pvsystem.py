@@ -626,6 +626,56 @@ def test_PVSystem_i_from_v():
 
 
 @requires_scipy
+def test_mpp_floats():
+    """test mpp"""
+    IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth)
+    expected = {'i_mp': 6.1362673597376753,  # 6.1390251797935704, lambertw
+                'v_mp': 6.2243393757884284,  # 6.221535886625464, lambertw
+                'p_mp': 38.194210547580511}  # 38.194165464983037} lambertw
+    assert isinstance(out, dict)
+    for k, v in out.items():
+        assert np.isclose(v, expected[k])
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='fast')
+    for k, v in out.items():
+        assert np.isclose(v, expected[k])
+
+
+@requires_scipy
+def test_mpp_array():
+    """test mpp"""
+    IL, I0, Rs, Rsh, nNsVth = ([7, 7], 6e-7, .1, 20, .5)
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth)
+    expected = {'i_mp': [6.1362673597376753] * 2,
+                'v_mp': [6.2243393757884284] * 2,
+                'p_mp': [38.194210547580511] * 2}
+    assert isinstance(out, dict)
+    for k, v in out.items():
+        assert np.allclose(v, expected[k])
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='fast')
+    for k, v in out.items():
+        assert np.allclose(v, expected[k])
+
+
+@requires_scipy
+def test_mpp_series():
+    """test mpp"""
+    idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']
+    IL, I0, Rs, Rsh, nNsVth = ([7, 7], 6e-7, .1, 20, .5)
+    IL = pd.Series(IL, index=idx)
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth)
+    expected = pd.DataFrame({'i_mp': [6.1362673597376753] * 2,
+                             'v_mp': [6.2243393757884284] * 2,
+                             'p_mp': [38.194210547580511] * 2},
+                            index=idx)
+    assert isinstance(out, pd.DataFrame)
+    for k, v in out.items():
+        assert np.allclose(v, expected[k])
+    for k, v in out.items():
+        assert np.allclose(v, expected[k])
+
+
+@requires_scipy
 def test_singlediode_series(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     poa_data = pd.Series([0, 800], index=times)

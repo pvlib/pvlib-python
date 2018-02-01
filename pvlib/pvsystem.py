@@ -1821,11 +1821,11 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     return out
 
 
-def mppt(photocurrent, saturation_current, resistance_series, resistance_shunt,
-         nNsVth, method='gold'):
+def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
+        nNsVth, method='gold'):
     """
-    Max power point tracker. Given the calculated DeSoto parameters calculates
-    the maximum power point (MPP).
+    Given the calculated DeSoto parameters, calculates the maximum power point
+    (MPP).
 
     :param numeric photocurrent: photo-generated current [A]
     :param numeric saturation_current: diode one reverse saturation current [A]
@@ -1837,13 +1837,13 @@ def mppt(photocurrent, saturation_current, resistance_series, resistance_shunt,
         and ``p_mp``
     """
     if method.lower() == 'fast':
-        mppt_func = singlediode_methods.fast_mppt
+        mpp_fun = singlediode_methods.fast_mpp
     else:
-        mppt_func = singlediode_methods.slow_mppt
+        mpp_fun = singlediode_methods.slow_mpp
     try:
         len(photocurrent)
     except TypeError:
-        i_mp, v_mp, p_mp = mppt_func(
+        i_mp, v_mp, p_mp = mpp_fun(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth
         )
@@ -1852,7 +1852,7 @@ def mppt(photocurrent, saturation_current, resistance_series, resistance_shunt,
         out['v_mp'] = v_mp
         out['p_mp'] = p_mp
     else:
-        vecfun = np.vectorize(mppt_func)
+        vecfun = np.vectorize(mpp_fun)
         ivp = vecfun(photocurrent, saturation_current, resistance_series,
                      resistance_shunt, nNsVth)
         if isinstance(photocurrent, pd.Series):

@@ -171,8 +171,8 @@ def fast_v_from_i(i, photocurrent, saturation_current, resistance_series,
     return bishop88(vd, *args)[1]
 
 
-def slow_mppt(photocurrent, saturation_current, resistance_series,
-              resistance_shunt, nNsVth):
+def slow_mpp(photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth):
     """
     This is a slow but reliable way to find mpp.
     """
@@ -188,8 +188,8 @@ def slow_mppt(photocurrent, saturation_current, resistance_series,
     return bishop88(vd, *args)
 
 
-def fast_mppt(photocurrent, saturation_current, resistance_series,
-              resistance_shunt, nNsVth):
+def fast_mpp(photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth):
     """
     This is a possibly faster way to find mpp.
     """
@@ -216,7 +216,7 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     v_oc = slow_v_from_i(0.0, *args)
-    i_mp, v_mp, p_mp = slow_mppt(*args)
+    i_mp, v_mp, p_mp = slow_mpp(*args)
     out = OrderedDict()
     out['i_sc'] = slow_i_from_v(0.0, *args)
     out['v_oc'] = v_oc
@@ -243,7 +243,7 @@ def faster_way(photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
     v_oc = fast_v_from_i(0.0, *args)
-    i_mp, v_mp, p_mp = fast_mppt(*args)
+    i_mp, v_mp, p_mp = fast_mpp(*args)
     out = OrderedDict()
     out['i_sc'] = fast_i_from_v(0.0, *args)
     out['v_oc'] = v_oc

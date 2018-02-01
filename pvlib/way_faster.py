@@ -8,7 +8,8 @@ import numpy as np
 try:
     from scipy.optimize import brentq, newton
 except ImportError:
-    raise ImportError('Thes function requires scipy')
+    brentq = NotImplemented
+    newton = NotImplemented
 
 # TODO: update pvsystem.i_from_v and v_from_i to use "gold" method by default
 
@@ -85,6 +86,8 @@ def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
     """
     This is a slow but reliable way to find current given any voltage.
     """
+    if brentq is NotImplemented:
+        raise ImportError('This function requires scipy')
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
@@ -99,6 +102,8 @@ def fast_i_from_v(v, photocurrent, saturation_current, resistance_series,
     """
     This is a fast but unreliable way to find current given any voltage.
     """
+    if newton is NotImplemented:
+        raise ImportError('This function requires scipy')
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
@@ -113,6 +118,8 @@ def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
     """
     This is a slow but reliable way to find voltage given any current.
     """
+    if brentq is NotImplemented:
+        raise ImportError('This function requires scipy')
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
@@ -127,6 +134,8 @@ def fast_v_from_i(i, photocurrent, saturation_current, resistance_series,
     """
     This is a fast but unreliable way to find voltage given any current.
     """
+    if newton is NotImplemented:
+        raise ImportError('This function requires scipy')
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
@@ -143,6 +152,8 @@ def slow_mppt(photocurrent, saturation_current, resistance_series,
     """
     This is a slow but reliable way to find mpp.
     """
+    if brentq is NotImplemented:
+        raise ImportError('This function requires scipy')
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
@@ -158,6 +169,8 @@ def fast_mppt(photocurrent, saturation_current, resistance_series,
     """
     This is a fast but unreliable way to find mpp.
     """
+    if newton is NotImplemented:
+        raise ImportError('This function requires scipy')
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)

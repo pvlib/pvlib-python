@@ -1738,7 +1738,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
         # Compute open circuit voltage
         v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
-                        saturation_current, photocurrent)
+                        saturation_current, photocurrent, method)
 
         params = {'r_sh': resistance_shunt,
                   'r_s': resistance_series,
@@ -1950,7 +1950,7 @@ def _pwr_optfcn(df, loc):
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent):
+             saturation_current, photocurrent, method=''):
     '''
     Device voltage at the given device current for the single diode model.
 
@@ -1999,6 +1999,11 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         IV curve conditions. Often abbreviated ``I_L``.
         0 <= photocurrent
 
+    method : str
+        Method to use. If 'lambertw' use ``lambertw``, if 'fast' use ``newton``,
+        otherwise use bisection. Note: bisection is limited to 1st quadrant
+        only.
+
     Returns
     -------
     current : np.ndarray or scalar
@@ -2009,81 +2014,125 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     parameters of real solar cells using Lambert W-function", Solar
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
-    try:
-        from scipy.special import lambertw
-    except ImportError:
-        raise ImportError('This function requires scipy')
+    if method.lower() == 'lambertw':
+        try:
+            from scipy.special import lambertw
+        except ImportError:
+            raise ImportError('This function requires scipy')
 
-    # Record if inputs were all scalar
-    output_is_scalar = all(map(np.isscalar,
-                               [resistance_shunt, resistance_series, nNsVth,
-                                current, saturation_current, photocurrent]))
+        # Record if inputs were all scalar
+        output_is_scalar = all(map(np.isscalar,
+                                   [resistance_shunt, resistance_series, nNsVth,
+                                    current, saturation_current, photocurrent]))
 
-    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
-    #  is generally more numerically stable
-    conductance_shunt = 1./resistance_shunt
+        # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+        #  is generally more numerically stable
+        conductance_shunt = 1./resistance_shunt
 
-    # Ensure that we are working with read-only views of numpy arrays
-    # Turns Series into arrays so that we don't have to worry about
-    #  multidimensional broadcasting failing
-    Gsh, Rs, a, I, I0, IL = \
-        np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
-                            current, saturation_current, photocurrent)
+        # Ensure that we are working with read-only views of numpy arrays
+        # Turns Series into arrays so that we don't have to worry about
+        #  multidimensional broadcasting failing
+        Gsh, Rs, a, I, I0, IL = \
+            np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
+                                current, saturation_current, photocurrent)
 
-    # Intitalize output V (I might not be float64)
-    V = np.full_like(I, np.nan, dtype=np.float64)
+        # Intitalize output V (I might not be float64)
+        V = np.full_like(I, np.nan, dtype=np.float64)
 
-    # Determine indices where 0 < Gsh requires implicit model solution
-    idx_p = 0. < Gsh
+        # Determine indices where 0 < Gsh requires implicit model solution
+        idx_p = 0. < Gsh
 
-    # Determine indices where 0 = Gsh allows explicit model solution
-    idx_z = 0. == Gsh
+        # Determine indices where 0 = Gsh allows explicit model solution
+        idx_z = 0. == Gsh
 
-    # Explicit solutions where Gsh=0
-    if np.any(idx_z):
-        V[idx_z] = a[idx_z]*np.log1p((IL[idx_z] - I[idx_z])/I0[idx_z]) - \
-            I[idx_z]*Rs[idx_z]
+        # Explicit solutions where Gsh=0
+        if np.any(idx_z):
+            V[idx_z] = a[idx_z]*np.log1p((IL[idx_z] - I[idx_z])/I0[idx_z]) - \
+                I[idx_z]*Rs[idx_z]
 
-    # Only compute using LambertW if there are cases with Gsh>0
-    if np.any(idx_p):
-        # LambertW argument, cannot be float128, may overflow to np.inf
-        argW = I0[idx_p] / (Gsh[idx_p]*a[idx_p]) * \
-            np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                   (Gsh[idx_p]*a[idx_p]))
+        # Only compute using LambertW if there are cases with Gsh>0
+        if np.any(idx_p):
+            # LambertW argument, cannot be float128, may overflow to np.inf
+            argW = I0[idx_p] / (Gsh[idx_p]*a[idx_p]) * \
+                np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
+                       (Gsh[idx_p]*a[idx_p]))
 
-        # lambertw typically returns complex value with zero imaginary part
-        # may overflow to np.inf
-        lambertwterm = lambertw(argW).real
+            # lambertw typically returns complex value with zero imaginary part
+            # may overflow to np.inf
+            lambertwterm = lambertw(argW).real
 
-        # Record indices where lambertw input overflowed output
-        idx_inf = np.logical_not(np.isfinite(lambertwterm))
+            # Record indices where lambertw input overflowed output
+            idx_inf = np.logical_not(np.isfinite(lambertwterm))
 
-        # Only re-compute LambertW if it overflowed
-        if np.any(idx_inf):
-            # Calculate using log(argW) in case argW is really big
-            logargW = (np.log(I0[idx_p]) - np.log(Gsh[idx_p]) -
-                       np.log(a[idx_p]) +
-                       (-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                       (Gsh[idx_p] * a[idx_p]))[idx_inf]
+            # Only re-compute LambertW if it overflowed
+            if np.any(idx_inf):
+                # Calculate using log(argW) in case argW is really big
+                logargW = (np.log(I0[idx_p]) - np.log(Gsh[idx_p]) -
+                           np.log(a[idx_p]) +
+                           (-I[idx_p] + IL[idx_p] + I0[idx_p]) /
+                           (Gsh[idx_p] * a[idx_p]))[idx_inf]
 
-            # Three iterations of Newton-Raphson method to solve
-            #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
-            #  evaluation (above) results in NaN from overflow, 3 iterations
-            #  of Newton's method gives approximately 8 digits of precision.
-            w = logargW
-            for _ in range(0, 3):
-                w = w * (1. - np.log(w) + logargW) / (1. + w)
-            lambertwterm[idx_inf] = w
+                # Three iterations of Newton-Raphson method to solve
+                #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
+                #  evaluation (above) results in NaN from overflow, 3 iterations
+                #  of Newton's method gives approximately 8 digits of precision.
+                w = logargW
+                for _ in range(0, 3):
+                    w = w * (1. - np.log(w) + logargW) / (1. + w)
+                lambertwterm[idx_inf] = w
 
-        # Eqn. 3 in Jain and Kapoor, 2004
-        #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
-        # Recast in terms of Gsh=1/Rsh for better numerical stability.
-        V[idx_p] = (IL[idx_p] + I0[idx_p] - I[idx_p])/Gsh[idx_p] - \
-            I[idx_p]*Rs[idx_p] - a[idx_p]*lambertwterm
+            # Eqn. 3 in Jain and Kapoor, 2004
+            #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
+            # Recast in terms of Gsh=1/Rsh for better numerical stability.
+            V[idx_p] = (IL[idx_p] + I0[idx_p] - I[idx_p])/Gsh[idx_p] - \
+                I[idx_p]*Rs[idx_p] - a[idx_p]*lambertwterm
 
-    if output_is_scalar:
-        return np.asscalar(V)
+        if output_is_scalar:
+            return np.asscalar(V)
+        else:
+            return V
     else:
+        # use way_faster methods
+        if method.lower() == 'fast':
+            v_from_i_fun = way_faster.fast_v_from_i  # fast method
+        else:
+            v_from_i_fun = way_faster.slow_v_from_i  # gold method
+        # wrap it so it returns nan
+        v_from_i_fun = way_faster.returns_nan()(v_from_i_fun)
+        # find the right size and shape for returns
+        args = (current, photocurrent, resistance_shunt)
+        size = 0
+        shape = None
+        for n, arg in enumerate(args):
+            try:
+                this_shape = arg.shape
+            except AttributeError:
+                this_shape = None
+                try:
+                    this_size = len(arg)
+                except TypeError:
+                    this_size = 0
+            else:
+                this_size = sum(this_shape)
+                if shape is None:
+                    shape = this_shape
+            if this_size > size and size <= 1:
+                size = this_size
+                if this_shape is not None:
+                    shape = this_shape
+        if size <= 1:
+            V = v_from_i_fun(current, photocurrent, saturation_current,
+                             resistance_series, resistance_shunt, nNsVth)
+            if shape is not None:
+                V = np.tile(V, shape)
+        else:
+            vecfun = np.vectorize(v_from_i_fun)
+            V = vecfun(current, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth)
+        if np.isnan(V).any() and size <= 1:
+            V = np.repeat(V, size)
+            if shape is not None:
+                V = V.reshape(shape)
         return V
 
 
@@ -2136,6 +2185,11 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
         0 <= photocurrent
+
+    method : str
+        Method to use. If 'lambertw' use ``lambertw``, if 'fast' use ``newton``,
+        otherwise use bisection. Note: bisection is limited to 1st quadrant
+        only.
 
     Returns
     -------
@@ -2206,20 +2260,49 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         else:
             return I
     else:
+        # use way_faster methods
         if method.lower() == 'fast':
-            i_from_v_fun = way_faster.fast_i_from_v
+            i_from_v_fun = way_faster.fast_i_from_v  # fast method
         else:
-            i_from_v_fun = way_faster.slow_i_from_v
-        try:
-            len(photocurrent)
-        except TypeError:
+            i_from_v_fun = way_faster.slow_i_from_v  # gold method
+        # wrap it so it returns nan
+        i_from_v_fun = way_faster.returns_nan()(i_from_v_fun)
+        # find the right size and shape for returns
+        args = (voltage, photocurrent, resistance_shunt)
+        size = 0
+        shape = None
+        for n, arg in enumerate(args):
+            try:
+                this_shape = arg.shape
+            except AttributeError:
+                this_shape = None
+                try:
+                    this_size = len(arg)
+                except TypeError:
+                    this_size = 0
+            else:
+                this_size = sum(this_shape)
+                if shape is None:
+                    shape = this_shape
+            if this_size > size and size <= 1:
+                size = this_size
+                if this_shape is not None:
+                    shape = this_shape
+        if size <= 1:
             I = i_from_v_fun(voltage, photocurrent, saturation_current,
                              resistance_series, resistance_shunt, nNsVth)
+            if shape is not None:
+                I = np.tile(I, shape)
         else:
             vecfun = np.vectorize(i_from_v_fun)
             I = vecfun(voltage, photocurrent, saturation_current,
                        resistance_series, resistance_shunt, nNsVth)
+        if np.isnan(I).any() and size <= 1:
+            I = np.repeat(I, size)
+            if shape is not None:
+                I = I.reshape(shape)
         return I
+
 
 def snlinverter(v_dc, p_dc, inverter):
     r'''

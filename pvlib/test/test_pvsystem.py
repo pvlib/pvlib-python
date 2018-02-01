@@ -498,6 +498,31 @@ def test_v_from_i(fixture_v_from_i):
     assert_allclose(V, V_expected, atol=atol)
 
 
+@requires_scipy
+def test_i_from_v_from_i(fixture_v_from_i):
+    # Solution set loaded from fixture
+    Rsh = fixture_v_from_i['Rsh']
+    Rs = fixture_v_from_i['Rs']
+    nNsVth = fixture_v_from_i['nNsVth']
+    I = fixture_v_from_i['I']
+    I0 = fixture_v_from_i['I0']
+    IL = fixture_v_from_i['IL']
+    V = fixture_v_from_i['V_expected']
+
+    # Convergence criteria
+    atol = 1.e-11
+
+    I_expected = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL,
+                                   method='lambertw')
+    assert_allclose(I, I_expected, atol=atol)
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
+    assert(isinstance(I, type(I_expected)))
+    if isinstance(I, type(np.ndarray)):
+        assert(isinstance(I.dtype, type(I_expected.dtype)))
+        assert(I.shape == I_expected.shape)
+    assert_allclose(I, I_expected, atol=atol)
+
+
 @pytest.fixture(params=[
     {  # Can handle all python scalar inputs
       'Rsh': 20.,
@@ -585,7 +610,7 @@ def test_i_from_v(fixture_i_from_v):
     # Convergence criteria
     atol = 1.e-11
 
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method='lambertw')
     assert(isinstance(I, type(I_expected)))
     if isinstance(I, type(np.ndarray)):
         assert(isinstance(I.dtype, type(I_expected.dtype)))
@@ -596,8 +621,8 @@ def test_i_from_v(fixture_i_from_v):
 @requires_scipy
 def test_PVSystem_i_from_v():
     system = pvsystem.PVSystem()
-    output = system.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_allclose(output, -299.746389916, atol=1e-5)
+    output = system.i_from_v(20, 0.1, 0.5, 7.5049875193450521, 6.0e-7, 7.0)
+    assert_allclose(output, 3.0, atol=1e-5)
 
 
 @requires_scipy
@@ -639,7 +664,8 @@ def test_singlediode_array():
                               resistance_series, resistance_shunt, nNsVth)
 
     expected = pvsystem.i_from_v(resistance_shunt, resistance_series, nNsVth,
-                                 sd['v_mp'], saturation_current, photocurrent)
+                                 sd['v_mp'], saturation_current, photocurrent,
+                                 method='lambertw')
 
     assert_allclose(sd['i_mp'], expected, atol=0.01)
 
@@ -719,10 +745,14 @@ def test_singlediode_series_ivcurve(cec_module_params):
 
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 
-    expected['i_mp'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v_mp'], I0, IL)
-    expected['v_mp'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i_mp'], I0, IL)
-    expected['i'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v'].T, I0, IL).T
-    expected['v'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i'].T, I0, IL).T
+    expected['i_mp'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v_mp'], I0, IL,
+                                         method='lambertw')
+    expected['v_mp'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i_mp'], I0, IL,
+                                         method='lambertw')
+    expected['i'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v'].T, I0, IL,
+                                         method='lambertw').T
+    expected['v'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i'].T, I0, IL,
+                                         method='lambertw').T
 
     for k, v in out.items():
         if k == 'p':

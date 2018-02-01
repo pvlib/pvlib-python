@@ -4,6 +4,7 @@ methods from J.W. Bishop (Solar Cells, 1988).
 """
 
 from collections import OrderedDict
+from functools import wraps
 import numpy as np
 try:
     from scipy.optimize import brentq, newton
@@ -12,6 +13,25 @@ except ImportError:
     newton = NotImplemented
 
 # TODO: update pvsystem.i_from_v and v_from_i to use "gold" method by default
+
+
+def returns_nan(exc=None):
+    """
+    Decorator that changes the return to NaN if either
+    """
+    if not exc:
+        exc = (ValueError, RuntimeError)
+
+    def wrapper(f):
+        @wraps(f)
+        def wrapped_fcn(*args, **kwargs):
+            try:
+                rval = f(*args, **kwargs)
+            except exc:
+                rval = np.nan
+            return rval
+        return wrapped_fcn
+    return wrapper
 
 
 def est_voc(photocurrent, saturation_current, nNsVth):

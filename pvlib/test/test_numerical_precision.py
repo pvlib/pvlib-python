@@ -8,7 +8,6 @@ import os
 import numpy as np
 import pandas as pd
 from pvlib import pvsystem
-from pvlib import way_faster
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)
@@ -65,7 +64,7 @@ def generate_numerical_precicion():
     )
     # generate exact values
     data = dict(zip((il, io, rs, rsh, nnsvt), ARGS))
-    vdtest = np.linspace(0, way_faster.est_voc(IL, I0, NNSVTH), IVCURVE_NPTS)
+    vdtest = np.linspace(0, pvsystem.est_voc(IL, I0, NNSVTH), IVCURVE_NPTS)
     expected = []
     for test in vdtest:
         data[vd] = test
@@ -89,8 +88,8 @@ def test_numerical_precicion():
     Test that there are no numerical errors due to floating point arithmetic.
     """
     expected = pd.read_csv(DATA_PATH)
-    vdtest = np.linspace(0, way_faster.est_voc(IL, I0, NNSVTH), IVCURVE_NPTS)
-    results = way_faster.bishop88(vdtest, *ARGS, gradients=True)
+    vdtest = np.linspace(0, pvsystem.est_voc(IL, I0, NNSVTH), IVCURVE_NPTS)
+    results = pvsystem.bishop88(vdtest, *ARGS, gradients=True)
     assert np.allclose(expected['i'], results[0])
     assert np.allclose(expected['v'], results[1])
     assert np.allclose(expected['p'], results[2])

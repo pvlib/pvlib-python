@@ -6,8 +6,10 @@ from time import clock
 import logging
 import numpy as np
 from pvlib import pvsystem
-from pvlib.way_faster import faster_way, slower_way
 from conftest import requires_scipy
+
+faster_way = pvsystem.way_faster.faster_way
+slower_way = pvsystem.way_faster.slower_way
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)

@@ -206,6 +206,8 @@ Functions relevant for the single diode model.
    pvsystem.singlediode
    pvsystem.v_from_i
    pvsystem.mppt
+   pvsystem.bishop88
+   pvsystem.est_voc
 
 SAPM model
 ----------

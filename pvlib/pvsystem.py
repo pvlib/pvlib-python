@@ -22,6 +22,9 @@ from pvlib.location import Location
 from pvlib import irradiance, atmosphere
 from pvlib import way_faster
 
+bishop88 = way_faster.bishop88
+est_voc = way_faster.est_voc
+
 
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
@@ -1668,16 +1671,19 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     :math:`V_d = V + I*Rs`. Then the voltage is backed out from :math:`V_d`.
     A specific desired point, such as short circuit current or max power, is
     located using the bisection search method, ``brentq``, bounded by a zero
-    diode voltage and an estimat of open circuit current given by
+    diode voltage and an estimate of open circuit voltage given by
 
     .. math::
 
         V_{oc, est} = n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)
 
     We know that :math:`V_d = 0` corresponds to a voltage less than zero, and
-    we can also show that when :math:`V_d = V_{oc, est}` that the resulting
-    current is also negative, meaning that the corresponding voltagge must be
-    in the 4th quadrant and therefore greater than the open circuit voltage.
+    we can also show that when :math:`V_d = V_{oc, est}`, the resulting
+    current is also negative, meaning that the corresponding voltage must be
+    in the 4th quadrant and therefore greater than the open circuit voltage
+    (see proof below). Therefore the entire forward-bias 1st quadrant IV-curve
+    is bounded, and a bisection search within these points will always find
+    desired condition.
 
     .. math::
 
@@ -1689,14 +1695,13 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         I = I_L - I_L - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
         I = - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}}
 
-    If ``method.lower() == 'fast'`` then a gradient descent method, ``newton``
+    If ``method.lower() == 'fast'`` then a gradient descent method, ``newton``,
     is used to solve the implicit diode equation. It should be safe for well
-    behaved IV-curves, but the default method is recommended for reliability
-    and surprisingly it is just as fast. This method may be removed in future
-    versions.
+    behaved IV-curves, but the default method is recommended for reliability,
+    it is often just as fast.
 
     If either the "fast" or default methods are indicated, then
-    :func:`pvlib.way_faster.bishop88` is used to calculate the points at diode
+    :func:`pvlib.pvsystem.bishop88` is used to calculate the points at diode
     voltages from zero to open-circuit voltage with a log spacing so that
     points get closer as they approach the open-circuit voltage.
 

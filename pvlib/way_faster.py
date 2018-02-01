@@ -16,15 +16,23 @@ except ImportError:
 def est_voc(photocurrent, saturation_current, nNsVth):
     """
     Rough estimate of open circuit voltage useful for bounding searches for
-    ``i`` of ``v`` when using :func:`~pvlib.way_faster`.
+    ``i`` of ``v`` when using :func:`~pvlib.pvsystem.singlediode`.
 
     :param numeric photocurrent: photo-generated current [A]
     :param numeric saturation_current: diode one reverse saturation current [A]
     :param numeric nNsVth: product of thermal voltage ``Vth`` [V], diode
         ideality factor ``n``, and number of series cells ``Ns``
     :returns: rough estimate of open circuit voltage [V]
+
+    The equation is from [1].
+
+    .. math::
+
+        V_{oc, est}=n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)
+
+    [1] http://www.pveducation.org/pvcdrom/open-circuit-voltage
     """
-    # http://www.pveducation.org/pvcdrom/open-circuit-voltage
+
     return nNsVth * np.log(photocurrent / saturation_current + 1.0)
 
 
@@ -35,8 +43,8 @@ def bishop88(vd, photocurrent, saturation_current, resistance_series,
     diode junction voltages [1].
 
     [1] "Computer simulation of the effects of electrical mismatches in
-        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
-        https://doi.org/10.1016/0379-6787(88)90059-2
+    photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+    https://doi.org/10.1016/0379-6787(88)90059-2
 
     :param numeric vd: diode voltages [V]
     :param numeric photocurrent: photo-generated current [A]

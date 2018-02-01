@@ -20,10 +20,10 @@ from pvlib import tools
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
-from pvlib import way_faster
+from pvlib import singlediode_methods
 
-bishop88 = way_faster.bishop88
-est_voc = way_faster.est_voc
+bishop88 = singlediode_methods.bishop88
+est_voc = singlediode_methods.est_voc
 
 
 # not sure if this belongs in the pvsystem module.
@@ -1788,9 +1788,9 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     else:
         if method.lower() == 'fast':
-            sdm_fun = way_faster.faster_way
+            sdm_fun = singlediode_methods.faster_way
         else:
-            sdm_fun = way_faster.slower_way
+            sdm_fun = singlediode_methods.slower_way
         try:
             len(photocurrent)
         except TypeError:
@@ -1837,9 +1837,9 @@ def mppt(photocurrent, saturation_current, resistance_series, resistance_shunt,
         and ``p_mp``
     """
     if method.lower() == 'fast':
-        mppt_func = way_faster.fast_mppt
+        mppt_func = singlediode_methods.fast_mppt
     else:
-        mppt_func = way_faster.slow_mppt
+        mppt_func = singlediode_methods.slow_mppt
     try:
         len(photocurrent)
     except TypeError:
@@ -2094,11 +2094,11 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     else:
         # use way_faster methods
         if method.lower() == 'fast':
-            v_from_i_fun = way_faster.fast_v_from_i  # fast method
+            v_from_i_fun = singlediode_methods.fast_v_from_i  # fast method
         else:
-            v_from_i_fun = way_faster.slow_v_from_i  # gold method
+            v_from_i_fun = singlediode_methods.slow_v_from_i  # gold method
         # wrap it so it returns nan
-        v_from_i_fun = way_faster.returns_nan()(v_from_i_fun)
+        v_from_i_fun = singlediode_methods.returns_nan()(v_from_i_fun)
         # find the right size and shape for returns
         args = (current, photocurrent, resistance_shunt)
         size = 0
@@ -2262,11 +2262,11 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     else:
         # use way_faster methods
         if method.lower() == 'fast':
-            i_from_v_fun = way_faster.fast_i_from_v  # fast method
+            i_from_v_fun = singlediode_methods.fast_i_from_v  # fast method
         else:
-            i_from_v_fun = way_faster.slow_i_from_v  # gold method
+            i_from_v_fun = singlediode_methods.slow_i_from_v  # gold method
         # wrap it so it returns nan
-        i_from_v_fun = way_faster.returns_nan()(i_from_v_fun)
+        i_from_v_fun = singlediode_methods.returns_nan()(i_from_v_fun)
         # find the right size and shape for returns
         args = (voltage, photocurrent, resistance_shunt)
         size = 0

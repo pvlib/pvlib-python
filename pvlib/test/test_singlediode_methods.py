@@ -8,8 +8,8 @@ import numpy as np
 from pvlib import pvsystem
 from conftest import requires_scipy
 
-faster_way = pvsystem.way_faster.faster_way
-slower_way = pvsystem.way_faster.slower_way
+faster_way = pvsystem.singlediode_methods.faster_way
+slower_way = pvsystem.singlediode_methods.slower_way
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)

@@ -12,7 +12,7 @@ Enhancements
 * Implement a reliable "gold" implementation of the single diode model (SDM)
   using a bisection method (Brent, 1973) bounded by points known to include the
   full forward-bias 1st quadrant IV-curve. Also implement a "fast" method using
-  a gradient decent method (Newton-Raphson) that is not bounded, but should be
+  a gradient descent method (Newton-Raphson) that is not bounded, but should be
   safe for well behaved IV-curves. (:issue:`408`)
 * Combine existing :func:`~pvlib.pvsystem.singlediode` method using Lambert-W
   with the two new implementations to form a wrapper, that takes an additional

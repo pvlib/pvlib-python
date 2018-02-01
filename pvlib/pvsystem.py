@@ -2100,35 +2100,35 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         # wrap it so it returns nan
         v_from_i_fun = singlediode_methods.returns_nan()(v_from_i_fun)
         # find the right size and shape for returns
-        args = (current, photocurrent, resistance_shunt)
-        size = 0
-        shape = None
-        for n, arg in enumerate(args):
+        args = (current, photocurrent, saturation_current,
+                resistance_series, resistance_shunt, nNsVth)
+        size, shape = 0, None  # 0 or None both mean scalar
+        for arg in args:
             try:
-                this_shape = arg.shape
+                this_shape = arg.shape  # try to get shape
             except AttributeError:
                 this_shape = None
                 try:
-                    this_size = len(arg)
+                    this_size = len(arg)  # try to get the size
                 except TypeError:
                     this_size = 0
             else:
-                this_size = sum(this_shape)
+                this_size = sum(this_shape)  # calc size from shape
                 if shape is None:
-                    shape = this_shape
-            if this_size > size and size <= 1:
+                    shape = this_shape  # set the shape if None
+            # update size and shape
+            if this_size > size:
                 size = this_size
                 if this_shape is not None:
                     shape = this_shape
         if size <= 1:
-            V = v_from_i_fun(current, photocurrent, saturation_current,
-                             resistance_series, resistance_shunt, nNsVth)
+            V = v_from_i_fun(*args)
             if shape is not None:
                 V = np.tile(V, shape)
         else:
+            # np.vectorize handles broadcasting, raises ValueError
             vecfun = np.vectorize(v_from_i_fun)
-            V = vecfun(current, photocurrent, saturation_current,
-                       resistance_series, resistance_shunt, nNsVth)
+            V = vecfun(*args)
         if np.isnan(V).any() and size <= 1:
             V = np.repeat(V, size)
             if shape is not None:
@@ -2270,35 +2270,31 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # find the right size and shape for returns
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        size = 0
-        shape = None
-        for n, arg in enumerate(args):
+        size, shape = 0, None  # 0 or None both mean scalar
+        for arg in args:
             try:
-                this_shape = arg.shape
+                this_shape = arg.shape  # try to get shape
             except AttributeError:
                 this_shape = None
                 try:
-                    this_size = len(arg)
+                    this_size = len(arg)  # try to get the size
                 except TypeError:
                     this_size = 0
             else:
-                this_size = sum(this_shape)
+                this_size = sum(this_shape)  # calc size from shape
                 if shape is None:
-                    shape = this_shape
-            if this_size > size and size <= 1:
+                    shape = this_shape  # set the shape if None
+            # update size and shape
+            if this_size > size:
                 size = this_size
                 if this_shape is not None:
                     shape = this_shape
-            else:
-                msg = ('Argument: "%s" is different size from other arguments'
-                       ' (%d > %d). All arguments must be the same size or'
-                       ' scalar.') % (arg, this_size, size)
-                raise ValueError(msg)
         if size <= 1:
             I = i_from_v_fun(*args)
             if shape is not None:
                 I = np.tile(I, shape)
         else:
+            # np.vectorize handles broadcasting, raises ValueError
             vecfun = np.vectorize(i_from_v_fun)
             I = vecfun(*args)
         if np.isnan(I).any() and size <= 1:

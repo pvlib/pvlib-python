@@ -626,9 +626,15 @@ def test_PVSystem_i_from_v():
 
 
 @requires_scipy
-@pytest.raises(ValueError)
 def test_i_from_v_size():
-    pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
+    with pytest.raises(ValueError):
+        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
+
+
+@requires_scipy
+def test_v_from_i_size():
+    with pytest.raises(ValueError):
+        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0)
 
 
 @requires_scipy

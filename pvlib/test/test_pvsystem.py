@@ -626,6 +626,12 @@ def test_PVSystem_i_from_v():
 
 
 @requires_scipy
+@pytest.raises(ValueError)
+def test_i_from_v_size():
+    pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
+
+
+@requires_scipy
 def test_mpp_floats():
     """test mpp"""
     IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)

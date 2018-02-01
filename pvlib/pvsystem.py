@@ -2268,7 +2268,8 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # wrap it so it returns nan
         i_from_v_fun = singlediode_methods.returns_nan()(i_from_v_fun)
         # find the right size and shape for returns
-        args = (voltage, photocurrent, resistance_shunt)
+        args = (voltage, photocurrent, saturation_current, resistance_series,
+                resistance_shunt, nNsVth)
         size = 0
         shape = None
         for n, arg in enumerate(args):
@@ -2288,15 +2289,18 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                 size = this_size
                 if this_shape is not None:
                     shape = this_shape
+            else:
+                msg = ('Argument: "%s" is different size from other arguments'
+                       ' (%d > %d). All arguments must be the same size or'
+                       ' scalar.') % (arg, this_size, size)
+                raise ValueError(msg)
         if size <= 1:
-            I = i_from_v_fun(voltage, photocurrent, saturation_current,
-                             resistance_series, resistance_shunt, nNsVth)
+            I = i_from_v_fun(*args)
             if shape is not None:
                 I = np.tile(I, shape)
         else:
             vecfun = np.vectorize(i_from_v_fun)
-            I = vecfun(voltage, photocurrent, saturation_current,
-                       resistance_series, resistance_shunt, nNsVth)
+            I = vecfun(*args)
         if np.isnan(I).any() and size <= 1:
             I = np.repeat(I, size)
             if shape is not None:

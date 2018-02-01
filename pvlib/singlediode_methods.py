@@ -45,7 +45,11 @@ def est_voc(photocurrent, saturation_current, nNsVth):
         ideality factor ``n``, and number of series cells ``Ns``
     :returns: rough estimate of open circuit voltage [V]
 
-    The equation is from [1].
+    Calculating the open circuit voltage, :math:`V_{oc}`, of an ideal device
+    with infinite shunt resistance, :math:`R_{sh} \\to \\infty`, and zero series
+    resistance, :math:`R_s = 0`, yields the following equation [1]. As an
+    estimate of :math:`V_{oc}` it is useful as an upper bound for the bisection
+    method.
 
     .. math::
 
@@ -120,7 +124,7 @@ def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
 def fast_i_from_v(v, photocurrent, saturation_current, resistance_series,
                   resistance_shunt, nNsVth):
     """
-    This is a fast but unreliable way to find current given any voltage.
+    This is a possibly faster way to find current given any voltage.
     """
     if newton is NotImplemented:
         raise ImportError('This function requires scipy')
@@ -152,7 +156,7 @@ def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
 def fast_v_from_i(i, photocurrent, saturation_current, resistance_series,
                   resistance_shunt, nNsVth):
     """
-    This is a fast but unreliable way to find voltage given any current.
+    This is a possibly faster way to find voltage given any current.
     """
     if newton is NotImplemented:
         raise ImportError('This function requires scipy')
@@ -187,7 +191,7 @@ def slow_mppt(photocurrent, saturation_current, resistance_series,
 def fast_mppt(photocurrent, saturation_current, resistance_series,
               resistance_shunt, nNsVth):
     """
-    This is a fast but unreliable way to find mpp.
+    This is a possibly faster way to find mpp.
     """
     if newton is NotImplemented:
         raise ImportError('This function requires scipy')

@@ -29,7 +29,7 @@ def test_fast_spr_e20_327():
         EgRef=1.121, dEgdT=-0.0002677)
     il, io, rs, rsh, nnsvt = x
     tstart = clock()
-    pvs = pvsystem.singlediode(*x)
+    pvs = pvsystem.singlediode(*x, method='lambertw')
     tstop = clock()
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
@@ -43,13 +43,14 @@ def test_fast_spr_e20_327():
     assert np.isclose(pvs['i_sc'], isc)
     assert np.isclose(pvs['v_oc'], voc)
     # the singlediode method doesn't actually get the MPP correct
-    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il)
-    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il)
+    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il, method='lambertw')
+    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il, method='lambertw')
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
     assert np.isclose(pvs['i_x'], ix)
-    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il)
+    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
+                                method='lambertw')
     assert np.isclose(pvs_ixx, ixx)
     return isc, voc, imp, vmp, pmp, pvs
 
@@ -64,7 +65,7 @@ def test_fast_fs_495():
     il, io, rs, rsh, nnsvt = x
     x += (101, )
     tstart = clock()
-    pvs = pvsystem.singlediode(*x)
+    pvs = pvsystem.singlediode(*x, method='lambertw')
     tstop = clock()
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
@@ -78,13 +79,14 @@ def test_fast_fs_495():
     assert np.isclose(pvs['i_sc'], isc)
     assert np.isclose(pvs['v_oc'], voc)
     # the singlediode method doesn't actually get the MPP correct
-    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il)
-    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il)
+    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il, method='lambertw')
+    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il, method='lambertw')
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
     assert np.isclose(pvs['i_x'], ix)
-    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il)
+    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
+                                method='lambertw')
     assert np.isclose(pvs_ixx, ixx)
     return isc, voc, imp, vmp, pmp, i, v, p, pvs
 
@@ -98,7 +100,7 @@ def test_slow_spr_e20_327():
         EgRef=1.121, dEgdT=-0.0002677)
     il, io, rs, rsh, nnsvt = x
     tstart = clock()
-    pvs = pvsystem.singlediode(*x)
+    pvs = pvsystem.singlediode(*x, method='lambertw')
     tstop = clock()
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
@@ -112,13 +114,14 @@ def test_slow_spr_e20_327():
     assert np.isclose(pvs['i_sc'], isc)
     assert np.isclose(pvs['v_oc'], voc)
     # the singlediode method doesn't actually get the MPP correct
-    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il)
-    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il)
+    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il, method='lambertw')
+    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il, method='lambertw')
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
     assert np.isclose(pvs['i_x'], ix)
-    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il)
+    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
+                                method='lambertw')
     assert np.isclose(pvs_ixx, ixx)
     return isc, voc, imp, vmp, pmp, pvs
 
@@ -133,7 +136,7 @@ def test_slow_fs_495():
     il, io, rs, rsh, nnsvt = x
     x += (101, )
     tstart = clock()
-    pvs = pvsystem.singlediode(*x)
+    pvs = pvsystem.singlediode(*x, method='lambertw')
     tstop = clock()
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
@@ -147,13 +150,14 @@ def test_slow_fs_495():
     assert np.isclose(pvs['i_sc'], isc)
     assert np.isclose(pvs['v_oc'], voc)
     # the singlediode method doesn't actually get the MPP correct
-    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il)
-    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il)
+    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il, method='lambertw')
+    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il, method='lambertw')
     assert np.isclose(pvs_imp, imp)
     assert np.isclose(pvs_vmp, vmp)
     assert np.isclose(pvs['p_mp'], pmp)
     assert np.isclose(pvs['i_x'], ix)
-    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il)
+    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
+                                method='lambertw')
     assert np.isclose(pvs_ixx, ixx)
     return isc, voc, imp, vmp, pmp, i, v, p, pvs
 

@@ -1575,7 +1575,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts=None, method=''):
+                resistance_shunt, nNsVth, ivcurve_pnts=None, method='gold'):
     r'''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -1631,7 +1631,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         Number of points in the desired IV curve. If None or 0, no
         IV curves will be produced.
 
-    method : str, default ''
+    method : str, default 'gold'
         Determines the method used to calculate IV curve and points. If
         'lambertw' then ``lambertw`` is used. If 'fast' then ``newton`` is
         used. Otherwise the problem is bounded between zero and open-circuit
@@ -1822,7 +1822,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
 
 def mppt(photocurrent, saturation_current, resistance_series, resistance_shunt,
-         nNsVth, method=''):
+         nNsVth, method='gold'):
     """
     Max power point tracker. Given the calculated DeSoto parameters calculates
     the maximum power point (MPP).
@@ -1950,7 +1950,7 @@ def _pwr_optfcn(df, loc):
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent, method=''):
+             saturation_current, photocurrent, method='gold'):
     '''
     Device voltage at the given device current for the single diode model.
 
@@ -2137,7 +2137,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-             saturation_current, photocurrent, method=''):
+             saturation_current, photocurrent, method='gold'):
     '''
     Device current at the given device voltage for the single diode model.
 

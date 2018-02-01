@@ -37,7 +37,7 @@ except ImportError as exc:
     sy_exp = NotImplemented
 
 
-def generate_numerical_precicion():
+def generate_numerical_precision():
     """
     Generate expected data with infinite numerical precision using SymPy.
     :return: dataframe of expected values
@@ -83,7 +83,7 @@ def generate_numerical_precicion():
     return pd.DataFrame(expected, index=vdtest)
 
 
-def test_numerical_precicion():
+def test_numerical_precision():
     """
     Test that there are no numerical errors due to floating point arithmetic.
     """
@@ -101,6 +101,6 @@ def test_numerical_precicion():
 
 
 if __name__ == '__main__':
-    expected = generate_numerical_precicion()
+    expected = generate_numerical_precision()
     expected.to_csv(DATA_PATH)
-    test_numerical_precicion()
+    test_numerical_precision()

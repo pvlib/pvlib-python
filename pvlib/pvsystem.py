@@ -565,6 +565,7 @@ class LocalizedPVSystem(PVSystem, Location):
     See the :py:class:`PVSystem` class for an object model that
     describes an unlocalized PV system.
     """
+
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
         # get and combine attributes from the pvsystem and/or location
@@ -1816,8 +1817,8 @@ def _pwr_optfcn(df, loc):
 
 def current_sum_diode_node(voltage, current, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent):
     ### Computes the sum of the currents at the diode node in the local 5-parameter single-diode equivalent-circuit model. ###
-    
-    ## Inputs (any broadcast-compatible combination of scalars and numpy arrays):
+
+    # Inputs (any broadcast-compatible combination of scalars and numpy arrays):
     # Observables at prevailing conditions (device-level):
     #  voltage is terminal voltage [V]
     #  current is terminal current [A]
@@ -1828,20 +1829,73 @@ def current_sum_diode_node(voltage, current, conductance_shunt, resistance_serie
     #  resistance_series is series resistance [Ohm]
     #  conductance_shunt is parallel conductance [S]
 
-    ## Outputs (device-level, at each combination of inputs):
+    # Outputs (device-level, at each combination of inputs):
     #  current_sum is sum of currents at the diode node [A], preserving the resolved type of the inputs
 
     # Voltage at diode node
     v_plus_i_times_r_s = voltage + current*resistance_series
-   
+
     # Sum of currents at diode node
-    current_sum = photocurrent - saturation_current*np.expm1(v_plus_i_times_r_s/nNsVth) - conductance_shunt*v_plus_i_times_r_s - current
+    current_sum = photocurrent - saturation_current * \
+        np.expm1(v_plus_i_times_r_s/nNsVth) - \
+        conductance_shunt*v_plus_i_times_r_s - current
 
     # Make sure we return an np.ndarray if any input was that type (undoes any casting of rank-0 np.ndarray to np.float64)
     if any(map(lambda x: isinstance(x, np.ndarray), [voltage, current, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent])):
         current_sum = np.asarray(current_sum)
-    
+
     return current_sum
+
+
+def v_oc(resistance_shunt, resistance_series, nNsVth, saturation_current, photocurrent):
+    ''' Comput open circuit voltage'''
+    try:
+        from scipy.optimize import brentq
+    except ImportError:
+        raise ImportError('This function requires scipy')
+
+    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+    #  is generally more numerically stable
+    conductance_shunt = 1./resistance_shunt
+
+    # Check for all scalar or rank-0 inputs, any transform for consistent indexing
+    if all(map(lambda x: np.isscalar(x) or (isinstance(x, np.ndarray) and not x.shape), [conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent])):
+        all_scalar_or_rank0_inputs = True
+        rank0_output = any(map(lambda x: isinstance(x, np.ndarray), [
+                           conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent]))
+        scalar_output = not rank0_output
+        # Make sure that we can index numpy arrays
+        conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent = map(
+            lambda x: np.array([x]), [conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent])
+    else:
+        all_scalar_or_rank0_inputs = False
+        rank0_output = False
+        scalar_output = False
+        # Make sure that we can index numpy arrays
+        conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent = np.broadcast_arrays(
+            conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)
+
+    # Get bracket maximum from corresponding ideal diode equation
+    b = nNsVth*(np.log(photocurrent + saturation_current) - np.log(saturation_current))
+
+    # Define main argument to scipy.optimize.brentq()
+    def f(v_oc, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent):
+        return current_sum_diode_node(v_oc, 0., conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)
+
+    # This allows us to make a ufunc out of brentq()
+    array_zero_func = np.frompyfunc(lambda b, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent: brentq(
+        f, 0., b, args=(conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent), maxiter=1000), 6, 1)
+
+    # Solve for output
+    v_oc = array_zero_func(b, conductance_shunt, resistance_series,
+                              nNsVth, saturation_current, photocurrent)
+
+    # Make sure we return proper type outputs corresponding to inputs
+    v_oc = np.float64(v_oc)
+    if not scalar_output:
+        v_oc = np.array(v_oc)
+
+    return v_oc
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
@@ -1851,7 +1905,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
     Uses the single diode model (SDM) as described in, e.g.,
      Jain and Kapoor 2004 [1].
-    The solution uses scipy.optimize.newton().
+    The solution uses scipy.optimize.brentq().
     Ideal device parameters are specified by resistance_shunt=np.inf and
      resistance_series=0.
     Inputs to this function can include scalars and pandas.Series, but it is
@@ -1904,7 +1958,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     try:
-        from scipy.optimize import newton
+        from scipy.optimize import brentq
     except ImportError:
         raise ImportError('This function requires scipy')
 
@@ -1915,30 +1969,38 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     # Check for all scalar or rank-0 inputs, any transform for consistent indexing
     if all(map(lambda x: np.isscalar(x) or (isinstance(x, np.ndarray) and not x.shape), [conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent])):
         all_scalar_or_rank0_inputs = True
-        rank0_output = any(map(lambda x: isinstance(x, np.ndarray), [conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent]))
+        rank0_output = any(map(lambda x: isinstance(x, np.ndarray), [
+                           conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent]))
         scalar_output = not rank0_output
         # Make sure that we can index numpy arrays
-        conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent = map(lambda x: np.array([x]), [conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent])
-    else:    
+        conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent = map(
+            lambda x: np.array([x]), [conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent])
+    else:
         all_scalar_or_rank0_inputs = False
         rank0_output = False
         scalar_output = False
         # Make sure that we can index numpy arrays
-        conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent = np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent)
+        conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent = np.broadcast_arrays(
+            conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent)
 
-    # Compute initially with zero conductance_shunt
-    voltage_ic = nNsVth*(np.log(photocurrent - current + saturation_current) - np.log(saturation_current)) - current*resistance_series
+    # Check current range to ensure good root bracketing
+    if np.any(current < 0.) or np.any(i_sc(conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent) < current):
+        raise ValueError("Current input out of range [0., Isc], current = {}, Isc = {}".format(current, i_sc(conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)))
 
-    # Define main arguments to scipy.optimize.newton()
-    f = lambda voltage, conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent: current_sum_diode_node(voltage, current, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)
-    fprime = lambda voltage, conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent: -saturation_current/nNsVth*np.exp((voltage + current*resistance_series)/nNsVth) - conductance_shunt
-    fprime2 = lambda voltage, conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent: -saturation_current/nNsVth**2.*np.exp((voltage + current*resistance_series)/nNsVth)
-    
-    # This allows us to make a ufunc out of newton()
-    array_zero_func = np.frompyfunc(lambda voltage_ic, conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent: newton(f, voltage_ic, fprime=fprime, args=(conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent), fprime2=fprime2), 7, 1)
+    # Compute initially for ideal device with zero resistance_series and zero conductance_shunt
+    b = nNsVth*(np.log(photocurrent + saturation_current - current) - np.log(saturation_current))
+
+    # Define main argument to scipy.optimize.brentq()
+    def f(voltage, conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent):
+        return current_sum_diode_node(voltage, current, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)
+
+    # This allows us to make a ufunc out of brentq()
+    array_zero_func = np.frompyfunc(lambda b, conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent: brentq(
+        f, 0., b, args=(conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent), maxiter=1000), 7, 1)
 
     # Solve for output
-    voltage = array_zero_func(voltage_ic, conductance_shunt, resistance_series, nNsVth, current, saturation_current, photocurrent)
+    voltage = array_zero_func(b, conductance_shunt, resistance_series,
+                              nNsVth, current, saturation_current, photocurrent)
 
     # Make sure we return proper type outputs corresponding to inputs
     voltage = np.float64(voltage)
@@ -1946,10 +2008,10 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         voltage = np.array(voltage)
 
     return voltage
-    
-    
+
+
 def v_from_i_original(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent):
+                      saturation_current, photocurrent):
     '''
     Device voltage at the given device current for the single diode model.
 
@@ -2086,6 +2148,57 @@ def v_from_i_original(resistance_shunt, resistance_series, nNsVth, current,
         return V
 
 
+def i_sc(resistance_shunt, resistance_series, nNsVth, saturation_current, photocurrent):
+    ''' Comput short circuit current'''
+    try:
+        from scipy.optimize import brentq
+    except ImportError:
+        raise ImportError('This function requires scipy')
+
+    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+    #  is generally more numerically stable
+    conductance_shunt = 1./resistance_shunt
+
+    # Check for all scalar or rank-0 inputs, any transform for consistent indexing
+    if all(map(lambda x: np.isscalar(x) or (isinstance(x, np.ndarray) and not x.shape), [conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent])):
+        all_scalar_or_rank0_inputs = True
+        rank0_output = any(map(lambda x: isinstance(x, np.ndarray), [
+                           conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent]))
+        scalar_output = not rank0_output
+        # Make sure that we can index numpy arrays
+        conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent = map(
+            lambda x: np.array([x]), [conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent])
+    else:
+        all_scalar_or_rank0_inputs = False
+        rank0_output = False
+        scalar_output = False
+        # Make sure that we can index numpy arrays
+        conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent = np.broadcast_arrays(
+            conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)
+
+    # Compute initially for ideal device with zero resistance_series and zero conductance_shunt
+    b = photocurrent
+
+    # Define main arguments to scipy.optimize.brentq()
+    def f(i_sc, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent):
+        return current_sum_diode_node(0., i_sc, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)
+
+    # This allows us to make a ufunc out of brentq()
+    array_zero_func = np.frompyfunc(lambda b, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent: brentq(
+        f, 0., b, args=(conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent), maxiter=1000), 6, 1)
+
+    # Solve for output (brentq() throws if convergence flag is not true)
+    i_sc = array_zero_func(b, conductance_shunt, resistance_series,
+                              nNsVth, saturation_current, photocurrent)
+
+    # Make sure we return proper type outputs corresponding to inputs
+    i_sc = np.float64(i_sc)
+    if not scalar_output:
+        i_sc = np.array(i_sc)
+
+    return i_sc
+
+
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
              saturation_current, photocurrent):
     '''
@@ -2157,30 +2270,38 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     # Check for all scalar or rank-0 inputs, any transform for consistent indexing
     if all(map(lambda x: np.isscalar(x) or (isinstance(x, np.ndarray) and not x.shape), [conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent])):
         all_scalar_or_rank0_inputs = True
-        rank0_output = any(map(lambda x: isinstance(x, np.ndarray), [conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent]))
+        rank0_output = any(map(lambda x: isinstance(x, np.ndarray), [
+                           conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent]))
         scalar_output = not rank0_output
         # Make sure that we can index numpy arrays
-        conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent = map(lambda x: np.array([x]), [conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent])
-    else:    
+        conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent = map(
+            lambda x: np.array([x]), [conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent])
+    else:
         all_scalar_or_rank0_inputs = False
         rank0_output = False
         scalar_output = False
         # Make sure that we can index numpy arrays
-        conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent = np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent)
+        conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent = np.broadcast_arrays(
+            conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent)
 
-    # Compute initially with zero resistance_series
-    current_ic = photocurrent - saturation_current*np.expm1(voltage/nNsVth) - conductance_shunt*voltage
-    
+    # Check voltage range to ensure good root bracketing
+    if np.any(voltage < 0.) or np.any(v_oc(conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent) < voltage):
+        raise ValueError("Voltage input out of range [0., Voc], voltage = {}, Voc = {}".format(voltage, v_oc(conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)))
+
+    # Compute initially for ideal device with zero resistance_series and zero conductance_shunt
+    b = photocurrent - saturation_current*np.expm1(voltage/nNsVth)
+
     # Define main arguments to scipy.optimize.brentq()
-    f = lambda current, conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent: current_sum_diode_node(voltage, current, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)
-    a = np.where(current_ic <= 0., current_ic, 0.)
-    b = np.where(0. < current_ic, current_ic, 0.)
+    def f(current, conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent):
+        return current_sum_diode_node(voltage, current, conductance_shunt, resistance_series, nNsVth, saturation_current, photocurrent)
 
     # This allows us to make a ufunc out of brentq()
-    array_zero_func = np.frompyfunc(lambda current_ic, a, b, conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent: brentq(f, a, b, args=(conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent), maxiter=1000), 9, 1)
+    array_zero_func = np.frompyfunc(lambda b, conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent: brentq(
+        f, 0., b, args=(conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent), maxiter=1000), 7, 1)
 
     # Solve for output (brentq() throws if convergence flag is not true)
-    current = array_zero_func(current_ic, a, b, conductance_shunt, resistance_series, nNsVth, voltage, saturation_current, photocurrent)
+    current = array_zero_func(b, conductance_shunt, resistance_series,
+                              nNsVth, voltage, saturation_current, photocurrent)
 
     # Make sure we return proper type outputs corresponding to inputs
     current = np.float64(current)
@@ -2191,7 +2312,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
 
 def i_from_v_original(resistance_shunt, resistance_series, nNsVth, voltage,
-             saturation_current, photocurrent):
+                      saturation_current, photocurrent):
     '''
     Device current at the given device voltage for the single diode model.
 

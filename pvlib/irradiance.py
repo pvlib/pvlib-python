@@ -294,13 +294,20 @@ def total_irrad(surface_tilt, surface_azimuth,
                 model='isotropic',
                 model_perez='allsitescomposite1990', **kwargs):
     r"""
-    Determine diffuse irradiance from the sky on a tilted surface.
+    Determine total in-plane irradiance and it's beam, sky diffuse and ground
+    reflected components, using the specified sky diffuse irradiance model.
 
     .. math::
 
-       I_{tot} = I_{beam} + I_{sky} + I_{ground}
+       I_{tot} = I_{beam} + I_{sky diffuse} + I_{ground}
 
-    See the transposition function documentation for details.
+    Sky diffuse models include:
+        * isotropic (default)
+        * klucher
+        * haydavies
+        * reindl
+        * king
+        * perez
 
     Parameters
     ----------
@@ -333,7 +340,7 @@ def total_irrad(surface_tilt, surface_azimuth,
 
     Returns
     -------
-    irradiance : OrderedDict or DataFrame
+    total_irrad : OrderedDict or DataFrame
         Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse', 
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
     """

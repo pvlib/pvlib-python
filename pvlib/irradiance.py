@@ -341,7 +341,7 @@ def total_irrad(surface_tilt, surface_azimuth,
     Returns
     -------
     total_irrad : OrderedDict or DataFrame
-        Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse', 
+        Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse',
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
     """
 
@@ -1333,8 +1333,8 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     Determine DNI from GHI using the DIRINDEX model, which is a modification of
     the DIRINT model with information from a clear sky model.
 
-    DIRINDEX [1] improves upon the DIRINT model by taking into account turbidity
-    when used with the Ineichen clear sky model results.
+    DIRINDEX [1] improves upon the DIRINT model by taking into account 
+    turbidity when used with the Ineichen clear sky model results.
 
     Parameters
     ----------
@@ -1396,7 +1396,8 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
                         use_delta_kt_prime=use_delta_kt_prime,
                         temp_dew=temp_dew)
 
-    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times, pressure=pressure,
+    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times, 
+                                 pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
                                  temp_dew=temp_dew)
 

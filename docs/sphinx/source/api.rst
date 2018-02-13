@@ -138,7 +138,7 @@ Decomposing and combining irradiance
    irradiance.aoi_projection
    irradiance.poa_horizontal_ratio
    irradiance.beam_component
-   irradiance.globalinplane
+   irradiance.poa_components
    irradiance.grounddiffuse
 
 Transposition models
@@ -148,6 +148,7 @@ Transposition models
    :toctree: generated/
 
    irradiance.total_irrad
+   irradiance.get_sky_diffuse
    irradiance.isotropic
    irradiance.perez
    irradiance.haydavies

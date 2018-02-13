@@ -6,6 +6,11 @@ v0.5.2 (__, 2017)
 API Changes
 ~~~~~~~~~~~
 * removed unused 'pressure' arg from irradiance.liujordan function (:issue:`386`)
+* Deprecated irradiance.globalinplane. globalinplane will be removed in 0.6.
+  Use the new irradiance.poa_components instead. (:issue:`422`)
+* Added irradiance.poa_components. Function is the same as the now-deprecated
+  irradiance.globalinplane, but adds 'poa_sky_diffuse' and
+  'poa_ground_diffuse' to the output. (:issue:`422`)
 
 Enhancements
 ~~~~~~~~~~~~

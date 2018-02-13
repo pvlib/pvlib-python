@@ -16,6 +16,7 @@ Bug fixes
 * fixed redeclaration of test_simplified_solis_series_elevation (:issue:`387`)
 * physicaliam now returns a Series if called with a Series as an
   argument. (:issue:`397`)
+* corrected docstring for irradiance.total_irrad (:issue: '423')
 
 Documentation
 ~~~~~~~~~~~~~
@@ -25,6 +26,7 @@ Testing
 ~~~~~~~
 * Test Python 3.6 on Windows with Appveyor instead of 3.4. (:issue:`392`)
 * Fix failing test on pandas 0.22 (:issue:`406`)
+* Fix too large test tolerance (:issue:`414`)
 
 Contributors
 ~~~~~~~~~~~~

@@ -640,13 +640,13 @@ def test_singlediode_floats(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5)
-    expected = {'i_xx': 4.2685798754011426,
-                'i_mp': 6.1390251797935704,
-                'v_oc': 8.1063001465863085,
-                'p_mp': 38.194165464983037,
-                'i_x': 6.7556075876880621,
-                'i_sc': 6.9646747613963198,
-                'v_mp': 6.221535886625464,
+    expected = {'i_xx': 4.2498,
+                'i_mp': 6.1275,
+                'v_oc': 8.1063,
+                'p_mp': 38.1937,
+                'i_x': 6.7558,
+                'i_sc': 6.9651,
+                'v_mp': 6.2331,
                 'i': None,
                 'v': None}
     assert isinstance(out, dict)
@@ -654,24 +654,24 @@ def test_singlediode_floats(sam_data):
         if k in ['i', 'v']:
             assert v is None
         else:
-            assert_allclose(v, expected[k], atol=3)
+            assert_allclose(v, expected[k], atol=1e-3)
 
 
 @requires_scipy
 def test_singlediode_floats_ivcurve():
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3)
-    expected = {'i_xx': 4.2685798754011426,
-                'i_mp': 6.1390251797935704,
-                'v_oc': 8.1063001465863085,
-                'p_mp': 38.194165464983037,
-                'i_x': 6.7556075876880621,
-                'i_sc': 6.9646747613963198,
-                'v_mp': 6.221535886625464,
+    expected = {'i_xx': 4.2498,
+                'i_mp': 6.1275,
+                'v_oc': 8.1063,
+                'p_mp': 38.1937,
+                'i_x': 6.7558,
+                'i_sc': 6.9651,
+                'v_mp': 6.2331,
                 'i': np.array([6.965172e+00, 6.755882e+00, 2.575717e-14]),
                 'v': np.array([0., 4.05315, 8.1063])}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_allclose(v, expected[k], atol=3)
+        assert_allclose(v, expected[k], atol=1e-3)
 
 
 @requires_scipy

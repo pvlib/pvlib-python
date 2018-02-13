@@ -499,7 +499,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 def globalinplane(*args):
     import warnings
     warnings.warn('globalinplane will be removed in 0.6.0.'
-                  'Use poa_components instead')
+                  'Use poa_components instead', DeprecationWarning)
     irrads = poa_components(*args)
     irrads.pop('poa_sky_diffuse')
     irrads.pop('poa_ground_diffuse')

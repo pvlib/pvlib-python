@@ -251,7 +251,7 @@ def test_total_irrad_scalars(model):
     assert np.isnan(np.array(list(total.values()))).sum() == 0
 
 
-def test_globalinplane():
+def test_poa_components():
     aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
     airmass = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
@@ -260,8 +260,7 @@ def test_globalinplane():
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
         ephem_data['apparent_zenith'], ephem_data['azimuth'], airmass)
     irradiance.globalinplane(
-        aoi=aoi, dni=irrad_data['dni'], poa_sky_diffuse=diff_perez,
-        poa_ground_diffuse=gr_sand)
+        aoi, irrad_data['dni'], diff_perez, gr_sand)
 
 
 def test_disc_keys():

@@ -294,7 +294,7 @@ def total_irrad(surface_tilt, surface_azimuth,
                 model='isotropic',
                 model_perez='allsitescomposite1990', **kwargs):
     r"""
-    Determine total in-plane irradiance and it's beam, sky diffuse and ground
+    Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
 
     .. math::

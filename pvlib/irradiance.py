@@ -470,7 +470,8 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
         * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
         * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky (W/m^2)
-        * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground (W/m^2)
+        * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground
+          (W/m^2)
 
     Notes
     ------
@@ -499,7 +500,10 @@ def globalinplane(*args):
     import warnings
     warnings.warn('globalinplane will be removed in 0.6.0.'
                   'Use poa_components instead')
-    return poa_components(*args)
+    irrads = poa_components(*args)
+    irrads.pop('poa_sky_diffuse')
+    irrads.pop('poa_ground_diffuse')
+    return irrads
 
 
 def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):

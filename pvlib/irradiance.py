@@ -344,14 +344,72 @@ def total_irrad(surface_tilt, surface_azimuth,
         Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse',
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
     """
-
-    pvl_logger.debug('planeofarray.total_irrad()')
-
+    # total_irrad arg names are wrong. these two lines will be removed in 0.6
     solar_zenith = apparent_zenith
     solar_azimuth = azimuth
 
-    beam = beam_component(surface_tilt, surface_azimuth,
-                          solar_zenith, solar_azimuth, dni)
+    poa_sky_diffuse = get_sky_diffuse(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, albedo=albedo,
+        surface_type=surface_type, model=model, model_perez=model_perez)
+
+    poa_ground_diffuse = grounddiffuse(surface_tilt, ghi, albedo, surface_type)
+    aois = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    irrads = poa_components(aois, dni, poa_sky_diffuse, poa_ground_diffuse)
+    return irrads
+
+
+def get_sky_diffuse(surface_tilt, surface_azimuth,
+                    solar_zenith, solar_azimuth,
+                    dni, ghi, dhi, dni_extra=None, airmass=None,
+                    albedo=.25, surface_type=None,
+                    model='isotropic',
+                    model_perez='allsitescomposite1990'):
+    r"""
+    Determine in-plane sky diffuse irradiance component
+    using the specified sky diffuse irradiance model.
+
+    Sky diffuse models include:
+        * isotropic (default)
+        * klucher
+        * haydavies
+        * reindl
+        * king
+        * perez
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Panel tilt from horizontal.
+    surface_azimuth : numeric
+        Panel azimuth from north.
+    solar_zenith : numeric
+        Solar zenith angle.
+    solar_azimuth : numeric
+        Solar azimuth angle.
+    dni : numeric
+        Direct Normal Irradiance
+    ghi : numeric
+        Global horizontal irradiance
+    dhi : numeric
+        Diffuse horizontal irradiance
+    dni_extra : None or numeric, default None
+        Extraterrestrial direct normal irradiance
+    airmass : None or numeric, default None
+        Airmass
+    albedo : numeric, default 0.25
+        Surface albedo
+    surface_type : None or String, default None
+        Surface type. See grounddiffuse.
+    model : String, default 'isotropic'
+        Irradiance model.
+    model_perez : String, default 'allsitescomposite1990'
+        See perez.
+
+    Returns
+    -------
+    poa_sky_diffuse : numeric
+    """
 
     model = model.lower()
     if model == 'isotropic':
@@ -374,25 +432,10 @@ def total_irrad(surface_tilt, surface_azimuth,
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
-    ground = grounddiffuse(surface_tilt, ghi, albedo, surface_type)
-
-    diffuse = sky + ground
-    total = beam + diffuse
-
-    all_irrad = OrderedDict()
-    all_irrad['poa_global'] = total
-    all_irrad['poa_direct'] = beam
-    all_irrad['poa_diffuse'] = diffuse
-    all_irrad['poa_sky_diffuse'] = sky
-    all_irrad['poa_ground_diffuse'] = ground
-
-    if isinstance(total, pd.Series):
-        all_irrad = pd.DataFrame(all_irrad)
-
-    return all_irrad
+    return sky
 
 
-def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
+def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     r'''
     Determine the three components on in-plane irradiance
 
@@ -426,6 +469,8 @@ def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         * ``poa_global`` : Total in-plane irradiance (W/m^2)
         * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
         * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
+        * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky (W/m^2)
+        * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground (W/m^2)
 
     Notes
     ------
@@ -434,18 +479,27 @@ def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     '''
 
     poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
-    poa_global = poa_direct + poa_sky_diffuse + poa_ground_diffuse
     poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
+    poa_global = poa_direct + poa_diffuse
 
     irrads = OrderedDict()
     irrads['poa_global'] = poa_global
     irrads['poa_direct'] = poa_direct
     irrads['poa_diffuse'] = poa_diffuse
+    irrads['poa_sky_diffuse'] = poa_sky_diffuse
+    irrads['poa_ground_diffuse'] = poa_ground_diffuse
 
     if isinstance(poa_direct, pd.Series):
         irrads = pd.DataFrame(irrads)
 
     return irrads
+
+
+def globalinplane(*args):
+    import warnings
+    warnings.warn('globalinplane will be removed in 0.6.0.'
+                  'Use poa_components instead')
+    return poa_components(*args)
 
 
 def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):

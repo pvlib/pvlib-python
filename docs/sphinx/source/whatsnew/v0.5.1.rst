@@ -24,23 +24,6 @@ Bug fixes
 * Remove condition causing Overflow warning from clearsky.haurwitz
   (:issue:`363`)
 * modelchain.basic_chain now correctly passes 'solar_position_method'
-  arg to solarposition.get_solarposition
-
-Enhancements
-~~~~~~~~~~~~
-* Improve clearsky.lookup_linke_turbidity speed. (:issue:`368`)
-* Ideal devices supported in single diode model, e.g.,
-  resistance_series = 0 and/or resistance_shunt = numpy.inf (:issue:`340`)
-* `pvsystem.v_from_i` and `pvsystem.i_from_v` computations for near ideal
-  devices are more numerically stable. However, very, very near ideal
-  resistance_series and/or resistance_shunt may still cause issues with the
-  implicit solver (:issue:`340`)
-
-API Changes
-~~~~~~~~~~~
-* `pvsystem.v_from_i` and `pvsystem.i_from_v` functions now accept
-  resistance_series = 0 and/or resistance_shunt = numpy.inf as inputs
-  (:issue:`340`)
   arg to solarposition.get_solarposition (:issue:`370`)
 * Fixed: `Variables and Symbols extra references not available
   <https://github.com/pvlib/pvlib-python/issues/380>`_ (:issue:`380`)
@@ -57,9 +40,6 @@ API Changes
 Documentation
 ~~~~~~~~~~~~~
 * Doc string of modelchain.basic_chain was updated to describe args
-  more accurately
-* Doc strings of `singlediode`, `pvsystem.v_from_i`, and `pvsystem.i_from_v`
-  were updated to describe acceptable input arg ranges
   more accurately. (:issue:`370`)
 * Doc strings of `singlediode`, `pvsystem.v_from_i`, and `pvsystem.i_from_v`
   were updated to describe acceptable input arg ranges. (:issue:`340`)

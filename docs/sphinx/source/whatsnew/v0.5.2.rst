@@ -17,6 +17,7 @@ Bug fixes
 * physicaliam now returns a Series if called with a Series as an
   argument. (:issue:`397`)
 * corrected docstring for irradiance.total_irrad (:issue: '423')
+* removed RuntimeWarnings caused by nans in the perez transposition function
 
 Documentation
 ~~~~~~~~~~~~~

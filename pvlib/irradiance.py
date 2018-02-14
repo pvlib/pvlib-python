@@ -1005,15 +1005,8 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # rules. 1 = overcast ... 8 = clear (these names really only make
     # sense for small zenith angles, but...) these values will
     # eventually be used as indicies for coeffecient look ups
-    ebin = np.zeros_like(eps, dtype=np.int8)
-    ebin[eps < 1.065] = 1
-    ebin[(eps >= 1.065) & (eps < 1.23)] = 2
-    ebin[(eps >= 1.23) & (eps < 1.5)] = 3
-    ebin[(eps >= 1.5) & (eps < 1.95)] = 4
-    ebin[(eps >= 1.95) & (eps < 2.8)] = 5
-    ebin[(eps >= 2.8) & (eps < 4.5)] = 6
-    ebin[(eps >= 4.5) & (eps < 6.2)] = 7
-    ebin[eps >= 6.2] = 8
+    ebin = np.digitize(eps, (0., 1.065, 1.23, 1.5, 1.95, 2.8, 4.5, 6.2))
+    ebin[np.isnan(eps)] = 0
 
     # correct for 0 indexing in coeffecient lookup
     # later, ebin = -1 will yield nan coefficients
@@ -1333,7 +1326,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     Determine DNI from GHI using the DIRINDEX model, which is a modification of
     the DIRINT model with information from a clear sky model.
 
-    DIRINDEX [1] improves upon the DIRINT model by taking into account 
+    DIRINDEX [1] improves upon the DIRINT model by taking into account
     turbidity when used with the Ineichen clear sky model results.
 
     Parameters
@@ -1396,7 +1389,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
                         use_delta_kt_prime=use_delta_kt_prime,
                         temp_dew=temp_dew)
 
-    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times, 
+    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times,
                                  pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
                                  temp_dew=temp_dew)

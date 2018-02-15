@@ -2305,9 +2305,16 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
 
     pdc = p_dc / p_nom
     vdc = v_dc / v_nom
-    poly = np.array([pdc**0, pdc, pdc**2, vdc - 1, pdc * (vdc - 1),
-                     pdc**2 * (vdc - 1), 1 / vdc - 1, pdc * (1. / vdc - 1),
-                     pdc**2 * (1. / vdc - 1)])
+    with np.errstate(invalid='ignore', divide='ignore'):
+        poly = np.array([pdc**0,  # replace with np.ones_like?
+                         pdc,
+                         pdc**2,
+                         vdc - 1,
+                         pdc * (vdc - 1),
+                         pdc**2 * (vdc - 1),
+                         1. / vdc - 1,  # divide by 0
+                         pdc * (1. / vdc - 1),  # invalid 0./0. --> nan
+                         pdc**2 * (1. / vdc - 1)])  # divide by 0
     p_loss = np.dot(np.array(ce_list), poly)
     ac_power = p_nom * (pdc-p_loss)
     p_nt = -1 * np.absolute(p_nt)

@@ -1542,7 +1542,9 @@ def sapm_aoi_loss(aoi, module, upper=None):
 
     aoi_loss = np.polyval(aoi_coeff, aoi)
     aoi_loss = np.clip(aoi_loss, 0, upper)
-    aoi_loss = np.where(aoi < 0, 0, aoi_loss)
+    mask = np.full_like(aoi, False, dtype='bool')
+    np.less(aoi, 0, where=~np.isnan(aoi), out=mask)
+    aoi_loss = np.where(mask, 0, aoi_loss)
 
     if isinstance(aoi, pd.Series):
         aoi_loss = pd.Series(aoi_loss, aoi.index)

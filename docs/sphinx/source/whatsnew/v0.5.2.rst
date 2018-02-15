@@ -17,7 +17,10 @@ Bug fixes
 * physicaliam now returns a Series if called with a Series as an
   argument. (:issue:`397`)
 * corrected docstring for irradiance.total_irrad (:issue: '423')
-* removed RuntimeWarnings caused by nans in the perez transposition function
+* removed RuntimeWarnings due to divide by 0 or nans in input data within
+  irradiance.perez, clearsky.simplified_solis, pvsystem.adrinverter,
+  pvsystem.ashraeiam, pvsystem.physicaliam.
+  (:issue:`428`)
 
 Documentation
 ~~~~~~~~~~~~~

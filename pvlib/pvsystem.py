@@ -1938,9 +1938,11 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     # Only compute using LambertW if there are cases with Gsh>0
     if np.any(idx_p):
         # LambertW argument, cannot be float128, may overflow to np.inf
-        argW = I0[idx_p] / (Gsh[idx_p]*a[idx_p]) * \
-            np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                   (Gsh[idx_p]*a[idx_p]))
+        # overflow is explicitly handled below, so ignore warnings here
+        with np.errstate(over='ignore'):
+            argW = (I0[idx_p] / (Gsh[idx_p]*a[idx_p]) *
+                    np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
+                           (Gsh[idx_p]*a[idx_p])))
 
         # lambertw typically returns complex value with zero imaginary part
         # may overflow to np.inf

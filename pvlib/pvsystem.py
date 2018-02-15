@@ -2312,18 +2312,11 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
     ac_power = p_nom * (pdc-p_loss)
     p_nt = -1 * np.absolute(p_nt)
 
-    # set ac_power to nan where results are non-physical
     ac_power = np.where((v_lim_upper < v_dc) | (v_dc < v_lim_lower),
                         np.nan, ac_power)
-    # machinery to set limits
-    # more verbose than simple bitwise comparisons, but more robust to nans
-    notnan = ~np.isnan(ac_power)
-    mask = np.full_like(ac_power, False, dtype='bool')
-    np.less(ac_power, p_nt, where=notnan, out=mask)
-    np.equal(vdc, 0, where=notnan, out=mask)
-    # p_nt where mask is True, ac_power where mask is False
-    ac_power = np.where(mask, p_nt, ac_power)
-    ac_power = np.minimum(pac_max, ac_power)
+    ac_power = np.where(vdc == 0, p_nt, ac_power)
+    ac_power = np.maximum(ac_power, p_nt)
+    ac_power = np.minimum(ac_power, pac_max)
 
     if isinstance(p_dc, pd.Series):
         ac_power = pd.Series(ac_power, index=pdc.index)

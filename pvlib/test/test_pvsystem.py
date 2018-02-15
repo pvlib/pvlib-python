@@ -839,6 +839,16 @@ def test_adrinverter_float(sam_data):
     assert_allclose(pacs, 1161.5745)
 
 
+def test_adrinverter_invalid_and_night(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Zigor__Sunzet_3_TL_US_240V__CEC_2011_'
+    vdcs = np.array([39.873036, 0.])
+    pdcs = np.array([188.09182, 0.])
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
+    assert_allclose(pacs, np.array([np.nan, -0.25]))
+
+
 def test_snlinverter(sam_data):
     inverters = sam_data['cecinverter']
     testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'

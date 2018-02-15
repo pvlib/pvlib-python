@@ -1305,11 +1305,26 @@ def sapm(effective_irradiance, temp_cell, module):
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
 
-    Ee = effective_irradiance
+    # avoid problem with integer input
+    Ee = np.array(effective_irradiance, dtype='float64')
+
+    # set up masking for 0, positive, and nan inputs
+    mask_pos = np.full_like(Ee, False, dtype='bool')
+    mask_zero = np.full_like(Ee, False, dtype='bool')
+    notnan = ~np.isnan(Ee)
+    positive = np.greater(Ee, 0, where=notnan, out=mask_pos)
+    zeros = np.equal(Ee, 0, where=notnan, out=mask_zero)
 
     Bvmpo = module['Bvmpo'] + module['Mbvmp']*(1 - Ee)
     Bvoco = module['Bvoco'] + module['Mbvoc']*(1 - Ee)
     delta = module['N'] * kb * (temp_cell + 273.15) / q
+
+    # avoid repeated computation
+    logEe = np.full_like(Ee, np.nan)
+    np.log(Ee, where=positive, out=logEe)
+    logEe = np.where(zeros, -np.inf, logEe)
+    # avoid repeated __getitem__
+    cells_in_series = module['Cells_in_Series']
 
     out = OrderedDict()
 
@@ -1321,13 +1336,13 @@ def sapm(effective_irradiance, temp_cell, module):
         (1 + module['Aimp']*(temp_cell - T0)))
 
     out['v_oc'] = np.maximum(0, (
-        module['Voco'] + module['Cells_in_Series']*delta*np.log(Ee) +
+        module['Voco'] + cells_in_series * delta * logEe +
         Bvoco*(temp_cell - T0)))
 
     out['v_mp'] = np.maximum(0, (
         module['Vmpo'] +
-        module['C2']*module['Cells_in_Series']*delta*np.log(Ee) +
-        module['C3']*module['Cells_in_Series']*((delta*np.log(Ee)) ** 2) +
+        module['C2'] * cells_in_series * delta * logEe +
+        module['C3'] * cells_in_series * ((delta * logEe) ** 2) +
         Bvmpo*(temp_cell - T0)))
 
     out['p_mp'] = out['i_mp'] * out['v_mp']

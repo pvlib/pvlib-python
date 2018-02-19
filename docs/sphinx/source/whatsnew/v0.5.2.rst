@@ -16,6 +16,10 @@ API Changes
 * Deprecated irradiance.grounddiffuse. Use irradiance.get_ground_diffuse
   instead. irradiance.grounddiffuse will be removed in 0.6. (:issue:`422`)
 
+* Removed 'klutcher' from get_sky_diffuse/total_irrad. This misspelling was
+  deprecated long ago but never removed.
+
+
 Enhancements
 ~~~~~~~~~~~~
 * Improve clearsky.lookup_linke_turbidity speed, changing .mat source

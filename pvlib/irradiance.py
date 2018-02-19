@@ -427,7 +427,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     model = model.lower()
     if model == 'isotropic':
         sky = isotropic(surface_tilt, dhi)
-    elif model in ['klucher', 'klutcher']:
+    elif model == 'klucher':
         sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
                       solar_zenith, solar_azimuth)
     elif model == 'haydavies':

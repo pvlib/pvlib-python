@@ -567,7 +567,7 @@ def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
-def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
+def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
     irradiance, albedo, and surface tilt
@@ -632,6 +632,10 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         pass
 
     return diffuse_irrad
+
+
+grounddiffuse = deprecated('0.5.2', alternative='get_ground_diffuse',
+                           name='grounddiffuse')(get_ground_diffuse)
 
 
 def isotropic(surface_tilt, dhi):

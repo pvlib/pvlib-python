@@ -11,8 +11,10 @@ API Changes
 * Added irradiance.poa_components. Function is the same as the now-deprecated
   irradiance.globalinplane, but adds 'poa_sky_diffuse' and
   'poa_ground_diffuse' to the output. (:issue:`422`)
-* Deprecated irradiance.extraradiation. Use irradiance.extra_radiation instead.
-  irradiance.extraradiation will be removed in 0.5. (:issue:`422`)
+* Deprecated irradiance.extraradiation. Use irradiance.get_extra_radiation
+  instead. irradiance.extraradiation will be removed in 0.6. (:issue:`422`)
+* Deprecated irradiance.grounddiffuse. Use irradiance.get_ground_diffuse
+  instead. irradiance.grounddiffuse will be removed in 0.6. (:issue:`422`)
 
 Enhancements
 ~~~~~~~~~~~~

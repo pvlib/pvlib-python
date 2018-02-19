@@ -300,12 +300,12 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     return beam
 
 
-def total_irrad(surface_tilt, surface_azimuth,
-                apparent_zenith, azimuth,
-                dni, ghi, dhi, dni_extra=None, airmass=None,
-                albedo=.25, surface_type=None,
-                model='isotropic',
-                model_perez='allsitescomposite1990', **kwargs):
+def get_total_poa_irradiance(surface_tilt, surface_azimuth,
+                             apparent_zenith, azimuth,
+                             dni, ghi, dhi, dni_extra=None, airmass=None,
+                             albedo=.25, surface_type=None,
+                             model='isotropic',
+                             model_perez='allsitescomposite1990', **kwargs):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -361,23 +361,27 @@ def total_irrad(surface_tilt, surface_azimuth,
     solar_zenith = apparent_zenith
     solar_azimuth = azimuth
 
-    poa_sky_diffuse = get_sky_diffuse(
+    poa_sky_diffuse = get_poa_sky_diffuse(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-        dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, albedo=albedo,
-        surface_type=surface_type, model=model, model_perez=model_perez)
+        dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
+        model_perez=model_perez)
 
-    poa_ground_diffuse = grounddiffuse(surface_tilt, ghi, albedo, surface_type)
+    poa_ground_diffuse = get_poa_ground_diffuse(surface_tilt, ghi, albedo,
+                                                surface_type)
     aoi_ = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     irrads = poa_components(aoi_, dni, poa_sky_diffuse, poa_ground_diffuse)
     return irrads
 
 
-def get_sky_diffuse(surface_tilt, surface_azimuth,
-                    solar_zenith, solar_azimuth,
-                    dni, ghi, dhi, dni_extra=None, airmass=None,
-                    albedo=.25, surface_type=None,
-                    model='isotropic',
-                    model_perez='allsitescomposite1990'):
+total_irrad = deprecated('0.5.2', alternative='get_total_poa_irradiance',
+                         name='total_irrad')(get_total_poa_irradiance)
+
+
+def get_poa_sky_diffuse(surface_tilt, surface_azimuth,
+                        solar_zenith, solar_azimuth,
+                        dni, ghi, dhi, dni_extra=None, airmass=None,
+                        model='isotropic',
+                        model_perez='allsitescomposite1990'):
     r"""
     Determine in-plane sky diffuse irradiance component
     using the specified sky diffuse irradiance model.
@@ -410,10 +414,6 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         Extraterrestrial direct normal irradiance
     airmass : None or numeric, default None
         Airmass
-    albedo : numeric, default 0.25
-        Surface albedo
-    surface_type : None or String, default None
-        Surface type. See grounddiffuse.
     model : String, default 'isotropic'
         Irradiance model.
     model_perez : String, default 'allsitescomposite1990'
@@ -509,6 +509,8 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
+# globalinplane returns less data than poa_components, so better
+# to copy it
 @deprecated('0.5.2', alternative='poa_components',
             addendum=' This function will be removed in 0.6')
 def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
@@ -567,7 +569,7 @@ def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
-def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
+def get_poa_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
     irradiance, albedo, and surface tilt
@@ -634,8 +636,8 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     return diffuse_irrad
 
 
-grounddiffuse = deprecated('0.5.2', alternative='get_ground_diffuse',
-                           name='grounddiffuse')(get_ground_diffuse)
+grounddiffuse = deprecated('0.5.2', alternative='get_poa_ground_diffuse',
+                           name='grounddiffuse')(get_poa_ground_diffuse)
 
 
 def isotropic(surface_tilt, dhi):

@@ -211,9 +211,8 @@ def test_liujordan():
     assert_frame_equal(out, expected)
 
 
-# klutcher (misspelling) will be removed in 0.3
 def test_total_irrad():
-    models = ['isotropic', 'klutcher', 'klucher',
+    models = ['isotropic', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']
     AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
 

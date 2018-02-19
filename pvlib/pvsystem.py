@@ -733,9 +733,9 @@ def ashraeiam(aoi, b=0.05):
     '''
 
     iam = 1 - b * ((1 / np.cos(np.radians(aoi)) - 1))
-    mask = np.full_like(aoi, False, dtype='bool')
-    np.greater_equal(np.abs(aoi), 90, where=~np.isnan(aoi), out=mask)
-    iam = np.where(mask, 0, iam)
+    aoi_gte_90 = np.full_like(aoi, False, dtype='bool')
+    np.greater_equal(np.abs(aoi), 90, where=~np.isnan(aoi), out=aoi_gte_90)
+    iam = np.where(aoi_gte_90, 0, iam)
     iam = np.maximum(0, iam)
 
     if isinstance(iam, pd.Series):
@@ -837,14 +837,14 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     # after deducting the reflected portion of each
     iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
 
-    # set up arrays for nan-tolerant masking operations
-    mask = np.full_like(aoi, False, dtype='bool')
+    # set up array for nan-tolerant masking operations
     notnan = ~np.isnan(aoi)
 
     # angles near zero produce nan, but iam is defined as one
     small_angle = 1e-06
-    np.less(np.abs(aoi), small_angle, where=notnan, out=mask)
-    iam = np.where(mask, 1.0, iam)
+    aoi_lt_small_angle = np.full_like(aoi, False, dtype='bool')
+    np.less(np.abs(aoi), small_angle, where=notnan, out=aoi_lt_small_angle)
+    iam = np.where(aoi_lt_small_angle, 1.0, iam)
 
     # angles at 90 degrees can produce tiny negative values,
     # which should be zero. this is a result of calculation precision
@@ -852,9 +852,9 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     iam = np.maximum(0, iam)
 
     # for light coming from behind the plane, none can enter the module
-    mask = np.full_like(aoi, False, dtype='bool')
-    np.greater(aoi, 90, where=notnan, out=mask)
-    iam = np.where(mask, 0, iam)
+    aoi_gt_90 = np.full_like(aoi, False, dtype='bool')
+    np.greater(aoi, 90, where=notnan, out=aoi_gt_90)
+    iam = np.where(aoi_gt_90, 0, iam)
 
     if isinstance(aoi_input, pd.Series):
         iam = pd.Series(iam, index=aoi_input.index)
@@ -1309,11 +1309,11 @@ def sapm(effective_irradiance, temp_cell, module):
     Ee = np.array(effective_irradiance, dtype='float64')
 
     # set up masking for 0, positive, and nan inputs
-    mask_pos = np.full_like(Ee, False, dtype='bool')
-    mask_zero = np.full_like(Ee, False, dtype='bool')
+    Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
+    Ee_eq_0 = np.full_like(Ee, False, dtype='bool')
     notnan = ~np.isnan(Ee)
-    positive = np.greater(Ee, 0, where=notnan, out=mask_pos)
-    zeros = np.equal(Ee, 0, where=notnan, out=mask_zero)
+    np.greater(Ee, 0, where=notnan, out=Ee_gt_0)
+    np.equal(Ee, 0, where=notnan, out=Ee_eq_0)
 
     Bvmpo = module['Bvmpo'] + module['Mbvmp']*(1 - Ee)
     Bvoco = module['Bvoco'] + module['Mbvoc']*(1 - Ee)
@@ -1321,8 +1321,8 @@ def sapm(effective_irradiance, temp_cell, module):
 
     # avoid repeated computation
     logEe = np.full_like(Ee, np.nan)
-    np.log(Ee, where=positive, out=logEe)
-    logEe = np.where(zeros, -np.inf, logEe)
+    np.log(Ee, where=Ee_gt_0, out=logEe)
+    logEe = np.where(Ee_eq_0, -np.inf, logEe)
     # avoid repeated __getitem__
     cells_in_series = module['Cells_in_Series']
 
@@ -1542,9 +1542,10 @@ def sapm_aoi_loss(aoi, module, upper=None):
 
     aoi_loss = np.polyval(aoi_coeff, aoi)
     aoi_loss = np.clip(aoi_loss, 0, upper)
-    mask = np.full_like(aoi, False, dtype='bool')
-    np.less(aoi, 0, where=~np.isnan(aoi), out=mask)
-    aoi_loss = np.where(mask, 0, aoi_loss)
+    # nan tolerant masking
+    aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
+    np.less(aoi, 0, where=~np.isnan(aoi), out=aoi_lt_0)
+    aoi_loss = np.where(aoi_lt_0, 0, aoi_loss)
 
     if isinstance(aoi, pd.Series):
         aoi_loss = pd.Series(aoi_loss, aoi.index)

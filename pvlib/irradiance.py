@@ -18,6 +18,7 @@ import pandas as pd
 from pvlib import tools
 from pvlib import solarposition
 from pvlib import atmosphere
+from pvlib._deprecation import deprecated
 
 pvl_logger = logging.getLogger('pvlib')
 
@@ -354,8 +355,8 @@ def total_irrad(surface_tilt, surface_azimuth,
         surface_type=surface_type, model=model, model_perez=model_perez)
 
     poa_ground_diffuse = grounddiffuse(surface_tilt, ghi, albedo, surface_type)
-    aois = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
-    irrads = poa_components(aois, dni, poa_sky_diffuse, poa_ground_diffuse)
+    aoi_ = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    irrads = poa_components(aoi_, dni, poa_sky_diffuse, poa_ground_diffuse)
     return irrads
 
 
@@ -496,13 +497,61 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
-def globalinplane(*args):
-    import warnings
-    warnings.warn('globalinplane will be removed in 0.6.0.'
-                  'Use poa_components instead', DeprecationWarning)
-    irrads = poa_components(*args)
-    irrads.pop('poa_sky_diffuse')
-    irrads.pop('poa_ground_diffuse')
+@deprecated('0.5.2', alternative='poa_components',
+            addendum=' This function will be removed in 0.6')
+def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
+    r'''
+    Determine the three components on in-plane irradiance
+
+    Combines in-plane irradaince compoents from the chosen diffuse
+    translation, ground reflection and beam irradiance algorithms into
+    the total in-plane irradiance.
+
+    Parameters
+    ----------
+    aoi : numeric
+        Angle of incidence of solar rays with respect to the module
+        surface, from :func:`aoi`.
+
+    dni : numeric
+        Direct normal irradiance (W/m^2), as measured from a TMY file or
+        calculated with a clearsky model.
+
+    poa_sky_diffuse : numeric
+        Diffuse irradiance (W/m^2) in the plane of the modules, as
+        calculated by a diffuse irradiance translation function
+
+    poa_ground_diffuse : numeric
+        Ground reflected irradiance (W/m^2) in the plane of the modules,
+        as calculated by an albedo model (eg. :func:`grounddiffuse`)
+
+    Returns
+    -------
+    irrads : OrderedDict or DataFrame
+        Contains the following keys:
+
+        * ``poa_global`` : Total in-plane irradiance (W/m^2)
+        * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
+        * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
+
+    Notes
+    ------
+    Negative beam irradiation due to aoi :math:`> 90^{\circ}` or AOI
+    :math:`< 0^{\circ}` is set to zero.
+    '''
+
+    poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
+    poa_global = poa_direct + poa_sky_diffuse + poa_ground_diffuse
+    poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
+
+    irrads = OrderedDict()
+    irrads['poa_global'] = poa_global
+    irrads['poa_direct'] = poa_direct
+    irrads['poa_diffuse'] = poa_diffuse
+
+    if isinstance(poa_direct, pd.Series):
+        irrads = pd.DataFrame(irrads)
+
     return irrads
 
 

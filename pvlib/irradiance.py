@@ -37,8 +37,8 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'dirty steel': 0.08}
 
 
-def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
-                   epoch_year=2014, **kwargs):
+def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
+                        method='spencer', epoch_year=2014, **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
 
@@ -86,6 +86,40 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
     """
 
+    to_doy, to_datetimeindex, to_output = \
+        _handle_extra_radiation_types(datetime_or_doy, epoch_year)
+
+    # consider putting asce and spencer methods in their own functions
+    method = method.lower()
+    if method == 'asce':
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
+        RoverR0sqrd = 1 + 0.033 * np.cos(B)
+    elif method == 'spencer':
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
+        RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
+                       0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
+    elif method == 'pyephem':
+        times = to_datetimeindex(datetime_or_doy)
+        RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
+    elif method == 'nrel':
+        times = to_datetimeindex(datetime_or_doy)
+        RoverR0sqrd = \
+            solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
+    else:
+        raise ValueError('Invalid method: %s', method)
+
+    Ea = solar_constant * RoverR0sqrd
+
+    Ea = to_output(Ea)
+
+    return Ea
+
+
+extraradiation = deprecated('0.5.2', alternative='get_extra_radiation',
+                            name='extraradiation')(get_extra_radiation)
+
+
+def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     # This block will set the functions that can be used to convert the
     # inputs to either day of year or pandas DatetimeIndex, and the
     # functions that will yield the appropriate output type. It's
@@ -118,29 +152,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
                                    epoch_year=epoch_year)
         to_output = tools._array_out
 
-    method = method.lower()
-    if method == 'asce':
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
-        RoverR0sqrd = 1 + 0.033 * np.cos(B)
-    elif method == 'spencer':
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
-        RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
-                       0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
-    elif method == 'pyephem':
-        times = to_datetimeindex(datetime_or_doy)
-        RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
-    elif method == 'nrel':
-        times = to_datetimeindex(datetime_or_doy)
-        RoverR0sqrd = \
-            solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
-    else:
-        raise ValueError('Invalid method: %s', method)
-
-    Ea = solar_constant * RoverR0sqrd
-
-    Ea = to_output(Ea)
-
-    return Ea
+    return to_doy, to_datetimeindex, to_output
 
 
 def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):

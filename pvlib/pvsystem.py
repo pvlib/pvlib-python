@@ -837,24 +837,18 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     # after deducting the reflected portion of each
     iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
 
-    # set up array for nan-tolerant masking operations
-    notnan = ~np.isnan(aoi)
+    with np.errstate(invalid='ignore'):
+        # angles near zero produce nan, but iam is defined as one
+        small_angle = 1e-06
+        iam = np.where(np.abs(aoi) < small_angle, 1.0, iam)
 
-    # angles near zero produce nan, but iam is defined as one
-    small_angle = 1e-06
-    aoi_lt_small_angle = np.full_like(aoi, False, dtype='bool')
-    np.less(np.abs(aoi), small_angle, where=notnan, out=aoi_lt_small_angle)
-    iam = np.where(aoi_lt_small_angle, 1.0, iam)
+        # angles at 90 degrees can produce tiny negative values,
+        # which should be zero. this is a result of calculation precision
+        # rather than the physical model
+        iam = np.where(iam < 0, 0, iam)
 
-    # angles at 90 degrees can produce tiny negative values,
-    # which should be zero. this is a result of calculation precision
-    # rather than the physical model
-    iam = np.maximum(0, iam)
-
-    # for light coming from behind the plane, none can enter the module
-    aoi_gt_90 = np.full_like(aoi, False, dtype='bool')
-    np.greater(aoi, 90, where=notnan, out=aoi_gt_90)
-    iam = np.where(aoi_gt_90, 0, iam)
+        # for light coming from behind the plane, none can enter the module
+        iam = np.where(aoi > 90, 0, iam)
 
     if isinstance(aoi_input, pd.Series):
         iam = pd.Series(iam, index=aoi_input.index)
@@ -2308,6 +2302,8 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
 
     pdc = p_dc / p_nom
     vdc = v_dc / v_nom
+    # zero voltage will lead to division by zero, but since power is
+    # set to night time value later, these errors can be safely ignored
     with np.errstate(invalid='ignore', divide='ignore'):
         poly = np.array([pdc**0,  # replace with np.ones_like?
                          pdc,

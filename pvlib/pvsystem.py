@@ -2318,10 +2318,17 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
     ac_power = p_nom * (pdc-p_loss)
     p_nt = -1 * np.absolute(p_nt)
 
-    ac_power = np.where((v_lim_upper < v_dc) | (v_dc < v_lim_lower),
-                        np.nan, ac_power)
+    # set output to nan where input is outside of limits
+    # errstate silences case where input is nan
+    with np.errstate(invalid='ignore'):
+        invalid = (v_lim_upper < v_dc) | (v_dc < v_lim_lower)
+    ac_power = np.where(invalid, np.nan, ac_power)
+
+    # set night values
     ac_power = np.where(vdc == 0, p_nt, ac_power)
     ac_power = np.maximum(ac_power, p_nt)
+
+    # set max ac output
     ac_power = np.minimum(ac_power, pac_max)
 
     if isinstance(p_dc, pd.Series):

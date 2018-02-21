@@ -102,6 +102,18 @@ def test_ashraeiam():
 
 
 @needs_numpy_1_10
+def test_ashraeiam_scalar():
+    thetas = -45.
+    iam = pvsystem.ashraeiam(thetas, .05)
+    expected = 0.97928932
+    assert_allclose(iam, expected, equal_nan=True)
+    thetas = np.nan
+    iam = pvsystem.ashraeiam(thetas, .05)
+    expected = np.nan
+    assert_allclose(iam, expected, equal_nan=True)
+
+
+@needs_numpy_1_10
 def test_PVSystem_ashraeiam():
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
@@ -125,6 +137,18 @@ def test_physicaliam():
     iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
     expected = pd.Series(expected)
     assert_series_equal(iam, expected)
+
+
+@needs_numpy_1_10
+def test_physicaliam_scalar():
+    aoi = -45.
+    iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
+    expected = 0.98797788
+    assert_allclose(iam, expected, equal_nan=True)
+    aoi = np.nan
+    iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
+    expected = np.nan
+    assert_allclose(iam, expected, equal_nan=True)
 
 
 @needs_numpy_1_10
@@ -813,6 +837,16 @@ def test_adrinverter_float(sam_data):
 
     pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
     assert_allclose(pacs, 1161.5745)
+
+
+def test_adrinverter_invalid_and_night(sam_data):
+    inverters = sam_data['adrinverter']
+    testinv = 'Zigor__Sunzet_3_TL_US_240V__CEC_2011_'
+    vdcs = np.array([39.873036, 0., np.nan, 420])
+    pdcs = np.array([188.09182, 0., 420, np.nan])
+
+    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
+    assert_allclose(pacs, np.array([np.nan, -0.25, np.nan, np.nan]))
 
 
 def test_snlinverter(sam_data):

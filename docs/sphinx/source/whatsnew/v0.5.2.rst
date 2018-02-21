@@ -17,6 +17,10 @@ Bug fixes
 * physicaliam now returns a Series if called with a Series as an
   argument. (:issue:`397`)
 * corrected docstring for irradiance.total_irrad (:issue: '423')
+* removed RuntimeWarnings due to divide by 0 or nans in input data within
+  irradiance.perez, clearsky.simplified_solis, pvsystem.adrinverter,
+  pvsystem.ashraeiam, pvsystem.physicaliam, pvsystem.sapm_aoi_loss,
+  pvsystem.v_from_i. (:issue:`428`)
 
 Documentation
 ~~~~~~~~~~~~~

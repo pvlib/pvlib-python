@@ -433,11 +433,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     w = precipitable_water
 
     # algorithm fails for pw < 0.2
-    if np.isscalar(w):
-        w = 0.2 if w < 0.2 else w
-    else:
-        w = w.copy()
-        w[w < 0.2] = 0.2
+    w = np.maximum(w, 0.2)
 
     # this algorithm is reasonably fast already, but it could be made
     # faster by precalculating the powers of aod700, the log(p/p0), and
@@ -542,8 +538,10 @@ def _calc_taud(w, aod700, p):
     elif np.isscalar(aod700):
         aod700 = np.full_like(w, aod700)
 
-    aod700_mask = aod700 < 0.05
-    aod700_mask = np.array([aod700_mask, ~aod700_mask], dtype=np.int)
+    # set up nan-tolerant masks
+    aod700_lt_0p05 = np.full_like(aod700, False, dtype='bool')
+    np.less(aod700, 0.05, where=~np.isnan(aod700), out=aod700_lt_0p05)
+    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=np.int)
 
     # create tuples of coefficients for
     # aod700 < 0.05, aod700 >= 0.05

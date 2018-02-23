@@ -465,7 +465,6 @@ def test_analytical_azimuth():
                        atol=0.017)
 
     # test for NaN values at boundary conditions (PR #431)
-    # use degrees rather than radians for clarity
     test_angles = np.radians(np.array(
                    [[   0., -180.,  -20.],
                     [   0.,    0.,   -5.],

@@ -133,7 +133,7 @@ Decomposing and combining irradiance
 .. autosummary::
    :toctree: generated/
 
-   irradiance.extraradiation
+   irradiance.get_extra_radiation
    irradiance.aoi
    irradiance.aoi_projection
    irradiance.poa_horizontal_ratio

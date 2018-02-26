@@ -483,6 +483,6 @@ def test_analytical_azimuth():
                     [ -30.,  180.,   10.]]))
 
     zeniths  = solarposition.solar_zenith_analytical(*test_angles.T)
-    azimuths = solarposition.solar_azimuth_analytical(*test_angles.T, zeniths)
+    azimuths = solarposition.solar_azimuth_analytical(*test_angles.T, zenith=zeniths)
 
     assert not np.isnan(azimuths).any()

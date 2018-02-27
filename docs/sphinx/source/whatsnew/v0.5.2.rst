@@ -20,6 +20,11 @@ Bug fixes
 * modified solar_azimuth_analytical to handle some borderline cases, thereby
   avoiding the NaN values and/or warnings that were previously produced
   (:issue: '420')
+* removed RuntimeWarnings due to divide by 0 or nans in input data within
+  irradiance.perez, clearsky.simplified_solis, pvsystem.adrinverter,
+  pvsystem.ashraeiam, pvsystem.physicaliam, pvsystem.sapm_aoi_loss,
+  pvsystem.v_from_i. (:issue:`428`)
+
 
 Documentation
 ~~~~~~~~~~~~~

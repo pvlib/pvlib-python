@@ -17,6 +17,9 @@ Bug fixes
 * physicaliam now returns a Series if called with a Series as an
   argument. (:issue:`397`)
 * corrected docstring for irradiance.total_irrad (:issue: '423')
+* modified solar_azimuth_analytical to handle some borderline cases, thereby
+  avoiding the NaN values and/or warnings that were previously produced
+  (:issue: '420')
 
 Documentation
 ~~~~~~~~~~~~~
@@ -33,5 +36,6 @@ Contributors
 * Cliff Hansen
 * Will Holmgren
 * KonstantinTr
+* Anton Driesse
 
 

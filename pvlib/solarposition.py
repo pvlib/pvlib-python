@@ -1096,9 +1096,27 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     hour_angle
     solar_zenith_analytical
     """
-    return np.sign(hour_angle) * np.abs(np.arccos((np.cos(zenith) * np.sin(
-        latitude) - np.sin(declination)) / (np.sin(zenith) * np.cos(
-        latitude)))) + np.pi
+
+    numer = (np.cos(zenith) * np.sin(latitude) - np.sin(declination))
+    denom = (np.sin(zenith) * np.cos(latitude))
+
+    # cases that would generate new NaN values are safely ignored here
+    # since they are dealt with further below
+    with np.errstate(invalid='ignore', divide='ignore'):
+        cos_azi = numer / denom
+
+    # when zero division occurs, use the limit value of the analytical expression
+    cos_azi = np.where(np.isclose(denom,    0.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
+
+    # when too many round-ups in floating point math take cos_azi beyond 1.0, use 1.0
+    cos_azi = np.where(np.isclose(cos_azi,  1.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
+    cos_azi = np.where(np.isclose(cos_azi, -1.0, rtol=0.0, atol=1e-8), -1.0, cos_azi)
+
+    # when NaN values occur in input, ignore and pass to output
+    with np.errstate(invalid='ignore'):
+        sign_ha = np.sign(hour_angle)
+
+    return (sign_ha * np.arccos(cos_azi) + np.pi)
 
 
 def solar_zenith_analytical(latitude, hour_angle, declination):

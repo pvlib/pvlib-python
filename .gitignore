@@ -61,6 +61,7 @@ coverage.xml
 .idea/
 *.sublime-project
 *.sublime-workspace
+.vscode
 
 # Rope
 .ropeproject

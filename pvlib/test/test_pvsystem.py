@@ -11,6 +11,7 @@ import pytest
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
+import pvlib.data.gold.sdm as sdm
 from pvlib import tmy
 from pvlib import pvsystem
 from pvlib import clearsky
@@ -359,6 +360,27 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
     assert_allclose(nNsVth, 0.473)
 
 
+def test_sdm_sum_current():
+
+    gold_dataset = sdm.sdm_load_gold_dataset_converted(
+        json_filepath=(os.path.join(os.path.dirname(
+            inspect.getfile(pvsystem)), "data", "gold", "sdm.json")))
+
+    for device in gold_dataset["devices"]:
+        for iv_curve in device["iv_curves"]:
+            current_sum_res = pvsystem.sdm_sum_current(
+                iv_curve["r_sh"],
+                iv_curve["r_s"],
+                iv_curve["nNsVth"],
+                iv_curve["i_gold"],
+                iv_curve["v_gold"],
+                iv_curve["i_0"],
+                iv_curve["i_l"])
+            print(current_sum_res)
+            # atol typically smaller that the interval tolerance for gold dataset
+            assert_allclose(current_sum_res, 0., rtol=0., atol=1.e-13)
+
+
 @pytest.fixture(params=[
     {  # Can handle all python scalar inputs
      'Rsh': 20.,
@@ -397,7 +419,7 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
       'I0': np.array([6.e-7, 6.e-7]),
       'IL': np.array([7., 7.]),
       'V_expected': np.array([0.5*(np.log(7. + 6.e-7) - np.log(6.e-7)),
-                             7.5049875193450521])
+                              7.5049875193450521])
     },
     {  # Can handle mixed inputs with a rank-2 array with infinite shunt
       #  resistance, Rsh=inf gives V=Voc=nNsVth*(np.log(IL + I0) - np.log(I0)

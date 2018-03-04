@@ -565,6 +565,7 @@ class LocalizedPVSystem(PVSystem, Location):
     See the :py:class:`PVSystem` class for an object model that
     describes an unlocalized PV system.
     """
+
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
         # get and combine attributes from the pvsystem and/or location
@@ -1814,6 +1815,76 @@ def _pwr_optfcn(df, loc):
     return I * df[loc]
 
 
+def sdm_sum_current(resistance_shunt, resistance_series, nNsVth, current,
+                    voltage, saturation_current, photocurrent):
+    '''
+    Computes sum of currents at the diode node of the single diode model.
+
+    Uses the single diode model (SDM) as described in, e.g., De Soto et al.
+     2006 [1].
+    The sum of currents equaling zero is the fundamental invariant of the SDM.
+    Ideal device parameters are specified by resistance_shunt=np.inf and
+     resistance_series=0.
+    In addition to np.ndarray, inputs to this function can include any 
+     broadcast-compatible combination of scalar, pandas.Series, and 
+     pandas.DataFrame, but it is the caller's responsibility to ensure that 
+     the arguments all have type float64 and are within the proper ranges.
+
+    Parameters
+    ----------
+    resistance_shunt : numeric
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+        0 < resistance_shunt <= numpy.inf
+
+    resistance_series : numeric
+        Series resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rs``.
+        0 <= resistance_series < numpy.inf
+
+    nNsVth : numeric
+        The product of three components. 1) The usual diode ideal factor
+        (n), 2) the number of cells in series (Ns), and 3) the cell
+        thermal voltage under the desired IV curve conditions (Vth). The
+        thermal voltage of the cell (in volts) may be calculated as
+        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
+        temp_cell is the temperature of the p-n junction in Kelvin, and
+        q is the charge of an electron (coulombs).
+        0 < nNsVth
+
+    current : numeric
+        The current in amperes under desired IV curve conditions.
+
+    voltage : numeric
+        The voltage in volts under desired IV curve conditions.
+
+    saturation_current : numeric
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
+
+    photocurrent : numeric
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
+
+    Returns
+    -------
+    current_sum : numeric
+
+    References
+    ----------
+    [1] W. De Soto et al., "Improvement and validation of a model for
+    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88, 2006.
+    '''
+
+    # Compute voltage at diode node first
+    voltage_diode = voltage + resistance_series*current
+    return photocurrent - saturation_current * \
+        np.expm1(voltage_diode/nNsVth) - voltage_diode/resistance_shunt - \
+        current
+
+
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
              saturation_current, photocurrent):
     '''
@@ -1990,7 +2061,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         0 < nNsVth
 
     voltage : numeric
-        The voltage in Volts under desired IV curve conditions.
+        The voltage in volts under desired IV curve conditions.
 
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve

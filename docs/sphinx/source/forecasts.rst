@@ -457,7 +457,8 @@ Here's the forecast plane of array irradiance...
 
     mc.total_irrad.plot();
     @savefig poa_irrad.png width=6in
-    plt.ylabel('Plane of array irradiance ($W/m**2$)');
+    plt.legend(loc='best')
+    plt.ylabel('Plane of array irradiance ($W/m^2$)');
 
 ...the cell and module temperature...
 

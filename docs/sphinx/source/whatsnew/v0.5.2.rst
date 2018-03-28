@@ -9,7 +9,7 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-*
+* Improve clearsky.lookup_linke_turbidity speed (IO) (:issue:`437`)
 
 Bug fixes
 ~~~~~~~~~
@@ -42,5 +42,4 @@ Contributors
 * Will Holmgren
 * KonstantinTr
 * Anton Driesse
-
-
+* Cedric Leroy

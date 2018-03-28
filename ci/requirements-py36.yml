@@ -6,6 +6,7 @@ dependencies:
     - python=3.6
     - numpy
     - scipy
+    - tables
     - pandas
     - pytz
     #- ephem

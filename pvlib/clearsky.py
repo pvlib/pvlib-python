@@ -194,18 +194,15 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # 1st column: 179.9583 W, 2nd column: 179.875 W
 
     try:
-        import scipy.io
+        import tables
     except ImportError:
-        raise ImportError('The Linke turbidity lookup table requires scipy. '
+        raise ImportError('The Linke turbidity lookup table requires tables. '
                           'You can still use clearsky.ineichen if you '
                           'supply your own turbidities.')
 
     if filepath is None:
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
-        filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
-
-    mat = scipy.io.loadmat(filepath)
-    linke_turbidity_table = mat['LinkeTurbidity']
+        filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
     latitude_index = (
         np.around(_linearly_scale(latitude, 90, -90, 0, 2160))
@@ -214,7 +211,14 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
         .astype(np.int64))
 
-    lts = linke_turbidity_table[latitude_index][longitude_index]
+    lt_h5_file = tables.open_file(filepath)
+    try:
+        lts = lt_h5_file.root.LinkeTurbidity[latitude_index, longitude_index, :]
+    except IndexError:
+        raise IndexError('Latitude should be between 90 and -90, '
+                         'longitude between -180 and 180.')
+    finally:
+        lt_h5_file.close()
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)

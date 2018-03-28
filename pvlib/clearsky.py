@@ -153,7 +153,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
                            interp_turbidity=True):
     """
-    Look up the Linke Turibidity from the ``LinkeTurbidities.mat``
+    Look up the Linke Turibidity from the ``LinkeTurbidities.h5``
     data file supplied with pvlib.
 
     Parameters
@@ -165,18 +165,18 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     longitude : float
 
     filepath : None or string, default None
-        The path to the ``.mat`` file.
+        The path to the ``.h5`` file.
 
     interp_turbidity : bool, default True
         If ``True``, interpolates the monthly Linke turbidity values
-        found in ``LinkeTurbidities.mat`` to daily values.
+        found in ``LinkeTurbidities.h5`` to daily values.
 
     Returns
     -------
     turbidity : Series
     """
 
-    # The .mat file 'LinkeTurbidities.mat' contains a single 2160 x 4320 x 12
+    # The .h5 file 'LinkeTurbidities.h5' contains a single 2160 x 4320 x 12
     # matrix of type uint8 called 'LinkeTurbidity'. The rows represent global
     # latitudes from 90 to -90 degrees; the columns represent global longitudes
     # from -180 to 180; and the depth (third dimension) represents months of

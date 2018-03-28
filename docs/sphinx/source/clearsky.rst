@@ -140,7 +140,7 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: pvlib_path = os.path.dirname(os.path.abspath(pvlib.clearsky.__file__))
 
-    In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
+    In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
     # data is in units of 20 x turbidity
     In [1]: lt_h5_file = tables.open_file(filepath)

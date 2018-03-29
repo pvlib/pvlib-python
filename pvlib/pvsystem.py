@@ -1141,7 +1141,7 @@ def retrieve_sam(name=None, path=None):
             os.path.dirname(os.path.abspath(__file__)), 'data')
         if name == 'cecmod':
             csvdata = os.path.join(
-                data_path, 'sam-library-cec-modules-2015-6-30.csv')
+                data_path, 'sam-library-cec-modules-2017-6-5.csv')
         elif name == 'sandiamod':
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
@@ -1151,7 +1151,7 @@ def retrieve_sam(name=None, path=None):
             # Allowing either, to provide for old code,
             # while aligning with current expectations
             csvdata = os.path.join(
-                data_path, 'sam-library-cec-inverters-2015-6-30.csv')
+                data_path, 'sam-library-cec-inverters-2018-3-18.csv')
         else:
             raise ValueError('invalid name {}'.format(name))
     elif path is not None:

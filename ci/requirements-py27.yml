@@ -6,7 +6,7 @@ dependencies:
     - python=2.7
     - numpy
     - scipy
-    - tables
+    - pytables
     - pandas
     - pytz
     - ephem

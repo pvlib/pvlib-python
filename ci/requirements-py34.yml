@@ -6,7 +6,7 @@ dependencies:
     - python=3.4
     - numpy
     - scipy
-    - tables
+    - pytables
     - pandas
     - pytz
     - ephem

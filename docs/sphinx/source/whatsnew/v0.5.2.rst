@@ -9,7 +9,8 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-* Improve clearsky.lookup_linke_turbidity speed (IO) (:issue:`437`)
+* Improve clearsky.lookup_linke_turbidity speed, changing .mat source
+  file to .h5 (:issue:`437`)
 
 Bug fixes
 ~~~~~~~~~

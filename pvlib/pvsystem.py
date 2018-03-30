@@ -1144,12 +1144,12 @@ def retrieve_sam(name=None, path=None):
             os.path.dirname(os.path.abspath(__file__)), 'data')
         if name == 'cecmod':
             csvdata = os.path.join(
-                data_path, 'sam-library-cec-modules-2015-6-30.csv')
+                data_path, 'sam-library-cec-modules-2017-6-5.csv')
         elif name == 'sandiamod':
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
         elif name == 'adrinverter':
-            csvdata = os.path.join(data_path, 'adr-library-2013-10-01.csv')
+            csvdata = os.path.join(data_path, 'adr-library-2018-3-18.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations

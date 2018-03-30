@@ -1149,12 +1149,12 @@ def retrieve_sam(name=None, path=None):
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
         elif name == 'adrinverter':
-            csvdata = os.path.join(data_path, 'adr-library-2018-3-18.csv')
+            csvdata = os.path.join(data_path, 'adr-library-2013-10-1.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
             csvdata = os.path.join(
-                data_path, 'sam-library-cec-inverters-2015-6-30.csv')
+                data_path, 'sam-library-cec-inverters-2018-3-18.csv')
         else:
             raise ValueError('invalid name {}'.format(name))
     elif path is not None:

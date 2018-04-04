@@ -136,23 +136,23 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: import os
 
-    In [1]: import scipy.io
+    In [1]: import tables
 
     In [1]: pvlib_path = os.path.dirname(os.path.abspath(pvlib.clearsky.__file__))
 
-    In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
-
-    In [1]: mat = scipy.io.loadmat(filepath)
+    In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
     # data is in units of 20 x turbidity
-    In [1]: linke_turbidity_table = mat['LinkeTurbidity']  # / 20.   # crashes on rtd
+    In [1]: lt_h5_file = tables.open_file(filepath)
 
     In [1]: def plot_turbidity_map(month, vmin=1, vmax=100):
        ...:     plt.figure();
-       ...:     plt.imshow(linke_turbidity_table[:, :, month-1], vmin=vmin, vmax=vmax);
+       ...:     plt.imshow(lt_h5_file.root.LinkeTurbidity[:, :, month-1], vmin=vmin, vmax=vmax);
        ...:     plt.title('Linke turbidity x 20, ' + calendar.month_name[month]);
        ...:     plt.colorbar(shrink=0.5);
        ...:     plt.tight_layout();
+
+    In [1]: lt_h5_file.close()
 
     @savefig turbidity-1.png width=10in
     In [1]: plot_turbidity_map(1)

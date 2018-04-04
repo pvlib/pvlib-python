@@ -20,6 +20,15 @@ requires_scipy = pytest.mark.skipif(not has_scipy, reason='requires scipy')
 
 
 try:
+    import tables
+    has_tables = True
+except ImportError:
+    has_tables = False
+
+requires_tables = pytest.mark.skipif(not has_tables, reason='requires tables')
+
+
+try:
     import ephem
     has_ephem = True
 except ImportError:

@@ -84,9 +84,6 @@ then set the location and time range data.
     import matplotlib.pyplot as plt
     import datetime
 
-    # seaborn makes the plots look nicer
-    import seaborn as sns; sns.set_color_codes()
-
     # import pvlib forecast models
     from pvlib.forecast import GFS, NAM, NDFD, HRRR, RAP
 

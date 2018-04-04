@@ -14,13 +14,92 @@ import pvlib.version
 # TODO Move globals and functions into pvsystem module
 
 
+def bootstrap_si_device_bishop(N_s=1, cell_area_cm2=4., ideality_factor=1.5):
+    """
+    Create a x-Si device based on cell parameters in Bishop's 1988 paper Fig. 6.
+
+    Parameters are normalized to the cell area.
+    """
+
+    # Copy an existing mono-Si device and None the entries we don't know or need
+    device = copy.deepcopy(pvsystem.retrieve_sam(
+        'cecmod').SunPower_SPR_E20_327)
+    device.name = 'Bishop_{}_{}_{}'.format(N_s, cell_area_cm2, ideality_factor)
+    device.BIPV = 'N'
+    device.Date = '6/20/1988'
+    device.T_NOCT = None
+    device.A_c = None
+    device.N_s = N_s
+    device.I_sc_ref = None
+    device.V_oc_ref = None
+    device.I_mp_ref = None
+    device.V_mp_ref = None
+    device.beta_oc = None
+    device.a_ref = N_s * ideality_factor * constants.boltzmann_J_per_K * \
+        constants.T_stc_K / constants.elementary_charge_C  # Volt
+    device.I_L_ref = cell_area_cm2 * 30.e-3  # Amp
+    device.I_o_ref = cell_area_cm2 * 5500.e-12  # Amp
+    device.R_s = N_s * cell_area_cm2 * 1.33  # Ohm
+    device.R_sh_ref = cell_area_cm2 * 750. / N_s  # Ohm
+    device.Adjust = None
+    device.gamma_r = None
+    device.Version = None
+    device.PTC = None
+
+    return device
+
+
+def bootstrap_si_device_pvmismatch(N_s=1, cell_area_cm2=153., ideality_factor=1.5):
+    """
+    Create a x-Si device based on default cell parameters in PVMismatch.
+    
+    Parameters are not normalized to the cell area.
+    First diode taken from two diode model used in PVMismatch, and default ideality factor
+      is average of first and second diode ideality factors.
+    https://github.com/SunPower/PVMismatch/blob/master/pvmismatch/pvmismatch_lib/pvcell.py
+    """
+
+    # This should match the default value for cell_area_cm2 argument
+    default_cell_area_cm2 = 153.
+
+    # Copy an existing mono-Si device and None the entries we don't know or need
+    device = copy.deepcopy(pvsystem.retrieve_sam(
+        'cecmod').SunPower_SPR_E20_327)
+    device.name = 'PVMismatch_{}_{}_{}'.format(
+        N_s, cell_area_cm2, ideality_factor)
+    device.BIPV = 'N'
+    device.Date = '2/20/2018'
+    device.T_NOCT = None
+    device.A_c = None
+    device.N_s = N_s
+    device.I_sc_ref = None
+    device.V_oc_ref = None
+    device.I_mp_ref = None
+    device.V_mp_ref = None
+    device.beta_oc = None
+    device.a_ref = N_s * ideality_factor * constants.boltzmann_J_per_K * \
+        constants.T_stc_K / constants.elementary_charge_C  # Volt
+    device.I_L_ref = cell_area_cm2 * 6.3056/default_cell_area_cm2  # Amp
+    device.I_o_ref = cell_area_cm2 * 2.286188161253440e-11/default_cell_area_cm2  # Amp
+    device.R_s = N_s * cell_area_cm2 * \
+        0.004267236774264931/default_cell_area_cm2  # Ohm
+    device.R_sh_ref = cell_area_cm2 * 10.01226369025448 / \
+        default_cell_area_cm2 / N_s  # Ohm
+    device.Adjust = None
+    device.gamma_r = None
+    device.Version = None
+    device.PTC = None
+
+    return device
+
+
 def sdm_make_gold_dataset(json_filepath=None):
-    '''
+    """
     TODO
     Returns the dataset in a python dictionary.
     Optionally writes result in lossless interoperable format to a json file.
     Follow SemVer and maintain backwards compatibility for dataset whenever possible
-    '''
+    """
 
     # Load module inside function to avoid a global dependency requirement
     # http://pyinterval.readthedocs.io/en/latest/guide.html
@@ -38,46 +117,16 @@ def sdm_make_gold_dataset(json_filepath=None):
     T_list = [15., 25., 50., 75.]  # degC
     NUM_PTS = 21
 
-    CECMOD = pvsystem.retrieve_sam('cecmod')
-
-    # Create a reference-like x-Si cell based on limited parameters in Bishop's 1988 paper Fig. 6
-    cell_area = 4.  # cm^2
-    ideality_factor = 1.5
-
-    # TODO Add mini-module and large cell devices
-
-    # Copy an existing mono-Si cell and None the entries we don't know or need
-    mono_Si_cell = copy.deepcopy(CECMOD.SunPower_SPR_E20_327)
-    mono_Si_cell.name = 'Bishop_ref_cell'
-    mono_Si_cell.BIPV = 'N'
-    mono_Si_cell.Date = '6/20/1988'
-    mono_Si_cell.T_NOCT = None
-    mono_Si_cell.A_c = None
-    mono_Si_cell.N_s = 1
-    mono_Si_cell.I_sc_ref = cell_area*30.e-3  # Amp
-    mono_Si_cell.V_oc_ref = None
-    mono_Si_cell.I_mp_ref = None
-    mono_Si_cell.V_mp_ref = None
-    mono_Si_cell.beta_oc = None
-    mono_Si_cell.a_ref = mono_Si_cell.N_s*ideality_factor * \
-        constants.boltzmann_J_per_K*constants.T_stc_K / \
-        constants.elementary_charge_C  # Volt
-    mono_Si_cell.I_L_ref = cell_area*30.e-3  # Amp
-    mono_Si_cell.I_o_ref = cell_area*5500.e-12  # Amp
-    mono_Si_cell.R_s = cell_area*1.33  # Ohm
-    mono_Si_cell.R_sh_ref = cell_area*750.  # Ohm
-    mono_Si_cell.Adjust = None
-    mono_Si_cell.gamma_r = None
-    mono_Si_cell.Version = None
-    mono_Si_cell.PTC = None
-
     # The "base" devices, of which there are ideal, normal, and degraded versions
-    devices = [mono_Si_cell, CECMOD.SunPower_SPR_E20_327,
-               CECMOD.First_Solar_FS_495]
+    devices = [bootstrap_si_device_bishop(),
+               bootstrap_si_device_bishop(N_s=8),
+               bootstrap_si_device_pvmismatch(),
+               pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327,
+               pvsystem.retrieve_sam('cecmod').First_Solar_FS_495]
 
     # Initialize the output
     gold_dataset = {"timestamp_utc_iso": datetime.datetime.utcnow().isoformat(),
-                    "dataset_version": '1.0.0', # dataset follows SemVer 
+                    "dataset_version": '1.0.0',  # dataset follows SemVer
                     "python_version": sys.version,
                     "numpy_version": numpy.__version__,
                     "scipy_version": scipy.__version__,
@@ -144,6 +193,8 @@ def sdm_make_gold_dataset(json_filepath=None):
                     # For max diode voltage, go slightly greater than Voc
                     v_d_max = 1.01*v_oc
                     # More I-V points towards Voc
+                    print((v_d_min, v_d_max, i_sc, v_oc,
+                           r_sh, r_s, nNsVth, 0., i_0, i_l))
                     v_d = v_d_min + \
                         (v_d_max - v_d_min) * \
                         numpy.log10(numpy.linspace(1., 10.**1.01, NUM_PTS))
@@ -176,8 +227,15 @@ def sdm_make_gold_dataset(json_filepath=None):
                     # Make sure the computed interval is within the specified tolerance
                     for v, i, current_sum_residual_interval in zip(v_gold, i_gold, current_sum_residual_interval_list):
                         if current_sum_residual_interval not in TOL_CURRENT_SUM_RESIDUAL_GOLD_INTERVAL:
-                            raise ValueError("Residual interval {} not in {}, for (V,I)=({},{})".format(
-                                current_sum_residual_interval, TOL_CURRENT_SUM_RESIDUAL_GOLD_INTERVAL, v, i))
+                            print([float.fromhex(v)
+                                   for v in device_dict["iv_curves"][-1]["v_gold"]])
+                            print([float.fromhex(i)
+                                   for i in device_dict["iv_curves"][-1]["i_gold"]])
+                            del device_dict["iv_curves"][-1]["v_gold"]
+                            del device_dict["iv_curves"][-1]["i_gold"]
+                            raise ValueError("Residual interval {} not in {}, for (V,I)=({},{}) at {}".format(
+                                current_sum_residual_interval, TOL_CURRENT_SUM_RESIDUAL_GOLD_INTERVAL, v, i,
+                                [float.fromhex(item) for item in device_dict["iv_curves"][-1]]))
 
         # Append this I-V curve to the list for this device
         gold_dataset["devices"].append(device_dict)
@@ -186,7 +244,7 @@ def sdm_make_gold_dataset(json_filepath=None):
     if json_filepath:
         with open(json_filepath, 'w') as fp:
             json.dump(gold_dataset, fp)
-        
+
         # TODO Read values back in and check for lossiness
 
     # Return the dictionary, with floating point values in hex format
@@ -194,9 +252,9 @@ def sdm_make_gold_dataset(json_filepath=None):
 
 
 def sdm_load_gold_dataset(json_filepath=None):
-    '''
+    """
     TODO
-    '''
+    """
 
     # If not specified as file, then generate gold dataset on the fly
     # Empty path strings also trigger generation
@@ -208,11 +266,11 @@ def sdm_load_gold_dataset(json_filepath=None):
 
 
 def convert_gold_dataset(gold_dataset):
-    '''
+    """
     TODO
     From a gold_dataset in the lossless, interoperable format, create copy in
     numpy format for current architecture that is friendly to the pvlib API.
-    '''
+    """
 
     # Return a new dict instead of clobbering existing (uses more memory)
     gold_dataset_converted = copy.deepcopy(gold_dataset)
@@ -226,7 +284,7 @@ def convert_gold_dataset(gold_dataset):
         for iv_curve in device["iv_curves"]:
             # Load G, T, and 5 single diode model parameters for each I-V curve
             # Floats are converted from lossless, interchangeable hex format
-            
+
             iv_curve["G"] = float.fromhex(iv_curve["G"])
             iv_curve["T"] = float.fromhex(iv_curve["T"])
 
@@ -244,17 +302,17 @@ def convert_gold_dataset(gold_dataset):
             iv_curve["i_0"] = float.fromhex(iv_curve["i_0"])
             iv_curve["i_l"] = float.fromhex(iv_curve["i_l"])
             iv_curve["v_gold"] = numpy.array([float.fromhex(v)
-                                  for v in iv_curve["v_gold"]])
+                                              for v in iv_curve["v_gold"]])
             iv_curve["i_gold"] = numpy.array([float.fromhex(i)
-                                  for i in iv_curve["i_gold"]])
+                                              for i in iv_curve["i_gold"]])
 
     return gold_dataset_converted
 
 
 def sdm_load_gold_dataset_converted(json_filepath=None):
-    '''
+    """
     TODO
-    '''
+    """
 
     # If not specified as file, then generate gold dataset on the fly
     # Empty path strings also trigger generation
@@ -262,17 +320,18 @@ def sdm_load_gold_dataset_converted(json_filepath=None):
 
 
 def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
-    '''
+    """
     TODO
     Function returns worst curve for each device for each function in test_func_dict
     Timing statistics for each gauged function in output
-    '''
+    """
 
     # Load gold dataset (converted)
     gold_dataset = sdm_load_gold_dataset_converted(json_filepath=json_filepath)
 
     # Follow SemVer and maintain backwards dataset compatibility whenever possible
-    print("{} at version {}".format(json_filepath, gold_dataset["dataset_version"]))
+    print("{} at version {}".format(
+        json_filepath, gold_dataset["dataset_version"]))
 
     # Initialize output
     worst_results = []
@@ -293,9 +352,11 @@ def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
              "Technology": device["Technology"],
              "N_s": device["N_s"]}
         if "i_from_v" in test_func_dict:
-            device_dict["i_from_v"] = {"current_sum": None, "terminal": None, "performance": {"time_s": {"data": [], "min": None, "med": None, "max": None}}}
+            device_dict["i_from_v"] = {"current_sum": None, "terminal": None, "performance": {
+                "time_s": {"data": [], "min": None, "med": None, "max": None}}}
         if "v_from_i" in test_func_dict:
-            device_dict["v_from_i"] = {"current_sum": None, "terminal": None, "performance": {"time_s": {"data": [], "min": None, "med": None, "max": None}}}
+            device_dict["v_from_i"] = {"current_sum": None, "terminal": None, "performance": {
+                "time_s": {"data": [], "min": None, "med": None, "max": None}}}
 
         # Gauge each I-V curve for current sum and terminal residuals
         for iv_curve in device["iv_curves"]:
@@ -310,7 +371,8 @@ def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
                     iv_curve["v_gold"],
                     iv_curve["i_0"],
                     iv_curve["i_l"])
-                device_dict["i_from_v"]["performance"]["time_s"]["data"].append(timer() - start)
+                device_dict["i_from_v"]["performance"]["time_s"]["data"].append(
+                    timer() - start)
 
                 # Gauge computed values against gold values for sum of currents residual at diode node
                 i_test_current_sum_res = pvsystem.sdm_sum_current(
@@ -339,7 +401,7 @@ def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
                             "i_test": i_test.tolist(),
                             "residual": i_test_current_sum_res.tolist(),
                             "max_abs_residual": i_test_current_sum_max_abs_res.tolist()
-                        }
+                    }
 
                 # Gauge computed values against gold values for difference residual at terminal
                 i_test_terminal_res = i_test - iv_curve["i_gold"]
@@ -361,7 +423,7 @@ def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
                             "i_test": i_test.tolist(),
                             "residual": i_test_terminal_res.tolist(),
                             "max_abs_residual": i_test_terminal_max_abs_res.tolist()
-                        }
+                    }
 
             # Check if caller wants to test a v_from_i function
             if "v_from_i" in test_func_dict:
@@ -374,7 +436,8 @@ def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
                     iv_curve["i_gold"],
                     iv_curve["i_0"],
                     iv_curve["i_l"])
-                device_dict["v_from_i"]["performance"]["time_s"]["data"].append(timer() - start)
+                device_dict["v_from_i"]["performance"]["time_s"]["data"].append(
+                    timer() - start)
 
                 # Gauge computed values against gold values for sum of currents residual at diode node
                 v_test_current_sum_res = pvsystem.sdm_sum_current(
@@ -403,7 +466,7 @@ def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
                             "v_test": v_test.tolist(),
                             "residual": v_test_current_sum_res.tolist(),
                             "max_abs_residual": v_test_current_sum_max_abs_res.tolist()
-                        }
+                    }
 
                 # Gauge computed values against gold values for difference residual at terminal
                 v_test_terminal_res = v_test - iv_curve["v_gold"]
@@ -425,32 +488,38 @@ def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
                             "v_test": v_test.tolist(),
                             "residual": v_test_terminal_res.tolist(),
                             "max_abs_residual": v_test_terminal_max_abs_res.tolist()
-                        }
-        
+                    }
+
         # Compute summary performance statistics
         if "i_from_v" in test_func_dict:
             device_dict["i_from_v"]["performance"]["time_s"]["min"] = \
                 min(device_dict["i_from_v"]["performance"]["time_s"]["data"])
             device_dict["i_from_v"]["performance"]["time_s"]["med"] = \
-                numpy.median(device_dict["i_from_v"]["performance"]["time_s"]["data"])
+                numpy.median(device_dict["i_from_v"]
+                             ["performance"]["time_s"]["data"])
             device_dict["i_from_v"]["performance"]["time_s"]["max"] = \
                 max(device_dict["i_from_v"]["performance"]["time_s"]["data"])
             device_dict["i_from_v"]["performance"]["time_s"]["avg"] = \
-                numpy.average(device_dict["i_from_v"]["performance"]["time_s"]["data"])
+                numpy.average(device_dict["i_from_v"]
+                              ["performance"]["time_s"]["data"])
             device_dict["i_from_v"]["performance"]["time_s"]["std"] = \
-                numpy.std(device_dict["i_from_v"]["performance"]["time_s"]["data"], ddof=1)
+                numpy.std(device_dict["i_from_v"]
+                          ["performance"]["time_s"]["data"], ddof=1)
 
         if "v_from_i" in test_func_dict:
             device_dict["v_from_i"]["performance"]["time_s"]["min"] = \
                 min(device_dict["v_from_i"]["performance"]["time_s"]["data"])
             device_dict["v_from_i"]["performance"]["time_s"]["med"] = \
-                numpy.median(device_dict["v_from_i"]["performance"]["time_s"]["data"])
+                numpy.median(device_dict["v_from_i"]
+                             ["performance"]["time_s"]["data"])
             device_dict["v_from_i"]["performance"]["time_s"]["max"] = \
                 max(device_dict["v_from_i"]["performance"]["time_s"]["data"])
             device_dict["v_from_i"]["performance"]["time_s"]["avg"] = \
-                numpy.average(device_dict["v_from_i"]["performance"]["time_s"]["data"])
+                numpy.average(device_dict["v_from_i"]
+                              ["performance"]["time_s"]["data"])
             device_dict["v_from_i"]["performance"]["time_s"]["std"] = \
-                numpy.std(device_dict["v_from_i"]["performance"]["time_s"]["data"], ddof=1)
+                numpy.std(device_dict["v_from_i"]
+                          ["performance"]["time_s"]["data"], ddof=1)
 
         # Append the worst results found for this device to the output dict
         # For convienent post processing and analysis, floats are NOT in hex format
@@ -461,11 +530,11 @@ def sdm_gauge_gold_dataset(test_func_dict, json_filepath=None):
 
 
 def sdm_pretty_print_gold_dataset(json_filepath=None, csv_filepath=None):
-    '''
+    """
     TODO
     Returns the dataset as a human-readale, comma-separated-value (csv) string.
     Optionally writes result in lossy csv file.
-    '''
+    """
 
     # Load gold dataset (converted)
     gold_dataset = sdm_load_gold_dataset_converted(json_filepath=json_filepath)
@@ -473,11 +542,17 @@ def sdm_pretty_print_gold_dataset(json_filepath=None, csv_filepath=None):
     num_pts = len(gold_dataset["devices"][0]["iv_curves"][0]["v_gold"])
 
     # Initialize output
-    gold_dataset_csv = gold_dataset["timestamp_utc_iso"] + ", " + gold_dataset["dataset_version"] + "\n\n"
+    gold_dataset_csv = gold_dataset["timestamp_utc_iso"] + \
+        ", " + gold_dataset["dataset_version"] + "\n\n"
     gold_dataset_csv = gold_dataset_csv + "G (W/m^2), T (degC)" + "\n"
-    gold_dataset_csv = gold_dataset_csv + "r_sh (Ohm), r_s (Ohm), nNsVth (V), i_0 (A), i_l (A)" + "\n"
-    gold_dataset_csv = gold_dataset_csv + ", ".join(["v_gold_" + str(idx) + " (V)" for idx in range(num_pts)]) + "\n"
-    gold_dataset_csv = gold_dataset_csv + ", ".join(["i_gold_" + str(idx) + " (A)" for idx in range(num_pts)]) + "\n"
+    gold_dataset_csv = gold_dataset_csv + \
+        "r_sh (Ohm), r_s (Ohm), nNsVth (V), i_0 (A), i_l (A)" + "\n"
+    gold_dataset_csv = gold_dataset_csv + \
+        ", ".join(["v_gold_" + str(idx) +
+                   " (V)" for idx in range(num_pts)]) + "\n"
+    gold_dataset_csv = gold_dataset_csv + \
+        ", ".join(["i_gold_" + str(idx) +
+                   " (A)" for idx in range(num_pts)]) + "\n"
     gold_dataset_csv = gold_dataset_csv + "\n\n"
 
     for device in gold_dataset["devices"]:
@@ -485,18 +560,18 @@ def sdm_pretty_print_gold_dataset(json_filepath=None, csv_filepath=None):
             # Load G, T, and 5 single diode model parameters for each I-V curve
             # Floats are converted from lossless, interchangeable hex format
             gold_dataset_csv = gold_dataset_csv + ", ".join(map(str,
-                [
-                    iv_curve["G"],
-                    iv_curve["T"]
-                ])) + "\n"
+                                                                [
+                                                                    iv_curve["G"],
+                                                                    iv_curve["T"]
+                                                                ])) + "\n"
             gold_dataset_csv = gold_dataset_csv + ", ".join(map(str,
-                [
-                    iv_curve["r_sh"],
-                    iv_curve["r_s"],
-                    iv_curve["nNsVth"],
-                    iv_curve["i_0"],
-                    iv_curve["i_l"]
-                ])) + "\n"
+                                                                [
+                                                                    iv_curve["r_sh"],
+                                                                    iv_curve["r_s"],
+                                                                    iv_curve["nNsVth"],
+                                                                    iv_curve["i_0"],
+                                                                    iv_curve["i_l"]
+                                                                ])) + "\n"
             gold_dataset_csv = gold_dataset_csv + ", ".join(
                 map(str, iv_curve["v_gold"].tolist())) + "\n"
             gold_dataset_csv = gold_dataset_csv + ", ".join(
@@ -519,4 +594,5 @@ if __name__ == '__main__':
     pprint.pprint(sdm_gauge_gold_dataset(
         {"i_from_v": pvsystem.i_from_v, "v_from_i": pvsystem.v_from_i}, json_filepath="sdm.json"))
 
-    sdm_pretty_print_gold_dataset(json_filepath="sdm.json", csv_filepath="sdm.csv")
+    sdm_pretty_print_gold_dataset(
+        json_filepath="sdm.json", csv_filepath="sdm.csv")

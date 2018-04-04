@@ -294,7 +294,7 @@ The pvlib-python community thanks Sandia National Lab
 for developing PVLIB Matlab and for supporting
 Rob Andrews of Calama Consulting to port the library to Python.
 Will Holmgren thanks the DOE EERE Postdoctoral Fellowship program
-for support.
+for support from 2014-2016.
 The pvlib-python maintainers thank all of pvlib's contributors of issues
 and especially pull requests.
 The pvlib-python community thanks all of the

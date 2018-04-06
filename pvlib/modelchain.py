@@ -7,7 +7,6 @@ the time to read the source code for the module.
 """
 
 from functools import partial
-import logging
 import warnings
 import pandas as pd
 
@@ -683,7 +682,6 @@ class ModelChain(object):
                    "https://github.com/pvlib/pvlib-python \n")
 
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
-            logging.debug('Estimate dni from ghi and dhi')
             clearsky = self.location.get_clearsky(
                 times, solar_position=self.solar_position)
             self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
@@ -693,13 +691,11 @@ class ModelChain(object):
                 clearsky_tolerance=1.1)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
-            logging.debug('Estimate ghi from dni and dhi')
             self.weather.loc[:, 'ghi'] = (
                 self.weather.dni * tools.cosd(self.solar_position.zenith) +
                 self.weather.dhi)
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
-            logging.debug('Estimate dhi from dni and ghi')
             self.weather.loc[:, 'dhi'] = (
                 self.weather.ghi - self.weather.dni *
                 tools.cosd(self.solar_position.zenith))

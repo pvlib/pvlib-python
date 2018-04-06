@@ -11,10 +11,6 @@ def test_boltzmann():
     assert constants.boltzmann_J_per_K == 1.38064852e-23
 
 
-def test_degC_to_K_offset():
-    assert constants.degC_to_K_offset == 273.15
-
-
 def test_T_stc_C():
     assert constants.T_stc_C == 25.
 

@@ -39,10 +39,6 @@ configuration at a handful of sites listed below.
     import pandas as pd
     import matplotlib.pyplot as plt
 
-    # seaborn makes the plots look nicer
-    import seaborn as sns
-    sns.set_color_codes()
-
     naive_times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
 
     # very approximate
@@ -298,7 +294,7 @@ The pvlib-python community thanks Sandia National Lab
 for developing PVLIB Matlab and for supporting
 Rob Andrews of Calama Consulting to port the library to Python.
 Will Holmgren thanks the DOE EERE Postdoctoral Fellowship program
-for support.
+for support from 2014-2016.
 The pvlib-python maintainers thank all of pvlib's contributors of issues
 and especially pull requests.
 The pvlib-python community thanks all of the

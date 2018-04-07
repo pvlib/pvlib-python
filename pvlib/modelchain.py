@@ -133,11 +133,10 @@ def basic_chain(times, latitude, longitude,
                                                      **kwargs)
 
     # possible error with using apparent zenith with some models
-    airmass = atmosphere.relativeairmass(solar_position['apparent_zenith'],
-                                         model=airmass_model)
-    airmass = atmosphere.absoluteairmass(airmass, pressure)
-    dni_extra = pvlib.irradiance.extraradiation(solar_position.index)
-    dni_extra = pd.Series(dni_extra, index=solar_position.index)
+    airmass = atmosphere.get_relative_airmass(
+        solar_position['apparent_zenith'], model=airmass_model)
+    airmass = atmosphere.absolute_airmass(airmass, pressure)
+    dni_extra = pvlib.irradiance.get_extra_radiation(solar_position.index)
 
     aoi = pvlib.irradiance.aoi(surface_tilt, surface_azimuth,
                                solar_position['apparent_zenith'],
@@ -154,7 +153,7 @@ def basic_chain(times, latitude, longitude,
             dni_extra=dni_extra
             )
 
-    total_irrad = pvlib.irradiance.total_irrad(
+    total_irrad = pvlib.irradiance.get_total_irradiance(
         surface_tilt,
         surface_azimuth,
         solar_position['apparent_zenith'],

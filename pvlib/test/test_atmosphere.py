@@ -30,37 +30,37 @@ def test_alt2press():
     ['simple', 'kasten1966', 'youngirvine1967', 'kastenyoung1989',
      'gueymard1993', 'young1994', 'pickering2002'])
 def test_airmass(model):
-    out = atmosphere.relativeairmass(ephem_data['zenith'], model)
+    out = atmosphere.get_relative_airmass(ephem_data['zenith'], model)
     assert isinstance(out, pd.Series)
-    out = atmosphere.relativeairmass(ephem_data['zenith'].values, model)
+    out = atmosphere.get_relative_airmass(ephem_data['zenith'].values, model)
     assert isinstance(out, np.ndarray)
 
 
 def test_airmass_scalar():
-    assert not np.isnan(atmosphere.relativeairmass(10))
+    assert not np.isnan(atmosphere.get_relative_airmass(10))
 
 
 def test_airmass_scalar_nan():
-    assert np.isnan(atmosphere.relativeairmass(100))
+    assert np.isnan(atmosphere.get_relative_airmass(100))
 
 
 def test_airmass_invalid():
     with pytest.raises(ValueError):
-        atmosphere.relativeairmass(ephem_data['zenith'], 'invalid')
+        atmosphere.get_relative_airmass(ephem_data['zenith'], 'invalid')
 
 
 def test_absoluteairmass():
-    relative_am = atmosphere.relativeairmass(ephem_data['zenith'], 'simple')
-    atmosphere.absoluteairmass(relative_am)
-    atmosphere.absoluteairmass(relative_am, pressure=100000)
+    relative_am = atmosphere.get_relative_airmass(ephem_data['zenith'], 'simple')
+    atmosphere.absolute_airmass(relative_am)
+    atmosphere.absolute_airmass(relative_am, pressure=100000)
 
 
 def test_absoluteairmass_numeric():
-    atmosphere.absoluteairmass(2)
+    atmosphere.absolute_airmass(2)
 
 
 def test_absoluteairmass_nan():
-    np.testing.assert_equal(np.nan, atmosphere.absoluteairmass(np.nan))
+    np.testing.assert_equal(np.nan, atmosphere.absolute_airmass(np.nan))
 
 
 def test_gueymard94_pw():
@@ -93,11 +93,11 @@ def test_gueymard94_pw():
     ('cigs', np.array(
         [[ 0.9745919 ,  1.02821696,  1.05067895],
          [ 0.97529378,  1.02967497,  1.05289307],
-         [ 0.97269159,  1.02730558,  1.05075651]])),   
+         [ 0.97269159,  1.02730558,  1.05075651]])),
     ('asi', np.array(
         [[ 1.0555275 ,  0.87707583,  0.72243772],
          [ 1.11225204,  0.93665901,  0.78487953],
-         [ 1.14555295,  0.97084011,  0.81994083]]))     
+         [ 1.14555295,  0.97084011,  0.81994083]]))
 ])
 def test_first_solar_spectral_correction(module_type, expect):
     ams = np.array([1, 3, 5])

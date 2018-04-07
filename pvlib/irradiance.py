@@ -1252,11 +1252,11 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
     """
 
     # this is the I0 calculation from the reference
-    I0 = extraradiation(datetime_or_doy, 1370, 'spencer')
+    I0 = get_extra_radiation(datetime_or_doy, 1370, 'spencer')
     I0h = I0 * np.cos(np.radians(zenith))
 
-    am = atmosphere.relativeairmass(zenith, model='kasten1966')
-    am = atmosphere.absoluteairmass(am, pressure)
+    am = atmosphere.get_relative_airmass(zenith, model='kasten1966')
+    am = atmosphere.absolute_airmass(am, pressure)
 
     kt = ghi / I0h
     kt = np.maximum(kt, 0)
@@ -1580,7 +1580,7 @@ def erbs(ghi, zenith, doy):
     disc
     """
 
-    dni_extra = extraradiation(doy)
+    dni_extra = get_extra_radiation(doy)
 
     # This Z needs to be the true Zenith angle, not apparent,
     # to get extraterrestrial horizontal radiation)

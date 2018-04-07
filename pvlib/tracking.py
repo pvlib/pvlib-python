@@ -138,9 +138,9 @@ class SingleAxisTracker(PVSystem):
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
-        Uses the :func:`irradiance.total_irrad` function to calculate
-        the plane of array irradiance components on a tilted surface
-        defined by the input data and ``self.albedo``.
+        Uses the :func:`irradiance.get_total_irradiance` function to
+        calculate the plane of array irradiance components on a tilted
+        surface defined by the input data and ``self.albedo``.
 
         For a given set of solar zenith and azimuth angles, the
         surface tilt and azimuth parameters are typically determined
@@ -180,20 +180,21 @@ class SingleAxisTracker(PVSystem):
 
         # not needed for all models, but this is easier
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(solar_zenith.index)
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
 
         if airmass is None:
-            airmass = atmosphere.relativeairmass(solar_zenith)
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.total_irrad(surface_tilt,
-                                      surface_azimuth,
-                                      solar_zenith,
-                                      solar_azimuth,
-                                      dni, ghi, dhi,
-                                      dni_extra=dni_extra, airmass=airmass,
-                                      model=model,
-                                      albedo=self.albedo,
-                                      **kwargs)
+        return irradiance.get_total_irradiance(surface_tilt,
+                                               surface_azimuth,
+                                               solar_zenith,
+                                               solar_azimuth,
+                                               dni, ghi, dhi,
+                                               dni_extra=dni_extra,
+                                               airmass=airmass,
+                                               model=model,
+                                               albedo=self.albedo,
+                                               **kwargs)
 
 
 class LocalizedSingleAxisTracker(SingleAxisTracker, Location):

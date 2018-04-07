@@ -839,7 +839,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     ze_rad = np.deg2rad(zenith)  # zenith in radians
     airmass = airmass_relative
     # Bird clear sky model
-    am_press = atmosphere.absoluteairmass(airmass, pressure)
+    am_press = atmosphere.absolute_airmass(airmass, pressure)
     t_rayleigh = (
         np.exp(-0.0903 * am_press ** 0.84 * (
             1.0 + am_press - am_press ** 1.01

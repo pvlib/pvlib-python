@@ -182,10 +182,10 @@ class PVSystem(object):
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
-        Uses the :py:func:`irradiance.total_irrad` function to calculate
-        the plane of array irradiance components on a tilted surface
-        defined by ``self.surface_tilt``, ``self.surface_azimuth``, and
-        ``self.albedo``.
+        Uses the :py:func:`irradiance.get_total_irradiance` function to
+        calculate the plane of array irradiance components on a tilted
+        surface defined by ``self.surface_tilt``,
+        ``self.surface_azimuth``, and ``self.albedo``.
 
         Parameters
         ----------
@@ -217,20 +217,20 @@ class PVSystem(object):
 
         # not needed for all models, but this is easier
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(solar_zenith.index)
-            dni_extra = pd.Series(dni_extra, index=solar_zenith.index)
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
 
         if airmass is None:
-            airmass = atmosphere.relativeairmass(solar_zenith)
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.total_irrad(self.surface_tilt,
-                                      self.surface_azimuth,
-                                      solar_zenith, solar_azimuth,
-                                      dni, ghi, dhi,
-                                      dni_extra=dni_extra, airmass=airmass,
-                                      model=model,
-                                      albedo=self.albedo,
-                                      **kwargs)
+        return irradiance.get_total_irradiance(self.surface_tilt,
+                                               self.surface_azimuth,
+                                               solar_zenith, solar_azimuth,
+                                               dni, ghi, dhi,
+                                               dni_extra=dni_extra,
+                                               airmass=airmass,
+                                               model=model,
+                                               albedo=self.albedo,
+                                               **kwargs)
 
     def ashraeiam(self, aoi):
         """

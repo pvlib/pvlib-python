@@ -25,8 +25,8 @@ def test_ineichen_series():
     times_localized = times.tz_localize(tus.tz)
     ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
                                                  tus.longitude)
-    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
-    am = atmosphere.absoluteairmass(am, atmosphere.alt2pres(tus.altitude))
+    am = atmosphere.get_relative_airmass(ephem_data['apparent_zenith'])
+    am = atmosphere.absolute_airmass(am, atmosphere.alt2pres(tus.altitude))
     expected = pd.DataFrame(np.
         array([[    0.        ,     0.        ,     0.        ],
                [    0.        ,     0.        ,     0.        ],
@@ -609,8 +609,8 @@ def test_bird():
         np.deg2rad(latitude), np.deg2rad(hour_angle), declination
     )
     zenith = np.rad2deg(zenith)
-    airmass = atmosphere.relativeairmass(zenith, model='kasten1966')
-    etr = irradiance.extraradiation(times)
+    airmass = atmosphere.get_relative_airmass(zenith, model='kasten1966')
+    etr = irradiance.get_extra_radiation(times)
     # test Bird with time series data
     field_names = ('dni', 'direct_horizontal', 'ghi', 'dhi')
     irrads = clearsky.bird(

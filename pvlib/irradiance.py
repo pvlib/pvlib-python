@@ -6,8 +6,6 @@ irradiance, and total irradiance under various conditions.
 
 from __future__ import division
 
-import logging
-
 import datetime
 from collections import OrderedDict
 from functools import partial
@@ -19,7 +17,6 @@ from pvlib import tools
 from pvlib import solarposition
 from pvlib import atmosphere
 
-pvl_logger = logging.getLogger('pvlib')
 
 SURFACE_ALBEDOS = {'urban': 0.18,
                    'grass': 0.20,
@@ -345,8 +342,6 @@ def total_irrad(surface_tilt, surface_azimuth,
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
     """
 
-    pvl_logger.debug('planeofarray.total_irrad()')
-
     solar_zenith = apparent_zenith
     solar_azimuth = azimuth
 
@@ -498,12 +493,8 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     http://en.wikipedia.org/wiki/Albedo
     '''
 
-    pvl_logger.debug('diffuse_ground.get_diffuse_ground()')
-
     if surface_type is not None:
         albedo = SURFACE_ALBEDOS[surface_type]
-        pvl_logger.info('surface_type=%s mapped to albedo=%s',
-                        surface_type, albedo)
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surface_tilt))) * 0.5
 
@@ -554,8 +545,6 @@ def isotropic(surface_tilt, dhi):
     [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar
     heat collector. Trans. ASME 64, 91.
     '''
-
-    pvl_logger.debug('diffuse_sky.isotropic()')
 
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
@@ -627,8 +616,6 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
     tilted surfaces. Solar Energy 23 (2), 111-114.
     '''
-
-    pvl_logger.debug('diffuse_sky.klucher()')
 
     # zenith angle with respect to panel normal.
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
@@ -718,8 +705,6 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
     Ministry of Supply and Services, Canada.
     '''
-
-    pvl_logger.debug('diffuse_sky.haydavies()')
 
     # if necessary, calculate ratio of titled and horizontal beam irradiance
     if projection_ratio is None:
@@ -819,8 +804,6 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
     '''
 
-    pvl_logger.debug('diffuse_sky.reindl()')
-
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                             solar_zenith, solar_azimuth)
 
@@ -880,8 +863,6 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
     poa_sky_diffuse : numeric
         The diffuse component of the solar radiation.
     '''
-
-    pvl_logger.debug('diffuse_sky.king()')
 
     sky_diffuse = (dhi * ((1 + tools.cosd(surface_tilt))) / 2 + ghi *
                    ((0.012 * solar_zenith - 0.04)) *

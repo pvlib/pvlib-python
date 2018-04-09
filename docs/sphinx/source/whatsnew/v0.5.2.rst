@@ -6,6 +6,9 @@ v0.5.2 (__, 2017)
 API Changes
 ~~~~~~~~~~~
 * removed unused 'pressure' arg from irradiance.liujordan function (:issue:`386`)
+* replaced logging.warning calls with warnings.warn calls, and removed
+  logging.debug calls. We encourage users to explore tools such as pdb and
+  trackback in place of the logging.debug calls. Fixes (:issue:`447`).
 
 Enhancements
 ~~~~~~~~~~~~
@@ -45,5 +48,4 @@ Contributors
 * Will Holmgren
 * KonstantinTr
 * Anton Driesse
-
-
+* Cedric Leroy

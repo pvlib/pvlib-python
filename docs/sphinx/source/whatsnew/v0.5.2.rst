@@ -1,45 +1,23 @@
 .. _whatsnew_0520:
 
-v0.5.2 (__, 2017)
--------------------------
+v0.5.2 (May 13, 2018)
+---------------------
 
 API Changes
 ~~~~~~~~~~~
-* pvlib python is changing a handful of function names. In general, functions
-  that can calculate a quantity using multiple algorithms now start
-  with the prefix ``get_``. For example, ``relativeairmass`` can calculate
-  airmass using one of many ``model`` arguments. Its name has been changed
-  to ``get_relative_airmass``. The old function names remain in this
-  release, but will emit a ``PVLibDeprecationWarning`` when called. The
-  old functions will be removed in the 0.6 release. Functions composed
-  of multiple words jammed together have been renamed with underscores
-  separating the words (see above).
-  Each change is detailed below. (:issue:`427`)
-* Deprecated relativeairmass. relativeairmass will be removed in 0.6.
-  Use the new get_relative_airmass instead. (:issue:`427`)
-* Deprecated absoluteairmass. absoluteairmass will be removed in 0.6.
-  Use the new absolute_airmass instead. (:issue:`427`)
-* Deprecated irradiance.globalinplane. globalinplane will be removed in 0.6.
-  Use the new irradiance.poa_components instead. (:issue:`427`)
-* Added irradiance.poa_components. Function is the same as the now-deprecated
-  irradiance.globalinplane, but adds 'poa_sky_diffuse' and
-  'poa_ground_diffuse' to the output. (:issue:`427`)
-* Deprecated irradiance.extraradiation. Use irradiance.get_extra_radiation
-  instead. irradiance.extraradiation will be removed in 0.6. (:issue:`427`)
-* Deprecated irradiance.grounddiffuse. Use irradiance.get_ground_diffuse
-  instead. irradiance.grounddiffuse will be removed in 0.6. (:issue:`427`)
-* Added irradiance.get_poa_sky_diffuse. (:issue:`427`)
-* Deprecated irradiance.total_irrad. Use irradiance.get_total_poa_irradiance
-  instead. irradiance.total_irrad will be removed in 0.6. (:issue:`427`)
-* Removed 'klutcher' from get_sky_diffuse/total_irrad. This misspelling was
-  deprecated long ago but never removed.
 * removed unused 'pressure' arg from irradiance.liujordan function (:issue:`386`)
-
+* replaced logging.warning calls with warnings.warn calls, and removed
+  logging.debug calls. We encourage users to explore tools such as pdb and
+  trackback in place of the logging.debug calls. Fixes (:issue:`447`).
 
 Enhancements
 ~~~~~~~~~~~~
-* Improve clearsky.lookup_linke_turbidity speed, changing .mat source
-  file to .h5 (:issue:`437`)
+* Improve clearsky.lookup_linke_turbidity speed, changing .mat source file
+  to .h5 (:issue:`437`)
+* Updated libraries for CEC module parameters to SAM release 2017.9.5
+  (library dated 2017.6.30) and CEC inverter parameters to file posted to
+  www.github.com/NREL/SAM on 2018.3.18, with one entry removed due to a
+  missing parameter value. (:issue:'440')
 
 Bug fixes
 ~~~~~~~~~

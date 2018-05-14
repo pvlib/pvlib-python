@@ -16,7 +16,7 @@ from pvlib import tools, atmosphere, solarposition, irradiance
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
-             altitude=0, dni_extra=1364.):
+             altitude=0, dni_extra=1364., perez_enhancement=False):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
 
@@ -46,6 +46,12 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     dni_extra : numeric, default 1364
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
+
+    perez_enhancement : bool, default False
+        Controls if the Perez enhancement factor should be applied.
+        Setting to True may produce spurious results for times when
+        the Sun is near the horizon and the airmass is high.
+        See https://github.com/pvlib/pvlib-python/issues/435
 
     Returns
     -------
@@ -119,8 +125,12 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     cg1 = 5.09e-05 * altitude + 0.868
     cg2 = 3.92e-05 * altitude + 0.0387
 
-    ghi = (np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1))) *
-           np.exp(0.01*airmass_absolute**1.8))
+    ghi = np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1)))
+
+    # https://github.com/pvlib/pvlib-python/issues/435
+    if perez_enhancement:
+        ghi *= np.exp(0.01*airmass_absolute**1.8)
+
     # use fmax to map airmass nans to 0s. multiply and divide by tl to
     # reinsert tl nans
     ghi = cg1 * dni_extra * cos_zenith * tl / tl * np.fmax(ghi, 0)

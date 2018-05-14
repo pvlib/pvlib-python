@@ -14,7 +14,7 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-* Unset executable bit in irradiance.py (:issue:`460`)
+* Unset executable bit of irradiance.py (:issue:`460`)
 
 
 Documentation

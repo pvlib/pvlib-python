@@ -1,0 +1,30 @@
+.. _whatsnew_0600:
+
+v0.6.0 (___, 2018)
+---------------------
+
+API Changes
+~~~~~~~~~~~
+
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+* Unset executable bits of irradiance.py and test_irradiance.py (:issue:`460`)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Will Holmgren

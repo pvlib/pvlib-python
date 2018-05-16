@@ -489,9 +489,11 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     The calculation is the last term of equations 3, 4, 7, 8, 10, 11, and 12.
 
     [2] albedos from:
-    http://pvpmc.org/modeling-steps/incident-irradiance/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/albedo/
+    http://files.pvsyst.com/help/albedo.htm
     and
     http://en.wikipedia.org/wiki/Albedo
+    and
+    https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
     '''
 
     if surface_type is not None:

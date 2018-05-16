@@ -471,8 +471,8 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
     surface_type: None or string, default None
         If not None, overrides albedo. String can be one of ``'urban',
-        'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt',
-        'concrete', 'aluminum', 'copper', 'fresh steel', 'dirty steel'``.
+        'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
+         'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'``.
 
     Returns
     -------

@@ -17,7 +17,7 @@ from pvlib import tools
 from pvlib import solarposition
 from pvlib import atmosphere
 
-
+# see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
                    'grass': 0.20,
                    'fresh grass': 0.26,

@@ -10,7 +10,7 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add sea surface albedo in irradiance.py (:issue:`458`)
 
 Bug fixes
 ~~~~~~~~~
@@ -28,3 +28,4 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren
+* Yu Cao

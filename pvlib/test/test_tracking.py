@@ -25,6 +25,7 @@ def test_solar_noon():
     expect = pd.DataFrame({'tracker_theta': 0, 'aoi': 10,
                            'surface_azimuth': 90, 'surface_tilt': 0},
                            index=[0], dtype=np.float64)
+    expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
 
@@ -41,6 +42,7 @@ def test_azimuth_north_south():
     expect = pd.DataFrame({'tracker_theta': -60, 'aoi': 0,
                            'surface_azimuth': 90, 'surface_tilt': 60},
                            index=[0], dtype=np.float64)
+    expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
 

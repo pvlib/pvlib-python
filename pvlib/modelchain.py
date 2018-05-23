@@ -532,7 +532,7 @@ class ModelChain(object):
         elif isinstance(model, str):
             model = model.lower()
             if model == 'first_solar':
-                raise NotImplementedError
+                self._spectral_model = self.first_solar_spectral_loss
             elif model == 'sapm':
                 self._spectral_model = self.sapm_spectral_loss
             elif model == 'no_loss':
@@ -546,13 +546,20 @@ class ModelChain(object):
         params = set(self.system.module_parameters.keys())
         if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
             return self.sapm_spectral_loss
+        elif ('Technology' in params or 
+              'Material' in params or 
+              'fs_spectral_coefficients' in params):
+            return self.first_solar_spectral_loss
         else:
             raise ValueError('could not infer spectral model from '
                              'system.module_parameters')
 
     def first_solar_spectral_loss(self):
-        raise NotImplementedError
-
+        self.spectral_modifier = self.system.first_solar_spectral_loss(
+                                        self.weather['precipitable_water'],
+                                        self.airmass['airmass_absolute'])
+        return self
+    
     def sapm_spectral_loss(self):
         self.spectral_modifier = self.system.sapm_spectral_loss(
             self.airmass['airmass_absolute'])

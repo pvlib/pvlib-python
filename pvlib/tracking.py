@@ -545,7 +545,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
                            'surface_azimuth': surface_azimuth,
                            'surface_tilt': surface_tilt},
                           index=times)
-
+    df_out = df_out[['tracker_theta', 'aoi',
+                     'surface_azimuth', 'surface_tilt']]
     df_out[apparent_zenith > 90] = np.nan
 
     return df_out

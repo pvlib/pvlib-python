@@ -546,13 +546,17 @@ class ModelChain(object):
         params = set(self.system.module_parameters.keys())
         if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
             return self.sapm_spectral_loss
-        elif ('Technology' in params or 
-              'Material' in params or 
-              'fs_spectral_coefficients' in params):
+        elif ((('Technology' in params or 
+                'Material' in params) and
+               (pvsystem._infer_cell_type() is not None)) or 
+              'first_solar_spectral_coefficients' in params):
             return self.first_solar_spectral_loss
         else:
             raise ValueError('could not infer spectral model from '
-                             'system.module_parameters')
+                             'system.module_parameters. Check that the '
+                             'parameters contain valid '
+                             'first_solar_spectral_coefficients or a valid '
+                             'Material or Technology value')
 
     def first_solar_spectral_loss(self):
         self.spectral_modifier = self.system.first_solar_spectral_loss(

@@ -438,28 +438,24 @@ class PVSystem(object):
         Returns
         -------
         modifier: array-like
-            spectral mismatch factor (unitless) which is can be multiplied
+            spectral mismatch factor (unitless) which can be multiplied
             with broadband irradiance reaching a module's cells to estimate
             effective irradiance, i.e., the irradiance that is converted to
             electrical current.
         """        
 
-        if self.module_parameters['fs_spectral_coefficients']:
-            coefficients = self.module_parameters['fs_spectral_coefficients']
+        if self.module_parameters['first_solar_spectral_coefficients']:
+            coefficients = \
+                   self.module_parameters['first_solar_spectral_coefficients']
             module_type = None
         else:
             module_type = self._infer_cell_type()
             coefficients = None
 
-        if (module_type is not None and coefficients is None) or \
-           (module_type is None and coefficients is not None):
-               return atmosphere.first_solar_spectral_correction(pw, 
-                                                          airmass_absolute, 
-                                                          module_type,
-                                                          coefficients)
-        else:
-            # default to no_spectral_loss function
-            return 1
+        return atmosphere.first_solar_spectral_correction(pw, 
+                                                  airmass_absolute, 
+                                                  module_type,
+                                                  coefficients)
         
     def _infer_cell_type(self):
         

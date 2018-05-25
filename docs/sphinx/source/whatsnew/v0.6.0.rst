@@ -35,6 +35,7 @@ API Changes
   deprecated long ago but never removed.
 
 
+
 Enhancements
 ~~~~~~~~~~~~
 
@@ -42,6 +43,13 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
+* Add sea surface albedo in irradiance.py (:issue:`458`)
+
+Bug fixes
+~~~~~~~~~
+* Unset executable bits of irradiance.py and test_irradiance.py (:issue:`460`)
+* Fix failing tests due to column order on Python 3.6+ and Pandas 0.23+
+  (:issue:`464`)
 
 
 Documentation
@@ -55,3 +63,4 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren
+* Yu Cao

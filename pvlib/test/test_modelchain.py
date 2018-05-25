@@ -173,12 +173,13 @@ def test_run_model_tracker(system, location):
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
 
-    expected = pd.DataFrame(np.
+    expect = pd.DataFrame(np.
         array([[ 54.82513187,  90.        ,  11.0039221 ,  11.0039221 ],
                [         nan,   0.        ,   0.        ,          nan]]),
         columns=['aoi', 'surface_azimuth', 'surface_tilt', 'tracker_theta'],
         index=times)
-    assert_frame_equal(mc.tracking, expected, check_less_precise=2)
+    expect = expect[['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt']]
+    assert_frame_equal(mc.tracking, expect, check_less_precise=2)
 
 
 def poadc(mc):

@@ -18,7 +18,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib._deprecation import deprecated
 
-
+# see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
                    'grass': 0.20,
                    'fresh grass': 0.26,
@@ -31,7 +31,8 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'aluminum': 0.85,
                    'copper': 0.74,
                    'fresh steel': 0.35,
-                   'dirty steel': 0.08}
+                   'dirty steel': 0.08,
+                   'sea': 0.06}
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
@@ -595,8 +596,8 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
     surface_type: None or string, default None
         If not None, overrides albedo. String can be one of ``'urban',
-        'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt',
-        'concrete', 'aluminum', 'copper', 'fresh steel', 'dirty steel'``.
+        'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
+         'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'``.
 
     Returns
     -------
@@ -613,9 +614,11 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     The calculation is the last term of equations 3, 4, 7, 8, 10, 11, and 12.
 
     [2] albedos from:
-    http://pvpmc.org/modeling-steps/incident-irradiance/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/albedo/
+    http://files.pvsyst.com/help/albedo.htm
     and
     http://en.wikipedia.org/wiki/Albedo
+    and
+    https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
     '''
 
     if surface_type is not None:

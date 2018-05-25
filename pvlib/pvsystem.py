@@ -421,7 +421,7 @@ class PVSystem(object):
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
 
-    def first_solar_spectral_correction(self, pw, airmass_absolute):
+    def first_solar_spectral_loss(self, pw, airmass_absolute):
         
         """
         Use the :py:func:`first_solar_spectral_correction` function to 

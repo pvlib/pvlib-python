@@ -266,6 +266,20 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
     out = system.sapm_spectral_loss(airmass)
 
 
+@pytest.mark.parametrize("module_type, expected", [
+                           ('cdte', np.array([1.01881074]))
+])
+    
+def test_first_solar_spectral_loss(module_type, expected):
+
+    pw = 3
+    airmass_absolute = 3
+    out = atmosphere.first_solar_spectral_correction(pw, airmass_absolute, 
+                                                     module_type,
+                                                     coefficients=None)
+    assert_allclose(out, expected, atol=1e-4)
+       
+        
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
     (np.array([[-30, 30, 100, np.nan]]),

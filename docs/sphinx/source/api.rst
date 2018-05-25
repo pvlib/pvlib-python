@@ -102,12 +102,14 @@ Airmass and atmospheric models
    :toctree: generated/
 
    location.Location.get_airmass
-   atmosphere.absoluteairmass
-   atmosphere.relativeairmass
+   atmosphere.absolute_airmass
+   atmosphere.get_relative_airmass
    atmosphere.pres2alt
    atmosphere.alt2pres
-   atmosphere.gueymard94_pw
-   atmosphere.first_solar_spectral_correction
+   atmosphere.pw_gueymard94
+   atmosphere.spectral_correction_first_solar  # consider spectral module
+   atmosphere.spectral_corrrection_sapm
+   atmosphere.aod_bb_bird_hulstrom80
    atmosphere.bird_hulstrom80_aod_bb
    atmosphere.kasten96_lt
    atmosphere.angstrom_aod_at_lambda
@@ -133,13 +135,13 @@ Decomposing and combining irradiance
 .. autosummary::
    :toctree: generated/
 
-   irradiance.extraradiation
+   irradiance.get_extra_radiation
    irradiance.aoi
    irradiance.aoi_projection
    irradiance.poa_horizontal_ratio
    irradiance.beam_component
-   irradiance.globalinplane
-   irradiance.grounddiffuse
+   irradiance.poa_components
+   irradiance.get_ground_diffuse
 
 Transposition models
 --------------------
@@ -147,7 +149,9 @@ Transposition models
 .. autosummary::
    :toctree: generated/
 
-   irradiance.total_irrad
+   # consider transposition module, though I lean towards no.
+   irradiance.get_total_irradiance
+   irradiance.get_sky_diffuse
    irradiance.isotropic
    irradiance.perez
    irradiance.haydavies
@@ -189,9 +193,10 @@ AOI modifiers
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.physicaliam
-   pvsystem.ashraeiam
-   pvsystem.sapm_aoi_loss
+   pvsystem.iam_physical  # consider iam module
+   pvsystem.iam_ashrae
+   pvsystem.iam_sapm
+
 
 Single diode model
 ------------------
@@ -201,7 +206,7 @@ Functions relevant for the single diode model.
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.calcparams_desoto
+   pvsystem.calcparams_desoto  # consider singlediode module
    pvsystem.i_from_v
    pvsystem.singlediode
    pvsystem.v_from_i
@@ -214,12 +219,12 @@ Functions relevant for the SAPM model.
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.sapm
-   pvsystem.sapm_effective_irradiance
-   pvsystem.sapm_celltemp
-   pvsystem.sapm_spectral_loss
-   pvsystem.sapm_aoi_loss
-   pvsystem.snlinverter
+   pvsystem.sapm  # dc_sapm?
+   pvsystem.effective_irradiance_sapm
+   pvsystem.celltemp_sapm
+   pvsystem.spectral_loss_sapm
+   pvsystem.iam_sapm
+   pvsystem.inverter_sapm
 
 PVWatts model
 -------------
@@ -227,9 +232,9 @@ PVWatts model
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.pvwatts_dc
-   pvsystem.pvwatts_ac
-   pvsystem.pvwatts_losses
+   pvsystem.pvwatts_dc  # dc_pvwatts?
+   pvsystem.pvwatts_ac  # ac_pvwatts?
+   pvsystem.pvwatts_losses  # losses_pvwatts?
 
 
 Other
@@ -274,6 +279,8 @@ TMY
 ===
 
 Methods and functions for reading data from TMY files.
+
+Move to IO subpackage
 
 .. autosummary::
    :toctree: generated/
@@ -421,6 +428,7 @@ on the information in the associated :py:class:`~pvsystem.PVSystem` object.
 .. autosummary::
    :toctree: generated/
 
+   # note how ModelChain organizes choices
    modelchain.ModelChain.infer_dc_model
    modelchain.ModelChain.infer_ac_model
    modelchain.ModelChain.infer_aoi_model
@@ -436,5 +444,5 @@ Functions for power modeling.
 .. autosummary::
    :toctree: generated/
 
-   modelchain.basic_chain
-   modelchain.get_orientation
+   modelchain.basic_chain  # deprecate
+   modelchain.get_orientation  # deprecate

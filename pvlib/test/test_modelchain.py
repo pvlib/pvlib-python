@@ -272,9 +272,8 @@ def test_spectral_models(system, location, spectral_model, expected):
     times = pd.date_range('20160101 1200-0700', periods=1, freq='6H')
     weather = pd.DataFrame(data=[0.3], index=times, columns=['precipitable_water'])
     mc = ModelChain(system, location, dc_model='sapm',
-                    aoi_model='no_loss', spectral_model=spectral_model,
-                    weather=weather)
-    spectral_modifier = mc.run_model(times).spectral_modifier
+                    aoi_model='no_loss', spectral_model=spectral_model)
+    spectral_modifier = mc.run_model(times=times, weather=weather).spectral_modifier
     if not isinstance(spectral_modifier, pd.Series):
         spectral_modifier = pd.Series(np.array(spectral_modifier), index=times)
     print(spectral_modifier)

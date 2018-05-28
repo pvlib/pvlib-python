@@ -518,8 +518,8 @@ class ModelChain(object):
         return self
 
     def no_aoi_loss(self):
-        self.aoi_modifier = 1
-        return self
+        self.aoi_modifier = 1.0
+       return self
 
     @property
     def spectral_model(self):

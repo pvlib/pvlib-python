@@ -264,24 +264,22 @@ def constant_spectral_loss(mc):
 
 @requires_scipy
 @pytest.mark.parametrize('spectral_model, expected', [
-    ('sapm', [1.0299227]),
+    ('sapm', [1.003971]),
     ('first_solar', [1.0001506]),
-    ('no_loss', [1.0]),
-    (constant_spectral_loss, [0.9])
+    ('no_loss', [1.0])
 ])
 def test_spectral_models(system, location, spectral_model, expected):
-    
     times = pd.date_range('20160101 1200-0700', periods=1, freq='6H')
     weather = pd.DataFrame(data=[0.3], index=times, columns=['precipitable_water'])
-    airmass = pd.DataFrame(data=[3.0], index=times, columns=['airmass_absolute'])
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model=spectral_model,
-                    weather=weather,
-                    airmass=airmass)
-    ac = mc.run_model(times).ac
-
+                    weather=weather)
+    spectral_modifier = mc.run_model(times).spectral_modifier
+    if not isinstance(spectral_modifier, pd.Series):
+        spectral_modifier = pd.Series(np.array(spectral_modifier), index=times)
+    print(spectral_modifier)
     expected = pd.Series(np.array(expected), index=times)
-    assert_series_equal(ac, expected, check_less_precise=2)
+    assert_series_equal(spectral_modifier, expected, check_less_precise=2)
 
 
 def constant_losses(mc):

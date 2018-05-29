@@ -113,15 +113,13 @@ def test_ashraeiam_scalar():
     assert_allclose(iam, expected, equal_nan=True)
 
 
-@needs_numpy_1_10
-def test_PVSystem_ashraeiam():
+def test_PVSystem_ashraeiam(mocker):
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  89., 90. , np.nan])
+    m = mocker.patch('pvlib.pvsystem.ashraeiam')
+    thetas = None
     iam = system.ashraeiam(thetas)
-    expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         0, 0,  np.nan])
-    assert_allclose(iam, expected, equal_nan=True)
+    m.assert_called_once_with(thetas, **module_parameters)
 
 
 @needs_numpy_1_10
@@ -151,15 +149,13 @@ def test_physicaliam_scalar():
     assert_allclose(iam, expected, equal_nan=True)
 
 
-@needs_numpy_1_10
-def test_PVSystem_physicaliam():
+def test_PVSystem_physicaliam_mocked(mocker):
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
+    m = mocker.patch('pvlib.pvsystem.physicaliam')
+    thetas = None
     iam = system.physicaliam(thetas)
-    expected = np.array([        0,  0.8893998 ,  0.98797788,  0.99926198,         1,
-        0.99926198,  0.98797788,  0.8893998 ,         0, np.nan])
-    assert_allclose(iam, expected, equal_nan=True)
+    m.assert_called_once_with(thetas, **module_parameters)
 
 
 # if this completes successfully we'll be able to do more tests below.

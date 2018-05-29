@@ -116,7 +116,7 @@ def test_ashraeiam_scalar():
 def test_PVSystem_ashraeiam(mocker):
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    m = mocker.patch('pvlib.pvsystem.ashraeiam')
+    m = mocker.patch('pvlib.pvsystem.ashraeiam', autospec=True)
     thetas = None
     iam = system.ashraeiam(thetas)
     m.assert_called_once_with(thetas, **module_parameters)
@@ -152,7 +152,7 @@ def test_physicaliam_scalar():
 def test_PVSystem_physicaliam_mocked(mocker):
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    m = mocker.patch('pvlib.pvsystem.physicaliam')
+    m = mocker.patch('pvlib.pvsystem.physicaliam', autospec=True)
     thetas = None
     iam = system.physicaliam(thetas)
     m.assert_called_once_with(thetas, **module_parameters)

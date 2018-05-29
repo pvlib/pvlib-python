@@ -114,12 +114,13 @@ def test_ashraeiam_scalar():
 
 
 def test_PVSystem_ashraeiam(mocker):
+    mocker.spy(pvsystem, 'ashraeiam')
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    m = mocker.patch('pvlib.pvsystem.ashraeiam', autospec=True)
-    thetas = None
+    thetas = 1
     iam = system.ashraeiam(thetas)
-    m.assert_called_once_with(thetas, **module_parameters)
+    pvsystem.ashraeiam.assert_called_once_with(thetas, b=0.05)
+    assert iam < 1.
 
 
 @needs_numpy_1_10
@@ -149,13 +150,14 @@ def test_physicaliam_scalar():
     assert_allclose(iam, expected, equal_nan=True)
 
 
-def test_PVSystem_physicaliam_mocked(mocker):
+def test_PVSystem_physicaliam(mocker):
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    m = mocker.patch('pvlib.pvsystem.physicaliam', autospec=True)
-    thetas = None
+    mocker.spy(pvsystem, 'physicaliam')
+    thetas = 1
     iam = system.physicaliam(thetas)
-    m.assert_called_once_with(thetas, **module_parameters)
+    pvsystem.physicaliam.assert_called_once_with(thetas, **module_parameters)
+    assert iam < 1.
 
 
 # if this completes successfully we'll be able to do more tests below.
@@ -289,13 +291,13 @@ def test_sapm_aoi_loss_limits():
     assert pvsystem.sapm_aoi_loss(1, module_parameters) == 0
 
 
-def test_PVSystem_sapm_aoi_loss(sapm_module_params):
+def test_PVSystem_sapm_aoi_loss(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    aoi = pd.Series([45, 10], index=times)
-
+    mocker.spy(pvsystem, 'sapm_aoi_loss')
+    aoi = 0
     out = system.sapm_aoi_loss(aoi)
+    pvsystem.sapm_aoi_loss.assert_called_once_with(aoi, sapm_module_params)
+    assert_allclose(out, 1.0, atol=0.01)
 
 
 @pytest.mark.parametrize('test_input,expected', [
@@ -328,18 +330,23 @@ def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
         assert_allclose(out, expected, atol=1e-4)
 
 
-def test_PVSystem_sapm_effective_irradiance(sapm_module_params):
+def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    mocker.spy(pvsystem, 'sapm_effective_irradiance')
 
-    poa_direct = np.array([np.nan, 1000, 1000])
-    poa_diffuse = np.array([100, np.nan, 100])
-    airmass_absolute = np.array([1.1, 1.1, 1.1])
-    aoi = np.array([10, 10, 10])
-    reference_irradiance = 1000
+    poa_direct = 1000
+    poa_diffuse = 100
+    airmass_absolute = 1.1
+    aoi = 10
+    reference_irradiance = 1100
 
     out = system.sapm_effective_irradiance(
         poa_direct, poa_diffuse, airmass_absolute,
         aoi, reference_irradiance=reference_irradiance)
+    pvsystem.sapm_effective_irradiance.assert_called_once_with(
+        poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params,
+        reference_irradiance=reference_irradiance)
+    assert_allclose(out, 1, atol=0.1)
 
 
 def test_calcparams_desoto(cec_module_params):
@@ -616,10 +623,12 @@ def test_i_from_v(fixture_i_from_v):
 
 
 @requires_scipy
-def test_PVSystem_i_from_v():
+def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
-    output = system.i_from_v(20, .1, .5, 40, 6e-7, 7)
-    assert_allclose(output, -299.746389916, atol=1e-5)
+    m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
+    args = (20, .1, .5, 40, 6e-7, 7)
+    output = system.i_from_v(*args)
+    m.assert_called_once_with(*args)
 
 
 @requires_scipy
@@ -740,17 +749,13 @@ def test_scale_voltage_current_power(sam_data):
     out = pvsystem.scale_voltage_current_power(data, voltage=2, current=3)
 
 
-def test_PVSystem_scale_voltage_current_power():
-    data = pd.DataFrame(
-        np.array([[2, 1.5, 10, 8, 12, 0.5, 1.5]]),
-        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
-        index=[0])
-    expected = pd.DataFrame(
-        np.array([[6, 4.5, 20, 16, 72, 1.5, 4.5]]),
-        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
-        index=[0])
+def test_PVSystem_scale_voltage_current_power(mocker):
+    data = None
     system = pvsystem.PVSystem(modules_per_string=2, strings_per_inverter=3)
+    m = mocker.patch(
+        'pvlib.pvsystem.scale_voltage_current_power', autospec=True)
     out = system.scale_voltage_current_power(data)
+    m.assert_called_once_with(data, voltage=2, current=3)
 
 
 def test_sapm_celltemp():
@@ -786,20 +791,19 @@ def test_sapm_celltemp_with_index():
     assert_frame_equal(expected, pvtemps)
 
 
-def test_PVSystem_sapm_celltemp():
-    system = pvsystem.PVSystem(racking_model='roof_mount_cell_glassback')
-    times = pd.DatetimeIndex(start='2015-01-01', end='2015-01-02', freq='12H')
-    temps = pd.Series([0, 10, 5], index=times)
-    irrads = pd.Series([0, 500, 0], index=times)
-    winds = pd.Series([10, 5, 0], index=times)
+def test_PVSystem_sapm_celltemp(mocker):
+    racking_model = 'roof_mount_cell_glassback'
 
-    pvtemps = system.sapm_celltemp(irrads, winds, temps)
-
-    expected = pd.DataFrame({'temp_cell':[0., 30.56763059, 5.],
-                             'temp_module':[0., 30.06763059, 5.]},
-                            index=times)
-
-    assert_frame_equal(expected, pvtemps)
+    system = pvsystem.PVSystem(racking_model=racking_model)
+    mocker.spy(pvsystem, 'sapm_celltemp')
+    temps = 25
+    irrads = 1000
+    winds = 1
+    out = system.sapm_celltemp(irrads, winds, temps)
+    pvsystem.sapm_celltemp.assert_called_once_with(
+        irrads, winds, temps, model=racking_model)
+    assert isinstance(out, pd.DataFrame)
+    assert out.shape == (1, 2)
 
 
 def test_adrinverter(sam_data):

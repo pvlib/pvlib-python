@@ -444,7 +444,7 @@ class PVSystem(object):
             electrical current.
         """        
 
-        if self.module_parameters['first_solar_spectral_coefficients']:
+        if 'first_solar_spectral_coefficients' in self.module_parameters.keys():
             coefficients = \
                    self.module_parameters['first_solar_spectral_coefficients']
             module_type = None

@@ -273,8 +273,8 @@ class ModelChain(object):
     spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
-        'first_solar' (not implemented), 'no_loss'. The ModelChain
-        instance will be passed as the first argument to a user-defined
+        'first_solar', 'no_loss'. The ModelChain instance will be passed 
+        as the first argument to a user-defined
         function.
 
     temp_model: str or function, default 'sapm'

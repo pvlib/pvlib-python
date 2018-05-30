@@ -425,7 +425,14 @@ class PVSystem(object):
 
         """
         Use the :py:func:`first_solar_spectral_correction` function to
-        calculate the spectral loss modifier.
+        calculate the spectral loss modifier. The model coefficients are
+        specific to the module's cell type, and are determined by searching
+        for one of the following keys in self.module_parameters (in order):
+            'first_solar_spectral_coefficients (user-supplied coefficients)
+            'Technology' - a string describing the cell type, can be read from
+            the CEC module parameter database
+            'Material' - a string describing the cell type, can be read from
+            the Sandia module database.
 
         Parameters
         ----------

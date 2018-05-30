@@ -150,7 +150,7 @@ reasonable.
 .. code-block:: python
     def test_PVSystem_ashraeiam(mocker):
         # mocker is a pytest-mock object.
-        # mocker.spy adds code to a function to keep track of how its called
+        # mocker.spy adds code to a function to keep track of how it is called
         mocker.spy(pvsystem, 'ashraeiam')
 
         # set up inputs
@@ -180,10 +180,37 @@ The tests in test_modelchain.py should ensure that
 ``ModelChain.__init__`` correctly configures the ModelChain object to
 eventually run the selected models. A test should ensure that the
 appropriate method is actually called in the course of
-``Model_chain.run_model``. A test should ensure that the model selection
+``ModelChain.run_model``. A test should ensure that the model selection
 does have a reasonable effect on the subsequent calculations, though the
 precise values of the data should be covered by the function tests
 discussed above. ``pytest-mock`` can also be used for testing ``ModelChain``.
+
+The example below shows how mock can be used to assert that the correct
+PVSystem method is called through ``ModelChain.run_model``.
+
+.. code-block:: python
+    def test_modelchain_dc_model(mocker):
+        # set up location and system for model chain
+        location = location.Location(32, -111)
+        system = pvsystem.PVSystem(module_parameters=some_sandia_mod_params,
+                                   inverter_parameters=some_cecinverter_params)
+
+        # mocker.spy adds code to the system.sapm method to keep track of how
+        # it is called. use returned mock object m to make assertion later,
+        # but see example above for alternative
+        m = mocker.spy(system, 'sapm')
+
+        # make and run the model chain
+        mc = ModelChain(system, location,
+                        aoi_model='no_loss', spectral_model='no_loss')
+        times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+        mc.run_model(times)
+
+        # assertion fails if PVSystem.sapm is not called once
+        m.assert_called_once()
+
+        # ensure that dc attribute now exists and is correct type
+        assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
 
 
 This documentation

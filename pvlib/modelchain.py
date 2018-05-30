@@ -546,9 +546,9 @@ class ModelChain(object):
         params = set(self.system.module_parameters.keys())
         if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
             return self.sapm_spectral_loss
-        elif ((('Technology' in params or 
+        elif ((('Technology' in params or
                 'Material' in params) and
-               (pvsystem._infer_cell_type() is not None)) or 
+               (pvsystem._infer_cell_type() is not None)) or
               'first_solar_spectral_coefficients' in params):
             return self.first_solar_spectral_loss
         else:
@@ -563,7 +563,7 @@ class ModelChain(object):
                                         self.weather['precipitable_water'],
                                         self.airmass['airmass_absolute'])
         return self
-    
+
     def sapm_spectral_loss(self):
         self.spectral_modifier = self.system.sapm_spectral_loss(
             self.airmass['airmass_absolute'])

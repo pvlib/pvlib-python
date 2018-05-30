@@ -320,6 +320,7 @@ def gueymard94_pw(temp_air, relative_humidity):
 
     return pw
 
+
 def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
                                     coefficients=None):
     r"""

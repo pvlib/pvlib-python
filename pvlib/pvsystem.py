@@ -422,16 +422,16 @@ class PVSystem(object):
             self.module_parameters, reference_irradiance=reference_irradiance)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
-        
+
         """
-        Use the :py:func:`first_solar_spectral_correction` function to 
+        Use the :py:func:`first_solar_spectral_correction` function to
         calculate the spectral loss modifier.
 
         Parameters
         ----------
         pw : array-like
             atmospheric precipitable water (cm).
-    
+
         airmass_absolute : array-like
             absolute (pressure corrected) airmass.
 
@@ -442,9 +442,10 @@ class PVSystem(object):
             with broadband irradiance reaching a module's cells to estimate
             effective irradiance, i.e., the irradiance that is converted to
             electrical current.
-        """        
+        """
 
-        if 'first_solar_spectral_coefficients' in self.module_parameters.keys():
+        if 'first_solar_spectral_coefficients' in 
+                               self.module_parameters.keys():
             coefficients = \
                    self.module_parameters['first_solar_spectral_coefficients']
             module_type = None
@@ -452,22 +453,22 @@ class PVSystem(object):
             module_type = self._infer_cell_type()
             coefficients = None
 
-        return atmosphere.first_solar_spectral_correction(pw, 
-                                                  airmass_absolute, 
-                                                  module_type,
-                                                  coefficients)
-        
+        return atmosphere.first_solar_spectral_correction(pw,
+                                                          airmass_absolute, 
+                                                          module_type,
+                                                          coefficients)
+
     def _infer_cell_type(self):
-        
+
         """
         Examines module_parameters and maps the Technology key for the CEC
         database and the Material key for the Sandia database to a common
         list of strings for cell type.
-        
+
         Returns
         -------
         cell_type: str
-        
+
         """
 
         _cell_type_dict = {'Multi-c-Si': 'multisi',
@@ -498,10 +499,9 @@ class PVSystem(object):
             cell_type = _cell_type_dict[self.module_parameters['Material']]
         else:
             cell_type = None
-            
+
         return cell_type
-        
-        
+
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
                     ivcurve_pnts=None):

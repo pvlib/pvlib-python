@@ -262,22 +262,25 @@ def test_aoi_models(system, location, aoi_model, expected):
 def constant_spectral_loss(mc):
     mc.spectral_modifier = 0.9
 
+
 @requires_scipy
 @pytest.mark.parametrize('spectral_model', ['sapm', 'first_solar', 'no_loss'])
-
 def test_spectral_models(system, location, spectral_model):
     times = pd.date_range('20160101 1200-0700', periods=3, freq='6H')
-    weather = pd.DataFrame(data=[0.3, 0.5, 1.0], index=times, columns=['precipitable_water'])
+    weather = pd.DataFrame(data=[0.3, 0.5, 1.0],
+                           index=times,
+                           columns=['precipitable_water'])
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model=spectral_model)
-    spectral_modifier = mc.run_model(times=times, weather=weather).spectral_modifier
-    print(spectral_modifier)
+    spectral_modifier = mc.run_model(times=times, 
+                                     weather=weather).spectral_modifier
     assert isinstance(spectral_modifier, (pd.Series, float, int))
 
 
 def constant_losses(mc):
     mc.losses = 0.9
     mc.ac *= mc.losses
+
 
 @requires_scipy
 @pytest.mark.parametrize('losses_model, expected', [

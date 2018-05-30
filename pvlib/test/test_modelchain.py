@@ -264,7 +264,9 @@ def constant_spectral_loss(mc):
 
 
 @requires_scipy
-@pytest.mark.parametrize('spectral_model', ['sapm', 'first_solar', 'no_loss'])
+@pytest.mark.parametrize('spectral_model', [
+        'sapm', 'first_solar', 'no_loss', constant_spectral_loss
+])
 def test_spectral_models(system, location, spectral_model):
     times = pd.date_range('20160101 1200-0700', periods=3, freq='6H')
     weather = pd.DataFrame(data=[0.3, 0.5, 1.0],

@@ -211,6 +211,22 @@ def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
+@pytest.mark.parametrize('dc_model', ['sapm', 'singlediode', 'pvwatts_dc'])
+def test_infer_dc_model(system, cec_dc_snl_ac_system,
+                        pvwatts_dc_pvwatts_ac_system, location, dc_model,
+                        mocker):
+    dc_systems = {'sapm': system, 'singlediode': cec_dc_snl_ac_system,
+                  'pvwatts_dc': pvwatts_dc_pvwatts_ac_system}
+    system = dc_systems[dc_model]
+    m = mocker.spy(system, dc_model)
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    mc.run_model(times)
+    m.assert_called_once()
+    assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
+
+
 def acdc(mc):
     mc.ac = mc.dc
 

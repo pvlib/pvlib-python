@@ -21,10 +21,16 @@ Bug fixes
 
 Documentation
 ~~~~~~~~~~~~~
+* Expand testing section with guidelines for functions, PVSystem/Location
+  objects, and ModelChain.
 
 
 Testing
 ~~~~~~~
+* Add pytest-mock dependency
+* Use pytest-mock to ensure that PVSystem methods call corresponding functions
+  correctly. Removes implicit dependence on precise return values of functions
+* Use pytest-mock to ensure that ModelChain DC model is set up correctly.
 
 
 Contributors

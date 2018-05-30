@@ -21,38 +21,11 @@ from pvlib.location import Location
 
 from conftest import needs_numpy_1_10, requires_scipy
 
-latitude = 32.2
-longitude = -111
-tus = Location(latitude, longitude, 'US/Arizona', 700, 'Tucson')
-times = pd.date_range(start=datetime.datetime(2014,1,1),
-                      end=datetime.datetime(2014,1,2), freq='1Min')
-ephem_data = solarposition.get_solarposition(times,
-                                             latitude=latitude,
-                                             longitude=longitude,
-                                             method='nrel_numpy')
-am = atmosphere.relativeairmass(ephem_data.apparent_zenith)
-irrad_data = clearsky.ineichen(ephem_data['apparent_zenith'], am,
-                               linke_turbidity=3)
-aoi = irradiance.aoi(0, 0, ephem_data['apparent_zenith'],
-                     ephem_data['azimuth'])
-
-
-meta = {'latitude': 37.8,
-        'longitude': -122.3,
-        'altitude': 10,
-        'Name': 'Oakland',
-        'State': 'CA',
-        'TZ': -8}
-
-pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
-
-tmy3_testfile = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
-tmy2_testfile = os.path.join(pvlib_abspath, 'data', '12839.tm2')
-
-tmy3_data, tmy3_metadata = tmy.readtmy3(tmy3_testfile)
-tmy2_data, tmy2_metadata = tmy.readtmy2(tmy2_testfile)
 
 def test_systemdef_tmy3():
+    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
+    tmy3_testfile = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
+    tmy3_data, tmy3_metadata = tmy.readtmy3(tmy3_testfile)
     expected = {'tz': -9.0,
                 'albedo': 0.1,
                 'altitude': 7.0,
@@ -65,7 +38,12 @@ def test_systemdef_tmy3():
                 'surface_tilt': 0}
     assert expected == pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5)
 
+
 def test_systemdef_tmy2():
+    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
+    tmy2_testfile = os.path.join(pvlib_abspath, 'data', '12839.tm2')
+    tmy2_data, tmy2_metadata = tmy.readtmy2(tmy2_testfile)
+
     expected = {'tz': -5,
                 'albedo': 0.1,
                 'altitude': 2.0,
@@ -78,7 +56,15 @@ def test_systemdef_tmy2():
                 'surface_tilt': 0}
     assert expected == pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5)
 
+
 def test_systemdef_dict():
+    meta = {'latitude': 37.8,
+            'longitude': -122.3,
+            'altitude': 10,
+            'Name': 'Oakland',
+            'State': 'CA',
+            'TZ': -8}
+
     expected = {'tz': -8, ## Note that TZ is float, but Location sets tz as string
                 'albedo': 0.1,
                 'altitude': 10,

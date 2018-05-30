@@ -143,8 +143,8 @@ it was called. Then a ``PVSystem`` object is created and the
 ``PVSystem.ashraeiam`` method is supposed to call the
 ``pvsystem.ashraeiam`` function with the angles supplied to the method
 call and the value of ``b`` that we defined in ``module_parameters``.
-The ``pvsystem.ashraeiam.assert_called_once_with`` call will test this
-for us! Finally, we check that the output of the method call is
+The ``pvsystem.ashraeiam.assert_called_once_with`` tests that this does,
+in fact, happen. Finally, we check that the output of the method call is
 reasonable.
 
 .. code-block:: python

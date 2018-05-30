@@ -230,14 +230,15 @@ def test_sapm(sapm_module_params):
                   sapm_module_params.to_dict())
 
 
-def test_PVSystem_sapm(sapm_module_params):
+def test_PVSystem_sapm(sapm_module_params, mocker):
+    mocker.spy(pvsystem, 'sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-
-    times = pd.DatetimeIndex(start='2015-01-01', periods=5, freq='12H')
-    effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
-    temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
-
+    effective_irradiance = 0.5
+    temp_cell = 25
     out = system.sapm(effective_irradiance, temp_cell)
+    pvsystem.sapm.assert_called_once_with(effective_irradiance, temp_cell,
+                                          sapm_module_params)
+    assert_allclose(out['p_mp'], 100, atol=100)
 
 
 @pytest.mark.parametrize('airmass,expected', [

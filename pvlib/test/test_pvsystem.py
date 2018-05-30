@@ -242,13 +242,14 @@ def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
         assert_allclose(out, expected, atol=1e-4)
 
 
-def test_PVSystem_sapm_spectral_loss(sapm_module_params):
+def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
+    mocker.spy(pvsystem, 'sapm_spectral_loss')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    airmass = pd.Series([1, 10], index=times)
-
+    airmass = 2
     out = system.sapm_spectral_loss(airmass)
+    pvsystem.sapm_spectral_loss.assert_called_once_with(airmass,
+                                                        sapm_module_params)
+    assert_allclose(out, 1, atol=0.5)
 
 
 @pytest.mark.parametrize('aoi,expected', [
@@ -356,23 +357,23 @@ def test_calcparams_desoto(cec_module_params):
     assert_allclose(nNsVth, 0.473)
 
 
-def test_PVSystem_calcparams_desoto(cec_module_params):
+def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
+    mocker.spy(pvsystem, 'calcparams_desoto')
     module_parameters = cec_module_params.copy()
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    poa_data = pd.Series([0, 800], index=times)
+    poa_data = np.array([0, 800])
     temp_cell = 25
-
     IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(poa_data, temp_cell)
-
-    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036], index=times))
-    # changed value in GH 444 for 2017-6-5 module file
-    assert_allclose(I0, 1.94e-9)
-    assert_allclose(Rs, 0.094)
-    assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65], index=times))
-    assert_allclose(nNsVth, 0.473)
+    pvsystem.calcparams_desoto.assert_called_once_with(
+        poa_data, temp_cell, module_parameters['alpha_sc'], module_parameters,
+        module_parameters['EgRef'], module_parameters['dEgdT'])
+    assert_allclose(IL, np.array([0.0, 6.036]), atol=1)
+    assert_allclose(I0, 2.0e-9, atol=1.0e-9)
+    assert_allclose(Rs, 0.1, atol=0.1)
+    assert_allclose(Rsh, np.array([np.inf, 20]), atol=1)
+    assert_allclose(nNsVth, 0.5, atol=0.1)
 
 
 @pytest.fixture(params=[

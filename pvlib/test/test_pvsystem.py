@@ -1092,36 +1092,57 @@ def make_pvwatts_system_kwargs():
     return system
 
 
-def test_PVSystem_pvwatts_dc():
+def test_PVSystem_pvwatts_dc(mocker):
+    mocker.spy(pvsystem, 'pvwatts_dc')
     system = make_pvwatts_system_defaults()
-    irrad_trans = pd.Series([np.nan, 900, 900])
-    temp_cell = pd.Series([30, np.nan, 30])
-    expected = pd.Series(np.array([   nan,    nan,  88.65]))
-    out = system.pvwatts_dc(irrad_trans, temp_cell)
-    assert_series_equal(expected, out)
+    irrad = 900
+    temp_cell = 30
+    expected = 90
+    out = system.pvwatts_dc(irrad, temp_cell)
+    pvsystem.pvwatts_dc.assert_called_once_with(irrad, temp_cell,
+                                                **system.module_parameters)
+    assert_allclose(expected, out, atol=10)
 
+
+def test_PVSystem_pvwatts_dc_kwargs(mocker):
+    mocker.spy(pvsystem, 'pvwatts_dc')
     system = make_pvwatts_system_kwargs()
-    expected = pd.Series(np.array([   nan,    nan,  87.3]))
-    out = system.pvwatts_dc(irrad_trans, temp_cell)
-    assert_series_equal(expected, out)
+    irrad = 900
+    temp_cell = 30
+    expected = 90
+    out = system.pvwatts_dc(irrad, temp_cell)
+    pvsystem.pvwatts_dc.assert_called_once_with(irrad, temp_cell,
+                                                **system.module_parameters)
+    assert_allclose(expected, out, atol=10)
 
 
-def test_PVSystem_pvwatts_losses():
+def test_PVSystem_pvwatts_losses(mocker):
+    mocker.spy(pvsystem, 'pvwatts_losses')
     system = make_pvwatts_system_defaults()
-    expected = pd.Series([nan, 14.934904])
-    age = pd.Series([nan, 1])
+    expected = 15
+    age = 1
     out = system.pvwatts_losses(age=age)
-    assert_series_equal(expected, out)
+    pvsystem.pvwatts_losses.assert_called_once_with(age=age)
+    assert out < 100
 
 
-def test_PVSystem_pvwatts_ac():
+def test_PVSystem_pvwatts_ac(mocker):
+    mocker.spy(pvsystem, 'pvwatts_ac')
     system = make_pvwatts_system_defaults()
-    pdc = pd.Series([np.nan, 50, 100])
-    expected = pd.Series(np.array([       nan,  48.1095776694, 96.0]))
+    pdc = 50
+    pdc0 = system.module_parameters['pdc0']
     out = system.pvwatts_ac(pdc)
-    assert_series_equal(expected, out)
+    pvsystem.pvwatts_ac.assert_called_once_with(pdc, pdc0,
+                                                **system.inverter_parameters)
+    assert out < pdc
 
+
+def test_PVSystem_pvwatts_ac_kwargs(mocker):
+    mocker.spy(pvsystem, 'pvwatts_ac')
     system = make_pvwatts_system_kwargs()
-    expected = pd.Series(np.array([       nan,  45.88025, 91.5515]))
+    pdc = 50
+    pdc0 = system.module_parameters['pdc0']
     out = system.pvwatts_ac(pdc)
-    assert_series_equal(expected, out)
+    pvsystem.pvwatts_ac.assert_called_once_with(pdc, pdc0,
+                                                **system.inverter_parameters)
+    assert out < pdc

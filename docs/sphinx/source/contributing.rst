@@ -154,7 +154,7 @@ reasonable.
         mocker.spy(pvsystem, 'ashraeiam')
 
         # set up inputs
-        module_parameters = pd.Series({'b': 0.05})
+        module_parameters = {'b': 0.05}
         system = pvsystem.PVSystem(module_parameters=module_parameters)
         thetas = 1
 
@@ -163,7 +163,7 @@ reasonable.
 
         # did the method call the function as we expected?
         # mocker.spy added assert_called_once_with to the function
-        pvsystem.ashraeiam.assert_called_once_with(thetas, b=0.05)
+        pvsystem.ashraeiam.assert_called_once_with(thetas, b=module_parameters['b'])
 
         # check that the output is reasonable, but no need to duplicate
         # the rigorous tests of the function

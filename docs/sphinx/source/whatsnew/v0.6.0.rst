@@ -11,6 +11,8 @@ API Changes
 Enhancements
 ~~~~~~~~~~~~
 * Add sea surface albedo in irradiance.py (:issue:`458`)
+* Implement first_solar_spectral_loss in modelchain.py (:issue:'359')
+
 
 Bug fixes
 ~~~~~~~~~
@@ -31,3 +33,5 @@ Contributors
 ~~~~~~~~~~~~
 * Will Holmgren
 * Yu Cao
+* Cliff Hansen
+

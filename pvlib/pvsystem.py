@@ -421,6 +421,94 @@ class PVSystem(object):
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
 
+    def first_solar_spectral_loss(self, pw, airmass_absolute):
+
+        """
+        Use the :py:func:`first_solar_spectral_correction` function to
+        calculate the spectral loss modifier. The model coefficients are
+        specific to the module's cell type, and are determined by searching
+        for one of the following keys in self.module_parameters (in order):
+            'first_solar_spectral_coefficients' (user-supplied coefficients)
+            'Technology' - a string describing the cell type, can be read from
+            the CEC module parameter database
+            'Material' - a string describing the cell type, can be read from
+            the Sandia module database.
+
+        Parameters
+        ----------
+        pw : array-like
+            atmospheric precipitable water (cm).
+
+        airmass_absolute : array-like
+            absolute (pressure corrected) airmass.
+
+        Returns
+        -------
+        modifier: array-like
+            spectral mismatch factor (unitless) which can be multiplied
+            with broadband irradiance reaching a module's cells to estimate
+            effective irradiance, i.e., the irradiance that is converted to
+            electrical current.
+        """
+
+        if 'first_solar_spectral_coefficients' in \
+                               self.module_parameters.keys():
+            coefficients = \
+                   self.module_parameters['first_solar_spectral_coefficients']
+            module_type = None
+        else:
+            module_type = self._infer_cell_type()
+            coefficients = None
+
+        return atmosphere.first_solar_spectral_correction(pw,
+                                                          airmass_absolute, 
+                                                          module_type,
+                                                          coefficients)
+
+    def _infer_cell_type(self):
+
+        """
+        Examines module_parameters and maps the Technology key for the CEC
+        database and the Material key for the Sandia database to a common
+        list of strings for cell type.
+
+        Returns
+        -------
+        cell_type: str
+
+        """
+
+        _cell_type_dict = {'Multi-c-Si': 'multisi',
+                           'Mono-c-Si': 'monosi',
+                           'Thin Film': 'cigs',
+                           'a-Si/nc': 'asi',
+                           'CIS': 'cigs',
+                           'CIGS': 'cigs',
+                           '1-a-Si': 'asi',
+                           'CdTe': 'cdte',
+                           'a-Si': 'asi',
+                           '2-a-Si': None,
+                           '3-a-Si': None,
+                           'HIT-Si': 'monosi',
+                           'mc-Si': 'multisi',
+                           'c-Si': 'multisi',
+                           'Si-Film': 'asi',
+                           'CdTe': 'cdte',
+                           'EFG mc-Si': 'multisi',
+                           'GaAs': None,
+                           'a-Si / mono-Si': 'monosi'}
+
+        if 'Technology' in self.module_parameters.keys():
+            # CEC module parameter set
+            cell_type = _cell_type_dict[self.module_parameters['Technology']]
+        elif 'Material' in self.module_parameters.keys():
+            # Sandia module parameter set
+            cell_type = _cell_type_dict[self.module_parameters['Material']]
+        else:
+            cell_type = None
+
+        return cell_type
+
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
                     ivcurve_pnts=None):

@@ -279,7 +279,7 @@ class PVSystem(object):
 
         return physicaliam(aoi, **kwargs)
 
-    def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
+    def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -287,8 +287,8 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_global : float or Series
-            The irradiance (in W/m^2) absorbed by the module.
+        effective_irradiance : numeric
+            Irradiance (suns) that is converted to photocurrent.
 
         temp_cell : float or Series
             The average cell temperature of cells within a module in C.
@@ -300,11 +300,13 @@ class PVSystem(object):
         -------
         See pvsystem.calcparams_desoto for details
         """
-        return calcparams_desoto(poa_global, temp_cell,
-                                 self.module_parameters['alpha_sc'],
-                                 self.module_parameters,
-                                 self.module_parameters['EgRef'],
-                                 self.module_parameters['dEgdT'], **kwargs)
+        kwargs = _build_kwargs(['alpha_isc', 'a_ref', 'I_L_ref', 'I_o_ref',
+                                'R_sh_ref', 'R_s', 'EgRef', 'dEgdT'],
+                                self.module_parameters)
+                      
+        return calcparams_desoto(effective_irradiance,
+                                 temp_cell,
+                                 **kwargs)
 
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -944,80 +946,62 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     return iam
 
 
-def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
-                      EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
+def calcparams_desoto(effective_irradiance, temp_cell,
+                      alpha_isc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
+                      EgRef=1.121, dEgdT=-0.0002677,
+                      irrad_ref=1000, temp_ref=25):
     '''
-    Applies the temperature and irradiance corrections to inputs for
-    singlediode.
-
-    Applies the temperature and irradiance corrections to the IL, I0,
-    Rs, Rsh, and a parameters at reference conditions (IL_ref, I0_ref,
-    etc.) according to the De Soto et. al description given in [1]. The
-    results of this correction procedure may be used in a single diode
-    model to determine IV curves at irradiance = S, cell temperature =
-    Tcell.
+    Calculates the five parameter values for the single diode equation
+    at effective irradiance and temperature conditions using the model
+    described in Desoto et al. [1]. The five parameter values are
+    inputs to singlediode for calculating an IV curve.
 
     Parameters
     ----------
-    poa_global : numeric
-        The irradiance (in W/m^2) absorbed by the module.
+    effective_irradiance : numeric
+        Irradiance (suns) that is converted to photocurrent.
 
     temp_cell : numeric
         The average cell temperature of cells within a module in C.
 
-    alpha_isc : float
+    alpha_isc : numeric
         The short-circuit current temperature coefficient of the
-        module in units of 1/C.
+        module in units of A/C.
 
-    module_parameters : dict
-        Parameters describing PV module performance at reference
-        conditions according to DeSoto's paper. Parameters may be
-        generated or found by lookup. For ease of use,
-        retrieve_sam can automatically generate a dict based on the
-        most recent SAM CEC module
-        database. The module_parameters dict must contain the
-        following 5 fields:
+    a_ref : numeric
+        The product of the diode ideality factor (unitless), number of cells
+        in series and the cell thermal voltage (in volts) at reference 
+        conditions.
 
-            * a_ref - modified diode ideality factor parameter at
-              reference conditions (units of eV), a_ref can be calculated
-              from the usual diode ideality factor (n),
-              number of cells in series (Ns),
-              and cell temperature (Tcell) per equation (2) in [1].
-            * I_L_ref - Light-generated current (or photocurrent)
-              in amperes at reference conditions. This value is referred to
-              as Iph in some literature.
-            * I_o_ref - diode reverse saturation current in amperes,
-              under reference conditions.
-            * R_sh_ref - shunt resistance under reference conditions (ohms).
-            * R_s - series resistance under reference conditions (ohms).
+    I_L_ref ; numeric
+        Light-generated current (or photocurrent) at reference conditions
+        (amperes).
 
-    EgRef : float
+    I_o_ref : numeric
+        Dark or diode reverse saturation current at reference conditions,
+        (amperes).
+
+    R_sh_ref : numeric
+        Shunt resistance at reference conditions (ohms).
+
+    R_s : numeric
+        Series resistance at reference conditions (ohms).
+
+    EgRef : numeric
         The energy bandgap at reference temperature (in eV).
         1.121 eV for silicon. EgRef must be >0.
 
-    dEgdT : float
+    dEgdT : numeric
         The temperature dependence of the energy bandgap at SRC (in
         1/C). May be either a scalar value (e.g. -0.0002677 as in [1])
         or a DataFrame of dEgdT values corresponding to each input
         condition (this may be useful if dEgdT is a function of
         temperature).
 
-    M : numeric (optional, default=1)
-        An optional airmass modifier, if omitted, M is given a value of
-        1, which assumes absolute (pressure corrected) airmass = 1.5. In
-        this code, M is equal to M/Mref as described in [1] (i.e. Mref
-        is assumed to be 1). Source [1] suggests that an appropriate
-        value for M as a function absolute airmass (AMa) may be:
-
-        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
-        ...                AMa) # doctest: +SKIP
-
-        M may be a Series.
-
-    irrad_ref : float (optional, default=1000)
+    irrad_ref : numeric (optional, default=1000)
         Reference irradiance in W/m^2.
 
-    temp_ref : float (optional, default=25)
+    temp_ref : numeric (optional, default=25)
         Reference cell temperature in C.
 
     Returns
@@ -1032,7 +1016,7 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
         Diode saturation curent in amperes at irradiance
         S and cell temperature Tcell.
 
-    resistance_series : float
+    resistance_series : numeric
         Series resistance in ohms at irradiance S and cell temperature
         Tcell.
 
@@ -1134,13 +1118,7 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
          Source: [4]
     '''
 
-    M = np.maximum(M, 0)
-    a_ref = module_parameters['a_ref']
-    IL_ref = module_parameters['I_L_ref']
-    I0_ref = module_parameters['I_o_ref']
-    Rsh_ref = module_parameters['R_sh_ref']
-    Rs_ref = module_parameters['R_s']
-
+    # Boltzmann constant in eV
     k = 8.617332478e-05
     Tref_K = temp_ref + 273.15
     Tcell_K = temp_cell + 273.15
@@ -1149,12 +1127,17 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    IL = (poa_global/irrad_ref) * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
-    I0 = (I0_ref * ((Tcell_K / Tref_K) ** 3) *
+    IL = effective_irradiance * (I_L_ref + alpha_isc * (Tcell_K - Tref_K))
+    I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
-    Rsh = Rsh_ref * (irrad_ref / poa_global)
-    Rs = Rs_ref
-
+    # The model described in [1] uses broadband irradiance reaching the cells
+    # denoted by S, in the equation for Rsh, i.e., Rsh = Rsh_ref * (Sref / S).
+    # Here effective irradiance is used in place of S. Effective irradiance
+    # differs from S by the spectral modifier. The original model behavior
+    # can be duplicated here by applying a spectral modifier of 1.0.
+    Rsh = R_sh_ref * (1 / effective_irradiance)
+    Rs = R_s
+    
     return IL, I0, Rs, Rsh, nNsVth
 
 
@@ -1307,7 +1290,7 @@ def sapm(effective_irradiance, temp_cell, module):
     Parameters
     ----------
     effective_irradiance : numeric
-        Effective irradiance (suns).
+        Irradiance (suns) that is converted to photocurrent.
 
     temp_cell : numeric
         The cell temperature (degrees C).

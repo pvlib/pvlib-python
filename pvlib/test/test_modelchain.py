@@ -211,6 +211,7 @@ def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
+@requires_scipy
 @pytest.mark.parametrize('dc_model', ['sapm', 'singlediode', 'pvwatts_dc'])
 def test_infer_dc_model(system, cec_dc_snl_ac_system,
                         pvwatts_dc_pvwatts_ac_system, location, dc_model,
@@ -223,7 +224,7 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system,
                     aoi_model='no_loss', spectral_model='no_loss')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     mc.run_model(times)
-    m.assert_called_once()
+    assert m.call_count == 1
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
 
 

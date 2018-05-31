@@ -207,7 +207,9 @@ PVSystem method is called through ``ModelChain.run_model``.
         mc.run_model(times)
 
         # assertion fails if PVSystem.sapm is not called once
-        m.assert_called_once()
+        # if using returned m, prefer this over m.assert_called_once()
+        # for compatibility with python < 3.6
+        assert m.call_count == 1
 
         # ensure that dc attribute now exists and is correct type
         assert isinstance(mc.dc, (pd.Series, pd.DataFrame))

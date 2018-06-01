@@ -1374,11 +1374,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
                         use_delta_kt_prime=use_delta_kt_prime,
                         temp_dew=temp_dew)
 
-<<<<<<< HEAD
     dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times,
-=======
-    dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times, 
->>>>>>> e03c3047ce151f07f22ff961347136d020b9aa32
                                  pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
                                  temp_dew=temp_dew)

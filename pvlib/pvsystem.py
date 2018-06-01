@@ -302,7 +302,7 @@ class PVSystem(object):
         """
 
         kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                                'R_s', 'alpha_isc', 'EgRef', 'dEgdT'],
+                                'R_s', 'alpha_sc', 'EgRef', 'dEgdT'],
                                 self.module_parameters)
         
         return calcparams_desoto(poa_global, temp_cell, **kwargs)
@@ -946,7 +946,7 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,
-                      alpha_isc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s, 
+                      alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s, 
                       EgRef=1.121, dEgdT=-0.0002677,
                       irrad_ref=1000, temp_ref=25):
     '''
@@ -963,7 +963,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     temp_cell : numeric
         The average cell temperature of cells within a module in C.
 
-    alpha_isc : float
+    alpha_sc : float
         The short-circuit current temperature coefficient of the
         module in units of A/C.
 
@@ -1144,7 +1144,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    IL = effective_irradiance * (I_L_ref + alpha_isc * (Tcell_K - Tref_K))
+    IL = effective_irradiance * (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
     I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
     # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as

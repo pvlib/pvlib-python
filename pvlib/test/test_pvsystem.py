@@ -364,7 +364,7 @@ def test_calcparams_desoto(cec_module_params):
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   effective_irradiance,
                                   temp_cell,
-                                  alpha_isc=cec_module_params['alpha_sc'],
+                                  alpha_sc=cec_module_params['alpha_sc'],
                                   a_ref=cec_module_params['a_ref'],
                                   I_L_ref=cec_module_params['I_L_ref'],
                                   I_o_ref=cec_module_params['I_o_ref'],
@@ -649,7 +649,7 @@ def test_singlediode_series(cec_module_params):
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                          poa_data,
                                          temp_cell=25,
-                                         alpha_isc=cec_module_params['alpha_sc'],
+                                         alpha_sc=cec_module_params['alpha_sc'],
                                          module_parameters=cec_module_params,
                                          EgRef=1.121,
                                          dEgdT=-0.0002677)
@@ -722,7 +722,7 @@ def test_singlediode_series_ivcurve(cec_module_params):
     poa_data = pd.Series([0, 400, 800], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   poa_data, temp_cell=25,
-                                  alpha_isc=cec_module_params['alpha_sc'],
+                                  alpha_sc=cec_module_params['alpha_sc'],
                                   module_parameters=cec_module_params,
                                   EgRef=1.121, dEgdT=-0.0002677)
 

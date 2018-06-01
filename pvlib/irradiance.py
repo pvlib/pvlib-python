@@ -1311,11 +1311,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     Determine DNI from GHI using the DIRINDEX model, which is a modification of
     the DIRINT model with information from a clear sky model.
 
-<<<<<<< HEAD
-    DIRINDEX [1] improves upon the DIRINT model by taking into account
-=======
     DIRINDEX [1] improves upon the DIRINT model by taking into account 
->>>>>>> e03c3047ce151f07f22ff961347136d020b9aa32
     turbidity when used with the Ineichen clear sky model results.
 
     Parameters

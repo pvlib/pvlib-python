@@ -369,7 +369,7 @@ def test_calcparams_desoto(cec_module_params):
                                   I_L_ref=cec_module_params['I_L_ref'],
                                   I_o_ref=cec_module_params['I_o_ref'],
                                   R_sh_ref=cec_module_params['R_sh_ref'],
-                                  Rs=cec_module_params['R_s'],
+                                  R_s=cec_module_params['R_s'],
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 

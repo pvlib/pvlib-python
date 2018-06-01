@@ -645,14 +645,18 @@ def test_PVSystem_i_from_v():
 @requires_scipy
 def test_singlediode_series(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    poa_data = pd.Series([0, 800], index=times)
+    effective_irradiance = pd.Series([0, 800], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                         poa_data,
-                                         temp_cell=25,
-                                         alpha_sc=cec_module_params['alpha_sc'],
-                                         module_parameters=cec_module_params,
-                                         EgRef=1.121,
-                                         dEgdT=-0.0002677)
+                                          effective_irradiance,
+                                          temp_cell=25,
+                                          alpha_sc=cec_module_params['alpha_sc'],
+                                          a_ref=cec_module_params['a_ref'],
+                                          I_L_ref=cec_module_params['I_L_ref'],
+                                          I_o_ref=cec_module_params['I_o_ref'],
+                                          R_sh_ref=cec_module_params['R_sh_ref'],
+                                          R_s=cec_module_params['R_s'],
+                                          EgRef=1.121,
+                                          dEgdT=-0.0002677)
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth)
     assert isinstance(out, pd.DataFrame)
 
@@ -719,12 +723,18 @@ def test_singlediode_floats_ivcurve():
 @requires_scipy
 def test_singlediode_series_ivcurve(cec_module_params):
     times = pd.DatetimeIndex(start='2015-06-01', periods=3, freq='6H')
-    poa_data = pd.Series([0, 400, 800], index=times)
+    effective_irradiance = pd.Series([0, 0.4, 0.8], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                  poa_data, temp_cell=25,
+                                  effective_irradiance,
+                                  temp_cell=25,
                                   alpha_sc=cec_module_params['alpha_sc'],
-                                  module_parameters=cec_module_params,
-                                  EgRef=1.121, dEgdT=-0.0002677)
+                                  a_ref=cec_module_params['a_ref'],
+                                  I_L_ref=cec_module_params['I_L_ref'],
+                                  I_o_ref=cec_module_params['I_o_ref'],
+                                  R_sh_ref=cec_module_params['R_sh_ref'],
+                                  R_s=cec_module_params['R_s'],
+                                  EgRef=1.121,
+                                  dEgdT=-0.0002677)
 
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 

@@ -358,7 +358,7 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params):
 
 def test_calcparams_desoto(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    effective_irradiance = pd.Series([0, 800], index=times)
+    effective_irradiance = pd.Series([0, 0.8], index=times)
     temp_cell = pd.Series([25, 25], index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
@@ -387,7 +387,7 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
     module_parameters['dEgdT'] = -0.0002677
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    effective_irradiance = pd.Series([0, 800], index=times)
+    effective_irradiance = pd.Series([0, 0.8], index=times)
     temp_cell = 25
 
     IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(effective_irradiance,

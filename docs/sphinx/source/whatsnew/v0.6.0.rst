@@ -1,0 +1,37 @@
+.. _whatsnew_0600:
+
+v0.6.0 (___, 2018)
+---------------------
+
+API Changes
+~~~~~~~~~~~
+
+
+
+Enhancements
+~~~~~~~~~~~~
+* Add sea surface albedo in irradiance.py (:issue:`458`)
+* Implement first_solar_spectral_loss in modelchain.py (:issue:'359')
+
+
+Bug fixes
+~~~~~~~~~
+* Unset executable bits of irradiance.py and test_irradiance.py (:issue:`460`)
+* Fix failing tests due to column order on Python 3.6+ and Pandas 0.23+
+  (:issue:`464`)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Will Holmgren
+* Yu Cao
+* Cliff Hansen
+

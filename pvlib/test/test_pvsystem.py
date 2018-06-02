@@ -266,6 +266,16 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params):
     out = system.sapm_spectral_loss(airmass)
 
 
+@pytest.mark.parametrize("expected", [1.03173953])
+def test_PVSystem_first_solar_spectral_loss(sapm_module_params, expected):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    pw = 3
+    airmass_absolute = 3
+    out = system.first_solar_spectral_loss(pw, airmass_absolute)
+
+    assert_allclose(out, expected, atol=1e-4)
+
+
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
     (np.array([[-30, 30, 100, np.nan]]),
@@ -359,7 +369,8 @@ def test_calcparams_desoto(cec_module_params):
                                   dEgdT=-0.0002677)
 
     assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036], index=times))
-    assert_allclose(I0, 1.943e-9)
+    # changed value in GH 444 for 2017-6-5 module file
+    assert_allclose(I0, 1.94e-9)
     assert_allclose(Rs, 0.094)
     assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65], index=times))
     assert_allclose(nNsVth, 0.473)
@@ -377,7 +388,8 @@ def test_PVSystem_calcparams_desoto(cec_module_params):
     IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(poa_data, temp_cell)
 
     assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036], index=times))
-    assert_allclose(I0, 1.943e-9)
+    # changed value in GH 444 for 2017-6-5 module file
+    assert_allclose(I0, 1.94e-9)
     assert_allclose(Rs, 0.094)
     assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65], index=times))
     assert_allclose(nNsVth, 0.473)

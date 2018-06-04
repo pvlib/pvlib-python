@@ -279,7 +279,7 @@ class PVSystem(object):
 
         return physicaliam(aoi, **kwargs)
 
-    def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
+    def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -287,8 +287,8 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_global : float or Series
-            The irradiance (in W/m^2) absorbed by the module.
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
 
         temp_cell : float or Series
             The average cell temperature of cells within a module in C.
@@ -305,7 +305,7 @@ class PVSystem(object):
                                 'R_s', 'alpha_sc', 'EgRef', 'dEgdT'],
                                 self.module_parameters)
         
-        return calcparams_desoto(poa_global, temp_cell, **kwargs)
+        return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -958,7 +958,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     Parameters
     ----------
     effective_irradiance : numeric
-        Effective irradiance (suns).
+        The irradiance (W/m2) that is converted to photocurrent.
 
     temp_cell : numeric
         The average cell temperature of cells within a module in C.
@@ -1144,7 +1144,8 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    IL = effective_irradiance * (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    IL = effective_irradiance / irrad_ref * \
+              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
     I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
     # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as
@@ -1153,7 +1154,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # by applying reflection and soiing losses to broadband plane of array
     # irradiance and not applying a spectral loss modifier, i.e., 
     # spectral_modifier = 1.0.
-    Rsh = R_sh_ref * (1.0 / effective_irradiance)
+    Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
     Rs = R_s
 
     return IL, I0, Rs, Rsh, nNsVth

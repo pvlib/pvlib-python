@@ -723,7 +723,7 @@ def test_singlediode_floats_ivcurve():
 @requires_scipy
 def test_singlediode_series_ivcurve(cec_module_params):
     times = pd.DatetimeIndex(start='2015-06-01', periods=3, freq='6H')
-    effective_irradiance = pd.Series([0, 0.4, 0.8], index=times)
+    effective_irradiance = pd.Series([0.0, 400.0, 800.0], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   effective_irradiance,
                                   temp_cell=25,

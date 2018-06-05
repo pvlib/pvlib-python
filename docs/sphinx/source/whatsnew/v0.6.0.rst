@@ -5,7 +5,7 @@ v0.6.0 (___, 2018)
 
 API Changes
 ~~~~~~~~~~~
-* pvsystem.calcparams_desoto now accepts only keyword arguments for each module model parameter. Prior to v0.6.0, pvsystem.calcparams_desoto required some module model parameters as keyword argument and accpted a dict, module_parameters, as an input providing the remaining module model parameters.
+* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
 
 
 Enhancements

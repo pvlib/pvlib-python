@@ -1001,18 +1001,6 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         the SAM CEC module database, dEgdT=-0.0002677 is imposed by the 
         parameter estimation algorithm used by NREL.
 
-    M : numeric (optional, default=1)
-        An optional airmass modifier, if omitted, M is given a value of
-        1, which assumes absolute (pressure corrected) airmass = 1.5. In
-        this code, M is equal to M/Mref as described in [1] (i.e. Mref
-        is assumed to be 1). Source [1] suggests that an appropriate
-        value for M as a function absolute airmass (AMa) may be:
-
-        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
-        ...                AMa) # doctest: +SKIP
-
-        M may be a Series.
-
     irrad_ref : float (optional, default=1000)
         Reference irradiance in W/m^2.
 
@@ -1133,6 +1121,28 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          Source: [4]
     '''
 
+    # test for use of function pre-v0.6.0 API change
+    if isinstance(a_ref, dict) or \
+       (isinstance(a_ref, pd.Series) and ('a_ref' in a_ref.keys())):
+        import warnings
+        warnings.warn('module_parameters detected as fourth positional'
+                      + ' argument of calcparams_desoto')
+        warnings.warn('calcparams_desoto will require one argument for' \
+                      + ' each module model parameter in v0.7.0 and later')
+        try:
+            module_parameters = a_ref
+            a_ref = module_parameters['a_ref']
+            I_L_ref = module_parameters['I_L_ref']
+            I_o_ref = module_parameters['I_o_ref']
+            R_sh_ref = module_parameters['R_sh_ref']
+            R_s = module_parameters['R_s']
+            warnings.warn('module parameters extracted from fourth positional'\
+                          + ' argument')
+        except:
+            warnings.warn('module parameters could not be extracted from' \
+                          + ' fourth positional argument')
+            return
+
     # Boltzmann constant in eV/K
     k = 8.617332478e-05
     
@@ -1151,7 +1161,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as
     # Rsh = Rsh_ref * (S_ref / S) where S is broadband irradiance reaching
     # the module's cells. If desired this model behavior can be duplicated
-    # by applying reflection and soiing losses to broadband plane of array
+    # by applying reflection and soiling losses to broadband plane of array
     # irradiance and not applying a spectral loss modifier, i.e., 
     # spectral_modifier = 1.0.
     Rsh = R_sh_ref * (irrad_ref / effective_irradiance)

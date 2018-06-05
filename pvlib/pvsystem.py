@@ -1126,9 +1126,9 @@ def calcparams_desoto(effective_irradiance, temp_cell,
        (isinstance(a_ref, pd.Series) and ('a_ref' in a_ref.keys())):
         import warnings
         warnings.warn('module_parameters detected as fourth positional'
-                      + ' argument of calcparams_desoto')
-        warnings.warn('calcparams_desoto will require one argument for' \
-                      + ' each module model parameter in v0.7.0 and later')
+                      + ' argument of calcparams_desoto. calcparams_desoto'
+                      + ' will require one argument for each module model'
+                      + ' parameter in v0.7.0 and later', DeprecationWarning)
         try:
             module_parameters = a_ref
             a_ref = module_parameters['a_ref']
@@ -1136,12 +1136,11 @@ def calcparams_desoto(effective_irradiance, temp_cell,
             I_o_ref = module_parameters['I_o_ref']
             R_sh_ref = module_parameters['R_sh_ref']
             R_s = module_parameters['R_s']
-            warnings.warn('module parameters extracted from fourth positional'\
-                          + ' argument')
-        except:
-            warnings.warn('module parameters could not be extracted from' \
-                          + ' fourth positional argument')
-            return
+        except Exception as e:
+            raise e('Module parameters could not be extracted from fourth'
+                    + ' positional argument of calcparams_desoto. Check that'
+                    + ' parameters are from the CEC database and/or update'
+                    + ' your code for the new API for calcparams_desoto')
 
     # Boltzmann constant in eV/K
     k = 8.617332478e-05

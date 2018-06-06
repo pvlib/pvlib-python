@@ -1152,6 +1152,10 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
+    # In the equation for IL, the single factor effective_irradiance is 
+    # used, in place of the product S*M in [1]. effective_irradiance is 
+    # equivalent to the product of S (irradiance reaching a module's cells) * 
+    # M (spectral adjustment factor) as described in [1].
     IL = effective_irradiance / irrad_ref * \
               (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
     I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *

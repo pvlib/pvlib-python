@@ -988,18 +988,17 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     EgRef : float
         The energy bandgap at reference temperature in units of eV.
-        1.121 eV for silicon. EgRef must be >0.  For parameters read from
-        the SAM CEC module database, EgRef=1.121 is imposed by the 
-        parameter estimation algorithm used by NREL.
+        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters 
+        from the SAM CEC module database, EgRef=1.121 is implicit for all
+        cell types in the parameter estimation algorithm used by NREL.
 
     dEgdT : float
         The temperature dependence of the energy bandgap at reference
-        conditions in units of 1/C. May be either a scalar value (e.g. -0.0002677 as in [1])
-        or a DataFrame of dEgdT values corresponding to each input
-        condition (this may be useful if dEgdT is a function of
-        temperature). For parameters read from
-        the SAM CEC module database, dEgdT=-0.0002677 is imposed by the 
-        parameter estimation algorithm used by NREL.
+        conditions in units of 1/K. May be either a scalar value 
+        (e.g. -0.0002677 as in [1]) or a DataFrame (this may be useful if 
+        dEgdT is a modeled as a function of temperature). For parameters from
+        the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
+        types in the parameter estimation algorithm used by NREL.
 
     irrad_ref : float (optional, default=1000)
         Reference irradiance in W/m^2.
@@ -1077,7 +1076,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     and modifying the reference parameters (for irradiance, temperature,
     and airmass) per DeSoto's equations.
 
-     Silicon (Si):
+     Crystalline Silicon (Si):
          * EgRef = 1.121
          * dEgdT = -0.0002677
 

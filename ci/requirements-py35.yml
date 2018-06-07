@@ -18,3 +18,5 @@ dependencies:
     - pip:
         - coveralls
         - pytest-timeout
+        - pyinterval
+

@@ -1,10 +1,10 @@
-import logging
 import os
 import pprint
 import uuid
 
 from numpy.testing import assert_allclose
 
+from conftest import requires_interval
 from pvlib import pvsystem
 from pvlib.data.gold import sdm
 
@@ -27,6 +27,7 @@ def test_sum_current():
             assert_allclose(current_sum_res, 0., rtol=0., atol=1.e-13)
 
 
+@requires_interval
 def test_file_operations():
     # Test file saves and data exactness after json file save and reload
     gold_dataset = sdm.make_gold_dataset()
@@ -42,11 +43,10 @@ def test_file_operations():
 
 def test_gauge_gold_dataset():
     # Test that pvsystem functions can be guaged
-    # FUTURE Report results somewhere using Air Speed Velocity or the like
+    # FUTURE Report results somewhere using Airspeed Velocity or the like
     json_rel_path = os.path.join(os.path.dirname(sdm.__file__), "sdm.json")
     gold_dataset = sdm.load_gold_dataset(json_rel_path=json_rel_path)
     pprint.pprint(sdm.gauge_gold_dataset(gold_dataset, {
             "i_from_v": pvsystem.i_from_v,
             "v_from_i": pvsystem.v_from_i,
         }))
-    logging.warn("blah")

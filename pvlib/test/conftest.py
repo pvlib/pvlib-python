@@ -87,3 +87,13 @@ except ImportError:
 
 requires_siphon = pytest.mark.skipif(not has_siphon,
                                      reason='requires siphon')
+
+
+try:
+    import interval  # noqa
+    has_interval = True
+except ImportError:
+    has_interval = False
+
+requires_interval = pytest.mark.skipif(not has_interval,
+                                       reason='requires interval')

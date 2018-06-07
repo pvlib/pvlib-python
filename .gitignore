@@ -44,12 +44,12 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-.coverage
 .cache
+.coverage
 .pytest_cache/
 .tox/
-nosetests.xml
 coverage.xml
+nosetests.xml
 
 # Translations
 *.mo

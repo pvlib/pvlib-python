@@ -41,7 +41,7 @@ def test_file_operations():
 
 
 def test_gauge_gold_dataset():
-    # Test that pvsystem functions can be guaged and (crudely) logs results
+    # Test that pvsystem functions can be guaged
     # FUTURE Report results somewhere using Air Speed Velocity or the like
     json_rel_path = os.path.join(os.path.dirname(sdm.__file__), "sdm.json")
     gold_dataset = sdm.load_gold_dataset(json_rel_path=json_rel_path)

@@ -1,11 +1,12 @@
 """
-The ``sdm_gold`` module contains functions for generating gold current-voltage
-(IV) data for the five-parameter single diode model (SDM) and gauging
-functions that compute IV values in terms of accuracy and computation speed.
+The ``sdm`` module contains functions for generating gold current-voltage
+(I-V) data for the five-parameter single-diode model (SDM) and gauging
+functions that compute I-V values in terms of accuracy and computation speed.
 
-Run this module from the command line to generate a gold dataset in
-pvlib/data/sdm_gold.json and pvlib/data/sdm_gold.csv and then guage the pvlib
-functions against it.
+Run this module from the command line to generate a gold dataset in two
+formats, pvlib/data/gold/sdm.json (lossles, machine-interoperable) and
+pvlib/data/gold/sdm.csv (human readable and lossy) and then guage functions
+against it that are compatible with the pvlib API.
 """
 
 import copy
@@ -26,7 +27,7 @@ import pvlib.version
 def sum_current(resistance_shunt, resistance_series, nNsVth, current, voltage,
                 saturation_current, photocurrent):
     """
-    Sum the current at the diode node of the single diode model (SDM).
+    Sum the current at the diode node of the single-diode model (SDM).
 
     The current sum equaling zero is the fundamental invariant of the SDM, as
     described in, e.g., De Soto et al. 2006 [1]. Reverse-voltage breakdown and
@@ -95,7 +96,7 @@ def sum_current(resistance_shunt, resistance_series, nNsVth, current, voltage,
 
 def bootstrap_si_device_bishop(N_s=1, cell_area_cm2=4., ideality_factor=1.5):
     """
-    Create x-Si device based on cell parameters in Bishop's 1988 paper Fig. 6.
+    Create c-Si device based on cell parameters in Bishop's 1988 paper Fig. 6.
 
     Parameters are normalized to the cell area.
     """
@@ -132,11 +133,11 @@ def bootstrap_si_device_pvmismatch(N_s=1,
                                    cell_area_cm2=153.,
                                    ideality_factor=1.5):
     """
-    Create a x-Si device based on default cell parameters in PVMismatch.
+    Create a c-Si device based on default cell parameters in PVMismatch.
 
     Parameters are not normalized to the cell area.
 
-    First diode taken from two diode model used in PVMismatch, and default
+    First diode taken from double-diode model used in PVMismatch, and default
     ideality factor is average of first and second diode ideality factors.
     https://github.com/SunPower/PVMismatch/blob/master/pvmismatch/pvmismatch_lib/pvcell.py
     """
@@ -178,10 +179,36 @@ def bootstrap_si_device_pvmismatch(N_s=1,
 
 def make_gold_dataset():
     """
-    TODO
-    Returns the dataset in lossless machine-interoperable format to a python dictionary.
+    Make a gold dataset of I-V curves that accurately solve single-diode model.
 
-    Follow SemVer and maintain backwards compatibility for dataset whenever possible.
+    The set of I-V curves are generated from a range of PV devices: small c-Si
+    cell, large c-Si cell, c-Si "mini-module", c-Si module, and CdTe module.
+    Additionally, each device is ideal, nominal, or degraded in terms of its
+    series and parallel resistances. I-V curves for each device are generated
+    over a matrix of irradiance and temperature. The I-V curve data are
+    returned in a python dict that is in a lossless, machine-interoperable
+    format, which is the expected input to most of the other functions in this
+    python module. (Other functions can convert this dict to a human-readable
+    format.) An explict method of Bishop [1] is used to compute (V, I) pairs
+    mostly in the first quadrant, and interval analysis guarantees the
+    numerical computations up to a specified tolerance.
+
+    New gold data can be added to the returned dict. Each change should be
+    versioned in `dataset_version`, following SemVer and maintaining backwards
+    compatibility whenever possible. Be sure to update all dependent functions.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    gold_dataset : dict
+
+    References
+    ----------
+    [1] J. W. Bishop, "Computer simulation of the effects of electrical
+    mismatches in photovoltaic cell interconnection circuits", Solar Cells,
+    vol 25, pp. 73-89, 1988.
     """
 
     # Load module inside function to avoid a global dependency requirement
@@ -210,7 +237,7 @@ def make_gold_dataset():
         pvsystem.retrieve_sam('cecmod').First_Solar_FS_495
     ]
 
-    # Initialize the output
+    # Initialize the output, recording metadata
     gold_dataset = {
         "timestamp_utc_iso": datetime.datetime.utcnow().isoformat(),
         "dataset_version": '1.0.0',  # dataset follows SemVer
@@ -234,7 +261,7 @@ def make_gold_dataset():
         "devices": []
     }
 
-    # For each ideal, normal, or degraded device, create matrix of I-V curves
+    # For each ideal, nominal, or degraded device, create matrix of I-V curves
     for device in devices:
         device_dict = {
             "name": device.name,
@@ -257,13 +284,12 @@ def make_gold_dataset():
         else:
             raise ValueError('Unsupported device technology.')
 
-        # Do all "flavor" combinations of ideal device, regular device, and
+        # Do all "flavor" combinations of ideal device, nominal device, and
         #  degraded device
         r_s_scale_grid, g_sh_scale_grid = numpy.meshgrid([0., 1., 5.],
                                                          [0., 1., 5.])
 
-        # For all "flavors" of this device, create I-V curves over the (G,T)
-        #  matrix
+        # For all "flavors" of this device, create I-V curves over (G,T) matrix
         for r_s_scale, g_sh_scale in zip(r_s_scale_grid.flat,
                                          g_sh_scale_grid.flat):
             for G in G_list:
@@ -303,23 +329,16 @@ def make_gold_dataset():
                     i_gold = i_l - i_0 * numpy.expm1(v_d / nNsVth) - g_sh * v_d
                     v_gold = v_d - r_s * i_gold
 
-                    # Record machine-interoperable hex values for vi_pair in
-                    #  zip(v_gold, i_gold):
+                    # Record lossless, machine-interoperable hex values for
+                    #  the (V, I) pairs
                     device_dict["iv_curves"].append({
-                        "G":
-                        G.hex(),
-                        "T":
-                        T.hex(),
-                        "i_l":
-                        i_l.hex(),
-                        "i_0":
-                        i_0.hex(),
-                        "r_s":
-                        r_s.hex(),
-                        "g_sh":
-                        g_sh.hex(),
-                        "nNsVth":
-                        nNsVth.hex(),
+                        "G": G.hex(),
+                        "T": T.hex(),
+                        "i_l": i_l.hex(),
+                        "i_0": i_0.hex(),
+                        "r_s": r_s.hex(),
+                        "g_sh": g_sh.hex(),
+                        "nNsVth": nNsVth.hex(),
                         "v_gold": [v.hex() for v in v_gold.tolist()],
                         "i_gold": [i.hex() for i in i_gold.tolist()]
                     })
@@ -337,15 +356,16 @@ def make_gold_dataset():
                          for vi_pair in zip(v_gold, i_gold)]
 
                     # Make sure the computed interval is within the specified
-                    #  tolerance
+                    #  tolerance, report bad value in exception if not
                     for v, i, current_sum_residual_interval in zip(
                             v_gold, i_gold,
                             current_sum_residual_interval_list):
                         if current_sum_residual_interval not in tol_interval:
+                            # Don't include entire curve in exception message
                             del device_dict["iv_curves"][-1]["v_gold"]
                             del device_dict["iv_curves"][-1]["i_gold"]
                             raise ValueError("Residual interval {} not in {}, \
-                                 for (V,I)=({},{}) at {}".format(
+                                 for (V, I)=({}, {}) at {}".format(
                                 current_sum_residual_interval, tol_interval, v,
                                 i, [
                                     float.fromhex(item)
@@ -379,8 +399,8 @@ def convert_gold_dataset(gold_dataset):
     # Convert the values
     for device in gold_dataset_converted["devices"]:
         for iv_curve in device["iv_curves"]:
-            # Load G, T, and 5 single diode model parameters for each I-V curve
-            # Floats are converted from lossless, interchangeable hex format
+            # Load G, T, and 5 single-diode model parameters for each I-V curve
+            # Floats converted from lossless, machine-interoperable hex format
 
             iv_curve["G"] = float.fromhex(iv_curve["G"])
             iv_curve["T"] = float.fromhex(iv_curve["T"])
@@ -415,7 +435,7 @@ def pretty_print_gold_dataset(gold_dataset):
     string.
     """
 
-    # Convert gold dataset (input should be the lossless version)
+    # Convert gold dataset from hex
     gold_dataset_converted = convert_gold_dataset(gold_dataset)
 
     num_pts = len(
@@ -437,7 +457,7 @@ def pretty_print_gold_dataset(gold_dataset):
 
     for device in gold_dataset_converted["devices"]:
         for iv_curve in device["iv_curves"]:
-            # Load G, T, and 5 single diode model parameters for each I-V curve
+            # Load G, T, and 5 single-diode model parameters for each I-V curve
             # Floats are converted from lossless, interchangeable hex format
             gold_dataset_csv = gold_dataset_csv + ", ".join(
                 map(str, [iv_curve["G"], iv_curve["T"]])) + "\n"
@@ -455,10 +475,10 @@ def pretty_print_gold_dataset(gold_dataset):
 
 
 def save_gold_dataset(gold_dataset,
-                      json_rel_path="data/sdm_gold.json",
-                      csv_rel_path="data/sdm_gold.csv"):
+                      json_rel_path="sdm.json",
+                      csv_rel_path="sdm.csv"):
     """
-    Save gold dataset to disk in two formats.
+    Save gold dataset to file in two possible formats.
 
     The gold dataset dict is saved in a lossless, machine-interoperable json
     file and in a lossy, but human-readable, csv file.
@@ -481,7 +501,7 @@ def save_gold_dataset(gold_dataset,
             fp.write(pretty_print_gold_dataset(gold_dataset))
 
 
-def load_gold_dataset(json_rel_path="data/sdm.json"):
+def load_gold_dataset(json_rel_path="sdm.json"):
     """
     Load gold dataset from disk.
 
@@ -509,7 +529,7 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
     This also helps verify that a given function meets the pvlib interface.
     """
 
-    # Convert gold dataset
+    # Convert gold dataset from hex
     gold_dataset = convert_gold_dataset(gold_dataset)
 
     # Follow SemVer and maintain backwards dataset compatibility whenever
@@ -744,8 +764,8 @@ if __name__ == '__main__':
 
     # File locations are robust to running script from different directories
     rel_path = os.path.dirname(__file__)
-    json_rel_path = os.path.join(rel_path, "data", "sdm_gold.json")
-    csv_rel_path = os.path.join(rel_path, "data", "sdm_gold.csv")
+    json_rel_path = os.path.join(rel_path, "sdm.json")
+    csv_rel_path = os.path.join(rel_path, "sdm.csv")
 
     save_gold_dataset(
         gold_dataset, json_rel_path=json_rel_path, csv_rel_path=csv_rel_path)

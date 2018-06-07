@@ -18,8 +18,9 @@ import sys
 from timeit import default_timer as timer
 
 import numpy
-import scipy  # constants depends on scipy version
 
+# constants is tied to a specific scipy.constants version, but they rarely
+#  change, and this can be traced through pvlib.version
 from pvlib import constants, pvsystem
 import pvlib.version
 
@@ -243,7 +244,6 @@ def make_gold_dataset():
         "dataset_version": '1.0.0',  # dataset follows SemVer
         "python_version": sys.version,
         "numpy_version": numpy.__version__,
-        "scipy_version": scipy.__version__,
         "pvlib_version": pvlib.version.__version__,
         "platform_version": platform.platform(),
         "residual_interval_tolerance": tol,

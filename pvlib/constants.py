@@ -1,23 +1,20 @@
 """
 Useful constants for photovoltaic modeling.
 
-Several constants are derived from scipy.constants, which are derived from
-standardized CODATA. See https://physics.nist.gov/cuu/Constants/.
+Several constants are derived from scipy.constants v1.1.0, which are derived
+from standardized CODATA. See https://physics.nist.gov/cuu/Constants/.
 
 Units appear in the variable suffix to eliminate ambiguity.
 """
 
-import scipy.constants as constants
+# elementary charge, from scipy.constants.value('elementary charge')
+elementary_charge_C = 1.6021766208e-19
 
-# elementary charge, 1.6021766208e-19 C
-elementary_charge_C = constants.value('elementary charge')
+# Boltzmann constant, from scipy.constants.value('Boltzmann constant')
+boltzmann_J_per_K = 1.38064852e-23
 
-# Boltzmann constant, 1.38064852e-23 J/K
-boltzmann_J_per_K = constants.value('Boltzmann constant')
+# Define standard test condition (STC) temperature in degrees Celsius
+T_stc_degC = 25.
 
-# Define standard test condition (STC) temperature
-T_stc_C = 25.  # degC
-
-# Define standard test condition (STC) temperature
-T_stc_K = constants.convert_temperature(T_stc_C, 'Celsius',
-                                        'Kelvin')  # 298.15 K
+# Define standard test condition (STC) temperature in Kelvin
+T_stc_K = 273.15 + T_stc_degC

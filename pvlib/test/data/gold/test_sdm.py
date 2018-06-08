@@ -4,7 +4,7 @@ import uuid
 
 from numpy.testing import assert_allclose
 
-from conftest import requires_interval
+from conftest import requires_interval, requires_scipy
 from pvlib import pvsystem
 from pvlib.data.gold import sdm
 
@@ -41,6 +41,7 @@ def test_file_operations():
     os.remove(file_name_csv)
 
 
+@requires_scipy
 def test_gauge_gold_dataset():
     # Test that pvsystem functions can be guaged
     # FUTURE Report results somewhere using Airspeed Velocity or the like

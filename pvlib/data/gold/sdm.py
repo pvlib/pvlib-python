@@ -297,10 +297,14 @@ def make_gold_dataset():
                     # Compute the model parameters at each
                     #  irradiance-temperature combo
                     device_params = pvsystem.calcparams_desoto(
-                        poa_global=G,
+                        effective_irradiance=G,
                         temp_cell=T,
-                        alpha_isc=device.alpha_sc,
-                        module_parameters=device,
+                        alpha_sc=device.alpha_sc,
+                        a_ref=device.a_ref,
+                        I_L_ref=device.I_L_ref,
+                        I_o_ref=device.I_o_ref,
+                        R_sh_ref=device.R_sh_ref,
+                        R_s=device.R_s,
                         EgRef=EgRef,
                         dEgdT=dEgdT)
                     # More convienent variable names

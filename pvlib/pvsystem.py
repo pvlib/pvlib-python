@@ -947,12 +947,12 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,
-                      alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s, 
+                      alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                       EgRef=1.121, dEgdT=-0.0002677,
                       irrad_ref=1000, temp_ref=25):
     '''
-    Calculates five parameter values for the single diode equation at 
-    effective irradiance and cell temperature using the De Soto et al. 
+    Calculates five parameter values for the single diode equation at
+    effective irradiance and cell temperature using the De Soto et al.
     model described in [1]. The five values returned by calcparams_desoto
     can be used by singlediode to calculate an IV curve.
 
@@ -969,7 +969,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         module in units of A/C.
 
     a_ref : float
-        The product of the usual diode ideality factor (n, unitless), 
+        The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at reference
         conditions, in units of V.
 
@@ -989,14 +989,14 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     EgRef : float
         The energy bandgap at reference temperature in units of eV.
-        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters 
+        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
         from the SAM CEC module database, EgRef=1.121 is implicit for all
         cell types in the parameter estimation algorithm used by NREL.
 
     dEgdT : float
         The temperature dependence of the energy bandgap at reference
-        conditions in units of 1/K. May be either a scalar value 
-        (e.g. -0.0002677 as in [1]) or a DataFrame (this may be useful if 
+        conditions in units of 1/K. May be either a scalar value
+        (e.g. -0.0002677 as in [1]) or a DataFrame (this may be useful if
         dEgdT is a modeled as a function of temperature). For parameters from
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
         types in the parameter estimation algorithm used by NREL.

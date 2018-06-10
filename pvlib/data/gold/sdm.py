@@ -43,40 +43,35 @@ def sum_current(resistance_shunt, resistance_series, nNsVth, current, voltage,
     Parameters
     ----------
     resistance_shunt : numeric
-        Shunt resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rsh``.
-        0 < resistance_shunt <= numpy.inf
+        Shunt resistance in ohms under desired I-V curve conditions.
+        Often abbreviated ``Rsh``. ``0 < Rsh <= numpy.inf``
 
     resistance_series : numeric
-        Series resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rs``.
-        0 <= resistance_series < numpy.inf
+        Series resistance in ohms under desired I-V curve conditions.
+        Often abbreviated ``Rs``. ``0 <= Rs < numpy.inf``
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
-        (n), 2) the number of cells in series (Ns), and 3) the cell
-        thermal voltage under the desired IV curve conditions (Vth). The
+        (``n``), 2) the number of cells in series (``Ns``), and 3) the cell
+        thermal voltage under the desired I-V curve conditions (``Vth``). The
         thermal voltage of the cell (in volts) may be calculated as
-        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
-        temp_cell is the temperature of the p-n junction in Kelvin, and
-        q is the charge of an electron (coulombs).
-        0 < nNsVth
+        ``k*temp_cell/q``, where ``k`` is Boltzmann's constant (J/K),
+        ``temp_cell`` is the temperature of the p-n junction in Kelvin, and
+        ``q`` is the charge of an electron (coulombs). ``0 < nNsVth``
 
     current : numeric
-        The terminal current in amperes under desired IV curve conditions.
+        The terminal current in amperes under desired I-V curve conditions.
 
     voltage : numeric
-        The terminal voltage in volts under desired IV curve conditions.
+        The terminal voltage in volts under desired I-V curve conditions.
 
     saturation_current : numeric
-        Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
-        0 < saturation_current
+        Diode saturation current in amperes under desired I-V curve
+        conditions. Often abbreviated ``I_0``. ``0 < I_0``
 
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
-        IV curve conditions. Often abbreviated ``I_L``.
-        0 <= photocurrent
+        I-V curve conditions. Often abbreviated ``I_L``. ``0 <= I_L``
 
     Returns
     -------
@@ -195,8 +190,9 @@ def make_gold_dataset():
     numerical computations up to a specified tolerance.
 
     New gold data can be added to the returned dict. Each change should be
-    versioned in `dataset_version`, following SemVer and maintaining backwards
-    compatibility whenever possible. Be sure to update all dependent functions.
+    versioned in ``dataset_version``, following SemVer and maintaining
+    backwards compatibility whenever possible. Be sure to update all dependent
+    functions.
 
     Parameters
     ----------
@@ -390,6 +386,14 @@ def convert_gold_dataset(gold_dataset):
     From a gold dataset in the lossless, machine-interoperable format, create
     and return a copy in a numpy-based machine-specific format for the current
     architecture that is compatible with the pvlib API.
+
+    Parameters
+    ----------
+    gold_dataset : dict
+
+    Returns
+    -------
+    gold_dataset_converted : dict
     """
 
     # Return a new dict instead of clobbering existing (uses more memory)
@@ -437,6 +441,15 @@ def pretty_print_gold_dataset(gold_dataset):
     From a gold dataset in the lossless, machine-interoperable format, create
     and return the dataset as a human-readale, comma-separated-value (csv)
     string.
+
+    Parameters
+    ----------
+    gold_dataset : dict
+
+    Returns
+    -------
+    gold_dataset_csv : str
+
     """
 
     # Convert gold dataset from hex
@@ -490,6 +503,20 @@ def save_gold_dataset(gold_dataset,
     Relative file paths are used, which are relative to the current directory.
     Defaults are customizable. Set a file path to None to skip saving that
     file.
+
+    Parameters
+    ----------
+    gold_dataset : dict
+
+    json_rel_path : str
+        Pass ``None`` to skip writing this file.
+
+    csv_rel_path :str
+        Pass ``None`` to skip writing this file.
+
+    Returns
+    -------
+
     """
 
     # When requested, write dataset in json file, skips when empty path string
@@ -512,6 +539,14 @@ def load_gold_dataset(json_rel_path="sdm.json"):
     The gold dataset is loaded from a json file into a dict in lossless,
     machine-interoperable format. Pass this to convert_gold_dataset() in order
     to use the data with pvlib on a specific machine.
+
+    Parameters
+    ----------
+    json_rel_path : str
+
+    Returns
+    -------
+    gold_dataset : dict
     """
 
     # This should normalize the path for the particular OS
@@ -519,18 +554,32 @@ def load_gold_dataset(json_rel_path="sdm.json"):
         return json.load(fp)
 
 
-def gauge_gold_dataset(gold_dataset, test_func_dict):
+def gauge_gold_dataset(gold_dataset, test_func):
     """
     Gauge modeling functions for accuracy and speed against the gold dataset.
 
-    For each modeling function passed in the dictionary, this gauges and
-    returns the IV curve for each device with the least accuracy as compared
-    to the gold dataset. Gauges are for both the residual of the current sum
-    at the diode node and the residual in terminal I or V. Timing data and
-    summary statistics are also returned for the ensemble of computations per
-    function and per device.
+    For each modeling function passed in the test_func dictionary, this gauges
+    and returns the I-V curve for each device with the least accuracy as
+    compared to the gold dataset. Gauges are for both the residual of the
+    current sum at the diode node and the residual in terminal I or V. Timing
+    data and summary statistics are also returned for the ensemble of
+    computations per function and per device.
 
     This also helps verify that a given function meets the pvlib interface.
+
+    Parameters
+    ----------
+    gold_dataset : dict
+
+    test_func : dict
+
+    Returns
+    -------
+    results : list
+        A per-device list of results with each function tested/benchmarked. The
+worst computed I-V curve is returned along with performance timing information
+and statistics for the device-ensemble of I-V curve computations (without any
+repetitions).
     """
 
     # Convert gold dataset from hex
@@ -550,7 +599,7 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
         worst_v_test_current_sum_max_abs_res = 0.
         worst_v_test_terminal_max_abs_res = 0.
 
-        # Initialize the worst results for this device
+        # Initialize the worst results and benchmarks for this device
         # Note that a caller may choose not to test all the possible functions
         # FUTURE This dictionary can be expanded in a backwards compatible
         #  manner to support additional gold values and residuals for
@@ -559,7 +608,7 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
             {"name": device["name"],
              "Technology": device["Technology"],
              "N_s": device["N_s"]}
-        if "i_from_v" in test_func_dict:
+        if "i_from_v" in test_func:
             device_dict["i_from_v"] = {
                 "current_sum": None,
                 "terminal": None,
@@ -572,7 +621,7 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
                     }
                 }
             }
-        if "v_from_i" in test_func_dict:
+        if "v_from_i" in test_func:
             device_dict["v_from_i"] = {
                 "current_sum": None,
                 "terminal": None,
@@ -589,11 +638,11 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
         # Gauge each I-V curve for current sum and terminal residuals
         for iv_curve in device["iv_curves"]:
             # Check if caller wants to test an i_from_v function
-            if "i_from_v" in test_func_dict:
+            if "i_from_v" in test_func:
                 # Compute test values using provided test function that meets
                 #  pvlib API
                 start = timer()
-                i_test = test_func_dict["i_from_v"](
+                i_test = test_func["i_from_v"](
                     iv_curve["r_sh"], iv_curve["r_s"], iv_curve["nNsVth"],
                     iv_curve["v_gold"], iv_curve["i_0"], iv_curve["i_l"])
                 device_dict["i_from_v"]["performance"]["time_s"][
@@ -655,11 +704,11 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
                     }
 
             # Check if caller wants to test a v_from_i function
-            if "v_from_i" in test_func_dict:
+            if "v_from_i" in test_func:
                 # Compute test values using provided test function that meets
                 #  pvlib API
                 start = timer()
-                v_test = test_func_dict["v_from_i"](
+                v_test = test_func["v_from_i"](
                     iv_curve["r_sh"], iv_curve["r_s"], iv_curve["nNsVth"],
                     iv_curve["i_gold"], iv_curve["i_0"], iv_curve["i_l"])
                 device_dict["v_from_i"]["performance"]["time_s"][
@@ -721,7 +770,7 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
                     }
 
         # Compute summary performance statistics for this device
-        if "i_from_v" in test_func_dict:
+        if "i_from_v" in test_func:
             device_dict["i_from_v"]["performance"]["time_s"]["min"] = \
                 min(device_dict["i_from_v"]["performance"]["time_s"]["data"])
             device_dict["i_from_v"]["performance"]["time_s"]["med"] = \
@@ -736,7 +785,7 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
                 numpy.std(device_dict["i_from_v"]
                           ["performance"]["time_s"]["data"], ddof=1)
 
-        if "v_from_i" in test_func_dict:
+        if "v_from_i" in test_func:
             device_dict["v_from_i"]["performance"]["time_s"]["min"] = \
                 min(device_dict["v_from_i"]["performance"]["time_s"]["data"])
             device_dict["v_from_i"]["performance"]["time_s"]["med"] = \
@@ -751,7 +800,8 @@ def gauge_gold_dataset(gold_dataset, test_func_dict):
                 numpy.std(device_dict["v_from_i"]
                           ["performance"]["time_s"]["data"], ddof=1)
 
-        # Append the worst results found for this device to the output dict
+        # Append the worst results and the benchmarking for this device to the
+        #  output list of devices
         # For convienent post processing and analysis, floats are NOT in hex
         #  format
         results.append(device_dict)

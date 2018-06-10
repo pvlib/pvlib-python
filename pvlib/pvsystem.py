@@ -1944,49 +1944,44 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     Device voltage at the given device current for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
-     Jain and Kapoor 2004 [1].
+    Jain and Kapoor 2004 [1].
     The solution is per Eq 3 of [1] except when resistance_shunt=numpy.inf,
-     in which case the explict solution for voltage is used.
+    in which case the explict solution for voltage is used.
     Ideal device parameters are specified by resistance_shunt=np.inf and
-     resistance_series=0.
+    resistance_series=0.
     Inputs to this function can include scalars and pandas.Series, but it is
-     the caller's responsibility to ensure that the arguments are all float64
-     and within the proper ranges.
+    the caller's responsibility to ensure that the arguments are all float64
+    and within the proper ranges.
 
     Parameters
     ----------
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rsh``.
-        0 < resistance_shunt <= numpy.inf
+        Often abbreviated ``Rsh``. ``0 < Rsh <= numpy.inf``
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rs``.
-        0 <= resistance_series < numpy.inf
+        Often abbreviated ``Rs``. ``0 <= Rs < numpy.inf``
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
-        (n), 2) the number of cells in series (Ns), and 3) the cell
-        thermal voltage under the desired IV curve conditions (Vth). The
+        (``n``), 2) the number of cells in series (``Ns``), and 3) the cell
+        thermal voltage under the desired IV curve conditions (``Vth``). The
         thermal voltage of the cell (in volts) may be calculated as
-        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
-        temp_cell is the temperature of the p-n junction in Kelvin, and
-        q is the charge of an electron (coulombs).
-        0 < nNsVth
+        ``k*temp_cell/q``, where ``k`` is Boltzmann's constant (J/K),
+        ``temp_cell`` is the temperature of the p-n junction in Kelvin, and
+        ``q`` is the charge of an electron (coulombs). ``0 < nNsVth``
 
     current : numeric
         The current in amperes under desired IV curve conditions.
 
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
-        0 < saturation_current
+        conditions. Often abbreviated ``I_0``. ``0 < I_0``
 
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
-        IV curve conditions. Often abbreviated ``I_L``.
-        0 <= photocurrent
+        IV curve conditions. Often abbreviated ``I_L``. ``0 <= I_L``
 
     Returns
     -------
@@ -2084,49 +2079,44 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     Device current at the given device voltage for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
-     Jain and Kapoor 2004 [1].
+    Jain and Kapoor 2004 [1].
     The solution is per Eq 2 of [1] except when resistance_series=0,
-     in which case the explict solution for current is used.
+    in which case the explict solution for current is used.
     Ideal device parameters are specified by resistance_shunt=np.inf and
-     resistance_series=0.
+    resistance_series=0.
     Inputs to this function can include scalars and pandas.Series, but it is
-     the caller's responsibility to ensure that the arguments are all float64
-     and within the proper ranges.
+    the caller's responsibility to ensure that the arguments are all float64
+    and within the proper ranges.
 
     Parameters
     ----------
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rsh``.
-        0 < resistance_shunt <= numpy.inf
+        Often abbreviated ``Rsh``. ``0 < Rsh <= numpy.inf``
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rs``.
-        0 <= resistance_series < numpy.inf
+        Often abbreviated ``Rs``. ``0 <= Rs < numpy.inf``
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
-        (n), 2) the number of cells in series (Ns), and 3) the cell
-        thermal voltage under the desired IV curve conditions (Vth). The
+        (``n``), 2) the number of cells in series (``Ns``), and 3) the cell
+        thermal voltage under the desired IV curve conditions (``Vth``). The
         thermal voltage of the cell (in volts) may be calculated as
-        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
-        temp_cell is the temperature of the p-n junction in Kelvin, and
-        q is the charge of an electron (coulombs).
-        0 < nNsVth
+        ``k*temp_cell/q``, where ``k`` is Boltzmann's constant (J/K),
+        ``temp_cell`` is the temperature of the p-n junction in Kelvin, and
+        ``q`` is the charge of an electron (coulombs). ``0 < nNsVth``
 
     voltage : numeric
         The voltage in volts under desired IV curve conditions.
 
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
-        0 < saturation_current
+        conditions. Often abbreviated ``I_0``. ``0 < I_0``
 
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
-        IV curve conditions. Often abbreviated ``I_L``.
-        0 <= photocurrent
+        IV curve conditions. Often abbreviated ``I_L``. ``0 <= I_L``
 
     Returns
     -------

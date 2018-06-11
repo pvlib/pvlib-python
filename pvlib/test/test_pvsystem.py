@@ -65,7 +65,8 @@ def test_systemdef_dict():
             'State': 'CA',
             'TZ': -8}
 
-    expected = {'tz': -8, ## Note that TZ is float, but Location sets tz as string
+    # Note that TZ is float, but Location sets tz as string
+    expected = {'tz': -8,
                 'albedo': 0.1,
                 'altitude': 10,
                 'latitude': 37.8,
@@ -260,8 +261,8 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
     ({'Material': 'Multi-c-Si'}, 'multisi', None),
     ({'first_solar_spectral_coefficients': (
         0.84, -0.03, -0.008, 0.14, 0.04, -0.002)},
-      None,
-      (0.84, -0.03, -0.008, 0.14, 0.04, -0.002))
+     None,
+     (0.84, -0.03, -0.008, 0.14, 0.04, -0.002))
     ])
 def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
                                             coefficients, mocker):
@@ -643,7 +644,7 @@ def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
     m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
     args = (20, .1, .5, 40, 6e-7, 7)
-    output = system.i_from_v(*args)
+    system.i_from_v(*args)
     m.assert_called_once_with(*args)
 
 
@@ -773,6 +774,7 @@ def test_scale_voltage_current_power(sam_data):
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=[0])
     out = pvsystem.scale_voltage_current_power(data, voltage=2, current=3)
+    assert_frame_equal(out, expected, check_less_precise=5)
 
 
 def test_PVSystem_scale_voltage_current_power(mocker):
@@ -780,7 +782,7 @@ def test_PVSystem_scale_voltage_current_power(mocker):
     system = pvsystem.PVSystem(modules_per_string=2, strings_per_inverter=3)
     m = mocker.patch(
         'pvlib.pvsystem.scale_voltage_current_power', autospec=True)
-    out = system.scale_voltage_current_power(data)
+    system.scale_voltage_current_power(data)
     m.assert_called_once_with(data, voltage=2, current=3)
 
 
@@ -1149,7 +1151,7 @@ def test_PVSystem_pvwatts_losses(mocker):
     age = 1
     out = system.pvwatts_losses(age=age)
     pvsystem.pvwatts_losses.assert_called_once_with(age=age)
-    assert out < 100
+    assert out < expected
 
 
 def test_PVSystem_pvwatts_ac(mocker):

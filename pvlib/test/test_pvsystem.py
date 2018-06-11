@@ -392,12 +392,21 @@ def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    poa_data = np.array([0, 800])
+    effective_irradiance = np.array([0, 800])
     temp_cell = 25
-    IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(poa_data, temp_cell)
+    IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(effective_irradiance,
+                                                       temp_cell)
     pvsystem.calcparams_desoto.assert_called_once_with(
-        poa_data, temp_cell, module_parameters['alpha_sc'], module_parameters,
-        module_parameters['EgRef'], module_parameters['dEgdT'])
+                                  effective_irradiance,
+                                  temp_cell,
+                                  alpha_sc=cec_module_params['alpha_sc'],
+                                  a_ref=cec_module_params['a_ref'],
+                                  I_L_ref=cec_module_params['I_L_ref'],
+                                  I_o_ref=cec_module_params['I_o_ref'],
+                                  R_sh_ref=cec_module_params['R_sh_ref'],
+                                  R_s=cec_module_params['R_s'],
+                                  EgRef=module_parameters['EgRef'],
+                                  dEgdT=module_parameters['dEgdT'])
     assert_allclose(IL, np.array([0.0, 6.036]), atol=1)
     assert_allclose(I0, 2.0e-9, atol=1.0e-9)
     assert_allclose(Rs, 0.1, atol=0.1)

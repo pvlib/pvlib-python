@@ -5,12 +5,15 @@ v0.6.0 (___, 2018)
 
 API Changes
 ~~~~~~~~~~~
-
+* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
 
 
 Enhancements
 ~~~~~~~~~~~~
 * Add sea surface albedo in irradiance.py (:issue:`458`)
+* Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
+* Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -37,3 +40,5 @@ Contributors
 ~~~~~~~~~~~~
 * Will Holmgren
 * Yu Cao
+* Cliff Hansen
+

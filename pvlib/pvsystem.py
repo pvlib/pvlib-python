@@ -279,7 +279,7 @@ class PVSystem(object):
 
         return physicaliam(aoi, **kwargs)
 
-    def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
+    def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -287,8 +287,8 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_global : float or Series
-            The irradiance (in W/m^2) absorbed by the module.
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
 
         temp_cell : float or Series
             The average cell temperature of cells within a module in C.
@@ -300,11 +300,12 @@ class PVSystem(object):
         -------
         See pvsystem.calcparams_desoto for details
         """
-        return calcparams_desoto(poa_global, temp_cell,
-                                 self.module_parameters['alpha_sc'],
-                                 self.module_parameters,
-                                 self.module_parameters['EgRef'],
-                                 self.module_parameters['dEgdT'], **kwargs)
+
+        kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                                'R_s', 'alpha_sc', 'EgRef', 'dEgdT'],
+                                self.module_parameters)
+        
+        return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -420,6 +421,94 @@ class PVSystem(object):
         return sapm_effective_irradiance(
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
+
+    def first_solar_spectral_loss(self, pw, airmass_absolute):
+
+        """
+        Use the :py:func:`first_solar_spectral_correction` function to
+        calculate the spectral loss modifier. The model coefficients are
+        specific to the module's cell type, and are determined by searching
+        for one of the following keys in self.module_parameters (in order):
+            'first_solar_spectral_coefficients' (user-supplied coefficients)
+            'Technology' - a string describing the cell type, can be read from
+            the CEC module parameter database
+            'Material' - a string describing the cell type, can be read from
+            the Sandia module database.
+
+        Parameters
+        ----------
+        pw : array-like
+            atmospheric precipitable water (cm).
+
+        airmass_absolute : array-like
+            absolute (pressure corrected) airmass.
+
+        Returns
+        -------
+        modifier: array-like
+            spectral mismatch factor (unitless) which can be multiplied
+            with broadband irradiance reaching a module's cells to estimate
+            effective irradiance, i.e., the irradiance that is converted to
+            electrical current.
+        """
+
+        if 'first_solar_spectral_coefficients' in \
+                               self.module_parameters.keys():
+            coefficients = \
+                   self.module_parameters['first_solar_spectral_coefficients']
+            module_type = None
+        else:
+            module_type = self._infer_cell_type()
+            coefficients = None
+
+        return atmosphere.first_solar_spectral_correction(pw,
+                                                          airmass_absolute, 
+                                                          module_type,
+                                                          coefficients)
+
+    def _infer_cell_type(self):
+
+        """
+        Examines module_parameters and maps the Technology key for the CEC
+        database and the Material key for the Sandia database to a common
+        list of strings for cell type.
+
+        Returns
+        -------
+        cell_type: str
+
+        """
+
+        _cell_type_dict = {'Multi-c-Si': 'multisi',
+                           'Mono-c-Si': 'monosi',
+                           'Thin Film': 'cigs',
+                           'a-Si/nc': 'asi',
+                           'CIS': 'cigs',
+                           'CIGS': 'cigs',
+                           '1-a-Si': 'asi',
+                           'CdTe': 'cdte',
+                           'a-Si': 'asi',
+                           '2-a-Si': None,
+                           '3-a-Si': None,
+                           'HIT-Si': 'monosi',
+                           'mc-Si': 'multisi',
+                           'c-Si': 'multisi',
+                           'Si-Film': 'asi',
+                           'CdTe': 'cdte',
+                           'EFG mc-Si': 'multisi',
+                           'GaAs': None,
+                           'a-Si / mono-Si': 'monosi'}
+
+        if 'Technology' in self.module_parameters.keys():
+            # CEC module parameter set
+            cell_type = _cell_type_dict[self.module_parameters['Technology']]
+        elif 'Material' in self.module_parameters.keys():
+            # Sandia module parameter set
+            cell_type = _cell_type_dict[self.module_parameters['Material']]
+        else:
+            cell_type = None
+
+        return cell_type
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
@@ -856,75 +945,60 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     return iam
 
 
-def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
-                      EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
+def calcparams_desoto(effective_irradiance, temp_cell,
+                      alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s, 
+                      EgRef=1.121, dEgdT=-0.0002677,
+                      irrad_ref=1000, temp_ref=25):
     '''
-    Applies the temperature and irradiance corrections to inputs for
-    singlediode.
-
-    Applies the temperature and irradiance corrections to the IL, I0,
-    Rs, Rsh, and a parameters at reference conditions (IL_ref, I0_ref,
-    etc.) according to the De Soto et. al description given in [1]. The
-    results of this correction procedure may be used in a single diode
-    model to determine IV curves at irradiance = S, cell temperature =
-    Tcell.
+    Calculates five parameter values for the single diode equation at 
+    effective irradiance and cell temperature using the De Soto et al. 
+    model described in [1]. The five values returned by calcparams_desoto
+    can be used by singlediode to calculate an IV curve.
 
     Parameters
     ----------
-    poa_global : numeric
-        The irradiance (in W/m^2) absorbed by the module.
+    effective_irradiance : numeric
+        The irradiance (W/m2) that is converted to photocurrent.
 
     temp_cell : numeric
         The average cell temperature of cells within a module in C.
 
-    alpha_isc : float
+    alpha_sc : float
         The short-circuit current temperature coefficient of the
-        module in units of 1/C.
+        module in units of A/C.
 
-    module_parameters : dict
-        Parameters describing PV module performance at reference
-        conditions according to DeSoto's paper. Parameters may be
-        generated or found by lookup. For ease of use,
-        retrieve_sam can automatically generate a dict based on the
-        most recent SAM CEC module
-        database. The module_parameters dict must contain the
-        following 5 fields:
+    a_ref : float
+        The product of the usual diode ideality factor (n, unitless), 
+        number of cells in series (Ns), and cell thermal voltage at reference
+        conditions, in units of V.
 
-            * a_ref - modified diode ideality factor parameter at
-              reference conditions (units of eV), a_ref can be calculated
-              from the usual diode ideality factor (n),
-              number of cells in series (Ns),
-              and cell temperature (Tcell) per equation (2) in [1].
-            * I_L_ref - Light-generated current (or photocurrent)
-              in amperes at reference conditions. This value is referred to
-              as Iph in some literature.
-            * I_o_ref - diode reverse saturation current in amperes,
-              under reference conditions.
-            * R_sh_ref - shunt resistance under reference conditions (ohms).
-            * R_s - series resistance under reference conditions (ohms).
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference conditions,
+        in amperes.
+        
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference conditions,
+        in amperes.
+        
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
+        
+    R_s : float
+        The series resistance at reference conditions, in ohms.
 
     EgRef : float
-        The energy bandgap at reference temperature (in eV).
-        1.121 eV for silicon. EgRef must be >0.
+        The energy bandgap at reference temperature in units of eV.
+        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters 
+        from the SAM CEC module database, EgRef=1.121 is implicit for all
+        cell types in the parameter estimation algorithm used by NREL.
 
     dEgdT : float
-        The temperature dependence of the energy bandgap at SRC (in
-        1/C). May be either a scalar value (e.g. -0.0002677 as in [1])
-        or a DataFrame of dEgdT values corresponding to each input
-        condition (this may be useful if dEgdT is a function of
-        temperature).
-
-    M : numeric (optional, default=1)
-        An optional airmass modifier, if omitted, M is given a value of
-        1, which assumes absolute (pressure corrected) airmass = 1.5. In
-        this code, M is equal to M/Mref as described in [1] (i.e. Mref
-        is assumed to be 1). Source [1] suggests that an appropriate
-        value for M as a function absolute airmass (AMa) may be:
-
-        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
-        ...                AMa) # doctest: +SKIP
-
-        M may be a Series.
+        The temperature dependence of the energy bandgap at reference
+        conditions in units of 1/K. May be either a scalar value 
+        (e.g. -0.0002677 as in [1]) or a DataFrame (this may be useful if 
+        dEgdT is a modeled as a function of temperature). For parameters from
+        the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
+        types in the parameter estimation algorithm used by NREL.
 
     irrad_ref : float (optional, default=1000)
         Reference irradiance in W/m^2.
@@ -1002,7 +1076,7 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
     and modifying the reference parameters (for irradiance, temperature,
     and airmass) per DeSoto's equations.
 
-     Silicon (Si):
+     Crystalline Silicon (Si):
          * EgRef = 1.121
          * dEgdT = -0.0002677
 
@@ -1046,14 +1120,31 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
          Source: [4]
     '''
 
-    M = np.maximum(M, 0)
-    a_ref = module_parameters['a_ref']
-    IL_ref = module_parameters['I_L_ref']
-    I0_ref = module_parameters['I_o_ref']
-    Rsh_ref = module_parameters['R_sh_ref']
-    Rs_ref = module_parameters['R_s']
+    # test for use of function pre-v0.6.0 API change
+    if isinstance(a_ref, dict) or \
+       (isinstance(a_ref, pd.Series) and ('a_ref' in a_ref.keys())):
+        import warnings
+        warnings.warn('module_parameters detected as fourth positional'
+                      + ' argument of calcparams_desoto. calcparams_desoto'
+                      + ' will require one argument for each module model'
+                      + ' parameter in v0.7.0 and later', DeprecationWarning)
+        try:
+            module_parameters = a_ref
+            a_ref = module_parameters['a_ref']
+            I_L_ref = module_parameters['I_L_ref']
+            I_o_ref = module_parameters['I_o_ref']
+            R_sh_ref = module_parameters['R_sh_ref']
+            R_s = module_parameters['R_s']
+        except Exception as e:
+            raise e('Module parameters could not be extracted from fourth'
+                    + ' positional argument of calcparams_desoto. Check that'
+                    + ' parameters are from the CEC database and/or update'
+                    + ' your code for the new API for calcparams_desoto')
 
+    # Boltzmann constant in eV/K
     k = 8.617332478e-05
+    
+    # reference temperature
     Tref_K = temp_ref + 273.15
     Tcell_K = temp_cell + 273.15
 
@@ -1061,11 +1152,22 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    IL = (poa_global/irrad_ref) * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
-    I0 = (I0_ref * ((Tcell_K / Tref_K) ** 3) *
+    # In the equation for IL, the single factor effective_irradiance is 
+    # used, in place of the product S*M in [1]. effective_irradiance is 
+    # equivalent to the product of S (irradiance reaching a module's cells) * 
+    # M (spectral adjustment factor) as described in [1].
+    IL = effective_irradiance / irrad_ref * \
+              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
-    Rsh = Rsh_ref * (irrad_ref / poa_global)
-    Rs = Rs_ref
+    # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as
+    # Rsh = Rsh_ref * (S_ref / S) where S is broadband irradiance reaching
+    # the module's cells. If desired this model behavior can be duplicated
+    # by applying reflection and soiling losses to broadband plane of array
+    # irradiance and not applying a spectral loss modifier, i.e., 
+    # spectral_modifier = 1.0.
+    Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
+    Rs = R_s
 
     return IL, I0, Rs, Rsh, nNsVth
 

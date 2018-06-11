@@ -252,6 +252,29 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
     assert_allclose(out, 1, atol=0.5)
 
 
+# this test could be improved to cover all cell types.
+# could remove the need for specifying spectral coefficients if we don't
+# care about the return value at all
+@pytest.mark.parametrize('module_parameters,module_type,coefficients', [
+    ({'Technology': 'mc-Si'}, 'multisi', None),
+    ({'Material': 'Multi-c-Si'}, 'multisi', None),
+    ({'first_solar_spectral_coefficients': (
+        0.84, -0.03, -0.008, 0.14, 0.04, -0.002)},
+      None,
+      (0.84, -0.03, -0.008, 0.14, 0.04, -0.002))
+    ])
+def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
+                                            coefficients, mocker):
+    mocker.spy(atmosphere, 'first_solar_spectral_correction')
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
+    pw = 3
+    airmass_absolute = 3
+    out = system.first_solar_spectral_loss(pw, airmass_absolute)
+    atmosphere.first_solar_spectral_correction.assert_called_once_with(
+        pw, airmass_absolute, module_type, coefficients)
+    assert_allclose(out, 1, atol=0.5)
+
+
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
     (np.array([[-30, 30, 100, np.nan]]),

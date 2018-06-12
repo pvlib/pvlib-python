@@ -346,11 +346,11 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     mocker.spy(pvsystem, 'sapm_effective_irradiance')
 
-    poa_direct = 1000
+    poa_direct = 900
     poa_diffuse = 100
-    airmass_absolute = 1.1
-    aoi = 10
-    reference_irradiance = 1100
+    airmass_absolute = 1.5
+    aoi = 0
+    reference_irradiance = 1000
 
     out = system.sapm_effective_irradiance(
         poa_direct, poa_diffuse, airmass_absolute,

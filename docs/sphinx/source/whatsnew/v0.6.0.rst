@@ -33,17 +33,11 @@ API Changes
   instead. irradiance.total_irrad will be removed in 0.7. (:issue:`427`)
 * Removed 'klutcher' from get_sky_diffuse/total_irrad. This misspelling was
   deprecated long ago but never removed.
-
 * pvsystem.calcparams_desoto now requires arguments for each module model parameter.
 
 
 Enhancements
 ~~~~~~~~~~~~
-
-
-Bug fixes
-~~~~~~~~~
-
 * Add sea surface albedo in irradiance.py (:issue:`458`)
 * Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
 * Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)

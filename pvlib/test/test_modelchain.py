@@ -211,6 +211,23 @@ def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
+@requires_scipy
+@pytest.mark.parametrize('dc_model', ['sapm', 'singlediode', 'pvwatts_dc'])
+def test_infer_dc_model(system, cec_dc_snl_ac_system,
+                        pvwatts_dc_pvwatts_ac_system, location, dc_model,
+                        mocker):
+    dc_systems = {'sapm': system, 'singlediode': cec_dc_snl_ac_system,
+                  'pvwatts_dc': pvwatts_dc_pvwatts_ac_system}
+    system = dc_systems[dc_model]
+    m = mocker.spy(system, dc_model)
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    mc.run_model(times)
+    assert m.call_count == 1
+    assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
+
+
 def acdc(mc):
     mc.ac = mc.dc
 
@@ -263,27 +280,27 @@ def test_aoi_models(system, location, aoi_model, expected):
 def constant_spectral_loss(mc):
     mc.spectral_modifier = 0.9
 
+
 @requires_scipy
-@pytest.mark.parametrize('spectral_model, expected', [
-    ('sapm', [182.338436597, -2.00000000e-02]),
-    pytest.mark.xfail(raises=NotImplementedError)
-    (('first_solar', [179.371460714, -2.00000000e-02])),
-    ('no_loss', [181.604438144, -2.00000000e-02]),
-    (constant_spectral_loss, [163.061569511, -2e-2])
+@pytest.mark.parametrize('spectral_model', [
+        'sapm', 'first_solar', 'no_loss', constant_spectral_loss
 ])
-def test_spectral_models(system, location, spectral_model, expected):
+def test_spectral_models(system, location, spectral_model):
+    times = pd.date_range('20160101 1200-0700', periods=3, freq='6H')
+    weather = pd.DataFrame(data=[0.3, 0.5, 1.0],
+                           index=times,
+                           columns=['precipitable_water'])
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model=spectral_model)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    ac = mc.run_model(times).ac
-
-    expected = pd.Series(np.array(expected), index=times)
-    assert_series_equal(ac, expected, check_less_precise=2)
+    spectral_modifier = mc.run_model(times=times, 
+                                     weather=weather).spectral_modifier
+    assert isinstance(spectral_modifier, (pd.Series, float, int))
 
 
 def constant_losses(mc):
     mc.losses = 0.9
     mc.ac *= mc.losses
+
 
 @requires_scipy
 @pytest.mark.parametrize('losses_model, expected', [

@@ -34,6 +34,7 @@ API Changes
 * Removed 'klutcher' from get_sky_diffuse/total_irrad. This misspelling was
   deprecated long ago but never removed.
 
+* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
 
 
 Enhancements
@@ -44,6 +45,9 @@ Bug fixes
 ~~~~~~~~~
 
 * Add sea surface albedo in irradiance.py (:issue:`458`)
+* Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
+* Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -54,13 +58,21 @@ Bug fixes
 
 Documentation
 ~~~~~~~~~~~~~
+* Expand testing section with guidelines for functions, PVSystem/Location
+  objects, and ModelChain.
 
 
 Testing
 ~~~~~~~
+* Add pytest-mock dependency
+* Use pytest-mock to ensure that PVSystem methods call corresponding functions
+  correctly. Removes implicit dependence on precise return values of functions
+* Use pytest-mock to ensure that ModelChain DC model is set up correctly.
 
 
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren
 * Yu Cao
+* Cliff Hansen
+

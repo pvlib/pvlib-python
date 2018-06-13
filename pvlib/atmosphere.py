@@ -476,8 +476,11 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         coefficients = _coefficients[module_type.lower()]
     elif module_type is None and coefficients is not None:
         pass
+    elif module_type is None and coefficients is None:
+        raise TypeError('No valid input provided, both module_type and ' +
+                        'coefficients are None')
     else:
-        raise TypeError('ambiguous input, must supply only 1 of ' +
+        raise TypeError('Cannot resolve input, must supply only one of ' +
                         'module_type and coefficients')
 
     # Evaluate Spectral Shift

@@ -59,8 +59,10 @@ coverage.xml
 .pydevproject
 .spyderproject
 .idea/
+.vscode/
 *.sublime-project
 *.sublime-workspace
+
 
 # Rope
 .ropeproject

@@ -1172,6 +1172,89 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     return IL, I0, Rs, Rsh, nNsVth
 
 
+def calc_params_campanelli(F, H, **kwargs):
+    """
+    Calculate the 5 coefficients of the SDM using Campanelli et al. model.
+
+    References
+    ----------
+    [1] M. B. Campanelli and B. H. Hamadani, "Calibration of a single‐diode
+    performance model without a short‐circuit temperature coefficient",
+    Energy Science and Engineering, (2018), https://doi.org/10.1002/ese3.190.
+
+    [2] M. B. Campanelli and C. R. Osterwald, "Effective Irradiance Ratios to
+    Improve I–V Curve Measurements and Diode Modeling Over a Range of
+    Temperature and Spectral and Total Irradiance",  IEEE Journal of
+    Photovoltaics, 6:1 (2015) 48-55,
+    https://doi.org/10.1109/JPHOTOV.2015.2489866.
+    """
+
+    # Unfortunately, order matters here because some computations rely on
+    #  previous ones
+    # A computational graph framework might make this more elegant and handle
+    #  more complicated cases, including parallel/distributed computations
+    kwargs['Rs'] = get_arg(kwargs['Rs'], F, H, **kwargs)
+    kwargs['Gsh'] = get_arg(kwargs['Gsh'], F, H, **kwargs)
+    kwargs['nNsVth'] = get_arg(kwargs['nNsVth'], F, H, **kwargs)
+    kwargs['I0'] = get_arg(kwargs['I0'], F, H, **kwargs)
+    kwargs['IL'] = get_arg(kwargs['IL'], F, H, **kwargs)
+
+    return kwargs['IL'], kwargs['I0'], kwargs['Rs'], 1. / kwargs['Gsh'], \
+        kwargs['nNsVth']
+
+
+def get_arg(arg, F, H, **kwargs):
+    """
+    Computes a function argument as a numpy array, when needed.
+    """
+
+    if hasattr(arg, '__call__'):
+        # Call arg to compute it as a numpy array
+        return arg(F, H, **kwargs)
+    else:
+        # Return arg as is
+        return arg
+
+
+def I0_campanelli(F, H, **kwargs):
+    """
+    Returns the reverse saturation current from Campanelli et al.
+    """
+
+    return kwargs['I0_ref'] * H**3. * \
+        np.exp(kwargs['Eg_ref_star'] / kwargs['nNsVth_ref'] *
+               (1. - 1. / H) * (1. - kwargs['dEgdT_ref_star']))
+
+
+def IL_campanelli(F, H, **kwargs):
+    """
+    Returns the photocurrent from Campanelli et al.
+    """
+
+    return F * kwargs['Isc_ref'] + \
+        kwargs['I0'] * np.expm1(F * kwargs['Isc_ref'] *
+                                kwargs['Rs'] / kwargs['nNsVth']) + \
+        kwargs['Gsh'] * F * kwargs['Isc_ref'] * kwargs['Rs']
+
+
+def nNsVth_campanelli(F, H, **kwargs):
+    """
+    Returns a the modified thermal voltage from Campanelli et al.
+
+    Same as DeSoto et al.
+    """
+
+    return kwargs['nNsVth_ref'] * H
+
+
+def Gsh_photoconductive(F, H, **kwargs):
+    """
+    Returns a photoconductive shunt conductance, analogous to DeSoto et al.
+    """
+
+    return kwargs['Gsh_ref'] * F
+
+
 def retrieve_sam(name=None, path=None):
     '''
     Retrieve latest module and inverter info from a local file or the

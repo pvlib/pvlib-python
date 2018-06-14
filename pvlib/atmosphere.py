@@ -5,9 +5,10 @@ absolute airmass and to determine pressure from altitude or vice versa.
 
 from __future__ import division
 
+from warnings import warn
+
 import numpy as np
 import pandas as pd
-from warnings import warn
 
 from pvlib._deprecation import deprecated
 

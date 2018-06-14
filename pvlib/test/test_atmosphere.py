@@ -1,10 +1,9 @@
 import itertools
 
 import numpy as np
-import pandas as pd
-
-import pytest
 from numpy.testing import assert_allclose
+import pandas as pd
+import pytest
 
 from pvlib import atmosphere
 from pvlib import solarposition
@@ -53,7 +52,8 @@ def test_airmass_invalid():
 
 
 def test_absolute_airmass():
-    relative_am = atmosphere.get_relative_airmass(ephem_data['zenith'], 'simple')
+    relative_am = atmosphere.get_relative_airmass(ephem_data['zenith'],
+                                                  'simple')
     atmosphere.absolute_airmass(relative_am)
     atmosphere.absolute_airmass(relative_am, pressure=100000)
 

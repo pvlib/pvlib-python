@@ -1,15 +1,15 @@
 import sys
-import platform
 
-from pkg_resources import parse_version
-import pandas as pd
 import numpy as np
+import pandas as pd
+from pkg_resources import parse_version
 import pytest
 
 import pvlib
 
 pvlib_base_version = \
     parse_version(parse_version(pvlib.__version__).base_version)
+
 
 # decorator takes one argument: the base version for which it should fail
 # for example @fail_on_pvlib_version('0.7') will cause a test to fail
@@ -30,6 +30,7 @@ def fail_on_pvlib_version(version):
                 return func
         return inner
     return wrapper
+
 
 skip_windows = pytest.mark.skipif('win' in sys.platform,
                                   reason='does not run on windows')

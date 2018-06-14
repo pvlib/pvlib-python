@@ -9,15 +9,12 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
-from pvlib.location import Location
-from pvlib import clearsky
-from pvlib import solarposition
-from pvlib import irradiance
-from pvlib import atmosphere
+from pvlib import atmosphere, irradiance, solarposition
 from pvlib._deprecation import PVLibDeprecationWarning
+from pvlib.location import Location
 
-from conftest import (requires_ephem, requires_numba, needs_numpy_1_10,
-                      pandas_0_22, fail_on_pvlib_version)
+from conftest import (fail_on_pvlib_version, needs_numpy_1_10, pandas_0_22,
+                      requires_ephem, requires_numba)
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -91,6 +88,7 @@ def test_get_extra_radiation_invalid():
     with pytest.raises(ValueError):
         irradiance.get_extra_radiation(300, method='invalid')
 
+
 def test_grounddiffuse_simple_float():
     result = irradiance.get_ground_diffuse(40, 900)
     assert_allclose(result, 26.32000014911496)
@@ -133,8 +131,8 @@ def test_klucher_series_float():
 
 def test_klucher_series():
     result = irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
-                           ephem_data['apparent_zenith'],
-                           ephem_data['azimuth'])
+                                ephem_data['apparent_zenith'],
+                                ephem_data['azimuth'])
     assert_allclose(result, [0, 37.446276, 109.209347, 56.965916], atol=1e-4)
 
 
@@ -201,6 +199,7 @@ def test_perez_components():
     assert_frame_equal(df_components, expected_components)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
+
 @needs_numpy_1_10
 def test_perez_arrays():
     am = atmosphere.get_relative_airmass(ephem_data['apparent_zenith'])
@@ -224,10 +223,10 @@ def test_liujordan():
     assert_frame_equal(out, expected)
 
 
-def test_total_irrad():
+def test_get_total_irradiance():
     models = ['isotropic', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']
-    AM = atmosphere.get_relative_airmass(ephem_data['apparent_zenith'])
+    airmass = atmosphere.get_relative_airmass(ephem_data['apparent_zenith'])
 
     for model in models:
         total = irradiance.get_total_irradiance(
@@ -235,7 +234,7 @@ def test_total_irrad():
             ephem_data['apparent_zenith'], ephem_data['azimuth'],
             dni=irrad_data['dni'], ghi=irrad_data['ghi'],
             dhi=irrad_data['dhi'],
-            dni_extra=dni_et, airmass=AM,
+            dni_extra=dni_et, airmass=airmass,
             model=model,
             surface_type='urban')
 

@@ -13,9 +13,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
-from pvlib import solarposition
-from pvlib import atmosphere
+from pvlib import atmosphere, solarposition, tools
 from pvlib._deprecation import deprecated
 
 # see References section of grounddiffuse function
@@ -114,8 +112,9 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
 
 
 extraradiation = deprecated('0.6', alternative='get_extra_radiation',
-    name='extraradiation', addendum=' This function will be removed in 0.7')(
-    get_extra_radiation)
+                            name='extraradiation',
+                            addendum=' This function will be removed in 0.7')(
+                            get_extra_radiation)
 
 
 def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
@@ -373,8 +372,9 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
 
 
 total_irrad = deprecated('0.6', alternative='get_total_irradiance',
-    name='total_irrad', addendum=' This function will be removed in 0.7')(
-    get_total_irradiance)
+                         name='total_irrad',
+                         addendum=' This function will be removed in 0.7')(
+                         get_total_irradiance)
 
 
 def get_sky_diffuse(surface_tilt, surface_azimuth,
@@ -635,8 +635,9 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
 
 grounddiffuse = deprecated('0.6', alternative='get_ground_diffuse',
-    name='grounddiffuse', addendum=' This function will be removed in 0.7')(
-    get_ground_diffuse)
+                           name='grounddiffuse',
+                           addendum=' This function will be removed in 0.7')(
+                           get_ground_diffuse)
 
 
 def isotropic(surface_tilt, dhi):

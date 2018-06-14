@@ -14,9 +14,10 @@ from pvlib import clearsky
 from pvlib import solarposition
 from pvlib import irradiance
 from pvlib import atmosphere
+from pvlib._deprecation import PVLibDeprecationWarning
 
 from conftest import (requires_ephem, requires_numba, needs_numpy_1_10,
-                      pandas_0_22)
+                      pandas_0_22, fail_on_pvlib_version)
 
 # setup times and location to be tested.
 tus = Location(32.2, -111, 'US/Arizona', 700)
@@ -32,6 +33,18 @@ irrad_data = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
 dni_et = irradiance.get_extra_radiation(times.dayofyear)
 
 ghi = irrad_data['ghi']
+
+
+@fail_on_pvlib_version('0.7')
+def test_deprecated_07():
+    with pytest.warns(PVLibDeprecationWarning):
+        irradiance.extraradiation(300)
+    with pytest.warns(PVLibDeprecationWarning):
+        irradiance.grounddiffuse(40, 900)
+    with pytest.warns(PVLibDeprecationWarning):
+        irradiance.total_irrad(32, 180, 10, 180, 0, 0, 0, 1400, 1)
+    with pytest.warns(PVLibDeprecationWarning):
+        irradiance.globalinplane(0, 1000, 100, 10)
 
 
 # setup for et rad test. put it here for readability
@@ -77,7 +90,6 @@ def test_get_extra_radiation_epoch_year():
 def test_get_extra_radiation_invalid():
     with pytest.raises(ValueError):
         irradiance.get_extra_radiation(300, method='invalid')
-
 
 def test_grounddiffuse_simple_float():
     result = irradiance.get_ground_diffuse(40, 900)

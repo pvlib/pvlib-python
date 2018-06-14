@@ -8,6 +8,9 @@ from numpy.testing import assert_allclose
 
 from pvlib import atmosphere
 from pvlib import solarposition
+from pvlib._deprecation import PVLibDeprecationWarning
+
+from conftest import fail_on_pvlib_version
 
 latitude, longitude, tz, altitude = 32.2, -111, 'US/Arizona', 700
 
@@ -49,18 +52,26 @@ def test_airmass_invalid():
         atmosphere.get_relative_airmass(ephem_data['zenith'], 'invalid')
 
 
-def test_absoluteairmass():
+def test_absolute_airmass():
     relative_am = atmosphere.get_relative_airmass(ephem_data['zenith'], 'simple')
     atmosphere.absolute_airmass(relative_am)
     atmosphere.absolute_airmass(relative_am, pressure=100000)
 
 
-def test_absoluteairmass_numeric():
+def test_absolute_airmass_numeric():
     atmosphere.absolute_airmass(2)
 
 
-def test_absoluteairmass_nan():
+def test_absolute_airmass_nan():
     np.testing.assert_equal(np.nan, atmosphere.absolute_airmass(np.nan))
+
+
+@fail_on_pvlib_version('0.7')
+def test_deprecated_07():
+    with pytest.warns(PVLibDeprecationWarning):
+        atmosphere.relativeairmass(2)
+    with pytest.warns(PVLibDeprecationWarning):
+        atmosphere.absoluteairmass(2)
 
 
 def test_gueymard94_pw():

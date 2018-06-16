@@ -16,7 +16,7 @@ $ python sdm.py
 ```
 
 which will overwrite the existing `sdm.json` and `sdm.csv` files. `sdm.json` is
-the lossles, machine-interoperable format, and `sdm.csv` is formatted to be
+the lossless, machine-interoperable format, and `sdm.csv` is formatted to be
 human-readable and to be easily viewed in a spreadsheet program.
 
 NOTES:

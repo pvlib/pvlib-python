@@ -9,6 +9,14 @@ from pvlib import pvsystem
 from pvlib.data.gold import sdm
 
 
+def test_constants():
+    # This catches an unexpected change in any of the values
+    assert sdm.elementary_charge_C == 1.6021766208e-19
+    assert sdm.boltzmann_J_per_K == 1.38064852e-23
+    assert sdm.T_stc_degC == 25.
+    assert sdm.T_stc_K == 298.15
+
+
 def test_sum_current():
     # Test sum_current computation against comitted gold dataset
     gold_dataset = sdm.convert_gold_dataset(

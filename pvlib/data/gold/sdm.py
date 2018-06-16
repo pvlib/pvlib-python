@@ -19,10 +19,27 @@ from timeit import default_timer as timer
 
 import numpy
 
-# constants is tied to a specific scipy.constants version, but they rarely
-#  change, and this can be traced through pvlib.version
-from pvlib import constants, pvsystem
+from pvlib import pvsystem
 import pvlib.version
+
+
+# Useful constants for photovoltaic modeling that are versioned. Several
+# constants are derived from scipy.constants v1.1.0, which are from
+# standardized CODATA. See https://physics.nist.gov/cuu/Constants/. We do not
+# import scipy because it is not required in the base pvlib installation. Units
+# appear in the variable suffix to eliminate ambiguity.
+
+# elementary charge, from scipy.constants.value('elementary charge')
+elementary_charge_C = 1.6021766208e-19
+
+# Boltzmann constant, from scipy.constants.value('Boltzmann constant')
+boltzmann_J_per_K = 1.38064852e-23
+
+# Define standard test condition (STC) temperature in degrees Celsius
+T_stc_degC = 25.
+
+# Define standard test condition (STC) temperature in Kelvin
+T_stc_K = 273.15 + T_stc_degC
 
 
 def sum_current(resistance_shunt, resistance_series, nNsVth, current, voltage,
@@ -111,8 +128,8 @@ def bootstrap_si_device_bishop(N_s=1, cell_area_cm2=4., ideality_factor=1.5):
     device.I_mp_ref = None
     device.V_mp_ref = None
     device.beta_oc = None
-    device.a_ref = N_s * ideality_factor * constants.boltzmann_J_per_K * \
-        constants.T_stc_K / constants.elementary_charge_C  # Volt
+    device.a_ref = N_s * ideality_factor * boltzmann_J_per_K * T_stc_K / \
+        elementary_charge_C  # Volt
     device.I_L_ref = cell_area_cm2 * 30.e-3  # Amp
     device.I_o_ref = cell_area_cm2 * 5500.e-12  # Amp
     device.R_s = N_s * cell_area_cm2 * 1.33  # Ohm
@@ -138,6 +155,8 @@ def bootstrap_si_device_pvmismatch(N_s=1,
     https://github.com/SunPower/PVMismatch/blob/master/pvmismatch/pvmismatch_lib/pvcell.py
     """
 
+    # TODO Check into normalizing for Ns
+
     # This should match the default value for cell_area_cm2 argument
     default_cell_area_cm2 = 153.
 
@@ -156,8 +175,8 @@ def bootstrap_si_device_pvmismatch(N_s=1,
     device.I_mp_ref = None
     device.V_mp_ref = None
     device.beta_oc = None
-    device.a_ref = N_s * ideality_factor * constants.boltzmann_J_per_K * \
-        constants.T_stc_K / constants.elementary_charge_C  # Volt
+    device.a_ref = N_s * ideality_factor * boltzmann_J_per_K * \
+        T_stc_K / elementary_charge_C  # Volt
     device.I_L_ref = cell_area_cm2 * 6.3056 / default_cell_area_cm2  # Amp
     device.I_o_ref = cell_area_cm2 * 2.286188161253440e-11 / \
         default_cell_area_cm2  # Amp

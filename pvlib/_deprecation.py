@@ -105,7 +105,7 @@ import functools
 import warnings
 
 
-class PVLibDeprecationWarning(UserWarning):
+class pvlibDeprecationWarning(UserWarning):
     """A class for issuing deprecation warnings for pvlib users.
 
     In light of the fact that Python builtin DeprecationWarnings are ignored
@@ -119,7 +119,7 @@ class PVLibDeprecationWarning(UserWarning):
     pass
 
 
-pvlibDeprecation = PVLibDeprecationWarning
+pvlibDeprecation = pvlibDeprecationWarning
 
 
 def _generate_deprecation_message(since, message='', name='',

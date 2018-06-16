@@ -7,7 +7,7 @@ import pytest
 
 from pvlib import atmosphere
 from pvlib import solarposition
-from pvlib._deprecation import PVLibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning
 
 from conftest import fail_on_pvlib_version
 
@@ -68,9 +68,9 @@ def test_absolute_airmass_nan():
 
 @fail_on_pvlib_version('0.7')
 def test_deprecated_07():
-    with pytest.warns(PVLibDeprecationWarning):
+    with pytest.warns(pvlibDeprecationWarning):
         atmosphere.relativeairmass(2)
-    with pytest.warns(PVLibDeprecationWarning):
+    with pytest.warns(pvlibDeprecationWarning):
         atmosphere.absoluteairmass(2)
 
 

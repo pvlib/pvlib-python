@@ -10,7 +10,7 @@ from numpy.testing import assert_almost_equal, assert_allclose
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
 from pvlib import atmosphere, irradiance, solarposition
-from pvlib._deprecation import PVLibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.location import Location
 
 from conftest import (fail_on_pvlib_version, needs_numpy_1_10, pandas_0_22,
@@ -34,13 +34,13 @@ ghi = irrad_data['ghi']
 
 @fail_on_pvlib_version('0.7')
 def test_deprecated_07():
-    with pytest.warns(PVLibDeprecationWarning):
+    with pytest.warns(pvlibDeprecationWarning):
         irradiance.extraradiation(300)
-    with pytest.warns(PVLibDeprecationWarning):
+    with pytest.warns(pvlibDeprecationWarning):
         irradiance.grounddiffuse(40, 900)
-    with pytest.warns(PVLibDeprecationWarning):
+    with pytest.warns(pvlibDeprecationWarning):
         irradiance.total_irrad(32, 180, 10, 180, 0, 0, 0, 1400, 1)
-    with pytest.warns(PVLibDeprecationWarning):
+    with pytest.warns(pvlibDeprecationWarning):
         irradiance.globalinplane(0, 1000, 100, 10)
 
 

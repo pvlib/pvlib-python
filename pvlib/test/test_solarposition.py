@@ -341,7 +341,7 @@ def test_get_solarposition_deltat(delta_t, method, expected):
     this_expected = np.round(this_expected, 5)
     ephem_data = np.round(ephem_data, 5)
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
-   
+
 
 def test_get_solarposition_no_kwargs(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
@@ -463,3 +463,26 @@ def test_analytical_azimuth():
                        atol=0.01)
     assert np.allclose(azimuth_2[idx], solar_azimuth.as_matrix()[idx],
                        atol=0.017)
+
+    # test for NaN values at boundary conditions (PR #431)
+    test_angles = np.radians(np.array(
+                   [[   0., -180.,  -20.],
+                    [   0.,    0.,   -5.],
+                    [   0.,    0.,    0.],
+                    [   0.,    0.,   15.],
+                    [   0.,  180.,   20.],
+                    [  30.,    0.,  -20.],
+                    [  30.,    0.,   -5.],
+                    [  30.,    0.,    0.],
+                    [  30.,  180.,    5.],
+                    [  30.,    0.,   10.],
+                    [ -30.,    0.,  -20.],
+                    [ -30.,    0.,  -15.],
+                    [ -30.,    0.,    0.],
+                    [ -30., -180.,    5.],
+                    [ -30.,  180.,   10.]]))
+
+    zeniths  = solarposition.solar_zenith_analytical(*test_angles.T)
+    azimuths = solarposition.solar_azimuth_analytical(*test_angles.T, zenith=zeniths)
+
+    assert not np.isnan(azimuths).any()

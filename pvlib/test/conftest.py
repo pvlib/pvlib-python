@@ -20,6 +20,15 @@ requires_scipy = pytest.mark.skipif(not has_scipy, reason='requires scipy')
 
 
 try:
+    import tables
+    has_tables = True
+except ImportError:
+    has_tables = False
+
+requires_tables = pytest.mark.skipif(not has_tables, reason='requires tables')
+
+
+try:
     import ephem
     has_ephem = True
 except ImportError:
@@ -40,6 +49,10 @@ def numpy_1_10():
 
 needs_numpy_1_10 = pytest.mark.skipif(
     not numpy_1_10(), reason='requires numpy 1.10 or greater')
+
+
+def pandas_0_22():
+    return parse_version(pd.__version__) >= parse_version('0.22.0')
 
 
 def has_spa_c():

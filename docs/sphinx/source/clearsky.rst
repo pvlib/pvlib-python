@@ -40,11 +40,6 @@ We'll need these imports for the examples below.
 
     In [1]: import pandas as pd
 
-    # seaborn makes the plots look nicer
-    In [1]: import seaborn as sns
-
-    In [1]: sns.set_color_codes()
-
     In [1]: import pvlib
 
     In [1]: from pvlib import clearsky, atmosphere
@@ -136,20 +131,18 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: import os
 
-    In [1]: import scipy.io
+    In [1]: import tables
 
     In [1]: pvlib_path = os.path.dirname(os.path.abspath(pvlib.clearsky.__file__))
 
-    In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
-
-    In [1]: mat = scipy.io.loadmat(filepath)
-
-    # data is in units of 20 x turbidity
-    In [1]: linke_turbidity_table = mat['LinkeTurbidity']  # / 20.   # crashes on rtd
+    In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
     In [1]: def plot_turbidity_map(month, vmin=1, vmax=100):
        ...:     plt.figure();
-       ...:     plt.imshow(linke_turbidity_table[:, :, month-1], vmin=vmin, vmax=vmax);
+       ...:     with tables.open_file(filepath) as lt_h5_file:
+       ...:         ltdata = lt_h5_file.root.LinkeTurbidity[:, :, month-1]
+       ...:     plt.imshow(ltdata, vmin=vmin, vmax=vmax);
+       ...:     # data is in units of 20 x turbidity
        ...:     plt.title('Linke turbidity x 20, ' + calendar.month_name[month]);
        ...:     plt.colorbar(shrink=0.5);
        ...:     plt.tight_layout();
@@ -228,7 +221,7 @@ A clear sky time series using only basic pvlib functions.
 
     In [1]: linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(times.dayofyear)
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(times)
 
     # an input is a pandas Series, so solis is a DataFrame
     In [1]: ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
@@ -270,7 +263,7 @@ Grid with a clear sky irradiance for a few turbidity values.
 
     In [1]: print('climatological linke_turbidity = {}'.format(linke_turbidity.mean()))
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(times.dayofyear)
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(times)
 
     In [1]: linke_turbidities = [linke_turbidity.mean(), 2, 4]
 
@@ -357,7 +350,7 @@ A clear sky time series using only basic pvlib functions.
 
     In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(times.dayofyear)
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(times)
 
     # an input is a Series, so solis is a DataFrame
     In [1]: solis = clearsky.simplified_solis(apparent_elevation, aod700, precipitable_water,
@@ -419,7 +412,7 @@ Grid with a clear sky irradiance for a few PW and AOD values.
 
     In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(times.dayofyear)
+    In [1]: dni_extra = pvlib.irradiance.extraradiation(times)
 
     In [1]: aod700 = [0.01, 0.1]
 
@@ -457,8 +450,6 @@ Contour plots of irradiance as a function of both PW and AOD.
        ...:                                   precipitable_water, pressure,
        ...:                                   dni_extra)
 
-    In [1]: cmap = plt.get_cmap('viridis')
-
     In [1]: n = 15
 
     In [1]: vmin = None
@@ -468,8 +459,8 @@ Contour plots of irradiance as a function of both PW and AOD.
     In [1]: def plot_solis(key):
        ...:     irrad = solis[key]
        ...:     fig, ax = plt.subplots()
-       ...:     im = ax.contour(aod700, precipitable_water, irrad[:, :], n, cmap=cmap, vmin=vmin, vmax=vmax)
-       ...:     imf = ax.contourf(aod700, precipitable_water, irrad[:, :], n, cmap=cmap, vmin=vmin, vmax=vmax)
+       ...:     im = ax.contour(aod700, precipitable_water, irrad[:, :], n, vmin=vmin, vmax=vmax)
+       ...:     imf = ax.contourf(aod700, precipitable_water, irrad[:, :], n, vmin=vmin, vmax=vmax)
        ...:     ax.set_xlabel('AOD')
        ...:     ax.set_ylabel('Precipitable water (cm)')
        ...:     ax.clabel(im, colors='k', fmt='%.0f')
@@ -566,7 +557,7 @@ Now we run the synthetic data and clear sky estimate through the
 
     fig, ax = plt.subplots()
 
-    clear_samples.plot();
+    clear_samples.astype(int).plot();
 
     @savefig detect-clear-detected.png width=10in
     ax.set_ylabel('Clear (1) or Cloudy (0)');

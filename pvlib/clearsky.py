@@ -153,7 +153,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
                            interp_turbidity=True):
     """
-    Look up the Linke Turibidity from the ``LinkeTurbidities.mat``
+    Look up the Linke Turibidity from the ``LinkeTurbidities.h5``
     data file supplied with pvlib.
 
     Parameters
@@ -165,18 +165,18 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     longitude : float
 
     filepath : None or string, default None
-        The path to the ``.mat`` file.
+        The path to the ``.h5`` file.
 
     interp_turbidity : bool, default True
         If ``True``, interpolates the monthly Linke turbidity values
-        found in ``LinkeTurbidities.mat`` to daily values.
+        found in ``LinkeTurbidities.h5`` to daily values.
 
     Returns
     -------
     turbidity : Series
     """
 
-    # The .mat file 'LinkeTurbidities.mat' contains a single 2160 x 4320 x 12
+    # The .h5 file 'LinkeTurbidities.h5' contains a single 2160 x 4320 x 12
     # matrix of type uint8 called 'LinkeTurbidity'. The rows represent global
     # latitudes from 90 to -90 degrees; the columns represent global longitudes
     # from -180 to 180; and the depth (third dimension) represents months of
@@ -194,18 +194,15 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # 1st column: 179.9583 W, 2nd column: 179.875 W
 
     try:
-        import scipy.io
+        import tables
     except ImportError:
-        raise ImportError('The Linke turbidity lookup table requires scipy. '
+        raise ImportError('The Linke turbidity lookup table requires tables. '
                           'You can still use clearsky.ineichen if you '
                           'supply your own turbidities.')
 
     if filepath is None:
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
-        filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
-
-    mat = scipy.io.loadmat(filepath)
-    linke_turbidity_table = mat['LinkeTurbidity']
+        filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
     latitude_index = (
         np.around(_linearly_scale(latitude, 90, -90, 0, 2160))
@@ -214,7 +211,14 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
         .astype(np.int64))
 
-    lts = linke_turbidity_table[latitude_index][longitude_index]
+    lt_h5_file = tables.open_file(filepath)
+    try:
+        lts = lt_h5_file.root.LinkeTurbidity[latitude_index, longitude_index, :]
+    except IndexError:
+        raise IndexError('Latitude should be between 90 and -90, '
+                         'longitude between -180 and 180.')
+    finally:
+        lt_h5_file.close()
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
@@ -433,11 +437,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     w = precipitable_water
 
     # algorithm fails for pw < 0.2
-    if np.isscalar(w):
-        w = 0.2 if w < 0.2 else w
-    else:
-        w = w.copy()
-        w[w < 0.2] = 0.2
+    w = np.maximum(w, 0.2)
 
     # this algorithm is reasonably fast already, but it could be made
     # faster by precalculating the powers of aod700, the log(p/p0), and
@@ -542,8 +542,10 @@ def _calc_taud(w, aod700, p):
     elif np.isscalar(aod700):
         aod700 = np.full_like(w, aod700)
 
-    aod700_mask = aod700 < 0.05
-    aod700_mask = np.array([aod700_mask, ~aod700_mask], dtype=np.int)
+    # set up nan-tolerant masks
+    aod700_lt_0p05 = np.full_like(aod700, False, dtype='bool')
+    np.less(aod700, 0.05, where=~np.isnan(aod700), out=aod700_lt_0p05)
+    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=np.int)
 
     # create tuples of coefficients for
     # aod700 < 0.05, aod700 >= 0.05

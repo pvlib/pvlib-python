@@ -53,7 +53,7 @@ install:
     - if [[ "$CONDA_ENV" == "py27-min" ]]; then
         pip uninstall numpy --yes;
         pip uninstall pandas --yes;
-        pip install --no-cache-dir numpy==1.9.0;
+        pip install --no-cache-dir numpy==1.10.1;
         pip install --no-cache-dir pandas==0.14.0;
       fi
     - conda list

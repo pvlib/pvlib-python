@@ -1,0 +1,44 @@
+.. _whatsnew_0600:
+
+v0.6.0 (___, 2018)
+---------------------
+
+API Changes
+~~~~~~~~~~~
+* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
+
+
+Enhancements
+~~~~~~~~~~~~
+* Add sea surface albedo in irradiance.py (:issue:`458`)
+* Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
+* Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)
+
+
+Bug fixes
+~~~~~~~~~
+* Unset executable bits of irradiance.py and test_irradiance.py (:issue:`460`)
+* Fix failing tests due to column order on Python 3.6+ and Pandas 0.23+
+  (:issue:`464`)
+
+
+Documentation
+~~~~~~~~~~~~~
+* Expand testing section with guidelines for functions, PVSystem/Location
+  objects, and ModelChain.
+
+
+Testing
+~~~~~~~
+* Add pytest-mock dependency
+* Use pytest-mock to ensure that PVSystem methods call corresponding functions
+  correctly. Removes implicit dependence on precise return values of functions
+* Use pytest-mock to ensure that ModelChain DC model is set up correctly.
+
+
+Contributors
+~~~~~~~~~~~~
+* Will Holmgren
+* Yu Cao
+* Cliff Hansen
+

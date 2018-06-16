@@ -350,23 +350,27 @@ def test_gti_dirint():
     poa_global = np.array([20, 300, 1000])
     aoi = np.array([100, 70, 10])
     zenith = np.array([80, 45, 20])
+    azimuth = np.array([90, 135, 180])
     surface_tilt = 30
+    surface_azimuth = 180
 
     # test defaults
     output = irradiance.gti_dirint(
-        poa_global, aoi, zenith, surface_tilt, times)
+        poa_global, aoi, zenith, azimuth, times, surface_tilt, surface_azimuth)
 
+    expected_col_order = ['ghi', 'dni', 'dhi']
     expected = pd.DataFrame(array(
-        [[  40.        ,    0.        ,   40.        ],
-         [ 620.23257547,  736.42663646,   99.50030698],
-         [ 954.18889414,  820.19398093,  183.45866265]]),
-        columns=['ghi', 'dni', 'dhi'], index=times)
+        [[ 21.66904795,   3.58226889,  21.04699348],
+         [279.36007723,  30.95337201, 257.47273799],
+         [932.13924995, 671.61465387, 301.02791569]]),
+        columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
 
     # test ignore calculate_gt_90
     output = irradiance.gti_dirint(
-        poa_global, aoi, zenith, surface_tilt, times, calculate_gt_90=False)
+        poa_global, aoi, zenith, azimuth, times, surface_tilt, surface_azimuth,
+        calculate_gt_90=False)
 
     expected_no_90 = expected.copy()
     expected_no_90.iloc[0, :] = np.nan
@@ -376,39 +380,42 @@ def test_gti_dirint():
     # test pressure input
     pressure = 93193.
     output = irradiance.gti_dirint(
-        poa_global, aoi, zenith, surface_tilt, times, pressure=pressure)
+        poa_global, aoi, zenith, azimuth, times, surface_tilt, surface_azimuth,
+        pressure=pressure)
 
     expected = pd.DataFrame(array(
-        [[  40.        ,    0.        ,   40.        ],
-         [ 620.23257547,  733.33741382,  101.68471726],
-         [ 954.18889414,  762.36158238,  237.8033408 ]]),
-        columns=['ghi', 'dni', 'dhi'], index=times)
+        [[ 21.8105756 ,   4.41192322,  21.04445318],
+         [280.20387412,  30.3662572 , 258.73168773],
+         [933.76427497, 619.53219867, 351.59443953]]),
+        columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
 
     # test albedo input
     albedo = 0.05
     output = irradiance.gti_dirint(
-        poa_global, aoi, zenith, surface_tilt, times, albedo=albedo)
+        poa_global, aoi, zenith, azimuth, times, surface_tilt, surface_azimuth,
+        albedo=albedo)
 
     expected = pd.DataFrame(array(
-        [[  40.        ,    0.        ,   40.        ],
-         [ 620.23257547,  736.42663646,   99.50030698],
-         [ 954.18889414,  820.19398093,  183.45866265]]),
-        columns=['ghi', 'dni', 'dhi'], index=times)
+        [[ 22.32891856,   5.60409205,  21.35577818],
+         [281.40333321,  32.59141534, 258.35772242],
+         [942.22639099, 702.62029581, 281.9792838 ]]),
+        columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
 
     # test temp_dew input
     temp_dew = np.array([70, 80, 20])
     output = irradiance.gti_dirint(
-        poa_global, aoi, zenith, surface_tilt, times, temp_dew=temp_dew)
+        poa_global, aoi, zenith, azimuth, times, surface_tilt, surface_azimuth,
+        temp_dew=temp_dew)
 
     expected = pd.DataFrame(array(
-        [[  40.        ,    0.        ,   40.        ],
-         [ 620.23257547,  744.71467705,   93.63977727],
-         [ 954.18889414,  884.74507752,  122.80047352]]),
-        columns=['ghi', 'dni', 'dhi'], index=times)
+        [[ 21.77284986,   4.19076978,  21.04513032],
+         [278.00117081,  52.60909109, 240.80092575],
+         [930.98006109, 684.25337403, 287.99221477]]),
+        columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
 

@@ -1391,9 +1391,9 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     return dni_dirindex
 
 
-def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth,
+def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
                surface_tilt, surface_azimuth,
-               times, pressure=101325.,
+               pressure=101325.,
                use_delta_kt_prime=True, temp_dew=None, albedo=.25,
                model='perez', model_perez='allsitescomposite1990',
                calculate_gt_90=True, max_iterations=30):
@@ -1409,16 +1409,20 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth,
         Angle of incidence of solar rays with respect to the module
         surface normal.
 
-    zenith : array-like
-        True (not refraction-corrected) zenith angles in decimal
+    solar_zenith : array-like
+        True (not refraction-corrected) solar zenith angles in decimal
         degrees.
+
+    solar_azimuth : array-like
+        Solar azimuth angles in decimal degrees.
+
+    times : DatetimeIndex
+        Time indices for the input array-like data.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees. Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
-
-    times : DatetimeIndex
 
     pressure : numeric, default 101325.0
         The site pressure in Pascal. Pressure may be measured or an
@@ -1445,6 +1449,9 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth,
         Controls if the algorithm evaluates inputs with AOI >= 90 degrees.
         If False, returns nan for AOI >= 90 degrees. Significant speed ups
         can be achieved by setting this parameter to False.
+
+    max_iterations : int, default 30
+        Maximum number of iterations for the aoi < 90 deg algorithm.
 
     Returns
     -------

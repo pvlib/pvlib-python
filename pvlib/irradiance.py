@@ -1519,13 +1519,15 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
     # these coeffs and diff variables and the loop below
     # implement figure 1 of Marion 2015
 
-    # make coeffs that is at least 30 elements long
-    # for loop below will limit iterations if necessary
+    # make coeffs that is at least 30 elements long so that all
+    # coeffs can be assigned as specified in Marion 2015.
+    # slice below will limit iterations if necessary
     coeffs = np.empty(max(30, max_iterations))
     coeffs[0:3] = 1
     coeffs[3:10] = 0.5
     coeffs[10:20] = 0.25
     coeffs[20:] = 0.125
+    coeffs = coeffs[:max_iterations]  # covers case where max_iterations < 30
 
     # initialize diff
     diff = pd.Series(9999, index=times)
@@ -1534,7 +1536,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
     # initialize poa_global_i
     poa_global_i = poa_global
 
-    for coeff in coeffs[:max_iterations]:
+    for iteration, coeff in enumerate(coeffs):
         # use slightly > 1 for float errors
         best_diff_lte_1 = best_diff <= 1.000001
 
@@ -1579,19 +1581,19 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         # save the best differences
         best_diff = diff_abs.where(smallest_diff, best_diff)
 
-        # save DNI, DHI, DHI if they provide the best consistency
-        # otherwise use the older values.
-        # try/except accounts for first iteration
-        try:
-            best_ghi = ghi.where(smallest_diff, best_ghi)
-            best_dni = dni.where(smallest_diff, best_dni)
-            best_dhi = dhi.where(smallest_diff, best_dhi)
-            best_kt_prime = kt_prime.where(smallest_diff, best_kt_prime)
-        except UnboundLocalError:
+        # on first iteration, the best values are the only values
+        if iteration == 0:
             best_ghi = ghi
             best_dni = dni
             best_dhi = dhi
             best_kt_prime = kt_prime
+        else:
+            # save new DNI, DHI, DHI if they provide the best consistency
+            # otherwise use the older values.
+            best_ghi = ghi.where(smallest_diff, best_ghi)
+            best_dni = dni.where(smallest_diff, best_dni)
+            best_dhi = dhi.where(smallest_diff, best_dhi)
+            best_kt_prime = kt_prime.where(smallest_diff, best_kt_prime)
 
         # calculate adjusted inputs for next iteration
         poa_global_i = np.maximum(1.0, poa_global_i - coeff * diff)

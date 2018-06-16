@@ -20,6 +20,8 @@ Bug fixes
 * Unset executable bits of irradiance.py and test_irradiance.py (:issue:`460`)
 * Fix failing tests due to column order on Python 3.6+ and Pandas 0.23+
   (:issue:`464`)
+* ModelChain.prepare_inputs failed to pass solar_position and airmass to
+  Location.get_clearsky. Fixed. (:issue:`481`)
 
 
 Documentation

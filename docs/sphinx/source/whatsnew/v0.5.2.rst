@@ -6,13 +6,6 @@ v0.5.2 (May 13, 2018)
 API Changes
 ~~~~~~~~~~~
 * removed unused 'pressure' arg from irradiance.liujordan function (:issue:`386`)
-* Add kt and kt_prime keyword arguments to dirint function. (:issue:`396`)
-* Add kt and min_cos_zenith keyword arguments to disc function. (:issue:`396`)
-* Change the disc dni filter thresholds. (:issue:`396`)
-
-Enhancements
-~~~~~~~~~~~~
-* Add gti_dirint function. (:issue:`396`)
 * replaced logging.warning calls with warnings.warn calls, and removed
   logging.debug calls. We encourage users to explore tools such as pdb and
   trackback in place of the logging.debug calls. Fixes (:issue:`447`).

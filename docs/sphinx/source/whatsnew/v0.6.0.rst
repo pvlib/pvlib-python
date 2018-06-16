@@ -6,7 +6,8 @@ v0.6.0 (___, 2018)
 API Changes
 ~~~~~~~~~~~
 * pvsystem.calcparams_desoto now requires arguments for each module model parameter.
-* Add kt and kt_prime keyword arguments to dirint function. (:issue:`396`)
+* Add kt, kt_prime keyword, and return_kt_prime arguments to dirint function.
+  (:issue:`396`)
 * Add kt and min_cos_zenith keyword arguments to disc function. (:issue:`396`)
 * Change the disc dni filter thresholds. (:issue:`396`)
 

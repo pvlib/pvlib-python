@@ -1554,7 +1554,6 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
             temp_dew=temp_dew, return_kt_prime=True)
 
         # calculate DHI using Marion eqn 3 (identify 1st term as GHI)
-        #ghi = np.minimum(disc_out['kt'], 0.82) * I0h
         ghi = disc_out['kt'] * I0h
         dhi = ghi - dni * cos_zenith
         bad_values = (dhi < 0) | (dni < 0) | (ghi < 0)
@@ -1613,11 +1612,10 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
                        surface_tilt, times, kt_prime,
                        pressure=101325., temp_dew=None, albedo=.25,):
 
-    # set the kt_prime for sunrise to AOI=90 to be equal to
+    # set the kt_prime from sunrise to AOI=90 to be equal to
     # the kt_prime for 65 < AOI < 80 during the morning.
     # similar for the afternoon. repeat for every day.
     aoi_gte_90 = aoi >= 90
-    aoi_lt_90 = aoi < 90
     aoi_65_80 = (aoi > 65) & (aoi < 80)
     zenith_lt_90 = solar_zenith < 90
     morning = solar_azimuth < 180

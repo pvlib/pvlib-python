@@ -2,7 +2,7 @@ import datetime
 from collections import OrderedDict
 
 import numpy as np
-from numpy import array, nan
+from numpy import array
 import pandas as pd
 
 import pytest

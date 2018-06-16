@@ -273,8 +273,8 @@ class ModelChain(object):
     spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
-        'first_solar' (not implemented), 'no_loss'. The ModelChain
-        instance will be passed as the first argument to a user-defined
+        'first_solar', 'no_loss'. The ModelChain instance will be passed 
+        as the first argument to a user-defined
         function.
 
     temp_model: str or function, default 'sapm'
@@ -518,7 +518,7 @@ class ModelChain(object):
         return self
 
     def no_aoi_loss(self):
-        self.aoi_modifier = 1
+        self.aoi_modifier = 1.0
         return self
 
     @property
@@ -532,7 +532,7 @@ class ModelChain(object):
         elif isinstance(model, str):
             model = model.lower()
             if model == 'first_solar':
-                raise NotImplementedError
+                self._spectral_model = self.first_solar_spectral_loss
             elif model == 'sapm':
                 self._spectral_model = self.sapm_spectral_loss
             elif model == 'no_loss':
@@ -546,12 +546,23 @@ class ModelChain(object):
         params = set(self.system.module_parameters.keys())
         if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
             return self.sapm_spectral_loss
+        elif ((('Technology' in params or
+                'Material' in params) and
+               (pvsystem._infer_cell_type() is not None)) or
+              'first_solar_spectral_coefficients' in params):
+            return self.first_solar_spectral_loss
         else:
             raise ValueError('could not infer spectral model from '
-                             'system.module_parameters')
+                             'system.module_parameters. Check that the '
+                             'parameters contain valid '
+                             'first_solar_spectral_coefficients or a valid '
+                             'Material or Technology value')
 
     def first_solar_spectral_loss(self):
-        raise NotImplementedError
+        self.spectral_modifier = self.system.first_solar_spectral_loss(
+                                        self.weather['precipitable_water'],
+                                        self.airmass['airmass_absolute'])
+        return self
 
     def sapm_spectral_loss(self):
         self.spectral_modifier = self.system.sapm_spectral_loss(

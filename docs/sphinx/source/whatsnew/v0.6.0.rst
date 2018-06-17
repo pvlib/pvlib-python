@@ -14,7 +14,7 @@ Enhancements
 * Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
 * Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)
 * Add gold I-V data set for the single-diode model, along with ``i_from_v()``
-and ``v_from_i()`` performance benchmarking
+and ``v_from_i()`` accuracy and performance benchmarking
 
 Bug fixes
 ~~~~~~~~~

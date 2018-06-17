@@ -107,11 +107,12 @@ def sum_current(resistance_shunt, resistance_series, nNsVth, current, voltage,
         current
 
 
-def bootstrap_si_device_bishop(N_s=1, cell_area_cm2=4., ideality_factor=1.5):
+def bootstrap_si_device_bishop(cell_area_cm2=4., N_s=1, ideality_factor=1.5):
     """
     Create c-Si device based on cell parameters in Bishop's 1988 paper Fig. 6.
 
-    Parameters are normalized to the cell area.
+    Parameters are adjusted for the cell area and the number of series cells in
+    the device.
     """
 
     # Copy an existing mono-Si device and None entries we don't know or need
@@ -142,52 +143,25 @@ def bootstrap_si_device_bishop(N_s=1, cell_area_cm2=4., ideality_factor=1.5):
     return device
 
 
-def bootstrap_si_device_pvmismatch(N_s=1,
-                                   cell_area_cm2=153.,
-                                   ideality_factor=1.5):
+def bootstrap_si_cell_large():
     """
-    Create a c-Si device based on default cell parameters in PVMismatch.
-
-    Parameters are not normalized to the cell area.
-
-    First diode taken from double-diode model used in PVMismatch, and default
-    ideality factor is average of first and second diode ideality factors.
-    https://github.com/SunPower/PVMismatch/blob/master/pvmismatch/pvmismatch_lib/pvcell.py
+    Create a single-large-area-cell c-Si device based on a SunPower module.
     """
 
-    # TODO Check into normalizing for Ns
-
-    # This should match the default value for cell_area_cm2 argument
-    default_cell_area_cm2 = 153.
-
-    # Copy an existing mono-Si device and None entries we don't know or need
+    # Use a single cell from an existing mono-Si module
     device = copy.deepcopy(
         pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327)
-    device.name = 'PVMismatch_{}_{}_{}'.format(N_s, cell_area_cm2,
-                                               ideality_factor)
-    device.BIPV = 'N'
-    device.Date = '2/20/2018'
-    device.T_NOCT = None
-    device.A_c = None
-    device.N_s = N_s
-    device.I_sc_ref = None
-    device.V_oc_ref = None
-    device.I_mp_ref = None
-    device.V_mp_ref = None
-    device.beta_oc = None
-    device.a_ref = N_s * ideality_factor * boltzmann_J_per_K * \
-        T_stc_K / elementary_charge_C  # Volt
-    device.I_L_ref = cell_area_cm2 * 6.3056 / default_cell_area_cm2  # Amp
-    device.I_o_ref = cell_area_cm2 * 2.286188161253440e-11 / \
-        default_cell_area_cm2  # Amp
-    device.R_s = N_s * cell_area_cm2 * \
-        0.004267236774264931/default_cell_area_cm2  # Ohm
-    device.R_sh_ref = cell_area_cm2 * 10.01226369025448 / \
-        default_cell_area_cm2 / N_s  # Ohm
-    device.Adjust = None
-    device.gamma_r = None
-    device.Version = None
-    device.PTC = None
+    Ns_module = device.N_s
+
+    # Scale relevant module parameters to single cell values
+    device.name = 'Si_cell_large'
+    device.Date = '6/16/2018'
+    device.N_s = 1  # Single large cell
+    device.V_oc_ref = device.V_oc_ref / Ns_module
+    device.V_mp_ref = device.V_mp_ref / Ns_module
+    device.a_ref = device.a_ref / Ns_module
+    device.R_s = device.R_s / Ns_module
+    device.R_sh_ref = Ns_module * device.R_sh_ref
 
     return device
 
@@ -248,7 +222,7 @@ def make_gold_dataset():
     devices = [
         bootstrap_si_device_bishop(),
         bootstrap_si_device_bishop(N_s=8),
-        bootstrap_si_device_pvmismatch(),
+        bootstrap_si_cell_large(),
         pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327,
         pvsystem.retrieve_sam('cecmod').First_Solar_FS_495
     ]

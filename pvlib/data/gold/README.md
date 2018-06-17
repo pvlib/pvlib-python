@@ -1,8 +1,8 @@
 Gold Datasets
 ============
 
-This directory contains gold datasets and modules for algorithm testing and
-benchmarking.
+This directory contains gold datasets and modules for algorithm verification
+and benchmarking.
 
 ## Single-Diode Model (SDM)
 
@@ -28,7 +28,7 @@ conditions.
 
 ### Benchmarking  SDM Functions
 
-Using an existing `sdm.json` gold dataset, you can test/benchmark various
+Using an existing `sdm.json` gold dataset, you can verify/benchmark various
 `i_from_v()` and `v_from_i()` implementations for accuracy/performance using a
 python script such as
 
@@ -49,8 +49,8 @@ pprint.pprint(sdm.gauge_gold_dataset(gold_dataset, {
 
 NOTES:
 - Any functions compatible with the `pvsystem.i_from_v` and `pvsystem.v_from_i`
-APIs can be tested/benchmarked against the gold dataset.
-- For each function tested/benchmarked, the worst computed I-V curve for each device is returned along with performance timing information and statistics for
+APIs can be verified/benchmarked against the gold dataset.
+- For each function verified/benchmarked, the worst computed I-V curve for each device is returned along with performance timing information and statistics for
 the ensemble of I-V curve computations for that device (without any
 repetitions).
 - See the `sdm.py` and `test_sdm.py` source code for details/examples.

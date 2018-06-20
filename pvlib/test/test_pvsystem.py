@@ -797,7 +797,7 @@ def test_singlediode_array():
 def test_singlediode_floats(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
-    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5)
+    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, method='lambertw')
     expected = {'i_xx': 4.2498,
                 'i_mp': 6.1275,
                 'v_oc': 8.1063,
@@ -817,7 +817,7 @@ def test_singlediode_floats(sam_data):
 
 @requires_scipy
 def test_singlediode_floats_ivcurve():
-    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3)
+    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3, method='lambertw')
     expected = {'i_xx': 4.2498,
                 'i_mp': 6.1275,
                 'v_oc': 8.1063,

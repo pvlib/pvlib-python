@@ -24,8 +24,10 @@ CECMOD = pvsystem.retrieve_sam('cecmod')
 def test_fast_spr_e20_327():
     spr_e20_327 = CECMOD.SunPower_SPR_E20_327
     x = pvsystem.calcparams_desoto(
-        poa_global=POA, temp_cell=TCELL,
-        alpha_isc=spr_e20_327.alpha_sc, module_parameters=spr_e20_327,
+        effective_irradiance=POA, temp_cell=TCELL,
+        alpha_sc=spr_e20_327.alpha_sc, a_ref=spr_e20_327.a_ref,
+        I_L_ref=spr_e20_327.I_L_ref, I_o_ref=spr_e20_327.I_o_ref,
+        R_sh_ref=spr_e20_327.R_sh_ref, R_s=spr_e20_327.R_s,
         EgRef=1.121, dEgdT=-0.0002677)
     il, io, rs, rsh, nnsvt = x
     tstart = clock()
@@ -59,8 +61,9 @@ def test_fast_spr_e20_327():
 def test_fast_fs_495():
     fs_495 = CECMOD.First_Solar_FS_495
     x = pvsystem.calcparams_desoto(
-        poa_global=POA, temp_cell=TCELL,
-        alpha_isc=fs_495.alpha_sc, module_parameters=fs_495,
+        effective_irradiance=POA, temp_cell=TCELL,
+        alpha_sc=fs_495.alpha_sc, a_ref=fs_495.a_ref, I_L_ref=fs_495.I_L_ref,
+        I_o_ref=fs_495.I_o_ref, R_sh_ref=fs_495.R_sh_ref, R_s=fs_495.R_s,
         EgRef=1.475, dEgdT=-0.0003)
     il, io, rs, rsh, nnsvt = x
     x += (101, )
@@ -95,8 +98,10 @@ def test_fast_fs_495():
 def test_slow_spr_e20_327():
     spr_e20_327 = CECMOD.SunPower_SPR_E20_327
     x = pvsystem.calcparams_desoto(
-        poa_global=POA, temp_cell=TCELL,
-        alpha_isc=spr_e20_327.alpha_sc, module_parameters=spr_e20_327,
+        effective_irradiance=POA, temp_cell=TCELL,
+        alpha_sc=spr_e20_327.alpha_sc, a_ref=spr_e20_327.a_ref,
+        I_L_ref=spr_e20_327.I_L_ref, I_o_ref=spr_e20_327.I_o_ref,
+        R_sh_ref=spr_e20_327.R_sh_ref, R_s=spr_e20_327.R_s,
         EgRef=1.121, dEgdT=-0.0002677)
     il, io, rs, rsh, nnsvt = x
     tstart = clock()
@@ -130,8 +135,9 @@ def test_slow_spr_e20_327():
 def test_slow_fs_495():
     fs_495 = CECMOD.First_Solar_FS_495
     x = pvsystem.calcparams_desoto(
-        poa_global=POA, temp_cell=TCELL,
-        alpha_isc=fs_495.alpha_sc, module_parameters=fs_495,
+        effective_irradiance=POA, temp_cell=TCELL,
+        alpha_sc=fs_495.alpha_sc, a_ref=fs_495.a_ref, I_L_ref=fs_495.I_L_ref,
+        I_o_ref=fs_495.I_o_ref, R_sh_ref=fs_495.R_sh_ref, R_s=fs_495.R_s,
         EgRef=1.475, dEgdT=-0.0003)
     il, io, rs, rsh, nnsvt = x
     x += (101, )

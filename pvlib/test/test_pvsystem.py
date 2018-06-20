@@ -479,12 +479,13 @@ def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
                                   R_sh_ref=pvsyst_module_params['R_sh_ref'],
                                   R_sh_0=pvsyst_module_params['R_sh_0'],
                                   R_s=pvsyst_module_params['R_s'],
-                    cells_in_series=pvsyst_module_params['cells_in_series'])
+                    cells_in_series=pvsyst_module_params['cells_in_series'],
+                                  R_sh_exp=pvsyst_module_params['R_sh_exp'])
 
     assert_allclose(IL, np.array([0.0, 4.8200]), atol=1)
     assert_allclose(I0, np.array([0.0, 1.47e-7]), atol=1.0e-5)
     assert_allclose(Rs, 0.5, atol=0.1)
-    assert_allclose(Rsh, np.array([1000, 305.76]), atol=50)
+    assert_allclose(Rsh, np.array([1000, 305.757]), atol=50)
     assert_allclose(nNsVth, np.array([1.6186, 1.7961]), atol=0.1)
 
 

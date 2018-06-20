@@ -417,9 +417,10 @@ def test_calcparams_pvsyst(pvsyst_module_params):
                                   I_L_ref=pvsyst_module_params['I_L_ref'],
                                   I_o_ref=pvsyst_module_params['I_o_ref'],
                                   R_sh_ref=pvsyst_module_params['R_sh_ref'],
+                                  R_sh_0=pvsyst_module_params['R_sh_0'],
                                   R_s=pvsyst_module_params['R_s'],
-                                  EgRef=pvsyst_module_params['EgRef'],
-                    cells_in_series=pvsyst_module_params['cells_in_series'])
+                    cells_in_series=pvsyst_module_params['cells_in_series'],
+                                  EgRef=pvsyst_module_params['EgRef'])
 
     assert_series_equal(np.round(IL, 3), pd.Series([0.0, 4.800], index=times))
     assert_series_equal(np.round(I0, 3),
@@ -476,9 +477,10 @@ def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
                                   I_L_ref=pvsyst_module_params['I_L_ref'],
                                   I_o_ref=pvsyst_module_params['I_o_ref'],
                                   R_sh_ref=pvsyst_module_params['R_sh_ref'],
+                                  R_sh_ref=pvsyst_module_params['R_sh_0'],
                                   R_s=pvsyst_module_params['R_s'],
-                                  EgRef=pvsyst_module_params['EgRef'],
-                    cells_in_series=pvsyst_module_params['cells_in_series'])
+                    cells_in_series=pvsyst_module_params['cells_in_series'],
+                                  EgRef=pvsyst_module_params['EgRef'])
     assert_allclose(IL, np.array([0.0, 4.800]), atol=1)
     assert_allclose(I0, np.array([0.0, 1.47e-7]), atol=1.0e-5)
     assert_allclose(Rs, 0.5, atol=0.1)

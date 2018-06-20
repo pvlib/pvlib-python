@@ -1,11 +1,14 @@
 .. _whatsnew_0520:
 
-v0.5.2 (__, 2017)
--------------------------
+v0.5.2 (May 13, 2018)
+---------------------
 
 API Changes
 ~~~~~~~~~~~
 * removed unused 'pressure' arg from irradiance.liujordan function (:issue:`386`)
+* replaced logging.warning calls with warnings.warn calls, and removed
+  logging.debug calls. We encourage users to explore tools such as pdb and
+  trackback in place of the logging.debug calls. Fixes (:issue:`447`).
 
 Enhancements
 ~~~~~~~~~~~~
@@ -27,12 +30,27 @@ Enhancements
   ``method`` argument ``('lambertw', 'fast', 'gold')`` that defaults to the new
   "gold" bounded bisection method. (:issue:`410`)
 * Add :func:`~pvlib.pvsystem.mpp` method to compute the max power point.
+* Improve clearsky.lookup_linke_turbidity speed, changing .mat source file
+  to .h5 (:issue:`437`)
+* Updated libraries for CEC module parameters to SAM release 2017.9.5
+  (library dated 2017.6.30) and CEC inverter parameters to file posted to
+  www.github.com/NREL/SAM on 2018.3.18, with one entry removed due to a
+  missing parameter value. (:issue:'440')
 
 Bug fixes
 ~~~~~~~~~
 * fixed redeclaration of test_simplified_solis_series_elevation (:issue:`387`)
 * physicaliam now returns a Series if called with a Series as an
   argument. (:issue:`397`)
+* corrected docstring for irradiance.total_irrad (:issue: '423')
+* modified solar_azimuth_analytical to handle some borderline cases, thereby
+  avoiding the NaN values and/or warnings that were previously produced
+  (:issue: '420')
+* removed RuntimeWarnings due to divide by 0 or nans in input data within
+  irradiance.perez, clearsky.simplified_solis, pvsystem.adrinverter,
+  pvsystem.ashraeiam, pvsystem.physicaliam, pvsystem.sapm_aoi_loss,
+  pvsystem.v_from_i. (:issue:`428`)
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -42,6 +60,7 @@ Testing
 ~~~~~~~
 * Test Python 3.6 on Windows with Appveyor instead of 3.4. (:issue:`392`)
 * Fix failing test on pandas 0.22 (:issue:`406`)
+* Fix too large test tolerance (:issue:`414`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -51,3 +70,5 @@ Contributors
 * Mark Mikofski
 
 
+* Anton Driesse
+* Cedric Leroy

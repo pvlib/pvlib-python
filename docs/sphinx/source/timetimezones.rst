@@ -298,12 +298,6 @@ The correct solar position can be immediately calculated from the
 DataFrame's index since the index has been localized.
 
 .. ipython:: python
-    :suppress:
-
-    import seaborn as sns
-    sns.set_color_codes()
-
-.. ipython:: python
 
     solar_position = pvlib.solarposition.get_solarposition(tmy3_data.index,
                                                            tmy3_metadata['latitude'],

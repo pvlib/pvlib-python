@@ -24,9 +24,6 @@ import pandas as pd
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 
 def get_solarposition(time, latitude, longitude,
                       altitude=None, pressure=None,
@@ -182,8 +179,6 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
         raise ImportError('Could not import built-in SPA calculator. ' +
                           'You may need to recompile the SPA code.')
 
-    pvl_logger.debug('using built-in spa code to calculate solar position')
-
     # if localized, convert to UTC. otherwise, assume UTC.
     try:
         time_utc = time.tz_convert('UTC')
@@ -236,14 +231,12 @@ def _spa_python_import(how):
         # the PVLIB_USE_NUMBA env variable is used to tell the module
         # to not compile with numba
         os.environ['PVLIB_USE_NUMBA'] = '0'
-        pvl_logger.debug('Reloading spa module without compiling')
         spa = reload(spa)
         del os.environ['PVLIB_USE_NUMBA']
     elif how == 'numba' and not using_numba:
         # The spa module was not compiled to numba code, so set
         # PVLIB_USE_NUMBA so it does compile to numba on reload.
         os.environ['PVLIB_USE_NUMBA'] = '1'
-        pvl_logger.debug('Reloading spa module, compiling with numba')
         spa = reload(spa)
         del os.environ['PVLIB_USE_NUMBA']
     elif how != 'numba' and how != 'numpy':
@@ -323,8 +316,6 @@ def spa_python(time, latitude, longitude,
 
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
-    pvl_logger.debug('Calculating solar position with spa_python code')
-
     lat = latitude
     lon = longitude
     elev = altitude
@@ -403,8 +394,6 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
     USA, http://www.nrel.gov.
     """
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
-
-    pvl_logger.debug('Calculating sunrise, set, transit with spa_python code')
 
     lat = latitude
     lon = longitude
@@ -492,8 +481,6 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
         import ephem
     except ImportError:
         raise ImportError('PyEphem must be installed')
-
-    pvl_logger.debug('using PyEphem to calculate solar position')
 
     # if localized, convert to UTC. otherwise, assume UTC.
     try:
@@ -790,7 +777,6 @@ def pyephem_earthsun_distance(time):
     -------
     pd.Series. Earth-sun distance in AU.
     """
-    pvl_logger.debug('solarposition.pyephem_earthsun_distance()')
 
     import ephem
 
@@ -1096,9 +1082,27 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     hour_angle
     solar_zenith_analytical
     """
-    return np.sign(hour_angle) * np.abs(np.arccos((np.cos(zenith) * np.sin(
-        latitude) - np.sin(declination)) / (np.sin(zenith) * np.cos(
-        latitude)))) + np.pi
+
+    numer = (np.cos(zenith) * np.sin(latitude) - np.sin(declination))
+    denom = (np.sin(zenith) * np.cos(latitude))
+
+    # cases that would generate new NaN values are safely ignored here
+    # since they are dealt with further below
+    with np.errstate(invalid='ignore', divide='ignore'):
+        cos_azi = numer / denom
+
+    # when zero division occurs, use the limit value of the analytical expression
+    cos_azi = np.where(np.isclose(denom,    0.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
+
+    # when too many round-ups in floating point math take cos_azi beyond 1.0, use 1.0
+    cos_azi = np.where(np.isclose(cos_azi,  1.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
+    cos_azi = np.where(np.isclose(cos_azi, -1.0, rtol=0.0, atol=1e-8), -1.0, cos_azi)
+
+    # when NaN values occur in input, ignore and pass to output
+    with np.errstate(invalid='ignore'):
+        sign_ha = np.sign(hour_angle)
+
+    return (sign_ha * np.arccos(cos_azi) + np.pi)
 
 
 def solar_zenith_analytical(latitude, hour_angle, declination):

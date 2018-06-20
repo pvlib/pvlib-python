@@ -10,9 +10,6 @@ from __future__ import division
 import os
 import threading
 import warnings
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 
 import numpy as np
 
@@ -995,13 +992,11 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
         unixtime = unixtime.astype(np.float64)
 
     if ulength < numthreads:
-        pvl_logger.warning('The number of threads is more than the length of' +
-                           ' the time array. Only using %s threads.',
-                            ulength)
+        warnings.warn('The number of threads is more than the length of '
+                      'the time array. Only using %s threads.'.format(ulength))
         numthreads = ulength
 
     if numthreads <= 1:
-        pvl_logger.debug('Only using one thread for calculation')
         solar_position_loop(unixtime, loc_args, result)
         return result
 
@@ -1312,16 +1307,16 @@ def calculate_deltat(year, month):
     Equations taken from http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
     """
 
-    plw = ' Deltat is unknown for years before -1999 and after 3000.'\
-          + ' Delta values will be calculated, but the calculations'\
-          + ' are not intended to be used for these years.'
+    plw = 'Deltat is unknown for years before -1999 and after 3000. ' \
+          'Delta values will be calculated, but the calculations ' \
+          'are not intended to be used for these years.'
 
     try:
         if np.any((year > 3000) | (year < -1999)):
-            pvl_logger.warning(plw)
+            warnings.warn(plw)
     except ValueError:
         if (year > 3000) | (year < -1999):
-            pvl_logger.warning(plw)
+            warnings.warn(plw)
     except TypeError:
         return 0
 

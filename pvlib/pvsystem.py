@@ -1327,7 +1327,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     Tcell_K = temp_cell + 273.15
 
     gamma = gamma_ref + mugamma * (Tcell_K - Tref_K)
-    nNsVth = gamma * k / q * cells_in_series
+    nNsVth = gamma * k / q * cells_in_series * Tcell_K
 
     IL = effective_irradiance / irrad_ref * \
               (I_L_ref + alpha_sc * (Tcell_K - Tref_K))

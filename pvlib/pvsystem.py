@@ -322,7 +322,7 @@ class PVSystem(object):
             The average cell temperature of cells within a module in C.
 
         **kwargs
-            See pvsystem.calcparams_desoto for details
+            See pvsystem.calcparams_pvsyst for details
 
         Returns
         -------
@@ -1230,6 +1230,9 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
 
     gamma_ref : float
         The diode ideality factor
+
+    mugamma : float
+        The temperature coefficient for the diode ideality factor, 1/K
 
     I_L_ref : float
         The light-generated current (or photocurrent) at reference conditions,

@@ -12,24 +12,6 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-* Implement a reliable "gold" implementation of the single diode model (SDM)
-  using a bisection method (Brent, 1973) bounded by points known to include the
-  full forward-bias 1st quadrant IV-curve. Also implement a "fast" method using
-  a gradient descent method (Newton-Raphson) that is not bounded, but should be
-  safe for well behaved IV-curves. (:issue:`408`)
-* Implement :func:`~pvlib.pvsystem.bishop88` for explicit calculation of
-  arbitrary IV curve points using diode voltage instead of cell voltage. This
-  method is called for ``ivcurve_pnts`` in :func:`~pvlib.pvsystem.singlediode`
-  if the method is either ``'fast'`` or ``'gold'``, but the IV curve points will
-  be log spaced instead of linear.
-* Implement :func:`~pvlib.pvsystem.est_voc` to estimate open circuit voltage by
-  assuming :math:`R_{sh} \to \infty`. This is used as an upper bound in
-  bisection method for :func:`~pvlib.pvsystem.singlediode`.
-* Combine existing :func:`~pvlib.pvsystem.singlediode` method using Lambert-W
-  with the two new implementations to form a wrapper, that takes an additional
-  ``method`` argument ``('lambertw', 'fast', 'gold')`` that defaults to the new
-  "gold" bounded bisection method. (:issue:`410`)
-* Add :func:`~pvlib.pvsystem.mpp` method to compute the max power point.
 * Improve clearsky.lookup_linke_turbidity speed, changing .mat source file
   to .h5 (:issue:`437`)
 * Updated libraries for CEC module parameters to SAM release 2017.9.5
@@ -67,8 +49,5 @@ Contributors
 * Cliff Hansen
 * Will Holmgren
 * KonstantinTr
-* Mark Mikofski
-
-
 * Anton Driesse
 * Cedric Leroy

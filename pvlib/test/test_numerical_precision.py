@@ -22,8 +22,10 @@ CECMOD = pvsystem.retrieve_sam('cecmod')
 # get module from cecmod and apply temp/irrad desoto corrections
 SPR_E20_327 = CECMOD.SunPower_SPR_E20_327
 ARGS = pvsystem.calcparams_desoto(
-    poa_global=POA, temp_cell=TCELL,
-    alpha_isc=SPR_E20_327.alpha_sc, module_parameters=SPR_E20_327,
+    effective_irradiance=POA, temp_cell=TCELL,
+    alpha_sc=SPR_E20_327.alpha_sc, a_ref=SPR_E20_327.a_ref,
+    I_L_ref=SPR_E20_327.I_L_ref, I_o_ref=SPR_E20_327.I_o_ref,
+    R_sh_ref=SPR_E20_327.R_sh_ref, R_s=SPR_E20_327.R_s,
     EgRef=1.121, dEgdT=-0.0002677
 )
 IL, I0, RS, RSH, NNSVTH = ARGS

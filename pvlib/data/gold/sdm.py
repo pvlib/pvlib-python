@@ -19,8 +19,7 @@ from timeit import default_timer as timer
 
 import numpy
 
-from pvlib import pvsystem
-import pvlib.version
+import pvlib
 
 
 # Useful constants for photovoltaic modeling that are versioned. Several
@@ -117,7 +116,7 @@ def bootstrap_si_device_bishop(cell_area_cm2=4., N_s=1, ideality_factor=1.5):
 
     # Copy an existing mono-Si device and None entries we don't know or need
     device = copy.deepcopy(
-        pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327)
+        pvlib.pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327)
     device.name = 'Bishop_{}_{}_{}'.format(N_s, cell_area_cm2, ideality_factor)
     device.BIPV = 'N'
     device.Date = '6/20/1988'
@@ -148,9 +147,9 @@ def bootstrap_si_cell_large():
     Create a single-large-area-cell c-Si device based on a SunPower module.
     """
 
-    # Use a single cell from an existing mono-Si module
+    # Use a large single cell from an existing mono-Si module
     device = copy.deepcopy(
-        pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327)
+        pvlib.pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327)
     Ns_module = device.N_s
 
     # Scale relevant module parameters to single cell values
@@ -193,6 +192,10 @@ def make_gold_dataset():
     Returns
     -------
     gold_dataset : dict
+        The gold data are returned in a dict with metadata (e.g., timestamp,
+        versions, units) and a list of representative PV devices, where each
+        device is a dict that includes a list of dict containing the diode
+        equation coefficients and corresponding gold I-V curve data.
 
     References
     ----------
@@ -223,8 +226,8 @@ def make_gold_dataset():
         bootstrap_si_device_bishop(),
         bootstrap_si_device_bishop(N_s=8),
         bootstrap_si_cell_large(),
-        pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327,
-        pvsystem.retrieve_sam('cecmod').First_Solar_FS_495
+        pvlib.pvsystem.retrieve_sam('cecmod').SunPower_SPR_E20_327,
+        pvlib.pvsystem.retrieve_sam('cecmod').First_Solar_FS_495
     ]
 
     # Initialize the output, recording metadata
@@ -233,7 +236,7 @@ def make_gold_dataset():
         "dataset_version": '1.0.0',  # dataset follows SemVer
         "python_version": sys.version,
         "numpy_version": numpy.__version__,
-        "pvlib_version": pvlib.version.__version__,
+        "pvlib_version": pvlib.__version__,
         "platform_version": platform.platform(),
         "residual_interval_tolerance": tol,
         "units": {
@@ -285,7 +288,7 @@ def make_gold_dataset():
                 for T in T_list:
                     # Compute the model parameters at each
                     #  irradiance-temperature combo
-                    device_params = pvsystem.calcparams_desoto(
+                    device_params = pvlib.pvsystem.calcparams_desoto(
                         effective_irradiance=G,
                         temp_cell=T,
                         alpha_sc=device.alpha_sc,
@@ -305,10 +308,10 @@ def make_gold_dataset():
                     #  conductance instead of shunt resistance
                     g_sh = g_sh_scale / r_sh
                     # Reverse engineer the diode voltage range
-                    i_sc = pvsystem.i_from_v(r_sh, r_s, nNsVth, 0., i_0,
-                                             i_l)  # Not a gold value
-                    v_oc = pvsystem.v_from_i(r_sh, r_s, nNsVth, 0., i_0,
-                                             i_l)  # Not a gold value
+                    i_sc = pvlib.pvsystem.i_from_v(r_sh, r_s, nNsVth, 0., i_0,
+                                                   i_l)  # Not a gold value
+                    v_oc = pvlib.pvsystem.v_from_i(r_sh, r_s, nNsVth, 0., i_0,
+                                                   i_l)  # Not a gold value
                     # For min diode voltage, go slightly less than Isc, even
                     #  when r_s==0
                     v_d_min = i_sc * r_s - 0.02 * v_oc
@@ -339,14 +342,11 @@ def make_gold_dataset():
                     # Solve the current sum at diode node residual as a
                     #  numerically reliable interval
                     current_sum_residual_interval_list = \
-                        [interval(i_l) - interval(i_0) *
-                         imath.expm1((interval(vi_pair[0]) +
-                                      interval(vi_pair[1])*interval(r_s)) /
-                                     interval(nNsVth)) -
-                         interval(g_sh)*(interval(vi_pair[0]) +
-                         interval(vi_pair[1])*interval(r_s)) -
-                         interval(vi_pair[1])
-                         for vi_pair in zip(v_gold, i_gold)]
+                        [interval(i_l) - interval(i_0) * imath.expm1(
+                            (interval(v) + interval(i)*interval(r_s)) /
+                            interval(nNsVth)) - interval(g_sh) *
+                            (interval(v) + interval(i)*interval(r_s)) -
+                            interval(i) for v, i in zip(v_gold, i_gold)]
 
                     # Make sure the computed interval is within the specified
                     #  tolerance, report bad value in exception if not
@@ -368,7 +368,7 @@ def make_gold_dataset():
         # Append this I-V curve to the list for this device
         gold_dataset["devices"].append(device_dict)
 
-    # Return the dictionary, with floating point values in hex format
+    # Return the list of devices' gold data with floats in hex format
     return gold_dataset
 
 
@@ -383,13 +383,16 @@ def convert_gold_dataset(gold_dataset):
     Parameters
     ----------
     gold_dataset : dict
+        See ``make_gold_dataset()``.
 
     Returns
     -------
-    gold_dataset_converted : dict
+    gold_dataset_converted : list
+        The gold dataset with floats converted from hex format, and shunt (or
+        parallel) conductance converted to shunt resistance.
     """
 
-    # Return a new dict instead of clobbering existing (uses more memory)
+    # Return a new list instead of clobbering existing (uses more memory)
     gold_dataset_converted = copy.deepcopy(gold_dataset)
 
     # Convert the relevant header items
@@ -438,10 +441,12 @@ def pretty_print_gold_dataset(gold_dataset):
     Parameters
     ----------
     gold_dataset : dict
+        See ``make_gold_dataset()``.
 
     Returns
     -------
     gold_dataset_csv : str
+        A csv string version of the output from ``convert_gold_dataset()``.
 
     """
 
@@ -484,28 +489,26 @@ def pretty_print_gold_dataset(gold_dataset):
     return gold_dataset_csv
 
 
-def save_gold_dataset(gold_dataset,
-                      json_rel_path="sdm.json",
-                      csv_rel_path="sdm.csv"):
+def save_gold_dataset(gold_dataset, json_path="sdm.json", csv_path="sdm.csv"):
     """
-    Save gold dataset to file in two possible formats.
+    Save gold dataset in two possible file formats.
 
     The gold dataset dict is saved in a lossless, machine-interoperable json
     file and in a lossy, but human-readable, csv file.
 
-    Relative file paths are used, which are relative to the current directory.
-    Defaults are customizable. Set a file path to None to skip saving that
-    file.
+    If relative file paths are specified, then they should be relative to the
+    current working directory. Set a file path to "" or None to skip saving
+    that file.
 
     Parameters
     ----------
     gold_dataset : dict
 
-    json_rel_path : str
-        Pass ``None`` to skip writing this file.
+    json_path : str
+        Pass an empty string or `None`` to skip writing this file.
 
-    csv_rel_path :str
-        Pass ``None`` to skip writing this file.
+    csv_path :str
+        Pass an empty string or ``None`` to skip writing this file.
 
     Returns
     -------
@@ -513,19 +516,19 @@ def save_gold_dataset(gold_dataset,
     """
 
     # When requested, write dataset in json file, skips when empty path string
-    if json_rel_path:
+    if json_path:
         # This should normalize the path for the particular OS
-        with open(os.path.abspath(json_rel_path), 'w') as fp:
+        with open(os.path.normpath(json_path), 'w') as fp:
             json.dump(gold_dataset, fp)
 
     # When requested, write dataset in csv file, skips when empty path string
-    if csv_rel_path:
+    if csv_path:
         # This should normalize the path for the particular OS
-        with open(os.path.abspath(csv_rel_path), 'w') as fp:
+        with open(os.path.normpath(csv_path), 'w') as fp:
             fp.write(pretty_print_gold_dataset(gold_dataset))
 
 
-def load_gold_dataset(json_rel_path="sdm.json"):
+def load_gold_dataset(json_path="sdm.json"):
     """
     Load gold dataset from disk.
 
@@ -533,21 +536,25 @@ def load_gold_dataset(json_rel_path="sdm.json"):
     machine-interoperable format. Pass this to convert_gold_dataset() in order
     to use the data with pvlib on a specific machine.
 
+    If a relative file path is specified, then it should be relative to the
+    current working directory.
+
     Parameters
     ----------
-    json_rel_path : str
+    json_path : str
 
     Returns
     -------
     gold_dataset : dict
+        See ``make_gold_dataset()``.
     """
 
     # This should normalize the path for the particular OS
-    with open(os.path.abspath(json_rel_path), 'r') as fp:
+    with open(os.path.normpath(json_path), 'r') as fp:
         return json.load(fp)
 
 
-def gauge_gold_dataset(gold_dataset, test_func):
+def gauge_functions(gold_dataset, test_func):
     """
     Gauge modeling functions for accuracy and speed against the gold dataset.
 
@@ -558,21 +565,25 @@ def gauge_gold_dataset(gold_dataset, test_func):
     data and summary statistics are also returned for the ensemble of
     computations per function and per device.
 
-    This also helps verify that a given function meets the pvlib interface.
+    This also helps verify that a given function meets the pvlib interface, but
+    note that no assertions are made about the quality of the gauged functions.
 
     Parameters
     ----------
     gold_dataset : dict
+        See ``make_gold_dataset()``.
 
     test_func : dict
+        A dictionary of functions to guage. Supported keys to functions are
+        'i_from_v' and 'v_from_i'.
 
     Returns
     -------
     results : list
         A per-device list of results with each function tested/benchmarked. The
-worst computed I-V curve is returned along with performance timing information
-and statistics for the device-ensemble of I-V curve computations (without any
-repetitions).
+        worst computed I-V curve is returned along with performance timing
+        information and statistics for the device-ensemble of I-V curve
+        computations (without any repetitions).
     """
 
     # Convert gold dataset from hex
@@ -807,19 +818,30 @@ repetitions).
 # Command line option
 if __name__ == '__main__':
 
-    gold_dataset = make_gold_dataset()
+    import argparse
+    import pprint
 
     # File locations are robust to running script from different directories
-    rel_path = os.path.dirname(__file__)
-    json_rel_path = os.path.join(rel_path, "sdm.json")
-    csv_rel_path = os.path.join(rel_path, "sdm.csv")
+    parser = argparse.ArgumentParser(description="Create a gold dataset in \
+both json and csv formats and gauge I-V functions against it.")
+    parser.add_argument('-p', '--path', type=str,
+                        default=os.path.dirname(__file__),
+                        help="directory path to write json and csv gold \
+dataset files to; OPTIONAL: defaults to this module's directory")
+    parser.add_argument('-n', '--name', type=str, default="sdm",
+                        help="the extensionless file name to use for json and \
+csv gold dataset files; OPTIONAL: defaults to 'sdm'")
+    args = parser.parse_args()
 
-    save_gold_dataset(
-        gold_dataset, json_rel_path=json_rel_path, csv_rel_path=csv_rel_path)
+    gold_dataset = make_gold_dataset()
 
-    import pprint
+    json_path = os.path.join(os.path.normpath(args.path), args.name + ".json")
+    csv_path = os.path.join(os.path.normpath(args.path),  args.name + ".csv")
+
+    save_gold_dataset(gold_dataset, json_path=json_path, csv_path=csv_path)
+
     pprint.pprint(
-        gauge_gold_dataset(gold_dataset, {
-            "i_from_v": pvsystem.i_from_v,
-            "v_from_i": pvsystem.v_from_i,
+        gauge_functions(gold_dataset, {
+            "i_from_v": pvlib.pvsystem.i_from_v,
+            "v_from_i": pvlib.pvsystem.v_from_i,
         }))

@@ -39,11 +39,20 @@ def est_voc(photocurrent, saturation_current, nNsVth):
     Rough estimate of open circuit voltage useful for bounding searches for
     ``i`` of ``v`` when using :func:`~pvlib.pvsystem.singlediode`.
 
-    :param numeric photocurrent: photo-generated current [A]
-    :param numeric saturation_current: diode one reverse saturation current [A]
-    :param numeric nNsVth: product of thermal voltage ``Vth`` [V], diode
-        ideality factor ``n``, and number of series cells ``Ns``
-    :returns: rough estimate of open circuit voltage [V]
+    Parameters
+    ----------
+    photocurrent : numeric
+        photo-generated current [A]
+    saturation_current : numeric
+        diode one reverse saturation current [A]
+    nNsVth : numeric
+        product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
+        and number of series cells ``Ns``
+
+    Returns
+    -------
+    numeric
+        rough estimate of open circuit voltage [V]
 
     Calculating the open circuit voltage, :math:`V_{oc}`, of an ideal device
     with infinite shunt resistance, :math:`R_{sh} \\to \\infty`, and zero series
@@ -71,18 +80,30 @@ def bishop88(vd, photocurrent, saturation_current, resistance_series,
     photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
     https://doi.org/10.1016/0379-6787(88)90059-2
 
-    :param numeric vd: diode voltages [V]
-    :param numeric photocurrent: photo-generated current [A]
-    :param numeric saturation_current: diode one reverse saturation current [A]
-    :param numeric resistance_series: series resitance [ohms]
-    :param numeric resistance_shunt: shunt resitance [ohms]
-    :param numeric nNsVth: product of thermal voltage ``Vth`` [V], diode
-        ideality factor ``n``, and number of series cells ``Ns``
-    :param bool gradients: default returns only i, v, and p, returns gradients
-        if true
-    :returns: tuple containing currents [A], voltages [V], power [W],
-        gradient ``di/dvd``, gradient ``dv/dvd``, gradient ``di/dv``,
-        gradient ``dp/dv``, and gradient ``d2p/dv/dvd``
+    Parameters
+    ----------
+    vd : numeric
+        diode voltages [V]
+    photocurrent : numeric
+        photo-generated current [A]
+    saturation_current : numeric
+        diode one reverse saturation current [A]
+    resistance_series : numeric
+        series resistance [ohms]
+    resistance_shunt: numeric
+        shunt resistance [ohms]
+    nNsVth : numeric
+        product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
+        and number of series cells ``Ns``
+    gradients : bool
+        default returns only i, v, and p, returns gradients if true
+
+    Returns
+    -------
+    tuple
+        containing currents [A], voltages [V], power [W], gradient ``di/dvd``,
+        gradient ``dv/dvd``, gradient ``di/dv``, gradient ``dp/dv``, and
+        gradient ``d2p/dv/dvd``
     """
     a = np.exp(vd / nNsVth)
     b = 1.0 / resistance_shunt

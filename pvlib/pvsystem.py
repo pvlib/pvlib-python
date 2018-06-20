@@ -307,6 +307,36 @@ class PVSystem(object):
         
         return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
+    def calcparams_pvsyst(self, effective_irradiance, temp_cell, **kwargs):
+        """
+        Use the :py:func:`calcparams_pvsyst` function, the input
+        parameters and ``self.module_parameters`` to calculate the
+        module currents and resistances.
+
+        Parameters
+        ----------
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
+
+        temp_cell : float or Series
+            The average cell temperature of cells within a module in C.
+
+        **kwargs
+            See pvsystem.calcparams_desoto for details
+
+        Returns
+        -------
+        See pvsystem.calcparams_pvsyst for details
+        """
+
+        kwargs = _build_kwargs(['gamma_ref', 'mugamma', 'I_L_ref', 'I_o_ref', 
+                                'R_sh_ref', 'R_sh_0', 'R_sh_exp', 
+                                'R_s', 'alpha_sc', 'EgRef',
+                                'cells_in_series'],
+                                self.module_parameters)
+        
+        return calcparams_pvsyst(effective_irradiance, temp_cell, **kwargs)
+
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`sapm` function, the input parameters,
@@ -1167,6 +1197,147 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # irradiance and not applying a spectral loss modifier, i.e., 
     # spectral_modifier = 1.0.
     Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
+    Rs = R_s
+
+    return IL, I0, Rs, Rsh, nNsVth
+
+
+def calcparams_pvsyst(effective_irradiance, temp_cell,
+                      alpha_sc, gamma_ref, mugamma,
+                      I_L_ref, I_o_ref, 
+                      R_sh_ref, R_sh_0, R_s, 
+                      cells_in_series,
+                      R_sh_exp=5.5,
+                      EgRef=1.121,
+                      irrad_ref=1000, temp_ref=25):
+    '''
+    Calculates five parameter values for the single diode equation at 
+    effective irradiance and cell temperature using the PVsyst v6 
+    model described in [1,2,3]. The five values returned by calcparams_pvsyst
+    can be used by singlediode to calculate an IV curve.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric
+        The irradiance (W/m2) that is converted to photocurrent.
+
+    temp_cell : numeric
+        The average cell temperature of cells within a module in C.
+
+    alpha_sc : float
+        The short-circuit current temperature coefficient of the
+        module in units of A/C.
+
+    gamma_ref : float
+        The diode ideality factor
+
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference conditions,
+        in amperes.
+        
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference conditions,
+        in amperes.
+        
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
+        
+    R_sh_0 : float
+        The shunt resistance at zero irradiance conditions, in ohms.
+        
+    R_s : float
+        The series resistance at reference conditions, in ohms.
+
+    cells_in_series : integer
+        The number of cells connected in series.
+
+    R_sh_exp : float
+        The exponent in the equation for shunt resistance, unitless. Defaults
+        to 5.5.
+
+    EgRef : float
+        The energy bandgap at reference temperature in units of eV.
+        1.121 eV for crystalline silicon. EgRef must be >0.
+
+    irrad_ref : float (optional, default=1000)
+        Reference irradiance in W/m^2.
+
+    temp_ref : float (optional, default=25)
+        Reference cell temperature in C.
+
+    Returns
+    -------
+    Tuple of the following results:
+
+    photocurrent : numeric
+        Light-generated current in amperes at irradiance=S and
+        cell temperature=Tcell.
+
+    saturation_current : numeric
+        Diode saturation curent in amperes at irradiance
+        S and cell temperature Tcell.
+
+    resistance_series : float
+        Series resistance in ohms at irradiance S and cell temperature
+        Tcell.
+
+    resistance_shunt : numeric
+        Shunt resistance in ohms at irradiance S and cell temperature
+        Tcell.
+
+    nNsVth : numeric
+        Modified diode ideality factor at irradiance S and cell
+        temperature Tcell. Note that in source [1] nNsVth = a (equation
+        2). nNsVth is the product of the diode ideality factor
+        (n), the number of series-connected cells in the module (Ns),
+        and the thermal voltage of a cell in the module (Vth) at a cell
+        temperature of Tcell.
+
+    References
+    ----------
+    [1] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and 
+     Temperature Dependence of Photovoltaic Modules in PVsyst, 
+     IEEE Journal of Photovoltaics v5(1), January 2015.
+
+    [2] A. Mermoud, PV modules modelling, Presentation at the 2nd PV
+     Performance Modeling Workshop, Santa Clara, CA, May 2013
+
+    [3] A. Mermoud, T. Lejeune, Performance Assessment of a Simulation Model
+     for PV modules of any available technology, 25th European Photovoltaic
+     Solar Energy Conference, Valencia, Spain, Sept. 2010
+
+    See Also
+    --------
+    calcparams_desoto
+    singlediode
+    
+    '''
+
+    # Boltzmann constant in J/K
+    k = 1.3806488e-23
+
+    # elementary charge in coulomb
+    q = 1.6021766e-19
+    
+    # reference temperature
+    Tref_K = temp_ref + 273.15
+    Tcell_K = temp_cell + 273.15
+
+    gamma = gamma_ref + mugamma * (Tcell_K - Tref_K)
+    nNsVth = gamma * k / q * cells_in_series
+
+    IL = effective_irradiance / irrad_ref * \
+              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+
+    I0 = I_o_ref * ((Tcell_K / Tref_K) ** 3) * \
+          (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
+
+    Rsh_tmp = (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
+    Rsh_base = np.maximum(0.0, Rsh_tmp)
+
+    Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
+              np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
+    
     Rs = R_s
 
     return IL, I0, Rs, Rsh, nNsVth

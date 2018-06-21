@@ -220,9 +220,6 @@ class ModelChain(object):
     necessary for calculating power or energy for a PV system at a given
     location using the SAPM.
 
-    CEC module specifications and the single diode model are not yet
-    supported.
-
     Parameters
     ----------
     system : PVSystem
@@ -233,7 +230,7 @@ class ModelChain(object):
         A :py:class:`~pvlib.location.Location` object that represents
         the physical location at which to evaluate the model.
 
-    orientation_strategy : None or str, default 'south_at_latitude_tilt'
+    orientation_strategy : None or str, default None
         The strategy for aligning the modules. If not None, sets the
         ``surface_azimuth`` and ``surface_tilt`` properties of the
         ``system``. Allowed strategies include 'flat',
@@ -260,9 +257,9 @@ class ModelChain(object):
     ac_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.inverter_parameters and system.module_parameters. Valid
-        strings are 'snlinverter', 'adrinverter' (not implemented),
-        'pvwatts'. The ModelChain instance will be passed as the first
-        argument to a user-defined function.
+        strings are 'snlinverter', 'adrinverter', 'pvwatts'. The
+        ModelChain instance will be passed as the first argument to a
+        user-defined function.
 
     aoi_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
@@ -273,9 +270,8 @@ class ModelChain(object):
     spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
-        'first_solar', 'no_loss'. The ModelChain instance will be passed 
-        as the first argument to a user-defined
-        function.
+        'first_solar', 'no_loss'. The ModelChain instance will be passed
+        as the first argument to a user-defined function.
 
     temp_model: str or function, default 'sapm'
         Valid strings are 'sapm'. The ModelChain instance will be passed
@@ -301,9 +297,7 @@ class ModelChain(object):
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temp_model='sapm',
-                 losses_model='no_loss',
-                 name=None,
-                 **kwargs):
+                 losses_model='no_loss', name=None, **kwargs):
 
         self.name = name
         self.system = system

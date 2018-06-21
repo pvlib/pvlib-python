@@ -1041,28 +1041,21 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     Tuple of the following results:
 
     photocurrent : numeric
-        Light-generated current in amperes at irradiance=S and
-        cell temperature=Tcell.
+        Light-generated current in amperes
 
     saturation_current : numeric
-        Diode saturation curent in amperes at irradiance
-        S and cell temperature Tcell.
+        Diode saturation curent in amperes
 
     resistance_series : float
-        Series resistance in ohms at irradiance S and cell temperature
-        Tcell.
+        Series resistance in ohms
 
     resistance_shunt : numeric
-        Shunt resistance in ohms at irradiance S and cell temperature
-        Tcell.
+        Shunt resistance in ohms
 
     nNsVth : numeric
-        Modified diode ideality factor at irradiance S and cell
-        temperature Tcell. Note that in source [1] nNsVth = a (equation
-        2). nNsVth is the product of the usual diode ideality factor
-        (n), the number of series-connected cells in the module (Ns),
-        and the thermal voltage of a cell in the module (Vth) at a cell
-        temperature of Tcell.
+        The product of the usual diode ideality factor (n, unitless), 
+        number of cells in series (Ns), and cell thermal voltage at 
+        specified effective irradiance and cell temperature.
 
     References
     ----------
@@ -1081,8 +1074,6 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     See Also
     --------
-    sapm
-    sapm_celltemp
     singlediode
     retrieve_sam
 
@@ -1273,28 +1264,21 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     Tuple of the following results:
 
     photocurrent : numeric
-        Light-generated current in amperes at irradiance=S and
-        cell temperature=Tcell.
+        Light-generated current in amperes
 
     saturation_current : numeric
-        Diode saturation curent in amperes at irradiance
-        S and cell temperature Tcell.
+        Diode saturation current in amperes
 
     resistance_series : float
-        Series resistance in ohms at irradiance S and cell temperature
-        Tcell.
-
+        Series resistance in ohms
+        
     resistance_shunt : numeric
-        Shunt resistance in ohms at irradiance S and cell temperature
-        Tcell.
+        Shunt resistance in ohms
 
     nNsVth : numeric
-        Modified diode ideality factor at irradiance S and cell
-        temperature Tcell. Note that in source [1] nNsVth = a (equation
-        2). nNsVth is the product of the diode ideality factor
-        (n), the number of series-connected cells in the module (Ns),
-        and the thermal voltage of a cell in the module (Vth) at a cell
-        temperature of Tcell.
+        The product of the usual diode ideality factor (n, unitless), 
+        number of cells in series (Ns), and cell thermal voltage at 
+        specified effective irradiance and cell temperature.
 
     References
     ----------

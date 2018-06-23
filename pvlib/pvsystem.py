@@ -119,8 +119,7 @@ class PVSystem(object):
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
-                 name=None,
-                 **kwargs):
+                 losses_parameters=None, name=None, **kwargs):
 
         self.name = name
 
@@ -149,6 +148,11 @@ class PVSystem(object):
             self.inverter_parameters = {}
         else:
             self.inverter_parameters = inverter_parameters
+
+        if losses_parameters is None:
+            self.losses_parameters = {}
+        else:
+            self.losses_parameters = losses_parameters
 
         self.racking_model = racking_model
 
@@ -304,7 +308,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
                                 'R_s', 'alpha_sc', 'EgRef', 'dEgdT'],
                                 self.module_parameters)
-        
+
         return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
@@ -462,7 +466,7 @@ class PVSystem(object):
             coefficients = None
 
         return atmosphere.first_solar_spectral_correction(pw,
-                                                          airmass_absolute, 
+                                                          airmass_absolute,
                                                           module_type,
                                                           coefficients)
 
@@ -597,15 +601,17 @@ class PVSystem(object):
                           self.module_parameters['gamma_pdc'],
                           **kwargs)
 
-    def pvwatts_losses(self, **kwargs):
+    def pvwatts_losses(self):
         """
         Calculates DC power losses according the PVwatts model using
-        :py:func:`pvwatts_losses`. No attributes are used in this
-        calculation, but all keyword arguments will be passed to the
-        function.
+        :py:func:`pvwatts_losses` and ``self.losses_parameters``.`
 
         See :py:func:`pvwatts_losses` for details.
         """
+        kwargs = _build_kwargs(['soiling', 'shading', 'snow', 'mismatch',
+                                'wiring', 'connections', 'lid',
+                                'nameplate_rating', 'age', 'availability'],
+                                self.losses_parameters)
         return pvwatts_losses(**kwargs)
 
     def pvwatts_ac(self, pdc):
@@ -946,12 +952,12 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,
-                      alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s, 
+                      alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                       EgRef=1.121, dEgdT=-0.0002677,
                       irrad_ref=1000, temp_ref=25):
     '''
-    Calculates five parameter values for the single diode equation at 
-    effective irradiance and cell temperature using the De Soto et al. 
+    Calculates five parameter values for the single diode equation at
+    effective irradiance and cell temperature using the De Soto et al.
     model described in [1]. The five values returned by calcparams_desoto
     can be used by singlediode to calculate an IV curve.
 
@@ -968,34 +974,34 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         module in units of A/C.
 
     a_ref : float
-        The product of the usual diode ideality factor (n, unitless), 
+        The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at reference
         conditions, in units of V.
 
     I_L_ref : float
         The light-generated current (or photocurrent) at reference conditions,
         in amperes.
-        
+
     I_o_ref : float
         The dark or diode reverse saturation current at reference conditions,
         in amperes.
-        
+
     R_sh_ref : float
         The shunt resistance at reference conditions, in ohms.
-        
+
     R_s : float
         The series resistance at reference conditions, in ohms.
 
     EgRef : float
         The energy bandgap at reference temperature in units of eV.
-        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters 
+        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
         from the SAM CEC module database, EgRef=1.121 is implicit for all
         cell types in the parameter estimation algorithm used by NREL.
 
     dEgdT : float
         The temperature dependence of the energy bandgap at reference
-        conditions in units of 1/K. May be either a scalar value 
-        (e.g. -0.0002677 as in [1]) or a DataFrame (this may be useful if 
+        conditions in units of 1/K. May be either a scalar value
+        (e.g. -0.0002677 as in [1]) or a DataFrame (this may be useful if
         dEgdT is a modeled as a function of temperature). For parameters from
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
         types in the parameter estimation algorithm used by NREL.
@@ -1143,7 +1149,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     # Boltzmann constant in eV/K
     k = 8.617332478e-05
-    
+
     # reference temperature
     Tref_K = temp_ref + 273.15
     Tcell_K = temp_cell + 273.15
@@ -1152,9 +1158,9 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    # In the equation for IL, the single factor effective_irradiance is 
-    # used, in place of the product S*M in [1]. effective_irradiance is 
-    # equivalent to the product of S (irradiance reaching a module's cells) * 
+    # In the equation for IL, the single factor effective_irradiance is
+    # used, in place of the product S*M in [1]. effective_irradiance is
+    # equivalent to the product of S (irradiance reaching a module's cells) *
     # M (spectral adjustment factor) as described in [1].
     IL = effective_irradiance / irrad_ref * \
               (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
@@ -1164,7 +1170,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # Rsh = Rsh_ref * (S_ref / S) where S is broadband irradiance reaching
     # the module's cells. If desired this model behavior can be duplicated
     # by applying reflection and soiling losses to broadband plane of array
-    # irradiance and not applying a spectral loss modifier, i.e., 
+    # irradiance and not applying a spectral loss modifier, i.e.,
     # spectral_modifier = 1.0.
     Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
     Rs = R_s

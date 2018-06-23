@@ -292,7 +292,7 @@ def test_spectral_models(system, location, spectral_model):
                            columns=['precipitable_water'])
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model=spectral_model)
-    spectral_modifier = mc.run_model(times=times, 
+    spectral_modifier = mc.run_model(times=times,
                                      weather=weather).spectral_modifier
     assert isinstance(spectral_modifier, (pd.Series, float, int))
 
@@ -318,6 +318,49 @@ def test_losses_models(pvwatts_dc_pvwatts_ac_system, location, losses_model,
 
     expected = pd.Series(np.array(expected), index=times)
     assert_series_equal(ac, expected, check_less_precise=2)
+
+
+@requires_scipy
+def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, mocker):
+    age = 1
+    pvwatts_dc_pvwatts_ac_system.losses_parameters = dict(age=age)
+    m = mocker.spy(pvsystem, 'pvwatts_losses')
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model='pvwatts')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    mc.run_model(times)
+
+    assert m.call_count == 1
+    assert pvsystem.pvwatts_losses.assert_called_with(age=age)
+    assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
+    assert not mc.ac.empty
+
+
+@requires_scipy
+def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, mocker):
+    m = mocker.spy(__name__, 'constant_losses')
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model=constant_losses)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    mc.run_model(times)
+
+    assert m.call_count == 1
+    assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
+    assert not mc.ac.empty
+
+
+@requires_scipy
+def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location):
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+
+    assert mc.losses_model == mc.no_extra_losses
+    mc.run_model(times)
+    assert mc.losses == 1
 
 
 @pytest.mark.parametrize('model', [

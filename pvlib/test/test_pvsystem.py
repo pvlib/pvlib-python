@@ -1156,9 +1156,10 @@ def test_PVSystem_pvwatts_dc_kwargs(mocker):
 def test_PVSystem_pvwatts_losses(mocker):
     mocker.spy(pvsystem, 'pvwatts_losses')
     system = make_pvwatts_system_defaults()
-    expected = 15
     age = 1
-    out = system.pvwatts_losses(age=age)
+    system.losses_parameters = dict(age=age)
+    expected = 15
+    out = system.pvwatts_losses()
     pvsystem.pvwatts_losses.assert_called_once_with(age=age)
     assert out < expected
 

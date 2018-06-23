@@ -329,7 +329,7 @@ class PVSystem(object):
         See pvsystem.calcparams_pvsyst for details
         """
 
-        kwargs = _build_kwargs(['gamma_ref', 'mugamma', 'I_L_ref', 'I_o_ref', 
+        kwargs = _build_kwargs(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref', 
                                 'R_sh_ref', 'R_sh_0', 'R_sh_exp', 
                                 'R_s', 'alpha_sc', 'EgRef',
                                 'cells_in_series'],
@@ -1194,7 +1194,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
 
 def calcparams_pvsyst(effective_irradiance, temp_cell,
-                      alpha_sc, gamma_ref, mugamma,
+                      alpha_sc, gamma_ref, mu_gamma,
                       I_L_ref, I_o_ref, 
                       R_sh_ref, R_sh_0, R_s, 
                       cells_in_series,
@@ -1222,7 +1222,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     gamma_ref : float
         The diode ideality factor
 
-    mugamma : float
+    mu_gamma : float
         The temperature coefficient for the diode ideality factor, 1/K
 
     I_L_ref : float
@@ -1310,7 +1310,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     Tref_K = temp_ref + 273.15
     Tcell_K = temp_cell + 273.15
 
-    gamma = gamma_ref + mugamma * (Tcell_K - Tref_K)
+    gamma = gamma_ref + mu_gamma * (Tcell_K - Tref_K)
     nNsVth = gamma * k / q * cells_in_series * Tcell_K
 
     IL = effective_irradiance / irrad_ref * \

@@ -6,6 +6,7 @@ v0.6.0 (___, 2018)
 API Changes
 ~~~~~~~~~~~
 * pvsystem.calcparams_desoto now requires arguments for each module model parameter.
+* removed irradiance parameter from ModelChain.run_model and ModelChain.prepare_inputs
 
 
 Enhancements
@@ -43,4 +44,5 @@ Contributors
 * Will Holmgren
 * Yu Cao
 * Cliff Hansen
+* Alan Mathew
 

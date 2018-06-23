@@ -28,8 +28,8 @@ Documentation
 ~~~~~~~~~~~~~
 * Expand testing section with guidelines for functions, PVSystem/Location
   objects, and ModelChain.
-* Remove several erroneous "not yet implemented" comments from ModelChain
-  documentation. (:issue:``)
+* Remove several erroneous statements in ModelChain documentation.
+  (:issue:`475`)
 
 
 Testing

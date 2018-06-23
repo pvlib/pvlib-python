@@ -216,9 +216,8 @@ def get_orientation(strategy, **kwargs):
 
 class ModelChain(object):
     """
-    An experimental class that represents all of the modeling steps
-    necessary for calculating power or energy for a PV system at a given
-    location using the SAPM.
+    A class to provide a high-level interface for standarized
+    calculations of PV power from a time series of weather inputs.
 
     Parameters
     ----------

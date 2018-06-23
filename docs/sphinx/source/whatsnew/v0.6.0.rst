@@ -5,10 +5,11 @@ v0.6.0 (___, 2018)
 
 API Changes
 ~~~~~~~~~~~
-* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
+* pvsystem.calcparams_desoto now requires arguments for each module model
+  parameter. (:issue:`462`)
 * Add losses_parameters attribute to PVSystem objects and remove the **kwargs
   support from PVSystem.pvwatts_losses. Enables custom losses specification
-  in ModelChain calculations. (:issue:``)
+  in ModelChain calculations. (:issue:`484`)
 
 
 Enhancements

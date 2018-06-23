@@ -745,15 +745,6 @@ class ModelChain(object):
         if self.weather is None:
             self.weather = pd.DataFrame()
 
-        # The following part could be removed together with the irradiance
-        # parameter at version v0.5 or v0.6.
-        # **** Begin ****
-        wrn_txt = ("The irradiance parameter will be removed soon.\n" +
-                   "Please use the weather parameter to pass a DataFrame " +
-                   "with irradiance (ghi, dni, dhi), wind speed and " +
-                   "temp_air.\n")
-        # **** End ****
-
         if times is not None:
             self.times = times
 

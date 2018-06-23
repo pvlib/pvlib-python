@@ -765,8 +765,8 @@ class ModelChain(object):
         if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
-                zenith_data=self.solar_position['apparent_zenith'],
-                airmass_data=self.airmass['airmass_absolute'])
+                solar_position=self.solar_position,
+                airmass_absolute=self.airmass['airmass_absolute'])
 
         if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
             raise ValueError(

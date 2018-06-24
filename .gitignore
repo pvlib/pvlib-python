@@ -63,7 +63,6 @@ coverage.xml
 *.sublime-project
 *.sublime-workspace
 
-
 # Rope
 .ropeproject
 

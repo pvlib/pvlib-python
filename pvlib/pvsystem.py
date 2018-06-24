@@ -101,6 +101,10 @@ class PVSystem(object):
 
     name : None or string, default None
 
+    model_dc : string that is one of 'campanelli', 'desoto', pvsyst',
+        'pvwatts', or 'sapm', or a custom user function, default 'pvwatts'.
+        If a function is provided, then it must meet the required API.
+
     **kwargs
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
@@ -119,10 +123,11 @@ class PVSystem(object):
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
-                 name=None,
+                 name=None, model_dc='pvwatts',
                  **kwargs):
 
         self.name = name
+        self.model_dc = model_dc
 
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
@@ -153,10 +158,52 @@ class PVSystem(object):
         self.racking_model = racking_model
 
     def __repr__(self):
-        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
-                 'inverter', 'albedo', 'racking_model']
+        attrs = ['name', 'model_dc', 'surface_tilt', 'surface_azimuth',
+                 'module', 'inverter', 'albedo', 'racking_model']
         return ('PVSystem: \n  ' + '\n  '.join(
             ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
+
+    def calc_model_dc(self, irr, temp):
+        """
+        Calculate the DC model
+
+        Use the model specified in model_dc, which may be a user-defined
+        function.
+
+        TODO Details
+        """
+
+        if self.model_dc == 'campanelli':
+            return sdm(get_coeffs_campanelli(irr, temp,
+                       **self.module_parameters),
+                       modules_per_string=self.modules_per_string,
+                       strings_per_inverter=self.strings_per_inverter)
+        elif self.model_dc == 'desoto':
+            return sdm(get_coeffs_desoto(irr, temp,
+                       **self.module_parameters),
+                       modules_per_string=self.modules_per_string,
+                       strings_per_inverter=self.strings_per_inverter)
+        elif self.model_dc == 'pvsyst':
+            return sdm(get_coeffs_pvsyst(irr, temp,
+                       **self.module_parameters),
+                       modules_per_string=self.modules_per_string,
+                       strings_per_inverter=self.strings_per_inverter)
+        elif self.model_dc == 'pvwatts':
+            # TODO Need to update pvwatts_dc for common input/output API
+            return pvwatts_dc(irr, temp, **self.module_parameters,
+                              modules_per_string=self.modules_per_string,
+                              strings_per_inverter=self.strings_per_inverter)
+        elif self.model_dc == 'sapm':
+            # TODO Need to update sapm for common input/output API
+            return sapm(irr, temp, **self.module_parameters,
+                        modules_per_string=self.modules_per_string,
+                        strings_per_inverter=self.strings_per_inverter)
+        else:
+            # Assume custom case is given a callable (e.g., a custom function)
+            return self.model_dc(
+                irr, temp, **self.module_parameters,
+                modules_per_string=self.modules_per_string,
+                strings_per_inverter=self.strings_per_inverter)
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
@@ -279,6 +326,7 @@ class PVSystem(object):
 
         return physicaliam(aoi, **kwargs)
 
+    # TODO Mark as deprecated
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
@@ -293,9 +341,6 @@ class PVSystem(object):
         temp_cell : float or Series
             The average cell temperature of cells within a module in C.
 
-        **kwargs
-            See pvsystem.calcparams_desoto for details
-
         Returns
         -------
         See pvsystem.calcparams_desoto for details
@@ -307,6 +352,7 @@ class PVSystem(object):
         
         return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
+    # TODO Mark as deprecated
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`sapm` function, the input parameters,
@@ -510,6 +556,7 @@ class PVSystem(object):
 
         return cell_type
 
+    # TODO Mark as deprecated
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
                     ivcurve_pnts=None):
@@ -582,6 +629,7 @@ class PVSystem(object):
                                            voltage=self.modules_per_string,
                                            current=self.strings_per_inverter)
 
+    # TODO Mark as deprecated
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
         Calcuates DC power according to the PVWatts model using
@@ -597,6 +645,7 @@ class PVSystem(object):
                           self.module_parameters['gamma_pdc'],
                           **kwargs)
 
+    # TODO Probably can be marked as deprecated
     def pvwatts_losses(self, **kwargs):
         """
         Calculates DC power losses according the PVwatts model using
@@ -945,6 +994,21 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     return iam
 
 
+def get_coeffs_desoto(effective_irradiance, temp_cell, **kwargs):
+    """TODO"""
+
+    # During deprecation period, probably should make calcparams_desoto call
+    #  this new function instead.
+    return calcparams_desoto(effective_irradiance, temp_cell,
+                             kwargs['alpha_sc'], kwargs['a_ref'],
+                             kwargs['I_L_ref'], kwargs['I_o_ref'],
+                             kwargs['R_sh_ref'], kwargs['R_s'],
+                             EgRef=kwargs['EgRef'], dEgdT=kwargs['dEgdT'],
+                             irrad_ref=kwargs['irrad_ref'],
+                             temp_ref=kwargs['temp_ref'])
+
+
+# TODO Add Deprecation Warning
 def calcparams_desoto(effective_irradiance, temp_cell,
                       alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s, 
                       EgRef=1.121, dEgdT=-0.0002677,
@@ -1018,7 +1082,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         Diode saturation curent in amperes at irradiance
         S and cell temperature Tcell.
 
-    resistance_series : float
+    resistance_series : numeric
         Series resistance in ohms at irradiance S and cell temperature
         Tcell.
 
@@ -1172,7 +1236,14 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     return IL, I0, Rs, Rsh, nNsVth
 
 
-def calc_params_campanelli(F, H, **kwargs):
+def get_coeffs_pvsyst(effective_irradiance, temp_cell, **kwargs):
+    """TODO"""
+
+    # WIP see #486
+    return None
+
+
+def get_coeffs_campanelli(F, H, **kwargs):
     """
     Calculate the 5 coefficients of the SDM using Campanelli et al. model.
 
@@ -1187,36 +1258,41 @@ def calc_params_campanelli(F, H, **kwargs):
     Temperature and Spectral and Total Irradiance",  IEEE Journal of
     Photovoltaics, 6:1 (2015) 48-55,
     https://doi.org/10.1109/JPHOTOV.2015.2489866.
+
+    See Also
+    --------
+    calcparams_desoto
+    singlediode
+    singlediode_campanelli
     """
 
-    # Unfortunately, order matters here because some computations rely on
-    #  previous ones
+    # Order matters here because some computations rely on previous ones
     # A computational graph framework might make this more elegant and handle
     #  more complicated cases, including parallel/distributed computations
-    kwargs['Rs'] = get_arg(kwargs['Rs'], F, H, **kwargs)
-    kwargs['Gsh'] = get_arg(kwargs['Gsh'], F, H, **kwargs)
-    kwargs['nNsVth'] = get_arg(kwargs['nNsVth'], F, H, **kwargs)
-    kwargs['I0'] = get_arg(kwargs['I0'], F, H, **kwargs)
-    kwargs['IL'] = get_arg(kwargs['IL'], F, H, **kwargs)
+    kwargs['Rs'] = get_numpy_arg(kwargs['Rs'], F, H, **kwargs)
+    kwargs['Gsh'] = get_numpy_arg(kwargs['Gsh'], F, H, **kwargs)
+    kwargs['nNsVth'] = get_numpy_arg(kwargs['nNsVth'], F, H, **kwargs)
+    kwargs['I0'] = get_numpy_arg(kwargs['I0'], F, H, **kwargs)
+    kwargs['IL'] = get_numpy_arg(kwargs['IL'], F, H, **kwargs)
 
     return kwargs['IL'], kwargs['I0'], kwargs['Rs'], 1. / kwargs['Gsh'], \
         kwargs['nNsVth']
 
 
-def get_arg(arg, F, H, **kwargs):
+def get_numpy_arg(arg, *args, **kwargs):
     """
     Computes a function argument as a numpy array, when needed.
     """
 
     if hasattr(arg, '__call__'):
         # Call arg to compute it as a numpy array
-        return arg(F, H, **kwargs)
+        return arg(*args, **kwargs)
     else:
         # Return arg as is
         return arg
 
 
-def I0_campanelli(F, H, **kwargs):
+def get_I0_campanelli(F, H, **kwargs):
     """
     Returns the reverse saturation current from Campanelli et al.
     """
@@ -1226,7 +1302,7 @@ def I0_campanelli(F, H, **kwargs):
                (1. - 1. / H) * (1. - kwargs['dEgdT_ref_star']))
 
 
-def IL_campanelli(F, H, **kwargs):
+def get_IL_campanelli(F, H, **kwargs):
     """
     Returns the photocurrent from Campanelli et al.
     """
@@ -1237,7 +1313,7 @@ def IL_campanelli(F, H, **kwargs):
         kwargs['Gsh'] * F * kwargs['Isc_ref'] * kwargs['Rs']
 
 
-def nNsVth_campanelli(F, H, **kwargs):
+def get_nNsVth_campanelli(F, H, **kwargs):
     """
     Returns a the modified thermal voltage from Campanelli et al.
 
@@ -1245,14 +1321,6 @@ def nNsVth_campanelli(F, H, **kwargs):
     """
 
     return kwargs['nNsVth_ref'] * H
-
-
-def Gsh_photoconductive(F, H, **kwargs):
-    """
-    Returns a photoconductive shunt conductance, analogous to DeSoto et al.
-    """
-
-    return kwargs['Gsh_ref'] * F
 
 
 def retrieve_sam(name=None, path=None):
@@ -1395,6 +1463,7 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
+# TODO Need align input/output API for usage with model_dc
 def sapm(effective_irradiance, temp_cell, module):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
@@ -1776,6 +1845,21 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     return Ee
 
 
+# TODO Address #418 and #83 here?
+def sdm(photocurrent, saturation_current, resistance_series, resistance_shunt,
+        nNsVth, ivcurve_pnts=None, modules_per_string=1,
+        strings_per_inverter=1):
+    """TODO"""
+
+    # During deprecation period, probably should make calcparams_desoto call
+    #  this new function instead.
+    return scale_voltage_current_power(singlediode(
+        photocurrent, saturation_current, resistance_series,
+        resistance_shunt, nNsVth, ivcurve_pnts=ivcurve_pnts),
+        voltage=modules_per_string, current=strings_per_inverter).fillna(0)
+
+
+# TODO Mark as deprecated
 def singlediode(photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth, ivcurve_pnts=None):
     r'''
@@ -2556,6 +2640,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     return data
 
 
+# TODO Need align input/output API for usage with model_dc
 def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     r"""
     Implements NREL's PVWatts DC power model [1]_:

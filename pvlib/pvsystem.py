@@ -327,7 +327,7 @@ class PVSystem(object):
         return physicaliam(aoi, **kwargs)
 
     # TODO Mark as deprecated
-    def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
+    def calcparams_desoto(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_desoto` function, the input
         parameters and ``self.module_parameters`` to calculate the

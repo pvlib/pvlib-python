@@ -216,8 +216,9 @@ def get_orientation(strategy, **kwargs):
 
 class ModelChain(object):
     """
-    A class to provide a high-level interface for standarized
-    calculations of PV power from a time series of weather inputs.
+    The ModelChain class to provides a standardized, high-level
+    interface for all of the modeling steps necessary for calculating PV
+    power from a time series of weather inputs.
 
     Parameters
     ----------

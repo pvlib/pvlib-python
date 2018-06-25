@@ -273,7 +273,7 @@ class ModelChain(object):
     spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
-        'first_solar', 'no_loss'. The ModelChain instance will be passed 
+        'first_solar', 'no_loss'. The ModelChain instance will be passed
         as the first argument to a user-defined
         function.
 
@@ -772,8 +772,8 @@ class ModelChain(object):
         if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
-                zenith_data=self.solar_position['apparent_zenith'],
-                airmass_data=self.airmass['airmass_absolute'])
+                solar_position=self.solar_position,
+                airmass_absolute=self.airmass['airmass_absolute'])
 
         if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
             raise ValueError(

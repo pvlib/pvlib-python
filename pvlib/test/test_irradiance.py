@@ -18,35 +18,49 @@ from pvlib import atmosphere
 from conftest import (requires_ephem, requires_numba, needs_numpy_1_10,
                       pandas_0_22)
 
-# setup times and location to be tested.
-tus = Location(32.2, -111, 'US/Arizona', 700)
 
-# must include night values
-times = pd.date_range(start='20140624', freq='6H', periods=4, tz=tus.tz)
+# fixtures create realistic test input data
+# test input data generated at Location(32.2, -111, 'US/Arizona', 700)
+# test input data is hard coded to avoid dependencies on other parts of pvlib
 
-irrad_data = pd.DataFrame(np.array(
-    [[   0.        ,    0.        ,    0.        ],
-     [  79.73860422,  316.1949056 ,   40.46149818],
-     [1042.48031487,  939.95469881,  118.45831879],
-     [ 257.20751138,  646.22886049,   62.03376265]]),
-    columns=['ghi', 'dni', 'dhi'], index=times)
 
-ephem_data = pd.DataFrame(np.array(
-    [[124.0390863 , 124.0390863 , -34.0390863 , -34.0390863 ,
-      352.69550699,  -2.36677158],
-     [ 82.85457044,  82.97705621,   7.14542956,   7.02294379,
-       66.71410338,  -2.42072165],
-     [ 10.56413562,  10.56725766,  79.43586438,  79.43274234,
-      144.76567754,  -2.47457321],
-     [ 72.41687122,  72.46903556,  17.58312878,  17.53096444,
-      287.04104128,  -2.52831909]]),
-    columns=['apparent_zenith', 'zenith', 'apparent_elevation', 'elevation',
-             'azimuth', 'equation_of_time'],
-    index=times)
+@pytest.fixture
+def times():
+    # must include night values
+    return pd.date_range(start='20140624', freq='6H', periods=4,
+                         tz='US/Arizona')
 
-dni_et = irradiance.extraradiation(times.dayofyear)
 
-ghi = irrad_data['ghi']
+@pytest.fixture
+def irrad_data(times):
+    return pd.DataFrame(np.array(
+        [[   0.        ,    0.        ,    0.        ],
+         [  79.73860422,  316.1949056 ,   40.46149818],
+         [1042.48031487,  939.95469881,  118.45831879],
+         [ 257.20751138,  646.22886049,   62.03376265]]),
+        columns=['ghi', 'dni', 'dhi'], index=times)
+
+
+@pytest.fixture
+def ephem_data(times):
+    return pd.DataFrame(np.array(
+        [[124.0390863 , 124.0390863 , -34.0390863 , -34.0390863 ,
+          352.69550699,  -2.36677158],
+         [ 82.85457044,  82.97705621,   7.14542956,   7.02294379,
+           66.71410338,  -2.42072165],
+         [ 10.56413562,  10.56725766,  79.43586438,  79.43274234,
+          144.76567754,  -2.47457321],
+         [ 72.41687122,  72.46903556,  17.58312878,  17.53096444,
+          287.04104128,  -2.52831909]]),
+        columns=['apparent_zenith', 'zenith', 'apparent_elevation',
+                 'elevation', 'azimuth', 'equation_of_time'],
+        index=times)
+
+
+@pytest.fixture
+def dni_et(times):
+    return irradiance.extraradiation(times.dayofyear)
+
 
 
 # setup for et rad test. put it here for readability
@@ -78,7 +92,7 @@ def test_extraradiation(input, expected, method):
 
 
 @requires_numba
-def test_extraradiation_nrel_numba():
+def test_extraradiation_nrel_numba(times):
     result = irradiance.extraradiation(times, method='nrel', how='numba',
                                        numthreads=4)
     assert_allclose(result,
@@ -100,23 +114,24 @@ def test_grounddiffuse_simple_float():
     assert_allclose(result, 26.32000014911496)
 
 
-def test_grounddiffuse_simple_series():
-    ground_irrad = irradiance.grounddiffuse(40, ghi)
+def test_grounddiffuse_simple_series(irrad_data):
+    ground_irrad = irradiance.grounddiffuse(40, irrad_data['ghi'])
     assert ground_irrad.name == 'diffuse_ground'
 
 
-def test_grounddiffuse_albedo_0():
-    ground_irrad = irradiance.grounddiffuse(40, ghi, albedo=0)
+def test_grounddiffuse_albedo_0(irrad_data):
+    ground_irrad = irradiance.grounddiffuse(40, irrad_data['ghi'], albedo=0)
     assert 0 == ground_irrad.all()
 
 
-def test_grounddiffuse_albedo_invalid_surface():
+def test_grounddiffuse_albedo_invalid_surface(irrad_data):
     with pytest.raises(KeyError):
-        irradiance.grounddiffuse(40, ghi, surface_type='invalid')
+        irradiance.grounddiffuse(40, irrad_data['ghi'], surface_type='invalid')
 
 
-def test_grounddiffuse_albedo_surface():
-    result = irradiance.grounddiffuse(40, ghi, surface_type='sand')
+def test_grounddiffuse_albedo_surface(irrad_data):
+    result = irradiance.grounddiffuse(40, irrad_data['ghi'],
+                                      surface_type='sand')
     assert_allclose(result, [0, 3.731058, 48.778813, 12.035025], atol=1e-4)
 
 
@@ -125,7 +140,7 @@ def test_isotropic_float():
     assert_allclose(result, 88.30222215594891)
 
 
-def test_isotropic_series():
+def test_isotropic_series(irrad_data):
     result = irradiance.isotropic(40, irrad_data['dhi'])
     assert_allclose(result, [0, 35.728402, 104.601328, 54.777191], atol=1e-4)
 
@@ -135,14 +150,14 @@ def test_klucher_series_float():
     assert_allclose(result, 88.3022221559)
 
 
-def test_klucher_series():
+def test_klucher_series(irrad_data, ephem_data):
     result = irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
                        ephem_data['apparent_zenith'],
                        ephem_data['azimuth'])
     assert_allclose(result, [0, 37.446276, 109.209347, 56.965916], atol=1e-4)
 
 
-def test_haydavies():
+def test_haydavies(irrad_data, ephem_data, dni_et):
     result = irradiance.haydavies(40, 180, irrad_data['dhi'], irrad_data['dni'],
                          dni_et,
                          ephem_data['apparent_zenith'],
@@ -150,7 +165,7 @@ def test_haydavies():
     assert_allclose(result, [0, 14.967008, 102.994862, 33.190865], atol=1e-4)
 
 
-def test_reindl():
+def test_reindl(irrad_data, ephem_data, dni_et):
     result = irradiance.reindl(40, 180, irrad_data['dhi'], irrad_data['dni'],
                       irrad_data['ghi'], dni_et,
                       ephem_data['apparent_zenith'],
@@ -158,13 +173,13 @@ def test_reindl():
     assert_allclose(result, [np.nan, 15.730664, 104.131724, 34.166258], atol=1e-4)
 
 
-def test_king():
+def test_king(irrad_data, ephem_data):
     result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
                     ephem_data['apparent_zenith'])
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
-def test_perez():
+def test_perez(irrad_data, ephem_data, dni_et):
     am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
@@ -173,11 +188,11 @@ def test_perez():
                      ephem_data['azimuth'], am)
     expected = pd.Series(np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877]),
-        index=times)
+        index=irrad_data.index)
     assert_series_equal(out, expected, check_less_precise=2)
 
 
-def test_perez_components():
+def test_perez_components(irrad_data, ephem_data, dni_et):
     am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
@@ -186,13 +201,13 @@ def test_perez_components():
                      ephem_data['azimuth'], am, return_components=True)
     expected = pd.Series(np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877]),
-        index=times)
+        index=irrad_data.index)
     expected_components = pd.DataFrame(
         np.array([[  0.        ,  26.84138589,          np.nan,  31.72696071],
                  [ 0.        ,  0.        ,         np.nan,  4.47966439],
                  [ 0.        ,  4.62212181,         np.nan,  9.25316454]]).T,
         columns=['isotropic', 'circumsolar', 'horizon'],
-        index=times
+        index=irrad_data.index
     )
     if pandas_0_22():
         expected_for_sum = expected.copy()
@@ -205,8 +220,9 @@ def test_perez_components():
     assert_frame_equal(df_components, expected_components)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
+
 @needs_numpy_1_10
-def test_perez_arrays():
+def test_perez_arrays(irrad_data, ephem_data, dni_et):
     am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
@@ -229,7 +245,7 @@ def test_liujordan():
 
 
 # klutcher (misspelling) will be removed in 0.3
-def test_total_irrad():
+def test_total_irrad(irrad_data, ephem_data, dni_et):
     models = ['isotropic', 'klutcher', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']
     AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
@@ -268,11 +284,12 @@ def test_total_irrad_scalars(model):
     assert np.isnan(np.array(list(total.values()))).sum() == 0
 
 
-def test_globalinplane():
+def test_globalinplane(irrad_data, ephem_data, dni_et):
     aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
     airmass = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
-    gr_sand = irradiance.grounddiffuse(40, ghi, surface_type='sand')
+    gr_sand = irradiance.grounddiffuse(40, irrad_data['ghi'],
+                                       surface_type='sand')
     diff_perez = irradiance.perez(
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
         ephem_data['apparent_zenith'], ephem_data['azimuth'], airmass)
@@ -281,7 +298,7 @@ def test_globalinplane():
         poa_ground_diffuse=gr_sand)
 
 
-def test_disc_keys():
+def test_disc_keys(irrad_data, ephem_data):
     disc_data = irradiance.disc(irrad_data['ghi'], ephem_data['zenith'],
                                 ephem_data.index)
     assert 'dni' in disc_data.columns
@@ -383,7 +400,7 @@ def test_erbs_all_scalar():
 
 
 @needs_numpy_1_10
-def test_dirindex():
+def test_dirindex(times):
     ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
     ghi_clearsky = pd.Series(
         np.array([0., 79.73860422, 1042.48031487, 257.20751138]),

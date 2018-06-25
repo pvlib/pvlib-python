@@ -24,10 +24,25 @@ tus = Location(32.2, -111, 'US/Arizona', 700)
 # must include night values
 times = pd.date_range(start='20140624', freq='6H', periods=4, tz=tus.tz)
 
-ephem_data = solarposition.get_solarposition(
-    times, tus.latitude, tus.longitude, method='nrel_numpy')
+irrad_data = pd.DataFrame(np.array(
+    [[   0.        ,    0.        ,    0.        ],
+     [  79.73860422,  316.1949056 ,   40.46149818],
+     [1042.48031487,  939.95469881,  118.45831879],
+     [ 257.20751138,  646.22886049,   62.03376265]]),
+    columns=['ghi', 'dni', 'dhi'], index=times)
 
-irrad_data = tus.get_clearsky(times, model='ineichen', linke_turbidity=3)
+ephem_data = pd.DataFrame(np.array(
+    [[124.0390863 , 124.0390863 , -34.0390863 , -34.0390863 ,
+      352.69550699,  -2.36677158],
+     [ 82.85457044,  82.97705621,   7.14542956,   7.02294379,
+       66.71410338,  -2.42072165],
+     [ 10.56413562,  10.56725766,  79.43586438,  79.43274234,
+      144.76567754,  -2.47457321],
+     [ 72.41687122,  72.46903556,  17.58312878,  17.53096444,
+      287.04104128,  -2.52831909]]),
+    columns=['apparent_zenith', 'zenith', 'apparent_elevation', 'elevation',
+             'azimuth', 'equation_of_time'],
+    index=times)
 
 dni_et = irradiance.extraradiation(times.dayofyear)
 
@@ -64,8 +79,10 @@ def test_extraradiation(input, expected, method):
 
 @requires_numba
 def test_extraradiation_nrel_numba():
-    result = irradiance.extraradiation(times, method='nrel', how='numba', numthreads=8)
-    assert_allclose(result, [1322.332316, 1322.296282, 1322.261205, 1322.227091])
+    result = irradiance.extraradiation(times, method='nrel', how='numba',
+                                       numthreads=4)
+    assert_allclose(result,
+                    [1322.332316, 1322.296282, 1322.261205, 1322.227091])
 
 
 def test_extraradiation_epoch_year():
@@ -265,9 +282,7 @@ def test_globalinplane():
 
 
 def test_disc_keys():
-    clearsky_data = tus.get_clearsky(times, model='ineichen',
-                                     linke_turbidity=3)
-    disc_data = irradiance.disc(clearsky_data['ghi'], ephem_data['zenith'],
+    disc_data = irradiance.disc(irrad_data['ghi'], ephem_data['zenith'],
                                 ephem_data.index)
     assert 'dni' in disc_data.columns
     assert 'kt' in disc_data.columns
@@ -282,14 +297,6 @@ def test_disc_value():
     disc_data = irradiance.disc(ghi, zenith, times, pressure=pressure)
     assert_almost_equal(disc_data['dni'].values,
                         np.array([830.46, 676.09]), 1)
-
-
-def test_dirint():
-    clearsky_data = tus.get_clearsky(times, model='ineichen',
-                                     linke_turbidity=3)
-    pressure = 93193.
-    dirint_data = irradiance.dirint(clearsky_data['ghi'], ephem_data['zenith'],
-                                    ephem_data.index, pressure=pressure)
 
 
 def test_dirint_value():
@@ -377,8 +384,6 @@ def test_erbs_all_scalar():
 
 @needs_numpy_1_10
 def test_dirindex():
-    clearsky_data = tus.get_clearsky(times, model='ineichen',
-                                     linke_turbidity=3)
     ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
     ghi_clearsky = pd.Series(
         np.array([0., 79.73860422, 1042.48031487, 257.20751138]),

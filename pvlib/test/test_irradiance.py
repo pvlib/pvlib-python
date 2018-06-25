@@ -9,14 +9,10 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
-from pvlib.location import Location
-from pvlib import clearsky
-from pvlib import solarposition
 from pvlib import irradiance
-from pvlib import atmosphere
 
-from conftest import (requires_ephem, requires_numba, needs_numpy_1_10,
-                      pandas_0_22)
+from conftest import (needs_numpy_1_10, pandas_0_22, requires_ephem,
+                      requires_numba)
 
 
 # fixtures create realistic test input data
@@ -61,6 +57,10 @@ def ephem_data(times):
 def dni_et(times):
     return irradiance.extraradiation(times.dayofyear)
 
+
+@pytest.fixture
+def relative_airmass(times):
+    return pd.Series([np.nan, 7.58831596, 1.01688136, 3.27930443], times)
 
 
 # setup for et rad test. put it here for readability
@@ -179,26 +179,25 @@ def test_king(irrad_data, ephem_data):
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
-def test_perez(irrad_data, ephem_data, dni_et):
-    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+def test_perez(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez(40, 180, irrad_data['dhi'], dni,
                      dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['azimuth'], am)
+                     ephem_data['azimuth'], relative_airmass)
     expected = pd.Series(np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877]),
         index=irrad_data.index)
     assert_series_equal(out, expected, check_less_precise=2)
 
 
-def test_perez_components(irrad_data, ephem_data, dni_et):
-    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out, df_components = irradiance.perez(40, 180, irrad_data['dhi'], dni,
                      dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['azimuth'], am, return_components=True)
+                     ephem_data['azimuth'], relative_airmass,
+                     return_components=True)
     expected = pd.Series(np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877]),
         index=irrad_data.index)
@@ -222,13 +221,12 @@ def test_perez_components(irrad_data, ephem_data, dni_et):
 
 
 @needs_numpy_1_10
-def test_perez_arrays(irrad_data, ephem_data, dni_et):
-    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
+def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez(40, 180, irrad_data['dhi'].values, dni.values,
                      dni_et, ephem_data['apparent_zenith'].values,
-                     ephem_data['azimuth'].values, am.values)
+                     ephem_data['azimuth'].values, relative_airmass.values)
     expected = np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877])
     assert_allclose(out, expected, atol=1e-2)
@@ -245,10 +243,9 @@ def test_liujordan():
 
 
 # klutcher (misspelling) will be removed in 0.3
-def test_total_irrad(irrad_data, ephem_data, dni_et):
+def test_total_irrad(irrad_data, ephem_data, dni_et, relative_airmass):
     models = ['isotropic', 'klutcher', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']
-    AM = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
 
     for model in models:
         total = irradiance.total_irrad(
@@ -256,7 +253,7 @@ def test_total_irrad(irrad_data, ephem_data, dni_et):
             ephem_data['apparent_zenith'], ephem_data['azimuth'],
             dni=irrad_data['dni'], ghi=irrad_data['ghi'],
             dhi=irrad_data['dhi'],
-            dni_extra=dni_et, airmass=AM,
+            dni_extra=dni_et, airmass=relative_airmass,
             model=model,
             surface_type='urban')
 
@@ -284,15 +281,14 @@ def test_total_irrad_scalars(model):
     assert np.isnan(np.array(list(total.values()))).sum() == 0
 
 
-def test_globalinplane(irrad_data, ephem_data, dni_et):
+def test_globalinplane(irrad_data, ephem_data, dni_et, relative_airmass):
     aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
-    airmass = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
     gr_sand = irradiance.grounddiffuse(40, irrad_data['ghi'],
                                        surface_type='sand')
     diff_perez = irradiance.perez(
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
-        ephem_data['apparent_zenith'], ephem_data['azimuth'], airmass)
+        ephem_data['apparent_zenith'], ephem_data['azimuth'], relative_airmass)
     irradiance.globalinplane(
         aoi=aoi, dni=irrad_data['dni'], poa_sky_diffuse=diff_perez,
         poa_ground_diffuse=gr_sand)

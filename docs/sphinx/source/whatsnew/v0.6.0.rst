@@ -23,6 +23,8 @@ Bug fixes
   (:issue:`464`)
 * ModelChain.prepare_inputs failed to pass solar_position and airmass to
   Location.get_clearsky. Fixed. (:issue:`481`)
+* Add User-Agent specification to TMY3 remote requests to avoid rejection.
+  (:issue:`493`)
 
 
 Documentation

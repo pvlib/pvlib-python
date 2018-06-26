@@ -216,12 +216,9 @@ def get_orientation(strategy, **kwargs):
 
 class ModelChain(object):
     """
-    An experimental class that represents all of the modeling steps
-    necessary for calculating power or energy for a PV system at a given
-    location using the SAPM.
-
-    CEC module specifications and the single diode model are not yet
-    supported.
+    The ModelChain class to provides a standardized, high-level
+    interface for all of the modeling steps necessary for calculating PV
+    power from a time series of weather inputs.
 
     Parameters
     ----------
@@ -233,7 +230,7 @@ class ModelChain(object):
         A :py:class:`~pvlib.location.Location` object that represents
         the physical location at which to evaluate the model.
 
-    orientation_strategy : None or str, default 'south_at_latitude_tilt'
+    orientation_strategy : None or str, default None
         The strategy for aligning the modules. If not None, sets the
         ``surface_azimuth`` and ``surface_tilt`` properties of the
         ``system``. Allowed strategies include 'flat',
@@ -260,9 +257,9 @@ class ModelChain(object):
     ac_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.inverter_parameters and system.module_parameters. Valid
-        strings are 'snlinverter', 'adrinverter' (not implemented),
-        'pvwatts'. The ModelChain instance will be passed as the first
-        argument to a user-defined function.
+        strings are 'snlinverter', 'adrinverter', 'pvwatts'. The
+        ModelChain instance will be passed as the first argument to a
+        user-defined function.
 
     aoi_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
@@ -274,8 +271,7 @@ class ModelChain(object):
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
         'first_solar', 'no_loss'. The ModelChain instance will be passed
-        as the first argument to a user-defined
-        function.
+        as the first argument to a user-defined function.
 
     temp_model: str or function, default 'sapm'
         Valid strings are 'sapm'. The ModelChain instance will be passed
@@ -301,9 +297,7 @@ class ModelChain(object):
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temp_model='sapm',
-                 losses_model='no_loss',
-                 name=None,
-                 **kwargs):
+                 losses_model='no_loss', name=None, **kwargs):
 
         self.name = name
         self.system = system
@@ -713,7 +707,7 @@ class ModelChain(object):
 
         return self
 
-    def prepare_inputs(self, times=None, irradiance=None, weather=None):
+    def prepare_inputs(self, times=None, weather=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
@@ -723,8 +717,6 @@ class ModelChain(object):
         times : None or DatetimeIndex, default None
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
-        irradiance : None or DataFrame
-            This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame, default None
             If None, the weather attribute is used. If the weather
             attribute is also None assumes air temperature is 20 C, wind
@@ -746,19 +738,6 @@ class ModelChain(object):
             self.weather = weather
         if self.weather is None:
             self.weather = pd.DataFrame()
-
-        # The following part could be removed together with the irradiance
-        # parameter at version v0.5 or v0.6.
-        # **** Begin ****
-        wrn_txt = ("The irradiance parameter will be removed soon.\n" +
-                   "Please use the weather parameter to pass a DataFrame " +
-                   "with irradiance (ghi, dni, dhi), wind speed and " +
-                   "temp_air.\n")
-        if irradiance is not None:
-            warnings.warn(wrn_txt, FutureWarning)
-            for column in irradiance.columns:
-                self.weather[column] = irradiance[column]
-        # **** End ****
 
         if times is not None:
             self.times = times
@@ -824,7 +803,7 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, times=None, irradiance=None, weather=None):
+    def run_model(self, times=None, weather=None):
         """
         Run the model.
 
@@ -833,8 +812,6 @@ class ModelChain(object):
         times : None or DatetimeIndex, default None
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
-        irradiance : None or DataFrame
-            This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame, default None
             If None, assumes air temperature is 20 C, wind speed is 0
             m/s and irradiation calculated from clear sky data. Column
@@ -852,7 +829,7 @@ class ModelChain(object):
         aoi_modifier, spectral_modifier, dc, ac, losses.
         """
 
-        self.prepare_inputs(times, irradiance, weather)
+        self.prepare_inputs(times, weather)
         self.aoi_model()
         self.spectral_model()
         self.effective_irradiance_model()

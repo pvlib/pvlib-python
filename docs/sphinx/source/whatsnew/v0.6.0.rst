@@ -24,9 +24,9 @@ Enhancements
   method is called for ``ivcurve_pnts`` in :func:`~pvlib.pvsystem.singlediode`
   if the method is either ``'fast'`` or ``'gold'``, but the IV curve points will
   be log spaced instead of linear.
-* Implement :func:`~pvlib.pvsystem.est_voc` to estimate open circuit voltage by
-  assuming :math:`R_{sh} \to \infty`. This is used as an upper bound in
-  bisection method for :func:`~pvlib.pvsystem.singlediode`.
+* Implement :func:`~pvlib.pvsystem.estimate_voc` to estimate open circuit
+  voltage by assuming :math:`R_{sh} \to \infty`. This is used as an upper bound
+  in bisection method for :func:`~pvlib.pvsystem.singlediode`.
 * Combine existing :func:`~pvlib.pvsystem.singlediode` method using Lambert-W
   with the two new implementations to form a wrapper, that takes an additional
   ``method`` argument ``('lambertw', 'fast', 'gold')`` that defaults to the new

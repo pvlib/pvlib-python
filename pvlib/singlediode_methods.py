@@ -34,7 +34,7 @@ def returns_nan(exc=None):
     return wrapper
 
 
-def est_voc(photocurrent, saturation_current, nNsVth):
+def estimate_voc(photocurrent, saturation_current, nNsVth):
     """
     Rough estimate of open circuit voltage useful for bounding searches for
     ``i`` of ``v`` when using :func:`~pvlib.pvsystem.singlediode`.
@@ -137,7 +137,7 @@ def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
-    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     vd = brentq(lambda x, *a: v - bishop88(x, *a)[1], 0.0, voc_est, args)
     return bishop88(vd, *args)[0]
 
@@ -169,7 +169,7 @@ def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
-    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     vd = brentq(lambda x, *a: i - bishop88(x, *a)[0], 0.0, voc_est, args)
     return bishop88(vd, *args)[1]
 
@@ -185,7 +185,7 @@ def fast_v_from_i(i, photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
-    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     vd = newton(func=lambda x, *a: bishop88(x, *a)[0] - i, x0=voc_est,
                 fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                 args=args)
@@ -203,7 +203,7 @@ def slow_mpp(photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
-    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     vd = brentq(lambda x, *a: bishop88(x, *a, gradients=True)[6], 0.0, voc_est,
                 args)
     return bishop88(vd, *args)
@@ -220,7 +220,7 @@ def fast_mpp(photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
-    voc_est = est_voc(photocurrent, saturation_current, nNsVth)
+    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     vd = newton(
         func=lambda x, *a: bishop88(x, *a, gradients=True)[6], x0=voc_est,
         fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args

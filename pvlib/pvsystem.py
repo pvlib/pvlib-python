@@ -23,7 +23,7 @@ from pvlib import irradiance, atmosphere
 from pvlib import singlediode_methods
 
 bishop88 = singlediode_methods.bishop88
-est_voc = singlediode_methods.est_voc
+est_voc = singlediode_methods.estimate_voc
 
 
 # not sure if this belongs in the pvsystem module.
@@ -1950,14 +1950,26 @@ def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
     Given the calculated DeSoto parameters, calculates the maximum power point
     (MPP).
 
-    :param numeric photocurrent: photo-generated current [A]
-    :param numeric saturation_current: diode one reverse saturation current [A]
-    :param numeric resistance_series: series resitance [ohms]
-    :param numeric resistance_shunt: shunt resitance [ohms]
-    :param numeric nNsVth: product of thermal voltage ``Vth`` [V], diode
-    :param str method: if "fast" then use Newton, otherwise use bisection
-    :returns: ``OrderedDict`` or ``pandas.Datafrane`` with ``i_mp``, ``v_mp``,
-        and ``p_mp``
+    Parameters
+    ----------
+    photocurrent : numeric
+        photo-generated current [A]
+    saturation_current : numeric
+        diode reverse saturation current [A]
+    resistance_series : numeric
+        series resitance [ohms]
+    resistance_shunt : numeric
+        shunt resitance [ohms]
+    nNsVth : numeric
+        product of thermal voltage ``Vth`` [V], diode ideality factor ``n``, and
+        number of serices cells ``Ns``
+    method : str
+        if "fast" then use Newton, otherwise use bisection
+
+    Returns
+    -------
+    OrderedDict or pandas.Datafrane
+        ``(i_mp, v_mp, p_mp)``
     """
     if method.lower() == 'fast':
         mpp_fun = singlediode_methods.fast_mpp

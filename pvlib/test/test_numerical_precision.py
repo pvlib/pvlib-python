@@ -66,7 +66,7 @@ def generate_numerical_precision():
     )
     # generate exact values
     data = dict(zip((il, io, rs, rsh, nnsvt), ARGS))
-    vdtest = np.linspace(0, pvsystem.est_voc(IL, I0, NNSVTH), IVCURVE_NPTS)
+    vdtest = np.linspace(0, pvsystem.estimate_voc(IL, I0, NNSVTH), IVCURVE_NPTS)
     expected = []
     for test in vdtest:
         data[vd] = test
@@ -90,7 +90,7 @@ def test_numerical_precision():
     Test that there are no numerical errors due to floating point arithmetic.
     """
     expected = pd.read_csv(DATA_PATH)
-    vdtest = np.linspace(0, pvsystem.est_voc(IL, I0, NNSVTH), IVCURVE_NPTS)
+    vdtest = np.linspace(0, pvsystem.estimate_voc(IL, I0, NNSVTH), IVCURVE_NPTS)
     results = pvsystem.bishop88(vdtest, *ARGS, gradients=True)
     assert np.allclose(expected['i'], results[0])
     assert np.allclose(expected['v'], results[1])

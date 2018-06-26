@@ -23,7 +23,7 @@ from pvlib import irradiance, atmosphere
 from pvlib import singlediode_methods
 
 bishop88 = singlediode_methods.bishop88
-est_voc = singlediode_methods.estimate_voc
+estimate_voc = singlediode_methods.estimate_voc
 
 
 # not sure if this belongs in the pvsystem module.

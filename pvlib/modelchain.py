@@ -713,7 +713,7 @@ class ModelChain(object):
 
         return self
 
-    def prepare_inputs(self, times=None, irradiance=None, weather=None):
+    def prepare_inputs(self, times=None, weather=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
@@ -723,8 +723,6 @@ class ModelChain(object):
         times : None or DatetimeIndex, default None
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
-        irradiance : None or DataFrame
-            This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame, default None
             If None, the weather attribute is used. If the weather
             attribute is also None assumes air temperature is 20 C, wind
@@ -746,19 +744,6 @@ class ModelChain(object):
             self.weather = weather
         if self.weather is None:
             self.weather = pd.DataFrame()
-
-        # The following part could be removed together with the irradiance
-        # parameter at version v0.5 or v0.6.
-        # **** Begin ****
-        wrn_txt = ("The irradiance parameter will be removed soon.\n" +
-                   "Please use the weather parameter to pass a DataFrame " +
-                   "with irradiance (ghi, dni, dhi), wind speed and " +
-                   "temp_air.\n")
-        if irradiance is not None:
-            warnings.warn(wrn_txt, FutureWarning)
-            for column in irradiance.columns:
-                self.weather[column] = irradiance[column]
-        # **** End ****
 
         if times is not None:
             self.times = times
@@ -824,7 +809,7 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, times=None, irradiance=None, weather=None):
+    def run_model(self, times=None, weather=None):
         """
         Run the model.
 
@@ -833,8 +818,6 @@ class ModelChain(object):
         times : None or DatetimeIndex, default None
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
-        irradiance : None or DataFrame
-            This parameter is deprecated. Please use `weather` instead.
         weather : None or DataFrame, default None
             If None, assumes air temperature is 20 C, wind speed is 0
             m/s and irradiation calculated from clear sky data. Column
@@ -852,7 +835,7 @@ class ModelChain(object):
         aoi_modifier, spectral_modifier, dc, ac, losses.
         """
 
-        self.prepare_inputs(times, irradiance, weather)
+        self.prepare_inputs(times, weather)
         self.aoi_model()
         self.spectral_model()
         self.effective_irradiance_model()

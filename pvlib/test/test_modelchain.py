@@ -464,21 +464,6 @@ def test_ModelChain___repr__(system, location, strategy, strategy_str):
 
 
 @requires_scipy
-def test_weather_irradiance_input(system, location):
-    """Test will raise a warning and should be removed in future versions."""
-    mc = ModelChain(system, location)
-    times = pd.date_range('2012-06-01 12:00:00', periods=2, freq='H')
-    i = pd.DataFrame({'dni': [2, 3], 'dhi': [4, 6], 'ghi': [9, 5]}, index=times)
-    w = pd.DataFrame({'wind_speed': [11, 5], 'temp_air': [30, 32]}, index=times)
-    mc.run_model(times, irradiance=i, weather=w)
-
-    assert_series_equal(mc.weather['dni'],
-                        pd.Series([2, 3], index=times, name='dni'))
-    assert_series_equal(mc.weather['wind_speed'],
-                        pd.Series([11, 5], index=times, name='wind_speed'))
-
-
-@requires_scipy
 def test_complete_irradiance_clean_run(system, location):
     """The DataFrame should not change if all columns are passed"""
     mc = ModelChain(system, location)

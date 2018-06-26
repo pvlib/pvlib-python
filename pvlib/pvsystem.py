@@ -611,7 +611,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['soiling', 'shading', 'snow', 'mismatch',
                                 'wiring', 'connections', 'lid',
                                 'nameplate_rating', 'age', 'availability'],
-                                self.losses_parameters)
+                               self.losses_parameters)
         return pvwatts_losses(**kwargs)
 
     def pvwatts_ac(self, pdc):

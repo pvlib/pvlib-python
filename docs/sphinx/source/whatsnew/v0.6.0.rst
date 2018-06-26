@@ -10,6 +10,8 @@ API Changes
 * Add losses_parameters attribute to PVSystem objects and remove the **kwargs
   support from PVSystem.pvwatts_losses. Enables custom losses specification
   in ModelChain calculations. (:issue:`484`)
+* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
+* removed irradiance parameter from ModelChain.run_model and ModelChain.prepare_inputs
 
 
 Enhancements
@@ -24,12 +26,18 @@ Bug fixes
 * Unset executable bits of irradiance.py and test_irradiance.py (:issue:`460`)
 * Fix failing tests due to column order on Python 3.6+ and Pandas 0.23+
   (:issue:`464`)
+* ModelChain.prepare_inputs failed to pass solar_position and airmass to
+  Location.get_clearsky. Fixed. (:issue:`481`)
+* Add User-Agent specification to TMY3 remote requests to avoid rejection.
+  (:issue:`493`)
 
 
 Documentation
 ~~~~~~~~~~~~~
 * Expand testing section with guidelines for functions, PVSystem/Location
   objects, and ModelChain.
+* Updated several incorrect statements in ModelChain documentation regarding
+  implementation status and default values. (:issue:`480`)
 
 
 Testing
@@ -45,4 +53,5 @@ Contributors
 * Will Holmgren
 * Yu Cao
 * Cliff Hansen
+* Alan Mathew
 

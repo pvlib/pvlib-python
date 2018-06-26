@@ -70,7 +70,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
     return nNsVth * np.log(photocurrent / saturation_current + 1.0)
 
 
-def bishop88(vd, photocurrent, saturation_current, resistance_series,
+def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,
              resistance_shunt, nNsVth, gradients=False):
     """
     Explicit calculation single-diode-model (SDM) currents and voltages using
@@ -82,7 +82,7 @@ def bishop88(vd, photocurrent, saturation_current, resistance_series,
 
     Parameters
     ----------
-    vd : numeric
+    diode_voltage : numeric
         diode voltages [V]
     photocurrent : numeric
         photo-generated current [A]
@@ -105,10 +105,10 @@ def bishop88(vd, photocurrent, saturation_current, resistance_series,
         gradient ``dv/dvd``, gradient ``di/dv``, gradient ``dp/dv``, and
         gradient ``d2p/dv/dvd``
     """
-    a = np.exp(vd / nNsVth)
+    a = np.exp(diode_voltage / nNsVth)
     b = 1.0 / resistance_shunt
-    i = photocurrent - saturation_current * (a - 1.0) - vd * b
-    v = vd - i * resistance_series
+    i = photocurrent - saturation_current * (a - 1.0) - diode_voltage * b
+    v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)
     if gradients:
         c = saturation_current * a / nNsVth

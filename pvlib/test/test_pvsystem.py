@@ -554,6 +554,50 @@ def test_v_from_i(fixture_v_from_i):
 
 
 @requires_scipy
+def test_v_from_i_brentq(fixture_v_from_i):
+    # Solution set loaded from fixture
+    Rsh = fixture_v_from_i['Rsh']
+    Rs = fixture_v_from_i['Rs']
+    nNsVth = fixture_v_from_i['nNsVth']
+    I = fixture_v_from_i['I']
+    I0 = fixture_v_from_i['I0']
+    IL = fixture_v_from_i['IL']
+    V_expected = fixture_v_from_i['V_expected']
+
+    # Convergence criteria
+    atol = 1.e-11
+
+    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method='brentq')
+    assert(isinstance(V, type(V_expected)))
+    if isinstance(V, type(np.ndarray)):
+        assert(isinstance(V.dtype, type(V_expected.dtype)))
+        assert(V.shape == V_expected.shape)
+    assert_allclose(V, V_expected, atol=atol)
+
+
+@requires_scipy
+def test_v_from_i_newton(fixture_v_from_i):
+    # Solution set loaded from fixture
+    Rsh = fixture_v_from_i['Rsh']
+    Rs = fixture_v_from_i['Rs']
+    nNsVth = fixture_v_from_i['nNsVth']
+    I = fixture_v_from_i['I']
+    I0 = fixture_v_from_i['I0']
+    IL = fixture_v_from_i['IL']
+    V_expected = fixture_v_from_i['V_expected']
+
+    # Convergence criteria
+    atol = 1.e-8
+
+    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method='newton')
+    assert(isinstance(V, type(V_expected)))
+    if isinstance(V, type(np.ndarray)):
+        assert(isinstance(V.dtype, type(V_expected.dtype)))
+        assert(V.shape == V_expected.shape)
+    assert_allclose(V, V_expected, atol=atol)
+
+
+@requires_scipy
 def test_i_from_v_from_i(fixture_v_from_i):
     # Solution set loaded from fixture
     Rsh = fixture_v_from_i['Rsh']
@@ -583,38 +627,38 @@ def test_i_from_v_from_i(fixture_v_from_i):
       'Rsh': 20.,
       'Rs': 0.1,
       'nNsVth': 0.5,
-      'V': 40.,
+      'V': 7.5049875193450521,
       'I0': 6.e-7,
       'IL': 7.,
-      'I_expected': -299.746389916
+      'I_expected': 3.
     },
     {  # Can handle all rank-0 array inputs
       'Rsh': np.array(20.),
       'Rs': np.array(0.1),
       'nNsVth': np.array(0.5),
-      'V': np.array(40.),
+      'V': np.array(7.5049875193450521),
       'I0': np.array(6.e-7),
       'IL': np.array(7.),
-      'I_expected': np.array(-299.746389916)
+      'I_expected': np.array(3.)
     },
     {  # Can handle all rank-1 singleton array inputs
       'Rsh': np.array([20.]),
       'Rs': np.array([0.1]),
       'nNsVth': np.array([0.5]),
-      'V': np.array([40.]),
+      'V': np.array([7.5049875193450521]),
       'I0': np.array([6.e-7]),
       'IL': np.array([7.]),
-      'I_expected': np.array([-299.746389916])
+      'I_expected': np.array([3.])
     },
     {  # Can handle all rank-1 non-singleton array inputs with a zero
       #  series resistance, Rs=0 gives I=IL=Isc at V=0
       'Rsh': np.array([20., 20.]),
       'Rs': np.array([0., 0.1]),
       'nNsVth': np.array([0.5, 0.5]),
-      'V': np.array([0., 40.]),
+      'V': np.array([0., 7.5049875193450521]),
       'I0': np.array([6.e-7, 6.e-7]),
       'IL': np.array([7., 7.]),
-      'I_expected': np.array([7., -299.746389916])
+      'I_expected': np.array([7., 3.])
     },
     {  # Can handle mixed inputs with a rank-2 array with zero series
       #  resistance, Rs=0 gives I=IL=Isc at V=0
@@ -642,10 +686,10 @@ def test_i_from_v_from_i(fixture_v_from_i):
       'Rsh': np.inf,
       'Rs': 0.1,
       'nNsVth': 0.5,
-      'V': 40.,
+      'V': 7.5049875193450521,
       'I0': 6.e-7,
       'IL': 7.,
-      'I_expected': -299.7383436645412
+      'I_expected': 3.2244873645510923
     }])
 def fixture_i_from_v(request):
     return request.param
@@ -674,6 +718,50 @@ def test_i_from_v(fixture_i_from_v):
 
 
 @requires_scipy
+def test_i_from_v_brentq(fixture_i_from_v):
+    # Solution set loaded from fixture
+    Rsh = fixture_i_from_v['Rsh']
+    Rs = fixture_i_from_v['Rs']
+    nNsVth = fixture_i_from_v['nNsVth']
+    V = fixture_i_from_v['V']
+    I0 = fixture_i_from_v['I0']
+    IL = fixture_i_from_v['IL']
+    I_expected = fixture_i_from_v['I_expected']
+
+    # Convergence criteria
+    atol = 1.e-11
+
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method='brentq')
+    assert(isinstance(I, type(I_expected)))
+    if isinstance(I, type(np.ndarray)):
+        assert(isinstance(I.dtype, type(I_expected.dtype)))
+        assert(I.shape == I_expected.shape)
+    assert_allclose(I, I_expected, atol=atol)
+
+
+@requires_scipy
+def test_i_from_v_newton(fixture_i_from_v):
+    # Solution set loaded from fixture
+    Rsh = fixture_i_from_v['Rsh']
+    Rs = fixture_i_from_v['Rs']
+    nNsVth = fixture_i_from_v['nNsVth']
+    V = fixture_i_from_v['V']
+    I0 = fixture_i_from_v['I0']
+    IL = fixture_i_from_v['IL']
+    I_expected = fixture_i_from_v['I_expected']
+
+    # Convergence criteria
+    atol = 1.e-11
+
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method='newton')
+    assert(isinstance(I, type(I_expected)))
+    if isinstance(I, type(np.ndarray)):
+        assert(isinstance(I.dtype, type(I_expected.dtype)))
+        assert(I.shape == I_expected.shape)
+    assert_allclose(I, I_expected, atol=atol)
+
+
+@requires_scipy
 def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
     m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
@@ -686,12 +774,24 @@ def test_PVSystem_i_from_v(mocker):
 def test_i_from_v_size():
     with pytest.raises(ValueError):
         pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
+    with pytest.raises(ValueError):
+        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0,
+                          method='brentq')
+    with pytest.raises(ValueError):
+        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0,
+                          method='newton')
 
 
 @requires_scipy
 def test_v_from_i_size():
     with pytest.raises(ValueError):
         pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0)
+    with pytest.raises(ValueError):
+        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0,
+                          method='brentq')
+    with pytest.raises(ValueError):
+        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0,
+                          method='newton')
 
 
 @requires_scipy

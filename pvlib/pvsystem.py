@@ -2049,7 +2049,7 @@ def _pwr_optfcn(df, loc):
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent, method='brentq'):
+             saturation_current, photocurrent, method='lambertw'):
     '''
     Device voltage at the given device current for the single diode model.
 
@@ -2197,7 +2197,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         v_from_i_fun = partial(singlediode_methods.bishop88_v_from_i,
                                method=method.lower())
         # wrap it so it returns nan
-        v_from_i_fun = singlediode_methods.returns_nan()(v_from_i_fun)
+        # v_from_i_fun = singlediode_methods.returns_nan()(v_from_i_fun)
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
         V = v_from_i_fun(*args)
@@ -2214,7 +2214,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-             saturation_current, photocurrent, method='brentq'):
+             saturation_current, photocurrent, method='lambertw'):
     '''
     Device current at the given device voltage for the single diode model.
 
@@ -2341,7 +2341,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         i_from_v_fun = partial(singlediode_methods.bishop88_i_from_v,
                                method=method.lower())
         # wrap it so it returns nan
-        i_from_v_fun = singlediode_methods.returns_nan()(i_from_v_fun)
+        # i_from_v_fun = singlediode_methods.returns_nan()(i_from_v_fun)
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
         I = i_from_v_fun(*args)

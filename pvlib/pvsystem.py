@@ -6,6 +6,7 @@ performance of PV modules and inverters.
 from __future__ import division
 
 from collections import OrderedDict
+from functools import partial
 import os
 import io
 try:
@@ -2048,7 +2049,7 @@ def _pwr_optfcn(df, loc):
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent, method='gold'):
+             saturation_current, photocurrent, method='brentq'):
     '''
     Device voltage at the given device current for the single diode model.
 
@@ -2192,11 +2193,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         else:
             return V
     else:
-        # use way_faster methods
-        if method.lower() == 'fast':
-            v_from_i_fun = singlediode_methods.fast_v_from_i  # fast method
-        else:
-            v_from_i_fun = singlediode_methods.slow_v_from_i  # gold method
+        # use singlediode methods
+        v_from_i_fun = partial(singlediode_methods.bishop88_v_from_i,
+                               method=method.lower())
         # wrap it so it returns nan
         v_from_i_fun = singlediode_methods.returns_nan()(v_from_i_fun)
         args = (current, photocurrent, saturation_current,
@@ -2204,11 +2203,18 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         V = v_from_i_fun(*args)
         # find the right size and shape for returns
         size, shape = singlediode_methods._get_size_and_shape(args)
+        if size <= 1:
+            if shape is not None:
+                V = np.tile(V, shape)
+        if np.isnan(V).any() and size <= 1:
+            V = np.repeat(V, size)
+            if shape is not None:
+                V = V.reshape(shape)
         return V
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-             saturation_current, photocurrent, method='gold'):
+             saturation_current, photocurrent, method='brentq'):
     '''
     Device current at the given device voltage for the single diode model.
 
@@ -2331,11 +2337,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         else:
             return I
     else:
-        # use way_faster methods
-        if method.lower() == 'fast':
-            i_from_v_fun = singlediode_methods.fast_i_from_v  # fast method
-        else:
-            i_from_v_fun = singlediode_methods.slow_i_from_v  # gold method
+        # use singlediode methods
+        i_from_v_fun = partial(singlediode_methods.bishop88_i_from_v,
+                               method=method.lower())
         # wrap it so it returns nan
         i_from_v_fun = singlediode_methods.returns_nan()(i_from_v_fun)
         args = (voltage, photocurrent, saturation_current, resistance_series,
@@ -2343,6 +2347,13 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         I = i_from_v_fun(*args)
         # find the right size and shape for returns
         size, shape = singlediode_methods._get_size_and_shape(args)
+        if size <= 1:
+            if shape is not None:
+                I = np.tile(I, shape)
+        if np.isnan(I).any() and size <= 1:
+            I = np.repeat(I, size)
+            if shape is not None:
+                I = I.reshape(shape)
         return I
 
 

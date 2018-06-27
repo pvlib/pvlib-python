@@ -18,7 +18,7 @@ except ImportError:
     from pvlib import tools
     from pvlib.tools import _array_newton
 # rename newton and set keyword arguments
-newton = partial(_array_newton, tol=1e-5, maxiter=50, fprime2=None)
+newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
 
 # TODO: update pvsystem.i_from_v and v_from_i to use "gold" method by default
 
@@ -168,23 +168,25 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
 
-    def fv(x, *a):
+    def fv(x, v, *a):
         # calculate voltage
-        return bishop88(x, *a)[1] - voltage
+        return bishop88(x, *a)[1] - v
 
     if method.lower() == 'brentq':
         if brentq is NotImplemented:
             raise ImportError('This function requires scipy')
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
-        # numpy.vectorize handles broadcasting, raises ValueError
+        # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
-            lambda iph, isat, rs, rsh, gamma: brentq(
-                fv, 0.0, voc_est, args=(iph, isat, rs, rsh, gamma)
-            )
+            lambda voc, v, iph, isat, rs, rsh, gamma:
+                brentq(fv, 0.0, voc, args=(v, iph, isat, rs, rsh, gamma))
         )
-        vd = vec_fun(*args)
+        vd = vec_fun(voc_est, voltage, *args)
     elif method.lower() == 'newton':
+        size, shape = _get_size_and_shape((voltage,) + args)
+        if shape is not None:
+            voltage = np.broadcast_to(voltage, shape).copy()
         vd = newton(func=fv, x0=voltage,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args)
@@ -229,21 +231,23 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
-    def fi(x, *a):
+    def fi(x, i, *a):
         # calculate current
-        return bishop88(x, *a)[0] - current
+        return bishop88(x, *a)[0] - i
 
     if method.lower() == 'brentq':
         if brentq is NotImplemented:
             raise ImportError('This function requires scipy')
-        # numpy.vectorize handles broadcasting, raises ValueError
+        # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
-            lambda iph, isat, rs, rsh, gamma: brentq(
-                fi, 0.0, voc_est, args=(iph, isat, rs, rsh, gamma)
-            )
+            lambda voc, i, iph, isat, rs, rsh, gamma:
+                brentq(fi, 0.0, voc, args=(i, iph, isat, rs, rsh, gamma))
         )
-        vd = vec_fun(*args)
+        vd = vec_fun( voc_est, current,*args)
     elif method.lower() == 'newton':
+        size, shape = _get_size_and_shape((current,) + args)
+        if shape is not None:
+            voc_est = np.broadcast_to(voc_est, shape).copy()
         vd = newton(func=fi, x0=voc_est,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                     args=args)

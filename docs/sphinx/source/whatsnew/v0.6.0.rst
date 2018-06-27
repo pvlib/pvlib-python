@@ -10,7 +10,6 @@ API Changes
 * Add losses_parameters attribute to PVSystem objects and remove the kwargs
   support from PVSystem.pvwatts_losses. Enables custom losses specification
   in ModelChain calculations. (:issue:`484`)
-* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
 * removed irradiance parameter from ModelChain.run_model and ModelChain.prepare_inputs
 
 

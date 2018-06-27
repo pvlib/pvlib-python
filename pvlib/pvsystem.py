@@ -99,6 +99,9 @@ class PVSystem(object):
     racking_model : None or string, default 'open_rack_cell_glassback'
         Used for cell and module temperature calculations.
 
+    losses_parameters : None, dict or Series, default None
+        Losses parameters as defined by PVWatts or other.
+
     name : None or string, default None
 
     **kwargs

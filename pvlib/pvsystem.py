@@ -22,6 +22,7 @@ from pvlib.location import Location
 from pvlib import irradiance, atmosphere
 from pvlib import singlediode_methods
 
+# expose single diode methods to API
 bishop88 = singlediode_methods.bishop88
 estimate_voc = singlediode_methods.estimate_voc
 
@@ -1914,33 +1915,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             sdm_fun = singlediode_methods.faster_way
         else:
             sdm_fun = singlediode_methods.slower_way
-        try:
-            len(photocurrent)
-        except TypeError:
-            out = sdm_fun(
-                photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts
-            )
-        else:
-            vecfun = np.vectorize(sdm_fun)
-            out = vecfun(photocurrent, saturation_current, resistance_series,
-                         resistance_shunt, nNsVth, ivcurve_pnts)
-            if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
-                out = pd.DataFrame(out.tolist(), index=photocurrent.index)
-            else:
-                out_array = pd.DataFrame(out.tolist())
-                out = OrderedDict()
-                out['i_sc'] = out_array.i_sc.values
-                out['v_oc'] = out_array.v_oc.values
-                out['i_mp'] = out_array.i_mp.values
-                out['v_mp'] = out_array.v_mp.values
-                out['p_mp'] = out_array.p_mp.values
-                out['i_x'] = out_array.i_x.values
-                out['i_xx'] = out_array.i_xx.values
-                if ivcurve_pnts:
-                    out['i'] = np.vstack(out_array.i.values)
-                    out['v'] = np.vstack(out_array.v.values)
-                    out['p'] = np.vstack(out_array.p.values)
+        out = sdm_fun(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth, ivcurve_pnts
+        )
     return out
 
 
@@ -1975,29 +1953,14 @@ def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
         mpp_fun = singlediode_methods.fast_mpp
     else:
         mpp_fun = singlediode_methods.slow_mpp
-    try:
-        len(photocurrent)
-    except TypeError:
-        i_mp, v_mp, p_mp = mpp_fun(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth
-        )
-        out = OrderedDict()
-        out['i_mp'] = i_mp
-        out['v_mp'] = v_mp
-        out['p_mp'] = p_mp
-    else:
-        vecfun = np.vectorize(mpp_fun)
-        ivp = vecfun(photocurrent, saturation_current, resistance_series,
-                     resistance_shunt, nNsVth)
-        if isinstance(photocurrent, pd.Series):
-            ivp = {k: v for k, v in zip(('i_mp', 'v_mp', 'p_mp'), ivp)}
-            out = pd.DataFrame(ivp, index=photocurrent.index)
-        else:
-            out = OrderedDict()
-            out['i_mp'] = ivp[0]
-            out['v_mp'] = ivp[1]
-            out['p_mp'] = ivp[2]
+    i_mp, v_mp, p_mp = mpp_fun(
+        photocurrent, saturation_current, resistance_series,
+        resistance_shunt, nNsVth
+    )
+    out = OrderedDict()
+    out['i_mp'] = i_mp
+    out['v_mp'] = v_mp
+    out['p_mp'] = p_mp
     return out
 
 
@@ -2005,7 +1968,7 @@ def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
 # Author: Rob Andrews, Calama Consulting
 
 def _golden_sect_DataFrame(params, VL, VH, func):
-    '''
+    """
     Vectorized golden section search for finding MPPT
     from a dataframe timeseries.
 
@@ -2035,8 +1998,8 @@ def _golden_sect_DataFrame(params, VL, VH, func):
 
     Notes
     -----
-    This funtion will find the MAXIMUM of a function
-    '''
+    This function will find the MAXIMUM of a function
+    """
 
     df = params
     df['VH'] = VH
@@ -2068,7 +2031,7 @@ def _golden_sect_DataFrame(params, VL, VH, func):
         iterations += 1
 
         if iterations > 50:
-            raise Exception("EXCEPTION:iterations exeeded maximum (50)")
+            raise Exception("EXCEPTION:iterations exceeded maximum (50)")
 
     return func(df, 'V1'), df['V1']
 
@@ -2236,41 +2199,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
             v_from_i_fun = singlediode_methods.slow_v_from_i  # gold method
         # wrap it so it returns nan
         v_from_i_fun = singlediode_methods.returns_nan()(v_from_i_fun)
-        # find the right size and shape for returns
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
-        size, shape = 0, None  # 0 or None both mean scalar
-        for arg in args:
-            try:
-                this_shape = arg.shape  # try to get shape
-            except AttributeError:
-                this_shape = None
-                try:
-                    this_size = len(arg)  # try to get the size
-                except TypeError:
-                    this_size = 0
-            else:
-                this_size = sum(this_shape)  # calc size from shape
-                if shape is None:
-                    shape = this_shape  # set the shape if None
-            # update size and shape
-            if this_size > size:
-                size = this_size
-                if this_shape is not None:
-                    shape = this_shape
-        if size <= 1:
-            V = v_from_i_fun(*args)
-            if shape is not None:
-                V = np.tile(V, shape)
-        else:
-            # np.vectorize handles broadcasting, raises ValueError
-            vecfun = np.vectorize(v_from_i_fun)
-            V = vecfun(*args)
-        if np.isnan(V).any() and size <= 1:
-            V = np.repeat(V, size)
-            if shape is not None:
-                V = V.reshape(shape)
-        return V
+        return v_from_i_fun(*args)
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
@@ -2404,41 +2335,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
             i_from_v_fun = singlediode_methods.slow_i_from_v  # gold method
         # wrap it so it returns nan
         i_from_v_fun = singlediode_methods.returns_nan()(i_from_v_fun)
-        # find the right size and shape for returns
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        size, shape = 0, None  # 0 or None both mean scalar
-        for arg in args:
-            try:
-                this_shape = arg.shape  # try to get shape
-            except AttributeError:
-                this_shape = None
-                try:
-                    this_size = len(arg)  # try to get the size
-                except TypeError:
-                    this_size = 0
-            else:
-                this_size = sum(this_shape)  # calc size from shape
-                if shape is None:
-                    shape = this_shape  # set the shape if None
-            # update size and shape
-            if this_size > size:
-                size = this_size
-                if this_shape is not None:
-                    shape = this_shape
-        if size <= 1:
-            I = i_from_v_fun(*args)
-            if shape is not None:
-                I = np.tile(I, shape)
-        else:
-            # np.vectorize handles broadcasting, raises ValueError
-            vecfun = np.vectorize(i_from_v_fun)
-            I = vecfun(*args)
-        if np.isnan(I).any() and size <= 1:
-            I = np.repeat(I, size)
-            if shape is not None:
-                I = I.reshape(shape)
-        return I
+        return i_from_v_fun(*args)
 
 
 def snlinverter(v_dc, p_dc, inverter):

@@ -4,13 +4,21 @@ methods from J.W. Bishop (Solar Cells, 1988).
 """
 
 from collections import OrderedDict
-from functools import wraps
+from functools import wraps, partial
 import numpy as np
+import pandas as pd
 try:
-    from scipy.optimize import brentq, newton
+    from scipy.optimize import brentq
 except ImportError:
     brentq = NotImplemented
-    newton = NotImplemented
+# FIXME: change this to newton when scipy-1.2 is released
+try:
+    from scipy.optimize import brentq, _array_newton as newton
+except ImportError:
+    from pvlib import tools
+    from pvlib.tools import _array_newton
+    newton = partial(_array_newton, tol=1e-5, maxiter=50, fprime2=None,
+                     converged=False)
 
 # TODO: update pvsystem.i_from_v and v_from_i to use "gold" method by default
 
@@ -136,6 +144,13 @@ def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
+    # find the right size and shape for returns
+    size, shape = get_size_and_shape((v,) + args)
+    # recursion
+    if size > 1:
+        # np.vectorize handles broadcasting, raises ValueError
+        vecfun = np.vectorize(slow_i_from_v)
+        return vecfun(v, *args)
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     vd = brentq(lambda x, *a: v - bishop88(x, *a)[1], 0.0, voc_est, args)
@@ -168,6 +183,13 @@ def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
+    # find the right size and shape for returns
+    size, shape = get_size_and_shape((i,) + args)
+    # recursion
+    if size > 1:
+        # np.vectorize handles broadcasting, raises ValueError
+        vecfun = np.vectorize(slow_v_from_i)
+        return vecfun(i, *args)
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
     vd = brentq(lambda x, *a: i - bishop88(x, *a)[0], 0.0, voc_est, args)
@@ -197,6 +219,24 @@ def slow_mpp(photocurrent, saturation_current, resistance_series,
     """
     This is a slow but reliable way to find mpp.
     """
+    # recursion
+    try:
+        len(photocurrent)
+    except TypeError:
+        pass
+    else:
+        vecfun = np.vectorize(slow_mpp)
+        ivp = vecfun(photocurrent, saturation_current, resistance_series,
+                     resistance_shunt, nNsVth)
+        if isinstance(photocurrent, pd.Series):
+            ivp = {k: v for k, v in zip(('i_mp', 'v_mp', 'p_mp'), ivp)}
+            out = pd.DataFrame(ivp, index=photocurrent.index)
+        else:
+            out = OrderedDict()
+            out['i_mp'] = ivp[0]
+            out['v_mp'] = ivp[1]
+            out['p_mp'] = ivp[2]
+        return out
     if brentq is NotImplemented:
         raise ImportError('This function requires scipy')
     # collect args
@@ -233,6 +273,32 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     """
     This is the slow but reliable way.
     """
+    # recursion
+    try:
+        len(photocurrent)
+    except TypeError:
+        pass
+    else:
+        vecfun = np.vectorize(slower_way)
+        out = vecfun(photocurrent, saturation_current, resistance_series,
+                     resistance_shunt, nNsVth, ivcurve_pnts)
+        if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
+            out = pd.DataFrame(out.tolist(), index=photocurrent.index)
+        else:
+            out_array = pd.DataFrame(out.tolist())
+            out = OrderedDict()
+            out['i_sc'] = out_array.i_sc.values
+            out['v_oc'] = out_array.v_oc.values
+            out['i_mp'] = out_array.i_mp.values
+            out['v_mp'] = out_array.v_mp.values
+            out['p_mp'] = out_array.p_mp.values
+            out['i_x'] = out_array.i_x.values
+            out['i_xx'] = out_array.i_xx.values
+            if ivcurve_pnts:
+                out['i'] = np.vstack(out_array.i.values)
+                out['v'] = np.vstack(out_array.v.values)
+                out['p'] = np.vstack(out_array.p.values)
+        return out
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
@@ -283,3 +349,27 @@ def faster_way(photocurrent, saturation_current, resistance_series,
         out['v'] = v
         out['p'] = p
     return out
+
+
+def get_size_and_shape(args):
+    # find the right size and shape for returns
+    size, shape = 0, None  # 0 or None both mean scalar
+    for arg in args:
+        try:
+            this_shape = arg.shape  # try to get shape
+        except AttributeError:
+            this_shape = None
+            try:
+                this_size = len(arg)  # try to get the size
+            except TypeError:
+                this_size = 0
+        else:
+            this_size = arg.size  # if it has shape then it also has size
+            if shape is None:
+                shape = this_shape  # set the shape if None
+        # update size and shape
+        if this_size > size:
+            size = this_size
+            if this_shape is not None:
+                shape = this_shape
+    return size, shape

@@ -11,17 +11,14 @@ try:
     from scipy.optimize import brentq
 except ImportError:
     brentq = NotImplemented
-else:
-    # np.vectorize handles broadcasting, raises ValueError
-    brentq = np.vectorize(brentq)
 # FIXME: change this to newton when scipy-1.2 is released
 try:
-    from scipy.optimize import brentq, _array_newton as newton
+    from scipy.optimize import _array_newton
 except ImportError:
     from pvlib import tools
     from pvlib.tools import _array_newton
-    newton = partial(_array_newton, tol=1e-5, maxiter=50, fprime2=None,
-                     converged=False)
+# rename newton and set keyword arguments
+newton = partial(_array_newton, tol=1e-5, maxiter=50, fprime2=None)
 
 # TODO: update pvsystem.i_from_v and v_from_i to use "gold" method by default
 
@@ -180,10 +177,14 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
             raise ImportError('This function requires scipy')
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
-        vd = brentq(fv, 0.0, voc_est, args)
+        # numpy.vectorize handles broadcasting, raises ValueError
+        vec_fun = np.vectorize(
+            lambda iph, isat, rs, rsh, gamma: brentq(
+                fv, 0.0, voc_est, args=(iph, isat, rs, rsh, gamma)
+            )
+        )
+        vd = vec_fun(*args)
     elif method.lower() == 'newton':
-        if newton is NotImplemented:
-            raise ImportError('This function requires scipy')
         vd = newton(func=fv, x0=voltage,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args)
@@ -235,10 +236,14 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     if method.lower() == 'brentq':
         if brentq is NotImplemented:
             raise ImportError('This function requires scipy')
-        vd = brentq(fi, 0.0, voc_est, args)
+        # numpy.vectorize handles broadcasting, raises ValueError
+        vec_fun = np.vectorize(
+            lambda iph, isat, rs, rsh, gamma: brentq(
+                fi, 0.0, voc_est, args=(iph, isat, rs, rsh, gamma)
+            )
+        )
+        vd = vec_fun(*args)
     elif method.lower() == 'newton':
-        if newton is NotImplemented:
-            raise ImportError('This function requires scipy')
         vd = newton(func=fi, x0=voc_est,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                     args=args)

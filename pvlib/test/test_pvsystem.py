@@ -178,7 +178,7 @@ def cec_module_params(sam_data):
 def pvsyst_module_params():
     module_parameters = {}
     module_parameters['gamma_ref'] = 1.05
-    module_parameters['mugamma'] = 0.001
+    module_parameters['mu_gamma'] = 0.001
     module_parameters['I_L_ref'] = 6.0
     module_parameters['I_o_ref'] = 5e-9
     module_parameters['EgRef'] = 1.121
@@ -413,7 +413,7 @@ def test_calcparams_pvsyst(pvsyst_module_params):
                                   temp_cell,
                                   alpha_sc=pvsyst_module_params['alpha_sc'],
                                   gamma_ref=pvsyst_module_params['gamma_ref'],
-                                  mugamma=pvsyst_module_params['mugamma'],
+                                  mu_gamma=pvsyst_module_params['mu_gamma'],
                                   I_L_ref=pvsyst_module_params['I_L_ref'],
                                   I_o_ref=pvsyst_module_params['I_o_ref'],
                                   R_sh_ref=pvsyst_module_params['R_sh_ref'],
@@ -473,7 +473,7 @@ def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
                                   temp_cell,
                                   alpha_sc=pvsyst_module_params['alpha_sc'],
                                   gamma_ref=pvsyst_module_params['gamma_ref'],
-                                  mugamma=pvsyst_module_params['mugamma'],
+                                  mu_gamma=pvsyst_module_params['mu_gamma'],
                                   I_L_ref=pvsyst_module_params['I_L_ref'],
                                   I_o_ref=pvsyst_module_params['I_o_ref'],
                                   R_sh_ref=pvsyst_module_params['R_sh_ref'],

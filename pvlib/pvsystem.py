@@ -2201,7 +2201,10 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         v_from_i_fun = singlediode_methods.returns_nan()(v_from_i_fun)
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
-        return v_from_i_fun(*args)
+        V = v_from_i_fun(*args)
+        # find the right size and shape for returns
+        size, shape = singlediode_methods._get_size_and_shape(args)
+        return V
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
@@ -2337,7 +2340,10 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         i_from_v_fun = singlediode_methods.returns_nan()(i_from_v_fun)
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        return i_from_v_fun(*args)
+        I = i_from_v_fun(*args)
+        # find the right size and shape for returns
+        size, shape = singlediode_methods._get_size_and_shape(args)
+        return I
 
 
 def snlinverter(v_dc, p_dc, inverter):

@@ -11,6 +11,9 @@ try:
     from scipy.optimize import brentq
 except ImportError:
     brentq = NotImplemented
+else:
+    # np.vectorize handles broadcasting, raises ValueError
+    brentq = np.vectorize(brentq)
 # FIXME: change this to newton when scipy-1.2 is released
 try:
     from scipy.optimize import brentq, _array_newton as newton
@@ -134,83 +137,113 @@ def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,
     return retval
 
 
-def slow_i_from_v(v, photocurrent, saturation_current, resistance_series,
-                  resistance_shunt, nNsVth):
+def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+                      resistance_series, resistance_shunt, nNsVth,
+                      method='newton'):
     """
-    This is a slow but reliable way to find current given any voltage.
+    Find current given any voltage.
+
+    Parameters
+    ----------
+    voltage : numeric
+        voltage (V) in volts [V]
+    photocurrent : numeric
+        photogenerated current (Iph or IL) in amperes [A]
+    saturation_current : numeric
+        diode dark or saturation current (Io or Isat) in amperes [A]
+    resistance_series : numeric
+        series resistance (Rs) in ohms
+    resistance_shunt : numeric
+        shunt resistance (Rsh) in ohms
+    nNsVth : numeric
+        product of diode ideality factor (n), number of series cells (Ns), and
+        thermal voltage (Vth = k_b * T / q_e) in volts [V]
+    method : str
+        one of two ptional search methods: either `brentq`, a reliable and
+        bounded method or `newton` the default, a gradient descent method.
+
+    Returns
+    -------
+    current : numeric
+        current (I) at the specified voltage (V) in amperes [A]
     """
-    if brentq is NotImplemented:
-        raise ImportError('This function requires scipy')
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
-    # find the right size and shape for returns
-    size, shape = get_size_and_shape((v,) + args)
-    # recursion
-    if size > 1:
-        # np.vectorize handles broadcasting, raises ValueError
-        vecfun = np.vectorize(slow_i_from_v)
-        return vecfun(v, *args)
-    # first bound the search using voc
-    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
-    vd = brentq(lambda x, *a: v - bishop88(x, *a)[1], 0.0, voc_est, args)
+
+    def fv(x, *a):
+        # calculate voltage
+        return bishop88(x, *a)[1] - voltage
+
+    if method.lower() == 'brentq':
+        if brentq is NotImplemented:
+            raise ImportError('This function requires scipy')
+        # first bound the search using voc
+        voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+        vd = brentq(fv, 0.0, voc_est, args)
+    elif method.lower() == 'newton':
+        if newton is NotImplemented:
+            raise ImportError('This function requires scipy')
+        vd = newton(func=fv, x0=voltage,
+                    fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
+                    args=args)
+    else:
+        raise NotImplementedError("Method '%s' isn't implemented" % method)
     return bishop88(vd, *args)[0]
 
 
-def fast_i_from_v(v, photocurrent, saturation_current, resistance_series,
-                  resistance_shunt, nNsVth):
+def bishop88_v_from_i(current, photocurrent, saturation_current,
+                      resistance_series, resistance_shunt, nNsVth,
+                      method='newton'):
     """
-    This is a possibly faster way to find current given any voltage.
-    """
-    if newton is NotImplemented:
-        raise ImportError('This function requires scipy')
-    # collect args
-    args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-    vd = newton(func=lambda x, *a: bishop88(x, *a)[1] - v, x0=v,
-                fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
-                args=args)
-    return bishop88(vd, *args)[0]
+    Find voltage given any current.
 
+    Parameters
+    ----------
+    current : numeric
+        current (I) in amperes [A]
+    photocurrent : numeric
+        photogenerated current (Iph or IL) in amperes [A]
+    saturation_current : numeric
+        diode dark or saturation current (Io or Isat) in amperes [A]
+    resistance_series : numeric
+        series resistance (Rs) in ohms
+    resistance_shunt : numeric
+        shunt resistance (Rsh) in ohms
+    nNsVth : numeric
+        product of diode ideality factor (n), number of series cells (Ns), and
+        thermal voltage (Vth = k_b * T / q_e) in volts [V]
+    method : str
+        one of two ptional search methods: either `brentq`, a reliable and
+        bounded method or `newton` the default, a gradient descent method.
 
-def slow_v_from_i(i, photocurrent, saturation_current, resistance_series,
-                  resistance_shunt, nNsVth):
+    Returns
+    -------
+    voltage : numeric
+        voltage (V) at the specified current (I) in volts [V]
     """
-    This is a slow but reliable way to find voltage given any current.
-    """
-    if brentq is NotImplemented:
-        raise ImportError('This function requires scipy')
-    # collect args
-    args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-    # find the right size and shape for returns
-    size, shape = get_size_and_shape((i,) + args)
-    # recursion
-    if size > 1:
-        # np.vectorize handles broadcasting, raises ValueError
-        vecfun = np.vectorize(slow_v_from_i)
-        return vecfun(i, *args)
-    # first bound the search using voc
-    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
-    vd = brentq(lambda x, *a: i - bishop88(x, *a)[0], 0.0, voc_est, args)
-    return bishop88(vd, *args)[1]
-
-
-def fast_v_from_i(i, photocurrent, saturation_current, resistance_series,
-                  resistance_shunt, nNsVth):
-    """
-    This is a possibly faster way to find voltage given any current.
-    """
-    if newton is NotImplemented:
-        raise ImportError('This function requires scipy')
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
-    vd = newton(func=lambda x, *a: bishop88(x, *a)[0] - i, x0=voc_est,
-                fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
-                args=args)
+
+    def fi(x, *a):
+        # calculate current
+        return bishop88(x, *a)[0] - current
+
+    if method.lower() == 'brentq':
+        if brentq is NotImplemented:
+            raise ImportError('This function requires scipy')
+        vd = brentq(fi, 0.0, voc_est, args)
+    elif method.lower() == 'newton':
+        if newton is NotImplemented:
+            raise ImportError('This function requires scipy')
+        vd = newton(func=fi, x0=voc_est,
+                    fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
+                    args=args)
+    else:
+        raise NotImplementedError("Method '%s' isn't implemented" % method)
     return bishop88(vd, *args)[1]
 
 
@@ -273,6 +306,8 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     """
     This is the slow but reliable way.
     """
+    slow_v_from_i = partial(bishop88_v_from_i, method='brentq')
+    slow_i_from_v = partial(bishop88_i_from_v, method='brentq')
     # recursion
     try:
         len(photocurrent)
@@ -327,6 +362,8 @@ def slower_way(photocurrent, saturation_current, resistance_series,
 def faster_way(photocurrent, saturation_current, resistance_series,
                resistance_shunt, nNsVth, ivcurve_pnts=None):
     """a faster way"""
+    fast_v_from_i = partial(bishop88_v_from_i, method='newton')
+    fast_i_from_v = partial(bishop88_i_from_v, method='newton')
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
     v_oc = fast_v_from_i(0.0, *args)
@@ -351,7 +388,7 @@ def faster_way(photocurrent, saturation_current, resistance_series,
     return out
 
 
-def get_size_and_shape(args):
+def _get_size_and_shape(args):
     # find the right size and shape for returns
     size, shape = 0, None  # 0 or None both mean scalar
     for arg in args:

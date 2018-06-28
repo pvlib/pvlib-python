@@ -1912,14 +1912,35 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             out = pd.DataFrame(out, index=photocurrent.index)
 
     else:
-        if method.lower() == 'newton':
-            sdm_fun = singlediode_methods.faster_way
-        else:
-            sdm_fun = singlediode_methods.slower_way
-        out = sdm_fun(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth, ivcurve_pnts
-        )
+        # use singlediode_methods
+        v_from_i_fun = partial(singlediode_methods.bishop88_v_from_i,
+                               method=method.lower())
+        i_from_v_fun = partial(singlediode_methods.bishop88_i_from_v,
+                               method=method.lower())
+        mpp_fun = partial(singlediode_methods.bishop88_mpp,
+                          method=method.lower())
+        args = (photocurrent, saturation_current, resistance_series,
+                resistance_shunt, nNsVth)  # collect args
+        v_oc = v_from_i_fun(0.0, *args)
+        i_mp, v_mp, p_mp = mpp_fun(*args)
+        out = OrderedDict()
+        out['i_sc'] = i_from_v_fun(0.0, *args)
+        out['v_oc'] = v_oc
+        out['i_mp'] = i_mp
+        out['v_mp'] = v_mp
+        out['p_mp'] = p_mp
+        out['i_x'] = i_from_v_fun(v_oc / 2.0, *args)
+        out['i_xx'] = i_from_v_fun((v_oc + v_mp) / 2.0, *args)
+        # calculate the IV curve if requested using bishop88
+        if ivcurve_pnts:
+            vd = v_oc * (
+                    (11.0 - np.logspace(np.log10(11.0), 0.0,
+                                        ivcurve_pnts)) / 10.0
+            )
+            i, v, p = bishop88(vd, *args)
+            out['i'] = i
+            out['v'] = v
+            out['p'] = p
     return out
 
 

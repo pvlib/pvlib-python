@@ -82,6 +82,8 @@ code. We can provide help and advice on this after you start the pull
 request. See the Testing section below.
 
 
+.. _pull-request-scope:
+
 Pull request scope
 ------------------
 
@@ -91,18 +93,26 @@ A pull request can quickly become unmanageable if too many lines are
 added or changed. "Too many" is hard to define, but as a rule of thumb,
 we encourage contributions that contain less than 50 lines of primary code.
 50 lines of primary code will typically need at least 250 lines
-of documentation and testing. A reviewer can typically understand
+of documentation and testing. This is about the limit of what the
+maintainers can review on a regular basis.
 
-A pull request can also quickly become unmanageable if it proposes major
-changes to the API. Consider documenting the API changes in
+A pull request can also quickly become unmanageable if it proposes
+changes to the API in order to implement another feature. Consider
+clearly and concisely documenting all proposed API changes before
+implementing any code. Modifying
 `api.rst <https://github.com/pvlib/pvlib-python/blob/master/docs/sphinx/source/api.rst>`_
-before implementing any code.
+and/or the latest `whatsnew file <https://github.com/pvlib/pvlib-python/tree/master/docs/sphinx/source/whatsnew>`_
+can help formalize this process.
 
-pvlib-python contains 3 "layers" of code: functions, PVSystem/Location,
-and ModelChain. We recommend that contributors focus their work on only
-one or two of those layers in a single pull request. New models are *not*
-required to be available to the higher-level API!
+Of course, sometimes it is necessary to make a large pull request. We
+only ask that you take a few minutes to consider how to break it into
+smaller chunks before proceeding.
 
+pvlib-python contains :ref:`3 "layers" of code <modeling-paradigms>`:
+functions, PVSystem/Location, and ModelChain. We recommend that
+contributors focus their work on only one or two of those layers in a
+single pull request. New models are *not* required to be available to
+the higher-level API!
 
 
 When should I submit a pull request?
@@ -134,7 +144,7 @@ a timely manner is to:
    the boxes in `pull request guidelines
    <https://github.com/pvlib/pvlib-python/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_,
    especially for pull requests with a lot of new primary code.
-   See :ref:`Pull request scope`.
+   See :ref:`pull-request-scope`.
 #. Tag ``@pvlib/maintainer`` when the pull request is ready for review.
 
 Questions about related issues frequently come up in the process of
@@ -148,22 +158,29 @@ is capable of processing.
 Code style
 ~~~~~~~~~~
 
+pvlib python generally follows the `PEP 8 -- Style Guide for Python Code
+<https://www.python.org/dev/peps/pep-0008/>`_. Maximum line length for code
+is 79 characters.
+
+Documentation must be written in `numpydoc format <https://numpydoc.readthedocs.io/>`_.
+
 pvlib python uses a mix of full and abbreviated variable names. See
-:ref:`_variables_style_rules`. Prefer full names for new contributions.
-This is especially important for the API. Abbreviations can be used within
-a function to improve the readability of formula.
+:ref:`variables_style_rules`. We could be better about consistency.
+Prefer full names for new contributions. This is especially important
+for the API. Abbreviations can be used within a function to improve the
+readability of formulae.
 
 Set your editor to strip extra whitespace from line endings. This helps
 keep the commit history clean.
 
-pvlib python does not use logging. Remove any logging calls that you
-added during development.
+pvlib python does not use ``logging``. Remove any logging calls that you
+added during development. ``warning`` is ok.
 
 
 Testing
 ~~~~~~~
 
-pvlib's unit tests can easily be run by executing ``py.test`` on the
+pvlib's unit tests can easily be run by executing ``pytest`` on the
 pvlib directory:
 
 ``pytest pvlib``
@@ -228,6 +245,7 @@ in fact, happen. Finally, we check that the output of the method call is
 reasonable.
 
 .. code-block:: python
+
     def test_PVSystem_ashraeiam(mocker):
         # mocker is a pytest-mock object.
         # mocker.spy adds code to a function to keep track of how it is called
@@ -269,6 +287,7 @@ The example below shows how mock can be used to assert that the correct
 PVSystem method is called through ``ModelChain.run_model``.
 
 .. code-block:: python
+
     def test_modelchain_dc_model(mocker):
         # set up location and system for model chain
         location = location.Location(32, -111)

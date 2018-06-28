@@ -1820,12 +1820,12 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         I = I_L - I_L - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
         I = - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}}
 
-    If ``method.lower() == 'fast'`` then a gradient descent method, ``newton``,
+    If ``method.lower() == 'newton'`` then a gradient descent method, ``newton``,
     is used to solve the implicit diode equation. It should be safe for well
     behaved IV-curves, but the default method is recommended for reliability,
     it is often just as fast.
 
-    If either the "fast" or default methods are indicated, then
+    If either the "newton" or "brentq" methods are indicated, then
     :func:`pvlib.pvsystem.bishop88` is used to calculate the points at diode
     voltages from zero to open-circuit voltage with a log spacing so that
     points get closer as they approach the open-circuit voltage.
@@ -1964,7 +1964,7 @@ def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``, and
         number of serices cells ``Ns``
     method : str
-        if "fast" then use Newton, otherwise use bisection
+        if "newton" then use Newton, otherwise use bisection method, ``brentq``
 
     Returns
     -------
@@ -2121,9 +2121,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         0 <= photocurrent
 
     method : str
-        Method to use. If 'lambertw' use ``lambertw``, if 'fast' use ``newton``,
-        otherwise use bisection. Note: bisection is limited to 1st quadrant
-        only.
+        Method to use. If 'lambertw' use ``lambertw``, if 'newton' use
+        ``newton``, otherwise use bisection method ``brentq``. Note: bisection
+        is limited to 1st quadrant only.
 
     Returns
     -------
@@ -2216,13 +2216,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
             return V
     else:
         # use singlediode methods
-        v_from_i_fun = partial(singlediode_methods.bishop88_v_from_i,
-                               method=method.lower())
-        # wrap it so it returns nan
-        # v_from_i_fun = singlediode_methods.returns_nan()(v_from_i_fun)
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
-        V = v_from_i_fun(*args)
+        V = singlediode_methods.bishop88_v_from_i(*args, method=method.lower())
         # find the right size and shape for returns
         size, shape = singlediode_methods._get_size_and_shape(args)
         if size <= 1:
@@ -2286,9 +2282,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         0 <= photocurrent
 
     method : str
-        Method to use. If 'lambertw' use ``lambertw``, if 'fast' use ``newton``,
-        otherwise use bisection. Note: bisection is limited to 1st quadrant
-        only.
+        Method to use. If 'lambertw' use ``lambertw``, if 'newton' use
+        ``newton``, otherwise use bisection method, ``brentq``. Note: bisection
+        is limited to 1st quadrant only.
 
     Returns
     -------
@@ -2360,13 +2356,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
             return I
     else:
         # use singlediode methods
-        i_from_v_fun = partial(singlediode_methods.bishop88_i_from_v,
-                               method=method.lower())
-        # wrap it so it returns nan
-        # i_from_v_fun = singlediode_methods.returns_nan()(i_from_v_fun)
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        I = i_from_v_fun(*args)
+        I = singlediode_methods.bishop88_i_from_v(*args, method=method.lower())
         # find the right size and shape for returns
         size, shape = singlediode_methods._get_size_and_shape(args)
         if size <= 1:

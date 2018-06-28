@@ -3,10 +3,8 @@ Faster ways to calculate single diode model currents and voltages using
 methods from J.W. Bishop (Solar Cells, 1988).
 """
 
-from collections import OrderedDict
-from functools import wraps, partial
+from functools import partial
 import numpy as np
-import pandas as pd
 try:
     from scipy.optimize import brentq
 except ImportError:
@@ -19,27 +17,6 @@ except ImportError:
     from pvlib.tools import _array_newton
 # rename newton and set keyword arguments
 newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
-
-# TODO: update pvsystem.i_from_v and v_from_i to use "gold" method by default
-
-
-def returns_nan(exc=None):
-    """
-    Decorator that changes the return to NaN if either
-    """
-    if not exc:
-        exc = (ValueError, RuntimeError)
-
-    def wrapper(f):
-        @wraps(f)
-        def wrapped_fcn(*args, **kwargs):
-            try:
-                rval = f(*args, **kwargs)
-            except exc:
-                rval = np.nan
-            return rval
-        return wrapped_fcn
-    return wrapper
 
 
 def estimate_voc(photocurrent, saturation_current, nNsVth):
@@ -128,7 +105,8 @@ def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,
         grad2i = -c / nNsVth  # d2i/dvd
         grad2v = -grad2i * resistance_series  # d2v/dvd
         grad2p = (
-            grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2) + grad_i
+            grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2)
+            + grad_i
         )  # d2p/dv/dvd
         retval += (grad_i, grad_v, grad, grad_p, grad2p)
     return retval
@@ -340,95 +318,6 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
     return bishop88(vd, *args)
-
-
-# def slower_way(photocurrent, saturation_current, resistance_series,
-#                resistance_shunt, nNsVth, ivcurve_pnts=None):
-#     """
-#     This is the slow but reliable way.
-#     """
-#     slow_v_from_i = partial(bishop88_v_from_i, method='brentq')
-#     slow_i_from_v = partial(bishop88_i_from_v, method='brentq')
-#     slow_mpp = partial(bishop88_mpp, method='brentq')
-#     # recursion
-#     try:
-#         len(photocurrent)
-#     except TypeError:
-#         pass
-#     else:
-#         vecfun = np.vectorize(slower_way)
-#         out = vecfun(photocurrent, saturation_current, resistance_series,
-#                      resistance_shunt, nNsVth, ivcurve_pnts)
-#         if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
-#             out = pd.DataFrame(out.tolist(), index=photocurrent.index)
-#         else:
-#             out_array = pd.DataFrame(out.tolist())
-#             out = OrderedDict()
-#             out['i_sc'] = out_array.i_sc.values
-#             out['v_oc'] = out_array.v_oc.values
-#             out['i_mp'] = out_array.i_mp.values
-#             out['v_mp'] = out_array.v_mp.values
-#             out['p_mp'] = out_array.p_mp.values
-#             out['i_x'] = out_array.i_x.values
-#             out['i_xx'] = out_array.i_xx.values
-#             if ivcurve_pnts:
-#                 out['i'] = np.vstack(out_array.i.values)
-#                 out['v'] = np.vstack(out_array.v.values)
-#                 out['p'] = np.vstack(out_array.p.values)
-#         return out
-#     # collect args
-#     args = (photocurrent, saturation_current, resistance_series,
-#             resistance_shunt, nNsVth)
-#     v_oc = slow_v_from_i(0.0, *args)
-#     i_mp, v_mp, p_mp = slow_mpp(*args)
-#     out = OrderedDict()
-#     out['i_sc'] = slow_i_from_v(0.0, *args)
-#     out['v_oc'] = v_oc
-#     out['i_mp'] = i_mp
-#     out['v_mp'] = v_mp
-#     out['p_mp'] = p_mp
-#     out['i_x'] = slow_i_from_v(v_oc / 2.0, *args)
-#     out['i_xx'] = slow_i_from_v((v_oc + v_mp) / 2.0, *args)
-#     # calculate the IV curve if requested using bishop88
-#     if ivcurve_pnts:
-#         vd = v_oc * (
-#             (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
-#         )
-#         i, v, p = bishop88(vd, *args)
-#         out['i'] = i
-#         out['v'] = v
-#         out['p'] = p
-#     return out
-#
-#
-# def faster_way(photocurrent, saturation_current, resistance_series,
-#                resistance_shunt, nNsVth, ivcurve_pnts=None):
-#     """a faster way"""
-#     fast_v_from_i = partial(bishop88_v_from_i, method='newton')
-#     fast_i_from_v = partial(bishop88_i_from_v, method='newton')
-#     fast_mpp = partial(bishop88_mpp, method='newton')
-#     args = (photocurrent, saturation_current, resistance_series,
-#             resistance_shunt, nNsVth)  # collect args
-#     v_oc = fast_v_from_i(0.0, *args)
-#     i_mp, v_mp, p_mp = fast_mpp(*args)
-#     out = OrderedDict()
-#     out['i_sc'] = fast_i_from_v(0.0, *args)
-#     out['v_oc'] = v_oc
-#     out['i_mp'] = i_mp
-#     out['v_mp'] = v_mp
-#     out['p_mp'] = p_mp
-#     out['i_x'] = fast_i_from_v(v_oc / 2.0, *args)
-#     out['i_xx'] = fast_i_from_v((v_oc + v_mp) / 2.0, *args)
-#     # calculate the IV curve if requested using bishop88
-#     if ivcurve_pnts:
-#         vd = v_oc * (
-#             (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
-#         )
-#         i, v, p = bishop88(vd, *args)
-#         out['i'] = i
-#         out['v'] = v
-#         out['p'] = p
-#     return out
 
 
 def _get_size_and_shape(args):

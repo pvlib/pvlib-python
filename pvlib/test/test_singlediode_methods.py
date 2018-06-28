@@ -8,9 +8,6 @@ import numpy as np
 from pvlib import pvsystem
 from conftest import requires_scipy
 
-faster_way = pvsystem.singlediode_methods.faster_way
-slower_way = pvsystem.singlediode_methods.slower_way
-
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
@@ -36,7 +33,7 @@ def test_fast_spr_e20_327():
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
-    out = faster_way(*x)
+    out = pvsystem.singlediode(*x, method='newton')
     tstop = clock()
     isc, voc, imp, vmp, pmp, ix, ixx = out.values()
     dt_fast = tstop - tstart
@@ -73,7 +70,7 @@ def test_fast_fs_495():
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
-    out = faster_way(*x)
+    out = pvsystem.singlediode(*x, method='newton')
     tstop = clock()
     isc, voc, imp, vmp, pmp, ix, ixx, i, v, p = out.values()
     dt_fast = tstop - tstart
@@ -110,7 +107,7 @@ def test_slow_spr_e20_327():
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
-    out = slower_way(*x)
+    out = pvsystem.singlediode(*x, method='brentq')
     tstop = clock()
     isc, voc, imp, vmp, pmp, ix, ixx = out.values()
     dt_fast = tstop - tstart
@@ -147,7 +144,7 @@ def test_slow_fs_495():
     dt_slow = tstop - tstart
     LOGGER.debug('single diode elapsed time = %g[s]', dt_slow)
     tstart = clock()
-    out = slower_way(*x)
+    out = pvsystem.singlediode(*x, method='brentq')
     tstop = clock()
     isc, voc, imp, vmp, pmp, ix, ixx, i, v, p = out.values()
     dt_fast = tstop - tstart

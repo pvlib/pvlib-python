@@ -7,6 +7,10 @@ Encouraging more people to help develop pvlib-python is essential to our
 success. Therefore, we want to make it easy and rewarding for you to
 contribute.
 
+There is a lot of material in this section, aimed at a variety of
+contributors from novice to expert. Don't worry if you don't (yet)
+understand parts of it.
+
 
 Easy ways to contribute
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -15,9 +19,13 @@ Here are a few ideas for you can contribute, even if you are new to
 pvlib-python, git, or Python:
 
 * Make `GitHub issues <https://github.com/pvlib/pvlib-python/issues>`_
-  and contribute to the conversation about how to resolve them.
+  and contribute to the conversations about how to resolve them.
 * Read issues and pull requests that other people created and
   contribute to the conversation about how to resolve them.
+  Look for issues tagged with
+  `good first issue <https://github.com/pvlib/pvlib-python/labels/good%20first%20issue>`_,
+  `easy <https://github.com/pvlib/pvlib-python/labels/easy>`_,
+  or `help wanted <https://github.com/pvlib/pvlib-python/labels/help%20wanted>`_.
 * Improve the documentation and the unit tests.
 * Improve the IPython/Jupyter Notebook tutorials or write new ones that
   demonstrate how to use pvlib-python in your area of expertise.
@@ -34,6 +42,9 @@ pvlib-python, git, or Python:
 
 How to contribute new code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The basics
+----------
 
 Contributors to pvlib-python use GitHub's pull requests to add/modify
 its source code. The GitHub pull request process can be intimidating for
@@ -53,15 +64,10 @@ process. Here's an outline of the process:
    request.
 
 The Pandas project maintains an excellent `contributing page
-<https://github.com/pydata/pandas/wiki/Contributing>`_ that goes into
-detail on each of these steps. Also see GitHub's `Set Up Git
+<http://pandas.pydata.org/pandas-docs/stable/contributing.html>`_ that goes
+into detail on each of these steps. Also see GitHub's `Set Up Git
 <https://help.github.com/articles/set-up-git/>`_ and `Using Pull
 Requests <https://help.github.com/articles/using-pull-requests/>`_.
-
-Note that you do not need to make all of your changes before creating a
-pull request. Your pull requests will automatically be updated when you
-commit new changes and push them to GitHub. This gives everybody an easy
-way to comment on the code and can make the process more efficient.
 
 We strongly recommend using virtual environments for development.
 Virtual environments make it trivial to switch between different
@@ -73,11 +79,85 @@ environment.
 
 You must include documentation and unit tests for any new or improved
 code. We can provide help and advice on this after you start the pull
-request.
+request. See the Testing section below.
 
-The maintainers will follow same procedures, rather than making direct
-commits to the main repo. Exceptions may be made for extremely minor
-changes, such as fixing documentation typos.
+
+Pull request scope
+------------------
+
+This section can be summed up as "less is more".
+
+A pull request can quickly become unmanageable if too many lines are
+added or changed. "Too many" is hard to define, but as a rule of thumb,
+we encourage contributions that contain less than 50 lines of primary code.
+50 lines of primary code will typically need at least 250 lines
+of documentation and testing. A reviewer can typically understand
+
+A pull request can also quickly become unmanageable if it proposes major
+changes to the API. Consider documenting the API changes in
+`api.rst <https://github.com/pvlib/pvlib-python/blob/master/docs/sphinx/source/api.rst>`_
+before implementing any code.
+
+pvlib-python contains 3 "layers" of code: functions, PVSystem/Location,
+and ModelChain. We recommend that contributors focus their work on only
+one or two of those layers in a single pull request. New models are *not*
+required to be available to the higher-level API!
+
+
+
+When should I submit a pull request?
+------------------------------------
+
+The short answer: anytime.
+
+The long answer: it depends. If in doubt, go ahead and submit. You do
+not need to make all of your changes before creating a pull request.
+Your pull requests will automatically be updated when you commit new
+changes and push them to GitHub.
+
+There are pros and cons to submitting incomplete pull-requests. On the
+plus side, it gives everybody an easy way to comment on the code and can
+make the process more efficient. On the minus side, it's easy for an
+incomplete pull request to grow into a multi-month saga that leaves
+everyone unhappy. If you submit an incomplete pull request, please be
+very clear about what you would like feedback on and what we should
+ignore. Alternatives to incomplete pull requests include posting a link
+to an experimental branch or to a `gist <https://gist.github.com>`_ in
+the corresponding issue.
+
+The best way to ensure that a pull request will be reviewed and merged in
+a timely manner is to:
+
+#. Start with an issue. The issue should be well-defined and actionable.
+#. Ask the maintainers to tag the issue with the appropriate milestone.
+#. Make a limited scope pull request. It can be a lot of work to check all of
+   the boxes in `pull request guidelines
+   <https://github.com/pvlib/pvlib-python/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_,
+   especially for pull requests with a lot of new primary code.
+   See :ref:`Pull request scope`.
+#. Tag ``@pvlib/maintainer`` when the pull request is ready for review.
+
+Questions about related issues frequently come up in the process of
+addressing implementing code for a pull request. Please try to avoid
+expanding the scope of your pull request. We'd rather see small
+additions to the project's technical debt than see a pull request
+languish because its scope expanded beyond what the reviewer community
+is capable of processing.
+
+
+Code style
+~~~~~~~~~~
+
+pvlib python uses a mix of full and abbreviated variable names. See
+:ref:`_variables_style_rules`. Prefer full names for new contributions.
+This is especially important for the API. Abbreviations can be used within
+a function to improve the readability of formula.
+
+Set your editor to strip extra whitespace from line endings. This helps
+keep the commit history clean.
+
+pvlib python does not use logging. Remove any logging calls that you
+added during development.
 
 
 Testing
@@ -220,5 +300,5 @@ This documentation
 
 If this documentation is unclear, help us improve it! Consider looking
 at the `pandas
-documentation <http://pandas.pydata.org/pandas-docs/version/0.18.1/
+documentation <http://pandas.pydata.org/pandas-docs/stable/
 contributing.html>`_ for inspiration.

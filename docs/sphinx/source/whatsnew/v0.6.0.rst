@@ -33,6 +33,7 @@ Documentation
   objects, and ModelChain.
 * Updated several incorrect statements in ModelChain documentation regarding
   implementation status and default values. (:issue:`480`)
+* Expanded general contributing and pull request guidelines.
 
 
 Testing

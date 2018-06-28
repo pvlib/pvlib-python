@@ -52,7 +52,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
     [1] http://www.pveducation.org/pvcdrom/open-circuit-voltage
     """
 
-    return nNsVth * np.log(photocurrent / saturation_current + 1.0)
+    return nNsVth * np.log(np.asarray(photocurrent) / saturation_current + 1.0)
 
 
 def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,

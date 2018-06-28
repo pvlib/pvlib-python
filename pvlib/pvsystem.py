@@ -1700,7 +1700,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts=None, method='gold'):
+                resistance_shunt, nNsVth, ivcurve_pnts=None, method='lambertw'):
     r'''
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -1756,9 +1756,9 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         Number of points in the desired IV curve. If None or 0, no
         IV curves will be produced.
 
-    method : str, default 'gold'
+    method : str, default 'lambertw'
         Determines the method used to calculate IV curve and points. If
-        'lambertw' then ``lambertw`` is used. If 'fast' then ``newton`` is
+        'lambertw' then ``lambertw`` is used. If 'newton' then ``newton`` is
         used. Otherwise the problem is bounded between zero and open-circuit
         voltage and a bisection method, ``brentq``, is used, that guarantees
         convergence.
@@ -1912,7 +1912,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             out = pd.DataFrame(out, index=photocurrent.index)
 
     else:
-        if method.lower() == 'fast':
+        if method.lower() == 'newton':
             sdm_fun = singlediode_methods.faster_way
         else:
             sdm_fun = singlediode_methods.slower_way
@@ -1924,7 +1924,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
 
 def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
-        nNsVth, method='gold'):
+        nNsVth, method='brentq'):
     """
     Given the calculated DeSoto parameters, calculates the maximum power point
     (MPP).
@@ -1950,18 +1950,19 @@ def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
     OrderedDict or pandas.Datafrane
         ``(i_mp, v_mp, p_mp)``
     """
-    if method.lower() == 'fast':
-        mpp_fun = singlediode_methods.fast_mpp
-    else:
-        mpp_fun = singlediode_methods.slow_mpp
+    mpp_fun = partial(singlediode_methods.bishop88_mpp, method=method.lower())
     i_mp, v_mp, p_mp = mpp_fun(
         photocurrent, saturation_current, resistance_series,
         resistance_shunt, nNsVth
     )
-    out = OrderedDict()
-    out['i_mp'] = i_mp
-    out['v_mp'] = v_mp
-    out['p_mp'] = p_mp
+    if isinstance(photocurrent, pd.Series):
+        ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}
+        out = pd.DataFrame(ivp, index=photocurrent.index)
+    else:
+        out = OrderedDict()
+        out['i_mp'] = i_mp
+        out['v_mp'] = v_mp
+        out['p_mp'] = p_mp
     return out
 
 

@@ -252,7 +252,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
             lambda voc, i, iph, isat, rs, rsh, gamma:
                 brentq(fi, 0.0, voc, args=(i, iph, isat, rs, rsh, gamma))
         )
-        vd = vec_fun(voc_est, current,*args)
+        vd = vec_fun(voc_est, current, *args)
     elif method.lower() == 'newton':
         # make sure all args are numpy arrays if max size > 1
         size, shape = _get_size_and_shape((current,) + args)
@@ -274,57 +274,71 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     return bishop88(vd, *args)[1]
 
 
-def slow_mpp(photocurrent, saturation_current, resistance_series,
-             resistance_shunt, nNsVth):
+def bishop88_mpp(photocurrent, saturation_current, resistance_series,
+                 resistance_shunt, nNsVth, method='newton'):
     """
-    This is a slow but reliable way to find mpp.
+    Find max power point.
+
+    Parameters
+    ----------
+    photocurrent : numeric
+        photogenerated current (Iph or IL) in amperes [A]
+    saturation_current : numeric
+        diode dark or saturation current (Io or Isat) in amperes [A]
+    resistance_series : numeric
+        series resistance (Rs) in ohms
+    resistance_shunt : numeric
+        shunt resistance (Rsh) in ohms
+    nNsVth : numeric
+        product of diode ideality factor (n), number of series cells (Ns), and
+        thermal voltage (Vth = k_b * T / q_e) in volts [V]
+    method : str
+        one of two ptional search methods: either `brentq`, a reliable and
+        bounded method or `newton` the default, a gradient descent method.
+
+    Returns
+    -------
+    OrderedDict or pandas.DataFrame
+        max power current ``i_mp`` [A], max power voltage ``v_mp`` [V], and
+        max power ``p_mp`` [W]
     """
-    # recursion
-    try:
-        len(photocurrent)
-    except TypeError:
-        pass
-    else:
-        vecfun = np.vectorize(slow_mpp)
-        ivp = vecfun(photocurrent, saturation_current, resistance_series,
-                     resistance_shunt, nNsVth)
-        if isinstance(photocurrent, pd.Series):
-            ivp = {k: v for k, v in zip(('i_mp', 'v_mp', 'p_mp'), ivp)}
-            out = pd.DataFrame(ivp, index=photocurrent.index)
+    # collect args
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+    # first bound the search using voc
+    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+
+    def fmpp(x, *a):
+        return bishop88(x, *a, gradients=True)[6]
+
+    if method.lower() == 'brentq':
+        if brentq is NotImplemented:
+            raise ImportError('This function requires scipy')
+        # break out arguments for numpy.vectorize to handle broadcasting
+        vec_fun = np.vectorize(
+            lambda voc, iph, isat, rs, rsh, gamma:
+                brentq(fmpp, 0.0, voc, args=(iph, isat, rs, rsh, gamma))
+        )
+        vd = vec_fun(voc_est, *args)
+    elif method.lower() == 'newton':
+        # make sure all args are numpy arrays if max size > 1
+        size, shape = _get_size_and_shape(args)
+        if size > 1:
+            args = [np.asarray(arg) for arg in args]
+        # newton uses initial guess for the output shape
+        # copy v0 to a new array and broadcast it to the shape of max size
+        if shape is not None:
+            v0 = np.broadcast_to(voc_est, shape).copy()
         else:
-            out = OrderedDict()
-            out['i_mp'] = ivp[0]
-            out['v_mp'] = ivp[1]
-            out['p_mp'] = ivp[2]
-        return out
-    if brentq is NotImplemented:
-        raise ImportError('This function requires scipy')
-    # collect args
-    args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-    # first bound the search using voc
-    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
-    vd = brentq(lambda x, *a: bishop88(x, *a, gradients=True)[6], 0.0, voc_est,
-                args)
-    return bishop88(vd, *args)
-
-
-def fast_mpp(photocurrent, saturation_current, resistance_series,
-             resistance_shunt, nNsVth):
-    """
-    This is a possibly faster way to find mpp.
-    """
-    if newton is NotImplemented:
-        raise ImportError('This function requires scipy')
-    # collect args
-    args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-    # first bound the search using voc
-    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
-    vd = newton(
-        func=lambda x, *a: bishop88(x, *a, gradients=True)[6], x0=voc_est,
-        fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args
-    )
+            v0 = voc_est
+        # x0 and x in func are the same reference! DO NOT set x0 to current!
+        # voltage in fi(x, current, *a) MUST BE CONSTANT!
+        vd = newton(
+            func=fmpp, x0=v0,
+            fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args
+        )
+    else:
+        raise NotImplementedError("Method '%s' isn't implemented" % method)
     return bishop88(vd, *args)
 
 
@@ -335,6 +349,7 @@ def slower_way(photocurrent, saturation_current, resistance_series,
     """
     slow_v_from_i = partial(bishop88_v_from_i, method='brentq')
     slow_i_from_v = partial(bishop88_i_from_v, method='brentq')
+    slow_mpp = partial(bishop88_mpp, method='brentq')
     # recursion
     try:
         len(photocurrent)
@@ -391,6 +406,7 @@ def faster_way(photocurrent, saturation_current, resistance_series,
     """a faster way"""
     fast_v_from_i = partial(bishop88_v_from_i, method='newton')
     fast_i_from_v = partial(bishop88_i_from_v, method='newton')
+    fast_mpp = partial(bishop88_mpp, method='newton')
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
     v_oc = fast_v_from_i(0.0, *args)

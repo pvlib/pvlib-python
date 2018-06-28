@@ -798,14 +798,14 @@ def test_v_from_i_size():
 def test_mpp_floats():
     """test mpp"""
     IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth)
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='brentq')
     expected = {'i_mp': 6.1362673597376753,  # 6.1390251797935704, lambertw
                 'v_mp': 6.2243393757884284,  # 6.221535886625464, lambertw
                 'p_mp': 38.194210547580511}  # 38.194165464983037} lambertw
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.isclose(v, expected[k])
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='fast')
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.isclose(v, expected[k])
 
@@ -813,15 +813,15 @@ def test_mpp_floats():
 @requires_scipy
 def test_mpp_array():
     """test mpp"""
-    IL, I0, Rs, Rsh, nNsVth = ([7, 7], 6e-7, .1, 20, .5)
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth)
+    IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='brentq')
     expected = {'i_mp': [6.1362673597376753] * 2,
                 'v_mp': [6.2243393757884284] * 2,
                 'p_mp': [38.194210547580511] * 2}
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.allclose(v, expected[k])
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='fast')
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.allclose(v, expected[k])
 
@@ -830,9 +830,9 @@ def test_mpp_array():
 def test_mpp_series():
     """test mpp"""
     idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']
-    IL, I0, Rs, Rsh, nNsVth = ([7, 7], 6e-7, .1, 20, .5)
+    IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
     IL = pd.Series(IL, index=idx)
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth)
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='brentq')
     expected = pd.DataFrame({'i_mp': [6.1362673597376753] * 2,
                              'v_mp': [6.2243393757884284] * 2,
                              'p_mp': [38.194210547580511] * 2},
@@ -840,6 +840,7 @@ def test_mpp_series():
     assert isinstance(out, pd.DataFrame)
     for k, v in out.items():
         assert np.allclose(v, expected[k])
+    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.allclose(v, expected[k])
 
@@ -849,16 +850,17 @@ def test_singlediode_series(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                          effective_irradiance,
-                                          temp_cell=25,
-                                          alpha_sc=cec_module_params['alpha_sc'],
-                                          a_ref=cec_module_params['a_ref'],
-                                          I_L_ref=cec_module_params['I_L_ref'],
-                                          I_o_ref=cec_module_params['I_o_ref'],
-                                          R_sh_ref=cec_module_params['R_sh_ref'],
-                                          R_s=cec_module_params['R_s'],
-                                          EgRef=1.121,
-                                          dEgdT=-0.0002677)
+        effective_irradiance,
+        temp_cell=25,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth)
     assert isinstance(out, pd.DataFrame)
 

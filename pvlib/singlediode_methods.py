@@ -1,6 +1,5 @@
 """
-Calculate single diode model currents and voltages using methods from
-J.W. Bishop (Solar Cells, 1988).
+Low-level functions for solving the single diode equation.
 """
 
 from functools import partial

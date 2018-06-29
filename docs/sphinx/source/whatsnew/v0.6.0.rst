@@ -20,29 +20,28 @@ Enhancements
   ``method`` in ``('lambertw', 'newton', 'brentq')``, default is ``'lambertw'``,
   to select a method to solve the single diode equation for points on the IV
   curve. Selecting either ``'brentq'`` or ``'newton'`` as the method uses
-  ``bishop88`` with the corresponding search method. (:issue:`410`)
+  :func:`~pvlib.singlediode_methods.bishop88` with the corresponding method.
+  (:issue:`410`)
 * Implement new methods ``'brentq'`` and ``'newton'`` for solving the single
   diode equation for points on the IV curve. ``'brentq'`` uses a bisection
   method (Brent, 1973) that may be slow but guarantees a solution. ``'newton'``
   uses the Newton-Raphson method and may be faster but is not guaranteed to
   converge. However, ``'newton'`` should be safe for well-behaved IV curves.
   (:issue:`408`)
-* Implement :func:`~pvlib.pvsystem.bishop88` for explicit calculation of
-  arbitrary IV curve points using diode voltage instead of cell voltage. If
+* Implement :func:`~pvlib.singlediode_methods.bishop88` for explicit calculation
+  of arbitrary IV curve points using diode voltage instead of cell voltage. If
   ``method`` is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts`` in
   :func:`~pvlib.pvsystem.singlediode` is provided, the IV curve points will be
   log spaced instead of linear.
-* Implement :func:`~pvlib.pvsystem.estimate_voc` to estimate open circuit
-  voltage by assuming :math:`R_{sh} \to \infty` and :math:`R_s=0` as an upper
-  bound in bisection method for :func:`~pvlib.pvsystem.singlediode`.
+* Implement :func:`~pvlib.singlediode_methods.estimate_voc` to estimate open
+  circuit voltage by assuming :math:`R_{sh} \to \infty` and :math:`R_s=0` as an
+  upper bound in bisection method for :func:`~pvlib.pvsystem.singlediode` when
+  method is either ``'newton'`` or ``'brentq'``.
 * Add :func:`~pvlib.pvsystem.mpp` method to compute the max power point using
-  the new "brentq" bounded bisection method.
-* Add new module ``pvlib.singlediode_methods`` which contains low-level
-  functions to support implementing ``bishop88`` and various other methods like
-  ``bishop88_i_from_v``, ``bishop88_v_from_i``, and ``bishop88_mpp``. *Note*:
-  :func:`pvlib.singlediode_methods.bishop88` and
-  :func:`pvlib.singlediode_methods.estimate_voc` are also imported into the
-  ``pvlib.pvsystem`` module.
+  the new ``'brentq'`` method.
+* Add new module ``pvlib.singlediode_methods`` with low-level functions for
+  solving the single diode equation such as: ``bishop88``, ``estimate_voc``,
+  ``bishop88_i_from_v``, ``bishop88_v_from_i``, and ``bishop88_mpp``.
 
 
 Bug fixes

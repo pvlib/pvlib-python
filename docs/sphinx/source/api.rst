@@ -206,13 +206,8 @@ Functions relevant for the single diode model.
    pvsystem.singlediode
    pvsystem.v_from_i
    pvsystem.mpp
-   pvsystem.estimate_voc
-   pvsystem.bishop88
 
-Low-level functions to support :func:`pvlib.pvsystem.bishop88`. *Note*:
-:func:`pvlib.singlediode_methods.bishop88` and
-:func:`pvlib.singlediode_methods.estimate_voc` are also imported into the
-``pvlib.pvsystem`` module.
+Low-level functions for solving the single diode equation.
 
 .. autosummary::
    :toctree: generated/

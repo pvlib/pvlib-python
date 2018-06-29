@@ -23,10 +23,6 @@ from pvlib.location import Location
 from pvlib import irradiance, atmosphere
 from pvlib import singlediode_methods
 
-# expose single diode methods to API
-bishop88 = singlediode_methods.bishop88
-estimate_voc = singlediode_methods.estimate_voc
-
 
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
@@ -1801,13 +1797,13 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     open-circuit.
 
     If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
-    are indicated, then :func:`pvlib.pvsystem.bishop88` is used to calculate
-    the points on the IV curve points at diode voltages from zero to
+    are indicated, then :func:`pvlib.singlediode_methods.bishop88` is used to
+    calculate the points on the IV curve points at diode voltages from zero to
     open-circuit voltage with a log spacing that gets closer as voltage
     increases. If the method is ``'lambertw'`` then the calculated points on
     the IV curve are linearly spaced.
 
-    The :func:`bishop88` method uses an explicit solution from [4] that finds
+    The ``bishop88`` method uses an explicit solution from [4] that finds
     points on the IV curve by first solving for pairs :math:`(V_d, I)` where
     :math:`V_d` is the diode voltage :math:`V_d = V + I*Rs`. Then the voltage
     is backed out from :math:`V_d`. Points with specific voltage, such as open
@@ -1955,7 +1951,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                     (11.0 - np.logspace(np.log10(11.0), 0.0,
                                         ivcurve_pnts)) / 10.0
             )
-            i, v, p = bishop88(vd, *args)
+            i, v, p = singlediode_methods.bishop88(vd, *args)
             out['i'] = i
             out['v'] = v
             out['p'] = p

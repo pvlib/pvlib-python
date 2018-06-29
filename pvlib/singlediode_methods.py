@@ -8,6 +8,7 @@ try:
     from scipy.optimize import brentq
 except ImportError:
     brentq = NotImplemented
+
 # FIXME: change this to newton when scipy-1.2 is released
 try:
     from scipy.optimize import _array_newton

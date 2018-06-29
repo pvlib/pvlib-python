@@ -40,8 +40,12 @@ Enhancements
 * Add :func:`~pvlib.pvsystem.mpp` method to compute the max power point using
   the new ``'brentq'`` method.
 * Add new module ``pvlib.singlediode_methods`` with low-level functions for
-  solving the single diode equation such as: ``bishop88``, ``estimate_voc``,
-  ``bishop88_i_from_v``, ``bishop88_v_from_i``, and ``bishop88_mpp``.
+  solving the single diode equation such as:
+  :func:`~pvlib.singlediode_methods.bishop88`,
+  :func:`~pvlib.singlediode_methods.estimate_voc`,
+  :func:`~pvlib.singlediode_methods.bishop88_i_from_v`,
+  :func:`~pvlib.singlediode_methods.bishop88_v_from_i`, and
+  :func:`~pvlib.singlediode_methods.bishop88_mpp`.
 
 
 Bug fixes

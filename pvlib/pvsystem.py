@@ -1863,7 +1863,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     --------
     sapm
     calcparams_desoto
-    bishop88
+    pvlib.singlediode_methods.bishop88
     """
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation

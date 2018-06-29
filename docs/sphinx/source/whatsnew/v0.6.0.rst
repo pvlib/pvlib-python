@@ -37,8 +37,8 @@ Enhancements
   circuit voltage by assuming :math:`R_{sh} \to \infty` and :math:`R_s=0` as an
   upper bound in bisection method for :func:`~pvlib.pvsystem.singlediode` when
   method is either ``'newton'`` or ``'brentq'``.
-* Add :func:`~pvlib.pvsystem.mpp` method to compute the max power point using
-  the new ``'brentq'`` method.
+* Add :func:`~pvlib.pvsystem.max_power_point` method to compute the max power
+  point using the new ``'brentq'`` method.
 * Add new module ``pvlib.singlediode_methods`` with low-level functions for
   solving the single diode equation such as:
   :func:`~pvlib.singlediode_methods.bishop88`,

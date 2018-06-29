@@ -1865,6 +1865,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     calcparams_desoto
     pvlib.singlediode_methods.bishop88
     """
+    # make IDE happy
+    ivcurve_v = NotImplemented
+    ivcurve_i = NotImplemented
+
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
@@ -1899,15 +1903,6 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                         0.5 * (v_oc + v_mp), saturation_current, photocurrent,
                         method)
 
-        out = OrderedDict()
-        out['i_sc'] = i_sc
-        out['v_oc'] = v_oc
-        out['i_mp'] = i_mp
-        out['v_mp'] = v_mp
-        out['p_mp'] = p_mp
-        out['i_x'] = i_x
-        out['i_xx'] = i_xx
-
         # create ivcurve
         if ivcurve_pnts:
             ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
@@ -1916,12 +1911,6 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             ivcurve_i = i_from_v(resistance_shunt, resistance_series, nNsVth,
                                  ivcurve_v.T, saturation_current, photocurrent,
                                  method).T
-
-            out['v'] = ivcurve_v
-            out['i'] = ivcurve_i
-
-        if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
-            out = pd.DataFrame(out, index=photocurrent.index)
 
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
@@ -1937,29 +1926,40 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)  # collect args
         v_oc = v_from_i_fun(0.0, *args)
         i_mp, v_mp, p_mp = mpp_fun(*args)
-        out = OrderedDict()
-        out['i_sc'] = i_from_v_fun(0.0, *args)
-        out['v_oc'] = v_oc
-        out['i_mp'] = i_mp
-        out['v_mp'] = v_mp
-        out['p_mp'] = p_mp
-        out['i_x'] = i_from_v_fun(v_oc / 2.0, *args)
-        out['i_xx'] = i_from_v_fun((v_oc + v_mp) / 2.0, *args)
+        i_sc = i_from_v_fun(0.0, *args)
+        i_x = i_from_v_fun(v_oc / 2.0, *args)
+        i_xx = i_from_v_fun((v_oc + v_mp) / 2.0, *args)
+
         # calculate the IV curve if requested using bishop88
         if ivcurve_pnts:
             vd = v_oc * (
                     (11.0 - np.logspace(np.log10(11.0), 0.0,
                                         ivcurve_pnts)) / 10.0
             )
-            i, v, p = singlediode_methods.bishop88(vd, *args)
-            out['i'] = i
-            out['v'] = v
-            out['p'] = p
+            ivcurve_i, ivcurve_v, _ = singlediode_methods.bishop88(vd, *args)
+
+    out = OrderedDict()
+    out['i_sc'] = i_sc
+    out['v_oc'] = v_oc
+    out['i_mp'] = i_mp
+    out['v_mp'] = v_mp
+    out['p_mp'] = p_mp
+    out['i_x'] = i_x
+    out['i_xx'] = i_xx
+
+    if ivcurve_pnts:
+
+        out['v'] = ivcurve_v
+        out['i'] = ivcurve_i
+
+    if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
+        out = pd.DataFrame(out, index=photocurrent.index)
+
     return out
 
 
-def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
-        nNsVth, method='brentq'):
+def max_power_point(photocurrent, saturation_current, resistance_series,
+                    resistance_shunt, nNsVth, method='brentq'):
     """
     Given the single diode equation coefficients, calculates the maximum power
     point (MPP).

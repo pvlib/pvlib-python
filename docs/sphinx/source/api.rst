@@ -205,7 +205,7 @@ Functions relevant for the single diode model.
    pvsystem.i_from_v
    pvsystem.singlediode
    pvsystem.v_from_i
-   pvsystem.mpp
+   pvsystem.max_power_point
 
 Low-level functions for solving the single diode equation.
 

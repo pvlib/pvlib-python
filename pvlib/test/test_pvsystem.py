@@ -796,43 +796,43 @@ def test_v_from_i_size():
 
 @requires_scipy
 def test_mpp_floats():
-    """test mpp"""
+    """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
     expected = {'i_mp': 6.1362673597376753,  # 6.1390251797935704, lambertw
                 'v_mp': 6.2243393757884284,  # 6.221535886625464, lambertw
                 'p_mp': 38.194210547580511}  # 38.194165464983037} lambertw
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.isclose(v, expected[k])
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='newton')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.isclose(v, expected[k])
 
 
 @requires_scipy
 def test_mpp_array():
-    """test mpp"""
+    """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
     expected = {'i_mp': [6.1362673597376753] * 2,
                 'v_mp': [6.2243393757884284] * 2,
                 'p_mp': [38.194210547580511] * 2}
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.allclose(v, expected[k])
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='newton')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.allclose(v, expected[k])
 
 
 @requires_scipy
 def test_mpp_series():
-    """test mpp"""
+    """test max_power_point"""
     idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
     IL = pd.Series(IL, index=idx)
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
     expected = pd.DataFrame({'i_mp': [6.1362673597376753] * 2,
                              'v_mp': [6.2243393757884284] * 2,
                              'p_mp': [38.194210547580511] * 2},
@@ -840,7 +840,7 @@ def test_mpp_series():
     assert isinstance(out, pd.DataFrame)
     for k, v in out.items():
         assert np.allclose(v, expected[k])
-    out = pvsystem.mpp(IL, I0, Rs, Rsh, nNsVth, method='newton')
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.allclose(v, expected[k])
 

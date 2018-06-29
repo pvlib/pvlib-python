@@ -271,7 +271,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
     method : str
-        one of two ptional search methods: either `brentq`, a reliable and
+        one of two optional search methods: either `brentq`, a reliable and
         bounded method or `newton` the default, a gradient descent method.
 
     Returns

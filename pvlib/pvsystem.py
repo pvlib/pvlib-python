@@ -1757,11 +1757,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         IV curves will be produced.
 
     method : str, default 'lambertw'
-        Determines the method used to calculate IV curve and points. If
-        'lambertw' then ``lambertw`` is used. If 'newton' then ``newton`` is
-        used. Otherwise the problem is bounded between zero and open-circuit
-        voltage and a bisection method, ``brentq``, is used, that guarantees
-        convergence.
+        Determines the method used to calculate points on the IV curve. The
+        options are 'lambertw', 'newton', or 'brentq'.
 
     Returns
     -------
@@ -1791,12 +1788,31 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     Notes
     -----
-    The default method employed is an explicit solution using [4] to find an
-    arbitrary point on the IV curve as a function of the diode  voltage
-    :math:`V_d = V + I*Rs`. Then the voltage is backed out from :math:`V_d`.
-    A specific desired point, such as short circuit current or max power, is
-    located using the bisection search method, ``brentq``, bounded by a zero
-    diode voltage and an estimate of open circuit voltage given by
+    If the method is ``'lambertw'`` then the solution employed to solve the
+    implicit diode equation utilizes the Lambert W function to obtain an
+    explicit function of :math:`V=f(I)` and :math:`I=f(V)` as shown in [2].
+
+    If the method is ``'newton'`` then the root-finding Newton-Raphson method
+    is used. It should be safe for well behaved IV-curves, but the ``'brentq'``
+    method is recommended for reliability.
+
+    If the method is ``'brentq'`` then Brent's bisection search method is used
+    that guarantees convergence by bounding the voltage between zero and
+    open-circuit.
+
+    If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
+    are indicated, then :func:`pvlib.pvsystem.bishop88` is used to calculate
+    the points on the IV curve points at diode voltages from zero to
+    open-circuit voltage with a log spacing that gets closer as voltage
+    increases. If the method is ``'lambertw'`` then the calculated points on
+    the IV curve are linearly spaced.
+
+    The :func:`bishop88` method uses an explicit solution from [4] that finds
+    points on the IV curve by first solving for pairs :math:`(V_d, I)` where
+    :math:`V_d` is the diode voltage :math:`V_d = V + I*Rs`. Then the voltage
+    is backed out from :math:`V_d`. Points with specific voltage, such as open
+    circuit, are located using the bisection search method, ``brentq``, bounded
+    by a zero diode voltage and an estimate of open circuit voltage given by
 
     .. math::
 
@@ -1819,20 +1835,6 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         I = I_L - I_0 \left(\frac{I_L}{I_0} \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
         I = I_L - I_L - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
         I = - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}}
-
-    If ``method.lower() == 'newton'`` then a gradient descent method, ``newton``,
-    is used to solve the implicit diode equation. It should be safe for well
-    behaved IV-curves, but the default method is recommended for reliability,
-    it is often just as fast.
-
-    If either the "newton" or "brentq" methods are indicated, then
-    :func:`pvlib.pvsystem.bishop88` is used to calculate the points at diode
-    voltages from zero to open-circuit voltage with a log spacing so that
-    points get closer as they approach the open-circuit voltage.
-
-    If ``method.lower() == 'lambertw'`` then the solution employed to solve the
-    implicit diode equation utilizes the Lambert W function to obtain an
-    explicit function of V=f(i) and I=f(V) as shown in [2].
 
     References
     -----------

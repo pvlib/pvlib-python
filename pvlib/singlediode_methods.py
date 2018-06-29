@@ -39,6 +39,8 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
     numeric
         rough estimate of open circuit voltage [V]
 
+    Notes
+    -----
     Calculating the open circuit voltage, :math:`V_{oc}`, of an ideal device
     with infinite shunt resistance, :math:`R_{sh} \\to \\infty`, and zero series
     resistance, :math:`R_s = 0`, yields the following equation [1]. As an
@@ -81,14 +83,15 @@ def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of series cells ``Ns``
     gradients : bool
-        default returns only i, v, and p, returns gradients if true
+        False returns only I, V, and P. True also returns gradients
 
     Returns
     -------
     tuple
-        containing currents [A], voltages [V], power [W], gradient ``di/dvd``,
-        gradient ``dv/dvd``, gradient ``di/dv``, gradient ``dp/dv``, and
-        gradient ``d2p/dv/dvd``
+        currents [A], voltages [V], power [W], and optionally
+        :math:`\\frac{dI}{dV_d}`, :math:`\\frac{dV}{dV_d}`,
+        :math:`\\frac{dI}{dV}`, :math:`\\frac{dP}{dV}`, and
+        :math:`\\frac{d^2 P}{dV dV_d}`
     """
     a = np.exp(diode_voltage / nNsVth)
     b = 1.0 / resistance_shunt
@@ -134,8 +137,8 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
     method : str
-        one of two optional search methods: either `brentq`, a reliable and
-        bounded method or `newton` the default, a gradient descent method.
+        one of two optional search methods: either ``'brentq'``, a reliable and
+        bounded method or ``'newton'`` which is the default.
 
     Returns
     -------
@@ -204,8 +207,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
     method : str
-        one of two optional search methods: either `brentq`, a reliable and
-        bounded method or `newton` the default, a gradient descent method.
+        one of two optional search methods: either ``'brentq'``, a reliable and
+        bounded method or ``'newton'`` which is the default.
 
     Returns
     -------
@@ -271,8 +274,8 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
     method : str
-        one of two optional search methods: either `brentq`, a reliable and
-        bounded method or `newton` the default, a gradient descent method.
+        one of two optional search methods: either ``'brentq'``, a reliable and
+        bounded method or ``'newton'`` which is the default.
 
     Returns
     -------

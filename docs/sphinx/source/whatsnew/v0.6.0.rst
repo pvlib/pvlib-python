@@ -11,27 +11,37 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-* Add sea surface albedo in irradiance.py (:issue:`458`)
-* Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
-* Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)
+* Add sea surface albedo in ``irradiance.py`` (:issue:`458`)
+* Implement :meth:`~pvlib.modelchain.ModelChain.first_solar_spectral_loss`
+  in ``modelchain.py`` (:issue:`359`)
+* Clarify arguments ``Egref`` and ``dEgdT`` for
+  :func:`~pvlib.pvsystem.calcparams_desoto` (:issue:`462`)
 * Implement a reliable "gold" implementation of the single diode model (SDM)
   using a bisection method (Brent, 1973) bounded by points known to include the
   full forward-bias 1st quadrant IV-curve. Also implement a "fast" method using
-  a gradient descent method (Newton-Raphson) that is not bounded, but should be
-  safe for well behaved IV-curves. (:issue:`408`)
+  the Newton-Raphson method that is not bounded, but should be safe for well
+  behaved IV-curves. (:issue:`408`)
 * Implement :func:`~pvlib.pvsystem.bishop88` for explicit calculation of
   arbitrary IV curve points using diode voltage instead of cell voltage. This
   method is called for ``ivcurve_pnts`` in :func:`~pvlib.pvsystem.singlediode`
-  if the method is either ``'fast'`` or ``'gold'``, but the IV curve points will
-  be log spaced instead of linear.
+  if the method is either ``'newton'`` or ``'brentq'``, but the IV curve points
+  will be log spaced instead of linear.
 * Implement :func:`~pvlib.pvsystem.estimate_voc` to estimate open circuit
   voltage by assuming :math:`R_{sh} \to \infty` and :math:`R_s=0` as an upper
   bound in bisection method for :func:`~pvlib.pvsystem.singlediode`.
 * Combine existing :func:`~pvlib.pvsystem.singlediode` method using Lambert-W
   with the two new implementations to form a wrapper, that takes an additional
-  ``method`` argument ``('lambertw', 'fast', 'gold')`` that defaults to the new
-  "gold" bounded bisection method. (:issue:`410`)
-* Add :func:`~pvlib.pvsystem.mpp` method to compute the max power point.
+  ``method`` argument ``('lambertw', 'newton', 'brentq')`` that defaults to a
+  Lambert-W solution. Selecting either "brentq" or "newton" as the method uses
+  ``bishop88`` with the corresponding search method. (:issue:`410`)
+* Add :func:`~pvlib.pvsystem.mpp` method to compute the max power point using
+  the new "brentq" bounded bisection method.
+* Add new module ``pvlib.singlediode_methods`` which contains low-level
+  functions to support implementing ``bishop88`` and various other methods like
+  ``bishop88_i_from_v``, ``bishop88_v_from_i``, and ``bishop88_mpp``. *Note*:
+  :func:`pvlib.singlediode_methods.bishop88` and
+  :func:`pvlib.singlediode_methods.estimate_voc` are also imported into the
+  ``pvlib.pvsystem`` module.
 
 
 Bug fixes

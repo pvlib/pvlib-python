@@ -65,7 +65,6 @@ algorithm.
 
    spa
 
-
 Correlations and analytical expressions for low precision solar position
 calculations.
 
@@ -79,6 +78,7 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
+
 
 Clear sky
 =========
@@ -206,8 +206,22 @@ Functions relevant for the single diode model.
    pvsystem.singlediode
    pvsystem.v_from_i
    pvsystem.mpp
-   pvsystem.bishop88
    pvsystem.estimate_voc
+   pvsystem.bishop88
+
+Low-level functions to support :func:`pvlib.pvsystem.bishop88`. *Note*:
+:func:`pvlib.singlediode_methods.bishop88` and
+:func:`pvlib.singlediode_methods.estimate_voc` are also imported into the
+``pvlib.pvsystem`` module.
+
+.. autosummary::
+   :toctree: generated/
+
+   singlediode_methods.estimate_voc
+   singlediode_methods.bishop88
+   singlediode_methods.bishop88_i_from_v
+   singlediode_methods.bishop88_v_from_i
+   singlediode_methods.bishop88_mpp
 
 SAPM model
 ----------
@@ -233,7 +247,6 @@ PVWatts model
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
-
 
 Other
 -----

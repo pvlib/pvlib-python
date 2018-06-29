@@ -1,5 +1,5 @@
 """
-testing way faster single-diode methods using JW Bishop 1988
+testing single-diode methods using JW Bishop 1988
 """
 
 from time import clock

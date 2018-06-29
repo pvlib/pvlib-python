@@ -1758,7 +1758,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The
-        options are 'lambertw', 'newton', or 'brentq'.
+        options are ``'lambertw'``, ``'newton'``, or ``'brentq'``.
 
     Returns
     -------
@@ -1816,7 +1816,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     .. math::
 
-        V_{oc, est} = n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right)
+        V_{oc, est} = n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)
 
     We know that :math:`V_d = 0` corresponds to a voltage less than zero, and
     we can also show that when :math:`V_d = V_{oc, est}`, the resulting
@@ -1828,13 +1828,24 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     .. math::
 
-        I = I_L - I_0 \left( \exp \left( \frac{V_{oc, est} }{ n Ns V_{th} } \right) - 1 \right) - \frac{V_{oc, est}}{R_{sh}} \\
-        I = I_L - I_0 \left(\exp \left( \frac{ n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1 \right) }{ n Ns V_{th} } \right) - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
-        I = I_L - I_0 \left(\exp \left( \log \left( \frac{I_L}{I_0} + 1 \right) \right)  - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
-        I = I_L - I_0 \left(\frac{I_L}{I_0} + 1  - 1 \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
-        I = I_L - I_0 \left(\frac{I_L}{I_0} \right) - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
-        I = I_L - I_L - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}} \\
-        I = - \frac{n Ns V_{th} \log \left( \frac{I_L}{I_0} + 1\right)}{R_{sh}}
+        I = I_L - I_0 \\left(\\exp \\left(\\frac{V_{oc, est}}{n Ns V_{th}} \\right) - 1 \\right)
+            - \\frac{V_{oc, est}}{R_{sh}} \\newline
+
+        I = I_L - I_0 \\left(\\exp \\left(\\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{n Ns V_{th}} \\right) - 1 \\right)
+            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
+
+        I = I_L - I_0 \\left(\\exp \\left(\\log \\left(\\frac{I_L}{I_0} + 1 \\right) \\right)  - 1 \\right)
+            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
+
+        I = I_L - I_0 \\left(\\frac{I_L}{I_0} + 1  - 1 \\right)
+            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
+
+        I = I_L - I_0 \\left(\\frac{I_L}{I_0} \\right)
+            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
+
+        I = I_L - I_L - \\frac{n Ns V_{th} \log \\left( \\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
+
+        I = - \\frac{n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)}{R_{sh}}
 
     References
     -----------
@@ -1971,7 +1982,7 @@ def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``, and
         number of serices cells ``Ns``
     method : str
-        either "newton" or "brentq"
+        either ``'newton'`` or ``'brentq'``
 
     Returns
     -------
@@ -2134,9 +2145,8 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         0 <= photocurrent
 
     method : str
-        Method to use. If 'lambertw' use ``lambertw``, if 'newton' use
-        ``newton``, otherwise use bisection method ``brentq``. Note: bisection
-        is limited to 1st quadrant only.
+        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
+        ``'brentq'`` is limited to 1st quadrant only.
 
     Returns
     -------
@@ -2297,9 +2307,8 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         0 <= photocurrent
 
     method : str
-        Method to use. If 'lambertw' use ``lambertw``, if 'newton' use
-        ``newton``, otherwise use bisection method, ``brentq``. Note: bisection
-        is limited to 1st quadrant only.
+        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
+        ``'brentq'`` is limited to 1st quadrant only.
 
     Returns
     -------

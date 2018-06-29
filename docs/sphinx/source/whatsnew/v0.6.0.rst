@@ -16,24 +16,25 @@ Enhancements
   in ``modelchain.py`` (:issue:`359`)
 * Clarify arguments ``Egref`` and ``dEgdT`` for
   :func:`~pvlib.pvsystem.calcparams_desoto` (:issue:`462`)
-* Implement a reliable "gold" implementation of the single diode model (SDM)
-  using a bisection method (Brent, 1973) bounded by points known to include the
-  full forward-bias 1st quadrant IV-curve. Also implement a "fast" method using
-  the Newton-Raphson method that is not bounded, but should be safe for well
-  behaved IV-curves. (:issue:`408`)
+* Extend :func:`~pvlib.pvsystem.singlediode` with an additional keyword argument
+  ``method`` in ``('lambertw', 'newton', 'brentq')``, default is ``'lambertw'``,
+  to select a method to solve the single diode equation for points on the IV
+  curve. Selecting either ``'brentq'`` or ``'newton'`` as the method uses
+  ``bishop88`` with the corresponding search method. (:issue:`410`)
+* Implement new methods ``'brentq'`` and ``'newton'`` for solving the single
+  diode equation for points on the IV curve. ``'brentq'`` uses a bisection
+  method (Brent, 1973) that may be slow but guarantees a solution. ``'newton'``
+  uses the Newton-Raphson method and may be faster but is not guaranteed to
+  converge. However, ``'newton'`` should be safe for well-behaved IV curves.
+  (:issue:`408`)
 * Implement :func:`~pvlib.pvsystem.bishop88` for explicit calculation of
-  arbitrary IV curve points using diode voltage instead of cell voltage. This
-  method is called for ``ivcurve_pnts`` in :func:`~pvlib.pvsystem.singlediode`
-  if the method is either ``'newton'`` or ``'brentq'``, but the IV curve points
-  will be log spaced instead of linear.
+  arbitrary IV curve points using diode voltage instead of cell voltage. If
+  ``method`` is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts`` in
+  :func:`~pvlib.pvsystem.singlediode` is provided, the IV curve points will be
+  log spaced instead of linear.
 * Implement :func:`~pvlib.pvsystem.estimate_voc` to estimate open circuit
   voltage by assuming :math:`R_{sh} \to \infty` and :math:`R_s=0` as an upper
   bound in bisection method for :func:`~pvlib.pvsystem.singlediode`.
-* Combine existing :func:`~pvlib.pvsystem.singlediode` method using Lambert-W
-  with the two new implementations to form a wrapper, that takes an additional
-  ``method`` argument ``('lambertw', 'newton', 'brentq')`` that defaults to a
-  Lambert-W solution. Selecting either "brentq" or "newton" as the method uses
-  ``bishop88`` with the corresponding search method. (:issue:`410`)
 * Add :func:`~pvlib.pvsystem.mpp` method to compute the max power point using
   the new "brentq" bounded bisection method.
 * Add new module ``pvlib.singlediode_methods`` which contains low-level

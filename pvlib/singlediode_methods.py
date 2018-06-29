@@ -1,6 +1,6 @@
 """
-Faster ways to calculate single diode model currents and voltages using
-methods from J.W. Bishop (Solar Cells, 1988).
+Calculate single diode model currents and voltages using methods from
+J.W. Bishop (Solar Cells, 1988).
 """
 
 from functools import partial
@@ -29,7 +29,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
     photocurrent : numeric
         photo-generated current [A]
     saturation_current : numeric
-        diode one reverse saturation current [A]
+        diode reverse saturation current [A]
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of series cells ``Ns``
@@ -58,8 +58,8 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
 def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,
              resistance_shunt, nNsVth, gradients=False):
     """
-    Explicit calculation single-diode-model (SDM) currents and voltages using
-    diode junction voltages [1].
+    Explicit calculation of points on the IV curve described by the single
+    diode equation [1].
 
     [1] "Computer simulation of the effects of electrical mismatches in
     photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
@@ -72,7 +72,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,
     photocurrent : numeric
         photo-generated current [A]
     saturation_current : numeric
-        diode one reverse saturation current [A]
+        diode reverse saturation current [A]
     resistance_series : numeric
         series resistance [ohms]
     resistance_shunt: numeric
@@ -134,7 +134,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
     method : str
-        one of two ptional search methods: either `brentq`, a reliable and
+        one of two optional search methods: either `brentq`, a reliable and
         bounded method or `newton` the default, a gradient descent method.
 
     Returns
@@ -204,7 +204,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
     method : str
-        one of two ptional search methods: either `brentq`, a reliable and
+        one of two optional search methods: either `brentq`, a reliable and
         bounded method or `newton` the default, a gradient descent method.
 
     Returns

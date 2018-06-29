@@ -1701,7 +1701,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 def singlediode(photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth, ivcurve_pnts=None, method='lambertw'):
-    r'''
+    """
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
     Singlediode solves the single diode equation [1]
@@ -1856,8 +1856,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     --------
     sapm
     calcparams_desoto
-    '''
-
+    bishop88
+    """
+    # Calculate points on the IV curve using the LambertW solution to the
+    # single diode equation
     if method.lower() == 'lambertw':
         # Compute short circuit current
         i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.,
@@ -1915,7 +1917,9 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             out = pd.DataFrame(out, index=photocurrent.index)
 
     else:
-        # use singlediode_methods
+        # Calculate points on the IV curve using either 'newton' or 'brentq'
+        # methods. Voltages are determined by first solving the single diode
+        # equation for the diode voltage V_d then backing out voltage
         v_from_i_fun = partial(singlediode_methods.bishop88_v_from_i,
                                method=method.lower())
         i_from_v_fun = partial(singlediode_methods.bishop88_i_from_v,
@@ -1950,8 +1954,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
         nNsVth, method='brentq'):
     """
-    Given the calculated DeSoto parameters, calculates the maximum power point
-    (MPP).
+    Given the single diode equation coefficients, calculates the maximum power
+    point (MPP).
 
     Parameters
     ----------
@@ -1967,12 +1971,18 @@ def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``, and
         number of serices cells ``Ns``
     method : str
-        if "newton" then use Newton, otherwise use bisection method, ``brentq``
+        either "newton" or "brentq"
 
     Returns
     -------
     OrderedDict or pandas.Datafrane
         ``(i_mp, v_mp, p_mp)``
+
+    Notes
+    -----
+    This function is an option to :func:`singlediode`. Use it when you just
+    want to find the max power point. It uses Brent's method by default because
+    it is guaranteed to converge.
     """
     mpp_fun = partial(singlediode_methods.bishop88_mpp, method=method.lower())
     i_mp, v_mp, p_mp = mpp_fun(
@@ -1995,8 +2005,8 @@ def mpp(photocurrent, saturation_current, resistance_series, resistance_shunt,
 
 def _golden_sect_DataFrame(params, VL, VH, func):
     """
-    Vectorized golden section search for finding MPPT
-    from a dataframe timeseries.
+    Vectorized golden section search for finding MPP from a dataframe
+    timeseries.
 
     Parameters
     ----------
@@ -2218,7 +2228,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         else:
             return V
     else:
-        # use singlediode methods
+        # Calculate points on the IV curve using either 'newton' or 'brentq'
+        # methods. Voltages are determined by first solving the single diode
+        # equation for the diode voltage V_d then backing out voltage
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
         V = singlediode_methods.bishop88_v_from_i(*args, method=method.lower())
@@ -2358,7 +2370,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         else:
             return I
     else:
-        # use singlediode methods
+        # Calculate points on the IV curve using either 'newton' or 'brentq'
+        # methods. Voltages are determined by first solving the single diode
+        # equation for the diode voltage V_d then backing out voltage
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
         I = singlediode_methods.bishop88_i_from_v(*args, method=method.lower())

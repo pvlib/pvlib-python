@@ -12,7 +12,8 @@ CECMOD = pvsystem.retrieve_sam('cecmod')
 
 
 @requires_scipy
-def test_fast_spr_e20_327():
+def test_newton_spr_e20_327():
+    """test pvsystem.singlediode with Newton method on SPR-E20-327"""
     spr_e20_327 = CECMOD.SunPower_SPR_E20_327
     x = pvsystem.calcparams_desoto(
         effective_irradiance=POA, temp_cell=TCELL,
@@ -40,7 +41,8 @@ def test_fast_spr_e20_327():
 
 
 @requires_scipy
-def test_fast_fs_495():
+def test_newton_fs_495():
+    """test pvsystem.singlediode with Newton method on FS495"""
     fs_495 = CECMOD.First_Solar_FS_495
     x = pvsystem.calcparams_desoto(
         effective_irradiance=POA, temp_cell=TCELL,
@@ -68,7 +70,8 @@ def test_fast_fs_495():
 
 
 @requires_scipy
-def test_slow_spr_e20_327():
+def test_brentq_spr_e20_327():
+    """test pvsystem.singlediode with Brent method on SPR-E20-327"""
     spr_e20_327 = CECMOD.SunPower_SPR_E20_327
     x = pvsystem.calcparams_desoto(
         effective_irradiance=POA, temp_cell=TCELL,
@@ -96,7 +99,8 @@ def test_slow_spr_e20_327():
 
 
 @requires_scipy
-def test_slow_fs_495():
+def test_brentq_fs_495():
+    """test pvsystem.singlediode with Brent method on SPR-E20-327"""
     fs_495 = CECMOD.First_Solar_FS_495
     x = pvsystem.calcparams_desoto(
         effective_irradiance=POA, temp_cell=TCELL,

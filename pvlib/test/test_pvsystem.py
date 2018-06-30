@@ -931,8 +931,6 @@ def test_singlediode_floats_ivcurve():
                 'v': np.array([0., 4.05315, 8.1063])}
     assert isinstance(out, dict)
     for k, v in out.items():
-        if k == 'p':
-            continue
         assert_allclose(v, expected[k], atol=1e-3)
 
 
@@ -986,9 +984,6 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                          method='lambertw').T
 
     for k, v in out.items():
-        if k == 'p':
-            # skip power, only in way_faster output
-            continue
         assert_allclose(v, expected[k], atol=1e-2)
 
 

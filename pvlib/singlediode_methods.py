@@ -13,7 +13,6 @@ except ImportError:
 try:
     from scipy.optimize import _array_newton
 except ImportError:
-    from pvlib import tools
     from pvlib.tools import _array_newton
 # rename newton and set keyword arguments
 newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
@@ -158,12 +157,15 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
             raise ImportError('This function requires scipy')
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
-        # break out arguments for numpy.vectorize to handle broadcasting
-        vec_fun = np.vectorize(
-            lambda voc, v, iph, isat, rs, rsh, gamma:
-                brentq(fv, 0.0, voc, args=(v, iph, isat, rs, rsh, gamma))
-        )
-        vd = vec_fun(voc_est, voltage, *args)
+
+        # brentq only works with scalar inputs, so we need a set up function
+        # and np.vectorize to repeatedly call the optimizer with the right
+        # arguments for possible array input
+        def vd_from_brent(voc, v, iph, isat, rs, rsh, gamma):
+            return brentq(fv, 0.0, voc, args=(v, iph, isat, rs, rsh, gamma))
+
+        vd_from_brent_vectorized = np.vectorize(vd_from_brent)
+        vd = vd_from_brent_vectorized(voc_est, voltage, *args)
     elif method.lower() == 'newton':
         # make sure all args are numpy arrays if max size > 1
         size, shape = _get_size_and_shape((voltage,) + args)
@@ -228,12 +230,15 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     if method.lower() == 'brentq':
         if brentq is NotImplemented:
             raise ImportError('This function requires scipy')
-        # break out arguments for numpy.vectorize to handle broadcasting
-        vec_fun = np.vectorize(
-            lambda voc, i, iph, isat, rs, rsh, gamma:
-                brentq(fi, 0.0, voc, args=(i, iph, isat, rs, rsh, gamma))
-        )
-        vd = vec_fun(voc_est, current, *args)
+
+        # brentq only works with scalar inputs, so we need a set up function
+        # and np.vectorize to repeatedly call the optimizer with the right
+        # arguments for possible array input
+        def vd_from_brent(voc, i, iph, isat, rs, rsh, gamma):
+            return brentq(fi, 0.0, voc, args=(i, iph, isat, rs, rsh, gamma))
+
+        vd_from_brent_vectorized = np.vectorize(vd_from_brent)
+        vd = vd_from_brent_vectorized(voc_est, current, *args)
     elif method.lower() == 'newton':
         # make sure all args are numpy arrays if max size > 1
         size, shape = _get_size_and_shape((current,) + args)

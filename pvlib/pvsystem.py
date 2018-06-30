@@ -1987,9 +1987,10 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
 
     Notes
     -----
-    This function is an option to :func:`singlediode`. Use it when you just
-    want to find the max power point. It uses Brent's method by default because
-    it is guaranteed to converge.
+    Use this function when you only want to find the maximum power point. Use
+    :func:`singlediode` when you need to find additional points on the IV curve.
+    This function uses Brent's method by default because it is guaranteed to
+    converge.
     """
     mpp_fun = partial(singlediode_methods.bishop88_mpp, method=method.lower())
     i_mp, v_mp, p_mp = mpp_fun(

@@ -254,6 +254,14 @@ def _build_kwargs(keys, input_dict):
     return kwargs
 
 
+# FIXME: remove _array_newton when SciPy-1.2.0 is released
+# pvlib.singlediode_methods.bishop88_i_from_v(..., method='newton') and other
+# functions in singlediode_methods call scipy.optimize.newton with a vector
+# unfortunately wrapping the functions with np.vectorize() was too slow
+# a vectorized newton method was merged into SciPy but isn't released yet, so
+# in the meantime, we just copied the relevant code: "_array_newton" for more
+# info see: https://github.com/scipy/scipy/pull/8357
+
 def _array_newton(func, x0, fprime, args, tol, maxiter, fprime2,
                   converged=False):
     """

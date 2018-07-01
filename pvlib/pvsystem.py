@@ -1184,7 +1184,7 @@ def sdm_campanelli(F, H, **kwargs):
     F = get_numeric_arg(F, **kwargs)
     H = get_numeric_arg(H, **kwargs)
 
-    return singlediode(get_coeffs_campanelli(F, H, **kwargs))
+    return singlediode(*get_coeffs_campanelli(F, H, **kwargs))
 
 
 def get_coeffs_campanelli(F, H, **kwargs):

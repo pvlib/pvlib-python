@@ -803,7 +803,7 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, times=None, weather=None):
+    def run_model(self, times=None, weather=None, pv_ref_device=False):
         """
         Run the model.
 
@@ -819,6 +819,12 @@ class ModelChain(object):
             Do not pass incomplete irradiation data. Use method
             :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
             instead.
+        pv_ref_device : Boolean, default False
+            If True, then the weather data are from a PV reference device as
+            effective irradiance ratio F and effective temperature ratio H,
+            see :py:meth:`~pvlib.pvsystem.sdm_campanelli`.
+            If False, then traditional meteorological weather data are
+            provided.
 
         Returns
         -------
@@ -829,11 +835,18 @@ class ModelChain(object):
         aoi_modifier, spectral_modifier, dc, ac, losses.
         """
 
-        self.prepare_inputs(times, weather)
-        self.aoi_model()
-        self.spectral_model()
-        self.effective_irradiance_model()
-        self.temp_model()
+        # TODO Should we be able to specify only one of F and H?
+        if pv_ref_device:
+            # a PV reference provides "direct" weather information
+            self.F = weather['F']
+            self.H = weather['H']
+        else:
+            # Use traditional meterological weather information
+            self.prepare_inputs(times, weather)
+            self.aoi_model()
+            self.spectral_model()
+            self.effective_irradiance_model()
+            self.temp_model()
         self.dc_model()
         self.ac_model()
         self.losses_model()
@@ -847,10 +860,10 @@ def sdm_campanelli(mc):
     device data.
     """
 
-    # calculate the dc power and assign it to mc.dc
+    # Calculate the dc power and assign it to mc.dc
     mc.dc = pvsystem.sdm_campanelli(mc.F, mc.H, **mc.system.module_parameters)
 
-    # return mc to enable method chaining
+    # Return ModelChain object to enable method chaining
     return mc
 
 
@@ -860,13 +873,14 @@ def sdm_campanelli_sapm(mc):
     irradiance F and effecitve temperature H.
     """
 
+    # SAPM computes F and H, assigned to object for inspection or further use
+    mc.F, mc.H = get_F_H_from_sapm(mc.effective_irradiance, mc.temps,
+                                   mc.system.module_parameters['Aisc'],
+                                   mc.system.module_parameters['irrad_ref'],
+                                   mc.system.module_parameters['temp_ref'])
+
     # Calculate the dc power and assign it to mc.dc
-    mc.dc = pvsystem.sdm_campanelli(
-        *get_F_H_from_sapm(mc.effective_irradiance, mc.temps,
-                           mc.system.module_parameters['Aisc'],
-                           mc.system.module_parameters['irrad_ref'],
-                           mc.system.module_parameters['temp_ref']),
-        **mc.system.module_parameters)
+    mc.dc = pvsystem.sdm_campanelli(mc.F, mc.H, **mc.system.module_parameters)
 
     # Return ModelChain object to enable method chaining
     return mc
@@ -874,7 +888,11 @@ def sdm_campanelli_sapm(mc):
 
 def get_F_H_from_sapm(effective_irradiance, temps, alpha_sc, irrad_ref,
                       temp_ref):
-    """TODO"""
+    """
+    Compute F and H using the SAPM.
+
+    TODO
+    """
 
     # Compute the effective irradiance ratio F from SAPM effective irradiance
     F = (1. + alpha_sc * (temps['temp_cell'].values - temp_ref)) * \

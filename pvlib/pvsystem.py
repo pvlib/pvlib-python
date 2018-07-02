@@ -1195,61 +1195,20 @@ def get_coeffs_campanelli(F, H, **kwargs):
     https://doi.org/10.1109/JPHOTOV.2015.2489866.
     """
 
+    # Series resistance and shunt conductance are assumed constant, but these
+    #  auxiliary equations may be extended in the future.
+
     # Order matters here because some computations rely on previous ones
-    # A computational graph framework might make this more elegant and handle
-    #  more complicated cases, including parallel/distributed computations
-    kwargs['Rs'] = get_numeric_arg(kwargs['Rs'], F, H, **kwargs)
-    kwargs['Gsh'] = get_numeric_arg(kwargs['Gsh'], F, H, **kwargs)
-    kwargs['nNsVth'] = get_numeric_arg(kwargs['nNsVth'], F, H, **kwargs)
-    kwargs['I0'] = get_numeric_arg(kwargs['I0'], F, H, **kwargs)
-    kwargs['IL'] = get_numeric_arg(kwargs['IL'], F, H, **kwargs)
+    n_mod_V = kwargs['n_mod_V_0'] * H
+    i_rs_A = kwargs['i_rs_A_0'] * H**3. * \
+        np.exp(kwargs['bg_mod_eV_0'] / kwargs['n_mod_V_0'] *
+               (1. - 1. / H) * (1. - kwargs['alpha_bg_mod_0']))
+    i_ph_A = F * kwargs['i_sc_A_0'] + i_rs_A * \
+        np.expm1(F * kwargs['i_sc_A_0'] * kwargs['r_s_Ohm_0'] / n_mod_V) + \
+        kwargs['g_p_Mho_0'] * F * kwargs['i_sc_A_0'] * kwargs['r_s_Ohm_0']
 
-    return kwargs['IL'], kwargs['I0'], kwargs['Rs'], 1. / kwargs['Gsh'], \
-        kwargs['nNsVth']
-
-
-def get_numeric_arg(callable_or_numeric, *args, **kwargs):
-    """
-    Computes first argument as a numeric (e.g., numpy ndarray), when needed.
-    """
-
-    if hasattr(callable_or_numeric, '__call__'):
-        # Call callable argument to compute it as a numpy array
-        return callable_or_numeric(*args, **kwargs)
-    else:
-        # Return numeric argument as is
-        return callable_or_numeric
-
-
-def get_I0_campanelli(F, H, **kwargs):
-    """
-    Returns the reverse saturation current from Campanelli et al.
-    """
-
-    return kwargs['I0_ref'] * H**3. * \
-        np.exp(kwargs['Eg_ref_star'] / kwargs['nNsVth_ref'] *
-               (1. - 1. / H) * (1. - kwargs['dEgdT_ref_star']))
-
-
-def get_IL_campanelli(F, H, **kwargs):
-    """
-    Returns the photocurrent from Campanelli et al.
-    """
-
-    return F * kwargs['Isc_ref'] + \
-        kwargs['I0'] * np.expm1(F * kwargs['Isc_ref'] *
-                                kwargs['Rs'] / kwargs['nNsVth']) + \
-        kwargs['Gsh'] * F * kwargs['Isc_ref'] * kwargs['Rs']
-
-
-def get_nNsVth_campanelli(F, H, **kwargs):
-    """
-    Returns a the modified thermal voltage from Campanelli et al.
-
-    Same as DeSoto et al.
-    """
-
-    return kwargs['nNsVth_ref'] * H
+    return i_ph_A, i_rs_A, kwargs['r_s_Ohm_0'], 1. / kwargs['g_p_Mho_0'], \
+        n_mod_V
 
 
 def retrieve_sam(name=None, path=None):

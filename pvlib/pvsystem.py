@@ -1173,16 +1173,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 def sdm_campanelli(F, H, **kwargs):
     """
     Compute the Campanelli et al. model
-
-    kwargs determines how F and H are computed (e.g., provided directly from a
-    matched reference device with an embedded temperature sensor OR derived
-    from effecitve irradiance and cell temperature models in the SAPM), as well
-    as the auxiliary equations that compute the coefficients of the single
-    diode equation.
     """
-
-    F = get_numeric_arg(F, **kwargs)
-    H = get_numeric_arg(H, **kwargs)
 
     return singlediode(*get_coeffs_campanelli(F, H, **kwargs))
 

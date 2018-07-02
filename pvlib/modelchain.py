@@ -866,7 +866,8 @@ class ModelChain(object):
 
 def sdm_campanelli(mc):
     """
-    ModelChain wrapper for Campanelli et al. model
+    ModelChain wrapper for Campanelli et al. model using matched reference
+    device data.
     """
 
     # calculate the dc power and assign it to mc.dc
@@ -882,26 +883,27 @@ def sdm_campanelli_sapm(mc):
     irradiance F and effecitve temperature H.
     """
 
-    # calculate the dc power and assign it to mc.dc
+    # Calculate the dc power and assign it to mc.dc
     mc.dc = pvsystem.sdm_campanelli(
         *get_F_H_from_sapm(mc.effective_irradiance, mc.temps,
                            mc.system.module_parameters['Aisc'],
+                           mc.system.module_parameters['irrad_ref'],
                            mc.system.module_parameters['temp_ref']),
         **mc.system.module_parameters)
 
-    # return mc to enable method chaining
+    # Return ModelChain object to enable method chaining
     return mc
 
 
-def get_F_H_from_sapm(effective_irradiance, temps, alpha_sc, T_ref_degC):
+def get_F_H_from_sapm(effective_irradiance, temps, alpha_sc, irrad_ref,
+                      temp_ref):
     """TODO"""
 
-    T_degC = temps['temp_cell'].values
-
     # Compute the effective irradiance ratio F from SAPM effective irradiance
-    F = (1. + alpha_sc * (T_degC - T_ref_degC)) * effective_irradiance.values
+    F = (1. + alpha_sc * (temps['temp_cell'].values - temp_ref)) * \
+        effective_irradiance.values / irrad_ref
 
     # Model the effective temperature ratio H from SAPM temp_cell
-    H = (T_degC + 273.15) / (T_ref_degC + 273.15)
+    H = (temps['temp_cell'].values + 273.15) / (temp_ref + 273.15)
 
     return F, H

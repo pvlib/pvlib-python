@@ -211,6 +211,23 @@ def test_dc_models(system, cec_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
     assert_series_equal(ac, expected, check_less_precise=2)
 
 
+@requires_scipy
+@pytest.mark.parametrize('dc_model', ['sapm', 'singlediode', 'pvwatts_dc'])
+def test_infer_dc_model(system, cec_dc_snl_ac_system,
+                        pvwatts_dc_pvwatts_ac_system, location, dc_model,
+                        mocker):
+    dc_systems = {'sapm': system, 'singlediode': cec_dc_snl_ac_system,
+                  'pvwatts_dc': pvwatts_dc_pvwatts_ac_system}
+    system = dc_systems[dc_model]
+    m = mocker.spy(system, dc_model)
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    mc.run_model(times)
+    assert m.call_count == 1
+    assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
+
+
 def acdc(mc):
     mc.ac = mc.dc
 
@@ -444,21 +461,6 @@ def test_ModelChain___repr__(system, location, strategy, strategy_str):
     ])
 
     assert mc.__repr__() == expected
-
-
-@requires_scipy
-def test_weather_irradiance_input(system, location):
-    """Test will raise a warning and should be removed in future versions."""
-    mc = ModelChain(system, location)
-    times = pd.date_range('2012-06-01 12:00:00', periods=2, freq='H')
-    i = pd.DataFrame({'dni': [2, 3], 'dhi': [4, 6], 'ghi': [9, 5]}, index=times)
-    w = pd.DataFrame({'wind_speed': [11, 5], 'temp_air': [30, 32]}, index=times)
-    mc.run_model(times, irradiance=i, weather=w)
-
-    assert_series_equal(mc.weather['dni'],
-                        pd.Series([2, 3], index=times, name='dni'))
-    assert_series_equal(mc.weather['wind_speed'],
-                        pd.Series([11, 5], index=times, name='wind_speed'))
 
 
 @requires_scipy

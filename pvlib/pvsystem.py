@@ -292,20 +292,17 @@ class PVSystem(object):
             The irradiance (W/m2) that is converted to photocurrent.
 
         temp_cell : float or Series
-            The average cell temperature of cells within a module in C.
+            The average cell temperature of cells within a module in degrees C.
 
         Returns
         -------
         See pvsystem.calcparams_desoto for details
         """
 
-        kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                                'R_s', 'alpha_sc', 'EgRef', 'dEgdT'],
-                                self.module_parameters)
-        
-        return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
+        return calcparams_desoto(effective_irradiance, temp_cell,
+                                 **self.module_parameters)
 
-    def sapm(self, effective_irradiance, temp_cell, **kwargs):
+    def sapm(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`sapm` function, the input parameters,
         and ``self.module_parameters`` to calculate
@@ -313,23 +310,11 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_direct : Series
-            The direct irradiance incident upon the module (W/m^2).
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
 
-        poa_diffuse : Series
-            The diffuse irradiance incident on module.
-
-        temp_cell : Series
-            The cell temperature (degrees C).
-
-        airmass_absolute : Series
-            Absolute airmass.
-
-        aoi : Series
-            Angle of incidence (degrees).
-
-        **kwargs
-            See pvsystem.sapm for details
+        temp_cell : float or Series
+            The average cell temperature of cells within a module in degrees C.
 
         Returns
         -------

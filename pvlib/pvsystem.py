@@ -1167,6 +1167,8 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 def sdm_campanelli(F, H, **kwargs):
     """
     Compute the Campanelli et al. model
+
+    TODO Details
     """
 
     return singlediode(*get_coeffs_campanelli(F, H, **kwargs))
@@ -1175,6 +1177,8 @@ def sdm_campanelli(F, H, **kwargs):
 def get_coeffs_campanelli(F, H, **kwargs):
     """
     Compute coefficients of the single diode eq. using Campanelli et al. SDM.
+
+    TODO Details
 
     References
     ----------

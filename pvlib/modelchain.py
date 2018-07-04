@@ -803,45 +803,57 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, times=None, weather=None, pv_ref_device=False):
+    def run_model(self, times=None, weather=None):
         """
         Run the model.
 
         Parameters
         ----------
         times : None or DatetimeIndex, default None
-            Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
+            Times at which to evaluate the model. Can be None if attribute
+            `times` is already set.
         weather : None or DataFrame, default None
-            If None, assumes air temperature is 20 C, wind speed is 0
-            m/s and irradiation calculated from clear sky data. Column
-            names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
-            Do not pass incomplete irradiation data. Use method
-            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
-            instead.
-        pv_ref_device : Boolean, default False
-            If True, then the weather data are from a PV reference device as
-            effective irradiance ratio F and effective temperature ratio H,
-            see :py:meth:`~pvlib.pvsystem.sdm_campanelli`.
-            If False, then traditional meteorological weather data are
-            provided.
+            If None, assumes air temperature is 20 C, wind speed is 0 m/s and
+            irradiation calculated from clear sky data.
+            For conventional weather data, column names must be 'wind_speed',
+            'temp_air', 'dni', 'ghi', 'dhi'. Do not pass incomplete irradiation
+            data, instead use method
+            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`.
+            For complete PV reference device data, column names must be 'F' and
+            'H', for effective irradiance ratio and effective temperature
+            ratio, respectively. See :py:func:`~pvlib.pvsystem.sdm_campanelli`.
+            If either 'F' or 'H' is missing, then convential weather data are
+            also required to compute the missing 'F' or 'H'.
 
         Returns
         -------
         self
 
-        Assigns attributes: times, solar_position, airmass, irradiance,
-        total_irrad, effective_irradiance, weather, temps, aoi,
-        aoi_modifier, spectral_modifier, dc, ac, losses.
+        For conventional weather data, assigns attributes: times,
+        solar_position, airmass, irradiance, total_irrad, effective_irradiance,
+        weather, temps, aoi, aoi_modifier, spectral_modifier, dc, ac, losses.
+        For complete reference device data, only assigns attributes: times, dc,
+        ac, losses.
         """
 
-        # TODO Should we be able to specify only one of F and H?
-        if pv_ref_device:
-            # a PV reference provides "direct" weather information
+        if weather is not None and 'F' in weather:
+            # Use PV reference device weather information for F
             self.F = weather['F']
+        else:
+            # Clear any stale value
+            if hasattr(self, 'F'):
+                print('F cleared')
+                del self.F
+        if weather is not None and 'H' in weather:
+            # Use PV reference device weather information for H
             self.H = weather['H']
         else:
-            # Use traditional meterological weather information
+            # Clear any stale value
+            if hasattr(self, 'H'):
+                print('H cleared')
+                del self.H
+        if not hasattr(self, 'F') and not hasattr(self, 'H'):
+            # Use conventional (meterological) weather information
             self.prepare_inputs(times, weather)
             self.aoi_model()
             self.spectral_model()
@@ -856,28 +868,22 @@ class ModelChain(object):
 
 def sdm_campanelli(mc):
     """
-    ModelChain wrapper for Campanelli et al. model using matched reference
-    device data.
+    ModelChain wrapper for Campanelli et al. model, optionally using SAPM for
+    effective irradiance F and/or effecitve temperature H.
+
+    TODO Details
     """
 
-    # Calculate the dc power and assign it to mc.dc
-    mc.dc = pvsystem.sdm_campanelli(mc.F, mc.H, **mc.system.module_parameters)
-
-    # Return ModelChain object to enable method chaining
-    return mc
-
-
-def sdm_campanelli_sapm(mc):
-    """
-    ModelChain wrapper for Campanelli et al. model using SAPM for effective
-    irradiance F and effecitve temperature H.
-    """
-
-    # SAPM computes F and H, assigned to object for inspection or further use
-    mc.F, mc.H = get_F_H_from_sapm(mc.effective_irradiance, mc.temps,
-                                   mc.system.module_parameters['Aisc'],
-                                   mc.system.module_parameters['irrad_ref'],
-                                   mc.system.module_parameters['temp_ref'])
+    if not hasattr(mc, 'F') or not hasattr(mc, 'H'):
+        # SAPM computes F and H so one/both may be used
+        F, H = get_F_H_from_sapm(mc.effective_irradiance, mc.temps,
+                                 mc.system.module_parameters['Aisc'],
+                                 mc.system.module_parameters['irrad_ref'],
+                                 mc.system.module_parameters['temp_ref'])
+        if not hasattr(mc, 'F'):
+            mc.F = F
+        if not hasattr(mc, 'H'):
+            mc.H = H
 
     # Calculate the dc power and assign it to mc.dc
     mc.dc = pvsystem.sdm_campanelli(mc.F, mc.H, **mc.system.module_parameters)
@@ -891,7 +897,7 @@ def get_F_H_from_sapm(effective_irradiance, temps, alpha_sc, irrad_ref,
     """
     Compute F and H using the SAPM.
 
-    TODO
+    TODO Details
     """
 
     # Compute the effective irradiance ratio F from SAPM effective irradiance

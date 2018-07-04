@@ -842,7 +842,6 @@ class ModelChain(object):
         else:
             # Clear any stale value
             if hasattr(self, 'F'):
-                print('F cleared')
                 del self.F
         if weather is not None and 'H' in weather:
             # Use PV reference device weather information for H
@@ -850,9 +849,10 @@ class ModelChain(object):
         else:
             # Clear any stale value
             if hasattr(self, 'H'):
-                print('H cleared')
                 del self.H
-        if not hasattr(self, 'F') and not hasattr(self, 'H'):
+        if not hasattr(self, 'F') and not hasattr(self, 'H') or \
+           hasattr(self, 'F') and not hasattr(self, 'H') or \
+           not hasattr(self, 'F') and hasattr(self, 'H'):
             # Use conventional (meterological) weather information
             self.prepare_inputs(times, weather)
             self.aoi_model()
@@ -885,8 +885,9 @@ def sdm_campanelli(mc):
         if not hasattr(mc, 'H'):
             mc.H = H
 
-    # Calculate the dc power and assign it to mc.dc
-    mc.dc = pvsystem.sdm_campanelli(mc.F, mc.H, **mc.system.module_parameters)
+    # Calculate the system-scaled dc power and assign it to mc.dc
+    mc.dc = mc.system.scale_voltage_current_power(
+        pvsystem.sdm_campanelli(mc.F, mc.H, **mc.system.module_parameters))
 
     # Return ModelChain object to enable method chaining
     return mc

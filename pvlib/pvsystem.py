@@ -282,9 +282,9 @@ class PVSystem(object):
 
     def calcparams_desoto(self, effective_irradiance, temp_cell):
         """
-        Use the :py:func:`calcparams_desoto` function, the input
-        parameters and ``self.module_parameters`` to calculate the
-        module currents and resistances.
+        Use the :py:func:`calcparams_desoto` function, the input parameters,
+        and ``self.module_parameters`` to calculate the inputs to
+        :py:func:`singlediode` or its wrapper :py:meth:`~PVSystem.singlediode`.
 
         Parameters
         ----------
@@ -296,17 +296,20 @@ class PVSystem(object):
 
         Returns
         -------
-        See pvsystem.calcparams_desoto for details
+        See pvsystem.calcparams_desoto for details.
         """
 
-        return calcparams_desoto(effective_irradiance, temp_cell,
-                                 **self.module_parameters)
+        kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                                'R_s', 'alpha_sc', 'EgRef', 'dEgdT'],
+                               self.module_parameters)
+
+        return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
     def sapm(self, effective_irradiance, temp_cell):
         """
-        Use the :py:func:`sapm` function, the input parameters,
-        and ``self.module_parameters`` to calculate
-        Voc, Isc, Ix, Ixx, Vmp/Imp.
+        Use the :py:func:`sapm` function, the input parameters, and
+        ``self.module_parameters`` to calculate Isc, Ix, Imp, Pmp, Vmp, Ixx,
+        and Voc.
 
         Parameters
         ----------
@@ -318,8 +321,9 @@ class PVSystem(object):
 
         Returns
         -------
-        See pvsystem.sapm for details
+        See pvsystem.sapm for details.
         """
+
         return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
     def sapm_celltemp(self, irrad, wind, temp):
@@ -496,16 +500,21 @@ class PVSystem(object):
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
                     ivcurve_pnts=None):
-        """Wrapper around the :py:func:`singlediode` function.
+        """
+        Use the :py:func:`singlediode` function and the input parameters, to
+        calculate Isc, Ix, Imp, Pmp, Vmp, Ixx, and Voc, and (optionally) I-V
+        curves with the specified number of points in the positive power
+        quadrant.
 
         Parameters
         ----------
-        See pvsystem.singlediode for details
+        See pvsystem.singlediode for details.
 
         Returns
         -------
-        See pvsystem.singlediode for details
+        See pvsystem.singlediode for details.
         """
+
         return singlediode(photocurrent, saturation_current,
                            resistance_series, resistance_shunt, nNsVth,
                            ivcurve_pnts=ivcurve_pnts)

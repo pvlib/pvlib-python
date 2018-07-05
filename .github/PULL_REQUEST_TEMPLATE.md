@@ -7,7 +7,7 @@ You may submit a pull request with your code at any stage of completion.
 
 The following items must be addressed before the code can be merged. Please don't hesitate to ask for help if you're unsure of how to accomplish any of the items below:
 
- - [ ] Closes #xxxx
+ - [ ] Closes issue #xxxx
  - [ ] I am familiar with the [contributing guidelines](http://pvlib-python.readthedocs.io/en/latest/contributing.html).
  - [ ] Fully tested. Added and/or modified tests to ensure correct behavior for all reasonable inputs. Tests (usually) must pass on the TravisCI and Appveyor testing services.
  - [ ] Updates entries to `docs/sphinx/source/api.rst` for API changes.

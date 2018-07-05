@@ -15,9 +15,11 @@ understand parts of it.
 Easy ways to contribute
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Here are a few ideas for you can contribute, even if you are new to
+Here are a few ideas for how you can contribute, even if you are new to
 pvlib-python, git, or Python:
 
+* Ask and answer `pvlib questions on StackOverflow <http://stackoverflow.com/questions/tagged/pvlib>`_
+  and participate in discussions in the `pvlib-python google group <https://groups.google.com/forum/#!forum/pvlib-python>`_.
 * Make `GitHub issues <https://github.com/pvlib/pvlib-python/issues>`_
   and contribute to the conversations about how to resolve them.
 * Read issues and pull requests that other people created and
@@ -104,6 +106,14 @@ implementing any code. Modifying
 and/or the latest `whatsnew file <https://github.com/pvlib/pvlib-python/tree/master/docs/sphinx/source/whatsnew>`_
 can help formalize this process.
 
+Questions about related issues frequently come up in the process of
+addressing implementing code for a pull request. Please try to avoid
+expanding the scope of your pull request (this also applies to
+reviewers!). We'd rather see small, well-documented additions to the
+project's technical debt than see a pull request languish because its
+scope expanded beyond what the reviewer community is capable of
+processing.
+
 Of course, sometimes it is necessary to make a large pull request. We
 only ask that you take a few minutes to consider how to break it into
 smaller chunks before proceeding.
@@ -131,29 +141,53 @@ make the process more efficient. On the minus side, it's easy for an
 incomplete pull request to grow into a multi-month saga that leaves
 everyone unhappy. If you submit an incomplete pull request, please be
 very clear about what you would like feedback on and what we should
-ignore. Alternatives to incomplete pull requests include posting a link
-to an experimental branch or to a `gist <https://gist.github.com>`_ in
-the corresponding issue.
+ignore. Alternatives to incomplete pull requests include creating a
+`gist <https://gist.github.com>`_ or experimental branch and linking to
+it in the corresponding issue.
 
 The best way to ensure that a pull request will be reviewed and merged in
 a timely manner is to:
 
-#. Start with an issue. The issue should be well-defined and actionable.
+#. Start by creating an issue. The issue should be well-defined and
+   actionable.
 #. Ask the maintainers to tag the issue with the appropriate milestone.
-#. Make a limited scope pull request. It can be a lot of work to check all of
+#. Make a limited-scope pull request. It can be a lot of work to check all of
    the boxes in `pull request guidelines
    <https://github.com/pvlib/pvlib-python/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_,
    especially for pull requests with a lot of new primary code.
    See :ref:`pull-request-scope`.
-#. Tag ``@pvlib/maintainer`` when the pull request is ready for review.
+#. Tag pvlib community members or ``@pvlib/maintainer`` when the pull
+   request is ready for review. (see :ref:`pull-request-reviews`)
 
-Questions about related issues frequently come up in the process of
-addressing implementing code for a pull request. Please try to avoid
-expanding the scope of your pull request. We'd rather see small
-additions to the project's technical debt than see a pull request
-languish because its scope expanded beyond what the reviewer community
-is capable of processing.
 
+.. _pull-request-reviews:
+
+Pull request reviews
+--------------------
+
+The pvlib community and maintainers will review your pull request in a
+timely fashion. Please "ping" ``@pvlib/maintainer`` if it seems that
+your pull request has been forgotten at any point in the pull request
+process.
+
+Keep in mind that the PV modeling community is diverse and each pvlib
+community member brings a different perspective when reviewing code.
+Some reviewers bring years of expertise in the sub-field that your code
+contributes to and will focus on the details of the algorithm. Other
+reviewers will be more focused on integrating your code with the rest of
+pvlib, ensuring that it is feasible to maintain, that it meets the
+:ref:`code style <code-style>` guidelines, and that it is
+:ref:`comprehensively tested <testing>`. Limiting the scope of the pull
+request makes it much more likely that all of these reviews can be
+conducted and any issues can be resolved in a timely fashion.
+
+Sometimes it's hard for reviewers to be immediately available, so the
+right amount of patience is to be expected. That said, interested
+reviewers should do their best to not wait until the last minute to put
+in their two cents.
+
+
+.. _code-style:
 
 Code style
 ~~~~~~~~~~
@@ -162,7 +196,15 @@ pvlib python generally follows the `PEP 8 -- Style Guide for Python Code
 <https://www.python.org/dev/peps/pep-0008/>`_. Maximum line length for code
 is 79 characters.
 
-Documentation must be written in `numpydoc format <https://numpydoc.readthedocs.io/>`_.
+Code must be compatible with python 2.7 and 3.4+.
+
+Documentation must be written in
+`numpydoc format <https://numpydoc.readthedocs.io/>`_.
+A relatively easy way to test your documentation is to build it on
+`readthedocs.org <https://readthedocs.org>` by following their
+`Import Your Docs <http://docs.readthedocs.io/en/stable/getting_started.html#import-your-docs>`_
+instructions and enabling your branch on the readthedocs
+`versions admin page <http://docs.readthedocs.io/en/stable/features.html#versions>`_.
 
 pvlib python uses a mix of full and abbreviated variable names. See
 :ref:`variables_style_rules`. We could be better about consistency.
@@ -170,12 +212,23 @@ Prefer full names for new contributions. This is especially important
 for the API. Abbreviations can be used within a function to improve the
 readability of formulae.
 
-Set your editor to strip extra whitespace from line endings. This helps
-keep the commit history clean.
+Set your editor to strip extra whitespace from line endings. This
+prevents the git commit history from becoming cluttered with whitespace
+changes.
 
-pvlib python does not use ``logging``. Remove any logging calls that you
-added during development. ``warning`` is ok.
+We typically use GitHub's
+"`squash and merge` <https://help.github.com/articles/about-pull-request-merges/#squash-and-merge-your-pull-request-commits>_"
+feature to merge your pull request into pvlib. GitHub will condense the
+commit history of your branch into a single commit when merging into
+pvlib-python/master (the commit history on your branch remains
+unchanged). Therefore, you are free to make commits that are as big or
+small as you'd like while developing your pull request.
 
+Remove any ``logging`` calls and ``print`` statements that you added
+during development. ``warning`` is ok.
+
+
+.. _testing:
 
 Testing
 ~~~~~~~
@@ -193,7 +246,16 @@ or, for a single test:
 
 ``pytest pvlib/test/test_clearsky.py::test_ineichen_nans``
 
-Use the ``--pdb`` flag to debug failures and avoid using ``print``.
+We suggest using pytest's ``--pdb`` flag to debug test failures rather
+than using ``print`` or ``logging`` calls. For example:
+
+``pytest pvlib --pdb``
+
+will drop you into the
+`pdb debugger <https://docs.python.org/3/library/pdb.html>`_ at the
+location of a test failure. As described in :ref:`code-style`, pvlib
+code does not use ``print`` or ``logging`` calls, and this also applies
+to the test suite (with rare exceptions).
 
 New unit test code should be placed in the corresponding test module in
 the pvlib/test directory.
@@ -203,7 +265,7 @@ modifications to pvlib.
 
 pvlib-python contains 3 "layers" of code: functions, PVSystem/Location,
 and ModelChain. Contributors will need to add tests that correspond to
-the layer that they modify.
+the layers that they modify.
 
 Functions
 ---------

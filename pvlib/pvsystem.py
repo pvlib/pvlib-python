@@ -1300,7 +1300,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     '''
 
     # Boltzmann constant in J/K
-    k = 1.3806488e-23
+    k = 1.38064852e-23
 
     # elementary charge in coulomb
     q = 1.6021766e-19

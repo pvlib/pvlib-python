@@ -174,7 +174,7 @@ def cec_module_params(sam_data):
     return module_parameters
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def pvsyst_module_params():
     module_parameters = {}
     module_parameters['gamma_ref'] = 1.05

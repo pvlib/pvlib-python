@@ -198,14 +198,6 @@ is 79 characters.
 
 Code must be compatible with python 2.7 and 3.4+.
 
-Documentation must be written in
-`numpydoc format <https://numpydoc.readthedocs.io/>`_.
-A relatively easy way to test your documentation is to build it on
-`readthedocs.org <https://readthedocs.org>` by following their
-`Import Your Docs <http://docs.readthedocs.io/en/stable/getting_started.html#import-your-docs>`_
-instructions and enabling your branch on the readthedocs
-`versions admin page <http://docs.readthedocs.io/en/stable/features.html#versions>`_.
-
 pvlib python uses a mix of full and abbreviated variable names. See
 :ref:`variables_style_rules`. We could be better about consistency.
 Prefer full names for new contributions. This is especially important
@@ -216,6 +208,12 @@ Set your editor to strip extra whitespace from line endings. This
 prevents the git commit history from becoming cluttered with whitespace
 changes.
 
+Please see :ref:`Documentation` for information specific to documentation
+style.
+
+Remove any ``logging`` calls and ``print`` statements that you added
+during development. ``warning`` is ok.
+
 We typically use GitHub's
 "`squash and merge` <https://help.github.com/articles/about-pull-request-merges/#squash-and-merge-your-pull-request-commits>_"
 feature to merge your pull request into pvlib. GitHub will condense the
@@ -224,9 +222,39 @@ pvlib-python/master (the commit history on your branch remains
 unchanged). Therefore, you are free to make commits that are as big or
 small as you'd like while developing your pull request.
 
-Remove any ``logging`` calls and ``print`` statements that you added
-during development. ``warning`` is ok.
 
+.. _documentation:
+
+Documentation
+~~~~~~~~~~~~~
+
+Documentation must be written in
+`numpydoc format <https://numpydoc.readthedocs.io/>`_.
+
+The numpydoc format includes a specification for the allowable input
+types. Python's `duck typing <https://en.wikipedia.org/wiki/Duck_typing>`_
+allows for multiple input types to work for many parameters. pvlib uses
+the following generic descriptors as short-hand to indicate which
+specific types may be used:
+
+* dict-like : dict, OrderedDict, pd.Series
+* numeric : scalar, np.array, pd.Series. Typically int or float dtype.
+* array-like : np.array, pd.Series. Typically int or float dtype.
+
+Parameters that specify a specific type require that specific input type.
+
+A relatively easy way to test your documentation is to build it on
+`readthedocs.org <https://readthedocs.org>` by following their
+`Import Your Docs <http://docs.readthedocs.io/en/stable/getting_started.html#import-your-docs>`_
+instructions and enabling your branch on the readthedocs
+`versions admin page <http://docs.readthedocs.io/en/stable/features.html#versions>`_.
+
+Another option is to install the required dependencies in your virtual/conda
+environment. See
+`docs/environment.yml <https://github.com/pvlib/pvlib-python/blob/master/docs/environment.yml>`_
+for the latest dependences for building the complete documentation. Some
+doc files can be compiled with fewer dependencies, but this is beyond
+the scope of this guide.
 
 .. _testing:
 

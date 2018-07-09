@@ -14,6 +14,7 @@ Enhancements
 * Add sea surface albedo in irradiance.py (:issue:`458`)
 * Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
 * Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)
+* Add pvsystem.calcparams_pvsyst to compute values for the single diode equation using the PVsyst v6 model (:issue:'470')
 
 
 Bug fixes

@@ -97,19 +97,21 @@ def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,
         :math:`\\frac{dI}{dV}`, :math:`\\frac{dP}{dV}`, and
         :math:`\\frac{d^2 P}{dV dV_d}`
     """
-    a = np.exp(diode_voltage / nNsVth)
-    b = 1.0 / resistance_shunt
-    i = photocurrent - saturation_current * (a - 1.0) - diode_voltage * b
+    # calculate temporary values to simplify calculations
+    v_star = diode_voltage / nNsVth  # non-dimensional diode voltage
+    g_sh = 1.0 / resistance_shunt  # conductance
+    i = (photocurrent - saturation_current * np.expm1(v_star)
+         - diode_voltage * g_sh)
     v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)
     if gradients:
-        c = saturation_current * a / nNsVth
-        grad_i = - c - b  # di/dvd
+        g_diode = saturation_current * np.exp(v_star) / nNsVth  # conductance
+        grad_i = -g_diode - g_sh  # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
         # dp/dv = d(iv)/dv = v * di/dv + i
         grad = grad_i / grad_v  # di/dv
         grad_p = v * grad + i  # dp/dv
-        grad2i = -c / nNsVth  # d2i/dvd
+        grad2i = -g_diode / nNsVth  # d2i/dvd
         grad2v = -grad2i * resistance_series  # d2v/dvd
         grad2p = (
             grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2)

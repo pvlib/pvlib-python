@@ -6,7 +6,6 @@ performance of PV modules and inverters.
 from __future__ import division
 
 from collections import OrderedDict
-from functools import partial
 import os
 import io
 try:
@@ -2037,19 +2036,23 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
-        v_from_i_fun = partial(singlediode_methods.bishop88_v_from_i,
-                               method=method.lower())
-        i_from_v_fun = partial(singlediode_methods.bishop88_i_from_v,
-                               method=method.lower())
-        mpp_fun = partial(singlediode_methods.bishop88_mpp,
-                          method=method.lower())
         args = (photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)  # collect args
-        v_oc = v_from_i_fun(0.0, *args)
-        i_mp, v_mp, p_mp = mpp_fun(*args)
-        i_sc = i_from_v_fun(0.0, *args)
-        i_x = i_from_v_fun(v_oc / 2.0, *args)
-        i_xx = i_from_v_fun((v_oc + v_mp) / 2.0, *args)
+        v_oc = singlediode_methods.bishop88_v_from_i(
+            0.0, *args, method=method.lower()
+        )
+        i_mp, v_mp, p_mp = singlediode_methods.bishop88_mpp(
+            *args, method=method.lower()
+        )
+        i_sc = singlediode_methods.bishop88_i_from_v(
+            0.0, *args, method=method.lower()
+        )
+        i_x = singlediode_methods.bishop88_i_from_v(
+            v_oc / 2.0, *args, method=method.lower()
+        )
+        i_xx = singlediode_methods.bishop88_i_from_v(
+            (v_oc + v_mp) / 2.0, *args, method=method.lower()
+        )
 
         # calculate the IV curve if requested using bishop88
         if ivcurve_pnts:
@@ -2113,10 +2116,9 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     This function uses Brent's method by default because it is guaranteed to
     converge.
     """
-    mpp_fun = partial(singlediode_methods.bishop88_mpp, method=method.lower())
-    i_mp, v_mp, p_mp = mpp_fun(
+    i_mp, v_mp, p_mp = singlediode_methods.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,
-        resistance_shunt, nNsVth
+        resistance_shunt, nNsVth, method=method.lower()
     )
     if isinstance(photocurrent, pd.Series):
         ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}

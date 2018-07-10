@@ -608,7 +608,10 @@ def fixture_v_from_i(request):
 
 
 @requires_scipy
-def test_v_from_i(fixture_v_from_i):
+@pytest.mark.parametrize(
+    'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-8)]
+)
+def test_v_from_i(fixture_v_from_i, method, atol):
     # Solution set loaded from fixture
     Rsh = fixture_v_from_i['Rsh']
     Rs = fixture_v_from_i['Rs']
@@ -618,10 +621,7 @@ def test_v_from_i(fixture_v_from_i):
     IL = fixture_v_from_i['IL']
     V_expected = fixture_v_from_i['V_expected']
 
-    # Convergence criteria
-    atol = 1.e-11
-
-    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL)
+    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method=method)
     assert(isinstance(V, type(V_expected)))
     if isinstance(V, type(np.ndarray)):
         assert(isinstance(V.dtype, type(V_expected.dtype)))
@@ -629,43 +629,68 @@ def test_v_from_i(fixture_v_from_i):
     assert_allclose(V, V_expected, atol=atol)
 
 
+@requires_scipy
+def test_i_from_v_from_i(fixture_v_from_i):
+    # Solution set loaded from fixture
+    Rsh = fixture_v_from_i['Rsh']
+    Rs = fixture_v_from_i['Rs']
+    nNsVth = fixture_v_from_i['nNsVth']
+    I = fixture_v_from_i['I']
+    I0 = fixture_v_from_i['I0']
+    IL = fixture_v_from_i['IL']
+    V = fixture_v_from_i['V_expected']
+
+    # Convergence criteria
+    atol = 1.e-11
+
+    I_expected = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL,
+                                   method='lambertw')
+    assert_allclose(I, I_expected, atol=atol)
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
+    assert(isinstance(I, type(I_expected)))
+    if isinstance(I, type(np.ndarray)):
+        assert(isinstance(I.dtype, type(I_expected.dtype)))
+        assert(I.shape == I_expected.shape)
+    assert_allclose(I, I_expected, atol=atol)
+
+
 @pytest.fixture(params=[
     {  # Can handle all python scalar inputs
       'Rsh': 20.,
       'Rs': 0.1,
       'nNsVth': 0.5,
-      'V': 40.,
+      'V': 7.5049875193450521,
       'I0': 6.e-7,
       'IL': 7.,
-      'I_expected': -299.746389916
+      'I_expected': 3.
     },
     {  # Can handle all rank-0 array inputs
       'Rsh': np.array(20.),
       'Rs': np.array(0.1),
       'nNsVth': np.array(0.5),
-      'V': np.array(40.),
+      'V': np.array(7.5049875193450521),
       'I0': np.array(6.e-7),
       'IL': np.array(7.),
-      'I_expected': np.array(-299.746389916)
+      'I_expected': np.array(3.)
     },
     {  # Can handle all rank-1 singleton array inputs
       'Rsh': np.array([20.]),
       'Rs': np.array([0.1]),
       'nNsVth': np.array([0.5]),
-      'V': np.array([40.]),
+      'V': np.array([7.5049875193450521]),
       'I0': np.array([6.e-7]),
       'IL': np.array([7.]),
-      'I_expected': np.array([-299.746389916])
+      'I_expected': np.array([3.])
     },
     {  # Can handle all rank-1 non-singleton array inputs with a zero
       #  series resistance, Rs=0 gives I=IL=Isc at V=0
       'Rsh': np.array([20., 20.]),
       'Rs': np.array([0., 0.1]),
       'nNsVth': np.array([0.5, 0.5]),
-      'V': np.array([0., 40.]),
+      'V': np.array([0., 7.5049875193450521]),
       'I0': np.array([6.e-7, 6.e-7]),
       'IL': np.array([7., 7.]),
-      'I_expected': np.array([7., -299.746389916])
+      'I_expected': np.array([7., 3.])
     },
     {  # Can handle mixed inputs with a rank-2 array with zero series
       #  resistance, Rs=0 gives I=IL=Isc at V=0
@@ -693,17 +718,20 @@ def test_v_from_i(fixture_v_from_i):
       'Rsh': np.inf,
       'Rs': 0.1,
       'nNsVth': 0.5,
-      'V': 40.,
+      'V': 7.5049875193450521,
       'I0': 6.e-7,
       'IL': 7.,
-      'I_expected': -299.7383436645412
+      'I_expected': 3.2244873645510923
     }])
 def fixture_i_from_v(request):
     return request.param
 
 
 @requires_scipy
-def test_i_from_v(fixture_i_from_v):
+@pytest.mark.parametrize(
+    'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11)]
+)
+def test_i_from_v(fixture_i_from_v, method, atol):
     # Solution set loaded from fixture
     Rsh = fixture_i_from_v['Rsh']
     Rs = fixture_i_from_v['Rs']
@@ -713,10 +741,7 @@ def test_i_from_v(fixture_i_from_v):
     IL = fixture_i_from_v['IL']
     I_expected = fixture_i_from_v['I_expected']
 
-    # Convergence criteria
-    atol = 1.e-11
-
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method=method)
     assert(isinstance(I, type(I_expected)))
     if isinstance(I, type(np.ndarray)):
         assert(isinstance(I.dtype, type(I_expected.dtype)))
@@ -728,9 +753,84 @@ def test_i_from_v(fixture_i_from_v):
 def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
     m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
-    args = (20, .1, .5, 40, 6e-7, 7)
+    args = (20, 0.1, 0.5, 7.5049875193450521, 6e-7, 7)
     system.i_from_v(*args)
     m.assert_called_once_with(*args)
+
+
+@requires_scipy
+def test_i_from_v_size():
+    with pytest.raises(ValueError):
+        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
+    with pytest.raises(ValueError):
+        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0,
+                          method='brentq')
+    with pytest.raises(ValueError):
+        pvsystem.i_from_v(20, 0.1, 0.5, [7.5] * 3, 6.0e-7, np.array([7., 7.]),
+                          method='newton')
+
+
+@requires_scipy
+def test_v_from_i_size():
+    with pytest.raises(ValueError):
+        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0)
+    with pytest.raises(ValueError):
+        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0,
+                          method='brentq')
+    with pytest.raises(ValueError):
+        pvsystem.v_from_i(20, [0.1], 0.5, [3.0] * 3, 6.0e-7, np.array([7., 7.]),
+                          method='newton')
+
+
+@requires_scipy
+def test_mpp_floats():
+    """test max_power_point"""
+    IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    expected = {'i_mp': 6.1362673597376753,  # 6.1390251797935704, lambertw
+                'v_mp': 6.2243393757884284,  # 6.221535886625464, lambertw
+                'p_mp': 38.194210547580511}  # 38.194165464983037} lambertw
+    assert isinstance(out, dict)
+    for k, v in out.items():
+        assert np.isclose(v, expected[k])
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
+    for k, v in out.items():
+        assert np.isclose(v, expected[k])
+
+
+@requires_scipy
+def test_mpp_array():
+    """test max_power_point"""
+    IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    expected = {'i_mp': [6.1362673597376753] * 2,
+                'v_mp': [6.2243393757884284] * 2,
+                'p_mp': [38.194210547580511] * 2}
+    assert isinstance(out, dict)
+    for k, v in out.items():
+        assert np.allclose(v, expected[k])
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
+    for k, v in out.items():
+        assert np.allclose(v, expected[k])
+
+
+@requires_scipy
+def test_mpp_series():
+    """test max_power_point"""
+    idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']
+    IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
+    IL = pd.Series(IL, index=idx)
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='brentq')
+    expected = pd.DataFrame({'i_mp': [6.1362673597376753] * 2,
+                             'v_mp': [6.2243393757884284] * 2,
+                             'p_mp': [38.194210547580511] * 2},
+                            index=idx)
+    assert isinstance(out, pd.DataFrame)
+    for k, v in out.items():
+        assert np.allclose(v, expected[k])
+    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
+    for k, v in out.items():
+        assert np.allclose(v, expected[k])
 
 
 @requires_scipy
@@ -738,16 +838,17 @@ def test_singlediode_series(cec_module_params):
     times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                          effective_irradiance,
-                                          temp_cell=25,
-                                          alpha_sc=cec_module_params['alpha_sc'],
-                                          a_ref=cec_module_params['a_ref'],
-                                          I_L_ref=cec_module_params['I_L_ref'],
-                                          I_o_ref=cec_module_params['I_o_ref'],
-                                          R_sh_ref=cec_module_params['R_sh_ref'],
-                                          R_s=cec_module_params['R_s'],
-                                          EgRef=1.121,
-                                          dEgdT=-0.0002677)
+        effective_irradiance,
+        temp_cell=25,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth)
     assert isinstance(out, pd.DataFrame)
 
@@ -762,7 +863,8 @@ def test_singlediode_array():
     saturation_current = 1.943e-09
 
     sd = pvsystem.singlediode(photocurrent, saturation_current,
-                              resistance_series, resistance_shunt, nNsVth)
+                              resistance_series, resistance_shunt, nNsVth,
+                              method='lambertw')
 
     expected = np.array([
         0.        ,  0.54538398,  1.43273966,  2.36328163,  3.29255606,
@@ -771,12 +873,21 @@ def test_singlediode_array():
 
     assert_allclose(sd['i_mp'], expected, atol=0.01)
 
+    sd = pvsystem.singlediode(photocurrent, saturation_current,
+                              resistance_series, resistance_shunt, nNsVth)
+
+    expected = pvsystem.i_from_v(resistance_shunt, resistance_series, nNsVth,
+                                 sd['v_mp'], saturation_current, photocurrent,
+                                 method='lambertw')
+
+    assert_allclose(sd['i_mp'], expected, atol=0.01)
+
 
 @requires_scipy
 def test_singlediode_floats(sam_data):
     module = 'Example_Module'
     module_parameters = sam_data['cecmod'][module]
-    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5)
+    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, method='lambertw')
     expected = {'i_xx': 4.2498,
                 'i_mp': 6.1275,
                 'v_oc': 8.1063,
@@ -796,7 +907,7 @@ def test_singlediode_floats(sam_data):
 
 @requires_scipy
 def test_singlediode_floats_ivcurve():
-    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3)
+    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3, method='lambertw')
     expected = {'i_xx': 4.2498,
                 'i_mp': 6.1275,
                 'v_oc': 8.1063,
@@ -827,7 +938,8 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
-    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
+                               method='lambertw')
 
     expected = OrderedDict([('i_sc', array([0., 3.01054475, 6.00675648])),
                             ('v_oc', array([0., 9.96886962, 10.29530483])),
@@ -844,6 +956,20 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                           3.10862447e-14],
                                          [6.00726296e+00, 5.74622046e+00,
                                           0.00000000e+00]]))])
+
+    for k, v in out.items():
+        assert_allclose(v, expected[k], atol=1e-2)
+
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+
+    expected['i_mp'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v_mp'], I0, IL,
+                                         method='lambertw')
+    expected['v_mp'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i_mp'], I0, IL,
+                                         method='lambertw')
+    expected['i'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v'].T, I0, IL,
+                                         method='lambertw').T
+    expected['v'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i'].T, I0, IL,
+                                         method='lambertw').T
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)

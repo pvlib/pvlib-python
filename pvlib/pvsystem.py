@@ -2099,8 +2099,8 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     resistance_shunt : numeric
         shunt resitance [ohms]
     nNsVth : numeric
-        product of thermal voltage ``Vth`` [V], diode ideality factor ``n``, and
-        number of serices cells ``Ns``
+        product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
+        and number of serices cells ``Ns``
     method : str
         either ``'newton'`` or ``'brentq'``
 
@@ -2112,9 +2112,9 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     Notes
     -----
     Use this function when you only want to find the maximum power point. Use
-    :func:`singlediode` when you need to find additional points on the IV curve.
-    This function uses Brent's method by default because it is guaranteed to
-    converge.
+    :func:`singlediode` when you need to find additional points on the IV
+    curve. This function uses Brent's method by default because it is
+    guaranteed to converge.
     """
     i_mp, v_mp, p_mp = singlediode_methods.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,

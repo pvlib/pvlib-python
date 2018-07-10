@@ -46,10 +46,10 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
     Notes
     -----
     Calculating the open circuit voltage, :math:`V_{oc}`, of an ideal device
-    with infinite shunt resistance, :math:`R_{sh} \\to \\infty`, and zero series
-    resistance, :math:`R_s = 0`, yields the following equation [1]. As an
-    estimate of :math:`V_{oc}` it is useful as an upper bound for the bisection
-    method.
+    with infinite shunt resistance, :math:`R_{sh} \\to \\infty`, and zero
+    series resistance, :math:`R_s = 0`, yields the following equation [1]. As
+    an estimate of :math:`V_{oc}` it is useful as an upper bound for the
+    bisection method.
 
     .. math::
 
@@ -61,8 +61,8 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
     return nNsVth * np.log(np.asarray(photocurrent) / saturation_current + 1.0)
 
 
-def bishop88(diode_voltage, photocurrent, saturation_current, resistance_series,
-             resistance_shunt, nNsVth, gradients=False):
+def bishop88(diode_voltage, photocurrent, saturation_current,
+             resistance_series, resistance_shunt, nNsVth, gradients=False):
     """
     Explicit calculation of points on the IV curve described by the single
     diode equation [1].
@@ -512,8 +512,8 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
                                         _pwr_optfcn)
 
     # Find Imp using Lambert W
-    i_mp = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
-                              saturation_current, photocurrent)
+    i_mp = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
+                              v_mp, saturation_current, photocurrent)
 
     # Find Ix and Ixx using Lambert W
     i_x = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,

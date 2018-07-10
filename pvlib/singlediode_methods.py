@@ -175,17 +175,8 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
     elif method.lower() == 'newton':
         # make sure all args are numpy arrays if max size > 1
-        size, shape = _get_size_and_shape((voltage,) + args)
-        if size > 1:
-            args = [np.asarray(arg) for arg in args]
-        # newton uses initial guess for the output shape
-        # copy v0 to a new array and broadcast it to the shape of max size
-        if shape is not None:
-            v0 = np.broadcast_to(voltage, shape).copy()
-        else:
-            v0 = voltage
-        # x0 and x in func are the same reference! DO NOT set x0 to voltage!
-        # voltage in fv(x, voltage, *a) MUST BE CONSTANT!
+        # if voltage is an array, then make a copy to use for initial guess, v0
+        args, v0 = _prepare_newton_inputs((voltage,), args, voltage)
         vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=v0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args)
@@ -248,17 +239,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         vd = vd_from_brent_vectorized(voc_est, current, *args)
     elif method.lower() == 'newton':
         # make sure all args are numpy arrays if max size > 1
-        size, shape = _get_size_and_shape((current,) + args)
-        if size > 1:
-            args = [np.asarray(arg) for arg in args]
-        # newton uses initial guess for the output shape
-        # copy v0 to a new array and broadcast it to the shape of max size
-        if shape is not None:
-            v0 = np.broadcast_to(voc_est, shape).copy()
-        else:
-            v0 = voc_est
-        # x0 and x in func are the same reference! DO NOT set x0 to current!
-        # voltage in fi(x, current, *a) MUST BE CONSTANT!
+        # if voc_est is an array, then make a copy to use for initial guess, v0
+        args, v0 = _prepare_newton_inputs((current,), args, voc_est)
         vd = newton(func=lambda x, *a: fi(x, current, *a), x0=v0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                     args=args)
@@ -315,17 +297,8 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         vd = vec_fun(voc_est, *args)
     elif method.lower() == 'newton':
         # make sure all args are numpy arrays if max size > 1
-        size, shape = _get_size_and_shape(args)
-        if size > 1:
-            args = [np.asarray(arg) for arg in args]
-        # newton uses initial guess for the output shape
-        # copy v0 to a new array and broadcast it to the shape of max size
-        if shape is not None:
-            v0 = np.broadcast_to(voc_est, shape).copy()
-        else:
-            v0 = voc_est
-        # x0 and x in func are the same reference! DO NOT set x0 to current!
-        # voltage in fi(x, current, *a) MUST BE CONSTANT!
+        # if voc_est is an array, then make a copy to use for initial guess, v0
+        args, v0 = _prepare_newton_inputs((), args, voc_est)
         vd = newton(
             func=fmpp, x0=v0,
             fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args
@@ -357,6 +330,19 @@ def _get_size_and_shape(args):
             if this_shape is not None:
                 shape = this_shape
     return size, shape
+
+
+def _prepare_newton_inputs(i_or_v_tup, args, v0):
+    # broadcast arguments for newton method
+    # the first argument should be a tuple, eg: (i,), (v,) or ()
+    size, shape = _get_size_and_shape(i_or_v_tup + args)
+    if size > 1:
+        args = [np.asarray(arg) for arg in args]
+    # newton uses initial guess for the output shape
+    # copy v0 to a new array and broadcast it to the shape of max size
+    if shape is not None:
+        v0 = np.broadcast_to(v0, shape).copy()
+    return args, v0
 
 
 def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,

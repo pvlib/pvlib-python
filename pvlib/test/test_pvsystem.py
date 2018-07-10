@@ -608,7 +608,10 @@ def fixture_v_from_i(request):
 
 
 @requires_scipy
-def test_v_from_i(fixture_v_from_i):
+@pytest.mark.parametrize(
+    'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-8)]
+)
+def test_v_from_i(fixture_v_from_i, method, atol):
     # Solution set loaded from fixture
     Rsh = fixture_v_from_i['Rsh']
     Rs = fixture_v_from_i['Rs']
@@ -618,54 +621,7 @@ def test_v_from_i(fixture_v_from_i):
     IL = fixture_v_from_i['IL']
     V_expected = fixture_v_from_i['V_expected']
 
-    # Convergence criteria
-    atol = 1.e-11
-
-    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL)
-    assert(isinstance(V, type(V_expected)))
-    if isinstance(V, type(np.ndarray)):
-        assert(isinstance(V.dtype, type(V_expected.dtype)))
-        assert(V.shape == V_expected.shape)
-    assert_allclose(V, V_expected, atol=atol)
-
-
-@requires_scipy
-def test_v_from_i_brentq(fixture_v_from_i):
-    # Solution set loaded from fixture
-    Rsh = fixture_v_from_i['Rsh']
-    Rs = fixture_v_from_i['Rs']
-    nNsVth = fixture_v_from_i['nNsVth']
-    I = fixture_v_from_i['I']
-    I0 = fixture_v_from_i['I0']
-    IL = fixture_v_from_i['IL']
-    V_expected = fixture_v_from_i['V_expected']
-
-    # Convergence criteria
-    atol = 1.e-11
-
-    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method='brentq')
-    assert(isinstance(V, type(V_expected)))
-    if isinstance(V, type(np.ndarray)):
-        assert(isinstance(V.dtype, type(V_expected.dtype)))
-        assert(V.shape == V_expected.shape)
-    assert_allclose(V, V_expected, atol=atol)
-
-
-@requires_scipy
-def test_v_from_i_newton(fixture_v_from_i):
-    # Solution set loaded from fixture
-    Rsh = fixture_v_from_i['Rsh']
-    Rs = fixture_v_from_i['Rs']
-    nNsVth = fixture_v_from_i['nNsVth']
-    I = fixture_v_from_i['I']
-    I0 = fixture_v_from_i['I0']
-    IL = fixture_v_from_i['IL']
-    V_expected = fixture_v_from_i['V_expected']
-
-    # Convergence criteria
-    atol = 1.e-8
-
-    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method='newton')
+    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method=method)
     assert(isinstance(V, type(V_expected)))
     if isinstance(V, type(np.ndarray)):
         assert(isinstance(V.dtype, type(V_expected.dtype)))
@@ -772,7 +728,10 @@ def fixture_i_from_v(request):
 
 
 @requires_scipy
-def test_i_from_v(fixture_i_from_v):
+@pytest.mark.parametrize(
+    'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11)]
+)
+def test_i_from_v(fixture_i_from_v, method, atol):
     # Solution set loaded from fixture
     Rsh = fixture_i_from_v['Rsh']
     Rs = fixture_i_from_v['Rs']
@@ -782,54 +741,7 @@ def test_i_from_v(fixture_i_from_v):
     IL = fixture_i_from_v['IL']
     I_expected = fixture_i_from_v['I_expected']
 
-    # Convergence criteria
-    atol = 1.e-11
-
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method='lambertw')
-    assert(isinstance(I, type(I_expected)))
-    if isinstance(I, type(np.ndarray)):
-        assert(isinstance(I.dtype, type(I_expected.dtype)))
-        assert(I.shape == I_expected.shape)
-    assert_allclose(I, I_expected, atol=atol)
-
-
-@requires_scipy
-def test_i_from_v_brentq(fixture_i_from_v):
-    # Solution set loaded from fixture
-    Rsh = fixture_i_from_v['Rsh']
-    Rs = fixture_i_from_v['Rs']
-    nNsVth = fixture_i_from_v['nNsVth']
-    V = fixture_i_from_v['V']
-    I0 = fixture_i_from_v['I0']
-    IL = fixture_i_from_v['IL']
-    I_expected = fixture_i_from_v['I_expected']
-
-    # Convergence criteria
-    atol = 1.e-11
-
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method='brentq')
-    assert(isinstance(I, type(I_expected)))
-    if isinstance(I, type(np.ndarray)):
-        assert(isinstance(I.dtype, type(I_expected.dtype)))
-        assert(I.shape == I_expected.shape)
-    assert_allclose(I, I_expected, atol=atol)
-
-
-@requires_scipy
-def test_i_from_v_newton(fixture_i_from_v):
-    # Solution set loaded from fixture
-    Rsh = fixture_i_from_v['Rsh']
-    Rs = fixture_i_from_v['Rs']
-    nNsVth = fixture_i_from_v['nNsVth']
-    V = fixture_i_from_v['V']
-    I0 = fixture_i_from_v['I0']
-    IL = fixture_i_from_v['IL']
-    I_expected = fixture_i_from_v['I_expected']
-
-    # Convergence criteria
-    atol = 1.e-11
-
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method='newton')
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method=method)
     assert(isinstance(I, type(I_expected)))
     if isinstance(I, type(np.ndarray)):
         assert(isinstance(I.dtype, type(I_expected.dtype)))

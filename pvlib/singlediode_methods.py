@@ -4,6 +4,7 @@ Low-level functions for solving the single diode equation.
 
 from functools import partial
 import numpy as np
+from pvlib.tools import _golden_sect_DataFrame
 
 # Try to import brentq from scipy to use when specified in bishop88_i_from_v,
 # bishop88_v_from_i, and bishop88_mpp methods below. If not imported, raises
@@ -354,3 +355,208 @@ def _get_size_and_shape(args):
             if this_shape is not None:
                 shape = this_shape
     return size, shape
+
+
+def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
+                       saturation_current, photocurrent):
+    try:
+        from scipy.special import lambertw
+    except ImportError:
+        raise ImportError('This function requires scipy')
+
+    # Record if inputs were all scalar
+    output_is_scalar = all(map(np.isscalar,
+                               [resistance_shunt, resistance_series, nNsVth,
+                                current, saturation_current, photocurrent]))
+
+    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+    #  is generally more numerically stable
+    conductance_shunt = 1. / resistance_shunt
+
+    # Ensure that we are working with read-only views of numpy arrays
+    # Turns Series into arrays so that we don't have to worry about
+    #  multidimensional broadcasting failing
+    Gsh, Rs, a, I, I0, IL = \
+        np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
+                            current, saturation_current, photocurrent)
+
+    # Intitalize output V (I might not be float64)
+    V = np.full_like(I, np.nan, dtype=np.float64)
+
+    # Determine indices where 0 < Gsh requires implicit model solution
+    idx_p = 0. < Gsh
+
+    # Determine indices where 0 = Gsh allows explicit model solution
+    idx_z = 0. == Gsh
+
+    # Explicit solutions where Gsh=0
+    if np.any(idx_z):
+        V[idx_z] = a[idx_z] * np.log1p((IL[idx_z] - I[idx_z]) / I0[idx_z]) - \
+                   I[idx_z] * Rs[idx_z]
+
+    # Only compute using LambertW if there are cases with Gsh>0
+    if np.any(idx_p):
+        # LambertW argument, cannot be float128, may overflow to np.inf
+        # overflow is explicitly handled below, so ignore warnings here
+        with np.errstate(over='ignore'):
+            argW = (I0[idx_p] / (Gsh[idx_p] * a[idx_p]) *
+                    np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
+                           (Gsh[idx_p] * a[idx_p])))
+
+        # lambertw typically returns complex value with zero imaginary part
+        # may overflow to np.inf
+        lambertwterm = lambertw(argW).real
+
+        # Record indices where lambertw input overflowed output
+        idx_inf = np.logical_not(np.isfinite(lambertwterm))
+
+        # Only re-compute LambertW if it overflowed
+        if np.any(idx_inf):
+            # Calculate using log(argW) in case argW is really big
+            logargW = (np.log(I0[idx_p]) - np.log(Gsh[idx_p]) -
+                       np.log(a[idx_p]) +
+                       (-I[idx_p] + IL[idx_p] + I0[idx_p]) /
+                       (Gsh[idx_p] * a[idx_p]))[idx_inf]
+
+            # Three iterations of Newton-Raphson method to solve
+            #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
+            #  evaluation (above) results in NaN from overflow, 3 iterations
+            #  of Newton's method gives approximately 8 digits of precision.
+            w = logargW
+            for _ in range(0, 3):
+                w = w * (1. - np.log(w) + logargW) / (1. + w)
+            lambertwterm[idx_inf] = w
+
+        # Eqn. 3 in Jain and Kapoor, 2004
+        #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
+        # Recast in terms of Gsh=1/Rsh for better numerical stability.
+        V[idx_p] = (IL[idx_p] + I0[idx_p] - I[idx_p]) / Gsh[idx_p] - \
+                   I[idx_p] * Rs[idx_p] - a[idx_p] * lambertwterm
+
+    if output_is_scalar:
+        return np.asscalar(V)
+    else:
+        return V
+
+
+def _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
+                       saturation_current, photocurrent):
+    try:
+        from scipy.special import lambertw
+    except ImportError:
+        raise ImportError('This function requires scipy')
+
+    # Record if inputs were all scalar
+    output_is_scalar = all(map(np.isscalar,
+                               [resistance_shunt, resistance_series, nNsVth,
+                                voltage, saturation_current, photocurrent]))
+
+    # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
+    #  is generally more numerically stable
+    conductance_shunt = 1. / resistance_shunt
+
+    # Ensure that we are working with read-only views of numpy arrays
+    # Turns Series into arrays so that we don't have to worry about
+    #  multidimensional broadcasting failing
+    Gsh, Rs, a, V, I0, IL = \
+        np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
+                            voltage, saturation_current, photocurrent)
+
+    # Intitalize output I (V might not be float64)
+    I = np.full_like(V, np.nan, dtype=np.float64)
+
+    # Determine indices where 0 < Rs requires implicit model solution
+    idx_p = 0. < Rs
+
+    # Determine indices where 0 = Rs allows explicit model solution
+    idx_z = 0. == Rs
+
+    # Explicit solutions where Rs=0
+    if np.any(idx_z):
+        I[idx_z] = IL[idx_z] - I0[idx_z] * np.expm1(V[idx_z] / a[idx_z]) - \
+                   Gsh[idx_z] * V[idx_z]
+
+    # Only compute using LambertW if there are cases with Rs>0
+    # Does NOT handle possibility of overflow, github issue 298
+    if np.any(idx_p):
+        # LambertW argument, cannot be float128, may overflow to np.inf
+        argW = Rs[idx_p] * I0[idx_p] / (
+                    a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)) * \
+               np.exp((Rs[idx_p] * (IL[idx_p] + I0[idx_p]) + V[idx_p]) /
+                      (a[idx_p] * (Rs[idx_p] * Gsh[idx_p] + 1.)))
+
+        # lambertw typically returns complex value with zero imaginary part
+        # may overflow to np.inf
+        lambertwterm = lambertw(argW).real
+
+        # Eqn. 2 in Jain and Kapoor, 2004
+        #  I = -V/(Rs + Rsh) - (a/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
+        # Recast in terms of Gsh=1/Rsh for better numerical stability.
+        I[idx_p] = (IL[idx_p] + I0[idx_p] - V[idx_p] * Gsh[idx_p]) / \
+                   (Rs[idx_p] * Gsh[idx_p] + 1.) - (
+                               a[idx_p] / Rs[idx_p]) * lambertwterm
+
+    if output_is_scalar:
+        return np.asscalar(I)
+    else:
+        return I
+
+
+def _lambertw(photocurrent, saturation_current, resistance_series,
+                         resistance_shunt, nNsVth, ivcurve_pnts=None):
+    # Compute short circuit current
+    i_sc = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, 0.,
+                              saturation_current, photocurrent)
+
+    # Compute open circuit voltage
+    v_oc = _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
+                              saturation_current, photocurrent)
+
+    params = {'r_sh': resistance_shunt,
+              'r_s': resistance_series,
+              'nNsVth': nNsVth,
+              'i_0': saturation_current,
+              'i_l': photocurrent}
+
+    # Find the voltage, v_mp, where the power is maximized.
+    # Start the golden section search at v_oc * 1.14
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
+                                        _pwr_optfcn)
+
+    # Find Imp using Lambert W
+    i_mp = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
+                              saturation_current, photocurrent)
+
+    # Find Ix and Ixx using Lambert W
+    i_x = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
+                             0.5 * v_oc, saturation_current, photocurrent)
+
+    i_xx = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
+                              0.5 * (v_oc + v_mp), saturation_current,
+                              photocurrent)
+
+    out = (i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx)
+
+    # create ivcurve
+    if ivcurve_pnts:
+        ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
+                     np.linspace(0, 1, ivcurve_pnts))
+
+        ivcurve_i = _lambertw_i_from_v(resistance_shunt, resistance_series,
+                                       nNsVth, ivcurve_v.T, saturation_current,
+                                       photocurrent).T
+
+        out += (ivcurve_i, ivcurve_v)
+
+    return out
+
+
+def _pwr_optfcn(df, loc):
+    '''
+    Function to find power from ``i_from_v``.
+    '''
+
+    I = _lambertw_i_from_v(df['r_sh'], df['r_s'], df['nNsVth'], df[loc],
+                           df['i_0'], df['i_l'])
+
+    return I * df[loc]

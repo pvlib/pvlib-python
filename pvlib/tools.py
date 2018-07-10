@@ -356,3 +356,75 @@ def _array_newton(func, x0, fprime, args, tol, maxiter, fprime2,
         result = namedtuple('result', ('root', 'converged', 'zero_der'))
         p = result(p, ~failures, zero_der)
     return p
+
+
+# Created April,2014
+# Author: Rob Andrews, Calama Consulting
+
+def _golden_sect_DataFrame(params, VL, VH, func):
+    """
+    Vectorized golden section search for finding MPP from a dataframe
+    timeseries.
+
+    Parameters
+    ----------
+    params : dict
+        Dictionary containing scalars or arrays
+        of inputs to the function to be optimized.
+        Each row should represent an independent optimization.
+
+    VL: float
+        Lower bound of the optimization
+
+    VH: float
+        Upper bound of the optimization
+
+    func: function
+        Function to be optimized must be in the form f(array-like, x)
+
+    Returns
+    -------
+    func(df,'V1') : DataFrame
+        function evaluated at the optimal point
+
+    df['V1']: Dataframe
+        Dataframe of optimal points
+
+    Notes
+    -----
+    This function will find the MAXIMUM of a function
+    """
+
+    df = params
+    df['VH'] = VH
+    df['VL'] = VL
+
+    err = df['VH'] - df['VL']
+    errflag = True
+    iterations = 0
+
+    while errflag:
+
+        phi = (np.sqrt(5)-1)/2*(df['VH']-df['VL'])
+        df['V1'] = df['VL'] + phi
+        df['V2'] = df['VH'] - phi
+
+        df['f1'] = func(df, 'V1')
+        df['f2'] = func(df, 'V2')
+        df['SW_Flag'] = df['f1'] > df['f2']
+
+        df['VL'] = df['V2']*df['SW_Flag'] + df['VL']*(~df['SW_Flag'])
+        df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
+
+        err = df['V1'] - df['V2']
+        try:
+            errflag = (abs(err) > .01).any()
+        except ValueError:
+            errflag = (abs(err) > .01)
+
+        iterations += 1
+
+        if iterations > 50:
+            raise Exception("EXCEPTION:iterations exceeded maximum (50)")
+
+    return func(df, 'V1'), df['V1']

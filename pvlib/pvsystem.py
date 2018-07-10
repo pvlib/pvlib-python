@@ -1853,7 +1853,8 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts=None, method='lambertw'):
+                resistance_shunt, nNsVth, ivcurve_pnts=None,
+                method='lambertw'):
     """
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -2022,53 +2023,16 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     calcparams_desoto
     pvlib.singlediode_methods.bishop88
     """
-    # make IDE happy
-    ivcurve_v = NotImplemented
-    ivcurve_i = NotImplemented
-
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
-        # Compute short circuit current
-        i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.,
-                        saturation_current, photocurrent, method)
-
-        # Compute open circuit voltage
-        v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
-                        saturation_current, photocurrent, method)
-
-        params = {'r_sh': resistance_shunt,
-                  'r_s': resistance_series,
-                  'nNsVth': nNsVth,
-                  'i_0': saturation_current,
-                  'i_l': photocurrent}
-
-        # Find the voltage, v_mp, where the power is maximized.
-        # Start the golden section search at v_oc * 1.14
-        p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
-                                            _pwr_optfcn)
-
-        # Find Imp using Lambert W
-        i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
-                        saturation_current, photocurrent, method)
-
-        # Find Ix and Ixx using Lambert W
-        i_x = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.5 * v_oc,
-                       saturation_current, photocurrent, method)
-
-        i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
-                        0.5 * (v_oc + v_mp), saturation_current, photocurrent,
-                        method)
-
-        # create ivcurve
+        out = singlediode_methods._lambertw(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth, ivcurve_pnts
+        )
+        i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx = out[:7]
         if ivcurve_pnts:
-            ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
-                         np.linspace(0, 1, ivcurve_pnts))
-
-            ivcurve_i = i_from_v(resistance_shunt, resistance_series, nNsVth,
-                                 ivcurve_v.T, saturation_current, photocurrent,
-                                 method).T
-
+            ivcurve_i, ivcurve_v = out[7:]
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
@@ -2165,89 +2129,6 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     return out
 
 
-# Created April,2014
-# Author: Rob Andrews, Calama Consulting
-
-def _golden_sect_DataFrame(params, VL, VH, func):
-    """
-    Vectorized golden section search for finding MPP from a dataframe
-    timeseries.
-
-    Parameters
-    ----------
-    params : dict
-        Dictionary containing scalars or arrays
-        of inputs to the function to be optimized.
-        Each row should represent an independent optimization.
-
-    VL: float
-        Lower bound of the optimization
-
-    VH: float
-        Upper bound of the optimization
-
-    func: function
-        Function to be optimized must be in the form f(array-like, x)
-
-    Returns
-    -------
-    func(df,'V1') : DataFrame
-        function evaluated at the optimal point
-
-    df['V1']: Dataframe
-        Dataframe of optimal points
-
-    Notes
-    -----
-    This function will find the MAXIMUM of a function
-    """
-
-    df = params
-    df['VH'] = VH
-    df['VL'] = VL
-
-    err = df['VH'] - df['VL']
-    errflag = True
-    iterations = 0
-
-    while errflag:
-
-        phi = (np.sqrt(5)-1)/2*(df['VH']-df['VL'])
-        df['V1'] = df['VL'] + phi
-        df['V2'] = df['VH'] - phi
-
-        df['f1'] = func(df, 'V1')
-        df['f2'] = func(df, 'V2')
-        df['SW_Flag'] = df['f1'] > df['f2']
-
-        df['VL'] = df['V2']*df['SW_Flag'] + df['VL']*(~df['SW_Flag'])
-        df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
-
-        err = df['V1'] - df['V2']
-        try:
-            errflag = (abs(err) > .01).any()
-        except ValueError:
-            errflag = (abs(err) > .01)
-
-        iterations += 1
-
-        if iterations > 50:
-            raise Exception("EXCEPTION:iterations exceeded maximum (50)")
-
-    return func(df, 'V1'), df['V1']
-
-
-def _pwr_optfcn(df, loc):
-    '''
-    Function to find power from ``i_from_v``.
-    '''
-
-    I = i_from_v(df['r_sh'], df['r_s'], df['nNsVth'], df[loc], df['i_0'],
-                 df['i_l'], method='lambertw')
-
-    return I * df[loc]
-
-
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
              saturation_current, photocurrent, method='lambertw'):
     '''
@@ -2313,84 +2194,10 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        try:
-            from scipy.special import lambertw
-        except ImportError:
-            raise ImportError('This function requires scipy')
-
-        # Record if inputs were all scalar
-        output_is_scalar = all(map(np.isscalar,
-                                   [resistance_shunt, resistance_series, nNsVth,
-                                    current, saturation_current, photocurrent]))
-
-        # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
-        #  is generally more numerically stable
-        conductance_shunt = 1./resistance_shunt
-
-        # Ensure that we are working with read-only views of numpy arrays
-        # Turns Series into arrays so that we don't have to worry about
-        #  multidimensional broadcasting failing
-        Gsh, Rs, a, I, I0, IL = \
-            np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
-                                current, saturation_current, photocurrent)
-
-        # Intitalize output V (I might not be float64)
-        V = np.full_like(I, np.nan, dtype=np.float64)
-
-        # Determine indices where 0 < Gsh requires implicit model solution
-        idx_p = 0. < Gsh
-
-        # Determine indices where 0 = Gsh allows explicit model solution
-        idx_z = 0. == Gsh
-
-        # Explicit solutions where Gsh=0
-        if np.any(idx_z):
-            V[idx_z] = a[idx_z]*np.log1p((IL[idx_z] - I[idx_z])/I0[idx_z]) - \
-                I[idx_z]*Rs[idx_z]
-
-        # Only compute using LambertW if there are cases with Gsh>0
-        if np.any(idx_p):
-            # LambertW argument, cannot be float128, may overflow to np.inf
-            # overflow is explicitly handled below, so ignore warnings here
-            with np.errstate(over='ignore'):
-                argW = (I0[idx_p] / (Gsh[idx_p]*a[idx_p]) *
-                np.exp((-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                       (Gsh[idx_p]*a[idx_p])))
-
-            # lambertw typically returns complex value with zero imaginary part
-            # may overflow to np.inf
-            lambertwterm = lambertw(argW).real
-
-            # Record indices where lambertw input overflowed output
-            idx_inf = np.logical_not(np.isfinite(lambertwterm))
-
-            # Only re-compute LambertW if it overflowed
-            if np.any(idx_inf):
-                # Calculate using log(argW) in case argW is really big
-                logargW = (np.log(I0[idx_p]) - np.log(Gsh[idx_p]) -
-                           np.log(a[idx_p]) +
-                           (-I[idx_p] + IL[idx_p] + I0[idx_p]) /
-                           (Gsh[idx_p] * a[idx_p]))[idx_inf]
-
-                # Three iterations of Newton-Raphson method to solve
-                #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
-                #  evaluation (above) results in NaN from overflow, 3 iterations
-                #  of Newton's method gives approximately 8 digits of precision.
-                w = logargW
-                for _ in range(0, 3):
-                    w = w * (1. - np.log(w) + logargW) / (1. + w)
-                lambertwterm[idx_inf] = w
-
-            # Eqn. 3 in Jain and Kapoor, 2004
-            #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
-            # Recast in terms of Gsh=1/Rsh for better numerical stability.
-            V[idx_p] = (IL[idx_p] + I0[idx_p] - I[idx_p])/Gsh[idx_p] - \
-                I[idx_p]*Rs[idx_p] - a[idx_p]*lambertwterm
-
-        if output_is_scalar:
-            return np.asscalar(V)
-        else:
-            return V
+        return singlediode_methods._lambertw_v_from_i(
+            resistance_shunt, resistance_series, nNsVth, current,
+            saturation_current, photocurrent
+        )
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
@@ -2475,63 +2282,10 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        try:
-            from scipy.special import lambertw
-        except ImportError:
-            raise ImportError('This function requires scipy')
-
-        # Record if inputs were all scalar
-        output_is_scalar = all(map(np.isscalar,
-                                   [resistance_shunt, resistance_series, nNsVth,
-                                    voltage, saturation_current, photocurrent]))
-
-        # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
-        #  is generally more numerically stable
-        conductance_shunt = 1./resistance_shunt
-
-        # Ensure that we are working with read-only views of numpy arrays
-        # Turns Series into arrays so that we don't have to worry about
-        #  multidimensional broadcasting failing
-        Gsh, Rs, a, V, I0, IL = \
-            np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
-                                voltage, saturation_current, photocurrent)
-
-        # Intitalize output I (V might not be float64)
-        I = np.full_like(V, np.nan, dtype=np.float64)
-
-        # Determine indices where 0 < Rs requires implicit model solution
-        idx_p = 0. < Rs
-
-        # Determine indices where 0 = Rs allows explicit model solution
-        idx_z = 0. == Rs
-
-        # Explicit solutions where Rs=0
-        if np.any(idx_z):
-            I[idx_z] = IL[idx_z] - I0[idx_z]*np.expm1(V[idx_z]/a[idx_z]) - \
-                Gsh[idx_z]*V[idx_z]
-
-        # Only compute using LambertW if there are cases with Rs>0
-        # Does NOT handle possibility of overflow, github issue 298
-        if np.any(idx_p):
-            # LambertW argument, cannot be float128, may overflow to np.inf
-            argW = Rs[idx_p]*I0[idx_p]/(a[idx_p]*(Rs[idx_p]*Gsh[idx_p] + 1.)) * \
-                np.exp((Rs[idx_p]*(IL[idx_p] + I0[idx_p]) + V[idx_p]) /
-                       (a[idx_p]*(Rs[idx_p]*Gsh[idx_p] + 1.)))
-
-            # lambertw typically returns complex value with zero imaginary part
-            # may overflow to np.inf
-            lambertwterm = lambertw(argW).real
-
-            # Eqn. 2 in Jain and Kapoor, 2004
-            #  I = -V/(Rs + Rsh) - (a/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
-            # Recast in terms of Gsh=1/Rsh for better numerical stability.
-            I[idx_p] = (IL[idx_p] + I0[idx_p] - V[idx_p]*Gsh[idx_p]) / \
-                (Rs[idx_p]*Gsh[idx_p] + 1.) - (a[idx_p]/Rs[idx_p])*lambertwterm
-
-        if output_is_scalar:
-            return np.asscalar(I)
-        else:
-            return I
+        return singlediode_methods._lambertw_i_from_v(
+            resistance_shunt, resistance_series, nNsVth, voltage,
+            saturation_current, photocurrent
+        )
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode

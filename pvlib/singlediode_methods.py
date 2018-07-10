@@ -4,6 +4,10 @@ Low-level functions for solving the single diode equation.
 
 from functools import partial
 import numpy as np
+
+# Try to import brentq from scipy to use when specified in bishop88_i_from_v,
+# bishop88_v_from_i, and bishop88_mpp methods below. If not imported, raises
+# ImportError when 'brentq' method is specified for those methods.
 try:
     from scipy.optimize import brentq
 except ImportError:

@@ -16,6 +16,8 @@ Enhancements
   in ``modelchain.py`` (:issue:`359`)
 * Clarify arguments ``Egref`` and ``dEgdT`` for
   :func:`~pvlib.pvsystem.calcparams_desoto` (:issue:`462`)
+* Add pvsystem.calcparams_pvsyst to compute values for the single diode equation
+  using the PVsyst v6 model (:issue:'470')
 * Extend :func:`~pvlib.pvsystem.singlediode` with an additional keyword argument
   ``method`` in ``('lambertw', 'newton', 'brentq')``, default is ``'lambertw'``,
   to select a method to solve the single diode equation for points on the IV
@@ -65,6 +67,7 @@ Documentation
   objects, and ModelChain.
 * Updated several incorrect statements in ModelChain documentation regarding
   implementation status and default values. (:issue:`480`)
+* Expanded general contributing and pull request guidelines.
 
 
 Testing

@@ -22,6 +22,8 @@ except ImportError:
 # rename newton and set keyword arguments
 newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
 
+VOLTAGE_BUILTIN = 0.9  # (V) intrinsic voltage for a:Si, CdTe, Mertens et al.
+
 
 def estimate_voc(photocurrent, saturation_current, nNsVth):
     """
@@ -62,7 +64,9 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
 
 
 def bishop88(diode_voltage, photocurrent, saturation_current,
-             resistance_series, resistance_shunt, nNsVth, gradients=False):
+             resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+             cells_in_series=None, voltage_builtin=VOLTAGE_BUILTIN,
+             gradients=False):
     """
     Explicit calculation of points on the IV curve described by the single
     diode equation [1].
@@ -97,21 +101,28 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         :math:`\\frac{dI}{dV}`, :math:`\\frac{dP}{dV}`, and
         :math:`\\frac{d^2 P}{dV dV_d}`
     """
+    # check if need to calculate recombination loss current
+    i_recomb = v_recomb = 0
+    if d2mutau > 0:
+        v_recomb = voltage_builtin - diode_voltage / cells_in_series
+        i_recomb = photocurrent * d2mutau / v_recomb
     # calculate temporary values to simplify calculations
     v_star = diode_voltage / nNsVth  # non-dimensional diode voltage
     g_sh = 1.0 / resistance_shunt  # conductance
     i = (photocurrent - saturation_current * np.expm1(v_star)
-         - diode_voltage * g_sh)
+         - diode_voltage * g_sh - i_recomb)
     v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)
     if gradients:
+        if d2mutau > 0:
+            grad_i_recomb = i_recomb/v_recomb
         g_diode = saturation_current * np.exp(v_star) / nNsVth  # conductance
-        grad_i = -g_diode - g_sh  # di/dvd
+        grad_i = -g_diode - g_sh - grad_i_recomb # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
         # dp/dv = d(iv)/dv = v * di/dv + i
         grad = grad_i / grad_v  # di/dv
         grad_p = v * grad + i  # dp/dv
-        grad2i = -g_diode / nNsVth  # d2i/dvd
+        grad2i = -g_diode / nNsVth - 2*grad_i_recomb/v_recomb  # d2i/dvd
         grad2v = -grad2i * resistance_series  # d2v/dvd
         grad2p = (
             grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2)

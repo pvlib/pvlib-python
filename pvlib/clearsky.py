@@ -688,9 +688,6 @@ def detect_clearsky(measured, clearsky, times, window_length,
                                   'times. consider resampling your data.')
 
     samples_per_window = int(window_length / sample_interval) + 1
-    # print(window_length)
-    # print(sample_interval)
-    # print(samples_per_window)
 
     # generate matrix of integers for creating windows with indexing
     from scipy.linalg import hankel
@@ -730,8 +727,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        #  c5 = (meas_slope_max - alpha*clear_slope_max) < slope_dev
-        c5 = np.max(meas_slope - alpha*clear_slope, axis=0) < slope_dev
+        c5 = np.max(np.abs(meas_slope - alpha*clear_slope), axis=0) < slope_dev
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 

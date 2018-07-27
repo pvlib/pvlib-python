@@ -61,6 +61,9 @@ Bug fixes
   (:issue:`493`)
 * Fix ``pvlib.irradiance.klucher`` output is different for Pandas Series vs.
   floats and NumPy arrays. (:issue:`508`)
+* Make GitHub recognize the license, add AUTHORS.md, clarify shared copyright.
+  (:issue:`503`)
+
 
 Documentation
 ~~~~~~~~~~~~~

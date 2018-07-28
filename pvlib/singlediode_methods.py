@@ -102,7 +102,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         :math:`\\frac{d^2 P}{dV dV_d}`
     """
     # check if need to calculate recombination loss current
-    i_recomb = v_recomb = 0
+    i_recomb, v_recomb = 0, np.inf
     if d2mutau > 0:
         v_recomb = voltage_builtin - diode_voltage / cells_in_series
         i_recomb = photocurrent * d2mutau / v_recomb
@@ -114,15 +114,18 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)
     if gradients:
+        # check again if need to calculate recombination loss current gradients
+        grad_i_recomb = grad_2i_recomb = 0
         if d2mutau > 0:
-            grad_i_recomb = i_recomb/v_recomb
+            grad_i_recomb = i_recomb / v_recomb
+            grad_2i_recomb = 2 * grad_i_recomb / v_recomb
         g_diode = saturation_current * np.exp(v_star) / nNsVth  # conductance
         grad_i = -g_diode - g_sh - grad_i_recomb # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
         # dp/dv = d(iv)/dv = v * di/dv + i
         grad = grad_i / grad_v  # di/dv
         grad_p = v * grad + i  # dp/dv
-        grad2i = -g_diode / nNsVth - 2*grad_i_recomb/v_recomb  # d2i/dvd
+        grad2i = -g_diode / nNsVth - grad_2i_recomb  # d2i/dvd
         grad2v = -grad2i * resistance_series  # d2v/dvd
         grad2p = (
             grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2)

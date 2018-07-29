@@ -104,7 +104,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     # check if need to calculate recombination loss current
     i_recomb, v_recomb = 0, np.inf
     if d2mutau > 0:
-        v_recomb = voltage_builtin - diode_voltage / cells_in_series
+        v_recomb = voltage_builtin * cells_in_series - diode_voltage
         i_recomb = photocurrent * d2mutau / v_recomb
     # calculate temporary values to simplify calculations
     v_star = diode_voltage / nNsVth  # non-dimensional diode voltage

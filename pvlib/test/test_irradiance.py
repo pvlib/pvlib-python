@@ -146,8 +146,20 @@ def test_isotropic_series(irrad_data):
 
 
 def test_klucher_series_float():
-    result = irradiance.klucher(40, 180, 100, 900, 20, 180)
-    assert_allclose(result, 88.3022221559)
+    # klucher inputs
+    surface_tilt, surface_azimuth = 40.0, 180.0
+    dhi, ghi = 100.0, 900.0
+    solar_zenith, solar_azimuth = 20.0, 180.0
+    # expect same result for floats and pd.Series
+    expected = irradiance.klucher(
+        surface_tilt, surface_azimuth,
+        pd.Series(dhi), pd.Series(ghi),
+        pd.Series(solar_zenith), pd.Series(solar_azimuth)
+    )  # 94.99429931664851
+    result = irradiance.klucher(
+        surface_tilt, surface_azimuth, dhi, ghi, solar_zenith, solar_azimuth
+    )
+    assert_allclose(result, expected[0])
 
 
 def test_klucher_series(irrad_data, ephem_data):
@@ -155,6 +167,12 @@ def test_klucher_series(irrad_data, ephem_data):
                        ephem_data['apparent_zenith'],
                        ephem_data['azimuth'])
     assert_allclose(result, [0, 37.446276, 109.209347, 56.965916], atol=1e-4)
+    # expect same result for np.array and pd.Series
+    expected = irradiance.klucher(
+        40, 180, irrad_data['dhi'].values, irrad_data['ghi'].values,
+        ephem_data['apparent_zenith'].values, ephem_data['azimuth'].values
+    )
+    assert_allclose(result, expected, atol=1e-4)
 
 
 def test_haydavies(irrad_data, ephem_data, dni_et):

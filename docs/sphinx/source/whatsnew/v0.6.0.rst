@@ -5,15 +5,53 @@ v0.6.0 (___, 2018)
 
 API Changes
 ~~~~~~~~~~~
-* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
+* pvsystem.calcparams_desoto now requires arguments for each module model
+  parameter. (:issue:`462`)
+* Add losses_parameters attribute to PVSystem objects and remove the kwargs
+  support from PVSystem.pvwatts_losses. Enables custom losses specification
+  in ModelChain calculations. (:issue:`484`)
 * removed irradiance parameter from ModelChain.run_model and ModelChain.prepare_inputs
 
 
 Enhancements
 ~~~~~~~~~~~~
-* Add sea surface albedo in irradiance.py (:issue:`458`)
-* Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
-* Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)
+* Add sea surface albedo in ``irradiance.py`` (:issue:`458`)
+* Implement :meth:`~pvlib.modelchain.ModelChain.first_solar_spectral_loss`
+  in ``modelchain.py`` (:issue:`359`)
+* Clarify arguments ``Egref`` and ``dEgdT`` for
+  :func:`~pvlib.pvsystem.calcparams_desoto` (:issue:`462`)
+* Add pvsystem.calcparams_pvsyst to compute values for the single diode equation
+  using the PVsyst v6 model (:issue:'470')
+* Extend :func:`~pvlib.pvsystem.singlediode` with an additional keyword argument
+  ``method`` in ``('lambertw', 'newton', 'brentq')``, default is ``'lambertw'``,
+  to select a method to solve the single diode equation for points on the IV
+  curve. Selecting either ``'brentq'`` or ``'newton'`` as the method uses
+  :func:`~pvlib.singlediode_methods.bishop88` with the corresponding method.
+  (:issue:`410`)
+* Implement new methods ``'brentq'`` and ``'newton'`` for solving the single
+  diode equation for points on the IV curve. ``'brentq'`` uses a bisection
+  method (Brent, 1973) that may be slow but guarantees a solution. ``'newton'``
+  uses the Newton-Raphson method and may be faster but is not guaranteed to
+  converge. However, ``'newton'`` should be safe for well-behaved IV curves.
+  (:issue:`408`)
+* Implement :func:`~pvlib.singlediode_methods.bishop88` for explicit calculation
+  of arbitrary IV curve points using diode voltage instead of cell voltage. If
+  ``method`` is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts`` in
+  :func:`~pvlib.pvsystem.singlediode` is provided, the IV curve points will be
+  log spaced instead of linear.
+* Implement :func:`~pvlib.singlediode_methods.estimate_voc` to estimate open
+  circuit voltage by assuming :math:`R_{sh} \to \infty` and :math:`R_s=0` as an
+  upper bound in bisection method for :func:`~pvlib.pvsystem.singlediode` when
+  method is either ``'newton'`` or ``'brentq'``.
+* Add :func:`~pvlib.pvsystem.max_power_point` method to compute the max power
+  point using the new ``'brentq'`` method.
+* Add new module ``pvlib.singlediode_methods`` with low-level functions for
+  solving the single diode equation such as:
+  :func:`~pvlib.singlediode_methods.bishop88`,
+  :func:`~pvlib.singlediode_methods.estimate_voc`,
+  :func:`~pvlib.singlediode_methods.bishop88_i_from_v`,
+  :func:`~pvlib.singlediode_methods.bishop88_v_from_i`, and
+  :func:`~pvlib.singlediode_methods.bishop88_mpp`.
 
 
 Bug fixes
@@ -25,6 +63,10 @@ Bug fixes
   Location.get_clearsky. Fixed. (:issue:`481`)
 * Add User-Agent specification to TMY3 remote requests to avoid rejection.
   (:issue:`493`)
+* Fix ``pvlib.irradiance.klucher`` output is different for Pandas Series vs.
+  floats and NumPy arrays. (:issue:`508`)
+* Make GitHub recognize the license, add AUTHORS.md, clarify shared copyright.
+  (:issue:`503`)
 
 
 Documentation
@@ -33,6 +75,7 @@ Documentation
   objects, and ModelChain.
 * Updated several incorrect statements in ModelChain documentation regarding
   implementation status and default values. (:issue:`480`)
+* Expanded general contributing and pull request guidelines.
 
 
 Testing
@@ -48,5 +91,6 @@ Contributors
 * Will Holmgren
 * Yu Cao
 * Cliff Hansen
+* Mark Mikofski
 * Alan Mathew
 

@@ -48,6 +48,34 @@ def test_ineichen_series():
     assert_frame_equal(expected, out)
 
 
+def test_ineichen_series_perez_enhancement():
+    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h',
+                          tz='America/Phoenix')
+    apparent_zenith = pd.Series(np.array(
+        [124.0390863, 113.38779941, 82.85457044, 46.0467599, 10.56413562,
+         34.86074109, 72.41687122, 105.69538659, 124.05614124]),
+        index=times)
+    am = pd.Series(np.array(
+        [nan, nan, 6.97935524, 1.32355476, 0.93527685,
+         1.12008114, 3.01614096, nan, nan]),
+        index=times)
+    expected = pd.DataFrame(np.
+        array([[   0.        ,    0.        ,    0.        ],
+               [   0.        ,    0.        ,    0.        ],
+               [  91.1249279 ,  321.16092171,   51.17628184],
+               [ 716.46580547,  888.9014706 ,   99.50500553],
+               [1053.42066073,  953.24925905,  116.3286895 ],
+               [ 863.54692748,  922.06124652,  106.9553658 ],
+               [ 271.06382275,  655.44925213,   73.05968076],
+               [   0.        ,    0.        ,    0.        ],
+               [   0.        ,    0.        ,    0.        ]]),
+                            columns=['ghi', 'dni', 'dhi'],
+                            index=times)
+
+    out = clearsky.ineichen(apparent_zenith, am, 3, perez_enhancement=True)
+    assert_frame_equal(expected, out)
+
+
 def test_ineichen_scalar_input():
     expected = OrderedDict()
     expected['ghi'] = 1038.159219

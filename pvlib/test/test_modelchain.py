@@ -163,15 +163,14 @@ def test_run_model_gueymard_perez(system, location):
 def test_run_model_with_weather(system, location, weather, mocker):
     mc = ModelChain(system, location)
     m = mocker.spy(system, 'sapm_celltemp')
-    weather2 = pd.DataFrame({'wind_speed':5, 'temp_air':10},
-                            index=weather.index)
-    weather = weather.join(weather2)
+    weather['wind_speed'] = 5
+    weather['temp_air'] = 10
     mc.run_model(weather.index, weather=weather)
     assert m.call_count == 1
-    # assert_called_once_with cannot be used with sereis, so need to use
+    # assert_called_once_with cannot be used with series, so need to use
     # assert_series_equal on call_args
-    assert_series_equal(m.call_args[0][1], weather2['wind_speed'])  # wind
-    assert_series_equal(m.call_args[0][2], weather2['temp_air'])  # temp
+    assert_series_equal(m.call_args[0][1], weather['wind_speed'])  # wind
+    assert_series_equal(m.call_args[0][2], weather['temp_air'])  # temp
     assert not mc.ac.empty
 
 

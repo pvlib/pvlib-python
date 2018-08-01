@@ -100,6 +100,9 @@ class PVSystem(object):
     racking_model : None or string, default 'open_rack_cell_glassback'
         Used for cell and module temperature calculations.
 
+    losses_parameters : None, dict or Series, default None
+        Losses parameters as defined by PVWatts or other.
+
     name : None or string, default None
 
     **kwargs
@@ -120,8 +123,7 @@ class PVSystem(object):
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
-                 name=None,
-                 **kwargs):
+                 losses_parameters=None, name=None, **kwargs):
 
         self.name = name
 
@@ -150,6 +152,11 @@ class PVSystem(object):
             self.inverter_parameters = {}
         else:
             self.inverter_parameters = inverter_parameters
+
+        if losses_parameters is None:
+            self.losses_parameters = {}
+        else:
+            self.losses_parameters = losses_parameters
 
         self.racking_model = racking_model
 
@@ -627,15 +634,17 @@ class PVSystem(object):
                           self.module_parameters['gamma_pdc'],
                           **kwargs)
 
-    def pvwatts_losses(self, **kwargs):
+    def pvwatts_losses(self):
         """
         Calculates DC power losses according the PVwatts model using
-        :py:func:`pvwatts_losses`. No attributes are used in this
-        calculation, but all keyword arguments will be passed to the
-        function.
+        :py:func:`pvwatts_losses` and ``self.losses_parameters``.`
 
         See :py:func:`pvwatts_losses` for details.
         """
+        kwargs = _build_kwargs(['soiling', 'shading', 'snow', 'mismatch',
+                                'wiring', 'connections', 'lid',
+                                'nameplate_rating', 'age', 'availability'],
+                               self.losses_parameters)
         return pvwatts_losses(**kwargs)
 
     def pvwatts_ac(self, pdc):

@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 from numpy import nan
@@ -78,9 +80,17 @@ def pvwatts_dc_pvwatts_ac_system(sam_data):
     return system
 
 
-@pytest.fixture()
+@pytest.fixture
 def location():
     return Location(32.2, -111, altitude=700)
+
+
+@pytest.fixture
+def weather():
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    weather = pd.DataFrame({'ghi': [500, 0], 'dni': [800, 0], 'dhi': [100, 0]},
+                           index=times)
+    return weather
 
 
 def test_ModelChain_creation(system, location):
@@ -292,7 +302,7 @@ def test_spectral_models(system, location, spectral_model):
                            columns=['precipitable_water'])
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model=spectral_model)
-    spectral_modifier = mc.run_model(times=times, 
+    spectral_modifier = mc.run_model(times=times,
                                      weather=weather).spectral_modifier
     assert isinstance(spectral_modifier, (pd.Series, float, int))
 
@@ -302,22 +312,44 @@ def constant_losses(mc):
     mc.ac *= mc.losses
 
 
-@requires_scipy
-@pytest.mark.parametrize('losses_model, expected', [
-    ('pvwatts', [163.280464174, 0]),
-    ('no_loss', [190.028186986, 0]),
-    (constant_losses, [171.025368287, 0])
-])
-def test_losses_models(pvwatts_dc_pvwatts_ac_system, location, losses_model,
-                       expected):
+def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
+                               mocker):
+    age = 1
+    pvwatts_dc_pvwatts_ac_system.losses_parameters = dict(age=age)
+    m = mocker.spy(pvsystem, 'pvwatts_losses')
     mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
                     aoi_model='no_loss', spectral_model='no_loss',
-                    losses_model=losses_model)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    ac = mc.run_model(times).ac
+                    losses_model='pvwatts')
+    mc.run_model(weather.index, weather=weather)
+    assert m.call_count == 1
+    m.assert_called_with(age=age)
+    assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
+    assert not mc.ac.empty
 
-    expected = pd.Series(np.array(expected), index=times)
-    assert_series_equal(ac, expected, check_less_precise=2)
+
+def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
+                               mocker):
+    m = mocker.spy(sys.modules[__name__], 'constant_losses')
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model=constant_losses)
+    mc.run_model(weather.index, weather=weather)
+    assert m.call_count == 1
+    assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
+    assert mc.losses == 0.9
+    assert not mc.ac.empty
+
+
+def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location, weather,
+                               mocker):
+    m = mocker.spy(pvsystem, 'pvwatts_losses')
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model='no_loss')
+    assert mc.losses_model == mc.no_extra_losses
+    mc.run_model(weather.index, weather=weather)
+    assert m.call_count == 0
+    assert mc.losses == 1
 
 
 @pytest.mark.parametrize('model', [

@@ -3,6 +3,7 @@ import os
 from collections import OrderedDict
 
 import numpy as np
+from numpy import nan
 import pandas as pd
 import pytz
 
@@ -20,13 +21,16 @@ from conftest import requires_scipy, requires_tables
 
 
 def test_ineichen_series():
-    tus = Location(32.2, -111, 'US/Arizona', 700)
-    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
-    times_localized = times.tz_localize(tus.tz)
-    ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
-                                                 tus.longitude)
-    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
-    am = atmosphere.absoluteairmass(am, atmosphere.alt2pres(tus.altitude))
+    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h',
+                          tz='America/Phoenix')
+    apparent_zenith = pd.Series(np.array(
+        [124.0390863, 113.38779941, 82.85457044, 46.0467599, 10.56413562,
+         34.86074109, 72.41687122, 105.69538659, 124.05614124]),
+        index=times)
+    am = pd.Series(np.array(
+        [nan, nan, 6.97935524, 1.32355476, 0.93527685,
+         1.12008114, 3.01614096, nan, nan]),
+        index=times)
     expected = pd.DataFrame(np.
         array([[   0.        ,    0.        ,    0.        ],
                [   0.        ,    0.        ,    0.        ],
@@ -38,9 +42,9 @@ def test_ineichen_series():
                [   0.        ,    0.        ,    0.        ],
                [   0.        ,    0.        ,    0.        ]]),
                             columns=['ghi', 'dni', 'dhi'],
-                            index=times_localized)
+                            index=times)
 
-    out = clearsky.ineichen(ephem_data['apparent_zenith'], am, 3)
+    out = clearsky.ineichen(apparent_zenith, am, 3)
     assert_frame_equal(expected, out)
 
 
@@ -526,18 +530,18 @@ def test_detect_clearsky_components(detect_clearsky_data):
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
     assert isinstance(components, OrderedDict)
-    assert np.allclose(alpha, 0.95345573579557108)
+    assert np.allclose(alpha, 0.9633903181941296)
 
 
 @requires_scipy
 def test_detect_clearsky_iterations(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    alpha = 1.0348
+    alpha = 1.0448
     with pytest.warns(RuntimeWarning):
         clear_samples = clearsky.detect_clearsky(
             expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=1)
-    assert (clear_samples[:'2012-04-01 10:39:00'] == True).all()
-    assert (clear_samples['2012-04-01 10:40:00':] == False).all()
+    assert (clear_samples[:'2012-04-01 10:41:00'] == True).all()
+    assert (clear_samples['2012-04-01 10:42:00':] == False).all()
     clear_samples = clearsky.detect_clearsky(
             expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=20)
     assert_series_equal(expected['Clear or not'], clear_samples,

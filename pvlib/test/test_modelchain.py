@@ -196,7 +196,8 @@ def poadc(mc):
     mc.dc.name = None  # assert_series_equal will fail without this
 
 
-@pytest.mark.parametrize('dc_model', ['sapm', 'singlediode', 'pvwatts_dc'])
+@pytest.mark.parametrize('dc_model', [
+    'sapm', pytest.param('singlediode', marks=requires_scipy), 'pvwatts_dc'])
 def test_infer_dc_model(system, cec_dc_snl_ac_system,
                         pvwatts_dc_pvwatts_ac_system, location, dc_model,
                         weather, mocker):
@@ -226,8 +227,9 @@ def acdc(mc):
     mc.ac = mc.dc
 
 
-@pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter',
-                                      'pvwatts'])
+@pytest.mark.parametrize('ac_model', [
+    'snlinverter', pytest.param('adrinverter', marks=requires_scipy),
+    'pvwatts'])
 def test_ac_models(system, cec_dc_adr_ac_system, pvwatts_dc_pvwatts_ac_system,
                    location, ac_model, weather, mocker):
     ac_systems = {'snlinverter': system, 'adrinverter': cec_dc_adr_ac_system,

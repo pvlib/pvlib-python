@@ -1,5 +1,9 @@
 import datetime
-from unittest.mock import ANY
+try:
+    from unittest.mock import ANY
+except ImportError:
+    # python 2
+    from mock import ANY
 
 import numpy as np
 from numpy import nan
@@ -75,9 +79,9 @@ def test_get_clearsky(mocker):
     times = pd.DatetimeIndex(start='20160101T0600-0700',
                              end='20160101T1800-0700',
                              freq='3H')
-    mocker.spy(pvlib.clearsky, 'ineichen')
+    m = mocker.spy(pvlib.clearsky, 'ineichen')
     out = tus.get_clearsky(times)
-    pvlib.clearsky.ineichen.assert_called_once()
+    assert m.call_count == 1
     assert_index_equal(out.index, times)
     # check that values are 0 before sunrise and after sunset
     assert out.iloc[0, :].sum().sum() == 0

@@ -1,5 +1,9 @@
 import sys
-from unittest.mock import ANY
+try:
+    from unittest.mock import ANY
+except ImportError:
+    # python 2
+    from mock import ANY
 
 import numpy as np
 import pandas as pd

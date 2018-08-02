@@ -69,11 +69,15 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
              gradients=False):
     """
     Explicit calculation of points on the IV curve described by the single
-    diode equation [1].
+    diode equation [1]_.
 
-    [1] "Computer simulation of the effects of electrical mismatches in
-    photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
-    https://doi.org/10.1016/0379-6787(88)90059-2
+    .. warning::
+       * Do not use ``d2mutau`` with CEC coefficients.
+       * Usage of ``d2mutau`` with PVSyst coefficients is required for CdTe and
+       a:Si modules.
+       * For PVSyst CdTe and a:Si modules, the cells_in_series parameter must
+       only account for a single parallel sub-string if the module has cells in
+       parallel greater than 1.
 
     Parameters
     ----------
@@ -90,6 +94,17 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of series cells ``Ns``
+    cells_in_series : int
+        number of cells in series per parallel module sub-string, if unset
+        default is ``None`` which raises ``TypeError`` if ``d2mutau`` is set.
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic thin-film layer squared :math:`d^2` and the diffusion
+        length of charge carriers :math:`\mu \tau`, in volts [V], defaults to
+        0[V]
+    voltage_builtin : numeric
+        PVSyst thin-film recombination parameter that is the builtin voltage of
+        the intrinsic thin-film layer, in volts [V], defaults to 0.9[V]
     gradients : bool
         False returns only I, V, and P. True also returns gradients
 
@@ -100,6 +115,31 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         :math:`\\frac{dI}{dV_d}`, :math:`\\frac{dV}{dV_d}`,
         :math:`\\frac{dI}{dV}`, :math:`\\frac{dP}{dV}`, and
         :math:`\\frac{d^2 P}{dV dV_d}`
+
+    Notes
+    -----
+    The PVSyst thin-film recombination losses parameters ``d2mutau`` and
+    ``voltage_builtin`` are only applied to cadmium-telluride (CdTe) and
+    amorphous-silicon (a:Si) PV modules, [2]_, [3]_. The builtin voltage should
+    account for all junctions. _EG_: tandem and triple junction cell would have
+    builtin voltages of 1.8[V] and 2.7[V] respectively, based on the default of
+    0.9[V] for a single junction.
+
+    References
+    ----------
+    .. [1] "Computer simulation of the effects of electrical mismatches in
+       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+       :doi:`10.1016/0379-6787(88)90059-2`
+
+    .. [2] "Improved equivalent circuit and Analytical Model for Amorphous
+       Silicon Solar Cells and Modules." J. Mertens, et al., IEEE Transactions
+       on Electron Devices, Vol 45, No 2, Feb 1998.
+       :doi:`10.1109/16.658676`
+
+    .. [3] "Performance assessment of a simulation model for PV modules of any
+       available technology", André Mermoud and Thibault Lejeune, 25th EUPVSEC,
+       2010
+       :doi:`10.4229/25thEUPVSEC2010-4BV.1.114`
     """
     # check if need to calculate recombination loss current
     i_recomb, v_recomb = 0, np.inf

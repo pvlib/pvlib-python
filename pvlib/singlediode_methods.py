@@ -64,8 +64,8 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
 
 
 def bishop88(diode_voltage, photocurrent, saturation_current,
-             resistance_series, resistance_shunt, nNsVth, d2mutau=0,
-             cells_in_series=None, voltage_builtin=VOLTAGE_BUILTIN,
+             resistance_series, resistance_shunt, nNsVth, cells_in_series=None,
+             d2mutau=0, voltage_builtin=VOLTAGE_BUILTIN,
              gradients=False):
     """
     Explicit calculation of points on the IV curve described by the single

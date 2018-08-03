@@ -129,36 +129,45 @@ def test_brentq_fs_495():
     return isc, voc, imp, vmp, pmp, i, v, pvs
 
 
-# PVsyst parameters for First Solar FS-495 module from PVSyst-6.7.2 database
-# I_L_ref derived from Isc_ref conditions:
-#     I_L_ref = (I_sc_ref + Id + Ish) / (1 - d2mutau/(Vbi*N_s - Vd))
-# where
-#     Vd = I_sc_ref * R_s
-#     Id = I_o_ref * (exp(Vd / nNsVt) - 1)
-#     Ish = Vd / R_sh_ref
-PVSYST_FS_495 = {
-    'd2mutau': 1.31, 'alpha_sc': 0.00039, 'gamma_ref': 1.48, 'mu_gamma': 0.001,
-    'I_o_ref': 9.62e-10, 'R_sh_ref': 5000, 'R_sh_0': 12500, 'R_sh_exp': 3.1,
-    'R_s': 4.6, 'beta_oc': -0.2116, 'EgRef': 1.5, 'cells_in_series': 108,
-    'cells_in_parallel': 2, 'I_sc_ref': 1.55, 'V_oc_ref': 86.5,
-    'I_mp_ref': 1.4, 'V_mp_ref': 67.85, 'temp_ref': 25, 'irrad_ref': 1000,
-    'I_L_ref': 1.5743233463848496
-}
+@pytest.fixture
+def pvsyst_fs_495():
+    """
+    PVsyst parameters for First Solar FS-495 module from PVSyst-6.7.2 database.
+
+    I_L_ref derived from Isc_ref conditions::
+
+        I_L_ref = (I_sc_ref + Id + Ish) / (1 - d2mutau/(Vbi*N_s - Vd))
+
+    where::
+
+        Vd = I_sc_ref * R_s
+        Id = I_o_ref * (exp(Vd / nNsVt) - 1)
+        Ish = Vd / R_sh_ref
+
+    """
+    return {
+        'd2mutau': 1.31, 'alpha_sc': 0.00039, 'gamma_ref': 1.48,
+        'mu_gamma': 0.001, 'I_o_ref': 9.62e-10, 'R_sh_ref': 5000,
+        'R_sh_0': 12500, 'R_sh_exp': 3.1, 'R_s': 4.6, 'beta_oc': -0.2116,
+        'EgRef': 1.5, 'cells_in_series': 108, 'cells_in_parallel': 2,
+        'I_sc_ref': 1.55, 'V_oc_ref': 86.5, 'I_mp_ref': 1.4, 'V_mp_ref': 67.85,
+        'temp_ref': 25, 'irrad_ref': 1000, 'I_L_ref': 1.5743233463848496
+    }
 
 
 @pytest.mark.parametrize(
     'poa, temp_cell, expected, tol',
-    [(PVSYST_FS_495['irrad_ref'], PVSYST_FS_495['temp_ref'],
-      {'pmp': PVSYST_FS_495['I_mp_ref']*PVSYST_FS_495['V_mp_ref'],
-       'isc': PVSYST_FS_495['I_sc_ref'], 'voc': PVSYST_FS_495['V_oc_ref']},
+    [(pvsyst_fs_495()['irrad_ref'], pvsyst_fs_495()['temp_ref'],
+      {'pmp': pvsyst_fs_495()['I_mp_ref'] * pvsyst_fs_495()['V_mp_ref'],
+       'isc': pvsyst_fs_495()['I_sc_ref'], 'voc': pvsyst_fs_495()['V_oc_ref']},
       (5e-4, 0.04)),
      (POA, TCELL, {'pmp': 76.26, 'isc': 1.387, 'voc': 79.29}, (1e-3, 1e-3))]
 )  # DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
-def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
+def test_pvsyst_recombination_loss(pvsyst_fs_495, poa, temp_cell, expected,
+                                   tol):
     """test PVSst recombination loss"""
     # first evaluate PVSyst model with thin-film recombination loss current
     # at reference conditions
-    pvsyst_fs_495 = PVSYST_FS_495
     x = pvsystem.calcparams_pvsyst(
         effective_irradiance=poa, temp_cell=temp_cell,
         alpha_sc=pvsyst_fs_495['alpha_sc'],

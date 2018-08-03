@@ -75,10 +75,10 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     .. warning::
        * Do not use ``d2mutau`` with CEC coefficients.
        * Usage of ``d2mutau`` with PVSyst coefficients is required for CdTe and
-       a:Si modules.
-       * For PVSyst CdTe and a:Si modules, the cells_in_series parameter must
-       only account for a single parallel sub-string if the module has cells in
-       parallel greater than 1.
+         a:Si modules.
+       * For PVSyst CdTe and a:Si modules, the ``cells_in_series`` parameter
+         must only account for a single parallel sub-string if the module has
+         cells in parallel greater than 1.
 
     Parameters
     ----------
@@ -96,12 +96,13 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of series cells ``Ns``
     cells_in_series : int
-        number of cells in series per parallel module sub-string, if unset
-        default is ``None`` which raises ``TypeError`` if ``d2mutau`` is set.
+        number of cells in series per parallel module sub-string, only required
+        for PVSyst thin-film recombination loss, if unset default is ``None``
+        which raises ``TypeError`` if ``d2mutau`` is set.
     d2mutau : numeric
         PVSyst thin-film recombination parameter that is the ratio of thickness
         of the intrinsic thin-film layer squared :math:`d^2` and the diffusion
-        length of charge carriers :math:`\mu \tau`, in volts [V], defaults to
+        length of charge carriers :math:`\\mu \\tau`, in volts [V], defaults to
         0[V]
     voltage_builtin : numeric
         PVSyst thin-film recombination parameter that is the builtin voltage of
@@ -122,7 +123,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     The PVSyst thin-film recombination losses parameters ``d2mutau`` and
     ``voltage_builtin`` are only applied to cadmium-telluride (CdTe) and
     amorphous-silicon (a:Si) PV modules, [2]_, [3]_. The builtin voltage should
-    account for all junctions. _EG_: tandem and triple junction cell would have
+    account for all junctions. *EG*: tandem and triple junction cell would have
     builtin voltages of 1.8[V] and 2.7[V] respectively, based on the default of
     0.9[V] for a single junction.
 

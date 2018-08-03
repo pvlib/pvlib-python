@@ -74,8 +74,8 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
     .. warning::
        * Do not use ``d2mutau`` with CEC coefficients.
-       * Usage of ``d2mutau`` with PVSyst coefficients is required for CdTe and
-         a:Si modules.
+       * Usage of ``d2mutau`` with PVSyst coefficients is required for cadmium-
+         telluride (CdTe) and amorphous-silicon (a:Si) PV modules only.
        * For PVSyst CdTe and a:Si modules, the ``cells_in_series`` parameter
          must only account for a single parallel sub-string if the module has
          cells in parallel greater than 1.
@@ -95,7 +95,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of series cells ``Ns``
-    cells_in_series : int
+    cells_in_series : None or int
         number of cells in series per parallel module sub-string, only required
         for PVSyst thin-film recombination loss, if unset default is ``None``
         which raises ``TypeError`` if ``d2mutau`` is set.
@@ -123,9 +123,9 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     The PVSyst thin-film recombination losses parameters ``d2mutau`` and
     ``voltage_builtin`` are only applied to cadmium-telluride (CdTe) and
     amorphous-silicon (a:Si) PV modules, [2]_, [3]_. The builtin voltage should
-    account for all junctions. *EG*: tandem and triple junction cell would have
-    builtin voltages of 1.8[V] and 2.7[V] respectively, based on the default of
-    0.9[V] for a single junction.
+    account for all junctions. For example: tandem and triple junction cell
+    would have builtin voltages of 1.8[V] and 2.7[V] respectively, based on the
+    default of 0.9[V] for a single junction.
 
     References
     ----------
@@ -143,11 +143,12 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
        2010
        :doi:`10.4229/25thEUPVSEC2010-4BV.1.114`
     """
-    # check if need to calculate recombination loss current
-    i_recomb, v_recomb = 0, np.inf
-    if d2mutau > 0:
-        v_recomb = voltage_builtin * cells_in_series - diode_voltage
-        i_recomb = photocurrent * d2mutau / v_recomb
+    # calculate recombination loss current where d2mutau > 0
+    is_recomb = d2mutau > 0  # True where there is thin-film recombination loss
+    v_recomb = np.where(is_recomb,
+                        voltage_builtin * cells_in_series - diode_voltage,
+                        np.inf)
+    i_recomb = np.where(is_recomb, photocurrent * d2mutau / v_recomb, 0)
     # calculate temporary values to simplify calculations
     v_star = diode_voltage / nNsVth  # non-dimensional diode voltage
     g_sh = 1.0 / resistance_shunt  # conductance
@@ -156,11 +157,9 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)
     if gradients:
-        # check again if need to calculate recombination loss current gradients
-        grad_i_recomb = grad_2i_recomb = 0
-        if d2mutau > 0:
-            grad_i_recomb = i_recomb / v_recomb
-            grad_2i_recomb = 2 * grad_i_recomb / v_recomb
+        # calculate recombination loss current gradients where d2mutau > 0
+        grad_i_recomb = np.where(is_recomb, i_recomb / v_recomb, 0)
+        grad_2i_recomb = np.where(is_recomb, 2 * grad_i_recomb / v_recomb, 0)
         g_diode = saturation_current * np.exp(v_star) / nNsVth  # conductance
         grad_i = -g_diode - g_sh - grad_i_recomb # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd

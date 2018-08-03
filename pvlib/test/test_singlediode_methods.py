@@ -4,7 +4,7 @@ testing single-diode methods using JW Bishop 1988
 
 import numpy as np
 from pvlib import pvsystem
-from pvlib.singlediode_methods import bishop88, estimate_voc
+from pvlib.singlediode_methods import bishop88, estimate_voc, VOLTAGE_BUILTIN
 import pytest
 from conftest import requires_scipy
 
@@ -189,7 +189,7 @@ def test_pvsyst_recombination_loss(pvsyst_fs_495, poa, temp_cell, expected,
         saturation_current=io_pvsyst, resistance_series=rs_pvsyst,
         resistance_shunt=rsh_pvsyst, nNsVth=nnsvt_pvsyst,
         d2mutau=pvsyst_fs_495['d2mutau'],
-        cells_in_series=pvsyst_fs_495['cells_in_series']
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series']
     )
     # test max power
     assert np.isclose(max(pvsyst[2]), expected['pmp'], *tol)

@@ -9,9 +9,9 @@ dependencies:
     - pytables
     - pandas
     - pytz
-    #- ephem
-    #- numba
-    #- siphon
+    - ephem
+    - numba
+    - siphon
     - pytest
     - pytest-cov
     - pytest-mock

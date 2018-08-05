@@ -8,6 +8,7 @@ environment:
   matrix:
     - PYTHON_VERSION: "2.7"
     - PYTHON_VERSION: "3.6"
+#    - PYTHON_VERSION: "3.7"  # appveyor supports 3.7, but siphon package not yet available for py 3.7 as of 2018-08-04. dont want to bother with a more complicated config
 
 platform:
     - x86

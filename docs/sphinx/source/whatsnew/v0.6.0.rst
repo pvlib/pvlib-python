@@ -67,6 +67,7 @@ Bug fixes
   floats and NumPy arrays. (:issue:`508`)
 * Make GitHub recognize the license, add AUTHORS.md, clarify shared copyright.
   (:issue:`503`)
+* Fix argument order of longitude and latitude when querying weather forecasts by lonlat bounding box (:issue:`521`)
 
 
 Documentation

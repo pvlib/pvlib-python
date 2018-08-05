@@ -46,7 +46,7 @@ before_install:
         export PATH=/usr/lib/ccache:$PATH;
       fi
     - export BASE="http://repo.continuum.io/miniconda/Miniconda"
-    - export CONDAVER="4.5.5"
+    - export CONDAVER="4.5.4"
     - wget $BASE$PYVER-$CONDAVER-$OSSTR -O miniconda.sh;
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"

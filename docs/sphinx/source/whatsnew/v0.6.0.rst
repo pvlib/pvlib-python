@@ -58,6 +58,7 @@ Enhancements
   :func:`~pvlib.singlediode_methods.bishop88_i_from_v`,
   :func:`~pvlib.singlediode_methods.bishop88_v_from_i`, and
   :func:`~pvlib.singlediode_methods.bishop88_mpp`.
+* Python 3.7 officially supported. (:issue:`496`)
 
 
 Bug fixes
@@ -93,6 +94,7 @@ Testing
 * Additional test refactoring to limit test result dependence to a single
   function per test. (:issue:`394`)
 * Use pytest-mock to ensure that ModelChain DC model is set up correctly.
+* Add Python 3.7 to build matrix
 
 
 Contributors

@@ -57,7 +57,9 @@ def ephem_data(times):
 
 @pytest.fixture
 def dni_et(times):
-    return irradiance.extraradiation(times.dayofyear)
+    return np.array(
+        [1321.1655834833093, 1321.1655834833093, 1321.1655834833093,
+         1321.1655834833093])
 
 
 @pytest.fixture
@@ -314,14 +316,26 @@ def test_get_total_irradiance_scalars(model):
 def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
     aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
-    airmass = atmosphere.get_relative_airmass(ephem_data['apparent_zenith'])
     gr_sand = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
                                             surface_type='sand')
     diff_perez = irradiance.perez(
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
         ephem_data['apparent_zenith'], ephem_data['azimuth'], relative_airmass)
-    irradiance.poa_components(
+    out = irradiance.poa_components(
         aoi, irrad_data['dni'], diff_perez, gr_sand)
+    expected = pd.DataFrame(np.array(
+        [[  0.        ,  -0.        ,   0.        ,   0.        ,
+            0.        ],
+         [ 35.19456561,   0.        ,  35.19456561,  31.4635077 ,
+            3.73105791],
+         [956.18253696, 798.31939281, 157.86314414, 109.08433162,
+           48.77881252],
+         [ 90.99624896,  33.50143401,  57.49481495,  45.45978964,
+           12.03502531]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse'],
+        index=irrad_data.index)
+    assert_frame_equal(out, expected)
 
 
 def test_disc_keys(irrad_data, ephem_data):

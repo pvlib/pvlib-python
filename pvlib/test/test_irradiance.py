@@ -143,7 +143,7 @@ def test_grounddiffuse_albedo_invalid_surface(irrad_data):
 
 
 def test_grounddiffuse_albedo_surface(irrad_data):
-    result = irradiance.get_ground_diffuse(40, irrad_data['ghi'], 
+    result = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
                                            surface_type='sand')
     assert_allclose(result, [0, 3.731058, 48.778813, 12.035025], atol=1e-4)
 
@@ -315,7 +315,8 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
     aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
     airmass = atmosphere.get_relative_airmass(ephem_data['apparent_zenith'])
-    gr_sand = irradiance.get_ground_diffuse(40, ghi, surface_type='sand')
+    gr_sand = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
+                                            surface_type='sand')
     diff_perez = irradiance.perez(
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
         ephem_data['apparent_zenith'], ephem_data['azimuth'], relative_airmass)

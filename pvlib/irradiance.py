@@ -299,7 +299,7 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
 
 def get_total_irradiance(surface_tilt, surface_azimuth,
-                         apparent_zenith, azimuth,
+                         solar_zenith, solar_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
                          albedo=.25, surface_type=None,
                          model='isotropic',
@@ -355,10 +355,6 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse',
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
     """
-    # total_irrad arg names are wrong. these two lines will be removed in 0.6
-    solar_zenith = apparent_zenith
-    solar_azimuth = azimuth
-
     poa_sky_diffuse = get_sky_diffuse(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,

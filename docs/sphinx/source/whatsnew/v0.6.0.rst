@@ -11,6 +11,12 @@ API Changes
   support from PVSystem.pvwatts_losses. Enables custom losses specification
   in ModelChain calculations. (:issue:`484`)
 * removed irradiance parameter from ModelChain.run_model and ModelChain.prepare_inputs
+* Add ``perez_enhancement`` keyword argument to clearsky.ineichen to control
+  whether or not the "perez enhancement factor" is applied. The enhancement
+  factor was always applied until now. Now it is turned off by default. The
+  enhancement factor can yield unphysical results, especially for latitudes
+  closer to the poles and especially in the winter months. It may yield
+  improved results under other conditions. (:issue:`435`)
 
 
 Enhancements
@@ -81,8 +87,11 @@ Documentation
 Testing
 ~~~~~~~
 * Add pytest-mock dependency
-* Use pytest-mock to ensure that PVSystem methods call corresponding functions
-  correctly. Removes implicit dependence on precise return values of functions
+* Use pytest-mock to ensure that PVSystem and ModelChain methods call
+  corresponding functions correctly. Removes implicit dependence on precise
+  return values of some function/methods. (:issue:`394`)
+* Additional test refactoring to limit test result dependence to a single
+  function per test. (:issue:`394`)
 * Use pytest-mock to ensure that ModelChain DC model is set up correctly.
 
 

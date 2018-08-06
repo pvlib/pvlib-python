@@ -50,17 +50,31 @@ else:
 @pytest.fixture(scope='module', params=_modelclasses)
 def model(request):
     amodel = request.param()
-    amodel.raw_data = \
-        amodel.get_data(_latitude, _longitude, _start, _end)
+    try:
+        raw_data = amodel.get_data(_latitude, _longitude, _start, _end)
+    except Exception as e:
+        print('Exception getting data for ', amodel)
+        print('latitude, longitude, start, end = ',
+              _latitude, _longitude, _start, _end)
+        print(e)
+        raw_data = pd.DataFrame(tz=_start.tzinfo)
+    amodel.raw_data = raw_data
     return amodel
 
 
 @requires_siphon
 def test_process_data(model):
     for how in ['liujordan', 'clearsky_scaling']:
+        if model.raw_data.empty:
+            print('Could not process {} data with how={} '
+                  'because raw_data was empty'.format(model, how))
+            continue
         data = model.process_data(model.raw_data, how=how)
         for variable in _nonnan_variables:
-            assert not data[variable].isnull().values.any()
+            try:
+                assert not data[variable].isnull().values.any()
+            except AssertionError:
+                print(model, variable, 'data contained null values')
 
 
 @requires_siphon

@@ -95,6 +95,7 @@ Testing
   function per test. (:issue:`394`)
 * Use pytest-mock to ensure that ModelChain DC model is set up correctly.
 * Add Python 3.7 to build matrix
+* Make test_forecast.py more robust. (:issue:`293`)
 
 
 Contributors

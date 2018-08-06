@@ -218,7 +218,7 @@ class Location(object):
 
             cs = clearsky.ineichen(apparent_zenith, airmass_absolute,
                                    linke_turbidity, altitude=self.altitude,
-                                   dni_extra=dni_extra)
+                                   dni_extra=dni_extra, **kwargs)
         elif model == 'haurwitz':
             cs = clearsky.haurwitz(apparent_zenith)
         elif model == 'simplified_solis':

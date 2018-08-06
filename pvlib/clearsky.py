@@ -16,7 +16,7 @@ from pvlib import tools, atmosphere, solarposition, irradiance
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
-             altitude=0, dni_extra=1364.):
+             altitude=0, dni_extra=1364., perez_enhancement=False):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
 
@@ -46,6 +46,12 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     dni_extra : numeric, default 1364
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
+
+    perez_enhancement : bool, default False
+        Controls if the Perez enhancement factor should be applied.
+        Setting to True may produce spurious results for times when
+        the Sun is near the horizon and the airmass is high.
+        See https://github.com/pvlib/pvlib-python/issues/435
 
     Returns
     -------
@@ -79,28 +85,9 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
         ISES Solar World Congress, June 2003. Goteborg, Sweden.
     '''
 
-    # Dan's note on the TL correction: By my reading of the publication
-    # on pages 151-157, Ineichen and Perez introduce (among other
-    # things) three things. 1) Beam model in eqn. 8, 2) new turbidity
-    # factor in eqn 9 and appendix A, and 3) Global horizontal model in
-    # eqn. 11. They do NOT appear to use the new turbidity factor (item
-    # 2 above) in either the beam or GHI models. The phrasing of
-    # appendix A seems as if there are two separate corrections, the
-    # first correction is used to correct the beam/GHI models, and the
-    # second correction is used to correct the revised turibidity
-    # factor. In my estimation, there is no need to correct the
-    # turbidity factor used in the beam/GHI models.
-
-    # Create the corrected TL for TL < 2
-    # TLcorr = TL;
-    # TLcorr(TL < 2) = TLcorr(TL < 2) - 0.25 .* (2-TLcorr(TL < 2)) .^ (0.5);
-
-    # This equation is found in Solar Energy 73, pg 311. Full ref: Perez
-    # et. al., Vol. 73, pp. 307-317 (2002). It is slightly different
-    # than the equation given in Solar Energy 73, pg 156. We used the
-    # equation from pg 311 because of the existence of known typos in
-    # the pg 156 publication (notably the fh2-(TL-1) should be fh2 *
-    # (TL-1)).
+    # ghi is calculated using either the equations in [1] by setting
+    # perez_enhancement=False (default behavior) or using the model
+    # in [2] by setting perez_enhancement=True.
 
     # The NaN handling is a little subtle. The AM input is likely to
     # have NaNs that we'll want to map to 0s in the output. However, we
@@ -119,8 +106,12 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     cg1 = 5.09e-05 * altitude + 0.868
     cg2 = 3.92e-05 * altitude + 0.0387
 
-    ghi = (np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1))) *
-           np.exp(0.01*airmass_absolute**1.8))
+    ghi = np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1)))
+
+    # https://github.com/pvlib/pvlib-python/issues/435
+    if perez_enhancement:
+        ghi *= np.exp(0.01*airmass_absolute**1.8)
+
     # use fmax to map airmass nans to 0s. multiply and divide by tl to
     # reinsert tl nans
     ghi = cg1 * dni_extra * cos_zenith * tl / tl * np.fmax(ghi, 0)

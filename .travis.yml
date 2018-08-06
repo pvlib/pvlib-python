@@ -6,6 +6,8 @@
 language: python
 sudo: false # if false, use TravisCI's container based build
 
+# assume linux if not specified
+# someday add os: osx to specify osx, but python not yet supported on Travis
 matrix:
     include:
     - python: 2.7
@@ -18,6 +20,8 @@ matrix:
       env: CONDA_ENV=py35
     - python: 3.6
       env: CONDA_ENV=py36
+    - python: 3.6
+      env: CONDA_ENV=py37
 
 addons:
     apt:
@@ -25,18 +29,25 @@ addons:
             - ccache
 
 cache:
-#    - pip
     - ccache
 
-# setup miniconda for numpy, scipy, pandas
+# setup miniconda for numpy, scipy, pandas, etc.
 before_install:
     - echo "before install"
-    - export PATH=/usr/lib/ccache:$PATH
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        wget http://repo.continuum.io/miniconda/Miniconda-3.16.0-Linux-x86_64.sh -O miniconda.sh;
+        export PYVER="2";
       else
-        wget http://repo.continuum.io/miniconda/Miniconda3-3.16.0-Linux-x86_64.sh -O miniconda.sh;
+        export PYVER="3";
       fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        export OSSTR="MacOSX-x86_64.sh";
+      else
+        export OSSTR="Linux-x86_64.sh";
+        export PATH=/usr/lib/ccache:$PATH;
+      fi
+    - export BASE="http://repo.continuum.io/miniconda/Miniconda"
+    - export CONDAVER="4.5.4"
+    - wget $BASE$PYVER-$CONDAVER-$OSSTR -O miniconda.sh;
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
@@ -59,12 +70,10 @@ install:
     - conda list
     - echo $PATH
     - ls -l /home/travis/miniconda/envs/test_env/lib
-    #- pip install . # use pip to automatically install anything not in the yml files (i.e. numpy/scipy/pandas for py3*)
-    #- pip install scipy # won't do anything if already installed
     - pip install -e .
 
 script:
-    - py.test pvlib --cov=pvlib --cov-report term-missing
+    - pytest pvlib --cov=pvlib --cov-report term-missing
 
 after_success:
     coveralls

@@ -760,7 +760,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
         # fails with single point input
         F.fillna(0, inplace=True)
     except AttributeError:
-        F = 0
+        F = np.where(np.isnan(F), 0, F)
 
     term1 = 0.5 * (1 + tools.cosd(surface_tilt))
     term2 = 1 + F * (tools.sind(0.5 * surface_tilt) ** 3)

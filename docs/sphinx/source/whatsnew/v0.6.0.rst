@@ -5,8 +5,18 @@ v0.6.0 (___, 2018)
 
 API Changes
 ~~~~~~~~~~~
-* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
+* pvsystem.calcparams_desoto now requires arguments for each module model
+  parameter. (:issue:`462`)
+* Add losses_parameters attribute to PVSystem objects and remove the kwargs
+  support from PVSystem.pvwatts_losses. Enables custom losses specification
+  in ModelChain calculations. (:issue:`484`)
 * removed irradiance parameter from ModelChain.run_model and ModelChain.prepare_inputs
+* Add ``perez_enhancement`` keyword argument to clearsky.ineichen to control
+  whether or not the "perez enhancement factor" is applied. The enhancement
+  factor was always applied until now. Now it is turned off by default. The
+  enhancement factor can yield unphysical results, especially for latitudes
+  closer to the poles and especially in the winter months. It may yield
+  improved results under other conditions. (:issue:`435`)
 
 
 Enhancements
@@ -49,6 +59,7 @@ Enhancements
   :func:`~pvlib.singlediode_methods.bishop88_v_from_i`, and
   :func:`~pvlib.singlediode_methods.bishop88_mpp`.
 * Add PVSyst thin-film recombination losses for CdTe and a:Si (:issue:`163`)
+* Python 3.7 officially supported. (:issue:`496`)
 
 
 Bug fixes
@@ -60,6 +71,10 @@ Bug fixes
   Location.get_clearsky. Fixed. (:issue:`481`)
 * Add User-Agent specification to TMY3 remote requests to avoid rejection.
   (:issue:`493`)
+* Fix ``pvlib.irradiance.klucher`` output is different for Pandas Series vs.
+  floats and NumPy arrays. (:issue:`508`)
+* Make GitHub recognize the license, add AUTHORS.md, clarify shared copyright.
+  (:issue:`503`)
 
 
 Documentation
@@ -74,9 +89,13 @@ Documentation
 Testing
 ~~~~~~~
 * Add pytest-mock dependency
-* Use pytest-mock to ensure that PVSystem methods call corresponding functions
-  correctly. Removes implicit dependence on precise return values of functions
+* Use pytest-mock to ensure that PVSystem and ModelChain methods call
+  corresponding functions correctly. Removes implicit dependence on precise
+  return values of some function/methods. (:issue:`394`)
+* Additional test refactoring to limit test result dependence to a single
+  function per test. (:issue:`394`)
 * Use pytest-mock to ensure that ModelChain DC model is set up correctly.
+* Add Python 3.7 to build matrix
 
 
 Contributors

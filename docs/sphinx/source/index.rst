@@ -74,6 +74,7 @@ Contents
    whatsnew
    installation
    contributing
+   pvsystem
    modelchain
    timetimezones
    clearsky

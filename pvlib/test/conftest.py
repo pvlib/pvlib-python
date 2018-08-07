@@ -1,4 +1,4 @@
-import sys
+import platform
 
 import numpy as np
 import pandas as pd
@@ -32,7 +32,7 @@ def fail_on_pvlib_version(version):
     return wrapper
 
 
-skip_windows = pytest.mark.skipif('win' in sys.platform,
+skip_windows = pytest.mark.skipif(platform.system() == 'Windows',
                                   reason='does not run on windows')
 
 try:

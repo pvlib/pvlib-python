@@ -18,7 +18,7 @@ API Changes
 * Deprecated relativeairmass. relativeairmass will be removed in 0.7.
   Use the new get_relative_airmass instead. (:issue:`427`)
 * Deprecated absoluteairmass. absoluteairmass will be removed in 0.7.
-  Use the new absolute_airmass instead. (:issue:`427`)
+  Use the new get_absolute_airmass instead. (:issue:`427`)
 * Deprecated irradiance.globalinplane. globalinplane will be removed in 0.7.
   Use the new irradiance.poa_components instead. (:issue:`427`)
 * Added irradiance.poa_components. Function is the same as the now-deprecated

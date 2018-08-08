@@ -268,8 +268,8 @@ class Location(object):
         airmass_relative = atmosphere.get_relative_airmass(zenith, model)
 
         pressure = atmosphere.alt2pres(self.altitude)
-        airmass_absolute = atmosphere.absolute_airmass(airmass_relative,
-                                                       pressure)
+        airmass_absolute = atmosphere.get_absolute_airmass(airmass_relative,
+                                                           pressure)
 
         airmass = pd.DataFrame()
         airmass['airmass_relative'] = airmass_relative

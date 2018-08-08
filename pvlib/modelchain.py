@@ -134,7 +134,7 @@ def basic_chain(times, latitude, longitude,
     # possible error with using apparent zenith with some models
     airmass = atmosphere.get_relative_airmass(
         solar_position['apparent_zenith'], model=airmass_model)
-    airmass = atmosphere.absolute_airmass(airmass, pressure)
+    airmass = atmosphere.get_absolute_airmass(airmass, pressure)
     dni_extra = pvlib.irradiance.get_extra_radiation(solar_position.index)
 
     aoi = pvlib.irradiance.aoi(surface_tilt, surface_azimuth,

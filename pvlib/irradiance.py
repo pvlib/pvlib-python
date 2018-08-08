@@ -1238,7 +1238,7 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
     I0h = I0 * np.cos(np.radians(zenith))
 
     am = atmosphere.get_relative_airmass(zenith, model='kasten1966')
-    am = atmosphere.absolute_airmass(am, pressure)
+    am = atmosphere.get_absolute_airmass(am, pressure)
 
     kt = ghi / I0h
     kt = np.maximum(kt, 0)

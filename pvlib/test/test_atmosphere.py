@@ -51,19 +51,19 @@ def test_airmass_invalid():
         atmosphere.get_relative_airmass(ephem_data['zenith'], 'invalid')
 
 
-def test_absolute_airmass():
+def test_get_absolute_airmass():
     relative_am = atmosphere.get_relative_airmass(ephem_data['zenith'],
                                                   'simple')
-    atmosphere.absolute_airmass(relative_am)
-    atmosphere.absolute_airmass(relative_am, pressure=100000)
+    atmosphere.get_absolute_airmass(relative_am)
+    atmosphere.get_absolute_airmass(relative_am, pressure=100000)
 
 
-def test_absolute_airmass_numeric():
-    atmosphere.absolute_airmass(2)
+def test_get_absolute_airmass_numeric():
+    atmosphere.get_absolute_airmass(2)
 
 
-def test_absolute_airmass_nan():
-    np.testing.assert_equal(np.nan, atmosphere.absolute_airmass(np.nan))
+def test_get_absolute_airmass_nan():
+    np.testing.assert_equal(np.nan, atmosphere.get_absolute_airmass(np.nan))
 
 
 @fail_on_pvlib_version('0.7')

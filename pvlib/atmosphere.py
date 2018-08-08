@@ -98,7 +98,7 @@ def alt2pres(altitude):
     return press
 
 
-def absolute_airmass(airmass_relative, pressure=101325.):
+def get_absolute_airmass(airmass_relative, pressure=101325.):
     '''
     Determine absolute (pressure corrected) airmass from relative
     airmass and pressure
@@ -137,9 +137,9 @@ def absolute_airmass(airmass_relative, pressure=101325.):
     return airmass_absolute
 
 
-absoluteairmass = deprecated('0.6', alternative='absolute_airmass',
+absoluteairmass = deprecated('0.6', alternative='get_absolute_airmass',
                              name='absoluteairmass', removal='0.7')(
-                             absolute_airmass)
+                             get_absolute_airmass)
 
 
 def get_relative_airmass(zenith, model='kastenyoung1989'):

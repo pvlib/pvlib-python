@@ -58,6 +58,7 @@ Enhancements
   :func:`~pvlib.singlediode_methods.bishop88_i_from_v`,
   :func:`~pvlib.singlediode_methods.bishop88_v_from_i`, and
   :func:`~pvlib.singlediode_methods.bishop88_mpp`.
+* Add PVSyst thin-film recombination losses for CdTe and a:Si (:issue:`163`)
 * Python 3.7 officially supported. (:issue:`496`)
 
 

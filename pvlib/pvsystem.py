@@ -1963,51 +1963,11 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     open-circuit.
 
     If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
-    are indicated, then :func:`pvlib.singlediode.bishop88` is used to
+    are indicated, then :func:`pvlib.singlediode.bishop88` [4] is used to
     calculate the points on the IV curve points at diode voltages from zero to
     open-circuit voltage with a log spacing that gets closer as voltage
     increases. If the method is ``'lambertw'`` then the calculated points on
     the IV curve are linearly spaced.
-
-    The ``bishop88`` method uses an explicit solution from [4] that finds
-    points on the IV curve by first solving for pairs :math:`(V_d, I)` where
-    :math:`V_d` is the diode voltage :math:`V_d = V + I*Rs`. Then the voltage
-    is backed out from :math:`V_d`. Points with specific voltage, such as open
-    circuit, are located using the bisection search method, ``brentq``, bounded
-    by a zero diode voltage and an estimate of open circuit voltage given by
-
-    .. math::
-
-        V_{oc, est} = n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)
-
-    We know that :math:`V_d = 0` corresponds to a voltage less than zero, and
-    we can also show that when :math:`V_d = V_{oc, est}`, the resulting
-    current is also negative, meaning that the corresponding voltage must be
-    in the 4th quadrant and therefore greater than the open circuit voltage
-    (see proof below). Therefore the entire forward-bias 1st quadrant IV-curve
-    is bounded, and a bisection search within these points will always find
-    desired condition.
-
-    .. math::
-
-        I = I_L - I_0 \\left(\\exp \\left(\\frac{V_{oc, est}}{n Ns V_{th}} \\right) - 1 \\right)
-            - \\frac{V_{oc, est}}{R_{sh}} \\newline
-
-        I = I_L - I_0 \\left(\\exp \\left(\\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{n Ns V_{th}} \\right) - 1 \\right)
-            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = I_L - I_0 \\left(\\exp \\left(\\log \\left(\\frac{I_L}{I_0} + 1 \\right) \\right)  - 1 \\right)
-            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = I_L - I_0 \\left(\\frac{I_L}{I_0} + 1  - 1 \\right)
-            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = I_L - I_0 \\left(\\frac{I_L}{I_0} \\right)
-            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = I_L - I_L - \\frac{n Ns V_{th} \log \\left( \\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = - \\frac{n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)}{R_{sh}}
 
     References
     -----------

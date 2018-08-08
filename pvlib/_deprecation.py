@@ -101,7 +101,17 @@ Licensee agrees to be bound by the terms and conditions of this License
 Agreement.
 """
 
+# modified from Matplotlib b97cd2d (post 2.2.2) in the following ways:
+# 1. use module-level _projectName = 'pvlib' and
+#    _projectWarning = 'pvlibDeprecationWarning' in place of MPL specific
+#    string/Class.
+# 2. remove keyword only argument requirement for removal
+# 3. remove deprecated obj_type from deprecated function
+# 4. if removal is empty, say 'soon' instead of assuming two minor releases
+#    later.
+
 import functools
+import textwrap
 import warnings
 
 
@@ -119,46 +129,50 @@ class pvlibDeprecationWarning(UserWarning):
     pass
 
 
-pvlibDeprecation = pvlibDeprecationWarning
+# make it easier for others to copy paste this code into their projects
+_projectName = 'pvlib'
+_projectWarning = pvlibDeprecationWarning
 
 
-def _generate_deprecation_message(since, message='', name='',
-                                  alternative='', pending=False,
-                                  obj_type='attribute',
-                                  addendum=''):
+def _generate_deprecation_message(
+        since, message='', name='', alternative='', pending=False,
+        obj_type='attribute', addendum='', removal=''):
+
+    if removal == "":
+        removal = "soon"
+    elif removal:
+        if pending:
+            raise ValueError(
+                "A pending deprecation cannot have a scheduled removal")
+        removal = "in {}".format(removal)
 
     if not message:
+        message = (
+            "The %(name)s %(obj_type)s"
+            + (" will be deprecated in a future version"
+               if pending else
+               (" was deprecated in %(projectName)s %(since)s"
+                + (" and will be removed %(removal)s"
+                   if removal else
+                   "")))
+            + "."
+            + (" Use %(alternative)s instead." if alternative else "")
+            + (" %(addendum)s" if addendum else ""))
 
-        if pending:
-            message = (
-                'The {} {} will be deprecated in a '
-                'future version.'.format(name, obj_type))
-        else:
-            message = (
-                'The {} {} was deprecated in version '
-                '{}.'.format(name, obj_type, since))
-
-    altmessage = ''
-    if alternative:
-        altmessage = ' Use {} instead.'.format(alternative)
-
-    message = message + altmessage
-
-    if addendum:
-        message += addendum
-
-    return message
+    return message % dict(
+        func=name, name=name, obj_type=obj_type, since=since, removal=removal,
+        alternative=alternative, addendum=addendum, projectName=_projectName)
 
 
-def warn_deprecated(since, message='', name='', alternative='', pending=False,
-                    obj_type='attribute', addendum=''):
-    """Display deprecation warning in a standard way.
-
+def warn_deprecated(
+        since, message='', name='', alternative='', pending=False,
+        obj_type='attribute', addendum='', *, removal=''):
+    """
+    Used to display deprecation in a standard way.
     Parameters
     ----------
     since : str
         The release at which this API became deprecated.
-
     message : str, optional
         Override the default deprecation message.  The format
         specifier `%(name)s` may be used for the name of the function,
@@ -166,121 +180,109 @@ def warn_deprecated(since, message='', name='', alternative='', pending=False,
         to insert the name of an alternative to the deprecated
         function.  `%(obj_type)s` may be used to insert a friendly name
         for the type of object being deprecated.
-
     name : str, optional
         The name of the deprecated object.
-
     alternative : str, optional
-        An alternative function that the user may use in place of the
-        deprecated function.  The deprecation warning will tell the user
-        about this alternative if provided.
-
+        An alternative API that the user may use in place of the deprecated
+        API.  The deprecation warning will tell the user about this alternative
+        if provided.
     pending : bool, optional
         If True, uses a PendingDeprecationWarning instead of a
-        DeprecationWarning.
-
+        DeprecationWarning.  Cannot be used together with *removal*.
+    removal : str, optional
+        The expected removal version.  With the default (an empty string), a
+        removal version is automatically computed from *since*.  Set to other
+        Falsy values to not schedule a removal date.  Cannot be used together
+        with *pending*.
     obj_type : str, optional
         The object type being deprecated.
-
     addendum : str, optional
         Additional text appended directly to the final message.
-
     Examples
     --------
         Basic example::
-
-            # To warn of the deprecation of "pvlib.name_of_module"
-            warn_deprecated('0.6.0', name='pvlib.name_of_module',
+            # To warn of the deprecation of "matplotlib.name_of_module"
+            warn_deprecated('1.4.0', name='matplotlib.name_of_module',
                             obj_type='module')
-
     """
-    message = _generate_deprecation_message(since, message, name, alternative,
-                                            pending, obj_type)
-
-    warnings.warn(message, pvlibDeprecation, stacklevel=1)
+    message = '\n' + _generate_deprecation_message(
+        since, message, name, alternative, pending, obj_type, addendum,
+        removal=removal)
+    category = (PendingDeprecationWarning if pending
+                else _projectWarning)
+    warnings.warn(message, category, stacklevel=2)
 
 
 def deprecated(since, message='', name='', alternative='', pending=False,
-               obj_type=None, addendum=''):
-    """Mark a function or a class as deprecated.
-
+               addendum='', removal=''):
+    """
+    Decorator to mark a function or a class as deprecated.
     Parameters
     ----------
     since : str
         The release at which this API became deprecated.  This is
         required.
-
     message : str, optional
         Override the default deprecation message.  The format
         specifier `%(name)s` may be used for the name of the object,
         and `%(alternative)s` may be used in the deprecation message
         to insert the name of an alternative to the deprecated
-        object.  `%(obj_type)s` may be used to insert a friendly name
-        for the type of object being deprecated.
-
+        object.
     name : str, optional
         The name of the deprecated object; if not provided the name
         is automatically determined from the passed in object,
         though this is useful in the case of renamed functions, where
         the new function is just assigned to the name of the
         deprecated function.  For example::
-
             def new_function():
                 ...
             oldFunction = new_function
-
     alternative : str, optional
-        An alternative object that the user may use in place of the
-        deprecated object.  The deprecation warning will tell the user
-        about this alternative if provided.
-
+        An alternative API that the user may use in place of the deprecated
+        API.  The deprecation warning will tell the user about this alternative
+        if provided.
     pending : bool, optional
         If True, uses a PendingDeprecationWarning instead of a
-        DeprecationWarning.
-
+        DeprecationWarning.  Cannot be used together with *removal*.
+    removal : str, optional
+        The expected removal version.  With the default (an empty string), a
+        removal version is automatically computed from *since*.  Set to other
+        Falsy values to not schedule a removal date.  Cannot be used together
+        with *pending*.
     addendum : str, optional
         Additional text appended directly to the final message.
-
     Examples
     --------
         Basic example::
-
             @deprecated('1.4.0')
             def the_function_to_deprecate():
                 pass
-
     """
+
     def deprecate(obj, message=message, name=name, alternative=alternative,
                   pending=pending, addendum=addendum):
-        import textwrap
 
         if not name:
             name = obj.__name__
 
         if isinstance(obj, type):
-            obj_type = 'class'
+            obj_type = "class"
             old_doc = obj.__doc__
             func = obj.__init__
 
             def finalize(wrapper, new_doc):
-                try:
-                    pass
-                    # obj.__doc = new_doc
-                except (AttributeError, TypeError):
-                    # cls.__doc__ is not writeable on Py2.
-                    # TypeError occurs on PyPy
-                    pass
+                obj.__doc__ = new_doc
                 obj.__init__ = wrapper
                 return obj
         else:
-            obj_type = 'function'
+            obj_type = "function"
             if isinstance(obj, classmethod):
                 func = obj.__func__
                 old_doc = func.__doc__
 
                 def finalize(wrapper, new_doc):
                     wrapper = functools.wraps(func)(wrapper)
-                    # wrapper.__doc__ = new_doc
+                    wrapper.__doc__ = new_doc
                     return classmethod(wrapper)
             else:
                 func = obj
@@ -288,21 +290,24 @@ def deprecated(since, message='', name='', alternative='', pending=False,
 
                 def finalize(wrapper, new_doc):
                     wrapper = functools.wraps(func)(wrapper)
-                    # wrapper.__doc__ = new_doc
+                    wrapper.__doc__ = new_doc
                     return wrapper
 
-        message = _generate_deprecation_message(since, message, name,
-                                                alternative, pending,
-                                                obj_type, addendum)
+        message = _generate_deprecation_message(
+            since, message, name, alternative, pending, obj_type, addendum,
+            removal=removal)
+        category = (PendingDeprecationWarning if pending
+                    else _projectWarning)
 
         def wrapper(*args, **kwargs):
-            warnings.warn(message, pvlibDeprecation, stacklevel=2)
+            warnings.warn(message, category, stacklevel=2)
             return func(*args, **kwargs)
 
         old_doc = textwrap.dedent(old_doc or '').strip('\n')
         message = message.strip()
-        new_doc = ('\n.. deprecated:: {}'
-                   '\n    {}\n\n'.format(since, message) + old_doc)
+        new_doc = (('\n.. deprecated:: %(since)s'
+                    '\n    %(message)s\n\n' %
+                    {'since': since, 'message': message}) + old_doc)
         if not old_doc:
             # This is to prevent a spurious 'unexected unindent' warning from
             # docutils when the original docstring was blank.

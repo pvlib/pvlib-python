@@ -112,8 +112,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
 
 
 extraradiation = deprecated('0.6', alternative='get_extra_radiation',
-                            name='extraradiation',
-                            addendum=' This function will be removed in 0.7')(
+                            name='extraradiation', removal='0.7')(
                             get_extra_radiation)
 
 
@@ -368,8 +367,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
 
 
 total_irrad = deprecated('0.6', alternative='get_total_irradiance',
-                         name='total_irrad',
-                         addendum=' This function will be removed in 0.7')(
+                         name='total_irrad', removal='0.7')(
                          get_total_irradiance)
 
 
@@ -507,8 +505,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 
 # globalinplane returns less data than poa_components, so better
 # to copy it
-@deprecated('0.6', alternative='poa_components',
-            addendum=' This function will be removed in 0.7')
+@deprecated('0.6', alternative='poa_components', removal='0.7')
 def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     r'''
     Determine the three components on in-plane irradiance
@@ -631,8 +628,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
 
 grounddiffuse = deprecated('0.6', alternative='get_ground_diffuse',
-                           name='grounddiffuse',
-                           addendum=' This function will be removed in 0.7')(
+                           name='grounddiffuse', removal='0.7')(
                            get_ground_diffuse)
 
 

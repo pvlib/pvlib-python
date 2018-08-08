@@ -137,8 +137,9 @@ def absolute_airmass(airmass_relative, pressure=101325.):
     return airmass_absolute
 
 
-absoluteairmass = deprecated('0.5.2', alternative='absolute_airmass',
-                             name='absoluteairmass')(absolute_airmass)
+absoluteairmass = deprecated('0.6', alternative='absolute_airmass',
+                             name='absoluteairmass', removal='0.7')(
+                             absolute_airmass)
 
 
 def get_relative_airmass(zenith, model='kastenyoung1989'):
@@ -248,8 +249,9 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     return am
 
 
-relativeairmass = deprecated('0.5.2', alternative='get_relative_airmass',
-                             name='relativeairmass')(get_relative_airmass)
+relativeairmass = deprecated('0.6', alternative='get_relative_airmass',
+                             name='relativeairmass', removal='0.7')(
+                             get_relative_airmass)
 
 
 def gueymard94_pw(temp_air, relative_humidity):

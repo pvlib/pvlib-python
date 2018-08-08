@@ -32,7 +32,7 @@ Enhancements
   ``method`` in ``('lambertw', 'newton', 'brentq')``, default is ``'lambertw'``,
   to select a method to solve the single diode equation for points on the IV
   curve. Selecting either ``'brentq'`` or ``'newton'`` as the method uses
-  :func:`~pvlib.singlediode_methods.bishop88` with the corresponding method.
+  :func:`~pvlib.singlediode.bishop88` with the corresponding method.
   (:issue:`410`)
 * Implement new methods ``'brentq'`` and ``'newton'`` for solving the single
   diode equation for points on the IV curve. ``'brentq'`` uses a bisection
@@ -40,24 +40,24 @@ Enhancements
   uses the Newton-Raphson method and may be faster but is not guaranteed to
   converge. However, ``'newton'`` should be safe for well-behaved IV curves.
   (:issue:`408`)
-* Implement :func:`~pvlib.singlediode_methods.bishop88` for explicit calculation
+* Implement :func:`~pvlib.singlediode.bishop88` for explicit calculation
   of arbitrary IV curve points using diode voltage instead of cell voltage. If
   ``method`` is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts`` in
   :func:`~pvlib.pvsystem.singlediode` is provided, the IV curve points will be
   log spaced instead of linear.
-* Implement :func:`~pvlib.singlediode_methods.estimate_voc` to estimate open
+* Implement :func:`~pvlib.singlediode.estimate_voc` to estimate open
   circuit voltage by assuming :math:`R_{sh} \to \infty` and :math:`R_s=0` as an
   upper bound in bisection method for :func:`~pvlib.pvsystem.singlediode` when
   method is either ``'newton'`` or ``'brentq'``.
 * Add :func:`~pvlib.pvsystem.max_power_point` method to compute the max power
   point using the new ``'brentq'`` method.
-* Add new module ``pvlib.singlediode_methods`` with low-level functions for
+* Add new module ``pvlib.singlediode`` with low-level functions for
   solving the single diode equation such as:
-  :func:`~pvlib.singlediode_methods.bishop88`,
-  :func:`~pvlib.singlediode_methods.estimate_voc`,
-  :func:`~pvlib.singlediode_methods.bishop88_i_from_v`,
-  :func:`~pvlib.singlediode_methods.bishop88_v_from_i`, and
-  :func:`~pvlib.singlediode_methods.bishop88_mpp`.
+  :func:`~pvlib.singlediode.bishop88`,
+  :func:`~pvlib.singlediode.estimate_voc`,
+  :func:`~pvlib.singlediode.bishop88_i_from_v`,
+  :func:`~pvlib.singlediode.bishop88_v_from_i`, and
+  :func:`~pvlib.singlediode.bishop88_mpp`.
 * Add PVSyst thin-film recombination losses for CdTe and a:Si (:issue:`163`)
 * Python 3.7 officially supported. (:issue:`496`)
 

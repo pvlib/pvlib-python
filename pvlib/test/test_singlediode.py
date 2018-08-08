@@ -4,7 +4,7 @@ testing single-diode methods using JW Bishop 1988
 
 import numpy as np
 from pvlib import pvsystem
-from pvlib.singlediode_methods import bishop88, estimate_voc, VOLTAGE_BUILTIN
+from pvlib.singlediode import bishop88, estimate_voc, VOLTAGE_BUILTIN
 import pytest
 from conftest import requires_scipy
 

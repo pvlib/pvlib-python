@@ -20,7 +20,7 @@ from pvlib import tools
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
-from pvlib import singlediode_methods
+import pvlib  # FIXME: import singlediode module from pvlib
 
 
 # not sure if this belongs in the pvsystem module.
@@ -1963,7 +1963,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     open-circuit.
 
     If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
-    are indicated, then :func:`pvlib.singlediode_methods.bishop88` is used to
+    are indicated, then :func:`pvlib.singlediode.bishop88` is used to
     calculate the points on the IV curve points at diode voltages from zero to
     open-circuit voltage with a log spacing that gets closer as voltage
     increases. If the method is ``'lambertw'`` then the calculated points on
@@ -2029,12 +2029,12 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     --------
     sapm
     calcparams_desoto
-    pvlib.singlediode_methods.bishop88
+    pvlib.singlediode.bishop88
     """
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
-        out = singlediode_methods._lambertw(
+        out = pvlib.singlediode._lambertw(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth, ivcurve_pnts
         )
@@ -2047,19 +2047,19 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         # equation for the diode voltage V_d then backing out voltage
         args = (photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)  # collect args
-        v_oc = singlediode_methods.bishop88_v_from_i(
+        v_oc = pvlib.singlediode.bishop88_v_from_i(
             0.0, *args, method=method.lower()
         )
-        i_mp, v_mp, p_mp = singlediode_methods.bishop88_mpp(
+        i_mp, v_mp, p_mp = pvlib.singlediode.bishop88_mpp(
             *args, method=method.lower()
         )
-        i_sc = singlediode_methods.bishop88_i_from_v(
+        i_sc = pvlib.singlediode.bishop88_i_from_v(
             0.0, *args, method=method.lower()
         )
-        i_x = singlediode_methods.bishop88_i_from_v(
+        i_x = pvlib.singlediode.bishop88_i_from_v(
             v_oc / 2.0, *args, method=method.lower()
         )
-        i_xx = singlediode_methods.bishop88_i_from_v(
+        i_xx = pvlib.singlediode.bishop88_i_from_v(
             (v_oc + v_mp) / 2.0, *args, method=method.lower()
         )
 
@@ -2069,7 +2069,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                     (11.0 - np.logspace(np.log10(11.0), 0.0,
                                         ivcurve_pnts)) / 10.0
             )
-            ivcurve_i, ivcurve_v, _ = singlediode_methods.bishop88(vd, *args)
+            ivcurve_i, ivcurve_v, _ = pvlib.singlediode.bishop88(vd, *args)
 
     out = OrderedDict()
     out['i_sc'] = i_sc
@@ -2125,7 +2125,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     curve. This function uses Brent's method by default because it is
     guaranteed to converge.
     """
-    i_mp, v_mp, p_mp = singlediode_methods.bishop88_mpp(
+    i_mp, v_mp, p_mp = pvlib.singlediode.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,
         resistance_shunt, nNsVth, method=method.lower()
     )
@@ -2205,7 +2205,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        return singlediode_methods._lambertw_v_from_i(
+        return pvlib.singlediode._lambertw_v_from_i(
             resistance_shunt, resistance_series, nNsVth, current,
             saturation_current, photocurrent
         )
@@ -2215,9 +2215,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         # equation for the diode voltage V_d then backing out voltage
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
-        V = singlediode_methods.bishop88_v_from_i(*args, method=method.lower())
+        V = pvlib.singlediode.bishop88_v_from_i(*args, method=method.lower())
         # find the right size and shape for returns
-        size, shape = singlediode_methods._get_size_and_shape(args)
+        size, shape = pvlib.singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
                 V = np.tile(V, shape)
@@ -2293,7 +2293,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        return singlediode_methods._lambertw_i_from_v(
+        return pvlib.singlediode._lambertw_i_from_v(
             resistance_shunt, resistance_series, nNsVth, voltage,
             saturation_current, photocurrent
         )
@@ -2303,9 +2303,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # equation for the diode voltage V_d then backing out voltage
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        I = singlediode_methods.bishop88_i_from_v(*args, method=method.lower())
+        I = pvlib.singlediode.bishop88_i_from_v(*args, method=method.lower())
         # find the right size and shape for returns
-        size, shape = singlediode_methods._get_size_and_shape(args)
+        size, shape = pvlib.singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
                 I = np.tile(I, shape)

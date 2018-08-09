@@ -213,15 +213,15 @@ A clear sky time series using only basic pvlib functions.
 
     In [1]: apparent_zenith = solpos['apparent_zenith']
 
-    In [1]: airmass = pvlib.atmosphere.relativeairmass(apparent_zenith)
+    In [1]: airmass = pvlib.atmosphere.get_relative_airmass(apparent_zenith)
 
     In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
 
-    In [1]: airmass = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+    In [1]: airmass = pvlib.atmosphere.get_absolute_airmass(airmass, pressure)
 
     In [1]: linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(times)
+    In [1]: dni_extra = pvlib.irradiance.get_extra_radiation(times)
 
     # an input is a pandas Series, so solis is a DataFrame
     In [1]: ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
@@ -253,17 +253,17 @@ Grid with a clear sky irradiance for a few turbidity values.
 
     In [1]: apparent_zenith = solpos['apparent_zenith']
 
-    In [1]: airmass = pvlib.atmosphere.relativeairmass(apparent_zenith)
+    In [1]: airmass = pvlib.atmosphere.get_relative_airmass(apparent_zenith)
 
     In [1]: pressure = pvlib.atmosphere.alt2pres(altitude)
 
-    In [1]: airmass = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+    In [1]: airmass = pvlib.atmosphere.get_absolute_airmass(airmass, pressure)
 
     In [1]: linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
 
     In [1]: print('climatological linke_turbidity = {}'.format(linke_turbidity.mean()))
 
-    In [1]: dni_extra = pvlib.irradiance.extraradiation(times)
+    In [1]: dni_extra = pvlib.irradiance.get_extra_radiation(times)
 
     In [1]: linke_turbidities = [linke_turbidity.mean(), 2, 4]
 

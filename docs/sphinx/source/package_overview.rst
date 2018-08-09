@@ -81,23 +81,23 @@ to accomplish our system modeling goal:
         times = naive_times.tz_localize(timezone)
         system['surface_tilt'] = latitude
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
-        dni_extra = pvlib.irradiance.extraradiation(times)
+        dni_extra = pvlib.irradiance.get_extra_radiation(times)
         dni_extra = pd.Series(dni_extra, index=times)
-        airmass = pvlib.atmosphere.relativeairmass(solpos['apparent_zenith'])
+        airmass = pvlib.atmosphere.get_relative_airmass(solpos['apparent_zenith'])
         pressure = pvlib.atmosphere.alt2pres(altitude)
-        am_abs = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+        am_abs = pvlib.atmosphere.get_absolute_airmass(airmass, pressure)
         tl = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
         cs = pvlib.clearsky.ineichen(solpos['apparent_zenith'], am_abs, tl,
                                      dni_extra=dni_extra, altitude=altitude)
         aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'],
                                    solpos['apparent_zenith'], solpos['azimuth'])
-        total_irrad = pvlib.irradiance.total_irrad(system['surface_tilt'],
-                                                   system['surface_azimuth'],
-                                                   solpos['apparent_zenith'],
-                                                   solpos['azimuth'],
-                                                   cs['dni'], cs['ghi'], cs['dhi'],
-                                                   dni_extra=dni_extra,
-                                                   model='haydavies')
+        total_irrad = pvlib.irradiance.get_total_irradiance(system['surface_tilt'],
+                                                            system['surface_azimuth'],
+                                                            solpos['apparent_zenith'],
+                                                            solpos['azimuth'],
+                                                            cs['dni'], cs['ghi'], cs['dhi'],
+                                                            dni_extra=dni_extra,
+                                                            model='haydavies')
         temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'],
                                              wind_speed, temp_air)
         effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(

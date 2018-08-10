@@ -3,6 +3,10 @@
 v0.6.0 (___, 2018)
 ---------------------
 
+**Python 2.7 support will end on June 1, 2019**. Releases made after this
+date will require Python 3. (:issue:`501`)
+
+
 API Changes
 ~~~~~~~~~~~
 * pvsystem.calcparams_desoto now requires arguments for each module model

@@ -32,7 +32,10 @@ def fail_on_pvlib_version(version):
     return wrapper
 
 
-skip_windows = pytest.mark.skipif(platform.system() == 'Windows',
+has_python2 = parse_version(platform.python_version()) < parse_version('3')
+
+platform_is_windows = platform.system() == 'Windows'
+skip_windows = pytest.mark.skipif(platform_is_windows,
                                   reason='does not run on windows')
 
 try:

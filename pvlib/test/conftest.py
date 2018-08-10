@@ -28,7 +28,7 @@ def fail_on_pvlib_version(version):
             # otherwise return the function to be executed
             else:
                 return func
-        return inner()
+        return inner
     return wrapper
 
 

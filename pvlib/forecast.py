@@ -174,8 +174,8 @@ class ForecastModel(object):
                 isinstance(self.latitude, list)):
             self.lbox = True
             # west, east, south, north
-            self.query.lonlat_box(self.latitude[0], self.latitude[1],
-                                  self.longitude[0], self.longitude[1])
+            self.query.lonlat_box(self.longitude[0], self.longitude[1],
+                                  self.latitude[0], self.latitude[1])
         else:
             self.lbox = False
             self.query.lonlat_point(self.longitude, self.latitude)

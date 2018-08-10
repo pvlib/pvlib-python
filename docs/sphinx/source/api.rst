@@ -214,11 +214,11 @@ Low-level functions for solving the single diode equation.
 .. autosummary::
    :toctree: generated/
 
-   singlediode_methods.estimate_voc
-   singlediode_methods.bishop88
-   singlediode_methods.bishop88_i_from_v
-   singlediode_methods.bishop88_v_from_i
-   singlediode_methods.bishop88_mpp
+   singlediode.estimate_voc
+   singlediode.bishop88
+   singlediode.bishop88_i_from_v
+   singlediode.bishop88_v_from_i
+   singlediode.bishop88_mpp
 
 SAPM model
 ----------

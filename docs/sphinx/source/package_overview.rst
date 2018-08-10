@@ -116,6 +116,8 @@ to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig proc-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 pvlib-python provides a :py:func:`~pvlib.modelchain.basic_chain`
 function that implements much of the code above. Use this function with
@@ -143,6 +145,8 @@ a full understanding of what it is doing internally!
     energies.plot(kind='bar', rot=0)
     @savefig basic-chain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 .. _object-oriented:
@@ -197,6 +201,8 @@ objects to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig modelchain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 Object oriented (LocalizedPVSystem)
@@ -255,6 +261,8 @@ object to accomplish our modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig localized-pvsystem-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 User extensions

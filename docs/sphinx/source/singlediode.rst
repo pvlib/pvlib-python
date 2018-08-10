@@ -17,15 +17,15 @@ method using the ``method`` keyword.
 Lambert W-Function
 ------------------
 When ``method='lambertw'``, the Lambert W-function is used as previously shown
-by Jain and Kapoor [1-3]. The following algorithm can be found on
+by Jain, Kapoor [1, 2] and Hansen [3]. The following algorithm can be found on
 `Wikipedia: Theory of Solar Cells
 <https://en.wikipedia.org/wiki/Theory_of_solar_cells>`_, given the basic single
 diode model equation.
 
 .. math::
 
-   I = I_L - I_0 \left(\exp \left(\frac{\left(V + I R_s \right)}{n Ns V_{th}} \right) - 1 \right)
-       - \frac{\left(V + I R_s \right)}{R_{sh}}
+   I = I_L - I_0 \left(\exp \left(\frac{V + I R_s}{n Ns V_{th}} \right) - 1 \right)
+       - \frac{V + I R_s}{R_{sh}}
 
 Lambert W-function is the inverse of the function
 :math:`f \left( w \right) = w \exp \left( w \right)` or

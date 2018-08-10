@@ -20,7 +20,7 @@ from pvlib import tools
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
-import pvlib  # FIXME: import singlediode module from pvlib
+import pvlib  # use pvlib.singlediode to avoid clash with local method
 
 
 # not sure if this belongs in the pvsystem module.

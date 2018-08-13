@@ -736,7 +736,7 @@ class ModelChain(object):
         if weather is not None:
             self.weather = weather
         if self.weather is None:
-            self.weather = pd.DataFrame()
+            self.weather = pd.DataFrame(index=times)
 
         if times is not None:
             self.times = times

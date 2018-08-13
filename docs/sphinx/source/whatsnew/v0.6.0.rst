@@ -93,6 +93,9 @@ Enhancements
 * Add PVSyst thin-film recombination losses for CdTe and a:Si (:issue:`163`)
 * Python 3.7 officially supported. (:issue:`496`)
 * Improve performance of solarposition.ephemeris. (:issue:`512`)
+* Improve performance of Location.get_airmass. Most noticeable when
+  solar position is supplied, time index length is less than 10000, and
+  method is looped over. (:issue:`502`)
 
 
 Bug fixes

@@ -24,25 +24,24 @@ able to edit the source code?**
 Installing pvlib-python is similar to installing most scientific python
 packages, so see the :ref:`references` section for further help.
 
+Please see the :ref:`compatibility` section for information on the
+optional packages that are needed for some pvlib-python features.
+
 .. _nopython:
 
 If you don't have Python
 ------------------------
 
 There are many ways to install Python on your system, but the Anaconda
-Scientific Python distribution provides by far the easiest way for new
+Python distribution is the easiest way for most new
 users to get started. Anaconda includes all of the popular libraries
 that you'll need for pvlib, including Pandas, NumPy, and SciPy.
 
-    Anaconda installs cleanly into a single directory, does not require
-    Administrator or root privileges, does not affect other Python installs
-    on your system, or interfere with OSX Frameworks. -- `The Anaconda
-    Documentation <https://docs.continuum.io/anaconda/index>`_
+#. **Install** the Anaconda Python distribution available
+   `at Anaconda.com <https://www.anaconda.com/download/>`_
 
-#. **Install** the full Anaconda Scientific Python distribution available
-   `at Continuum.io <https://store.continuum.io/cshop/anaconda/>`_
-
-See the `Anaconda FAQ <http://docs.continuum.io/anaconda/faq.html>`_
+See `What is Anaconda? <https://www.anaconda.com/what-is-anaconda/>`_
+and the `Anaconda Documentation <https://docs.anaconda.com/anaconda/>`_
 for more information.
 
 You can now install pvlib-python by one of the methods below.
@@ -58,8 +57,13 @@ non-editable way, use `conda <http://conda.pydata.org/docs/>`_
 (recommended if you use the Anaconda Python distribution) or `pip
 <https://pip.pypa.io>`_ (works with any Python distribution)::
 
+    # get the package from the pvlib conda channel
     conda install -c pvlib pvlib
 
+    # get the package from the conda-forge conda channel
+    conda install -c conda-forge pvlib-python
+
+    # get the package from the Python Package Index
     pip install pvlib
 
 If your system complains that you don't have access privileges or asks
@@ -194,6 +198,30 @@ interpreter will also work.
 Remember to ``source activate pvlibdev`` (or whatever you named your
 environment) when you start a new shell or terminal.
 
+.. _compatibility:
+
+Compatibility
+-------------
+
+pvlib-python is compatible with Python versions 2.7 and 3.4-3.7.
+
+pvlib-python requires Pandas and Numpy. The minimum version requirements
+are specified in
+`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
+They are typically releases from several years ago.
+
+A handful of pvlib-python features require additional packages that
+must be installed separately using pip or conda. These packages/features
+include:
+
+* scipy: single diode model, clear sky detection
+* pytables: Linke turbidity look up for clear sky models
+* numba: fastest solar position calculations
+* pyephem: solar positions calculations using an astronomical library
+* siphon: forecasting PV power using the pvlib.forecast module
+
+The Anaconda distribution includes most of the above packages.
+
 .. _nrelspa:
 
 NREL SPA algorithm
@@ -215,28 +243,6 @@ To install the NREL SPA algorithm for use with pvlib:
 #. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files``
 #. From the ``pvlib-python`` directory, run ``pip uninstall pvlib``
    followed by ``pip install .``
-
-.. _compatibility:
-
-Compatibility
--------------
-
-pvlib-python is compatible with Python versions 2.7, 3.4, 3.5 and Pandas
-versions 0.13.1 or newer.
-
-There have been several problems with Continuum's Anaconda packages that
-have impacted pvlib users. The current problems that we're aware of are
-listed below:
-
-#. For Windows + Python 2.7 users: Continuum's Python 2.7 SciPy 0.16.1,
-   0.17.0, 0.17.1 packages are not compiled properly and will crash your
-   Python interpreter if you use our Linke turbidity lookup function. See
-   `Anaconda issue 650
-   <https://github.com/ContinuumIO/anaconda-issues/issues/650>`_ for more.
-
-Note that our Numba-accelerated solar position algorithms have more
-specific version requirements that will be resolved by the Numba
-installer.
 
 .. _references:
 

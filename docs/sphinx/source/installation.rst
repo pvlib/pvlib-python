@@ -33,12 +33,12 @@ If you don't have Python
 ------------------------
 
 There are many ways to install Python on your system, but the Anaconda
-Python distribution is the easiest way for most new
-users to get started. Anaconda includes all of the popular libraries
-that you'll need for pvlib, including Pandas, NumPy, and SciPy.
+Python distribution is the easiest way for most new users to get
+started. Anaconda includes all of the popular libraries that you'll need
+for pvlib, including Pandas, NumPy, and SciPy.
 
-#. **Install** the Anaconda Python distribution available
-   `at Anaconda.com <https://www.anaconda.com/download/>`_
+#. **Install** the Anaconda Python distribution available at
+   `Anaconda.com <https://www.anaconda.com/download/>`_.
 
 See `What is Anaconda? <https://www.anaconda.com/what-is-anaconda/>`_
 and the `Anaconda Documentation <https://docs.anaconda.com/anaconda/>`_
@@ -160,10 +160,10 @@ referred to as *conda environments*, but they're the same for our purposes.
 #. **Install** additional packages into your development environment:
    ``conda install jupyter ipython matplotlib seaborn pytest nose flake8``
 
-The `conda documentation
-<http://conda.pydata.org/docs/using/index.html>`_ has more information
-on how to use conda virtual environments. You can also add ``-h`` to most
-pip and conda commands to get help (e.g. ``conda -h`` or ``conda env -h``)
+The `conda documentation <https://conda.io/docs/index.html>`_ has more
+information on how to use conda virtual environments. You can also add
+``-h`` to most pip and conda commands to get help (e.g. ``conda -h`` or
+``conda env -h``)
 
 .. _installsource:
 
@@ -195,7 +195,7 @@ if you make changes to pvlib during an interactive Python
 session (including a Jupyter notebook). Restarting the Python
 interpreter will also work.
 
-Remember to ``source activate pvlibdev`` (or whatever you named your
+Remember to ``conda activate pvlibdev`` (or whatever you named your
 environment) when you start a new shell or terminal.
 
 .. _compatibility:
@@ -210,8 +210,8 @@ are specified in
 `setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
 They are typically releases from several years ago.
 
-A handful of pvlib-python features require additional packages that
-must be installed separately using pip or conda. These packages/features
+A handful of pvlib-python features require additional packages that must
+be installed separately using pip or conda. These packages/features
 include:
 
 * scipy: single diode model, clear sky detection

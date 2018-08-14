@@ -141,7 +141,7 @@ class SingleAxisTracker(PVSystem):
 
         For a given set of solar zenith and azimuth angles, the
         surface tilt and azimuth parameters are typically determined
-        by :py:method:`~SingleAxisTracker.singleaxis`.
+        by :py:meth:`~SingleAxisTracker.singleaxis`.
 
         Parameters
         ----------
@@ -195,7 +195,17 @@ class SingleAxisTracker(PVSystem):
 
 
 class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
-    """Highly experimental."""
+    """
+    The LocalizedSingleAxisTracker class defines a standard set of
+    installed PV system attributes and modeling functions. This class
+    combines the attributes and methods of the SingleAxisTracker (a
+    subclass of PVSystem) and Location classes.
+
+    The LocalizedSingleAxisTracker may have bugs due to the difficulty
+    of robustly implementing multiple inheritance. See
+    :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
+    for modeling PV systems at specific locations.
+    """
 
     def __init__(self, pvsystem=None, location=None, **kwargs):
 

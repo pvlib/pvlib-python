@@ -690,8 +690,10 @@ class LocalizedPVSystem(PVSystem, Location):
     system attributes and modeling functions. This class combines the
     attributes and methods of the PVSystem and Location classes.
 
-    See the :py:class:`PVSystem` class for an object model that
-    describes an unlocalized PV system.
+    The LocalizedPVSystem may have bugs due to the difficulty of
+    robustly implementing multiple inheritance. See
+    :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
+    for modeling PV systems at specific locations.
     """
     def __init__(self, pvsystem=None, location=None, **kwargs):
 

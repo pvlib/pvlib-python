@@ -49,6 +49,8 @@ API Changes
   enhancement factor can yield unphysical results, especially for latitudes
   closer to the poles and especially in the winter months. It may yield
   improved results under other conditions. (:issue:`435`)
+* Add projection_minimum keyword argument to irradiance.aoi_projection.
+  Default behavior remains the same. (:issue:`526`)
 
 
 Enhancements
@@ -109,6 +111,11 @@ Bug fixes
 * Make GitHub recognize the license, add AUTHORS.md, clarify shared copyright.
   (:issue:`503`)
 * Fix argument order of longitude and latitude when querying weather forecasts by lonlat bounding box (:issue:`521`)
+* Fix issue with non-zero direct irradiance contribution to Reindl, Klucher,
+  and Hay-Davies diffuse sky algorithms when the sun is behind the array.
+  (:issue:`526`)
+* Fix issue with dividing by near-0 cos(solar_zenith) values in Reindl and
+  Hay-Davies diffuse sky algorithms. (:issue:`432`)
 
 
 Documentation

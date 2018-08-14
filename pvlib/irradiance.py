@@ -152,7 +152,8 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     return to_doy, to_datetimeindex, to_output
 
 
-def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
+def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+                   projection_minimum=None):
     """
     Calculates the dot product of the solar vector and the surface
     normal.
@@ -169,6 +170,11 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         Solar zenith angle.
     solar_azimuth : numeric
         Solar azimuth angle.
+    projection_minimum : None or numeric, default None
+        Minimum allowable value for the projection for the solar angle
+        into the plane of the array. For example, 0 is equivalent to a
+        90 degree limit, 0.01745 is equivalent to a 89 degree limit.
+        `None` applies no limit.
 
     Returns
     -------
@@ -180,6 +186,9 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         tools.cosd(surface_tilt) * tools.cosd(solar_zenith) +
         tools.sind(surface_tilt) * tools.sind(solar_zenith) *
         tools.cosd(solar_azimuth - surface_azimuth))
+
+    if projection_minimum is not None:
+        projection = np.maximum(projection, projection_minimum)
 
     try:
         projection.name = 'aoi_projection'
@@ -226,7 +235,9 @@ def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
 
 
 def poa_horizontal_ratio(surface_tilt, surface_azimuth,
-                         solar_zenith, solar_azimuth):
+                         solar_zenith, solar_azimuth,
+                         poa_projection_minimum=None,
+                         solar_zenith_projection_minimum=None):
     """
     Calculates the ratio of the beam components of the plane of array
     irradiance and the horizontal irradiance.
@@ -243,6 +254,12 @@ def poa_horizontal_ratio(surface_tilt, surface_azimuth,
         Solar zenith angle.
     solar_azimuth : numeric
         Solar azimuth angle.
+    poa_projection_minimum : None or numeric, default None
+        Minimum allowable value for the projection for the solar angle
+        into the plane of the array. `None` applies no limit.
+    solar_zenith_projection_minimum : numeric, default None
+        Minimum allowable value for the projection of the solar angle
+        on to a horizontal surface. `None` applies no limit.
 
     Returns
     -------
@@ -252,9 +269,14 @@ def poa_horizontal_ratio(surface_tilt, surface_azimuth,
     """
 
     cos_poa_zen = aoi_projection(surface_tilt, surface_azimuth,
-                                 solar_zenith, solar_azimuth)
+                                 solar_zenith, solar_azimuth,
+                                 projection_minimum=poa_projection_minimum)
 
     cos_solar_zenith = tools.cosd(solar_zenith)
+
+    if solar_zenith_projection_minimum is not None:
+        cos_solar_zenith = np.maximum(cos_solar_zenith,
+                                      solar_zenith_projection_minimum)
 
     # ratio of titled and horizontal beam irradiance
     ratio = cos_poa_zen / cos_solar_zenith
@@ -745,7 +767,8 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     # zenith angle with respect to panel normal.
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
-                            solar_zenith, solar_azimuth)
+                            solar_zenith, solar_azimuth,
+                            projection_minimum=0)
 
     F = 1 - ((dhi / ghi) ** 2)
     try:
@@ -835,8 +858,9 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # if necessary, calculate ratio of titled and horizontal beam irradiance
     if projection_ratio is None:
         cos_tt = aoi_projection(surface_tilt, surface_azimuth,
-                                solar_zenith, solar_azimuth)
-        cos_solar_zenith = tools.cosd(solar_zenith)
+                                solar_zenith, solar_azimuth,
+                                projection_minimum=0)
+        cos_solar_zenith = np.maximum(tools.cosd(solar_zenith), 0.01745)
         Rb = cos_tt / cos_solar_zenith
     else:
         Rb = projection_ratio
@@ -931,9 +955,10 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     '''
 
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
-                            solar_zenith, solar_azimuth)
+                            solar_zenith, solar_azimuth,
+                            projection_minimum=0)
 
-    cos_solar_zenith = tools.cosd(solar_zenith)
+    cos_solar_zenith = np.maximum(tools.cosd(solar_zenith), 0.01745)
 
     # ratio of titled and horizontal beam irradiance
     Rb = cos_tt / cos_solar_zenith

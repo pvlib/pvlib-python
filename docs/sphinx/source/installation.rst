@@ -52,18 +52,25 @@ You can now install pvlib-python by one of the methods below.
 Install standard release
 ------------------------
 
+Users may install pvlib-python using either the
+`conda <https://conda.io/docs/>`_ or `pip <https://pip.pypa.io>`_
+package manager. We recommend that most users install pvlib-python
+using the conda package manager in the
+`Anaconda Python distribution <https://www.anaconda.com/what-is-anaconda/>`_.
 To install the most recent stable release of pvlib-python in a
-non-editable way, use `conda <http://conda.pydata.org/docs/>`_
-(recommended if you use the Anaconda Python distribution) or `pip
-<https://pip.pypa.io>`_ (works with any Python distribution)::
+non-editable way, use one of the following commands to install pvlib-python::
 
     # get the package from the pvlib conda channel
+    # best option for installing pvlib in the base Anaconda distribution
     conda install -c pvlib pvlib
 
     # get the package from the conda-forge conda channel
-    conda install -c conda-forge pvlib-python
+    # best option if using pvlib.forecast module
+    # strongly recommend installing in a separate conda env as shown below
+    conda create -n pvlib -c conda-forge pvlib-python; conda activate pvlib
 
     # get the package from the Python Package Index
+    # best option if you know what you are doing
     pip install pvlib
 
 If your system complains that you don't have access privileges or asks

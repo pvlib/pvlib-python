@@ -159,13 +159,15 @@ object describes the modeling chain used to calculate PV output at that
 Location. This can be a useful paradigm if you prefer to think about the
 PV system and its location as separate concepts or if you develop your
 own ModelChain subclasses. It can also be helpful if you make extensive
-use of Location-specific methods for other calculations.
+use of Location-specific methods for other calculations. pvlib-python
+also includes a :py:class:`~pvlib.tracking.SingleAxisTracker` class that
+is a subclass of :py:class:`~pvlib.pvsystem.PVSystem`.
 
 The following code demonstrates how to use
 :py:class:`~pvlib.location.Location`,
 :py:class:`~pvlib.pvsystem.PVSystem`, and
-:py:class:`~pvlib.modelchain.ModelChain`
-objects to accomplish our system modeling goal:
+:py:class:`~pvlib.modelchain.ModelChain` objects to accomplish our
+system modeling goal:
 
 .. ipython:: python
 
@@ -203,13 +205,30 @@ Object oriented (LocalizedPVSystem)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The second object oriented paradigm uses a model where a
-:py:class:`~pvlib.pvsystem.LocalizedPVSystem` represents a
-PV system at a particular place on the planet. This can be a useful
-paradigm if you're thinking about a power plant that already exists.
+:py:class:`~pvlib.pvsystem.LocalizedPVSystem` represents a PV system at
+a particular place on the planet. This can be a useful paradigm if
+you're thinking about a power plant that already exists.
+
+The :py:class:`~pvlib.pvsystem.LocalizedPVSystem` inherits from both
+:py:class:`~pvlib.pvsystem.PVSystem` and
+:py:class:`~pvlib.location.Location`, while the
+:py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` inherits from
+:py:class:`~pvlib.tracking.SingleAxisTracker` (itself a subclass of
+:py:class:`~pvlib.pvsystem.PVSystem`) and
+:py:class:`~pvlib.location.Location`. The
+:py:class:`~pvlib.pvsystem.LocalizedPVSystem` and
+:py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` classes may
+contain bugs due to the relative difficulty of implementing multiple
+inheritance. The :py:class:`~pvlib.pvsystem.LocalizedPVSystem` and
+:py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` may be deprecated
+in a future release. We recommend that most modeling workflows implement
+:py:class:`~pvlib.location.Location`,
+:py:class:`~pvlib.pvsystem.PVSystem`, and
+:py:class:`~pvlib.modelchain.ModelChain`.
 
 The following code demonstrates how to use a
-:py:class:`~pvlib.pvsystem.LocalizedPVSystem`
-object to accomplish our modeling goal:
+:py:class:`~pvlib.pvsystem.LocalizedPVSystem` object to accomplish our
+modeling goal:
 
 .. ipython:: python
 

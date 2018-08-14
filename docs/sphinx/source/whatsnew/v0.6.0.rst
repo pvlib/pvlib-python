@@ -87,7 +87,8 @@ Documentation
 * Expanded general contributing and pull request guidelines.
 * Added section on single diode equation with some detail on solutions used in
   pvlib-python (:issue:`518`)
-
+* Improve LocalizedPVSystem and LocalizedSingleAxisTracker documentation.
+  (:issue:`532`)
 
 Testing
 ~~~~~~~

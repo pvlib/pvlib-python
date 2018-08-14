@@ -108,7 +108,8 @@ Bug fixes
   floats and NumPy arrays. (:issue:`508`)
 * Make GitHub recognize the license, add AUTHORS.md, clarify shared copyright.
   (:issue:`503`)
-* Fix argument order of longitude and latitude when querying weather forecasts by lonlat bounding box (:issue:`521`)
+* Fix argument order of longitude and latitude when querying weather forecasts
+  by lonlat bounding box (:issue:`521`)
 
 
 Documentation
@@ -121,9 +122,9 @@ Documentation
 * Added section on single diode equation with some detail on solutions used in
   pvlib-python (:issue:`518`)
 * Minor improvements and updates to installation documentation. (:issue:`531`)
-
 * Improve LocalizedPVSystem and LocalizedSingleAxisTracker documentation.
   (:issue:`532`)
+
 
 Testing
 ~~~~~~~

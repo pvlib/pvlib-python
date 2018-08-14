@@ -1,12 +1,41 @@
 import platform
 
-from pkg_resources import parse_version
-import pandas as pd
 import numpy as np
+import pandas as pd
+from pkg_resources import parse_version
 import pytest
 
+import pvlib
 
-skip_windows = pytest.mark.skipif(platform.system() == 'Windows',
+pvlib_base_version = \
+    parse_version(parse_version(pvlib.__version__).base_version)
+
+
+# decorator takes one argument: the base version for which it should fail
+# for example @fail_on_pvlib_version('0.7') will cause a test to fail
+# on pvlib versions 0.7a, 0.7b, 0.7rc1, etc.
+def fail_on_pvlib_version(version):
+    # second level of decorator takes the function under consideration
+    def wrapper(func):
+        # third level defers computation until the test is called
+        # this allows the specific test to fail at test runtime,
+        # rather than at decoration time (when the module is imported)
+        def inner():
+            # fail if the version is too high
+            if pvlib_base_version >= parse_version(version):
+                pytest.fail('the tested function is scheduled to be '
+                            'removed in %s' % version)
+            # otherwise return the function to be executed
+            else:
+                return func
+        return inner
+    return wrapper
+
+
+has_python2 = parse_version(platform.python_version()) < parse_version('3')
+
+platform_is_windows = platform.system() == 'Windows'
+skip_windows = pytest.mark.skipif(platform_is_windows,
                                   reason='does not run on windows')
 
 try:

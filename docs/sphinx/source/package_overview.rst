@@ -81,23 +81,23 @@ to accomplish our system modeling goal:
         times = naive_times.tz_localize(timezone)
         system['surface_tilt'] = latitude
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
-        dni_extra = pvlib.irradiance.extraradiation(times)
+        dni_extra = pvlib.irradiance.get_extra_radiation(times)
         dni_extra = pd.Series(dni_extra, index=times)
-        airmass = pvlib.atmosphere.relativeairmass(solpos['apparent_zenith'])
+        airmass = pvlib.atmosphere.get_relative_airmass(solpos['apparent_zenith'])
         pressure = pvlib.atmosphere.alt2pres(altitude)
-        am_abs = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+        am_abs = pvlib.atmosphere.get_absolute_airmass(airmass, pressure)
         tl = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
         cs = pvlib.clearsky.ineichen(solpos['apparent_zenith'], am_abs, tl,
                                      dni_extra=dni_extra, altitude=altitude)
         aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'],
                                    solpos['apparent_zenith'], solpos['azimuth'])
-        total_irrad = pvlib.irradiance.total_irrad(system['surface_tilt'],
-                                                   system['surface_azimuth'],
-                                                   solpos['apparent_zenith'],
-                                                   solpos['azimuth'],
-                                                   cs['dni'], cs['ghi'], cs['dhi'],
-                                                   dni_extra=dni_extra,
-                                                   model='haydavies')
+        total_irrad = pvlib.irradiance.get_total_irradiance(system['surface_tilt'],
+                                                            system['surface_azimuth'],
+                                                            solpos['apparent_zenith'],
+                                                            solpos['azimuth'],
+                                                            cs['dni'], cs['ghi'], cs['dhi'],
+                                                            dni_extra=dni_extra,
+                                                            model='haydavies')
         temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'],
                                              wind_speed, temp_air)
         effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
@@ -116,6 +116,8 @@ to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig proc-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 pvlib-python provides a :py:func:`~pvlib.modelchain.basic_chain`
 function that implements much of the code above. Use this function with
@@ -143,6 +145,8 @@ a full understanding of what it is doing internally!
     energies.plot(kind='bar', rot=0)
     @savefig basic-chain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 .. _object-oriented:
@@ -197,6 +201,8 @@ objects to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig modelchain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 Object oriented (LocalizedPVSystem)
@@ -255,6 +261,8 @@ object to accomplish our modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig localized-pvsystem-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 User extensions

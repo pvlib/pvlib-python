@@ -1,0 +1,34 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "https://orcid.org/0000-0001-6218-9767",
+      "@type": "Person",
+      "name": "William F. Holmgren",
+      "affiliation": "Department of Hydrology and Atmospheric Sciences, University of Arizona"
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-8620-5378",
+      "@type": "Person",
+      "name": "Clifford W. Hansen",
+      "affiliation": "Sandia National Laboratories"
+    },
+    {
+      "@id": "https://orcid.org/0000-0001-8001-8582",
+      "@type": "Person",
+      "name": "Mark A. Mikofski",
+      "affiliation": "DNV-GL"
+    }
+  ],
+  "identifier": "http://doi.org/10.5281/zenodo.1246152",
+  "codeRepository": "https://github.com/pvlib/pvlib-python",
+  "datePublished": "2018-08-02",
+  "dateModified": "2018-08-02",
+  "dateCreated": "2018-08-02",
+  "description": "pvlib python is a community-supported open source tool that provides a set of functions and classes for simulating the performance of photovoltaic energy systems.",
+  "keywords": "Python, solar energy, photovoltaics, renewable energy",
+  "license": "BSD 3 Clause",
+  "title": "pvlib python",
+  "version": "v0.5.2"
+}

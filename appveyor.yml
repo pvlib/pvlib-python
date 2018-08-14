@@ -8,6 +8,7 @@ environment:
   matrix:
     - PYTHON_VERSION: "2.7"
     - PYTHON_VERSION: "3.6"
+#    - PYTHON_VERSION: "3.7"  # appveyor supports 3.7, but siphon package not yet available for py 3.7 as of 2018-08-04. dont want to bother with a more complicated config
 
 platform:
     - x86
@@ -28,7 +29,7 @@ install:
     - cmd: conda info -a
 
     # install depenencies
-    - cmd: conda create -n test_env --yes --quiet python=%PYTHON_VERSION% pip numpy scipy pytables pandas nose pytest pytz ephem numba siphon pytest-mock -c conda-forge
+    - cmd: conda create -n test_env --yes --quiet python=%PYTHON_VERSION% numpy scipy pytables pandas nose pytest pytz ephem numba siphon pytest-mock -c conda-forge
     - cmd: activate test_env
     - cmd: python --version
     - cmd: conda list
@@ -39,4 +40,4 @@ install:
 build: false
 
 test_script:
-    - cmd: py.test -v pvlib
+    - cmd: pytest -v pvlib

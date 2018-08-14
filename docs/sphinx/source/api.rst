@@ -65,7 +65,6 @@ algorithm.
 
    spa
 
-
 Correlations and analytical expressions for low precision solar position
 calculations.
 
@@ -79,6 +78,7 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
+
 
 Clear sky
 =========
@@ -102,8 +102,8 @@ Airmass and atmospheric models
    :toctree: generated/
 
    location.Location.get_airmass
-   atmosphere.absoluteairmass
-   atmosphere.relativeairmass
+   atmosphere.get_absolute_airmass
+   atmosphere.get_relative_airmass
    atmosphere.pres2alt
    atmosphere.alt2pres
    atmosphere.gueymard94_pw
@@ -133,13 +133,13 @@ Decomposing and combining irradiance
 .. autosummary::
    :toctree: generated/
 
-   irradiance.extraradiation
+   irradiance.get_extra_radiation
    irradiance.aoi
    irradiance.aoi_projection
    irradiance.poa_horizontal_ratio
    irradiance.beam_component
-   irradiance.globalinplane
-   irradiance.grounddiffuse
+   irradiance.poa_components
+   irradiance.get_ground_diffuse
 
 Transposition models
 --------------------
@@ -147,7 +147,8 @@ Transposition models
 .. autosummary::
    :toctree: generated/
 
-   irradiance.total_irrad
+   irradiance.get_total_irradiance
+   irradiance.get_sky_diffuse
    irradiance.isotropic
    irradiance.perez
    irradiance.haydavies
@@ -203,9 +204,22 @@ Functions relevant for the single diode model.
    :toctree: generated/
 
    pvsystem.calcparams_desoto
+   pvsystem.calcparams_pvsyst
    pvsystem.i_from_v
    pvsystem.singlediode
    pvsystem.v_from_i
+   pvsystem.max_power_point
+
+Low-level functions for solving the single diode equation.
+
+.. autosummary::
+   :toctree: generated/
+
+   singlediode.estimate_voc
+   singlediode.bishop88
+   singlediode.bishop88_i_from_v
+   singlediode.bishop88_v_from_i
+   singlediode.bishop88_mpp
 
 SAPM model
 ----------
@@ -231,7 +245,6 @@ PVWatts model
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
-
 
 Other
 -----

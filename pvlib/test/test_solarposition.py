@@ -260,6 +260,19 @@ def test_ephemeris_physical_dst(expected_solpos):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
+def test_ephemeris_physical_no_tz(expected_solpos):
+    times = pd.date_range(datetime.datetime(2003,10,17,19,30,30),
+                          periods=1, freq='D')
+    ephem_data = solarposition.ephemeris(times, golden_mst.latitude,
+                                         golden_mst.longitude,
+                                         pressure=82000,
+                                         temperature=11)
+    expected_solpos.index = times
+    expected_solpos = np.round(expected_solpos, 2)
+    ephem_data = np.round(ephem_data, 2)
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+
+
 def test_get_solarposition_error():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)

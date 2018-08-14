@@ -13,9 +13,8 @@ from functools import partial
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
-from pvlib import solarposition
-from pvlib import atmosphere
+from pvlib import atmosphere, solarposition, tools
+from pvlib._deprecation import deprecated
 
 # see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
@@ -34,8 +33,8 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'sea': 0.06}
 
 
-def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
-                   epoch_year=2014, **kwargs):
+def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
+                        method='spencer', epoch_year=2014, **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
 
@@ -83,6 +82,41 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
     """
 
+    to_doy, to_datetimeindex, to_output = \
+        _handle_extra_radiation_types(datetime_or_doy, epoch_year)
+
+    # consider putting asce and spencer methods in their own functions
+    method = method.lower()
+    if method == 'asce':
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
+        RoverR0sqrd = 1 + 0.033 * np.cos(B)
+    elif method == 'spencer':
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
+        RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
+                       0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
+    elif method == 'pyephem':
+        times = to_datetimeindex(datetime_or_doy)
+        RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
+    elif method == 'nrel':
+        times = to_datetimeindex(datetime_or_doy)
+        RoverR0sqrd = \
+            solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
+    else:
+        raise ValueError('Invalid method: %s', method)
+
+    Ea = solar_constant * RoverR0sqrd
+
+    Ea = to_output(Ea)
+
+    return Ea
+
+
+extraradiation = deprecated('0.6', alternative='get_extra_radiation',
+                            name='extraradiation', removal='0.7')(
+                            get_extra_radiation)
+
+
+def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     # This block will set the functions that can be used to convert the
     # inputs to either day of year or pandas DatetimeIndex, and the
     # functions that will yield the appropriate output type. It's
@@ -115,29 +149,7 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
                                    epoch_year=epoch_year)
         to_output = tools._array_out
 
-    method = method.lower()
-    if method == 'asce':
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
-        RoverR0sqrd = 1 + 0.033 * np.cos(B)
-    elif method == 'spencer':
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
-        RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
-                       0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
-    elif method == 'pyephem':
-        times = to_datetimeindex(datetime_or_doy)
-        RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
-    elif method == 'nrel':
-        times = to_datetimeindex(datetime_or_doy)
-        RoverR0sqrd = \
-            solarposition.nrel_earthsun_distance(times, **kwargs) ** (-2)
-    else:
-        raise ValueError('Invalid method: %s', method)
-
-    Ea = solar_constant * RoverR0sqrd
-
-    Ea = to_output(Ea)
-
-    return Ea
+    return to_doy, to_datetimeindex, to_output
 
 
 def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
@@ -285,12 +297,12 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     return beam
 
 
-def total_irrad(surface_tilt, surface_azimuth,
-                apparent_zenith, azimuth,
-                dni, ghi, dhi, dni_extra=None, airmass=None,
-                albedo=.25, surface_type=None,
-                model='isotropic',
-                model_perez='allsitescomposite1990', **kwargs):
+def get_total_irradiance(surface_tilt, surface_azimuth,
+                         solar_zenith, solar_azimuth,
+                         dni, ghi, dhi, dni_extra=None, airmass=None,
+                         albedo=.25, surface_type=None,
+                         model='isotropic',
+                         model_perez='allsitescomposite1990', **kwargs):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -342,17 +354,74 @@ def total_irrad(surface_tilt, surface_azimuth,
         Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse',
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
     """
+    poa_sky_diffuse = get_sky_diffuse(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
+        model_perez=model_perez)
 
-    solar_zenith = apparent_zenith
-    solar_azimuth = azimuth
+    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
+                                            surface_type)
+    aoi_ = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    irrads = poa_components(aoi_, dni, poa_sky_diffuse, poa_ground_diffuse)
+    return irrads
 
-    beam = beam_component(surface_tilt, surface_azimuth,
-                          solar_zenith, solar_azimuth, dni)
+
+total_irrad = deprecated('0.6', alternative='get_total_irradiance',
+                         name='total_irrad', removal='0.7')(
+                         get_total_irradiance)
+
+
+def get_sky_diffuse(surface_tilt, surface_azimuth,
+                    solar_zenith, solar_azimuth,
+                    dni, ghi, dhi, dni_extra=None, airmass=None,
+                    model='isotropic',
+                    model_perez='allsitescomposite1990'):
+    r"""
+    Determine in-plane sky diffuse irradiance component
+    using the specified sky diffuse irradiance model.
+
+    Sky diffuse models include:
+        * isotropic (default)
+        * klucher
+        * haydavies
+        * reindl
+        * king
+        * perez
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Panel tilt from horizontal.
+    surface_azimuth : numeric
+        Panel azimuth from north.
+    solar_zenith : numeric
+        Solar zenith angle.
+    solar_azimuth : numeric
+        Solar azimuth angle.
+    dni : numeric
+        Direct Normal Irradiance
+    ghi : numeric
+        Global horizontal irradiance
+    dhi : numeric
+        Diffuse horizontal irradiance
+    dni_extra : None or numeric, default None
+        Extraterrestrial direct normal irradiance
+    airmass : None or numeric, default None
+        Airmass
+    model : String, default 'isotropic'
+        Irradiance model.
+    model_perez : String, default 'allsitescomposite1990'
+        See perez.
+
+    Returns
+    -------
+    poa_sky_diffuse : numeric
+    """
 
     model = model.lower()
     if model == 'isotropic':
         sky = isotropic(surface_tilt, dhi)
-    elif model in ['klucher', 'klutcher']:
+    elif model == 'klucher':
         sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
                       solar_zenith, solar_azimuth)
     elif model == 'haydavies':
@@ -370,24 +439,73 @@ def total_irrad(surface_tilt, surface_azimuth,
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
-    ground = grounddiffuse(surface_tilt, ghi, albedo, surface_type)
-
-    diffuse = sky + ground
-    total = beam + diffuse
-
-    all_irrad = OrderedDict()
-    all_irrad['poa_global'] = total
-    all_irrad['poa_direct'] = beam
-    all_irrad['poa_diffuse'] = diffuse
-    all_irrad['poa_sky_diffuse'] = sky
-    all_irrad['poa_ground_diffuse'] = ground
-
-    if isinstance(total, pd.Series):
-        all_irrad = pd.DataFrame(all_irrad)
-
-    return all_irrad
+    return sky
 
 
+def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
+    r'''
+    Determine the three components on in-plane irradiance
+
+    Combines in-plane irradaince compoents from the chosen diffuse
+    translation, ground reflection and beam irradiance algorithms into
+    the total in-plane irradiance.
+
+    Parameters
+    ----------
+    aoi : numeric
+        Angle of incidence of solar rays with respect to the module
+        surface, from :func:`aoi`.
+
+    dni : numeric
+        Direct normal irradiance (W/m^2), as measured from a TMY file or
+        calculated with a clearsky model.
+
+    poa_sky_diffuse : numeric
+        Diffuse irradiance (W/m^2) in the plane of the modules, as
+        calculated by a diffuse irradiance translation function
+
+    poa_ground_diffuse : numeric
+        Ground reflected irradiance (W/m^2) in the plane of the modules,
+        as calculated by an albedo model (eg. :func:`grounddiffuse`)
+
+    Returns
+    -------
+    irrads : OrderedDict or DataFrame
+        Contains the following keys:
+
+        * ``poa_global`` : Total in-plane irradiance (W/m^2)
+        * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
+        * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
+        * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky (W/m^2)
+        * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground
+          (W/m^2)
+
+    Notes
+    ------
+    Negative beam irradiation due to aoi :math:`> 90^{\circ}` or AOI
+    :math:`< 0^{\circ}` is set to zero.
+    '''
+
+    poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
+    poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
+    poa_global = poa_direct + poa_diffuse
+
+    irrads = OrderedDict()
+    irrads['poa_global'] = poa_global
+    irrads['poa_direct'] = poa_direct
+    irrads['poa_diffuse'] = poa_diffuse
+    irrads['poa_sky_diffuse'] = poa_sky_diffuse
+    irrads['poa_ground_diffuse'] = poa_ground_diffuse
+
+    if isinstance(poa_direct, pd.Series):
+        irrads = pd.DataFrame(irrads)
+
+    return irrads
+
+
+# globalinplane returns less data than poa_components, so better
+# to copy it
+@deprecated('0.6', alternative='poa_components', removal='0.7')
 def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     r'''
     Determine the three components on in-plane irradiance
@@ -444,7 +562,7 @@ def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
-def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
+def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
     irradiance, albedo, and surface tilt
@@ -470,9 +588,9 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         overridden if surface_type is supplied.
 
     surface_type: None or string, default None
-        If not None, overrides albedo. String can be one of ``'urban',
+        If not None, overrides albedo. String can be one of 'urban',
         'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
-         'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'``.
+        'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'.
 
     Returns
     -------
@@ -507,6 +625,11 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         pass
 
     return diffuse_irrad
+
+
+grounddiffuse = deprecated('0.6', alternative='get_ground_diffuse',
+                           name='grounddiffuse', removal='0.7')(
+                           get_ground_diffuse)
 
 
 def isotropic(surface_tilt, dhi):
@@ -629,7 +752,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
         # fails with single point input
         F.fillna(0, inplace=True)
     except AttributeError:
-        F = 0
+        F = np.where(np.isnan(F), 0, F)
 
     term1 = 0.5 * (1 + tools.cosd(surface_tilt))
     term2 = 1 + F * (tools.sind(0.5 * surface_tilt) ** 3)
@@ -1112,12 +1235,12 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325, min_cos_zenith=0.065,
     """
 
     # this is the I0 calculation from the reference
-    I0 = extraradiation(datetime_or_doy, 1370, 'spencer')
+    I0 = get_extra_radiation(datetime_or_doy, 1370, 'spencer')
     cos_zenith = np.maximum(min_cos_zenith, np.cos(np.radians(zenith)))
     I0h = I0 * cos_zenith
 
-    am = atmosphere.relativeairmass(zenith, model='kasten1966')
-    am = atmosphere.absoluteairmass(am, pressure)
+    am = atmosphere.get_relative_airmass(zenith, model='kasten1966')
+    am = atmosphere.get_absolute_airmass(am, pressure)
 
     if kt is None:
         kt = ghi / I0h
@@ -1713,7 +1836,7 @@ def erbs(ghi, zenith, doy):
     disc
     """
 
-    dni_extra = extraradiation(doy)
+    dni_extra = get_extra_radiation(doy)
 
     # This Z needs to be the true Zenith angle, not apparent,
     # to get extraterrestrial horizontal radiation)

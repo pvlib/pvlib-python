@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.irradiance import liujordan, extraradiation, disc
+from pvlib.irradiance import liujordan, get_extra_radiation, disc
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
@@ -174,8 +174,8 @@ class ForecastModel(object):
                 isinstance(self.latitude, list)):
             self.lbox = True
             # west, east, south, north
-            self.query.lonlat_box(self.latitude[0], self.latitude[1],
-                                  self.longitude[0], self.longitude[1])
+            self.query.lonlat_box(self.longitude[0], self.longitude[1],
+                                  self.latitude[0], self.latitude[1])
         else:
             self.lbox = False
             self.query.lonlat_point(self.longitude, self.latitude)
@@ -499,7 +499,7 @@ class ForecastModel(object):
         # pressure, temp, etc., but the cloud cover forecast is not
         # accurate enough to justify using these minor corrections
         solar_position = self.location.get_solarposition(cloud_cover.index)
-        dni_extra = extraradiation(cloud_cover.index)
+        dni_extra = get_extra_radiation(cloud_cover.index)
         airmass = self.location.get_airmass(cloud_cover.index)
 
         transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,

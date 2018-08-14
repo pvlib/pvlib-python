@@ -81,23 +81,23 @@ to accomplish our system modeling goal:
         times = naive_times.tz_localize(timezone)
         system['surface_tilt'] = latitude
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
-        dni_extra = pvlib.irradiance.extraradiation(times)
+        dni_extra = pvlib.irradiance.get_extra_radiation(times)
         dni_extra = pd.Series(dni_extra, index=times)
-        airmass = pvlib.atmosphere.relativeairmass(solpos['apparent_zenith'])
+        airmass = pvlib.atmosphere.get_relative_airmass(solpos['apparent_zenith'])
         pressure = pvlib.atmosphere.alt2pres(altitude)
-        am_abs = pvlib.atmosphere.absoluteairmass(airmass, pressure)
+        am_abs = pvlib.atmosphere.get_absolute_airmass(airmass, pressure)
         tl = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
         cs = pvlib.clearsky.ineichen(solpos['apparent_zenith'], am_abs, tl,
                                      dni_extra=dni_extra, altitude=altitude)
         aoi = pvlib.irradiance.aoi(system['surface_tilt'], system['surface_azimuth'],
                                    solpos['apparent_zenith'], solpos['azimuth'])
-        total_irrad = pvlib.irradiance.total_irrad(system['surface_tilt'],
-                                                   system['surface_azimuth'],
-                                                   solpos['apparent_zenith'],
-                                                   solpos['azimuth'],
-                                                   cs['dni'], cs['ghi'], cs['dhi'],
-                                                   dni_extra=dni_extra,
-                                                   model='haydavies')
+        total_irrad = pvlib.irradiance.get_total_irradiance(system['surface_tilt'],
+                                                            system['surface_azimuth'],
+                                                            solpos['apparent_zenith'],
+                                                            solpos['azimuth'],
+                                                            cs['dni'], cs['ghi'], cs['dhi'],
+                                                            dni_extra=dni_extra,
+                                                            model='haydavies')
         temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'],
                                              wind_speed, temp_air)
         effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
@@ -116,6 +116,8 @@ to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig proc-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 pvlib-python provides a :py:func:`~pvlib.modelchain.basic_chain`
 function that implements much of the code above. Use this function with
@@ -143,6 +145,8 @@ a full understanding of what it is doing internally!
     energies.plot(kind='bar', rot=0)
     @savefig basic-chain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 .. _object-oriented:
@@ -159,13 +163,15 @@ object describes the modeling chain used to calculate PV output at that
 Location. This can be a useful paradigm if you prefer to think about the
 PV system and its location as separate concepts or if you develop your
 own ModelChain subclasses. It can also be helpful if you make extensive
-use of Location-specific methods for other calculations.
+use of Location-specific methods for other calculations. pvlib-python
+also includes a :py:class:`~pvlib.tracking.SingleAxisTracker` class that
+is a subclass of :py:class:`~pvlib.pvsystem.PVSystem`.
 
 The following code demonstrates how to use
 :py:class:`~pvlib.location.Location`,
 :py:class:`~pvlib.pvsystem.PVSystem`, and
-:py:class:`~pvlib.modelchain.ModelChain`
-objects to accomplish our system modeling goal:
+:py:class:`~pvlib.modelchain.ModelChain` objects to accomplish our
+system modeling goal:
 
 .. ipython:: python
 
@@ -197,19 +203,38 @@ objects to accomplish our system modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig modelchain-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 Object oriented (LocalizedPVSystem)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The second object oriented paradigm uses a model where a
-:py:class:`~pvlib.pvsystem.LocalizedPVSystem` represents a
-PV system at a particular place on the planet. This can be a useful
-paradigm if you're thinking about a power plant that already exists.
+:py:class:`~pvlib.pvsystem.LocalizedPVSystem` represents a PV system at
+a particular place on the planet. This can be a useful paradigm if
+you're thinking about a power plant that already exists.
+
+The :py:class:`~pvlib.pvsystem.LocalizedPVSystem` inherits from both
+:py:class:`~pvlib.pvsystem.PVSystem` and
+:py:class:`~pvlib.location.Location`, while the
+:py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` inherits from
+:py:class:`~pvlib.tracking.SingleAxisTracker` (itself a subclass of
+:py:class:`~pvlib.pvsystem.PVSystem`) and
+:py:class:`~pvlib.location.Location`. The
+:py:class:`~pvlib.pvsystem.LocalizedPVSystem` and
+:py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` classes may
+contain bugs due to the relative difficulty of implementing multiple
+inheritance. The :py:class:`~pvlib.pvsystem.LocalizedPVSystem` and
+:py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` may be deprecated
+in a future release. We recommend that most modeling workflows implement
+:py:class:`~pvlib.location.Location`,
+:py:class:`~pvlib.pvsystem.PVSystem`, and
+:py:class:`~pvlib.modelchain.ModelChain`.
 
 The following code demonstrates how to use a
-:py:class:`~pvlib.pvsystem.LocalizedPVSystem`
-object to accomplish our modeling goal:
+:py:class:`~pvlib.pvsystem.LocalizedPVSystem` object to accomplish our
+modeling goal:
 
 .. ipython:: python
 
@@ -255,6 +280,8 @@ object to accomplish our modeling goal:
     energies.plot(kind='bar', rot=0)
     @savefig localized-pvsystem-energies.png width=6in
     plt.ylabel('Yearly energy yield (W hr)')
+    @suppress
+    plt.close();
 
 
 User extensions

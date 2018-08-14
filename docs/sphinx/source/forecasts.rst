@@ -195,6 +195,8 @@ cover forecasts.
               .format(latitude, longitude));
     @savefig gfs_cloud_cover.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 However, many of forecast models do not include radiation components in
 their output fields, or if they do then the radiation fields suffer from
@@ -245,6 +247,8 @@ irradiance conversion using the clear sky scaling algorithm.
               .format(latitude, longitude));
     @savefig gfs_irrad_cs.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 The essential parts of the Liu-Jordan cloud cover to irradiance algorithm
@@ -271,6 +275,8 @@ irradiance conversion.
               .format(latitude, longitude));
     @savefig gfs_irrad_lj.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 Most weather model output has a fairly coarse time resolution, at least
@@ -290,6 +296,8 @@ recalculate the irradiance.
               .format(latitude, longitude));
     @savefig gfs_irrad_high_res.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 Users may then recombine resampled_irrads and resampled_data using
 slicing :py:func:`pandas.concat` or :py:meth:`pandas.DataFrame.join`.
@@ -345,6 +353,8 @@ The HRRR model covers the continental United States.
               .format(latitude, longitude));
     @savefig hrrr_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 RAP
@@ -369,6 +379,8 @@ The RAP model covers most of North America.
               .format(latitude, longitude));
     @savefig rap_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 NAM
@@ -389,6 +401,8 @@ resolution NAM data with a time horizon of up to 4 days.
               .format(latitude, longitude));
     @savefig nam_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 NDFD
@@ -411,6 +425,8 @@ The NDFD is available for the United States.
               .format(latitude, longitude));
     @savefig ndfd_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 PV Power Forecast
@@ -456,6 +472,8 @@ Here's the forecast plane of array irradiance...
     @savefig poa_irrad.png width=6in
     plt.ylabel('Plane of array irradiance ($W/m^2$)');
     plt.legend(loc='best');
+    @suppress
+    plt.close();
 
 ...the cell and module temperature...
 
@@ -464,6 +482,8 @@ Here's the forecast plane of array irradiance...
     mc.temps.plot();
     @savefig pv_temps.png width=6in
     plt.ylabel('Temperature (C)');
+    @suppress
+    plt.close();
 
 ...and finally AC power...
 
@@ -473,4 +493,6 @@ Here's the forecast plane of array irradiance...
     plt.ylim(0, None);
     @savefig ac_power.png width=6in
     plt.ylabel('AC Power (W)');
+    @suppress
+    plt.close();
 

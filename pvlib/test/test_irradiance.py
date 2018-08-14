@@ -9,10 +9,12 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
-from pvlib import irradiance
+from pvlib import atmosphere, irradiance, solarposition
+from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib.location import Location
 
-from conftest import (needs_numpy_1_10, pandas_0_22, requires_ephem,
-                      requires_numba)
+from conftest import (fail_on_pvlib_version, needs_numpy_1_10, pandas_0_22,
+                      requires_ephem, requires_numba)
 
 
 # fixtures create realistic test input data
@@ -55,12 +57,26 @@ def ephem_data(times):
 
 @pytest.fixture
 def dni_et(times):
-    return irradiance.extraradiation(times.dayofyear)
+    return np.array(
+        [1321.1655834833093, 1321.1655834833093, 1321.1655834833093,
+         1321.1655834833093])
 
 
 @pytest.fixture
 def relative_airmass(times):
     return pd.Series([np.nan, 7.58831596, 1.01688136, 3.27930443], times)
+
+
+@fail_on_pvlib_version('0.7')
+def test_deprecated_07():
+    with pytest.warns(pvlibDeprecationWarning):
+        irradiance.extraradiation(300)
+    with pytest.warns(pvlibDeprecationWarning):
+        irradiance.grounddiffuse(40, 900)
+    with pytest.warns(pvlibDeprecationWarning):
+        irradiance.total_irrad(32, 180, 10, 180, 0, 0, 0, 1400, 1)
+    with pytest.warns(pvlibDeprecationWarning):
+        irradiance.globalinplane(0, 1000, 100, 10)
 
 
 # setup for et rad test. put it here for readability
@@ -86,52 +102,51 @@ value = 1383.636203
 ])
 @pytest.mark.parametrize('method', [
     'asce', 'spencer', 'nrel', requires_ephem('pyephem')])
-def test_extraradiation(input, expected, method):
-    out = irradiance.extraradiation(input)
+def test_get_extra_radiation(input, expected, method):
+    out = irradiance.get_extra_radiation(input)
     assert_allclose(out, expected, atol=1)
 
 
 @requires_numba
-def test_extraradiation_nrel_numba(times):
-    result = irradiance.extraradiation(times, method='nrel', how='numba',
-                                       numthreads=4)
-    assert_allclose(result,
-                    [1322.332316, 1322.296282, 1322.261205, 1322.227091])
+def test_get_extra_radiation_nrel_numba(times):
+    result = irradiance.get_extra_radiation(times, method='nrel', how='numba',
+                                            numthreads=8)
+    assert_allclose(result, [1322.332316, 1322.296282, 1322.261205, 1322.227091])
 
 
-def test_extraradiation_epoch_year():
-    out = irradiance.extraradiation(doy, method='nrel', epoch_year=2012)
+def test_get_extra_radiation_epoch_year():
+    out = irradiance.get_extra_radiation(doy, method='nrel', epoch_year=2012)
     assert_allclose(out, 1382.4926804890767, atol=0.1)
 
 
-def test_extraradiation_invalid():
+def test_get_extra_radiation_invalid():
     with pytest.raises(ValueError):
-        irradiance.extraradiation(300, method='invalid')
+        irradiance.get_extra_radiation(300, method='invalid')
 
 
 def test_grounddiffuse_simple_float():
-    result = irradiance.grounddiffuse(40, 900)
+    result = irradiance.get_ground_diffuse(40, 900)
     assert_allclose(result, 26.32000014911496)
 
 
 def test_grounddiffuse_simple_series(irrad_data):
-    ground_irrad = irradiance.grounddiffuse(40, irrad_data['ghi'])
+    ground_irrad = irradiance.get_ground_diffuse(40, irrad_data['ghi'])
     assert ground_irrad.name == 'diffuse_ground'
 
 
 def test_grounddiffuse_albedo_0(irrad_data):
-    ground_irrad = irradiance.grounddiffuse(40, irrad_data['ghi'], albedo=0)
+    ground_irrad = irradiance.get_ground_diffuse(40, irrad_data['ghi'], albedo=0)
     assert 0 == ground_irrad.all()
 
 
 def test_grounddiffuse_albedo_invalid_surface(irrad_data):
     with pytest.raises(KeyError):
-        irradiance.grounddiffuse(40, irrad_data['ghi'], surface_type='invalid')
+        irradiance.get_ground_diffuse(40, irrad_data['ghi'], surface_type='invalid')
 
 
 def test_grounddiffuse_albedo_surface(irrad_data):
-    result = irradiance.grounddiffuse(40, irrad_data['ghi'],
-                                      surface_type='sand')
+    result = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
+                                           surface_type='sand')
     assert_allclose(result, [0, 3.731058, 48.778813, 12.035025], atol=1e-4)
 
 
@@ -164,8 +179,8 @@ def test_klucher_series_float():
 
 def test_klucher_series(irrad_data, ephem_data):
     result = irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
-                       ephem_data['apparent_zenith'],
-                       ephem_data['azimuth'])
+                                ephem_data['apparent_zenith'],
+                                ephem_data['azimuth'])
     assert_allclose(result, [0, 37.446276, 109.209347, 56.965916], atol=1e-4)
     # expect same result for np.array and pd.Series
     expected = irradiance.klucher(
@@ -260,13 +275,12 @@ def test_liujordan():
     assert_frame_equal(out, expected)
 
 
-# klutcher (misspelling) will be removed in 0.3
-def test_total_irrad(irrad_data, ephem_data, dni_et, relative_airmass):
-    models = ['isotropic', 'klutcher', 'klucher',
+def test_get_total_irradiance(irrad_data, ephem_data, dni_et, relative_airmass):
+    models = ['isotropic', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']
 
     for model in models:
-        total = irradiance.total_irrad(
+        total = irradiance.get_total_irradiance(
             32, 180,
             ephem_data['apparent_zenith'], ephem_data['azimuth'],
             dni=irrad_data['dni'], ghi=irrad_data['ghi'],
@@ -282,8 +296,8 @@ def test_total_irrad(irrad_data, ephem_data, dni_et, relative_airmass):
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
                                    'haydavies', 'reindl', 'king', 'perez'])
-def test_total_irrad_scalars(model):
-    total = irradiance.total_irrad(
+def test_get_total_irradiance_scalars(model):
+    total = irradiance.get_total_irradiance(
         32, 180,
         10, 180,
         dni=1000, ghi=1100,
@@ -299,17 +313,29 @@ def test_total_irrad_scalars(model):
     assert np.isnan(np.array(list(total.values()))).sum() == 0
 
 
-def test_globalinplane(irrad_data, ephem_data, dni_et, relative_airmass):
+def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
     aoi = irradiance.aoi(40, 180, ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
-    gr_sand = irradiance.grounddiffuse(40, irrad_data['ghi'],
-                                       surface_type='sand')
+    gr_sand = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
+                                            surface_type='sand')
     diff_perez = irradiance.perez(
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
         ephem_data['apparent_zenith'], ephem_data['azimuth'], relative_airmass)
-    irradiance.globalinplane(
-        aoi=aoi, dni=irrad_data['dni'], poa_sky_diffuse=diff_perez,
-        poa_ground_diffuse=gr_sand)
+    out = irradiance.poa_components(
+        aoi, irrad_data['dni'], diff_perez, gr_sand)
+    expected = pd.DataFrame(np.array(
+        [[  0.        ,  -0.        ,   0.        ,   0.        ,
+            0.        ],
+         [ 35.19456561,   0.        ,  35.19456561,  31.4635077 ,
+            3.73105791],
+         [956.18253696, 798.31939281, 157.86314414, 109.08433162,
+           48.77881252],
+         [ 90.99624896,  33.50143401,  57.49481495,  45.45978964,
+           12.03502531]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse'],
+        index=irrad_data.index)
+    assert_frame_equal(out, expected)
 
 
 def test_disc_keys(irrad_data, ephem_data):

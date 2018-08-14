@@ -690,13 +690,14 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     ApparentSunEl = SunEl + Refract
 
     # make output DataFrame
-    DFOut = pd.DataFrame(index=time)
+    DFOut = pd.DataFrame(index=time_utc)
     DFOut['apparent_elevation'] = ApparentSunEl
     DFOut['elevation'] = SunEl
     DFOut['azimuth'] = SunAz
     DFOut['apparent_zenith'] = 90 - ApparentSunEl
     DFOut['zenith'] = 90 - SunEl
     DFOut['solar_time'] = SolarTime
+    DFOut.index = time
 
     return DFOut
 

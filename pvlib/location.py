@@ -271,7 +271,7 @@ class Location(object):
         airmass_absolute = atmosphere.get_absolute_airmass(airmass_relative,
                                                            pressure)
 
-        airmass = pd.DataFrame()
+        airmass = pd.DataFrame(index=solar_position.index)
         airmass['airmass_relative'] = airmass_relative
         airmass['airmass_absolute'] = airmass_absolute
 

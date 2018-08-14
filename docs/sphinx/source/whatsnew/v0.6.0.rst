@@ -92,6 +92,7 @@ Enhancements
   :func:`~pvlib.singlediode.bishop88_mpp`.
 * Add PVSyst thin-film recombination losses for CdTe and a:Si (:issue:`163`)
 * Python 3.7 officially supported. (:issue:`496`)
+* Improve performance of solarposition.ephemeris. (:issue:`512`)
 
 
 Bug fixes

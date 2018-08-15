@@ -346,7 +346,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     model : String, default 'isotropic'
         Irradiance model.
     model_perez : String, default 'allsitescomposite1990'
-        See perez.
+        Used only if model='perez'. See :py:func:`perez`.
 
     Returns
     -------
@@ -1547,6 +1547,11 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The Azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
     pressure : numeric, default 101325.0
         The site pressure in Pascal. Pressure may be measured or an
         average pressure may be calculated from site altitude.
@@ -1567,6 +1572,15 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         DewPtTemp=NaN does not have dew point improvements applied. If
         DewPtTemp is not provided, then dew point improvements are not
         applied.
+
+    albedo : numeric, default 0.25
+        Surface albedo
+
+    model : String, default 'isotropic'
+        Irradiance model.
+
+    model_perez : String, default 'allsitescomposite1990'
+        Used only if model='perez'. See :py:func:`perez`.
 
     calculate_gt_90 : bool, default True
         Controls if the algorithm evaluates inputs with AOI >= 90 degrees.
@@ -1597,7 +1611,6 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
     aoi_lt_90 = aoi < 90
 
     # for AOI less than 90 degrees
-
     ghi, dni, dhi, kt_prime = _gti_dirint_lt_90(
         poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         surface_tilt, surface_azimuth, times, pressure=pressure,
@@ -1606,7 +1619,6 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         max_iterations=max_iterations)
 
     # for AOI greater than or equal to 90 degrees
-
     if calculate_gt_90:
         ghi_gte_90, dni_gte_90, dhi_gte_90 = _gti_dirint_gte_90(
             poa_global, aoi, solar_zenith, solar_azimuth,
@@ -1616,7 +1628,6 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         ghi_gte_90, dni_gte_90, dhi_gte_90 = np.nan, np.nan, np.nan
 
     # put the AOI < 90 and AOI >= 90 conditions together
-
     output = OrderedDict()
     output['ghi'] = ghi.where(aoi_lt_90, ghi_gte_90)
     output['dni'] = dni.where(aoi_lt_90, dni_gte_90)
@@ -1634,7 +1645,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
                       model='perez', model_perez='allsitescomposite1990',
                       max_iterations=30):
 
-    I0 = extraradiation(times, 1370, 'spencer')
+    I0 = get_extra_radiation(times, 1370, 'spencer')
     # cos_zenith = np.maximum(0.065, tools.cosd(solar_zenith))
     cos_zenith = tools.cosd(solar_zenith)
     I0h = I0 * cos_zenith
@@ -1685,7 +1696,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         dhi[bad_values] = np.nan
 
         # use DNI and DHI to model GTI
-        all_irrad = total_irrad(
+        all_irrad = get_total_irradiance(
             surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
             dni, ghi, dhi, dni_extra=I0, airmass=disc_out['airmass'],
             albedo=albedo, model=model, model_perez=model_perez)
@@ -1759,8 +1770,8 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
         kt_prime_90s.append(kt_prime_90)
     kt_prime_90s = pd.concat(kt_prime_90s)
 
-    am = atmosphere.relativeairmass(solar_zenith, model='kasten1966')
-    am = atmosphere.absoluteairmass(am, pressure)
+    am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
+    am = atmosphere.get_absolute_airmass(am, pressure)
     kt = kt_prime_90s * (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
 
     dni_gte_90 = dirint(

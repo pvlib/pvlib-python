@@ -1236,8 +1236,8 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325, min_cos_zenith=0.065,
 
     # this is the I0 calculation from the reference
     I0 = get_extra_radiation(datetime_or_doy, 1370, 'spencer')
-    cos_zenith = np.maximum(min_cos_zenith, np.cos(np.radians(zenith)))
-    I0h = I0 * cos_zenith
+    cos_zenith = np.cos(np.radians(zenith))
+    I0h = I0 * np.maximum(min_cos_zenith, cos_zenith)
 
     am = atmosphere.get_relative_airmass(zenith, model='kasten1966')
     am = atmosphere.get_absolute_airmass(am, pressure)
@@ -1284,7 +1284,7 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325, min_cos_zenith=0.065,
 
 
 def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
-           temp_dew=None, kt=None, kt_prime=None, return_kt_prime=False):
+           temp_dew=None, kt=None, kt_prime=None, return_components=False):
     """
     Determine DNI from GHI using the DIRINT modification of the DISC
     model.
@@ -1427,8 +1427,12 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     dni *= dirint_coeffs
 
-    if return_kt_prime:
-        return dni, kt_prime
+    if return_components:
+        out = {'dni': dni, 'dni_disc': disc_out['dni'], 'kt_prime': kt_prime,
+               'airmass': disc_out['airmass'], 'kt': disc_out['kt']}
+        if isinstance(disc_out, pd.DataFrame):
+            out = pd.DataFrame(out)
+        return out
     else:
         return dni
 
@@ -1644,11 +1648,13 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
                       use_delta_kt_prime=True, temp_dew=None, albedo=.25,
                       model='perez', model_perez='allsitescomposite1990',
                       max_iterations=30):
-
+    """
+    GTI-DIRINT model for AOI < 90 degrees. See Marion 2015 Section 2.1.
+    """
     I0 = get_extra_radiation(times, 1370, 'spencer')
-    # cos_zenith = np.maximum(0.065, tools.cosd(solar_zenith))
     cos_zenith = tools.cosd(solar_zenith)
-    I0h = I0 * cos_zenith
+    # I0h as in Marion 2015 eqns 1, 3
+    I0h = I0 * np.maximum(0.065, cos_zenith)
 
     # these coeffs and diff variables and the loop below
     # implement figure 1 of Marion 2015
@@ -1679,17 +1685,20 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         if best_diff_lte_1_lt_90.all():
             break
 
-        # calculate kt and DNI using GTI and pvlib implementations
-        # of Marion eqn 2 and DIRINT
-        disc_out = disc(poa_global_i, aoi, times, pressure=pressure)
-        dni, kt_prime = dirint(
+        # calculate kt and DNI from GTI
+        # pvlib's disc implements Marion eqn 2 for determining kt
+        dirint_out = dirint(
             poa_global_i, aoi, times, pressure=pressure,
             use_delta_kt_prime=use_delta_kt_prime,
-            temp_dew=temp_dew, return_kt_prime=True)
+            temp_dew=temp_dew, return_components=True)
+        kt = dirint_out['kt']               # kt from Marion eqn 2
+        dni = dirint_out['dni']             # dirint DNI in Marion eqn 3
+        kt_prime = dirint_out['kt_prime']   # used later in AOI > 90 case
 
-        # calculate DHI using Marion eqn 3 (identify 1st term as GHI)
-        ghi = disc_out['kt'] * I0h
-        dhi = ghi - dni * cos_zenith
+        # calculate DHI using Marion eqn 3 (identify 1st term on RHS as GHI)
+        # I0h has a minimum zenith projection, but multiplier of DNI does not
+        ghi = kt * I0h                  # Kt * I0 * max(0.065, cos(zen))
+        dhi = ghi - dni * cos_zenith    # no cos(zen) restriction here
         bad_values = (dhi < 0) | (dni < 0) | (ghi < 0)
         dni[bad_values] = np.nan
         ghi[bad_values] = np.nan
@@ -1698,7 +1707,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         # use DNI and DHI to model GTI
         all_irrad = get_total_irradiance(
             surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-            dni, ghi, dhi, dni_extra=I0, airmass=disc_out['airmass'],
+            dni, ghi, dhi, dni_extra=I0, airmass=dirint_out['airmass'],
             albedo=albedo, model=model, model_perez=model_perez)
 
         gti_model = all_irrad['poa_global']

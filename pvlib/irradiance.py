@@ -1650,6 +1650,8 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
                       max_iterations=30):
     """
     GTI-DIRINT model for AOI < 90 degrees. See Marion 2015 Section 2.1.
+
+    See gti_dirint signature for parameter details.
     """
     I0 = get_extra_radiation(times, 1370, 'spencer')
     cos_zenith = tools.cosd(solar_zenith)
@@ -1754,7 +1756,57 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
 def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
                        surface_tilt, times, kt_prime,
                        pressure=101325., temp_dew=None, albedo=.25,):
+    """
+    GTI-DIRINT model for AOI >= 90 degrees. See Marion 2015 Section 2.2.
 
+    See gti_dirint signature for parameter details.
+    """
+    kt_prime_gte_90 = _gti_dirint_gte_90_kt_prime(aoi, solar_zenith,
+                                                  solar_azimuth, times,
+                                                  kt_prime)
+
+    am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
+    am = atmosphere.get_absolute_airmass(am, pressure)
+    kt = kt_prime_gte_90 * (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
+
+    dni_gte_90 = dirint(
+        poa_global, solar_zenith, times, pressure=pressure,
+        use_delta_kt_prime=False,
+        temp_dew=temp_dew, kt=kt, kt_prime=kt_prime_gte_90)
+
+    dni_gte_90_proj = dni_gte_90 * tools.cosd(solar_zenith)
+    cos_surface_tilt = tools.cosd(surface_tilt)
+
+    # isotropic sky plus ground diffuse
+    dhi_gte_90 = (
+        (2 * poa_global - dni_gte_90_proj * albedo * (1 - cos_surface_tilt)) /
+        (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt)))
+
+    ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
+
+    return ghi_gte_90, dni_gte_90, dhi_gte_90
+
+
+def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times,
+                                kt_prime):
+    """
+    Determine kt' values to be used in GTI-DIRINT AOI >= 90 degrees case.
+    See Marion 2015 Section 2.2.
+
+    For AOI >= 90 deg: average of the kt_prime values for 65 < AOI < 80
+    in each day's morning and afternoon. Morning and afternoon are treated
+    separately.
+
+    For AOI < 90 deg: NaN.
+
+    See gti_dirint signature for parameter details.
+
+    Returns
+    -------
+    kt_prime_gte_90 : Series
+        Index is `times`.
+    """
+    # kt_prime values from DIRINT calculation for AOI < 90 case
     # set the kt_prime from sunrise to AOI=90 to be equal to
     # the kt_prime for 65 < AOI < 80 during the morning.
     # similar for the afternoon. repeat for every day.
@@ -1768,39 +1820,18 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
     zenith_lt_90_aoi_gte_90_morning = zenith_lt_90 & aoi_gte_90 & morning
     zenith_lt_90_aoi_gte_90_afternoon = zenith_lt_90 & aoi_gte_90 & afternoon
 
-    kt_prime_90s = []
+    kt_prime_gte_90 = []
     for date, data in kt_prime.groupby(times.date):
         kt_prime_am_avg = data[aoi_65_80_morning].mean()
         kt_prime_pm_avg = data[aoi_65_80_afternoon].mean()
 
-        kt_prime_90 = pd.Series(np.nan, index=data.index)
-        kt_prime_90[zenith_lt_90_aoi_gte_90_morning] = kt_prime_am_avg
-        kt_prime_90[zenith_lt_90_aoi_gte_90_afternoon] = kt_prime_pm_avg
-        kt_prime_90s.append(kt_prime_90)
-    kt_prime_90s = pd.concat(kt_prime_90s)
+        kt_prime_by_date = pd.Series(np.nan, index=data.index)
+        kt_prime_by_date[zenith_lt_90_aoi_gte_90_morning] = kt_prime_am_avg
+        kt_prime_by_date[zenith_lt_90_aoi_gte_90_afternoon] = kt_prime_pm_avg
+        kt_prime_gte_90.append(kt_prime_by_date)
+    kt_prime_gte_90 = pd.concat(kt_prime_gte_90)
 
-    am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
-    am = atmosphere.get_absolute_airmass(am, pressure)
-    kt = kt_prime_90s * (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
-
-    dni_gte_90 = dirint(
-        poa_global, solar_zenith, times, pressure=pressure,
-        use_delta_kt_prime=False,
-        temp_dew=temp_dew, kt=kt, kt_prime=kt_prime_90s)
-
-    cos_zenith = tools.cosd(solar_zenith)
-
-    dni_gte_90_proj = dni_gte_90 * cos_zenith
-
-    cos_surface_tilt = tools.cosd(surface_tilt)
-    # isotropic sky plus ground diffuse
-    dhi_gte_90 = (
-        (2 * poa_global - dni_gte_90_proj * albedo * (1 - cos_surface_tilt)) /
-        (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt)))
-
-    ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
-
-    return ghi_gte_90, dni_gte_90, dhi_gte_90
+    return kt_prime_gte_90
 
 
 def erbs(ghi, zenith, doy):

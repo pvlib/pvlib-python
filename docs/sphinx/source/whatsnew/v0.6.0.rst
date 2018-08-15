@@ -9,18 +9,6 @@ date will require Python 3. (:issue:`501`)
 
 API Changes
 ~~~~~~~~~~~
-* pvsystem.calcparams_desoto now requires arguments for each module model parameter.
-* Add kt, kt_prime keyword, and return_kt_prime arguments to dirint function.
-  (:issue:`396`)
-* Add kt and min_cos_zenith keyword arguments to disc function. (:issue:`396`)
-* Change the disc dni filter thresholds. (:issue:`396`)
-
-Enhancements
-~~~~~~~~~~~~
-* Add sea surface albedo in irradiance.py (:issue:`458`)
-* Implement first_solar_spectral_loss in modelchain.py (:issue:`359`)
-* Clarify arguments Egref and dEgdT for calcparams_desoto (:issue:`462`)
-* Add gti_dirint function. (:issue:`396`)
 * pvlib python is changing a handful of function names. In general, functions
   that can calculate a quantity using multiple algorithms now start
   with the prefix ``get_``. For example, ``relativeairmass`` can calculate
@@ -61,6 +49,10 @@ Enhancements
   enhancement factor can yield unphysical results, especially for latitudes
   closer to the poles and especially in the winter months. It may yield
   improved results under other conditions. (:issue:`435`)
+* Add kt, kt_prime keyword, and return_kt_prime arguments to dirint function.
+  (:issue:`396`)
+* Add kt and min_cos_zenith keyword arguments to disc function. (:issue:`396`)
+* Change the disc dni filter thresholds. (:issue:`396`)
 
 
 Enhancements
@@ -108,6 +100,7 @@ Enhancements
 * Improve performance of Location.get_airmass. Most noticeable when
   solar position is supplied, time index length is less than 10000, and
   method is looped over. (:issue:`502`)
+* Add irradiance.gti_dirint function. (:issue:`396`)
 
 
 Bug fixes

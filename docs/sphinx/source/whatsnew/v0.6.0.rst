@@ -49,8 +49,6 @@ API Changes
   enhancement factor can yield unphysical results, especially for latitudes
   closer to the poles and especially in the winter months. It may yield
   improved results under other conditions. (:issue:`435`)
-* Add projection_minimum keyword argument to irradiance.aoi_projection.
-  Default behavior remains the same. (:issue:`526`)
 
 
 Enhancements

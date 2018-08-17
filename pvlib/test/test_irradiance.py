@@ -357,6 +357,10 @@ def test_disc_value():
                         np.array([830.46, 676.09]), 1)
 
 
+def test_disc_min_cos_zenith_max_zenith():
+    assert False
+
+
 def test_dirint_value():
     times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
@@ -408,6 +412,14 @@ def test_dirint_coeffs():
     assert coeffs[3,2,6,3] == 1.032260
 
 
+def test_dirint_min_cos_zenith_max_zenith():
+    assert False
+
+
+def test_dirindex_min_cos_zenith_max_zenith():
+    assert False
+
+
 def test_gti_dirint():
     times = pd.DatetimeIndex(
         ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])
@@ -424,9 +436,9 @@ def test_gti_dirint():
 
     expected_col_order = ['ghi', 'dni', 'dhi']
     expected = pd.DataFrame(array(
-        [[ 21.66904795,   3.58226889,  21.04699348],
-         [279.36007723,  30.95337201, 257.47273799],
-         [932.13924995, 671.61465387, 301.02791569]]),
+        [[  21.05796198,    0.        ,   21.05796198],
+         [ 288.22574368,   60.59964218,  245.37532576],
+         [ 930.85454521,  695.8504884 ,  276.96897609]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -448,9 +460,9 @@ def test_gti_dirint():
         pressure=pressure)
 
     expected = pd.DataFrame(array(
-        [[ 21.8105756 ,   4.41192322,  21.04445318],
-         [280.20387412,  30.3662572 , 258.73168773],
-         [933.76427497, 619.53219867, 351.59443953]]),
+        [[  21.05796198,    0.        ,   21.05796198],
+         [ 289.81109139,   60.52460392,  247.01373353],
+         [ 932.22047435,  647.68716072,  323.59362885]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -462,9 +474,9 @@ def test_gti_dirint():
         albedo=albedo)
 
     expected = pd.DataFrame(array(
-        [[ 22.32891856,   5.60409205,  21.35577818],
-         [281.40333321,  32.59141534, 258.35772242],
-         [942.22639099, 702.62029581, 281.9792838 ]]),
+        [[  21.3592591 ,    0.        ,   21.3592591 ],
+         [ 292.5162373 ,   64.42628826,  246.95997198],
+         [ 941.47847463,  727.07261187,  258.25370648]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -476,9 +488,9 @@ def test_gti_dirint():
         temp_dew=temp_dew)
 
     expected = pd.DataFrame(array(
-        [[ 21.77284986,   4.19076978,  21.04513032],
-         [278.00117081,  52.60909109, 240.80092575],
-         [930.98006109, 684.25337403, 287.99221477]]),
+        [[  21.05796198,    0.        ,   21.05796198],
+         [ 292.40468994,   36.79559287,  266.3862767 ],
+         [ 930.72198876,  712.36063132,  261.32196017]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -587,6 +599,17 @@ def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     assert_allclose(aoi_projection, aoi_proj_expected, atol=1e-6)
 
+
+@pytest.fixture
+def airmass_kt():
+    # disc algorithm stopped at am=12. test am > 12 for out of range behavior
+    return np.array([1, 5, 12, 20])
+
+
+def test_kt_kt_prime_factor(airmass_kt):
+    out = irradiance._kt_kt_prime_factor(airmass_kt)
+    expected = np.array([ 0.999971,  0.723088,  0.548811,  0.471068])
+    assert_allclose(out, expected, atol=1e-5)
 
 def test_clearness_index():
     assert False

@@ -1334,8 +1334,8 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     Kn = _disc_kn(kt, am)
     dni = Kn * I0
 
-    filter = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
-    dni = np.where(filter, 0, dni)
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
 
     output = OrderedDict()
     output['dni'] = dni
@@ -1442,27 +1442,11 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
         Maximum value of zenith to allow in DNI calculation. DNI will be
         set to 0 for times with zenith values greater than `max_zenith`.
 
-    return_components : bool, default False
-        If False, return only dni. If True, return dict or DataFrame of
-        dni and other data (see Returns for details).
-
     Returns
     -------
-    If return_components is False:
-        dni : array-like
-            The modeled direct normal irradiance in W/m^2 provided by the
-            DIRINT model.
-
-    If return_components is True:
-        data : DataFrame
-            Columns include:
-                * dni : DNI determined by DIRINT model
-                * dni_disc : DNI determined by DISC model
-                * airmass : Airmass determined in DISC model
-                * kt : Global clearness index determined by DISC model
-                * kt_prime : Zenith-independent global clearness index
-                  determined by DIRINT model
-            Order determined by Python/Pandas versions.
+    dni : array-like
+        The modeled direct normal irradiance in W/m^2 provided by the
+        DIRINT model.
 
     Notes
     -----
@@ -1820,8 +1804,8 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
 
     # for AOI less than 90 degrees
     ghi, dni, dhi, kt_prime = _gti_dirint_lt_90(
-        poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
-        surface_tilt, surface_azimuth, times, pressure=pressure,
+        poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth, times,
+        surface_tilt, surface_azimuth, pressure=pressure,
         use_delta_kt_prime=use_delta_kt_prime, temp_dew=temp_dew,
         albedo=albedo, model=model, model_perez=model_perez,
         max_iterations=max_iterations)
@@ -1847,8 +1831,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
 
 
 def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
-                      surface_tilt, surface_azimuth,
-                      times, pressure=101325.,
+                      times, surface_tilt, surface_azimuth, pressure=101325.,
                       use_delta_kt_prime=True, temp_dew=None, albedo=.25,
                       model='perez', model_perez='allsitescomposite1990',
                       max_iterations=30):
@@ -1886,11 +1869,14 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
     poa_global_i = poa_global
 
     for iteration, coeff in enumerate(coeffs):
-        best_diff_lte_1 = best_diff <= 1
 
+        # test if difference between modeled GTI and
+        # measured GTI (poa_global) is less than 1 W/m^2
         # only test for aoi less than 90 deg
+        best_diff_lte_1 = best_diff <= 1
         best_diff_lte_1_lt_90 = best_diff_lte_1[aoi_lt_90]
         if best_diff_lte_1_lt_90.all():
+            # all aoi < 90 points have a difference <= 1, so break loop
             break
 
         # calculate kt and DNI from GTI
@@ -1905,13 +1891,23 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         # I0h has a minimum zenith projection, but multiplier of DNI does not
         ghi = kt * I0h                  # Kt * I0 * max(0.065, cos(zen))
         dhi = ghi - dni * cos_zenith    # no cos(zen) restriction here
-        limit = 0
-        bad_values = (dhi < limit) | (dni < limit) | (ghi < limit)
-        dni[bad_values] = np.nan
-        ghi[bad_values] = np.nan
-        dhi[bad_values] = np.nan
+
+        zero_instead_of_nan = True  # decide approach before merging
+        if zero_instead_of_nan:
+            # following SSC code
+            dni = np.maximum(dni, 0)
+            ghi = np.maximum(ghi, 0)
+            dhi = np.maximum(dhi, 0)
+        else:
+            limit = 0
+            bad_values = (dhi < limit) | (dni < limit) | (ghi < limit)
+            dni[bad_values] = np.nan
+            ghi[bad_values] = np.nan
+            dhi[bad_values] = np.nan
 
         # use DNI and DHI to model GTI
+        # GTI-DIRINT uses perez transposition model, but we allow for
+        # any model here
         all_irrad = get_total_irradiance(
             surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
             dni, ghi, dhi, dni_extra=I0, airmass=airmass,
@@ -1944,10 +1940,11 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
             best_dhi = dhi.where(smallest_diff, best_dhi)
             best_kt_prime = kt_prime.where(smallest_diff, best_kt_prime)
 
-        # calculate adjusted inputs for next iteration
+        # calculate adjusted inputs for next iteration. Marion eqn 4
         poa_global_i = np.maximum(1.0, poa_global_i - coeff * diff)
-        failed_points = best_diff[aoi_lt_90][best_diff_lte_1_lt_90 == False]
     else:
+        # we are here because we ran out of coeffs to loop over and
+        # therefore we have exceeded max_iterations
         import warnings
         failed_points = best_diff[aoi_lt_90][best_diff_lte_1_lt_90 == False]
         warnings.warn(
@@ -1955,6 +1952,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
              % (len(failed_points), max_iterations, failed_points)),
             RuntimeWarning)
 
+    # return the best data, whether or not the solution converged
     return best_ghi, best_dni, best_dhi, best_kt_prime
 
 

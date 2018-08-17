@@ -586,3 +586,13 @@ def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
     aoi_projection = irradiance.aoi_projection(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     assert_allclose(aoi_projection, aoi_proj_expected, atol=1e-6)
+
+
+def test_clearness_index():
+    assert False
+    irradiance.clearness_index
+
+
+def test_clearness_index_zenith_independent():
+    assert False
+    irradiance.clearness_index

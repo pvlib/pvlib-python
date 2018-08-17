@@ -1254,7 +1254,8 @@ def _kt_kt_prime_factor(airmass):
     Calculate the conversion factor between kt and kt prime.
     Function is useful because DIRINT and GTI-DIRINT both use this.
     """
-    # consider adding am = np.maximum(am, 12)  # GH 450
+    # consider adding
+    # airmass = np.maximum(airmass, 12)  # GH 450
     return 1.031 * np.exp(-1.4 / (0.9 + 9.4 / airmass)) + 0.1
 
 
@@ -1355,6 +1356,9 @@ def _disc_kn(clearness_index, airmass):
     kt = clearness_index
     am = airmass
 
+    # consider adding
+    # am = np.maximum(am, 12)  # GH 450
+
     # powers of kt will be used repeatedly, so compute only once
     kt2 = kt * kt  # about the same as kt ** 2
     kt3 = kt2 * kt  # 5-10x faster than kt ** 3
@@ -1372,15 +1376,13 @@ def _disc_kn(clearness_index, airmass):
 
     delta_kn = a + b * np.exp(c*am)
 
-    # consider adding am = np.maximum(am, 12)  # GH 450
     Knc = 0.866 - 0.122*am + 0.0121*am**2 - 0.000653*am**3 + 1.4e-05*am**4
     Kn = Knc - delta_kn
     return Kn
 
 
 def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
-           temp_dew=None, kt=None, kt_prime=None, min_cos_zenith=0.065,
-           max_zenith=87, return_components=False):
+           temp_dew=None, min_cos_zenith=0.065, max_zenith=87):
     """
     Determine DNI from GHI using the DIRINT modification of the DISC
     model.
@@ -1480,14 +1482,12 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
                     min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
-    am = disc_out['airmass']
+    airmass = disc_out['airmass']
     kt = disc_out['kt']
 
-    kt_prime = clearness_index_zenith_independent(kt, am)
-
+    kt_prime = clearness_index_zenith_independent(kt, airmass)
     delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
                                             times)
-
     w = _temp_dew_dirint(temp_dew, times)
 
     dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
@@ -1501,6 +1501,11 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
 def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime,
                              temp_dew):
+    """
+    Calculate DIRINT DNI from supplied DISC DNI and Kt'.
+
+    Supports :py:func:`gti_dirint`
+    """
     times = dni.index
     delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
                                             times)
@@ -1514,7 +1519,7 @@ def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime,
 def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
     """
     Calculate delta kt prime (Perez eqn 2), or return a default value
-    for use with _dirint_bins.
+    for use with :py:func:`_dirint_bins`.
     """
     if use_delta_kt_prime:
         # Perez eqn 2
@@ -1530,7 +1535,7 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
 def _temp_dew_dirint(temp_dew, times):
     """
     Calculate precipitable water from surface dew point temp (Perez eqn 4),
-    or return a default value for use with _dirint_bins.
+    or return a default value for use with :py:func:`_dirint_bins`.
     """
     if temp_dew is not None:
         # Perez eqn 4
@@ -1942,7 +1947,6 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         # calculate adjusted inputs for next iteration
         poa_global_i = np.maximum(1.0, poa_global_i - coeff * diff)
         failed_points = best_diff[aoi_lt_90][best_diff_lte_1_lt_90 == False]
-        #print(failed_points, '\n', dirint_out.loc[failed_points.index])
     else:
         import warnings
         failed_points = best_diff[aoi_lt_90][best_diff_lte_1_lt_90 == False]
@@ -1956,7 +1960,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
 
 def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
                        surface_tilt, times, kt_prime,
-                       pressure=101325., temp_dew=None, albedo=.25,):
+                       pressure=101325., temp_dew=None, albedo=.25):
     """
     GTI-DIRINT model for AOI >= 90 degrees. See Marion 2015 Section 2.2.
 
@@ -1966,14 +1970,14 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
                                                   solar_azimuth, times,
                                                   kt_prime)
 
+    I0 = get_extra_radiation(times, 1370, 'spencer')
     airmass = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
     airmass = atmosphere.get_absolute_airmass(airmass, pressure)
     kt = kt_prime_gte_90 * _kt_kt_prime_factor(airmass)
+    disc_dni = np.maximum(_disc_kn(kt, airmass) * I0, 0)
 
-    dni_gte_90 = dirint(
-        poa_global, solar_zenith, times, pressure=pressure,
-        use_delta_kt_prime=False,
-        temp_dew=temp_dew, kt=kt, kt_prime=kt_prime_gte_90)
+    dni_gte_90 = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
+                                          False, temp_dew)
 
     dni_gte_90_proj = dni_gte_90 * tools.cosd(solar_zenith)
     cos_surface_tilt = tools.cosd(surface_tilt)
@@ -1991,7 +1995,7 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
 def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times,
                                 kt_prime):
     """
-    Determine kt' values to be used in GTI-DIRINT AOI >= 90 degrees case.
+    Determine kt' values to be used in GTI-DIRINT AOI >= 90 deg case.
     See Marion 2015 Section 2.2.
 
     For AOI >= 90 deg: average of the kt_prime values for 65 < AOI < 80

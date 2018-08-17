@@ -49,10 +49,8 @@ API Changes
   enhancement factor can yield unphysical results, especially for latitudes
   closer to the poles and especially in the winter months. It may yield
   improved results under other conditions. (:issue:`435`)
-* Add kt, kt_prime keyword, and return_kt_prime arguments to dirint function.
-  (:issue:`396`)
-* Add kt and min_cos_zenith keyword arguments to disc function. (:issue:`396`)
-* Change the disc dni filter thresholds. (:issue:`396`)
+* Add min_cos_zenith, max_zenith keyword arguments to disc and dirint
+  functions. (:issue:`311`, :issue:`396`)
 
 
 Enhancements
@@ -101,6 +99,8 @@ Enhancements
   solar position is supplied, time index length is less than 10000, and
   method is looped over. (:issue:`502`)
 * Add irradiance.gti_dirint function. (:issue:`396`)
+* Add clearness_index function. (:issue:`396`)
+* Add clearness_index_zenith_independent. (:issue:`396`)
 
 
 Bug fixes

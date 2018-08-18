@@ -269,6 +269,16 @@ def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_allclose(out, expected, atol=1e-2)
 
 
+@pytest.mark.parametrize('model', ['isotropic', 'klucher', 'haydavies',
+                                   'reindl', 'king', 'perez'])
+def test_sky_diffuse_zenith_close_to_90(model):
+    # GH 432
+    sky_diffuse = irradiance.get_sky_diffuse(
+        30, 180, 89.999, 230,
+        dni=10, ghi=51, dhi=50, dni_extra=1360, airmass=12, model=model)
+    assert sky_diffuse < 100
+
+
 def test_liujordan():
     expected = pd.DataFrame(np.
         array([[863.859736967, 653.123094076, 220.65905025]]),

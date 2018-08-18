@@ -181,7 +181,9 @@ def test_klucher_series(irrad_data, ephem_data):
     result = irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
                                 ephem_data['apparent_zenith'],
                                 ephem_data['azimuth'])
-    assert_allclose(result, [0, 37.446276, 109.209347, 56.965916], atol=1e-4)
+    # pvlib matlab 1.4 does not contain the max(cos_tt, 0) correction
+    # so, these values are different
+    assert_allclose(result, [0., 36.789794, 109.209347, 56.965916], atol=1e-4)
     # expect same result for np.array and pd.Series
     expected = irradiance.klucher(
         40, 180, irrad_data['dhi'].values, irrad_data['ghi'].values,
@@ -195,7 +197,8 @@ def test_haydavies(irrad_data, ephem_data, dni_et):
                          dni_et,
                          ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
-    assert_allclose(result, [0, 14.967008, 102.994862, 33.190865], atol=1e-4)
+    # values from matlab 1.4 code
+    assert_allclose(result, [0, 27.1775, 102.9949, 33.1909], atol=1e-4)
 
 
 def test_reindl(irrad_data, ephem_data, dni_et):
@@ -203,7 +206,8 @@ def test_reindl(irrad_data, ephem_data, dni_et):
                       irrad_data['ghi'], dni_et,
                       ephem_data['apparent_zenith'],
                       ephem_data['azimuth'])
-    assert_allclose(result, [np.nan, 15.730664, 104.131724, 34.166258], atol=1e-4)
+    # values from matlab 1.4 code
+    assert_allclose(result, [np.nan, 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
 def test_king(irrad_data, ephem_data):

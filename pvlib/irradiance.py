@@ -1199,7 +1199,7 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065):
 
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
-        clearness index `kt`. Equivalent to 86.273 degrees.
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
 
     Returns
     -------
@@ -1217,7 +1217,9 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065):
     I0h = extra_radiation * np.maximum(cos_zenith, min_cos_zenith)
     kt = ghi / I0h
     kt = np.maximum(kt, 0)
-    kt = np.minimum(kt, 0.82)  # consider replacing with 1 or nan assignment
+    # Limit copied from the kt prime limit in dirint, which was justified
+    # with reference to SRRL code. consider replacing with 1 or nan
+    kt = np.minimum(kt, 0.82)
     return kt
 
 
@@ -1287,7 +1289,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
-        clearness index `kt`. Equivalent to 86.273 degrees.
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
 
     max_zenith : numeric, default 87
         Maximum value of zenith to allow in DNI calculation. DNI will be
@@ -1426,17 +1428,9 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
         DewPtTemp is not provided, then dew point improvements are not
         applied.
 
-    kt : None or array-like, default None
-        The global clearness index. If None, calculated using
-        :py:func:`disc`.
-
-    kt_prime : None or array-like, default None
-        The zenith angle-independent clearness index. If None, calculated
-        from `kt` following [1].
-
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
-        clearness index `kt`. Equivalent to 86.273 degrees.
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
 
     max_zenith : numeric, default 87
         Maximum value of zenith to allow in DNI calculation. DNI will be
@@ -1834,7 +1828,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
                       times, surface_tilt, surface_azimuth, pressure=101325.,
                       use_delta_kt_prime=True, temp_dew=None, albedo=.25,
                       model='perez', model_perez='allsitescomposite1990',
-                      max_iterations=30):
+                      max_iterations=30, debug=False):
     """
     GTI-DIRINT model for AOI < 90 degrees. See Marion 2015 Section 2.1.
 
@@ -1952,6 +1946,8 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
              % (len(failed_points), max_iterations, failed_points)),
             RuntimeWarning)
 
+    if debug:
+        return best_ghi, best_dni, best_dhi, best_kt_prime, all_irrad, poa_global_i, kt, kt_prime, best_diff
     # return the best data, whether or not the solution converged
     return best_ghi, best_dni, best_dhi, best_kt_prime
 

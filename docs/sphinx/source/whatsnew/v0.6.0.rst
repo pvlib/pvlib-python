@@ -93,6 +93,9 @@ Enhancements
 * Add PVSyst thin-film recombination losses for CdTe and a:Si (:issue:`163`)
 * Python 3.7 officially supported. (:issue:`496`)
 * Improve performance of solarposition.ephemeris. (:issue:`512`)
+* Improve performance of Location.get_airmass. Most noticeable when
+  solar position is supplied, time index length is less than 10000, and
+  method is looped over. (:issue:`502`)
 
 
 Bug fixes
@@ -114,6 +117,8 @@ Bug fixes
   (:issue:`526`)
 * Fix issue with dividing by near-0 cos(solar_zenith) values in Reindl and
   Hay-Davies diffuse sky algorithms. (:issue:`432`)
+* Fix argument order of longitude and latitude when querying weather forecasts
+  by lonlat bounding box (:issue:`521`)
 
 
 Documentation
@@ -125,6 +130,9 @@ Documentation
 * Expanded general contributing and pull request guidelines.
 * Added section on single diode equation with some detail on solutions used in
   pvlib-python (:issue:`518`)
+* Minor improvements and updates to installation documentation. (:issue:`531`)
+* Improve LocalizedPVSystem and LocalizedSingleAxisTracker documentation.
+  (:issue:`532`)
 
 
 Testing

@@ -256,7 +256,7 @@ def poa_horizontal_ratio(surface_tilt, surface_azimuth,
 
     cos_solar_zenith = tools.cosd(solar_zenith)
 
-    # ratio of titled and horizontal beam irradiance
+    # ratio of tilted and horizontal beam irradiance
     ratio = cos_poa_zen / cos_solar_zenith
 
     try:
@@ -746,6 +746,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     # zenith angle with respect to panel normal.
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                             solar_zenith, solar_azimuth)
+    cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
     F = 1 - ((dhi / ghi) ** 2)
     try:
@@ -836,8 +837,9 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     if projection_ratio is None:
         cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                                 solar_zenith, solar_azimuth)
+        cos_tt = np.maximum(cos_tt, 0)  # GH 526
         cos_solar_zenith = tools.cosd(solar_zenith)
-        Rb = cos_tt / cos_solar_zenith
+        Rb = cos_tt / np.maximum(cos_solar_zenith, 0.01745)  # GH 432
     else:
         Rb = projection_ratio
 
@@ -932,11 +934,13 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                             solar_zenith, solar_azimuth)
+    cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
+    # do not apply cos(zen) limit here (needed for HB below)
     cos_solar_zenith = tools.cosd(solar_zenith)
 
     # ratio of titled and horizontal beam irradiance
-    Rb = cos_tt / cos_solar_zenith
+    Rb = cos_tt / np.maximum(cos_solar_zenith, 0.01745)  # GH 432
 
     # Anisotropy Index
     AI = dni / dni_extra

@@ -181,7 +181,9 @@ def test_klucher_series(irrad_data, ephem_data):
     result = irradiance.klucher(40, 180, irrad_data['dhi'], irrad_data['ghi'],
                                 ephem_data['apparent_zenith'],
                                 ephem_data['azimuth'])
-    assert_allclose(result, [0, 37.446276, 109.209347, 56.965916], atol=1e-4)
+    # pvlib matlab 1.4 does not contain the max(cos_tt, 0) correction
+    # so, these values are different
+    assert_allclose(result, [0., 36.789794, 109.209347, 56.965916], atol=1e-4)
     # expect same result for np.array and pd.Series
     expected = irradiance.klucher(
         40, 180, irrad_data['dhi'].values, irrad_data['ghi'].values,
@@ -195,7 +197,8 @@ def test_haydavies(irrad_data, ephem_data, dni_et):
                          dni_et,
                          ephem_data['apparent_zenith'],
                          ephem_data['azimuth'])
-    assert_allclose(result, [0, 14.967008, 102.994862, 33.190865], atol=1e-4)
+    # values from matlab 1.4 code
+    assert_allclose(result, [0, 27.1775, 102.9949, 33.1909], atol=1e-4)
 
 
 def test_reindl(irrad_data, ephem_data, dni_et):
@@ -203,7 +206,8 @@ def test_reindl(irrad_data, ephem_data, dni_et):
                       irrad_data['ghi'], dni_et,
                       ephem_data['apparent_zenith'],
                       ephem_data['azimuth'])
-    assert_allclose(result, [np.nan, 15.730664, 104.131724, 34.166258], atol=1e-4)
+    # values from matlab 1.4 code
+    assert_allclose(result, [np.nan, 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
 def test_king(irrad_data, ephem_data):
@@ -263,6 +267,16 @@ def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     expected = np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877])
     assert_allclose(out, expected, atol=1e-2)
+
+
+@pytest.mark.parametrize('model', ['isotropic', 'klucher', 'haydavies',
+                                   'reindl', 'king', 'perez'])
+def test_sky_diffuse_zenith_close_to_90(model):
+    # GH 432
+    sky_diffuse = irradiance.get_sky_diffuse(
+        30, 180, 89.999, 230,
+        dni=10, ghi=51, dhi=50, dni_extra=1360, airmass=12, model=model)
+    assert sky_diffuse < 100
 
 
 def test_liujordan():

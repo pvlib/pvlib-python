@@ -73,7 +73,6 @@ to accomplish our system modeling goal:
         system['surface_tilt'] = latitude
         solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
         dni_extra = pvlib.irradiance.get_extra_radiation(times)
-        dni_extra = pd.Series(dni_extra, index=times)
         airmass = pvlib.atmosphere.get_relative_airmass(solpos['apparent_zenith'])
         pressure = pvlib.atmosphere.alt2pres(altitude)
         am_abs = pvlib.atmosphere.get_absolute_airmass(airmass, pressure)
@@ -133,7 +132,16 @@ The following code demonstrates how to use
 :py:class:`~pvlib.location.Location`,
 :py:class:`~pvlib.pvsystem.PVSystem`, and
 :py:class:`~pvlib.modelchain.ModelChain` objects to accomplish our
-system modeling goal:
+system modeling goal. ModelChain objects provide convenience methods
+that can provide default selections for models and can also fill
+necessary input data with modeled data. In our example below, we use
+convenience methods. For example, no irradiance data is provided as
+input, so the ModelChain object substitutes irradiance from a clear-sky
+model via the prepare_inputs method. Also, no irradiance transposition
+model is specified (keyword argument `transposition` for ModelChain) so
+the ModelChain defaults to the `haydavies` model. In this example,
+ModelChain infers the DC power model from the module provided by
+examining the parameters defined for module.
 
 .. ipython:: python
 
@@ -146,6 +154,7 @@ system modeling goal:
 
     energies = {}
     for latitude, longitude, name, altitude, timezone in coordinates:
+        times = naive_times.tz_localize(timezone)
         location = Location(latitude, longitude, name=name, altitude=altitude,
                             tz=timezone)
         # very experimental
@@ -153,7 +162,7 @@ system modeling goal:
                         orientation_strategy='south_at_latitude_tilt')
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
-        mc.run_model(naive_times.tz_localize(timezone))
+        mc.run_model(times)
         annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 

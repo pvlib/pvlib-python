@@ -134,6 +134,7 @@ Documentation
   (:issue:`532`)
 * Move the "Getting Started"/"Modeling Paradigms" section to a new
   top-level "Intro Examples" page.
+* Copy pvlib documentation's "Getting support" section to README.md.
 
 
 Testing

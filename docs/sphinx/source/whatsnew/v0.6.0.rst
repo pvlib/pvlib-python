@@ -132,6 +132,7 @@ Documentation
 * Minor improvements and updates to installation documentation. (:issue:`531`)
 * Improve LocalizedPVSystem and LocalizedSingleAxisTracker documentation.
   (:issue:`532`)
+* Copy pvlib documentation's "Getting support" section to README.md.
 
 
 Testing

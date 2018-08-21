@@ -625,9 +625,31 @@ def test_kt_kt_prime_factor(airmass_kt):
     expected = np.array([ 0.999971,  0.723088,  0.548811,  0.471068])
     assert_allclose(out, expected, atol=1e-5)
 
+
 def test_clearness_index():
-    assert False
-    irradiance.clearness_index
+    ghi = np.array([-1, 0, 1000])
+    solar_zenith = np.array([180, 90, 0])
+    ghi, solar_zenith = np.meshgrid(ghi, solar_zenith)
+    # default min_cos_zenith
+    out = irradiance.clearness_index(ghi, solar_zenith, 1370)
+    expected = np.array([])
+    assert_allclose(out, expected)
+    # specify min_cos_zenith
+    out = irradiance.clearness_index(ghi, solar_zenith, 1400, min_cos_zenith=0)
+    expected = np.array([])
+    assert_allclose(out, expected)
+    # scalars
+    out = irradiance.clearness_index(1000, 90, 1400)
+    expected = 100
+    assert_allclose(out, expected)
+    # series
+    times = pd.DatetimeIndex(start='20180601')
+    ghi = pd.Series([0, 1000], index=times)
+    solar_zenith = pd.Series([90, 0], index=times)
+    extra_radiation = pd.Series([1360, 1400], index=times)
+    out = irradiance.clearness_index(ghi, solar_zenith, extra_radiation)
+    expected = np.array([])
+    assert_allclose(out, expected)
 
 
 def test_clearness_index_zenith_independent():

@@ -1416,20 +1416,18 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
         average pressure may be calculated from site altitude.
 
     use_delta_kt_prime : bool, default True
-        Indicates if the user would like to utilize the time-series
-        nature of the GHI measurements. A value of ``False`` will not
-        use the time-series improvements, any other numeric value will
-        use time-series improvements. It is recommended that time-series
-        data only be used if the time between measured data points is
-        less than 1.5 hours. If none of the input arguments are vectors,
-        then time-series improvements are not used (because it's not a
-        time-series). If True, input data must be Series.
+        If True, indicates that the stability index delta_kt_prime is
+        included in the model. The stability index adjusts the estimated
+        DNI in response to dynamics in the time series of GHI. It is
+        recommended that delta_kt_prime is not used if the time between
+        GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
+        input data must be Series.
 
     temp_dew : None, float, or array-like, default None
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
-        DewPtTemp=NaN does not have dew point improvements applied. If
-        DewPtTemp is not provided, then dew point improvements are not
+        temp_dew=NaN does not have dew point improvements applied. If
+        temp_dew is not provided, then dew point improvements are not
         applied.
 
     min_cos_zenith : numeric, default 0.065
@@ -1747,20 +1745,18 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         average pressure may be calculated from site altitude.
 
     use_delta_kt_prime : bool, default True
-        Indicates if the user would like to utilize the time-series
-        nature of the GHI measurements. A value of ``False`` will not
-        use the time-series improvements, any other numeric value will
-        use time-series improvements. It is recommended that time-series
-        data only be used if the time between measured data points is
-        less than 1.5 hours. If none of the input arguments are vectors,
-        then time-series improvements are not used (because it's not a
-        time-series). If True, input data must be Series.
+        If True, indicates that the stability index delta_kt_prime is
+        included in the model. The stability index adjusts the estimated
+        DNI in response to dynamics in the time series of GHI. It is
+        recommended that delta_kt_prime is not used if the time between
+        GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
+        input data must be Series.
 
-    temp_dew : numeric, default None
+    temp_dew : None, float, or array-like, default None
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
-        DewPtTemp=NaN does not have dew point improvements applied. If
-        DewPtTemp is not provided, then dew point improvements are not
+        temp_dew=NaN does not have dew point improvements applied. If
+        temp_dew is not provided, then dew point improvements are not
         applied.
 
     albedo : numeric, default 0.25

@@ -99,8 +99,8 @@ Enhancements
   solar position is supplied, time index length is less than 10000, and
   method is looped over. (:issue:`502`)
 * Add irradiance.gti_dirint function. (:issue:`396`)
-* Add clearness_index function. (:issue:`396`)
-* Add clearness_index_zenith_independent. (:issue:`396`)
+* Add irradiance.clearness_index function. (:issue:`396`)
+* Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
 
 
 Bug fixes

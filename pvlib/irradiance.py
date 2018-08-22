@@ -1251,6 +1251,9 @@ def clearness_index_zenith_independent(clearness_index, airmass):
 
     Reference
     ---------
+    [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
+    (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
+    ASHRAE Transactions-Research Series, pp. 354-369
     """
     # Perez eqn 1
     kt_prime = clearness_index / _kt_kt_prime_factor(airmass)

@@ -71,6 +71,7 @@ Contents
    :maxdepth: 1
 
    package_overview
+   introexamples
    whatsnew
    installation
    contributing

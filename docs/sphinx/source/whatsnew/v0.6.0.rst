@@ -132,6 +132,8 @@ Documentation
 * Minor improvements and updates to installation documentation. (:issue:`531`)
 * Improve LocalizedPVSystem and LocalizedSingleAxisTracker documentation.
   (:issue:`532`)
+* Move the "Getting Started"/"Modeling Paradigms" section to a new
+  top-level "Intro Examples" page.
 * Copy pvlib documentation's "Getting support" section to README.md.
 
 

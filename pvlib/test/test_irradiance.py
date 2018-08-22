@@ -2,7 +2,7 @@ import datetime
 from collections import OrderedDict
 
 import numpy as np
-from numpy import array
+from numpy import array, nan
 import pandas as pd
 
 import pytest
@@ -372,7 +372,36 @@ def test_disc_value():
 
 
 def test_disc_min_cos_zenith_max_zenith():
-    assert False
+    # map out behavior under difficult conditions with various
+    # limiting kwargs settings
+    columns = ['dni', 'kt', 'airmass']
+    times = pd.DatetimeIndex(['2016-07-19 06:11:00-0600'])
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times)
+    expected = pd.DataFrame(np.array(
+        [[  0.00000000e+00,   1.16046346e-02,   3.63954476e+01]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0)
+    expected = pd.DataFrame(np.array(
+        [[  0.00000000e+00,   0.82,   3.63954476e+01]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[  6.68577449e+03,   1.16046346e-02,   3.63954476e+01]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[  7.34371328e+03,   8.20000000e-01,   3.63954476e+01]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
 
 
 def test_dirint_value():
@@ -427,11 +456,29 @@ def test_dirint_coeffs():
 
 
 def test_dirint_min_cos_zenith_max_zenith():
-    assert False
+    # map out behavior under difficult conditions with various
+    # limiting kwargs settings
+    # times don't have any physical relevance
+    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    ghi = pd.Series([0, 1], index=times)
+    solar_zenith = pd.Series([90, 89.99], index=times)
 
+    out = irradiance.dirint(ghi, solar_zenith, times)
+    expected = pd.Series([0.0, 0.0], index=times, name='dni')
+    assert_series_equal(out, expected)
 
-def test_dirindex_min_cos_zenith_max_zenith():
-    assert False
+    out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0)
+    expected = pd.Series([0.0, 0.0], index=times, name='dni')
+    assert_series_equal(out, expected)
+
+    out = irradiance.dirint(ghi, solar_zenith, times, max_zenith=100)
+    expected = pd.Series([862.197596231, 848.305136439], index=times, name='dni')
+    assert_series_equal(out, expected)
+
+    out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0,
+                            max_zenith=100)
+    expected = pd.Series([147655.599432, 3817.76605046], index=times, name='dni')
+    assert_series_equal(out, expected)
 
 
 def test_gti_dirint():
@@ -576,6 +623,37 @@ def test_dirindex(times):
                        equal_nan=True)
 
 
+def test_dirindex_min_cos_zenith_max_zenith():
+    # map out behavior under difficult conditions with various
+    # limiting kwargs settings
+    # times don't have any physical relevance
+    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    ghi = pd.Series([0, 1], index=times)
+    ghi_clearsky = pd.Series([0, 1], index=times)
+    dni_clearsky = pd.Series([0, 5], index=times)
+    solar_zenith = pd.Series([90, 89.99], index=times)
+
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
+                              times)
+    expected = pd.Series([nan, nan], index=times)
+    assert_series_equal(out, expected)
+
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
+                              times, min_cos_zenith=0)
+    expected = pd.Series([nan, nan], index=times)
+    assert_series_equal(out, expected)
+
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
+                              times, max_zenith=100)
+    expected = pd.Series([0., 5.], index=times)
+    assert_series_equal(out, expected)
+
+    out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
+                              times, min_cos_zenith=0, max_zenith=100)
+    expected = pd.Series([0., 5.], index=times)
+    assert_series_equal(out, expected)
+
+
 def test_dni():
     ghi = pd.Series([90, 100, 100, 100, 100])
     dhi = pd.Series([100, 90, 50, 50, 50])
@@ -627,31 +705,61 @@ def test_kt_kt_prime_factor(airmass_kt):
 
 
 def test_clearness_index():
-    ghi = np.array([-1, 0, 1000])
-    solar_zenith = np.array([180, 90, 0])
+    ghi = np.array([-1, 0, 1, 1000])
+    solar_zenith = np.array([180, 90, 89.999, 0])
     ghi, solar_zenith = np.meshgrid(ghi, solar_zenith)
     # default min_cos_zenith
     out = irradiance.clearness_index(ghi, solar_zenith, 1370)
-    expected = np.array([])
-    assert_allclose(out, expected)
+    expected = np.array(
+        [[ 0.   ,  0.   ,  0.011,  0.82 ],
+         [ 0.   ,  0.   ,  0.011,  0.82 ],
+         [ 0.   ,  0.   ,  0.011,  0.82 ],
+         [ 0.   ,  0.   ,  0.001,  0.73 ]])
+    assert_allclose(out, expected, atol=0.001)
     # specify min_cos_zenith
-    out = irradiance.clearness_index(ghi, solar_zenith, 1400, min_cos_zenith=0)
-    expected = np.array([])
-    assert_allclose(out, expected)
+    with np.errstate(invalid='ignore', divide='ignore'):
+        out = irradiance.clearness_index(ghi, solar_zenith, 1400,
+                                         min_cos_zenith=0)
+    expected = np.array(
+        [[ 0.   ,    nan,  0.82 ,  0.82 ],
+         [ 0.   ,  0.   ,  0.82 ,  0.82 ],
+         [ 0.   ,  0.   ,  0.82 ,  0.82 ],
+         [ 0.   ,  0.   ,  0.001,  0.714]])
+    assert_allclose(out, expected, atol=0.001)
     # scalars
-    out = irradiance.clearness_index(1000, 90, 1400)
-    expected = 100
-    assert_allclose(out, expected)
+    out = irradiance.clearness_index(1000, 10, 1400)
+    expected = 0.725
+    assert_allclose(out, expected, atol=0.001)
     # series
-    times = pd.DatetimeIndex(start='20180601')
+    times = pd.DatetimeIndex(start='20180601', periods=2, freq='12H')
     ghi = pd.Series([0, 1000], index=times)
     solar_zenith = pd.Series([90, 0], index=times)
     extra_radiation = pd.Series([1360, 1400], index=times)
     out = irradiance.clearness_index(ghi, solar_zenith, extra_radiation)
-    expected = np.array([])
-    assert_allclose(out, expected)
+    expected = pd.Series([0, 0.714285714286], index=times)
+    assert_series_equal(out, expected)
 
 
-def test_clearness_index_zenith_independent():
-    assert False
-    irradiance.clearness_index
+def test_clearness_index_zenith_independent(airmass_kt):
+    clearness_index = np.array([-1, 0, .1, 1])
+    clearness_index, airmass_kt = np.meshgrid(clearness_index, airmass_kt)
+    out = irradiance.clearness_index_zenith_independent(clearness_index,
+                                                        airmass_kt)
+    expected = np.array(
+        [[ 0.   ,  0.   ,  0.1  ,  0.82 ],
+         [ 0.   ,  0.   ,  0.138,  0.82 ],
+         [ 0.   ,  0.   ,  0.182,  0.82 ],
+         [ 0.   ,  0.   ,  0.212,  0.82 ]])
+    assert_allclose(out, expected, atol=0.001)
+    # scalars
+    out = irradiance.clearness_index_zenith_independent(.4, 2)
+    expected = 0.443
+    assert_allclose(out, expected, atol=0.001)
+    # series
+    times = pd.DatetimeIndex(start='20180601', periods=2, freq='12H')
+    clearness_index = pd.Series([0, .5], index=times)
+    airmass = pd.Series([np.nan, 2], index=times)
+    out = irradiance.clearness_index_zenith_independent(clearness_index,
+                                                        airmass)
+    expected = pd.Series([np.nan, 0.553744437562], index=times)
+    assert_series_equal(out, expected)

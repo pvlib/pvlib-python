@@ -1219,6 +1219,10 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065):
     """
     cos_zenith = tools.cosd(solar_zenith)
     I0h = extra_radiation * np.maximum(cos_zenith, min_cos_zenith)
+    # consider adding
+    # with np.errstate(invalid='ignore', divide='ignore'):
+    # to kt calculation, but perhaps it's good to allow these
+    # warnings to the users that override min_cos_zenith
     kt = ghi / I0h
     kt = np.maximum(kt, 0)
     # Limit copied from the kt prime limit in dirint, which was justified
@@ -1622,7 +1626,8 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
 
 
 def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
-             use_delta_kt_prime=True, temp_dew=None):
+             use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
+             max_zenith=87):
     """
     Determine DNI from GHI using the DIRINDEX model, which is a modification of
     the DIRINT model with information from a clear sky model.
@@ -1653,21 +1658,27 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
         average pressure may be calculated from site altitude.
 
     use_delta_kt_prime : bool, default True
-        Indicates if the user would like to utilize the time-series
-        nature of the GHI measurements. A value of ``False`` will not
-        use the time-series improvements, any other numeric value will
-        use time-series improvements. It is recommended that time-series
-        data only be used if the time between measured data points is
-        less than 1.5 hours. If none of the input arguments are vectors,
-        then time-series improvements are not used (because it's not a
-        time-series). If True, input data must be Series.
+        If True, indicates that the stability index delta_kt_prime is
+        included in the model. The stability index adjusts the estimated
+        DNI in response to dynamics in the time series of GHI. It is
+        recommended that delta_kt_prime is not used if the time between
+        GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
+        input data must be Series.
 
     temp_dew : None, float, or array-like, default None
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
-        DewPtTemp=NaN does not have dew point improvements applied. If
-        DewPtTemp is not provided, then dew point improvements are not
+        temp_dew=NaN does not have dew point improvements applied. If
+        temp_dew is not provided, then dew point improvements are not
         applied.
+
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
 
     Returns
     -------
@@ -1688,12 +1699,15 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
     dni_dirint = dirint(ghi, zenith, times, pressure=pressure,
                         use_delta_kt_prime=use_delta_kt_prime,
-                        temp_dew=temp_dew)
+                        temp_dew=temp_dew, min_cos_zenith=min_cos_zenith,
+                        max_zenith=max_zenith)
 
     dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times,
                                  pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
-                                 temp_dew=temp_dew)
+                                 temp_dew=temp_dew,
+                                 min_cos_zenith=min_cos_zenith,
+                                 max_zenith=max_zenith)
 
     dni_dirindex = dni_clearsky * dni_dirint / dni_dirint_clearsky
 

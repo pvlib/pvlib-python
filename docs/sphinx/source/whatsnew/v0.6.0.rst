@@ -49,8 +49,8 @@ API Changes
   enhancement factor can yield unphysical results, especially for latitudes
   closer to the poles and especially in the winter months. It may yield
   improved results under other conditions. (:issue:`435`)
-* Add min_cos_zenith, max_zenith keyword arguments to disc and dirint
-  functions. (:issue:`311`, :issue:`396`)
+* Add min_cos_zenith, max_zenith keyword arguments to disc, dirint, and
+  dirindex functions. (:issue:`311`, :issue:`396`)
 
 
 Enhancements

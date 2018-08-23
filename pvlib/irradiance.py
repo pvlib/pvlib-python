@@ -1182,7 +1182,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def disc(ghi, zenith, datetime_or_doy, pressure=101325):
+def disc(ghi, zenith, datetime_or_doy, pressure=101325, zenith_threshold=87.):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1206,6 +1206,9 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
 
     pressure : numeric, default 101325
         Site pressure in Pascal.
+
+    zenith_threshold: numeric
+        Filtering threshold on zenith angles in decimal degrees.
 
     Returns
     -------
@@ -1268,7 +1271,7 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
 
     dni = Kn * I0
 
-    dni = np.where((zenith > 87) | (ghi < 0) | (dni < 0), 0, dni)
+    dni = np.where((zenith > zenith_threshold) | (ghi < 0) | (dni < 0), 0, dni)
 
     output = OrderedDict()
     output['dni'] = dni

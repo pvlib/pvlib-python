@@ -118,6 +118,7 @@ Bug fixes
   Hay-Davies diffuse sky algorithms. (:issue:`432`)
 * Fix argument order of longitude and latitude when querying weather forecasts
   by lonlat bounding box (:issue:`521`)
+* Limit pvwatts_ac results to be greater than or equal to 0. (:issue:`541`)
 
 
 Documentation

@@ -52,8 +52,17 @@ License
 BSD 3-clause
 
 
-Contact
-=======
+Getting support
+===============
 
-Please use our [issues page](https://github.com/pvlib/pvlib-python/issues)
-to contact the developers and pvlib community.
+pvlib usage questions can be asked on
+[Stack Overflow](http://stackoverflow.com) and tagged with
+the [pvlib](http://stackoverflow.com/questions/tagged/pvlib) tag.
+
+The [pvlib-python google group](https://groups.google.com/forum/#!forum/pvlib-python)
+is used for discussing various topics of interest to the pvlib-python
+community. We also make new version announcements on the google group.
+
+If you suspect that you may have discovered a bug or if you'd like to
+change something about pvlib, then please make an issue on our
+[GitHub issues page](https://github.com/pvlib/pvlib-python/issues).

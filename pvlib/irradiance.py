@@ -359,7 +359,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
         model_perez=model_perez)
 
-    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo=albedo,
+    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
                                             surface_type)
     aoi_ = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     irrads = poa_components(aoi_, dni, poa_sky_diffuse, poa_ground_diffuse)

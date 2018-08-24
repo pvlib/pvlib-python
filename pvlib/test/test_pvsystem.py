@@ -1275,6 +1275,14 @@ def test_pvwatts_ac_scalars():
     assert_allclose(out, expected)
 
 
+def test_pvwatts_ac_possible_negative():
+    # pvwatts_ac could return a negative value for (pdc / pdc0) < 0.006
+    # unless it is clipped. see GH 541 for more
+    expected = 0
+    out = pvsystem.pvwatts_ac(0.001, 1)
+    assert_allclose(out, expected)
+
+
 @needs_numpy_1_10
 def test_pvwatts_ac_arrays():
     pdc = np.array([[np.nan], [50], [100]])

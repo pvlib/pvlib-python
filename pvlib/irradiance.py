@@ -359,7 +359,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
         model_perez=model_perez)
 
-    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
+    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo=albedo,
                                             surface_type)
     aoi_ = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     irrads = poa_components(aoi_, dni, poa_sky_diffuse, poa_ground_diffuse)
@@ -1182,7 +1182,8 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065):
+def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
+                    max_clearness_index=2.0):
     """
     Calculate the clearness index.
 
@@ -1204,6 +1205,11 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065):
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
         clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+
+    max_clearness_index : numeric, default 2.0
+        Maximum value of the clearness index. The default, 2.0, allows
+        for over-irradiance events typically seen in sub-hourly data.
+        NREL's SRRL Fortran code used 0.82 for hourly data.
 
     Returns
     -------
@@ -1227,11 +1233,12 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065):
     kt = np.maximum(kt, 0)
     # Limit copied from the kt prime limit in dirint, which was justified
     # with reference to SRRL code. consider replacing with 1 or nan
-    kt = np.minimum(kt, 0.82)
+    kt = np.minimum(kt, max_clearness_index)
     return kt
 
 
-def clearness_index_zenith_independent(clearness_index, airmass):
+def clearness_index_zenith_independent(clearness_index, airmass,
+                                       max_clearness_index=2.0):
     """
     Calculate the zenith angle independent clearness index.
 
@@ -1243,6 +1250,11 @@ def clearness_index_zenith_independent(clearness_index, airmass):
 
     airmass : numeric
         Airmass
+
+    max_clearness_index : numeric, default 2.0
+        Maximum value of the clearness index. The default, 2.0, allows
+        for over-irradiance events typically seen in sub-hourly data.
+        NREL's SRRL Fortran code used 0.82 for hourly data.
 
     Returns
     -------
@@ -1258,7 +1270,7 @@ def clearness_index_zenith_independent(clearness_index, airmass):
     # Perez eqn 1
     kt_prime = clearness_index / _kt_kt_prime_factor(airmass)
     kt_prime = np.maximum(kt_prime, 0)
-    kt_prime = np.minimum(kt_prime, 0.82)  # From SRRL code
+    kt_prime = np.minimum(kt_prime, max_clearness_index)
     return kt_prime
 
 
@@ -1281,6 +1293,8 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     The DISC algorithm converts global horizontal irradiance to direct
     normal irradiance through empirical relationships between the global
     and direct clearness indices.
+
+    The pvlib implementation limits the clearness index to 1.
 
     Parameters
     ----------
@@ -1339,7 +1353,8 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     # SSC uses solar constant = 1367.0 (checked 2018 08 15)
     I0 = get_extra_radiation(datetime_or_doy, 1370, 'spencer')
 
-    kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith)
+    kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith,
+                         max_clearness_index=1)
 
     am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
     am = atmosphere.get_absolute_airmass(am, pressure)
@@ -1407,6 +1422,8 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     information. The effectiveness of the DIRINT model improves with
     each piece of information provided.
 
+    The pvlib implementation limits the clearness index to 1.
+
     Parameters
     ----------
     ghi : array-like
@@ -1472,7 +1489,8 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     airmass = disc_out['airmass']
     kt = disc_out['kt']
 
-    kt_prime = clearness_index_zenith_independent(kt, airmass)
+    kt_prime = clearness_index_zenith_independent(
+        kt, airmass, max_clearness_index=1)
     delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
                                             times)
     w = _temp_dew_dirint(temp_dew, times)
@@ -1637,6 +1655,8 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
     DIRINDEX [1] improves upon the DIRINT model by taking into account
     turbidity when used with the Ineichen clear sky model results.
+
+    The pvlib implementation limits the clearness index to 1.
 
     Parameters
     ----------
@@ -1903,18 +1923,10 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         ghi = kt * I0h                  # Kt * I0 * max(0.065, cos(zen))
         dhi = ghi - dni * cos_zenith    # no cos(zen) restriction here
 
-        zero_instead_of_nan = True  # decide approach before merging
-        if zero_instead_of_nan:
-            # following SSC code
-            dni = np.maximum(dni, 0)
-            ghi = np.maximum(ghi, 0)
-            dhi = np.maximum(dhi, 0)
-        else:
-            limit = 0
-            bad_values = (dhi < limit) | (dni < limit) | (ghi < limit)
-            dni[bad_values] = np.nan
-            ghi[bad_values] = np.nan
-            dhi[bad_values] = np.nan
+        # following SSC code
+        dni = np.maximum(dni, 0)
+        ghi = np.maximum(ghi, 0)
+        dhi = np.maximum(dhi, 0)
 
         # use DNI and DHI to model GTI
         # GTI-DIRINT uses perez transposition model, but we allow for

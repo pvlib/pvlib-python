@@ -1351,7 +1351,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     # this is the I0 calculation from the reference
     # SSC uses solar constant = 1367.0 (checked 2018 08 15)
-    I0 = get_extra_radiation(datetime_or_doy, 1370, 'spencer')
+    I0 = get_extra_radiation(datetime_or_doy, 1370., 'spencer')
 
     kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)

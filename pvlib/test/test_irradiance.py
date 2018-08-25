@@ -355,24 +355,28 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
 
 def test_disc_value():
     columns = ['dni', 'kt', 'airmass']
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T1200', '2014-06-24T1800'],
+                             tz='America/Phoenix')
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
     out = irradiance.disc(ghi, zenith, times, pressure=pressure)
-    expected = pd.DataFrame(np.array(
-        [[8.30465672e+02, 7.97424662e-01, 9.35050958e-01],
-         [6.76183401e+02, 6.37821639e-01, 3.02102114e+00]]),
-        columns=columns, index=times)
-    assert_frame_equal(out, expected)
+    expected_values = np.array(
+        [[830.46567,   0.79742,   0.93505],
+         [676.09497,   0.63776,   3.02102]])
+    expected = pd.DataFrame(expected_values, columns=columns, index=times)
+    # check the pandas dataframe. check_less_precise is weird
+    assert_frame_equal(out, expected, check_less_precise=True)
+    # use np.assert_allclose to check values more clearly
+    assert_allclose(out.values, expected_values, atol=1e-5)
 
 
 def test_disc_overirradiance():
     columns = ['dni', 'kt', 'airmass']
     ghi = np.array([3000])
     solar_zenith = np.full_like(ghi, 0)
-    times = pd.DatetimeIndex(start='2016-07-19 12:00:00-0600', freq='1s',
-                             periods=len(ghi))
+    times = pd.DatetimeIndex(start='2016-07-19 12:00:00', freq='1s',
+                             periods=len(ghi), tz='America/Phoenix')
     out = irradiance.disc(ghi=ghi, solar_zenith=solar_zenith,
                           datetime_or_doy=times)
     expected = pd.DataFrame(np.array(
@@ -385,7 +389,7 @@ def test_disc_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
     columns = ['dni', 'kt', 'airmass']
-    times = pd.DatetimeIndex(['2016-07-19 06:11:00-0600'])
+    times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times)
     expected = pd.DataFrame(np.array(
         [[0.00000000e+00, 1.16046346e-02, 3.63954476e+01]]),
@@ -482,13 +486,13 @@ def test_dirint_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected)
 
     out = irradiance.dirint(ghi, solar_zenith, times, max_zenith=100)
-    expected = pd.Series([862.197596231, 848.305136439], index=times, name='dni')
-    assert_series_equal(out, expected)
+    expected = pd.Series([862.198, 848.387], index=times, name='dni')
+    assert_series_equal(out, expected, check_less_precise=True)
 
     out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0,
                             max_zenith=100)
-    expected = pd.Series([147655.599431, 3749.492024], index=times, name='dni')
-    assert_series_equal(out, expected)
+    expected = pd.Series([147655.5994, 3749.8542], index=times, name='dni')
+    assert_series_equal(out, expected, check_less_precise=True)
 
 
 def test_gti_dirint():

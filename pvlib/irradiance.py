@@ -1216,12 +1216,12 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
     kt : numeric
         Clearness index
 
-    Reference
-    ---------
-    [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
-    Global Horizontal to Direct Normal Insolation", Technical
-    Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
-    Institute, 1987.
+    References
+    ----------
+    .. [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+           Global Horizontal to Direct Normal Insolation", Technical
+           Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
+           Institute, 1987.
     """
     cos_zenith = tools.cosd(solar_zenith)
     I0h = extra_radiation * np.maximum(cos_zenith, min_cos_zenith)
@@ -1231,8 +1231,6 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
     # warnings to the users that override min_cos_zenith
     kt = ghi / I0h
     kt = np.maximum(kt, 0)
-    # Limit copied from the kt prime limit in dirint, which was justified
-    # with reference to SRRL code. consider replacing with 1 or nan
     kt = np.minimum(kt, max_clearness_index)
     return kt
 
@@ -1261,11 +1259,11 @@ def clearness_index_zenith_independent(clearness_index, airmass,
     kt_prime : numeric
         Zenith independent clearness index
 
-    Reference
-    ---------
-    [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
-    (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
-    ASHRAE Transactions-Research Series, pp. 354-369
+    References
+    ----------
+    .. [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
+           (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
+           ASHRAE Transactions-Research Series, pp. 354-369
     """
     # Perez eqn 1
     kt_prime = clearness_index / _kt_kt_prime_factor(airmass)
@@ -1740,13 +1738,18 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
 
 def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
-               surface_tilt, surface_azimuth,
-               pressure=101325.,
+               surface_tilt, surface_azimuth, pressure=101325.,
                use_delta_kt_prime=True, temp_dew=None, albedo=.25,
                model='perez', model_perez='allsitescomposite1990',
                calculate_gt_90=True, max_iterations=30):
     """
     Determine GHI, DNI, DHI from POA global using the GTI DIRINT model.
+
+    .. warning::
+
+        Model performance is poor for AOI greater than approximately
+        80 degrees `and` plane of array irradiance greater than
+        approximately 200 W/m^2.
 
     Parameters
     ----------
@@ -1865,7 +1868,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
                       times, surface_tilt, surface_azimuth, pressure=101325.,
                       use_delta_kt_prime=True, temp_dew=None, albedo=.25,
                       model='perez', model_perez='allsitescomposite1990',
-                      max_iterations=30, debug=False):
+                      max_iterations=30):
     """
     GTI-DIRINT model for AOI < 90 degrees. See Marion 2015 Section 2.1.
 
@@ -1975,8 +1978,6 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
              % (len(failed_points), max_iterations, failed_points)),
             RuntimeWarning)
 
-    if debug:
-        return best_ghi, best_dni, best_dhi, best_kt_prime, all_irrad, poa_global_i, kt, kt_prime, best_diff
     # return the best data, whether or not the solution converged
     return best_ghi, best_dni, best_dhi, best_kt_prime
 

@@ -229,8 +229,8 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
         am = (1.0 / (np.sin(np.radians(90 - z +
               244.0 / (165 + 47.0 * (90 - z) ** 1.1)))))
     elif 'youngirvine1967' == model:
-        am = ((1.0 / np.cos(zenith_rad)) *
-              (1 - 0.0012*((1.0 / np.cos(zenith_rad)) ** 2) - 1))
+        sec_zen = 1.0 / np.cos(zenith_rad)
+        am = sec_zen * (1 - 0.0012 * (sec_zen * sec_zen - 1))
     elif 'young1994' == model:
         am = ((1.002432*((np.cos(zenith_rad)) ** 2) +
               0.148386*(np.cos(zenith_rad)) + 0.0096467) /

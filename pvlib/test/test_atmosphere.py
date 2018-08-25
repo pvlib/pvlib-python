@@ -1,69 +1,77 @@
 import itertools
 
 import numpy as np
+from numpy import nan
 from numpy.testing import assert_allclose
 import pandas as pd
+from pandas.testing import assert_series_equal
 import pytest
 
 from pvlib import atmosphere
-from pvlib import solarposition
 from pvlib._deprecation import pvlibDeprecationWarning
 
 from conftest import fail_on_pvlib_version
 
-latitude, longitude, tz, altitude = 32.2, -111, 'US/Arizona', 700
-
-times = pd.date_range(start='20140626', end='20140626', freq='6h', tz=tz)
-
-ephem_data = solarposition.get_solarposition(times, latitude, longitude)
-
-
-# need to add physical tests instead of just functional tests
 
 def test_pres2alt():
-    atmosphere.pres2alt(100000)
+    out = atmosphere.pres2alt(np.array([10000, 90000, 101325]))
+    expected = np.array([15797.638, 988.637, 0.124])
+    assert_allclose(out, expected, atol=0.001)
 
 
-def test_alt2press():
-    atmosphere.pres2alt(1000)
+def test_alt2pres():
+    out = atmosphere.alt2pres(np.array([-100, 0, 1000, 8000]))
+    expected = np.array([102532.073, 101324.999,  89874.750,  35600.496])
+    assert_allclose(out, expected, atol=0.001)
 
 
-@pytest.mark.parametrize("model",
-    ['simple', 'kasten1966', 'youngirvine1967', 'kastenyoung1989',
-     'gueymard1993', 'young1994', 'pickering2002'])
-def test_airmass(model):
-    out = atmosphere.get_relative_airmass(ephem_data['zenith'], model)
-    assert isinstance(out, pd.Series)
-    out = atmosphere.get_relative_airmass(ephem_data['zenith'].values, model)
-    assert isinstance(out, np.ndarray)
+@pytest.fixture
+def zeniths():
+    return np.array([100, 89.9, 80, 0])
+
+
+@pytest.mark.parametrize("model,expected",
+                         [['simple', [nan, 572.958,   5.759,   1.000]],
+                          ['kasten1966', [nan, 35.365,  5.580,  0.999]],
+                          ['youngirvine1967', [
+                                 nan, -2.251358367165932e+05, 5.5365, 1.0000]],
+                          ['kastenyoung1989', [nan, 36.467,  5.586,  1.000]],
+                          ['gueymard1993', [nan, 36.431,  5.581,  1.000]],
+                          ['young1994', [nan, 30.733,  5.541,  1.000]],
+                          ['pickering2002', [nan, 37.064,  5.581,  1.000]]])
+def test_airmass(model, expected, zeniths):
+    out = atmosphere.get_relative_airmass(zeniths, model)
+    expected = np.array(expected)
+    assert_allclose(out, expected, equal_nan=True, atol=0.001)
+    # test series in/out. index does not matter
+    # hits the isinstance() block in get_relative_airmass
+    times = pd.DatetimeIndex(start='20180101', periods=len(zeniths), freq='1s')
+    zeniths = pd.Series(zeniths, index=times)
+    expected = pd.Series(expected, index=times)
+    out = atmosphere.get_relative_airmass(zeniths, model)
+    assert_series_equal(out, expected, check_less_precise=True)
 
 
 def test_airmass_scalar():
     assert not np.isnan(atmosphere.get_relative_airmass(10))
 
 
-def test_airmass_scalar_nan():
-    assert np.isnan(atmosphere.get_relative_airmass(100))
-
-
 def test_airmass_invalid():
     with pytest.raises(ValueError):
-        atmosphere.get_relative_airmass(ephem_data['zenith'], 'invalid')
+        atmosphere.get_relative_airmass(0, 'invalid')
 
 
 def test_get_absolute_airmass():
-    relative_am = atmosphere.get_relative_airmass(ephem_data['zenith'],
-                                                  'simple')
-    atmosphere.get_absolute_airmass(relative_am)
-    atmosphere.get_absolute_airmass(relative_am, pressure=100000)
-
-
-def test_get_absolute_airmass_numeric():
-    atmosphere.get_absolute_airmass(2)
-
-
-def test_get_absolute_airmass_nan():
-    np.testing.assert_equal(np.nan, atmosphere.get_absolute_airmass(np.nan))
+    # input am
+    relative_am = np.array([nan, 40, 2, .999])
+    # call without pressure kwarg
+    out = atmosphere.get_absolute_airmass(relative_am)
+    expected = np.array([nan, 40., 2., 0.999])
+    assert_allclose(out, expected, equal_nan=True, atol=0.001)
+    # call with pressure kwarg
+    out = atmosphere.get_absolute_airmass(relative_am, pressure=90000)
+    expected = np.array([nan, 35.529, 1.776, 0.887])
+    assert_allclose(out, expected, equal_nan=True, atol=0.001)
 
 
 @fail_on_pvlib_version('0.7')

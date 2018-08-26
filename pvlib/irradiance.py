@@ -1831,7 +1831,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
     .. [1] B. Marion, A model for deriving the direct normal and
            diffuse horizontal irradiance from the global tilted
            irradiance, Solar Energy 122, 1037-1046.
-           http://dx.doi.org/10.1016/j.solener.2015.10.024
+           :doi:`10.1016/j.solener.2015.10.024`
     """
 
     aoi_lt_90 = aoi < 90

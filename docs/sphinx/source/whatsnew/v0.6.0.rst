@@ -49,6 +49,8 @@ API Changes
   enhancement factor can yield unphysical results, especially for latitudes
   closer to the poles and especially in the winter months. It may yield
   improved results under other conditions. (:issue:`435`)
+* Add min_cos_zenith, max_zenith keyword arguments to disc, dirint, and
+  dirindex functions. (:issue:`311`, :issue:`396`)
 
 
 Enhancements
@@ -96,6 +98,9 @@ Enhancements
 * Improve performance of Location.get_airmass. Most noticeable when
   solar position is supplied, time index length is less than 10000, and
   method is looped over. (:issue:`502`)
+* Add irradiance.gti_dirint function. (:issue:`396`)
+* Add irradiance.clearness_index function. (:issue:`396`)
+* Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
 
 
 Bug fixes
@@ -118,6 +123,7 @@ Bug fixes
   Hay-Davies diffuse sky algorithms. (:issue:`432`)
 * Fix argument order of longitude and latitude when querying weather forecasts
   by lonlat bounding box (:issue:`521`)
+* Fix issue with unbounded clearness index calculation in disc. (:issue:`540`)
 * Limit pvwatts_ac results to be greater than or equal to 0. (:issue:`541`)
 * Fix bug in get_relative_airmass(model='youngirvine1967'). (:issue:`545`)
 

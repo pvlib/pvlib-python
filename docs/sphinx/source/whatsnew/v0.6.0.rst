@@ -125,6 +125,7 @@ Bug fixes
   by lonlat bounding box (:issue:`521`)
 * Fix issue with unbounded clearness index calculation in disc. (:issue:`540`)
 * Limit pvwatts_ac results to be greater than or equal to 0. (:issue:`541`)
+* Fix bug in get_relative_airmass(model='youngirvine1967'). (:issue:`545`)
 
 
 Documentation
@@ -155,6 +156,7 @@ Testing
 * Use pytest-mock to ensure that ModelChain DC model is set up correctly.
 * Add Python 3.7 to build matrix
 * Make test_forecast.py more robust. (:issue:`293`)
+* Improve test_atmosphere.py. (:issue:`158`)
 
 
 Contributors

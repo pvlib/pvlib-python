@@ -167,6 +167,16 @@ DNI estimation models
    irradiance.dirindex
    irradiance.erbs
    irradiance.liujordan
+   irradiance.gti_dirint
+
+Clearness index models
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   irradiance.clearness_index
+   irradiance.clearness_index_zenith_independent
 
 
 PV Modeling

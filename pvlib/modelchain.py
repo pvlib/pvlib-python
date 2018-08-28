@@ -366,7 +366,7 @@ class ModelChain(object):
         elif isinstance(model, str):
             model = model.lower()
             # validate module parameters
-            missing_params = DC_MODEL_PARAMS() - \
+            missing_params = DC_MODEL_PARAMS[model] - \
                                     set(self.system.module_parameters.keys())
             if missing_params: # some parameters are not in module.keys()
                 raise ValueError(model + ' selected for the DC model but '

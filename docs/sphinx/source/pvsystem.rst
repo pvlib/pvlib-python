@@ -1,12 +1,20 @@
-.. _pvsystem:
+.. _pvsystemdoc:
 
 PVSystem
 ========
 
-The :py:class:`~.pvsystem.PVSystem` class wraps many of the functions in
-the :py:mod:`~.pvsystem` module. This simplifies the API by eliminating
-the need for a user to specify arguments such as module and
-inverter properties when calling PVSystem methods.
+.. ipython:: python
+    :suppress:
+
+    from pvlib import pvsystem
+
+The :py:class:`~pvlib.pvsystem.PVSystem` class wraps many of the
+functions in the :py:mod:`~pvlib.pvsystem` module. This simplifies the
+API by eliminating the need for a user to specify arguments such as
+module and inverter properties when calling PVSystem methods.
+:py:class:`~pvlib.pvsystem.PVSystem` is not better or worse than the
+functions it wraps -- it is simply an alternative way of organizing
+your data.
 
 This guide aims to build understanding of the PVSystem class. It assumes
 basic familiarity with object-oriented code in Python, but most
@@ -14,8 +22,8 @@ information should be understandable without a solid understanding of
 classes. Keep in mind that `functions` are independent of objects,
 while `methods` are attached to objects.
 
-See the :ref:`modelchain` documentation for a similar guide
-focused on using PVSystem objects in time series modeling applications.
+See :py:class:`~pvlib.modelchain.ModelChain` for an application of
+PVSystem to time series modeling.
 
 
 .. _designphilosophy:
@@ -34,39 +42,41 @@ Intrinsic data is stored in object attributes. For example, the data
 that describes a PV system's module parameters is stored in
 `PVSystem.module_parameters`.
 
-.. ipython::
+.. ipython:: python
 
     module_parameters = {'pdc0': 10, 'gamma_pdc': -0.004}
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     print(system.module_parameters)
 
 Extrinsic data is passed to a PVSystem as method arguments. For example,
-the :py:meth:`~pvsystem.PVSystem.pvwatts_dc` method accepts extrinsic
+the :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method accepts extrinsic
 data irradiance and temperature.
 
-.. ipython::
+.. ipython:: python
 
     pdc = system.pvwatts_dc(1000, 30)
     print(pdc)
 
-Compare the :py:meth:`~pvsystem.PVSystem.pvwatts_dc` method signature
-to the :py:func:`~pvsystem.pvwatts_dc` function signature.
+Compare the :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method signature
+to the :py:func:`~pvlib.pvsystem.pvwatts_dc` function signature:
 
-:py:meth:`~pvsystem.PVSystem.pvwatts_dc`: ``pvwatts_dc(g_poa_effective, temp_cell)``
-:py:func:`~pvsystem.pvwatts_dc`: ``pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.)``
+    * :py:meth:`PVSystem.pvwatts_dc(g_poa_effective, temp_cell) <pvlib.pvsystem.PVSystem.pvwatts_dc>`
+    * :py:func:`pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.) <pvlib.pvsystem.pvwatts_dc>`
 
-How does this work? The :py:meth:`~pvsystem.PVSystem.pvwatts_dc` method
-looks in `PVSystem.module_parameters` for the `pdc0`, `gamma_pdc`
-arguments. Then the :py:meth:`~pvsystem.PVSystem.pvwatts_dc` calls the
-:py:func:`~pvsystem.pvwatts_dc` function with all of the arguments and
-returns the result to the user. Note that the function includes a
-default value for the parameter `temp_ref`. This default value may be
-overridden by specifying the `temp_ref` key in the
+How does this work? The :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc`
+method looks in `PVSystem.module_parameters` for the `pdc0`, and
+`gamma_pdc` arguments. Then the :py:meth:`PVSystem.pvwatts_dc
+<pvlib.pvsystem.PVSystem.pvwatts_dc>` method calls the
+:py:func:`pvsystem.pvwatts_dc <pvlib.pvsystem.pvwatts_dc>` function with
+all of the arguments and returns the result to the user. Note that the
+function includes a default value for the parameter `temp_ref`. This
+default value may be overridden by specifying the `temp_ref` key in the
 `PVSystem.module_parameters` dictionary.
 
-.. ipython::
+.. ipython:: python
 
     system.module_parameters['temp_ref'] = 0
+    # lower temp_ref should to lower DC power than calculated above
     pdc = system.pvwatts_dc(1000, 30)
     print(pdc)
 
@@ -81,15 +91,30 @@ PVSystem attributes
 -------------------
 
 Here we review the most commonly used PVSystem attributes.
-Please see the :py:class:`~.pvsystem.PVSystem` class documentation for a
+Please see the :py:class:`~pvlib.pvsystem.PVSystem` class documentation for a
 comprehensive list.
+
+The first PVSystem parameters are `surface_tilt` and `surface_azimuth`.
+These parameters are used in PVSystem methods such as
+:py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` and
+:py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance`.
+
+.. ipython:: python
+
+    # 20 deg tilt, south-facing
+    system = pvsystem.PVSystem(surface_tilt=20, surface_azimuth=180)
+    print(system.surface_tilt, system.surface_azimuth)
+
+    # call get_aoi with solar_zenith, solar_zenith
+    aoi = system.get_aoi(30, 180)
+    print(aoi)
 
 `module_parameters` and `inverter_parameters` contain the data
 necessary for computing DC and AC power using one of the available
 PVSystem methods. These are typically specified using data from
-the :py:func:`~pvsystem.retreive_sam` function:
+the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
 
-.. ipython::
+.. ipython:: python
 
     modules = pvsystem.retrieve_sam('cecmod')
     module_parameters = modules['Example_Module']
@@ -105,13 +130,15 @@ systems for use with the PVWatts models, as demonstrated in
 
 The `losses_parameters` attribute contains data that may be used with
 methods that calculate system losses. At present, this is only incudes
-:py:meth:`~PVSystem.pvwatts_losses` and
-:py:func:`~pvsystem.pvwatts_losses`, but we hope to add more functions
-and methods in the future.
+:py:meth:`PVSystem.pvwatts_losses
+<pvlib.pvsystem.PVSystem.pvwatts_losses>` and
+:py:func:`pvsystem.pvwatts_losses <pvlib.pvsystem.pvwatts_losses>`, but
+we hope to add more functions and methods in the future.
 
-modules_per_string and strings_per_inverter
-
-miscellaneous attributes
+The attributes `modules_per_string` and `strings_per_inverter` are used
+by some DC power models in :py:class:`~pvlib.modelchain.ModelChain`.
+They are also used in the
+:py:meth:`~pvlib.pvsystem.PVSystem.scale_voltage_current_power` method.
 
 
 .. _sat:
@@ -119,4 +146,9 @@ miscellaneous attributes
 SingleAxisTracker
 -----------------
 
-SingleAxisTracker is a subclass of PVSystem
+The :py:class:`~pvlib.tracking.SingleAxisTracker` is a subclass of
+:py:class:`~pvlib.pvsystem.PVSystem`. The SingleAxisTracker class
+includes a few more keyword arguments and attributes that are specific
+to trackers, plus adds the
+:py:meth:`~pvlib.tracking.SingleAxisTracker.singleaxis` method. It also
+overrides the `get_aoi` and `get_irradiance` methods.

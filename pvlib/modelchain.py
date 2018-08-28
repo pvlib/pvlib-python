@@ -13,6 +13,7 @@ import pandas as pd
 from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
+from pvlib.pvsystem import DC_MODEL_PARAMS
 
 
 def basic_chain(times, latitude, longitude,
@@ -364,56 +365,24 @@ class ModelChain(object):
             self._dc_model = self.infer_dc_model()
         elif isinstance(model, str):
             model = model.lower()
+            # validate module parameters
+            missing_params = DC_MODEL_PARAMS() - \
+                                    set(self.system.module_parameters.keys())
+            if missing_params: # some parameters are not in module.keys()
+                raise ValueError(model + ' selected for the DC model but '
+                                     'the module is missing one or more '
+                                     'required parameters: ' +
+                                     str(missing_params))
             if model == 'sapm':
-                # validate module parameters
-                missing_params = self._sapm_param_set() - \
-                                    set(self.system.module.keys())
-                if missing_params: # some parameters are not in module.keys()
-                    raise ValueError('SAPM selected for the DC model but ' + \
-                                     'the module is missing one or more ' + \
-                                     'required parameters: ' + \
-                                     str(missing_params))
-                else:
-                    self._dc_model = self.sapm
+                self._dc_model = self.sapm
             elif model == 'singlediode':
-                # validate module parameters
-                missing_params = self._singlediode_param_set() - \
-                                    set(self.system.module.keys())
-                if missing_params: # some parameters are not in module.keys()
-                    raise ValueError('singlediode selected for the DC ' + \
-                                     'model but the module is missing one ' + \
-                                     'or more required parameters: ' + \
-                                     str(missing_params))
-                else:
-                    self._dc_model = self.singlediode
+                self._dc_model = self.singlediode
             elif model == 'pvwatts':
-                # validate module parameters
-                missing_params = self._pvwatts_dc_param_set() - \
-                                    set(self.system.module.keys())
-                if missing_params: # some parameters are not in module.keys()
-                    raise ValueError('pvwatts_dc selected for the DC ' + \
-                                     'model but the module is missing one ' + \
-                                     'or more required parameters: ' + \
-                                     str(missing_params))
-                else:
-                    self._dc_model = self.pvwatts_dc
+                self._dc_model = self.pvwatts_dc
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
             self._dc_model = partial(model, self)
-
-    def _sapm_param_set(self):
-        return set(['A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3', 'B4', 
-                    'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'Isco',
-                    'Impo', 'Aisc', 'Aimp', 'Bvoco', 'Mbvoc', 'Bvmpo', 'Mbvmp',
-                    'N', 'Cells_in_Series', 'IX0', 'IXX0', 'FD'])
-
-    def _singlediode_param_set(self):
-        return set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                    'R_s'])
-            
-    def _pvwatts_dc_param_set(self):
-        return set(['pdc0', 'gamma_pdc'])
 
     def infer_dc_model(self):
         params = set(self.system.module_parameters.keys())

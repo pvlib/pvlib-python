@@ -102,8 +102,8 @@ Airmass and atmospheric models
    :toctree: generated/
 
    location.Location.get_airmass
-   atmosphere.absoluteairmass
-   atmosphere.relativeairmass
+   atmosphere.get_absolute_airmass
+   atmosphere.get_relative_airmass
    atmosphere.pres2alt
    atmosphere.alt2pres
    atmosphere.gueymard94_pw
@@ -133,13 +133,13 @@ Decomposing and combining irradiance
 .. autosummary::
    :toctree: generated/
 
-   irradiance.extraradiation
+   irradiance.get_extra_radiation
    irradiance.aoi
    irradiance.aoi_projection
    irradiance.poa_horizontal_ratio
    irradiance.beam_component
-   irradiance.globalinplane
-   irradiance.grounddiffuse
+   irradiance.poa_components
+   irradiance.get_ground_diffuse
 
 Transposition models
 --------------------
@@ -147,7 +147,8 @@ Transposition models
 .. autosummary::
    :toctree: generated/
 
-   irradiance.total_irrad
+   irradiance.get_total_irradiance
+   irradiance.get_sky_diffuse
    irradiance.isotropic
    irradiance.perez
    irradiance.haydavies
@@ -166,6 +167,16 @@ DNI estimation models
    irradiance.dirindex
    irradiance.erbs
    irradiance.liujordan
+   irradiance.gti_dirint
+
+Clearness index models
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   irradiance.clearness_index
+   irradiance.clearness_index_zenith_independent
 
 
 PV Modeling
@@ -213,11 +224,11 @@ Low-level functions for solving the single diode equation.
 .. autosummary::
    :toctree: generated/
 
-   singlediode_methods.estimate_voc
-   singlediode_methods.bishop88
-   singlediode_methods.bishop88_i_from_v
-   singlediode_methods.bishop88_v_from_i
-   singlediode_methods.bishop88_mpp
+   singlediode.estimate_voc
+   singlediode.bishop88
+   singlediode.bishop88_i_from_v
+   singlediode.bishop88_v_from_i
+   singlediode.bishop88_mpp
 
 SAPM model
 ----------

@@ -71,6 +71,7 @@ Contents
    :maxdepth: 1
 
    package_overview
+   introexamples
    whatsnew
    installation
    contributing
@@ -82,6 +83,7 @@ Contents
    api
    comparison_pvlib_matlab
    variables_style_rules
+   singlediode
 
 
 Indices and tables

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Low-level functions for solving the single diode equation.
 """
@@ -21,6 +22,9 @@ except ImportError:
     from pvlib.tools import _array_newton
 # rename newton and set keyword arguments
 newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
+
+# intrinsic voltage per cell junction for a:Si, CdTe, Mertens et al.
+VOLTAGE_BUILTIN = 0.9  # [V]
 
 
 def estimate_voc(photocurrent, saturation_current, nNsVth):
@@ -62,14 +66,16 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
 
 
 def bishop88(diode_voltage, photocurrent, saturation_current,
-             resistance_series, resistance_shunt, nNsVth, gradients=False):
+             resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+             NsVbi=np.Inf, gradients=False):
     """
     Explicit calculation of points on the IV curve described by the single
-    diode equation [1].
+    diode equation [1]_.
 
-    [1] "Computer simulation of the effects of electrical mismatches in
-    photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
-    https://doi.org/10.1016/0379-6787(88)90059-2
+    .. warning::
+       * Do not use ``d2mutau`` with CEC coefficients.
+       * Usage of ``d2mutau`` with PVSyst coefficients is required for cadmium-
+         telluride (CdTe) and amorphous-silicon (a:Si) PV modules only.
 
     Parameters
     ----------
@@ -86,6 +92,14 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of series cells ``Ns``
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
     gradients : bool
         False returns only I, V, and P. True also returns gradients
 
@@ -96,22 +110,56 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         :math:`\\frac{dI}{dV_d}`, :math:`\\frac{dV}{dV_d}`,
         :math:`\\frac{dI}{dV}`, :math:`\\frac{dP}{dV}`, and
         :math:`\\frac{d^2 P}{dV dV_d}`
+
+    Notes
+    -----
+    The PVSyst thin-film recombination losses parameters ``d2mutau`` and
+    ``NsVbi`` are only applied to cadmium-telluride (CdTe) and amorphous-
+    silicon (a:Si) PV modules, [2]_, [3]_. The builtin voltage :math:`V_{bi}`
+    should account for all junctions. For example: tandem and triple junction
+    cells would have builtin voltages of 1.8[V] and 2.7[V] respectively, based
+    on the default of 0.9[V] for a single junction. The parameter ``NsVbi``
+    should only account for the number of series cells in a single parallel
+    sub-string if the module has cells in parallel greater than 1.
+
+    References
+    ----------
+    .. [1] "Computer simulation of the effects of electrical mismatches in
+       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+       :doi:`10.1016/0379-6787(88)90059-2`
+
+    .. [2] "Improved equivalent circuit and Analytical Model for Amorphous
+       Silicon Solar Cells and Modules." J. Mertens, et al., IEEE Transactions
+       on Electron Devices, Vol 45, No 2, Feb 1998.
+       :doi:`10.1109/16.658676`
+
+    .. [3] "Performance assessment of a simulation model for PV modules of any
+       available technology", André Mermoud and Thibault Lejeune, 25th EUPVSEC,
+       2010
+       :doi:`10.4229/25thEUPVSEC2010-4BV.1.114`
     """
+    # calculate recombination loss current where d2mutau > 0
+    is_recomb = d2mutau > 0  # True where there is thin-film recombination loss
+    v_recomb = np.where(is_recomb, NsVbi - diode_voltage, np.inf)
+    i_recomb = np.where(is_recomb, photocurrent * d2mutau / v_recomb, 0)
     # calculate temporary values to simplify calculations
     v_star = diode_voltage / nNsVth  # non-dimensional diode voltage
     g_sh = 1.0 / resistance_shunt  # conductance
     i = (photocurrent - saturation_current * np.expm1(v_star)
-         - diode_voltage * g_sh)
+         - diode_voltage * g_sh - i_recomb)
     v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)
     if gradients:
+        # calculate recombination loss current gradients where d2mutau > 0
+        grad_i_recomb = np.where(is_recomb, i_recomb / v_recomb, 0)
+        grad_2i_recomb = np.where(is_recomb, 2 * grad_i_recomb / v_recomb, 0)
         g_diode = saturation_current * np.exp(v_star) / nNsVth  # conductance
-        grad_i = -g_diode - g_sh  # di/dvd
+        grad_i = -g_diode - g_sh - grad_i_recomb # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
         # dp/dv = d(iv)/dv = v * di/dv + i
         grad = grad_i / grad_v  # di/dv
         grad_p = v * grad + i  # dp/dv
-        grad2i = -g_diode / nNsVth  # d2i/dvd
+        grad2i = -g_diode / nNsVth - grad_2i_recomb  # d2i/dvd
         grad2v = -grad2i * resistance_series  # d2v/dvd
         grad2p = (
             grad_v * grad + v * (grad2i/grad_v - grad_i*grad2v/grad_v**2)

@@ -6,13 +6,13 @@ http://docs.sympy.org/latest/modules/evalf.html#accuracy-and-error-handling
 
 This module can be executed from the command line to generate a high precision
 dataset of I-V curve points to test the explicit single diode calculations
-:func:`pvlib.singlediode_methods.bishop88`::
+:func:`pvlib.singlediode.bishop88`::
 
     $ python test_numeric_precision.py
 
 This generates a file in the pvlib data folder, which is specified by the
 constant ``DATA_PATH``. When the test is run using ``pytest`` it will compare
-the values calculated by :func:`pvlib.singlediode_methods.bishop88` with the
+the values calculated by :func:`pvlib.singlediode.bishop88` with the
 high-precision values generated with SymPy.
 """
 
@@ -21,7 +21,7 @@ import os
 import numpy as np
 import pandas as pd
 from pvlib import pvsystem
-from pvlib.singlediode_methods import bishop88, estimate_voc
+from pvlib.singlediode import bishop88, estimate_voc
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)

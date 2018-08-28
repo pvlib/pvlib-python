@@ -5,9 +5,12 @@ absolute airmass and to determine pressure from altitude or vice versa.
 
 from __future__ import division
 
+from warnings import warn
+
 import numpy as np
 import pandas as pd
-from warnings import warn
+
+from pvlib._deprecation import deprecated
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')
@@ -95,7 +98,7 @@ def alt2pres(altitude):
     return press
 
 
-def absoluteairmass(airmass_relative, pressure=101325.):
+def get_absolute_airmass(airmass_relative, pressure=101325.):
     '''
     Determine absolute (pressure corrected) airmass from relative
     airmass and pressure
@@ -134,7 +137,12 @@ def absoluteairmass(airmass_relative, pressure=101325.):
     return airmass_absolute
 
 
-def relativeairmass(zenith, model='kastenyoung1989'):
+absoluteairmass = deprecated('0.6', alternative='get_absolute_airmass',
+                             name='absoluteairmass', removal='0.7')(
+                             get_absolute_airmass)
+
+
+def get_relative_airmass(zenith, model='kastenyoung1989'):
     '''
     Gives the relative (not pressure-corrected) airmass.
 
@@ -221,8 +229,8 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         am = (1.0 / (np.sin(np.radians(90 - z +
               244.0 / (165 + 47.0 * (90 - z) ** 1.1)))))
     elif 'youngirvine1967' == model:
-        am = ((1.0 / np.cos(zenith_rad)) *
-              (1 - 0.0012*((1.0 / np.cos(zenith_rad)) ** 2) - 1))
+        sec_zen = 1.0 / np.cos(zenith_rad)
+        am = sec_zen * (1 - 0.0012 * (sec_zen * sec_zen - 1))
     elif 'young1994' == model:
         am = ((1.002432*((np.cos(zenith_rad)) ** 2) +
               0.148386*(np.cos(zenith_rad)) + 0.0096467) /
@@ -239,6 +247,11 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         am = pd.Series(am, index=zenith.index)
 
     return am
+
+
+relativeairmass = deprecated('0.6', alternative='get_relative_airmass',
+                             name='relativeairmass', removal='0.7')(
+                             get_relative_airmass)
 
 
 def gueymard94_pw(temp_air, relative_humidity):

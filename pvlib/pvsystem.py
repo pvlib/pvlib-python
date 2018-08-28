@@ -20,7 +20,7 @@ from pvlib import tools
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
-from pvlib import singlediode_methods
+import pvlib  # use pvlib.singlediode to avoid clash with local method
 
 
 # not sure if this belongs in the pvsystem module.
@@ -190,10 +190,10 @@ class PVSystem(object):
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
-        Uses the :py:func:`irradiance.total_irrad` function to calculate
-        the plane of array irradiance components on a tilted surface
-        defined by ``self.surface_tilt``, ``self.surface_azimuth``, and
-        ``self.albedo``.
+        Uses the :py:func:`irradiance.get_total_irradiance` function to
+        calculate the plane of array irradiance components on a tilted
+        surface defined by ``self.surface_tilt``,
+        ``self.surface_azimuth``, and ``self.albedo``.
 
         Parameters
         ----------
@@ -225,20 +225,20 @@ class PVSystem(object):
 
         # not needed for all models, but this is easier
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(solar_zenith.index)
-            dni_extra = pd.Series(dni_extra, index=solar_zenith.index)
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
 
         if airmass is None:
-            airmass = atmosphere.relativeairmass(solar_zenith)
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.total_irrad(self.surface_tilt,
-                                      self.surface_azimuth,
-                                      solar_zenith, solar_azimuth,
-                                      dni, ghi, dhi,
-                                      dni_extra=dni_extra, airmass=airmass,
-                                      model=model,
-                                      albedo=self.albedo,
-                                      **kwargs)
+        return irradiance.get_total_irradiance(self.surface_tilt,
+                                               self.surface_azimuth,
+                                               solar_zenith, solar_azimuth,
+                                               dni, ghi, dhi,
+                                               dni_extra=dni_extra,
+                                               airmass=airmass,
+                                               model=model,
+                                               albedo=self.albedo,
+                                               **kwargs)
 
     def ashraeiam(self, aoi):
         """
@@ -690,8 +690,10 @@ class LocalizedPVSystem(PVSystem, Location):
     system attributes and modeling functions. This class combines the
     attributes and methods of the PVSystem and Location classes.
 
-    See the :py:class:`PVSystem` class for an object model that
-    describes an unlocalized PV system.
+    The LocalizedPVSystem may have bugs due to the difficulty of
+    robustly implementing multiple inheritance. See
+    :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
+    for modeling PV systems at specific locations.
     """
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
@@ -1963,51 +1965,11 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     open-circuit.
 
     If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
-    are indicated, then :func:`pvlib.singlediode_methods.bishop88` is used to
+    are indicated, then :func:`pvlib.singlediode.bishop88` [4] is used to
     calculate the points on the IV curve points at diode voltages from zero to
     open-circuit voltage with a log spacing that gets closer as voltage
     increases. If the method is ``'lambertw'`` then the calculated points on
     the IV curve are linearly spaced.
-
-    The ``bishop88`` method uses an explicit solution from [4] that finds
-    points on the IV curve by first solving for pairs :math:`(V_d, I)` where
-    :math:`V_d` is the diode voltage :math:`V_d = V + I*Rs`. Then the voltage
-    is backed out from :math:`V_d`. Points with specific voltage, such as open
-    circuit, are located using the bisection search method, ``brentq``, bounded
-    by a zero diode voltage and an estimate of open circuit voltage given by
-
-    .. math::
-
-        V_{oc, est} = n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)
-
-    We know that :math:`V_d = 0` corresponds to a voltage less than zero, and
-    we can also show that when :math:`V_d = V_{oc, est}`, the resulting
-    current is also negative, meaning that the corresponding voltage must be
-    in the 4th quadrant and therefore greater than the open circuit voltage
-    (see proof below). Therefore the entire forward-bias 1st quadrant IV-curve
-    is bounded, and a bisection search within these points will always find
-    desired condition.
-
-    .. math::
-
-        I = I_L - I_0 \\left(\\exp \\left(\\frac{V_{oc, est}}{n Ns V_{th}} \\right) - 1 \\right)
-            - \\frac{V_{oc, est}}{R_{sh}} \\newline
-
-        I = I_L - I_0 \\left(\\exp \\left(\\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{n Ns V_{th}} \\right) - 1 \\right)
-            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = I_L - I_0 \\left(\\exp \\left(\\log \\left(\\frac{I_L}{I_0} + 1 \\right) \\right)  - 1 \\right)
-            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = I_L - I_0 \\left(\\frac{I_L}{I_0} + 1  - 1 \\right)
-            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = I_L - I_0 \\left(\\frac{I_L}{I_0} \\right)
-            - \\frac{n Ns V_{th} \\log \\left(\\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = I_L - I_L - \\frac{n Ns V_{th} \log \\left( \\frac{I_L}{I_0} + 1 \\right)}{R_{sh}} \\newline
-
-        I = - \\frac{n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)}{R_{sh}}
 
     References
     -----------
@@ -2029,12 +1991,12 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     --------
     sapm
     calcparams_desoto
-    pvlib.singlediode_methods.bishop88
+    pvlib.singlediode.bishop88
     """
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
-        out = singlediode_methods._lambertw(
+        out = pvlib.singlediode._lambertw(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth, ivcurve_pnts
         )
@@ -2047,19 +2009,19 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         # equation for the diode voltage V_d then backing out voltage
         args = (photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)  # collect args
-        v_oc = singlediode_methods.bishop88_v_from_i(
+        v_oc = pvlib.singlediode.bishop88_v_from_i(
             0.0, *args, method=method.lower()
         )
-        i_mp, v_mp, p_mp = singlediode_methods.bishop88_mpp(
+        i_mp, v_mp, p_mp = pvlib.singlediode.bishop88_mpp(
             *args, method=method.lower()
         )
-        i_sc = singlediode_methods.bishop88_i_from_v(
+        i_sc = pvlib.singlediode.bishop88_i_from_v(
             0.0, *args, method=method.lower()
         )
-        i_x = singlediode_methods.bishop88_i_from_v(
+        i_x = pvlib.singlediode.bishop88_i_from_v(
             v_oc / 2.0, *args, method=method.lower()
         )
-        i_xx = singlediode_methods.bishop88_i_from_v(
+        i_xx = pvlib.singlediode.bishop88_i_from_v(
             (v_oc + v_mp) / 2.0, *args, method=method.lower()
         )
 
@@ -2069,7 +2031,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                     (11.0 - np.logspace(np.log10(11.0), 0.0,
                                         ivcurve_pnts)) / 10.0
             )
-            ivcurve_i, ivcurve_v, _ = singlediode_methods.bishop88(vd, *args)
+            ivcurve_i, ivcurve_v, _ = pvlib.singlediode.bishop88(vd, *args)
 
     out = OrderedDict()
     out['i_sc'] = i_sc
@@ -2125,7 +2087,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     curve. This function uses Brent's method by default because it is
     guaranteed to converge.
     """
-    i_mp, v_mp, p_mp = singlediode_methods.bishop88_mpp(
+    i_mp, v_mp, p_mp = pvlib.singlediode.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,
         resistance_shunt, nNsVth, method=method.lower()
     )
@@ -2205,7 +2167,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        return singlediode_methods._lambertw_v_from_i(
+        return pvlib.singlediode._lambertw_v_from_i(
             resistance_shunt, resistance_series, nNsVth, current,
             saturation_current, photocurrent
         )
@@ -2215,9 +2177,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         # equation for the diode voltage V_d then backing out voltage
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
-        V = singlediode_methods.bishop88_v_from_i(*args, method=method.lower())
+        V = pvlib.singlediode.bishop88_v_from_i(*args, method=method.lower())
         # find the right size and shape for returns
-        size, shape = singlediode_methods._get_size_and_shape(args)
+        size, shape = pvlib.singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
                 V = np.tile(V, shape)
@@ -2293,7 +2255,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        return singlediode_methods._lambertw_i_from_v(
+        return pvlib.singlediode._lambertw_i_from_v(
             resistance_shunt, resistance_series, nNsVth, voltage,
             saturation_current, photocurrent
         )
@@ -2303,9 +2265,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # equation for the diode voltage V_d then backing out voltage
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        I = singlediode_methods.bishop88_i_from_v(*args, method=method.lower())
+        I = pvlib.singlediode.bishop88_i_from_v(*args, method=method.lower())
         # find the right size and shape for returns
-        size, shape = singlediode_methods._get_size_and_shape(args)
+        size, shape = pvlib.singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
                 I = np.tile(I, shape)
@@ -2731,9 +2693,11 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pac0 = eta_inv_nom * pdc0
     zeta = pdc / pdc0
 
+    # eta < 0 if zeta < 0.006. pac is forced to be >= 0 below. GH 541
     eta = eta_inv_nom / eta_inv_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
 
     pac = eta * pdc
     pac = np.minimum(pac0, pac)
+    pac = np.maximum(0, pac)     # GH 541
 
     return pac

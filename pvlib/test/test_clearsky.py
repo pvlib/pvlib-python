@@ -641,8 +641,8 @@ def test_bird():
         np.deg2rad(latitude), np.deg2rad(hour_angle), declination
     )
     zenith = np.rad2deg(zenith)
-    airmass = atmosphere.relativeairmass(zenith, model='kasten1966')
-    etr = irradiance.extraradiation(times)
+    airmass = atmosphere.get_relative_airmass(zenith, model='kasten1966')
+    etr = irradiance.get_extra_radiation(times)
     # test Bird with time series data
     field_names = ('dni', 'direct_horizontal', 'ghi', 'dhi')
     irrads = clearsky.bird(

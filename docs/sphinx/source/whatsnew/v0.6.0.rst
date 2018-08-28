@@ -3,8 +3,40 @@
 v0.6.0 (___, 2018)
 ---------------------
 
+**Python 2.7 support will end on June 1, 2019**. Releases made after this
+date will require Python 3. (:issue:`501`)
+
+
 API Changes
 ~~~~~~~~~~~
+* pvlib python is changing a handful of function names. In general, functions
+  that can calculate a quantity using multiple algorithms now start
+  with the prefix ``get_``. For example, ``relativeairmass`` can calculate
+  airmass using one of many ``model`` arguments. Its name has been changed
+  to ``get_relative_airmass``. The old function names remain in this
+  release, but will emit a ``PVLibDeprecationWarning`` when called. The
+  old functions will be removed in the 0.7 release. Functions composed
+  of multiple words jammed together have been renamed with underscores
+  separating the words (see above).
+  Each change is detailed below. (:issue:`427`)
+* Deprecated relativeairmass. relativeairmass will be removed in 0.7.
+  Use the new get_relative_airmass instead. (:issue:`427`)
+* Deprecated absoluteairmass. absoluteairmass will be removed in 0.7.
+  Use the new get_absolute_airmass instead. (:issue:`427`)
+* Deprecated irradiance.globalinplane. globalinplane will be removed in 0.7.
+  Use the new irradiance.poa_components instead. (:issue:`427`)
+* Added irradiance.poa_components. Function is the same as the now-deprecated
+  irradiance.globalinplane, but adds 'poa_sky_diffuse' and
+  'poa_ground_diffuse' to the output. (:issue:`427`)
+* Deprecated irradiance.extraradiation. Use irradiance.get_extra_radiation
+  instead. irradiance.extraradiation will be removed in 0.7. (:issue:`427`)
+* Deprecated irradiance.grounddiffuse. Use irradiance.get_ground_diffuse
+  instead. irradiance.grounddiffuse will be removed in 0.7. (:issue:`427`)
+* Added irradiance.get_poa_sky_diffuse. (:issue:`427`)
+* Deprecated irradiance.total_irrad. Use irradiance.get_total_poa_irradiance
+  instead. irradiance.total_irrad will be removed in 0.7. (:issue:`427`)
+* Removed 'klutcher' from get_sky_diffuse/total_irrad. This misspelling was
+  deprecated long ago but never removed. (:issue:`97`)
 * pvsystem.calcparams_desoto now requires arguments for each module model
   parameter. (:issue:`462`)
 * Add losses_parameters attribute to PVSystem objects and remove the kwargs
@@ -17,6 +49,8 @@ API Changes
   enhancement factor can yield unphysical results, especially for latitudes
   closer to the poles and especially in the winter months. It may yield
   improved results under other conditions. (:issue:`435`)
+* Add min_cos_zenith, max_zenith keyword arguments to disc, dirint, and
+  dirindex functions. (:issue:`311`, :issue:`396`)
 
 
 Enhancements
@@ -32,7 +66,7 @@ Enhancements
   ``method`` in ``('lambertw', 'newton', 'brentq')``, default is ``'lambertw'``,
   to select a method to solve the single diode equation for points on the IV
   curve. Selecting either ``'brentq'`` or ``'newton'`` as the method uses
-  :func:`~pvlib.singlediode_methods.bishop88` with the corresponding method.
+  :func:`~pvlib.singlediode.bishop88` with the corresponding method.
   (:issue:`410`)
 * Implement new methods ``'brentq'`` and ``'newton'`` for solving the single
   diode equation for points on the IV curve. ``'brentq'`` uses a bisection
@@ -40,25 +74,33 @@ Enhancements
   uses the Newton-Raphson method and may be faster but is not guaranteed to
   converge. However, ``'newton'`` should be safe for well-behaved IV curves.
   (:issue:`408`)
-* Implement :func:`~pvlib.singlediode_methods.bishop88` for explicit calculation
+* Implement :func:`~pvlib.singlediode.bishop88` for explicit calculation
   of arbitrary IV curve points using diode voltage instead of cell voltage. If
   ``method`` is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts`` in
   :func:`~pvlib.pvsystem.singlediode` is provided, the IV curve points will be
   log spaced instead of linear.
-* Implement :func:`~pvlib.singlediode_methods.estimate_voc` to estimate open
+* Implement :func:`~pvlib.singlediode.estimate_voc` to estimate open
   circuit voltage by assuming :math:`R_{sh} \to \infty` and :math:`R_s=0` as an
   upper bound in bisection method for :func:`~pvlib.pvsystem.singlediode` when
   method is either ``'newton'`` or ``'brentq'``.
 * Add :func:`~pvlib.pvsystem.max_power_point` method to compute the max power
   point using the new ``'brentq'`` method.
-* Add new module ``pvlib.singlediode_methods`` with low-level functions for
+* Add new module ``pvlib.singlediode`` with low-level functions for
   solving the single diode equation such as:
-  :func:`~pvlib.singlediode_methods.bishop88`,
-  :func:`~pvlib.singlediode_methods.estimate_voc`,
-  :func:`~pvlib.singlediode_methods.bishop88_i_from_v`,
-  :func:`~pvlib.singlediode_methods.bishop88_v_from_i`, and
-  :func:`~pvlib.singlediode_methods.bishop88_mpp`.
+  :func:`~pvlib.singlediode.bishop88`,
+  :func:`~pvlib.singlediode.estimate_voc`,
+  :func:`~pvlib.singlediode.bishop88_i_from_v`,
+  :func:`~pvlib.singlediode.bishop88_v_from_i`, and
+  :func:`~pvlib.singlediode.bishop88_mpp`.
+* Add PVSyst thin-film recombination losses for CdTe and a:Si (:issue:`163`)
 * Python 3.7 officially supported. (:issue:`496`)
+* Improve performance of solarposition.ephemeris. (:issue:`512`)
+* Improve performance of Location.get_airmass. Most noticeable when
+  solar position is supplied, time index length is less than 10000, and
+  method is looped over. (:issue:`502`)
+* Add irradiance.gti_dirint function. (:issue:`396`)
+* Add irradiance.clearness_index function. (:issue:`396`)
+* Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
 
 
 Bug fixes
@@ -74,6 +116,16 @@ Bug fixes
   floats and NumPy arrays. (:issue:`508`)
 * Make GitHub recognize the license, add AUTHORS.md, clarify shared copyright.
   (:issue:`503`)
+* Fix issue with non-zero direct irradiance contribution to Reindl, Klucher,
+  and Hay-Davies diffuse sky algorithms when the sun is behind the array.
+  (:issue:`526`)
+* Fix issue with dividing by near-0 cos(solar_zenith) values in Reindl and
+  Hay-Davies diffuse sky algorithms. (:issue:`432`)
+* Fix argument order of longitude and latitude when querying weather forecasts
+  by lonlat bounding box (:issue:`521`)
+* Fix issue with unbounded clearness index calculation in disc. (:issue:`540`)
+* Limit pvwatts_ac results to be greater than or equal to 0. (:issue:`541`)
+* Fix bug in get_relative_airmass(model='youngirvine1967'). (:issue:`545`)
 
 
 Documentation
@@ -83,6 +135,14 @@ Documentation
 * Updated several incorrect statements in ModelChain documentation regarding
   implementation status and default values. (:issue:`480`)
 * Expanded general contributing and pull request guidelines.
+* Added section on single diode equation with some detail on solutions used in
+  pvlib-python (:issue:`518`)
+* Minor improvements and updates to installation documentation. (:issue:`531`)
+* Improve LocalizedPVSystem and LocalizedSingleAxisTracker documentation.
+  (:issue:`532`)
+* Move the "Getting Started"/"Modeling Paradigms" section to a new
+  top-level "Intro Examples" page.
+* Copy pvlib documentation's "Getting support" section to README.md.
 
 
 Testing
@@ -95,6 +155,8 @@ Testing
   function per test. (:issue:`394`)
 * Use pytest-mock to ensure that ModelChain DC model is set up correctly.
 * Add Python 3.7 to build matrix
+* Make test_forecast.py more robust. (:issue:`293`)
+* Improve test_atmosphere.py. (:issue:`158`)
 
 
 Contributors

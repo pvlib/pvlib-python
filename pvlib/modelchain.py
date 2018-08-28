@@ -397,7 +397,7 @@ class ModelChain(object):
         elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
             return self.singlediode, 'singlediode'
         elif set(['pdc0', 'gamma_pdc']) <= params:
-            return self.pvwatts_dc, 'pvwatts_dc'
+            return self.pvwatts_dc, 'pvwatts'
         else:
             raise ValueError('could not infer DC model from '
                              'system.module_parameters')

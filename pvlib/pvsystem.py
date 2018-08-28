@@ -34,7 +34,7 @@ DC_MODEL_PARAMS = {'sapm' :
                    'singlediode' :
                      set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
                           'R_sh_ref', 'R_s']),
-                   'pvwatts_dc' :
+                   'pvwatts' :
                      set(['pdc0', 'gamma_pdc'])
                   }
 

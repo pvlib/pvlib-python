@@ -368,20 +368,21 @@ class ModelChain(object):
         # Set model and validate parameters
         if isinstance(model, str):
             model = model.lower()
-            # validate module parameters
-            missing_params = DC_MODEL_PARAMS[model] - \
-                                    set(self.system.module_parameters.keys())
-            if missing_params: # some parameters are not in module.keys()
-                raise ValueError(model + ' selected for the DC model but '
-                                     'one or more required parameters '
-                                     ' are missing : ' +
-                                     str(missing_params))
-            if model == 'sapm':
-                self._dc_model = self.sapm
-            elif model == 'singlediode':
-                self._dc_model = self.singlediode
-            elif model == 'pvwatts':
-                self._dc_model = self.pvwatts_dc
+            if model in DC_MODEL_PARAMS.keys():
+                # validate module parameters
+                missing_params = DC_MODEL_PARAMS[model] - \
+                                        set(self.system.module_parameters.keys())
+                if missing_params: # some parameters are not in module.keys()
+                    raise ValueError(model + ' selected for the DC model but '
+                                         'one or more required parameters '
+                                         ' are missing : ' +
+                                         str(missing_params))
+                if model == 'sapm':
+                    self._dc_model = self.sapm
+                elif model == 'singlediode':
+                    self._dc_model = self.singlediode
+                elif model == 'pvwatts':
+                    self._dc_model = self.pvwatts_dc
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:

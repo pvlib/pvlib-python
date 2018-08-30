@@ -389,9 +389,6 @@ class ModelChain(object):
             self._dc_model = partial(model, self)
 
     def infer_dc_model(self):
-        # returns both model function object and model string, could drop
-        # model function object in the future since the model function object
-        # will be set in dc_model after validating parameter consistency
         params = set(self.system.module_parameters.keys())
         if set(['A0', 'A1', 'C7']) <= params:
             return self.sapm, 'sapm'

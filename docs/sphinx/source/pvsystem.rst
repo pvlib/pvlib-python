@@ -6,6 +6,7 @@ PVSystem
 .. ipython:: python
     :suppress:
 
+    import pandas as pd
     from pvlib import pvsystem
 
 The :py:class:`~pvlib.pvsystem.PVSystem` class wraps many of the
@@ -76,7 +77,7 @@ default value may be overridden by specifying the `temp_ref` key in the
 .. ipython:: python
 
     system.module_parameters['temp_ref'] = 0
-    # lower temp_ref should to lower DC power than calculated above
+    # lower temp_ref should lead to lower DC power than calculated above
     pdc = system.pvwatts_dc(1000, 30)
     print(pdc)
 
@@ -90,8 +91,8 @@ as well as the incidence angle modifier methods.
 PVSystem attributes
 -------------------
 
-Here we review the most commonly used PVSystem attributes.
-Please see the :py:class:`~pvlib.pvsystem.PVSystem` class documentation for a
+Here we review the most commonly used PVSystem attributes. Please see
+the :py:class:`~pvlib.pvsystem.PVSystem` class documentation for a
 comprehensive list.
 
 The first PVSystem parameters are `surface_tilt` and `surface_azimuth`.
@@ -122,23 +123,33 @@ the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
     inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     system = pvsystem.PVSystem(module_parameters=module_parameters, inverter_parameters=inverter_parameters)
 
-As shown above, the parameters can also be specified manually.
-This is useful for specifying modules and inverters that are not
-included in the supplied databases. It is also useful for specifying
-systems for use with the PVWatts models, as demonstrated in
-:ref:`designphilosophy`.
+The parameters can also be specified manually. This is useful for
+specifying modules and inverters that are not included in the supplied
+databases. It is also useful for specifying systems for use with the
+PVWatts models, as demonstrated in :ref:`designphilosophy`.
 
 The `losses_parameters` attribute contains data that may be used with
 methods that calculate system losses. At present, this is only incudes
 :py:meth:`PVSystem.pvwatts_losses
 <pvlib.pvsystem.PVSystem.pvwatts_losses>` and
 :py:func:`pvsystem.pvwatts_losses <pvlib.pvsystem.pvwatts_losses>`, but
-we hope to add more functions and methods in the future.
+we hope to add more related functions and methods in the future.
 
 The attributes `modules_per_string` and `strings_per_inverter` are used
-by some DC power models in :py:class:`~pvlib.modelchain.ModelChain`.
-They are also used in the
-:py:meth:`~pvlib.pvsystem.PVSystem.scale_voltage_current_power` method.
+in the :py:meth:`~pvlib.pvsystem.PVSystem.scale_voltage_current_power`
+method. Some DC power models in :py:class:`~pvlib.modelchain.ModelChain`
+automatically call this method and make use of these attributes. As an
+example, consider a system with 35 modules arranged into 5 strings of 7
+modules each.
+
+.. ipython:: python
+
+    system = pvsystem.PVSystem(modules_per_string=7, strings_per_inverter=5)
+    # crude numbers from a single module
+    data = pd.DataFrame({'v_mp': 8, 'v_oc': 10, 'i_mp': 5, 'i_x': 6,
+                         'i_xx': 4, 'i_sc': 7, 'p_mp': 40}, index=[0])
+    data_scaled = system.scale_voltage_current_power(data)
+    print(data_scaled)
 
 
 .. _sat:

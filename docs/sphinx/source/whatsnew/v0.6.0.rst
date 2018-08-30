@@ -101,6 +101,7 @@ Enhancements
 * Add irradiance.gti_dirint function. (:issue:`396`)
 * Add irradiance.clearness_index function. (:issue:`396`)
 * Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
+* Add checking for consistency between module_parameters and dc_model. (:issue:`417`)
 
 
 Bug fixes

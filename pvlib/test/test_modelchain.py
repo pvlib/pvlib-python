@@ -21,8 +21,6 @@ import pytest
 from test_pvsystem import sam_data
 from conftest import requires_scipy
 
-import copy
-
 
 @pytest.fixture
 def system(sam_data):
@@ -378,23 +376,20 @@ def test_invalid_dc_model_params(system, cec_dc_snl_ac_system,
     kwargs = {'dc_model': 'sapm', 'ac_model': 'snlinverter',
               'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
               'temp_model': 'sapm', 'losses_model': 'no_loss'}
-    tmp = copy.deepcopy(system)
-    tmp.module_parameters.pop('A0') # remove a parameter
+    system.module_parameters.pop('A0') # remove a parameter
     with pytest.raises(ValueError):
-        mc = ModelChain(tmp, location, **kwargs)
+        mc = ModelChain(system, location, **kwargs)
 
     kwargs['dc_model'] = 'singlediode'
-    tmp = copy.deepcopy(cec_dc_snl_ac_system)
-    tmp.module_parameters.pop('a_ref') # remove a parameter
+    cec_dc_snl_ac_system.module_parameters.pop('a_ref') # remove a parameter
     with pytest.raises(ValueError):
-        mc = ModelChain(tmp, location, **kwargs)
+        mc = ModelChain(cec_dc_snl_ac_system, location, **kwargs)
 
     kwargs['dc_model'] = 'pvwatts'
     kwargs['ac_model'] = 'pvwatts'
-    tmp = copy.deepcopy(pvwatts_dc_pvwatts_ac_system)
-    tmp.module_parameters.pop('pdc0')
+    pvwatts_dc_pvwatts_ac_system.module_parameters.pop('pdc0')
     with pytest.raises(ValueError):
-        mc = ModelChain(tmp, location, **kwargs)
+        mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, **kwargs)
 
 
 @pytest.mark.parametrize('model', [
@@ -408,7 +403,7 @@ def test_invalid_models(model, system, location):
     kwargs[model] = 'invalid'
     with pytest.raises(ValueError):
         mc = ModelChain(system, location, **kwargs)
-      
+
 
 def test_bad_get_orientation():
     with pytest.raises(ValueError):

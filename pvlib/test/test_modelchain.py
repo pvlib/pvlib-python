@@ -58,7 +58,7 @@ def cec_dc_snl_ac_system(sam_data):
 @pytest.fixture
 def cec_dc_adr_ac_system(sam_data):
     modules = sam_data['cecmod']
-    module - 'Canadian_Solar_CS5P_220M'
+    module = 'Canadian_Solar_CS5P_220M'
     module_parameters = modules[module].copy()
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121

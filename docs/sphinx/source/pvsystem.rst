@@ -15,7 +15,7 @@ API by eliminating the need for a user to specify arguments such as
 module and inverter properties when calling PVSystem methods.
 :py:class:`~pvlib.pvsystem.PVSystem` is not better or worse than the
 functions it wraps -- it is simply an alternative way of organizing
-your data.
+your data and calculations.
 
 This guide aims to build understanding of the PVSystem class. It assumes
 basic familiarity with object-oriented code in Python, but most
@@ -32,9 +32,9 @@ PVSystem to time series modeling.
 Design philosophy
 -----------------
 
-The PVSystem class is designed to separate the data that represents a PV
-system (e.g. tilt angle or module parameters) from the data that
-influences the PV system (e.g. the weather).
+The PVSystem class allows modelers to easily separate the data that
+represents a PV system (e.g. tilt angle or module parameters) from the
+data that influences the PV system (e.g. the weather).
 
 The data that represents the PV system is *intrinsic*. The
 data that influences the PV system is *extrinsic*.
@@ -58,8 +58,11 @@ data irradiance and temperature.
     pdc = system.pvwatts_dc(1000, 30)
     print(pdc)
 
-Compare the :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method signature
-to the :py:func:`~pvlib.pvsystem.pvwatts_dc` function signature:
+Methods attached to a PVSystem object wrap corresponding functions in
+:py:mod:`~pvlib.pvsystem`. The methods simplify the argument list by
+using data stored in the PVSystem attributes. Compare the
+:py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method signature to the
+:py:func:`~pvlib.pvsystem.pvwatts_dc` function signature:
 
     * :py:meth:`PVSystem.pvwatts_dc(g_poa_effective, temp_cell) <pvlib.pvsystem.PVSystem.pvwatts_dc>`
     * :py:func:`pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.) <pvlib.pvsystem.pvwatts_dc>`
@@ -98,7 +101,12 @@ comprehensive list.
 The first PVSystem parameters are `surface_tilt` and `surface_azimuth`.
 These parameters are used in PVSystem methods such as
 :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` and
-:py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance`.
+:py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance`. Angle of incidence
+(AOI) calculations require `surface_tilt`, `surface_azimuth` and also
+the sun position. The :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` method
+uses the `surface_tilt` and `surface_azimuth` attributes in its PVSystem
+object, and so requires only `solar_zenith` and `solar_azimuth` as
+arguments.
 
 .. ipython:: python
 
@@ -106,7 +114,7 @@ These parameters are used in PVSystem methods such as
     system = pvsystem.PVSystem(surface_tilt=20, surface_azimuth=180)
     print(system.surface_tilt, system.surface_azimuth)
 
-    # call get_aoi with solar_zenith, solar_zenith
+    # call get_aoi with solar_zenith, solar_azimuth
     aoi = system.get_aoi(30, 180)
     print(aoi)
 
@@ -117,20 +125,23 @@ the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
 
 .. ipython:: python
 
+    # retrieve_sam returns a dict. the dict keys are module names,
+    # and the values are model parameters for that module
     modules = pvsystem.retrieve_sam('cecmod')
     module_parameters = modules['Example_Module']
     inverters = pvsystem.retrieve_sam('cecinverter')
     inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     system = pvsystem.PVSystem(module_parameters=module_parameters, inverter_parameters=inverter_parameters)
 
-The parameters can also be specified manually. This is useful for
-specifying modules and inverters that are not included in the supplied
-databases. It is also useful for specifying systems for use with the
-PVWatts models, as demonstrated in :ref:`designphilosophy`.
+The module and/or inverter parameters can also be specified manually.
+This is useful for specifying modules and inverters that are not
+included in the supplied databases. It is also useful for specifying
+systems for use with the PVWatts models, as demonstrated in
+:ref:`designphilosophy`.
 
 The `losses_parameters` attribute contains data that may be used with
-methods that calculate system losses. At present, this is only incudes
-:py:meth:`PVSystem.pvwatts_losses
+methods that calculate system losses. At present, these methods include
+only :py:meth:`PVSystem.pvwatts_losses
 <pvlib.pvsystem.PVSystem.pvwatts_losses>` and
 :py:func:`pvsystem.pvwatts_losses <pvlib.pvsystem.pvwatts_losses>`, but
 we hope to add more related functions and methods in the future.
@@ -160,6 +171,6 @@ SingleAxisTracker
 The :py:class:`~pvlib.tracking.SingleAxisTracker` is a subclass of
 :py:class:`~pvlib.pvsystem.PVSystem`. The SingleAxisTracker class
 includes a few more keyword arguments and attributes that are specific
-to trackers, plus adds the
+to trackers, plus the
 :py:meth:`~pvlib.tracking.SingleAxisTracker.singleaxis` method. It also
 overrides the `get_aoi` and `get_irradiance` methods.

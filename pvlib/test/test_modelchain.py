@@ -25,10 +25,12 @@ from conftest import requires_scipy
 @pytest.fixture
 def system(sam_data):
     modules = sam_data['sandiamod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_'].copy()
+    module = 'Canadian_Solar_CS5P_220M___2009_'
+    module_parameters = modules[module].copy()
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module=module,
                       module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
@@ -37,13 +39,15 @@ def system(sam_data):
 @pytest.fixture
 def cec_dc_snl_ac_system(sam_data):
     modules = sam_data['cecmod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M'].copy()
+    module = 'Canadian_Solar_CS5P_220M'
+    module_parameters = modules[module].copy()
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module=module,
                       module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
@@ -52,13 +56,15 @@ def cec_dc_snl_ac_system(sam_data):
 @pytest.fixture
 def cec_dc_adr_ac_system(sam_data):
     modules = sam_data['cecmod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M'].copy()
+    module = 'Canadian_Solar_CS5P_220M'
+    module_parameters = modules[module].copy()
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
     inverters = sam_data['adrinverter']
     inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module=module,
                       module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
@@ -363,6 +369,27 @@ def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location, weather,
     mc.run_model(weather.index, weather=weather)
     assert m.call_count == 0
     assert mc.losses == 1
+
+
+def test_invalid_dc_model_params(system, cec_dc_snl_ac_system,
+                        pvwatts_dc_pvwatts_ac_system, location):
+    kwargs = {'dc_model': 'sapm', 'ac_model': 'snlinverter',
+              'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
+              'temp_model': 'sapm', 'losses_model': 'no_loss'}
+    system.module_parameters.pop('A0') # remove a parameter
+    with pytest.raises(ValueError):
+        mc = ModelChain(system, location, **kwargs)
+
+    kwargs['dc_model'] = 'singlediode'
+    cec_dc_snl_ac_system.module_parameters.pop('a_ref') # remove a parameter
+    with pytest.raises(ValueError):
+        mc = ModelChain(cec_dc_snl_ac_system, location, **kwargs)
+
+    kwargs['dc_model'] = 'pvwatts'
+    kwargs['ac_model'] = 'pvwatts'
+    pvwatts_dc_pvwatts_ac_system.module_parameters.pop('pdc0')
+    with pytest.raises(ValueError):
+        mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, **kwargs)
 
 
 @pytest.mark.parametrize('model', [

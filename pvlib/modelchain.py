@@ -13,6 +13,7 @@ import pandas as pd
 from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
+from pvlib.pvsystem import DC_MODEL_PARAMS
 
 
 def basic_chain(times, latitude, longitude,
@@ -360,16 +361,28 @@ class ModelChain(object):
 
     @dc_model.setter
     def dc_model(self, model):
+        # guess at model if None
         if model is None:
-            self._dc_model = self.infer_dc_model()
-        elif isinstance(model, str):
+            self._dc_model, model = self.infer_dc_model()
+
+        # Set model and validate parameters
+        if isinstance(model, str):
             model = model.lower()
-            if model == 'sapm':
-                self._dc_model = self.sapm
-            elif model == 'singlediode':
-                self._dc_model = self.singlediode
-            elif model == 'pvwatts':
-                self._dc_model = self.pvwatts_dc
+            if model in DC_MODEL_PARAMS.keys():
+                # validate module parameters
+                missing_params = DC_MODEL_PARAMS[model] - \
+                                        set(self.system.module_parameters.keys())
+                if missing_params: # some parameters are not in module.keys()
+                    raise ValueError(model + ' selected for the DC model but '
+                                         'one or more required parameters '
+                                         'are missing : ' +
+                                         str(missing_params))
+                if model == 'sapm':
+                    self._dc_model = self.sapm
+                elif model == 'singlediode':
+                    self._dc_model = self.singlediode
+                elif model == 'pvwatts':
+                    self._dc_model = self.pvwatts_dc
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
@@ -378,11 +391,11 @@ class ModelChain(object):
     def infer_dc_model(self):
         params = set(self.system.module_parameters.keys())
         if set(['A0', 'A1', 'C7']) <= params:
-            return self.sapm
+            return self.sapm, 'sapm'
         elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
-            return self.singlediode
+            return self.singlediode, 'singlediode'
         elif set(['pdc0', 'gamma_pdc']) <= params:
-            return self.pvwatts_dc
+            return self.pvwatts_dc, 'pvwatts'
         else:
             raise ValueError('could not infer DC model from '
                              'system.module_parameters')

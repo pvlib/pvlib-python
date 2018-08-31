@@ -51,6 +51,8 @@ API Changes
   improved results under other conditions. (:issue:`435`)
 * Add min_cos_zenith, max_zenith keyword arguments to disc, dirint, and
   dirindex functions. (:issue:`311`, :issue:`396`)
+* Method ModelChain.infer_dc_model now returns a tuple (function handle, model name string)
+  instead of only the function handle (:issue:`417`)
 
 
 Enhancements
@@ -101,6 +103,7 @@ Enhancements
 * Add irradiance.gti_dirint function. (:issue:`396`)
 * Add irradiance.clearness_index function. (:issue:`396`)
 * Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
+* Add checking for consistency between module_parameters and dc_model. (:issue:`417`)
 
 
 Bug fixes

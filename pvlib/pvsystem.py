@@ -23,6 +23,22 @@ from pvlib import irradiance, atmosphere
 import pvlib  # use pvlib.singlediode to avoid clash with local method
 
 
+# a dict of required parameter names for each DC power model
+
+DC_MODEL_PARAMS = {'sapm' :
+                     set(['A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
+                          'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
+                          'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
+                          'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
+                          'IXO', 'IXXO', 'FD']),
+                   'singlediode' :
+                     set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+                          'R_sh_ref', 'R_s']),
+                   'pvwatts' :
+                     set(['pdc0', 'gamma_pdc'])
+                  }
+
+
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.

@@ -747,8 +747,8 @@ class HRRR_ESRL(ForecastModel):
     """
 
     def __init__(self, set_type='best'):
-        import warnings
-        warnings.warn('HRRR_ESRL is an experimental model and is not always available.')
+        warnings.warn('HRRR_ESRL is an experimental model and is not '
+                      'always available.')
 
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
@@ -764,7 +764,7 @@ class HRRR_ESRL(ForecastModel):
 
         self.output_variables = [
             'temp_air',
-            'wind_speed'
+            'wind_speed',
             'ghi_raw',
             'ghi',
             'dni',

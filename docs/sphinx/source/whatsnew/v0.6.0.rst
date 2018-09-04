@@ -146,6 +146,7 @@ Documentation
 * Move the "Getting Started"/"Modeling Paradigms" section to a new
   top-level "Intro Examples" page.
 * Copy pvlib documentation's "Getting support" section to README.md.
+* Add PVSystem documentation page. (:issue:`514`, :issue:`319`)
 
 
 Testing

@@ -223,7 +223,7 @@ def poadc(mc):
     pytest.param('pvsyst', marks=requires_scipy), 
     pytest.param('singlediode', marks=requires_scipy), 
     'pvwatts_dc'])
-def test_infer_dc_model(system, cec_dc_snl_ac_system,
+def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
                         pvwatts_dc_pvwatts_ac_system, location, dc_model,
                         weather, mocker):
     dc_systems = {'sapm': system,

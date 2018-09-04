@@ -231,8 +231,13 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system,
                   'pvsyst': pvsyst_dc_snl_ac_system,
                   'singlediode': cec_dc_snl_ac_system,
                   'pvwatts_dc': pvwatts_dc_pvwatts_ac_system}
+    dc_model_function = {'sapm': pvsystem.sapm,
+                         'desoto': pvsystem.calcparams_desoto,
+                         'pvsyst': pvsystem.calcparams_pvsyst,
+                         'singlediode': pvsystem.calcparams_desoto,
+                         'pvwatts_dc': pvsystem.pvwatts_dc}
     system = dc_systems[dc_model]
-    m = mocker.spy(system, dc_model)
+    m = mocker.spy(system, dc_model_function[dc_model])
     mc = ModelChain(system, location,
                     aoi_model='no_loss', spectral_model='no_loss')
     mc.run_model(weather.index, weather=weather)

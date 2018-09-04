@@ -14,12 +14,13 @@ from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
+from pvlib._deprecation import pvlibDeprecationWarning
 
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 import pytest
 
 from test_pvsystem import sam_data, pvsyst_module_params
-from conftest import requires_scipy
+from conftest import fail_on_pvlib_version, requires_scipy
 
 
 @pytest.fixture
@@ -429,6 +430,14 @@ def test_invalid_models(model, system, location):
 def test_bad_get_orientation():
     with pytest.raises(ValueError):
         modelchain.get_orientation('bad value')
+
+
+@fail_on_pvlib_version('0.7')
+def test_deprecated_07():
+    with pytest.warns(pvlibDeprecationWarning):
+        mc = ModelChain(cec_dc_snl_ac_system, location,
+                        dc_model='singlediode', # this should fail after 0.7
+                        aoi_model='no_loss', spectral_model='no_loss')
 
 
 @requires_scipy

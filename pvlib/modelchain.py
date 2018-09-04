@@ -14,6 +14,7 @@ from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import DC_MODEL_PARAMS
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def basic_chain(times, latitude, longitude,
@@ -390,7 +391,7 @@ class ModelChain(object):
                                   'ModelChain object. singlediode is '
                                   'ambiguous, use desoto instead. singlediode '
                                   'keyword will be removed in v0.7.0 and '
-                                  'later', DeprecationWarning)
+                                  'later', pvlibDeprecationWarning)
                     self._dc_model = self.desoto
             else:
                 raise ValueError(model + ' is not a valid DC power model')

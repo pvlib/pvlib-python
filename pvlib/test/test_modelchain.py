@@ -55,7 +55,7 @@ def cec_dc_snl_ac_system(sam_data):
 
 
 @pytest.fixture
-def pvsyst_dc_snl_ac_system():
+def pvsyst_dc_snl_ac_system(sam_data):
     module = 'PVsyst test module'
     module_parameters = pvsyst_module_params()
     module_parameters['b'] = 0.05

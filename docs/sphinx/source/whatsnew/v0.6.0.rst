@@ -129,6 +129,8 @@ Bug fixes
 * Fix issue with unbounded clearness index calculation in disc. (:issue:`540`)
 * Limit pvwatts_ac results to be greater than or equal to 0. (:issue:`541`)
 * Fix bug in get_relative_airmass(model='youngirvine1967'). (:issue:`545`)
+* Fix bug in variable names returned by forecast.py's HRRR_ESRL model.
+  (:issue:`557`)
 
 
 Documentation

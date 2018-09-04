@@ -18,7 +18,7 @@ from pvlib.location import Location
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 import pytest
 
-from test_pvsystem import sam_data
+from test_pvsystem import sam_data, pvsyst_module_params
 from conftest import requires_scipy
 
 
@@ -44,6 +44,20 @@ def cec_dc_snl_ac_system(sam_data):
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
+    inverters = sam_data['cecinverter']
+    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module=module,
+                      module_parameters=module_parameters,
+                      inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
+def pvsyst_dc_snl_ac_system():
+    module = 'PVsyst test module'
+    module_parameters = pvsyst_module_params()
+    module_parameters['b'] = 0.05
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
@@ -203,11 +217,18 @@ def poadc(mc):
 
 
 @pytest.mark.parametrize('dc_model', [
-    'sapm', pytest.param('singlediode', marks=requires_scipy), 'pvwatts_dc'])
+    'sapm',
+    pytest.param('desoto', marks=requires_scipy), 
+    pytest.param('pvsyst', marks=requires_scipy), 
+    pytest.param('singlediode', marks=requires_scipy), 
+    'pvwatts_dc'])
 def test_infer_dc_model(system, cec_dc_snl_ac_system,
                         pvwatts_dc_pvwatts_ac_system, location, dc_model,
                         weather, mocker):
-    dc_systems = {'sapm': system, 'singlediode': cec_dc_snl_ac_system,
+    dc_systems = {'sapm': system,
+                  'desoto': cec_dc_snl_ac_system,
+                  'pvsyst': pvsyst_dc_snl_ac_system,
+                  'singlediode': cec_dc_snl_ac_system,
                   'pvwatts_dc': pvwatts_dc_pvwatts_ac_system}
     system = dc_systems[dc_model]
     m = mocker.spy(system, dc_model)

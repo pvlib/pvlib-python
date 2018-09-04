@@ -251,8 +251,8 @@ class ModelChain(object):
     dc_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
-        'singlediode', 'pvwatts'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+        'desoto', 'pvsyst', 'pvwatts'. The ModelChain instance will
+        be passed as the first argument to a user-defined function.
 
     ac_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
@@ -379,10 +379,19 @@ class ModelChain(object):
                                          str(missing_params))
                 if model == 'sapm':
                     self._dc_model = self.sapm
-                elif model == 'singlediode':
-                    self._dc_model = self.singlediode
+                elif model == 'desoto':
+                    self._dc_model = self.desoto
+                elif model == 'pvsyst':
+                    self._dc_model = self.pvsyst
                 elif model == 'pvwatts':
                     self._dc_model = self.pvwatts_dc
+                elif model == 'singlediode':
+                    warnings.warn('DC model keyword singlediode used for '
+                                  'ModelChain object. singlediode is '
+                                  'ambiguous, use desoto instead. singlediode '
+                                  'keyword will be removed in v0.7.0 and '
+                                  'later', DeprecationWarning)
+                    self._dc_model = self.desoto
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
@@ -393,7 +402,10 @@ class ModelChain(object):
         if set(['A0', 'A1', 'C7']) <= params:
             return self.sapm, 'sapm'
         elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
-            return self.singlediode, 'singlediode'
+            return self.desoto, 'desoto'
+        elif set(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+                  'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s']) <= params:
+            return self.pvsyst, 'pvsyst'
         elif set(['pdc0', 'gamma_pdc']) <= params:
             return self.pvwatts_dc, 'pvwatts'
         else:
@@ -408,6 +420,41 @@ class ModelChain(object):
 
         return self
 
+    def desoto(self):
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_desoto(self.effective_irradiance,
+                                          self.temps['temp_cell']))
+
+        self.diode_params = (photocurrent, saturation_current, resistance_series,
+                       resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
+
+        return self
+
+    def pvsyst(self):
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_pvsyst(self.effective_irradiance,
+                                          self.temps['temp_cell']))
+
+        self.diode_params = (photocurrent, saturation_current, resistance_series,
+                       resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
+
+        return self
+
+    # singlediode should be deprecated
     def singlediode(self):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (

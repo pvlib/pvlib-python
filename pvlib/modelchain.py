@@ -252,7 +252,7 @@ class ModelChain(object):
     dc_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
-        'desoto', 'pvsyst', 'pvwatts'. The ModelChain instance will
+        'desoto', 'cec', 'pvsyst', 'pvwatts'. The ModelChain instance will
         be passed as the first argument to a user-defined function.
 
     ac_model: None, str, or function, default None
@@ -382,6 +382,8 @@ class ModelChain(object):
                     self._dc_model = self.sapm
                 elif model == 'desoto':
                     self._dc_model = self.desoto
+                elif model == 'cec':
+                    self._dc_model = self.cec
                 elif model == 'pvsyst':
                     self._dc_model = self.pvsyst
                 elif model == 'pvwatts':
@@ -402,7 +404,11 @@ class ModelChain(object):
         params = set(self.system.module_parameters.keys())
         if set(['A0', 'A1', 'C7']) <= params:
             return self.sapm, 'sapm'
-        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
+        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                  'R_s', 'Adjust']) <= params:
+            return self.cec, 'cec'
+        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                  'R_s']) <= params:
             return self.desoto, 'desoto'
         elif set(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
                   'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s']) <= params:
@@ -425,6 +431,22 @@ class ModelChain(object):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
             self.system.calcparams_desoto(self.effective_irradiance,
+                                          self.temps['temp_cell']))
+
+        self.diode_params = (photocurrent, saturation_current,
+                             resistance_series,
+                             resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
+
+    def cec(self):
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_cec(self.effective_irradiance,
                                           self.temps['temp_cell']))
 
         self.diode_params = (photocurrent, saturation_current,

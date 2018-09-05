@@ -204,10 +204,10 @@ AOI modifiers
    pvsystem.ashraeiam
    pvsystem.sapm_aoi_loss
 
-Single diode model
-------------------
+Single diode models
+-------------------
 
-Functions relevant for the single diode model.
+Functions relevant for single diode models.
 
 .. autosummary::
    :toctree: generated/
@@ -419,7 +419,9 @@ ModelChain model definitions.
    :toctree: generated/
 
    modelchain.ModelChain.sapm
-   modelchain.ModelChain.singlediode
+   modelchain.ModelChain.desoto
+   modelchain.ModelChain.pvsyst
+   modelchain.ModelChain.singlediode (deprecated)
    modelchain.ModelChain.pvwatts_dc
    modelchain.ModelChain.snlinverter
    modelchain.ModelChain.adrinverter

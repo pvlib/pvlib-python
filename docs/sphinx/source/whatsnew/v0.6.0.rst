@@ -53,6 +53,8 @@ API Changes
   dirindex functions. (:issue:`311`, :issue:`396`)
 * Method ModelChain.infer_dc_model now returns a tuple (function handle, model name string)
   instead of only the function handle (:issue:`417`)
+* Add DC model methods desoto and pvsyst to ModelChain, and deprecates DC model method singlediode
+  (singlediode defaults to desoto until v0.7.0) (:issue:`487`)
 
 
 Enhancements
@@ -104,6 +106,7 @@ Enhancements
 * Add irradiance.clearness_index function. (:issue:`396`)
 * Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
 * Add checking for consistency between module_parameters and dc_model. (:issue:`417`)
+* Add DC model methods desoto and pvsyst to ModelChain (:issue:`487`)
 
 
 Bug fixes

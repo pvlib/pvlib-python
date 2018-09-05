@@ -31,6 +31,13 @@ DC_MODEL_PARAMS = {'sapm' :
                           'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
                           'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
                           'IXO', 'IXXO', 'FD']),
+                   'desoto' :
+                     set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+                          'R_sh_ref', 'R_s']),
+                   'pvsyst' :
+                     set(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+                          'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
+                          'cells_in_series']),
                    'singlediode' :
                      set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
                           'R_sh_ref', 'R_s']),

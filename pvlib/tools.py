@@ -338,7 +338,8 @@ def _array_newton(func, x0, fprime, args, tol, maxiter, fprime2,
                 rms = np.sqrt(
                     sum((p1[zero_der_nz_dp] - p[zero_der_nz_dp]) ** 2)
                 )
-                warnings.warn('RMS of {:g} reached'.format(rms), RuntimeWarning)
+                warnings.warn('RMS of {:g} reached'.format(rms),
+                              RuntimeWarning)
         # newton or halley warnings
         else:
             all_or_some = 'all' if zero_der.all() else 'some'
@@ -399,7 +400,6 @@ def _golden_sect_DataFrame(params, VL, VH, func):
     df['VH'] = VH
     df['VL'] = VL
 
-    err = df['VH'] - df['VL']
     errflag = True
     iterations = 0
 

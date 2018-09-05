@@ -125,12 +125,9 @@ def basic_chain(times, latitude, longitude,
     elif pressure is None:
         pressure = atmosphere.alt2pres(altitude)
 
-    solar_position = solarposition.get_solarposition(times, latitude,
-                                                     longitude,
-                                                     altitude=altitude,
-                                                     pressure=pressure,
-                                                     method=solar_position_method,
-                                                     **kwargs)
+    solar_position = solarposition.get_solarposition(
+        times, latitude, longitude, altitude=altitude, pressure=pressure,
+        method=solar_position_method, **kwargs)
 
     # possible error with using apparent zenith with some models
     airmass = atmosphere.get_relative_airmass(
@@ -371,12 +368,11 @@ class ModelChain(object):
             if model in DC_MODEL_PARAMS.keys():
                 # validate module parameters
                 missing_params = DC_MODEL_PARAMS[model] - \
-                                        set(self.system.module_parameters.keys())
-                if missing_params: # some parameters are not in module.keys()
+                                 set(self.system.module_parameters.keys())
+                if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
-                                         'one or more required parameters '
-                                         'are missing : ' +
-                                         str(missing_params))
+                                     'one or more required parameters are '
+                                     'missing : ' + str(missing_params))
                 if model == 'sapm':
                     self._dc_model = self.sapm
                 elif model == 'singlediode':

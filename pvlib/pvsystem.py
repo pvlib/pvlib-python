@@ -25,18 +25,17 @@ import pvlib  # use pvlib.singlediode to avoid clash with local method
 
 # a dict of required parameter names for each DC power model
 
-DC_MODEL_PARAMS = {'sapm' :
-                     set(['A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
-                          'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-                          'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
-                          'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-                          'IXO', 'IXXO', 'FD']),
-                   'singlediode' :
-                     set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-                          'R_sh_ref', 'R_s']),
-                   'pvwatts' :
-                     set(['pdc0', 'gamma_pdc'])
-                  }
+DC_MODEL_PARAMS = {
+    'sapm': set([
+        'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
+        'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
+        'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
+        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
+        'IXO', 'IXXO', 'FD']),
+    'singlediode': set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']),
+    'pvwatts': set(['pdc0', 'gamma_pdc'])
+    }
 
 
 # not sure if this belongs in the pvsystem module.
@@ -328,7 +327,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
                                 'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
                                 'irrad_ref', 'temp_ref'],
-                                self.module_parameters)
+                               self.module_parameters)
 
         return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
@@ -356,7 +355,7 @@ class PVSystem(object):
                                 'R_s', 'alpha_sc', 'EgRef',
                                 'irrad_ref', 'temp_ref',
                                 'cells_in_series'],
-                                self.module_parameters)
+                               self.module_parameters)
 
         return calcparams_pvsyst(effective_irradiance, temp_cell, **kwargs)
 
@@ -506,7 +505,7 @@ class PVSystem(object):
         """
 
         if 'first_solar_spectral_coefficients' in \
-                               self.module_parameters.keys():
+                self.module_parameters.keys():
             coefficients = \
                    self.module_parameters['first_solar_spectral_coefficients']
             module_type = None
@@ -1128,7 +1127,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          * EgRef = 1.121
          * dEgdT = -0.0002677
 
-         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.918093],
+         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.9181],
          ...                AMa) # doctest: +SKIP
 
          Source: [1]
@@ -1205,7 +1204,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # equivalent to the product of S (irradiance reaching a module's cells) *
     # M (spectral adjustment factor) as described in [1].
     IL = effective_irradiance / irrad_ref * \
-              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
     I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
     # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as
@@ -1341,16 +1340,17 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     nNsVth = gamma * k / q * cells_in_series * Tcell_K
 
     IL = effective_irradiance / irrad_ref * \
-              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
 
     I0 = I_o_ref * ((Tcell_K / Tref_K) ** 3) * \
-          (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
+        (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
 
-    Rsh_tmp = (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
+    Rsh_tmp = \
+        (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
     Rsh_base = np.maximum(0.0, Rsh_tmp)
 
     Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
-              np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
+        np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
 
     Rs = R_s
 

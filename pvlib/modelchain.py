@@ -427,8 +427,9 @@ class ModelChain(object):
             self.system.calcparams_desoto(self.effective_irradiance,
                                           self.temps['temp_cell']))
 
-        self.diode_params = (photocurrent, saturation_current, resistance_series,
-                       resistance_shunt, nNsVth)
+        self.diode_params = (photocurrent, saturation_current,
+                             resistance_series,
+                             resistance_shunt, nNsVth)
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
@@ -444,8 +445,9 @@ class ModelChain(object):
             self.system.calcparams_pvsyst(self.effective_irradiance,
                                           self.temps['temp_cell']))
 
-        self.diode_params = (photocurrent, saturation_current, resistance_series,
-                       resistance_shunt, nNsVth)
+        self.diode_params = (photocurrent, saturation_current,
+                             resistance_series,
+                             resistance_shunt, nNsVth)
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,

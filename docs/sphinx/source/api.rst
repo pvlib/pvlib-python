@@ -421,7 +421,6 @@ ModelChain model definitions.
    modelchain.ModelChain.sapm
    modelchain.ModelChain.desoto
    modelchain.ModelChain.pvsyst
-   modelchain.ModelChain.singlediode (deprecated)
    modelchain.ModelChain.pvwatts_dc
    modelchain.ModelChain.snlinverter
    modelchain.ModelChain.adrinverter

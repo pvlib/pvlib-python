@@ -6,8 +6,8 @@ performance of PV modules and inverters.
 from __future__ import division
 
 from collections import OrderedDict
-import os
 import io
+import os
 try:
     from urllib2 import urlopen
 except ImportError:
@@ -16,11 +16,10 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
+import pvlib  # use pvlib.singlediode to avoid clash with local method
+from pvlib import atmosphere, irradiance, tools
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
-from pvlib import irradiance, atmosphere
-import pvlib  # use pvlib.singlediode to avoid clash with local method
 
 
 # a dict of required parameter names for each DC power model
@@ -546,7 +545,6 @@ class PVSystem(object):
                            'mc-Si': 'multisi',
                            'c-Si': 'multisi',
                            'Si-Film': 'asi',
-                           'CdTe': 'cdte',
                            'EFG mc-Si': 'multisi',
                            'GaAs': None,
                            'a-Si / mono-Si': 'monosi'}
@@ -1718,8 +1716,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
-    elif isinstance(model, list):
-        model = model
+
     elif isinstance(model, (dict, pd.Series)):
         model = [model['a'], model['b'], model['deltaT']]
 

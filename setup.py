@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import os
-import re
-import shutil
-import sys
 
 try:
-    from setuptools import setup, Command
+    from setuptools import setup
     from setuptools.extension import Extension
 except ImportError:
     raise RuntimeError('setuptools is required')

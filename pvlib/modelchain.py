@@ -115,8 +115,6 @@ def basic_chain(times, latitude, longitude,
         raise ValueError('orientation_strategy or surface_tilt and '
                          'surface_azimuth must be provided')
 
-    times = times
-
     if altitude is None and pressure is None:
         altitude = 0.
         pressure = 101325.

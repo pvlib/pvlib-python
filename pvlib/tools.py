@@ -100,9 +100,6 @@ def localize_to_utc(time, location):
     -------
     pandas object localized to UTC.
     """
-    import datetime as dt
-    import pytz
-
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:
             time = pytz.timezone(location.tz).localize(time)

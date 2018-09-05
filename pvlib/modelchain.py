@@ -455,8 +455,8 @@ class ModelChain(object):
 
         return self
 
-    # singlediode should be deprecated
     def singlediode(self):
+        """Deprecated"""
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
             self.system.calcparams_desoto(self.effective_irradiance,

@@ -26,10 +26,6 @@ time series of clear sky data for a location. The :ref:`ineichen` and
 input data. The :ref:`detect_clearsky` subsection demonstrates the use
 of the clear sky detection algorithm.
 
-The :py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`, and
-:py:func:`~pvlib.atmosphere.kasten96_lt` functions are useful for
-calculating inputs to the clear sky functions.
-
 We'll need these imports for the examples below.
 
 .. ipython::
@@ -42,7 +38,7 @@ We'll need these imports for the examples below.
 
     In [1]: import pvlib
 
-    In [1]: from pvlib import clearsky, atmosphere
+    In [1]: from pvlib import clearsky, atmosphere, tmy, solarposition
 
     In [1]: from pvlib.location import Location
 
@@ -117,6 +113,57 @@ Ineichen and Perez
 The Ineichen and Perez clear sky model parameterizes irradiance in terms
 of the Linke turbidity [Ine02]_. pvlib-python implements this model in
 the :py:func:`pvlib.clearsky.ineichen` function.
+
+
+The :py:func:`~pvlib.atmosphere.kasten96_lt` function can be used to calculate
+Linke turbidity [Kas96]_ as input to the clear sky Ineichen and Perez function.
+The Kasten formulation requires precipitable water and broadband AOD which can
+be approximated at 700-nm [Mol98]_ or from the function,
+:py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb` which uses a combination of
+AOD measured at two wavelengths.
+
+.. ipython::
+
+    In [1]: MBARS = 100  # conversion factor from mbars to Pa
+
+    In [1]: URL = 'http://rredc.nrel.gov/solar/old_data/nsrdb/1991-2005/data/tmy3/722040TYA.CSV'
+
+    In [1]: melbourne = tmy.readtmy3(URL)
+
+    In [1]: dt = pd.DatetimeIndex(start='2000-01-01 01:00:00', end='2000-12-31', freq='H')
+
+    In [1]: melbourne[0].index = dt
+
+    In [1]: melbourne_tl = clearsky.lookup_linke_turbidity(time=melbourne[0].index,
+       ...:     latitude=melbourne[1]['latitude'], longitude=melbourne[1]['longitude'])
+
+    In [1]: melbourne_solpos = solarposition.get_solarposition(time=melbourne[0].index,
+       ...:     latitude=melbourne[1]['latitude'], longitude=melbourne[1]['longitude'],
+       ...:     altitude=melbourne[1]['altitude'], pressure=melbourne[0]['Pressure']*MBARS,
+       ...:     temperature=melbourne[0]['DryBulb'])
+
+    In [1]: am_rel = atmosphere.relativeairmass(melbourne_solpos.apparent_zenith)
+
+    In [1]: am_abs = atmosphere.absoluteairmass(am_rel, melbourne[0]['Pressure']*MBARS)
+
+    In [1]: melbourne_am = pd.DataFrame({'airmass_relative': am_rel, 'airmass_absolute': am_abs},
+       ...:     index=melbourne[0].index)
+
+    In [1]: melbourne_tl_molineaux = atmosphere.kasten96_lt(
+       ...:     melbourne_am.airmass_absolute, melbourne[0]['Pwat'], melbourne[0]['AOD'])
+
+    In [1]: tl = pd.concat([melbourne_tl, melbourne_tl_molineaux], axis=1)
+
+    In [1]: tl.rename(columns={0:'TL', 1:'Kasten'}).resample('W').mean().plot();
+
+    In [1]: plt.grid()
+
+    In [1]: plt.title('\n'.join(['Comparison of Historic Linke Turbidity Factors vs.',
+       ...:     'Kasten Pyrheliometric Formula at Melbourne, FL (722040TYA)']));
+
+    @savefig kasten-tl.png width=10in
+    In [1]: plt.ylabel('Linke Turbidity Factor, TL');
+
 
 Turbidity data
 ^^^^^^^^^^^^^^
@@ -327,8 +374,14 @@ from the `ECMWF <https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Pub
 and `SoDa <http://www.soda-pro.com/web-services/radiation/cams-mcclear>`_.
 
 Aerosol optical depth is a function of wavelength, and the Simplified
-Solis model requires AOD at 700 nm. Models exist to convert AOD between
-different wavelengths, as well as convert Linke turbidity to AOD and PW
+Solis model requires AOD at 700 nm. The function,
+:py:func:`~pvlib.atmosphere.angstrom_aod_at_lambda`, is useful for converting
+AOD between different wavelengths using the Angstrom turbidity model and given
+the Angstrom exponent, :math:`\alpha`, which can be calculated from AOD at two
+wavelengths with the :py:func:`~pvlib.atmosphere.angstrom_alpha` function. The
+function, :py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`, can be used to
+approximate broadband AOD based on the Bird and Hulstrom model, but the
+recommendation by Molineaux is to use AOD at 700-nm for broadband.
 [Ine08con]_, [Ine16]_.
 
 
@@ -617,3 +670,11 @@ References
 .. [Ren16] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
    sky irradiance in time series of GHI measurements" Renewable Energy,
    v90, p. 520-531, 2016.
+
+.. [Mol98] B. Molineaux, P. Ineichen, and N. O’Neill, “Equivalence of
+   pyrheliometric and monochromatic aerosol optical depths at a single key
+   wavelength.,” Appl. Opt., vol. 37, no. 30, pp. 7008–18, Oct. 1998.
+
+.. [Kas96] F. Kasten, “The linke turbidity factor based on improved values
+   of the integral Rayleigh optical thickness,” Sol. Energy, vol. 56, no. 3,
+   pp. 239–244, Mar. 1996.

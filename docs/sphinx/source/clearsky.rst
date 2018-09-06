@@ -385,15 +385,22 @@ from the `ECMWF <https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Pub
 and `SoDa <http://www.soda-pro.com/web-services/radiation/cams-mcclear>`_.
 
 Aerosol optical depth is a function of wavelength, and the Simplified
-Solis model requires AOD at 700 nm. The function,
-:py:func:`~pvlib.atmosphere.angstrom_aod_at_lambda`, is useful for converting
-AOD between different wavelengths using the Angstrom turbidity model and given
-the Angstrom exponent, :math:`\alpha`, which can be calculated from AOD at two
-wavelengths with the :py:func:`~pvlib.atmosphere.angstrom_alpha` function. The
-function, :py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`, can be used to
-approximate broadband AOD based on the Bird and Hulstrom model, but the
-recommendation by Molineaux is to use AOD at 700-nm for broadband.
-[Ine08con]_, [Ine16]_, [Ang61]_, [Bir80]_, [Mol98]_.
+Solis model requires AOD at 700 nm.
+:py:func:`~pvlib.atmosphere.angstrom_aod_at_lambda` is useful for converting
+AOD between different wavelengths using the Angstrom turbidity model. The
+Angstrom exponent, :math:`\alpha`, can be calculated from AOD at two
+wavelengths with :py:func:`~pvlib.atmosphere.angstrom_alpha`.
+[Ine08con]_, [Ine16]_, [Ang61]_.
+
+.. ipython::
+
+    In [1]: aod1240nm = 2.2  # AOD measured at 1240-nm
+
+    In [1]: aod550nm = 3.3  # AOD measured at 550-nm
+
+    In [1]: alpha_exponent = atmosphere.angstrom_alpha(aod1240nm, 1240, aod550nm, 550)
+
+    In [1]: aod700nm = atmosphere.angstrom_aod_at_lambda(aod1240nm, 1240, alpha_exponent, 700)
 
 
 Examples

@@ -128,7 +128,7 @@ wavelengths [Bir80]_, and is implemented in
 
 .. ipython::
 
-    In [1] pvlib_data = os.path.join(os.path.dirname(pvlib.__file__), 'data')
+    In [1]: pvlib_data = os.path.join(os.path.dirname(pvlib.__file__), 'data')
 
     In [1]: mbars = 100  # conversion factor from mbars to Pa
 
@@ -136,31 +136,35 @@ wavelengths [Bir80]_, and is implemented in
 
     In [1]: tmy_data, tmy_header = tmy.readtmy3(tmy_file)  # read TMY data
 
-    In [1]: dt = pd.DatetimeIndex(start='2000-01-01 01:00:00', end='2000-12-31', freq='H')
+    In [1]: dt = pd.DatetimeIndex(start='1999-01-01 00:00:00', end='1999-12-31 23:59:59',
+       ...:     freq='H')
 
-    In [1]: tmy_data.index = dt  # replace TMY timestamps
+    In [1]: tmy_data.index = dt.tz_localize(tz=tmy_data.index.tz)  # replace timestamps
 
     In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
 
     In [1]: solpos = solarposition.get_solarposition(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'],
-       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*MBARS,
+       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*mbars,
        ...:     temperature=tmy_data['DryBulb'])
 
     In [1]: am_rel = atmosphere.relativeairmass(solpos.apparent_zenith)
 
-    In [1]: am_abs = atmosphere.absoluteairmass(am_rel, tmy_data['Pressure']*MBARS)
+    In [1]: am_abs = atmosphere.absoluteairmass(am_rel, tmy_data['Pressure']*mbars)
 
-    In [1]: airmass = pd.DataFrame({'airmass_relative': am_rel, 'airmass_absolute': am_abs},
-       ...:     index=tmy_data.index)
+    In [1]: airmass = pd.concat([am_rel, am_abs], axis=1).rename(
+       ...:     columns={0: 'airmass_relative', 1: 'airmass_absolute'})
 
     In [1]: tl_calculated = atmosphere.kasten96_lt(
        ...:     airmass.airmass_absolute, tmy_data['Pwat'], tmy_data['AOD'])
 
-    In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1)
+    In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1).rename(
+       ...:     columns={0:'Historic', 1:'Calculated'})
 
-    In [1]: tl.rename(columns={0:'Historic', 1:'Calculated'}).resample('W').mean().plot();
+    In [1]: tl.index = dt  # remove timezone
+
+    In [1]: tl.resample('W').mean().plot();
 
     In [1]: plt.grid()
 

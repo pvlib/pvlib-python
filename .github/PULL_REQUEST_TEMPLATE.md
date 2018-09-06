@@ -12,7 +12,7 @@ The following items must be addressed before the code can be merged. Please don'
  - [ ] Fully tested. Added and/or modified tests to ensure correct behavior for all reasonable inputs. Tests (usually) must pass on the TravisCI and Appveyor testing services.
  - [ ] Updates entries to `docs/sphinx/source/api.rst` for API changes.
  - [ ] Adds description and name entries in the appropriate `docs/sphinx/source/whatsnew` file for all changes.
- - [ ] Code quality and style is sufficient. Passes ``git diff upstream/master -u -- "*.py" | flake8 --diff``
+ - [ ] Code quality and style is sufficient. Passes LGTM and SticklerCI checks.
  - [ ] New code is fully documented. Includes sphinx/numpydoc compliant docstrings and comments in the code where necessary.
  - [ ] Pull request is nearly complete and ready for detailed review.
 

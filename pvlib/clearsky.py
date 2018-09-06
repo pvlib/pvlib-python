@@ -12,7 +12,7 @@ import calendar
 import numpy as np
 import pandas as pd
 
-from pvlib import tools, atmosphere, solarposition, irradiance
+from pvlib import atmosphere, tools
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -204,7 +204,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
 
     lt_h5_file = tables.open_file(filepath)
     try:
-        lts = lt_h5_file.root.LinkeTurbidity[latitude_index, longitude_index, :]
+        lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
+                                             longitude_index, :]
     except IndexError:
         raise IndexError('Latitude should be between 90 and -90, '
                          'longitude between -180 and 180.')
@@ -364,8 +365,9 @@ def haurwitz(apparent_zenith):
 
     cos_zenith = tools.cosd(apparent_zenith.values)
     clearsky_ghi = np.zeros_like(apparent_zenith.values)
-    clearsky_ghi[cos_zenith>0] = 1098.0 * cos_zenith[cos_zenith>0] * \
-                                    np.exp(-0.059/cos_zenith[cos_zenith>0])
+    cos_zen_gte_0 = cos_zenith > 0
+    clearsky_ghi[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
+                                   np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
 
     df_out = pd.DataFrame(index=apparent_zenith.index,
                           data=clearsky_ghi,
@@ -675,14 +677,14 @@ def detect_clearsky(measured, clearsky, times, window_length,
     if len(unique_deltas) == 1:
         sample_interval = unique_deltas[0]
     else:
-        raise NotImplementedError('algorithm does not yet support unequal ' \
+        raise NotImplementedError('algorithm does not yet support unequal '
                                   'times. consider resampling your data.')
 
     samples_per_window = int(window_length / sample_interval)
 
     # generate matrix of integers for creating windows with indexing
     from scipy.linalg import hankel
-    H = hankel(np.arange(samples_per_window),
+    H = hankel(np.arange(samples_per_window),                   # noqa: N806
                np.arange(samples_per_window-1, len(times)))
 
     # calculate measurement statistics
@@ -729,14 +731,16 @@ def detect_clearsky(measured, clearsky, times, window_length,
         previous_alpha = alpha
         clear_meas = measured[clear_samples]
         clear_clear = clearsky[clear_samples]
+
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+
         alpha = minimize_scalar(rmse).x
         if round(alpha*10000) == round(previous_alpha*10000):
             break
     else:
         import warnings
-        warnings.warn('failed to converge after %s iterations' \
+        warnings.warn('failed to converge after %s iterations'
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
@@ -765,17 +769,18 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     Based on NREL Excel implementation by Daryl R. Myers [1, 2].
 
-    Bird and Hulstrom define the zenith as the "angle between a line to the sun
-    and the local zenith". There is no distinction in the paper between solar
-    zenith and apparent (or refracted) zenith, but the relative airmass is
-    defined using the Kasten 1966 expression, which requires apparent zenith.
-    Although the formulation for calculated zenith is never explicitly defined
-    in the report, since the purpose was to compare existing clear sky models
-    with "rigorous radiative transfer models" (RTM) it is possible that apparent
-    zenith was obtained as output from the RTM. However, the implentation
-    presented in PVLIB is tested against the NREL Excel implementation by Daryl
-    Myers which uses an analytical expression for solar zenith instead of
-    apparent zenith.
+    Bird and Hulstrom define the zenith as the "angle between a line to
+    the sun and the local zenith". There is no distinction in the paper
+    between solar zenith and apparent (or refracted) zenith, but the
+    relative airmass is defined using the Kasten 1966 expression, which
+    requires apparent zenith. Although the formulation for calculated
+    zenith is never explicitly defined in the report, since the purpose
+    was to compare existing clear sky models with "rigorous radiative
+    transfer models" (RTM) it is possible that apparent zenith was
+    obtained as output from the RTM. However, the implentation presented
+    in PVLIB is tested against the NREL Excel implementation by Daryl
+    Myers which uses an analytical expression for solar zenith instead
+    of apparent zenith.
 
     Parameters
     ----------
@@ -824,7 +829,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf>`_
 
-    `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
+    `Error Reports
+     <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians

@@ -120,7 +120,7 @@ Linke turbidity [Kas96]_ as input to the clear sky Ineichen and Perez function.
 The Kasten formulation requires precipitable water and broadband AOD which can
 be approximated at 700-nm [Mol98]_ or from the function,
 :py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb` which uses a combination of
-AOD measured at two wavelengths.
+AOD measured at two wavelengths [Bir80]_.
 
 .. ipython::
 
@@ -382,7 +382,7 @@ wavelengths with the :py:func:`~pvlib.atmosphere.angstrom_alpha` function. The
 function, :py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`, can be used to
 approximate broadband AOD based on the Bird and Hulstrom model, but the
 recommendation by Molineaux is to use AOD at 700-nm for broadband.
-[Ine08con]_, [Ine16]_.
+[Ine08con]_, [Ine16]_, [Ang61]_, [Bir80]_, [Mol98]_.
 
 
 Examples
@@ -678,3 +678,9 @@ References
 .. [Kas96] F. Kasten, “The linke turbidity factor based on improved values
    of the integral Rayleigh optical thickness,” Sol. Energy, vol. 56, no. 3,
    pp. 239–244, Mar. 1996.
+
+.. [Bir80] R. E. Bird and R. L. Hulstrom, “Direct Insolation Models,”
+   1980.
+
+.. [Ang61] A. ÅNGSTRÖM, “Techniques of Determinig the Turbidity of the
+   Atmosphere,” Tellus A, vol. 13, no. 2, pp. 214–223, 1961.

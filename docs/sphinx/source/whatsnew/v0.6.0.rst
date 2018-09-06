@@ -152,6 +152,8 @@ Documentation
   top-level "Intro Examples" page.
 * Copy pvlib documentation's "Getting support" section to README.md.
 * Add PVSystem documentation page. (:issue:`514`, :issue:`319`)
+* Add example of Kasten Linke Turbidity calculation, discuss broadband AOD and
+  Angstrom Turbidity Model. (:issue:`302`)
 
 
 Testing

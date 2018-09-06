@@ -16,11 +16,9 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-import pvlib  # use pvlib.singlediode to avoid clash with local method
-from pvlib import atmosphere, irradiance, tools
+from pvlib import atmosphere, irradiance, tools, singlediode as _singlediode
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
-from pvlib import irradiance, atmosphere, singlediode as _singlediode
 
 
 # a dict of required parameter names for each DC power model

@@ -441,7 +441,7 @@ class ModelChain(object):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
             self.system.calcparams_cec(self.effective_irradiance,
-                                          self.temps['temp_cell']))
+                                       self.temps['temp_cell']))
 
         self.diode_params = (photocurrent, saturation_current,
                              resistance_series,

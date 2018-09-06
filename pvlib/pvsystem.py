@@ -23,26 +23,26 @@ from pvlib.location import Location
 
 # a dict of required parameter names for each DC power model
 DC_MODEL_PARAMS = {
-    'sapm' : set([
+    'sapm': set([
         'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
         'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
         'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
         'IXO', 'IXXO', 'FD']),
-    'desoto' : set([
+    'desoto': set([
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s']),
-    'cec' : set([
+    'cec': set([
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s', 'Adjust']),
-    'pvsyst' : set([
+    'pvsyst': set([
         'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
         'cells_in_series']),
-    'singlediode' : set([
+    'singlediode': set([
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s']),
-    'pvwatts' : set(['pdc0', 'gamma_pdc'])
+    'pvwatts': set(['pdc0', 'gamma_pdc'])
 }
 
 
@@ -364,7 +364,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
                                 'R_s', 'alpha_sc', 'Adjust', 'EgRef', 'dEgdT',
                                 'irrad_ref', 'temp_ref'],
-                                self.module_parameters)
+                               self.module_parameters)
 
         return calcparams_cec(effective_irradiance, temp_cell, **kwargs)
 
@@ -1297,7 +1297,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
         The series resistance at reference conditions, in ohms.
 
     Adjust : float
-        The adjustment to the temperature coefficient for short circuit 
+        The adjustment to the temperature coefficient for short circuit
         current, in percent
 
     EgRef : float
@@ -1361,7 +1361,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
 
     Notes
     -----
-    The CEC model differs from the De soto et al. model [3] only in the 
+    The CEC model differs from the De soto et al. model [3] only in the
     parameter adjust.
     '''
 

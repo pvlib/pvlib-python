@@ -30,6 +30,8 @@ We'll need these imports for the examples below.
 
 .. ipython::
 
+    In [1]: import os
+
     In [1]: import itertools
 
     In [1]: import matplotlib.pyplot as plt
@@ -117,49 +119,54 @@ the :py:func:`pvlib.clearsky.ineichen` function.
 
 The :py:func:`~pvlib.atmosphere.kasten96_lt` function can be used to calculate
 Linke turbidity [Kas96]_ as input to the clear sky Ineichen and Perez function.
-The Kasten formulation requires precipitable water and broadband AOD which can
-be approximated at 700-nm [Mol98]_ or from the function,
-:py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb` which uses a combination of
-AOD measured at two wavelengths [Bir80]_.
+The Kasten formulation requires precipitable water and broadband aerosol
+optical depth (AOD). According to Molineaux, broadband AOD can be approximated
+by a single measurement at 700-nm [Mol98]_. An alternate broadband AOD
+approximation from Bird and Hulstrom combines AOD measured at two
+wavelengths [Bir80]_, and is implemented in
+:py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`.
 
 .. ipython::
 
-    In [1]: MBARS = 100  # conversion factor from mbars to Pa
+    In [1] pvlib_data = os.path.join(os.path.dirname(pvlib.__file__), 'data')
 
-    In [1]: URL = 'http://rredc.nrel.gov/solar/old_data/nsrdb/1991-2005/data/tmy3/722040TYA.CSV'
+    In [1]: mbars = 100  # conversion factor from mbars to Pa
 
-    In [1]: melbourne = tmy.readtmy3(URL)
+    In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
+
+    In [1]: tmy_data, tmy_header = tmy.readtmy3(tmy_file)  # read TMY data
 
     In [1]: dt = pd.DatetimeIndex(start='2000-01-01 01:00:00', end='2000-12-31', freq='H')
 
-    In [1]: melbourne[0].index = dt
+    In [1]: tmy_data.index = dt  # replace TMY timestamps
 
-    In [1]: melbourne_tl = clearsky.lookup_linke_turbidity(time=melbourne[0].index,
-       ...:     latitude=melbourne[1]['latitude'], longitude=melbourne[1]['longitude'])
+    In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
+       ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
 
-    In [1]: melbourne_solpos = solarposition.get_solarposition(time=melbourne[0].index,
-       ...:     latitude=melbourne[1]['latitude'], longitude=melbourne[1]['longitude'],
-       ...:     altitude=melbourne[1]['altitude'], pressure=melbourne[0]['Pressure']*MBARS,
-       ...:     temperature=melbourne[0]['DryBulb'])
+    In [1]: solpos = solarposition.get_solarposition(time=tmy_data.index,
+       ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'],
+       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*MBARS,
+       ...:     temperature=tmy_data['DryBulb'])
 
-    In [1]: am_rel = atmosphere.relativeairmass(melbourne_solpos.apparent_zenith)
+    In [1]: am_rel = atmosphere.relativeairmass(solpos.apparent_zenith)
 
-    In [1]: am_abs = atmosphere.absoluteairmass(am_rel, melbourne[0]['Pressure']*MBARS)
+    In [1]: am_abs = atmosphere.absoluteairmass(am_rel, tmy_data['Pressure']*MBARS)
 
-    In [1]: melbourne_am = pd.DataFrame({'airmass_relative': am_rel, 'airmass_absolute': am_abs},
-       ...:     index=melbourne[0].index)
+    In [1]: airmass = pd.DataFrame({'airmass_relative': am_rel, 'airmass_absolute': am_abs},
+       ...:     index=tmy_data.index)
 
-    In [1]: melbourne_tl_molineaux = atmosphere.kasten96_lt(
-       ...:     melbourne_am.airmass_absolute, melbourne[0]['Pwat'], melbourne[0]['AOD'])
+    In [1]: tl_calculated = atmosphere.kasten96_lt(
+       ...:     airmass.airmass_absolute, tmy_data['Pwat'], tmy_data['AOD'])
 
-    In [1]: tl = pd.concat([melbourne_tl, melbourne_tl_molineaux], axis=1)
+    In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1)
 
-    In [1]: tl.rename(columns={0:'TL', 1:'Kasten'}).resample('W').mean().plot();
+    In [1]: tl.rename(columns={0:'Historic', 1:'Calculated'}).resample('W').mean().plot();
 
     In [1]: plt.grid()
 
-    In [1]: plt.title('\n'.join(['Comparison of Historic Linke Turbidity Factors vs.',
-       ...:     'Kasten Pyrheliometric Formula at Melbourne, FL (722040TYA)']));
+    In [1]: plt.title('Comparison of Historic Linke Turbidity Factors vs. \n'
+       ...:     'Kasten Pyrheliometric Formula at {name:s}, {state:s} ({usaf:d}TY)'.format(
+       ...:     name=tmy_header['Name'], state=tmy_header['State'], usaf=tmy_header['USAF']));
 
     @savefig kasten-tl.png width=10in
     In [1]: plt.ylabel('Linke Turbidity Factor, TL');

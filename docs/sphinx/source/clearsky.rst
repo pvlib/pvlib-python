@@ -117,61 +117,6 @@ of the Linke turbidity [Ine02]_. pvlib-python implements this model in
 the :py:func:`pvlib.clearsky.ineichen` function.
 
 
-The :py:func:`~pvlib.atmosphere.kasten96_lt` function can be used to calculate
-Linke turbidity [Kas96]_ as input to the clear sky Ineichen and Perez function.
-The Kasten formulation requires precipitable water and broadband aerosol
-optical depth (AOD). According to Molineaux, broadband AOD can be approximated
-by a single measurement at 700-nm [Mol98]_. An alternate broadband AOD
-approximation from Bird and Hulstrom combines AOD measured at two
-wavelengths [Bir80]_, and is implemented in
-:py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`.
-
-.. ipython::
-
-    In [1]: pvlib_data = os.path.join(os.path.dirname(pvlib.__file__), 'data')
-
-    In [1]: mbars = 100  # conversion factor from mbars to Pa
-
-    In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
-
-    In [1]: tmy_data, tmy_header = tmy.readtmy3(tmy_file, coerce_year=1999)  # read TMY data
-
-    In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
-       ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
-
-    In [1]: solpos = solarposition.get_solarposition(time=tmy_data.index,
-       ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'],
-       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*mbars,
-       ...:     temperature=tmy_data['DryBulb'])
-
-    In [1]: am_rel = atmosphere.get_relative_airmass(solpos.apparent_zenith)
-
-    In [1]: am_abs = atmosphere.get_absolute_airmass(am_rel, tmy_data['Pressure']*mbars)
-
-    In [1]: airmass = pd.concat([am_rel, am_abs], axis=1).rename(
-       ...:     columns={0: 'airmass_relative', 1: 'airmass_absolute'})
-
-    In [1]: tl_calculated = atmosphere.kasten96_lt(
-       ...:     airmass.airmass_absolute, tmy_data['Pwat'], tmy_data['AOD'])
-
-    In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1).rename(
-       ...:     columns={0:'Historic', 1:'Calculated'})
-
-    In [1]: tl.index = tmy_data.index.tz_convert(None)  # remove timezone
-
-    In [1]: tl.resample('W').mean().plot();
-
-    In [1]: plt.grid()
-
-    In [1]: plt.title('Comparison of Historic Linke Turbidity Factors vs. \n'
-       ...:     'Kasten Pyrheliometric Formula at {name:s}, {state:s} ({usaf:d}TY)'.format(
-       ...:     name=tmy_header['Name'], state=tmy_header['State'], usaf=tmy_header['USAF']));
-
-    In [1]: plt.ylabel('Linke Turbidity Factor, TL');
-
-    @savefig kasten-tl.png width=10in
-    In [1]: plt.tight_layout()
-
 Turbidity data
 ^^^^^^^^^^^^^^
 
@@ -251,6 +196,62 @@ varies from 300 m to 1500 m.
 
     @savefig turbidity-yes-interp.png width=6in
     In [1]: plt.ylabel('Linke Turbidity');
+
+The :py:func:`~pvlib.atmosphere.kasten96_lt` function can be used to calculate
+Linke turbidity [Kas96]_ as input to the clear sky Ineichen and Perez function.
+The Kasten formulation requires precipitable water and broadband aerosol
+optical depth (AOD). According to Molineaux, broadband AOD can be approximated
+by a single measurement at 700-nm [Mol98]_. An alternate broadband AOD
+approximation from Bird and Hulstrom combines AOD measured at two
+wavelengths [Bir80]_, and is implemented in
+:py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`.
+
+.. ipython::
+
+    In [1]: pvlib_data = os.path.join(os.path.dirname(pvlib.__file__), 'data')
+
+    In [1]: mbars = 100  # conversion factor from mbars to Pa
+
+    In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
+
+    In [1]: tmy_data, tmy_header = tmy.readtmy3(tmy_file, coerce_year=1999)  # read TMY data
+
+    In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
+       ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
+
+    In [1]: solpos = solarposition.get_solarposition(time=tmy_data.index,
+       ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'],
+       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*mbars,
+       ...:     temperature=tmy_data['DryBulb'])
+
+    In [1]: am_rel = atmosphere.get_relative_airmass(solpos.apparent_zenith)
+
+    In [1]: am_abs = atmosphere.get_absolute_airmass(am_rel, tmy_data['Pressure']*mbars)
+
+    In [1]: airmass = pd.concat([am_rel, am_abs], axis=1).rename(
+       ...:     columns={0: 'airmass_relative', 1: 'airmass_absolute'})
+
+    In [1]: tl_calculated = atmosphere.kasten96_lt(
+       ...:     airmass.airmass_absolute, tmy_data['Pwat'], tmy_data['AOD'])
+
+    In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1).rename(
+       ...:     columns={0:'Historic', 1:'Calculated'})
+
+    In [1]: tl.index = tmy_data.index.tz_convert(None)  # remove timezone
+
+    In [1]: tl.resample('W').mean().plot();
+
+    In [1]: plt.grid()
+
+    In [1]: plt.title('Comparison of Historic Linke Turbidity Factors vs. \n'
+       ...:     'Kasten Pyrheliometric Formula at {name:s}, {state:s} ({usaf:d}TY)'.format(
+       ...:     name=tmy_header['Name'], state=tmy_header['State'], usaf=tmy_header['USAF']));
+
+    In [1]: plt.ylabel('Linke Turbidity Factor, TL');
+
+    @savefig kasten-tl.png width=10in
+    In [1]: plt.tight_layout()
+
 
 Examples
 ^^^^^^^^
@@ -390,14 +391,22 @@ wavelengths with :py:func:`~pvlib.atmosphere.angstrom_alpha`.
 
 .. ipython::
 
-    In [1]: aod1240nm = 2.2  # AOD measured at 1240-nm
+    In [1]: aod1240nm = 1.2  # AOD measured at 1240-nm
 
-    In [1]: aod550nm = 3.3  # AOD measured at 550-nm
+    In [1]: aod550nm = 3.1  # AOD measured at 550-nm
 
     In [1]: alpha_exponent = atmosphere.angstrom_alpha(aod1240nm, 1240, aod550nm, 550)
 
     In [1]: aod700nm = atmosphere.angstrom_aod_at_lambda(aod1240nm, 1240, alpha_exponent, 700)
 
+    In [1]: aod380nm = atmosphere.angstrom_aod_at_lambda(aod550nm, 550, alpha_exponent, 380)
+
+    In [1]: aod500nm = atmosphere.angstrom_aod_at_lambda(aod550nm, 550, alpha_exponent, 500)
+
+    In [1]: aod_bb = atmosphere.bird_hulstrom80_aod_bb(aod380nm, aod500nm)
+
+    In [1]: print('compare AOD at 700-nm = {:g}, to estimated broadband AOD = {:g}, with alpha = {:g}'.format(
+       ...:     aod700nm, aod_bb, alpha_exponent))
 
 Examples
 ^^^^^^^^

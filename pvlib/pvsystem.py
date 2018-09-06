@@ -32,6 +32,9 @@ DC_MODEL_PARAMS = {
     'desoto' : set([
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s']),
+    'cec' : set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s', 'Adjust']),
     'pvsyst' : set([
         'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',

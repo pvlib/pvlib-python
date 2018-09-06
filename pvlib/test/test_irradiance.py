@@ -248,7 +248,7 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
         expected_for_sum = expected['sky_diffuse'].copy()
         expected_for_sum.iloc[2] = 0
     else:
-        expected_for_sum = expected
+        expected_for_sum = expected['sky_diffuse']
     sum_components = out.iloc[:, 1:].sum(axis=1)
     sum_components.name = 'sky_diffuse'
 

@@ -6,8 +6,8 @@ performance of PV modules and inverters.
 from __future__ import division
 
 from collections import OrderedDict
-import os
 import io
+import os
 try:
     from urllib2 import urlopen
 except ImportError:
@@ -16,37 +16,31 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
+from pvlib import atmosphere, irradiance, tools, singlediode as _singlediode
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
-from pvlib import irradiance, atmosphere
-import pvlib  # use pvlib.singlediode to avoid clash with local method
 
 
 # a dict of required parameter names for each DC power model
-
-DC_MODEL_PARAMS = {'sapm' :
-                     set(['A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
-                          'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-                          'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
-                          'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-                          'IXO', 'IXXO', 'FD']),
-                   'desoto' :
-                     set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-                          'R_sh_ref', 'R_s']),
-                   'cec' :
-                     set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-                          'R_sh_ref', 'R_s', 'Adjust']),
-                   'pvsyst' :
-                     set(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
-                          'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
-                          'cells_in_series']),
-                   'singlediode' :
-                     set(['alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-                          'R_sh_ref', 'R_s']),
-                   'pvwatts' :
-                     set(['pdc0', 'gamma_pdc'])
-                  }
+DC_MODEL_PARAMS = {
+    'sapm' : set([
+        'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
+        'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
+        'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
+        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
+        'IXO', 'IXXO', 'FD']),
+    'desoto' : set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s']),
+    'pvsyst' : set([
+        'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
+        'cells_in_series']),
+    'singlediode' : set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s']),
+    'pvwatts' : set(['pdc0', 'gamma_pdc'])
+}
 
 
 # not sure if this belongs in the pvsystem module.
@@ -338,7 +332,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
                                 'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
                                 'irrad_ref', 'temp_ref'],
-                                self.module_parameters)
+                               self.module_parameters)
 
         return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
@@ -395,7 +389,7 @@ class PVSystem(object):
                                 'R_s', 'alpha_sc', 'EgRef',
                                 'irrad_ref', 'temp_ref',
                                 'cells_in_series'],
-                                self.module_parameters)
+                               self.module_parameters)
 
         return calcparams_pvsyst(effective_irradiance, temp_cell, **kwargs)
 
@@ -545,7 +539,7 @@ class PVSystem(object):
         """
 
         if 'first_solar_spectral_coefficients' in \
-                               self.module_parameters.keys():
+                self.module_parameters.keys():
             coefficients = \
                    self.module_parameters['first_solar_spectral_coefficients']
             module_type = None
@@ -586,7 +580,6 @@ class PVSystem(object):
                            'mc-Si': 'multisi',
                            'c-Si': 'multisi',
                            'Si-Film': 'asi',
-                           'CdTe': 'cdte',
                            'EFG mc-Si': 'multisi',
                            'GaAs': None,
                            'a-Si / mono-Si': 'monosi'}
@@ -1167,7 +1160,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          * EgRef = 1.121
          * dEgdT = -0.0002677
 
-         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.918093],
+         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.9181],
          ...                AMa) # doctest: +SKIP
 
          Source: [1]
@@ -1244,7 +1237,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # equivalent to the product of S (irradiance reaching a module's cells) *
     # M (spectral adjustment factor) as described in [1].
     IL = effective_irradiance / irrad_ref * \
-              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
     I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
     # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as
@@ -1520,16 +1513,17 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     nNsVth = gamma * k / q * cells_in_series * Tcell_K
 
     IL = effective_irradiance / irrad_ref * \
-              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
 
     I0 = I_o_ref * ((Tcell_K / Tref_K) ** 3) * \
-          (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
+        (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
 
-    Rsh_tmp = (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
+    Rsh_tmp = \
+        (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
     Rsh_base = np.maximum(0.0, Rsh_tmp)
 
     Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
-              np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
+        np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
 
     Rs = R_s
 
@@ -1897,8 +1891,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
-    elif isinstance(model, list):
-        model = model
+
     elif isinstance(model, (dict, pd.Series)):
         model = [model['a'], model['b'], model['deltaT']]
 
@@ -2191,7 +2184,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
-        out = pvlib.singlediode._lambertw(
+        out = _singlediode._lambertw(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth, ivcurve_pnts
         )
@@ -2204,19 +2197,19 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         # equation for the diode voltage V_d then backing out voltage
         args = (photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)  # collect args
-        v_oc = pvlib.singlediode.bishop88_v_from_i(
+        v_oc = _singlediode.bishop88_v_from_i(
             0.0, *args, method=method.lower()
         )
-        i_mp, v_mp, p_mp = pvlib.singlediode.bishop88_mpp(
+        i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
             *args, method=method.lower()
         )
-        i_sc = pvlib.singlediode.bishop88_i_from_v(
+        i_sc = _singlediode.bishop88_i_from_v(
             0.0, *args, method=method.lower()
         )
-        i_x = pvlib.singlediode.bishop88_i_from_v(
+        i_x = _singlediode.bishop88_i_from_v(
             v_oc / 2.0, *args, method=method.lower()
         )
-        i_xx = pvlib.singlediode.bishop88_i_from_v(
+        i_xx = _singlediode.bishop88_i_from_v(
             (v_oc + v_mp) / 2.0, *args, method=method.lower()
         )
 
@@ -2226,7 +2219,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                     (11.0 - np.logspace(np.log10(11.0), 0.0,
                                         ivcurve_pnts)) / 10.0
             )
-            ivcurve_i, ivcurve_v, _ = pvlib.singlediode.bishop88(vd, *args)
+            ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
 
     out = OrderedDict()
     out['i_sc'] = i_sc
@@ -2282,7 +2275,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     curve. This function uses Brent's method by default because it is
     guaranteed to converge.
     """
-    i_mp, v_mp, p_mp = pvlib.singlediode.bishop88_mpp(
+    i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,
         resistance_shunt, nNsVth, method=method.lower()
     )
@@ -2362,7 +2355,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        return pvlib.singlediode._lambertw_v_from_i(
+        return _singlediode._lambertw_v_from_i(
             resistance_shunt, resistance_series, nNsVth, current,
             saturation_current, photocurrent
         )
@@ -2372,9 +2365,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         # equation for the diode voltage V_d then backing out voltage
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
-        V = pvlib.singlediode.bishop88_v_from_i(*args, method=method.lower())
+        V = _singlediode.bishop88_v_from_i(*args, method=method.lower())
         # find the right size and shape for returns
-        size, shape = pvlib.singlediode._get_size_and_shape(args)
+        size, shape = _singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
                 V = np.tile(V, shape)
@@ -2450,7 +2443,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        return pvlib.singlediode._lambertw_i_from_v(
+        return _singlediode._lambertw_i_from_v(
             resistance_shunt, resistance_series, nNsVth, voltage,
             saturation_current, photocurrent
         )
@@ -2460,9 +2453,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # equation for the diode voltage V_d then backing out voltage
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        I = pvlib.singlediode.bishop88_i_from_v(*args, method=method.lower())
+        I = _singlediode.bishop88_i_from_v(*args, method=method.lower())
         # find the right size and shape for returns
-        size, shape = pvlib.singlediode._get_size_and_shape(args)
+        size, shape = _singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
                 I = np.tile(I, shape)

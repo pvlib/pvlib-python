@@ -864,26 +864,27 @@ def _calculate_simple_day_angle(dayofyear):
 
 def equation_of_time_spencer71(dayofyear):
     """
-    Equation of time from Duffie & Beckman and attributed to Spencer (1971) and
-    Iqbal (1983).
+    Equation of time from Duffie & Beckman and attributed to Spencer
+    (1971) and Iqbal (1983).
 
-    The coefficients correspond to the online copy of the `Fourier paper`_ [1]_
-    in the Sundial Mailing list that was posted in 1998 by Mac Oglesby from his
-    correspondence with Macquarie University Prof. John Pickard who added the
-    following note.
+    The coefficients correspond to the online copy of the `Fourier
+    paper`_ [1]_ in the Sundial Mailing list that was posted in 1998 by
+    Mac Oglesby from his correspondence with Macquarie University Prof.
+    John Pickard who added the following note.
 
         In the early 1970s, I contacted Dr Spencer about this method because I
         was trying to use a hand calculator for calculating solar positions,
         etc. He was extremely helpful and gave me a reprint of this paper. He
         also pointed out an error in the original: in the series for E, the
-        constant was printed as 0.000075 rather than 0.0000075. I have corrected
-        the error in this version.
+        constant was printed as 0.000075 rather than 0.0000075. I have
+        corrected the error in this version.
 
-    There appears to be another error in formula as printed in both Duffie &
-    Beckman's [2]_ and Frank Vignola's [3]_ books in which the coefficient
-    0.04089 is printed instead of 0.040849, corresponding to the value used in
-    the Bird Clear Sky model implemented by Daryl Myers [4]_ and printed in both
-    the Fourier paper from the Sundial Mailing List and R. Hulstrom's [5]_ book.
+    There appears to be another error in formula as printed in both
+    Duffie & Beckman's [2]_ and Frank Vignola's [3]_ books in which the
+    coefficient 0.04089 is printed instead of 0.040849, corresponding to
+    the value used in the Bird Clear Sky model implemented by Daryl
+    Myers [4]_ and printed in both the Fourier paper from the Sundial
+    Mailing List and R. Hulstrom's [5]_ book.
 
     .. _Fourier paper: http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html
 
@@ -918,19 +919,23 @@ def equation_of_time_spencer71(dayofyear):
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
     # convert from radians to minutes per day = 24[h/day] * 60[min/h] / 2 / pi
-    return (1440.0 / 2 / np.pi) * (0.0000075 +
+    eot = (1440.0 / 2 / np.pi) * (
+        0.0000075 +
         0.001868 * np.cos(day_angle) - 0.032077 * np.sin(day_angle) -
         0.014615 * np.cos(2.0 * day_angle) - 0.040849 * np.sin(2.0 * day_angle)
     )
+    return eot
 
 
 def equation_of_time_pvcdrom(dayofyear):
     """
     Equation of time from PVCDROM.
 
-    `PVCDROM`_ is a website by Solar Power Lab at Arizona State University (ASU)
+    `PVCDROM`_ is a website by Solar Power Lab at Arizona State
+    University (ASU)
 
-    .. _PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
+    .. _PVCDROM:
+    http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
 
     Parameters
     ----------
@@ -938,28 +943,29 @@ def equation_of_time_pvcdrom(dayofyear):
 
     Returns
     -------
-    equation_of_time : numeric
-        Difference in time between solar time and mean solar time in minutes.
+    equation_of_time : numeric Difference in time between solar time and
+        mean solar time in minutes.
 
     References
     ----------
-    [1] Soteris A. Kalogirou, "Solar Energy Engineering Processes and Systems,
-    2nd Edition" Elselvier/Academic Press (2009).
+    [1] Soteris A. Kalogirou, "Solar Energy Engineering Processes and
+    Systems, 2nd Edition" Elselvier/Academic Press (2009).
 
     See Also
     --------
     equation_of_time_Spencer71
     """
     # day angle relative to Vernal Equinox, typically March 22 (day number 81)
-    bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
+    bday = \
+        _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
     # same value but about 2x faster than Spencer (1971)
     return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)
 
 
 def declination_spencer71(dayofyear):
     """
-    Solar declination from Duffie & Beckman [1] and attributed to Spencer (1971)
-    and Iqbal (1983).
+    Solar declination from Duffie & Beckman [1] and attributed to
+    Spencer (1971) and Iqbal (1983).
 
     .. warning::
         Return units are radians, not degrees.
@@ -990,7 +996,8 @@ def declination_spencer71(dayofyear):
     declination_cooper69
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
-    return (0.006918 -
+    return (
+        0.006918 -
         0.399912 * np.cos(day_angle) + 0.070257 * np.sin(day_angle) -
         0.006758 * np.cos(2. * day_angle) + 0.000907 * np.sin(2. * day_angle) -
         0.002697 * np.cos(3. * day_angle) + 0.00148 * np.sin(3. * day_angle)
@@ -1038,7 +1045,8 @@ def declination_cooper69(dayofyear):
     declination_spencer71
     """
     day_angle = _calculate_simple_day_angle(dayofyear)
-    return np.deg2rad(23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0))
+    dec = np.deg2rad(23.45 * np.sin(day_angle + (2.0 * np.pi / 365.0) * 285.0))
+    return dec
 
 
 def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
@@ -1073,8 +1081,8 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     [3] `Wikipedia: Solar Azimuth Angle
     <https://en.wikipedia.org/wiki/Solar_azimuth_angle>`_
 
-    [4] `PVCDROM: Azimuth Angle <http://www.pveducation.org/pvcdrom/2-properties
-    -sunlight/azimuth-angle>`_
+    [4] `PVCDROM: Azimuth Angle <http://www.pveducation.org/pvcdrom/2-
+    properties-sunlight/azimuth-angle>`_
 
     See Also
     --------
@@ -1092,12 +1100,17 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     with np.errstate(invalid='ignore', divide='ignore'):
         cos_azi = numer / denom
 
-    # when zero division occurs, use the limit value of the analytical expression
-    cos_azi = np.where(np.isclose(denom,    0.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
+    # when zero division occurs, use the limit value of the analytical
+    # expression
+    cos_azi = \
+        np.where(np.isclose(denom,    0.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
 
-    # when too many round-ups in floating point math take cos_azi beyond 1.0, use 1.0
-    cos_azi = np.where(np.isclose(cos_azi,  1.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
-    cos_azi = np.where(np.isclose(cos_azi, -1.0, rtol=0.0, atol=1e-8), -1.0, cos_azi)
+    # when too many round-ups in floating point math take cos_azi beyond
+    # 1.0, use 1.0
+    cos_azi = \
+        np.where(np.isclose(cos_azi,  1.0, rtol=0.0, atol=1e-8),  1.0, cos_azi)
+    cos_azi = \
+        np.where(np.isclose(cos_azi, -1.0, rtol=0.0, atol=1e-8), -1.0, cos_azi)
 
     # when NaN values occur in input, ignore and pass to output
     with np.errstate(invalid='ignore'):
@@ -1108,45 +1121,42 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
 
 def solar_zenith_analytical(latitude, hour_angle, declination):
     """
-    Analytical expression of solar zenith angle based on spherical trigonometry.
+    Analytical expression of solar zenith angle based on spherical
+    trigonometry.
 
-    .. warning::
-        The analytic form neglects the effect of atmospheric refraction.
+    .. warning:: The analytic form neglects the effect of atmospheric
+        refraction.
 
     Parameters
     ----------
-    latitude : numeric
-        Latitude of location in radians.
-    hour_angle : numeric
-        Hour angle in the local solar time in radians.
-    declination : numeric
-        Declination of the sun in radians.
+    latitude : numeric Latitude of location in radians. hour_angle :
+        numeric Hour angle in the local solar time in radians.
+        declination : numeric Declination of the sun in radians.
 
     Returns
     -------
-    zenith : numeric
-        Solar zenith angle in radians.
+    zenith : numeric Solar zenith angle in radians.
 
     References
     ----------
     [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
     Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
 
-    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
-    p. 132, J. Wiley (1998)
+    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and
+    Physics" p. 132, J. Wiley (1998)
 
-    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
-    Energy Applications", p. 5 CRC Press (2013)
+    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for
+    Renewable Energy Applications", p. 5 CRC Press (2013)
 
-    `Wikipedia: Solar Zenith Angle <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
+    `Wikipedia: Solar Zenith Angle
+    <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
 
-    `PVCDROM: Sun's Position <http://www.pveducation.org/pvcdrom/2-properties-sunlight/suns-position>`_
+    `PVCDROM: Sun's Position
+    <http://www.pveducation.org/pvcdrom/2-properties-sunlight/suns-position>`_
 
     See Also
     --------
-    declination_spencer71
-    declination_cooper69
-    hour_angle
+    declination_spencer71 declination_cooper69 hour_angle
     """
     return np.arccos(
         np.cos(declination) * np.cos(latitude) * np.cos(hour_angle) +

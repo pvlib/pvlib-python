@@ -478,7 +478,6 @@ def singleaxis(apparent_zenith, apparent_azimuth,
                                  panel_norm_earth[:, 2]*0]).T
 
     # calculate vector magnitudes
-    panel_norm_earth_mag = np.sqrt(np.nansum(panel_norm_earth**2, axis=1))
     projected_normal_mag = np.sqrt(np.nansum(projected_normal**2, axis=1))
 
     # renormalize the projected vector

@@ -6,8 +6,8 @@ performance of PV modules and inverters.
 from __future__ import division
 
 from collections import OrderedDict
-import os
 import io
+import os
 try:
     from urllib2 import urlopen
 except ImportError:
@@ -16,10 +16,9 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
+from pvlib import atmosphere, irradiance, tools, singlediode as _singlediode
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
-from pvlib import irradiance, atmosphere, singlediode as _singlediode
 
 
 # a dict of required parameter names for each DC power model
@@ -333,7 +332,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
                                 'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
                                 'irrad_ref', 'temp_ref'],
-                                self.module_parameters)
+                               self.module_parameters)
 
         return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
@@ -361,7 +360,7 @@ class PVSystem(object):
                                 'R_s', 'alpha_sc', 'EgRef',
                                 'irrad_ref', 'temp_ref',
                                 'cells_in_series'],
-                                self.module_parameters)
+                               self.module_parameters)
 
         return calcparams_pvsyst(effective_irradiance, temp_cell, **kwargs)
 
@@ -511,7 +510,7 @@ class PVSystem(object):
         """
 
         if 'first_solar_spectral_coefficients' in \
-                               self.module_parameters.keys():
+                self.module_parameters.keys():
             coefficients = \
                    self.module_parameters['first_solar_spectral_coefficients']
             module_type = None
@@ -552,7 +551,6 @@ class PVSystem(object):
                            'mc-Si': 'multisi',
                            'c-Si': 'multisi',
                            'Si-Film': 'asi',
-                           'CdTe': 'cdte',
                            'EFG mc-Si': 'multisi',
                            'GaAs': None,
                            'a-Si / mono-Si': 'monosi'}
@@ -1133,7 +1131,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          * EgRef = 1.121
          * dEgdT = -0.0002677
 
-         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.918093],
+         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.9181],
          ...                AMa) # doctest: +SKIP
 
          Source: [1]
@@ -1210,7 +1208,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # equivalent to the product of S (irradiance reaching a module's cells) *
     # M (spectral adjustment factor) as described in [1].
     IL = effective_irradiance / irrad_ref * \
-              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
     I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
     # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as
@@ -1346,16 +1344,17 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     nNsVth = gamma * k / q * cells_in_series * Tcell_K
 
     IL = effective_irradiance / irrad_ref * \
-              (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
 
     I0 = I_o_ref * ((Tcell_K / Tref_K) ** 3) * \
-          (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
+        (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
 
-    Rsh_tmp = (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
+    Rsh_tmp = \
+        (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
     Rsh_base = np.maximum(0.0, Rsh_tmp)
 
     Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
-              np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
+        np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
 
     Rs = R_s
 
@@ -1723,8 +1722,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
-    elif isinstance(model, list):
-        model = model
+
     elif isinstance(model, (dict, pd.Series)):
         model = [model['a'], model['b'], model['deltaT']]
 

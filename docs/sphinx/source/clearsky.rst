@@ -134,12 +134,7 @@ wavelengths [Bir80]_, and is implemented in
 
     In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
 
-    In [1]: tmy_data, tmy_header = tmy.readtmy3(tmy_file)  # read TMY data
-
-    In [1]: dt = pd.DatetimeIndex(start='1999-01-01 00:00:00', end='1999-12-31 23:59:59',
-       ...:     freq='H')
-
-    In [1]: tmy_data.index = dt.tz_localize(tz=tmy_data.index.tz)  # replace timestamps
+    In [1]: tmy_data, tmy_header = tmy.readtmy3(tmy_file, coerce_year=1999)  # read TMY data
 
     In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
@@ -149,9 +144,9 @@ wavelengths [Bir80]_, and is implemented in
        ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*mbars,
        ...:     temperature=tmy_data['DryBulb'])
 
-    In [1]: am_rel = atmosphere.relativeairmass(solpos.apparent_zenith)
+    In [1]: am_rel = atmosphere.get_relative_airmass(solpos.apparent_zenith)
 
-    In [1]: am_abs = atmosphere.absoluteairmass(am_rel, tmy_data['Pressure']*mbars)
+    In [1]: am_abs = atmosphere.get_absolute_airmass(am_rel, tmy_data['Pressure']*mbars)
 
     In [1]: airmass = pd.concat([am_rel, am_abs], axis=1).rename(
        ...:     columns={0: 'airmass_relative', 1: 'airmass_absolute'})
@@ -162,7 +157,7 @@ wavelengths [Bir80]_, and is implemented in
     In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1).rename(
        ...:     columns={0:'Historic', 1:'Calculated'})
 
-    In [1]: tl.index = dt  # remove timezone
+    In [1]: tl.index = tmy_data.index.tz_convert(None)  # remove timezone
 
     In [1]: tl.resample('W').mean().plot();
 
@@ -172,9 +167,10 @@ wavelengths [Bir80]_, and is implemented in
        ...:     'Kasten Pyrheliometric Formula at {name:s}, {state:s} ({usaf:d}TY)'.format(
        ...:     name=tmy_header['Name'], state=tmy_header['State'], usaf=tmy_header['USAF']));
 
-    @savefig kasten-tl.png width=10in
     In [1]: plt.ylabel('Linke Turbidity Factor, TL');
 
+    @savefig kasten-tl.png width=10in
+    In [1]: plt.tight_layout()
 
 Turbidity data
 ^^^^^^^^^^^^^^

@@ -55,6 +55,11 @@ API Changes
   instead of only the function handle (:issue:`417`)
 * Add DC model methods desoto and pvsyst to ModelChain, and deprecates DC model method singlediode
   (singlediode defaults to desoto until v0.7.0) (:issue:`487`)
+* The behavior of irradiance.perez(return_components=True) has changed.
+  The function previously returned a tuple of total sky diffuse and
+  an OrderedDict/DataFrame of components. The function now returns
+  an OrderedDict/DataFrame with total sky diffuse and each component.
+  The behavior for return_components=False remains unchanged. (:issue:`434`)
 
 
 Enhancements

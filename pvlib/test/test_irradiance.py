@@ -250,10 +250,10 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     else:
         expected_for_sum = expected
     sum_components = out.iloc[:, 1:].sum(axis=1)
+    sum_components.name = 'sky_diffuse'
 
     assert_frame_equal(out, expected, check_less_precise=2)
-    assert_series_equal(sum_components, expected_for_sum, check_less_precise=2,
-                        check_names=False)
+    assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 
 @needs_numpy_1_10

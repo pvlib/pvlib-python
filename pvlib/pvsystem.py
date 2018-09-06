@@ -20,25 +20,29 @@ import pvlib  # use pvlib.singlediode to avoid clash with local method
 from pvlib import atmosphere, irradiance, tools
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
+from pvlib import irradiance, atmosphere, singlediode as _singlediode
 
 
 # a dict of required parameter names for each DC power model
 DC_MODEL_PARAMS = {
-    'sapm': set([
+    'sapm' : set([
         'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
         'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
         'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
         'IXO', 'IXXO', 'FD']),
-    'desoto': set([
-        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']),
-    'pvsyst': set([
-        'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_sh_0',
-        'R_s', 'alpha_sc', 'EgRef', 'cells_in_series']),
-    'singlediode': set([
-        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']),
-    'pvwatts': set(['pdc0', 'gamma_pdc'])
-    }
+    'desoto' : set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s']),
+    'pvsyst' : set([
+        'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
+        'cells_in_series']),
+    'singlediode' : set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s']),
+    'pvwatts' : set(['pdc0', 'gamma_pdc'])
+}
 
 
 # not sure if this belongs in the pvsystem module.
@@ -2013,7 +2017,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
-        out = pvlib.singlediode._lambertw(
+        out = _singlediode._lambertw(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth, ivcurve_pnts
         )
@@ -2026,19 +2030,19 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         # equation for the diode voltage V_d then backing out voltage
         args = (photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)  # collect args
-        v_oc = pvlib.singlediode.bishop88_v_from_i(
+        v_oc = _singlediode.bishop88_v_from_i(
             0.0, *args, method=method.lower()
         )
-        i_mp, v_mp, p_mp = pvlib.singlediode.bishop88_mpp(
+        i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
             *args, method=method.lower()
         )
-        i_sc = pvlib.singlediode.bishop88_i_from_v(
+        i_sc = _singlediode.bishop88_i_from_v(
             0.0, *args, method=method.lower()
         )
-        i_x = pvlib.singlediode.bishop88_i_from_v(
+        i_x = _singlediode.bishop88_i_from_v(
             v_oc / 2.0, *args, method=method.lower()
         )
-        i_xx = pvlib.singlediode.bishop88_i_from_v(
+        i_xx = _singlediode.bishop88_i_from_v(
             (v_oc + v_mp) / 2.0, *args, method=method.lower()
         )
 
@@ -2048,7 +2052,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                     (11.0 - np.logspace(np.log10(11.0), 0.0,
                                         ivcurve_pnts)) / 10.0
             )
-            ivcurve_i, ivcurve_v, _ = pvlib.singlediode.bishop88(vd, *args)
+            ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
 
     out = OrderedDict()
     out['i_sc'] = i_sc
@@ -2104,7 +2108,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     curve. This function uses Brent's method by default because it is
     guaranteed to converge.
     """
-    i_mp, v_mp, p_mp = pvlib.singlediode.bishop88_mpp(
+    i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,
         resistance_shunt, nNsVth, method=method.lower()
     )
@@ -2184,7 +2188,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        return pvlib.singlediode._lambertw_v_from_i(
+        return _singlediode._lambertw_v_from_i(
             resistance_shunt, resistance_series, nNsVth, current,
             saturation_current, photocurrent
         )
@@ -2194,9 +2198,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         # equation for the diode voltage V_d then backing out voltage
         args = (current, photocurrent, saturation_current,
                 resistance_series, resistance_shunt, nNsVth)
-        V = pvlib.singlediode.bishop88_v_from_i(*args, method=method.lower())
+        V = _singlediode.bishop88_v_from_i(*args, method=method.lower())
         # find the right size and shape for returns
-        size, shape = pvlib.singlediode._get_size_and_shape(args)
+        size, shape = _singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
                 V = np.tile(V, shape)
@@ -2272,7 +2276,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
-        return pvlib.singlediode._lambertw_i_from_v(
+        return _singlediode._lambertw_i_from_v(
             resistance_shunt, resistance_series, nNsVth, voltage,
             saturation_current, photocurrent
         )
@@ -2282,9 +2286,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # equation for the diode voltage V_d then backing out voltage
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        I = pvlib.singlediode.bishop88_i_from_v(*args, method=method.lower())
+        I = _singlediode.bishop88_i_from_v(*args, method=method.lower())
         # find the right size and shape for returns
-        size, shape = pvlib.singlediode._get_size_and_shape(args)
+        size, shape = _singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
                 I = np.tile(I, shape)

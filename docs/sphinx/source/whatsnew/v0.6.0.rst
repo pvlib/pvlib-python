@@ -53,8 +53,13 @@ API Changes
   dirindex functions. (:issue:`311`, :issue:`396`)
 * Method ModelChain.infer_dc_model now returns a tuple (function handle, model name string)
   instead of only the function handle (:issue:`417`)
-* Add DC model methods desoto and pvsyst to ModelChain, and deprecates DC model method singlediode
-  (singlediode defaults to desoto until v0.7.0) (:issue:`487`)
+* Add DC model methods desoto and pvsyst to ModelChain, and deprecates DC model method
+  singlediode (singlediode defaults to desoto until v0.7.0) (:issue:`487`)
+* Add the CEC module model in pvsystem.calcparams_cec and ModelChain.cec. The CEC model
+  differs from the desoto model by using the parameter Adjust. Modules selected from
+  the SAM CEC library sam-library-cec-modules-2017-6-5.csv include the Adjust parameter
+  and ModelChain.infer_dc_model will now select the cec model rather than the desoto model.
+  (:issue:`463`)
 
 
 Enhancements
@@ -106,7 +111,8 @@ Enhancements
 * Add irradiance.clearness_index function. (:issue:`396`)
 * Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
 * Add checking for consistency between module_parameters and dc_model. (:issue:`417`)
-* Add DC model methods desoto and pvsyst to ModelChain (:issue:`487`)
+* Add DC model methods ``'desoto'`` and ``'pvsyst'`` to ModelChain (:issue:`487`)
+* Add the CEC module model in `pvsystem.calcparams_cec` and `ModelChain.cec`. (:issue:`463`) 
 
 
 Bug fixes

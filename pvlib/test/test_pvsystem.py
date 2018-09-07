@@ -379,9 +379,9 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
 
 
 def test_calcparams_desoto(cec_module_params):
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    effective_irradiance = pd.Series([0.0, 800.0], index=times)
-    temp_cell = pd.Series([25, 25], index=times)
+    times = pd.DatetimeIndex(start='2015-01-01', periods=3, freq='12H')
+    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
+    temp_cell = pd.Series([25, 25, 50], index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   effective_irradiance,
@@ -395,12 +395,44 @@ def test_calcparams_desoto(cec_module_params):
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
-    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036], index=times))
-    # changed value in GH 444 for 2017-6-5 module file
-    assert_allclose(I0, 1.94e-9)
+    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036, 6.096],
+                        index=times))
+    assert_series_equal(np.round(I0, 3), pd.Series([0.0, 1.94e-9, 7.419e-8],
+                        index=times))
     assert_allclose(Rs, 0.094)
-    assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65], index=times))
-    assert_allclose(nNsVth, 0.473)
+    assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65, 19.65],
+                        index=times))
+    assert_series_equal(np.round(nNsVth, 3), pd.Series([0.473, 0.473, 0.5127],
+                        index=times))
+
+
+def test_calcparams_cec(cec_module_params):
+    times = pd.DatetimeIndex(start='2015-01-01', periods=3, freq='12H')
+    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
+    temp_cell = pd.Series([25, 25, 50], index=times)
+
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_cec(
+                                  effective_irradiance,
+                                  temp_cell,
+                                  alpha_sc=cec_module_params['alpha_sc'],
+                                  a_ref=cec_module_params['a_ref'],
+                                  I_L_ref=cec_module_params['I_L_ref'],
+                                  I_o_ref=cec_module_params['I_o_ref'],
+                                  R_sh_ref=cec_module_params['R_sh_ref'],
+                                  R_s=cec_module_params['R_s'],
+                                  Adjust=cec_module_params['Adjust'],
+                                  EgRef=1.121,
+                                  dEgdT=-0.0002677)
+
+    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036, 6.0896],
+                        index=times))
+    assert_series_equal(np.round(I0, 3), pd.Series([0.0, 1.94e-9, 7.419e-8],
+                        index=times))
+    assert_allclose(Rs, 0.094)
+    assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65, 19.65],
+                        index=times))
+    assert_series_equal(np.round(nNsVth, 3), pd.Series([0.473, 0.473, 0.5127],
+                        index=times))
 
 
 def test_calcparams_pvsyst(pvsyst_module_params):

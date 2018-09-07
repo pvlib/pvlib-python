@@ -437,6 +437,8 @@ class ModelChain(object):
 
         self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
 
+        return self
+
     def cec(self):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (

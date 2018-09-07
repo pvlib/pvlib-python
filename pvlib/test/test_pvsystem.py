@@ -395,15 +395,15 @@ def test_calcparams_desoto(cec_module_params):
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
-    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036, 6.096],
-                        index=times))
-    assert_series_equal(np.round(I0, 3), pd.Series([0.0, 1.94e-9, 7.419e-8],
-                        index=times))
+    assert_series_equal(IL, pd.Series([0.0, 6.036, 6.096], index=times),
+                        check_less_precise=3)
+    assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
+                        check_less_precise=3)
     assert_allclose(Rs, 0.094)
-    assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65, 19.65],
-                        index=times))
-    assert_series_equal(np.round(nNsVth, 3), pd.Series([0.473, 0.473, 0.5127],
-                        index=times))
+    assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
+                        check_less_precise=3)
+    assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
+                        check_less_precise=3)
 
 
 def test_calcparams_cec(cec_module_params):
@@ -424,15 +424,15 @@ def test_calcparams_cec(cec_module_params):
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
-    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036, 6.0896],
-                        index=times))
-    assert_series_equal(np.round(I0, 3), pd.Series([0.0, 1.94e-9, 7.419e-8],
-                        index=times))
+    assert_series_equal(IL, pd.Series([0.0, 6.036, 6.0896], index=times),
+                        check_less_precise=3)
+    assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
+                        check_less_precise=3)
     assert_allclose(Rs, 0.094)
-    assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65, 19.65],
-                        index=times))
-    assert_series_equal(np.round(nNsVth, 3), pd.Series([0.473, 0.473, 0.5127],
-                        index=times))
+    assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
+                        check_less_precise=3)
+    assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
+                        check_less_precise=3)
 
 
 def test_calcparams_pvsyst(pvsyst_module_params):

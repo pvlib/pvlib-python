@@ -42,7 +42,11 @@ INSTALL_REQUIRES = ['numpy >= 1.10.1',
                     'pytz',
                     'six',
                     ]
-TESTS_REQUIRE = ['pytest', 'nose']
+TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock', 'nose']
+EXTRAS_REQUIRE = {
+    'complete': ['scipy', 'tables', 'numba', 'siphon', 'ephem'],
+    'test': TESTS_REQUIRE
+}
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -94,6 +98,7 @@ setup(name=DISTNAME,
       cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
       install_requires=INSTALL_REQUIRES,
+      extras_require=EXTRAS_REQUIRE,
       tests_require=TESTS_REQUIRE,
       ext_modules=extensions,
       description=DESCRIPTION,

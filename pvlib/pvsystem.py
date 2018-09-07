@@ -1385,7 +1385,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
 
     # pass adjusted temperature coefficient to desoto
     return calcparams_desoto(effective_irradiance, temp_cell,
-                             alpha_sc*Adjust/100,
+                             alpha_sc*(1.0 - Adjust/100),
                              a_ref, I_L_ref, I_o_ref,
                              R_sh_ref, R_s,
                              EgRef=1.121, dEgdT=-0.0002677,

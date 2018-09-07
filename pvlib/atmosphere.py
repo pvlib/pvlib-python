@@ -621,7 +621,7 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     return lt
 
 
-def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
+def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     r"""
     Get AOD at specified wavelength using Angstrom turbidity model.
 
@@ -631,7 +631,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
         aerosol optical depth (AOD) measured at known wavelength
     lambda0 : numeric
         wavelength in nanometers corresponding to ``aod0``
-    alpha : numeric
+    alpha : numeric, default 1.14
         Angstrom :math:`\alpha` exponent corresponding to ``aod0``
     lambda1 : numeric, default 700
         desired wavelength in nanometers

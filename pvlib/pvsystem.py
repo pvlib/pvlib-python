@@ -1362,27 +1362,6 @@ def calcparams_cec(effective_irradiance, temp_cell,
 
     '''
 
-    # test for use of function pre-v0.6.0 API change
-    if isinstance(a_ref, dict) or \
-       (isinstance(a_ref, pd.Series) and ('a_ref' in a_ref.keys())):
-        import warnings
-        warnings.warn('module_parameters detected as fourth positional'
-                      + ' argument of calcparams_cec. calcparams_cec'
-                      + ' will require one argument for each module model'
-                      + ' parameter in v0.7.0 and later', DeprecationWarning)
-        try:
-            module_parameters = a_ref
-            a_ref = module_parameters['a_ref']
-            I_L_ref = module_parameters['I_L_ref']
-            I_o_ref = module_parameters['I_o_ref']
-            R_sh_ref = module_parameters['R_sh_ref']
-            R_s = module_parameters['R_s']
-        except Exception as e:
-            raise e('Module parameters could not be extracted from fourth'
-                    + ' positional argument of calcparams_desoto. Check that'
-                    + ' parameters are from the CEC database and/or update'
-                    + ' your code for the new API for calcparams_desoto')
-
     # pass adjusted temperature coefficient to desoto
     return calcparams_desoto(effective_irradiance, temp_cell,
                              alpha_sc*(1.0 - Adjust/100),

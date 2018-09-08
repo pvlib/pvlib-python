@@ -60,8 +60,6 @@ API Changes
   the SAM CEC library sam-library-cec-modules-2017-6-5.csv include the Adjust parameter
   and ModelChain.infer_dc_model will now select the cec model rather than the desoto model.
   (:issue:`463`)
-* Add DC model methods desoto and pvsyst to ModelChain, and deprecates DC model method singlediode
-  (singlediode defaults to desoto until v0.7.0) (:issue:`487`)
 * The behavior of irradiance.perez(return_components=True) has changed.
   The function previously returned a tuple of total sky diffuse and
   an OrderedDict/DataFrame of components. The function now returns

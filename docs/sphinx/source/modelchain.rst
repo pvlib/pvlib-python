@@ -7,7 +7,7 @@ interface for standardized PV modeling. The class aims to automate much
 of the modeling process while providing user-control and remaining
 extensible. This guide aims to build users' understanding of the
 ModelChain class. It assumes some familiarity with object-oriented
-ipython in Python, but most information should be understandable even
+code in Python, but most information should be understandable even
 without a solid understanding of classes.
 
 A :py:class:`~.modelchain.ModelChain` is composed of a
@@ -142,7 +142,7 @@ workflows.
     :okexcept:
 
     mc = ModelChain(poorly_specified_system, location,
-                    dc_model='singlediode', ac_model='snlinverter',
+                    dc_model='desoto', ac_model='snlinverter',
                     aoi_model='physical', spectral_model='no_loss')
     print(mc)
 
@@ -218,14 +218,14 @@ Demystifying ModelChain internals
 ---------------------------------
 
 The ModelChain class has a lot going in inside it in order to make
-users' ipython as simple as possible.
+users' code as simple as possible.
 
 The key parts of ModelChain are:
 
-1. The :py:meth:`ModelChain.run_model() <.ModelChain.run_model>` method
-1. A set of methods that wrap and call the PVSystem methods.
-1. A set of methods that inspect user-supplied objects to determine
-   the appropriate default models.
+    1. The :py:meth:`ModelChain.run_model() <.ModelChain.run_model>` method
+    2. A set of methods that wrap and call the PVSystem methods.
+    3. A set of methods that inspect user-supplied objects to determine
+       the appropriate default models.
 
 run_model
 ~~~~~~~~~
@@ -264,7 +264,7 @@ then be passed to :py:meth:`~pvlib.modelchain.ModelChain.run_model`.
 Wrapping methods into a unified API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Readers may notice that the source ipython of the ModelChain.run_model
+Readers may notice that the source code of the ModelChain.run_model
 method is model-agnostic. ModelChain.run_model calls generic methods
 such as ``self.dc_model`` rather than a specific model such as
 ``singlediode``. So how does the ModelChain.run_model know what models
@@ -285,7 +285,7 @@ the ModelChain.pvwatts_dc method is shown below. Its only argument is
 The ModelChain.pvwatts_dc method calls the pvwatts_dc method of the
 PVSystem object that we supplied using data that is stored in its own
 ``effective_irradiance`` and ``temps`` attributes. Then it assigns the
-result to the ``dc`` attribute of the ModelChain object. The ipython below
+result to the ``dc`` attribute of the ModelChain object. The code below
 shows a simple example of this.
 
 .. ipython:: python

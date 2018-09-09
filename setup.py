@@ -46,7 +46,7 @@ TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock', 'nose']
 EXTRAS_REQUIRE = {
     'complete': ['scipy', 'tables', 'numba', 'siphon', 'netcdf4', 'ephem'],
     'doc': ['sphinx', 'ipython', 'sphinx_rtd_theme', 'numpydoc',
-            'matplotlib', 'jupyter'],
+            'matplotlib'],
     'test': TESTS_REQUIRE
 }
 

@@ -3,12 +3,12 @@
 PVSystem
 ========
 
-.. ipython::
+.. ipython:: python
    :suppress:
 
-    In [1]: import pandas as pd
+    import pandas as pd
+    from pvlib import pvsystem
 
-    In [2]: from pvlib import pvsystem
 
 The :py:class:`~pvlib.pvsystem.PVSystem` class wraps many of the
 functions in the :py:mod:`~pvlib.pvsystem` module. This simplifies the
@@ -44,14 +44,11 @@ Intrinsic data is stored in object attributes. For example, the data
 that describes a PV system's module parameters is stored in
 `PVSystem.module_parameters`.
 
-.. ipython::
+.. ipython:: python
 
-    In [3]: module_parameters = {'pdc0': 10, 'gamma_pdc': -0.004}
-
-    In [4]: system = pvsystem.PVSystem(module_parameters=module_parameters)
-
-    In [5]: print(system.module_parameters)
-    {'pdc0': 10, 'gamma_pdc': -0.004}
+    module_parameters = {'pdc0': 10, 'gamma_pdc': -0.004}
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
+    print(system.module_parameters)
 
 Extrinsic data is passed to a PVSystem as method arguments. For example,
 the :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method accepts extrinsic
@@ -122,6 +119,7 @@ arguments.
     aoi = system.get_aoi(30, 180)
     print(aoi)
 
+
 `module_parameters` and `inverter_parameters` contain the data
 necessary for computing DC and AC power using one of the available
 PVSystem methods. These are typically specified using data from
@@ -136,6 +134,7 @@ the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
     inverters = pvsystem.retrieve_sam('cecinverter')
     inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     system = pvsystem.PVSystem(module_parameters=module_parameters, inverter_parameters=inverter_parameters)
+
 
 The module and/or inverter parameters can also be specified manually.
 This is useful for specifying modules and inverters that are not

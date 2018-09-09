@@ -4,10 +4,11 @@ PVSystem
 ========
 
 .. ipython:: python
-    :suppress:
+   :suppress:
 
     import pandas as pd
     from pvlib import pvsystem
+
 
 The :py:class:`~pvlib.pvsystem.PVSystem` class wraps many of the
 functions in the :py:mod:`~pvlib.pvsystem` module. This simplifies the
@@ -118,6 +119,7 @@ arguments.
     aoi = system.get_aoi(30, 180)
     print(aoi)
 
+
 `module_parameters` and `inverter_parameters` contain the data
 necessary for computing DC and AC power using one of the available
 PVSystem methods. These are typically specified using data from
@@ -132,6 +134,7 @@ the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
     inverters = pvsystem.retrieve_sam('cecinverter')
     inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     system = pvsystem.PVSystem(module_parameters=module_parameters, inverter_parameters=inverter_parameters)
+
 
 The module and/or inverter parameters can also be specified manually.
 This is useful for specifying modules and inverters that are not

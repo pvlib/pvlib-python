@@ -934,8 +934,7 @@ def equation_of_time_pvcdrom(dayofyear):
     `PVCDROM`_ is a website by Solar Power Lab at Arizona State
     University (ASU)
 
-    .. _PVCDROM:
-    http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
+    .. _PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
 
     Parameters
     ----------

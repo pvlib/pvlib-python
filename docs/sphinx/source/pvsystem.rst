@@ -43,11 +43,13 @@ Intrinsic data is stored in object attributes. For example, the data
 that describes a PV system's module parameters is stored in
 `PVSystem.module_parameters`.
 
-.. ipython:: python
+.. ipython::
 
-    module_parameters = {'pdc0': 10, 'gamma_pdc': -0.004}
-    system = pvsystem.PVSystem(module_parameters=module_parameters)
-    print(system.module_parameters)
+    In [1]: module_parameters = {'pdc0': 10, 'gamma_pdc': -0.004}
+
+    In [1]: system = pvsystem.PVSystem(module_parameters=module_parameters)
+
+    In [1]: print(system.module_parameters)
 
 Extrinsic data is passed to a PVSystem as method arguments. For example,
 the :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method accepts extrinsic

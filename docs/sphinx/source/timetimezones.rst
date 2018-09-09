@@ -24,11 +24,14 @@ using the corresponding pandas functionality where possible.
 First, we'll import the libraries that we'll use to explore the basic
 time and time zone functionality in python and pvlib.
 
-.. ipython:: python
+.. ipython::
 
-    import datetime
-    import pandas as pd
-    import pytz
+    In [1]: import datetime
+
+    In [1]: import pandas as pd
+
+    In [1]: import pytz
+
 
 Finding a time zone
 *******************

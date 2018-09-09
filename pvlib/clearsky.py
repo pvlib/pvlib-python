@@ -829,8 +829,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf>`_
 
-    `Error Reports
-     <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
+    `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians

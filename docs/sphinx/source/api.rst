@@ -212,6 +212,7 @@ Functions relevant for single diode models.
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.calcparams_cec
    pvsystem.calcparams_desoto
    pvsystem.calcparams_pvsyst
    pvsystem.i_from_v
@@ -419,6 +420,7 @@ ModelChain model definitions.
    :toctree: generated/
 
    modelchain.ModelChain.sapm
+   modelchain.ModelChain.cec
    modelchain.ModelChain.desoto
    modelchain.ModelChain.pvsyst
    modelchain.ModelChain.pvwatts_dc

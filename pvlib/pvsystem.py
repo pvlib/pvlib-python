@@ -23,23 +23,26 @@ from pvlib.location import Location
 
 # a dict of required parameter names for each DC power model
 DC_MODEL_PARAMS = {
-    'sapm' : set([
+    'sapm': set([
         'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
         'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
         'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
         'IXO', 'IXXO', 'FD']),
-    'desoto' : set([
+    'desoto': set([
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s']),
-    'pvsyst' : set([
+    'cec': set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s', 'Adjust']),
+    'pvsyst': set([
         'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
         'cells_in_series']),
-    'singlediode' : set([
+    'singlediode': set([
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s']),
-    'pvwatts' : set(['pdc0', 'gamma_pdc'])
+    'pvwatts': set(['pdc0', 'gamma_pdc'])
 }
 
 
@@ -335,6 +338,35 @@ class PVSystem(object):
                                self.module_parameters)
 
         return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
+
+    def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
+        """
+        Use the :py:func:`calcparams_cec` function, the input
+        parameters and ``self.module_parameters`` to calculate the
+        module currents and resistances.
+
+        Parameters
+        ----------
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
+
+        temp_cell : float or Series
+            The average cell temperature of cells within a module in C.
+
+        **kwargs
+            See pvsystem.calcparams_cec for details
+
+        Returns
+        -------
+        See pvsystem.calcparams_cec for details
+        """
+
+        kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                                'R_s', 'alpha_sc', 'Adjust', 'EgRef', 'dEgdT',
+                                'irrad_ref', 'temp_ref'],
+                               self.module_parameters)
+
+        return calcparams_cec(effective_irradiance, temp_cell, **kwargs)
 
     def calcparams_pvsyst(self, effective_irradiance, temp_cell):
         """
@@ -1221,6 +1253,122 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     Rs = R_s
 
     return IL, I0, Rs, Rsh, nNsVth
+
+
+def calcparams_cec(effective_irradiance, temp_cell,
+                   alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
+                   Adjust, EgRef=1.121, dEgdT=-0.0002677,
+                   irrad_ref=1000, temp_ref=25):
+    '''
+    Calculates five parameter values for the single diode equation at
+    effective irradiance and cell temperature using the CEC
+    model described in [1]. The CEC model differs from the De soto et al.
+    model [3] by the parameter Adjust. The five values returned by
+    calcparams_cec can be used by singlediode to calculate an IV curve.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric
+        The irradiance (W/m2) that is converted to photocurrent.
+
+    temp_cell : numeric
+        The average cell temperature of cells within a module in C.
+
+    alpha_sc : float
+        The short-circuit current temperature coefficient of the
+        module in units of A/C.
+
+    a_ref : float
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at reference
+        conditions, in units of V.
+
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference conditions,
+        in amperes.
+
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference conditions,
+        in amperes.
+
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
+
+    R_s : float
+        The series resistance at reference conditions, in ohms.
+
+    Adjust : float
+        The adjustment to the temperature coefficient for short circuit
+        current, in percent
+
+    EgRef : float
+        The energy bandgap at reference temperature in units of eV.
+        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
+        from the SAM CEC module database, EgRef=1.121 is implicit for all
+        cell types in the parameter estimation algorithm used by NREL.
+
+    dEgdT : float
+        The temperature dependence of the energy bandgap at reference
+        conditions in units of 1/K. May be either a scalar value
+        (e.g. -0.0002677 as in [3]) or a DataFrame (this may be useful if
+        dEgdT is a modeled as a function of temperature). For parameters from
+        the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
+        types in the parameter estimation algorithm used by NREL.
+
+    irrad_ref : float (optional, default=1000)
+        Reference irradiance in W/m^2.
+
+    temp_ref : float (optional, default=25)
+        Reference cell temperature in C.
+
+    Returns
+    -------
+    Tuple of the following results:
+
+    photocurrent : numeric
+        Light-generated current in amperes
+
+    saturation_current : numeric
+        Diode saturation curent in amperes
+
+    resistance_series : float
+        Series resistance in ohms
+
+    resistance_shunt : numeric
+        Shunt resistance in ohms
+
+    nNsVth : numeric
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at
+        specified effective irradiance and cell temperature.
+
+    References
+    ----------
+    [1] A. Dobos, "An Improved Coefficient Calculator for the California
+    Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
+    Solar Energy Engineering, vol 134, 2012.
+
+    [2] System Advisor Model web page. https://sam.nrel.gov.
+
+    [3] W. De Soto et al., "Improvement and validation of a model for
+    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+    2006.
+
+    See Also
+    --------
+    calcparams_desoto
+    singlediode
+    retrieve_sam
+
+    '''
+
+    # pass adjusted temperature coefficient to desoto
+    return calcparams_desoto(effective_irradiance, temp_cell,
+                             alpha_sc*(1.0 - Adjust/100),
+                             a_ref, I_L_ref, I_o_ref,
+                             R_sh_ref, R_s,
+                             EgRef=1.121, dEgdT=-0.0002677,
+                             irrad_ref=1000, temp_ref=25)
 
 
 def calcparams_pvsyst(effective_irradiance, temp_cell,

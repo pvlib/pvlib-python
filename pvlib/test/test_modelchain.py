@@ -219,6 +219,7 @@ def poadc(mc):
 
 @pytest.mark.parametrize('dc_model', [
     'sapm',
+    pytest.param('cec', marks=requires_scipy), 
     pytest.param('desoto', marks=requires_scipy), 
     pytest.param('pvsyst', marks=requires_scipy), 
     pytest.param('singlediode', marks=requires_scipy), 
@@ -227,16 +228,21 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
                         pvwatts_dc_pvwatts_ac_system, location, dc_model,
                         weather, mocker):
     dc_systems = {'sapm': system,
+                  'cec': cec_dc_snl_ac_system,
                   'desoto': cec_dc_snl_ac_system,
                   'pvsyst': pvsyst_dc_snl_ac_system,
                   'singlediode': cec_dc_snl_ac_system,
                   'pvwatts_dc': pvwatts_dc_pvwatts_ac_system}
     dc_model_function = {'sapm': 'sapm',
+                         'cec': 'calcparams_cec',
                          'desoto': 'calcparams_desoto',
                          'pvsyst': 'calcparams_pvsyst',
                          'singlediode': 'calcparams_desoto',
                          'pvwatts_dc': 'pvwatts_dc'}
     system = dc_systems[dc_model]
+    # remove Adjust from model parameters for desoto, singlediode
+    if dc_model in ['desoto', 'singlediode']:
+        system.module_parameters.pop('Adjust')
     m = mocker.spy(system, dc_model_function[dc_model])
     mc = ModelChain(system, location,
                     aoi_model='no_loss', spectral_model='no_loss')

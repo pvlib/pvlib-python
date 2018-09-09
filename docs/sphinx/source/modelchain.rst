@@ -133,32 +133,6 @@ will throw an error when we try to create it.
 
     ModelChain(poorly_specified_system, location)
 
-If our goal is simply to get the object constructed, we can specify the
-models that the ModelChain should use. We’ll have to fill in missing
-data on the PVSystem object later, but maybe that’s desirable in some
-workflows.
-
-.. ipython:: python
-    :okexcept:
-
-    mc = ModelChain(poorly_specified_system, location,
-                    dc_model='desoto', ac_model='snlinverter',
-                    aoi_model='physical', spectral_model='no_loss')
-    print(mc)
-
-As expected, without additional information, the
-:py:meth:`~.ModelChain.run_model` method fails at run time.
-
-.. ipython:: python
-    :okexcept:
-
-    mc.run_model(times=weather.index, weather=weather)
-
-The ModelChain attempted to execute the PVSystem object's
-:py:meth:`~pvlib.pvsystem.PVSystem.singlediode` method, and the method
-failed because the object's ``module_parameters`` did not include the
-data necessary to run the model.
-
 Next, we define a PVSystem with a module from the SAPM database and an
 inverter from the CEC database. ModelChain will examine the PVSystem
 object’s properties and determine that it should choose the SAPM DC
@@ -172,7 +146,7 @@ model, AC model, AOI loss model, and spectral loss model.
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather)
+    mc.run_model(times=weather.index, weather=weather);
     mc.ac
 
 Alternatively, we could have specified single diode or PVWatts related
@@ -192,7 +166,7 @@ information to determine which of those models to choose.
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather)
+    mc.run_model(times=weather.index, weather=weather);
     mc.ac
 
 User-supplied keyword arguments override ModelChain’s inspection
@@ -207,7 +181,7 @@ functions for a PVSystem that contains SAPM-specific parameters.
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather)
+    mc.run_model(times=weather.index, weather=weather);
     mc.ac
 
 Of course, these choices can also lead to failure when executing
@@ -301,7 +275,7 @@ shows a simple example of this.
     mc.temps = pd.DataFrame({'temp_cell': 50, 'temp_module': 50}, index=[pd.Timestamp('20170401 1200-0700')])
 
     # run ModelChain.pvwatts_dc and look at the result
-    mc.pvwatts_dc()
+    mc.pvwatts_dc();
     mc.dc
 
 The ModelChain.sapm method works similarly to the ModelChain.pvwatts_dc
@@ -333,7 +307,7 @@ PVSystem.scale_voltage_current_power method.
     mc.temps = pd.DataFrame({'temp_cell': 50, 'temp_module': 50}, index=[pd.Timestamp('20170401 1200-0700')])
 
     # run ModelChain.sapm and look at the result
-    mc.sapm()
+    mc.sapm();
     mc.dc
 
 We’ve established that the ``ModelChain.pvwatts_dc`` and
@@ -450,5 +424,5 @@ The end result is that ModelChain.run_model works as expected!
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather)
+    mc.run_model(times=weather.index, weather=weather);
     mc.dc

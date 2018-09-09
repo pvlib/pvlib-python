@@ -24,13 +24,11 @@ using the corresponding pandas functionality where possible.
 First, we'll import the libraries that we'll use to explore the basic
 time and time zone functionality in python and pvlib.
 
-.. ipython::
+.. ipython:: python
 
-    In [1]: import datetime
-
-    In [1]: import pandas as pd
-
-    In [1]: import pytz
+    import datetime
+    import pandas as pd
+    import pytz
 
 
 Finding a time zone
@@ -97,7 +95,7 @@ It does not make sense to convert a time stamp that has not been
 localized, and pandas will raise an exception if you try to do so.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     midnight = pd.Timestamp('2015-1-1 00:00')
     midnight.tz_convert('UTC')
@@ -239,7 +237,7 @@ passed to ``Timestamp``.
 You cannot localize a native Python date object.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     # fail
     pytz.timezone('US/Mountain').localize(naive_python_date)

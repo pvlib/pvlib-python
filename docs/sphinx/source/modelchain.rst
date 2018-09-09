@@ -129,7 +129,7 @@ able to automatically determine its set of models, so the ModelChain
 will throw an error when we try to create it.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     ModelChain(poorly_specified_system, location)
 

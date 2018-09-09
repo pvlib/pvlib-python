@@ -4,4 +4,4 @@ python:
     pip_install: true
     extra_requirements:
         - complete
-        - docs
+        - doc

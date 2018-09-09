@@ -117,11 +117,12 @@ Enhancements
 * Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
 * Add checking for consistency between module_parameters and dc_model. (:issue:`417`)
 * Add DC model methods ``'desoto'`` and ``'pvsyst'`` to ModelChain (:issue:`487`)
-* Add the CEC module model in `pvsystem.calcparams_cec` and `ModelChain.cec`. (:issue:`463`) 
+* Add the CEC module model in `pvsystem.calcparams_cec` and `ModelChain.cec`. (:issue:`463`)
 * Add DC model methods desoto and pvsyst to ModelChain (:issue:`487`)
 * pvlib now ships with a pvlib[complete] installation option to automatically
   install all packages needed to support all pvlib features:
-  ``pip install pvlib[complete]`` (:issue:`553`, :issue:`483`)
+  ``pip install pvlib[complete]``. doc and test options are also available.
+  (:issue:`553`, :issue:`483`)
 * Set default alpha to 1.14 in :func:`~pvlib.atmosphere.angstrom_aod_at_lambda` (:issue:`563`)
 
 

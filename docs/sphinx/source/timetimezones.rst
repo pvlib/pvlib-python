@@ -24,11 +24,13 @@ using the corresponding pandas functionality where possible.
 First, we'll import the libraries that we'll use to explore the basic
 time and time zone functionality in python and pvlib.
 
-.. ipython:: python
+.. ipython::
 
-    import datetime
-    import pandas as pd
-    import pytz
+    In [1]: import datetime
+
+    In [2]: import pandas as pd
+
+    In [3]: import pytz
 
 
 Finding a time zone
@@ -38,10 +40,43 @@ pytz is based on the Olson time zone database. You can obtain a list of
 all valid time zone strings with ``pytz.all_timezones``. It's a long
 list, so we only print every 20th time zone.
 
-.. ipython:: python
+.. ipython::
 
-    len(pytz.all_timezones)
-    pytz.all_timezones[::20]
+    In [4]: len(pytz.all_timezones)
+    Out[4]: 591
+
+    In [5]: pytz.all_timezones[::20]
+    Out[5]:
+    ['Africa/Abidjan',
+    'Africa/Douala',
+    'Africa/Mbabane',
+    'America/Argentina/Catamarca',
+    'America/Belize',
+    'America/Curacao',
+    'America/Guatemala',
+    'America/Kentucky/Louisville',
+    'America/Mexico_City',
+    'America/Port-au-Prince',
+    'America/Sitka',
+    'Antarctica/Casey',
+    'Asia/Ashkhabad',
+    'Asia/Dubai',
+    'Asia/Khandyga',
+    'Asia/Qatar',
+    'Asia/Ujung_Pandang',
+    'Atlantic/South_Georgia',
+    'Australia/South',
+    'Chile/Continental',
+    'Etc/GMT+8',
+    'Etc/UTC',
+    'Europe/Helsinki',
+    'Europe/Podgorica',
+    'Europe/Vilnius',
+    'Indian/Comoro',
+    'NZ-CHAT',
+    'Pacific/Johnston',
+    'Pacific/Tahiti',
+    'US/Hawaii']
 
 Wikipedia's `List of tz database time zones
 <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`_ is also
@@ -49,15 +84,80 @@ good reference.
 
 The ``pytz.country_timezones`` function is useful, too.
 
-.. ipython:: python
+.. ipython::
 
-    pytz.country_timezones('US')
+    In [6]: pytz.country_timezones('US')
+    Out[6]:
+    ['America/New_York',
+    'America/Detroit',
+    'America/Kentucky/Louisville',
+    'America/Kentucky/Monticello',
+    'America/Indiana/Indianapolis',
+    'America/Indiana/Vincennes',
+    'America/Indiana/Winamac',
+    'America/Indiana/Marengo',
+    'America/Indiana/Petersburg',
+    'America/Indiana/Vevay',
+    'America/Chicago',
+    'America/Indiana/Tell_City',
+    'America/Indiana/Knox',
+    'America/Menominee',
+    'America/North_Dakota/Center',
+    'America/North_Dakota/New_Salem',
+    'America/North_Dakota/Beulah',
+    'America/Denver',
+    'America/Boise',
+    'America/Phoenix',
+    'America/Los_Angeles',
+    'America/Anchorage',
+    'America/Juneau',
+    'America/Sitka',
+    'America/Metlakatla',
+    'America/Yakutat',
+    'America/Nome',
+    'America/Adak',
+    'Pacific/Honolulu']
 
 And don't forget about Python's :py:func:`python:filter` function.
 
-.. ipython:: python
+.. ipython::
 
-    list(filter(lambda x: 'GMT' in x, pytz.all_timezones))
+    In [7]: list(filter(lambda x: 'GMT' in x, pytz.all_timezones))
+    Out[7]:
+    ['Etc/GMT',
+    'Etc/GMT+0',
+    'Etc/GMT+1',
+    'Etc/GMT+10',
+    'Etc/GMT+11',
+    'Etc/GMT+12',
+    'Etc/GMT+2',
+    'Etc/GMT+3',
+    'Etc/GMT+4',
+    'Etc/GMT+5',
+    'Etc/GMT+6',
+    'Etc/GMT+7',
+    'Etc/GMT+8',
+    'Etc/GMT+9',
+    'Etc/GMT-0',
+    'Etc/GMT-1',
+    'Etc/GMT-10',
+    'Etc/GMT-11',
+    'Etc/GMT-12',
+    'Etc/GMT-13',
+    'Etc/GMT-14',
+    'Etc/GMT-2',
+    'Etc/GMT-3',
+    'Etc/GMT-4',
+    'Etc/GMT-5',
+    'Etc/GMT-6',
+    'Etc/GMT-7',
+    'Etc/GMT-8',
+    'Etc/GMT-9',
+    'Etc/GMT0',
+    'GMT',
+    'GMT+0',
+    'GMT-0',
+    'GMT0']
 
 Note that while pytz has ``'EST'`` and ``'MST'``, it does not have
 ``'PST'``. Use ``'Etc/GMT+8'`` instead, or see :ref:`fixedoffsets`.
@@ -71,9 +171,10 @@ surrounding them; see the pandas documentation for more information.
 
 First, create a time zone naive pandas.Timestamp.
 
-.. ipython:: python
+.. ipython::
 
-    pd.Timestamp('2015-1-1 00:00')
+    In [8]: pd.Timestamp('2015-1-1 00:00')
+    Out[8]: Timestamp('2015-01-01 00:00:00')
 
 You can specify the time zone using the ``tz`` keyword argument or the
 ``tz_localize`` method of Timestamp and DatetimeIndex objects.
@@ -81,6 +182,7 @@ You can specify the time zone using the ``tz`` keyword argument or the
 .. ipython:: python
 
     pd.Timestamp('2015-1-1 00:00', tz='America/Denver')
+
     pd.Timestamp('2015-1-1 00:00').tz_localize('America/Denver')
 
 Localized Timestamps can be converted from one time zone to another.
@@ -88,7 +190,9 @@ Localized Timestamps can be converted from one time zone to another.
 .. ipython:: python
 
     midnight_mst = pd.Timestamp('2015-1-1 00:00', tz='America/Denver')
+
     corresponding_utc = midnight_mst.tz_convert('UTC')  # returns a new Timestamp
+
     corresponding_utc
 
 It does not make sense to convert a time stamp that has not been
@@ -98,6 +202,7 @@ localized, and pandas will raise an exception if you try to do so.
    :okexcept:
 
     midnight = pd.Timestamp('2015-1-1 00:00')
+
     midnight.tz_convert('UTC')
 
 The difference between ``tz_localize`` and ``tz_convert`` is a common
@@ -116,6 +221,7 @@ Note the UTC offset in winter...
 .. ipython:: python
 
     pd.Timestamp('2015-1-1 00:00').tz_localize('US/Mountain')
+
     pd.Timestamp('2015-1-1 00:00').tz_localize('Etc/GMT+7')
 
 vs. the UTC offset in summer...
@@ -123,6 +229,7 @@ vs. the UTC offset in summer...
 .. ipython:: python
 
     pd.Timestamp('2015-6-1 00:00').tz_localize('US/Mountain')
+
     pd.Timestamp('2015-6-1 00:00').tz_localize('Etc/GMT+7')
 
 pandas and pytz make this time zone handling possible because pandas
@@ -132,6 +239,7 @@ Here is the pandas time representation of the integers 1 and 1e9.
 .. ipython:: python
 
     pd.Timestamp(1)
+
     pd.Timestamp(1e9)
 
 So if we specify times consistent with the specified time zone, pandas
@@ -266,12 +374,16 @@ Let's first examine how pvlib handles time when it imports a TMY3 file.
 .. ipython:: python
 
     import os
+
     import inspect
+
     import pvlib
 
     # some gymnastics to find the example file
     pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvlib)))
+
     file_abspath = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
+
     tmy3_data, tmy3_metadata = pvlib.tmy.readtmy3(file_abspath)
 
     tmy3_metadata
@@ -307,10 +419,15 @@ DataFrame's index since the index has been localized.
     ax = solar_position.loc[solar_position.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
+
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset
+
     ax.axhline(180, color='darkgray');  # add 180 deg line for azimuth at solar noon
+
     ax.set_ylim(-60, 200);  # zoom in, but cuts off full azimuth range
+
     ax.set_xlabel('Local time ({})'.format(solar_position.index.tz));
+
     @savefig solar-position.png width=6in
     ax.set_ylabel('(degrees)');
 
@@ -329,6 +446,7 @@ below? The solar position calculator will assume UTC time.
 .. ipython:: python
 
     index = pd.DatetimeIndex(start='1997-01-01 01:00', freq='1h', periods=24)
+
     index
 
     solar_position_notz = pvlib.solarposition.get_solarposition(index,
@@ -338,10 +456,15 @@ below? The solar position calculator will assume UTC time.
     ax = solar_position_notz.loc[solar_position_notz.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
+
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset
+
     ax.axhline(180, color='darkgray');  # add 180 deg line for azimuth at solar noon
+
     ax.set_ylim(-60, 200);  # zoom in, but cuts off full azimuth range
+
     ax.set_xlabel('Time (UTC)');
+
     @savefig solar-position-nolocal.png width=6in
     ax.set_ylabel('(degrees)');
 
@@ -356,6 +479,7 @@ UTC, and then convert it to the desired time zone.
 .. ipython:: python
 
     fixed_tz = pytz.FixedOffset(tmy3_metadata['TZ'] * 60)
+
     solar_position_hack = solar_position_notz.tz_localize('UTC').tz_convert(fixed_tz)
 
     solar_position_hack.index
@@ -363,10 +487,15 @@ UTC, and then convert it to the desired time zone.
     ax = solar_position_hack.loc[solar_position_hack.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
+
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset
+
     ax.axhline(180, color='darkgray');  # add 180 deg line for azimuth at solar noon
+
     ax.set_ylim(-60, 200);  # zoom in, but cuts off full azimuth range
+
     ax.set_xlabel('Local time ({})'.format(solar_position_hack.index.tz));
+
     @savefig solar-position-hack.png width=6in
     ax.set_ylabel('(degrees)');
 

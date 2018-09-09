@@ -1,5 +1,7 @@
-conda:
-    file: docs/environment.yml
 python:
-    version: 2
-    setup_py_install: true
+    version: 3
+    use_system_site_packages: true
+    pip_install: true
+    extra_requirements:
+        - complete
+        - docs

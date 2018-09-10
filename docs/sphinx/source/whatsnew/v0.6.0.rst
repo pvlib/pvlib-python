@@ -119,10 +119,11 @@ Enhancements
 * Add DC model methods ``'desoto'`` and ``'pvsyst'`` to ModelChain (:issue:`487`)
 * Add the CEC module model in `pvsystem.calcparams_cec` and `ModelChain.cec`. (:issue:`463`)
 * Add DC model methods desoto and pvsyst to ModelChain (:issue:`487`)
-* pvlib now ships with a pvlib[complete] installation option to automatically
-  install all packages needed to support all pvlib features:
-  ``pip install pvlib[complete]``. doc and test options are also available.
-  (:issue:`553`, :issue:`483`)
+* pvlib now ships with a pvlib[optional] installation option to automatically
+  install packages needed to support additional pvlib features:
+  ``pip install pvlib[optional]``. Additional installation options include
+  `doc` (requirements for minimal documentation build), `test` (requirements
+  for testing), and `all` (optional + doc + test). (:issue:`553`, :issue:`483`)
 * Set default alpha to 1.14 in :func:`~pvlib.atmosphere.angstrom_aod_at_lambda` (:issue:`563`)
 
 

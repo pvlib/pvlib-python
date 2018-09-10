@@ -75,7 +75,7 @@ non-editable way, use one of the following commands to install pvlib-python::
 
     # get pvlib and optional dependencies from the Python Package Index
     # another option if you know what you are doing
-    pip install pvlib[complete]
+    pip install pvlib[optional]
 
 If your system complains that you don't have access privileges or asks
 for a password then you're probably trying to install pvlib into your
@@ -185,10 +185,12 @@ Good news -- installing the source code is the easiest part!
 With your conda/virtual environment still active...
 
 #. **Install** pvlib-python in "development mode" by running
-   ``pip install -e /path/to/your/pvlib-python``.
-   You remember this path from the clone step, right? It's probably
-   something like ``C:\Users\%USER%\Documents\GitHub\pvlib-python``
-   (Windows) or ``/Users/%USER%/Documents/pvlib-python`` (Mac).
+   ``pip install -e .`` from within the directory you previously cloned.
+   Consider installing pvlib using ``pip install -e .[all]`` so that
+   you can run the unit tests and build the documentation.
+   Your clone directory is probably similar to
+   ``C:\Users\%USER%\Documents\GitHub\pvlib-python``(Windows) or
+   ``/Users/%USER%/Documents/pvlib-python`` (Mac).
 #. **Test** your installation by running ``python -c 'import pvlib'``.
    You're good to go if it returns without an exception.
 
@@ -235,7 +237,7 @@ The Anaconda distribution includes most of the above packages.
 
 Alternatively, users may install all optional dependencies using
 
-    pip install pvlib[complete]
+    pip install pvlib[optional]
 
 
 .. _nrelspa:

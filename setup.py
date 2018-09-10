@@ -44,11 +44,12 @@ INSTALL_REQUIRES = ['numpy >= 1.10.1',
                     ]
 TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock', 'nose']
 EXTRAS_REQUIRE = {
-    'complete': ['scipy', 'tables', 'numba', 'siphon', 'netcdf4', 'ephem'],
+    'optional': ['scipy', 'tables', 'numba', 'siphon', 'netcdf4', 'ephem'],
     'doc': ['sphinx', 'ipython', 'sphinx_rtd_theme', 'numpydoc',
             'matplotlib'],
     'test': TESTS_REQUIRE
 }
+EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',

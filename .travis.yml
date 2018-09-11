@@ -19,7 +19,9 @@ matrix:
     - python: 3.5
       env: CONDA_ENV=py35
     - python: 3.6
-      env: CONDA_ENV=py36
+      env:
+        - CONDA_ENV=py36
+        - TASK="coverage"
     - python: 3.6
       env: CONDA_ENV=py37
 
@@ -74,6 +76,12 @@ install:
 
 script:
     - pytest pvlib --cov=pvlib --cov-report term-missing
+
+after_script:
+  - if [[ $TASK == "coverage" ]]; then
+      pip install codecov;
+      codecov -e TRAVIS_PYTHON_VERSION;
+    fi
 
 after_success:
     coveralls

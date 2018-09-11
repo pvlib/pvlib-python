@@ -260,10 +260,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     Parameters
     ----------
-    apparent_zenith : numeric
+    apparent_zenith : float, 1d array, or Series
         Solar apparent zenith angles in decimal degrees.
 
-    apparent_azimuth : numeric
+    apparent_azimuth : float, 1d array, or Series
         Solar apparent azimuth angles in decimal degrees.
 
     axis_tilt : float, default 0
@@ -326,6 +326,9 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # convert scalars to arrays
     apparent_azimuth = np.atleast_1d(apparent_azimuth)
     apparent_zenith = np.atleast_1d(apparent_zenith)
+
+    if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
+        raise ValueError('Input dimensions must not exceed 1')
 
     # Calculate sun position x, y, z using coordinate system as in [1], Eq 2.
 

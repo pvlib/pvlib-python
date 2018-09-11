@@ -26,7 +26,7 @@ def test_solar_noon():
 
     expect = pd.DataFrame({'tracker_theta': 0, 'aoi': 10,
                            'surface_azimuth': 90, 'surface_tilt': 0},
-                           index=index, dtype=np.float64)
+                          index=index, dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -63,11 +63,13 @@ def test_arrays():
 def test_arrays_multi():
     apparent_zenith = np.array([[10, 10], [10, 10]])
     apparent_azimuth = np.array([[180, 180], [180, 180]])
+    # singleaxis should fail for num dim > 1
     with pytest.raises(ValueError):
         tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
-                                        axis_tilt=0, axis_azimuth=0,
-                                        max_angle=90, backtrack=True,
-                                        gcr=2.0/7.0)
+                                           axis_tilt=0, axis_azimuth=0,
+                                           max_angle=90, backtrack=True,
+                                           gcr=2.0/7.0)
+    # uncomment if we ever get singleaxis to support num dim > 1 arrays
     # assert isinstance(tracker_data, dict)
     # expect = {'tracker_theta': np.full_like(apparent_zenith, 0),
     #           'aoi': np.full_like(apparent_zenith, 10),

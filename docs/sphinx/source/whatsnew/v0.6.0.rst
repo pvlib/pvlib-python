@@ -117,7 +117,7 @@ Enhancements
 * Add irradiance.clearness_index_zenith_independent function. (:issue:`396`)
 * Add checking for consistency between module_parameters and dc_model. (:issue:`417`)
 * Add DC model methods ``'desoto'`` and ``'pvsyst'`` to ModelChain (:issue:`487`)
-* Add the CEC module model in `pvsystem.calcparams_cec` and `ModelChain.cec`. (:issue:`463`) 
+* Add the CEC module model in `pvsystem.calcparams_cec` and `ModelChain.cec`. (:issue:`463`)
 * Add DC model methods desoto and pvsyst to ModelChain (:issue:`487`)
 * Set default alpha to 1.14 in :func:`~pvlib.atmosphere.angstrom_aod_at_lambda` (:issue:`563`)
 
@@ -167,6 +167,7 @@ Documentation
 * Add PVSystem documentation page. (:issue:`514`, :issue:`319`)
 * Add example of Kasten Linke Turbidity calculation, discuss broadband AOD and
   Angstrom Turbidity Model. (:issue:`302`)
+* Add JOSS paper to "Citing pvlib-python" section.
 
 
 Testing

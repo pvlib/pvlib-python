@@ -152,6 +152,9 @@ Bug fixes
 * Fix bug in get_relative_airmass(model='youngirvine1967'). (:issue:`545`)
 * Fix bug in variable names returned by forecast.py's HRRR_ESRL model.
   (:issue:`557`)
+* Fixed bug in tracking.singleaxis that mistakenly assigned nan values when
+  the Sun was still above the horizon. No effect on systems with axis_tilt=0.
+  (:issue:`569`)
 
 
 Documentation

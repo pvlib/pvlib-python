@@ -163,6 +163,22 @@ def test_axis_azimuth():
     assert_frame_equal(expect, tracker_data)
 
 
+def test_horizon():
+    # GH 569
+    solar_azimuth = np.array([0, 180, 359])
+    solar_zenith = np.full_like(solar_azimuth, 45)
+    solar_azimuth = pd.Series(solar_azimuth)
+    solar_zenith = pd.Series(solar_zenith)
+    out = tracking.singleaxis(solar_zenith, solar_azimuth, axis_tilt=90,
+                              axis_azimuth=180, backtrack=False, max_angle=180)
+    expected = pd.DataFrame(np.array(
+        [[ 180.,  45.,   0.,  90.],
+         [   0.,  45., 180.,  90.],
+         [ 179.,  45., 359.,  90.]]),
+        columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
+    assert_frame_equal(out, expected)
+
+
 def test_index_mismatch():
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([90,180])

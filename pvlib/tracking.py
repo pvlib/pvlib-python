@@ -411,7 +411,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     wid = pd.Series(90 - np.degrees(np.arctan2(zp, xp)), index=times)
 
     # filter for sun above panel horizon
-    wid[zp <= 0] = np.nan
+    wid[apparent_zenith > 90] = np.nan
 
     # Account for backtracking; modified from [1] to account for rotation
     # angle convention being used here.

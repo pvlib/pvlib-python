@@ -23,6 +23,7 @@ matrix:
       env:
         - CONDA_ENV=py36
         - TASK="coverage"
+        - DEPLOY_ENV="true"
     - python: 3.6
       env: CONDA_ENV=py37
 
@@ -97,5 +98,5 @@ deploy:
     on:
       repo: pvlib/pvlib-python
       python: 3.6
-      condition: $TASK != "docs"
+      condition: $DEPLOY_ENV == "true"
       tags: true

@@ -172,6 +172,7 @@ Documentation
 * Add PVSystem documentation page. (:issue:`514`, :issue:`319`)
 * Add example of Kasten Linke Turbidity calculation, discuss broadband AOD and
   Angstrom Turbidity Model. (:issue:`302`)
+* Add JOSS paper to "Citing pvlib-python" section.
 
 
 Testing

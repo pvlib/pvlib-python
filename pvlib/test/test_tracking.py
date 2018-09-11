@@ -14,9 +14,11 @@ from pvlib import tracking
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
 
+
 def test_solar_noon():
-    apparent_zenith = pd.Series([10])
-    apparent_azimuth = pd.Series([180])
+    index = pd.DatetimeIndex(start='20180701T1200', freq='1s', periods=1)
+    apparent_zenith = pd.Series([10], index=index)
+    apparent_azimuth = pd.Series([180], index=index)
     tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
                                        axis_tilt=0, axis_azimuth=0,
                                        max_angle=90, backtrack=True,
@@ -24,10 +26,55 @@ def test_solar_noon():
 
     expect = pd.DataFrame({'tracker_theta': 0, 'aoi': 10,
                            'surface_azimuth': 90, 'surface_tilt': 0},
-                           index=[0], dtype=np.float64)
+                           index=index, dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
+
+
+def test_scalars():
+    apparent_zenith = 10
+    apparent_azimuth = 180
+    tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                       axis_tilt=0, axis_azimuth=0,
+                                       max_angle=90, backtrack=True,
+                                       gcr=2.0/7.0)
+    assert isinstance(tracker_data, dict)
+    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
+              'surface_tilt': 0}
+    for k, v in expect.items():
+        assert_allclose(tracker_data[k], v)
+
+
+def test_arrays():
+    apparent_zenith = np.array([10])
+    apparent_azimuth = np.array([180])
+    tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                       axis_tilt=0, axis_azimuth=0,
+                                       max_angle=90, backtrack=True,
+                                       gcr=2.0/7.0)
+    assert isinstance(tracker_data, dict)
+    expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
+              'surface_tilt': 0}
+    for k, v in expect.items():
+        assert_allclose(tracker_data[k], v)
+
+
+def test_arrays_multi():
+    apparent_zenith = np.array([[10, 10], [10, 10]])
+    apparent_azimuth = np.array([[180, 180], [180, 180]])
+    with pytest.raises(ValueError):
+        tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                        axis_tilt=0, axis_azimuth=0,
+                                        max_angle=90, backtrack=True,
+                                        gcr=2.0/7.0)
+    # assert isinstance(tracker_data, dict)
+    # expect = {'tracker_theta': np.full_like(apparent_zenith, 0),
+    #           'aoi': np.full_like(apparent_zenith, 10),
+    #           'surface_azimuth': np.full_like(apparent_zenith, 90),
+    #           'surface_tilt': np.full_like(apparent_zenith, 0)}
+    # for k, v in expect.items():
+    #     assert_allclose(tracker_data[k], v)
 
 
 def test_azimuth_north_south():
@@ -177,16 +224,6 @@ def test_horizon():
          [ 179.,  45., 359.,  90.]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
     assert_frame_equal(out, expected)
-
-
-def test_index_mismatch():
-    apparent_zenith = pd.Series([30])
-    apparent_azimuth = pd.Series([90,180])
-    with pytest.raises(ValueError):
-        tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
-                                           axis_tilt=0, axis_azimuth=90,
-                                           max_angle=90, backtrack=True,
-                                           gcr=2.0/7.0)
 
 
 def test_SingleAxisTracker_creation():

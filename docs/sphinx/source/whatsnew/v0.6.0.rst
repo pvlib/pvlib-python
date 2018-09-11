@@ -125,6 +125,7 @@ Enhancements
   `doc` (requirements for minimal documentation build), `test` (requirements
   for testing), and `all` (optional + doc + test). (:issue:`553`, :issue:`483`)
 * Set default alpha to 1.14 in :func:`~pvlib.atmosphere.angstrom_aod_at_lambda` (:issue:`563`)
+* tracking.singleaxis now accepts scalar and 1D-array input.
 
 
 Bug fixes

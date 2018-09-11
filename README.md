@@ -4,6 +4,7 @@ pvlib-python
 [![TravisCI](https://travis-ci.org/pvlib/pvlib-python.svg?branch=master)](https://travis-ci.org/pvlib/pvlib-python)
 [![Build status](https://ci.appveyor.com/api/projects/status/gr2eyhc84tvtkopk?svg=true)](https://ci.appveyor.com/project/wholmgren/pvlib-python-fv2to)
 [![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
+[![codecov](https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg)](https://codecov.io/gh/pvlib/pvlib-python)
 [![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=latest)](http://pvlib-python.readthedocs.org/en/latest/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1246152.svg)](https://doi.org/10.5281/zenodo.1246152)
 [![Code Health](https://landscape.io/github/pvlib/pvlib-python/master/landscape.svg?style=flat)](https://landscape.io/github/pvlib/pvlib-python/master)

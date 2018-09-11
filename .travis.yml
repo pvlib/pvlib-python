@@ -2,6 +2,7 @@
 # http://conda.pydata.org/docs/travis.html
 # https://github.com/xray/xray/blob/master/.travis.yml
 # https://github.com/scipy/scipy/blob/master/.travis.yml
+# https://github.com/Unidata/MetPy/blob/master/.travis.yml
 
 language: python
 sudo: false # if false, use TravisCI's container based build
@@ -19,7 +20,10 @@ matrix:
     - python: 3.5
       env: CONDA_ENV=py35
     - python: 3.6
-      env: CONDA_ENV=py36
+      env:
+        - CONDA_ENV=py36
+        - TASK="coverage"
+        - DEPLOY_ENV="true"
     - python: 3.6
       env: CONDA_ENV=py37
 
@@ -75,5 +79,24 @@ install:
 script:
     - pytest pvlib --cov=pvlib --cov-report term-missing
 
+after_script:
+  - if [[ $TASK == "coverage" ]]; then
+      pip install codecov;
+      codecov -e TRAVIS_PYTHON_VERSION;
+    fi
+
 after_success:
     coveralls
+
+deploy:
+  - provider: pypi
+    user: wholmgren
+    password:
+      secure: cUaCm+/9BAZ7pn1e6+X1TBh4ysSW9dFnUHrYIcR8xefb/O5YVlzPZACt2pR0vYJuJ6vGWOK5VzigeKyh9dccIJUqntqsqNwQF3GkgcNNzIwDUKzsmbuKEgL1GCvJWaIvov0Sevfmg7eFpGbXdynw6IVFMBssz+eVCwEV5Ww8WbI=
+    distributions: sdist bdist_wheel
+    upload_docs: false
+    on:
+      repo: pvlib/pvlib-python
+      python: 3.6
+      condition: $DEPLOY_ENV == "true"
+      tags: true

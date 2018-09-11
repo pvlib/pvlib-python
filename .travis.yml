@@ -2,6 +2,7 @@
 # http://conda.pydata.org/docs/travis.html
 # https://github.com/xray/xray/blob/master/.travis.yml
 # https://github.com/scipy/scipy/blob/master/.travis.yml
+# https://github.com/Unidata/MetPy/blob/master/.travis.yml
 
 language: python
 sudo: false # if false, use TravisCI's container based build

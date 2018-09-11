@@ -1182,6 +1182,39 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
+def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
+    """
+    Calculate the clearsky index.
+
+    The clearsky index is the ratio of global to clearsky global irradiance.
+
+    Parameters
+    ----------
+    ghi : numeric
+        Global horizontal irradiance in W/m^2.
+
+    clearsky_ghi : numeric
+        Modeled clearsky GHI
+
+    max_clearsky_index : numeric, default 2.0
+        Maximum value of the clearsky index. The default, 2.0, allows
+        for over-irradiance events typically seen in sub-hourly data.
+
+    Returns
+    -------
+    kt : numeric
+        Clearness index
+
+    References
+    ----------
+    .. [1] None
+    """
+    kt = ghi / clearsky_ghi
+    kt = np.maximum(kt, 0)
+    kt = np.minimum(kt, max_clearsky_index)
+    return kt
+
+
 def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
                     max_clearness_index=2.0):
     """

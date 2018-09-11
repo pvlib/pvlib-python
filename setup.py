@@ -42,7 +42,14 @@ INSTALL_REQUIRES = ['numpy >= 1.10.1',
                     'pytz',
                     'six',
                     ]
-TESTS_REQUIRE = ['pytest', 'nose']
+TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock', 'nose']
+EXTRAS_REQUIRE = {
+    'optional': ['scipy', 'tables', 'numba', 'siphon', 'netcdf4', 'ephem'],
+    'doc': ['sphinx', 'ipython', 'sphinx_rtd_theme', 'numpydoc',
+            'matplotlib'],
+    'test': TESTS_REQUIRE
+}
+EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -94,6 +101,7 @@ setup(name=DISTNAME,
       cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
       install_requires=INSTALL_REQUIRES,
+      extras_require=EXTRAS_REQUIRE,
       tests_require=TESTS_REQUIRE,
       ext_modules=extensions,
       description=DESCRIPTION,

@@ -73,6 +73,10 @@ non-editable way, use one of the following commands to install pvlib-python::
     # best option if you know what you are doing
     pip install pvlib
 
+    # get pvlib and optional dependencies from the Python Package Index
+    # another option if you know what you are doing
+    pip install pvlib[optional]
+
 If your system complains that you don't have access privileges or asks
 for a password then you're probably trying to install pvlib into your
 system's Python distribution. This is usually a bad idea and you should
@@ -163,9 +167,9 @@ referred to as *conda environments*, but they're the same for our purposes.
 #. **Create** a new conda environment for pvlib and pre-install
    the required packages into the environment:
    ``conda create --name pvlibdev python pandas scipy``
-#. **Activate** the new conda environment: ``source activate pvlibdev``
+#. **Activate** the new conda environment: ``conda activate pvlibdev``
 #. **Install** additional packages into your development environment:
-   ``conda install jupyter ipython matplotlib seaborn pytest nose flake8``
+   ``conda install jupyter ipython matplotlib pytest nose flake8``
 
 The `conda documentation <https://conda.io/docs/index.html>`_ has more
 information on how to use conda virtual environments. You can also add
@@ -181,10 +185,12 @@ Good news -- installing the source code is the easiest part!
 With your conda/virtual environment still active...
 
 #. **Install** pvlib-python in "development mode" by running
-   ``pip install -e /path/to/your/pvlib-python``.
-   You remember this path from the clone step, right? It's probably
-   something like ``C:\Users\%USER%\Documents\GitHub\pvlib-python``
-   (Windows) or ``/Users/%USER%/Documents/pvlib-python`` (Mac).
+   ``pip install -e .`` from within the directory you previously cloned.
+   Consider installing pvlib using ``pip install -e .[all]`` so that
+   you can run the unit tests and build the documentation.
+   Your clone directory is probably similar to
+   ``C:\Users\%USER%\Documents\GitHub\pvlib-python``(Windows) or
+   ``/Users/%USER%/Documents/pvlib-python`` (Mac).
 #. **Test** your installation by running ``python -c 'import pvlib'``.
    You're good to go if it returns without an exception.
 
@@ -228,6 +234,11 @@ include:
 * siphon: forecasting PV power using the pvlib.forecast module
 
 The Anaconda distribution includes most of the above packages.
+
+Alternatively, users may install all optional dependencies using
+
+    pip install pvlib[optional]
+
 
 .. _nrelspa:
 

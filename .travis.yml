@@ -85,3 +85,17 @@ after_script:
 
 after_success:
     coveralls
+
+deploy:
+  matrix:
+  - provider: pypi
+    user: wholmgren
+    password:
+      secure: cUaCm+/9BAZ7pn1e6+X1TBh4ysSW9dFnUHrYIcR8xefb/O5YVlzPZACt2pR0vYJuJ6vGWOK5VzigeKyh9dccIJUqntqsqNwQF3GkgcNNzIwDUKzsmbuKEgL1GCvJWaIvov0Sevfmg7eFpGbXdynw6IVFMBssz+eVCwEV5Ww8WbI=
+    distributions: sdist bdist_wheel
+    upload_docs: false
+    on:
+      repo: pvlib/pvlib-python
+      python: 3.6
+      condition: $TASK != "docs"
+      tags: true

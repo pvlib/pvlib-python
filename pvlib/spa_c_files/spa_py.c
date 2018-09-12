@@ -999,6 +999,7 @@ static const char __pyx_k_function[] = "function";
 static const char __pyx_k_latitude[] = "latitude";
 static const char __pyx_k_pressure[] = "pressure";
 static const char __pyx_k_spa_calc[] = "spa_calc";
+static const char __pyx_k_timezone[] = "timezone";
 static const char __pyx_k_delta_ut1[] = "delta_ut1";
 static const char __pyx_k_elevation[] = "elevation";
 static const char __pyx_k_incidence[] = "incidence";
@@ -1044,9 +1045,10 @@ static PyObject *__pyx_n_s_suntransit;
 static PyObject *__pyx_n_s_temperature;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_time_zone;
+static PyObject *__pyx_n_s_timezone;
 static PyObject *__pyx_n_s_year;
 static PyObject *__pyx_n_s_zenith;
-static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_year, PyObject *__pyx_v_month, PyObject *__pyx_v_day, PyObject *__pyx_v_hour, PyObject *__pyx_v_minute, PyObject *__pyx_v_second, PyObject *__pyx_v_time_zone, PyObject *__pyx_v_latitude, PyObject *__pyx_v_longitude, PyObject *__pyx_v_elevation, PyObject *__pyx_v_pressure, PyObject *__pyx_v_temperature, PyObject *__pyx_v_delta_t, PyObject *__pyx_v_delta_ut1, PyObject *__pyx_v_slope, PyObject *__pyx_v_azm_rotation, PyObject *__pyx_v_atmos_refract); /* proto */
+static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_year, PyObject *__pyx_v_month, PyObject *__pyx_v_day, PyObject *__pyx_v_hour, PyObject *__pyx_v_minute, PyObject *__pyx_v_second, PyObject *__pyx_v_timezone, PyObject *__pyx_v_latitude, PyObject *__pyx_v_longitude, PyObject *__pyx_v_elevation, PyObject *__pyx_v_pressure, PyObject *__pyx_v_temperature, PyObject *__pyx_v_delta_t, PyObject *__pyx_v_delta_ut1, PyObject *__pyx_v_slope, PyObject *__pyx_v_azm_rotation, PyObject *__pyx_v_atmos_refract); /* proto */
 static PyObject *__pyx_float_30_0;
 static PyObject *__pyx_float_0_5667;
 static PyObject *__pyx_int_0;
@@ -1058,7 +1060,7 @@ static PyObject *__pyx_codeobj__2;
 /* "spa_py.pyx":3
  * cimport cspa_py
  * 
- * def spa_calc(year, month, day, hour, minute, second, time_zone, latitude,             # <<<<<<<<<<<<<<
+ * def spa_calc(year, month, day, hour, minute, second, timezone, latitude,             # <<<<<<<<<<<<<<
  *         longitude, elevation, pressure, temperature, delta_t,
  *         delta_ut1=0, slope=30.0, azm_rotation=-10, atmos_refract=0.5667):
  */
@@ -1073,7 +1075,7 @@ static PyObject *__pyx_pw_6spa_py_1spa_calc(PyObject *__pyx_self, PyObject *__py
   PyObject *__pyx_v_hour = 0;
   PyObject *__pyx_v_minute = 0;
   PyObject *__pyx_v_second = 0;
-  PyObject *__pyx_v_time_zone = 0;
+  PyObject *__pyx_v_timezone = 0;
   PyObject *__pyx_v_latitude = 0;
   PyObject *__pyx_v_longitude = 0;
   PyObject *__pyx_v_elevation = 0;
@@ -1088,7 +1090,7 @@ static PyObject *__pyx_pw_6spa_py_1spa_calc(PyObject *__pyx_self, PyObject *__py
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("spa_calc (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_year,&__pyx_n_s_month,&__pyx_n_s_day,&__pyx_n_s_hour,&__pyx_n_s_minute,&__pyx_n_s_second,&__pyx_n_s_time_zone,&__pyx_n_s_latitude,&__pyx_n_s_longitude,&__pyx_n_s_elevation,&__pyx_n_s_pressure,&__pyx_n_s_temperature,&__pyx_n_s_delta_t,&__pyx_n_s_delta_ut1,&__pyx_n_s_slope,&__pyx_n_s_azm_rotation,&__pyx_n_s_atmos_refract,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_year,&__pyx_n_s_month,&__pyx_n_s_day,&__pyx_n_s_hour,&__pyx_n_s_minute,&__pyx_n_s_second,&__pyx_n_s_timezone,&__pyx_n_s_latitude,&__pyx_n_s_longitude,&__pyx_n_s_elevation,&__pyx_n_s_pressure,&__pyx_n_s_temperature,&__pyx_n_s_delta_t,&__pyx_n_s_delta_ut1,&__pyx_n_s_slope,&__pyx_n_s_azm_rotation,&__pyx_n_s_atmos_refract,0};
     PyObject* values[17] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     values[13] = ((PyObject *)__pyx_int_0);
     values[14] = ((PyObject *)__pyx_float_30_0);
@@ -1172,7 +1174,7 @@ static PyObject *__pyx_pw_6spa_py_1spa_calc(PyObject *__pyx_self, PyObject *__py
         }
         CYTHON_FALLTHROUGH;
         case  6:
-        if (likely((values[6] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_time_zone)) != 0)) kw_args--;
+        if (likely((values[6] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_timezone)) != 0)) kw_args--;
         else {
           __Pyx_RaiseArgtupleInvalid("spa_calc", 0, 13, 17, 6); __PYX_ERR(0, 3, __pyx_L3_error)
         }
@@ -1273,7 +1275,7 @@ static PyObject *__pyx_pw_6spa_py_1spa_calc(PyObject *__pyx_self, PyObject *__py
     __pyx_v_hour = values[3];
     __pyx_v_minute = values[4];
     __pyx_v_second = values[5];
-    __pyx_v_time_zone = values[6];
+    __pyx_v_timezone = values[6];
     __pyx_v_latitude = values[7];
     __pyx_v_longitude = values[8];
     __pyx_v_elevation = values[9];
@@ -1293,14 +1295,14 @@ static PyObject *__pyx_pw_6spa_py_1spa_calc(PyObject *__pyx_self, PyObject *__py
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_6spa_py_spa_calc(__pyx_self, __pyx_v_year, __pyx_v_month, __pyx_v_day, __pyx_v_hour, __pyx_v_minute, __pyx_v_second, __pyx_v_time_zone, __pyx_v_latitude, __pyx_v_longitude, __pyx_v_elevation, __pyx_v_pressure, __pyx_v_temperature, __pyx_v_delta_t, __pyx_v_delta_ut1, __pyx_v_slope, __pyx_v_azm_rotation, __pyx_v_atmos_refract);
+  __pyx_r = __pyx_pf_6spa_py_spa_calc(__pyx_self, __pyx_v_year, __pyx_v_month, __pyx_v_day, __pyx_v_hour, __pyx_v_minute, __pyx_v_second, __pyx_v_timezone, __pyx_v_latitude, __pyx_v_longitude, __pyx_v_elevation, __pyx_v_pressure, __pyx_v_temperature, __pyx_v_delta_t, __pyx_v_delta_ut1, __pyx_v_slope, __pyx_v_azm_rotation, __pyx_v_atmos_refract);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_year, PyObject *__pyx_v_month, PyObject *__pyx_v_day, PyObject *__pyx_v_hour, PyObject *__pyx_v_minute, PyObject *__pyx_v_second, PyObject *__pyx_v_time_zone, PyObject *__pyx_v_latitude, PyObject *__pyx_v_longitude, PyObject *__pyx_v_elevation, PyObject *__pyx_v_pressure, PyObject *__pyx_v_temperature, PyObject *__pyx_v_delta_t, PyObject *__pyx_v_delta_ut1, PyObject *__pyx_v_slope, PyObject *__pyx_v_azm_rotation, PyObject *__pyx_v_atmos_refract) {
+static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_year, PyObject *__pyx_v_month, PyObject *__pyx_v_day, PyObject *__pyx_v_hour, PyObject *__pyx_v_minute, PyObject *__pyx_v_second, PyObject *__pyx_v_timezone, PyObject *__pyx_v_latitude, PyObject *__pyx_v_longitude, PyObject *__pyx_v_elevation, PyObject *__pyx_v_pressure, PyObject *__pyx_v_temperature, PyObject *__pyx_v_delta_t, PyObject *__pyx_v_delta_ut1, PyObject *__pyx_v_slope, PyObject *__pyx_v_azm_rotation, PyObject *__pyx_v_atmos_refract) {
   spa_data __pyx_v_spa;
   CYTHON_UNUSED int __pyx_v_err;
   PyObject *__pyx_r = NULL;
@@ -1355,7 +1357,7 @@ static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, P
  *     spa.hour = hour
  *     spa.minute = minute             # <<<<<<<<<<<<<<
  *     spa.second = second
- *     spa.time_zone = time_zone
+ *     spa.time_zone = timezone
  */
   __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_minute); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 13, __pyx_L1_error)
   __pyx_v_spa.minute = __pyx_t_1;
@@ -1364,7 +1366,7 @@ static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, P
  *     spa.hour = hour
  *     spa.minute = minute
  *     spa.second = second             # <<<<<<<<<<<<<<
- *     spa.time_zone = time_zone
+ *     spa.time_zone = timezone
  *     spa.delta_ut1 = delta_ut1
  */
   __pyx_t_2 = __pyx_PyFloat_AsDouble(__pyx_v_second); if (unlikely((__pyx_t_2 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 14, __pyx_L1_error)
@@ -1373,16 +1375,16 @@ static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, P
   /* "spa_py.pyx":15
  *     spa.minute = minute
  *     spa.second = second
- *     spa.time_zone = time_zone             # <<<<<<<<<<<<<<
+ *     spa.time_zone = timezone             # <<<<<<<<<<<<<<
  *     spa.delta_ut1 = delta_ut1
  *     spa.delta_t = delta_t
  */
-  __pyx_t_2 = __pyx_PyFloat_AsDouble(__pyx_v_time_zone); if (unlikely((__pyx_t_2 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 15, __pyx_L1_error)
+  __pyx_t_2 = __pyx_PyFloat_AsDouble(__pyx_v_timezone); if (unlikely((__pyx_t_2 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 15, __pyx_L1_error)
   __pyx_v_spa.time_zone = __pyx_t_2;
 
   /* "spa_py.pyx":16
  *     spa.second = second
- *     spa.time_zone = time_zone
+ *     spa.time_zone = timezone
  *     spa.delta_ut1 = delta_ut1             # <<<<<<<<<<<<<<
  *     spa.delta_t = delta_t
  *     spa.longitude = longitude
@@ -1391,7 +1393,7 @@ static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_v_spa.delta_ut1 = __pyx_t_2;
 
   /* "spa_py.pyx":17
- *     spa.time_zone = time_zone
+ *     spa.time_zone = timezone
  *     spa.delta_ut1 = delta_ut1
  *     spa.delta_t = delta_t             # <<<<<<<<<<<<<<
  *     spa.longitude = longitude
@@ -1513,7 +1515,7 @@ static PyObject *__pyx_pf_6spa_py_spa_calc(CYTHON_UNUSED PyObject *__pyx_self, P
   /* "spa_py.pyx":3
  * cimport cspa_py
  * 
- * def spa_calc(year, month, day, hour, minute, second, time_zone, latitude,             # <<<<<<<<<<<<<<
+ * def spa_calc(year, month, day, hour, minute, second, timezone, latitude,             # <<<<<<<<<<<<<<
  *         longitude, elevation, pressure, temperature, delta_t,
  *         delta_ut1=0, slope=30.0, azm_rotation=-10, atmos_refract=0.5667):
  */
@@ -1599,6 +1601,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_temperature, __pyx_k_temperature, sizeof(__pyx_k_temperature), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_time_zone, __pyx_k_time_zone, sizeof(__pyx_k_time_zone), 0, 0, 1, 1},
+  {&__pyx_n_s_timezone, __pyx_k_timezone, sizeof(__pyx_k_timezone), 0, 0, 1, 1},
   {&__pyx_n_s_year, __pyx_k_year, sizeof(__pyx_k_year), 0, 0, 1, 1},
   {&__pyx_n_s_zenith, __pyx_k_zenith, sizeof(__pyx_k_zenith), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
@@ -1614,11 +1617,11 @@ static int __Pyx_InitCachedConstants(void) {
   /* "spa_py.pyx":3
  * cimport cspa_py
  * 
- * def spa_calc(year, month, day, hour, minute, second, time_zone, latitude,             # <<<<<<<<<<<<<<
+ * def spa_calc(year, month, day, hour, minute, second, timezone, latitude,             # <<<<<<<<<<<<<<
  *         longitude, elevation, pressure, temperature, delta_t,
  *         delta_ut1=0, slope=30.0, azm_rotation=-10, atmos_refract=0.5667):
  */
-  __pyx_tuple_ = PyTuple_Pack(19, __pyx_n_s_year, __pyx_n_s_month, __pyx_n_s_day, __pyx_n_s_hour, __pyx_n_s_minute, __pyx_n_s_second, __pyx_n_s_time_zone, __pyx_n_s_latitude, __pyx_n_s_longitude, __pyx_n_s_elevation, __pyx_n_s_pressure, __pyx_n_s_temperature, __pyx_n_s_delta_t, __pyx_n_s_delta_ut1, __pyx_n_s_slope, __pyx_n_s_azm_rotation, __pyx_n_s_atmos_refract, __pyx_n_s_spa, __pyx_n_s_err); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 3, __pyx_L1_error)
+  __pyx_tuple_ = PyTuple_Pack(19, __pyx_n_s_year, __pyx_n_s_month, __pyx_n_s_day, __pyx_n_s_hour, __pyx_n_s_minute, __pyx_n_s_second, __pyx_n_s_timezone, __pyx_n_s_latitude, __pyx_n_s_longitude, __pyx_n_s_elevation, __pyx_n_s_pressure, __pyx_n_s_temperature, __pyx_n_s_delta_t, __pyx_n_s_delta_ut1, __pyx_n_s_slope, __pyx_n_s_azm_rotation, __pyx_n_s_atmos_refract, __pyx_n_s_spa, __pyx_n_s_err); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 3, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
   __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(17, 0, 19, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_spa_py_pyx, __pyx_n_s_spa_calc, 3, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 3, __pyx_L1_error)
@@ -1880,7 +1883,7 @@ if (!__Pyx_RefNanny) {
   /* "spa_py.pyx":3
  * cimport cspa_py
  * 
- * def spa_calc(year, month, day, hour, minute, second, time_zone, latitude,             # <<<<<<<<<<<<<<
+ * def spa_calc(year, month, day, hour, minute, second, timezone, latitude,             # <<<<<<<<<<<<<<
  *         longitude, elevation, pressure, temperature, delta_t,
  *         delta_ut1=0, slope=30.0, azm_rotation=-10, atmos_refract=0.5667):
  */
@@ -1892,7 +1895,7 @@ if (!__Pyx_RefNanny) {
   /* "spa_py.pyx":1
  * cimport cspa_py             # <<<<<<<<<<<<<<
  * 
- * def spa_calc(year, month, day, hour, minute, second, time_zone, latitude,
+ * def spa_calc(year, month, day, hour, minute, second, timezone, latitude,
  */
   __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);

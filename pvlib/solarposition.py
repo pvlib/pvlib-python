@@ -206,7 +206,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     spa_df = pd.DataFrame(spa_out, index=time)
 
     if raw_spa_output:
-        return spa_df
+        return spa_df.rename(columns={'time_zone': 'timezone'})
     else:
         dfout = pd.DataFrame({'azimuth': spa_df['azimuth'],
                               'apparent_zenith': spa_df['zenith'],

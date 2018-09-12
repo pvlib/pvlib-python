@@ -1,4 +1,7 @@
 cdef extern from "spa.h":
+    ctypedef enum:
+        SPA_ZA, SPA_ZA_INC, SPA_ZA_RTS, SPA_ALL
+
     ctypedef struct spa_data:
         int year
         int month

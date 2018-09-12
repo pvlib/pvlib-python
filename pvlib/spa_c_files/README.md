@@ -36,3 +36,5 @@ folder:
 
 Executing the build command will also download the ``spa.c`` and ``spa.h``
 files from NREL and copy them into the ``pvlib/spa_c_files`` directory.
+
+This build process may not be not compatible with Python-2.7.

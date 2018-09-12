@@ -1,7 +1,11 @@
 .. _whatsnew_0600:
 
-v0.6.0 (___, 2018)
----------------------
+v0.6.0 (September 12, 2018)
+---------------------------
+
+This is a major release and contains a large number of API changes, new
+features, and bug fixes. Users should carefully read the changelog below
+before upgrading.
 
 **Python 2.7 support will end on June 1, 2019**. Releases made after this
 date will require Python 3. (:issue:`501`)
@@ -75,7 +79,7 @@ Enhancements
 * Clarify arguments ``Egref`` and ``dEgdT`` for
   :func:`~pvlib.pvsystem.calcparams_desoto` (:issue:`462`)
 * Add pvsystem.calcparams_pvsyst to compute values for the single diode equation
-  using the PVsyst v6 model (:issue:'470')
+  using the PVsyst v6 model (:issue:`470`)
 * Extend :func:`~pvlib.pvsystem.singlediode` with an additional keyword argument
   ``method`` in ``('lambertw', 'newton', 'brentq')``, default is ``'lambertw'``,
   to select a method to solve the single diode equation for points on the IV

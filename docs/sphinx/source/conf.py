@@ -271,7 +271,8 @@ extlinks = {'issue': ('https://github.com/pvlib/pvlib-python/issues/%s',
                       'GH'),
             'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s',
                      'wiki '),
-            'doi': ('http://dx.doi.org/%s', 'DOI: ')}
+            'doi': ('http://dx.doi.org/%s', 'DOI: '),
+            'ghuser': ('https://github.com/%s', '@')}
 
 # -- Options for manual page output ---------------------------------------
 

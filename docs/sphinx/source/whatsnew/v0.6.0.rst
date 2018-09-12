@@ -197,13 +197,24 @@ Testing
 * Improve test_atmosphere.py. (:issue:`158`)
 * Add LGTM.com integration. (:issue:`554`)
 * Add SticklerCI integration.
+* Add codecov integration.
 
 
 Contributors
 ~~~~~~~~~~~~
-* Will Holmgren
-* Yu Cao
-* Cliff Hansen
-* Mark Mikofski
-* Alan Mathew
-* Xavier Rene-Corail
+* Will Holmgren (:ghuser:`wholmgren`)
+* Yu Cao (:ghuser:`tsaoyu`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Alan Mathew (:ghuser:`alamathe1`)
+* Xavier Rene-Corail (:ghuser:`xcorail`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Mark Campanelli (:ghuser:`thunderfish24`)
+* Cedric Leroy (:ghuser:`cedricleroy`)
+* Jessica Forbess (:ghuser:`jforbess`)
+* Jeff Newmiller (:ghuser:`jdnewmil`)
+* :ghuser:`josricha`
+* Marc A. Anoma (:ghuser:`anomam`)
+* William C Grisaitis (:ghuser:`grisaitis`)
+* Karel De Brabandere (:ghuser:`kdebrab`)
+* :ghuser:`tadatoshi`

@@ -427,14 +427,11 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         # (always positive b/c acosd returns values between 0 and 180)
         wc = np.degrees(np.arccos(temp))
 
-        v = wid < 0
-        widc = np.full_like(wid, np.nan)
-        widc[~v] = wid[~v] - wc[~v]  # Eq 4 applied when wid in QI
-        widc[v] = wid[v] + wc[v]     # Eq 4 applied when wid in QIV
+        # Eq 4 applied when wid in QIV (wid < 0 evalulates True), QI
+        tracker_theta = np.where(wid < 0, wid + wc, wid - wc)
     else:
-        widc = wid
+        tracker_theta = wid
 
-    tracker_theta = widc.copy()
     tracker_theta[tracker_theta > max_angle] = max_angle
     tracker_theta[tracker_theta < -max_angle] = -max_angle
 

@@ -60,6 +60,37 @@ def test_arrays():
         assert_allclose(tracker_data[k], v)
 
 
+def test_nans():
+    apparent_zenith = np.array([10, np.nan, 10])
+    apparent_azimuth = np.array([180, 180, np.nan])
+    with np.errstate(invalid='ignore'):
+        tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                           axis_tilt=0, axis_azimuth=0,
+                                           max_angle=90, backtrack=True,
+                                           gcr=2.0/7.0)
+    expect = {'tracker_theta': np.array([0, nan, nan]),
+              'aoi': np.array([10, nan, nan]),
+              'surface_azimuth': np.array([90, nan, nan]),
+              'surface_tilt': np.array([0, nan, nan])}
+    for k, v in expect.items():
+        assert_allclose(tracker_data[k], v)
+
+    # repeat with Series because nans can differ
+    apparent_zenith = pd.Series(apparent_zenith)
+    apparent_azimuth = pd.Series(apparent_azimuth)
+    with np.errstate(invalid='ignore'):
+        tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                           axis_tilt=0, axis_azimuth=0,
+                                           max_angle=90, backtrack=True,
+                                           gcr=2.0/7.0)
+    expect = pd.DataFrame(np.array(
+        [[ 0., 10., 90.,  0.],
+         [nan, nan, nan, nan],
+         [nan, nan, nan, nan]]),
+        columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
+    assert_frame_equal(tracker_data, expect)
+
+
 def test_arrays_multi():
     apparent_zenith = np.array([[10, 10], [10, 10]])
     apparent_azimuth = np.array([[180, 180], [180, 180]])
@@ -212,7 +243,25 @@ def test_axis_azimuth():
     assert_frame_equal(expect, tracker_data)
 
 
-def test_horizon():
+def test_horizon_flat():
+    # GH 569
+    solar_azimuth = np.array([0, 180, 359])
+    solar_zenith = np.array([100, 45, 100])
+    solar_azimuth = pd.Series(solar_azimuth)
+    solar_zenith = pd.Series(solar_zenith)
+    # depending on platform and numpy versions this will generate
+    # RuntimeWarning: invalid value encountered in > < >=
+    out = tracking.singleaxis(solar_zenith, solar_azimuth, axis_tilt=0,
+                              axis_azimuth=180, backtrack=False, max_angle=180)
+    expected = pd.DataFrame(np.array(
+        [[ nan,  nan,  nan,  nan],
+         [  0.,  45., 270.,   0.],
+         [ nan,  nan,  nan,  nan]]),
+        columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
+    assert_frame_equal(out, expected)
+
+
+def test_horizon_tilted():
     # GH 569
     solar_azimuth = np.array([0, 180, 359])
     solar_zenith = np.full_like(solar_azimuth, 45)
@@ -340,19 +389,25 @@ def test_get_irradiance():
                              end='20160101 1800-0700', freq='6H')
     location = Location(latitude=32, longitude=-111)
     solar_position = location.get_solarposition(times)
-    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
+    irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
                           index=times)
     solar_zenith = solar_position['apparent_zenith']
     solar_azimuth = solar_position['azimuth']
-    tracker_data = system.singleaxis(solar_zenith, solar_azimuth)
 
-    irradiance = system.get_irradiance(tracker_data['surface_tilt'],
-                                       tracker_data['surface_azimuth'],
-                                       solar_zenith,
-                                       solar_azimuth,
-                                       irrads['dni'],
-                                       irrads['ghi'],
-                                       irrads['dhi'])
+    # invalid warnings already generated in horizon test above,
+    # no need to clutter test output here
+    with np.errstate(invalid='ignore'):
+        tracker_data = system.singleaxis(solar_zenith, solar_azimuth)
+
+    # some invalid values in irradiance.py. not our problem here
+    with np.errstate(invalid='ignore'):
+        irradiance = system.get_irradiance(tracker_data['surface_tilt'],
+                                           tracker_data['surface_azimuth'],
+                                           solar_zenith,
+                                           solar_azimuth,
+                                           irrads['dni'],
+                                           irrads['ghi'],
+                                           irrads['dhi'])
 
     expected = pd.DataFrame(data=np.array(
         [[961.80070,   815.94490,   145.85580,   135.32820, 10.52757492],

@@ -9,18 +9,17 @@ from Cython.Build import cythonize
 DIRNAME = os.path.dirname(__file__)
 SPA_C_URL = r'https://midcdmz.nrel.gov/apps/download.pl'
 SPA_H_URL = r'https://midcdmz.nrel.gov/spa/spa.h'
-VALUES = {
-    'country': 'US',
-    'company': 'Individual',
-    'software': 'SPA'
-}
+VALUES = {'software': 'SPA'}
 LICENSE = 'SPA_NOTICE.md'
 
 with open(os.path.join(DIRNAME, LICENSE)) as f:
     print(f.read())
 
-VALUES['name'] = input('Enter your name to accept the NREL LICENSE: ')
-# b'Name must be atleast 2 valid characters.'
+print('\nEnter the following information to accept the NREL LICENSE ...\n')
+VALUES['name'] = input('Name: ')
+VALUES['company'] = input('Company (or enter "Individual"): ')
+VALUES['country'] = input('Country: ')
+VALUES['email'] = input('Email (optional): ')
 DATA = parse.urlencode(VALUES).encode('ascii')
 
 # get spa.c

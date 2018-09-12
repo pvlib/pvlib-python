@@ -415,7 +415,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # filter for sun above panel horizon
     zen_gt_90 = apparent_zenith > 90
-    wid[apparent_zenith > 90] = np.nan
+    wid[zen_gt_90] = np.nan
 
     # Account for backtracking; modified from [1] to account for rotation
     # angle convention being used here.

@@ -16,6 +16,7 @@ VALUES = {
     'software': 'SPA'
 }
 DATA = parse.urlencode(VALUES).encode('ascii')
+LICENSE = 'SPA_NOTICE.md'
 
 # get spa.c
 REQ = request.Request(SPA_C_URL, DATA)
@@ -30,6 +31,11 @@ with request.urlopen(SPA_H_URL) as response:
 SPA_H = SPA_H.replace(b'timezone', b'time_zone')
 with open(os.path.join(DIRNAME, 'spa.h'), 'wb') as f:
     f.write(SPA_H)
+
+with open(os.path.join(DIRNAME, LICENSE)) as f:
+    print(f.read())
+
+input('By continuing you accept the NREL LICENSE. Press any key ...')
 
 setup(
     ext_modules=cythonize([Extension('spa_py', ['spa_py.pyx', 'spa.c'])])

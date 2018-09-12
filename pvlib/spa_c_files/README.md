@@ -8,7 +8,7 @@ This folder contains the files required to make NREL's C code accessible
 to the ``pvlib-python`` package. We use the Cython package to wrap NREL's SPA 
 implementation. 
 
-** Due to licensing issues, the [SPA C files](http://www.nrel.gov/midc/spa) can
+** Due to licensing issues, the [SPA C files](https://midcdmz.nrel.gov/spa/) can
 _not_ be included in the pvlib-python distribution. The SPA C files will be
 downloaded when you build the Python extension. By using this module you agree
 to the NREL license in SPA_NOTICE. **

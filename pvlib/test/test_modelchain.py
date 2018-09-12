@@ -219,10 +219,10 @@ def poadc(mc):
 
 @pytest.mark.parametrize('dc_model', [
     'sapm',
-    pytest.param('cec', marks=requires_scipy), 
-    pytest.param('desoto', marks=requires_scipy), 
-    pytest.param('pvsyst', marks=requires_scipy), 
-    pytest.param('singlediode', marks=requires_scipy), 
+    pytest.param('cec', marks=requires_scipy),
+    pytest.param('desoto', marks=requires_scipy),
+    pytest.param('pvsyst', marks=requires_scipy),
+    pytest.param('singlediode', marks=requires_scipy),
     'pvwatts_dc'])
 def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
                         pvwatts_dc_pvwatts_ac_system, location, dc_model,
@@ -445,9 +445,12 @@ def test_bad_get_orientation():
 
 @fail_on_pvlib_version('0.7')
 def test_deprecated_07():
+    # explicit system creation call because fail_on_pvlib_version
+    # does not support decorators
+    system = cec_dc_snl_ac_system(sam_data())
     with pytest.warns(pvlibDeprecationWarning):
-        mc = ModelChain(cec_dc_snl_ac_system, location,
-                        dc_model='singlediode', # this should fail after 0.7
+        mc = ModelChain(system, location,
+                        dc_model='singlediode',  # this should fail after 0.7
                         aoi_model='no_loss', spectral_model='no_loss')
 
 

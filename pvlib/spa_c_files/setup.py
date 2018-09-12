@@ -10,13 +10,18 @@ DIRNAME = os.path.dirname(__file__)
 SPA_C_URL = r'https://midcdmz.nrel.gov/apps/download.pl'
 SPA_H_URL = r'https://midcdmz.nrel.gov/spa/spa.h'
 VALUES = {
-    'name': 'pvlib-python',
     'country': 'US',
     'company': 'Individual',
     'software': 'SPA'
 }
-DATA = parse.urlencode(VALUES).encode('ascii')
 LICENSE = 'SPA_NOTICE.md'
+
+with open(os.path.join(DIRNAME, LICENSE)) as f:
+    print(f.read())
+
+VALUES['name'] = input('Enter your name to accept the NREL LICENSE: ')
+# b'Name must be atleast 2 valid characters.'
+DATA = parse.urlencode(VALUES).encode('ascii')
 
 # get spa.c
 REQ = request.Request(SPA_C_URL, DATA)
@@ -31,11 +36,6 @@ with request.urlopen(SPA_H_URL) as response:
 SPA_H = SPA_H.replace(b'timezone', b'time_zone')
 with open(os.path.join(DIRNAME, 'spa.h'), 'wb') as f:
     f.write(SPA_H)
-
-with open(os.path.join(DIRNAME, LICENSE)) as f:
-    print(f.read())
-
-input('By continuing you accept the NREL LICENSE. Press any key ...')
 
 setup(
     ext_modules=cythonize([Extension('spa_py', ['spa_py.pyx', 'spa.c'])])

@@ -6,7 +6,7 @@ coverage:
   status:
     patch:
       default:
-        target: '80'
+        target: 100%
         if_no_uploads: error
         if_not_found: success
         if_ci_failed: failure
@@ -19,10 +19,9 @@ coverage:
         if_ci_failed: failure
         paths:
           - "pvlib/(\w+/)?[^/]+\.py$"
-
       tests:
         target: 100%
         paths:
-          - "pvlib/tests/.*"
+          - "pvlib/test/.*"
 
 comment: off

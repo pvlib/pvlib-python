@@ -14,3 +14,10 @@ def test_fail_on_pvlib_version():
 @fail_on_pvlib_version('100000.0')
 def test_fail_on_pvlib_version_pass():
     pass
+
+
+@pytest.mark.xfail(strict=(not (platform_is_windows and has_python2)),
+                   reason='ensure that the test is called')
+@fail_on_pvlib_version('100000.0')
+def test_fail_on_pvlib_version_fail_in_test():
+    raise Exception

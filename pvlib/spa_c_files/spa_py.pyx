@@ -2,7 +2,7 @@ cimport cspa_py
 
 def spa_calc(year, month, day, hour, minute, second, time_zone, latitude,
         longitude, elevation, pressure, temperature, delta_t,
-        delta_ut1=0, slope=30.0, axm_rotation=-10, atmos_refract=0.5667):
+        delta_ut1=0, slope=30.0, azm_rotation=-10, atmos_refract=0.5667):
 
     cdef cspa_py.spa_data spa
 
@@ -21,7 +21,7 @@ def spa_calc(year, month, day, hour, minute, second, time_zone, latitude,
     spa.pressure = pressure
     spa.temperature = temperature
     spa.slope = slope
-    spa.azm_rotation = axm_rotation
+    spa.azm_rotation = azm_rotation
     spa.atmos_refract = atmos_refract
     spa.function = cspa_py.SPA_ALL
 

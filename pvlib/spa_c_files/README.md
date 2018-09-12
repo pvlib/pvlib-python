@@ -38,3 +38,44 @@ Executing the build command will also download the ``spa.c`` and ``spa.h``
 files from NREL and copy them into the ``pvlib/spa_c_files`` directory.
 
 This build process may not be not compatible with Python-2.7.
+
+There are four optional keyword arguments `delta_ut1=0`, `slope=30.0`,
+`azm_rotation=-10`, `atmos_refract` that effect four optional return values
+`incidence`, `suntransit`, `sunrise`, and `sunset`. If not given, the defaults
+shown are used.
+
+There is an example in `spa_py_example.py` that contains a test function called
+`spa_calc_example` that users can use to check that the result is consistent
+with expected values:
+
+    >>> from spa_py_example import spa_calc_example
+    >>> r = spa_calc_example()
+    {
+        'year': 2004,
+        'month': 10,
+        'day': 17,
+        'hour': 12,
+        'minute': 30,
+        'second': 30.0,
+        'delta_ut1': 0.0,
+        'delta_t': 67.0,
+        'time_zone': -7.0,
+        'longitude': -105.1786,
+        'latitude': 39.742476,
+        'elevation': 1830.14,
+        'pressure': 820.0,
+        'temperature': 11.0,
+        'slope': 30.0,
+        'azm_rotation': -10.0,
+        'atmos_refract': 0.5667,
+        'function': 3,
+        'e0': 39.59209464796398,
+        'e': 39.60858878898177,
+        'zenith': 50.39141121101823,
+        'azimuth_astro': 14.311961805946808,
+        'azimuth': 194.3119618059468,
+        'incidence': 25.42168493680471,
+        'suntransit': 11.765833793714224,
+        'sunrise': 6.22578372122376,
+        'sunset': 17.320379610556166
+    }

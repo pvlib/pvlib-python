@@ -4,40 +4,39 @@ README
 NREL provides a C implementation of the solar position algorithm described in
 [Reda, I.; Andreas, A. (2003). Solar Position Algorithm for Solar Radiation Applications. 55 pp.; NREL Report No. TP-560-34302](http://www.nrel.gov/docs/fy08osti/34302.pdf).
 
-This folder contains the files required to make NREL's C code accessible
-to the ``pvlib-python`` package. We use the Cython package to wrap NREL's SPA 
+This folder contains the files required to make SPA C code accessible
+to the `pvlib-python` package. We use the Cython package to wrap the NREL SPA 
 implementation. 
 
-** Due to licensing issues, the [SPA C files](https://midcdmz.nrel.gov/spa/) can
-_not_ be included in the pvlib-python distribution. The SPA C files will be
-downloaded when you build the Python extension. By using this module you agree
-to the NREL license in SPA_NOTICE. **
+** Due to licensing issues, the SPA C files can _not_ be distributed with
+`pvlib-python`. You must download the SPA C files from the
+[NREL website](https://midcdmz.nrel.gov/spa/). **
+
+Download the `spa.c` and `spa.h` files from NREL,  and copy them into the
+`pvlib/spa_c_files` directory. The SPA C files will be patched to avoid
+[Python bug 24643](https://bugs.python.org/issue24643) when the extension is
+built.
 
 There are a total of 5 files needed to compile the C code, described below:
 
-* ``spa.c``: original C code from NREL 
-* ``spa.h``: header file for spa.c
-* ``cspa_py.pxd``: a cython header file which essentially tells cython which
+* `spa.c`: original C code from NREL 
+* `spa.h`: header file for spa.c
+* `cspa_py.pxd`: a cython header file which essentially tells cython which
   parts of the main header file to pay attention to
-* ``spa_py.pyx``: the cython code used to define both functions in the python
+* `spa_py.pyx`: the cython code used to define both functions in the python
   namespace. NOTE: It is possible to provide user access to other paramters of
   the SPA algorithm through modifying this file 
-* ``setup.py``: a distutils file which performs the compiling of the cython code
+* `setup.py`: a distutils file which performs the compiling of the cython code
 
 The cython compilation process produces two files:
-* ``spa_py.c``: an intermediate cython c file
-* ``spa_py.so`` or ``spa_py.<cpyver-platform>.pyd``: the python module which
+* `spa_py.c`: an intermediate cython c file
+* `spa_py.so` or `spa_py.<cpyver-plat>.pyd`: the python module which
   can be imported into a namespace
 
 To create the SPA Python extension, use the following shell command inside this
 folder:
 
     $ python setup.py build_ext --inplace
-
-Executing the build command will also download the ``spa.c`` and ``spa.h``
-files from NREL and copy them into the ``pvlib/spa_c_files`` directory.
-
-This build process may not be not compatible with Python-2.7.
 
 There are four optional keyword arguments `delta_ut1=0`, `slope=30.0`,
 `azm_rotation=-10`, `atmos_refract` that effect four optional return values

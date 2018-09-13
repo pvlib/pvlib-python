@@ -31,6 +31,7 @@ with request.urlopen(REQ) as response:
 SPA_C = SPA_C.replace(b'timezone', b'time_zone')
 with open(os.path.join(DIRNAME, 'spa.c'), 'wb') as f:
     f.write(SPA_C)
+
 # get spa.h
 with request.urlopen(SPA_H_URL) as response:
     SPA_H = response.read()
@@ -40,6 +41,8 @@ SPA_H = SPA_H.replace(b'timezone', b'time_zone')
 with open(os.path.join(DIRNAME, 'spa.h'), 'wb') as f:
     f.write(SPA_H)
 
+SPA_SOURCES = [os.path.join(DIRNAME, src) for src in ['spa_py.pyx', 'spa.c']]
+
 setup(
-    ext_modules=cythonize([Extension('spa_py', ['spa_py.pyx', 'spa.c'])])
+    ext_modules=cythonize([Extension('spa_py', SPA_SOURCES)])
 )

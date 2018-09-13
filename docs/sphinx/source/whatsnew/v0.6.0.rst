@@ -17,31 +17,31 @@ API Changes
   that can calculate a quantity using multiple algorithms now start
   with the prefix ``get_``. For example, ``relativeairmass`` can calculate
   airmass using one of many ``model`` arguments. Its name has been changed
-  to ``get_relative_airmass``. The old function names remain in this
+  to :func:`~pvlib.atmosphere.get_relative_airmass`. The old function names remain in this
   release, but will emit a ``PVLibDeprecationWarning`` when called. The
-  old functions will be removed in the 0.7 release. Functions composed
+  old functions will be removed in the v0.7 release. Functions composed
   of multiple words jammed together have been renamed with underscores
   separating the words (see above).
   Each change is detailed below. (:issue:`427`)
-* Deprecated relativeairmass. relativeairmass will be removed in 0.7.
-  Use the new get_relative_airmass instead. (:issue:`427`)
-* Deprecated absoluteairmass. absoluteairmass will be removed in 0.7.
-  Use the new get_absolute_airmass instead. (:issue:`427`)
-* Deprecated irradiance.globalinplane. globalinplane will be removed in 0.7.
-  Use the new irradiance.poa_components instead. (:issue:`427`)
-* Added irradiance.poa_components. Function is the same as the now-deprecated
-  irradiance.globalinplane, but adds 'poa_sky_diffuse' and
-  'poa_ground_diffuse' to the output. (:issue:`427`)
-* Deprecated irradiance.extraradiation. Use irradiance.get_extra_radiation
-  instead. irradiance.extraradiation will be removed in 0.7. (:issue:`427`)
-* Deprecated irradiance.grounddiffuse. Use irradiance.get_ground_diffuse
-  instead. irradiance.grounddiffuse will be removed in 0.7. (:issue:`427`)
-* Added irradiance.get_poa_sky_diffuse. (:issue:`427`)
-* Deprecated irradiance.total_irrad. Use irradiance.get_total_poa_irradiance
-  instead. irradiance.total_irrad will be removed in 0.7. (:issue:`427`)
-* Removed 'klutcher' from get_sky_diffuse/total_irrad. This misspelling was
+* Deprecated ``relativeairmass``; it will be removed in v0.7.
+  Use the new :func:`~pvlib.atmosphere.get_relative_airmass` instead. (:issue:`427`)
+* Deprecated ``absoluteairmass``; it will be removed in v0.7.
+  Use the new :func:`~pvlib.atmosphere.get_absolute_airmass` instead. (:issue:`427`)
+* Deprecated ``irradiance.globalinplane``; it will be removed in v0.7.
+  Use the new :func:`~pvlib.irradiance.poa_components` instead. (:issue:`427`)
+* Added :func:`~pvlib.irradiance.poa_components`. Function is the same as the now-deprecated
+  ``irradiance.globalinplane``, but adds ``'poa_sky_diffuse'`` and
+  ``'poa_ground_diffuse'`` to the output. (:issue:`427`)
+* Deprecated ``irradiance.extraradiation``; it will be removed in v0.7.
+  Use :func:`pvlib.irradiance.get_extra_radiation` instead. (:issue:`427`)
+* Deprecated ``irradiance.grounddiffuse``; it will be removed in v0.7. Use
+  :func:`~pvlib.irradiance.get_ground_diffuse` instead. (:issue:`427`)
+* Added :func:`~pvlib.irradiance.get_poa_sky_diffuse`. (:issue:`427`)
+* Deprecated ``irradiance.total_irrad``; it will be removed in v0.7. Use
+  :func:`~pvlib.irradiance.get_total_poa_irradiance` instead. (:issue:`427`)
+* Removed ``'klutcher'`` from ``get_sky_diffuse``/``total_irrad``. This misspelling was
   deprecated long ago but never removed. (:issue:`97`)
-* pvsystem.calcparams_desoto now requires arguments for each module model
+* :func:`~pvlib.pvsystem.calcparams_desoto` now requires arguments for each module model
   parameter. (:issue:`462`)
 * Add losses_parameters attribute to PVSystem objects and remove the kwargs
   support from PVSystem.pvwatts_losses. Enables custom losses specification

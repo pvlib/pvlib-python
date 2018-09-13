@@ -194,7 +194,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
                                 hour=date.hour,
                                 minute=date.minute,
                                 second=date.second,
-                                timezone=0,  # date uses utc time
+                                time_zone=0,  # date uses utc time
                                 latitude=latitude,
                                 longitude=longitude,
                                 elevation=altitude,

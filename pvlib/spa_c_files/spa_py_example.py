@@ -35,7 +35,7 @@ EXPECTED = {
 def spa_calc_example(test=True):
     result = spa_calc(
         year=2004, month=10, day=17, hour=12, minute=30, second=30,
-        timezone=-7, longitude=-105.1786, latitude=39.742476,
+        time_zone=-7, longitude=-105.1786, latitude=39.742476,
         elevation=1830.14, pressure=820, temperature=11, delta_t=67
     )
     if test:

@@ -1,6 +1,6 @@
 cimport cspa_py
 
-def spa_calc(year, month, day, hour, minute, second, timezone, latitude,
+def spa_calc(year, month, day, hour, minute, second, time_zone, latitude,
         longitude, elevation, pressure, temperature, delta_t,
         delta_ut1=0, slope=30.0, azm_rotation=-10, atmos_refract=0.5667):
 
@@ -12,7 +12,7 @@ def spa_calc(year, month, day, hour, minute, second, timezone, latitude,
     spa.hour = hour
     spa.minute = minute
     spa.second = second
-    spa.time_zone = timezone
+    spa.time_zone = time_zone
     spa.delta_ut1 = delta_ut1
     spa.delta_t = delta_t
     spa.longitude = longitude

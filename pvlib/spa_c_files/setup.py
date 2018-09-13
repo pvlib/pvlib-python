@@ -26,12 +26,16 @@ DATA = parse.urlencode(VALUES).encode('ascii')
 REQ = request.Request(SPA_C_URL, DATA)
 with request.urlopen(REQ) as response:
     SPA_C = response.read()
+# replace timezone with time_zone to avoid a nameclash the function
+# __timezone which is defined by a MACRO in pyconfig.h as timezone
 SPA_C = SPA_C.replace(b'timezone', b'time_zone')
 with open(os.path.join(DIRNAME, 'spa.c'), 'wb') as f:
     f.write(SPA_C)
 # get spa.h
 with request.urlopen(SPA_H_URL) as response:
     SPA_H = response.read()
+# replace timezone with time_zone to avoid a nameclash the function
+# __timezone which is defined by a MACRO in pyconfig.h as timezone
 SPA_H = SPA_H.replace(b'timezone', b'time_zone')
 with open(os.path.join(DIRNAME, 'spa.h'), 'wb') as f:
     f.write(SPA_H)

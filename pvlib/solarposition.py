@@ -164,7 +164,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 
     Note: The ``timezone`` field in the SPA C files is replaced with ``time_zone``
     to avoid a nameclash with the function ``__timezone`` that is redefined by
-    Python-3.5. This issue is `Python bug 24643 <https://bugs.python.org/issue24643>`_.
+    Python>=3.5. This issue is `Python bug 24643 <https://bugs.python.org/issue24643>`_.
 
     USNO delta T:
     http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term

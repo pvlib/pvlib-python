@@ -1,6 +1,6 @@
 .. _whatsnew_0600:
 
-v0.6.0 (September 12, 2018)
+v0.6.0 (September 14, 2018)
 ---------------------------
 
 This is a major release and contains a large number of API changes, new

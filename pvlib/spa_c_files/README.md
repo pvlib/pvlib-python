@@ -13,9 +13,10 @@ implementation.
 [NREL website](https://midcdmz.nrel.gov/spa/). **
 
 Download the `spa.c` and `spa.h` files from NREL,  and copy them into the
-`pvlib/spa_c_files` directory. The SPA C files will be patched to avoid
-[Python bug 24643](https://bugs.python.org/issue24643) when the extension is
-built.
+`pvlib/spa_c_files` directory. When the extension is built, the ``timezone``
+field in the SPA C files is replaced with `time_zone` to avoid a nameclash
+with the function `__timezone` that is redefined by Python>=3.5. This issue
+is [Python bug 24643](https://bugs.python.org/issue24643).
 
 There are a total of 5 files needed to compile the C code, described below:
 

@@ -158,6 +158,7 @@ Bug fixes
   (:issue:`569`)
 * Source distribution did not contain LICENSE file. Added LICENSE, AUTHORS.md,
   and some docs to MANIFEST. (:issue:`579`)
+* Patch SPA C-files to fix timezone macro name clash with `pyconfig.h`. (:issue:`168`)
 
 
 Documentation

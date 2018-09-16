@@ -31,6 +31,7 @@ venv/
 
 # spa_c_files builds
 pvlib/spa_c_files/build*
+pvlib/spa_c_files/spa_py.c
 
 # spa_c_files source
 pvlib/spa_c_files/spa.c

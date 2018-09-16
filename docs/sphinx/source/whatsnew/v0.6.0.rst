@@ -156,6 +156,7 @@ Bug fixes
 * Fixed bug in tracking.singleaxis that mistakenly assigned nan values when
   the Sun was still above the horizon. No effect on systems with axis_tilt=0.
   (:issue:`569`)
+* Patch SPA C-files to fix timezone macro name clash with `pyconfig.h`. (:issue:`168`)
 
 
 Documentation

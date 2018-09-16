@@ -156,6 +156,8 @@ Bug fixes
 * Fixed bug in tracking.singleaxis that mistakenly assigned nan values when
   the Sun was still above the horizon. No effect on systems with axis_tilt=0.
   (:issue:`569`)
+* Source distribution did not contain LICENSE file. Added LICENSE, AUTHORS.md,
+  and some docs to MANIFEST. (:issue:`579`)
 
 
 Documentation

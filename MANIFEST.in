@@ -7,6 +7,12 @@ include pvlib/_version.py
 
 recursive-include pvlib/data *
 
+# include pvlib files needed to compile NREL SPA code,
+# specifically exclude the code itself to comply with NREL license
+recursive-include pvlib/spa_c_files *.py *.pyx *.pxd *.md
+exclude pvlib/spa_c_files/spa.c
+exclude pvlib/spa_c_files/spa.h
+
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 

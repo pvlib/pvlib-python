@@ -10,8 +10,8 @@ graft pvlib
 
 # we included pvlib files needed to compile NREL SPA code in graft above,
 # now we exclude the NREL code itself to comply with their license
-exclude pvlib/spa_c_files/spa.c
-exclude pvlib/spa_c_files/spa.h
+global-exclude */spa.c
+global-exclude */spa.h
 prune pvlib/spa_c_files/build
 
 graft docs

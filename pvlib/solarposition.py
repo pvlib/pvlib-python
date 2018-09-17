@@ -159,7 +159,13 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 
     References
     ----------
-    NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    NREL SPA reference: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    NREL SPA C files: https://midcdmz.nrel.gov/spa/
+
+    Note: The ``timezone`` field in the SPA C files is replaced with
+    ``time_zone`` to avoid a nameclash with the function ``__timezone`` that is
+    redefined by Python>=3.5. This issue is
+    `Python bug 24643 <https://bugs.python.org/issue24643>`_.
 
     USNO delta T:
     http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
@@ -194,7 +200,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
                                 hour=date.hour,
                                 minute=date.minute,
                                 second=date.second,
-                                timezone=0,  # date uses utc time
+                                time_zone=0,  # date uses utc time
                                 latitude=latitude,
                                 longitude=longitude,
                                 elevation=altitude,
@@ -206,7 +212,9 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     spa_df = pd.DataFrame(spa_out, index=time)
 
     if raw_spa_output:
-        return spa_df
+        # rename "time_zone" from raw output from spa_c_files.spa_py.spa_calc()
+        # to "timezone" to match the API of pvlib.solarposition.spa_c()
+        return spa_df.rename(columns={'time_zone': 'timezone'})
     else:
         dfout = pd.DataFrame({'azimuth': spa_df['azimuth'],
                               'apparent_zenith': spa_df['zenith'],

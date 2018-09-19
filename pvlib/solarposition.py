@@ -1210,3 +1210,50 @@ def hour_angle(times, longitude, equation_of_time):
     )).total_seconds() / 3600. for t in times])
     timezone = times.tz.utcoffset(times).total_seconds() / 3600.
     return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.
+
+
+def _hours(times, hour_angle, longitude, equation_of_time):
+    timezone = times.tz.utcoffset(times).total_seconds() / 3600.
+    return (hour_angle - longitude - equation_of_time/4.)/15. + 12. + timezone
+
+
+def _times(times, hours):
+    return np.array([(dt.timedelta(hours=h) + t.tz.localize(
+        dt.datetime(t.year, t.month, t.day)
+    )) for h, t in zip(hours, times)])
+
+
+def sunrise_sunset_transit_analytical(times, latitude, longitude, declination,
+                                      equation_of_time):
+    """
+    Analytical calculation of solar sunrise, sunset, and transit.
+
+    .. warning:: The analytic form neglects the effect of atmospheric
+        refraction.
+
+    Parameters
+    ----------
+    times : :class:`pandas.DatetimeIndex`
+        Corresponding timestamps, must be timezone aware.
+    latitude : float
+        Latitude in degrees
+    longitude : float
+        Longitude in degrees
+    declination : numeric
+        declination angle in radians at ``times``
+    equation_of_time : numeric
+        difference in time between solar time and mean solar time in minutes
+    """
+    latitude_rad = np.radians(latitude)  # radians
+    sunset_angle_rad = np.arccos(-np.tan(declination) * np.tan(latitude_rad))
+    sunset_angle = np.degrees(sunset_angle_rad)  # degrees
+    # solar noon is at hour angle zero
+    # so sunrise is just negative of sunset
+    sunrise_angle = -sunset_angle
+    sunrise_hour = _hours(times, sunrise_angle, longitude, equation_of_time)
+    sunset_hour = _hours(times, sunset_angle, longitude, equation_of_time)
+    transit_hour = _hours(times, 0, longitude, equation_of_time)
+    sunrise = _times(times, sunrise_hour)
+    sunset = _times(times, sunset_hour)
+    transit = _times(times, transit_hour)
+    return (sunrise, sunset, transit)

@@ -1,5 +1,6 @@
 import calendar
 import datetime
+import os
 
 import numpy as np
 import pandas as pd
@@ -15,6 +16,9 @@ from pvlib import solarposition, spa
 from conftest import (requires_ephem, needs_pandas_0_17,
                       requires_spa_c, requires_numba)
 
+DIRNAME = os.path.dirname(__file__)
+PROJDIR = os.path.dirname(DIRNAME)
+DATADIR = os.path.join(PROJDIR, 'data')
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24),
@@ -499,3 +503,35 @@ def test_analytical_azimuth():
     azimuths = solarposition.solar_azimuth_analytical(*test_angles.T, zenith=zeniths)
 
     assert not np.isnan(azimuths).any()
+
+
+def test_analytical_sunrise_sunset_transit():
+    """Test analytical calculations for sunrise, sunset, and transit times"""
+    times = pd.DatetimeIndex(start='2018-01-01 0:00:00',
+                             end='2018-12-31 23:59:59',
+                             freq='H').tz_localize('Etc/GMT+7')
+    lat, lon = 39.743, -105.178  # degrees
+    eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)  # minutes
+    decl = solarposition.declination_spencer71(times.dayofyear)  # radians
+    sst = solarposition.sunrise_sunset_transit_analytical(
+        times, latitude=lat, longitude=lon, declination=decl,
+        equation_of_time=eot)
+    sunrise = (sr.time() for sr in sst[0])
+    sunset = (ss.time() for ss in sst[1])
+    transit = (tr.time() for tr in sst[2])
+    sunrise_hours = [sr.hour + (sr.minute + sr.second/60.)/60.
+                     for sr in sunrise]
+    sunset_hours = [ss.hour + (ss.minute + ss.second/60.)/60. for ss in sunset]
+    transit_hours = [tr.hour + (tr.minute + tr.second/60.)/60.
+                     for tr in transit]
+    test_data_file = os.path.join(
+        DATADIR, 'sunrise_sunset_transit.txt')
+    test_data_type = np.dtype(
+        [('sunrise', float), ('sunset', float), ('transit', float)])
+    test_data = np.loadtxt(test_data_file, dtype=test_data_type)
+    # test data created using SPA algorithm at following conditions:
+    # year=2018, time_zone=-7, longitude=-105.178, latitude=39.743,
+    # elevation=1830.14, pressure=820, temperature=11, delta_t=67
+    assert np.allclose(sunrise_hours, test_data['sunrise'], atol=0.11)
+    assert np.allclose(sunset_hours, test_data['sunset'], atol=0.11)
+    assert np.allclose(transit_hours, test_data['transit'], atol=0.02)

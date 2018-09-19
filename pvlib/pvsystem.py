@@ -6,8 +6,8 @@ performance of PV modules and inverters.
 from __future__ import division
 
 from collections import OrderedDict
-import os
 import io
+import os
 try:
     from urllib2 import urlopen
 except ImportError:
@@ -16,10 +16,34 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
+from pvlib import atmosphere, irradiance, tools, singlediode as _singlediode
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
-from pvlib import irradiance, atmosphere
+
+
+# a dict of required parameter names for each DC power model
+DC_MODEL_PARAMS = {
+    'sapm': set([
+        'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
+        'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
+        'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
+        'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
+        'IXO', 'IXXO', 'FD']),
+    'desoto': set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s']),
+    'cec': set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s', 'Adjust']),
+    'pvsyst': set([
+        'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
+        'cells_in_series']),
+    'singlediode': set([
+        'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
+        'R_sh_ref', 'R_s']),
+    'pvwatts': set(['pdc0', 'gamma_pdc'])
+}
 
 
 # not sure if this belongs in the pvsystem module.
@@ -56,47 +80,53 @@ class PVSystem(object):
 
     Parameters
     ----------
-    surface_tilt: float or array-like
-        Tilt angle of the module surface.
-        Up=0, horizon=90.
+    surface_tilt: float or array-like, default 0
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surface_azimuth: float or array-like
+    surface_azimuth: float or array-like, default 180
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
 
-    albedo : None, float
+    albedo : None or float, default None
         The ground albedo. If ``None``, will attempt to use
         ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
         to lookup albedo.
 
-    surface_type : None, string
+    surface_type : None or string, default None
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
         for valid values.
 
-    module : None, string
+    module : None or string, default None
         The model name of the modules.
         May be used to look up the module_parameters dictionary
         via some other method.
 
-    module_parameters : None, dict or Series
+    module_parameters : None, dict or Series, default None
         Module parameters as defined by the SAPM, CEC, or other.
 
-    modules_per_string: int or float
+    modules_per_string: int or float, default 1
         See system topology discussion above.
 
-    strings_per_inverter: int or float
+    strings_per_inverter: int or float, default 1
         See system topology discussion above.
 
-    inverter : None, string
+    inverter : None or string, default None
         The model name of the inverters.
         May be used to look up the inverter_parameters dictionary
         via some other method.
 
-    inverter_parameters : None, dict or Series
+    inverter_parameters : None, dict or Series, default None
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : None or string
+    racking_model : None or string, default 'open_rack_cell_glassback'
         Used for cell and module temperature calculations.
+
+    losses_parameters : None, dict or Series, default None
+        Losses parameters as defined by PVWatts or other.
+
+    name : None or string, default None
 
     **kwargs
         Arbitrary keyword arguments.
@@ -116,8 +146,7 @@ class PVSystem(object):
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
                  racking_model='open_rack_cell_glassback',
-                 name=None,
-                 **kwargs):
+                 losses_parameters=None, name=None, **kwargs):
 
         self.name = name
 
@@ -133,24 +162,32 @@ class PVSystem(object):
 
         # could tie these together with @property
         self.module = module
-        self.module_parameters = module_parameters
+        if module_parameters is None:
+            self.module_parameters = {}
+        else:
+            self.module_parameters = module_parameters
 
         self.modules_per_string = modules_per_string
         self.strings_per_inverter = strings_per_inverter
 
         self.inverter = inverter
-        self.inverter_parameters = inverter_parameters
+        if inverter_parameters is None:
+            self.inverter_parameters = {}
+        else:
+            self.inverter_parameters = inverter_parameters
+
+        if losses_parameters is None:
+            self.losses_parameters = {}
+        else:
+            self.losses_parameters = losses_parameters
 
         self.racking_model = racking_model
-
-        # needed for tying together Location and PVSystem in LocalizedPVSystem
-        super(PVSystem, self).__init__(**kwargs)
 
     def __repr__(self):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
                  'inverter', 'albedo', 'racking_model']
         return ('PVSystem: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
@@ -176,10 +213,10 @@ class PVSystem(object):
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
-        Uses the :py:func:`irradiance.total_irrad` function to calculate
-        the plane of array irradiance components on a tilted surface
-        defined by ``self.surface_tilt``, ``self.surface_azimuth``, and
-        ``self.albedo``.
+        Uses the :py:func:`irradiance.get_total_irradiance` function to
+        calculate the plane of array irradiance components on a tilted
+        surface defined by ``self.surface_tilt``,
+        ``self.surface_azimuth``, and ``self.albedo``.
 
         Parameters
         ----------
@@ -193,11 +230,11 @@ class PVSystem(object):
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance
-        dni_extra : float or Series
+        dni_extra : None, float or Series, default None
             Extraterrestrial direct normal irradiance
-        airmass : float or Series
+        airmass : None, float or Series, default None
             Airmass
-        model : String
+        model : String, default 'haydavies'
             Irradiance model.
 
         **kwargs
@@ -211,20 +248,20 @@ class PVSystem(object):
 
         # not needed for all models, but this is easier
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(solar_zenith.index)
-            dni_extra = pd.Series(dni_extra, index=solar_zenith.index)
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
 
         if airmass is None:
-            airmass = atmosphere.relativeairmass(solar_zenith)
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.total_irrad(self.surface_tilt,
-                                      self.surface_azimuth,
-                                      solar_zenith, solar_azimuth,
-                                      dni, ghi, dhi,
-                                      dni_extra=dni_extra, airmass=airmass,
-                                      model=model,
-                                      albedo=self.albedo,
-                                      **kwargs)
+        return irradiance.get_total_irradiance(self.surface_tilt,
+                                               self.surface_azimuth,
+                                               solar_zenith, solar_azimuth,
+                                               dni, ghi, dhi,
+                                               dni_extra=dni_extra,
+                                               airmass=airmass,
+                                               model=model,
+                                               albedo=self.albedo,
+                                               **kwargs)
 
     def ashraeiam(self, aoi):
         """
@@ -273,7 +310,7 @@ class PVSystem(object):
 
         return physicaliam(aoi, **kwargs)
 
-    def calcparams_desoto(self, poa_global, temp_cell, **kwargs):
+    def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -281,8 +318,8 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_global : float or Series
-            The irradiance (in W/m^2) absorbed by the module.
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
 
         temp_cell : float or Series
             The average cell temperature of cells within a module in C.
@@ -294,11 +331,70 @@ class PVSystem(object):
         -------
         See pvsystem.calcparams_desoto for details
         """
-        return calcparams_desoto(poa_global, temp_cell,
-                                 self.module_parameters['alpha_sc'],
-                                 self.module_parameters,
-                                 self.module_parameters['EgRef'],
-                                 self.module_parameters['dEgdT'], **kwargs)
+
+        kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                                'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
+                                'irrad_ref', 'temp_ref'],
+                               self.module_parameters)
+
+        return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
+
+    def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
+        """
+        Use the :py:func:`calcparams_cec` function, the input
+        parameters and ``self.module_parameters`` to calculate the
+        module currents and resistances.
+
+        Parameters
+        ----------
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
+
+        temp_cell : float or Series
+            The average cell temperature of cells within a module in C.
+
+        **kwargs
+            See pvsystem.calcparams_cec for details
+
+        Returns
+        -------
+        See pvsystem.calcparams_cec for details
+        """
+
+        kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                                'R_s', 'alpha_sc', 'Adjust', 'EgRef', 'dEgdT',
+                                'irrad_ref', 'temp_ref'],
+                               self.module_parameters)
+
+        return calcparams_cec(effective_irradiance, temp_cell, **kwargs)
+
+    def calcparams_pvsyst(self, effective_irradiance, temp_cell):
+        """
+        Use the :py:func:`calcparams_pvsyst` function, the input
+        parameters and ``self.module_parameters`` to calculate the
+        module currents and resistances.
+
+        Parameters
+        ----------
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
+
+        temp_cell : float or Series
+            The average cell temperature of cells within a module in C.
+
+        Returns
+        -------
+        See pvsystem.calcparams_pvsyst for details
+        """
+
+        kwargs = _build_kwargs(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+                                'R_sh_ref', 'R_sh_0', 'R_sh_exp',
+                                'R_s', 'alpha_sc', 'EgRef',
+                                'irrad_ref', 'temp_ref',
+                                'cells_in_series'],
+                               self.module_parameters)
+
+        return calcparams_pvsyst(effective_irradiance, temp_cell, **kwargs)
 
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -403,7 +499,7 @@ class PVSystem(object):
         aoi : numeric
             Angle of incidence in degrees.
 
-        reference_irradiance : numeric
+        reference_irradiance : numeric, default 1000
             Reference irradiance by which to divide the input irradiance.
 
         Returns
@@ -414,6 +510,93 @@ class PVSystem(object):
         return sapm_effective_irradiance(
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
+
+    def first_solar_spectral_loss(self, pw, airmass_absolute):
+
+        """
+        Use the :py:func:`first_solar_spectral_correction` function to
+        calculate the spectral loss modifier. The model coefficients are
+        specific to the module's cell type, and are determined by searching
+        for one of the following keys in self.module_parameters (in order):
+            'first_solar_spectral_coefficients' (user-supplied coefficients)
+            'Technology' - a string describing the cell type, can be read from
+            the CEC module parameter database
+            'Material' - a string describing the cell type, can be read from
+            the Sandia module database.
+
+        Parameters
+        ----------
+        pw : array-like
+            atmospheric precipitable water (cm).
+
+        airmass_absolute : array-like
+            absolute (pressure corrected) airmass.
+
+        Returns
+        -------
+        modifier: array-like
+            spectral mismatch factor (unitless) which can be multiplied
+            with broadband irradiance reaching a module's cells to estimate
+            effective irradiance, i.e., the irradiance that is converted to
+            electrical current.
+        """
+
+        if 'first_solar_spectral_coefficients' in \
+                self.module_parameters.keys():
+            coefficients = \
+                   self.module_parameters['first_solar_spectral_coefficients']
+            module_type = None
+        else:
+            module_type = self._infer_cell_type()
+            coefficients = None
+
+        return atmosphere.first_solar_spectral_correction(pw,
+                                                          airmass_absolute,
+                                                          module_type,
+                                                          coefficients)
+
+    def _infer_cell_type(self):
+
+        """
+        Examines module_parameters and maps the Technology key for the CEC
+        database and the Material key for the Sandia database to a common
+        list of strings for cell type.
+
+        Returns
+        -------
+        cell_type: str
+
+        """
+
+        _cell_type_dict = {'Multi-c-Si': 'multisi',
+                           'Mono-c-Si': 'monosi',
+                           'Thin Film': 'cigs',
+                           'a-Si/nc': 'asi',
+                           'CIS': 'cigs',
+                           'CIGS': 'cigs',
+                           '1-a-Si': 'asi',
+                           'CdTe': 'cdte',
+                           'a-Si': 'asi',
+                           '2-a-Si': None,
+                           '3-a-Si': None,
+                           'HIT-Si': 'monosi',
+                           'mc-Si': 'multisi',
+                           'c-Si': 'multisi',
+                           'Si-Film': 'asi',
+                           'EFG mc-Si': 'multisi',
+                           'GaAs': None,
+                           'a-Si / mono-Si': 'monosi'}
+
+        if 'Technology' in self.module_parameters.keys():
+            # CEC module parameter set
+            cell_type = _cell_type_dict[self.module_parameters['Technology']]
+        elif 'Material' in self.module_parameters.keys():
+            # Sandia module parameter set
+            cell_type = _cell_type_dict[self.module_parameters['Material']]
+        else:
+            cell_type = None
+
+        return cell_type
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
@@ -462,6 +645,9 @@ class PVSystem(object):
         """
         return snlinverter(v_dc, p_dc, self.inverter_parameters)
 
+    def adrinverter(self, v_dc, p_dc):
+        return adrinverter(v_dc, p_dc, self.inverter_parameters)
+
     def scale_voltage_current_power(self, data):
         """
         Scales the voltage, current, and power of the DataFrames
@@ -499,15 +685,17 @@ class PVSystem(object):
                           self.module_parameters['gamma_pdc'],
                           **kwargs)
 
-    def pvwatts_losses(self, **kwargs):
+    def pvwatts_losses(self):
         """
         Calculates DC power losses according the PVwatts model using
-        :py:func:`pvwatts_losses`. No attributes are used in this
-        calculation, but all keyword arguments will be passed to the
-        function.
+        :py:func:`pvwatts_losses` and ``self.losses_parameters``.`
 
         See :py:func:`pvwatts_losses` for details.
         """
+        kwargs = _build_kwargs(['soiling', 'shading', 'snow', 'mismatch',
+                                'wiring', 'connections', 'lid',
+                                'nameplate_rating', 'age', 'availability'],
+                               self.losses_parameters)
         return pvwatts_losses(**kwargs)
 
     def pvwatts_ac(self, pdc):
@@ -531,9 +719,9 @@ class PVSystem(object):
 
         Parameters
         ----------
-        location : None or Location
-        latitude : None or float
-        longitude : None or float
+        location : None or Location, default None
+        latitude : None or float, default None
+        longitude : None or float, default None
         **kwargs : see Location
 
         Returns
@@ -553,8 +741,10 @@ class LocalizedPVSystem(PVSystem, Location):
     system attributes and modeling functions. This class combines the
     attributes and methods of the PVSystem and Location classes.
 
-    See the :py:class:`PVSystem` class for an object model that
-    describes an unlocalized PV system.
+    The LocalizedPVSystem may have bugs due to the difficulty of
+    robustly implementing multiple inheritance. See
+    :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
+    for modeling PV systems at specific locations.
     """
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
@@ -575,15 +765,15 @@ class LocalizedPVSystem(PVSystem, Location):
                           list(loc_dict.items()) +
                           list(kwargs.items()))
 
-        super(LocalizedPVSystem, self).__init__(**new_kwargs)
+        PVSystem.__init__(self, **new_kwargs)
+        Location.__init__(self, **new_kwargs)
 
     def __repr__(self):
-        attrs = [
-            'name', 'latitude', 'longitude', 'altitude', 'tz', 'surface_tilt',
-            'surface_azimuth', 'module', 'inverter', 'albedo', 'racking_model'
-                 ]
+        attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz',
+                 'surface_tilt', 'surface_azimuth', 'module', 'inverter',
+                 'albedo', 'racking_model']
         return ('LocalizedPVSystem: \n  ' + '\n  '.join(
-            (attr + ': ' + str(getattr(self, attr)) for attr in attrs)))
+            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
 
 def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
@@ -690,9 +880,9 @@ def ashraeiam(aoi, b=0.05):
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector in degrees. Angles of nan will result in nan.
 
-    b : float
+    b : float, default 0.05
         A parameter to adjust the modifier as a function of angle of
         incidence. Typical values are on the order of 0.05 [3].
 
@@ -702,7 +892,7 @@ def ashraeiam(aoi, b=0.05):
         The incident angle modifier calculated as 1-b*(sec(aoi)-1) as
         described in [2,3].
 
-        Returns nan for all abs(aoi) >= 90 and for all IAM values that
+        Returns zeros for all abs(aoi) >= 90 and for all IAM values that
         would be less than 0.
 
     References
@@ -723,9 +913,10 @@ def ashraeiam(aoi, b=0.05):
     physicaliam
     '''
 
-    iam = 1 - b*((1/np.cos(np.radians(aoi)) - 1))
-
-    iam = np.where(np.abs(aoi) >= 90, np.nan, iam)
+    iam = 1 - b * ((1 / np.cos(np.radians(aoi)) - 1))
+    aoi_gte_90 = np.full_like(aoi, False, dtype='bool')
+    np.greater_equal(np.abs(aoi), 90, where=~np.isnan(aoi), out=aoi_gte_90)
+    iam = np.where(aoi_gte_90, 0, iam)
     iam = np.maximum(0, iam)
 
     if isinstance(iam, pd.Series):
@@ -737,39 +928,39 @@ def ashraeiam(aoi, b=0.05):
 def physicaliam(aoi, n=1.526, K=4., L=0.002):
     '''
     Determine the incidence angle modifier using refractive index,
-    glazing thickness, and extinction coefficient
+    extinction coefficient, and glazing thickness.
 
     physicaliam calculates the incidence angle modifier as described in
     De Soto et al. "Improvement and validation of a model for
     photovoltaic array performance", section 3. The calculation is based
-    upon a physical model of absorbtion and transmission through a
-    cover. Required information includes, incident angle, cover
-    extinction coefficient, cover thickness
+    on a physical model of absorbtion and transmission through a
+    cover.
 
     Note: The authors of this function believe that eqn. 14 in [1] is
     incorrect. This function uses the following equation in its place:
-    theta_r = arcsin(1/n * sin(theta))
+    theta_r = arcsin(1/n * sin(aoi))
 
     Parameters
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector in degrees. Angles of 0 are replaced with 1e-06
+        to ensure non-nan results. Angles of nan will result in nan.
 
-    n : numeric
+    n : numeric, default 1.526
         The effective index of refraction (unitless). Reference [1]
         indicates that a value of 1.526 is acceptable for glass. n must
         be a numeric scalar or vector with all values >=0. If n is a
         vector, it must be the same size as all other input vectors.
 
-    K : numeric
+    K : numeric, default 4.0
         The glazing extinction coefficient in units of 1/meters.
         Reference [1] indicates that a value of  4 is reasonable for
         "water white" glass. K must be a numeric scalar or vector with
         all values >=0. If K is a vector, it must be the same size as
         all other input vectors.
 
-    L : numeric
+    L : numeric, default 0.002
         The glazing thickness in units of meters. Reference [1]
         indicates that 0.002 meters (2 mm) is reasonable for most
         glass-covered PV panels. L must be a numeric scalar or vector
@@ -778,14 +969,8 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
     Returns
     -------
-    IAM : numeric
-        The incident angle modifier as specified in eqns. 14-16 of [1].
-        IAM is a column vector with the same number of elements as the
-        largest input vector.
-
-        Theta must be a numeric scalar or vector. For any values of
-        theta where abs(aoi)>90, IAM is set to 0. For any values of aoi
-        where -90 < aoi < 0, theta is set to abs(aoi) and evaluated.
+    iam : numeric
+        The incident angle modifier
 
     References
     ----------
@@ -804,103 +989,108 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     spa
     ashraeiam
     '''
-    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
-
-    tau = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg))) *
-           ((1 - 0.5*((((tools.sind(thetar_deg - aoi)) ** 2) /
-            ((tools.sind(thetar_deg + aoi)) ** 2) +
-            ((tools.tand(thetar_deg - aoi)) ** 2) /
-            ((tools.tand(thetar_deg + aoi)) ** 2))))))
-
     zeroang = 1e-06
 
-    thetar_deg0 = tools.asind(1.0 / n*(tools.sind(zeroang)))
+    # hold a new reference to the input aoi object since we're going to
+    # overwrite the aoi reference below, but we'll need it for the
+    # series check at the end of the function
+    aoi_input = aoi
 
-    tau0 = (np.exp(- 1.0 * (K*L / tools.cosd(thetar_deg0))) *
-            ((1 - 0.5*((((tools.sind(thetar_deg0 - zeroang)) ** 2) /
-             ((tools.sind(thetar_deg0 + zeroang)) ** 2) +
-             ((tools.tand(thetar_deg0 - zeroang)) ** 2) /
-             ((tools.tand(thetar_deg0 + zeroang)) ** 2))))))
+    aoi = np.where(aoi == 0, zeroang, aoi)
 
-    iam = tau / tau0
+    # angle of reflection
+    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
 
-    iam = np.where((np.abs(aoi) >= 90) | (iam < 0), np.nan, iam)
+    # reflectance and transmittance for normal incidence light
+    rho_zero = ((1-n) / (1+n)) ** 2
+    tau_zero = np.exp(-K*L)
 
-    if isinstance(aoi, pd.Series):
-        iam = pd.Series(iam, index=aoi.index)
+    # reflectance for parallel and perpendicular polarized light
+    rho_para = (tools.tand(thetar_deg - aoi) /
+                tools.tand(thetar_deg + aoi)) ** 2
+    rho_perp = (tools.sind(thetar_deg - aoi) /
+                tools.sind(thetar_deg + aoi)) ** 2
+
+    # transmittance for non-normal light
+    tau = np.exp(-K*L / tools.cosd(thetar_deg))
+
+    # iam is ratio of non-normal to normal incidence transmitted light
+    # after deducting the reflected portion of each
+    iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
+
+    with np.errstate(invalid='ignore'):
+        # angles near zero produce nan, but iam is defined as one
+        small_angle = 1e-06
+        iam = np.where(np.abs(aoi) < small_angle, 1.0, iam)
+
+        # angles at 90 degrees can produce tiny negative values,
+        # which should be zero. this is a result of calculation precision
+        # rather than the physical model
+        iam = np.where(iam < 0, 0, iam)
+
+        # for light coming from behind the plane, none can enter the module
+        iam = np.where(aoi > 90, 0, iam)
+
+    if isinstance(aoi_input, pd.Series):
+        iam = pd.Series(iam, index=aoi_input.index)
 
     return iam
 
 
-def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
-                      EgRef, dEgdT, M=1, irrad_ref=1000, temp_ref=25):
+def calcparams_desoto(effective_irradiance, temp_cell,
+                      alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
+                      EgRef=1.121, dEgdT=-0.0002677,
+                      irrad_ref=1000, temp_ref=25):
     '''
-    Applies the temperature and irradiance corrections to inputs for
-    singlediode.
-
-    Applies the temperature and irradiance corrections to the IL, I0,
-    Rs, Rsh, and a parameters at reference conditions (IL_ref, I0_ref,
-    etc.) according to the De Soto et. al description given in [1]. The
-    results of this correction procedure may be used in a single diode
-    model to determine IV curves at irradiance = S, cell temperature =
-    Tcell.
+    Calculates five parameter values for the single diode equation at
+    effective irradiance and cell temperature using the De Soto et al.
+    model described in [1]. The five values returned by calcparams_desoto
+    can be used by singlediode to calculate an IV curve.
 
     Parameters
     ----------
-    poa_global : numeric
-        The irradiance (in W/m^2) absorbed by the module.
+    effective_irradiance : numeric
+        The irradiance (W/m2) that is converted to photocurrent.
 
     temp_cell : numeric
         The average cell temperature of cells within a module in C.
 
-    alpha_isc : float
+    alpha_sc : float
         The short-circuit current temperature coefficient of the
-        module in units of 1/C.
+        module in units of A/C.
 
-    module_parameters : dict
-        Parameters describing PV module performance at reference
-        conditions according to DeSoto's paper. Parameters may be
-        generated or found by lookup. For ease of use,
-        retrieve_sam can automatically generate a dict based on the
-        most recent SAM CEC module
-        database. The module_parameters dict must contain the
-        following 5 fields:
+    a_ref : float
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at reference
+        conditions, in units of V.
 
-            * a_ref - modified diode ideality factor parameter at
-              reference conditions (units of eV), a_ref can be calculated
-              from the usual diode ideality factor (n),
-              number of cells in series (Ns),
-              and cell temperature (Tcell) per equation (2) in [1].
-            * I_L_ref - Light-generated current (or photocurrent)
-              in amperes at reference conditions. This value is referred to
-              as Iph in some literature.
-            * I_o_ref - diode reverse saturation current in amperes,
-              under reference conditions.
-            * R_sh_ref - shunt resistance under reference conditions (ohms).
-            * R_s - series resistance under reference conditions (ohms).
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference conditions,
+        in amperes.
+
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference conditions,
+        in amperes.
+
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
+
+    R_s : float
+        The series resistance at reference conditions, in ohms.
 
     EgRef : float
-        The energy bandgap at reference temperature (in eV).
-        1.121 eV for silicon. EgRef must be >0.
+        The energy bandgap at reference temperature in units of eV.
+        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
+        from the SAM CEC module database, EgRef=1.121 is implicit for all
+        cell types in the parameter estimation algorithm used by NREL.
 
     dEgdT : float
-        The temperature dependence of the energy bandgap at SRC (in
-        1/C). May be either a scalar value (e.g. -0.0002677 as in [1])
-        or a DataFrame of dEgdT values corresponding to each input
-        condition (this may be useful if dEgdT is a function of
-        temperature).
-
-    M : numeric (optional, default=1)
-        An optional airmass modifier, if omitted, M is given a value of
-        1, which assumes absolute (pressure corrected) airmass = 1.5. In
-        this code, M is equal to M/Mref as described in [1] (i.e. Mref
-        is assumed to be 1). Source [1] suggests that an appropriate
-        value for M as a function absolute airmass (AMa) may be:
-
-        >>> M = np.polyval([-0.000126, 0.002816, -0.024459, 0.086257, 0.918093],
-        ...                AMa) # doctest: +SKIP
-
-        M may be a Series.
+        The temperature dependence of the energy bandgap at reference
+        conditions in units of 1/K. May be either a scalar value
+        (e.g. -0.0002677 as in [1]) or a DataFrame (this may be useful if
+        dEgdT is a modeled as a function of temperature). For parameters from
+        the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
+        types in the parameter estimation algorithm used by NREL.
 
     irrad_ref : float (optional, default=1000)
         Reference irradiance in W/m^2.
@@ -913,28 +1103,21 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
     Tuple of the following results:
 
     photocurrent : numeric
-        Light-generated current in amperes at irradiance=S and
-        cell temperature=Tcell.
+        Light-generated current in amperes
 
     saturation_current : numeric
-        Diode saturation curent in amperes at irradiance
-        S and cell temperature Tcell.
+        Diode saturation curent in amperes
 
     resistance_series : float
-        Series resistance in ohms at irradiance S and cell temperature
-        Tcell.
+        Series resistance in ohms
 
     resistance_shunt : numeric
-        Shunt resistance in ohms at irradiance S and cell temperature
-        Tcell.
+        Shunt resistance in ohms
 
     nNsVth : numeric
-        Modified diode ideality factor at irradiance S and cell
-        temperature Tcell. Note that in source [1] nNsVth = a (equation
-        2). nNsVth is the product of the usual diode ideality factor
-        (n), the number of series-connected cells in the module (Ns),
-        and the thermal voltage of a cell in the module (Vth) at a cell
-        temperature of Tcell.
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at
+        specified effective irradiance and cell temperature.
 
     References
     ----------
@@ -953,8 +1136,6 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
 
     See Also
     --------
-    sapm
-    sapm_celltemp
     singlediode
     retrieve_sam
 
@@ -978,11 +1159,11 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
     and modifying the reference parameters (for irradiance, temperature,
     and airmass) per DeSoto's equations.
 
-     Silicon (Si):
+     Crystalline Silicon (Si):
          * EgRef = 1.121
          * dEgdT = -0.0002677
 
-         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.918093],
+         >>> M = np.polyval([-1.26E-4, 2.816E-3, -0.024459, 0.086257, 0.9181],
          ...                AMa) # doctest: +SKIP
 
          Source: [1]
@@ -1022,14 +1203,31 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
          Source: [4]
     '''
 
-    M = np.maximum(M, 0)
-    a_ref = module_parameters['a_ref']
-    IL_ref = module_parameters['I_L_ref']
-    I0_ref = module_parameters['I_o_ref']
-    Rsh_ref = module_parameters['R_sh_ref']
-    Rs_ref = module_parameters['R_s']
+    # test for use of function pre-v0.6.0 API change
+    if isinstance(a_ref, dict) or \
+       (isinstance(a_ref, pd.Series) and ('a_ref' in a_ref.keys())):
+        import warnings
+        warnings.warn('module_parameters detected as fourth positional'
+                      + ' argument of calcparams_desoto. calcparams_desoto'
+                      + ' will require one argument for each module model'
+                      + ' parameter in v0.7.0 and later', DeprecationWarning)
+        try:
+            module_parameters = a_ref
+            a_ref = module_parameters['a_ref']
+            I_L_ref = module_parameters['I_L_ref']
+            I_o_ref = module_parameters['I_o_ref']
+            R_sh_ref = module_parameters['R_sh_ref']
+            R_s = module_parameters['R_s']
+        except Exception as e:
+            raise e('Module parameters could not be extracted from fourth'
+                    + ' positional argument of calcparams_desoto. Check that'
+                    + ' parameters are from the CEC database and/or update'
+                    + ' your code for the new API for calcparams_desoto')
 
+    # Boltzmann constant in eV/K
     k = 8.617332478e-05
+
+    # reference temperature
     Tref_K = temp_ref + 273.15
     Tcell_K = temp_cell + 273.15
 
@@ -1037,11 +1235,276 @@ def calcparams_desoto(poa_global, temp_cell, alpha_isc, module_parameters,
 
     nNsVth = a_ref * (Tcell_K / Tref_K)
 
-    IL = (poa_global/irrad_ref) * M * (IL_ref + alpha_isc * (Tcell_K - Tref_K))
-    I0 = (I0_ref * ((Tcell_K / Tref_K) ** 3) *
+    # In the equation for IL, the single factor effective_irradiance is
+    # used, in place of the product S*M in [1]. effective_irradiance is
+    # equivalent to the product of S (irradiance reaching a module's cells) *
+    # M (spectral adjustment factor) as described in [1].
+    IL = effective_irradiance / irrad_ref * \
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+    I0 = (I_o_ref * ((Tcell_K / Tref_K) ** 3) *
           (np.exp(EgRef / (k*(Tref_K)) - (E_g / (k*(Tcell_K))))))
-    Rsh = Rsh_ref * (irrad_ref / poa_global)
-    Rs = Rs_ref
+    # Note that the equation for Rsh differs from [1]. In [1] Rsh is given as
+    # Rsh = Rsh_ref * (S_ref / S) where S is broadband irradiance reaching
+    # the module's cells. If desired this model behavior can be duplicated
+    # by applying reflection and soiling losses to broadband plane of array
+    # irradiance and not applying a spectral loss modifier, i.e.,
+    # spectral_modifier = 1.0.
+    Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
+    Rs = R_s
+
+    return IL, I0, Rs, Rsh, nNsVth
+
+
+def calcparams_cec(effective_irradiance, temp_cell,
+                   alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
+                   Adjust, EgRef=1.121, dEgdT=-0.0002677,
+                   irrad_ref=1000, temp_ref=25):
+    '''
+    Calculates five parameter values for the single diode equation at
+    effective irradiance and cell temperature using the CEC
+    model described in [1]. The CEC model differs from the De soto et al.
+    model [3] by the parameter Adjust. The five values returned by
+    calcparams_cec can be used by singlediode to calculate an IV curve.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric
+        The irradiance (W/m2) that is converted to photocurrent.
+
+    temp_cell : numeric
+        The average cell temperature of cells within a module in C.
+
+    alpha_sc : float
+        The short-circuit current temperature coefficient of the
+        module in units of A/C.
+
+    a_ref : float
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at reference
+        conditions, in units of V.
+
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference conditions,
+        in amperes.
+
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference conditions,
+        in amperes.
+
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
+
+    R_s : float
+        The series resistance at reference conditions, in ohms.
+
+    Adjust : float
+        The adjustment to the temperature coefficient for short circuit
+        current, in percent
+
+    EgRef : float
+        The energy bandgap at reference temperature in units of eV.
+        1.121 eV for crystalline silicon. EgRef must be >0.  For parameters
+        from the SAM CEC module database, EgRef=1.121 is implicit for all
+        cell types in the parameter estimation algorithm used by NREL.
+
+    dEgdT : float
+        The temperature dependence of the energy bandgap at reference
+        conditions in units of 1/K. May be either a scalar value
+        (e.g. -0.0002677 as in [3]) or a DataFrame (this may be useful if
+        dEgdT is a modeled as a function of temperature). For parameters from
+        the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
+        types in the parameter estimation algorithm used by NREL.
+
+    irrad_ref : float (optional, default=1000)
+        Reference irradiance in W/m^2.
+
+    temp_ref : float (optional, default=25)
+        Reference cell temperature in C.
+
+    Returns
+    -------
+    Tuple of the following results:
+
+    photocurrent : numeric
+        Light-generated current in amperes
+
+    saturation_current : numeric
+        Diode saturation curent in amperes
+
+    resistance_series : float
+        Series resistance in ohms
+
+    resistance_shunt : numeric
+        Shunt resistance in ohms
+
+    nNsVth : numeric
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at
+        specified effective irradiance and cell temperature.
+
+    References
+    ----------
+    [1] A. Dobos, "An Improved Coefficient Calculator for the California
+    Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
+    Solar Energy Engineering, vol 134, 2012.
+
+    [2] System Advisor Model web page. https://sam.nrel.gov.
+
+    [3] W. De Soto et al., "Improvement and validation of a model for
+    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+    2006.
+
+    See Also
+    --------
+    calcparams_desoto
+    singlediode
+    retrieve_sam
+
+    '''
+
+    # pass adjusted temperature coefficient to desoto
+    return calcparams_desoto(effective_irradiance, temp_cell,
+                             alpha_sc*(1.0 - Adjust/100),
+                             a_ref, I_L_ref, I_o_ref,
+                             R_sh_ref, R_s,
+                             EgRef=1.121, dEgdT=-0.0002677,
+                             irrad_ref=1000, temp_ref=25)
+
+
+def calcparams_pvsyst(effective_irradiance, temp_cell,
+                      alpha_sc, gamma_ref, mu_gamma,
+                      I_L_ref, I_o_ref,
+                      R_sh_ref, R_sh_0, R_s,
+                      cells_in_series,
+                      R_sh_exp=5.5,
+                      EgRef=1.121,
+                      irrad_ref=1000, temp_ref=25):
+    '''
+    Calculates five parameter values for the single diode equation at
+    effective irradiance and cell temperature using the PVsyst v6
+    model described in [1,2,3]. The five values returned by calcparams_pvsyst
+    can be used by singlediode to calculate an IV curve.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric
+        The irradiance (W/m2) that is converted to photocurrent.
+
+    temp_cell : numeric
+        The average cell temperature of cells within a module in C.
+
+    alpha_sc : float
+        The short-circuit current temperature coefficient of the
+        module in units of A/C.
+
+    gamma_ref : float
+        The diode ideality factor
+
+    mu_gamma : float
+        The temperature coefficient for the diode ideality factor, 1/K
+
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference conditions,
+        in amperes.
+
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference conditions,
+        in amperes.
+
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
+
+    R_sh_0 : float
+        The shunt resistance at zero irradiance conditions, in ohms.
+
+    R_s : float
+        The series resistance at reference conditions, in ohms.
+
+    cells_in_series : integer
+        The number of cells connected in series.
+
+    R_sh_exp : float
+        The exponent in the equation for shunt resistance, unitless. Defaults
+        to 5.5.
+
+    EgRef : float
+        The energy bandgap at reference temperature in units of eV.
+        1.121 eV for crystalline silicon. EgRef must be >0.
+
+    irrad_ref : float (optional, default=1000)
+        Reference irradiance in W/m^2.
+
+    temp_ref : float (optional, default=25)
+        Reference cell temperature in C.
+
+    Returns
+    -------
+    Tuple of the following results:
+
+    photocurrent : numeric
+        Light-generated current in amperes
+
+    saturation_current : numeric
+        Diode saturation current in amperes
+
+    resistance_series : float
+        Series resistance in ohms
+
+    resistance_shunt : numeric
+        Shunt resistance in ohms
+
+    nNsVth : numeric
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at
+        specified effective irradiance and cell temperature.
+
+    References
+    ----------
+    [1] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
+     Temperature Dependence of Photovoltaic Modules in PVsyst,
+     IEEE Journal of Photovoltaics v5(1), January 2015.
+
+    [2] A. Mermoud, PV modules modelling, Presentation at the 2nd PV
+     Performance Modeling Workshop, Santa Clara, CA, May 2013
+
+    [3] A. Mermoud, T. Lejeune, Performance Assessment of a Simulation Model
+     for PV modules of any available technology, 25th European Photovoltaic
+     Solar Energy Conference, Valencia, Spain, Sept. 2010
+
+    See Also
+    --------
+    calcparams_desoto
+    singlediode
+
+    '''
+
+    # Boltzmann constant in J/K
+    k = 1.38064852e-23
+
+    # elementary charge in coulomb
+    q = 1.6021766e-19
+
+    # reference temperature
+    Tref_K = temp_ref + 273.15
+    Tcell_K = temp_cell + 273.15
+
+    gamma = gamma_ref + mu_gamma * (Tcell_K - Tref_K)
+    nNsVth = gamma * k / q * cells_in_series * Tcell_K
+
+    IL = effective_irradiance / irrad_ref * \
+        (I_L_ref + alpha_sc * (Tcell_K - Tref_K))
+
+    I0 = I_o_ref * ((Tcell_K / Tref_K) ** 3) * \
+        (np.exp((q * EgRef) / (k * gamma) * (1 / Tref_K - 1 / Tcell_K)))
+
+    Rsh_tmp = \
+        (R_sh_ref - R_sh_0 * np.exp(-R_sh_exp)) / (1.0 - np.exp(-R_sh_exp))
+    Rsh_base = np.maximum(0.0, Rsh_tmp)
+
+    Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
+        np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
+
+    Rs = R_s
 
     return IL, I0, Rs, Rsh, nNsVth
 
@@ -1056,12 +1519,13 @@ def retrieve_sam(name=None, path=None):
         * CEC module database
         * Sandia Module database
         * CEC Inverter database
+        * Anton Driesse Inverter database
 
     and return it as a pandas DataFrame.
 
     Parameters
     ----------
-    name : None or string
+    name : None or string, default None
         Name can be one of:
 
         * 'CECMod' - returns the CEC module database
@@ -1070,8 +1534,9 @@ def retrieve_sam(name=None, path=None):
           (CEC is only current inverter db available; tag kept for
           backwards compatibility)
         * 'SandiaMod' - returns the Sandia Module database
+        * 'ADRInverter' - returns the ADR Inverter database
 
-    path : None or string
+    path : None or string, default None
         Path to the SAM file. May also be a URL.
 
     If both name and path are None, a dialogue will open allowing the
@@ -1118,15 +1583,17 @@ def retrieve_sam(name=None, path=None):
             os.path.dirname(os.path.abspath(__file__)), 'data')
         if name == 'cecmod':
             csvdata = os.path.join(
-                data_path, 'sam-library-cec-modules-2015-6-30.csv')
+                data_path, 'sam-library-cec-modules-2017-6-5.csv')
         elif name == 'sandiamod':
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
+        elif name == 'adrinverter':
+            csvdata = os.path.join(data_path, 'adr-library-2013-10-01.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
             csvdata = os.path.join(
-                data_path, 'sam-library-cec-inverters-2015-6-30.csv')
+                data_path, 'sam-library-cec-inverters-2018-3-18.csv')
         else:
             raise ValueError('invalid name {}'.format(name))
     elif path is not None:
@@ -1171,6 +1638,13 @@ def _parse_raw_sam_df(csvdata):
 
     df.index = parsedindex
     df = df.transpose()
+    if 'ADRCoefficients' in df.index:
+        ad_ce = 'ADRCoefficients'
+        # for each inverter, parses a string of coefficients like
+        # ' 1.33, 2.11, 3.12' into a list containing floats:
+        # [1.33, 2.11, 3.12]
+        df.loc[ad_ce] = df.loc[ad_ce].map(lambda x: list(
+            map(float, x.strip(' []').split())))
 
     return df
 
@@ -1264,11 +1738,26 @@ def sapm(effective_irradiance, temp_cell, module):
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
 
-    Ee = effective_irradiance
+    # avoid problem with integer input
+    Ee = np.array(effective_irradiance, dtype='float64')
+
+    # set up masking for 0, positive, and nan inputs
+    Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
+    Ee_eq_0 = np.full_like(Ee, False, dtype='bool')
+    notnan = ~np.isnan(Ee)
+    np.greater(Ee, 0, where=notnan, out=Ee_gt_0)
+    np.equal(Ee, 0, where=notnan, out=Ee_eq_0)
 
     Bvmpo = module['Bvmpo'] + module['Mbvmp']*(1 - Ee)
     Bvoco = module['Bvoco'] + module['Mbvoc']*(1 - Ee)
     delta = module['N'] * kb * (temp_cell + 273.15) / q
+
+    # avoid repeated computation
+    logEe = np.full_like(Ee, np.nan)
+    np.log(Ee, where=Ee_gt_0, out=logEe)
+    logEe = np.where(Ee_eq_0, -np.inf, logEe)
+    # avoid repeated __getitem__
+    cells_in_series = module['Cells_in_Series']
 
     out = OrderedDict()
 
@@ -1280,13 +1769,13 @@ def sapm(effective_irradiance, temp_cell, module):
         (1 + module['Aimp']*(temp_cell - T0)))
 
     out['v_oc'] = np.maximum(0, (
-        module['Voco'] + module['Cells_in_Series']*delta*np.log(Ee) +
+        module['Voco'] + cells_in_series * delta * logEe +
         Bvoco*(temp_cell - T0)))
 
     out['v_mp'] = np.maximum(0, (
         module['Vmpo'] +
-        module['C2']*module['Cells_in_Series']*delta*np.log(Ee) +
-        module['C3']*module['Cells_in_Series']*((delta*np.log(Ee)) ** 2) +
+        module['C2'] * cells_in_series * delta * logEe +
+        module['C3'] * cells_in_series * ((delta * logEe) ** 2) +
         Bvmpo*(temp_cell - T0)))
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
@@ -1325,7 +1814,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     temp_air : float or Series
         Ambient dry bulb temperature in degrees C.
 
-    model : string, list, or dict
+    model : string, list, or dict, default 'open_rack_cell_glassback'
         Model to be used.
 
         If string, can be:
@@ -1381,8 +1870,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
-    elif isinstance(model, list):
-        model = model
+
     elif isinstance(model, (dict, pd.Series)):
         model = [model['a'], model['b'], model['deltaT']]
 
@@ -1444,14 +1932,14 @@ def sapm_aoi_loss(aoi, module, upper=None):
     ----------
     aoi : numeric
         Angle of incidence in degrees. Negative input angles will return
-        nan values.
+        zeros.
 
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the :py:func:`sapm` notes section for more
         details.
 
-    upper : None or float
+    upper : None or float, default None
         Upper limit on the results.
 
     Returns
@@ -1486,7 +1974,10 @@ def sapm_aoi_loss(aoi, module, upper=None):
 
     aoi_loss = np.polyval(aoi_coeff, aoi)
     aoi_loss = np.clip(aoi_loss, 0, upper)
-    aoi_loss = np.where(aoi < 0, np.nan, aoi_loss)
+    # nan tolerant masking
+    aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
+    np.less(aoi, 0, where=~np.isnan(aoi), out=aoi_lt_0)
+    aoi_loss = np.where(aoi_lt_0, 0, aoi_loss)
 
     if isinstance(aoi, pd.Series):
         aoi_loss = pd.Series(aoi_loss, aoi.index)
@@ -1519,7 +2010,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
         parameters. See the :py:func:`sapm` notes section for more
         details.
 
-    reference_irradiance : numeric
+    reference_irradiance : numeric, default 1000
         Reference irradiance by which to divide the input irradiance.
 
     Returns
@@ -1539,8 +2030,9 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts=None):
-    r'''
+                resistance_shunt, nNsVth, ivcurve_pnts=None,
+                method='lambertw'):
+    """
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
     Singlediode solves the single diode equation [1]
@@ -1564,18 +2056,22 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
 
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
+        0 <= resistance_series < numpy.inf
 
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
+        0 < resistance_shunt <= numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -1585,10 +2081,15 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
+        0 < nNsVth
 
-    ivcurve_pnts : None or int
+    ivcurve_pnts : None or int, default None
         Number of points in the desired IV curve. If None or 0, no
         IV curves will be produced.
+
+    method : str, default 'lambertw'
+        Determines the method used to calculate points on the IV curve. The
+        options are ``'lambertw'``, ``'newton'``, or ``'brentq'``.
 
     Returns
     -------
@@ -1618,9 +2119,24 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     Notes
     -----
-    The solution employed to solve the implicit diode equation utilizes
-    the Lambert W function to obtain an explicit function of V=f(i) and
-    I=f(V) as shown in [2].
+    If the method is ``'lambertw'`` then the solution employed to solve the
+    implicit diode equation utilizes the Lambert W function to obtain an
+    explicit function of :math:`V=f(I)` and :math:`I=f(V)` as shown in [2].
+
+    If the method is ``'newton'`` then the root-finding Newton-Raphson method
+    is used. It should be safe for well behaved IV-curves, but the ``'brentq'``
+    method is recommended for reliability.
+
+    If the method is ``'brentq'`` then Brent's bisection search method is used
+    that guarantees convergence by bounding the voltage between zero and
+    open-circuit.
+
+    If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
+    are indicated, then :func:`pvlib.singlediode.bishop88` [4] is used to
+    calculate the points on the IV curve points at diode voltages from zero to
+    open-circuit voltage with a log spacing that gets closer as voltage
+    increases. If the method is ``'lambertw'`` then the calculated points on
+    the IV curve are linearly spaced.
 
     References
     -----------
@@ -1634,39 +2150,55 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     [3] D. King et al, "Sandia Photovoltaic Array Performance Model",
     SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
 
+    [4] "Computer simulation of the effects of electrical mismatches in
+    photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+    https://doi.org/10.1016/0379-6787(88)90059-2
+
     See also
     --------
     sapm
     calcparams_desoto
-    '''
+    pvlib.singlediode.bishop88
+    """
+    # Calculate points on the IV curve using the LambertW solution to the
+    # single diode equation
+    if method.lower() == 'lambertw':
+        out = _singlediode._lambertw(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth, ivcurve_pnts
+        )
+        i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx = out[:7]
+        if ivcurve_pnts:
+            ivcurve_i, ivcurve_v = out[7:]
+    else:
+        # Calculate points on the IV curve using either 'newton' or 'brentq'
+        # methods. Voltages are determined by first solving the single diode
+        # equation for the diode voltage V_d then backing out voltage
+        args = (photocurrent, saturation_current, resistance_series,
+                resistance_shunt, nNsVth)  # collect args
+        v_oc = _singlediode.bishop88_v_from_i(
+            0.0, *args, method=method.lower()
+        )
+        i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
+            *args, method=method.lower()
+        )
+        i_sc = _singlediode.bishop88_i_from_v(
+            0.0, *args, method=method.lower()
+        )
+        i_x = _singlediode.bishop88_i_from_v(
+            v_oc / 2.0, *args, method=method.lower()
+        )
+        i_xx = _singlediode.bishop88_i_from_v(
+            (v_oc + v_mp) / 2.0, *args, method=method.lower()
+        )
 
-    # Find short circuit current using Lambert W
-    i_sc = i_from_v(resistance_shunt, resistance_series, nNsVth, 0.01,
-                    saturation_current, photocurrent)
-
-    # Find open circuit voltage using Lambert W
-    v_oc = v_from_i(resistance_shunt, resistance_series, nNsVth, 0.0,
-                    saturation_current, photocurrent)
-
-    params = {'r_sh': resistance_shunt,
-              'r_s': resistance_series,
-              'nNsVth': nNsVth,
-              'i_0': saturation_current,
-              'i_l': photocurrent}
-
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0, v_oc*1.14, _pwr_optfcn)
-
-    # Invert the Power-Current curve. Find the current where the inverted power
-    # is minimized. This is i_mp. Start the optimization at v_oc/2
-    i_mp = i_from_v(resistance_shunt, resistance_series, nNsVth, v_mp,
-                    saturation_current, photocurrent)
-
-    # Find Ix and Ixx using Lambert W
-    i_x = i_from_v(resistance_shunt, resistance_series, nNsVth,
-                   0.5*v_oc, saturation_current, photocurrent)
-
-    i_xx = i_from_v(resistance_shunt, resistance_series, nNsVth,
-                    0.5*(v_oc+v_mp), saturation_current, photocurrent)
+        # calculate the IV curve if requested using bishop88
+        if ivcurve_pnts:
+            vd = v_oc * (
+                    (11.0 - np.logspace(np.log10(11.0), 0.0,
+                                        ivcurve_pnts)) / 10.0
+            )
+            ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
 
     out = OrderedDict()
     out['i_sc'] = i_sc
@@ -1677,13 +2209,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     out['i_x'] = i_x
     out['i_xx'] = i_xx
 
-    # create ivcurve
     if ivcurve_pnts:
-        ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
-                     np.linspace(0, 1, ivcurve_pnts))
-        ivcurve_i = i_from_v(
-            resistance_shunt, resistance_series, nNsVth, ivcurve_v.T,
-            saturation_current, photocurrent).T
+
         out['v'] = ivcurve_v
         out['i'] = ivcurve_i
 
@@ -1693,102 +2220,81 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     return out
 
 
-# Created April,2014
-# Author: Rob Andrews, Calama Consulting
-
-def _golden_sect_DataFrame(params, VL, VH, func):
-    '''
-    Vectorized golden section search for finding MPPT
-    from a dataframe timeseries.
+def max_power_point(photocurrent, saturation_current, resistance_series,
+                    resistance_shunt, nNsVth, method='brentq'):
+    """
+    Given the single diode equation coefficients, calculates the maximum power
+    point (MPP).
 
     Parameters
     ----------
-    params : dict
-        Dictionary containing scalars or arrays
-        of inputs to the function to be optimized.
-        Each row should represent an independent optimization.
-
-    VL: float
-        Lower bound of the optimization
-
-    VH: float
-        Upper bound of the optimization
-
-    func: function
-        Function to be optimized must be in the form f(array-like, x)
+    photocurrent : numeric
+        photo-generated current [A]
+    saturation_current : numeric
+        diode reverse saturation current [A]
+    resistance_series : numeric
+        series resitance [ohms]
+    resistance_shunt : numeric
+        shunt resitance [ohms]
+    nNsVth : numeric
+        product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
+        and number of serices cells ``Ns``
+    method : str
+        either ``'newton'`` or ``'brentq'``
 
     Returns
     -------
-    func(df,'V1') : DataFrame
-        function evaluated at the optimal point
-
-    df['V1']: Dataframe
-        Dataframe of optimal points
+    OrderedDict or pandas.Datafrane
+        ``(i_mp, v_mp, p_mp)``
 
     Notes
     -----
-    This funtion will find the MAXIMUM of a function
-    '''
-
-    df = params
-    df['VH'] = VH
-    df['VL'] = VL
-
-    err = df['VH'] - df['VL']
-    errflag = True
-    iterations = 0
-
-    while errflag:
-
-        phi = (np.sqrt(5)-1)/2*(df['VH']-df['VL'])
-        df['V1'] = df['VL'] + phi
-        df['V2'] = df['VH'] - phi
-
-        df['f1'] = func(df, 'V1')
-        df['f2'] = func(df, 'V2')
-        df['SW_Flag'] = df['f1'] > df['f2']
-
-        df['VL'] = df['V2']*df['SW_Flag'] + df['VL']*(~df['SW_Flag'])
-        df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
-
-        err = df['V1'] - df['V2']
-        try:
-            errflag = (abs(err) > .01).any()
-        except ValueError:
-            errflag = (abs(err) > .01)
-
-        iterations += 1
-
-        if iterations > 50:
-            raise Exception("EXCEPTION:iterations exeeded maximum (50)")
-
-    return func(df, 'V1'), df['V1']
-
-
-def _pwr_optfcn(df, loc):
-    '''
-    Function to find power from ``i_from_v``.
-    '''
-
-    I = i_from_v(df['r_sh'], df['r_s'], df['nNsVth'],
-                 df[loc], df['i_0'], df['i_l'])
-    return I*df[loc]
+    Use this function when you only want to find the maximum power point. Use
+    :func:`singlediode` when you need to find additional points on the IV
+    curve. This function uses Brent's method by default because it is
+    guaranteed to converge.
+    """
+    i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
+        photocurrent, saturation_current, resistance_series,
+        resistance_shunt, nNsVth, method=method.lower()
+    )
+    if isinstance(photocurrent, pd.Series):
+        ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}
+        out = pd.DataFrame(ivp, index=photocurrent.index)
+    else:
+        out = OrderedDict()
+        out['i_mp'] = i_mp
+        out['v_mp'] = v_mp
+        out['p_mp'] = p_mp
+    return out
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent):
+             saturation_current, photocurrent, method='lambertw'):
     '''
-    Calculates voltage from current per Eq 3 Jain and Kapoor 2004 [1].
+    Device voltage at the given device current for the single diode model.
+
+    Uses the single diode model (SDM) as described in, e.g.,
+     Jain and Kapoor 2004 [1].
+    The solution is per Eq 3 of [1] except when resistance_shunt=numpy.inf,
+     in which case the explict solution for voltage is used.
+    Ideal device parameters are specified by resistance_shunt=np.inf and
+     resistance_series=0.
+    Inputs to this function can include scalars and pandas.Series, but it is
+     the caller's responsibility to ensure that the arguments are all float64
+     and within the proper ranges.
 
     Parameters
     ----------
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
+        0 < resistance_shunt <= numpy.inf
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
+        0 <= resistance_series < numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -1798,6 +2304,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
+        0 < nNsVth
 
     current : numeric
         The current in amperes under desired IV curve conditions.
@@ -1805,14 +2312,20 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
+
+    method : str
+        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
+        ``'brentq'`` is limited to 1st quadrant only.
 
     Returns
     -------
-    current : np.array
+    current : np.ndarray or scalar
 
     References
     ----------
@@ -1820,56 +2333,56 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     parameters of real solar cells using Lambert W-function", Solar
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
-    try:
-        from scipy.special import lambertw
-    except ImportError:
-        raise ImportError('This function requires scipy')
-
-    Rsh = resistance_shunt
-    Rs = resistance_series
-    I0 = saturation_current
-    IL = photocurrent
-    I = current
-
-    argW = I0 * Rsh / nNsVth * np.exp(Rsh * (-I + IL + I0) / nNsVth)
-    lambertwterm = lambertw(argW).real
-
-    # Calculate using log(argW) in case argW is really big
-    logargW = (np.log(I0) + np.log(Rsh) - np.log(nNsVth) +
-               Rsh * (-I + IL + I0) / nNsVth)
-
-    # Three iterations of Newton-Raphson method to solve
-    # w+log(w)=logargW. The initial guess is w=logargW. Where direct
-    # evaluation (above) results in NaN from overflow, 3 iterations
-    # of Newton's method gives approximately 8 digits of precision.
-    w = logargW
-    for i in range(0, 3):
-        w = w * (1 - np.log(w) + logargW) / (1 + w)
-    lambertwterm_log = w
-
-    lambertwterm = np.where(np.isfinite(lambertwterm), lambertwterm,
-                            lambertwterm_log)
-
-    # Eqn. 3 in Jain and Kapoor, 2004
-    V = -I*(Rs + Rsh) + IL*Rsh - nNsVth*lambertwterm + I0*Rsh
-
-    return V
+    if method.lower() == 'lambertw':
+        return _singlediode._lambertw_v_from_i(
+            resistance_shunt, resistance_series, nNsVth, current,
+            saturation_current, photocurrent
+        )
+    else:
+        # Calculate points on the IV curve using either 'newton' or 'brentq'
+        # methods. Voltages are determined by first solving the single diode
+        # equation for the diode voltage V_d then backing out voltage
+        args = (current, photocurrent, saturation_current,
+                resistance_series, resistance_shunt, nNsVth)
+        V = _singlediode.bishop88_v_from_i(*args, method=method.lower())
+        # find the right size and shape for returns
+        size, shape = _singlediode._get_size_and_shape(args)
+        if size <= 1:
+            if shape is not None:
+                V = np.tile(V, shape)
+        if np.isnan(V).any() and size <= 1:
+            V = np.repeat(V, size)
+            if shape is not None:
+                V = V.reshape(shape)
+        return V
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-             saturation_current, photocurrent):
+             saturation_current, photocurrent, method='lambertw'):
     '''
-    Calculates current from voltage per Eq 2 Jain and Kapoor 2004 [1].
+    Device current at the given device voltage for the single diode model.
+
+    Uses the single diode model (SDM) as described in, e.g.,
+     Jain and Kapoor 2004 [1].
+    The solution is per Eq 2 of [1] except when resistance_series=0,
+     in which case the explict solution for current is used.
+    Ideal device parameters are specified by resistance_shunt=np.inf and
+     resistance_series=0.
+    Inputs to this function can include scalars and pandas.Series, but it is
+     the caller's responsibility to ensure that the arguments are all float64
+     and within the proper ranges.
 
     Parameters
     ----------
     resistance_shunt : numeric
         Shunt resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rsh``.
+        0 < resistance_shunt <= numpy.inf
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
+        0 <= resistance_series < numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -1879,6 +2392,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
+        0 < nNsVth
 
     voltage : numeric
         The voltage in Volts under desired IV curve conditions.
@@ -1886,14 +2400,20 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     saturation_current : numeric
         Diode saturation current in amperes under desired IV curve
         conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     photocurrent : numeric
         Light-generated current (photocurrent) in amperes under desired
         IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
+
+    method : str
+        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
+        ``'brentq'`` is limited to 1st quadrant only.
 
     Returns
     -------
-    current : np.array
+    current : np.ndarray or scalar
 
     References
     ----------
@@ -1901,28 +2421,28 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     parameters of real solar cells using Lambert W-function", Solar
     Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
-    try:
-        from scipy.special import lambertw
-    except ImportError:
-        raise ImportError('This function requires scipy')
-
-    # asarray turns Series into arrays so that we don't have to worry
-    # about multidimensional broadcasting failing
-    Rsh = np.asarray(resistance_shunt)
-    Rs = np.asarray(resistance_series)
-    I0 = np.asarray(saturation_current)
-    IL = np.asarray(photocurrent)
-    V = np.asarray(voltage)
-
-    argW = (Rs*I0*Rsh *
-            np.exp(Rsh*(Rs*(IL+I0)+V) / (nNsVth*(Rs+Rsh))) /
-            (nNsVth*(Rs + Rsh)))
-    lambertwterm = lambertw(argW).real
-
-    # Eqn. 4 in Jain and Kapoor, 2004
-    I = -V/(Rs + Rsh) - (nNsVth/Rs)*lambertwterm + Rsh*(IL + I0)/(Rs + Rsh)
-
-    return I
+    if method.lower() == 'lambertw':
+        return _singlediode._lambertw_i_from_v(
+            resistance_shunt, resistance_series, nNsVth, voltage,
+            saturation_current, photocurrent
+        )
+    else:
+        # Calculate points on the IV curve using either 'newton' or 'brentq'
+        # methods. Voltages are determined by first solving the single diode
+        # equation for the diode voltage V_d then backing out voltage
+        args = (voltage, photocurrent, saturation_current, resistance_series,
+                resistance_shunt, nNsVth)
+        I = _singlediode.bishop88_i_from_v(*args, method=method.lower())
+        # find the right size and shape for returns
+        size, shape = _singlediode._get_size_and_shape(args)
+        if size <= 1:
+            if shape is not None:
+                I = np.tile(I, shape)
+        if np.isnan(I).any() and size <= 1:
+            I = np.repeat(I, size)
+            if shape is not None:
+                I = I.reshape(shape)
+        return I
 
 
 def snlinverter(v_dc, p_dc, inverter):
@@ -2037,6 +2557,137 @@ def snlinverter(v_dc, p_dc, inverter):
     return ac_power
 
 
+def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
+    r'''
+    Converts DC power and voltage to AC power using Anton Driesse's
+    Grid-Connected PV Inverter efficiency model
+
+    Parameters
+    ----------
+    v_dc : numeric
+        A scalar or pandas series of DC voltages, in volts, which are provided
+        as input to the inverter. If Vdc and Pdc are vectors, they must be
+        of the same size. v_dc must be >= 0. (V)
+
+    p_dc : numeric
+        A scalar or pandas series of DC powers, in watts, which are provided
+        as input to the inverter. If Vdc and Pdc are vectors, they must be
+        of the same size. p_dc must be >= 0. (W)
+
+    inverter : dict-like
+        A dict-like object defining the inverter to be used, giving the
+        inverter performance parameters according to the model
+        developed by Anton Driesse [1].
+        A set of inverter performance parameters may be loaded from the
+        supplied data table using retrievesam.
+        See Notes for required keys.
+
+    vtol : numeric, default 0.1
+        A unit-less fraction that determines how far the efficiency model is
+        allowed to extrapolate beyond the inverter's normal input voltage
+        operating range. 0.0 <= vtol <= 1.0
+
+    Returns
+    -------
+    ac_power : numeric
+        A numpy array or pandas series of modeled AC power output given the
+        input DC voltage, v_dc, and input DC power, p_dc. When ac_power would
+        be greater than pac_max, it is set to p_max to represent inverter
+        "clipping". When ac_power would be less than -p_nt (energy consumed
+        rather  than produced) then ac_power is set to -p_nt to represent
+        nightly power losses. ac_power is not adjusted for maximum power point
+        tracking (MPPT) voltage windows or maximum current limits of the
+        inverter.
+
+    Notes
+    -----
+
+    Required inverter keys are:
+
+    =======   ============================================================
+    Column    Description
+    =======   ============================================================
+    p_nom     The nominal power value used to normalize all power values,
+              typically the DC power needed to produce maximum AC power
+              output, (W).
+
+    v_nom     The nominal DC voltage value used to normalize DC voltage
+              values, typically the level at which the highest efficiency
+              is achieved, (V).
+
+    pac_max   The maximum AC output power value, used to clip the output
+              if needed, (W).
+
+    ce_list   This is a list of 9 coefficients that capture the influence
+              of input voltage and power on inverter losses, and thereby
+              efficiency.
+
+    p_nt      ac-power consumed by inverter at night (night tare) to
+              maintain circuitry required to sense PV array voltage, (W).
+    =======   ============================================================
+
+    References
+    ----------
+    [1] Beyond the Curves: Modeling the Electrical Efficiency
+        of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
+
+    See also
+    --------
+    sapm
+    singlediode
+    '''
+
+    p_nom = inverter['Pnom']
+    v_nom = inverter['Vnom']
+    pac_max = inverter['Pacmax']
+    p_nt = inverter['Pnt']
+    ce_list = inverter['ADRCoefficients']
+    v_max = inverter['Vmax']
+    v_min = inverter['Vmin']
+    vdc_max = inverter['Vdcmax']
+    mppt_hi = inverter['MPPTHi']
+    mppt_low = inverter['MPPTLow']
+
+    v_lim_upper = np.nanmax([v_max, vdc_max, mppt_hi]) * (1 + vtol)
+    v_lim_lower = np.nanmax([v_min, mppt_low]) * (1 - vtol)
+
+    pdc = p_dc / p_nom
+    vdc = v_dc / v_nom
+    # zero voltage will lead to division by zero, but since power is
+    # set to night time value later, these errors can be safely ignored
+    with np.errstate(invalid='ignore', divide='ignore'):
+        poly = np.array([pdc**0,  # replace with np.ones_like?
+                         pdc,
+                         pdc**2,
+                         vdc - 1,
+                         pdc * (vdc - 1),
+                         pdc**2 * (vdc - 1),
+                         1. / vdc - 1,  # divide by 0
+                         pdc * (1. / vdc - 1),  # invalid 0./0. --> nan
+                         pdc**2 * (1. / vdc - 1)])  # divide by 0
+    p_loss = np.dot(np.array(ce_list), poly)
+    ac_power = p_nom * (pdc-p_loss)
+    p_nt = -1 * np.absolute(p_nt)
+
+    # set output to nan where input is outside of limits
+    # errstate silences case where input is nan
+    with np.errstate(invalid='ignore'):
+        invalid = (v_lim_upper < v_dc) | (v_dc < v_lim_lower)
+    ac_power = np.where(invalid, np.nan, ac_power)
+
+    # set night values
+    ac_power = np.where(vdc == 0, p_nt, ac_power)
+    ac_power = np.maximum(ac_power, p_nt)
+
+    # set max ac output
+    ac_power = np.minimum(ac_power, pac_max)
+
+    if isinstance(p_dc, pd.Series):
+        ac_power = pd.Series(ac_power, index=pdc.index)
+
+    return ac_power
+
+
 def scale_voltage_current_power(data, voltage=1, current=1):
     """
     Scales the voltage, current, and power of the DataFrames
@@ -2047,9 +2698,9 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     data: DataFrame
         Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
         'i_sc', 'p_mp'`.
-    voltage: numeric
+    voltage: numeric, default 1
         The amount by which to multiply the voltages.
-    current: numeric
+    current: numeric, default 1
         The amount by which to multiply the currents.
 
     Returns
@@ -2093,7 +2744,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     gamma_pdc: numeric
         The temperature coefficient in units of 1/C. Typically -0.002 to
         -0.005 per degree C.
-    temp_ref: numeric
+    temp_ref: numeric, default 25.0
         Cell reference temperature. PVWatts defines it to be 25 C and
         is included here for flexibility.
 
@@ -2130,17 +2781,17 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
     Parameters
     ----------
-    soiling: numeric
-    shading: numeric
-    snow: numeric
-    mismatch: numeric
-    wiring: numeric
-    connections: numeric
-    lid: numeric
+    soiling: numeric, default 2
+    shading: numeric, default 3
+    snow: numeric, default 0
+    mismatch: numeric, default 2
+    wiring: numeric, default 2
+    connections: numeric, default 0.5
+    lid: numeric, default 1.5
         Light induced degradation
-    nameplate_rating: numeric
-    age: numeric
-    availability: numeric
+    nameplate_rating: numeric, default 1
+    age: numeric, default 0
+    availability: numeric, default 3
 
     Returns
     -------
@@ -2188,9 +2839,9 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
         DC power.
     pdc0: numeric
         Nameplate DC rating.
-    eta_inv_nom: numeric
+    eta_inv_nom: numeric, default 0.96
         Nominal inverter efficiency.
-    eta_inv_ref: numeric
+    eta_inv_ref: numeric, default 0.9637
         Reference inverter efficiency. PVWatts defines it to be 0.9637
         and is included here for flexibility.
 
@@ -2209,9 +2860,11 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pac0 = eta_inv_nom * pdc0
     zeta = pdc / pdc0
 
+    # eta < 0 if zeta < 0.006. pac is forced to be >= 0 below. GH 541
     eta = eta_inv_nom / eta_inv_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
 
     pac = eta * pdc
     pac = np.minimum(pac0, pac)
+    pac = np.maximum(0, pac)     # GH 541
 
     return pac

@@ -24,25 +24,24 @@ able to edit the source code?**
 Installing pvlib-python is similar to installing most scientific python
 packages, so see the :ref:`references` section for further help.
 
+Please see the :ref:`compatibility` section for information on the
+optional packages that are needed for some pvlib-python features.
+
 .. _nopython:
 
 If you don't have Python
 ------------------------
 
 There are many ways to install Python on your system, but the Anaconda
-Scientific Python distribution provides by far the easiest way for new
-users to get started. Anaconda includes all of the popular libraries
-that you'll need for pvlib, including Pandas, NumPy, and SciPy.
+Python distribution is the easiest way for most new users to get
+started. Anaconda includes all of the popular libraries that you'll need
+for pvlib, including Pandas, NumPy, and SciPy.
 
-    Anaconda installs cleanly into a single directory, does not require
-    Administrator or root privileges, does not affect other Python installs
-    on your system, or interfere with OSX Frameworks. -- `The Anaconda
-    Documentation <https://docs.continuum.io/anaconda/index>`_
+#. **Install** the Anaconda Python distribution available at
+   `Anaconda.com <https://www.anaconda.com/download/>`_.
 
-#. **Install** the full Anaconda Scientific Python distribution available
-   `at Continuum.io <https://store.continuum.io/cshop/anaconda/>`_
-
-See the `Anaconda FAQ <http://docs.continuum.io/anaconda/faq.html>`_
+See `What is Anaconda? <https://www.anaconda.com/what-is-anaconda/>`_
+and the `Anaconda Documentation <https://docs.anaconda.com/anaconda/>`_
 for more information.
 
 You can now install pvlib-python by one of the methods below.
@@ -53,14 +52,30 @@ You can now install pvlib-python by one of the methods below.
 Install standard release
 ------------------------
 
+Users may install pvlib-python using either the
+`conda <https://conda.io/docs/>`_ or `pip <https://pip.pypa.io>`_
+package manager. We recommend that most users install pvlib-python
+using the conda package manager in the
+`Anaconda Python distribution <https://www.anaconda.com/what-is-anaconda/>`_.
 To install the most recent stable release of pvlib-python in a
-non-editable way, use `conda <http://conda.pydata.org/docs/>`_
-(recommended if you use the Anaconda Python distribution) or `pip
-<https://pip.pypa.io>`_ (works with any Python distribution)::
+non-editable way, use one of the following commands to install pvlib-python::
 
+    # get the package from the pvlib conda channel
+    # best option for installing pvlib in the base Anaconda distribution
     conda install -c pvlib pvlib
 
+    # get the package from the conda-forge conda channel
+    # best option if using pvlib.forecast module
+    # strongly recommend installing in a separate conda env as shown below
+    conda create -n pvlib -c conda-forge pvlib-python; conda activate pvlib
+
+    # get the package from the Python Package Index
+    # best option if you know what you are doing
     pip install pvlib
+
+    # get pvlib and optional dependencies from the Python Package Index
+    # another option if you know what you are doing
+    pip install pvlib[optional]
 
 If your system complains that you don't have access privileges or asks
 for a password then you're probably trying to install pvlib into your
@@ -152,14 +167,14 @@ referred to as *conda environments*, but they're the same for our purposes.
 #. **Create** a new conda environment for pvlib and pre-install
    the required packages into the environment:
    ``conda create --name pvlibdev python pandas scipy``
-#. **Activate** the new conda environment: ``source activate pvlibdev``
+#. **Activate** the new conda environment: ``conda activate pvlibdev``
 #. **Install** additional packages into your development environment:
-   ``conda install jupyter ipython matplotlib seaborn pytest nose flake8``
+   ``conda install jupyter ipython matplotlib pytest nose flake8``
 
-The `conda documentation
-<http://conda.pydata.org/docs/using/index.html>`_ has more information
-on how to use conda virtual environments. You can also add ``-h`` to most
-pip and conda commands to get help (e.g. ``conda -h`` or ``conda env -h``)
+The `conda documentation <https://conda.io/docs/index.html>`_ has more
+information on how to use conda virtual environments. You can also add
+``-h`` to most pip and conda commands to get help (e.g. ``conda -h`` or
+``conda env -h``)
 
 .. _installsource:
 
@@ -170,10 +185,12 @@ Good news -- installing the source code is the easiest part!
 With your conda/virtual environment still active...
 
 #. **Install** pvlib-python in "development mode" by running
-   ``pip install -e /path/to/your/pvlib-python``.
-   You remember this path from the clone step, right? It's probably
-   something like ``C:\Users\%USER%\Documents\GitHub\pvlib-python``
-   (Windows) or ``/Users/%USER%/Documents/pvlib-python`` (Mac).
+   ``pip install -e .`` from within the directory you previously cloned.
+   Consider installing pvlib using ``pip install -e .[all]`` so that
+   you can run the unit tests and build the documentation.
+   Your clone directory is probably similar to
+   ``C:\Users\%USER%\Documents\GitHub\pvlib-python``(Windows) or
+   ``/Users/%USER%/Documents/pvlib-python`` (Mac).
 #. **Test** your installation by running ``python -c 'import pvlib'``.
    You're good to go if it returns without an exception.
 
@@ -191,8 +208,37 @@ if you make changes to pvlib during an interactive Python
 session (including a Jupyter notebook). Restarting the Python
 interpreter will also work.
 
-Remember to ``source activate pvlibdev`` (or whatever you named your
+Remember to ``conda activate pvlibdev`` (or whatever you named your
 environment) when you start a new shell or terminal.
+
+.. _compatibility:
+
+Compatibility
+-------------
+
+pvlib-python is compatible with Python versions 2.7 and 3.4-3.7.
+
+pvlib-python requires Pandas and Numpy. The minimum version requirements
+are specified in
+`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
+They are typically releases from several years ago.
+
+A handful of pvlib-python features require additional packages that must
+be installed separately using pip or conda. These packages/features
+include:
+
+* scipy: single diode model, clear sky detection
+* pytables: Linke turbidity look up for clear sky models
+* numba: fastest solar position calculations
+* pyephem: solar positions calculations using an astronomical library
+* siphon: forecasting PV power using the pvlib.forecast module
+
+The Anaconda distribution includes most of the above packages.
+
+Alternatively, users may install all optional dependencies using
+
+    pip install pvlib[optional]
+
 
 .. _nrelspa:
 
@@ -215,28 +261,6 @@ To install the NREL SPA algorithm for use with pvlib:
 #. Copy the SPA files into ``pvlib-python/pvlib/spa_c_files``
 #. From the ``pvlib-python`` directory, run ``pip uninstall pvlib``
    followed by ``pip install .``
-
-.. _compatibility:
-
-Compatibility
--------------
-
-pvlib-python is compatible with Python versions 2.7, 3.4, 3.5 and Pandas
-versions 0.13.1 or newer.
-
-There have been several problems with Continuum's Anaconda packages that
-have impacted pvlib users. The current problems that we're aware of are
-listed below:
-
-#. For Windows + Python 2.7 users: Continuum's Python 2.7 SciPy 0.16.1,
-   0.17.0, 0.17.1 packages are not compiled properly and will crash your
-   Python interpreter if you use our Linke turbidity lookup function. See
-   `Anaconda issue 650
-   <https://github.com/ContinuumIO/anaconda-issues/issues/650>`_ for more.
-
-Note that our Numba-accelerated solar position algorithms have more
-specific version requirements that will be resolved by the Numba
-installer.
 
 .. _references:
 

@@ -1,0 +1,20 @@
+name: test_env
+channels:
+    - defaults
+    - conda-forge
+dependencies:
+    - python=3.6
+    - numpy
+    - scipy
+    - pytables
+    - pandas
+    - pytz
+    - ephem
+    - numba
+    - siphon
+    - pytest
+    - pytest-cov
+    - pytest-mock
+    - nose
+    - pip:
+        - coveralls

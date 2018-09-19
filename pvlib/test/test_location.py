@@ -1,20 +1,27 @@
 import datetime
+try:
+    from unittest.mock import ANY
+except ImportError:
+    # python 2
+    from mock import ANY
 
 import numpy as np
 from numpy import nan
 import pandas as pd
-import pytz
+from pandas.util.testing import assert_frame_equal, assert_index_equal
 
 import pytest
-from pytz.exceptions import UnknownTimeZoneError
-from pandas.util.testing import assert_series_equal, assert_frame_equal
 
+import pytz
+from pytz.exceptions import UnknownTimeZoneError
+
+import pvlib
 from pvlib.location import Location
 
 from test_solarposition import expected_solpos
+
 from conftest import requires_scipy
 
-aztz = pytz.timezone('US/Arizona')
 
 def test_location_required():
     Location(32.2, -111)
@@ -24,7 +31,7 @@ def test_location_all():
 
 
 @pytest.mark.parametrize('tz', [
-    aztz, 'America/Phoenix',  -7, -7.0,
+    pytz.timezone('US/Arizona'), 'America/Phoenix',  -7, -7.0,
 ])
 def test_location_tz(tz):
     Location(32.2, -111, tz)
@@ -49,11 +56,12 @@ def test_location_print_all():
         '  longitude: -111',
         '  altitude: 700',
         '  tz: US/Arizona'
-])
+    ])
     assert tus.__str__() == expected_str
 
+
 def test_location_print_pytz():
-    tus = Location(32.2, -111, aztz, 700, 'Tucson')
+    tus = Location(32.2, -111, pytz.timezone('US/Arizona'), 700, 'Tucson')
     expected_str = '\n'.join([
         'Location: ',
         '  name: Tucson',
@@ -66,40 +74,38 @@ def test_location_print_pytz():
 
 
 @requires_scipy
-def test_get_clearsky():
+def test_get_clearsky(mocker):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     times = pd.DatetimeIndex(start='20160101T0600-0700',
                              end='20160101T1800-0700',
                              freq='3H')
-    clearsky = tus.get_clearsky(times)
-    expected = pd.DataFrame(data=np.array([
-        (  0.0,                0.0,              0.0),
-        (262.77734276159333, 791.1972825869296, 46.18714900637892),
-        (616.764693938387,   974.9610353623959, 65.44157429054201),
-        (419.6512657626518,  901.6234995035793, 54.26016437839348),
-        (  0.0,                0.0,              0.0)],
-        dtype=[('ghi', '<f8'), ('dni', '<f8'), ('dhi', '<f8')]), index=times)
-    assert_frame_equal(expected, clearsky, check_less_precise=2)
+    m = mocker.spy(pvlib.clearsky, 'ineichen')
+    out = tus.get_clearsky(times)
+    assert m.call_count == 1
+    assert_index_equal(out.index, times)
+    # check that values are 0 before sunrise and after sunset
+    assert out.iloc[0, :].sum().sum() == 0
+    assert out.iloc[-1:, :].sum().sum() == 0
+    # check that values are > 0 during the day
+    assert (out.iloc[1:-1, :] > 0).all().all()
+    assert (out.columns.values == ['ghi', 'dni', 'dhi']).all()
 
 
-def test_get_clearsky_ineichen_supply_linke():
+def test_get_clearsky_ineichen_supply_linke(mocker):
     tus = Location(32.2, -111, 'US/Arizona', 700)
-    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
-    times_localized = times.tz_localize(tus.tz)
-    expected = pd.DataFrame(np.
-        array([[    0.        ,     0.        ,     0.        ],
-               [    0.        ,     0.        ,     0.        ],
-               [   79.73090244,   316.16436502,    40.45759009],
-               [  703.43653498,   876.41452667,    95.15798252],
-               [ 1042.37962396,   939.86391062,   118.44687715],
-               [  851.32411813,   909.11186737,   105.36662462],
-               [  257.18266827,   646.16644264,    62.02777094],
-               [    0.        ,     0.        ,     0.        ],
-               [    0.        ,     0.        ,     0.        ]]),
-                            columns=['ghi', 'dni', 'dhi'],
-                            index=times_localized)
-    out = tus.get_clearsky(times_localized, linke_turbidity=3)
-    assert_frame_equal(expected, out, check_less_precise=2)
+    times = pd.date_range(start='2014-06-24-0700', end='2014-06-25-0700',
+                          freq='3h')
+    mocker.spy(pvlib.clearsky, 'ineichen')
+    out = tus.get_clearsky(times, linke_turbidity=3)
+    # we only care that the LT is passed in this test
+    pvlib.clearsky.ineichen.assert_called_once_with(ANY, ANY, 3, ANY, ANY)
+    assert_index_equal(out.index, times)
+    # check that values are 0 before sunrise and after sunset
+    assert out.iloc[0:2, :].sum().sum() == 0
+    assert out.iloc[-2:, :].sum().sum() == 0
+    # check that values are > 0 during the day
+    assert (out.iloc[2:-2, :] > 0).all().all()
+    assert (out.columns.values == ['ghi', 'dni', 'dhi']).all()
 
 
 def test_get_clearsky_haurwitz():

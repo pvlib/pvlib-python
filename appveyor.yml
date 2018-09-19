@@ -7,8 +7,8 @@ environment:
 
   matrix:
     - PYTHON_VERSION: "2.7"
-    - PYTHON_VERSION: "3.4"
-    #- PYTHON_VERSION: "3.5"
+    - PYTHON_VERSION: "3.6"
+#    - PYTHON_VERSION: "3.7"  # appveyor supports 3.7, but siphon package not yet available for py 3.7 as of 2018-08-04. dont want to bother with a more complicated config
 
 platform:
     - x86
@@ -18,6 +18,8 @@ install:
     # Use the pre-installed Miniconda for the desired arch
     - ps: if($env:PYTHON_VERSION -eq '3.5')
             { $env:CONDA_PATH="$($env:CONDA_PATH)35" }
+    - ps: if($env:PYTHON_VERSION -eq '3.6')
+            { $env:CONDA_PATH="$($env:CONDA_PATH)36" }
     - ps: if($env:TARGET_ARCH -eq 'x64')
             { $env:CONDA_PATH="$($env:CONDA_PATH)-x64" }
     - ps: $env:path="$($env:CONDA_PATH);$($env:CONDA_PATH)\Scripts;$($env:CONDA_PATH)\Library\bin;C:\cygwin\bin;$($env:PATH)"
@@ -27,7 +29,7 @@ install:
     - cmd: conda info -a
 
     # install depenencies
-    - cmd: conda create -n test_env --yes --quiet python=%PYTHON_VERSION% pip numpy scipy pandas nose pytest pytz ephem numba siphon -c conda-forge
+    - cmd: conda create -n test_env --yes --quiet python=%PYTHON_VERSION% numpy scipy pytables pandas nose pytest pytz ephem numba siphon pytest-mock -c conda-forge
     - cmd: activate test_env
     - cmd: python --version
     - cmd: conda list
@@ -38,4 +40,4 @@ install:
 build: false
 
 test_script:
-    - cmd: py.test -v pvlib
+    - cmd: pytest -v pvlib

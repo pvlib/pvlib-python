@@ -1,0 +1,8 @@
+linters:
+    flake8:
+        python: 3
+        max-line-length: 79
+        ignore: E201,E241
+files:
+    ignore:
+        - 'pvlib/_version.py'

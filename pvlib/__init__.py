@@ -1,5 +1,3 @@
-import logging
-logging.basicConfig()
 from pvlib.version import __version__
 from pvlib import tools
 from pvlib import atmosphere
@@ -13,3 +11,4 @@ from pvlib import tracking
 from pvlib import pvsystem
 from pvlib import spa
 from pvlib import modelchain
+from pvlib import singlediode

@@ -1,0 +1,28 @@
+.. _whatsnew_0430:
+
+v0.4.3 (December 28, 2016)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Adding implementation of Perez's DIRINDEX model based on existing DIRINT
+  model implementation. (:issue:`282`)
+* Added clearsky.detect_clearsky function to determine the clear times
+  in a GHI time series. (:issue:`284`)
+
+
+Other
+~~~~~
+
+* Adds Python 3.6 to compatibility statement and pypi classifiers.
+  (:issue:`286`)
+
+
+Contributors
+~~~~~~~~~~~~
+
+* Marc Anoma
+* Will Holmgren
+* Cliff Hansen
+* Tony Lorenzo

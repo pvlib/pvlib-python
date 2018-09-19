@@ -1,0 +1,59 @@
+.. _whatsnew_0510:
+
+v0.5.1 (October 17, 2017)
+-------------------------
+
+API Changes
+~~~~~~~~~~~
+* `pvsystem.v_from_i` and `pvsystem.i_from_v` functions now accept
+  resistance_series = 0 and/or resistance_shunt = numpy.inf as inputs
+  (:issue:`340`)
+
+Enhancements
+~~~~~~~~~~~~
+* Improve clearsky.lookup_linke_turbidity speed. (:issue:`368`)
+* Ideal devices supported in single diode model, e.g.,
+  resistance_series = 0 and/or resistance_shunt = numpy.inf (:issue:`340`)
+* `pvsystem.v_from_i` and `pvsystem.i_from_v` computations for near ideal
+  devices are more numerically stable. However, very, very near ideal
+  resistance_series and/or resistance_shunt may still cause issues with the
+  implicit solver (:issue:`340`)
+
+Bug fixes
+~~~~~~~~~
+* Remove condition causing Overflow warning from clearsky.haurwitz
+  (:issue:`363`)
+* modelchain.basic_chain now correctly passes 'solar_position_method'
+  arg to solarposition.get_solarposition (:issue:`370`)
+* Fixed: `Variables and Symbols extra references not available
+  <https://github.com/pvlib/pvlib-python/issues/380>`_ (:issue:`380`)
+* Removed unnecessary calculations of alpha_prime in spa.solar_position_numpy
+  and spa.solar_position_loop (:issue:`366`)
+* Fixed args mismatch for solarposition.pyephem call
+  from solarposition.get_solarposition with method='pyephem'
+  arg to solarposition.get_solarposition (:issue:`370`)
+* ModelChain.prepare_inputs and ModelChain.complete_irradiance now
+  correctly pass the 'solar_position_method' argument to
+  solarposition.get_solarposition (:issue:`377`)
+* Fixed usage of inplace parameter for tmy._recolumn (:issue:`342`)
+
+Documentation
+~~~~~~~~~~~~~
+* Doc string of modelchain.basic_chain was updated to describe args
+  more accurately. (:issue:`370`)
+* Doc strings of `singlediode`, `pvsystem.v_from_i`, and `pvsystem.i_from_v`
+  were updated to describe acceptable input arg ranges. (:issue:`340`)
+
+Testing
+~~~~~~~
+* Changed test for clearsky.haurwitz to operate on zenith angles
+* Significant new test cases added for `pvsystem.v_from_i` and
+  `pvsystem.i_from_v` (:issue:`340`)
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen
+* KonstantinTr
+* Will Holmgren
+* Mark Campanelli
+* DaCoEx

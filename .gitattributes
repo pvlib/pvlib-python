@@ -1,1 +1,4 @@
 pvlib/version.py export-subst
+
+# reduce the number of merge conflicts
+docs/sphinx/source/whatsnew/* merge=union

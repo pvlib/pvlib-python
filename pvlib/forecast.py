@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.irradiance import liujordan, extraradiation, disc
+from pvlib.irradiance import liujordan, get_extra_radiation, disc
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
@@ -118,12 +118,16 @@ class ForecastModel(object):
         self.model_type = model_type
         self.model_name = model_name
         self.set_type = set_type
+        self.connected = False
+
+    def connect_to_catalog(self):
         self.catalog = TDSCatalog(self.catalog_url)
-        self.fm_models = TDSCatalog(self.catalog.catalog_refs[model_type].href)
+        self.fm_models = TDSCatalog(
+            self.catalog.catalog_refs[self.model_type].href)
         self.fm_models_list = sorted(list(self.fm_models.catalog_refs.keys()))
 
         try:
-            model_url = self.fm_models.catalog_refs[model_name].href
+            model_url = self.fm_models.catalog_refs[self.model_name].href
         except ParseError:
             raise ParseError(self.model_name + ' model may be unavailable.')
 
@@ -137,6 +141,7 @@ class ForecastModel(object):
 
         self.datasets_list = list(self.model.datasets.keys())
         self.set_dataset()
+        self.connected = True
 
     def __repr__(self):
         return '{}, {}'.format(self.model_name, self.set_type)
@@ -169,8 +174,8 @@ class ForecastModel(object):
                 isinstance(self.latitude, list)):
             self.lbox = True
             # west, east, south, north
-            self.query.lonlat_box(self.latitude[0], self.latitude[1],
-                                  self.longitude[0], self.longitude[1])
+            self.query.lonlat_box(self.longitude[0], self.longitude[1],
+                                  self.latitude[0], self.latitude[1])
         else:
             self.lbox = False
             self.query.lonlat_point(self.longitude, self.latitude)
@@ -211,11 +216,11 @@ class ForecastModel(object):
             The start time.
         end: datetime or timestamp
             The end time.
-        vert_level: None, float or integer
+        vert_level: None, float or integer, default None
             Vertical altitude of interest.
-        variables: None or list
+        query_variables: None or list, default None
             If None, uses self.variables.
-        close_netcdf_data: bool
+        close_netcdf_data: bool, default True
             Controls if the temporary netcdf data file should be closed.
             Set to False to access the raw data.
 
@@ -224,6 +229,10 @@ class ForecastModel(object):
         forecast_data : DataFrame
             column names are the weather model's variable names.
         """
+
+        if not self.connected:
+            self.connect_to_catalog()
+
         if vert_level is not None:
             self.vert_level = vert_level
 
@@ -300,7 +309,7 @@ class ForecastModel(object):
         Parameters
         ----------
         data: DataFrame
-        variables: None or dict
+        variables: None or dict, default None
             If None, uses self.variables
 
         Returns
@@ -372,7 +381,7 @@ class ForecastModel(object):
             Cloud cover in %.
         ghi_clear: numeric
             GHI under clear sky conditions.
-        offset: numeric
+        offset: numeric, default 35
             Determines the minimum GHI.
         kwargs
             Not used.
@@ -412,7 +421,7 @@ class ForecastModel(object):
         ----------
         cloud_cover : Series
             Cloud cover in %.
-        method : str
+        method : str, default 'linear'
             Method for converting cloud cover to GHI.
             'linear' is currently the only option.
         **kwargs
@@ -454,7 +463,7 @@ class ForecastModel(object):
         ----------
         cloud_cover : numeric
             Cloud cover in %.
-        offset : numeric
+        offset : numeric, default 0.75
             Determines the maximum transmittance.
         kwargs
             Not used.
@@ -464,7 +473,7 @@ class ForecastModel(object):
         ghi : numeric
             Estimated GHI.
         """
-        transmittance = ((100.0 - cloud_cover) / 100.0) * 0.75
+        transmittance = ((100.0 - cloud_cover) / 100.0) * offset
 
         return transmittance
 
@@ -490,7 +499,7 @@ class ForecastModel(object):
         # pressure, temp, etc., but the cloud cover forecast is not
         # accurate enough to justify using these minor corrections
         solar_position = self.location.get_solarposition(cloud_cover.index)
-        dni_extra = extraradiation(cloud_cover.index)
+        dni_extra = get_extra_radiation(cloud_cover.index)
         airmass = self.location.get_airmass(cloud_cover.index)
 
         transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,
@@ -511,7 +520,7 @@ class ForecastModel(object):
         Parameters
         ----------
         cloud_cover : Series
-        how : str
+        how : str, default 'clearsky_scaling'
             Selects the method for conversion. Can be one of
             clearsky_scaling or liujordan.
         **kwargs
@@ -565,9 +574,9 @@ class ForecastModel(object):
             Temperature in K
         """
 
-        P = data['pressure'] / 100.0
-        Tiso = data['temperature_iso']
-        Td = data['temperature_dew_iso'] - 273.15
+        P = data['pressure'] / 100.0                            # noqa: N806
+        Tiso = data['temperature_iso']                          # noqa: N806
+        Td = data['temperature_dew_iso'] - 273.15               # noqa: N806
 
         # saturation water vapor pressure
         e = 6.11 * 10**((7.5 * Td) / (Td + 273.3))
@@ -575,9 +584,9 @@ class ForecastModel(object):
         # saturation water vapor mixing ratio
         w = 0.622 * (e / (P - e))
 
-        T = Tiso - ((2.501 * 10.**6) / 1005.7) * w
+        temperature = Tiso - ((2.501 * 10.**6) / 1005.7) * w
 
-        return T
+        return temperature
 
     def uv_to_speed(self, data):
         """
@@ -624,9 +633,9 @@ class GFS(ForecastModel):
 
     Parameters
     ----------
-    resolution: string
+    resolution: string, default 'half'
         Resolution of the model, either 'half' or 'quarter' degree.
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -661,13 +670,19 @@ class GFS(ForecastModel):
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'wind_speed_u': 'u-component_of_wind_isobaric',
             'wind_speed_v': 'v-component_of_wind_isobaric',
-            'total_clouds': 'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
-            'low_clouds': 'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
-            'mid_clouds': 'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
-            'high_clouds': 'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
-            'boundary_clouds': 'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
+            'total_clouds':
+                'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
+            'low_clouds':
+                'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+            'mid_clouds':
+                'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
+            'high_clouds':
+                'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+            'boundary_clouds': ('Total_cloud_cover_boundary_layer_cloud_'
+                                'Mixed_intervals_Average'),
             'convect_clouds': 'Total_cloud_cover_convective_cloud',
-            'ghi_raw': 'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average', }
+            'ghi_raw': ('Downward_Short-Wave_Radiation_Flux_'
+                        'surface_Mixed_intervals_Average')}
 
         self.output_variables = [
             'temp_air',
@@ -691,7 +706,7 @@ class GFS(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -704,10 +719,10 @@ class GFS(ForecastModel):
         data['wind_speed'] = self.uv_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
-class HRRR_ESRL(ForecastModel):
+class HRRR_ESRL(ForecastModel):                                 # noqa: N801
     """
     Subclass of the ForecastModel class representing
     NOAA/GSD/ESRL's HRRR forecast model.
@@ -718,7 +733,7 @@ class HRRR_ESRL(ForecastModel):
 
     Parameters
     ----------
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -738,8 +753,8 @@ class HRRR_ESRL(ForecastModel):
     """
 
     def __init__(self, set_type='best'):
-        import warnings
-        warnings.warn('HRRR_ESRL is an experimental model and is not always available.')
+        warnings.warn('HRRR_ESRL is an experimental model and is not '
+                      'always available.')
 
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
@@ -755,7 +770,7 @@ class HRRR_ESRL(ForecastModel):
 
         self.output_variables = [
             'temp_air',
-            'wind_speed'
+            'wind_speed',
             'ghi_raw',
             'ghi',
             'dni',
@@ -776,7 +791,7 @@ class HRRR_ESRL(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -790,7 +805,7 @@ class HRRR_ESRL(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class NAM(ForecastModel):
@@ -803,7 +818,7 @@ class NAM(ForecastModel):
 
     Parameters
     ----------
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -857,7 +872,7 @@ class NAM(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -871,7 +886,7 @@ class NAM(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class HRRR(ForecastModel):
@@ -884,7 +899,7 @@ class HRRR(ForecastModel):
 
     Parameters
     ----------
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -916,7 +931,8 @@ class HRRR(ForecastModel):
             'low_clouds': 'Low_cloud_cover_low_cloud',
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
             'high_clouds': 'High_cloud_cover_high_cloud',
-            'condensation_height': 'Geopotential_height_adiabatic_condensation_lifted'}
+            'condensation_height':
+                'Geopotential_height_adiabatic_condensation_lifted'}
 
         self.output_variables = [
             'temp_air',
@@ -940,7 +956,7 @@ class HRRR(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -955,7 +971,7 @@ class HRRR(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class NDFD(ForecastModel):
@@ -967,7 +983,7 @@ class NDFD(ForecastModel):
 
     Parameters
     ----------
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -1024,7 +1040,7 @@ class NDFD(ForecastModel):
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]
 
 
 class RAP(ForecastModel):
@@ -1036,9 +1052,9 @@ class RAP(ForecastModel):
 
     Parameters
     ----------
-    resolution: string or int
+    resolution: string or int, default '20'
         The model resolution, either '20' or '40' (km)
-    set_type: string
+    set_type: string, default 'best'
         Type of model to pull data from.
 
     Attributes
@@ -1095,7 +1111,7 @@ class RAP(ForecastModel):
         ----------
         data: DataFrame
             Raw forecast data
-        cloud_cover: str
+        cloud_cover: str, default 'total_clouds'
             The type of cloud cover used to infer the irradiance.
 
         Returns
@@ -1109,4 +1125,4 @@ class RAP(ForecastModel):
         data['wind_speed'] = self.gust_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
-        return data.ix[:, self.output_variables]
+        return data[self.output_variables]

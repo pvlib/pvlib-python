@@ -10,9 +10,6 @@ from __future__ import division
 import os
 import threading
 import warnings
-import logging
-pvl_logger = logging.getLogger('pvlib')
-
 
 import numpy as np
 
@@ -952,7 +949,6 @@ def solar_position_loop(unixtime, loc_args, out):
         x = xterm(u, lat, elev)
         y = yterm(u, lat, elev)
         delta_alpha = parallax_sun_right_ascension(x, xi, H, delta)
-        alpha_prime = topocentric_sun_right_ascension(alpha, delta_alpha)
         delta_prime = topocentric_sun_declination(delta, x, y, xi, delta_alpha,
                                                   H)
         H_prime = topocentric_local_hour_angle(H, delta_alpha)
@@ -996,13 +992,11 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
         unixtime = unixtime.astype(np.float64)
 
     if ulength < numthreads:
-        pvl_logger.warning('The number of threads is more than the length of' +
-                           ' the time array. Only using %s threads.',
-                            ulength)
+        warnings.warn('The number of threads is more than the length of '
+                      'the time array. Only using %s threads.'.format(ulength))
         numthreads = ulength
 
     if numthreads <= 1:
-        pvl_logger.debug('Only using one thread for calculation')
         solar_position_loop(unixtime, loc_args, result)
         return result
 
@@ -1064,7 +1058,6 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     x = xterm(u, lat, elev)
     y = yterm(u, lat, elev)
     delta_alpha = parallax_sun_right_ascension(x, xi, H, delta)
-    alpha_prime = topocentric_sun_right_ascension(alpha, delta_alpha)
     delta_prime = topocentric_sun_declination(delta, x, y, xi, delta_alpha, H)
     H_prime = topocentric_local_hour_angle(H, delta_alpha)
     e0 = topocentric_elevation_angle_without_atmosphere(lat, delta_prime,
@@ -1103,7 +1096,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     elev : float
         Elevation of location in meters
     pressure : int or float
-        avg. yearly pressure at location in Pascals;
+        avg. yearly pressure at location in millibars;
         used for atmospheric correction
     temp : int or float
         avg. yearly temperature at location in
@@ -1119,13 +1112,13 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
-    numthreads: int, optional
+    numthreads: int, optional, default 8
         Number of threads to use for computation if numba>=0.17
         is installed.
-    sst : bool
+    sst : bool, default False
         If True, return only data needed for sunrise, sunset, and transit
         calculations.
-    esd : bool
+    esd : bool, default False
         If True, return only Earth-Sun distance in AU
 
     Returns
@@ -1314,16 +1307,16 @@ def calculate_deltat(year, month):
     Equations taken from http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
     """
 
-    plw = ' Deltat is unknown for years before -1999 and after 3000.'\
-          + ' Delta values will be calculated, but the calculations'\
-          + ' are not intended to be used for these years.'
+    plw = 'Deltat is unknown for years before -1999 and after 3000. ' \
+          'Delta values will be calculated, but the calculations ' \
+          'are not intended to be used for these years.'
 
     try:
         if np.any((year > 3000) | (year < -1999)):
-            pvl_logger.warning(plw)
+            warnings.warn(plw)
     except ValueError:
         if (year > 3000) | (year < -1999):
-            pvl_logger.warning(plw)
+            warnings.warn(plw)
     except TypeError:
         return 0
 

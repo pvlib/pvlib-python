@@ -1,11 +1,12 @@
 name: test_env
 channels:
-    - defaults
     - conda-forge
+    - defaults
 dependencies:
     - python=3.4
     - numpy
     - scipy
+    - pytables
     - pandas
     - pytz
     - ephem
@@ -13,6 +14,8 @@ dependencies:
     - siphon
     - pytest
     - pytest-cov
+    - pytest-mock
     - nose
     - pip:
         - coveralls
+        - pytest-timeout

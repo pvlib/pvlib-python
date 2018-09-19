@@ -1,40 +1,43 @@
 cdef extern from "spa.h":
-	ctypedef struct spa_data:
-		int year           
-		int month          
-		int day            
-		int hour           
-		int minute         
-		double second  
-		double delta_ut1   
-		double delta_t     
-		double timezone    
-		double longitude   
-		double latitude        
+    ctypedef enum:
+        SPA_ZA, SPA_ZA_INC, SPA_ZA_RTS, SPA_ALL
 
-		double elevation       
+    ctypedef struct spa_data:
+        int year
+        int month
+        int day
+        int hour
+        int minute
+        double second
+        double delta_ut1
+        double delta_t
+        double time_zone
+        double longitude
+        double latitude
 
-		double pressure        
+        double elevation
 
-		double temperature     
+        double pressure
 
-		double slope           
+        double temperature
 
-		double azm_rotation        
+        double slope
 
-		double atmos_refract    
+        double azm_rotation
 
-		int function       
+        double atmos_refract
 
-		double e0
-		double e
-		double zenith     
-		double azimuth_astro
-		double azimuth    
-		double incidence  
+        int function
 
-		double suntransit 
-		double sunrise    
-		double sunset   
+        double e0
+        double e
+        double zenith
+        double azimuth_astro
+        double azimuth
+        double incidence
 
-	int spa_calculate(spa_data *spa)
+        double suntransit
+        double sunrise
+        double sunset
+
+    int spa_calculate(spa_data *spa)

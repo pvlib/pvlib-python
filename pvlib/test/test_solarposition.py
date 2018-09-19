@@ -1,3 +1,4 @@
+import calendar
 import datetime
 
 import numpy as np
@@ -9,7 +10,7 @@ from numpy.testing import assert_allclose
 import pytest
 
 from pvlib.location import Location
-from pvlib import solarposition
+from pvlib import solarposition, spa
 
 from conftest import (requires_ephem, needs_pandas_0_17,
                       requires_spa_c, requires_numba)
@@ -259,6 +260,19 @@ def test_ephemeris_physical_dst(expected_solpos):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
+def test_ephemeris_physical_no_tz(expected_solpos):
+    times = pd.date_range(datetime.datetime(2003,10,17,19,30,30),
+                          periods=1, freq='D')
+    ephem_data = solarposition.ephemeris(times, golden_mst.latitude,
+                                         golden_mst.longitude,
+                                         pressure=82000,
+                                         temperature=11)
+    expected_solpos.index = times
+    expected_solpos = np.round(expected_solpos, 2)
+    ephem_data = np.round(ephem_data, 2)
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+
+
 def test_get_solarposition_error():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
@@ -340,13 +354,26 @@ def test_get_solarposition_deltat(delta_t, method, expected):
     this_expected = np.round(this_expected, 5)
     ephem_data = np.round(ephem_data, 5)
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
-   
+
 
 def test_get_solarposition_no_kwargs(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude)
+    expected_solpos.index = times
+    expected_solpos = np.round(expected_solpos, 2)
+    ephem_data = np.round(ephem_data, 2)
+    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+
+
+@requires_ephem
+def test_get_solarposition_method_pyephem(expected_solpos):
+    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+                          periods=1, freq='D', tz=golden.tz)
+    ephem_data = solarposition.get_solarposition(times, golden.latitude,
+                                                 golden.longitude,
+                                                 method='pyephem')
     expected_solpos.index = times
     expected_solpos = np.round(expected_solpos, 2)
     ephem_data = np.round(ephem_data, 2)
@@ -367,3 +394,108 @@ def test_nrel_earthsun_distance():
     expected = pd.Series(np.array([0.983289204601]),
                          index=pd.DatetimeIndex([times, ]))
     assert_series_equal(expected, result)
+
+
+def test_equation_of_time():
+    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                             freq="H")
+    output = solarposition.spa_python(times, 37.8, -122.25, 100)
+    eot = output['equation_of_time']
+    eot_rng = eot.max() - eot.min()  # range of values, around 30 minutes
+    eot_1 = solarposition.equation_of_time_spencer71(times.dayofyear)
+    eot_2 = solarposition.equation_of_time_pvcdrom(times.dayofyear)
+    assert np.allclose(eot_1 / eot_rng, eot / eot_rng, atol=0.3)  # spencer
+    assert np.allclose(eot_2 / eot_rng, eot / eot_rng, atol=0.4)  # pvcdrom
+
+
+def test_declination():
+    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                             freq="H")
+    atmos_refract = 0.5667
+    delta_t = spa.calculate_deltat(times.year, times.month)
+    unixtime = np.array([calendar.timegm(t.timetuple()) for t in times])
+    _, _, declination = spa.solar_position(unixtime, 37.8, -122.25, 100,
+                                           1013.25, 25, delta_t, atmos_refract,
+                                           sst=True)
+    declination = np.deg2rad(declination)
+    declination_rng = declination.max() - declination.min()
+    declination_1 = solarposition.declination_cooper69(times.dayofyear)
+    declination_2 = solarposition.declination_spencer71(times.dayofyear)
+    a, b = declination_1 / declination_rng, declination / declination_rng
+    assert np.allclose(a, b, atol=0.03)  # cooper
+    a, b = declination_2 / declination_rng, declination / declination_rng
+    assert np.allclose(a, b, atol=0.02)  # spencer
+
+
+def test_analytical_zenith():
+    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                             freq="H").tz_localize('Etc/GMT+8')
+    lat, lon = 37.8, -122.25
+    lat_rad = np.deg2rad(lat)
+    output = solarposition.spa_python(times, lat, lon, 100)
+    solar_zenith = np.deg2rad(output['zenith'])  # spa
+    # spencer
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
+    hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
+    decl = solarposition.declination_spencer71(times.dayofyear)
+    zenith_1 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
+    # pvcdrom and cooper
+    eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)
+    hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
+    decl = solarposition.declination_cooper69(times.dayofyear)
+    zenith_2 = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
+    assert np.allclose(zenith_1, solar_zenith, atol=0.015)
+    assert np.allclose(zenith_2, solar_zenith, atol=0.025)
+
+
+def test_analytical_azimuth():
+    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                             freq="H").tz_localize('Etc/GMT+8')
+    lat, lon = 37.8, -122.25
+    lat_rad = np.deg2rad(lat)
+    output = solarposition.spa_python(times, lat, lon, 100)
+    solar_azimuth = np.deg2rad(output['azimuth'])  # spa
+    solar_zenith = np.deg2rad(output['zenith'])
+    # spencer
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
+    hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
+    decl = solarposition.declination_spencer71(times.dayofyear)
+    zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
+    azimuth_1 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
+                                                       decl, zenith)
+    # pvcdrom and cooper
+    eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)
+    hour_angle = np.deg2rad(solarposition.hour_angle(times, lon, eot))
+    decl = solarposition.declination_cooper69(times.dayofyear)
+    zenith = solarposition.solar_zenith_analytical(lat_rad, hour_angle, decl)
+    azimuth_2 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
+                                                       decl, zenith)
+
+    idx = np.where(solar_zenith < np.pi/2)
+    assert np.allclose(azimuth_1[idx], solar_azimuth.as_matrix()[idx],
+                       atol=0.01)
+    assert np.allclose(azimuth_2[idx], solar_azimuth.as_matrix()[idx],
+                       atol=0.017)
+
+    # test for NaN values at boundary conditions (PR #431)
+    test_angles = np.radians(np.array(
+                   [[   0., -180.,  -20.],
+                    [   0.,    0.,   -5.],
+                    [   0.,    0.,    0.],
+                    [   0.,    0.,   15.],
+                    [   0.,  180.,   20.],
+                    [  30.,    0.,  -20.],
+                    [  30.,    0.,   -5.],
+                    [  30.,    0.,    0.],
+                    [  30.,  180.,    5.],
+                    [  30.,    0.,   10.],
+                    [ -30.,    0.,  -20.],
+                    [ -30.,    0.,  -15.],
+                    [ -30.,    0.,    0.],
+                    [ -30., -180.,    5.],
+                    [ -30.,  180.,   10.]]))
+
+    zeniths  = solarposition.solar_zenith_analytical(*test_angles.T)
+    azimuths = solarposition.solar_azimuth_analytical(*test_angles.T, zenith=zeniths)
+
+    assert not np.isnan(azimuths).any()

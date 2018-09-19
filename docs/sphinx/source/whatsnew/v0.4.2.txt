@@ -1,6 +1,6 @@
 .. _whatsnew_0420:
 
-v0.4.2 (October 31, 2016)
+v0.4.2 (December 7, 2016)
 -------------------------
 
 This is a minor release from 0.4.1.
@@ -46,12 +46,16 @@ Enhancements
   separate pages for each function, class, or method. (:issue:`258`)
 * Improved Linke turbidity factor time interpolation with Python `calendar`
   month days and leap years (:issue:`265`)
+* Added option to return diffuse components from Perez transposition model.
 
 
 Other
 ~~~~~
+
 * Typical modeling results could change by ~1%, depending on location, if they
   depend on the turbidity table
+* Fixed issues with pvsystem, tracking, and tmy_to_power jupyter notebooks
+  (:issue:`267`, :issue:`273`)
 
 
 Code Contributors
@@ -61,3 +65,5 @@ Code Contributors
 * Will Holmgren
 * Volker Beutner
 * Mark Mikofski
+* Marc Anoma
+* Giuseppe Peronato

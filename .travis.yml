@@ -2,10 +2,13 @@
 # http://conda.pydata.org/docs/travis.html
 # https://github.com/xray/xray/blob/master/.travis.yml
 # https://github.com/scipy/scipy/blob/master/.travis.yml
+# https://github.com/Unidata/MetPy/blob/master/.travis.yml
 
 language: python
 sudo: false # if false, use TravisCI's container based build
 
+# assume linux if not specified
+# someday add os: osx to specify osx, but python not yet supported on Travis
 matrix:
     include:
     - python: 2.7
@@ -16,6 +19,13 @@ matrix:
       env: CONDA_ENV=py34
     - python: 3.5
       env: CONDA_ENV=py35
+    - python: 3.6
+      env:
+        - CONDA_ENV=py36
+        - TASK="coverage"
+        - DEPLOY_ENV="true"
+    - python: 3.6
+      env: CONDA_ENV=py37
 
 addons:
     apt:
@@ -23,18 +33,25 @@ addons:
             - ccache
 
 cache:
-#    - pip
     - ccache
 
-# setup miniconda for numpy, scipy, pandas
+# setup miniconda for numpy, scipy, pandas, etc.
 before_install:
     - echo "before install"
-    - export PATH=/usr/lib/ccache:$PATH
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        wget http://repo.continuum.io/miniconda/Miniconda-3.16.0-Linux-x86_64.sh -O miniconda.sh;
+        export PYVER="2";
       else
-        wget http://repo.continuum.io/miniconda/Miniconda3-3.16.0-Linux-x86_64.sh -O miniconda.sh;
+        export PYVER="3";
       fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        export OSSTR="MacOSX-x86_64.sh";
+      else
+        export OSSTR="Linux-x86_64.sh";
+        export PATH=/usr/lib/ccache:$PATH;
+      fi
+    - export BASE="http://repo.continuum.io/miniconda/Miniconda"
+    - export CONDAVER="4.5.4"
+    - wget $BASE$PYVER-$CONDAVER-$OSSTR -O miniconda.sh;
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
@@ -51,18 +68,35 @@ install:
     - if [[ "$CONDA_ENV" == "py27-min" ]]; then
         pip uninstall numpy --yes;
         pip uninstall pandas --yes;
-        pip install --no-cache-dir numpy==1.9.0;
+        pip install --no-cache-dir numpy==1.10.1;
         pip install --no-cache-dir pandas==0.14.0;
       fi
     - conda list
     - echo $PATH
     - ls -l /home/travis/miniconda/envs/test_env/lib
-    #- pip install . # use pip to automatically install anything not in the yml files (i.e. numpy/scipy/pandas for py3*)
-    #- pip install scipy # won't do anything if already installed
     - pip install -e .
 
 script:
-    - py.test pvlib --cov=pvlib --cov-report term-missing
+    - pytest pvlib --cov=pvlib --cov-report term-missing
+
+after_script:
+  - if [[ $TASK == "coverage" ]]; then
+      pip install codecov;
+      codecov -e TRAVIS_PYTHON_VERSION;
+    fi
 
 after_success:
     coveralls
+
+deploy:
+  - provider: pypi
+    user: wholmgren
+    password:
+      secure: cUaCm+/9BAZ7pn1e6+X1TBh4ysSW9dFnUHrYIcR8xefb/O5YVlzPZACt2pR0vYJuJ6vGWOK5VzigeKyh9dccIJUqntqsqNwQF3GkgcNNzIwDUKzsmbuKEgL1GCvJWaIvov0Sevfmg7eFpGbXdynw6IVFMBssz+eVCwEV5Ww8WbI=
+    distributions: sdist bdist_wheel
+    upload_docs: false
+    on:
+      repo: pvlib/pvlib-python
+      python: 3.6
+      condition: $DEPLOY_ENV == "true"
+      tags: true

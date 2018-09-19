@@ -1,4 +1,5 @@
 # Byte-compiled / optimized / DLL files
+.pytest_cache/
 __pycache__/
 *.py[cod]
 
@@ -22,6 +23,7 @@ var/
 Drafts/
 */build/
 build/
+venv/
 
 *.egg-info/
 .installed.cfg
@@ -29,6 +31,7 @@ build/
 
 # spa_c_files builds
 pvlib/spa_c_files/build*
+pvlib/spa_c_files/spa_py.c
 
 # spa_c_files source
 pvlib/spa_c_files/spa.c
@@ -36,7 +39,8 @@ pvlib/spa_c_files/spa.h
 pvlib/spa_c_files/spa_tester.c
 
 # generated documentation
-# pvlib/sphinx/Docs/build/
+docs/sphinx/source/generated
+docs/sphinx/source/savefig
 
 # Installer logs
 pip-log.txt
@@ -58,6 +62,9 @@ coverage.xml
 .pydevproject
 .spyderproject
 .idea/
+*.sublime-project
+*.sublime-workspace
+.vscode
 
 # Rope
 .ropeproject

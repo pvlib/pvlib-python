@@ -7,9 +7,9 @@ import datetime
 import dateutil
 import io
 try:
-    from urllib2 import urlopen
+    from urllib2 import urlopen, Request
 except ImportError:
-    from urllib.request import urlopen
+    from urllib.request import urlopen, Request
 
 import pandas as pd
 
@@ -28,14 +28,14 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
 
     Parameters
     ----------
-    filename : None or string
+    filename : None or string, default None
         If None, attempts to use a Tkinter file browser. A string can be
         a relative file path, absolute file path, or url.
 
-    coerce_year : None or int
+    coerce_year : None or int, default None
         If supplied, the year of the data will be set to this value.
 
-    recolumn : bool
+    recolumn : bool, default True
         If True, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
 
@@ -157,21 +157,30 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     if filename is None:
         try:
             filename = _interactive_load()
-        except:
-            raise Exception('Interactive load failed. Tkinter not supported ' +
-                            'on this system. Try installing X-Quartz and ' +
-                            'reloading')
+        except ImportError:
+            raise ImportError('Interactive load failed. Tkinter not supported '
+                              'on this system. Try installing X-Quartz and '
+                              'reloading')
 
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    try:
-        csvdata = open(filename, 'r')
-    except IOError:
-        response = urlopen(filename)
+    if filename.startswith('http'):
+        request = Request(filename, headers={'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 '
+            'Safari/537.36'})
+        response = urlopen(request)
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
+    else:
+        # assume it's accessible via the file system
+        csvdata = open(filename, 'r')
 
-    # read in file metadata
-    meta = dict(zip(head, csvdata.readline().rstrip('\n').split(",")))
+    # read in file metadata, advance buffer to second line
+    firstline = csvdata.readline()
+    if 'Request Rejected' in firstline:
+        raise IOError('Remote server rejected TMY file request')
+
+    meta = dict(zip(head, firstline.rstrip('\n').split(",")))
 
     # convert metadata strings to numeric types
     meta['altitude'] = float(meta['altitude'])
@@ -180,14 +189,18 @@ def readtmy3(filename=None, coerce_year=None, recolumn=True):
     meta['TZ'] = float(meta['TZ'])
     meta['USAF'] = int(meta['USAF'])
 
+    # use pandas to read the csv file/stringio buffer
+    # header is actually the second line in file, but tell pandas to look for
+    # header information on the 1st line (0 indexing) because we've already
+    # advanced past the true first line with the readline call above.
     data = pd.read_csv(
-        filename, header=1,
+        csvdata, header=0,
         parse_dates={'datetime': ['Date (MM/DD/YYYY)', 'Time (HH:MM)']},
         date_parser=lambda *x: _parsedate(*x, year=coerce_year),
         index_col='datetime')
 
     if recolumn:
-        _recolumn(data)  # rename to standard column names
+        data = _recolumn(data)  # rename to standard column names
 
     data = data.tz_localize(int(meta['TZ']*3600))
 
@@ -213,7 +226,7 @@ def _parsedate(ymd, hour, year=None):
     return true_date
 
 
-def _recolumn(tmy3_dataframe, inplace=True):
+def _recolumn(tmy3_dataframe):
     """
     Rename the columns of the TMY3 DataFrame.
 
@@ -251,7 +264,7 @@ def _recolumn(tmy3_dataframe, inplace=True):
 
     mapping = dict(zip(raw_columns.split(','), new_columns))
 
-    return tmy3_dataframe.rename(columns=mapping, inplace=True)
+    return tmy3_dataframe.rename(columns=mapping)
 
 
 def readtmy2(filename):
@@ -389,16 +402,18 @@ def readtmy2(filename):
     if filename is None:
         try:
             filename = _interactive_load()
-        except:
-            raise Exception('Interactive load failed. Tkinter not supported on this system. Try installing X-Quartz and reloading')
+        except ImportError:
+            raise ImportError('Interactive load failed. Tkinter not supported '
+                              'on this system. Try installing X-Quartz and '
+                              'reloading')
 
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'
     columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'
     hdr_columns = 'WBAN,City,State,TZ,latitude,longitude,altitude'
 
-    TMY2, TMY2_meta = _read_tmy2(string, columns, hdr_columns, filename)
+    tmy2, tmy2_meta = _read_tmy2(string, columns, hdr_columns, filename)
 
-    return TMY2, TMY2_meta
+    return tmy2, tmy2_meta
 
 
 def _parsemeta_tmy2(columns, line):
@@ -467,20 +482,17 @@ def _read_tmy2(string, columns, hdr_columns, fname):
                     try:
                         val = float(val)
                     except:
-                        raise Exception('WARNING: In' + fname +
-                                        ' Read value is not an integer " ' +
-                                        val + ' " ')
+                        raise Exception('WARNING: In {} Read value is not an '
+                                        'integer " {} " '.format(fname, val))
                 elif marker[-1] == 's':
                     try:
                         val = str(val)
                     except:
-                        raise Exception('WARNING: In' + fname +
-                                        ' Read value is not a string" ' +
-                                        val + ' " ')
+                        raise Exception('WARNING: In {} Read value is not a '
+                                        'string " {} " '.format(fname, val))
                 else:
-                    raise Exception('WARNING: In' + __name__ +
-                                    'Improper column DataFrame " %' +
-                                    marker + ' " ')
+                    raise Exception('WARNING: In {} Improper column DataFrame '
+                                    '" %{} " '.format(__name__, marker))
 
                 part.append(val)
 

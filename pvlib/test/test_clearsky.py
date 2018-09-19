@@ -1,7 +1,11 @@
+import inspect
+import os
 from collections import OrderedDict
 
 import numpy as np
+from numpy import nan
 import pandas as pd
+import pytz
 
 import pytest
 from numpy.testing import assert_almost_equal, assert_allclose
@@ -11,40 +15,72 @@ from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
 from pvlib import atmosphere
+from pvlib import irradiance
 
-from conftest import requires_scipy
+from conftest import requires_scipy, requires_tables
 
 
 def test_ineichen_series():
-    tus = Location(32.2, -111, 'US/Arizona', 700)
-    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
-    times_localized = times.tz_localize(tus.tz)
-    ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
-                                                 tus.longitude)
-    am = atmosphere.relativeairmass(ephem_data['apparent_zenith'])
-    am = atmosphere.absoluteairmass(am, atmosphere.alt2pres(tus.altitude))
+    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h',
+                          tz='America/Phoenix')
+    apparent_zenith = pd.Series(np.array(
+        [124.0390863, 113.38779941, 82.85457044, 46.0467599, 10.56413562,
+         34.86074109, 72.41687122, 105.69538659, 124.05614124]),
+        index=times)
+    am = pd.Series(np.array(
+        [nan, nan, 6.97935524, 1.32355476, 0.93527685,
+         1.12008114, 3.01614096, nan, nan]),
+        index=times)
     expected = pd.DataFrame(np.
-        array([[    0.        ,     0.        ,     0.        ],
-               [    0.        ,     0.        ,     0.        ],
-               [   91.12492792,   321.16092181,    51.17628184],
-               [  716.46580533,   888.90147035,    99.5050056 ],
-               [ 1053.42066043,   953.24925854,   116.32868969],
-               [  863.54692781,   922.06124712,   106.95536561],
-               [  271.06382274,   655.44925241,    73.05968071],
-               [    0.        ,     0.        ,     0.        ],
-               [    0.        ,     0.        ,     0.        ]]),
+        array([[   0.        ,    0.        ,    0.        ],
+               [   0.        ,    0.        ,    0.        ],
+               [  65.49426624,  321.16092181,   25.54562017],
+               [ 704.6968125 ,  888.90147035,   87.73601277],
+               [1044.1230677 ,  953.24925854,  107.03109696],
+               [ 853.02065704,  922.06124712,   96.42909484],
+               [ 251.99427693,  655.44925241,   53.9901349 ],
+               [   0.        ,    0.        ,    0.        ],
+               [   0.        ,    0.        ,    0.        ]]),
                             columns=['ghi', 'dni', 'dhi'],
-                            index=times_localized)
+                            index=times)
 
-    out = clearsky.ineichen(ephem_data['apparent_zenith'], am, 3)
+    out = clearsky.ineichen(apparent_zenith, am, 3)
+    assert_frame_equal(expected, out)
+
+
+def test_ineichen_series_perez_enhancement():
+    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h',
+                          tz='America/Phoenix')
+    apparent_zenith = pd.Series(np.array(
+        [124.0390863, 113.38779941, 82.85457044, 46.0467599, 10.56413562,
+         34.86074109, 72.41687122, 105.69538659, 124.05614124]),
+        index=times)
+    am = pd.Series(np.array(
+        [nan, nan, 6.97935524, 1.32355476, 0.93527685,
+         1.12008114, 3.01614096, nan, nan]),
+        index=times)
+    expected = pd.DataFrame(np.
+        array([[   0.        ,    0.        ,    0.        ],
+               [   0.        ,    0.        ,    0.        ],
+               [  91.1249279 ,  321.16092171,   51.17628184],
+               [ 716.46580547,  888.9014706 ,   99.50500553],
+               [1053.42066073,  953.24925905,  116.3286895 ],
+               [ 863.54692748,  922.06124652,  106.9553658 ],
+               [ 271.06382275,  655.44925213,   73.05968076],
+               [   0.        ,    0.        ,    0.        ],
+               [   0.        ,    0.        ,    0.        ]]),
+                            columns=['ghi', 'dni', 'dhi'],
+                            index=times)
+
+    out = clearsky.ineichen(apparent_zenith, am, 3, perez_enhancement=True)
     assert_frame_equal(expected, out)
 
 
 def test_ineichen_scalar_input():
     expected = OrderedDict()
-    expected['ghi'] = 1048.592893113678
+    expected['ghi'] = 1038.159219
     expected['dni'] = 942.2081860378344
-    expected['dhi'] = 120.6989665520498
+    expected['dhi'] = 110.26529293612793
 
     out = clearsky.ineichen(10., 1., 3.)
     for k, v in expected.items():
@@ -70,9 +106,9 @@ def test_ineichen_nans():
     expected['dni'] = np.full(length, np.nan)
     expected['dhi'] = np.full(length, np.nan)
 
-    expected['ghi'][length-1] = 1053.205472
-    expected['dni'][length-1] = 946.352797
-    expected['dhi'][length-1] = 121.2299
+    expected['ghi'][length-1] = 1042.72590228
+    expected['dni'][length-1] = 946.35279683
+    expected['dhi'][length-1] = 110.75033088
 
     out = clearsky.ineichen(apparent_zenith, airmass_absolute,
                             linke_turbidity, dni_extra=dni_extra)
@@ -85,43 +121,43 @@ def test_ineichen_arrays():
     expected = OrderedDict()
 
     expected['ghi'] = (np.
-        array([[[ 1106.78342709,  1064.7691287 ,  1024.34972343],
-                [  847.84529406,   815.66047425,   784.69741345],
-                [  192.19092519,   184.89521884,   177.87646277]],
+        array([[[1095.77074798, 1054.17449885, 1014.15727338],
+                [ 839.40909243,  807.54451692,  776.88954373],
+                [ 190.27859353,  183.05548067,  176.10656239]],
 
-               [[  959.12310134,   775.2374976 ,   626.60692548],
-                [  734.73092205,   593.86637713,   480.00875328],
-                [  166.54997871,   134.61857872,   108.80915072]],
+               [[ 773.49041181,  625.19479557,  505.33080493],
+                [ 592.52803177,  478.92699901,  387.10585505],
+                [ 134.31520045,  108.56393694,   87.74977339]],
 
-               [[ 1026.15144142,   696.85030591,   473.22483724],
-                [  786.0776095 ,   533.81830453,   362.51125692],
-                [  178.18932781,   121.00678573,    82.17463061]]]))
+               [[ 545.9968869 ,  370.78162375,  251.79449885],
+                [ 418.25788117,  284.03520249,  192.88577665],
+                [  94.81136442,   64.38555328,   43.72365587]]]))
 
     expected['dni'] = (np.
-        array([[[ 1024.58284359,   942.20818604,   861.11344424],
-                [ 1024.58284359,   942.20818604,   861.11344424],
-                [ 1024.58284359,   942.20818604,   861.11344424]],
+        array([[[1014.38807396,  942.20818604,  861.11344424],
+                [1014.38807396,  942.20818604,  861.11344424],
+                [1014.38807396,  942.20818604,  861.11344424]],
 
-               [[  687.61305142,   419.14891162,   255.50098235],
-                [  687.61305142,   419.14891162,   255.50098235],
-                [  687.61305142,   419.14891162,   255.50098235]],
+               [[ 687.61305142,  419.14891162,  255.50098235],
+                [ 687.61305142,  419.14891162,  255.50098235],
+                [ 687.61305142,  419.14891162,  255.50098235]],
 
-               [[  458.62196014,   186.46177428,    75.80970012],
-                [  458.62196014,   186.46177428,    75.80970012],
-                [  458.62196014,   186.46177428,    75.80970012]]]))
+               [[ 458.62196014,  186.46177428,   75.80970012],
+                [ 458.62196014,  186.46177428,   75.80970012],
+                [ 458.62196014,  186.46177428,   75.80970012]]]))
 
     expected['dhi'] = (np.
-            array([[[  82.20058349,  122.56094266,  163.23627919],
-                    [  62.96930021,   93.88712907,  125.04624459],
-                    [  14.27398153,   21.28248435,   28.34568241]],
+        array([[[ 81.38267402, 111.96631281, 153.04382915],
+                [ 62.3427452 ,  85.77117175, 117.23837487],
+                [ 14.13195304,  19.44274618,  26.57578203]],
 
-                   [[ 271.51004993,  356.08858598,  371.10594313],
-                    [ 207.988765  ,  272.77968255,  284.28364554],
-                    [  47.14722539,   61.83413404,   64.44187075]],
+               [[ 85.87736039, 206.04588395, 249.82982258],
+                [ 65.78587472, 157.84030442, 191.38074731],
+                [ 14.91244713,  35.77949226,  43.38249342]],
 
-                   [[ 567.52948128,  510.38853163,  397.41513712],
-                    [ 434.75280544,  390.98029849,  304.4376574 ],
-                    [  98.5504602 ,   88.62803842,   69.01041434]]]))
+               [[ 87.37492676, 184.31984947, 175.98479873],
+                [ 66.93307711, 141.19719644, 134.81217714],
+                [ 15.17249681,  32.00680597,  30.5594396 ]]]))
 
     apparent_zenith = np.linspace(0, 80, 3)
     airmass_absolute = np.linspace(1, 10, 3)
@@ -138,7 +174,7 @@ def test_ineichen_arrays():
 
 def test_ineichen_dni_extra():
     expected = pd.DataFrame(
-        np.array([[ 1053.20547182,   946.35279683,   121.22990042]]),
+        np.array([[1042.72590228,  946.35279683,  110.75033088]]),
         columns=['ghi', 'dni', 'dhi'])
 
     out = clearsky.ineichen(10, 1, 3, dni_extra=pd.Series(1370))
@@ -147,14 +183,14 @@ def test_ineichen_dni_extra():
 
 def test_ineichen_altitude():
     expected = pd.DataFrame(
-        np.array([[ 1145.64245696,   994.95377835,   165.80426215]]),
+        np.array([[1134.24312405,  994.95377835,  154.40492924]]),
         columns=['ghi', 'dni', 'dhi'])
 
     out = clearsky.ineichen(10, 1, 3, altitude=pd.Series(2000))
     assert_frame_equal(expected, out)
 
 
-@requires_scipy
+@requires_tables
 def test_lookup_linke_turbidity():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -167,7 +203,7 @@ def test_lookup_linke_turbidity():
     assert_series_equal(expected, out)
 
 
-@requires_scipy
+@requires_tables
 def test_lookup_linke_turbidity_leapyear():
     times = pd.date_range(start='2016-06-24', end='2016-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -180,7 +216,7 @@ def test_lookup_linke_turbidity_leapyear():
     assert_series_equal(expected, out)
 
 
-@requires_scipy
+@requires_tables
 def test_lookup_linke_turbidity_nointerp():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -191,7 +227,7 @@ def test_lookup_linke_turbidity_nointerp():
     assert_series_equal(expected, out)
 
 
-@requires_scipy
+@requires_tables
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
                           freq='1M', tz='America/Phoenix')
@@ -202,7 +238,7 @@ def test_lookup_linke_turbidity_months():
     assert_series_equal(expected, out)
 
 
-@requires_scipy
+@requires_tables
 def test_lookup_linke_turbidity_months_leapyear():
     times = pd.date_range(start='2016-04-01', end='2016-07-01',
                           freq='1M', tz='America/Phoenix')
@@ -213,7 +249,7 @@ def test_lookup_linke_turbidity_months_leapyear():
     assert_series_equal(expected, out)
 
 
-@requires_scipy
+@requires_tables
 def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
                           freq='1M', tz='America/Phoenix')
@@ -230,46 +266,22 @@ def test_lookup_linke_turbidity_nointerp_months():
 
 
 def test_haurwitz():
-    tus = Location(32.2, -111, 'US/Arizona', 700)
-    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
-    times_localized = times.tz_localize(tus.tz)
-    ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
-                                                 tus.longitude)
-    expected = pd.DataFrame(np.array([[0.],
-                                      [0.],
-                                      [82.85934048],
-                                      [699.74514735],
-                                      [1016.50198354],
-                                      [838.32103769],
-                                      [271.90853863],
-                                      [0.],
-                                      [0.]]),
-                             columns=['ghi'], index=times_localized)
-    out = clearsky.haurwitz(ephem_data['zenith'])
-    assert_frame_equal(expected, out)
-
-
-def test_simplified_solis_series_elevation():
-    tus = Location(32.2, -111, 'US/Arizona', 700)
-    times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h')
-    times_localized = times.tz_localize(tus.tz)
-    ephem_data = solarposition.get_solarposition(times_localized, tus.latitude,
-                                                 tus.longitude)
-    expected = pd.DataFrame(
-        np.array([[    0.        ,     0.        ,     0.        ],
-                  [    0.        ,     0.        ,     0.        ],
-                  [  377.80060035,    79.91931339,    42.77453223],
-                  [  869.47538184,   706.37903999,   110.05635962],
-                  [  958.89448856,  1062.44821373,   129.02349236],
-                  [  913.3209839 ,   860.48978599,   118.94598678],
-                  [  634.01066762,   256.00505836,    72.18396705],
-                  [    0.        ,     0.        ,     0.        ],
-                  [    0.        ,     0.        ,     0.        ]]),
-                            columns=['dni', 'ghi', 'dhi'],
-                            index=times_localized)
-    expected = expected[['dhi', 'dni', 'ghi']]
-
-    out = clearsky.simplified_solis(ephem_data['apparent_elevation'])
+    apparent_solar_elevation = np.array([-20, -0.05, -0.001, 5, 10, 30, 50, 90])
+    apparent_solar_zenith = 90 - apparent_solar_elevation
+    data_in = pd.DataFrame(data=apparent_solar_zenith,
+                           index=apparent_solar_zenith,
+                           columns=['apparent_zenith'])
+    expected = pd.DataFrame(np.array([0.,
+                                      0.,
+                                      0.,
+                                      48.6298687941956,
+                                      135.741748091813,
+                                      487.894132885425,
+                                      778.766689344363,
+                                      1035.09203253450]),
+                             columns=['ghi'],
+                             index=apparent_solar_zenith)
+    out = clearsky.haurwitz(data_in['apparent_zenith'])
     assert_frame_equal(expected, out)
 
 
@@ -468,7 +480,7 @@ def test_simplified_solis_nans_series():
     assert_frame_equal(expected, out)
 
 
-@requires_scipy
+@requires_tables
 def test_linke_turbidity_corners():
     """Test Linke turbidity corners out of bounds."""
     months = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))
@@ -504,3 +516,206 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(-91, -122)  # exceeds min latitude
     with pytest.raises(IndexError):
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
+
+
+@pytest.fixture
+def detect_clearsky_data():
+    test_dir = os.path.dirname(os.path.abspath(
+        inspect.getfile(inspect.currentframe())))
+    file = os.path.join(test_dir, '..', 'data', 'detect_clearsky_data.csv')
+    expected = pd.read_csv(file, index_col=0, parse_dates=True, comment='#')
+    expected = expected.tz_localize('UTC').tz_convert('Etc/GMT+7')
+    metadata = {}
+    with open(file) as f:
+        for line in f:
+            if line.startswith('#'):
+                key, value = line.strip('# \n').split(':')
+                metadata[key] = float(value)
+            else:
+                break
+    metadata['window_length'] = int(metadata['window_length'])
+    loc = Location(metadata['latitude'], metadata['longitude'],
+                   altitude=metadata['elevation'])
+    # specify turbidity to guard against future lookup changes
+    cs = loc.get_clearsky(expected.index, linke_turbidity=2.658197)
+    return expected, cs
+
+
+@requires_scipy
+def test_detect_clearsky(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 10)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+@requires_scipy
+def test_detect_clearsky_components(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples, components, alpha = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 10, return_components=True)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+    assert isinstance(components, OrderedDict)
+    assert np.allclose(alpha, 0.9633903181941296)
+
+
+@requires_scipy
+def test_detect_clearsky_iterations(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    alpha = 1.0448
+    with pytest.warns(RuntimeWarning):
+        clear_samples = clearsky.detect_clearsky(
+            expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=1)
+    assert (clear_samples[:'2012-04-01 10:41:00'] == True).all()
+    assert (clear_samples['2012-04-01 10:42:00':] == False).all()
+    clear_samples = clearsky.detect_clearsky(
+            expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=20)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+@requires_scipy
+def test_detect_clearsky_kwargs(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 10,
+        mean_diff=1000, max_diff=1000, lower_line_length=-1000,
+        upper_line_length=1000, var_diff=10, slope_dev=1000)
+    assert clear_samples.all()
+
+
+@requires_scipy
+def test_detect_clearsky_window(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], cs.index, 3)
+    expected = expected['Clear or not'].copy()
+    expected.iloc[-3:] = True
+    assert_series_equal(expected, clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+@requires_scipy
+def test_detect_clearsky_arrays(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'].values, cs['ghi'].values, cs.index, 10)
+    assert isinstance(clear_samples, np.ndarray)
+    assert (clear_samples == expected['Clear or not'].values).all()
+
+
+@requires_scipy
+def test_detect_clearsky_irregular_times(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    times = cs.index.values.copy()
+    times[0] += 10**9
+    times = pd.DatetimeIndex(times)
+    with pytest.raises(NotImplementedError):
+        clear_samples = clearsky.detect_clearsky(
+            expected['GHI'].values, cs['ghi'].values, times, 10)
+
+
+def test_bird():
+    """Test Bird/Hulstrom Clearsky Model"""
+    times = pd.DatetimeIndex(start='1/1/2015 0:00', end='12/31/2015 23:00',
+                             freq='H')
+    tz = -7  # test timezone
+    gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
+    times = times.tz_localize(gmt_tz)  # set timezone
+    # match test data from BIRD_08_16_2012.xls
+    latitude = 40.
+    longitude = -105.
+    press_mB = 840.
+    o3_cm = 0.3
+    h2o_cm = 1.5
+    aod_500nm = 0.1
+    aod_380nm = 0.15
+    b_a = 0.85
+    alb = 0.2
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
+    hour_angle = solarposition.hour_angle(times, longitude, eot) - 0.5 * 15.
+    declination = solarposition.declination_spencer71(times.dayofyear)
+    zenith = solarposition.solar_zenith_analytical(
+        np.deg2rad(latitude), np.deg2rad(hour_angle), declination
+    )
+    zenith = np.rad2deg(zenith)
+    airmass = atmosphere.get_relative_airmass(zenith, model='kasten1966')
+    etr = irradiance.get_extra_radiation(times)
+    # test Bird with time series data
+    field_names = ('dni', 'direct_horizontal', 'ghi', 'dhi')
+    irrads = clearsky.bird(
+        zenith, airmass, aod_380nm, aod_500nm, h2o_cm, o3_cm, press_mB * 100.,
+        etr, b_a, alb
+    )
+    Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
+    clearsky_path = os.path.dirname(os.path.abspath(__file__))
+    pvlib_path = os.path.dirname(clearsky_path)
+    data_path = os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012.csv')
+    testdata = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
+    testdata.index = times[1:48]
+    assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:48]))
+    assert np.allclose(testdata['EQT'], eot[1:48], rtol=1e-4)
+    assert np.allclose(testdata['Hour Angle'], hour_angle[1:48])
+    assert np.allclose(testdata['Zenith Ang'], zenith[1:48])
+    dawn = zenith < 88.
+    dusk = testdata['Zenith Ang'] < 88.
+    am = pd.Series(np.where(dawn, airmass, 0.), index=times).fillna(0.0)
+    assert np.allclose(
+        testdata['Air Mass'].where(dusk, 0.), am[1:48], rtol=1e-3
+    )
+    direct_beam = pd.Series(np.where(dawn, Eb, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:48], rtol=1e-3
+    )
+    direct_horz = pd.Series(np.where(dawn, Ebh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:48], rtol=1e-3
+    )
+    global_horz = pd.Series(np.where(dawn, Gh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Global Hz'].where(dusk, 0.), global_horz[1:48], rtol=1e-3
+    )
+    diffuse_horz = pd.Series(np.where(dawn, Dh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
+    )
+    # test keyword parameters
+    irrads2 = clearsky.bird(
+        zenith, airmass, aod_380nm, aod_500nm, h2o_cm, dni_extra=etr
+    )
+    Eb2, Ebh2, Gh2, Dh2 = (irrads2[_] for _ in field_names)
+    clearsky_path = os.path.dirname(os.path.abspath(__file__))
+    pvlib_path = os.path.dirname(clearsky_path)
+    data_path = os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012_patm.csv')
+    testdata2 = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
+    testdata2.index = times[1:48]
+    direct_beam2 = pd.Series(np.where(dawn, Eb2, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata2['Direct Beam'].where(dusk, 0.), direct_beam2[1:48], rtol=1e-3
+    )
+    direct_horz2 = pd.Series(np.where(dawn, Ebh2, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata2['Direct Hz'].where(dusk, 0.), direct_horz2[1:48], rtol=1e-3
+    )
+    global_horz2 = pd.Series(np.where(dawn, Gh2, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata2['Global Hz'].where(dusk, 0.), global_horz2[1:48], rtol=1e-3
+    )
+    diffuse_horz2 = pd.Series(np.where(dawn, Dh2, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata2['Dif Hz'].where(dusk, 0.), diffuse_horz2[1:48], rtol=1e-3
+    )
+    # test scalars just at noon
+    # XXX: calculations start at 12am so noon is at index = 12
+    irrads3 = clearsky.bird(
+        zenith[12], airmass[12], aod_380nm, aod_500nm, h2o_cm, dni_extra=etr[12]
+    )
+    Eb3, Ebh3, Gh3, Dh3 = (irrads3[_] for _ in field_names)
+    # XXX: testdata starts at 1am so noon is at index = 11
+    np.allclose(
+        [Eb3, Ebh3, Gh3, Dh3],
+        testdata2[['Direct Beam', 'Direct Hz', 'Global Hz', 'Dif Hz']].iloc[11],
+        rtol=1e-3)
+    return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=times)

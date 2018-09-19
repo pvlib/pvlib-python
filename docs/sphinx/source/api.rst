@@ -31,6 +31,11 @@ Solar Position
 
 Functions and methods for calculating solar position.
 
+The :py:meth:`location.Location.get_solarposition` method and the
+:py:func:`solarposition.get_solarposition` function with default
+parameters are fast and accurate. We recommend using these functions
+unless you know that you need a different function.
+
 .. autosummary::
    :toctree: generated/
 
@@ -40,6 +45,7 @@ Functions and methods for calculating solar position.
    solarposition.ephemeris
    solarposition.pyephem
    solarposition.spa_c
+
 
 Additional functions for quantities closely related to solar position.
 
@@ -59,6 +65,20 @@ algorithm.
 
    spa
 
+Correlations and analytical expressions for low precision solar position
+calculations.
+
+.. autosummary::
+   :toctree: generated/
+
+   solarposition.solar_zenith_analytical
+   solarposition.solar_azimuth_analytical
+   solarposition.declination_spencer71
+   solarposition.declination_cooper69
+   solarposition.equation_of_time_spencer71
+   solarposition.equation_of_time_pvcdrom
+   solarposition.hour_angle
+
 
 Clear sky
 =========
@@ -71,6 +91,8 @@ Clear sky
    clearsky.lookup_linke_turbidity
    clearsky.simplified_solis
    clearsky.haurwitz
+   clearsky.detect_clearsky
+   clearsky.bird
 
 
 Airmass and atmospheric models
@@ -80,12 +102,16 @@ Airmass and atmospheric models
    :toctree: generated/
 
    location.Location.get_airmass
-   atmosphere.absoluteairmass
-   atmosphere.relativeairmass
+   atmosphere.get_absolute_airmass
+   atmosphere.get_relative_airmass
    atmosphere.pres2alt
    atmosphere.alt2pres
    atmosphere.gueymard94_pw
    atmosphere.first_solar_spectral_correction
+   atmosphere.bird_hulstrom80_aod_bb
+   atmosphere.kasten96_lt
+   atmosphere.angstrom_aod_at_lambda
+   atmosphere.angstrom_alpha
 
 
 Irradiance
@@ -107,13 +133,13 @@ Decomposing and combining irradiance
 .. autosummary::
    :toctree: generated/
 
-   irradiance.extraradiation
+   irradiance.get_extra_radiation
    irradiance.aoi
    irradiance.aoi_projection
    irradiance.poa_horizontal_ratio
    irradiance.beam_component
-   irradiance.globalinplane
-   irradiance.grounddiffuse
+   irradiance.poa_components
+   irradiance.get_ground_diffuse
 
 Transposition models
 --------------------
@@ -121,7 +147,8 @@ Transposition models
 .. autosummary::
    :toctree: generated/
 
-   irradiance.total_irrad
+   irradiance.get_total_irradiance
+   irradiance.get_sky_diffuse
    irradiance.isotropic
    irradiance.perez
    irradiance.haydavies
@@ -137,8 +164,19 @@ DNI estimation models
 
    irradiance.disc
    irradiance.dirint
+   irradiance.dirindex
    irradiance.erbs
    irradiance.liujordan
+   irradiance.gti_dirint
+
+Clearness index models
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   irradiance.clearness_index
+   irradiance.clearness_index_zenith_independent
 
 
 PV Modeling
@@ -166,18 +204,32 @@ AOI modifiers
    pvsystem.ashraeiam
    pvsystem.sapm_aoi_loss
 
-Single diode model
-------------------
+Single diode models
+-------------------
 
-Functions relevant for the single diode model.
+Functions relevant for single diode models.
 
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.singlediode
+   pvsystem.calcparams_cec
    pvsystem.calcparams_desoto
-   pvsystem.v_from_i
+   pvsystem.calcparams_pvsyst
    pvsystem.i_from_v
+   pvsystem.singlediode
+   pvsystem.v_from_i
+   pvsystem.max_power_point
+
+Low-level functions for solving the single diode equation.
+
+.. autosummary::
+   :toctree: generated/
+
+   singlediode.estimate_voc
+   singlediode.bishop88
+   singlediode.bishop88_i_from_v
+   singlediode.bishop88_v_from_i
+   singlediode.bishop88_mpp
 
 SAPM model
 ----------
@@ -203,7 +255,6 @@ PVWatts model
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
-
 
 Other
 -----
@@ -369,7 +420,9 @@ ModelChain model definitions.
    :toctree: generated/
 
    modelchain.ModelChain.sapm
-   modelchain.ModelChain.singlediode
+   modelchain.ModelChain.cec
+   modelchain.ModelChain.desoto
+   modelchain.ModelChain.pvsyst
    modelchain.ModelChain.pvwatts_dc
    modelchain.ModelChain.snlinverter
    modelchain.ModelChain.adrinverter

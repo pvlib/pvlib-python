@@ -30,6 +30,7 @@ time and time zone functionality in python and pvlib.
     import pandas as pd
     import pytz
 
+
 Finding a time zone
 *******************
 
@@ -94,7 +95,7 @@ It does not make sense to convert a time stamp that has not been
 localized, and pandas will raise an exception if you try to do so.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     midnight = pd.Timestamp('2015-1-1 00:00')
     midnight.tz_convert('UTC')
@@ -236,7 +237,7 @@ passed to ``Timestamp``.
 You cannot localize a native Python date object.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     # fail
     pytz.timezone('US/Mountain').localize(naive_python_date)
@@ -286,7 +287,7 @@ print just a few of the rows and columns of the large dataframe.
 
     tmy3_data.index.tz
 
-    tmy3_data.ix[0:3, ['GHI', 'DNI', 'AOD']]
+    tmy3_data.loc[tmy3_data.index[0:3], ['GHI', 'DNI', 'AOD']]
 
 The :py:func:`~pvlib.tmy.readtmy2` function also returns a DataFrame
 with a localized DatetimeIndex.
@@ -298,18 +299,12 @@ The correct solar position can be immediately calculated from the
 DataFrame's index since the index has been localized.
 
 .. ipython:: python
-    :suppress:
-
-    import seaborn as sns
-    sns.set_color_codes()
-
-.. ipython:: python
 
     solar_position = pvlib.solarposition.get_solarposition(tmy3_data.index,
                                                            tmy3_metadata['latitude'],
                                                            tmy3_metadata['longitude'])
 
-    ax = solar_position.ix[0:24, ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
+    ax = solar_position.loc[solar_position.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset
@@ -340,7 +335,7 @@ below? The solar position calculator will assume UTC time.
                                                                 tmy3_metadata['latitude'],
                                                                 tmy3_metadata['longitude'])
 
-    ax = solar_position_notz.ix[0:24, ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
+    ax = solar_position_notz.loc[solar_position_notz.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset
@@ -365,7 +360,7 @@ UTC, and then convert it to the desired time zone.
 
     solar_position_hack.index
 
-    ax = solar_position_hack.ix[0:24, ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
+    ax = solar_position_hack.loc[solar_position_hack.index[0:24], ['apparent_zenith', 'apparent_elevation', 'azimuth']].plot()
 
     ax.legend(loc=1);
     ax.axhline(0, color='darkgray');  # add 0 deg line for sunrise/sunset

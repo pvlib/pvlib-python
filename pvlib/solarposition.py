@@ -950,8 +950,8 @@ def equation_of_time_pvcdrom(dayofyear):
 
     Returns
     -------
-    equation_of_time : numeric Difference in time between solar time and
-        mean solar time in minutes.
+    equation_of_time : numeric
+        Difference in time between solar time and mean solar time in minutes.
 
     References
     ----------

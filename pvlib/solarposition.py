@@ -1136,9 +1136,12 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
 
     Parameters
     ----------
-    latitude : numeric Latitude of location in radians. hour_angle :
-        numeric Hour angle in the local solar time in radians.
-        declination : numeric Declination of the sun in radians.
+    latitude : numeric
+        Latitude of location in radians.
+    hour_angle : numeric
+        Hour angle in the local solar time in radians.
+    declination : numeric
+        Declination of the sun in radians.
 
     Returns
     -------

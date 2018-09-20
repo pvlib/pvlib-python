@@ -59,4 +59,3 @@ def test_read_tmy3_no_coerce_year():
 
 def test_read_tmy2():
     tmy.read_tmy2(tmy2_testfile)
-

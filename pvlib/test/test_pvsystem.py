@@ -22,9 +22,10 @@ from conftest import needs_numpy_1_10, requires_scipy
 
 
 def test_systemdef_tmy3():
-    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
+    from pvlib.iotools import tmy
+    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvsystem)))
     tmy3_testfile = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
-    tmy3_data, tmy3_metadata = tmy.readtmy3(tmy3_testfile)
+    tmy3_data, tmy3_metadata = tmy.read_tmy3(tmy3_testfile)
     expected = {'tz': -9.0,
                 'albedo': 0.1,
                 'altitude': 7.0,
@@ -39,9 +40,10 @@ def test_systemdef_tmy3():
 
 
 def test_systemdef_tmy2():
-    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
+    from pvlib.iotools import tmy
+    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvsystem)))
     tmy2_testfile = os.path.join(pvlib_abspath, 'data', '12839.tm2')
-    tmy2_data, tmy2_metadata = tmy.readtmy2(tmy2_testfile)
+    tmy2_data, tmy2_metadata = tmy.read_tmy2(tmy2_testfile)
 
     expected = {'tz': -5,
                 'albedo': 0.1,

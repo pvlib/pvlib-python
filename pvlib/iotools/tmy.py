@@ -14,7 +14,7 @@ except ImportError:
 import pandas as pd
 
 
-def readtmy3(filename=None, coerce_year=None, recolumn=True):
+def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     '''
     Read a TMY3 file in to a pandas dataframe.
 
@@ -267,7 +267,7 @@ def _recolumn(tmy3_dataframe):
     return tmy3_dataframe.rename(columns=mapping)
 
 
-def readtmy2(filename):
+def read_tmy2(filename):
     '''
     Read a TMY2 file in to a DataFrame.
 

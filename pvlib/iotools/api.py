@@ -1,1 +1,2 @@
-from pvlib.iotools.tmy import readtmy2, readtmy3
+from pvlib.iotools.tmy import read_tmy2
+from pvlib.iotools.tmy import read_tmy3

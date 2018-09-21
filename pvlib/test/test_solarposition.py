@@ -54,11 +54,11 @@ def expected_rise_set():
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
                               datetime.datetime(2015, 8, 2),
                               ]).tz_localize('MST')
-    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 19, 2),
-                                datetime.datetime(2015, 8, 2, 5, 1, 26)
+    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 22, 0),
+                                datetime.datetime(2015, 8, 2, 5, 1, 0)
                                 ]).tz_localize('MST').tolist()
-    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 49, 10),
-                               datetime.datetime(2015, 8, 2, 19, 11, 31)
+    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 48, 0),
+                               datetime.datetime(2015, 8, 2, 19, 13, 0)
                                ]).tz_localize('MST').tolist()
     return pd.DataFrame({'sunrise': sunrise, 'sunset': sunset}, index=times)
 
@@ -174,12 +174,14 @@ def test_get_sun_rise_set_transit(expected_rise_set):
                                                     golden.latitude,
                                                     golden.longitude,
                                                     delta_t=64.0)
+
+    # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = (pd.to_datetime(
-            np.floor(data.values.astype(np.int64) / 1e9)*1e9, utc=True)
+            np.floor(data.values.astype(np.int64) / 60e9)*60e9, utc=True)
             .tz_convert('MST'))
 
     del result_rounded['transit']
@@ -195,10 +197,11 @@ def test_ephem_next_rise_set(expected_rise_set):
                                                golden.altitude,
                                                pressure=101325,
                                                temperature=12)
+    # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
         result_rounded[col] = (pd.to_datetime(
-            np.floor(data.values.astype(np.int64) / 1e9)*1e9, utc=True)
+            np.floor(data.values.astype(np.int64) / 60e9)*60e9, utc=True)
             .tz_convert('MST'))
 
     assert_frame_equal(expected_rise_set, result_rounded)

@@ -45,6 +45,21 @@ def expected_solpos_multi():
                          'apparent_elevation': [39.888378, 39.521740]},
                         index=[['2003-10-17T12:30:30Z', '2003-10-18T12:30:30Z']])
 
+@pytest.fixture()
+def expected_rise_set():
+    # for Golden, CO, from USNO website
+    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
+                              datetime.datetime(2015, 8, 2),]
+                             ).tz_localize('MST')
+    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 19, 2),
+                                datetime.datetime(2015, 8, 2, 5, 1, 26)
+                                ]).tz_localize('MST').tolist()
+    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 49, 10),
+                               datetime.datetime(2015, 8, 2, 19, 11, 31)
+                               ]).tz_localize('MST').tolist()
+    return pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
+
+
 # the physical tests are run at the same time as the NREL SPA test.
 # pyephem reproduces the NREL result to 2 decimal places.
 # this doesn't mean that one code is better than the other.
@@ -125,7 +140,7 @@ def test_spa_python_numba_physical_dst(expected_solpos):
 
 
 @needs_pandas_0_17
-def test_get_sun_rise_set_transit():
+def test_get_sun_rise_set_transit(expected_rise_set):
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
                               datetime.datetime(2004, 12, 4, 0)]
@@ -136,10 +151,11 @@ def test_get_sun_rise_set_transit():
     sunset = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 17, 1, 4),
                                datetime.datetime(2004, 12, 4, 19, 2, 2)]
                               ).tz_localize('UTC').tolist()
+    frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
+
     result = solarposition.get_sun_rise_set_transit(times, south.latitude,
                                                     south.longitude,
                                                     delta_t=64.0)
-    frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
@@ -150,23 +166,11 @@ def test_get_sun_rise_set_transit():
     del result_rounded['transit']
     assert_frame_equal(frame, result_rounded)
 
-
-    # tests from USNO
-    # Golden
-    golden = Location(39.0, -105.0, tz='MST')
-    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
-                              datetime.datetime(2015, 8, 2),]
-                             ).tz_localize('MST')
-    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 19, 2),
-                                datetime.datetime(2015, 8, 2, 5, 1, 26)
-                                ]).tz_localize('MST').tolist()
-    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 49, 10),
-                               datetime.datetime(2015, 8, 2, 19, 11, 31)
-                               ]).tz_localize('MST').tolist()
-    result = solarposition.get_sun_rise_set_transit(times, golden.latitude,
+    # test for Golden, CO compare to USNO
+    result = solarposition.get_sun_rise_set_transit(expected_rise_set.index,
+                                                    golden.latitude,
                                                     golden.longitude,
                                                     delta_t=64.0)
-    frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
@@ -176,7 +180,25 @@ def test_get_sun_rise_set_transit():
             .tz_convert('MST'))
 
     del result_rounded['transit']
-    assert_frame_equal(frame, result_rounded)
+    assert_frame_equal(expected_rise_set, result_rounded)
+
+
+@requires_ephem
+def test_ephem_next_rise_set(expected_rise_set):
+    # test for Golden, CO compare to USNO
+    result = solarposition.ephem_next_rise_set(expected_rise_set.index,
+                                               golden.latitude,
+                                               golden.longitude,
+                                               golden.altitude,
+                                               pressure=101325,
+                                               temperature=12)
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = (pd.to_datetime(
+            np.floor(data.values.astype(np.int64) / 1e9)*1e9, utc=True)
+            .tz_convert('MST'))
+
+    assert_frame_equal(expected_rise_set, result_rounded)
 
 
 @requires_ephem
@@ -190,6 +212,7 @@ def test_pyephem_physical(expected_solpos):
     assert_frame_equal(expected_solpos.round(2),
                        ephem_data[expected_solpos.columns].round(2))
 
+
 @requires_ephem
 def test_pyephem_physical_dst(expected_solpos):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1,
@@ -200,6 +223,7 @@ def test_pyephem_physical_dst(expected_solpos):
     expected_solpos.index = times
     assert_frame_equal(expected_solpos.round(2),
                        ephem_data[expected_solpos.columns].round(2))
+
 
 @requires_ephem
 def test_calc_time():
@@ -226,6 +250,7 @@ def test_calc_time():
                           epoch_dt).total_seconds(), actual_timestamp)
     assert_allclose((az.replace(second=0, microsecond=0) -
                           epoch_dt).total_seconds(), actual_timestamp)
+
 
 @requires_ephem
 def test_earthsun_distance():

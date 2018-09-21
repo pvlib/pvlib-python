@@ -438,6 +438,24 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
     return result
 
 
+def _ephem_convert_to_seconds_and_microseconds(date):
+    # utility from unreleased PyEphem 3.6.7.1
+    """Converts a PyEphem date into seconds"""
+    microseconds = int(round(24 * 60 * 60 * 1000000 * date))
+    seconds, microseconds = divmod(microseconds, 1000000)
+    seconds -= 2209032000  # difference between epoch 1900 and epoch 1970
+    return seconds, microseconds
+
+
+def _ephem_to_timezone(date, tzinfo):
+    # utility from unreleased PyEphem 3.6.7.1
+    """"Convert a PyEphem date into a timezone aware Python datetime representation."""
+    seconds, microseconds = _ephem_convert_to_seconds_and_microseconds(date)
+    date = dt.datetime.fromtimestamp(seconds, tzinfo)
+    date = date.replace(microsecond=microseconds)
+    return date
+
+
 def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
     import ephem
     # initialize a PyEphem observer
@@ -453,6 +471,63 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
     return obs, sun
 
 
+def ephem_next_rise_set(time, latitude, longitude, altitude=0,
+                        pressure=101325, temperature=12):
+    """
+    Calculate the next sunrise and sunset times using the PyEphem package.
+
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+        Localized or UTC.
+    latitude : float
+        positive is north of 0
+    longitude : float
+        positive is east of 0
+    altitude : float, default 0
+        distance above sea level in meters.
+    pressure : int or float, optional, default 101325
+        air pressure in Pascals.
+    temperature : int or float, optional, default 12
+        air temperature in degrees C.
+
+    Returns
+    -------
+    pandas.DataFrame
+        index is the same as input time.index
+        columns are 'sunrise' and 'sunset', times are localized to the
+        timezone time.tz
+
+    See also
+    --------
+    pyephem
+    """
+
+    try:
+        import ephem
+    except ImportError:
+        raise ImportError('PyEphem must be installed')
+
+    # if localized, convert to UTC. otherwise, assume UTC.
+    try:
+        time_utc = time.tz_convert('UTC')
+    except TypeError:
+        time_utc = time
+
+    obs, sun = _ephem_setup(latitude, longitude, altitude,
+                            pressure, temperature)
+    # create lists of the next sunrise and sunset time localized to time.tz
+    next_sunrise = []
+    next_sunset = []
+    for thetime in time_utc:
+        obs.date = ephem.Date(thetime)
+        next_sunrise.append(_ephem_to_timezone(obs.next_rising(sun), time.tz))
+        next_sunset.append(_ephem_to_timezone(obs.next_setting(sun), time.tz))
+
+    return pd.DataFrame(index=time, data={'sunrise' : next_sunrise,
+                                          'sunset' : next_sunset})
+
+
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
             temperature=12):
     """
@@ -463,9 +538,11 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     time : pandas.DatetimeIndex
         Localized or UTC.
     latitude : float
+        positive is north of 0
     longitude : float
+        positive is east of 0
     altitude : float, default 0
-        distance above sea level.
+        distance above sea level in meters.
     pressure : int or float, optional, default 101325
         air pressure in Pascals.
     temperature : int or float, optional, default 12

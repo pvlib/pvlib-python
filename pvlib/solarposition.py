@@ -449,7 +449,7 @@ def _ephem_convert_to_seconds_and_microseconds(date):
 
 def _ephem_to_timezone(date, tzinfo):
     # utility from unreleased PyEphem 3.6.7.1
-    """"Convert a PyEphem date into a timezone aware Python datetime representation."""
+    """"Convert a PyEphem Date into a timezone aware python datetime"""
     seconds, microseconds = _ephem_convert_to_seconds_and_microseconds(date)
     date = dt.datetime.fromtimestamp(seconds, tzinfo)
     date = date.replace(microsecond=microseconds)
@@ -524,8 +524,8 @@ def ephem_next_rise_set(time, latitude, longitude, altitude=0,
         next_sunrise.append(_ephem_to_timezone(obs.next_rising(sun), time.tz))
         next_sunset.append(_ephem_to_timezone(obs.next_setting(sun), time.tz))
 
-    return pd.DataFrame(index=time, data={'sunrise' : next_sunrise,
-                                          'sunset' : next_sunset})
+    return pd.DataFrame(index=time, data={'sunrise': next_sunrise,
+                                          'sunset': next_sunset})
 
 
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,

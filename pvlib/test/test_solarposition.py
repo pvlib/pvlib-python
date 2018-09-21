@@ -29,6 +29,7 @@ times_localized = times.tz_localize(tus.tz)
 
 tol = 5
 
+
 @pytest.fixture()
 def expected_solpos():
     return pd.DataFrame({'elevation': 39.872046,
@@ -36,6 +37,7 @@ def expected_solpos():
                          'azimuth': 194.340241,
                          'apparent_elevation': 39.888378},
                         index=['2003-10-17T12:30:30Z'])
+
 
 @pytest.fixture()
 def expected_solpos_multi():
@@ -45,19 +47,20 @@ def expected_solpos_multi():
                          'apparent_elevation': [39.888378, 39.521740]},
                         index=[['2003-10-17T12:30:30Z', '2003-10-18T12:30:30Z']])
 
+
 @pytest.fixture()
 def expected_rise_set():
     # for Golden, CO, from USNO website
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
-                              datetime.datetime(2015, 8, 2),]
-                             ).tz_localize('MST')
+                              datetime.datetime(2015, 8, 2),
+                              ]).tz_localize('MST')
     sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 19, 2),
                                 datetime.datetime(2015, 8, 2, 5, 1, 26)
                                 ]).tz_localize('MST').tolist()
     sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 49, 10),
                                datetime.datetime(2015, 8, 2, 19, 11, 31)
                                ]).tz_localize('MST').tolist()
-    return pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
+    return pd.DataFrame({'sunrise': sunrise, 'sunset': sunset}, index=times)
 
 
 # the physical tests are run at the same time as the NREL SPA test.

@@ -164,7 +164,7 @@ def test_get_sun_rise_set_transit(expected_rise_set):
     # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = pd.to_datetime(
-            np.floor(data.values.astype(np.int64) / 1e9)*1e9, utc=True)
+            np.floor(data.values.astype(np.int64) / 1e9) * 1e9, utc=True)
 
     del result_rounded['transit']
     assert_frame_equal(frame, result_rounded)
@@ -181,7 +181,7 @@ def test_get_sun_rise_set_transit(expected_rise_set):
     # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = (pd.to_datetime(
-            np.floor(data.values.astype(np.int64) / 60e9)*60e9, utc=True)
+            np.round(data.values.astype(np.int64)), utc=True)
             .tz_convert('MST'))
 
     del result_rounded['transit']
@@ -189,7 +189,7 @@ def test_get_sun_rise_set_transit(expected_rise_set):
 
 
 @requires_ephem
-def test_ephem_next_rise_set(expected_rise_set):
+def test_next_rise_set_ephem(expected_rise_set):
     # test for Golden, CO compare to USNO
     result = solarposition.ephem_next_rise_set(expected_rise_set.index,
                                                golden.latitude,
@@ -201,7 +201,7 @@ def test_ephem_next_rise_set(expected_rise_set):
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
         result_rounded[col] = (pd.to_datetime(
-            np.floor(data.values.astype(np.int64) / 60e9)*60e9, utc=True)
+            np.round(data.values.astype(np.int64)), utc=True)
             .tz_convert('MST'))
 
     assert_frame_equal(expected_rise_set, result_rounded)

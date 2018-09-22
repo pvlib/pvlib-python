@@ -204,7 +204,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     if recolumn:
         data = _recolumn(data)  # rename to standard column names
 
-    data = data.tz_localize(int(meta['TZ']*3600))
+    data = data.tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
 
@@ -475,11 +475,12 @@ def _read_tmy2(string, columns, hdr_columns, fname):
 
                 # Read the next increment from the marker list
                 increment = int(re.findall('\d+', marker)[0])
+                next_cursor = cursor + increment
 
                 # Extract the value from the line in the file
-                val = (line[cursor:cursor+increment])
+                val = (line[cursor:next_cursor])
                 # increment the cursor by the length of the read value
-                cursor = cursor+increment
+                cursor = next_cursor
 
                 # Determine the datatype from the marker string
                 if marker[-1] == 'd':
@@ -502,7 +503,7 @@ def _read_tmy2(string, columns, hdr_columns, fname):
 
             if fline == 0:
                 axes = [part]
-                year = part[0]+1900
+                year = part[0] + 1900
                 fline = 1
             else:
                 axes.append(part)
@@ -511,10 +512,10 @@ def _read_tmy2(string, columns, hdr_columns, fname):
             date.append(datetime.datetime(year=int(year),
                                           month=int(part[1]),
                                           day=int(part[2]),
-                                          hour=int(part[3])-1))
+                                          hour=(int(part[3]) - 1)))
 
     data = pd.DataFrame(
         axes, index=date,
-        columns=columns.split(',')).tz_localize(int(meta['TZ']*3600))
+        columns=columns.split(',')).tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta

@@ -163,7 +163,7 @@ def test_get_sun_rise_set_transit(expected_rise_set):
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
-        result_rounded[col] = data.dt.round('sec')
+        result_rounded[col] = data.dt.round('1s')
 
     del result_rounded['transit']
     assert_frame_equal(frame, result_rounded)

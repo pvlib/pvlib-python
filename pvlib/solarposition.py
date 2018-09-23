@@ -456,7 +456,8 @@ def _ephem_to_timezone(date, tzinfo):
     return date
 
 
-def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
+def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
+                 horizon):
     import ephem
     # initialize a PyEphem observer
     obs = ephem.Observer()
@@ -465,14 +466,15 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
     obs.elevation = altitude
     obs.pressure = pressure / 100.  # convert to mBar
     obs.temp = temperature
+    obs.horizon = horizon
 
     # the PyEphem sun
     sun = ephem.Sun()
     return obs, sun
 
 
-def ephem_next_rise_set(time, latitude, longitude, altitude=0,
-                        pressure=101325, temperature=12):
+def next_rise_set_ephem(time, latitude, longitude, altitude=0,
+                        pressure=101325, temperature=12, horizon='0:00'):
     """
     Calculate the next sunrise and sunset times using the PyEphem package.
 
@@ -490,6 +492,10 @@ def ephem_next_rise_set(time, latitude, longitude, altitude=0,
         air pressure in Pascals.
     temperature : int or float, optional, default 12
         air temperature in degrees C.
+    horizon : string, format +/-X:YY
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='-0:34' when the sun's upper edge crosses the
+        geometrical horizon
 
     Returns
     -------
@@ -515,7 +521,7 @@ def ephem_next_rise_set(time, latitude, longitude, altitude=0,
         time_utc = time
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature)
+                            pressure, temperature, horizon)
     # create lists of the next sunrise and sunset time localized to time.tz
     next_sunrise = []
     next_sunset = []

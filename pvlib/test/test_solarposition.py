@@ -50,7 +50,7 @@ def expected_solpos_multi():
 
 @pytest.fixture()
 def expected_rise_set():
-    # for Golden, CO, from NREL SPA website
+    # for Golden, CO, from NREL SPA and USNO websites
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
                               datetime.datetime(2015, 8, 2),
                               ]).tz_localize('MST')
@@ -58,7 +58,7 @@ def expected_rise_set():
                                 datetime.datetime(2015, 8, 2, 5, 0, 0)
                                 ]).tz_localize('MST').tolist()
     sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 48, 0),
-                               datetime.datetime(2015, 8, 2, 19, 14, 0)
+                               datetime.datetime(2015, 8, 2, 19, 13, 0)
                                ]).tz_localize('MST').tolist()
     transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 12, 5, 0),
                                 datetime.datetime(2015, 8, 2, 12, 7, 0)
@@ -160,7 +160,7 @@ def test_get_sun_rise_set_transit(expected_rise_set):
     sunset = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 17, 1, 4),
                                datetime.datetime(2004, 12, 4, 19, 2, 3)]
                               ).tz_localize('UTC').tolist()
-    frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
+    frame = pd.DataFrame({'sunrise': sunrise, 'sunset': sunset}, index=times)
 
     result = solarposition.get_sun_rise_set_transit(times, south.latitude,
                                                     south.longitude,
@@ -191,13 +191,14 @@ def test_get_sun_rise_set_transit(expected_rise_set):
 
 @requires_ephem
 def test_next_rise_set_ephem(expected_rise_set):
-    # test for Golden, CO compare to NREL SPA
-    result = solarposition.ephem_next_rise_set(expected_rise_set.index,
+    # test for Golden, CO compare to USNO
+    result = solarposition.next_rise_set_ephem(expected_rise_set.index,
                                                golden.latitude,
                                                golden.longitude,
                                                golden.altitude,
-                                               pressure=82000,
-                                               temperature=11)
+                                               pressure=0,
+                                               temperature=11,
+                                               horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():

@@ -55,12 +55,17 @@ def expected_rise_set():
                               datetime.datetime(2015, 8, 2),
                               ]).tz_localize('MST')
     sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 22, 0),
-                                datetime.datetime(2015, 8, 2, 5, 1, 0)
+                                datetime.datetime(2015, 8, 2, 5, 0, 0)
                                 ]).tz_localize('MST').tolist()
     sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 48, 0),
                                datetime.datetime(2015, 8, 2, 19, 13, 0)
                                ]).tz_localize('MST').tolist()
-    return pd.DataFrame({'sunrise': sunrise, 'sunset': sunset}, index=times)
+    transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 12, 5, 0),
+                                datetime.datetime(2015, 8, 2, 12, 7, 0)
+                               ]).tz_localize('MST').tolist()
+    return pd.DataFrame({'sunrise': sunrise,
+                         'sunset': sunset,
+                         'transit': transit}, index=times)
 
 
 # the physical tests are run at the same time as the NREL SPA test.
@@ -177,11 +182,9 @@ def test_get_sun_rise_set_transit(expected_rise_set):
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
-    # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
 
-    del result_rounded['transit']
     assert_frame_equal(expected_rise_set, result_rounded)
 
 
@@ -198,7 +201,7 @@ def test_next_rise_set_ephem(expected_rise_set):
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
-
+    del expected_rise_set('transit')
     assert_frame_equal(expected_rise_set, result_rounded)
 
 

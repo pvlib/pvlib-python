@@ -535,7 +535,7 @@ def next_rise_set_ephem(time, latitude, longitude, altitude=0,
 
 
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
-            temperature=12):
+            temperature=12, horizon='+0:00'):
     """
     Calculate the solar position using the PyEphem package.
 
@@ -553,6 +553,10 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
         air pressure in Pascals.
     temperature : int or float, optional, default 12
         air temperature in degrees C.
+    horizon : string, optional, default '+0:00'
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='-0:34' when the sun's upper edge crosses the
+        geometrical horizon
 
     Returns
     -------
@@ -582,7 +586,7 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     sun_coords = pd.DataFrame(index=time)
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature)
+                            pressure, temperature, horizon)
 
     # make and fill lists of the sun's altitude and azimuth
     # this is the pressure and temperature corrected apparent alt/az.

@@ -58,7 +58,7 @@ def expected_rise_set_spa():
                                 datetime.datetime(2015, 8, 2, 5, 0, 27)
                                 ]).tz_localize('MST').tolist()
     sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 47, 43),
-                               datetime.datetime(2015, 8, 2, 19, 12, 15)
+                               datetime.datetime(2015, 8, 2, 19, 13, 58)
                                ]).tz_localize('MST').tolist()
     transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 12, 4, 45),
                                 datetime.datetime(2015, 8, 2, 12, 6, 58)

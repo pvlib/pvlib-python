@@ -16,10 +16,6 @@ from pvlib import solarposition, spa
 from conftest import (requires_ephem, needs_pandas_0_17,
                       requires_spa_c, requires_numba)
 
-DIRNAME = os.path.dirname(__file__)
-PROJDIR = os.path.dirname(DIRNAME)
-DATADIR = os.path.join(PROJDIR, 'data')
-
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014,6,24),
                       end=datetime.datetime(2014,6,26), freq='15Min')
@@ -505,6 +501,29 @@ def test_analytical_azimuth():
     assert not np.isnan(azimuths).any()
 
 
+EXPECTED_ANALYTICAL_SUNRISE_SUNSET_TRANSIT = [
+    (7.455277777777778, 16.691666666666666, 12.073611111111111),
+    (7.3975, 16.98138888888889, 12.189444444444444),
+    (7.161388888888889, 17.338333333333335, 12.25),
+    (6.79, 17.69472222222222, 12.2425),
+    (6.307777777777778, 18.0375, 12.1725),
+    (5.821666666666666, 18.336111111111112, 12.078888888888889),
+    (5.3613888888888885, 18.629722222222224, 11.995555555555555),
+    (4.978888888888889, 18.925555555555555, 11.952222222222222),
+    (4.709722222222222, 19.213333333333335, 11.961666666666666),
+    (4.617222222222222, 19.405833333333334, 12.011388888888888),
+    (4.686944444444444, 19.458333333333332, 12.072777777777778),
+    (4.8825, 19.340555555555557, 12.111666666666666),
+    (5.158333333333333, 19.043333333333333, 12.100833333333334),
+    (5.433333333333334, 18.6375, 12.035277777777777),
+    (5.704166666666667, 18.160833333333333, 11.9325),
+    (5.9847222222222225, 17.666666666666668, 11.825555555555555),
+    (6.315277777777778, 17.185, 11.75),
+    (6.666944444444445, 16.82, 11.743611111111111),
+    (7.0225, 16.593055555555555, 11.807777777777778),
+    (7.311111111111111, 16.54277777777778, 11.926944444444445)]
+
+
 def test_analytical_sunrise_sunset_transit():
     """Test analytical calculations for sunrise, sunset, and transit times"""
     times = pd.DatetimeIndex(start='2018-01-01 0:00:00',
@@ -513,25 +532,27 @@ def test_analytical_sunrise_sunset_transit():
     lat, lon = 39.743, -105.178  # degrees
     eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)  # minutes
     decl = solarposition.declination_spencer71(times.dayofyear)  # radians
-    sst = solarposition.sunrise_sunset_transit_analytical(
+    sr, ss, st = solarposition.sunrise_sunset_transit_analytical(
         times, latitude=lat, longitude=lon, declination=decl,
         equation_of_time=eot)
+    sst = list(
+        zip(*[(sr[idx], ss[idx], st[idx]) for idx in range(0, 8760, 438)]))
     sunrise = (sr.time() for sr in sst[0])
     sunset = (ss.time() for ss in sst[1])
     transit = (tr.time() for tr in sst[2])
-    sunrise_hours = [sr.hour + (sr.minute + sr.second/60.)/60.
+    sunrise_hours = [sr.hour + (sr.minute + sr.second / 60.) / 60.
                      for sr in sunrise]
-    sunset_hours = [ss.hour + (ss.minute + ss.second/60.)/60. for ss in sunset]
-    transit_hours = [tr.hour + (tr.minute + tr.second/60.)/60.
+    sunset_hours = [ss.hour + (ss.minute + ss.second / 60.) / 60.
+                    for ss in sunset]
+    transit_hours = [tr.hour + (tr.minute + tr.second / 60.) / 60.
                      for tr in transit]
-    test_data_file = os.path.join(
-        DATADIR, 'sunrise_sunset_transit.txt')
+    test_data_file = EXPECTED_ANALYTICAL_SUNRISE_SUNSET_TRANSIT
     test_data_type = np.dtype(
         [('sunrise', float), ('sunset', float), ('transit', float)])
-    test_data = np.loadtxt(test_data_file, dtype=test_data_type)
-    # test data created using SPA algorithm at following conditions:
+    test_data = np.array(test_data_file, dtype=test_data_type)
+    # test data created using NREL SPA-C algorithm at following conditions:
     # year=2018, time_zone=-7, longitude=-105.178, latitude=39.743,
     # elevation=1830.14, pressure=820, temperature=11, delta_t=67
-    assert np.allclose(sunrise_hours, test_data['sunrise'], atol=0.11)
-    assert np.allclose(sunset_hours, test_data['sunset'], atol=0.11)
-    assert np.allclose(transit_hours, test_data['transit'], atol=0.02)
+    assert np.allclose(sunrise_hours, test_data['sunrise'])
+    assert np.allclose(sunset_hours, test_data['sunset'])
+    assert np.allclose(transit_hours, test_data['transit'])

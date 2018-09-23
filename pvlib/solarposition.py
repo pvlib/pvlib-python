@@ -1213,8 +1213,9 @@ def hour_angle(times, longitude, equation_of_time):
 
 
 def _hours(times, hour_angle, longitude, equation_of_time):
-    timezone = times.tz.utcoffset(times).total_seconds() / 3600.
-    return (hour_angle - longitude - equation_of_time/4.)/15. + 12. + timezone
+    tz_info = times.tz  # pytz timezone info
+    tz = tz_info.utcoffset(times).total_seconds() / 3600.
+    return (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tz
 
 
 def _times(times, hours):
@@ -1233,7 +1234,7 @@ def sunrise_sunset_transit_analytical(times, latitude, longitude, declination,
 
     Parameters
     ----------
-    times : :class:`pandas.DatetimeIndex`
+    times : pandas.DatetimeIndex
         Corresponding timestamps, must be timezone aware.
     latitude : float
         Latitude in degrees
@@ -1243,6 +1244,24 @@ def sunrise_sunset_transit_analytical(times, latitude, longitude, declination,
         declination angle in radians at ``times``
     equation_of_time : numeric
         difference in time between solar time and mean solar time in minutes
+
+    Returns
+    -------
+    sunrise : datetime
+        localized sunrise time
+    sunset : datetime
+        localized sunset time
+    transit : datetime
+        localized sun transit time
+
+    References
+    ----------
+    [2] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition" pp. 9-11, J. Wiley and Sons, New York (2006)
+
+    [3] Frank Vignola et al., "Solar And Infrared Radiation Measurements",
+    p. 13, CRC Press (2012)
+
     """
     latitude_rad = np.radians(latitude)  # radians
     sunset_angle_rad = np.arccos(-np.tan(declination) * np.tan(latitude_rad))
@@ -1256,4 +1275,4 @@ def sunrise_sunset_transit_analytical(times, latitude, longitude, declination,
     sunrise = _times(times, sunrise_hour)
     sunset = _times(times, sunset_hour)
     transit = _times(times, transit_hour)
-    return (sunrise, sunset, transit)
+    return sunrise, sunset, transit

@@ -50,7 +50,7 @@ def expected_solpos_multi():
 
 @pytest.fixture()
 def expected_rise_set():
-    # for Golden, CO, from USNO website
+    # for Golden, CO, from NREL SPA website
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
                               datetime.datetime(2015, 8, 2),
                               ]).tz_localize('MST')
@@ -58,7 +58,7 @@ def expected_rise_set():
                                 datetime.datetime(2015, 8, 2, 5, 0, 0)
                                 ]).tz_localize('MST').tolist()
     sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 48, 0),
-                               datetime.datetime(2015, 8, 2, 19, 13, 0)
+                               datetime.datetime(2015, 8, 2, 19, 14, 0)
                                ]).tz_localize('MST').tolist()
     transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 12, 5, 0),
                                 datetime.datetime(2015, 8, 2, 12, 7, 0)
@@ -164,7 +164,7 @@ def test_get_sun_rise_set_transit(expected_rise_set):
 
     result = solarposition.get_sun_rise_set_transit(times, south.latitude,
                                                     south.longitude,
-                                                    delta_t=64.0)
+                                                    delta_t=65.0)
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
@@ -174,11 +174,11 @@ def test_get_sun_rise_set_transit(expected_rise_set):
     del result_rounded['transit']
     assert_frame_equal(frame, result_rounded)
 
-    # test for Golden, CO compare to USNO
+    # test for Golden, CO compare to NREL SPA
     result = solarposition.get_sun_rise_set_transit(expected_rise_set.index,
                                                     golden.latitude,
                                                     golden.longitude,
-                                                    delta_t=64.0)
+                                                    delta_t=65.0)
 
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
@@ -191,7 +191,7 @@ def test_get_sun_rise_set_transit(expected_rise_set):
 
 @requires_ephem
 def test_next_rise_set_ephem(expected_rise_set):
-    # test for Golden, CO compare to USNO
+    # test for Golden, CO compare to NREL SPA
     result = solarposition.ephem_next_rise_set(expected_rise_set.index,
                                                golden.latitude,
                                                golden.longitude,

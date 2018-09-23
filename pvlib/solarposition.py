@@ -798,7 +798,8 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
-              altitude=0, pressure=101325, temperature=12, xtol=1.0e-12):
+              altitude=0, pressure=101325, temperature=12, horizon='+0:00',
+              xtol=1.0e-12):
     """
     Calculate the time between lower_bound and upper_bound
     where the attribute is equal to value. Uses PyEphem for
@@ -823,6 +824,10 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         atmospheric correction.
     temperature : int or float, optional, default 12
         Air temperature in degrees C.
+    horizon : string, optional, default '+0:00'
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='-0:34' when the sun's upper edge crosses the
+        geometrical horizon
     xtol : float, optional, default 1.0e-12
         The allowed error in the result from value
 
@@ -845,7 +850,7 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         raise ImportError('The calc_time function requires scipy')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature)
+                            pressure, temperature, horizon)
 
     def compute_attr(thetime, target, attr):
         obs.date = thetime

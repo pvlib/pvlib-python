@@ -62,7 +62,7 @@ def expected_rise_set():
                                ]).tz_localize('MST').tolist()
     transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 12, 5, 0),
                                 datetime.datetime(2015, 8, 2, 12, 7, 0)
-                               ]).tz_localize('MST').tolist()
+                                ]).tz_localize('MST').tolist()
     return pd.DataFrame({'transit': transit,
                          'sunrise': sunrise,
                          'sunset': sunset,
@@ -158,7 +158,7 @@ def test_get_sun_rise_set_transit(expected_rise_set):
                                 datetime.datetime(2004, 12, 4, 4, 38, 57)]
                                ).tz_localize('UTC').tolist()
     sunset = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 17, 1, 4),
-                               datetime.datetime(2004, 12, 4, 19, 2, 2)]
+                               datetime.datetime(2004, 12, 4, 19, 2, 3)]
                               ).tz_localize('UTC').tolist()
     frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
 
@@ -196,8 +196,8 @@ def test_next_rise_set_ephem(expected_rise_set):
                                                golden.latitude,
                                                golden.longitude,
                                                golden.altitude,
-                                               pressure=101325,
-                                               temperature=12)
+                                               pressure=82000,
+                                               temperature=11)
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():

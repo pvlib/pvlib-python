@@ -201,7 +201,7 @@ def test_next_rise_set_ephem(expected_rise_set):
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
-    del expected_rise_set('transit')
+    del expected_rise_set['transit']
     assert_frame_equal(expected_rise_set, result_rounded)
 
 

@@ -1213,15 +1213,18 @@ def hour_angle(times, longitude, equation_of_time):
 
 
 def _hours(times, hour_angle, longitude, equation_of_time):
+    """helper that converts hour angles in degrees into hours"""
     tz_info = times.tz  # pytz timezone info
     tz = tz_info.utcoffset(times).total_seconds() / 3600.
     return (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tz
 
 
 def _times(times, hours):
-    return np.array([(dt.timedelta(hours=h) + t.tz.localize(
-        dt.datetime(t.year, t.month, t.day)
-    )) for h, t in zip(hours, times)])
+    """helper converts hours from an array of floats to localized times"""
+    tz_info = times.tz
+    return pd.DatetimeIndex(
+        times.tz_localize(None).values.astype('datetime64[D]')
+        + (hours.values * 3600. * 1.e9).astype('timedelta64[ns]'), tz=tz_info)
 
 
 def sunrise_sunset_transit_analytical(times, latitude, longitude, declination,

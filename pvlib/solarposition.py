@@ -1223,19 +1223,20 @@ def _times(times, hours):
     """helper converts hours from an array of floats to localized times"""
     tz_info = times.tz
     try:
+        hours = hours.values  # make a new reference
+    except AttributeError:
+        pass
+    try:
+        # OLD pandas, "TypeError: Already tz-aware, use tz_convert to convert."
         times.tz = None
     except AttributeError:
-        # OLD pandas, "TypeError: Already tz-aware, use tz_convert to convert."
-        return pd.DatetimeIndex(
-            times.tz_localize(None).values.astype('datetime64[D]') +
-            (hours.values * 3600. * 1.e9).astype('timedelta64[ns]'),
-            tz=tz_info)
-    else:
         # NEW pandas, "AttributeError: Cannot directly set timezone. Use
         # tz_localize() or tz_convert() as appropriate"
-        return pd.DatetimeIndex(
-            times.values.astype('datetime64[D]') +
-            (hours * 3600. * 1.e9).astype('timedelta64[ns]'), tz=tz_info)
+        times = times.tz_localize(None)
+    return pd.DatetimeIndex(
+        times.values.astype('datetime64[D]').astype('datetime64[ns]') +
+        (hours * 3600. * 1.e9).astype('timedelta64[ns]'),
+        tz=tz_info)
 
 
 def sunrise_sunset_transit_analytical(times, latitude, longitude, declination,

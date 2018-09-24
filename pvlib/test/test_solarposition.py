@@ -65,29 +65,34 @@ def expected_rise_set_spa():
                                 ]).tz_localize('MST').tolist()
     return pd.DataFrame({'transit': transit,
                          'sunrise': sunrise,
-                         'sunset': sunset,
-                         }, index=times)
+                         'sunset': sunset},
+                        index=times,
+                        dtype='datetime64[ns]')
 
 
 @pytest.fixture()
 def expected_rise_set_ephem():
     # for Golden, CO, from USNO websites
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
+                              datetime.datetime(2015, 1, 3),
                               datetime.datetime(2015, 8, 2),
                               ]).tz_localize('MST')
     sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 22, 0),
+                                datetime.datetime(2015, 1, 3, 7, 22, 0),
                                 datetime.datetime(2015, 8, 2, 5, 0, 0)
                                 ]).tz_localize('MST').tolist()
     sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 48, 0),
+                               datetime.datetime(2015, 1, 3, 16, 49, 0),
                                datetime.datetime(2015, 8, 2, 19, 13, 0)
                                ]).tz_localize('MST').tolist()
     transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 12, 5, 0),
+                                datetime.datetime(2015, 1, 3, 12, 5, 0),
                                 datetime.datetime(2015, 8, 2, 12, 7, 0)
                                 ]).tz_localize('MST').tolist()
     return pd.DataFrame({'transit': transit,
                          'sunrise': sunrise,
-                         'sunset': sunset,
-                         }, index=times)
+                         'sunset': sunset},
+                        index=times)
 # the physical tests are run at the same time as the NREL SPA test.
 # pyephem reproduces the NREL result to 2 decimal places.
 # this doesn't mean that one code is better than the other.
@@ -224,6 +229,57 @@ def test_next_rise_set_ephem(expected_rise_set_ephem):
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
     del expected_rise_set_ephem['transit']
     assert_frame_equal(expected_rise_set_ephem, result_rounded)
+
+    # test with times
+    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 3, 0, 0),
+                              datetime.datetime(2015, 1, 2, 10, 15, 0),
+                              datetime.datetime(2015, 1, 2, 15, 3, 0),
+                              datetime.datetime(2015, 1, 2, 21, 6, 7)
+                              ]).tz_localize('MST')
+    expected = pd.DataFrame(index=times,
+                            columns=['sunrise', 'sunset'],
+                            dtype='datetime64[ns]')
+    expected['sunrise'] = pd.Series(index=times, data = \
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
+    expected['sunset'] = pd.Series(index=times, data = \
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunset']])
+
+    result = solarposition.next_rise_set_ephem(times,
+                                               golden.latitude,
+                                               golden.longitude,
+                                               golden.altitude,
+                                               pressure=0,
+                                               temperature=11,
+                                               horizon='-0:34')
+    # round to nearest minute
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = data.dt.round('min').tz_convert('MST')
+    assert_frame_equal(expected, result_rounded)
+
+    # test with different timezone
+    times = times.tz_convert('UTC')
+    expected = expected.tz_convert('UTC')
+    for col, data in expected.iteritems():
+        expected[col] = data.dt.tz_convert('UTC')
+    result = solarposition.next_rise_set_ephem(times,
+                                               golden.latitude,
+                                               golden.longitude,
+                                               golden.altitude,
+                                               pressure=0,
+                                               temperature=11,
+                                               horizon='-0:34')
+    # round to nearest minute
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = data.dt.round('min').tz_convert(times.tz)
+    assert_frame_equal(expected, result_rounded)
 
 
 @requires_ephem

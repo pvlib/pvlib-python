@@ -523,7 +523,7 @@ EXPECTED_ANALYTICAL_SUNRISE_SUNSET_TRANSIT = [
     (7.311111111111111, 16.54277777777778, 11.926944444444445)]
 
 
-def test_analytical_sunrise_sunset_transit():
+def test_geometric_sunrise_sunset_transit():
     """Test analytical calculations for sunrise, sunset, and transit times"""
     times = pd.DatetimeIndex(start='2018-01-01 0:00:00',
                              end='2018-12-31 23:59:59',
@@ -531,7 +531,7 @@ def test_analytical_sunrise_sunset_transit():
     lat, lon = 39.743, -105.178  # degrees
     eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)  # minutes
     decl = solarposition.declination_spencer71(times.dayofyear)  # radians
-    sr, ss, st = solarposition.sunrise_sunset_transit_analytical(
+    sr, ss, st = solarposition.sunrise_sunset_transit_geometric(
         times, latitude=lat, longitude=lon, declination=decl,
         equation_of_time=eot)
     sst = list(

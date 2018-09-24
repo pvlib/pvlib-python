@@ -1213,39 +1213,46 @@ def hour_angle(times, longitude, equation_of_time):
 
 
 def _hours(times, hour_angle, longitude, equation_of_time):
-    """helper that converts hour angles in degrees into hours"""
+    """converts hour angles in degrees to hours as a numpy array"""
     tz_info = times.tz  # pytz timezone info
     tz = tz_info.utcoffset(times).total_seconds() / 3600.
-    return (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tz
-
-
-def _times(times, hours):
-    """helper converts hours from an array of floats to localized times"""
-    tz_info = times.tz
+    hours = (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tz
+    # hour_angle and/or equation of time could be either numpy arrays or pandas
+    # series, use ducktyping to enforce that the return is always a numpy array
     try:
         hours = hours.values  # make a new reference
     except AttributeError:
         pass
+    return hours
+
+
+def _times(times, hours):
+    """converts hours from an array of floats to localized times"""
+    tz_info = times.tz  # pytz timezone info
+    # change the localize tz-aware times to local, naive without converting tz
+    # by either replacing tz with None or using tz_localize(None)
     try:
-        # OLD pandas, "TypeError: Already tz-aware, use tz_convert to convert."
+        # OLD pandas, can't use tz_localize() on tz-aware times
         times.tz = None
     except AttributeError:
-        # NEW pandas, "AttributeError: Cannot directly set timezone. Use
-        # tz_localize() or tz_convert() as appropriate"
+        # NEW pandas, can't replace tz attribute of times
         times = times.tz_localize(None)
+    # convert times to previous midnight UTC
+    times = times.values.astype('datetime64[D]').astype('datetime64[ns]')
+    # add the hours until sunrise/sunset/transit
     return pd.DatetimeIndex(
-        times.values.astype('datetime64[D]').astype('datetime64[ns]') +
-        (hours * 3600. * 1.e9).astype('timedelta64[ns]'),
-        tz=tz_info)
+        times + (hours * 3600. * 1.e9).astype('timedelta64[ns]'), tz=tz_info)
 
 
-def sunrise_sunset_transit_analytical(times, latitude, longitude, declination,
-                                      equation_of_time):
+def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
+                                     equation_of_time):
     """
-    Analytical calculation of solar sunrise, sunset, and transit.
+    Geometric calculation of solar sunrise, sunset, and transit.
 
-    .. warning:: The analytic form neglects the effect of atmospheric
-        refraction.
+    .. warning:: The geometric calculation assumes a circula earth oribit with
+        the sun as a point source at its center, and neglects the effect of
+        atmospheric refraction on zenith. The error depends on location and
+        time of year but is of order 10 minutes.
 
     Parameters
     ----------

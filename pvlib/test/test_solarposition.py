@@ -66,8 +66,7 @@ def expected_rise_set_spa():
     return pd.DataFrame({'transit': transit,
                          'sunrise': sunrise,
                          'sunset': sunset},
-                        index=times,
-                        dtype='datetime64[ns]')
+                        index=times)
 
 
 @pytest.fixture()
@@ -199,10 +198,9 @@ def test_get_sun_rise_set_transit(expected_rise_set_spa):
     assert_frame_equal(frame, result_rounded)
 
     # test for Golden, CO compare to NREL SPA
-    result = solarposition.get_sun_rise_set_transit(expected_rise_set_spa.index,
-                                                    golden.latitude,
-                                                    golden.longitude,
-                                                    delta_t=65.0)
+    result = solarposition.get_sun_rise_set_transit(
+            expected_rise_set_spa.index, golden.latitude, golden.longitude,
+            delta_t=65.0)
 
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
@@ -239,12 +237,12 @@ def test_next_rise_set_ephem(expected_rise_set_ephem):
     expected = pd.DataFrame(index=times,
                             columns=['sunrise', 'sunset'],
                             dtype='datetime64[ns]')
-    expected['sunrise'] = pd.Series(index=times, data = \
+    expected['sunrise'] = pd.Series(index=times, data =
        [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
-    expected['sunset'] = pd.Series(index=times, data = \
+    expected['sunset'] = pd.Series(index=times, data =
        [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],

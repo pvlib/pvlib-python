@@ -1212,7 +1212,7 @@ def hour_angle(times, longitude, equation_of_time):
     return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.
 
 
-def _hours(times, hour_angle, longitude, equation_of_time):
+def _hour_angle_to_hours(times, hour_angle, longitude, equation_of_time):
     """converts hour angles in degrees to hours as a numpy array"""
     tz_info = times.tz  # pytz timezone info
     tz = tz_info.utcoffset(times).total_seconds() / 3600.
@@ -1226,7 +1226,7 @@ def _hours(times, hour_angle, longitude, equation_of_time):
     return hours
 
 
-def _times(times, hours):
+def _local_times_from_hours_since_midnite(times, hours):
     """converts hours from an array of floats to localized times"""
     tz_info = times.tz  # pytz timezone info
     # change the localize tz-aware times to local, naive without converting tz
@@ -1249,7 +1249,7 @@ def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
     """
     Geometric calculation of solar sunrise, sunset, and transit.
 
-    .. warning:: The geometric calculation assumes a circula earth oribit with
+    .. warning:: The geometric calculation assumes a circular earth orbit with
         the sun as a point source at its center, and neglects the effect of
         atmospheric refraction on zenith. The error depends on location and
         time of year but is of order 10 minutes.
@@ -1259,9 +1259,9 @@ def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
     times : pandas.DatetimeIndex
         Corresponding timestamps, must be timezone aware.
     latitude : float
-        Latitude in degrees
+        Latitude in degrees, positive north of equator, negative to south
     longitude : float
-        Longitude in degrees
+        Longitude in degrees, positive east of prime meridian, negative to west
     declination : numeric
         declination angle in radians at ``times``
     equation_of_time : numeric
@@ -1278,11 +1278,11 @@ def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
 
     References
     ----------
-    [2] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" pp. 9-11, J. Wiley and Sons, New York (2006)
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition," J. Wiley and Sons, New York (2006)
 
-    [3] Frank Vignola et al., "Solar And Infrared Radiation Measurements",
-    p. 13, CRC Press (2012)
+    [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements,"
+    CRC Press (2012)
 
     """
     latitude_rad = np.radians(latitude)  # radians
@@ -1291,10 +1291,12 @@ def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
     # solar noon is at hour angle zero
     # so sunrise is just negative of sunset
     sunrise_angle = -sunset_angle
-    sunrise_hour = _hours(times, sunrise_angle, longitude, equation_of_time)
-    sunset_hour = _hours(times, sunset_angle, longitude, equation_of_time)
-    transit_hour = _hours(times, 0, longitude, equation_of_time)
-    sunrise = _times(times, sunrise_hour)
-    sunset = _times(times, sunset_hour)
-    transit = _times(times, transit_hour)
+    sunrise_hour = _hour_angle_to_hours(
+        times, sunrise_angle, longitude, equation_of_time)
+    sunset_hour = _hour_angle_to_hours(
+        times, sunset_angle, longitude, equation_of_time)
+    transit_hour = _hour_angle_to_hours(times, 0, longitude, equation_of_time)
+    sunrise = _local_times_from_hours_since_midnite(times, sunrise_hour)
+    sunset = _local_times_from_hours_since_midnite(times, sunset_hour)
+    transit = _local_times_from_hours_since_midnite(times, transit_hour)
     return sunrise, sunset, transit

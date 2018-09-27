@@ -36,12 +36,13 @@ def read_srml(filename):
 
     # Quality flags are all labeled 0, but occur immediately after their
     # associated var so we create a dict mapping them to var_flag for renaming
-    flag_label_map = {flag: data.columns[data.columns.get_loc(flag)-1]+'_flag'
-                      for flag in data.columns[1::2]}
+    columns = data.columns
+    flag_label_map = {flag: columns[columns.get_loc(flag) - 1] + '_flag'
+                      for flag in columns[1::2]}
     data = data.rename(columns=flag_label_map)
     # For data flagged bad or missing, replace the value with np.NaN
-    for col in data.columns[::2]:
-        data[col] = data[col].where(~(data[col+'_flag'] == 99), np.NaN)
+    for col in columns[::2]:
+        data[col] = data[col].where(~(data[col + '_flag'] == 99), np.NaN)
     return data
 
 
@@ -63,19 +64,20 @@ def map_columns(col):
     -----
     var_map is a dictionary mapping SRML data element numbers
     to their pvlib names. For most variables, only the first
-    three numbers are used, the fourth indicating the instrument.
-    Spectral data (7xxx) uses all four numbers to indicate the
+    three digits are used, the fourth indicating the instrument.
+    Spectral data (7xxx) uses all four digits to indicate the
     variable.
     """
     var_map = {
         '100': 'ghi',
         '201': 'dni',
         '300': 'dhi',
+        '920': 'wind_dir',
+        '921': 'wind_speed',
         '930': 'temp_air',
         '931': 'temp_dew',
         '933': 'relative_humidity',
-        '921': 'wind_speed',
-        '920': 'wind_dir',
+        '937': 'temp_cell',
     }
     if col.startswith('7'):
         # spectral data
@@ -84,7 +86,7 @@ def map_columns(col):
         except KeyError:
             return col
     try:
-        return var_map[col[:3]]+'_'+col[3:]
+        return var_map[col[:3]] + '_' + col[3:]
     except KeyError:
         return col
 
@@ -106,8 +108,8 @@ def format_index(df, year):
     """
     df_time = df[df.columns[1]] - 1
     df_doy = df[df.columns[0]]
-    hours = df_time % 100 == 99
-    times = df_time.where(~hours, df_time - 40)
+    fifty_nines = df_time % 100 == 99
+    times = df_time.where(~fifty_nines, df_time - 40)
     times = times.apply(lambda x: '{:04.0f}'.format(x))
     doy = df_doy.apply(lambda x: '{:03.0f}'.format(x))
     dts = pd.to_datetime(str(year) + '-' + doy + '-' + times,
@@ -117,7 +119,7 @@ def format_index(df, year):
     return df
 
 
-def request_uo_data(station, year, month, filetype='PO'):
+def request_srml_data(station, year, month, filetype='PO'):
     """Read a month of SRML data from solardat into a Dataframe.
 
     Parameters
@@ -136,11 +138,11 @@ def request_uo_data(station, year, month, filetype='PO'):
     data: pd.DataFrame
         One month of data from SRML.
     """
-    file_name = "{station}{filetype}{year:2d}{month:2d}.txt".format(
+    file_name = "{station}{filetype}{year:02d}{month:02d}.txt".format(
         station=station,
         filetype=filetype,
         year=year % 100,
         month=month)
     url = "http://solardat.uoregon.edu/download/Archive/"
-    data = read_srml(url+file_name)
+    data = read_srml(url + file_name)
     return data

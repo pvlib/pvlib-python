@@ -1,12 +1,32 @@
-"""Collection of functions to get data from UO SRML.
+"""Collection of functions to operate on data from University of Oregon Solar
+Radiation Monitoring Laboratory (SRML) data.
 """
 import numpy as np
 import pandas as pd
 
+"""
+variable_map is a dictionary mapping SRML data element numbers to their
+pvlib names. For most variables, only the first three digits are used,
+the fourth indicating the instrument. Spectral data (7xxx) uses all
+four digits to indicate the variable. See a full list of data element
+numbers `here. <http://solardat.uoregon.edu/DataElementNumbers.html>`_
+"""
+variable_map = {
+        '100': 'ghi',
+        '201': 'dni',
+        '300': 'dhi',
+        '920': 'wind_dir',
+        '921': 'wind_speed',
+        '930': 'temp_air',
+        '931': 'temp_dew',
+        '933': 'relative_humidity',
+        '937': 'temp_cell',
+    }
+
 
 def read_srml(filename):
     """
-    Read SRML file into pandas dataframe.
+    Read University of Oregon SRML[1] 1min .tsv file into pandas dataframe.
 
     Parameters
     ----------
@@ -17,8 +37,8 @@ def read_srml(filename):
     -------
     data: Dataframe
         A dataframe with datetime index and all of the variables listed
-        in the `var_map` dict inside of the map_columns function, along
-        with their associated quality control flags.
+        in the `variable_map` dict inside of the map_columns function,
+        along with their associated quality control flags.
 
     Notes
     -----
@@ -27,27 +47,51 @@ def read_srml(filename):
     on a given line should now be understood to occur during the interval
     extending from the time of the line in which they are listed to
     the ending time on the next line, rather than the previous line.
+
+    See SRML's `Archival Files`_ page for more information.
+
+    .. _Archival Files: http://solardat.uoregon.edu/ArchivalFiles.html
+
+    References
+    ----------
+
+    [1] University of Oregon Solar Radiation Monitoring Laboratory
+        `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
     """
     tsv_data = pd.read_csv(filename, delimiter='\t')
     year = tsv_data.columns[1]
     data = format_index(tsv_data, year)
-    # Rename and drop datetime columns
-    data = data[data.columns[2:]].rename(columns=map_columns)
+    # Drop day of year and time columns
+    data = data[data.columns[2:]]
 
-    # Quality flags are all labeled 0, but occur immediately after their
-    # associated var so we create a dict mapping them to var_flag for renaming
+    data = data.rename(columns=map_columns)
+
+    # Quality flag columns are all labeled 0 in the original data. They
+    # appear immediately after their associated variable and are suffixed
+    # with an integer value when read from the file. So we map flags to
+    # the preceding variable with a '_flag' suffix.
+    #
+    # Example:
+    #   Columns ['ghi_0', '0.1', 'temp_air_2', '0.2']
+    #
+    #   Yields a flag_label_map of:
+    #       { '0.1': 'ghi_0_flag',
+    #         '0.2': 'temp_air_2'}
+    #
     columns = data.columns
     flag_label_map = {flag: columns[columns.get_loc(flag) - 1] + '_flag'
                       for flag in columns[1::2]}
     data = data.rename(columns=flag_label_map)
-    # For data flagged bad or missing, replace the value with np.NaN
+
+    # Mask data marked with quality flag 99 (bad or missing data)
     for col in columns[::2]:
-        data[col] = data[col].where(~(data[col + '_flag'] == 99), np.NaN)
+        missing = data[col + '_flag'] == 99
+        data[col] = data[col].where(~(missing), np.NaN)
     return data
 
 
 def map_columns(col):
-    """Map column labels to pvlib names.
+    """Map data element numbers to pvlib names.
 
     Parameters
     ----------
@@ -60,33 +104,17 @@ def map_columns(col):
         The pvlib label if it was found in the mapping,
         else the original label.
 
-    Notes
-    -----
-    var_map is a dictionary mapping SRML data element numbers
-    to their pvlib names. For most variables, only the first
-    three digits are used, the fourth indicating the instrument.
-    Spectral data (7xxx) uses all four digits to indicate the
-    variable.
     """
-    var_map = {
-        '100': 'ghi',
-        '201': 'dni',
-        '300': 'dhi',
-        '920': 'wind_dir',
-        '921': 'wind_speed',
-        '930': 'temp_air',
-        '931': 'temp_dew',
-        '933': 'relative_humidity',
-        '937': 'temp_cell',
-    }
     if col.startswith('7'):
         # spectral data
         try:
-            return var_map[col]
+            return variable_map[col]
         except KeyError:
             return col
     try:
-        return var_map[col[:3]] + '_' + col[3:]
+        variable_name = variable_map[col[:3]]
+        variable_number = col[3:]
+        return variable_name + '_' + variable_number
     except KeyError:
         return col
 
@@ -119,8 +147,9 @@ def format_index(df, year):
     return df
 
 
-def request_srml_data(station, year, month, filetype='PO'):
-    """Read a month of SRML data from solardat into a Dataframe.
+def read_srml_month_from_solardat(station, year, month, filetype='PO'):
+    """Request a month of SRML[1] data from solardat and read it into
+    a Dataframe.
 
     Parameters
     ----------
@@ -137,6 +166,12 @@ def request_srml_data(station, year, month, filetype='PO'):
     -------
     data: pd.DataFrame
         One month of data from SRML.
+
+    References
+    ----------
+    [1] University of Oregon Solar Radiation Measurement Laboratory
+        `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
+
     """
     file_name = "{station}{filetype}{year:02d}{month:02d}.txt".format(
         station=station,

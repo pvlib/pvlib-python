@@ -222,7 +222,7 @@ def test_get_rise_set_ephem(expected_rise_set_ephem):
                                               golden.latitude,
                                               golden.longitude,
                                               next_or_previous='next',
-                                              golden.altitude,
+                                              altitude=golden.altitude,
                                               pressure=0,
                                               temperature=11,
                                               horizon='-0:34')
@@ -257,7 +257,7 @@ def test_get_rise_set_ephem(expected_rise_set_ephem):
                                               golden.latitude,
                                               golden.longitude,
                                               next_or_previous='next',
-                                              golden.altitude,
+                                              altitude=golden.altitude,
                                               pressure=0,
                                               temperature=11,
                                               horizon='-0:34')
@@ -291,7 +291,7 @@ def test_get_rise_set_ephem(expected_rise_set_ephem):
                                               golden.latitude,
                                               golden.longitude,
                                               next_or_previous='previous',
-                                              golden.altitude,
+                                              altitude=golden.altitude,
                                               pressure=0,
                                               temperature=11,
                                               horizon='-0:34')
@@ -310,7 +310,7 @@ def test_get_rise_set_ephem(expected_rise_set_ephem):
                                               golden.latitude,
                                               golden.longitude,
                                               next_or_previous='next',
-                                              golden.altitude,
+                                              altitude=golden.altitude,
                                               pressure=0,
                                               temperature=11,
                                               horizon='-0:34')

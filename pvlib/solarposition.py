@@ -548,69 +548,6 @@ def get_rise_set_ephem(time, latitude, longitude,
                                           'sunset': sunset})
 
 
-def previous_rise_set_ephem(time, latitude, longitude, altitude=0,
-                        pressure=101325, temperature=12, horizon='0:00'):
-    """
-    Calculate the previous sunrise and sunset times using the PyEphem package.
-
-    Parameters
-    ----------
-    time : pandas.DatetimeIndex
-        Localized or UTC.
-    latitude : float
-        positive is north of 0
-    longitude : float
-        positive is east of 0
-    altitude : float, default 0
-        distance above sea level in meters.
-    pressure : int or float, optional, default 101325
-        air pressure in Pascals.
-    temperature : int or float, optional, default 12
-        air temperature in degrees C.
-    horizon : string, format +/-X:YY
-        arc degrees:arc minutes from geometrical horizon for sunrise and
-        sunset, e.g., horizon='-0:34' when the sun's upper edge crosses the
-        geometrical horizon
-
-    Returns
-    -------
-    pandas.DataFrame
-        index is the same as input time.index
-        columns are 'sunrise' and 'sunset', times are localized to the
-        timezone time.tz
-
-    See also
-    --------
-    pyephem
-    """
-
-    try:
-        import ephem
-    except ImportError:
-        raise ImportError('PyEphem must be installed')
-
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
-
-    obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature, horizon)
-    # create lists of the next sunrise and sunset time localized to time.tz
-    previous_sunrise = []
-    previous_sunset = []
-    for thetime in time_utc:
-        obs.date = ephem.Date(thetime)
-        previous_sunrise.append(_ephem_to_timezone(obs.previous_rising(sun),
-                                                   time.tz))
-        previous_sunset.append(_ephem_to_timezone(obs.previous_setting(sun),
-                                                  time.tz))
-
-    return pd.DataFrame(index=time, data={'sunrise': previous_sunrise,
-                                          'sunset': previous_sunset})
-
-
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
             temperature=12, horizon='+0:00'):
     """

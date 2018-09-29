@@ -303,13 +303,13 @@ def test_get_rise_set_ephem(expected_rise_set_ephem):
 
     # test with different timezone
     times = times.tz_convert('UTC')
-    expected = expected.tz_convert('UTC')
+    expected = expected.tz_convert('UTC') # resuse result from previous
     for col, data in expected.iteritems():
         expected[col] = data.dt.tz_convert('UTC')
     result = solarposition.get_rise_set_ephem(times,
                                               golden.latitude,
                                               golden.longitude,
-                                              next_or_previous='next',
+                                              next_or_previous='previous',
                                               altitude=golden.altitude,
                                               pressure=0,
                                               temperature=11,

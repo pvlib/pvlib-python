@@ -16,6 +16,7 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
+* :func:`~pvlib.solarposition.get_rise_set_ephem` returns sunrise and sunset times using pyephem
 
 
 Bug fixes
@@ -30,3 +31,4 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
+* Cliff Hansen (:ghuser:`cwhanse`)

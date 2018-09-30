@@ -505,7 +505,7 @@ def expected_rise_set_geometric():
     # for Golden, CO, from USNO websites
     latitude, longitude = 39.742476, -105.1786
     times = pd.DatetimeIndex(
-        ['2015-01-01', '2015-01-02', '2015-01-03','2015-08-02'], tz='MST')
+        ['2015-01-01', '2015-01-02', '2015-01-03', '2015-08-02'], tz='MST')
     sunrise = pd.DatetimeIndex([
         '2015-01-01 07:26:32.916133528',
         '2015-01-02 07:26:39.763224487',

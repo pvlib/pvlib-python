@@ -40,9 +40,11 @@ We'll need these imports for the examples below.
 
     In [1]: import pvlib
 
-    In [1]: from pvlib import clearsky, atmosphere, tmy, solarposition
+    In [1]: from pvlib import clearsky, atmosphere, solarposition
 
     In [1]: from pvlib.location import Location
+
+    In [1]: from pvlib.iotools import read_tmy3
 
 
 .. _location:
@@ -214,7 +216,7 @@ wavelengths [Bir80]_, and is implemented in
 
     In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
 
-    In [1]: tmy_data, tmy_header = tmy.readtmy3(tmy_file, coerce_year=1999)  # read TMY data
+    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999)  # read TMY data
 
     In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])

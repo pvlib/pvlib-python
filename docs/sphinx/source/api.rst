@@ -295,8 +295,36 @@ Functions
    tracking.singleaxis
 
 
+.. _iotools:
+
+IO Tools
+========
+
+Functions for reading and writing data from a variety of file formats
+relevant to solar energy modeling.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.read_tmy2
+   iotools.read_tmy3
+
+A :py:class:`~pvlib.location.Location` object may be created from metadata
+in some files.
+
+.. autosummary::
+   :toctree: generated/
+
+   location.Location.from_tmy
+
+
 TMY
 ===
+
+.. warning::
+
+    The :py:mod:`pvlib.tmy` module is deprecated; it will be removed
+    in pvlib 0.7. Please see the :ref:`pvlib.iotools <iotools>` package.
 
 Methods and functions for reading data from TMY files.
 

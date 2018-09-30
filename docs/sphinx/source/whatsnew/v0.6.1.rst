@@ -12,7 +12,12 @@ date will require Python 3. (:issue:`501`)
 
 API Changes
 ~~~~~~~~~~~
+* Created the ``pvlib.iotools`` subpackage. (:issue:`29`, :issue:`261`)
+* Deprecated ``tmy``, ``tmy.readtmy2`` and ``tmy.readtmy3``;
+  they will be removed in v0.7. Use the new :py:func:`pvlib.iotools.read_tmy2`
+  and :py:func:`pvlib.iotools.read_tmy3` instead. (:issue:`261`)
 * Added kwarg `horizon` to :func:`~pvlib.solarposition.pyephem` and :func:`~pvlib.solarposition.calc_time` with default value `'+0:00'`
+
 
 Enhancements
 ~~~~~~~~~~~~

@@ -6,6 +6,7 @@ Calculate the solar position using a variety of methods/packages.
 # Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
 # Will Holmgren (@wholmgren), University of Arizona, 2014
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
+# Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
 
 from __future__ import division
 import os
@@ -473,17 +474,17 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
     return obs, sun
 
 
-def get_rise_set_ephem(time, latitude, longitude,
-                       next_or_previous='next',
-                       altitude=0,
-                       pressure=101325, temperature=12, horizon='0:00'):
+def rise_set_transit_ephem(time, latitude, longitude,
+                           next_or_previous='next',
+                           altitude=0,
+                           pressure=101325, temperature=12, horizon='0:00'):
     """
     Calculate the next sunrise and sunset times using the PyEphem package.
 
     Parameters
     ----------
     time : pandas.DatetimeIndex
-        Localized or UTC.
+        Must be localized
     latitude : float
         positive is north of 0
     longitude : float
@@ -498,15 +499,16 @@ def get_rise_set_ephem(time, latitude, longitude,
         air temperature in degrees C.
     horizon : string, format +/-X:YY
         arc degrees:arc minutes from geometrical horizon for sunrise and
-        sunset, e.g., horizon='-0:34' when the sun's upper edge crosses the
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
         geometrical horizon
 
     Returns
     -------
     pandas.DataFrame
-        index is the same as input time.index
-        columns are 'sunrise' and 'sunset', times are localized to the
-        timezone time.tz
+        index is the same as input `time` argument
+        columns are 'sunrise', 'sunset', and 'transit'
 
     See also
     --------
@@ -518,11 +520,9 @@ def get_rise_set_ephem(time, latitude, longitude,
     except ImportError:
         raise ImportError('PyEphem must be installed')
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
+    # times must be localized
+    if not time.tz:
+        raise ValueError('rise_set_ephem: times must be localized')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)
@@ -539,7 +539,7 @@ def get_rise_set_ephem(time, latitude, longitude,
 
     sunrise = []
     sunset = []
-    for thetime in time_utc:
+    for thetime in time:
         obs.date = ephem.Date(thetime)
         sunrise.append(_ephem_to_timezone(rising(sun), time.tz))
         sunset.append(_ephem_to_timezone(setting(sun), time.tz))
@@ -569,12 +569,15 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
         air temperature in degrees C.
     horizon : string, optional, default '+0:00'
         arc degrees:arc minutes from geometrical horizon for sunrise and
-        sunset, e.g., horizon='-0:34' when the sun's upper edge crosses the
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
         geometrical horizon
 
     Returns
     -------
-    DataFrame
+    pandas.DataFrame
+        index is the same as input `time` argument
         The DataFrame will have the following columns:
         apparent_elevation, elevation,
         apparent_azimuth, azimuth,
@@ -840,7 +843,9 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         Air temperature in degrees C.
     horizon : string, optional, default '+0:00'
         arc degrees:arc minutes from geometrical horizon for sunrise and
-        sunset, e.g., horizon='-0:34' when the sun's upper edge crosses the
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
         geometrical horizon
     xtol : float, optional, default 1.0e-12
         The allowed error in the result from value

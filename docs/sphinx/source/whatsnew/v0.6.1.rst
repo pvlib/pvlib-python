@@ -12,11 +12,11 @@ date will require Python 3. (:issue:`501`)
 
 API Changes
 ~~~~~~~~~~~
-
+* Added kwarg `horizon` to :func:`~pvlib.solarposition.pyephem` and :func:`~pvlib.solarposition.calc_time` with default value `'+0:00'`
 
 Enhancements
 ~~~~~~~~~~~~
-* :func:`~pvlib.solarposition.get_rise_set_ephem` returns sunrise and sunset times using pyephem
+* :func:`~pvlib.solarposition.rise_set_transit_ephem` returns sunrise, sunset and transit times using pyephem
 
 
 Bug fixes

@@ -98,9 +98,9 @@ def expected_rise_set_ephem():
                                 datetime.datetime(2015, 1, 3, 12, 5, 0),
                                 datetime.datetime(2015, 8, 2, 12, 7, 0)
                                 ]).tz_localize('MST').tolist()
-    return pd.DataFrame({'transit': transit,
-                         'sunrise': sunrise,
-                         'sunset': sunset},
+    return pd.DataFrame({'sunrise': sunrise,
+                         'sunset': sunset,
+                         'transit': transit},
                         index=times)
 # the physical tests are run at the same time as the NREL SPA test.
 # pyephem reproduces the NREL result to 2 decimal places.

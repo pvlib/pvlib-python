@@ -541,16 +541,16 @@ def rise_set_transit_ephem(time, latitude, longitude,
 
     sunrise = []
     sunset = []
-    transit = []
+    trans = []
     for thetime in time:
         obs.date = ephem.Date(thetime)
         sunrise.append(_ephem_to_timezone(rising(sun), time.tz))
         sunset.append(_ephem_to_timezone(setting(sun), time.tz))
-        transit.append(_ephem_to_timezone(transit(sun), time.tz))
+        trans.append(_ephem_to_timezone(transit(sun), time.tz))
 
     return pd.DataFrame(index=time, data={'sunrise': sunrise,
                                           'sunset': sunset,
-                                          'transit': transit})
+                                          'transit': trans})
 
 
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,

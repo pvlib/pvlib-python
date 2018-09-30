@@ -18,7 +18,7 @@ from pytz.exceptions import UnknownTimeZoneError
 import pvlib
 from pvlib.location import Location
 
-from test_solarposition import expected_solpos
+from test_solarposition import expected_solpos, golden_mst
 
 from conftest import requires_scipy
 
@@ -252,8 +252,7 @@ def test_from_tmy_2():
     assert_frame_equal(loc.tmy_data, data)
 
 
-def test_get_solarposition(expected_solpos):
-    from test_solarposition import golden_mst
+def test_get_solarposition(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = golden_mst.get_solarposition(times, temperature=11)

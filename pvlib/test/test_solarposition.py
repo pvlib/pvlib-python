@@ -504,7 +504,7 @@ def test_get_solarposition_pressure(pressure, expected, golden):
 
 @pytest.mark.parametrize(
     "altitude, expected", [
-    (golden.altitude, expected_solpos()),
+    (golden().altitude, expected_solpos()),
     (2000, pd.DataFrame(
         np.array([[  39.88788,   50.11212,  194.34024,   39.87205,   14.64151,
                      50.12795]]),

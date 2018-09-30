@@ -500,58 +500,56 @@ def test_analytical_azimuth():
     assert not np.isnan(azimuths).any()
 
 
-EXPECTED_ANALYTICAL_SUNRISE_SUNSET_TRANSIT = [
-    (7.455277777777778, 16.691666666666666, 12.073611111111111),
-    (7.3975, 16.98138888888889, 12.189444444444444),
-    (7.161388888888889, 17.338333333333335, 12.25),
-    (6.79, 17.69472222222222, 12.2425),
-    (6.307777777777778, 18.0375, 12.1725),
-    (5.821666666666666, 18.336111111111112, 12.078888888888889),
-    (5.3613888888888885, 18.629722222222224, 11.995555555555555),
-    (4.978888888888889, 18.925555555555555, 11.952222222222222),
-    (4.709722222222222, 19.213333333333335, 11.961666666666666),
-    (4.617222222222222, 19.405833333333334, 12.011388888888888),
-    (4.686944444444444, 19.458333333333332, 12.072777777777778),
-    (4.8825, 19.340555555555557, 12.111666666666666),
-    (5.158333333333333, 19.043333333333333, 12.100833333333334),
-    (5.433333333333334, 18.6375, 12.035277777777777),
-    (5.704166666666667, 18.160833333333333, 11.9325),
-    (5.9847222222222225, 17.666666666666668, 11.825555555555555),
-    (6.315277777777778, 17.185, 11.75),
-    (6.666944444444445, 16.82, 11.743611111111111),
-    (7.0225, 16.593055555555555, 11.807777777777778),
-    (7.311111111111111, 16.54277777777778, 11.926944444444445)]
+@pytest.fixture()
+def expected_rise_set_geometric():
+    # for Golden, CO, from USNO websites
+    latitude, longitude = 39.742476, -105.1786
+    times = pd.DatetimeIndex(
+        ['2015-01-01', '2015-01-02', '2015-01-03','2015-08-02'], tz='MST')
+    sunrise = pd.DatetimeIndex([
+        '2015-01-01 07:26:32.916133528',
+        '2015-01-02 07:26:39.763224487',
+        '2015-01-03 07:26:44.474206647',
+        '2015-08-02 05:04:35.688533801'],
+        tz='MST')
+    sunset = pd.DatetimeIndex([
+        '2015-01-01 16:40:43.173266362',
+        '2015-01-02 16:41:29.951096777',
+        '2015-01-03 16:42:18.353827270',
+        '2015-08-02 19:09:46.597355085'],
+        tz='MST')
+    transit = pd.DatetimeIndex([
+        '2015-01-01 12:03:38.044699945',
+        '2015-01-02 12:04:04.857160632',
+        '2015-01-03 12:04:31.414016959',
+        '2015-08-02 12:07:11.142944443'],
+        tz='MST')
+    return {'times': times, 'latitude': latitude, 'longitude': longitude,
+            'sunrise': sunrise, 'sunset': sunset,  'transit': transit}
 
 
-def test_geometric_sunrise_sunset_transit():
+def _times_to_hours(times):
+    """convert pandas datetime indicies to list of hours as floats"""
+    return [t.hour + (t.minute + t.second / 60.) / 60.
+            for t in (dt.time() for dt in times)]
+
+
+def test_geometric_sunrise_sunset_transit(expected_rise_set_geometric):
     """Test analytical calculations for sunrise, sunset, and transit times"""
-    times = pd.DatetimeIndex(start='2018-01-01 0:00:00',
-                             end='2018-12-31 23:59:59',
-                             freq='H').tz_localize('Etc/GMT+7')
-    lat, lon = 39.743, -105.178  # degrees
-    eot = solarposition.equation_of_time_pvcdrom(times.dayofyear)  # minutes
+    times = expected_rise_set_geometric['times']
+    latitude = expected_rise_set_geometric['latitude']
+    longitude = expected_rise_set_geometric['longitude']
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)  # minutes
     decl = solarposition.declination_spencer71(times.dayofyear)  # radians
     sr, ss, st = solarposition.sunrise_sunset_transit_geometric(
-        times, latitude=lat, longitude=lon, declination=decl,
+        times, latitude=latitude, longitude=longitude, declination=decl,
         equation_of_time=eot)
-    sst = list(
-        zip(*[(sr[idx], ss[idx], st[idx]) for idx in range(0, 8760, 438)]))
-    sunrise = (sr.time() for sr in sst[0])
-    sunset = (ss.time() for ss in sst[1])
-    transit = (tr.time() for tr in sst[2])
-    sunrise_hours = [sr.hour + (sr.minute + sr.second / 60.) / 60.
-                     for sr in sunrise]
-    sunset_hours = [ss.hour + (ss.minute + ss.second / 60.) / 60.
-                    for ss in sunset]
-    transit_hours = [tr.hour + (tr.minute + tr.second / 60.) / 60.
-                     for tr in transit]
-    test_data_file = EXPECTED_ANALYTICAL_SUNRISE_SUNSET_TRANSIT
-    test_data_type = np.dtype(
-        [('sunrise', float), ('sunset', float), ('transit', float)])
-    test_data = np.array(test_data_file, dtype=test_data_type)
-    # test data created using NREL SPA-C algorithm at following conditions:
-    # year=2018, time_zone=-7, longitude=-105.178, latitude=39.743,
-    # elevation=1830.14, pressure=820, temperature=11, delta_t=67
-    assert np.allclose(sunrise_hours, test_data['sunrise'])
-    assert np.allclose(sunset_hours, test_data['sunset'])
-    assert np.allclose(transit_hours, test_data['transit'])
+    sunrise = _times_to_hours(sr)
+    sunset = _times_to_hours(ss)
+    transit = _times_to_hours(st)
+    test_sunrise = _times_to_hours(expected_rise_set_geometric['sunrise'])
+    test_sunset = _times_to_hours(expected_rise_set_geometric['sunset'])
+    test_transit = _times_to_hours(expected_rise_set_geometric['transit'])
+    assert np.allclose(sunrise, test_sunrise)
+    assert np.allclose(sunset, test_sunset)
+    assert np.allclose(transit, test_transit)

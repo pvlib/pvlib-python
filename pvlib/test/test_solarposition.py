@@ -130,7 +130,7 @@ def test_spa_c_physical_dst(expected_solpos, golden):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_spa_python_numpy_physical(expected_solpos, golden):
+def test_spa_python_numpy_physical(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
@@ -503,13 +503,13 @@ def test_get_solarposition_pressure(pressure, expected, golden):
 
 
 @pytest.mark.parametrize(
-    "altitude, expected", [
-    (golden().altitude, expected_solpos()),
+    "altitude, expected",
+    [(golden().altitude, expected_solpos()),
     (2000, pd.DataFrame(
         np.array([[  39.88788,   50.11212,  194.34024,   39.87205,   14.64151,
                      50.12795]]),
-        columns=['apparent_elevation', 'apparent_zenith', 'azimuth', 'elevation',
-                 'equation_of_time', 'zenith'],
+        columns=['apparent_elevation', 'apparent_zenith', 'azimuth',
+                 'elevation', 'equation_of_time', 'zenith'],
         index=expected_solpos().index))
     ])
 def test_get_solarposition_altitude(altitude, expected, golden):

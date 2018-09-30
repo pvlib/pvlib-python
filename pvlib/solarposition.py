@@ -530,22 +530,27 @@ def rise_set_transit_ephem(time, latitude, longitude,
     if next_or_previous.lower() == 'next':
         rising = obs.next_rising
         setting = obs.next_setting
+        transit = obs.next_transit
     elif next_or_previous.lower() == 'previous':
         rising = obs.previous_rising
         setting = obs.previous_setting
+        transit = obs.previous_transit
     else:
         raise ValueError("next_or_previous must be either 'next' or" +
                          " 'previous'")
 
     sunrise = []
     sunset = []
+    transit = []
     for thetime in time:
         obs.date = ephem.Date(thetime)
         sunrise.append(_ephem_to_timezone(rising(sun), time.tz))
         sunset.append(_ephem_to_timezone(setting(sun), time.tz))
+        transit.append(_ephem_to_timezone(transit(sun), time.tz))
 
     return pd.DataFrame(index=time, data={'sunrise': sunrise,
-                                          'sunset': sunset})
+                                          'sunset': sunset,
+                                          'transit': transit})
 
 
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,

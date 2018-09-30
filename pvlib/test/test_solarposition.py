@@ -91,7 +91,7 @@ def expected_rise_set_ephem():
     sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 1, 16, 47, 0),
                                datetime.datetime(2015, 1, 2, 16, 48, 0),
                                datetime.datetime(2015, 1, 3, 16, 49, 0),
-                               datetime.datetime(2015, 8, 2, 19, 13, 0)
+                               datetime.datetime(2015, 8, 2, 19, 14, 0)
                                ]).tz_localize('MST').tolist()
     transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 1, 12, 4, 0),
                                 datetime.datetime(2015, 1, 2, 12, 5, 0),
@@ -366,7 +366,8 @@ def test_rise_set_transit_ephem_horizon(golden):
     sunrise_delta = datetime.datetime(2016, 1, 3, 7, 17, 11) - \
         datetime.datetime(2016, 1, 3, 7, 21, 33)
     expected = pd.Series(index=times,
-                         data=sunrise_delta).dt.round('min')
+                         data=sunrise_delta,
+                         name='sunrise').dt.round('min')
     assert_series_equal(expected, result_rounded)
 
 

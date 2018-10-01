@@ -47,8 +47,10 @@ def test_read_srml_nans_exist():
 ])
 def test_read_srml_dt_index(url, year, month):
     data = srml.read_srml(url)
-    start = pd.Timestamp(year, month, 1, 0, 0).tz_localize('Etc/GMT+8')
-    end = pd.Timestamp(year, month, 31, 23, 59).tz_localize('Etc/GMT+8')
+    start = pd.Timestamp('{:04d}{:02d}01 00:00'.format(year, month))
+    start = start.tz_localize('Etc/GMT+8')
+    end = pd.Timestamp('{:04d}{:02d}31 23:59'.format(year, month))
+    end = end.tz_localize('Etc/GMT+8')
     assert data.index[0] == start
     assert data.index[-1] == end
     assert (data.index[59::60].minute == 59).all()

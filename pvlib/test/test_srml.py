@@ -11,7 +11,7 @@ from pvlib.iotools import srml
 
 test_dir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
-srml_testfile = os.path.join(test_dir, '../data/SRML-tabs.txt')
+srml_testfile = os.path.join(test_dir, '../data/SRML-day-EUPO1801.txt')
 
 
 def test_read_srml():
@@ -67,6 +67,7 @@ def test_map_columns(column, expected):
 
 @network
 def test_read_srml_month_from_solardat():
-    file_data = srml.read_srml('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt')
+    url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
+    file_data = srml.read_srml(url)
     requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
     assert file_data.equals(requested)

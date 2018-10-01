@@ -12,16 +12,16 @@ four digits to indicate the variable. See a full list of data element
 numbers `here. <http://solardat.uoregon.edu/DataElementNumbers.html>`_
 """
 variable_map = {
-        '100': 'ghi',
-        '201': 'dni',
-        '300': 'dhi',
-        '920': 'wind_dir',
-        '921': 'wind_speed',
-        '930': 'temp_air',
-        '931': 'temp_dew',
-        '933': 'relative_humidity',
-        '937': 'temp_cell',
-    }
+    '100': 'ghi',
+    '201': 'dni',
+    '300': 'dhi',
+    '920': 'wind_dir',
+    '921': 'wind_speed',
+    '930': 'temp_air',
+    '931': 'temp_dew',
+    '933': 'relative_humidity',
+    '937': 'temp_cell',
+}
 
 
 def read_srml(filename):

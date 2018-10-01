@@ -544,6 +544,8 @@ def rise_set_transit_ephem(time, latitude, longitude,
     trans = []
     for thetime in time:
         thetime = thetime.to_pydatetime()
+        # pyephem drops timezone when converting to its internal datetime
+        # format, so handle timezone explicitly here
         obs.date = ephem.Date(thetime - thetime.utcoffset())
         sunrise.append(_ephem_to_timezone(rising(sun), time.tz))
         sunset.append(_ephem_to_timezone(setting(sun), time.tz))

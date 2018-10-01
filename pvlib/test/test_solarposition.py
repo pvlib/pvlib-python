@@ -91,7 +91,7 @@ def expected_rise_set_ephem():
     sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 1, 16, 47, 0),
                                datetime.datetime(2015, 1, 2, 16, 48, 0),
                                datetime.datetime(2015, 1, 3, 16, 49, 0),
-                               datetime.datetime(2015, 8, 2, 19, 14, 0)
+                               datetime.datetime(2015, 8, 2, 19, 13, 0)
                                ]).tz_localize('MST').tolist()
     transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 1, 12, 4, 0),
                                 datetime.datetime(2015, 1, 2, 12, 5, 0),

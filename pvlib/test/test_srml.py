@@ -11,7 +11,7 @@ from pvlib.iotools import srml
 
 test_dir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
-srml_testfile = os.path.join(test_dir, '../data/SRML-EUPO1801.txt')
+srml_testfile = os.path.join(test_dir, '../data/SRML-tabs.txt')
 
 
 def test_read_srml():
@@ -27,15 +27,16 @@ def test_read_srml_columns_exist():
     data = srml.read_srml(srml_testfile)
     assert 'ghi_0' in data.columns
     assert 'ghi_0_flag' in data.columns
-    assert 'ghi_2' in data.columns
+    assert 'dni_1' in data.columns
+    assert 'dni_1_flag' in data.columns
     assert '7008' in data.columns
     assert '7008_flag' in data.columns
 
 
 def test_read_srml_nans_exist():
     data = srml.read_srml(srml_testfile)
-    assert isnan(data['temp_air_3'][1510])
-    assert data['temp_air_3_flag'][1510] == 99
+    assert isnan(data['dni_0'][1119])
+    assert data['dni_0_flag'][1119] == 99
 
 
 @pytest.mark.parametrize('url,year,month', [
@@ -65,7 +66,7 @@ def test_map_columns(column, expected):
 
 
 @network
-def test_request_srml_data():
-    file_data = srml.read_srml(srml_testfile)
-    requested = srml.request_srml_data('EU', 2018, 1)
+def test_read_srml_month_from_solardat():
+    file_data = srml.read_srml('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt')
+    requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
     assert file_data.equals(requested)

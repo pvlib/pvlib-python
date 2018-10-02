@@ -54,7 +54,7 @@ def test_read_srml_dt_index(url, year, month):
     assert data.index[0] == start
     assert data.index[-1] == end
     assert (data.index[59::60].minute == 59).all()
-    assert year not in data.columns
+    assert str(year) not in data.columns
 
 
 @pytest.mark.parametrize('column,expected', [

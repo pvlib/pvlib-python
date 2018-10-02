@@ -4,14 +4,14 @@ Radiation Monitoring Laboratory (SRML) data.
 import numpy as np
 import pandas as pd
 
-"""
-variable_map is a dictionary mapping SRML data element numbers to their
-pvlib names. For most variables, only the first three digits are used,
-the fourth indicating the instrument. Spectral data (7xxx) uses all
-four digits to indicate the variable. See a full list of data element
-numbers `here. <http://solardat.uoregon.edu/DataElementNumbers.html>`_
-"""
-variable_map = {
+
+# VARIABLE_MAP is a dictionary mapping SRML data element numbers to their
+# pvlib names. For most variables, only the first three digits are used,
+# the fourth indicating the instrument. Spectral data (7xxx) uses all
+# four digits to indicate the variable. See a full list of data element
+# numbers `here. <http://solardat.uoregon.edu/DataElementNumbers.html>`_
+
+VARIABLE_MAP = {
     '100': 'ghi',
     '201': 'dni',
     '300': 'dhi',
@@ -37,16 +37,16 @@ def read_srml(filename):
     -------
     data: Dataframe
         A dataframe with datetime index and all of the variables listed
-        in the `variable_map` dict inside of the map_columns function,
+        in the `VARIABLE_MAP` dict inside of the map_columns function,
         along with their associated quality control flags.
 
     Notes
     -----
-    Note that the time index is shifted back one minute to account for
-    2400 hours, and to avoid time parsing errors on leap years. Data values
-    on a given line should now be understood to occur during the interval
-    extending from the time of the line in which they are listed to
-    the ending time on the next line, rather than the previous line.
+    The time index is shifted back one minute to account for 2400 hours,
+    and to avoid time parsing errors on leap years. The returned data
+    values should be understood to occur during the interval from the
+    time of the row until the time of the next row. This is consistent
+    with pandas' default labeling behavior.
 
     See SRML's `Archival Files`_ page for more information.
 
@@ -54,13 +54,11 @@ def read_srml(filename):
 
     References
     ----------
-
     [1] University of Oregon Solar Radiation Monitoring Laboratory
         `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
     """
     tsv_data = pd.read_csv(filename, delimiter='\t')
-    year = tsv_data.columns[1]
-    data = format_index(tsv_data, year)
+    data = format_index(tsv_data)
     # Drop day of year and time columns
     data = data[data.columns[2:]]
 
@@ -103,38 +101,37 @@ def map_columns(col):
     str
         The pvlib label if it was found in the mapping,
         else the original label.
-
     """
     if col.startswith('7'):
         # spectral data
         try:
-            return variable_map[col]
+            return VARIABLE_MAP[col]
         except KeyError:
             return col
     try:
-        variable_name = variable_map[col[:3]]
+        variable_name = VARIABLE_MAP[col[:3]]
         variable_number = col[3:]
         return variable_name + '_' + variable_number
     except KeyError:
         return col
 
 
-def format_index(df, year):
-    """ Create a datetime index from day of year, and time columns.
+def format_index(df):
+    """Create a datetime index from day of year, and time columns.
 
     Parameters
     ----------
     df: pd.Dataframe
         The srml data to reindex.
-    year: int
-        The year of the file
 
     Returns
     -------
     df: pd.Dataframe
-        The Dataframe with a datetime index applied.
-
+        The Dataframe with a DatetimeIndex localized to 'Etc/GMT+8'.
     """
+    # Name of the second column indicates the year of the file, but
+    # the column contains times.
+    year = int(df.columns[1])
     df_doy = df[df.columns[0]]
     # Times are expressed as integers from 1-2400, we convert to 0-2359 by
     # subracting one and then correcting the minutes at each former hour.
@@ -166,6 +163,7 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO'):
     filetype: string
         SRML file type to gather. 'RO' and 'PO' are the
         only minute resolution files.
+
     Returns
     -------
     data: pd.DataFrame
@@ -175,7 +173,6 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO'):
     ----------
     [1] University of Oregon Solar Radiation Measurement Laboratory
         `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
-
     """
     file_name = "{station}{filetype}{year:02d}{month:02d}.txt".format(
         station=station,

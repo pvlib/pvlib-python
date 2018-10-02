@@ -133,11 +133,15 @@ def format_index(df, year):
     -------
     df: pd.Dataframe
         The Dataframe with a datetime index applied.
+
     """
-    df_time = df[df.columns[1]] - 1
     df_doy = df[df.columns[0]]
+    # Times are expressed as integers from 1-2400, we convert to 0-2359 by
+    # subracting one and then correcting the minutes at each former hour.
+    df_time = df[df.columns[1]] - 1
     fifty_nines = df_time % 100 == 99
     times = df_time.where(~fifty_nines, df_time - 40)
+
     times = times.apply(lambda x: '{:04.0f}'.format(x))
     doy = df_doy.apply(lambda x: '{:03.0f}'.format(x))
     dts = pd.to_datetime(str(year) + '-' + doy + '-' + times,

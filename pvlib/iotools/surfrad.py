@@ -40,7 +40,7 @@ def read_surfrad(filename):
         Dataframe with the fields found in SURFRAD_COLUMNS.
     metadata: dict
         Site metadata included in the file.
-    
+
     Notes
     -----
     Metadata includes the following fields

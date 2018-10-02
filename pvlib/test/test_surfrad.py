@@ -39,10 +39,10 @@ def test_format_index():
     assert actual.index.equals(expected_index)
 
 def test_read_surfrad_metadata():
-    expected = { 'station': 'Alamosa',
+    expected = { 'name': 'Alamosa',
                  'latitude': '37.70',
                  'longitude': '105.92',
-                 'altitude': '2317',
+                 'elevation': '2317',
                  'surfrad_version': '1' }
     _, metadata = surfrad.read_surfrad(testfile)
     assert metadata == expected

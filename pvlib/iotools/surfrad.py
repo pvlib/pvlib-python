@@ -2,7 +2,6 @@
 Import functions for NOAA SURFRAD Data.
 """
 import io
-import os
 
 try:
     # python 2 compatibility
@@ -38,9 +37,22 @@ def read_surfrad(filename):
     Tuple of the form (data, metadata).
 
     data: Dataframe
-        
+        Dataframe with the fields found in SURFRAD_COLUMNS.
     metadata: dict
         Site metadata included in the file.
+    
+    Notes
+    -----
+    Metadata includes the following fields
+    =============== ====== ===============
+    key             format description
+    =============== ====== ===============
+    station         String site name
+    latitude        Float  site latitude
+    longitude       Float  site longitude
+    elevation       Int    site elevation
+    surfrad_version Int    surfrad version
+
 
     References
     ----------
@@ -60,15 +72,16 @@ def read_surfrad(filename):
 
     metadata_list = file_metadata.split()
     metadata = {}
-    metadata['station'] = station.strip()
+    metadata['name'] = station.strip()
     metadata['latitude'] = metadata_list[0]
     metadata['longitude'] = metadata_list[1]
-    metadata['altitude'] = metadata_list[2]
+    metadata['elevation'] = metadata_list[2]
     metadata['surfrad_version'] = metadata_list[-1]
 
     data = pd.read_csv(file_buffer, delim_whitespace=True,
                        header=None, names=SURFRAD_COLUMNS)
     file_buffer.close()
+
     data = format_index(data)
     missing = data == -9999.9
     data = data.where(~missing, np.NaN)

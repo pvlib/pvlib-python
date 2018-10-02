@@ -20,7 +20,8 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Created :py:func:`pvlib.iotools.read_srml` and :py:func:`pvlib.iotools.read_srml_month_from_solardat`
+  to read University of Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
 
 Bug fixes
 ~~~~~~~~~
@@ -34,3 +35,4 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
+* Leland Boeman (:ghuser:`lboeman`)

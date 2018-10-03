@@ -680,12 +680,12 @@ def detect_clearsky(measured, clearsky, times, window_length,
         raise NotImplementedError('algorithm does not yet support unequal '
                                   'times. consider resampling your data.')
 
-    samples_per_window = int(window_length / sample_interval) + 1
+    intervals_per_window = int(window_length / sample_interval)
 
     # generate matrix of integers for creating windows with indexing
     from scipy.linalg import hankel
-    H = hankel(np.arange(samples_per_window),                   # noqa: N806
-               np.arange(samples_per_window-1, len(times)))
+    H = hankel(np.arange(intervals_per_window),                   # noqa: N806
+               np.arange(intervals_per_window-1, len(times)))
 
     # calculate measurement statistics
     meas_mean = np.mean(measured[H], axis=0)

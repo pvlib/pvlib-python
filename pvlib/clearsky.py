@@ -685,7 +685,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
     # generate matrix of integers for creating windows with indexing
     from scipy.linalg import hankel
     H = hankel(np.arange(intervals_per_window),                   # noqa: N806
-               np.arange(intervals_per_window-1, len(times)))
+               np.arange(intervals_per_window - 1, len(times)))
 
     # calculate measurement statistics
     meas_mean = np.mean(measured[H], axis=0)
@@ -696,7 +696,8 @@ def detect_clearsky(measured, clearsky, times, window_length,
     meas_slope_nstd = np.std(meas_slope, axis=0, ddof=1) / meas_mean
     # meas_slope_max = np.max(np.abs(meas_slope), axis=0)
     meas_line_length = np.sum(np.sqrt(
-        meas_ghi_diff*meas_ghi_diff + sample_interval*sample_interval), axis=0)
+        meas_ghi_diff * meas_ghi_diff + 
+        sample_interval * sample_interval), axis=0)
 
     # calculate clear sky statistics
     clear_mean = np.mean(clearsky[H], axis=0)
@@ -710,8 +711,8 @@ def detect_clearsky(measured, clearsky, times, window_length,
     alpha = 1
     for iteration in range(max_iterations):
         clear_line_length = np.sum(np.sqrt(
-            alpha*alpha*clear_ghi_diff*clear_ghi_diff +
-            sample_interval*sample_interval), axis=0)
+            alpha * alpha * clear_ghi_diff * clear_ghi_diff +
+            sample_interval * sample_interval), axis=0)
 
         line_diff = meas_line_length - clear_line_length
 
@@ -720,7 +721,8 @@ def detect_clearsky(measured, clearsky, times, window_length,
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        c5 = np.max(np.abs(meas_slope - alpha*clear_slope), axis=0) < slope_dev
+        c5 = np.max(np.abs(meas_slope - 
+                           alpha * clear_slope), axis=0) < slope_dev
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
@@ -759,11 +761,12 @@ def detect_clearsky(measured, clearsky, times, window_length,
         components['mean_nan'] = c6
         components['windows'] = clear_windows
 
-        components['mean_diff_array'] = np.abs(meas_mean - alpha*clear_mean)
-        components['max_diff_array'] = np.abs(meas_max - alpha*clear_max)
+        components['mean_diff_array'] = np.abs(meas_mean - alpha * clear_mean)
+        components['max_diff_array'] = np.abs(meas_max - alpha * clear_max)
         components['line_length_array'] = meas_line_length - clear_line_length
         components['slope_nstd_array'] = meas_slope_nstd
-        components['slope_max_array'] = (np.max(meas_slope - alpha*clear_slope, axis=0))
+        components['slope_max_array'] = (np.max(
+                meas_slope - alpha * clear_slope, axis=0))
 
         return clear_samples, components, alpha
     else:

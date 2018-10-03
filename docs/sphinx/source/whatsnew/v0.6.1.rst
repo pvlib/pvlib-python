@@ -21,6 +21,7 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Fix when building documentation using Matplotlib 3.0 or greater.
+* Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
 
 
 Testing
@@ -30,3 +31,5 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
+* Ben Ellis (:ghuser:`bhellis725`)
+* Cliff Hansen (:ghuser:`cwhanse`)

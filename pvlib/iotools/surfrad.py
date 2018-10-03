@@ -37,21 +37,60 @@ def read_surfrad(filename):
     Tuple of the form (data, metadata).
 
     data: Dataframe
-        Dataframe with the fields found in SURFRAD_COLUMNS.
+        Dataframe with the fields found below.
     metadata: dict
         Site metadata included in the file.
 
     Notes
     -----
-    Metadata includes the following fields
-    =============== ====== ===============
-    key             format description
-    =============== ====== ===============
-    station         String site name
-    latitude        Float  site latitude
-    longitude       Float  site longitude
-    elevation       Int    site elevation
-    surfrad_version Int    surfrad version
+    Metadata dictionary includes the following fields:
+
+    ===============  ======  ===============
+    Key              Format  Description
+    ===============  ======  ===============
+    station          String  site name
+    latitude         Float   site latitude
+    longitude        Float   site longitude
+    elevation        Int     site elevation
+    surfrad_version  Int     surfrad version
+    ===============  ======  ===============
+
+    Dataframe includes the following fields:
+
+    ==================   ======  ==========================================
+    SURFRAD data Field   Format  Description
+    ==================   ======  ==========================================
+    year                 int     year as 4 digit int
+    jday                 int     day of year 1-365(or 366)
+    month                int     month (1-12)
+    day                  int     day of month(1-31)
+    hour                 int     hour (0-23)
+    minute               int     minute (0-59)
+    dt                   float   decimal time i.e. 23.5 = 2330
+    zen                  float   solar zenith angle (deg)
+    **Fields below have associated qc flags labeled <field>_flag.**
+    -----------------------------------------------------------------------
+    dw_solar             float   downwelling global solar(W/m^2)
+    uw_solar             float   updownwelling global solar(W/m^2)
+    direct_n             float   direct normal solar (W/m^2)
+    diffuse              float   downwelling diffuse solar (W/m^2)
+    dw_ir                float   downwelling thermal infrared (W/m^2)
+    dw_casetemp          float   downwelling IR case temp (K)
+    dw_dometemp          float   downwelling IR dome temp (K)
+    uw_ir                float   upwelling thermal infrared (W/m^2)
+    uw_casetemp          float   upwelling IR case temp (K)
+    uw_dometemp          float   upwelling IR case temp (K)
+    uvb                  float   global uvb (miliWatts/m^2)
+    par                  float   photosynthetically active radiation(W/m^2)
+    netsolar             float   net solar (dw_solar - uw_solar) (W/m^2)
+    netir                float   net infrared (dw_ir - uw_ir) (W/m^2)
+    totalnet             float   net radiation (netsolar+netir) (W/m^2)
+    temp                 float   10-meter air temperature (?C)
+    rh                   float   relative humidity (%)
+    windspd              float   wind speed (m/s)
+    winddir              float   wind direction (deg, clockwise from north)
+    pressure             float   station pressure (mb)
+    ==================   ======  ==========================================
 
     See README files located in the station directories in the SURFRAD
     data archives[2] for details on SURFRAD daily data files.

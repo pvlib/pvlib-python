@@ -12,11 +12,16 @@ date will require Python 3. (:issue:`501`)
 
 API Changes
 ~~~~~~~~~~~
+* Created the ``pvlib.iotools`` subpackage. (:issue:`29`, :issue:`261`)
+* Deprecated ``tmy``, ``tmy.readtmy2`` and ``tmy.readtmy3``;
+  they will be removed in v0.7. Use the new :py:func:`pvlib.iotools.read_tmy2`
+  and :py:func:`pvlib.iotools.read_tmy3` instead. (:issue:`261`)
 
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Created :py:func:`pvlib.iotools.read_srml` and :py:func:`pvlib.iotools.read_srml_month_from_solardat`
+  to read University of Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
 
 Bug fixes
 ~~~~~~~~~
@@ -31,5 +36,6 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
+* Leland Boeman (:ghuser:`lboeman`)
 * Ben Ellis (:ghuser:`bhellis725`)
 * Cliff Hansen (:ghuser:`cwhanse`)

@@ -209,8 +209,6 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         return bishop88(x, *a)[1] - v
 
     if method.lower() == 'brentq':
-        if brentq is NotImplemented:
-            raise ImportError('This function requires scipy')
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
@@ -275,9 +273,6 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         return bishop88(x, *a)[0] - i
 
     if method.lower() == 'brentq':
-        if brentq is NotImplemented:
-            raise ImportError('This function requires scipy')
-
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input
@@ -336,8 +331,6 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         return bishop88(x, *a, gradients=True)[6]
 
     if method.lower() == 'brentq':
-        if brentq is NotImplemented:
-            raise ImportError('This function requires scipy')
         # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
             lambda voc, iph, isat, rs, rsh, gamma:

@@ -1,7 +1,7 @@
 import inspect
 import os
 
-import pandas as pd
+from pandas import Timestamp, DatetimeIndex
 from pandas.util.testing import network
 
 from pvlib.iotools import surfrad
@@ -31,10 +31,8 @@ def test_read_surfrad_columns_exist():
 
 
 def test_format_index():
-    start = pd.Timestamp('20160101 00:00')
-    expected_index = pd.DatetimeIndex(start=start,
-                                      periods=1440,
-                                      freq='1min')
+    start = Timestamp('20160101 00:00')
+    expected_index = DatetimeIndex(start=start, periods=1440, freq='1min')
     expected_index.tz_localize('UTC')
     actual, _ = surfrad.read_surfrad(testfile)
     assert actual.index.equals(expected_index)

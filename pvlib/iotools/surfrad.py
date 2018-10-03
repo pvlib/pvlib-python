@@ -103,7 +103,12 @@ def format_index(data):
     data: Dataframe
         Dataframe with a DatetimeIndex localized to UTC.
     """
-    index = pd.to_datetime(data[['year', 'month', 'day', 'hour', 'minute']])
+    year = data.year.apply(str)
+    jday = data.jday.apply(lambda x: '{:03d}'.format(x))
+    hours = data.hour.apply(lambda x: '{:02d}'.format(x))
+    minutes = data.minute.apply(lambda x: '{:02d}'.format(x))
+
+    index = pd.to_datetime(year + jday + hours + minutes, format="%Y%j%H%M")
     data.index = index
     data.tz_localize('UTC')
     return data

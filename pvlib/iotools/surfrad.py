@@ -53,11 +53,15 @@ def read_surfrad(filename):
     elevation       Int    site elevation
     surfrad_version Int    surfrad version
 
+    See README files located in the station directories in the SURFRAD
+    data archives[2] for details on SURFRAD daily data files.
 
     References
     ----------
     [1] NOAA Earth System Research Laboratory Surface Radiation Budget Network
-        `https://www.esrl.noaa.gov/gmd/grad/surfrad/index.html`
+        `SURFRAD Homepage <https://www.esrl.noaa.gov/gmd/grad/surfrad/>`_
+    [2] NOAA SURFRAD Data Archive
+        `SURFRAD Archive <ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/>`_
     """
     if filename.startswith('ftp'):
         req = Request(filename)
@@ -95,7 +99,7 @@ def format_index(data):
     Parameters
     ----------
     data: Dataframe
-        Must contain columns 'year', 'month', 'day', 'hour' and
+        Must contain columns 'year', 'jday', 'hour' and
         'minute'.
 
     Return

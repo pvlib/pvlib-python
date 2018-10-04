@@ -22,7 +22,9 @@ API Changes
 Enhancements
 ~~~~~~~~~~~~
 * :func:`~pvlib.solarposition.rise_set_transit_ephem` returns sunrise, sunset and transit times using pyephem
-
+* Created :py:func:`pvlib.iotools.read_srml` and :py:func:`pvlib.iotools.read_srml_month_from_solardat`
+  to read University of Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
+  
 
 Bug fixes
 ~~~~~~~~~
@@ -37,3 +39,4 @@ Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Leland Boeman (:ghuser:`lboeman`)

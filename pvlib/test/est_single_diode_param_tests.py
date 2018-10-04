@@ -1,5 +1,5 @@
 import numpy as np
-from pvlib.est_single_diode_param import est_single_diode_param
+from pvlib.est_single_diode_param import estimate_parameters
 
 
 def test_answer():
@@ -11,7 +11,7 @@ def test_answer():
          2.76, 2.78, 2.81, 2.85, 2.88])
     nsvth = 2.
 
-    io, iph, rs, rsh, n = est_single_diode_param(i, v, nsvth)
+    io, iph, rs, rsh, n = estimate_parameters(i, v, nsvth)
 
     np.testing.assert_allclose(io, np.array([96699.876]), atol=.0001)
     np.testing.assert_allclose(iph, np.array([-96695.792]), atol=.0001)
@@ -25,7 +25,7 @@ def test_answer1():
     v1 = np.array([0., 0.2, 0.4, 0.6, 0.8, 1., 1.2, 1.4, 1.45, 1.5])
     nsvth1 = 10.
 
-    io1, iph1, rs1, rsh1, n1 = est_single_diode_param(i1, v1, nsvth1)
+    io1, iph1, rs1, rsh1, n1 = estimate_parameters(i1, v1, nsvth1)
 
     np.testing.assert_allclose(io1, np.array([11.6865]), atol=.0001)
     np.testing.assert_allclose(iph1, np.array([2.3392]), atol=.0001)
@@ -42,7 +42,7 @@ def test_answer2():
         [0., .1, .2, .3, .4, .5, .6, .7, .8, .9, 1., 1.1, 1.18, 1.2, 1.22])
     nsvth2 = 15.
 
-    io2, iph2, rs2, rsh2, n2 = est_single_diode_param(i2, v2, nsvth2)
+    io2, iph2, rs2, rsh2, n2 = estimate_parameters(i2, v2, nsvth2)
 
     np.testing.assert_allclose(io2, np.array([27.1196]), atol=.0001)
     np.testing.assert_allclose(iph2, np.array([-22.0795]), atol=.0001)
@@ -56,7 +56,7 @@ def test_answer3():
     v3 = np.array([0., .5, 1., 1.5, 2., 2.2, 2.3, 2.35])
     nsvth3 = 20.
 
-    io3, iph3, rs3, rsh3, n3 = est_single_diode_param(i3, v3, nsvth3)
+    io3, iph3, rs3, rsh3, n3 = estimate_parameters(i3, v3, nsvth3)
 
     np.testing.assert_allclose(io3, np.array([46.8046]), atol=.0001)
     np.testing.assert_allclose(iph3, np.array([-42.4727]), atol=.0001)

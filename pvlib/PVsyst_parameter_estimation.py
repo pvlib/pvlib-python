@@ -3,7 +3,7 @@ import statsmodels.api as sm
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-from pvlib.est_single_diode_param import est_single_diode_param
+from pvlib.est_single_diode_param import estimate_parameters
 from pvlib.update_io_known_n import update_io_known_n
 from pvlib.update_rsh_fixed_pt import update_rsh_fixed_pt
 from pvlib.calc_theta_phi_exact import calc_theta_phi_exact
@@ -527,7 +527,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
         pio[j], piph[j], prs[j], prsh[j], pn[j] = \
-            est_single_diode_param(current, voltage, vth[j] * specs['ns'])
+            estimate_parameters(current, voltage, vth[j] * specs['ns'])
 
     # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
     # temperature dependence by means of the equation for Io

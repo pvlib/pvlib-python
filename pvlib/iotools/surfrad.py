@@ -80,11 +80,11 @@ def read_surfrad(filename, map_variables=True):
 
     Dataframe includes the following fields:
 
-    =======================  ======  ===========================================
+    =======================  ======  ==========================================
     raw, mapped              Format  Description
-    =======================  ======  ===========================================
+    =======================  ======  ==========================================
     **Mapped field names are returned when the map_variables argument is True**
-    ----------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     year                     int     year as 4 digit int
     jday                     int     day of year 1-365(or 366)
     month                    int     month (1-12)
@@ -94,7 +94,7 @@ def read_surfrad(filename, map_variables=True):
     dt                       float   decimal time i.e. 23.5 = 2330
     zen, solar_zenith        float   solar zenith angle (deg)
     **Fields below have associated qc flags labeled <field>_flag.**
-    ----------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     dw_solar, ghi            float   downwelling global solar(W/m^2)
     uw_solar                 float   updownwelling global solar(W/m^2)
     direct_n, dni            float   direct normal solar (W/m^2)
@@ -115,7 +115,7 @@ def read_surfrad(filename, map_variables=True):
     windspd, wind_speed      float   wind speed (m/s)
     winddir, wind_direction  float   wind direction (deg, clockwise from north)
     pressure                 float   station pressure (mb)
-    =======================  ======  ===========================================
+    =======================  ======  ==========================================
 
     See README files located in the station directories in the SURFRAD
     data archives[2] for details on SURFRAD daily data files.

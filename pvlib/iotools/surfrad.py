@@ -52,7 +52,7 @@ def read_surfrad(filename, map_variables=True):
         Filepath or url.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable.
+        where applicable. See variable SURFRAD_COLUMNS.
 
     Returns
     -------

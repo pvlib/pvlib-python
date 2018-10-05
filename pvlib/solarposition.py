@@ -1339,8 +1339,8 @@ def hour_angle(times, longitude, equation_of_time):
     # combine some arithmetic to make calculation more efficient:
     # hours - timezone = times - times.normalized - (naive_times - times)
     hrs_minus_tzs = 1 / (3600. * 1.e9) * (
-        2 * times.astype(np.int64) - times.normalize().astype(np.int64)
-        - naive_times.astype(np.int64))
+        2 * times.astype(np.int64) - times.normalize().astype(np.int64) -
+        naive_times.astype(np.int64))
     # ensure array return instead of a version-dependent pandas <T>Index
     return np.asarray(
         15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)

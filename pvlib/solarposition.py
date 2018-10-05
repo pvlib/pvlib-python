@@ -1327,17 +1327,8 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_Spencer71
     equation_of_time_pvcdrom
     """
-    # utcoffset() has unpredictable outcome when used with pandas DatetimeIndex
-    # change the localize tz-aware times to local, naive without converting tz
-    # by either replacing tz with None or using tz_localize(None)
-    try:
-        naive_times = times.tz_localize(None)
-    except TypeError:
-        # pandas <0.15 doesn't allow localization of tz-aware datetime index
-        naive_times = times.copy()
-        naive_times.tz = None
-    # combine some arithmetic to make calculation more efficient:
-    # hours - timezone = times - times.normalized - (naive_times - times)
+    naive_times = times.tz_localize(None)  # naive but still localized
+    # hours - timezone = (times - normalized_times) - (naive_times - times)
     hrs_minus_tzs = 1 / (3600. * 1.e9) * (
         2 * times.astype(np.int64) - times.normalize().astype(np.int64) -
         naive_times.astype(np.int64))

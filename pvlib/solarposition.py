@@ -1333,11 +1333,14 @@ def hour_angle(times, longitude, equation_of_time):
     try:
         naive_times = times.tz_localize(None)
     except TypeError:
+        # pandas <0.15 doesn't allow localization of tz-aware datetime index
         naive_times = times.copy()
         naive_times.tz = None
-    ns2hr = 1 / (3600. * 1.e9)
-    timezones = np.array(ns2hr * (
-            naive_times.astype(np.int64) - times.astype(np.int64)))
-    hours = ns2hr * (
-            times.astype(np.int64) - times.normalize().astype(np.int64))
-    return 15. * (hours - 12. - timezones) + longitude + equation_of_time / 4.
+    # combine some arithmetic to make calculation more efficient:
+    # hours - timezone = times - times.normalized - (naive_times - times)
+    hrs_minus_tzs = 1 / (3600. * 1.e9) * (
+        2 * times.astype(np.int64) - times.normalize().astype(np.int64)
+        - naive_times.astype(np.int64))
+    # ensure array return instead of a version-dependent pandas <T>Index
+    return np.asarray(
+        15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)

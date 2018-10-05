@@ -1217,13 +1217,7 @@ def _hour_angle_to_hours(times, hour_angle, longitude, equation_of_time):
     tz_info = times.tz  # pytz timezone info
     tz = tz_info.utcoffset(times).total_seconds() / 3600.
     hours = (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tz
-    # hour_angle and/or equation of time could be either numpy arrays or pandas
-    # series, use ducktyping to enforce that the return is always a numpy array
-    try:
-        hours = hours.values  # make a new reference
-    except AttributeError:
-        pass
-    return hours
+    return np.asarray(hours)
 
 
 def _local_times_from_hours_since_midnite(times, hours):

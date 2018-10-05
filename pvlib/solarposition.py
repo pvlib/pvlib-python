@@ -1329,5 +1329,6 @@ def hour_angle(times, longitude, equation_of_time):
     """
     tz_info = times.tz
     timezone = tz_info.utcoffset(times).total_seconds() / 3600.
-    hours = (times - times.normalize()).astype(int) / 3600. / 1.e9
+    hours = (times.astype(np.int64) - times.normalize().astype(np.int64)) / (
+            3600. * 1.e9)
     return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.

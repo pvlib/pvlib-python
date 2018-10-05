@@ -714,5 +714,7 @@ def test_hour_angle():
     eot = np.array([-3.935172, -4.117227, -4.026295])
     hours = solarposition.hour_angle(times, longitude, eot)
     expected = (-70.682338, 70.72118825000001, 0.000801250)
-    #expected = (-70.699400,70.512721, 0.0)  # can't quite get these, why?
+    # FIXME: there are differences from expected NREL SPA calculator values
+    # sunrise: 4 seconds, sunset: 48 seconds, transit: 0.2 seconds
+    # but the differences may be due to other SPA input parameters
     assert np.allclose(hours, expected)

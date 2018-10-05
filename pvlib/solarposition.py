@@ -1327,8 +1327,7 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_Spencer71
     equation_of_time_pvcdrom
     """
-    hours = np.array([(t - t.tz.localize(
-        dt.datetime(t.year, t.month, t.day)
-    )).total_seconds() / 3600. for t in times])
-    timezone = times.tz.utcoffset(times).total_seconds() / 3600.
+    tz_info = times.tz
+    timezone = tz_info.utcoffset(times).total_seconds() / 3600.
+    hours = (times - times.normalize()).astype(int) / 3600. / 1.e9
     return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.

@@ -1214,23 +1214,17 @@ def hour_angle(times, longitude, equation_of_time):
 
 def _hour_angle_to_hours(times, hour_angle, longitude, equation_of_time):
     """converts hour angles in degrees to hours as a numpy array"""
-    tz_info = times.tz  # pytz timezone info
-    tz = tz_info.utcoffset(times).total_seconds() / 3600.
-    hours = (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tz
+    naive_times = times.tz_localize(None)  # naive but still localized
+    tzs = 1 / (3600. * 1.e9) * (
+            naive_times.astype(np.int64) - times.astype(np.int64))
+    hours = (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
     return np.asarray(hours)
 
 
 def _local_times_from_hours_since_midnite(times, hours):
     """converts hours from an array of floats to localized times"""
     tz_info = times.tz  # pytz timezone info
-    # change the localize tz-aware times to local, naive without converting tz
-    # by either replacing tz with None or using tz_localize(None)
-    try:
-        # OLD pandas, can't use tz_localize() on tz-aware times
-        times.tz = None
-    except AttributeError:
-        # NEW pandas, can't replace tz attribute of times
-        times = times.tz_localize(None)
+    times = times.tz_localize(None)  # naive but still localized
     # convert times to previous midnight UTC
     times = times.values.astype('datetime64[D]').astype('datetime64[ns]')
     # add the hours until sunrise/sunset/transit

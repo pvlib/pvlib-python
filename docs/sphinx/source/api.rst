@@ -55,6 +55,7 @@ Additional functions for quantities closely related to solar position.
    solarposition.calc_time
    solarposition.pyephem_earthsun_distance
    solarposition.nrel_earthsun_distance
+   solarposition.rise_set_transit_ephem
    spa.calculate_deltat
 
 The spa module contains the implementation of the built-in NREL SPA
@@ -294,8 +295,38 @@ Functions
    tracking.singleaxis
 
 
+.. _iotools:
+
+IO Tools
+========
+
+Functions for reading and writing data from a variety of file formats
+relevant to solar energy modeling.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.read_tmy2
+   iotools.read_tmy3
+   iotools.read_srml
+   iotools.read_srml_month_from_solardat
+
+A :py:class:`~pvlib.location.Location` object may be created from metadata
+in some files.
+
+.. autosummary::
+   :toctree: generated/
+
+   location.Location.from_tmy
+
+
 TMY
 ===
+
+.. warning::
+
+    The :py:mod:`pvlib.tmy` module is deprecated; it will be removed
+    in pvlib 0.7. Please see the :ref:`pvlib.iotools <iotools>` package.
 
 Methods and functions for reading data from TMY files.
 

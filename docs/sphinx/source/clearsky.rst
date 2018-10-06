@@ -40,9 +40,11 @@ We'll need these imports for the examples below.
 
     In [1]: import pvlib
 
-    In [1]: from pvlib import clearsky, atmosphere, tmy, solarposition
+    In [1]: from pvlib import clearsky, atmosphere, solarposition
 
     In [1]: from pvlib.location import Location
+
+    In [1]: from pvlib.iotools import read_tmy3
 
 
 .. _location:
@@ -214,7 +216,7 @@ wavelengths [Bir80]_, and is implemented in
 
     In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
 
-    In [1]: tmy_data, tmy_header = tmy.readtmy3(tmy_file, coerce_year=1999)  # read TMY data
+    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999)  # read TMY data
 
     In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
@@ -289,10 +291,9 @@ A clear sky time series using only basic pvlib functions.
 
     In [1]: ax.set_title('Ineichen Clear Sky Model');
 
+    @savefig ineichen-vs-time-climo.png width=6in
     In [1]: ax.legend(loc=2);
 
-    @savefig ineichen-vs-time-climo.png width=6in
-    In [1]: plt.show();
 
 The input data types determine the returned output type. Array input
 results in an OrderedDict of array output, and Series input results in a
@@ -330,14 +331,11 @@ Grid with a clear sky irradiance for a few turbidity values.
        ...:     ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
        ...:     ineichen.plot(ax=ax, title='Linke turbidity = {:0.1f}'.format(linke_turbidity));
 
-    In [1]: ax.legend(loc=1);
-
     @savefig ineichen-grid.png width=10in
-    In [1]: plt.show();
+    In [1]: ax.legend(loc=1);
 
     @suppress
     In [1]: plt.close();
-
 
 
 Validation
@@ -441,10 +439,8 @@ A clear sky time series using only basic pvlib functions.
 
     In [1]: ax.set_title('Simplified Solis Clear Sky Model');
 
-    In [1]: ax.legend(loc=2);
-
     @savefig solis-vs-time-0.1-1.png width=6in
-    In [1]: plt.show();
+    In [1]: ax.legend(loc=2);
 
     @suppress
     In [1]: plt.close();
@@ -485,7 +481,7 @@ Irradiance as a function of solar elevation.
     In [1]: plt.close();
 
 
-Grid with a clear sky irradiance for a few PW and AOD values.
+Grid with clear sky irradiance for a few PW and AOD values.
 
 .. ipython::
 
@@ -507,12 +503,10 @@ Grid with a clear sky irradiance for a few PW and AOD values.
 
     In [1]: axes = axes.flatten()
 
+    @savefig solis-grid.png width=10in
     In [1]: for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes):
        ...:     cs = clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra)
        ...:     cs.plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw))
-
-    @savefig solis-grid.png width=10in
-    In [1]: plt.show();
 
     @suppress
     In [1]: plt.close();
@@ -557,26 +551,20 @@ Contour plots of irradiance as a function of both PW and AOD.
 
 .. ipython::
 
+    @savefig solis-ghi.png width=10in
     In [1]: plot_solis('ghi')
 
-    @savefig solis-ghi.png width=10in
-    In [1]: plt.show()
-
     @suppress
     In [1]: plt.close();
-
-    In [1]: plot_solis('dni')
 
     @savefig solis-dni.png width=10in
-    In [1]: plt.show()
+    In [1]: plot_solis('dni')
 
     @suppress
     In [1]: plt.close();
 
-    In [1]: plot_solis('dhi')
-
     @savefig solis-dhi.png width=10in
-    In [1]: plt.show()
+    In [1]: plot_solis('dhi')
 
     @suppress
     In [1]: plt.close();
@@ -641,9 +629,8 @@ GHI data. We first generate and plot the clear sky and measured data.
 
     ax.set_ylabel('Irradiance $W/m^2$');
 
-    plt.legend(loc=4);
     @savefig detect-clear-ghi.png width=10in
-    plt.show();
+    plt.legend(loc=4);
 
     @suppress
     plt.close();

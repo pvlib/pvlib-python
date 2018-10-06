@@ -6,6 +6,7 @@ Calculate the solar position using a variety of methods/packages.
 # Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
 # Will Holmgren (@wholmgren), University of Arizona, 2014
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
+# Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
 
 from __future__ import division
 import os
@@ -438,7 +439,26 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
     return result
 
 
-def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
+def _ephem_convert_to_seconds_and_microseconds(date):
+    # utility from unreleased PyEphem 3.6.7.1
+    """Converts a PyEphem date into seconds"""
+    microseconds = int(round(24 * 60 * 60 * 1000000 * date))
+    seconds, microseconds = divmod(microseconds, 1000000)
+    seconds -= 2209032000  # difference between epoch 1900 and epoch 1970
+    return seconds, microseconds
+
+
+def _ephem_to_timezone(date, tzinfo):
+    # utility from unreleased PyEphem 3.6.7.1
+    """"Convert a PyEphem Date into a timezone aware python datetime"""
+    seconds, microseconds = _ephem_convert_to_seconds_and_microseconds(date)
+    date = dt.datetime.fromtimestamp(seconds, tzinfo)
+    date = date.replace(microsecond=microseconds)
+    return date
+
+
+def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
+                 horizon):
     import ephem
     # initialize a PyEphem observer
     obs = ephem.Observer()
@@ -447,14 +467,97 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
     obs.elevation = altitude
     obs.pressure = pressure / 100.  # convert to mBar
     obs.temp = temperature
+    obs.horizon = horizon
 
     # the PyEphem sun
     sun = ephem.Sun()
     return obs, sun
 
 
+def rise_set_transit_ephem(time, latitude, longitude,
+                           next_or_previous='next',
+                           altitude=0,
+                           pressure=101325, temperature=12, horizon='0:00'):
+    """
+    Calculate the next sunrise and sunset times using the PyEphem package.
+
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+        Must be localized
+    latitude : float
+        positive is north of 0
+    longitude : float
+        positive is east of 0
+    next_or_previous : str
+        'next' or 'previous' sunrise and sunset relative to time
+    altitude : float, default 0
+        distance above sea level in meters.
+    pressure : int or float, optional, default 101325
+        air pressure in Pascals.
+    temperature : int or float, optional, default 12
+        air temperature in degrees C.
+    horizon : string, format +/-X:YY
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
+        geometrical horizon
+
+    Returns
+    -------
+    pandas.DataFrame
+        index is the same as input `time` argument
+        columns are 'sunrise', 'sunset', and 'transit'
+
+    See also
+    --------
+    pyephem
+    """
+
+    try:
+        import ephem
+    except ImportError:
+        raise ImportError('PyEphem must be installed')
+
+    # times must be localized
+    if not time.tz:
+        raise ValueError('rise_set_ephem: times must be localized')
+
+    obs, sun = _ephem_setup(latitude, longitude, altitude,
+                            pressure, temperature, horizon)
+    # create lists of sunrise and sunset time localized to time.tz
+    if next_or_previous.lower() == 'next':
+        rising = obs.next_rising
+        setting = obs.next_setting
+        transit = obs.next_transit
+    elif next_or_previous.lower() == 'previous':
+        rising = obs.previous_rising
+        setting = obs.previous_setting
+        transit = obs.previous_transit
+    else:
+        raise ValueError("next_or_previous must be either 'next' or" +
+                         " 'previous'")
+
+    sunrise = []
+    sunset = []
+    trans = []
+    for thetime in time:
+        thetime = thetime.to_pydatetime()
+        # pyephem drops timezone when converting to its internal datetime
+        # format, so handle timezone explicitly here
+        obs.date = ephem.Date(thetime - thetime.utcoffset())
+        sunrise.append(_ephem_to_timezone(rising(sun), time.tz))
+        sunset.append(_ephem_to_timezone(setting(sun), time.tz))
+        trans.append(_ephem_to_timezone(transit(sun), time.tz))
+
+    return pd.DataFrame(index=time, data={'sunrise': sunrise,
+                                          'sunset': sunset,
+                                          'transit': trans})
+
+
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
-            temperature=12):
+            temperature=12, horizon='+0:00'):
     """
     Calculate the solar position using the PyEphem package.
 
@@ -463,17 +566,26 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     time : pandas.DatetimeIndex
         Localized or UTC.
     latitude : float
+        positive is north of 0
     longitude : float
+        positive is east of 0
     altitude : float, default 0
-        distance above sea level.
+        distance above sea level in meters.
     pressure : int or float, optional, default 101325
         air pressure in Pascals.
     temperature : int or float, optional, default 12
         air temperature in degrees C.
+    horizon : string, optional, default '+0:00'
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
+        geometrical horizon
 
     Returns
     -------
-    DataFrame
+    pandas.DataFrame
+        index is the same as input `time` argument
         The DataFrame will have the following columns:
         apparent_elevation, elevation,
         apparent_azimuth, azimuth,
@@ -499,7 +611,7 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     sun_coords = pd.DataFrame(index=time)
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature)
+                            pressure, temperature, horizon)
 
     # make and fill lists of the sun's altitude and azimuth
     # this is the pressure and temperature corrected apparent alt/az.
@@ -711,7 +823,8 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
-              altitude=0, pressure=101325, temperature=12, xtol=1.0e-12):
+              altitude=0, pressure=101325, temperature=12, horizon='+0:00',
+              xtol=1.0e-12):
     """
     Calculate the time between lower_bound and upper_bound
     where the attribute is equal to value. Uses PyEphem for
@@ -736,6 +849,12 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         atmospheric correction.
     temperature : int or float, optional, default 12
         Air temperature in degrees C.
+    horizon : string, optional, default '+0:00'
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
+        geometrical horizon
     xtol : float, optional, default 1.0e-12
         The allowed error in the result from value
 
@@ -758,7 +877,7 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         raise ImportError('The calc_time function requires scipy')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature)
+                            pressure, temperature, horizon)
 
     def compute_attr(thetime, target, attr):
         obs.date = thetime
@@ -950,8 +1069,8 @@ def equation_of_time_pvcdrom(dayofyear):
 
     Returns
     -------
-    equation_of_time : numeric Difference in time between solar time and
-        mean solar time in minutes.
+    equation_of_time : numeric
+        Difference in time between solar time and mean solar time in minutes.
 
     References
     ----------
@@ -1136,9 +1255,12 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
 
     Parameters
     ----------
-    latitude : numeric Latitude of location in radians. hour_angle :
-        numeric Hour angle in the local solar time in radians.
-        declination : numeric Declination of the sun in radians.
+    latitude : numeric
+        Latitude of location in radians.
+    hour_angle : numeric
+        Hour angle in the local solar time in radians.
+    declination : numeric
+        Declination of the sun in radians.
 
     Returns
     -------
@@ -1205,11 +1327,14 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_Spencer71
     equation_of_time_pvcdrom
     """
-    hours = np.array([(t - t.tz.localize(
-        dt.datetime(t.year, t.month, t.day)
-    )).total_seconds() / 3600. for t in times])
-    timezone = times.tz.utcoffset(times).total_seconds() / 3600.
-    return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.
+    naive_times = times.tz_localize(None)  # naive but still localized
+    # hours - timezone = (times - normalized_times) - (naive_times - times)
+    hrs_minus_tzs = 1 / (3600. * 1.e9) * (
+        2 * times.astype(np.int64) - times.normalize().astype(np.int64) -
+        naive_times.astype(np.int64))
+    # ensure array return instead of a version-dependent pandas <T>Index
+    return np.asarray(
+        15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)
 
 
 def _hour_angle_to_hours(times, hour_angle, longitude, equation_of_time):

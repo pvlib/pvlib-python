@@ -6,7 +6,7 @@ pvlib-python
 [![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
 [![codecov](https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg)](https://codecov.io/gh/pvlib/pvlib-python)
 [![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=latest)](http://pvlib-python.readthedocs.org/en/latest/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1246152.svg)](https://doi.org/10.5281/zenodo.1246152)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1420548.svg)](https://doi.org/10.5281/zenodo.1420548)
 [![Code Health](https://landscape.io/github/pvlib/pvlib-python/master/landscape.svg?style=flat)](https://landscape.io/github/pvlib/pvlib-python/master)
 [![status](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg)](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1)
 [![Code Quality: Python](https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/context:python)

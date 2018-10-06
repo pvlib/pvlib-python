@@ -1418,7 +1418,7 @@ def calculate_deltat(year, month):
                       -20+32*((y-1820)/100)**2
                       - 0.5628*(2150-y), deltat)
 
-    deltat = np.where(year > 2150,
+    deltat = np.where(year >= 2150,
 
                       -20+32*((y-1820)/100)**2, deltat)
 

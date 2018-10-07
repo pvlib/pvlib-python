@@ -1341,7 +1341,7 @@ def _hour_angle_to_hours(times, hour_angle, longitude, equation_of_time):
     """converts hour angles in degrees to hours as a numpy array"""
     naive_times = times.tz_localize(None)  # naive but still localized
     tzs = 1 / (3600. * 1.e9) * (
-            naive_times.astype(np.int64) - times.astype(np.int64))
+        naive_times.astype(np.int64) - times.astype(np.int64))
     hours = (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
     return np.asarray(hours)
 

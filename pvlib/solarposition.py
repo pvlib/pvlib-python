@@ -1350,11 +1350,19 @@ def _local_times_from_hours_since_midnite(times, hours):
     """converts hours from an array of floats to localized times"""
     tz_info = times.tz  # pytz timezone info
     times = times.tz_localize(None)  # naive but still localized
-    # convert times to previous midnight UTC
+    # convert times to previous naive, local midnight
     times = times.values.astype('datetime64[D]').astype('datetime64[ns]')
     # add the hours until sunrise/sunset/transit
     return pd.DatetimeIndex(
         times + (hours * 3600. * 1.e9).astype('timedelta64[ns]'), tz=tz_info)
+
+
+def _times_to_hours(times):
+    """convert local pandas datetime indices to array of hours as floats"""
+    times = times.tz_localize(None)
+    hrs = 1 / (3600. * 1.e9) * (
+        times.astype(np.int64) - times.normalize().astype(np.int64))
+    return np.array(hrs)
 
 
 def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,

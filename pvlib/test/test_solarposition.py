@@ -531,7 +531,9 @@ def test_get_solarposition_altitude(altitude, expected, golden):
     "delta_t, method, expected", [
     (None, 'nrel_numpy', expected_solpos_multi()),
     (67.0, 'nrel_numpy', expected_solpos_multi()),
-    pytest.mark.xfail(raises=ValueError, reason = 'spa.calculate_deltat not implemented for numba yet')
+    pytest.mark.xfail(
+        raises=ValueError,
+        reason = 'spa.calculate_deltat not implemented for numba yet')
     ((None, 'nrel_numba', expected_solpos_multi())),
     (67.0, 'nrel_numba', expected_solpos_multi())
     ])
@@ -690,8 +692,9 @@ def test_analytical_azimuth():
                     [ -30., -180.,    5.],
                     [ -30.,  180.,   10.]]))
 
-    zeniths  = solarposition.solar_zenith_analytical(*test_angles.T)
-    azimuths = solarposition.solar_azimuth_analytical(*test_angles.T, zenith=zeniths)
+    zeniths = solarposition.solar_zenith_analytical(*test_angles.T)
+    azimuths = solarposition.solar_azimuth_analytical(*test_angles.T,
+                                                      zenith=zeniths)
 
     assert not np.isnan(azimuths).any()
 
@@ -718,56 +721,45 @@ def test_hour_angle():
     # sunrise: 4 seconds, sunset: 48 seconds, transit: 0.2 seconds
     # but the differences may be due to other SPA input parameters
     assert np.allclose(hours, expected)
-@pytest.fixture()
-def expected_rise_set_geometric():
-    # for Golden, CO, from USNO websites
-    latitude, longitude = 39.742476, -105.1786
-    times = pd.DatetimeIndex(
-        ['2015-01-01', '2015-01-02', '2015-01-03', '2015-08-02'], tz='MST')
-    sunrise = pd.DatetimeIndex([
-        '2015-01-01 07:26:32.916133528',
-        '2015-01-02 07:26:39.763224487',
-        '2015-01-03 07:26:44.474206647',
-        '2015-08-02 05:04:35.688533801'],
-        tz='MST')
-    sunset = pd.DatetimeIndex([
-        '2015-01-01 16:40:43.173266362',
-        '2015-01-02 16:41:29.951096777',
-        '2015-01-03 16:42:18.353827270',
-        '2015-08-02 19:09:46.597355085'],
-        tz='MST')
-    transit = pd.DatetimeIndex([
-        '2015-01-01 12:03:38.044699945',
-        '2015-01-02 12:04:04.857160632',
-        '2015-01-03 12:04:31.414016959',
-        '2015-08-02 12:07:11.142944443'],
-        tz='MST')
-    return {'times': times, 'latitude': latitude, 'longitude': longitude,
-            'sunrise': sunrise, 'sunset': sunset,  'transit': transit}
 
 
-def _times_to_hours(times):
-    """convert pandas datetime indicies to list of hours as floats"""
-    return [t.hour + (t.minute + t.second / 60.) / 60.
-            for t in (dt.time() for dt in times)]
-
-
-def test_geometric_sunrise_sunset_transit(expected_rise_set_geometric):
+def test_geometric_sunrise_sunset_transit(expected_rise_set_spa, golden_mst):
     """Test analytical calculations for sunrise, sunset, and transit times"""
-    times = expected_rise_set_geometric['times']
-    latitude = expected_rise_set_geometric['latitude']
-    longitude = expected_rise_set_geometric['longitude']
+    times = expected_rise_set_spa.index
+    latitude = golden_mst.latitude
+    longitude = golden_mst.longitude
     eot = solarposition.equation_of_time_spencer71(times.dayofyear)  # minutes
     decl = solarposition.declination_spencer71(times.dayofyear)  # radians
     sr, ss, st = solarposition.sunrise_sunset_transit_geometric(
         times, latitude=latitude, longitude=longitude, declination=decl,
         equation_of_time=eot)
-    sunrise = _times_to_hours(sr)
-    sunset = _times_to_hours(ss)
-    transit = _times_to_hours(st)
-    test_sunrise = _times_to_hours(expected_rise_set_geometric['sunrise'])
-    test_sunset = _times_to_hours(expected_rise_set_geometric['sunset'])
-    test_transit = _times_to_hours(expected_rise_set_geometric['transit'])
-    assert np.allclose(sunrise, test_sunrise)
-    assert np.allclose(sunset, test_sunset)
-    assert np.allclose(transit, test_transit)
+    # sunrise: 2015-01-02 07:26:39.763224487, 2015-08-02 05:04:35.688533801
+    # sunset:  2015-01-02 16:41:29.951096777, 2015-08-02 19:09:46.597355085
+    # transit: 2015-01-02 12:04:04.857160632, 2015-08-02 12:07:11.142944443
+    test_sunrise = solarposition._times_to_hours(sr)
+    test_sunset = solarposition._times_to_hours(ss)
+    test_transit = solarposition._times_to_hours(st)
+    # convert expected SPA sunrise, sunset, transit to local datetime indices
+    expected_sunrise = pd.DatetimeIndex(expected_rise_set_spa.sunrise.values,
+                                        tz='UTC').tz_convert(golden_mst.tz)
+    expected_sunset = pd.DatetimeIndex(expected_rise_set_spa.sunset.values,
+                                       tz='UTC').tz_convert(golden_mst.tz)
+    expected_transit = pd.DatetimeIndex(expected_rise_set_spa.transit.values,
+                                        tz='UTC').tz_convert(golden_mst.tz)
+    # convert expected times to hours since midnight as arrays of floats
+    expected_sunrise = solarposition._times_to_hours(expected_sunrise)
+    expected_sunset = solarposition._times_to_hours(expected_sunset)
+    expected_transit = solarposition._times_to_hours(expected_transit)
+    # geometric time has about 4-6 minute error compared to SPA sunset/sunrise
+    expected_sunrise_error = np.array(
+        [0.07910089555555544, 0.06908014805555496])  # 4.8[min], 4.2[min]
+    expected_sunset_error = np.array(
+        [-0.1036246955555562, -0.06983406805555603])  # -6.2[min], -4.2[min]
+    expected_transit_error = np.array(
+        [-0.011150788888889096, 0.0036508177777765383])  # -40[sec], 13.3[sec]
+    assert np.allclose(test_sunrise, expected_sunrise,
+                       atol=np.abs(expected_sunrise_error).max())
+    assert np.allclose(test_sunset, expected_sunset,
+                       atol=np.abs(expected_sunset_error).max())
+    assert np.allclose(test_transit, expected_transit,
+                       atol=np.abs(expected_transit_error).max())

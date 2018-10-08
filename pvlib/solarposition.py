@@ -25,6 +25,8 @@ import pandas as pd
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
+NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
+
 
 def get_solarposition(time, latitude, longitude,
                       altitude=None, pressure=None,
@@ -1329,7 +1331,7 @@ def hour_angle(times, longitude, equation_of_time):
     """
     naive_times = times.tz_localize(None)  # naive but still localized
     # hours - timezone = (times - normalized_times) - (naive_times - times)
-    hrs_minus_tzs = 1 / (3600. * 1.e9) * (
+    hrs_minus_tzs = 1 / NS_PER_HR * (
         2 * times.astype(np.int64) - times.normalize().astype(np.int64) -
         naive_times.astype(np.int64))
     # ensure array return instead of a version-dependent pandas <T>Index
@@ -1337,30 +1339,31 @@ def hour_angle(times, longitude, equation_of_time):
         15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)
 
 
-def _hour_angle_to_hours(times, hour_angle, longitude, equation_of_time):
+def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
     """converts hour angles in degrees to hours as a numpy array"""
     naive_times = times.tz_localize(None)  # naive but still localized
-    tzs = 1 / (3600. * 1.e9) * (
+    tzs = 1 / NS_PER_HR * (
         naive_times.astype(np.int64) - times.astype(np.int64))
-    hours = (hour_angle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
+    hours = (hourangle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
     return np.asarray(hours)
 
 
-def _local_times_from_hours_since_midnite(times, hours):
+def _local_times_from_hours_since_midnight(times, hours):
     """converts hours from an array of floats to localized times"""
     tz_info = times.tz  # pytz timezone info
-    times = times.tz_localize(None)  # naive but still localized
-    # convert times to previous naive, local midnight
-    times = times.values.astype('datetime64[D]').astype('datetime64[ns]')
-    # add the hours until sunrise/sunset/transit
+    naive_times = times.tz_localize(None)  # naive but still localized
+    # normalize local, naive times to previous midnight and add the hours until
+    # sunrise, sunset, and transit
     return pd.DatetimeIndex(
-        times + (hours * 3600. * 1.e9).astype('timedelta64[ns]'), tz=tz_info)
+        (naive_times.normalize().astype(np.int64)
+         + (hours * NS_PER_HR).astype(np.int64)).astype('datetime64[ns]'),
+        tz=tz_info)
 
 
 def _times_to_hours(times):
     """convert local pandas datetime indices to array of hours as floats"""
     times = times.tz_localize(None)
-    hrs = 1 / (3600. * 1.e9) * (
+    hrs = 1 / NS_PER_HR * (
         times.astype(np.int64) - times.normalize().astype(np.int64))
     return np.array(hrs)
 
@@ -1417,7 +1420,7 @@ def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
     sunset_hour = _hour_angle_to_hours(
         times, sunset_angle, longitude, equation_of_time)
     transit_hour = _hour_angle_to_hours(times, 0, longitude, equation_of_time)
-    sunrise = _local_times_from_hours_since_midnite(times, sunrise_hour)
-    sunset = _local_times_from_hours_since_midnite(times, sunset_hour)
-    transit = _local_times_from_hours_since_midnite(times, transit_hour)
+    sunrise = _local_times_from_hours_since_midnight(times, sunrise_hour)
+    sunset = _local_times_from_hours_since_midnight(times, sunset_hour)
+    transit = _local_times_from_hours_since_midnight(times, transit_hour)
     return sunrise, sunset, transit

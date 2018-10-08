@@ -80,14 +80,16 @@ Phi = 194.340241
 year = 1985 
 month = 2
 year_array = np.array([-499, 500, 1000, 1500, 1800, 1860, 1900, 1950,
-                       1970, 1985, 1990, 2000, 2005])
-month_array = np.array([1, 2, 3, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12])
+                       1970, 1985, 1990, 2000, 2005, 2050, 2150])
+# `month_array` is used with `year_array` in `test_calculate_deltat`.
+# Both arrays need to have the same length for the test, hence the duplicates.
+month_array = np.array([1, 2, 3, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 12, 12])
 dt_actual = 54.413442486
 dt_actual_array = np.array([1.7184831e+04, 5.7088051e+03, 1.5730419e+03,
                             1.9801820e+02, 1.3596506e+01, 7.8316585e+00,
                             -2.1171894e+00, 2.9289261e+01, 4.0824887e+01,
                             5.4724581e+01, 5.7426651e+01, 6.4108015e+01,
-                            6.5038015e+01])
+                            6.5038015e+01, 9.4952955e+01, 3.3050693e+02])
 mix_year_array = np.full((10), year)
 mix_month_array = np.full((10), month)
 mix_year_actual = np.full((10), dt_actual)

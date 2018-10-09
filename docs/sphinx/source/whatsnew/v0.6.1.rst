@@ -29,6 +29,8 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Fix when building documentation using Matplotlib 3.0 or greater.
+* `~pvlib.spa.calculate_deltat`: Fix constant coefficient of the polynomial expression for years >= 1860
+  and < 1900, fix year 2050 which was returning 0.
 
 
 Testing
@@ -40,3 +42,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Leland Boeman (:ghuser:`lboeman`)
+* Cedric Leroy (:ghuser:`cedricleroy`)

@@ -1355,8 +1355,8 @@ def _local_times_from_hours_since_midnight(times, hours):
     # normalize local, naive times to previous midnight and add the hours until
     # sunrise, sunset, and transit
     return pd.DatetimeIndex(
-        (naive_times.normalize().astype(np.int64)
-         + (hours * NS_PER_HR).astype(np.int64)).astype('datetime64[ns]'),
+        (naive_times.normalize().astype(np.int64) +
+         (hours * NS_PER_HR).astype(np.int64)).astype('datetime64[ns]'),
         tz=tz_info)
 
 

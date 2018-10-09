@@ -25,6 +25,8 @@ import pandas as pd
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
+NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
+
 
 def get_solarposition(time, latitude, longitude,
                       altitude=None, pressure=None,
@@ -1175,7 +1177,7 @@ def declination_cooper69(dayofyear):
     return dec
 
 
-def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
+def solar_azimuth_analytical(latitude, hourangle, declination, zenith):
     """
     Analytical expression of solar azimuth angle based on spherical
     trigonometry.
@@ -1184,7 +1186,7 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     ----------
     latitude : numeric
         Latitude of location in radians.
-    hour_angle : numeric
+    hourangle : numeric
         Hour angle in the local solar time in radians.
     declination : numeric
         Declination of the sun in radians.
@@ -1240,12 +1242,12 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
 
     # when NaN values occur in input, ignore and pass to output
     with np.errstate(invalid='ignore'):
-        sign_ha = np.sign(hour_angle)
+        sign_ha = np.sign(hourangle)
 
-    return (sign_ha * np.arccos(cos_azi) + np.pi)
+    return sign_ha * np.arccos(cos_azi) + np.pi
 
 
-def solar_zenith_analytical(latitude, hour_angle, declination):
+def solar_zenith_analytical(latitude, hourangle, declination):
     """
     Analytical expression of solar zenith angle based on spherical
     trigonometry.
@@ -1257,7 +1259,7 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     ----------
     latitude : numeric
         Latitude of location in radians.
-    hour_angle : numeric
+    hourangle : numeric
         Hour angle in the local solar time in radians.
     declination : numeric
         Declination of the sun in radians.
@@ -1288,7 +1290,7 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     declination_spencer71 declination_cooper69 hour_angle
     """
     return np.arccos(
-        np.cos(declination) * np.cos(latitude) * np.cos(hour_angle) +
+        np.cos(declination) * np.cos(latitude) * np.cos(hourangle) +
         np.sin(declination) * np.sin(latitude)
     )
 
@@ -1300,7 +1302,8 @@ def hour_angle(times, longitude, equation_of_time):
     Parameters
     ----------
     times : :class:`pandas.DatetimeIndex`
-        Corresponding timestamps, must be timezone aware.
+        Corresponding timestamps, must be localized to the timezone for the
+        ``longitude``.
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric
@@ -1329,9 +1332,99 @@ def hour_angle(times, longitude, equation_of_time):
     """
     naive_times = times.tz_localize(None)  # naive but still localized
     # hours - timezone = (times - normalized_times) - (naive_times - times)
-    hrs_minus_tzs = 1 / (3600. * 1.e9) * (
+    hrs_minus_tzs = 1 / NS_PER_HR * (
         2 * times.astype(np.int64) - times.normalize().astype(np.int64) -
         naive_times.astype(np.int64))
     # ensure array return instead of a version-dependent pandas <T>Index
     return np.asarray(
         15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)
+
+
+def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
+    """converts hour angles in degrees to hours as a numpy array"""
+    naive_times = times.tz_localize(None)  # naive but still localized
+    tzs = 1 / NS_PER_HR * (
+        naive_times.astype(np.int64) - times.astype(np.int64))
+    hours = (hourangle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
+    return np.asarray(hours)
+
+
+def _local_times_from_hours_since_midnight(times, hours):
+    """
+    converts hours since midnight from an array of floats to localized times
+    """
+    tz_info = times.tz  # pytz timezone info
+    naive_times = times.tz_localize(None)  # naive but still localized
+    # normalize local, naive times to previous midnight and add the hours until
+    # sunrise, sunset, and transit
+    return pd.DatetimeIndex(
+        (naive_times.normalize().astype(np.int64) +
+         (hours * NS_PER_HR).astype(np.int64)).astype('datetime64[ns]'),
+        tz=tz_info)
+
+
+def _times_to_hours_after_local_midnight(times):
+    """convert local pandas datetime indices to array of hours as floats"""
+    times = times.tz_localize(None)
+    hrs = 1 / NS_PER_HR * (
+        times.astype(np.int64) - times.normalize().astype(np.int64))
+    return np.array(hrs)
+
+
+def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
+                                     equation_of_time):
+    """
+    Geometric calculation of solar sunrise, sunset, and transit.
+
+    .. warning:: The geometric calculation assumes a circular earth orbit with
+        the sun as a point source at its center, and neglects the effect of
+        atmospheric refraction on zenith. The error depends on location and
+        time of year but is of order 10 minutes.
+
+    Parameters
+    ----------
+    times : pandas.DatetimeIndex
+        Corresponding timestamps, must be localized to the timezone for the
+        ``latitude`` and ``longitude``.
+    latitude : float
+        Latitude in degrees, positive north of equator, negative to south
+    longitude : float
+        Longitude in degrees, positive east of prime meridian, negative to west
+    declination : numeric
+        declination angle in radians at ``times``
+    equation_of_time : numeric
+        difference in time between solar time and mean solar time in minutes
+
+    Returns
+    -------
+    sunrise : datetime
+        localized sunrise time
+    sunset : datetime
+        localized sunset time
+    transit : datetime
+        localized sun transit time
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition," J. Wiley and Sons, New York (2006)
+
+    [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements,"
+    CRC Press (2012)
+
+    """
+    latitude_rad = np.radians(latitude)  # radians
+    sunset_angle_rad = np.arccos(-np.tan(declination) * np.tan(latitude_rad))
+    sunset_angle = np.degrees(sunset_angle_rad)  # degrees
+    # solar noon is at hour angle zero
+    # so sunrise is just negative of sunset
+    sunrise_angle = -sunset_angle
+    sunrise_hour = _hour_angle_to_hours(
+        times, sunrise_angle, longitude, equation_of_time)
+    sunset_hour = _hour_angle_to_hours(
+        times, sunset_angle, longitude, equation_of_time)
+    transit_hour = _hour_angle_to_hours(times, 0, longitude, equation_of_time)
+    sunrise = _local_times_from_hours_since_midnight(times, sunrise_hour)
+    sunset = _local_times_from_hours_since_midnight(times, sunset_hour)
+    transit = _local_times_from_hours_since_midnight(times, transit_hour)
+    return sunrise, sunset, transit

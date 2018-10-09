@@ -1350,7 +1350,9 @@ def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
 
 
 def _local_times_from_hours_since_midnight(times, hours):
-    """converts hours from an array of floats to localized times"""
+    """
+    converts hours since midnight from an array of floats to localized times
+    """
     tz_info = times.tz  # pytz timezone info
     naive_times = times.tz_localize(None)  # naive but still localized
     # normalize local, naive times to previous midnight and add the hours until

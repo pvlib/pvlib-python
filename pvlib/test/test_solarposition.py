@@ -723,8 +723,8 @@ def test_hour_angle():
     assert np.allclose(hours, expected)
 
 
-def test_geometric_sunrise_sunset_transit(expected_rise_set_spa, golden_mst):
-    """Test analytical calculations for sunrise, sunset, and transit times"""
+def test_sunrise_sunset_transit_geometric(expected_rise_set_spa, golden_mst):
+    """Test geometric calculations for sunrise, sunset, and transit times"""
     times = expected_rise_set_spa.index
     latitude = golden_mst.latitude
     longitude = golden_mst.longitude

@@ -38,7 +38,7 @@ MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
 INSTALL_REQUIRES = ['numpy >= 1.10.1',
-                    'pandas >= 0.14.0',
+                    'pandas >= 0.15.0',
                     'pytz',
                     'six',
                     ]

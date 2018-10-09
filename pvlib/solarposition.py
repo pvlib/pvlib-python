@@ -6,6 +6,7 @@ Calculate the solar position using a variety of methods/packages.
 # Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
 # Will Holmgren (@wholmgren), University of Arizona, 2014
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
+# Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
 
 from __future__ import division
 import os
@@ -23,6 +24,8 @@ import pandas as pd
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
+
+NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
 
 
 def get_solarposition(time, latitude, longitude,
@@ -438,7 +441,26 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
     return result
 
 
-def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
+def _ephem_convert_to_seconds_and_microseconds(date):
+    # utility from unreleased PyEphem 3.6.7.1
+    """Converts a PyEphem date into seconds"""
+    microseconds = int(round(24 * 60 * 60 * 1000000 * date))
+    seconds, microseconds = divmod(microseconds, 1000000)
+    seconds -= 2209032000  # difference between epoch 1900 and epoch 1970
+    return seconds, microseconds
+
+
+def _ephem_to_timezone(date, tzinfo):
+    # utility from unreleased PyEphem 3.6.7.1
+    """"Convert a PyEphem Date into a timezone aware python datetime"""
+    seconds, microseconds = _ephem_convert_to_seconds_and_microseconds(date)
+    date = dt.datetime.fromtimestamp(seconds, tzinfo)
+    date = date.replace(microsecond=microseconds)
+    return date
+
+
+def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
+                 horizon):
     import ephem
     # initialize a PyEphem observer
     obs = ephem.Observer()
@@ -447,14 +469,97 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature):
     obs.elevation = altitude
     obs.pressure = pressure / 100.  # convert to mBar
     obs.temp = temperature
+    obs.horizon = horizon
 
     # the PyEphem sun
     sun = ephem.Sun()
     return obs, sun
 
 
+def rise_set_transit_ephem(time, latitude, longitude,
+                           next_or_previous='next',
+                           altitude=0,
+                           pressure=101325, temperature=12, horizon='0:00'):
+    """
+    Calculate the next sunrise and sunset times using the PyEphem package.
+
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+        Must be localized
+    latitude : float
+        positive is north of 0
+    longitude : float
+        positive is east of 0
+    next_or_previous : str
+        'next' or 'previous' sunrise and sunset relative to time
+    altitude : float, default 0
+        distance above sea level in meters.
+    pressure : int or float, optional, default 101325
+        air pressure in Pascals.
+    temperature : int or float, optional, default 12
+        air temperature in degrees C.
+    horizon : string, format +/-X:YY
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
+        geometrical horizon
+
+    Returns
+    -------
+    pandas.DataFrame
+        index is the same as input `time` argument
+        columns are 'sunrise', 'sunset', and 'transit'
+
+    See also
+    --------
+    pyephem
+    """
+
+    try:
+        import ephem
+    except ImportError:
+        raise ImportError('PyEphem must be installed')
+
+    # times must be localized
+    if not time.tz:
+        raise ValueError('rise_set_ephem: times must be localized')
+
+    obs, sun = _ephem_setup(latitude, longitude, altitude,
+                            pressure, temperature, horizon)
+    # create lists of sunrise and sunset time localized to time.tz
+    if next_or_previous.lower() == 'next':
+        rising = obs.next_rising
+        setting = obs.next_setting
+        transit = obs.next_transit
+    elif next_or_previous.lower() == 'previous':
+        rising = obs.previous_rising
+        setting = obs.previous_setting
+        transit = obs.previous_transit
+    else:
+        raise ValueError("next_or_previous must be either 'next' or" +
+                         " 'previous'")
+
+    sunrise = []
+    sunset = []
+    trans = []
+    for thetime in time:
+        thetime = thetime.to_pydatetime()
+        # pyephem drops timezone when converting to its internal datetime
+        # format, so handle timezone explicitly here
+        obs.date = ephem.Date(thetime - thetime.utcoffset())
+        sunrise.append(_ephem_to_timezone(rising(sun), time.tz))
+        sunset.append(_ephem_to_timezone(setting(sun), time.tz))
+        trans.append(_ephem_to_timezone(transit(sun), time.tz))
+
+    return pd.DataFrame(index=time, data={'sunrise': sunrise,
+                                          'sunset': sunset,
+                                          'transit': trans})
+
+
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
-            temperature=12):
+            temperature=12, horizon='+0:00'):
     """
     Calculate the solar position using the PyEphem package.
 
@@ -463,17 +568,26 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     time : pandas.DatetimeIndex
         Localized or UTC.
     latitude : float
+        positive is north of 0
     longitude : float
+        positive is east of 0
     altitude : float, default 0
-        distance above sea level.
+        distance above sea level in meters.
     pressure : int or float, optional, default 101325
         air pressure in Pascals.
     temperature : int or float, optional, default 12
         air temperature in degrees C.
+    horizon : string, optional, default '+0:00'
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
+        geometrical horizon
 
     Returns
     -------
-    DataFrame
+    pandas.DataFrame
+        index is the same as input `time` argument
         The DataFrame will have the following columns:
         apparent_elevation, elevation,
         apparent_azimuth, azimuth,
@@ -499,7 +613,7 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     sun_coords = pd.DataFrame(index=time)
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature)
+                            pressure, temperature, horizon)
 
     # make and fill lists of the sun's altitude and azimuth
     # this is the pressure and temperature corrected apparent alt/az.
@@ -711,7 +825,8 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
-              altitude=0, pressure=101325, temperature=12, xtol=1.0e-12):
+              altitude=0, pressure=101325, temperature=12, horizon='+0:00',
+              xtol=1.0e-12):
     """
     Calculate the time between lower_bound and upper_bound
     where the attribute is equal to value. Uses PyEphem for
@@ -736,6 +851,12 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         atmospheric correction.
     temperature : int or float, optional, default 12
         Air temperature in degrees C.
+    horizon : string, optional, default '+0:00'
+        arc degrees:arc minutes from geometrical horizon for sunrise and
+        sunset, e.g., horizon='+0:00' to use sun center crossing the
+        geometrical horizon to define sunrise and sunset,
+        horizon='-0:34' for when the sun's upper edge crosses the
+        geometrical horizon
     xtol : float, optional, default 1.0e-12
         The allowed error in the result from value
 
@@ -758,7 +879,7 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         raise ImportError('The calc_time function requires scipy')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
-                            pressure, temperature)
+                            pressure, temperature, horizon)
 
     def compute_attr(thetime, target, attr):
         obs.date = thetime
@@ -1056,7 +1177,7 @@ def declination_cooper69(dayofyear):
     return dec
 
 
-def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
+def solar_azimuth_analytical(latitude, hourangle, declination, zenith):
     """
     Analytical expression of solar azimuth angle based on spherical
     trigonometry.
@@ -1065,7 +1186,7 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     ----------
     latitude : numeric
         Latitude of location in radians.
-    hour_angle : numeric
+    hourangle : numeric
         Hour angle in the local solar time in radians.
     declination : numeric
         Declination of the sun in radians.
@@ -1121,12 +1242,12 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
 
     # when NaN values occur in input, ignore and pass to output
     with np.errstate(invalid='ignore'):
-        sign_ha = np.sign(hour_angle)
+        sign_ha = np.sign(hourangle)
 
-    return (sign_ha * np.arccos(cos_azi) + np.pi)
+    return sign_ha * np.arccos(cos_azi) + np.pi
 
 
-def solar_zenith_analytical(latitude, hour_angle, declination):
+def solar_zenith_analytical(latitude, hourangle, declination):
     """
     Analytical expression of solar zenith angle based on spherical
     trigonometry.
@@ -1138,7 +1259,7 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     ----------
     latitude : numeric
         Latitude of location in radians.
-    hour_angle : numeric
+    hourangle : numeric
         Hour angle in the local solar time in radians.
     declination : numeric
         Declination of the sun in radians.
@@ -1169,7 +1290,7 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     declination_spencer71 declination_cooper69 hour_angle
     """
     return np.arccos(
-        np.cos(declination) * np.cos(latitude) * np.cos(hour_angle) +
+        np.cos(declination) * np.cos(latitude) * np.cos(hourangle) +
         np.sin(declination) * np.sin(latitude)
     )
 
@@ -1181,7 +1302,8 @@ def hour_angle(times, longitude, equation_of_time):
     Parameters
     ----------
     times : :class:`pandas.DatetimeIndex`
-        Corresponding timestamps, must be timezone aware.
+        Corresponding timestamps, must be localized to the timezone for the
+        ``longitude``.
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric
@@ -1208,8 +1330,101 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_Spencer71
     equation_of_time_pvcdrom
     """
-    hours = np.array([(t - t.tz.localize(
-        dt.datetime(t.year, t.month, t.day)
-    )).total_seconds() / 3600. for t in times])
-    timezone = times.tz.utcoffset(times).total_seconds() / 3600.
-    return 15. * (hours - 12. - timezone) + longitude + equation_of_time / 4.
+    naive_times = times.tz_localize(None)  # naive but still localized
+    # hours - timezone = (times - normalized_times) - (naive_times - times)
+    hrs_minus_tzs = 1 / NS_PER_HR * (
+        2 * times.astype(np.int64) - times.normalize().astype(np.int64) -
+        naive_times.astype(np.int64))
+    # ensure array return instead of a version-dependent pandas <T>Index
+    return np.asarray(
+        15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)
+
+
+def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
+    """converts hour angles in degrees to hours as a numpy array"""
+    naive_times = times.tz_localize(None)  # naive but still localized
+    tzs = 1 / NS_PER_HR * (
+        naive_times.astype(np.int64) - times.astype(np.int64))
+    hours = (hourangle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
+    return np.asarray(hours)
+
+
+def _local_times_from_hours_since_midnight(times, hours):
+    """
+    converts hours since midnight from an array of floats to localized times
+    """
+    tz_info = times.tz  # pytz timezone info
+    naive_times = times.tz_localize(None)  # naive but still localized
+    # normalize local, naive times to previous midnight and add the hours until
+    # sunrise, sunset, and transit
+    return pd.DatetimeIndex(
+        (naive_times.normalize().astype(np.int64) +
+         (hours * NS_PER_HR).astype(np.int64)).astype('datetime64[ns]'),
+        tz=tz_info)
+
+
+def _times_to_hours_after_local_midnight(times):
+    """convert local pandas datetime indices to array of hours as floats"""
+    times = times.tz_localize(None)
+    hrs = 1 / NS_PER_HR * (
+        times.astype(np.int64) - times.normalize().astype(np.int64))
+    return np.array(hrs)
+
+
+def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
+                                     equation_of_time):
+    """
+    Geometric calculation of solar sunrise, sunset, and transit.
+
+    .. warning:: The geometric calculation assumes a circular earth orbit with
+        the sun as a point source at its center, and neglects the effect of
+        atmospheric refraction on zenith. The error depends on location and
+        time of year but is of order 10 minutes.
+
+    Parameters
+    ----------
+    times : pandas.DatetimeIndex
+        Corresponding timestamps, must be localized to the timezone for the
+        ``latitude`` and ``longitude``.
+    latitude : float
+        Latitude in degrees, positive north of equator, negative to south
+    longitude : float
+        Longitude in degrees, positive east of prime meridian, negative to west
+    declination : numeric
+        declination angle in radians at ``times``
+    equation_of_time : numeric
+        difference in time between solar time and mean solar time in minutes
+
+    Returns
+    -------
+    sunrise : datetime
+        localized sunrise time
+    sunset : datetime
+        localized sunset time
+    transit : datetime
+        localized sun transit time
+
+    References
+    ----------
+    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+    Processes, 3rd Edition," J. Wiley and Sons, New York (2006)
+
+    [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements,"
+    CRC Press (2012)
+
+    """
+    latitude_rad = np.radians(latitude)  # radians
+    sunset_angle_rad = np.arccos(-np.tan(declination) * np.tan(latitude_rad))
+    sunset_angle = np.degrees(sunset_angle_rad)  # degrees
+    # solar noon is at hour angle zero
+    # so sunrise is just negative of sunset
+    sunrise_angle = -sunset_angle
+    sunrise_hour = _hour_angle_to_hours(
+        times, sunrise_angle, longitude, equation_of_time)
+    sunset_hour = _hour_angle_to_hours(
+        times, sunset_angle, longitude, equation_of_time)
+    transit_hour = _hour_angle_to_hours(times, 0, longitude, equation_of_time)
+    sunrise = _local_times_from_hours_since_midnight(times, sunrise_hour)
+    sunset = _local_times_from_hours_since_midnight(times, sunset_hour)
+    transit = _local_times_from_hours_since_midnight(times, transit_hour)
+    return sunrise, sunset, transit

@@ -3,7 +3,7 @@
 v0.6.1 (EST October, 2018)
 --------------------------
 
-This is a minor release. We recommend all users of 0.6.0 upgrade to this
+This is a minor release. We recommend all users of v0.6.0 upgrade to this
 release.
 
 **Python 2.7 support will end on June 1, 2019**. Releases made after this
@@ -16,22 +16,32 @@ API Changes
 * Deprecated ``tmy``, ``tmy.readtmy2`` and ``tmy.readtmy3``;
   they will be removed in v0.7. Use the new :py:func:`pvlib.iotools.read_tmy2`
   and :py:func:`pvlib.iotools.read_tmy3` instead. (:issue:`261`)
+* Added keyword argument ``horizon`` to :func:`~pvlib.solarposition.pyephem`
+  and :func:`~pvlib.solarposition.calc_time` with default value ``'+0:00'``
 * Changed key names for `components` returned from :py:func:`pvlib.clearsky.detect_clearsky`
 
 
 Enhancements
 ~~~~~~~~~~~~
-* Created :py:func:`pvlib.iotools.read_srml` and :py:func:`pvlib.iotools.read_srml_month_from_solardat`
-  to read University of Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
+* :func:`~pvlib.solarposition.rise_set_transit_ephem` returns sunrise, sunset
+  and transit times using pyephem (:issue:`114`)
+* Add geometric functions for sunrise, sunset, and sun transit times,
+  :func:`~pvlib.solarposition.sunrise_sunset_transit_geometric` (:issue:`114`)
+* Created :py:func:`pvlib.iotools.read_srml` and
+  :py:func:`pvlib.iotools.read_srml_month_from_solardat` to read University of
+  Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
+
 
 Bug fixes
 ~~~~~~~~~
 * Fix when building documentation using Matplotlib 3.0 or greater.
+* Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
 * Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
 
 
 Testing
 ~~~~~~~
+* Add test for :func:`~pvlib.solarposition.hour_angle` (:issue:`597`)
 
 
 Contributors
@@ -40,3 +50,4 @@ Contributors
 * Leland Boeman (:ghuser:`lboeman`)
 * Ben Ellis (:ghuser:`bhellis725`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Mark Mikofski (:ghuser:`mikofski`)

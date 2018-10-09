@@ -55,6 +55,7 @@ Additional functions for quantities closely related to solar position.
    solarposition.calc_time
    solarposition.pyephem_earthsun_distance
    solarposition.nrel_earthsun_distance
+   solarposition.rise_set_transit_ephem
    spa.calculate_deltat
 
 The spa module contains the implementation of the built-in NREL SPA
@@ -78,6 +79,7 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
+   solarposition.sunrise_sunset_transit_geometric
 
 
 Clear sky

@@ -21,13 +21,20 @@ times = pd.date_range(start=datetime.datetime(2014,6,24),
                       end=datetime.datetime(2014,6,26), freq='15Min')
 
 tus = Location(32.2, -111, 'US/Arizona', 700) # no DST issues possible
-# In 2003, DST in US was from April 6 to October 26
-golden_mst = Location(39.742476, -105.1786, 'MST', 1830.14) # no DST issues possible
-golden = Location(39.742476, -105.1786, 'America/Denver', 1830.14) # DST issues possible
-
 times_localized = times.tz_localize(tus.tz)
 
 tol = 5
+
+
+@pytest.fixture()
+def golden():
+    return Location(39.742476, -105.1786, 'America/Denver', 1830.14)
+
+
+@pytest.fixture()
+def golden_mst():
+    return Location(39.742476, -105.1786, 'MST', 1830.14)
+
 
 @pytest.fixture()
 def expected_solpos():
@@ -37,6 +44,7 @@ def expected_solpos():
                          'apparent_elevation': 39.888378},
                         index=['2003-10-17T12:30:30Z'])
 
+
 @pytest.fixture()
 def expected_solpos_multi():
     return pd.DataFrame({'elevation': [39.872046, 39.505196],
@@ -45,12 +53,61 @@ def expected_solpos_multi():
                          'apparent_elevation': [39.888378, 39.521740]},
                         index=[['2003-10-17T12:30:30Z', '2003-10-18T12:30:30Z']])
 
+
+@pytest.fixture()
+def expected_rise_set_spa():
+    # for Golden, CO, from NREL SPA website
+    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
+                              datetime.datetime(2015, 8, 2),
+                              ]).tz_localize('MST')
+    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 21, 55),
+                                datetime.datetime(2015, 8, 2, 5, 0, 27)
+                                ]).tz_localize('MST').tolist()
+    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 47, 43),
+                               datetime.datetime(2015, 8, 2, 19, 13, 58)
+                               ]).tz_localize('MST').tolist()
+    transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 12, 4, 45),
+                                datetime.datetime(2015, 8, 2, 12, 6, 58)
+                                ]).tz_localize('MST').tolist()
+    return pd.DataFrame({'transit': transit,
+                         'sunrise': sunrise,
+                         'sunset': sunset},
+                        index=times)
+
+
+@pytest.fixture()
+def expected_rise_set_ephem():
+    # for Golden, CO, from USNO websites
+    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 1),
+                              datetime.datetime(2015, 1, 2),
+                              datetime.datetime(2015, 1, 3),
+                              datetime.datetime(2015, 8, 2),
+                              ]).tz_localize('MST')
+    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 1, 7, 22, 0),
+                                datetime.datetime(2015, 1, 2, 7, 22, 0),
+                                datetime.datetime(2015, 1, 3, 7, 22, 0),
+                                datetime.datetime(2015, 8, 2, 5, 0, 0)
+                                ]).tz_localize('MST').tolist()
+    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 1, 16, 47, 0),
+                               datetime.datetime(2015, 1, 2, 16, 48, 0),
+                               datetime.datetime(2015, 1, 3, 16, 49, 0),
+                               datetime.datetime(2015, 8, 2, 19, 13, 0)
+                               ]).tz_localize('MST').tolist()
+    transit = pd.DatetimeIndex([datetime.datetime(2015, 1, 1, 12, 4, 0),
+                                datetime.datetime(2015, 1, 2, 12, 5, 0),
+                                datetime.datetime(2015, 1, 3, 12, 5, 0),
+                                datetime.datetime(2015, 8, 2, 12, 7, 0)
+                                ]).tz_localize('MST').tolist()
+    return pd.DataFrame({'sunrise': sunrise,
+                         'sunset': sunset,
+                         'transit': transit},
+                        index=times)
 # the physical tests are run at the same time as the NREL SPA test.
 # pyephem reproduces the NREL result to 2 decimal places.
 # this doesn't mean that one code is better than the other.
 
 @requires_spa_c
-def test_spa_c_physical(expected_solpos):
+def test_spa_c_physical(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_c(times, golden_mst.latitude,
@@ -62,7 +119,7 @@ def test_spa_c_physical(expected_solpos):
 
 
 @requires_spa_c
-def test_spa_c_physical_dst(expected_solpos):
+def test_spa_c_physical_dst(expected_solpos, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_c(times, golden.latitude,
@@ -72,7 +129,8 @@ def test_spa_c_physical_dst(expected_solpos):
     expected_solpos.index = times
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
-def test_spa_python_numpy_physical(expected_solpos):
+
+def test_spa_python_numpy_physical(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
@@ -84,7 +142,8 @@ def test_spa_python_numpy_physical(expected_solpos):
     expected_solpos.index = times
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
-def test_spa_python_numpy_physical_dst(expected_solpos):
+
+def test_spa_python_numpy_physical_dst(expected_solpos, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_python(times, golden.latitude,
@@ -98,7 +157,7 @@ def test_spa_python_numpy_physical_dst(expected_solpos):
 
 
 @requires_numba
-def test_spa_python_numba_physical(expected_solpos):
+def test_spa_python_numba_physical(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
@@ -112,7 +171,7 @@ def test_spa_python_numba_physical(expected_solpos):
 
 
 @requires_numba
-def test_spa_python_numba_physical_dst(expected_solpos):
+def test_spa_python_numba_physical_dst(expected_solpos, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_python(times, golden.latitude,
@@ -125,7 +184,7 @@ def test_spa_python_numba_physical_dst(expected_solpos):
 
 
 @needs_pandas_0_17
-def test_get_sun_rise_set_transit():
+def test_get_sun_rise_set_transit(expected_rise_set_spa, golden):
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
                               datetime.datetime(2004, 12, 4, 0)]
@@ -134,53 +193,186 @@ def test_get_sun_rise_set_transit():
                                 datetime.datetime(2004, 12, 4, 4, 38, 57)]
                                ).tz_localize('UTC').tolist()
     sunset = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 17, 1, 4),
-                               datetime.datetime(2004, 12, 4, 19, 2, 2)]
+                               datetime.datetime(2004, 12, 4, 19, 2, 3)]
                               ).tz_localize('UTC').tolist()
+    frame = pd.DataFrame({'sunrise': sunrise, 'sunset': sunset}, index=times)
+
     result = solarposition.get_sun_rise_set_transit(times, south.latitude,
                                                     south.longitude,
-                                                    delta_t=64.0)
-    frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
+                                                    delta_t=65.0)
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
-        result_rounded[col] = pd.to_datetime(
-            np.floor(data.values.astype(np.int64) / 1e9)*1e9, utc=True)
+        result_rounded[col] = data.dt.round('1s')
 
     del result_rounded['transit']
     assert_frame_equal(frame, result_rounded)
 
+    # test for Golden, CO compare to NREL SPA
+    result = solarposition.get_sun_rise_set_transit(
+        expected_rise_set_spa.index, golden.latitude, golden.longitude,
+        delta_t=65.0)
 
-    # tests from USNO
-    # Golden
-    golden = Location(39.0, -105.0, tz='MST')
-    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
-                              datetime.datetime(2015, 8, 2),]
-                             ).tz_localize('MST')
-    sunrise = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 7, 19, 2),
-                                datetime.datetime(2015, 8, 2, 5, 1, 26)
-                                ]).tz_localize('MST').tolist()
-    sunset = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 16, 49, 10),
-                               datetime.datetime(2015, 8, 2, 19, 11, 31)
-                               ]).tz_localize('MST').tolist()
-    result = solarposition.get_sun_rise_set_transit(times, golden.latitude,
-                                                    golden.longitude,
-                                                    delta_t=64.0)
-    frame = pd.DataFrame({'sunrise':sunrise, 'sunset':sunset}, index=times)
+    # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
-    # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
-        result_rounded[col] = (pd.to_datetime(
-            np.floor(data.values.astype(np.int64) / 1e9)*1e9, utc=True)
-            .tz_convert('MST'))
+        result_rounded[col] = data.dt.round('s').tz_convert('MST')
 
-    del result_rounded['transit']
-    assert_frame_equal(frame, result_rounded)
+    assert_frame_equal(expected_rise_set_spa, result_rounded)
 
 
 @requires_ephem
-def test_pyephem_physical(expected_solpos):
+def test_rise_set_transit_ephem(expected_rise_set_ephem, golden):
+    # test for Golden, CO compare to USNO, using local midnight
+    result = solarposition.rise_set_transit_ephem(
+        expected_rise_set_ephem.index, golden.latitude, golden.longitude,
+        next_or_previous='next', altitude=golden.altitude, pressure=0,
+        temperature=11, horizon='-0:34')
+    # round to nearest minute
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = data.dt.round('min').tz_convert('MST')
+    assert_frame_equal(expected_rise_set_ephem, result_rounded)
+
+    # test next sunrise/sunset with times
+    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 3, 0, 0),
+                              datetime.datetime(2015, 1, 2, 10, 15, 0),
+                              datetime.datetime(2015, 1, 2, 15, 3, 0),
+                              datetime.datetime(2015, 1, 2, 21, 6, 7)
+                              ]).tz_localize('MST')
+    expected = pd.DataFrame(index=times,
+                            columns=['sunrise', 'sunset'],
+                            dtype='datetime64[ns]')
+    expected['sunrise'] = pd.Series(index=times, data=
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
+    expected['sunset'] = pd.Series(index=times, data=
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunset']])
+    expected['transit'] = pd.Series(index=times, data=
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
+
+    result = solarposition.rise_set_transit_ephem(times,
+                                                  golden.latitude,
+                                                  golden.longitude,
+                                                  next_or_previous='next',
+                                                  altitude=golden.altitude,
+                                                  pressure=0,
+                                                  temperature=11,
+                                                  horizon='-0:34')
+    # round to nearest minute
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = data.dt.round('min').tz_convert('MST')
+    assert_frame_equal(expected, result_rounded)
+
+    # test previous sunrise/sunset with times
+    times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 3, 0, 0),
+                              datetime.datetime(2015, 1, 2, 10, 15, 0),
+                              datetime.datetime(2015, 1, 3, 3, 0, 0),
+                              datetime.datetime(2015, 1, 3, 13, 6, 7)
+                              ]).tz_localize('MST')
+    expected = pd.DataFrame(index=times,
+                            columns=['sunrise', 'sunset'],
+                            dtype='datetime64[ns]')
+    expected['sunrise'] = pd.Series(index=times, data=
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
+    expected['sunset'] = pd.Series(index=times, data=
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset']])
+    expected['transit'] = pd.Series(index=times, data=
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
+
+    result = solarposition.rise_set_transit_ephem(times,
+                                                  golden.latitude,
+                                                  golden.longitude,
+                                                  next_or_previous='previous',
+                                                  altitude=golden.altitude,
+                                                  pressure=0,
+                                                  temperature=11,
+                                                  horizon='-0:34')
+    # round to nearest minute
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = data.dt.round('min').tz_convert('MST')
+    assert_frame_equal(expected, result_rounded)
+
+    # test with different timezone
+    times = times.tz_convert('UTC')
+    expected = expected.tz_convert('UTC')  # resuse result from previous
+    for col, data in expected.iteritems():
+        expected[col] = data.dt.tz_convert('UTC')
+    result = solarposition.rise_set_transit_ephem(times,
+                                                  golden.latitude,
+                                                  golden.longitude,
+                                                  next_or_previous='previous',
+                                                  altitude=golden.altitude,
+                                                  pressure=0,
+                                                  temperature=11,
+                                                  horizon='-0:34')
+    # round to nearest minute
+    result_rounded = pd.DataFrame(index=result.index)
+    for col, data in result.iteritems():
+        result_rounded[col] = data.dt.round('min').tz_convert(times.tz)
+    assert_frame_equal(expected, result_rounded)
+
+
+@requires_ephem
+def test_rise_set_transit_ephem_error(expected_rise_set_ephem, golden):
+    with pytest.raises(ValueError):
+        solarposition.rise_set_transit_ephem(expected_rise_set_ephem.index,
+                                             golden.latitude,
+                                             golden.longitude,
+                                             next_or_previous='other')
+    tz_naive = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 3, 0, 0)])
+    with pytest.raises(ValueError):
+        solarposition.rise_set_transit_ephem(tz_naive,
+                                             golden.latitude,
+                                             golden.longitude,
+                                             next_or_previous='next')
+
+
+@requires_ephem
+def test_rise_set_transit_ephem_horizon(golden):
+    times = pd.DatetimeIndex([datetime.datetime(2016, 1, 3, 0, 0, 0)
+                              ]).tz_localize('MST')
+    # center of sun disk
+    center = solarposition.rise_set_transit_ephem(times,
+                                                  latitude=golden.latitude,
+                                                  longitude=golden.longitude)
+    edge = solarposition.rise_set_transit_ephem(times,
+                                                latitude=golden.latitude,
+                                                longitude=golden.longitude,
+                                                horizon='-0:34')
+    result_rounded = (edge['sunrise'] - center['sunrise']).dt.round('min')
+
+    sunrise_delta = datetime.datetime(2016, 1, 3, 7, 17, 11) - \
+        datetime.datetime(2016, 1, 3, 7, 21, 33)
+    expected = pd.Series(index=times,
+                         data=sunrise_delta,
+                         name='sunrise').dt.round('min')
+    assert_series_equal(expected, result_rounded)
+
+
+@requires_ephem
+def test_pyephem_physical(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.pyephem(times, golden_mst.latitude,
@@ -190,8 +382,9 @@ def test_pyephem_physical(expected_solpos):
     assert_frame_equal(expected_solpos.round(2),
                        ephem_data[expected_solpos.columns].round(2))
 
+
 @requires_ephem
-def test_pyephem_physical_dst(expected_solpos):
+def test_pyephem_physical_dst(expected_solpos, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1,
                           freq='D', tz=golden.tz)
     ephem_data = solarposition.pyephem(times, golden.latitude,
@@ -200,6 +393,7 @@ def test_pyephem_physical_dst(expected_solpos):
     expected_solpos.index = times
     assert_frame_equal(expected_solpos.round(2),
                        ephem_data[expected_solpos.columns].round(2))
+
 
 @requires_ephem
 def test_calc_time():
@@ -227,6 +421,7 @@ def test_calc_time():
     assert_allclose((az.replace(second=0, microsecond=0) -
                           epoch_dt).total_seconds(), actual_timestamp)
 
+
 @requires_ephem
 def test_earthsun_distance():
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
@@ -235,7 +430,7 @@ def test_earthsun_distance():
     assert_allclose(1, distance, atol=0.1)
 
 
-def test_ephemeris_physical(expected_solpos):
+def test_ephemeris_physical(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.ephemeris(times, golden_mst.latitude,
@@ -248,7 +443,7 @@ def test_ephemeris_physical(expected_solpos):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_ephemeris_physical_dst(expected_solpos):
+def test_ephemeris_physical_dst(expected_solpos, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.ephemeris(times, golden.latitude,
@@ -260,7 +455,7 @@ def test_ephemeris_physical_dst(expected_solpos):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_ephemeris_physical_no_tz(expected_solpos):
+def test_ephemeris_physical_no_tz(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,19,30,30),
                           periods=1, freq='D')
     ephem_data = solarposition.ephemeris(times, golden_mst.latitude,
@@ -273,7 +468,7 @@ def test_ephemeris_physical_no_tz(expected_solpos):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_get_solarposition_error():
+def test_get_solarposition_error(golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     with pytest.raises(ValueError):
@@ -294,7 +489,7 @@ def test_get_solarposition_error():
                  'equation_of_time', 'zenith'],
         index=expected_solpos().index))
     ])
-def test_get_solarposition_pressure(pressure, expected):
+def test_get_solarposition_pressure(pressure, expected, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
@@ -309,16 +504,16 @@ def test_get_solarposition_pressure(pressure, expected):
 
 
 @pytest.mark.parametrize(
-    "altitude, expected", [
-    (golden.altitude, expected_solpos()),
+    "altitude, expected",
+    [(golden().altitude, expected_solpos()),
     (2000, pd.DataFrame(
         np.array([[  39.88788,   50.11212,  194.34024,   39.87205,   14.64151,
                      50.12795]]),
-        columns=['apparent_elevation', 'apparent_zenith', 'azimuth', 'elevation',
-                 'equation_of_time', 'zenith'],
+        columns=['apparent_elevation', 'apparent_zenith', 'azimuth',
+                 'elevation', 'equation_of_time', 'zenith'],
         index=expected_solpos().index))
     ])
-def test_get_solarposition_altitude(altitude, expected):
+def test_get_solarposition_altitude(altitude, expected, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
@@ -334,13 +529,15 @@ def test_get_solarposition_altitude(altitude, expected):
 
 @pytest.mark.parametrize(
     "delta_t, method, expected", [
-    (None, 'nrel_numpy', expected_solpos_multi()),
-    (67.0, 'nrel_numpy', expected_solpos_multi()),
-    pytest.mark.xfail(raises=ValueError, reason = 'spa.calculate_deltat not implemented for numba yet')
-    ((None, 'nrel_numba', expected_solpos_multi())),
-    (67.0, 'nrel_numba', expected_solpos_multi())
+        (None, 'nrel_numpy', expected_solpos_multi()),
+        (67.0, 'nrel_numpy', expected_solpos_multi()),
+        pytest.mark.xfail(
+            raises=ValueError,
+            reason='spa.calculate_deltat not implemented for numba yet')
+        ((None, 'nrel_numba', expected_solpos_multi())),
+        (67.0, 'nrel_numba', expected_solpos_multi())
     ])
-def test_get_solarposition_deltat(delta_t, method, expected):
+def test_get_solarposition_deltat(delta_t, method, expected, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=2, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
@@ -356,7 +553,7 @@ def test_get_solarposition_deltat(delta_t, method, expected):
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
 
-def test_get_solarposition_no_kwargs(expected_solpos):
+def test_get_solarposition_no_kwargs(expected_solpos, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
@@ -368,7 +565,7 @@ def test_get_solarposition_no_kwargs(expected_solpos):
 
 
 @requires_ephem
-def test_get_solarposition_method_pyephem(expected_solpos):
+def test_get_solarposition_method_pyephem(expected_solpos, golden):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
@@ -495,7 +692,77 @@ def test_analytical_azimuth():
                     [ -30., -180.,    5.],
                     [ -30.,  180.,   10.]]))
 
-    zeniths  = solarposition.solar_zenith_analytical(*test_angles.T)
-    azimuths = solarposition.solar_azimuth_analytical(*test_angles.T, zenith=zeniths)
+    zeniths = solarposition.solar_zenith_analytical(*test_angles.T)
+    azimuths = solarposition.solar_azimuth_analytical(*test_angles.T,
+                                                      zenith=zeniths)
 
     assert not np.isnan(azimuths).any()
+
+
+def test_hour_angle():
+    """
+    Test conversion from hours to hour angles in degrees given the following
+    inputs from NREL SPA calculator at Golden, CO
+    date,times,eot,sunrise,sunset
+    1/2/2015,7:21:55,-3.935172,-70.699400,70.512721
+    1/2/2015,16:47:43,-4.117227,-70.699400,70.512721
+    1/2/2015,12:04:45,-4.026295,-70.699400,70.512721
+    """
+    longitude = -105.1786  # degrees
+    times = pd.DatetimeIndex([
+        '2015-01-02 07:21:55.2132',
+        '2015-01-02 16:47:42.9828',
+        '2015-01-02 12:04:44.6340'
+    ]).tz_localize('Etc/GMT+7')
+    eot = np.array([-3.935172, -4.117227, -4.026295])
+    hours = solarposition.hour_angle(times, longitude, eot)
+    expected = (-70.682338, 70.72118825000001, 0.000801250)
+    # FIXME: there are differences from expected NREL SPA calculator values
+    # sunrise: 4 seconds, sunset: 48 seconds, transit: 0.2 seconds
+    # but the differences may be due to other SPA input parameters
+    assert np.allclose(hours, expected)
+
+
+def test_sunrise_sunset_transit_geometric(expected_rise_set_spa, golden_mst):
+    """Test geometric calculations for sunrise, sunset, and transit times"""
+    times = expected_rise_set_spa.index
+    latitude = golden_mst.latitude
+    longitude = golden_mst.longitude
+    eot = solarposition.equation_of_time_spencer71(times.dayofyear)  # minutes
+    decl = solarposition.declination_spencer71(times.dayofyear)  # radians
+    sr, ss, st = solarposition.sunrise_sunset_transit_geometric(
+        times, latitude=latitude, longitude=longitude, declination=decl,
+        equation_of_time=eot)
+    # sunrise: 2015-01-02 07:26:39.763224487, 2015-08-02 05:04:35.688533801
+    # sunset:  2015-01-02 16:41:29.951096777, 2015-08-02 19:09:46.597355085
+    # transit: 2015-01-02 12:04:04.857160632, 2015-08-02 12:07:11.142944443
+    test_sunrise = solarposition._times_to_hours_after_local_midnight(sr)
+    test_sunset = solarposition._times_to_hours_after_local_midnight(ss)
+    test_transit = solarposition._times_to_hours_after_local_midnight(st)
+    # convert expected SPA sunrise, sunset, transit to local datetime indices
+    expected_sunrise = pd.DatetimeIndex(expected_rise_set_spa.sunrise.values,
+                                        tz='UTC').tz_convert(golden_mst.tz)
+    expected_sunset = pd.DatetimeIndex(expected_rise_set_spa.sunset.values,
+                                       tz='UTC').tz_convert(golden_mst.tz)
+    expected_transit = pd.DatetimeIndex(expected_rise_set_spa.transit.values,
+                                        tz='UTC').tz_convert(golden_mst.tz)
+    # convert expected times to hours since midnight as arrays of floats
+    expected_sunrise = solarposition._times_to_hours_after_local_midnight(
+        expected_sunrise)
+    expected_sunset = solarposition._times_to_hours_after_local_midnight(
+        expected_sunset)
+    expected_transit = solarposition._times_to_hours_after_local_midnight(
+        expected_transit)
+    # geometric time has about 4-6 minute error compared to SPA sunset/sunrise
+    expected_sunrise_error = np.array(
+        [0.07910089555555544, 0.06908014805555496])  # 4.8[min], 4.2[min]
+    expected_sunset_error = np.array(
+        [-0.1036246955555562, -0.06983406805555603])  # -6.2[min], -4.2[min]
+    expected_transit_error = np.array(
+        [-0.011150788888889096, 0.0036508177777765383])  # -40[sec], 13.3[sec]
+    assert np.allclose(test_sunrise, expected_sunrise,
+                       atol=np.abs(expected_sunrise_error).max())
+    assert np.allclose(test_sunset, expected_sunset,
+                       atol=np.abs(expected_sunset_error).max())
+    assert np.allclose(test_transit, expected_transit,
+                       atol=np.abs(expected_transit_error).max())

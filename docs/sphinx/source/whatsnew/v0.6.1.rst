@@ -24,11 +24,11 @@ Enhancements
 ~~~~~~~~~~~~
 * :func:`~pvlib.solarposition.rise_set_transit_ephem` returns sunrise, sunset
   and transit times using pyephem (:issue:`114`)
+* Add geometric functions for sunrise, sunset, and sun transit times,
+  :func:`~pvlib.solarposition.sunrise_sunset_transit_geometric` (:issue:`114`)
 * Created :py:func:`pvlib.iotools.read_srml` and
   :py:func:`pvlib.iotools.read_srml_month_from_solardat` to read University of
   Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
-* Add geometric functions for sunrise, sunset, and sun transit times,
-  :func:`~pvlib.solarposition.sunrise_sunset_transit_geometric` (:issue:`114`)
 
 
 Bug fixes

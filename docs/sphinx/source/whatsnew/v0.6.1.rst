@@ -18,6 +18,7 @@ API Changes
   and :py:func:`pvlib.iotools.read_tmy3` instead. (:issue:`261`)
 * Added keyword argument ``horizon`` to :func:`~pvlib.solarposition.pyephem`
   and :func:`~pvlib.solarposition.calc_time` with default value ``'+0:00'``
+* Changed key names for `components` returned from :py:func:`pvlib.clearsky.detect_clearsky`
 
 
 Enhancements
@@ -35,6 +36,7 @@ Bug fixes
 ~~~~~~~~~
 * Fix when building documentation using Matplotlib 3.0 or greater.
 * Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
+* Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
 
 
 Testing
@@ -45,6 +47,7 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
-* Cliff Hansen (:ghuser:`cwhanse`)
 * Leland Boeman (:ghuser:`lboeman`)
+* Ben Ellis (:ghuser:`bhellis725`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)

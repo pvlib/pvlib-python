@@ -1177,7 +1177,7 @@ def declination_cooper69(dayofyear):
     return dec
 
 
-def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
+def solar_azimuth_analytical(latitude, hourangle, declination, zenith):
     """
     Analytical expression of solar azimuth angle based on spherical
     trigonometry.
@@ -1186,7 +1186,7 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
     ----------
     latitude : numeric
         Latitude of location in radians.
-    hour_angle : numeric
+    hourangle : numeric
         Hour angle in the local solar time in radians.
     declination : numeric
         Declination of the sun in radians.
@@ -1242,12 +1242,12 @@ def solar_azimuth_analytical(latitude, hour_angle, declination, zenith):
 
     # when NaN values occur in input, ignore and pass to output
     with np.errstate(invalid='ignore'):
-        sign_ha = np.sign(hour_angle)
+        sign_ha = np.sign(hourangle)
 
-    return (sign_ha * np.arccos(cos_azi) + np.pi)
+    return sign_ha * np.arccos(cos_azi) + np.pi
 
 
-def solar_zenith_analytical(latitude, hour_angle, declination):
+def solar_zenith_analytical(latitude, hourangle, declination):
     """
     Analytical expression of solar zenith angle based on spherical
     trigonometry.
@@ -1259,7 +1259,7 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     ----------
     latitude : numeric
         Latitude of location in radians.
-    hour_angle : numeric
+    hourangle : numeric
         Hour angle in the local solar time in radians.
     declination : numeric
         Declination of the sun in radians.
@@ -1290,7 +1290,7 @@ def solar_zenith_analytical(latitude, hour_angle, declination):
     declination_spencer71 declination_cooper69 hour_angle
     """
     return np.arccos(
-        np.cos(declination) * np.cos(latitude) * np.cos(hour_angle) +
+        np.cos(declination) * np.cos(latitude) * np.cos(hourangle) +
         np.sin(declination) * np.sin(latitude)
     )
 
@@ -1302,7 +1302,8 @@ def hour_angle(times, longitude, equation_of_time):
     Parameters
     ----------
     times : :class:`pandas.DatetimeIndex`
-        Corresponding timestamps, must be timezone aware.
+        Corresponding timestamps, must be localized to the timezone for the
+        ``longitude``.
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric
@@ -1360,7 +1361,7 @@ def _local_times_from_hours_since_midnight(times, hours):
         tz=tz_info)
 
 
-def _times_to_hours(times):
+def _times_to_hours_after_local_midnight(times):
     """convert local pandas datetime indices to array of hours as floats"""
     times = times.tz_localize(None)
     hrs = 1 / NS_PER_HR * (
@@ -1381,7 +1382,8 @@ def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
     Parameters
     ----------
     times : pandas.DatetimeIndex
-        Corresponding timestamps, must be timezone aware.
+        Corresponding timestamps, must be localized to the timezone for the
+        ``latitude`` and ``longitude``.
     latitude : float
         Latitude in degrees, positive north of equator, negative to south
     longitude : float

@@ -736,9 +736,9 @@ def test_geometric_sunrise_sunset_transit(expected_rise_set_spa, golden_mst):
     # sunrise: 2015-01-02 07:26:39.763224487, 2015-08-02 05:04:35.688533801
     # sunset:  2015-01-02 16:41:29.951096777, 2015-08-02 19:09:46.597355085
     # transit: 2015-01-02 12:04:04.857160632, 2015-08-02 12:07:11.142944443
-    test_sunrise = solarposition._times_to_hours(sr)
-    test_sunset = solarposition._times_to_hours(ss)
-    test_transit = solarposition._times_to_hours(st)
+    test_sunrise = solarposition._times_to_hours_after_local_midnight(sr)
+    test_sunset = solarposition._times_to_hours_after_local_midnight(ss)
+    test_transit = solarposition._times_to_hours_after_local_midnight(st)
     # convert expected SPA sunrise, sunset, transit to local datetime indices
     expected_sunrise = pd.DatetimeIndex(expected_rise_set_spa.sunrise.values,
                                         tz='UTC').tz_convert(golden_mst.tz)
@@ -747,9 +747,12 @@ def test_geometric_sunrise_sunset_transit(expected_rise_set_spa, golden_mst):
     expected_transit = pd.DatetimeIndex(expected_rise_set_spa.transit.values,
                                         tz='UTC').tz_convert(golden_mst.tz)
     # convert expected times to hours since midnight as arrays of floats
-    expected_sunrise = solarposition._times_to_hours(expected_sunrise)
-    expected_sunset = solarposition._times_to_hours(expected_sunset)
-    expected_transit = solarposition._times_to_hours(expected_transit)
+    expected_sunrise = solarposition._times_to_hours_after_local_midnight(
+        expected_sunrise)
+    expected_sunset = solarposition._times_to_hours_after_local_midnight(
+        expected_sunset)
+    expected_transit = solarposition._times_to_hours_after_local_midnight(
+        expected_transit)
     # geometric time has about 4-6 minute error compared to SPA sunset/sunrise
     expected_sunrise_error = np.array(
         [0.07910089555555544, 0.06908014805555496])  # 4.8[min], 4.2[min]

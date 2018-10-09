@@ -16,6 +16,7 @@ API Changes
 * Deprecated ``tmy``, ``tmy.readtmy2`` and ``tmy.readtmy3``;
   they will be removed in v0.7. Use the new :py:func:`pvlib.iotools.read_tmy2`
   and :py:func:`pvlib.iotools.read_tmy3` instead. (:issue:`261`)
+* Changed key names for `components` returned from :py:func:`pvlib.clearsky.detect_clearsky`
 
 
 Enhancements

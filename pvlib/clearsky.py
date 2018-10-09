@@ -764,7 +764,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
         components['line_length'] = meas_line_length - clear_line_length
         components['slope_nstd'] = meas_slope_nstd
         components['slope_max'] = (np.max(
-          meas_slope - alpha * clear_slope, axis=0))
+            meas_slope - alpha * clear_slope, axis=0))
 
         return clear_samples, components, alpha
     else:

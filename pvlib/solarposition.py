@@ -437,8 +437,8 @@ def rise_set_transit_spa(times, latitude, longitude, how='numpy',
         times.tz).tolist()
 
     return pd.DataFrame(index=times, data={'sunrise': sunrise,
-                                          'sunset': sunset,
-                                          'transit': transit})
+                                           'sunset': sunset,
+                                           'transit': transit})
 
 
 def _ephem_convert_to_seconds_and_microseconds(date):

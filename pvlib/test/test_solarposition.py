@@ -197,8 +197,8 @@ def test_rise_set_transit_spa(expected_rise_set_spa, golden):
                                datetime.datetime(2004, 12, 4, 19, 2, 3)]
                               ).tz_localize('UTC').tolist()
     transit = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 12, 4, 36),
-                               datetime.datetime(2004, 12, 4, 11, 50, 22)]
-                              ).tz_localize('UTC').tolist()
+                                datetime.datetime(2004, 12, 4, 11, 50, 22)]
+                               ).tz_localize('UTC').tolist()
     frame = pd.DataFrame({'sunrise': sunrise,
                           'sunset': sunset,
                           'transit': transit}, index=times)

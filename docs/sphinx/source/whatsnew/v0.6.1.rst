@@ -21,6 +21,7 @@ API Changes
 * Added keyword argument ``horizon`` to :func:`~pvlib.solarposition.pyephem`
   and :func:`~pvlib.solarposition.calc_time` with default value ``'+0:00'``
 * Changed key names for `components` returned from :py:func:`pvlib.clearsky.detect_clearsky`
+* Changed function name from :py:func:`pvlib.solarposition.get_rise_set_transit` (deprecated) to :py:func:`pvlib.solarposition.rise_set_transit_spa. `rise_set_transit_spa` requires time input to be localized to the specified latitude/longitude. (:issue:`316')
 
 
 Enhancements

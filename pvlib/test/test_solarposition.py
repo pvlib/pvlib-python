@@ -184,7 +184,8 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
 
 
 @needs_pandas_0_17
-def test_get_sun_rise_set_transit(expected_rise_set_spa, golden):
+def test_rise_set_transit_spa(expected_rise_set_spa, golden):
+    # solution from NREL SAP web calculator
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
                               datetime.datetime(2004, 12, 4, 0)]
@@ -195,22 +196,26 @@ def test_get_sun_rise_set_transit(expected_rise_set_spa, golden):
     sunset = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 17, 1, 4),
                                datetime.datetime(2004, 12, 4, 19, 2, 3)]
                               ).tz_localize('UTC').tolist()
-    frame = pd.DataFrame({'sunrise': sunrise, 'sunset': sunset}, index=times)
+    transit = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 12, 4, 36),
+                               datetime.datetime(2004, 12, 4, 11, 50, 22)]
+                              ).tz_localize('UTC').tolist()
+    frame = pd.DataFrame({'sunrise': sunrise,
+                          'sunset': sunset,
+                          'transit': transit}, index=times)
 
-    result = solarposition.get_sun_rise_set_transit(times, south.latitude,
-                                                    south.longitude,
-                                                    delta_t=65.0)
+    result = solarposition.rise_set_transit_spa(times, south.latitude,
+                                                south.longitude,
+                                                delta_t=65.0)
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
     for col, data in result.iteritems():
         result_rounded[col] = data.dt.round('1s')
 
-    del result_rounded['transit']
     assert_frame_equal(frame, result_rounded)
 
     # test for Golden, CO compare to NREL SPA
-    result = solarposition.get_sun_rise_set_transit(
+    result = solarposition.rise_set_transit_spa(
         expected_rise_set_spa.index, golden.latitude, golden.longitude,
         delta_t=65.0)
 

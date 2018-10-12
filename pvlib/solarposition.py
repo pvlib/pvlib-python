@@ -24,6 +24,8 @@ import pandas as pd
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
+from pvlib._deprecation import deprecated
+
 
 NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
 
@@ -359,9 +361,13 @@ def spa_python(time, latitude, longitude,
     return result
 
 
-def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
-                             delta_t=67.0,
-                             numthreads=4):
+get_sun_rise_set_transit = deprecated('0.6',
+                                      alternative='rise_set_transit_spa',
+                                      removal='0.7')
+
+
+def rise_set_transit_spa(times, latitude, longitude, how='numpy',
+                         delta_t=67.0, numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
     NREL SPA algorithm described in [1].
@@ -373,13 +379,15 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
 
     Parameters
     ----------
-    time : pandas.DatetimeIndex
-        Only the date part is used
+    times : pandas.DatetimeIndex
+        Must be localized to the timezone for ``latitude`` and ``longitude``.
     latitude : float
+        Latitude in degrees, positive north of equator, negative to south
     longitude : float
+        Longitude in degrees, positive east of prime meridian, negative to west
     delta_t : float, optional
         If delta_t is None, uses spa.calculate_deltat
-        using time.year and time.month from pandas.DatetimeIndex.
+        using times.year and times.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
         *Note: delta_t = None will break code using nrel_numba,
@@ -394,9 +402,9 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
 
     Returns
     -------
-    DataFrame
-        The DataFrame will have the following columns:
-        sunrise, sunset, transit
+    pandas.DataFrame
+        index is the same as input `times` argument
+        columns are 'sunrise', 'sunset', and 'transit'
 
     References
     ----------
@@ -409,36 +417,28 @@ def get_sun_rise_set_transit(time, latitude, longitude, how='numpy',
     lat = latitude
     lon = longitude
 
-    if not isinstance(time, pd.DatetimeIndex):
-        try:
-            time = pd.DatetimeIndex(time)
-        except (TypeError, ValueError):
-            time = pd.DatetimeIndex([time, ])
-
     # must convert to midnight UTC on day of interest
-    utcday = pd.DatetimeIndex(time.date).tz_localize('UTC')
+    utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
     unixtime = np.array(utcday.astype(np.int64)/10**9)
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
+    delta_t = delta_t or spa.calculate_deltat(times.year, times.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
         unixtime, lat, lon, delta_t, numthreads)
 
     # arrays are in seconds since epoch format, need to conver to timestamps
     transit = pd.to_datetime(transit*1e9, unit='ns', utc=True).tz_convert(
-        time.tz).tolist()
+        times.tz).tolist()
     sunrise = pd.to_datetime(sunrise*1e9, unit='ns', utc=True).tz_convert(
-        time.tz).tolist()
+        times.tz).tolist()
     sunset = pd.to_datetime(sunset*1e9, unit='ns', utc=True).tz_convert(
-        time.tz).tolist()
+        times.tz).tolist()
 
-    result = pd.DataFrame({'transit': transit,
-                           'sunrise': sunrise,
-                           'sunset': sunset}, index=time)
-
-    return result
+    return pd.DataFrame(index=times, data={'sunrise': sunrise,
+                                          'sunset': sunset,
+                                          'transit': transit})
 
 
 def _ephem_convert_to_seconds_and_microseconds(date):
@@ -488,9 +488,9 @@ def rise_set_transit_ephem(time, latitude, longitude,
     time : pandas.DatetimeIndex
         Must be localized
     latitude : float
-        positive is north of 0
+        Latitude in degrees, positive north of equator, negative to south
     longitude : float
-        positive is east of 0
+        Longitude in degrees, positive east of prime meridian, negative to west
     next_or_previous : str
         'next' or 'previous' sunrise and sunset relative to time
     altitude : float, default 0

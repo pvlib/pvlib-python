@@ -421,7 +421,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         raise ValueError('sun_rise_set_ephem: times must be localized')
 
     # must convert to midnight UTC on day of interest
-    utcday = pd.DatetimeIndex(times.date).tz_convert('UTC')
+    utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
     unixtime = np.array(utcday.astype(np.int64)/10**9)
 
     spa = _spa_python_import(how)
@@ -479,7 +479,7 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
     return obs, sun
 
 
-def sun_rise_set_transit_ephem(time, latitude, longitude,
+def sun_rise_set_transit_ephem(times, latitude, longitude,
                                next_or_previous='next',
                                altitude=0,
                                pressure=101325,
@@ -527,7 +527,7 @@ def sun_rise_set_transit_ephem(time, latitude, longitude,
         raise ImportError('PyEphem must be installed')
 
     # times must be localized
-    if not time.tz:
+    if not times.tz:
         raise ValueError('sun_rise_set_ephem: times must be localized')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
@@ -548,18 +548,18 @@ def sun_rise_set_transit_ephem(time, latitude, longitude,
     sunrise = []
     sunset = []
     trans = []
-    for thetime in time:
+    for thetime in times:
         thetime = thetime.to_pydatetime()
         # pyephem drops timezone when converting to its internal datetime
         # format, so handle timezone explicitly here
         obs.date = ephem.Date(thetime - thetime.utcoffset())
-        sunrise.append(_ephem_to_timezone(rising(sun), time.tz))
-        sunset.append(_ephem_to_timezone(setting(sun), time.tz))
-        trans.append(_ephem_to_timezone(transit(sun), time.tz))
+        sunrise.append(_ephem_to_timezone(rising(sun), times.tz))
+        sunset.append(_ephem_to_timezone(setting(sun), times.tz))
+        trans.append(_ephem_to_timezone(transit(sun), times.tz))
 
-    return pd.DataFrame(index=time, data={'sunrise': sunrise,
-                                          'sunset': sunset,
-                                          'transit': trans})
+    return pd.DataFrame(index=times, data={'sunrise': sunrise,
+                                           'sunset': sunset,
+                                           'transit': trans})
 
 
 def pyephem(time, latitude, longitude, altitude=0, pressure=101325,

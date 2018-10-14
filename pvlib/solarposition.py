@@ -42,7 +42,6 @@ def get_solarposition(time, latitude, longitude,
     time : pandas.DatetimeIndex
 
     latitude : float
-
     longitude : float
 
     altitude : None or float, default None
@@ -362,12 +361,12 @@ def spa_python(time, latitude, longitude,
 
 
 get_sun_rise_set_transit = deprecated('0.6',
-                                      alternative='rise_set_transit_spa',
+                                      alternative='sun_rise_set_transit_spa',
                                       removal='0.7')
 
 
-def rise_set_transit_spa(times, latitude, longitude, how='numpy',
-                         delta_t=67.0, numthreads=4):
+def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
+                             delta_t=67.0, numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
     NREL SPA algorithm described in [1].
@@ -417,8 +416,12 @@ def rise_set_transit_spa(times, latitude, longitude, how='numpy',
     lat = latitude
     lon = longitude
 
+    # times must be localized
+    if not times.tz:
+        raise ValueError('sun_rise_set_ephem: times must be localized')
+
     # must convert to midnight UTC on day of interest
-    utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
+    utcday = pd.DatetimeIndex(times.date).tz_convert('UTC')
     unixtime = np.array(utcday.astype(np.int64)/10**9)
 
     spa = _spa_python_import(how)
@@ -476,10 +479,11 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
     return obs, sun
 
 
-def rise_set_transit_ephem(time, latitude, longitude,
-                           next_or_previous='next',
-                           altitude=0,
-                           pressure=101325, temperature=12, horizon='0:00'):
+def sun_rise_set_transit_ephem(time, latitude, longitude,
+                               next_or_previous='next',
+                               altitude=0,
+                               pressure=101325,
+                               temperature=12, horizon='0:00'):
     """
     Calculate the next sunrise and sunset times using the PyEphem package.
 
@@ -524,7 +528,7 @@ def rise_set_transit_ephem(time, latitude, longitude,
 
     # times must be localized
     if not time.tz:
-        raise ValueError('rise_set_ephem: times must be localized')
+        raise ValueError('sun_rise_set_ephem: times must be localized')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)
@@ -1371,8 +1375,8 @@ def _times_to_hours_after_local_midnight(times):
     return np.array(hrs)
 
 
-def sunrise_sunset_transit_geometric(times, latitude, longitude, declination,
-                                     equation_of_time):
+def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
+                                   equation_of_time):
     """
     Geometric calculation of solar sunrise, sunset, and transit.
 

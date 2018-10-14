@@ -184,7 +184,7 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
 
 
 @needs_pandas_0_17
-def test_rise_set_transit_spa(expected_rise_set_spa, golden):
+def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden):
     # solution from NREL SAP web calculator
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
@@ -203,9 +203,9 @@ def test_rise_set_transit_spa(expected_rise_set_spa, golden):
                           'sunset': sunset,
                           'transit': transit}, index=times)
 
-    result = solarposition.rise_set_transit_spa(times, south.latitude,
-                                                south.longitude,
-                                                delta_t=65.0)
+    result = solarposition.sun_rise_set_transit_spa(times, south.latitude,
+                                                    south.longitude,
+                                                    delta_t=65.0)
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
@@ -215,7 +215,7 @@ def test_rise_set_transit_spa(expected_rise_set_spa, golden):
     assert_frame_equal(frame, result_rounded)
 
     # test for Golden, CO compare to NREL SPA
-    result = solarposition.rise_set_transit_spa(
+    result = solarposition.sun_rise_set_transit_spa(
         expected_rise_set_spa.index, golden.latitude, golden.longitude,
         delta_t=65.0)
 
@@ -229,9 +229,9 @@ def test_rise_set_transit_spa(expected_rise_set_spa, golden):
 
 
 @requires_ephem
-def test_rise_set_transit_ephem(expected_rise_set_ephem, golden):
+def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     # test for Golden, CO compare to USNO, using local midnight
-    result = solarposition.rise_set_transit_ephem(
+    result = solarposition.sun_rise_set_transit_ephem(
         expected_rise_set_ephem.index, golden.latitude, golden.longitude,
         next_or_previous='next', altitude=golden.altitude, pressure=0,
         temperature=11, horizon='-0:34')
@@ -266,14 +266,14 @@ def test_rise_set_transit_ephem(expected_rise_set_ephem, golden):
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit'],
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
 
-    result = solarposition.rise_set_transit_ephem(times,
-                                                  golden.latitude,
-                                                  golden.longitude,
-                                                  next_or_previous='next',
-                                                  altitude=golden.altitude,
-                                                  pressure=0,
-                                                  temperature=11,
-                                                  horizon='-0:34')
+    result = solarposition.sun_rise_set_transit_ephem(times,
+                                                      golden.latitude,
+                                                      golden.longitude,
+                                                      next_or_previous='next',
+                                                      altitude=golden.altitude,
+                                                      pressure=0,
+                                                      temperature=11,
+                                                      horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
@@ -305,14 +305,9 @@ def test_rise_set_transit_ephem(expected_rise_set_ephem, golden):
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
         expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
 
-    result = solarposition.rise_set_transit_ephem(times,
-                                                  golden.latitude,
-                                                  golden.longitude,
-                                                  next_or_previous='previous',
-                                                  altitude=golden.altitude,
-                                                  pressure=0,
-                                                  temperature=11,
-                                                  horizon='-0:34')
+    result = solarposition.sun_rise_set_transit_ephem(times,
+        golden.latitude, golden.longitude, next_or_previous='previous',
+        altitude=golden.altitude, pressure=0, temperature=11, horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
@@ -324,14 +319,9 @@ def test_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     expected = expected.tz_convert('UTC')  # resuse result from previous
     for col, data in expected.iteritems():
         expected[col] = data.dt.tz_convert('UTC')
-    result = solarposition.rise_set_transit_ephem(times,
-                                                  golden.latitude,
-                                                  golden.longitude,
-                                                  next_or_previous='previous',
-                                                  altitude=golden.altitude,
-                                                  pressure=0,
-                                                  temperature=11,
-                                                  horizon='-0:34')
+    result = solarposition.sun_rise_set_transit_ephem(times,
+        golden.latitude, golden.longitude, next_or_previous='previous',
+        altitude=golden.altitude, pressure=0, temperature=11, horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
@@ -340,32 +330,29 @@ def test_rise_set_transit_ephem(expected_rise_set_ephem, golden):
 
 
 @requires_ephem
-def test_rise_set_transit_ephem_error(expected_rise_set_ephem, golden):
+def test_sun_rise_set_transit_ephem_error(expected_rise_set_ephem, golden):
     with pytest.raises(ValueError):
-        solarposition.rise_set_transit_ephem(expected_rise_set_ephem.index,
-                                             golden.latitude,
-                                             golden.longitude,
-                                             next_or_previous='other')
+        solarposition.sun_rise_set_transit_ephem(expected_rise_set_ephem.index,
+                                                 golden.latitude,
+                                                 golden.longitude,
+                                                 next_or_previous='other')
     tz_naive = pd.DatetimeIndex([datetime.datetime(2015, 1, 2, 3, 0, 0)])
     with pytest.raises(ValueError):
-        solarposition.rise_set_transit_ephem(tz_naive,
-                                             golden.latitude,
-                                             golden.longitude,
-                                             next_or_previous='next')
+        solarposition.sun_rise_set_transit_ephem(tz_naive,
+                                                 golden.latitude,
+                                                 golden.longitude,
+                                                 next_or_previous='next')
 
 
 @requires_ephem
-def test_rise_set_transit_ephem_horizon(golden):
+def test_sun_rise_set_transit_ephem_horizon(golden):
     times = pd.DatetimeIndex([datetime.datetime(2016, 1, 3, 0, 0, 0)
                               ]).tz_localize('MST')
     # center of sun disk
-    center = solarposition.rise_set_transit_ephem(times,
-                                                  latitude=golden.latitude,
-                                                  longitude=golden.longitude)
-    edge = solarposition.rise_set_transit_ephem(times,
-                                                latitude=golden.latitude,
-                                                longitude=golden.longitude,
-                                                horizon='-0:34')
+    center = solarposition.sun_rise_set_transit_ephem(times,
+        latitude=golden.latitude, longitude=golden.longitude)
+    edge = solarposition.sun_rise_set_transit_ephem(times,
+        latitude=golden.latitude, longitude=golden.longitude, horizon='-0:34')
     result_rounded = (edge['sunrise'] - center['sunrise']).dt.round('min')
 
     sunrise_delta = datetime.datetime(2016, 1, 3, 7, 17, 11) - \
@@ -728,14 +715,14 @@ def test_hour_angle():
     assert np.allclose(hours, expected)
 
 
-def test_sunrise_sunset_transit_geometric(expected_rise_set_spa, golden_mst):
+def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
     """Test geometric calculations for sunrise, sunset, and transit times"""
     times = expected_rise_set_spa.index
     latitude = golden_mst.latitude
     longitude = golden_mst.longitude
     eot = solarposition.equation_of_time_spencer71(times.dayofyear)  # minutes
     decl = solarposition.declination_spencer71(times.dayofyear)  # radians
-    sr, ss, st = solarposition.sunrise_sunset_transit_geometric(
+    sr, ss, st = solarposition.sun_rise_set_transit_geometric(
         times, latitude=latitude, longitude=longitude, declination=decl,
         equation_of_time=eot)
     # sunrise: 2015-01-02 07:26:39.763224487, 2015-08-02 05:04:35.688533801

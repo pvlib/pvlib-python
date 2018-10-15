@@ -417,9 +417,9 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     lon = longitude
 
     # times must be localized
-    try:
+    if times.tz:
         tzinfo = times.tz
-    except AttributeError:
+    else:
         raise ValueError('sun_rise_set_transit_spa: times must be localized')
 
     # must convert to midnight UTC on day of interest
@@ -529,9 +529,9 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         raise ImportError('PyEphem must be installed')
 
     # times must be localized
-    try:
+    if times.tz:
         tzinfo = times.tz
-    except AttributeError:
+    else:
         raise ValueError('sun_rise_set_transit_ephem: times must be localized')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,

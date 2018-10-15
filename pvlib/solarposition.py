@@ -420,7 +420,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     if times.tz:
         tzinfo = times.tz
     else:
-        raise ValueError('sun_rise_set_transit_spa: times must be localized')
+        raise ValueError('times must be localized')
 
     # must convert to midnight UTC on day of interest
     utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
@@ -532,7 +532,7 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
     if times.tz:
         tzinfo = times.tz
     else:
-        raise ValueError('sun_rise_set_transit_ephem: times must be localized')
+        raise ValueError('times must be localized')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)

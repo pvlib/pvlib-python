@@ -59,6 +59,17 @@ Additional functions for quantities closely related to solar position.
    solarposition.rise_set_transit_spa
    spa.calculate_deltat
 
+
+Functions for calculating sunrise, sunset and transit times.
+
+.. autosummary::
+   :toctree: generated/
+
+   solarposition.sun_rise_set_transit_ephem
+   solarposition.sun_rise_set_transit_spa
+   solarposition.sun_rise_set_transit_geometric
+
+
 The spa module contains the implementation of the built-in NREL SPA
 algorithm.
 

@@ -109,8 +109,8 @@ def expected_rise_set_ephem():
 def test_deprecated_07():
     with pytest.warns(pvlibDeprecationWarning):
         solarposition.get_sun_rise_set_transit(datetime.datetime(2015, 1, 1),
-                                               golden.latitude,
-                                               golden.longitude)
+                                               39.7,
+                                               -105.2)
 
 
 # the physical tests are run at the same time as the NREL SPA test.

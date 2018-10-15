@@ -417,8 +417,10 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     lon = longitude
 
     # times must be localized
-    if not times.tz:
-        raise ValueError('sun_rise_set_ephem: times must be localized')
+    try:
+        tzinfo = times.tz
+    except AttributeError:
+        raise ValueError('sun_rise_set_transit_spa: times must be localized')
 
     # must convert to midnight UTC on day of interest
     utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
@@ -433,11 +435,11 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 
     # arrays are in seconds since epoch format, need to conver to timestamps
     transit = pd.to_datetime(transit*1e9, unit='ns', utc=True).tz_convert(
-        times.tz).tolist()
+        tzinfo).tolist()
     sunrise = pd.to_datetime(sunrise*1e9, unit='ns', utc=True).tz_convert(
-        times.tz).tolist()
+        tzinfo).tolist()
     sunset = pd.to_datetime(sunset*1e9, unit='ns', utc=True).tz_convert(
-        times.tz).tolist()
+        tzinfo).tolist()
 
     return pd.DataFrame(index=times, data={'sunrise': sunrise,
                                            'sunset': sunset,
@@ -527,8 +529,10 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         raise ImportError('PyEphem must be installed')
 
     # times must be localized
-    if not times.tz:
-        raise ValueError('sun_rise_set_ephem: times must be localized')
+    try:
+        tzinfo = times.tz
+    except AttributeError:
+        raise ValueError('sun_rise_set_transit_ephem: times must be localized')
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)
@@ -553,9 +557,9 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         # pyephem drops timezone when converting to its internal datetime
         # format, so handle timezone explicitly here
         obs.date = ephem.Date(thetime - thetime.utcoffset())
-        sunrise.append(_ephem_to_timezone(rising(sun), times.tz))
-        sunset.append(_ephem_to_timezone(setting(sun), times.tz))
-        trans.append(_ephem_to_timezone(transit(sun), times.tz))
+        sunrise.append(_ephem_to_timezone(rising(sun), tzinfo))
+        sunset.append(_ephem_to_timezone(setting(sun), tzinfo))
+        trans.append(_ephem_to_timezone(transit(sun), tzinfo))
 
     return pd.DataFrame(index=times, data={'sunrise': sunrise,
                                            'sunset': sunset,

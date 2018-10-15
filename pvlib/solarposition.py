@@ -360,7 +360,7 @@ def spa_python(time, latitude, longitude,
     return result
 
 
-get_sun_rise_set_transit = deprecated('0.6',
+get_sun_rise_set_transit = deprecated('0.6.1',
                                       alternative='sun_rise_set_transit_spa',
                                       removal='0.7')
 

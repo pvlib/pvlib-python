@@ -360,11 +360,6 @@ def spa_python(time, latitude, longitude,
     return result
 
 
-get_sun_rise_set_transit = deprecated('0.6.1',
-                                      alternative='sun_rise_set_transit_spa',
-                                      removal='0.7')
-
-
 def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
                              delta_t=67.0, numthreads=4):
     """
@@ -444,6 +439,12 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     return pd.DataFrame(index=times, data={'sunrise': sunrise,
                                            'sunset': sunset,
                                            'transit': transit})
+
+
+get_sun_rise_set_transit = deprecated('0.6.1',
+                                      alternative='sun_rise_set_transit_spa',
+                                      name='get_sun_rise_set_transit',
+                                      removal='0.7')(sun_rise_set_transit_spa)
 
 
 def _ephem_convert_to_seconds_and_microseconds(date):

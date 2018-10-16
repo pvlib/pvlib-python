@@ -21,14 +21,17 @@ API Changes
 * Added keyword argument ``horizon`` to :func:`~pvlib.solarposition.pyephem`
   and :func:`~pvlib.solarposition.calc_time` with default value ``'+0:00'``
 * Changed key names for `components` returned from :py:func:`pvlib.clearsky.detect_clearsky`
+* Changed function name from :py:func:`pvlib.solarposition.get_rise_set_transit` (deprecated)
+  to :py:func:`pvlib.solarposition.sun_rise_set_transit_spa. `sun_rise_set_transit_spa`
+  requires time input to be localized to the specified latitude/longitude. (:issue:`316')
 
 
 Enhancements
 ~~~~~~~~~~~~
-* :func:`~pvlib.solarposition.rise_set_transit_ephem` returns sunrise, sunset
+* :func:`~pvlib.solarposition.sun_rise_set_transit_ephem` returns sunrise, sunset
   and transit times using pyephem (:issue:`114`)
 * Add geometric functions for sunrise, sunset, and sun transit times,
-  :func:`~pvlib.solarposition.sunrise_sunset_transit_geometric` (:issue:`114`)
+  :func:`~pvlib.solarposition.sun_rise_set_transit_geometric` (:issue:`114`)
 * Created :py:func:`pvlib.iotools.read_srml` and
   :py:func:`pvlib.iotools.read_srml_month_from_solardat` to read University of
   Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)

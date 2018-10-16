@@ -17,10 +17,10 @@ VARIABLE_MAP = {'Global PSP [W/m^2]': 'ghi',
                 'Avg Wind Speed @ 3m [m/s]': 'wind_speed'}
 
 
-@pytest.mark.paramatrize('field_name,expected', [
+@pytest.mark.parametrize('field_name,expected', [
     ('Temperature @ 2m [deg C]', 'temp_air'),
     ('Global PSP [W/m^2]', 'ghi'),
-    ('Temperature @ 50m [deg C]', 'Temperature @ 50m [deg C]')
+    ('Temperature @ 50m [deg C]', 'Temperature @ 50m [deg C]'),
 ])
 def test_read_midc_mapper_function(field_name, expected):
     assert midc.map_midc_to_pvlib(VARIABLE_MAP, field_name) == expected

@@ -107,7 +107,7 @@ def expected_rise_set_ephem():
 
 @fail_on_pvlib_version('0.7')
 def test_deprecated_07():
-    tt = pd.DatetimeIndex(2015, 1, 1, 0, 0, 0).tz_localize('MST')
+    tt = pd.DatetimeIndex([datetime.datetime(2015, 1, 1)]).tz_localize('MST')
     with pytest.warns(pvlibDeprecationWarning):
         solarposition.get_sun_rise_set_transit(tt,
                                                39.7,

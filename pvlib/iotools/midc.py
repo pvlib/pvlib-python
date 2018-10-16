@@ -61,5 +61,5 @@ def read_midc(filename, variable_map={}):
     data = pd.read_csv(filename)
     data = format_index(data)
     mapper = partial(map_midc_to_pvlib, variable_map)
-    data = data.rename(mapper, axis='columns')
+    data = data.rename(columns=mapper)
     return data

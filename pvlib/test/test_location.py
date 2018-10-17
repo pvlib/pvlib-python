@@ -18,6 +18,7 @@ from pytz.exceptions import UnknownTimeZoneError
 import pvlib
 from pvlib.location import Location
 
+from test_solarposition import expected_solpos, golden_mst
 from test_solarposition import golden, expected_rise_set_ephem
 
 from conftest import requires_scipy
@@ -313,8 +314,7 @@ def test_Location___repr__():
     assert tus.__repr__() == expected
 
 
-def test_get_sun_rise_set_transit():
+def test_get_sun_rise_set_transit(expected_rise_set_ephem):
     result = golden.get_sun_rise_set_transit(expected_rise_set_ephem.index,
                                              method='pyephem')
     assert_frame_equal(expected_rise_set_ephem, result)
-

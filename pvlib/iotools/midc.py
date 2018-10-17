@@ -37,15 +37,18 @@ def format_index(data):
 
 
 def read_midc(filename, variable_map={}):
-    """Read in NREL MIDC[1]_ weather data.
+    """Read in NREL MIDC [1]_ weather data.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     filename: string
         Filename or url of data to read.
     variable_map: dictionary
-        Dictionary mapping MIDC field names to pvlib names.
-        example:
+        Dictionary mapping MIDC field names to pvlib names. For a full list of
+        pvlib variable names please see the `Variable Style Rules <https://pvlib-python.readthedocs.io/en/latest/variables_style_rules.html>`_.
+
+        Example::
+
             { 'Temperature @ 2m [deg C]': 'air_temp'}
 
     Returns
@@ -55,8 +58,8 @@ def read_midc(filename, variable_map={}):
 
     References
     ----------
-    [1] National Renewable Energy Laboratory: Measurement and Instrumentation Data Center # NOQA
-        https://midcdmz.nrel.gov/
+    .. [1] National Renewable Energy Laboratory: Measurement and Instrumentation Data Center # NOQA
+        `https://midcdmz.nrel.gov/ <https://midcdmz.nrel.gov/>`_
     """
     data = pd.read_csv(filename)
     data = format_index(data)

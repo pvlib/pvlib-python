@@ -314,7 +314,7 @@ def test_Location___repr__():
     assert tus.__repr__() == expected
 
 
-def test_get_sun_rise_set_transit(expected_rise_set_ephem):
+def test_get_sun_rise_set_transit(expected_rise_set_ephem, golden):
     result = golden.get_sun_rise_set_transit(expected_rise_set_ephem.index,
                                              method='pyephem')
     assert_frame_equal(expected_rise_set_ephem, result)

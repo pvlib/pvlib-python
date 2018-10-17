@@ -20,7 +20,7 @@ from pvlib.location import Location
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
 from test_solarposition import expected_solpos, golden_mst
-from test_solarposition import golden, expected_rise_set_ephem
+from test_solarposition import golden
 
 from conftest import requires_scipy
 
@@ -328,8 +328,8 @@ def test_get_sun_rise_set_transit(golden):
     declination = declination_spencer71(dayofyear)
     eot = equation_of_time_spencer71(dayofyear)
     (sr, ss, tr) = golden.get_sun_rise_set_transit(times, method='geometric',
-                                             declination=declination,
-                                             equation_of_time=eot)
+                                                   declination=declination,
+                                                   equation_of_time=eot)
     assert all(isinstance(sr, pd.DatetimeIndex),
                isinstance(ss, pd.DatetimeIndex),
                isinstance(tr, pd.DatetimeIndex))

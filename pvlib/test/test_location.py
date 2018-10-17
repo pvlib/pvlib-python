@@ -316,7 +316,7 @@ def test_Location___repr__():
 
 
 def test_get_sun_rise_set_transit(golden):
-    times = pd.DatetimeIndex(['2015-01-01:07:00:00', '2015-01-01:23:00:00'],
+    times = pd.DatetimeIndex(['2015-01-01 07:00:00', '2015-01-01 23:00:00'],
                              tz='MST')
     result = golden.get_sun_rise_set_transit(times, method='pyephem')
     assert result.columns == ['sunrise', 'sunset', 'transit']

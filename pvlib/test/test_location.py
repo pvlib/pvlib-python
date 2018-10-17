@@ -330,6 +330,6 @@ def test_get_sun_rise_set_transit(golden):
     (sr, ss, tr) = golden.get_sun_rise_set_transit(times, method='geometric',
                                                    declination=declination,
                                                    equation_of_time=eot)
-    assert all(isinstance(sr, pd.DatetimeIndex),
-               isinstance(ss, pd.DatetimeIndex),
-               isinstance(tr, pd.DatetimeIndex))
+    assert all([isinstance(sr, pd.DatetimeIndex),
+                isinstance(ss, pd.DatetimeIndex),
+                isinstance(tr, pd.DatetimeIndex)])

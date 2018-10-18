@@ -333,3 +333,10 @@ def test_get_sun_rise_set_transit(golden):
     assert all([isinstance(sr, pd.DatetimeIndex),
                 isinstance(ss, pd.DatetimeIndex),
                 isinstance(tr, pd.DatetimeIndex)])
+
+
+def test_get_sun_rise_set_transit_valueerror(golden):
+    times = pd.DatetimeIndex(['2015-01-01 07:00:00', '2015-01-01 23:00:00'],
+                             tz='MST')
+    with pytest.raises(ValueError):
+        result = golden.get_sun_rise_set_transit(times, method='eyeball')

@@ -84,18 +84,16 @@ def read_midc(filename, variable_map=VARIABLE_MAP):
     
         e.g. 'Global PSP [W/m^2]' is entered as a key of 'Global'
     
-    The 'PSP' indicating instrument are appended to the pvlib variable name
-    after mapping to differentiate measurements of the same variable. Fields
-    with multiple possible labels are mapped to <pvlib name>_# to prevent
-    collisions in the event that they appear at the same station. For a full
-    list of pvlib variable names please see the `Variable Style Rules <https://pvlib-python.readthedocs.io/en/latest/variables_style_rules.html>`_.
+    The 'PSP' indicating instrument is appended to the pvlib variable name
+    after mapping to differentiate measurements of the same variable. For a full
+    list of pvlib variable names see the `Variable Style Rules <https://pvlib-python.readthedocs.io/en/latest/variables_style_rules.html>`_.
 
     Be sure to check the units for the variables you will use on the
     `MIDC site <https://midcdmz.nrel.gov/>`_.
 
     References
     ----------
-    .. [1] National Renewable Energy Laboratory: Measurement and Instrumentation Data Center # NOQA
+    .. [1] National Renewable Energy Laboratory: Measurement and Instrumentation Data Center
         `https://midcdmz.nrel.gov/ <https://midcdmz.nrel.gov/>`_
     """
     data = pd.read_csv(filename)

@@ -469,8 +469,7 @@ class PVSystem(object):
         return sapm_aoi_loss(aoi, self.module_parameters)
 
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
-                                  airmass_absolute, aoi,
-                                  reference_irradiance=1000):
+                                  airmass_absolute, aoi):
         """
         Use the :py:func:`sapm_effective_irradiance` function, the input
         parameters, and ``self.module_parameters`` to calculate
@@ -490,9 +489,6 @@ class PVSystem(object):
         aoi : numeric
             Angle of incidence in degrees.
 
-        reference_irradiance : numeric, default 1000
-            Reference irradiance by which to divide the input irradiance.
-
         Returns
         -------
         effective_irradiance : numeric
@@ -500,7 +496,7 @@ class PVSystem(object):
         """
         return sapm_effective_irradiance(
             poa_direct, poa_diffuse, airmass_absolute, aoi,
-            self.module_parameters, reference_irradiance=reference_irradiance)
+            self.module_parameters)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 

@@ -348,7 +348,7 @@ def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
 
     test_input.append(sapm_module_params)
 
-    out = pvsystem.sapm_effective_irradiance(test_input)
+    out = pvsystem.sapm_effective_irradiance(*test_input)
 
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)

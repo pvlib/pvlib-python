@@ -36,6 +36,8 @@ Enhancements
   :py:func:`pvlib.iotools.read_srml_month_from_solardat` to read University of
   Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
 * Created :py:func:`pvlib.iotools.read_surfrad` to read NOAA SURFRAD data. (:issue:`590`)
+* Change :py:func:`pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
+
 
 Bug fixes
 ~~~~~~~~~

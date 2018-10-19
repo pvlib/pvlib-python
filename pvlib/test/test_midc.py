@@ -16,6 +16,7 @@ midc_testfile = os.path.join(test_dir, '../data/midc_20181014.txt')
     ('Temperature @ 2m [deg C]', 'temp_air_@_2m'),
     ('Global PSP [W/m^2]', 'ghi_PSP'),
     ('Temperature @ 50m [deg C]', 'temp_air_@_50m'),
+    ('Other Variable [units]', 'Other Variable [units]'),
 ])
 def test_read_midc_mapper_function(field_name, expected):
     assert midc.map_midc_to_pvlib(midc.VARIABLE_MAP, field_name) == expected

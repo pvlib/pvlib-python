@@ -331,16 +331,16 @@ def test_PVSystem_sapm_aoi_loss(sapm_module_params, mocker):
 
 
 @pytest.mark.parametrize('test_input,expected', [
-    ([1000, 100, 5, 45, 1000], 1.1400510967821877),
+    ([1000, 100, 5, 45, 1000], 1140.0510967821877),
     ([np.array([np.nan, 1000, 1000]),
       np.array([100, np.nan, 100]),
       np.array([1.1, 1.1, 1.1]),
       np.array([10, 10, 10]),
       1000],
-     np.array([np.nan, np.nan, 1.081157])),
+     np.array([np.nan, np.nan, 1081.157])),
     ([pd.Series([1000]), pd.Series([100]), pd.Series([1.1]),
       pd.Series([10]), 1370],
-     pd.Series([0.789166]))
+     pd.Series([789.166]))
 ])
 def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
 
@@ -368,14 +368,11 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
     poa_diffuse = 100
     airmass_absolute = 1.5
     aoi = 0
-    reference_irradiance = 1000
 
     out = system.sapm_effective_irradiance(
-        poa_direct, poa_diffuse, airmass_absolute,
-        aoi, reference_irradiance=reference_irradiance)
+        poa_direct, poa_diffuse, airmass_absolute, aoi)
     pvsystem.sapm_effective_irradiance.assert_called_once_with(
-        poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params,
-        reference_irradiance=reference_irradiance)
+        poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params)
     assert_allclose(out, 1, atol=0.1)
 
 

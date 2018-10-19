@@ -61,7 +61,8 @@ def format_index(data):
 
 
 def read_midc(filename, variable_map=VARIABLE_MAP):
-    """Read in NREL MIDC [1]_ weather data.
+    """Read in National Renewable Energy Laboratory Measurement and
+    Instrumentation Data Center [1]_ weather data.
 
     Parameters
     ----------
@@ -70,7 +71,7 @@ def read_midc(filename, variable_map=VARIABLE_MAP):
     variable_map: dictionary
         Dictionary for mapping MIDC field names to pvlib names. See variable
         `VARIABLE_MAP` for default and Notes section below for a description of
-        its format. 
+        its format.
 
     Returns
     -------
@@ -81,19 +82,20 @@ def read_midc(filename, variable_map=VARIABLE_MAP):
     -----
     Keys of the `variable_map` dictionary should include the first part
     of a MIDC field name which indicates the variable being measured.
-    
+
         e.g. 'Global PSP [W/m^2]' is entered as a key of 'Global'
-    
+
     The 'PSP' indicating instrument is appended to the pvlib variable name
-    after mapping to differentiate measurements of the same variable. For a full
-    list of pvlib variable names see the `Variable Style Rules <https://pvlib-python.readthedocs.io/en/latest/variables_style_rules.html>`_.
+    after mapping to differentiate measurements of the same variable. For a
+    full list of pvlib variable names see the `Variable Style Rules
+    <https://pvlib-python.readthedocs.io/en/latest/variables_style_rules.html>`_.
 
     Be sure to check the units for the variables you will use on the
     `MIDC site <https://midcdmz.nrel.gov/>`_.
 
     References
     ----------
-    .. [1] National Renewable Energy Laboratory: Measurement and Instrumentation Data Center
+    .. [1] NREL: Measurement and Instrumentation Data Center
         `https://midcdmz.nrel.gov/ <https://midcdmz.nrel.gov/>`_
     """
     data = pd.read_csv(filename)

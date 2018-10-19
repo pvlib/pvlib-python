@@ -195,10 +195,13 @@ def pvsyst_module_params():
 def test_sapm(sapm_module_params):
 
     times = pd.DatetimeIndex(start='2015-01-01', periods=5, freq='12H')
-    effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
+    effective_irradiance = pd.Series([-1000, 500, 1100, np.nan, 1000],
+                                     index=times)
     temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
+    reference_irradiance = 1000
 
-    out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
+    out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params,
+                        reference_irradiance)
 
     expected = pd.DataFrame(np.array(
       [[  -5.0608322 ,   -4.65037767,           nan,           nan,
@@ -238,7 +241,7 @@ def test_sapm(sapm_module_params):
 def test_PVSystem_sapm(sapm_module_params, mocker):
     mocker.spy(pvsystem, 'sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-    effective_irradiance = 0.5
+    effective_irradiance = 500
     temp_cell = 25
     out = system.sapm(effective_irradiance, temp_cell)
     pvsystem.sapm.assert_called_once_with(effective_irradiance, temp_cell,

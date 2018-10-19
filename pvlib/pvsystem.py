@@ -404,20 +404,11 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_direct : Series
-            The direct irradiance incident upon the module (W/m^2).
-
-        poa_diffuse : Series
-            The diffuse irradiance incident on module.
+        effective_irradiance : Series
+            The effective irradiance incident upon the module (W/m^2).
 
         temp_cell : Series
             The cell temperature (degrees C).
-
-        airmass_absolute : Series
-            Absolute airmass.
-
-        aoi : Series
-            Angle of incidence (degrees).
 
         **kwargs
             See pvsystem.sapm for details
@@ -505,7 +496,7 @@ class PVSystem(object):
         Returns
         -------
         effective_irradiance : numeric
-            The SAPM effective irradiance.
+            The SAPM effective irradiance in W/m^2.
         """
         return sapm_effective_irradiance(
             poa_direct, poa_diffuse, airmass_absolute, aoi,
@@ -1649,7 +1640,7 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(effective_irradiance, temp_cell, module):
+def sapm(effective_irradiance, temp_cell, module, reference_irradiance=1000):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
@@ -1658,7 +1649,7 @@ def sapm(effective_irradiance, temp_cell, module):
     Parameters
     ----------
     effective_irradiance : numeric
-        Effective irradiance (suns).
+        Effective irradiance (W/m^2).
 
     temp_cell : numeric
         The cell temperature (degrees C).
@@ -1666,6 +1657,9 @@ def sapm(effective_irradiance, temp_cell, module):
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the notes section for more details.
+
+    reference_irradiance : float
+        Default 1000 W/m^2.
 
     Returns
     -------
@@ -1739,7 +1733,7 @@ def sapm(effective_irradiance, temp_cell, module):
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
-    Ee = np.array(effective_irradiance, dtype='float64')
+    Ee = np.array(effective_irradiance, dtype='float64') / reference_irradiance
 
     # set up masking for 0, positive, and nan inputs
     Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
@@ -1986,7 +1980,7 @@ def sapm_aoi_loss(aoi, module, upper=None):
 
 
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
-                              module, reference_irradiance=1000):
+                              module):
     """
     Calculates the SAPM effective irradiance using the SAPM spectral
     loss and SAPM angle of incidence loss functions.
@@ -2010,21 +2004,16 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
         parameters. See the :py:func:`sapm` notes section for more
         details.
 
-    reference_irradiance : numeric, default 1000
-        Reference irradiance by which to divide the input irradiance.
-
     Returns
     -------
     effective_irradiance : numeric
-        The SAPM effective irradiance.
+        The SAPM effective irradiance in W/m^2.
     """
 
     F1 = sapm_spectral_loss(airmass_absolute, module)
     F2 = sapm_aoi_loss(aoi, module)
 
-    E0 = reference_irradiance
-
-    Ee = F1 * (poa_direct*F2 + module['FD']*poa_diffuse) / E0
+    Ee = F1 * (poa_direct*F2 + module['FD']*poa_diffuse)
 
     return Ee
 

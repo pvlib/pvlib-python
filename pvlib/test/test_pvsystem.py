@@ -342,7 +342,7 @@ def test_PVSystem_sapm_aoi_loss(sapm_module_params, mocker):
      np.array([np.nan, np.nan, 1081.157])),
     ([pd.Series([1000]), pd.Series([100]), pd.Series([1.1]),
       pd.Series([10])],
-     pd.Series([789.166]))
+     pd.Series([1081.11573]))
 ])
 def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
 
@@ -353,7 +353,7 @@ def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
     else:
-        assert_allclose(out, expected, atol=1e-4)
+        assert_allclose(out, expected, atol=1e-2)
 
 
 def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
@@ -369,7 +369,7 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
         poa_direct, poa_diffuse, airmass_absolute, aoi)
     pvsystem.sapm_effective_irradiance.assert_called_once_with(
         poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params)
-    assert_allclose(out, 1, atol=0.1)
+    assert_allclose(out, 1000, atol=0.1)
 
 
 def test_calcparams_desoto(cec_module_params):

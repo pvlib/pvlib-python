@@ -2009,7 +2009,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     F1 = sapm_spectral_loss(airmass_absolute, module)
     F2 = sapm_aoi_loss(aoi, module)
 
-    Ee = F1 * (poa_direct*F2 + module['FD']*poa_diffuse)
+    Ee = F1 * (poa_direct * F2 + module['FD'] * poa_diffuse)
 
     return Ee
 

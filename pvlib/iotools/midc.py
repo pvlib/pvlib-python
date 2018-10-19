@@ -26,7 +26,7 @@ def map_midc_to_pvlib(variable_map, field_name):
     Parameters
     ----------
     variable_map: Dictionary
-        A dictionary for mapping MIDC field names to pvlib names. See VARIABLE_MAP
+        A dictionary for mapping MIDC field nameto pvlib name. See VARIABLE_MAP
         for default value and description of how to construct this argument.
     field_name: string
         The Column to map.
@@ -39,10 +39,10 @@ def map_midc_to_pvlib(variable_map, field_name):
     """
     new_field_name = field_name
     for midc_name, pvlib_name in variable_map.items():
-        if  field_name.startswith(midc_name):
+        if field_name.startswith(midc_name):
             # extract the instument and units field and then remove units
             instrument_units = field_name[len(midc_name):]
-            instrument = instrument_units[:instrument_units.find('[')-1]
+            instrument = instrument_units[:instrument_units.find('[') - 1]
             new_field_name = pvlib_name + instrument.replace(' ', '_')
             break
     return new_field_name

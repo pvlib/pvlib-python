@@ -11,7 +11,9 @@ from pvlib.iotools import midc
 test_dir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 midc_testfile = os.path.join(test_dir, '../data/midc_20181014.txt')
-midc_network_testfile = 'https://midcdmz.nrel.gov/apps/data_api.pl?site=UAT&begin=20181018&end=20181019'
+midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
+                         '?site=UAT&begin=20181018&end=20181019')
+
 
 @pytest.mark.parametrize('field_name,expected', [
     ('Temperature @ 2m [deg C]', 'temp_air_@_2m'),
@@ -34,6 +36,7 @@ def test_midc_format_index():
     assert data.index[0] == start
     assert data.index[-1] == end
 
+
 def test_midc_format_index_raw():
     data = pd.read_csv(midc_network_testfile)
     data = midc.format_index_raw(data)
@@ -44,6 +47,7 @@ def test_midc_format_index_raw():
     assert data.index[0] == start
     assert data.index[-1] == end
 
+
 def test_read_midc_var_mapping_as_arg():
     data = midc.read_midc(midc_testfile, variable_map=midc.VARIABLE_MAP)
     assert 'ghi_PSP' in data.columns
@@ -51,8 +55,8 @@ def test_read_midc_var_mapping_as_arg():
     assert 'temp_air_@_50m' in data.columns
 
 
-start_ts = pd.Timestamp('20181018')
-end_ts = pd.Timestamp('20181019')
 @network
 def test_read_midc_raw_data_from_nrel():
+    start_ts = pd.Timestamp('20181018')
+    end_ts = pd.Timestamp('20181019')
     midc.read_midc_raw_data_from_nrel('UAT', start_ts, end_ts)

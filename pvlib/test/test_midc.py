@@ -11,6 +11,7 @@ from pvlib.iotools import midc
 test_dir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 midc_testfile = os.path.join(test_dir, '../data/midc_20181014.txt')
+midc_raw_testfile = os.path.join(test_dir, '../data/midc_raw_20181018.txt')
 midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
                          '?site=UAT&begin=20181018&end=20181019')
 
@@ -38,11 +39,11 @@ def test_midc_format_index():
 
 
 def test_midc_format_index_raw():
-    data = pd.read_csv(midc_network_testfile)
+    data = pd.read_csv(midc_raw_testfile)
     data = midc.format_index_raw(data)
     start = pd.Timestamp('20181018 00:00')
     start = start.tz_localize('MST')
-    end = pd.Timestamp('20181019 23:59')
+    end = pd.Timestamp('20181018 23:59')
     end = end.tz_localize('MST')
     assert data.index[0] == start
     assert data.index[-1] == end
@@ -59,4 +60,6 @@ def test_read_midc_var_mapping_as_arg():
 def test_read_midc_raw_data_from_nrel():
     start_ts = pd.Timestamp('20181018')
     end_ts = pd.Timestamp('20181019')
-    midc.read_midc_raw_data_from_nrel('UAT', start_ts, end_ts)
+    data = midc.read_midc_raw_data_from_nrel('UAT', start_ts, end_ts)
+    assert 'dni_Normal' in data.columns
+    assert data.index.size == 2880

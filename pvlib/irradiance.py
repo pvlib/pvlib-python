@@ -1147,17 +1147,17 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     F2c = np.vstack((F2c, nans))
 
     F1 = (F1c[ebin, 0] + F1c[ebin, 1] * delta + F1c[ebin, 2] * z)
-    F1 = np.maximum(F1, 0)
+    F1 = np.where(np.isnan(F1), np.nan, np.maximum(F1, 0))
 
     F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z)
-    F2 = np.maximum(F2, 0)
+    F2 = np.where(np.isnan(F2), np.nan, np.maximum(F2, 0))
 
     A = aoi_projection(surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth)
     A = np.maximum(A, 0)
 
     B = tools.cosd(solar_zenith)
-    B = np.maximum(B, tools.cosd(85))
+    B = np.where(np.isnan(B), np.nan, np.maximum(B, tools.cosd(85)))
 
     # Calculate Diffuse POA from sky dome
     term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))

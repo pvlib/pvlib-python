@@ -298,20 +298,14 @@ class Location(object):
         """
 
         if method == 'pyephem':
-            result = solarposition.sun_rise_set_transit_ephem(times,
-                                                              self.latitude,
-                                                              self.longitude,
-                                                              **kwargs)
+            result = solarposition.sun_rise_set_transit_ephem(
+                times, self.latitude, self.longitude, **kwargs)
         elif method == 'spa':
-            result = solarposition.sun_rise_set_transit_spa(times,
-                                                            self.latitude,
-                                                            self.longitude,
-                                                            **kwargs)
+            result = solarposition.sun_rise_set_transit_spa(
+                times, self.latitude, self.longitude, **kwargs)
         elif method == 'geometric':
-            sr, ss, tr = solarposition.sun_rise_set_transit_geometric(times,
-                                                            self.latitude,
-                                                            self.longitude,
-                                                            **kwargs)
+            sr, ss, tr = solarposition.sun_rise_set_transit_geometric(
+                times, self.latitude, self.longitude, **kwargs)
             result = pd.DataFrame(index=times,
                                   data={'sunrise': sr,
                                         'sunset': ss,

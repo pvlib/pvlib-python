@@ -22,7 +22,7 @@ from pvlib.solarposition import equation_of_time_spencer71
 from test_solarposition import expected_solpos, golden_mst
 from test_solarposition import golden
 
-from conftest import requires_scipy
+from conftest import requires_ephem, requires_scipy
 
 
 def test_location_required():
@@ -315,6 +315,7 @@ def test_Location___repr__():
     assert tus.__repr__() == expected
 
 
+@requires_ephem
 def test_get_sun_rise_set_transit(golden):
     times = pd.DatetimeIndex(['2015-01-01 07:00:00', '2015-01-01 23:00:00'],
                              tz='MST')

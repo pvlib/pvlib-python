@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from pandas.util.testing import network
 import pytest
+import pytz
 
 from pvlib.iotools import midc
 
@@ -36,6 +37,13 @@ def test_midc_format_index():
     assert type(data.index) == pd.DatetimeIndex
     assert data.index[0] == start
     assert data.index[-1] == end
+
+
+def test_midc_format_index_tz_conversion():
+    data = pd.read_csv(midc_testfile)
+    data = data.rename(columns={'MST': 'PST'})
+    data = midc.format_index(data)
+    assert data.index[0].tz == pytz.timezone('Etc/GMT+8')
 
 
 def test_midc_format_index_raw():

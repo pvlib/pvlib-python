@@ -19,6 +19,13 @@ VARIABLE_MAP = {
     'Relative Humidity': 'relative_humidity',
 }
 
+# Maps problematic timezones to 'Etc/GMT' for parsing.
+
+TZ_MAP = {
+    'PST': 'Etc/GMT+8',
+    'CST': 'Etc/GMT+6',
+}
+
 
 def map_midc_to_pvlib(variable_map, field_name):
     """A mapper function to rename Dataframe columns to their pvlib counterparts.
@@ -72,8 +79,9 @@ def format_index(data):
     data: Dataframe
         Dataframe with DatetimeIndex localized to the provided timezone.
     """
-    timezone = data.columns[1]
-    datetime = data['DATE (MM/DD/YYYY)'] + data[timezone]
+    tz_raw = data.columns[1]
+    timezone = TZ_MAP.get(tz_raw, tz_raw)
+    datetime = data['DATE (MM/DD/YYYY)'] + data[tz_raw]
     datetime = pd.to_datetime(datetime, format='%m/%d/%Y%H:%M')
     data = data.set_index(datetime)
     data = data.tz_localize(timezone)
@@ -95,13 +103,14 @@ def format_index_raw(data):
     data: Dataframe
         The data with a Datetime index localized to the provided timezone.
     """
-    tz = data.columns[3]
+    tz_raw = data.columns[3]
+    timezone = TZ_MAP.get(tz_raw, tz_raw)
     year = data.Year.apply(str)
     jday = data.DOY.apply(lambda x: '{:03d}'.format(x))
-    time = data[tz].apply(lambda x: '{:04d}'.format(x))
+    time = data[tz_raw].apply(lambda x: '{:04d}'.format(x))
     index = pd.to_datetime(year + jday + time, format="%Y%j%H%M")
     data = data.set_index(index)
-    data = data.tz_localize(tz)
+    data = data.tz_localize(timezone)
     return data
 
 

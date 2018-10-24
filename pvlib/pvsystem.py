@@ -600,7 +600,7 @@ class PVSystem(object):
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
-                    ivcurve_pnts=None):
+                    d2mutau=0, NsVbi=np.Inf, ivcurve_pnts=None):
         """Wrapper around the :py:func:`singlediode` function.
 
         Parameters
@@ -613,7 +613,7 @@ class PVSystem(object):
         """
         return singlediode(photocurrent, saturation_current,
                            resistance_series, resistance_shunt, nNsVth,
-                           ivcurve_pnts=ivcurve_pnts)
+                           d2mutau, NsVbi, ivcurve_pnts=ivcurve_pnts)
 
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
@@ -2030,8 +2030,8 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts=None,
-                method='lambertw'):
+                resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                ivcurve_pnts=None, method='lambertw'):
     """
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
@@ -2082,6 +2082,16 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
         0 < nNsVth
+
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
 
     ivcurve_pnts : None or int, default None
         Number of points in the desired IV curve. If None or 0, no
@@ -2175,7 +2185,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
         args = (photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth)  # collect args
+                resistance_shunt, nNsVth, d2mutau, NsVbi)  # collect args
         v_oc = _singlediode.bishop88_v_from_i(
             0.0, *args, method=method.lower()
         )
@@ -2221,7 +2231,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
 
 def max_power_point(photocurrent, saturation_current, resistance_series,
-                    resistance_shunt, nNsVth, method='brentq'):
+                    resistance_shunt, nNsVth,  d2mutau=0, NsVbi=np.Inf,
+                    method='brentq'):
     """
     Given the single diode equation coefficients, calculates the maximum power
     point (MPP).
@@ -2239,6 +2250,14 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of serices cells ``Ns``
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
     method : str
         either ``'newton'`` or ``'brentq'``
 
@@ -2256,7 +2275,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     """
     i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,
-        resistance_shunt, nNsVth, method=method.lower()
+        resistance_shunt, nNsVth, d2mutau, NsVbi, method=method.lower()
     )
     if isinstance(photocurrent, pd.Series):
         ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}
@@ -2270,7 +2289,8 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
 
 
 def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent, method='lambertw'):
+             saturation_current, photocurrent, d2mutau=0, NsVbi=np.Inf,
+             method='lambertw'):
     '''
     Device voltage at the given device current for the single diode model.
 
@@ -2319,6 +2339,16 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         IV curve conditions. Often abbreviated ``I_L``.
         0 <= photocurrent
 
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
+
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
         ``'brentq'`` is limited to 1st quadrant only.
@@ -2343,7 +2373,7 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
         args = (current, photocurrent, saturation_current,
-                resistance_series, resistance_shunt, nNsVth)
+                resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi)
         V = _singlediode.bishop88_v_from_i(*args, method=method.lower())
         # find the right size and shape for returns
         size, shape = _singlediode._get_size_and_shape(args)
@@ -2358,7 +2388,8 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
 
 def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-             saturation_current, photocurrent, method='lambertw'):
+             saturation_current, photocurrent, d2mutau=0,
+             NsVbi=np.Inf, method='lambertw'):
     '''
     Device current at the given device voltage for the single diode model.
 
@@ -2407,6 +2438,16 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         IV curve conditions. Often abbreviated ``I_L``.
         0 <= photocurrent
 
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
+
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
         ``'brentq'`` is limited to 1st quadrant only.
@@ -2431,7 +2472,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
         args = (voltage, photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth)
+                resistance_shunt, nNsVth, d2mutau, NsVbi)
         I = _singlediode.bishop88_i_from_v(*args, method=method.lower())
         # find the right size and shape for returns
         size, shape = _singlediode._get_size_and_shape(args)

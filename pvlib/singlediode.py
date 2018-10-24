@@ -138,6 +138,11 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
        available technology", André Mermoud and Thibault Lejeune, 25th EUPVSEC,
        2010
        :doi:`10.4229/25thEUPVSEC2010-4BV.1.114`
+
+       [4] K. J. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance
+       and Temperature Dependence of Photovoltaic Modules in PVsyst, J. of
+       Photovoltaics 5(1), Jan. 2015.
+       :doi:`10.1109/JPHOTOV.2014.2364133`
     """
     # calculate recombination loss current where d2mutau > 0
     is_recomb = d2mutau > 0  # True where there is thin-film recombination loss
@@ -171,8 +176,8 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
 
 def bishop88_i_from_v(voltage, photocurrent, saturation_current,
-                      resistance_series, resistance_shunt, nNsVth,
-                      method='newton'):
+                      resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+                      NsVbi=np.Inf, method='newton'):
     """
     Find current given any voltage.
 
@@ -191,6 +196,14 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
     method : str
         one of two optional search methods: either ``'brentq'``, a reliable and
         bounded method or ``'newton'`` which is the default.
@@ -202,7 +215,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
+            resistance_shunt, nNsVth, d2mutau, NsVbi)
 
     def fv(x, v, *a):
         # calculate voltage residual given diode voltage "x"
@@ -233,8 +246,8 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
 
 
 def bishop88_v_from_i(current, photocurrent, saturation_current,
-                      resistance_series, resistance_shunt, nNsVth,
-                      method='newton'):
+                      resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+                      NsVbi=np.Inf, method='newton'):
     """
     Find voltage given any current.
 
@@ -250,6 +263,14 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         series resistance (Rs) in ohms
     resistance_shunt : numeric
         shunt resistance (Rsh) in ohms
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
@@ -264,7 +285,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
+            resistance_shunt, nNsVth, d2mutau, NsVbi)
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
@@ -294,7 +315,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
 
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
-                 resistance_shunt, nNsVth, method='newton'):
+                 resistance_shunt, nNsVth,  d2mutau=0, NsVbi=np.Inf,
+                 method='newton'):
     """
     Find max power point.
 
@@ -311,6 +333,14 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
     method : str
         one of two optional search methods: either ``'brentq'``, a reliable and
         bounded method or ``'newton'`` which is the default.
@@ -323,7 +353,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
+            resistance_shunt, nNsVth, d2mutau, NsVbi)
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 

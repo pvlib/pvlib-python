@@ -219,7 +219,7 @@ def test_sapm(sapm_module_params):
 
     assert_frame_equal(out, expected, check_less_precise=4)
 
-    out = pvsystem.sapm(1, 25, sapm_module_params)
+    out = pvsystem.sapm(1000, 25, sapm_module_params)
 
     expected = OrderedDict()
     expected['i_sc'] = 5.09115
@@ -353,7 +353,7 @@ def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
     else:
-        assert_allclose(out, expected, atol=1e-2)
+        assert_allclose(out, expected, atol=1)
 
 
 def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
@@ -369,7 +369,7 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
         poa_direct, poa_diffuse, airmass_absolute, aoi)
     pvsystem.sapm_effective_irradiance.assert_called_once_with(
         poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params)
-    assert_allclose(out, 1000, atol=0.1)
+    assert_allclose(out, 1000, atol=1)
 
 
 def test_calcparams_desoto(cec_module_params):

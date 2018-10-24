@@ -308,10 +308,14 @@ class Location(object):
                                                             self.longitude,
                                                             **kwargs)
         elif method == 'geometric':
-            result = solarposition.sun_rise_set_transit_geometric(times,
+            sr, ss, tr = solarposition.sun_rise_set_transit_geometric(times,
                                                             self.latitude,
                                                             self.longitude,
                                                             **kwargs)
+            result = pd.DataFrame(index=times,
+                                  data={'sunrise': sr,
+                                        'sunset': ss,
+                                        'transit': tr})
         else:
             raise ValueError('{} is not a valid method. Must be '
                              'one of pyephem, spa, geometric'

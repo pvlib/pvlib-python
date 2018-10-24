@@ -24,9 +24,6 @@ API Changes
 * Changed function name from :py:func:`pvlib.solarposition.get_rise_set_transit` (deprecated)
   to :py:func:`pvlib.solarposition.sun_rise_set_transit_spa. `sun_rise_set_transit_spa`
   requires time input to be localized to the specified latitude/longitude. (:issue:`316')
-* Changed function :py:func:`pvlib.pvsystem.sapm` to expect input `effective_irradiance`
-  in units of W/m2 rather than suns. Changed output of function 
-  :py:func:`sapm_effective_irradiance` to units of W/m2 rather than suns.
 
 
 Enhancements

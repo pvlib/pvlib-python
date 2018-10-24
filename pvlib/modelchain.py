@@ -414,7 +414,7 @@ class ModelChain(object):
                              'system.module_parameters')
 
     def sapm(self):
-        self.dc = self.system.sapm(self.effective_irradiance/1000.,
+        self.dc = self.system.sapm(self.effective_irradiance,
                                    self.temps['temp_cell'])
 
         self.dc = self.system.scale_voltage_current_power(self.dc)

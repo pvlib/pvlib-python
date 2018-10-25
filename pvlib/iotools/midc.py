@@ -55,7 +55,7 @@ def map_midc_to_pvlib(variable_map, field_name):
     new_field_name = field_name
     for midc_name, pvlib_name in variable_map.items():
         if field_name.startswith(midc_name):
-            # extract the instument and units field and then remove units
+            # extract the instrument and units field and then remove units
             instrument_units = field_name[len(midc_name):]
             units_index = instrument_units.find('[')
             instrument = instrument_units[:units_index - 1]

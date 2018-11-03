@@ -1,7 +1,7 @@
 .. _whatsnew_0601:
 
 v0.6.1 (EST November, 2018)
---------------------_------
+---------------------------
 
 This is a minor release. We recommend all users of v0.6.0 upgrade to this
 release.

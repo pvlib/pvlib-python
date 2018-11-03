@@ -1,7 +1,7 @@
 .. _whatsnew_0601:
 
-v0.6.1 (EST October, 2018)
---------------------------
+v0.6.1 (EST November, 2018)
+--------------------_------
 
 This is a minor release. We recommend all users of v0.6.0 upgrade to this
 release.
@@ -39,6 +39,10 @@ Enhancements
 * Created :py:func:`pvlib.iotools.read_surfrad` to read NOAA SURFRAD data. (:issue:`590`)
 * Created :py:func:`pvlib.iotools.read_midc` and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`
   to read NREL MIDC data. (:issue:`601`)
+* Use HRRR modeled surface temperature values instead of inferring from
+  isobaric values and modeled wind speed instead of inferring from gust.
+  (:issue:`604`)
+
 
 Bug fixes
 ~~~~~~~~~

@@ -55,8 +55,19 @@ Additional functions for quantities closely related to solar position.
    solarposition.calc_time
    solarposition.pyephem_earthsun_distance
    solarposition.nrel_earthsun_distance
-   solarposition.rise_set_transit_ephem
    spa.calculate_deltat
+
+
+Functions for calculating sunrise, sunset and transit times.
+
+.. autosummary::
+   :toctree: generated/
+
+   location.Location.get_sun_rise_set_transit
+   solarposition.sun_rise_set_transit_ephem
+   solarposition.sun_rise_set_transit_spa
+   solarposition.sun_rise_set_transit_geometric
+
 
 The spa module contains the implementation of the built-in NREL SPA
 algorithm.
@@ -79,6 +90,7 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
+   solarposition.sunrise_sunset_transit_geometric
 
 
 Clear sky
@@ -310,6 +322,9 @@ relevant to solar energy modeling.
    iotools.read_tmy3
    iotools.read_srml
    iotools.read_srml_month_from_solardat
+   iotools.read_surfrad
+   iotools.read_midc
+   iotools.read_midc_raw_data_from_nrel
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

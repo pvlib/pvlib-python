@@ -3,11 +3,13 @@
 v0.6.1 (EST October, 2018)
 --------------------------
 
-This is a minor release. We recommend all users of 0.6.0 upgrade to this
+This is a minor release. We recommend all users of v0.6.0 upgrade to this
 release.
 
 **Python 2.7 support will end on June 1, 2019**. Releases made after this
 date will require Python 3. (:issue:`501`)
+
+**Minimum pandas requirement bumped 0.14.0=>0.15.0**
 
 
 API Changes
@@ -16,30 +18,47 @@ API Changes
 * Deprecated ``tmy``, ``tmy.readtmy2`` and ``tmy.readtmy3``;
   they will be removed in v0.7. Use the new :py:func:`pvlib.iotools.read_tmy2`
   and :py:func:`pvlib.iotools.read_tmy3` instead. (:issue:`261`)
-* Added kwarg `horizon` to :func:`~pvlib.solarposition.pyephem` and :func:`~pvlib.solarposition.calc_time` with default value `'+0:00'`
+* Added keyword argument ``horizon`` to :func:`~pvlib.solarposition.pyephem`
+  and :func:`~pvlib.solarposition.calc_time` with default value ``'+0:00'``
+* Changed key names for `components` returned from :py:func:`pvlib.clearsky.detect_clearsky`
+* Changed function name from :py:func:`pvlib.solarposition.get_rise_set_transit` (deprecated)
+  to :py:func:`pvlib.solarposition.sun_rise_set_transit_spa. `sun_rise_set_transit_spa`
+  requires time input to be localized to the specified latitude/longitude. (:issue:`316')
 
 
 Enhancements
 ~~~~~~~~~~~~
-* :func:`~pvlib.solarposition.rise_set_transit_ephem` returns sunrise, sunset and transit times using pyephem
-* Created :py:func:`pvlib.iotools.read_srml` and :py:func:`pvlib.iotools.read_srml_month_from_solardat`
-  to read University of Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
-  
+* Add :py:func:`~pvlib.solarposition.sun_rise_set_transit_ephem`to calculate sunrise, sunset
+  and transit times using pyephem (:issue:`114`)
+* Add geometric functions for sunrise, sunset, and sun transit times,
+  :func:`~pvlib.solarposition.sun_rise_set_transit_geometric` (:issue:`114`)
+* Add `Location` class method :py:func:`~pvlib.location.Location.get_sun_rise_set_transit`
+* Created :py:func:`pvlib.iotools.read_srml` and
+  :py:func:`pvlib.iotools.read_srml_month_from_solardat` to read University of
+  Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
+* Created :py:func:`pvlib.iotools.read_surfrad` to read NOAA SURFRAD data. (:issue:`590`)
+* Created :py:func:`pvlib.iotools.read_midc` and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`
+  to read NREL MIDC data. (:issue:`601`)
 
 Bug fixes
 ~~~~~~~~~
 * Fix when building documentation using Matplotlib 3.0 or greater.
 * `~pvlib.spa.calculate_deltat`: Fix constant coefficient of the polynomial expression for years >= 1860
   and < 1900, fix year 2050 which was returning 0.
+* Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
+* Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
 
 
 Testing
 ~~~~~~~
+* Add test for :func:`~pvlib.solarposition.hour_angle` (:issue:`597`)
 
 
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
-* Cliff Hansen (:ghuser:`cwhanse`)
 * Leland Boeman (:ghuser:`lboeman`)
 * Cedric Leroy (:ghuser:`cedricleroy`)
+* Ben Ellis (:ghuser:`bhellis725`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Mark Mikofski (:ghuser:`mikofski`)

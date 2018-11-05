@@ -39,6 +39,8 @@ Enhancements
 * Created :py:func:`pvlib.iotools.read_surfrad` to read NOAA SURFRAD data. (:issue:`590`)
 * Created :py:func:`pvlib.iotools.read_midc` and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`
   to read NREL MIDC data. (:issue:`601`)
+* Change :py:func:`pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
+
 
 Bug fixes
 ~~~~~~~~~

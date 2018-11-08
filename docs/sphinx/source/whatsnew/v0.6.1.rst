@@ -42,11 +42,14 @@ Enhancements
 * Use HRRR modeled surface temperature values instead of inferring from
   isobaric values and modeled wind speed instead of inferring from gust.
   (:issue:`604`)
+* Change :py:func:`pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
 
 
 Bug fixes
 ~~~~~~~~~
 * Fix when building documentation using Matplotlib 3.0 or greater.
+* `~pvlib.spa.calculate_deltat`: Fix constant coefficient of the polynomial expression for years >= 1860
+  and < 1900, fix year 2050 which was returning 0.
 * Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
 * Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
 
@@ -60,6 +63,7 @@ Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
 * Leland Boeman (:ghuser:`lboeman`)
+* Cedric Leroy (:ghuser:`cedricleroy`)
 * Ben Ellis (:ghuser:`bhellis725`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)

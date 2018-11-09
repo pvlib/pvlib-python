@@ -25,7 +25,7 @@ def get_num_intervals(end, start, deltat):
     deltat : timedelta
 
     """
-    return int((end - start).total_seconds() / deltat.seconds) + 1
+    return int((end - start).total_seconds() / deltat.seconds)
 
 
 def _get_data_for_ARMA_forecast(start, end, deltat, history,
@@ -60,7 +60,11 @@ def _get_data_for_ARMA_forecast(start, end, deltat, history,
 
     # find number of deltat intervals between start and last time in history
     # assumes that start > max(history.index)
-    K = get_num_intervals(start, max(history.index), deltat)
+    if start < history.index[-1]:
+        # truncate history
+        history = history.loc[history.index < start]
+
+    K = get_num_intervals(start, history.index[-1], deltat)
 
     # find number of deltat intervals covering dataWindowLength in history
     N = get_num_intervals(start - K*deltat,
@@ -88,7 +92,7 @@ def _get_data_for_ARMA_forecast(start, end, deltat, history,
                         (idata.index<=resample_end)].copy()
 
 
-def forecast_ARMA(start, end, history, deltat,
+def forecast_ARMA(pvobj, start, end, history, deltat,
                   dataWindowLength=timedelta(hours=1),
                   order=None,
                   start_params=None):
@@ -175,15 +179,19 @@ def forecast_ARMA(start, end, history, deltat,
     results = model.fit(start_params=start_params)
 
     # total intervals to forecast from end of data to end of forecast
-    idr = pd.DatetimeIndex(start=max(fitdata.index),
+    idr = pd.DatetimeIndex(start=fitdata.index[-1],
                            end=end,
                            freq=pd.to_timedelta(deltat))
 
-    f_intervals = len(idr-1) # first time in idr is last data point
+    f_intervals = len(idr) - 1 # first time in idr is last data point
 
     # forecast
     f = results.forecast(f_intervals)
+
     # return the requested forecast times
+    f = f[fdr]
+    #TODO: limit forecast by sunrise, sunset and clear-sky power
+    f[f < 0] = 0.0
 
     return f[fdr]
 

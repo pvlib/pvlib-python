@@ -21,6 +21,7 @@ except ImportError:
 
 import numpy as np
 import pandas as pd
+import warnings
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
@@ -242,12 +243,14 @@ def _spa_python_import(how):
         # reload the module without compiling
         # the PVLIB_USE_NUMBA env variable is used to tell the module
         # to not compile with numba
+        warnings.warn('Reloading spa to use numpy')
         os.environ['PVLIB_USE_NUMBA'] = '0'
         spa = reload(spa)
         del os.environ['PVLIB_USE_NUMBA']
     elif how == 'numba' and not using_numba:
         # The spa module was not compiled to numba code, so set
         # PVLIB_USE_NUMBA so it does compile to numba on reload.
+        warnings.warn('Reloading spa to use numba')
         os.environ['PVLIB_USE_NUMBA'] = '1'
         spa = reload(spa)
         del os.environ['PVLIB_USE_NUMBA']

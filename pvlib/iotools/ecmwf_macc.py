@@ -3,32 +3,34 @@ Read data from ECMWF MACC Reanalysis.
 """
 
 from __future__ import division, print_function, absolute_import
-import os
 import netCDF4
-import numpy as np
+import pandas as pd
 
 
 class ECMWF_MACC(object):
-    """container for data"""
+    """container for ECMWF MACC reanalysis data"""
 
-    DIMENSIONS = ['longitude', 'latitude', 'time']
-
-    def __init__(self, filename, delta_time):
-        self.delta_time = delta_time  # time resolution
+    def __init__(self, filename):
         self.data = netCDF4.Dataset(filename)
-        self.variables = tuple(self.data.variables.keys())
+        # data variables and dimensions
+        variables = set(self.data.variables.keys())
+        dimensions = set(self.data.dimensions.keys())
+        self.variables = tuple(variables)
+        self.dimensions = tuple(dimensions)
         # data names
-        names = list(self.variables)
-        for v in ECMWF_MACC.DIMENSIONS:
-            n = self.variables.index(v)  # raises ValueError if missing
-            names.pop(n)  # not a data name
-        self.names = tuple(names)
+        self.keys = tuple(variables - dimensions)
         # size of lat/lon dimensions
         self.lat_size = self.data.dimensions['latitude'].size
         self.lon_size = self.data.dimensions['longitude'].size
         # spatial resolution in degrees
         self.delta_lat = 180.0 / (self.lat_size - 1)
         self.delta_lon = 360.0 / self.lon_size
+        self.time_size = self.data.dimensions['time'].size
+        # time resolution in hours
+        self.start_time = self.data['time'][0]
+        self.stop_time = self.data['time'][-1]
+        self.time_range = self.stop_time - self.start_time
+        self.delta_time = self.time_range / (self.time_size - 1)
 
     def get_nearest_indices(self, latitude, longitude):
         # index of nearest latitude
@@ -44,20 +46,39 @@ class ECMWF_MACC(object):
         idx_lon = int(round(longitude / self.delta_lon)) % self.lon_size
         return idx_lat, idx_lon
 
-    def interp_data(self, lat, lon, utc_time, data, key):
-        """
-        Interpolate data using nearest neighbor.
-        """
-        nctime = data['time']  # time
-        ilat, ilon = self.get_nearest_indices(lat, lon)
-        # time index before
-        before = netCDF4.date2index(utc_time, nctime, select='before')
-        fbefore = data[key][before, ilat, ilon]
-        fafter = data[key][before + 1, ilat, ilon]
-        dt_num = netCDF4.date2num(utc_time, nctime.units)
-        time_ratio = (dt_num - nctime[before]) / self.delta_time
-        return fbefore + (fafter - fbefore) * time_ratio
 
+def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
+    """
+    Read data from ECMWF MACC reanalysis netCDF4 file.
 
-def read_ecmwf_macc(key, latitude, longitude, times, filename):
-    pass
+    Parameters
+    ----------
+    filename : string
+        full path to netCDF4 data file.
+    latitude : float
+        latitude in degrees
+    longitude : float
+        longitude in degrees
+    utc_time_range : sequence of datetime.datetime
+        pair of start and stop naive or UTC date-times
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        dataframe for specified range of UTC date-times
+    """
+    data = ECMWF_MACC(filename)
+    ilat, ilon = data.get_nearest_indices(latitude, longitude)
+    nctime = data['time']
+    if utc_time_range:
+        start_idx = netCDF4.date2index(
+            utc_time_range[0], nctime, select='before')
+        stop_idx = netCDF4.date2index(
+            utc_time_range[-1], nctime, select='after')
+        idx_slice = slice(start_idx, stop_idx + 1)
+    else:
+        idx_slice = slice(0, data.time_size)
+    times = netCDF4.num2date(
+        data['time'][idx_slice], data['time'].units)
+    df = {k: data[k][idx_slice, ilat, ilon] for k in data.keys}
+    return pd.DataFrame(df, index=times.astype('datetime64[s]'))

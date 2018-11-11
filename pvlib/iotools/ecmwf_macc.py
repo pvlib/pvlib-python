@@ -10,6 +10,8 @@ import pandas as pd
 class ECMWF_MACC(object):
     """container for ECMWF MACC reanalysis data"""
 
+    TCWV = 'tcwv'  # total column water vapor in kg/m^2 at (1-atm,25-degC)
+
     def __init__(self, filename):
         self.data = netCDF4.Dataset(filename)
         # data variables and dimensions
@@ -81,4 +83,7 @@ def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
     times = netCDF4.num2date(
         nctime[idx_slice], nctime.units)
     df = {k: ecmwf_macc.data[k][idx_slice, ilat, ilon] for k in ecmwf_macc.keys}
+    if ECMWF_MACC.TCWV in df:
+        # convert kg/m^2 to cm
+        df['precipitable_water'] = ecmwf_macc.data[ECMWF_MACC.TCWV] / 10.0
     return pd.DataFrame(df, index=times.astype('datetime64[s]'))

@@ -67,9 +67,9 @@ def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
     data : pandas.DataFrame
         dataframe for specified range of UTC date-times
     """
-    data = ECMWF_MACC(filename)
-    ilat, ilon = data.get_nearest_indices(latitude, longitude)
-    nctime = data['time']
+    ecmwf_macc = ECMWF_MACC(filename)
+    ilat, ilon = ecmwf_macc.get_nearest_indices(latitude, longitude)
+    nctime = ecmwf_macc.data['time']
     if utc_time_range:
         start_idx = netCDF4.date2index(
             utc_time_range[0], nctime, select='before')
@@ -77,8 +77,8 @@ def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
             utc_time_range[-1], nctime, select='after')
         idx_slice = slice(start_idx, stop_idx + 1)
     else:
-        idx_slice = slice(0, data.time_size)
+        idx_slice = slice(0, ecmwf_macc.time_size)
     times = netCDF4.num2date(
-        data['time'][idx_slice], data['time'].units)
-    df = {k: data[k][idx_slice, ilat, ilon] for k in data.keys}
+        nctime[idx_slice], nctime.units)
+    df = {k: ecmwf_macc.data[k][idx_slice, ilat, ilon] for k in ecmwf_macc.keys}
     return pd.DataFrame(df, index=times.astype('datetime64[s]'))

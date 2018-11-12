@@ -8,9 +8,138 @@ Created on Thu Aug 23 15:03:04 2018
 import pandas as pd
 import statsmodels.api as sm
 from datetime import timedelta
+import numpy as np
 
-# Forecast functions
 
+# forecast functions for persistence method
+def _get_data_for_persistence(start, history, dataWindowLength):
+
+    """
+    Returns data from history for persistence forecast
+
+    Parameters
+    -----------
+
+    pvobj : an instance of type PVobj
+
+    start : datetime
+        the time for the first forecast value
+
+    history : pandas DataFrame with key 'ac_power'
+        historical values of AC power from which the forecast is made.
+
+    dataWindowLenth : timedelta
+        time interval in history to be considered
+
+    Returns
+    ----------
+    result :
+        data from history in period of duration dataWindowLength, prior to the
+        minimum of either the forecast start or the last time in history
+
+    """
+
+    # find last time to include. Earliest of either forecast start or the last
+    # time in history
+    end_data_time = min([history.index[-1], start])
+    # select data within dataWindowLength
+    result = history.loc[(history.index>=end_data_time - dataWindowLength) &
+                         (history.index<=end_data_time)]
+
+    return result
+
+
+def _calc_ratio(X, Y):
+
+    # Compute the ratio X / Y
+    # inputs X and Y can be pandas.Series, or np.ndarray
+    # returns the same type as the inputs
+    np.seterr(divide='ignore')
+    ratio = np.true_divide(X, Y)
+    np.seterr(divide='raise')
+    return ratio
+
+
+def forecast_persistence(start, end, deltat, history, dataWindowLength,
+                         reference=None, method='mean'):
+
+    """
+    Generate forecast from start to end at time resolution deltat
+    using the persistence method applied to the data in history.
+
+    Parameters
+    -----------
+
+    start : datetime
+        the time for the first forecast value
+
+    end : datetime
+        the last time to be forecast
+
+    deltat : timedelta
+        the time interval for the forecast
+
+    history : pandas Series
+        historical values from which the forecast is made.
+
+    dataWindowLenth : timedelta
+        time interval in history to be considered
+
+    reference : pandas Series, default None
+        if forecasting an index, e.g., clearness index, reference is the
+        denominator of the index. Must extend from prior to 
+        (start - dataWindowLength) to end.
+
+    method : str, default 'mean'
+        method applied to history or data to calculate forecast values
+
+    Returns
+    --------
+    forecast : pandas Series
+        forecast from start to end at interval deltat
+    """
+    # time index for forecast
+    dr = pd.DatetimeIndex(start=start, end=end, freq=deltat)
+
+    forecast = pd.Series(data=0.0, index=dr)
+
+    # get data for forecast
+    fitdata = _get_data_for_persistence(start, history, dataWindowLength)
+
+    if reference: # forecast index history / reference
+        # get reference data for index calculation
+        refdata = _get_data_for_persistence(fitdata.index[0], reference,
+            fitdata.index[-1] - fitdata.index[0])
+        if len(refdata)==0:
+            raise ValueError('No data for persistence forecast in history from'
+                             ' {} to {}'.format(start - dataWindowLength,
+                               end - dataWindowLength))
+        else:
+            # interpolate reference to time points in history
+            denom = np.interp(refdata.index.asi8/1e9, fitdata.asi8/1e9,
+                              fitdata.values)
+            index = _calc_ratio(fitdata, denom)
+            forecast_data = _get_data_for_persistence(start, reference,
+                                                      end - start)
+            # line up reference data to desired forecast times
+            forecast_data = np.interp(dr.asi8/1e9,
+                                      forecast_data.index.asi8/1e9,
+                                      forecast_data.values)
+    else: # simple persistence forecast
+        index = 1.0
+
+    if method=='mean':
+        index = index.mean()
+    else:
+        raise ValueError('{} is not a recognized value for method'
+                         .format(method))
+    # forecast
+    forecast = pd.Series(data=forecast_data * index, index=dr)
+
+    return forecast
+
+
+# Forecast functions for ARMA method
 def get_num_intervals(end, start, deltat):
     """
     Calculate number of intervals of length deltat from end working back to
@@ -92,7 +221,7 @@ def _get_data_for_ARMA_forecast(start, end, deltat, history,
                         (idata.index<=resample_end)].copy()
 
 
-def forecast_ARMA(pvobj, start, end, history, deltat,
+def forecast_ARMA(start, end, history, deltat,
                   dataWindowLength=timedelta(hours=1),
                   order=None,
                   start_params=None):

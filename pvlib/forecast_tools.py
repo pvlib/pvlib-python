@@ -87,7 +87,7 @@ def forecast_persistence(start, end, deltat, history, dataWindowLength,
 
     reference : pandas Series, default None
         if forecasting an index, e.g., clearness index, reference is the
-        denominator of the index. Must extend from prior to 
+        denominator of the index. Must extend from prior to
         (start - dataWindowLength) to end.
 
     method : str, default 'mean'
@@ -103,7 +103,7 @@ def forecast_persistence(start, end, deltat, history, dataWindowLength,
 
     forecast = pd.Series(data=0.0, index=dr)
 
-    # get data for forecast
+    # get data from history
     fitdata = _get_data_for_persistence(start, history, dataWindowLength)
 
     if reference: # forecast index history / reference
@@ -119,15 +119,18 @@ def forecast_persistence(start, end, deltat, history, dataWindowLength,
             denom = np.interp(refdata.index.asi8/1e9, fitdata.asi8/1e9,
                               fitdata.values)
             index = _calc_ratio(fitdata, denom)
+            # get data from reference for the forecast period
             forecast_data = _get_data_for_persistence(start, reference,
                                                       end - start)
             # line up reference data to desired forecast times
             forecast_data = np.interp(dr.asi8/1e9,
                                       forecast_data.index.asi8/1e9,
                                       forecast_data.values)
+            # limit
     else: # simple persistence forecast
         index = 1.0
 
+    # reduce index to a factor
     if method=='mean':
         index = index.mean()
     else:
@@ -294,10 +297,10 @@ def forecast_ARMA(start, end, history, deltat,
                                       trend='n',
                                       order=order)
 
-    # if not provided, generate guess of model parameters, helps overcome 
+    # if not provided, generate guess of model parameters, helps overcome
     # non-stationarity
     if not start_params:
-        # generate a list with one entry '0' for each AR or MA parameter 
+        # generate a list with one entry '0' for each AR or MA parameter
         # plus an entry '1' for the variance parameter
         start_params = []
         for i in range(0, order[0]+order[2]):

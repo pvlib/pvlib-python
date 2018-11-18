@@ -57,6 +57,18 @@ Additional functions for quantities closely related to solar position.
    solarposition.nrel_earthsun_distance
    spa.calculate_deltat
 
+
+Functions for calculating sunrise, sunset and transit times.
+
+.. autosummary::
+   :toctree: generated/
+
+   location.Location.get_sun_rise_set_transit
+   solarposition.sun_rise_set_transit_ephem
+   solarposition.sun_rise_set_transit_spa
+   solarposition.sun_rise_set_transit_geometric
+
+
 The spa module contains the implementation of the built-in NREL SPA
 algorithm.
 
@@ -78,6 +90,7 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
+   solarposition.sunrise_sunset_transit_geometric
 
 
 Clear sky
@@ -204,14 +217,15 @@ AOI modifiers
    pvsystem.ashraeiam
    pvsystem.sapm_aoi_loss
 
-Single diode model
-------------------
+Single diode models
+-------------------
 
-Functions relevant for the single diode model.
+Functions relevant for single diode models.
 
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.calcparams_cec
    pvsystem.calcparams_desoto
    pvsystem.calcparams_pvsyst
    pvsystem.i_from_v
@@ -293,8 +307,41 @@ Functions
    tracking.singleaxis
 
 
+.. _iotools:
+
+IO Tools
+========
+
+Functions for reading and writing data from a variety of file formats
+relevant to solar energy modeling.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.read_tmy2
+   iotools.read_tmy3
+   iotools.read_srml
+   iotools.read_srml_month_from_solardat
+   iotools.read_surfrad
+   iotools.read_midc
+   iotools.read_midc_raw_data_from_nrel
+
+A :py:class:`~pvlib.location.Location` object may be created from metadata
+in some files.
+
+.. autosummary::
+   :toctree: generated/
+
+   location.Location.from_tmy
+
+
 TMY
 ===
+
+.. warning::
+
+    The :py:mod:`pvlib.tmy` module is deprecated; it will be removed
+    in pvlib 0.7. Please see the :ref:`pvlib.iotools <iotools>` package.
 
 Methods and functions for reading data from TMY files.
 
@@ -419,7 +466,9 @@ ModelChain model definitions.
    :toctree: generated/
 
    modelchain.ModelChain.sapm
-   modelchain.ModelChain.singlediode
+   modelchain.ModelChain.cec
+   modelchain.ModelChain.desoto
+   modelchain.ModelChain.pvsyst
    modelchain.ModelChain.pvwatts_dc
    modelchain.ModelChain.snlinverter
    modelchain.ModelChain.adrinverter

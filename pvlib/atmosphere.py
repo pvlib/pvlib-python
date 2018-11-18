@@ -317,8 +317,8 @@ def gueymard94_pw(temp_air, relative_humidity):
        1294-1300.
     """
 
-    T = temp_air + 273.15  # Convert to Kelvin
-    RH = relative_humidity
+    T = temp_air + 273.15  # Convert to Kelvin                  # noqa: N806
+    RH = relative_humidity                                      # noqa: N806
 
     theta = T / 273.15
 
@@ -473,7 +473,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     _coefficients['cigs'] = (
         0.85252, -0.022314, -0.0047216, 0.13666, 0.013342, -0.0008945)
     _coefficients['asi'] = (
-        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382,-0.0033818)
+        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382, -0.0033818)
 
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]
@@ -621,7 +621,7 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     return lt
 
 
-def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
+def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     r"""
     Get AOD at specified wavelength using Angstrom turbidity model.
 
@@ -631,7 +631,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
         aerosol optical depth (AOD) measured at known wavelength
     lambda0 : numeric
         wavelength in nanometers corresponding to ``aod0``
-    alpha : numeric
+    alpha : numeric, default 1.14
         Angstrom :math:`\alpha` exponent corresponding to ``aod0``
     lambda1 : numeric, default 700
         desired wavelength in nanometers

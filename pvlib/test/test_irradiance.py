@@ -232,29 +232,27 @@ def test_perez(irrad_data, ephem_data, dni_et, relative_airmass):
 def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
-    out, df_components = irradiance.perez(40, 180, irrad_data['dhi'], dni,
-                     dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['azimuth'], relative_airmass,
-                     return_components=True)
-    expected = pd.Series(np.array(
-        [   0.        ,   31.46046871,  np.nan,   45.45539877]),
-        index=irrad_data.index)
-    expected_components = pd.DataFrame(
-        np.array([[  0.        ,  26.84138589,          np.nan,  31.72696071],
-                 [ 0.        ,  0.        ,         np.nan,  4.47966439],
-                 [ 0.        ,  4.62212181,         np.nan,  9.25316454]]).T,
-        columns=['isotropic', 'circumsolar', 'horizon'],
+    out = irradiance.perez(40, 180, irrad_data['dhi'], dni,
+                           dni_et, ephem_data['apparent_zenith'],
+                           ephem_data['azimuth'], relative_airmass,
+                           return_components=True)
+    expected = pd.DataFrame(np.array(
+        [[   0.        ,   31.46046871,  np.nan,   45.45539877],
+         [  0.        ,  26.84138589,          np.nan,  31.72696071],
+         [ 0.        ,  0.        ,         np.nan,  4.47966439],
+         [ 0.        ,  4.62212181,         np.nan,  9.25316454]]).T,
+        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
         index=irrad_data.index
     )
     if pandas_0_22():
-        expected_for_sum = expected.copy()
+        expected_for_sum = expected['sky_diffuse'].copy()
         expected_for_sum.iloc[2] = 0
     else:
-        expected_for_sum = expected
-    sum_components = df_components.sum(axis=1)
+        expected_for_sum = expected['sky_diffuse']
+    sum_components = out.iloc[:, 1:].sum(axis=1)
+    sum_components.name = 'sky_diffuse'
 
-    assert_series_equal(out, expected, check_less_precise=2)
-    assert_frame_equal(df_components, expected_components)
+    assert_frame_equal(out, expected, check_less_precise=2)
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 
@@ -268,6 +266,15 @@ def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     expected = np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877])
     assert_allclose(out, expected, atol=1e-2)
+    assert isinstance(out, np.ndarray)
+
+
+def test_perez_scalar():
+    # copied values from fixtures
+    out = irradiance.perez(40, 180, 118.45831879, 939.95469881,
+                           1321.1655834833093, 10.56413562, 144.76567754,
+                           1.01688136)
+    assert_allclose(out, 109.084332)
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher', 'haydavies',

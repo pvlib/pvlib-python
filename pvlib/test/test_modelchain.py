@@ -14,12 +14,13 @@ from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
+from pvlib._deprecation import pvlibDeprecationWarning
 
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 import pytest
 
-from test_pvsystem import sam_data
-from conftest import requires_scipy
+from test_pvsystem import sam_data, pvsyst_module_params
+from conftest import fail_on_pvlib_version, requires_scipy
 
 
 @pytest.fixture
@@ -44,6 +45,20 @@ def cec_dc_snl_ac_system(sam_data):
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
+    inverters = sam_data['cecinverter']
+    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module=module,
+                      module_parameters=module_parameters,
+                      inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
+def pvsyst_dc_snl_ac_system(sam_data):
+    module = 'PVsyst test module'
+    module_parameters = pvsyst_module_params()
+    module_parameters['b'] = 0.05
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
@@ -203,14 +218,32 @@ def poadc(mc):
 
 
 @pytest.mark.parametrize('dc_model', [
-    'sapm', pytest.param('singlediode', marks=requires_scipy), 'pvwatts_dc'])
-def test_infer_dc_model(system, cec_dc_snl_ac_system,
+    'sapm',
+    pytest.param('cec', marks=requires_scipy),
+    pytest.param('desoto', marks=requires_scipy),
+    pytest.param('pvsyst', marks=requires_scipy),
+    pytest.param('singlediode', marks=requires_scipy),
+    'pvwatts_dc'])
+def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
                         pvwatts_dc_pvwatts_ac_system, location, dc_model,
                         weather, mocker):
-    dc_systems = {'sapm': system, 'singlediode': cec_dc_snl_ac_system,
+    dc_systems = {'sapm': system,
+                  'cec': cec_dc_snl_ac_system,
+                  'desoto': cec_dc_snl_ac_system,
+                  'pvsyst': pvsyst_dc_snl_ac_system,
+                  'singlediode': cec_dc_snl_ac_system,
                   'pvwatts_dc': pvwatts_dc_pvwatts_ac_system}
+    dc_model_function = {'sapm': 'sapm',
+                         'cec': 'calcparams_cec',
+                         'desoto': 'calcparams_desoto',
+                         'pvsyst': 'calcparams_pvsyst',
+                         'singlediode': 'calcparams_desoto',
+                         'pvwatts_dc': 'pvwatts_dc'}
     system = dc_systems[dc_model]
-    m = mocker.spy(system, dc_model)
+    # remove Adjust from model parameters for desoto, singlediode
+    if dc_model in ['desoto', 'singlediode']:
+        system.module_parameters.pop('Adjust')
+    m = mocker.spy(system, dc_model_function[dc_model])
     mc = ModelChain(system, location,
                     aoi_model='no_loss', spectral_model='no_loss')
     mc.run_model(weather.index, weather=weather)
@@ -408,6 +441,17 @@ def test_invalid_models(model, system, location):
 def test_bad_get_orientation():
     with pytest.raises(ValueError):
         modelchain.get_orientation('bad value')
+
+
+@fail_on_pvlib_version('0.7')
+def test_deprecated_07():
+    # explicit system creation call because fail_on_pvlib_version
+    # does not support decorators
+    system = cec_dc_snl_ac_system(sam_data())
+    with pytest.warns(pvlibDeprecationWarning):
+        mc = ModelChain(system, location,
+                        dc_model='singlediode',  # this should fail after 0.7
+                        aoi_model='no_loss', spectral_model='no_loss')
 
 
 @requires_scipy

@@ -125,7 +125,7 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     # a better way to do it.
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
-        to_datetimeindex = lambda x: datetime_or_doy
+        def to_datetimeindex(x): return x                       # noqa: E306
         to_output = partial(pd.Series, index=datetime_or_doy)
     elif isinstance(datetime_or_doy, pd.Timestamp):
         to_doy = tools._pandas_to_doy
@@ -139,12 +139,12 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
             tools._datetimelike_scalar_to_datetimeindex
         to_output = tools._scalar_out
     elif np.isscalar(datetime_or_doy):  # ints and floats of various types
-        to_doy = lambda x: datetime_or_doy
+        def to_doy(x): return x                                 # noqa: E306
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
         to_output = tools._scalar_out
     else:  # assume that we have an array-like object of doy
-        to_doy = lambda x: datetime_or_doy
+        def to_doy(x): return x                                 # noqa: E306
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
         to_output = tools._array_out
@@ -1077,9 +1077,22 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Returns
     --------
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by `return_components` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation on a tilted
-        surface. Array input is currently converted to Series output.
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse: Total sky diffuse
+            * isotropic
+            * circumsolar
+            * horizon
+
 
     References
     ----------
@@ -1161,6 +1174,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         diffuse_components = OrderedDict()
+        diffuse_components['sky_diffuse'] = sky_diffuse
 
         # Calculate the different components
         diffuse_components['isotropic'] = dhi * term1
@@ -1175,9 +1189,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         else:
             diffuse_components = {k: np.where(mask, 0, v) for k, v in
                                   diffuse_components.items()}
-
-        return sky_diffuse, diffuse_components
-
+        return diffuse_components
     else:
         return sky_diffuse
 
@@ -2005,7 +2017,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
         # we are here because we ran out of coeffs to loop over and
         # therefore we have exceeded max_iterations
         import warnings
-        failed_points = best_diff[aoi_lt_90][best_diff_lte_1_lt_90 == False]
+        failed_points = best_diff[aoi_lt_90][~best_diff_lte_1_lt_90]
         warnings.warn(
             ('%s points failed to converge after %s iterations. best_diff:\n%s'
              % (len(failed_points), max_iterations, failed_points)),

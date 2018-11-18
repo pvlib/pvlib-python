@@ -17,10 +17,12 @@ from pytz.exceptions import UnknownTimeZoneError
 
 import pvlib
 from pvlib.location import Location
+from pvlib.solarposition import declination_spencer71
+from pvlib.solarposition import equation_of_time_spencer71
+from test_solarposition import expected_solpos, golden_mst
+from test_solarposition import golden
 
-from test_solarposition import expected_solpos
-
-from conftest import requires_scipy
+from conftest import requires_ephem, requires_scipy
 
 
 def test_location_required():
@@ -232,8 +234,8 @@ def test_get_clearsky_valueerror():
 
 def test_from_tmy_3():
     from test_tmy import tmy3_testfile
-    from pvlib.tmy import readtmy3
-    data, meta = readtmy3(tmy3_testfile)
+    from pvlib.iotools import read_tmy3
+    data, meta = read_tmy3(tmy3_testfile)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
@@ -243,8 +245,8 @@ def test_from_tmy_3():
 
 def test_from_tmy_2():
     from test_tmy import tmy2_testfile
-    from pvlib.tmy import readtmy2
-    data, meta = readtmy2(tmy2_testfile)
+    from pvlib.iotools import read_tmy2
+    data, meta = read_tmy2(tmy2_testfile)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0
@@ -252,8 +254,7 @@ def test_from_tmy_2():
     assert_frame_equal(loc.tmy_data, data)
 
 
-def test_get_solarposition(expected_solpos):
-    from test_solarposition import golden_mst
+def test_get_solarposition(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = golden_mst.get_solarposition(times, temperature=11)
@@ -312,3 +313,29 @@ def test_Location___repr__():
         '  tz: US/Arizona'
 ])
     assert tus.__repr__() == expected
+
+
+@requires_ephem
+def test_get_sun_rise_set_transit(golden):
+    times = pd.DatetimeIndex(['2015-01-01 07:00:00', '2015-01-01 23:00:00'],
+                             tz='MST')
+    result = golden.get_sun_rise_set_transit(times, method='pyephem')
+    assert all(result.columns == ['sunrise', 'sunset', 'transit'])
+
+    result = golden.get_sun_rise_set_transit(times, method='spa')
+    assert all(result.columns == ['sunrise', 'sunset', 'transit'])
+
+    dayofyear = 1
+    declination = declination_spencer71(dayofyear)
+    eot = equation_of_time_spencer71(dayofyear)
+    result = golden.get_sun_rise_set_transit(times, method='geometric',
+                                                   declination=declination,
+                                                   equation_of_time=eot)
+    assert all(result.columns == ['sunrise', 'sunset', 'transit'])
+
+
+def test_get_sun_rise_set_transit_valueerror(golden):
+    times = pd.DatetimeIndex(['2015-01-01 07:00:00', '2015-01-01 23:00:00'],
+                             tz='MST')
+    with pytest.raises(ValueError):
+        result = golden.get_sun_rise_set_transit(times, method='eyeball')

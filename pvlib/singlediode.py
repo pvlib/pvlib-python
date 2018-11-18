@@ -13,7 +13,8 @@ from pvlib.tools import _golden_sect_DataFrame
 try:
     from scipy.optimize import brentq
 except ImportError:
-    brentq = NotImplemented
+    def brentq(): raise NotImplementedError(
+        "brentq can't be imported because scipy isn't installed")
 
 # FIXME: change this to newton when scipy-1.2 is released
 try:
@@ -154,7 +155,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         grad_i_recomb = np.where(is_recomb, i_recomb / v_recomb, 0)
         grad_2i_recomb = np.where(is_recomb, 2 * grad_i_recomb / v_recomb, 0)
         g_diode = saturation_current * np.exp(v_star) / nNsVth  # conductance
-        grad_i = -g_diode - g_sh - grad_i_recomb # di/dvd
+        grad_i = -g_diode - g_sh - grad_i_recomb  # di/dvd
         grad_v = 1.0 - grad_i * resistance_series  # dv/dvd
         # dp/dv = d(iv)/dv = v * di/dv + i
         grad = grad_i / grad_v  # di/dv
@@ -208,8 +209,6 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         return bishop88(x, *a)[1] - v
 
     if method.lower() == 'brentq':
-        if brentq is NotImplemented:
-            raise ImportError('This function requires scipy')
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
@@ -274,9 +273,6 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         return bishop88(x, *a)[0] - i
 
     if method.lower() == 'brentq':
-        if brentq is NotImplemented:
-            raise ImportError('This function requires scipy')
-
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input
@@ -335,8 +331,6 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         return bishop88(x, *a, gradients=True)[6]
 
     if method.lower() == 'brentq':
-        if brentq is NotImplemented:
-            raise ImportError('This function requires scipy')
         # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
             lambda voc, iph, isat, rs, rsh, gamma:
@@ -467,7 +461,7 @@ def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         #  V = -I*(Rs + Rsh) + IL*Rsh - a*lambertwterm + I0*Rsh
         # Recast in terms of Gsh=1/Rsh for better numerical stability.
         V[idx_p] = (IL[idx_p] + I0[idx_p] - I[idx_p]) / Gsh[idx_p] - \
-                   I[idx_p] * Rs[idx_p] - a[idx_p] * lambertwterm
+            I[idx_p] * Rs[idx_p] - a[idx_p] * lambertwterm
 
     if output_is_scalar:
         return np.asscalar(V)
@@ -499,7 +493,7 @@ def _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                             voltage, saturation_current, photocurrent)
 
     # Intitalize output I (V might not be float64)
-    I = np.full_like(V, np.nan, dtype=np.float64)
+    I = np.full_like(V, np.nan, dtype=np.float64)           # noqa: E741, N806
 
     # Determine indices where 0 < Rs requires implicit model solution
     idx_p = 0. < Rs
@@ -539,7 +533,7 @@ def _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
 
 def _lambertw(photocurrent, saturation_current, resistance_series,
-                         resistance_shunt, nNsVth, ivcurve_pnts=None):
+              resistance_shunt, nNsVth, ivcurve_pnts=None):
     # Compute short circuit current
     i_sc = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, 0.,
                               saturation_current, photocurrent)
@@ -592,7 +586,7 @@ def _pwr_optfcn(df, loc):
     Function to find power from ``i_from_v``.
     '''
 
-    I = _lambertw_i_from_v(df['r_sh'], df['r_s'], df['nNsVth'], df[loc],
-                           df['i_0'], df['i_l'])
+    I = _lambertw_i_from_v(df['r_sh'], df['r_s'],           # noqa: E741, N806
+                           df['nNsVth'], df[loc], df['i_0'], df['i_l'])
 
     return I * df[loc]

@@ -276,3 +276,42 @@ class Location(object):
         airmass['airmass_absolute'] = airmass_absolute
 
         return airmass
+
+    def get_sun_rise_set_transit(self, times, method='pyephem', **kwargs):
+        """
+        Calculate sunrise, sunset and transit times.
+
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Must be localized to the Location
+        method : str, default 'pyephem'
+            'pyephem', 'spa', or 'geometric'
+
+        kwargs are passed to the relevant functions. See
+        solarposition.sun_rise_set_transit_<method> for details.
+
+        Returns
+        -------
+        result : DataFrame
+            Column names are: ``sunrise, sunset, transit``.
+        """
+
+        if method == 'pyephem':
+            result = solarposition.sun_rise_set_transit_ephem(
+                times, self.latitude, self.longitude, **kwargs)
+        elif method == 'spa':
+            result = solarposition.sun_rise_set_transit_spa(
+                times, self.latitude, self.longitude, **kwargs)
+        elif method == 'geometric':
+            sr, ss, tr = solarposition.sun_rise_set_transit_geometric(
+                times, self.latitude, self.longitude, **kwargs)
+            result = pd.DataFrame(index=times,
+                                  data={'sunrise': sr,
+                                        'sunset': ss,
+                                        'transit': tr})
+        else:
+            raise ValueError('{} is not a valid method. Must be '
+                             'one of pyephem, spa, geometric'
+                             .format(method))
+        return result

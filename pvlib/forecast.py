@@ -574,9 +574,9 @@ class ForecastModel(object):
             Temperature in K
         """
 
-        P = data['pressure'] / 100.0
-        Tiso = data['temperature_iso']
-        Td = data['temperature_dew_iso'] - 273.15
+        P = data['pressure'] / 100.0                            # noqa: N806
+        Tiso = data['temperature_iso']                          # noqa: N806
+        Td = data['temperature_dew_iso'] - 273.15               # noqa: N806
 
         # saturation water vapor pressure
         e = 6.11 * 10**((7.5 * Td) / (Td + 273.3))
@@ -584,9 +584,9 @@ class ForecastModel(object):
         # saturation water vapor mixing ratio
         w = 0.622 * (e / (P - e))
 
-        T = Tiso - ((2.501 * 10.**6) / 1005.7) * w
+        temperature = Tiso - ((2.501 * 10.**6) / 1005.7) * w
 
-        return T
+        return temperature
 
     def uv_to_speed(self, data):
         """
@@ -670,13 +670,19 @@ class GFS(ForecastModel):
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'wind_speed_u': 'u-component_of_wind_isobaric',
             'wind_speed_v': 'v-component_of_wind_isobaric',
-            'total_clouds': 'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
-            'low_clouds': 'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
-            'mid_clouds': 'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
-            'high_clouds': 'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
-            'boundary_clouds': 'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
+            'total_clouds':
+                'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
+            'low_clouds':
+                'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+            'mid_clouds':
+                'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
+            'high_clouds':
+                'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+            'boundary_clouds': ('Total_cloud_cover_boundary_layer_cloud_'
+                                'Mixed_intervals_Average'),
             'convect_clouds': 'Total_cloud_cover_convective_cloud',
-            'ghi_raw': 'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average', }
+            'ghi_raw': ('Downward_Short-Wave_Radiation_Flux_'
+                        'surface_Mixed_intervals_Average')}
 
         self.output_variables = [
             'temp_air',
@@ -716,7 +722,7 @@ class GFS(ForecastModel):
         return data[self.output_variables]
 
 
-class HRRR_ESRL(ForecastModel):
+class HRRR_ESRL(ForecastModel):                                 # noqa: N801
     """
     Subclass of the ForecastModel class representing
     NOAA/GSD/ESRL's HRRR forecast model.
@@ -747,8 +753,8 @@ class HRRR_ESRL(ForecastModel):
     """
 
     def __init__(self, set_type='best'):
-        import warnings
-        warnings.warn('HRRR_ESRL is an experimental model and is not always available.')
+        warnings.warn('HRRR_ESRL is an experimental model and is not '
+                      'always available.')
 
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
@@ -764,7 +770,7 @@ class HRRR_ESRL(ForecastModel):
 
         self.output_variables = [
             'temp_air',
-            'wind_speed'
+            'wind_speed',
             'ghi_raw',
             'ghi',
             'dni',
@@ -925,7 +931,8 @@ class HRRR(ForecastModel):
             'low_clouds': 'Low_cloud_cover_low_cloud',
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
             'high_clouds': 'High_cloud_cover_high_cloud',
-            'condensation_height': 'Geopotential_height_adiabatic_condensation_lifted'}
+            'condensation_height':
+                'Geopotential_height_adiabatic_condensation_lifted'}
 
         self.output_variables = [
             'temp_air',

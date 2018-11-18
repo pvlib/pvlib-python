@@ -1369,7 +1369,7 @@ def calculate_deltat(year, month):
 
     deltat = np.where((1860 <= year) & (year < 1900),
 
-                      7.6+0.5737*(y-1860)
+                      7.62+0.5737*(y-1860)
                       - 0.251754*(y-1860)**2
                       + 0.01680668*(y-1860)**3
                       - 0.0004473624*(y-1860)**4
@@ -1418,7 +1418,7 @@ def calculate_deltat(year, month):
                       -20+32*((y-1820)/100)**2
                       - 0.5628*(2150-y), deltat)
 
-    deltat = np.where(year > 2150,
+    deltat = np.where(year >= 2150,
 
                       -20+32*((y-1820)/100)**2, deltat)
 

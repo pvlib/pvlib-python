@@ -14,6 +14,7 @@ from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import DC_MODEL_PARAMS
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def basic_chain(times, latitude, longitude,
@@ -115,8 +116,6 @@ def basic_chain(times, latitude, longitude,
         raise ValueError('orientation_strategy or surface_tilt and '
                          'surface_azimuth must be provided')
 
-    times = times
-
     if altitude is None and pressure is None:
         altitude = 0.
         pressure = 101325.
@@ -125,12 +124,9 @@ def basic_chain(times, latitude, longitude,
     elif pressure is None:
         pressure = atmosphere.alt2pres(altitude)
 
-    solar_position = solarposition.get_solarposition(times, latitude,
-                                                     longitude,
-                                                     altitude=altitude,
-                                                     pressure=pressure,
-                                                     method=solar_position_method,
-                                                     **kwargs)
+    solar_position = solarposition.get_solarposition(
+        times, latitude, longitude, altitude=altitude, pressure=pressure,
+        method=solar_position_method, **kwargs)
 
     # possible error with using apparent zenith with some models
     airmass = atmosphere.get_relative_airmass(
@@ -251,8 +247,8 @@ class ModelChain(object):
     dc_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'sapm',
-        'singlediode', 'pvwatts'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+        'desoto', 'cec', 'pvsyst', 'pvwatts'. The ModelChain instance will
+        be passed as the first argument to a user-defined function.
 
     ac_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
@@ -371,18 +367,28 @@ class ModelChain(object):
             if model in DC_MODEL_PARAMS.keys():
                 # validate module parameters
                 missing_params = DC_MODEL_PARAMS[model] - \
-                                        set(self.system.module_parameters.keys())
-                if missing_params: # some parameters are not in module.keys()
+                                 set(self.system.module_parameters.keys())
+                if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
-                                         'one or more required parameters '
-                                         'are missing : ' +
-                                         str(missing_params))
+                                     'one or more required parameters are '
+                                     'missing : ' + str(missing_params))
                 if model == 'sapm':
                     self._dc_model = self.sapm
-                elif model == 'singlediode':
-                    self._dc_model = self.singlediode
+                elif model == 'desoto':
+                    self._dc_model = self.desoto
+                elif model == 'cec':
+                    self._dc_model = self.cec
+                elif model == 'pvsyst':
+                    self._dc_model = self.pvsyst
                 elif model == 'pvwatts':
                     self._dc_model = self.pvwatts_dc
+                elif model == 'singlediode':
+                    warnings.warn('DC model keyword singlediode used for '
+                                  'ModelChain object. singlediode is '
+                                  'ambiguous, use desoto instead. singlediode '
+                                  'keyword will be removed in v0.7.0 and '
+                                  'later', pvlibDeprecationWarning)
+                    self._dc_model = self.desoto
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
@@ -392,8 +398,15 @@ class ModelChain(object):
         params = set(self.system.module_parameters.keys())
         if set(['A0', 'A1', 'C7']) <= params:
             return self.sapm, 'sapm'
-        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s']) <= params:
-            return self.singlediode, 'singlediode'
+        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                  'R_s', 'Adjust']) <= params:
+            return self.cec, 'cec'
+        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                  'R_s']) <= params:
+            return self.desoto, 'desoto'
+        elif set(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+                  'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s']) <= params:
+            return self.pvsyst, 'pvsyst'
         elif set(['pdc0', 'gamma_pdc']) <= params:
             return self.pvwatts_dc, 'pvwatts'
         else:
@@ -408,7 +421,62 @@ class ModelChain(object):
 
         return self
 
+    def desoto(self):
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_desoto(self.effective_irradiance,
+                                          self.temps['temp_cell']))
+
+        self.diode_params = (photocurrent, saturation_current,
+                             resistance_series,
+                             resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
+
+        return self
+
+    def cec(self):
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_cec(self.effective_irradiance,
+                                       self.temps['temp_cell']))
+
+        self.diode_params = (photocurrent, saturation_current,
+                             resistance_series,
+                             resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
+
+        return self
+
+    def pvsyst(self):
+        (photocurrent, saturation_current, resistance_series,
+         resistance_shunt, nNsVth) = (
+            self.system.calcparams_pvsyst(self.effective_irradiance,
+                                          self.temps['temp_cell']))
+
+        self.diode_params = (photocurrent, saturation_current,
+                             resistance_series,
+                             resistance_shunt, nNsVth)
+
+        self.dc = self.system.singlediode(
+            photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)
+
+        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
+
+        return self
+
     def singlediode(self):
+        """Deprecated"""
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
             self.system.calcparams_desoto(self.effective_irradiance,

@@ -36,8 +36,18 @@ Citing pvlib-python
 
 Many of the contributors to pvlib-python work in institutions where
 citation metrics are used in performance or career evaluations. If you
-use pvlib-python in a published work, please cite the most appropriate
-of:
+use pvlib-python in a published work, please cite:
+
+  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
+  "pvlib python: a python package for modeling solar energy systems."
+  Journal of Open Source Software, 3(29), 884, (2018).
+  https://doi.org/10.21105/joss.00884
+
+Please also cite the DOI corresponding to the specific version of
+pvlib-python that you used. pvlib-python DOIs are listed at
+`Zenodo.org <https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version>`_
+
+Additional pvlib-python publications include:
 
 * J. S. Stein, “The photovoltaic performance modeling
   collaborative (PVPMC),” in Photovoltaic Specialists Conference, 2012.
@@ -60,9 +70,6 @@ of:
   "An Open Source Solar Power Forecasting Tool Using PVLIB-Python,"
   in 43rd Photovoltaic Specialists Conference, 2016.
 
-Specific released versions of pvlib-python can be cited using their
-`Zenodo DOI <https://zenodo.org/search?ln=en&p=pvlib&action_search=>`_.
-
 
 Contents
 ========
@@ -75,6 +82,7 @@ Contents
    whatsnew
    installation
    contributing
+   pvsystem
    modelchain
    timetimezones
    clearsky

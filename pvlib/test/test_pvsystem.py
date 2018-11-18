@@ -11,7 +11,6 @@ import pytest
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
-from pvlib import tmy
 from pvlib import pvsystem
 from pvlib import clearsky
 from pvlib import irradiance
@@ -23,9 +22,10 @@ from conftest import needs_numpy_1_10, requires_scipy
 
 
 def test_systemdef_tmy3():
-    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
+    from pvlib.iotools import tmy
+    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvsystem)))
     tmy3_testfile = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
-    tmy3_data, tmy3_metadata = tmy.readtmy3(tmy3_testfile)
+    tmy3_data, tmy3_metadata = tmy.read_tmy3(tmy3_testfile)
     expected = {'tz': -9.0,
                 'albedo': 0.1,
                 'altitude': 7.0,
@@ -40,9 +40,10 @@ def test_systemdef_tmy3():
 
 
 def test_systemdef_tmy2():
-    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(tmy)))
+    from pvlib.iotools import tmy
+    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvsystem)))
     tmy2_testfile = os.path.join(pvlib_abspath, 'data', '12839.tm2')
-    tmy2_data, tmy2_metadata = tmy.readtmy2(tmy2_testfile)
+    tmy2_data, tmy2_metadata = tmy.read_tmy2(tmy2_testfile)
 
     expected = {'tz': -5,
                 'albedo': 0.1,
@@ -379,9 +380,9 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
 
 
 def test_calcparams_desoto(cec_module_params):
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
-    effective_irradiance = pd.Series([0.0, 800.0], index=times)
-    temp_cell = pd.Series([25, 25], index=times)
+    times = pd.DatetimeIndex(start='2015-01-01', periods=3, freq='12H')
+    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
+    temp_cell = pd.Series([25, 25, 50], index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   effective_irradiance,
@@ -395,12 +396,44 @@ def test_calcparams_desoto(cec_module_params):
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
-    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 6.036], index=times))
-    # changed value in GH 444 for 2017-6-5 module file
-    assert_allclose(I0, 1.94e-9)
+    assert_series_equal(IL, pd.Series([0.0, 6.036, 6.096], index=times),
+                        check_less_precise=3)
+    assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
+                        check_less_precise=3)
     assert_allclose(Rs, 0.094)
-    assert_series_equal(np.round(Rsh, 3), pd.Series([np.inf, 19.65], index=times))
-    assert_allclose(nNsVth, 0.473)
+    assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
+                        check_less_precise=3)
+    assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
+                        check_less_precise=3)
+
+
+def test_calcparams_cec(cec_module_params):
+    times = pd.DatetimeIndex(start='2015-01-01', periods=3, freq='12H')
+    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
+    temp_cell = pd.Series([25, 25, 50], index=times)
+
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_cec(
+                                  effective_irradiance,
+                                  temp_cell,
+                                  alpha_sc=cec_module_params['alpha_sc'],
+                                  a_ref=cec_module_params['a_ref'],
+                                  I_L_ref=cec_module_params['I_L_ref'],
+                                  I_o_ref=cec_module_params['I_o_ref'],
+                                  R_sh_ref=cec_module_params['R_sh_ref'],
+                                  R_s=cec_module_params['R_s'],
+                                  Adjust=cec_module_params['Adjust'],
+                                  EgRef=1.121,
+                                  dEgdT=-0.0002677)
+
+    assert_series_equal(IL, pd.Series([0.0, 6.036, 6.0896], index=times),
+                        check_less_precise=3)
+    assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
+                        check_less_precise=3)
+    assert_allclose(Rs, 0.094)
+    assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
+                        check_less_precise=3)
+    assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
+                        check_less_precise=3)
 
 
 def test_calcparams_pvsyst(pvsyst_module_params):

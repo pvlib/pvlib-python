@@ -26,13 +26,11 @@ time series of clear sky data for a location. The :ref:`ineichen` and
 input data. The :ref:`detect_clearsky` subsection demonstrates the use
 of the clear sky detection algorithm.
 
-The :py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`, and
-:py:func:`~pvlib.atmosphere.kasten96_lt` functions are useful for
-calculating inputs to the clear sky functions.
-
 We'll need these imports for the examples below.
 
 .. ipython::
+
+    In [1]: import os
 
     In [1]: import itertools
 
@@ -42,9 +40,11 @@ We'll need these imports for the examples below.
 
     In [1]: import pvlib
 
-    In [1]: from pvlib import clearsky, atmosphere
+    In [1]: from pvlib import clearsky, atmosphere, solarposition
 
     In [1]: from pvlib.location import Location
+
+    In [1]: from pvlib.iotools import read_tmy3
 
 
 .. _location:
@@ -117,6 +117,7 @@ Ineichen and Perez
 The Ineichen and Perez clear sky model parameterizes irradiance in terms
 of the Linke turbidity [Ine02]_. pvlib-python implements this model in
 the :py:func:`pvlib.clearsky.ineichen` function.
+
 
 Turbidity data
 ^^^^^^^^^^^^^^
@@ -198,6 +199,62 @@ varies from 300 m to 1500 m.
     @savefig turbidity-yes-interp.png width=6in
     In [1]: plt.ylabel('Linke Turbidity');
 
+The :py:func:`~pvlib.atmosphere.kasten96_lt` function can be used to calculate
+Linke turbidity [Kas96]_ as input to the clear sky Ineichen and Perez function.
+The Kasten formulation requires precipitable water and broadband aerosol
+optical depth (AOD). According to Molineaux, broadband AOD can be approximated
+by a single measurement at 700-nm [Mol98]_. An alternate broadband AOD
+approximation from Bird and Hulstrom combines AOD measured at two
+wavelengths [Bir80]_, and is implemented in
+:py:func:`~pvlib.atmosphere.bird_hulstrom80_aod_bb`.
+
+.. ipython::
+
+    In [1]: pvlib_data = os.path.join(os.path.dirname(pvlib.__file__), 'data')
+
+    In [1]: mbars = 100  # conversion factor from mbars to Pa
+
+    In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
+
+    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999)  # read TMY data
+
+    In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
+       ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
+
+    In [1]: solpos = solarposition.get_solarposition(time=tmy_data.index,
+       ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'],
+       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*mbars,
+       ...:     temperature=tmy_data['DryBulb'])
+
+    In [1]: am_rel = atmosphere.get_relative_airmass(solpos.apparent_zenith)
+
+    In [1]: am_abs = atmosphere.get_absolute_airmass(am_rel, tmy_data['Pressure']*mbars)
+
+    In [1]: airmass = pd.concat([am_rel, am_abs], axis=1).rename(
+       ...:     columns={0: 'airmass_relative', 1: 'airmass_absolute'})
+
+    In [1]: tl_calculated = atmosphere.kasten96_lt(
+       ...:     airmass.airmass_absolute, tmy_data['Pwat'], tmy_data['AOD'])
+
+    In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1).rename(
+       ...:     columns={0:'Historic', 1:'Calculated'})
+
+    In [1]: tl.index = tmy_data.index.tz_convert(None)  # remove timezone
+
+    In [1]: tl.resample('W').mean().plot();
+
+    In [1]: plt.grid()
+
+    In [1]: plt.title('Comparison of Historic Linke Turbidity Factors vs. \n'
+       ...:     'Kasten Pyrheliometric Formula at {name:s}, {state:s} ({usaf:d}TY)'.format(
+       ...:     name=tmy_header['Name'], state=tmy_header['State'], usaf=tmy_header['USAF']));
+
+    In [1]: plt.ylabel('Linke Turbidity Factor, TL');
+
+    @savefig kasten-tl.png width=10in
+    In [1]: plt.tight_layout()
+
+
 Examples
 ^^^^^^^^
 
@@ -234,10 +291,9 @@ A clear sky time series using only basic pvlib functions.
 
     In [1]: ax.set_title('Ineichen Clear Sky Model');
 
+    @savefig ineichen-vs-time-climo.png width=6in
     In [1]: ax.legend(loc=2);
 
-    @savefig ineichen-vs-time-climo.png width=6in
-    In [1]: plt.show();
 
 The input data types determine the returned output type. Array input
 results in an OrderedDict of array output, and Series input results in a
@@ -275,14 +331,11 @@ Grid with a clear sky irradiance for a few turbidity values.
        ...:     ineichen = clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
        ...:     ineichen.plot(ax=ax, title='Linke turbidity = {:0.1f}'.format(linke_turbidity));
 
-    In [1]: ax.legend(loc=1);
-
     @savefig ineichen-grid.png width=10in
-    In [1]: plt.show();
+    In [1]: ax.legend(loc=1);
 
     @suppress
     In [1]: plt.close();
-
 
 
 Validation
@@ -326,11 +379,32 @@ contain one or both of aerosols and precipitable water. Consider data
 from the `ECMWF <https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Public+Datasets>`_
 and `SoDa <http://www.soda-pro.com/web-services/radiation/cams-mcclear>`_.
 
-Aerosol optical depth is a function of wavelength, and the Simplified
-Solis model requires AOD at 700 nm. Models exist to convert AOD between
-different wavelengths, as well as convert Linke turbidity to AOD and PW
-[Ine08con]_, [Ine16]_.
+Aerosol optical depth (AOD) is a function of wavelength, and the Simplified
+Solis model requires AOD at 700 nm.
+:py:func:`~pvlib.atmosphere.angstrom_aod_at_lambda` is useful for converting
+AOD between different wavelengths using the Angstrom turbidity model. The
+Angstrom exponent, :math:`\alpha`, can be calculated from AOD at two
+wavelengths with :py:func:`~pvlib.atmosphere.angstrom_alpha`.
+[Ine08con]_, [Ine16]_, [Ang61]_.
 
+.. ipython::
+
+    In [1]: aod1240nm = 1.2  # fictitious AOD measured at 1240-nm
+
+    In [1]: aod550nm = 3.1  # fictitious AOD measured at 550-nm
+
+    In [1]: alpha_exponent = atmosphere.angstrom_alpha(aod1240nm, 1240, aod550nm, 550)
+
+    In [1]: aod700nm = atmosphere.angstrom_aod_at_lambda(aod1240nm, 1240, alpha_exponent, 700)
+
+    In [1]: aod380nm = atmosphere.angstrom_aod_at_lambda(aod550nm, 550, alpha_exponent, 380)
+
+    In [1]: aod500nm = atmosphere.angstrom_aod_at_lambda(aod550nm, 550, alpha_exponent, 500)
+
+    In [1]: aod_bb = atmosphere.bird_hulstrom80_aod_bb(aod380nm, aod500nm)
+
+    In [1]: print('compare AOD at 700-nm = {:g}, to estimated broadband AOD = {:g}, '
+       ...:     'with alpha = {:g}'.format(aod700nm, aod_bb, alpha_exponent))
 
 Examples
 ^^^^^^^^
@@ -365,10 +439,8 @@ A clear sky time series using only basic pvlib functions.
 
     In [1]: ax.set_title('Simplified Solis Clear Sky Model');
 
-    In [1]: ax.legend(loc=2);
-
     @savefig solis-vs-time-0.1-1.png width=6in
-    In [1]: plt.show();
+    In [1]: ax.legend(loc=2);
 
     @suppress
     In [1]: plt.close();
@@ -409,7 +481,7 @@ Irradiance as a function of solar elevation.
     In [1]: plt.close();
 
 
-Grid with a clear sky irradiance for a few PW and AOD values.
+Grid with clear sky irradiance for a few PW and AOD values.
 
 .. ipython::
 
@@ -431,12 +503,10 @@ Grid with a clear sky irradiance for a few PW and AOD values.
 
     In [1]: axes = axes.flatten()
 
+    @savefig solis-grid.png width=10in
     In [1]: for (aod, pw), ax in zip(itertools.chain(itertools.product(aod700, precipitable_water)), axes):
        ...:     cs = clearsky.simplified_solis(apparent_elevation, aod, pw, pressure, dni_extra)
        ...:     cs.plot(ax=ax, title='aod700={}, pw={}'.format(aod, pw))
-
-    @savefig solis-grid.png width=10in
-    In [1]: plt.show();
 
     @suppress
     In [1]: plt.close();
@@ -481,26 +551,20 @@ Contour plots of irradiance as a function of both PW and AOD.
 
 .. ipython::
 
+    @savefig solis-ghi.png width=10in
     In [1]: plot_solis('ghi')
 
-    @savefig solis-ghi.png width=10in
-    In [1]: plt.show()
-
     @suppress
     In [1]: plt.close();
-
-    In [1]: plot_solis('dni')
 
     @savefig solis-dni.png width=10in
-    In [1]: plt.show()
+    In [1]: plot_solis('dni')
 
     @suppress
     In [1]: plt.close();
 
-    In [1]: plot_solis('dhi')
-
     @savefig solis-dhi.png width=10in
-    In [1]: plt.show()
+    In [1]: plot_solis('dhi')
 
     @suppress
     In [1]: plt.close();
@@ -565,9 +629,8 @@ GHI data. We first generate and plot the clear sky and measured data.
 
     ax.set_ylabel('Irradiance $W/m^2$');
 
-    plt.legend(loc=4);
     @savefig detect-clear-ghi.png width=10in
-    plt.show();
+    plt.legend(loc=4);
 
     @suppress
     plt.close();
@@ -617,3 +680,17 @@ References
 .. [Ren16] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
    sky irradiance in time series of GHI measurements" Renewable Energy,
    v90, p. 520-531, 2016.
+
+.. [Mol98] B. Molineaux, P. Ineichen, and N. O’Neill, “Equivalence of
+   pyrheliometric and monochromatic aerosol optical depths at a single key
+   wavelength.,” Appl. Opt., vol. 37, no. 30, pp. 7008–18, Oct. 1998.
+
+.. [Kas96] F. Kasten, “The linke turbidity factor based on improved values
+   of the integral Rayleigh optical thickness,” Sol. Energy, vol. 56, no. 3,
+   pp. 239–244, Mar. 1996.
+
+.. [Bir80] R. E. Bird and R. L. Hulstrom, “Direct Insolation Models,”
+   1980.
+
+.. [Ang61] A. ÅNGSTRÖM, “Techniques of Determinig the Turbidity of the
+   Atmosphere,” Tellus A, vol. 13, no. 2, pp. 214–223, 1961.

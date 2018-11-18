@@ -744,7 +744,7 @@ def test_clearsky_index():
     assert_allclose(out, expected, atol=0.001)
     # scalars
     out = irradiance.clearsky_index(10, 1000)
-    expected = 0.1
+    expected = 0.01
     assert_allclose(out, expected, atol=0.001)
     # series
     times = pd.DatetimeIndex(start='20180601', periods=2, freq='12H')

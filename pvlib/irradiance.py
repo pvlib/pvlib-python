@@ -1209,7 +1209,7 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     ----------
     .. [1] None
     """
-    kt = ghi / clearsky_ghi
+    kt = ghi * 1. / clearsky_ghi
     kt = np.maximum(kt, 0)
     kt = np.minimum(kt, max_clearsky_index)
     return kt

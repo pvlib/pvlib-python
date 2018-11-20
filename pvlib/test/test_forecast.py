@@ -27,7 +27,7 @@ if has_siphon:
             HRRR_ESRL, marks=[
                 skip_windows,
                 pytest.mark.xfail(reason="HRRR_ESRL is unreliable"),
-                pytest.mark.timeout(HRRR_ESRL, timeout=60)])]
+                pytest.mark.timeout(timeout=60)])]
     _working_models = []
     _variables = ['temp_air', 'wind_speed', 'total_clouds', 'low_clouds',
                   'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi']

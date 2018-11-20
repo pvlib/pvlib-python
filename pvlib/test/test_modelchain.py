@@ -578,6 +578,7 @@ def test_ModelChain___repr__(system, location, strategy, strategy_str):
 
     assert mc.__repr__() == expected
 
+
 @requires_scipy
 def test_complete_irradiance_clean_run(system, location):
     """The DataFrame should not change if all columns are passed"""

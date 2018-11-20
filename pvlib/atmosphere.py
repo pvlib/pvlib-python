@@ -5,9 +5,12 @@ absolute airmass and to determine pressure from altitude or vice versa.
 
 from __future__ import division
 
+from warnings import warn
+
 import numpy as np
 import pandas as pd
-from warnings import warn
+
+from pvlib._deprecation import deprecated
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')
@@ -95,7 +98,7 @@ def alt2pres(altitude):
     return press
 
 
-def absoluteairmass(airmass_relative, pressure=101325.):
+def get_absolute_airmass(airmass_relative, pressure=101325.):
     '''
     Determine absolute (pressure corrected) airmass from relative
     airmass and pressure
@@ -134,7 +137,12 @@ def absoluteairmass(airmass_relative, pressure=101325.):
     return airmass_absolute
 
 
-def relativeairmass(zenith, model='kastenyoung1989'):
+absoluteairmass = deprecated('0.6', alternative='get_absolute_airmass',
+                             name='absoluteairmass', removal='0.7')(
+                             get_absolute_airmass)
+
+
+def get_relative_airmass(zenith, model='kastenyoung1989'):
     '''
     Gives the relative (not pressure-corrected) airmass.
 
@@ -221,8 +229,8 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         am = (1.0 / (np.sin(np.radians(90 - z +
               244.0 / (165 + 47.0 * (90 - z) ** 1.1)))))
     elif 'youngirvine1967' == model:
-        am = ((1.0 / np.cos(zenith_rad)) *
-              (1 - 0.0012*((1.0 / np.cos(zenith_rad)) ** 2) - 1))
+        sec_zen = 1.0 / np.cos(zenith_rad)
+        am = sec_zen * (1 - 0.0012 * (sec_zen * sec_zen - 1))
     elif 'young1994' == model:
         am = ((1.002432*((np.cos(zenith_rad)) ** 2) +
               0.148386*(np.cos(zenith_rad)) + 0.0096467) /
@@ -239,6 +247,11 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         am = pd.Series(am, index=zenith.index)
 
     return am
+
+
+relativeairmass = deprecated('0.6', alternative='get_relative_airmass',
+                             name='relativeairmass', removal='0.7')(
+                             get_relative_airmass)
 
 
 def gueymard94_pw(temp_air, relative_humidity):
@@ -304,8 +317,8 @@ def gueymard94_pw(temp_air, relative_humidity):
        1294-1300.
     """
 
-    T = temp_air + 273.15  # Convert to Kelvin
-    RH = relative_humidity
+    T = temp_air + 273.15  # Convert to Kelvin                  # noqa: N806
+    RH = relative_humidity                                      # noqa: N806
 
     theta = T / 273.15
 
@@ -380,7 +393,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
         The module used to calculate the spectral correction
         coefficients corresponds to the Mult-crystalline silicon
         Manufacturer 2 Model C from [3]_. Spectral Response (SR) of CIGS
-        and a-Si modules used to derive coefficients can be found in [4]_ 
+        and a-Si modules used to derive coefficients can be found in [4]_
 
     coefficients : None or array-like, default None
         allows for entry of user defined spectral correction
@@ -460,14 +473,17 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     _coefficients['cigs'] = (
         0.85252, -0.022314, -0.0047216, 0.13666, 0.013342, -0.0008945)
     _coefficients['asi'] = (
-        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382,-0.0033818)
+        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382, -0.0033818)
 
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]
     elif module_type is None and coefficients is not None:
         pass
+    elif module_type is None and coefficients is None:
+        raise TypeError('No valid input provided, both module_type and ' +
+                        'coefficients are None')
     else:
-        raise TypeError('ambiguous input, must supply only 1 of ' +
+        raise TypeError('Cannot resolve input, must supply only one of ' +
                         'module_type and coefficients')
 
     # Evaluate Spectral Shift
@@ -605,7 +621,7 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     return lt
 
 
-def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
+def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     r"""
     Get AOD at specified wavelength using Angstrom turbidity model.
 
@@ -615,7 +631,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
         aerosol optical depth (AOD) measured at known wavelength
     lambda0 : numeric
         wavelength in nanometers corresponding to ``aod0``
-    alpha : numeric
+    alpha : numeric, default 1.14
         Angstrom :math:`\alpha` exponent corresponding to ``aod0``
     lambda1 : numeric, default 700
         desired wavelength in nanometers

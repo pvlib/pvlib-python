@@ -16,11 +16,13 @@ state-of-the-art of solar power forecasting.
 
 pvlib-python uses Unidata's `Siphon
 <http://siphon.readthedocs.org/en/latest/>`_ library to simplify access
-to forecast data hosted on the Unidata `THREDDS catalog
+to real-time forecast data hosted on the Unidata `THREDDS catalog
 <http://thredds.ucar.edu/thredds/catalog.html>`_. Siphon is great for
 programatic access of THREDDS data, but we also recommend using tools
 such as `Panoply <http://www.giss.nasa.gov/tools/panoply/>`_
 to easily browse the catalog and become more familiar with its contents.
+
+We do not know of a similarly easy way to access archives of forecast data.
 
 This document demonstrates how to use pvlib-python to create a PV power
 forecast using these tools. The `forecast
@@ -83,9 +85,6 @@ then set the location and time range data.
     import pandas as pd
     import matplotlib.pyplot as plt
     import datetime
-
-    # seaborn makes the plots look nicer
-    import seaborn as sns; sns.set_color_codes()
 
     # import pvlib forecast models
     from pvlib.forecast import GFS, NAM, NDFD, HRRR, RAP
@@ -196,6 +195,8 @@ cover forecasts.
               .format(latitude, longitude));
     @savefig gfs_cloud_cover.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 However, many of forecast models do not include radiation components in
 their output fields, or if they do then the radiation fields suffer from
@@ -246,6 +247,8 @@ irradiance conversion using the clear sky scaling algorithm.
               .format(latitude, longitude));
     @savefig gfs_irrad_cs.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 The essential parts of the Liu-Jordan cloud cover to irradiance algorithm
@@ -272,6 +275,8 @@ irradiance conversion.
               .format(latitude, longitude));
     @savefig gfs_irrad_lj.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 Most weather model output has a fairly coarse time resolution, at least
@@ -291,6 +296,8 @@ recalculate the irradiance.
               .format(latitude, longitude));
     @savefig gfs_irrad_high_res.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 Users may then recombine resampled_irrads and resampled_data using
 slicing :py:func:`pandas.concat` or :py:meth:`pandas.DataFrame.join`.
@@ -329,8 +336,7 @@ HRRR
 The High Resolution Rapid Refresh (HRRR) model is perhaps the most
 accurate model, however, it is only available for ~15 hours. It is
 updated every hour and runs at 3 km resolution. The HRRR excels in
-severe weather situations. A major upgrade to the HRRR model is expected
-in Spring, 2016. See the `NOAA ESRL HRRR page
+severe weather situations. See the `NOAA ESRL HRRR page
 <http://rapidrefresh.noaa.gov/hrrr/>`_ for more information. Use the
 HRRR, among others, if you want forecasts for less than 24 hours.
 The HRRR model covers the continental United States.
@@ -347,6 +353,8 @@ The HRRR model covers the continental United States.
               .format(latitude, longitude));
     @savefig hrrr_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 RAP
@@ -354,8 +362,7 @@ RAP
 The Rapid Refresh (RAP) model is the parent model for the HRRR. It is
 updated every hour and runs at 40, 20, and 13 km resolutions. Only the
 20 and 40 km resolutions are currently available in pvlib. It is also
-excels in severe weather situations. A major upgrade to the RAP model is
-expected in Spring, 2016. See the `NOAA ESRL HRRR page
+excels in severe weather situations. See the `NOAA ESRL HRRR page
 <http://rapidrefresh.noaa.gov/hrrr/>`_ for more information. Use the
 RAP, among others, if you want forecasts for less than 24 hours.
 The RAP model covers most of North America.
@@ -372,6 +379,8 @@ The RAP model covers most of North America.
               .format(latitude, longitude));
     @savefig rap_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 NAM
@@ -392,6 +401,8 @@ resolution NAM data with a time horizon of up to 4 days.
               .format(latitude, longitude));
     @savefig nam_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 NDFD
@@ -414,6 +425,8 @@ The NDFD is available for the United States.
               .format(latitude, longitude));
     @savefig ndfd_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 PV Power Forecast
@@ -457,7 +470,10 @@ Here's the forecast plane of array irradiance...
 
     mc.total_irrad.plot();
     @savefig poa_irrad.png width=6in
-    plt.ylabel('Plane of array irradiance ($W/m**2$)');
+    plt.ylabel('Plane of array irradiance ($W/m^2$)');
+    plt.legend(loc='best');
+    @suppress
+    plt.close();
 
 ...the cell and module temperature...
 
@@ -466,13 +482,17 @@ Here's the forecast plane of array irradiance...
     mc.temps.plot();
     @savefig pv_temps.png width=6in
     plt.ylabel('Temperature (C)');
+    @suppress
+    plt.close();
 
 ...and finally AC power...
 
 .. ipython:: python
 
-    mc.ac.plot();
+    mc.ac.fillna(0).plot();
     plt.ylim(0, None);
     @savefig ac_power.png width=6in
     plt.ylabel('AC Power (W)');
+    @suppress
+    plt.close();
 

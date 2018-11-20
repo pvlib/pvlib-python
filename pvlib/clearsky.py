@@ -12,11 +12,11 @@ import calendar
 import numpy as np
 import pandas as pd
 
-from pvlib import tools, atmosphere, solarposition, irradiance
+from pvlib import atmosphere, tools
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
-             altitude=0, dni_extra=1364.):
+             altitude=0, dni_extra=1364., perez_enhancement=False):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
 
@@ -46,6 +46,12 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     dni_extra : numeric, default 1364
         Extraterrestrial irradiance. The units of ``dni_extra``
         determine the units of the output.
+
+    perez_enhancement : bool, default False
+        Controls if the Perez enhancement factor should be applied.
+        Setting to True may produce spurious results for times when
+        the Sun is near the horizon and the airmass is high.
+        See https://github.com/pvlib/pvlib-python/issues/435
 
     Returns
     -------
@@ -79,28 +85,9 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
         ISES Solar World Congress, June 2003. Goteborg, Sweden.
     '''
 
-    # Dan's note on the TL correction: By my reading of the publication
-    # on pages 151-157, Ineichen and Perez introduce (among other
-    # things) three things. 1) Beam model in eqn. 8, 2) new turbidity
-    # factor in eqn 9 and appendix A, and 3) Global horizontal model in
-    # eqn. 11. They do NOT appear to use the new turbidity factor (item
-    # 2 above) in either the beam or GHI models. The phrasing of
-    # appendix A seems as if there are two separate corrections, the
-    # first correction is used to correct the beam/GHI models, and the
-    # second correction is used to correct the revised turibidity
-    # factor. In my estimation, there is no need to correct the
-    # turbidity factor used in the beam/GHI models.
-
-    # Create the corrected TL for TL < 2
-    # TLcorr = TL;
-    # TLcorr(TL < 2) = TLcorr(TL < 2) - 0.25 .* (2-TLcorr(TL < 2)) .^ (0.5);
-
-    # This equation is found in Solar Energy 73, pg 311. Full ref: Perez
-    # et. al., Vol. 73, pp. 307-317 (2002). It is slightly different
-    # than the equation given in Solar Energy 73, pg 156. We used the
-    # equation from pg 311 because of the existence of known typos in
-    # the pg 156 publication (notably the fh2-(TL-1) should be fh2 *
-    # (TL-1)).
+    # ghi is calculated using either the equations in [1] by setting
+    # perez_enhancement=False (default behavior) or using the model
+    # in [2] by setting perez_enhancement=True.
 
     # The NaN handling is a little subtle. The AM input is likely to
     # have NaNs that we'll want to map to 0s in the output. However, we
@@ -119,8 +106,12 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     cg1 = 5.09e-05 * altitude + 0.868
     cg2 = 3.92e-05 * altitude + 0.0387
 
-    ghi = (np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1))) *
-           np.exp(0.01*airmass_absolute**1.8))
+    ghi = np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1)))
+
+    # https://github.com/pvlib/pvlib-python/issues/435
+    if perez_enhancement:
+        ghi *= np.exp(0.01*airmass_absolute**1.8)
+
     # use fmax to map airmass nans to 0s. multiply and divide by tl to
     # reinsert tl nans
     ghi = cg1 * dni_extra * cos_zenith * tl / tl * np.fmax(ghi, 0)
@@ -153,7 +144,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
                            interp_turbidity=True):
     """
-    Look up the Linke Turibidity from the ``LinkeTurbidities.mat``
+    Look up the Linke Turibidity from the ``LinkeTurbidities.h5``
     data file supplied with pvlib.
 
     Parameters
@@ -165,18 +156,18 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     longitude : float
 
     filepath : None or string, default None
-        The path to the ``.mat`` file.
+        The path to the ``.h5`` file.
 
     interp_turbidity : bool, default True
         If ``True``, interpolates the monthly Linke turbidity values
-        found in ``LinkeTurbidities.mat`` to daily values.
+        found in ``LinkeTurbidities.h5`` to daily values.
 
     Returns
     -------
     turbidity : Series
     """
 
-    # The .mat file 'LinkeTurbidities.mat' contains a single 2160 x 4320 x 12
+    # The .h5 file 'LinkeTurbidities.h5' contains a single 2160 x 4320 x 12
     # matrix of type uint8 called 'LinkeTurbidity'. The rows represent global
     # latitudes from 90 to -90 degrees; the columns represent global longitudes
     # from -180 to 180; and the depth (third dimension) represents months of
@@ -194,18 +185,15 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # 1st column: 179.9583 W, 2nd column: 179.875 W
 
     try:
-        import scipy.io
+        import tables
     except ImportError:
-        raise ImportError('The Linke turbidity lookup table requires scipy. ' +
-                          'You can still use clearsky.ineichen if you ' +
+        raise ImportError('The Linke turbidity lookup table requires tables. '
+                          'You can still use clearsky.ineichen if you '
                           'supply your own turbidities.')
 
     if filepath is None:
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
-        filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.mat')
-
-    mat = scipy.io.loadmat(filepath)
-    linke_turbidity_table = mat['LinkeTurbidity']
+        filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
     latitude_index = (
         np.around(_linearly_scale(latitude, 90, -90, 0, 2160))
@@ -214,54 +202,103 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
         .astype(np.int64))
 
-    g = linke_turbidity_table[latitude_index][longitude_index]
+    lt_h5_file = tables.open_file(filepath)
+    try:
+        lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
+                                             longitude_index, :]
+    except IndexError:
+        raise IndexError('Latitude should be between 90 and -90, '
+                         'longitude between -180 and 180.')
+    finally:
+        lt_h5_file.close()
 
     if interp_turbidity:
-        # Data covers 1 year. Assume that data corresponds to the value at the
-        # middle of each month. This means that we need to add previous Dec and
-        # next Jan to the array so that the interpolation will work for
-        # Jan 1 - Jan 15 and Dec 16 - Dec 31.
-        g2 = np.concatenate([[g[-1]], g, [g[0]]])
-        # Then we map the month value to the day of year value.
-        isleap = [calendar.isleap(t.year) for t in time]
-        if all(isleap):
-            days = _calendar_month_middles(2016)  # all years are leap
-        elif not any(isleap):
-            days = _calendar_month_middles(2015)  # none of the years are leap
-        else:
-            days = None  # some of the years are leap years and some are not
-        if days is None:
-            # Loop over different years, might be slow for large timeserires
-            linke_turbidity = pd.Series([
-                np.interp(t.dayofyear, _calendar_month_middles(t.year), g2)
-                for t in time
-            ], index=time)
-        else:
-            linke_turbidity = pd.Series(np.interp(time.dayofyear, days, g2),
-                                        index=time)
+        linke_turbidity = _interpolate_turbidity(lts, time)
     else:
-        linke_turbidity = pd.DataFrame(time.month, index=time)
-        # apply monthly data
-        linke_turbidity = linke_turbidity.apply(lambda x: g[x[0]-1], axis=1)
+        months = time.month - 1
+        linke_turbidity = pd.Series(lts[months], index=time)
 
     linke_turbidity /= 20.
 
     return linke_turbidity
 
 
+def _is_leap_year(year):
+    """Determine if a year is leap year.
+
+    Parameters
+    ----------
+    year : numeric
+
+    Returns
+    -------
+    isleap : array of bools
+    """
+    isleap = ((np.mod(year, 4) == 0) &
+              ((np.mod(year, 100) != 0) | (np.mod(year, 400) == 0)))
+    return isleap
+
+
+def _interpolate_turbidity(lts, time):
+    """
+    Interpolated monthly Linke turbidity onto daily values.
+
+    Parameters
+    ----------
+    lts : np.array
+        Monthly Linke turbidity values.
+    time : pd.DatetimeIndex
+        Times to be interpolated onto.
+
+    Returns
+    -------
+    linke_turbidity : pd.Series
+        The interpolated turbidity.
+    """
+    # Data covers 1 year. Assume that data corresponds to the value at the
+    # middle of each month. This means that we need to add previous Dec and
+    # next Jan to the array so that the interpolation will work for
+    # Jan 1 - Jan 15 and Dec 16 - Dec 31.
+    lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
+
+    # handle leap years
+    try:
+        isleap = time.is_leap_year
+    except AttributeError:
+        year = time.year
+        isleap = _is_leap_year(year)
+
+    dayofyear = time.dayofyear
+    days_leap = _calendar_month_middles(2016)
+    days_no_leap = _calendar_month_middles(2015)
+
+    # Then we map the month value to the day of year value.
+    # Do it for both leap and non-leap years.
+    lt_leap = np.interp(dayofyear, days_leap, lts_concat)
+    lt_no_leap = np.interp(dayofyear, days_no_leap, lts_concat)
+    linke_turbidity = np.where(isleap, lt_leap, lt_no_leap)
+
+    linke_turbidity = pd.Series(linke_turbidity, index=time)
+
+    return linke_turbidity
+
+
 def _calendar_month_middles(year):
-    """list of middle day of each month, used by Linke turbidity lookup"""
+    """List of middle day of each month, used by Linke turbidity lookup"""
     # remove mdays[0] since January starts at mdays[1]
-    # make local copy of mdays since we need to change February for leap years
+    # make local copy of mdays since we need to change
+    # February for leap years
     mdays = np.array(calendar.mdays[1:])
     ydays = 365
     # handle leap years
     if calendar.isleap(year):
         mdays[1] = mdays[1] + 1
         ydays = 366
-    return np.concatenate([[-calendar.mdays[-1] / 2.0],  # Dec last year
-                           np.cumsum(mdays) - np.array(mdays) / 2.,  # this year
-                           [ydays + calendar.mdays[1] / 2.0]])  # Jan next year
+    middles = np.concatenate(
+        [[-calendar.mdays[-1] / 2.0],  # Dec last year
+         np.cumsum(mdays) - np.array(mdays) / 2.,  # this year
+         [ydays + calendar.mdays[1] / 2.0]])  # Jan next year
+    return middles
 
 
 def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
@@ -294,9 +331,9 @@ def haurwitz(apparent_zenith):
 
     Implements the Haurwitz clear sky model for global horizontal
     irradiance (GHI) as presented in [1, 2]. A report on clear
-    sky models found the Haurwitz model to have the best performance of
-    models which require only zenith angle [3]. Extreme care should
-    be taken in the interpretation of this result!
+    sky models found the Haurwitz model to have the best performance
+    in terms of average monthly error among models which require only
+    zenith angle [3].
 
     Parameters
     ----------
@@ -306,7 +343,7 @@ def haurwitz(apparent_zenith):
 
     Returns
     -------
-    pd.Series
+    pd.DataFrame
     The modeled global horizonal irradiance in W/m^2 provided
     by the Haurwitz clear-sky model.
 
@@ -326,13 +363,15 @@ def haurwitz(apparent_zenith):
      Laboratories, SAND2012-2389, 2012.
     '''
 
-    cos_zenith = tools.cosd(apparent_zenith)
+    cos_zenith = tools.cosd(apparent_zenith.values)
+    clearsky_ghi = np.zeros_like(apparent_zenith.values)
+    cos_zen_gte_0 = cos_zenith > 0
+    clearsky_ghi[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
+                                   np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
 
-    clearsky_ghi = 1098.0 * cos_zenith * np.exp(-0.059/cos_zenith)
-
-    clearsky_ghi[clearsky_ghi < 0] = 0
-
-    df_out = pd.DataFrame({'ghi': clearsky_ghi})
+    df_out = pd.DataFrame(index=apparent_zenith.index,
+                          data=clearsky_ghi,
+                          columns=['ghi'])
 
     return df_out
 
@@ -391,11 +430,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
     w = precipitable_water
 
     # algorithm fails for pw < 0.2
-    if np.isscalar(w):
-        w = 0.2 if w < 0.2 else w
-    else:
-        w = w.copy()
-        w[w < 0.2] = 0.2
+    w = np.maximum(w, 0.2)
 
     # this algorithm is reasonably fast already, but it could be made
     # faster by precalculating the powers of aod700, the log(p/p0), and
@@ -500,8 +535,10 @@ def _calc_taud(w, aod700, p):
     elif np.isscalar(aod700):
         aod700 = np.full_like(w, aod700)
 
-    aod700_mask = aod700 < 0.05
-    aod700_mask = np.array([aod700_mask, ~aod700_mask], dtype=np.int)
+    # set up nan-tolerant masks
+    aod700_lt_0p05 = np.full_like(aod700, False, dtype='bool')
+    np.less(aod700, 0.05, where=~np.isnan(aod700), out=aod700_lt_0p05)
+    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=np.int)
 
     # create tuples of coefficients for
     # aod700 < 0.05, aod700 >= 0.05
@@ -640,39 +677,40 @@ def detect_clearsky(measured, clearsky, times, window_length,
     if len(unique_deltas) == 1:
         sample_interval = unique_deltas[0]
     else:
-        raise NotImplementedError('algorithm does not yet support unequal ' \
+        raise NotImplementedError('algorithm does not yet support unequal '
                                   'times. consider resampling your data.')
 
-    samples_per_window = int(window_length / sample_interval)
+    intervals_per_window = int(window_length / sample_interval)
 
     # generate matrix of integers for creating windows with indexing
     from scipy.linalg import hankel
-    H = hankel(np.arange(samples_per_window),
-               np.arange(samples_per_window-1, len(times)))
+    H = hankel(np.arange(intervals_per_window),                   # noqa: N806
+               np.arange(intervals_per_window - 1, len(times)))
 
     # calculate measurement statistics
     meas_mean = np.mean(measured[H], axis=0)
     meas_max = np.max(measured[H], axis=0)
-    meas_slope = np.diff(measured[H], n=1, axis=0)
+    meas_diff = np.diff(measured[H], n=1, axis=0)
+    meas_slope = np.diff(measured[H], n=1, axis=0) / sample_interval
     # matlab std function normalizes by N-1, so set ddof=1 here
     meas_slope_nstd = np.std(meas_slope, axis=0, ddof=1) / meas_mean
-    meas_slope_max = np.max(np.abs(meas_slope), axis=0)
     meas_line_length = np.sum(np.sqrt(
-        meas_slope*meas_slope + sample_interval*sample_interval), axis=0)
+        meas_diff * meas_diff +
+        sample_interval * sample_interval), axis=0)
 
     # calculate clear sky statistics
     clear_mean = np.mean(clearsky[H], axis=0)
     clear_max = np.max(clearsky[H], axis=0)
-    clear_slope = np.diff(clearsky[H], n=1, axis=0)
-    clear_slope_max = np.max(np.abs(clear_slope), axis=0)
+    clear_diff = np.diff(clearsky[H], n=1, axis=0)
+    clear_slope = np.diff(clearsky[H], n=1, axis=0) / sample_interval
 
     from scipy.optimize import minimize_scalar
 
     alpha = 1
     for iteration in range(max_iterations):
         clear_line_length = np.sum(np.sqrt(
-            alpha*alpha*clear_slope*clear_slope +
-            sample_interval*sample_interval), axis=0)
+            alpha * alpha * clear_diff * clear_diff +
+            sample_interval * sample_interval), axis=0)
 
         line_diff = meas_line_length - clear_line_length
 
@@ -681,7 +719,8 @@ def detect_clearsky(measured, clearsky, times, window_length,
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        c5 = (meas_slope_max - alpha*clear_slope_max) < slope_dev
+        c5 = np.max(np.abs(meas_slope -
+                           alpha * clear_slope), axis=0) < slope_dev
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
@@ -694,14 +733,16 @@ def detect_clearsky(measured, clearsky, times, window_length,
         previous_alpha = alpha
         clear_meas = measured[clear_samples]
         clear_clear = clearsky[clear_samples]
+
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+
         alpha = minimize_scalar(rmse).x
         if round(alpha*10000) == round(previous_alpha*10000):
             break
     else:
         import warnings
-        warnings.warn('failed to converge after %s iterations' \
+        warnings.warn('failed to converge after %s iterations'
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
@@ -710,13 +751,21 @@ def detect_clearsky(measured, clearsky, times, window_length,
 
     if return_components:
         components = OrderedDict()
-        components['mean_diff'] = c1
-        components['max_diff'] = c2
-        components['line_length'] = c3
-        components['slope_nstd'] = c4
-        components['slope_max'] = c5
-        components['mean_nan'] = c6
+        components['mean_diff_flag'] = c1
+        components['max_diff_flag'] = c2
+        components['line_length_flag'] = c3
+        components['slope_nstd_flag'] = c4
+        components['slope_max_flag'] = c5
+        components['mean_nan_flag'] = c6
         components['windows'] = clear_windows
+
+        components['mean_diff'] = np.abs(meas_mean - alpha * clear_mean)
+        components['max_diff'] = np.abs(meas_max - alpha * clear_max)
+        components['line_length'] = meas_line_length - clear_line_length
+        components['slope_nstd'] = meas_slope_nstd
+        components['slope_max'] = (np.max(
+            meas_slope - alpha * clear_slope, axis=0))
+
         return clear_samples, components, alpha
     else:
         return clear_samples
@@ -730,17 +779,18 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     Based on NREL Excel implementation by Daryl R. Myers [1, 2].
 
-    Bird and Hulstrom define the zenith as the "angle between a line to the sun
-    and the local zenith". There is no distinction in the paper between solar
-    zenith and apparent (or refracted) zenith, but the relative airmass is
-    defined using the Kasten 1966 expression, which requires apparent zenith.
-    Although the formulation for calculated zenith is never explicitly defined
-    in the report, since the purpose was to compare existing clear sky models
-    with "rigorous radiative transfer models" (RTM) it is possible that apparent
-    zenith was obtained as output from the RTM. However, the implentation
-    presented in PVLIB is tested against the NREL Excel implementation by Daryl
-    Myers which uses an analytical expression for solar zenith instead of
-    apparent zenith.
+    Bird and Hulstrom define the zenith as the "angle between a line to
+    the sun and the local zenith". There is no distinction in the paper
+    between solar zenith and apparent (or refracted) zenith, but the
+    relative airmass is defined using the Kasten 1966 expression, which
+    requires apparent zenith. Although the formulation for calculated
+    zenith is never explicitly defined in the report, since the purpose
+    was to compare existing clear sky models with "rigorous radiative
+    transfer models" (RTM) it is possible that apparent zenith was
+    obtained as output from the RTM. However, the implentation presented
+    in PVLIB is tested against the NREL Excel implementation by Daryl
+    Myers which uses an analytical expression for solar zenith instead
+    of apparent zenith.
 
     Parameters
     ----------
@@ -795,7 +845,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     ze_rad = np.deg2rad(zenith)  # zenith in radians
     airmass = airmass_relative
     # Bird clear sky model
-    am_press = atmosphere.absoluteairmass(airmass, pressure)
+    am_press = atmosphere.get_absolute_airmass(airmass, pressure)
     t_rayleigh = (
         np.exp(-0.0903 * am_press ** 0.84 * (
             1.0 + am_press - am_press ** 1.01

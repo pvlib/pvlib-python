@@ -30,6 +30,7 @@ time and time zone functionality in python and pvlib.
     import pandas as pd
     import pytz
 
+
 Finding a time zone
 *******************
 
@@ -94,7 +95,7 @@ It does not make sense to convert a time stamp that has not been
 localized, and pandas will raise an exception if you try to do so.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     midnight = pd.Timestamp('2015-1-1 00:00')
     midnight.tz_convert('UTC')
@@ -236,7 +237,7 @@ passed to ``Timestamp``.
 You cannot localize a native Python date object.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     # fail
     pytz.timezone('US/Mountain').localize(naive_python_date)
@@ -296,12 +297,6 @@ Solar position
 
 The correct solar position can be immediately calculated from the
 DataFrame's index since the index has been localized.
-
-.. ipython:: python
-    :suppress:
-
-    import seaborn as sns
-    sns.set_color_codes()
 
 .. ipython:: python
 

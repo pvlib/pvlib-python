@@ -1,0 +1,55 @@
+.. _whatsnew_0500:
+
+v0.5.0 (August 11, 2017)
+------------------------
+
+API Changes
+~~~~~~~~~~~
+* Removed parameter w from _calc_d (:issue:`344`)
+* SingleAxisTracker.get_aoi and SingleAxisTracker.get_irradiance
+  now require surface_zenith and surface_azimuth (:issue:`351`)
+* Changes calculation of the Incidence Angle Modifier to return 0
+  instead of np.nan for angles >= 90°. This improves the calculation of
+  effective irradiance close to sunrise and sunset. (:issue:`338`)
+* Change the default ModelChain orientation strategy from
+  'south_at_latitude_tilt' to ``None``. (:issue:`290`)
+
+Bug fixes
+~~~~~~~~~
+* Method of multi-inheritance has changed to make it possible to use kwargs in
+  the parent classes of LocalizedPVSystem and LocalizedSingleAxisTracker
+  (:issue:`330`)
+* Fix the `__repr__` method of `ModelChain`, crashing when
+  `orientation_strategy` is set to `'None'` (:issue:`352`)
+* Fix the `ModelChain`'s angle of incidence calculation for
+  SingleAxisTracker objects (:issue:`351`)
+* Fix issue with ForecastModel.cloud_cover_to_transmittance_linear method of
+  forecast.py ignoring 'offset' parameter. (:issue:`343`)
+
+Enhancements
+~~~~~~~~~~~~
+* Added default values to docstrings of all functions (:issue:`336`)
+* Added analytical method that calculates solar azimuth angle (:issue:`291`)
+
+Documentation
+~~~~~~~~~~~~~
+* Added ModelChain documentation page
+* Added nbsphinx to documentation build configuration.
+* Added a pull request template file (:issue:`354`)
+
+Testing
+~~~~~~~
+* Added explicit tests for aoi and aoi_projection functions.
+* Update test of `ModelChain.__repr__` to take in account :issue:`352`
+* Added a test for solar_azimuth_analytical function.
+
+Contributors
+~~~~~~~~~~~~
+* Johannes Kaufmann
+* Will Holmgren
+* Uwe Krien
+* Alaina Kafkes
+* Birgit Schachler
+* Jonathan Gaffiot
+* Siyan (Veronica) Guo
+* KonstantinTr

@@ -58,7 +58,7 @@ extensions = [
     'numpydoc',
     'sphinx.ext.autosummary',
     'IPython.sphinxext.ipython_directive',
-    'IPython.sphinxext.ipython_console_highlighting',
+    'IPython.sphinxext.ipython_console_highlighting'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -100,7 +100,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['whatsnew/*']
+exclude_patterns = ['whatsnew/*', '**.ipynb_checkpoints']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -271,7 +271,8 @@ extlinks = {'issue': ('https://github.com/pvlib/pvlib-python/issues/%s',
                       'GH'),
             'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s',
                      'wiki '),
-            'doi': ('http://dx.doi.org/%s', 'DOI: ')}
+            'doi': ('http://dx.doi.org/%s', 'DOI: '),
+            'ghuser': ('https://github.com/%s', '@')}
 
 # -- Options for manual page output ---------------------------------------
 
@@ -311,8 +312,9 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.5/', None),
+    'python': ('https://docs.python.org/3.7/', None),
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
 }
 
+nbsphinx_allow_errors = True

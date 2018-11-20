@@ -187,7 +187,7 @@ class Location(object):
             Column names are: ``ghi, dni, dhi``.
         """
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(times)
+            dni_extra = irradiance.get_extra_radiation(times)
 
         try:
             pressure = kwargs.pop('pressure')
@@ -218,7 +218,7 @@ class Location(object):
 
             cs = clearsky.ineichen(apparent_zenith, airmass_absolute,
                                    linke_turbidity, altitude=self.altitude,
-                                   dni_extra=dni_extra)
+                                   dni_extra=dni_extra, **kwargs)
         elif model == 'haurwitz':
             cs = clearsky.haurwitz(apparent_zenith)
         elif model == 'simplified_solis':
@@ -265,14 +265,53 @@ class Location(object):
         else:
             raise ValueError('{} is not a valid airmass model'.format(model))
 
-        airmass_relative = atmosphere.relativeairmass(zenith, model)
+        airmass_relative = atmosphere.get_relative_airmass(zenith, model)
 
         pressure = atmosphere.alt2pres(self.altitude)
-        airmass_absolute = atmosphere.absoluteairmass(airmass_relative,
-                                                      pressure)
+        airmass_absolute = atmosphere.get_absolute_airmass(airmass_relative,
+                                                           pressure)
 
-        airmass = pd.DataFrame()
+        airmass = pd.DataFrame(index=solar_position.index)
         airmass['airmass_relative'] = airmass_relative
         airmass['airmass_absolute'] = airmass_absolute
 
         return airmass
+
+    def get_sun_rise_set_transit(self, times, method='pyephem', **kwargs):
+        """
+        Calculate sunrise, sunset and transit times.
+
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Must be localized to the Location
+        method : str, default 'pyephem'
+            'pyephem', 'spa', or 'geometric'
+
+        kwargs are passed to the relevant functions. See
+        solarposition.sun_rise_set_transit_<method> for details.
+
+        Returns
+        -------
+        result : DataFrame
+            Column names are: ``sunrise, sunset, transit``.
+        """
+
+        if method == 'pyephem':
+            result = solarposition.sun_rise_set_transit_ephem(
+                times, self.latitude, self.longitude, **kwargs)
+        elif method == 'spa':
+            result = solarposition.sun_rise_set_transit_spa(
+                times, self.latitude, self.longitude, **kwargs)
+        elif method == 'geometric':
+            sr, ss, tr = solarposition.sun_rise_set_transit_geometric(
+                times, self.latitude, self.longitude, **kwargs)
+            result = pd.DataFrame(index=times,
+                                  data={'sunrise': sr,
+                                        'sunset': ss,
+                                        'transit': tr})
+        else:
+            raise ValueError('{} is not a valid method. Must be '
+                             'one of pyephem, spa, geometric'
+                             .format(method))
+        return result

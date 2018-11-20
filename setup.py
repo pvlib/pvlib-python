@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import os
-import re
-import shutil
-import sys
 
 try:
-    from setuptools import setup, Command
+    from setuptools import setup
     from setuptools.extension import Extension
 except ImportError:
     raise RuntimeError('setuptools is required')
@@ -40,12 +37,20 @@ AUTHOR = 'PVLIB Python Developers'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
-INSTALL_REQUIRES = ['numpy >= 1.9.0',
-                    'pandas >= 0.14.0',
+INSTALL_REQUIRES = ['numpy >= 1.10.1',
+                    'pandas >= 0.15.0',
                     'pytz',
                     'six',
                     ]
-TESTS_REQUIRE = ['pytest', 'nose']
+TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock', 'nose']
+EXTRAS_REQUIRE = {
+    'optional': ['scipy', 'tables', 'numba', 'siphon', 'netcdf4',
+                 'ephem', 'cython'],
+    'doc': ['sphinx', 'ipython', 'sphinx_rtd_theme', 'numpydoc',
+            'matplotlib'],
+    'test': TESTS_REQUIRE
+}
+EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -60,6 +65,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
     'Topic :: Scientific/Engineering',
 ]
 
@@ -96,6 +102,7 @@ setup(name=DISTNAME,
       cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
       install_requires=INSTALL_REQUIRES,
+      extras_require=EXTRAS_REQUIRE,
       tests_require=TESTS_REQUIRE,
       ext_modules=extensions,
       description=DESCRIPTION,

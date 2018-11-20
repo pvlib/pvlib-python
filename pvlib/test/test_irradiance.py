@@ -10,9 +10,8 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
-from pvlib import atmosphere, irradiance, solarposition
+from pvlib import irradiance
 from pvlib._deprecation import pvlibDeprecationWarning
-from pvlib.location import Location
 
 from conftest import (fail_on_pvlib_version, needs_numpy_1_10, pandas_0_22,
                       requires_ephem, requires_numba)
@@ -102,7 +101,7 @@ value = 1383.636203
     (timestamp, value)
 ])
 @pytest.mark.parametrize('method', [
-    'asce', 'spencer', 'nrel', requires_ephem('pyephem')])
+    'asce', 'spencer', 'nrel', pytest.param('pyephem', marks=requires_ephem)])
 def test_get_extra_radiation(input, expected, method):
     out = irradiance.get_extra_radiation(input)
     assert_allclose(out, expected, atol=1)

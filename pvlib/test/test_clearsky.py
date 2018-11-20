@@ -279,8 +279,8 @@ def test_haurwitz():
                                       487.894132885425,
                                       778.766689344363,
                                       1035.09203253450]),
-                             columns=['ghi'],
-                             index=apparent_solar_zenith)
+                            columns=['ghi'],
+                            index=apparent_solar_zenith)
     out = clearsky.haurwitz(data_in['apparent_zenith'])
     assert_frame_equal(expected, out)
 
@@ -293,7 +293,7 @@ def test_simplified_solis_scalar_elevation():
 
     out = clearsky.simplified_solis(80)
     for k, v in expected.items():
-        yield assert_allclose, expected[k], out[k]
+        assert_allclose(expected[k], out[k])
 
 
 def test_simplified_solis_scalar_neg_elevation():
@@ -304,7 +304,7 @@ def test_simplified_solis_scalar_neg_elevation():
 
     out = clearsky.simplified_solis(-10)
     for k, v in expected.items():
-        yield assert_allclose, expected[k], out[k]
+        assert_allclose(expected[k], out[k])
 
 
 def test_simplified_solis_series_elevation():

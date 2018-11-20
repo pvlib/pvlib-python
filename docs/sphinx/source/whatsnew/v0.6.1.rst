@@ -55,6 +55,7 @@ Bug fixes
 Testing
 ~~~~~~~
 * Add test for :func:`~pvlib.solarposition.hour_angle` (:issue:`597`)
+* Update tests to be compatible with pytest 4.0. (:issue:`623`)
 
 
 Contributors

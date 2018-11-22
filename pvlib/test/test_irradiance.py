@@ -756,7 +756,7 @@ def test_clearsky_index():
     # series
     times = pd.DatetimeIndex(start='20180601', periods=2, freq='12H')
     ghi_measured = pd.Series([100,  500], index=times)
-    ghi_modeled  = pd.Series([500, 1000], index=times)
+    ghi_modeled = pd.Series([500, 1000], index=times)
     out = irradiance.clearsky_index(ghi_measured, ghi_modeled)
     expected = pd.Series([0.2, 0.5], index=times)
     assert_series_equal(out, expected)

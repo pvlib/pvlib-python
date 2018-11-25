@@ -359,17 +359,23 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_frame_equal(out, expected)
 
 
-def test_disc_value():
+@pytest.mark.parametrize('pressure,expected', [
+    (93193,  [[830.46567,   0.79742,   0.93505],
+              [676.09497,   0.63776,   3.02102]]),
+    (None,   [[868.72425,   0.79742,   1.01664],
+              [680.66679,   0.63776,   3.28463]]),
+    (101325, [[868.72425,   0.79742,   1.01664],
+              [680.66679,   0.63776,   3.28463]])
+])
+def test_disc_value(pressure, expected):
+    # see GH 449 for pressure=None vs. 101325.
     columns = ['dni', 'kt', 'airmass']
     times = pd.DatetimeIndex(['2014-06-24T1200', '2014-06-24T1800'],
                              tz='America/Phoenix')
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
-    pressure = 93193.
     out = irradiance.disc(ghi, zenith, times, pressure=pressure)
-    expected_values = np.array(
-        [[830.46567,   0.79742,   0.93505],
-         [676.09497,   0.63776,   3.02102]])
+    expected_values = np.array(expected)
     expected = pd.DataFrame(expected_values, columns=columns, index=times)
     # check the pandas dataframe. check_less_precise is weird
     assert_frame_equal(out, expected, check_less_precise=True)

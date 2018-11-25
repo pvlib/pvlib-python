@@ -55,9 +55,9 @@ def cec_dc_snl_ac_system(sam_data):
 
 
 @pytest.fixture
-def pvsyst_dc_snl_ac_system(sam_data):
+def pvsyst_dc_snl_ac_system(sam_data, pvsyst_module_params):
     module = 'PVsyst test module'
-    module_parameters = pvsyst_module_params()
+    module_parameters = pvsyst_module_params
     module_parameters['b'] = 0.05
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
@@ -446,12 +446,16 @@ def test_bad_get_orientation():
 @fail_on_pvlib_version('0.7')
 def test_deprecated_07():
     # explicit system creation call because fail_on_pvlib_version
-    # does not support decorators
-    system = cec_dc_snl_ac_system(sam_data())
+    # does not support decorators.
+    # does not matter what the parameters are, just fake it until we make it
+    module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
+                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
+    system = PVSystem(module_parameters=module_parameters)
     with pytest.warns(pvlibDeprecationWarning):
         mc = ModelChain(system, location,
                         dc_model='singlediode',  # this should fail after 0.7
-                        aoi_model='no_loss', spectral_model='no_loss')
+                        aoi_model='no_loss', spectral_model='no_loss',
+                        ac_model='snlinverter')
 
 
 @requires_scipy

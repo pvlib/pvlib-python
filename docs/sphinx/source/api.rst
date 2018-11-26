@@ -90,7 +90,7 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
-   solarposition.sunrise_sunset_transit_geometric
+   solarposition.sun_rise_set_transit_geometric
 
 
 Clear sky

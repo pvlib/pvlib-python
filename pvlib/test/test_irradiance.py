@@ -372,7 +372,8 @@ def test_disc_value():
          [676.09497,   0.63776,   3.02102]])
     expected = pd.DataFrame(expected_values, columns=columns, index=times)
     # check the pandas dataframe. check_less_precise is weird
-    assert_frame_equal(out, expected, check_less_precise=True) # use np.assert_allclose to check values more clearly
+    assert_frame_equal(out, expected, check_less_precise=True)
+    # use np.assert_allclose to check values more clearly
     assert_allclose(out.values, expected_values, atol=1e-5)
 
 
@@ -401,6 +402,7 @@ def test_disc_min_cos_zenith_max_zenith():
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # max_zenith and/or max_airmass keep these results reasonable
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
                           min_cos_zenith=0)
     expected = pd.DataFrame(np.array(
@@ -408,6 +410,32 @@ def test_disc_min_cos_zenith_max_zenith():
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # still get reasonable values because of max_airmass=12 limit
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[0., 1.16046346e-02, 12.0]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # still get reasonable values because of max_airmass=12 limit
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[277.50185968, 1.0, 12.0]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # max_zenith keeps this result reasonable
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_airmass=100)
+    expected = pd.DataFrame(np.array(
+        [[0.00000000e+00, 1.0, 36.39544757]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # allow zenith to be close to 90 and airmass to be infinite
+    # and we get crazy values
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
                           max_zenith=100, max_airmass=100)
     expected = pd.DataFrame(np.array(
@@ -415,10 +443,12 @@ def test_disc_min_cos_zenith_max_zenith():
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # allow min cos zenith to be 0, zenith to be close to 90,
+    # and airmass to be very big and we get even higher DNI values
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
-                          min_cos_zenith=0, max_zenith=100)
+                          min_cos_zenith=0, max_zenith=100, max_airmass=100)
     expected = pd.DataFrame(np.array(
-        [[277.50185968, 1.0, 12.0]]),
+        [[7.21238390e+03, 1., 3.63954476e+01]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 

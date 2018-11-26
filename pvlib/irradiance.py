@@ -1295,7 +1295,7 @@ def _kt_kt_prime_factor(airmass):
 
 
 def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
-         min_cos_zenith=0.065, max_zenith=87):
+         min_cos_zenith=0.065, max_zenith=87, max_airmass=12):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1329,6 +1329,11 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     max_zenith : numeric, default 87
         Maximum value of zenith to allow in DNI calculation. DNI will be
         set to 0 for times with zenith values greater than `max_zenith`.
+
+    max_airmass : numeric, default 12
+        Maximum value of the airmass to allow in Kn calculation.
+        Default value (12) comes from range over which Kn was fit
+        to airmass in the original paper.
 
     Returns
     -------
@@ -1369,6 +1374,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
     am = atmosphere.get_absolute_airmass(am, pressure)
 
+    am = np.minimum(am, max_airmass)  # GH 450
     Kn = _disc_kn(kt, am)
     dni = Kn * I0
 
@@ -1393,9 +1399,6 @@ def _disc_kn(clearness_index, airmass):
     # short names for equations
     kt = clearness_index
     am = airmass
-
-    # consider adding
-    # am = np.maximum(am, 12)  # GH 450
 
     # powers of kt will be used repeatedly, so compute only once
     kt2 = kt * kt  # about the same as kt ** 2

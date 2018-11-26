@@ -24,6 +24,11 @@ API Changes
 * Changed function name from :py:func:`pvlib.solarposition.get_rise_set_transit` (deprecated)
   to :py:func:`pvlib.solarposition.sun_rise_set_transit_spa. `sun_rise_set_transit_spa`
   requires time input to be localized to the specified latitude/longitude. (:issue:`316')
+* Add `max_airmass` keyword argument to :py:func:`pvlib.irradiance.disc`.
+  Default value (`max_airmass=12`) is consistent with polynomial fit in
+  original paper describing the model. Output of
+  :py:func:`pvlib.irradiance.dirint` and `:py:func:`pvlib.irradiance.dirindex`,
+  are different when `min_cos_zenith` and `max_zenith` kwargs are used.
 
 
 Enhancements

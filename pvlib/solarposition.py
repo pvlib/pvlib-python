@@ -387,7 +387,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         using times.year and times.month from pandas.DatetimeIndex.
         For most simulations specifing delta_t is sufficient.
         Difference between terrestrial time and UT1.
-        *Note: delta_t = None will break code using nrel_numba,
+        delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.
         By default, use USNO historical data and predictions
     how : str, optional, default 'numpy'

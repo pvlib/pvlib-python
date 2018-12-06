@@ -1886,6 +1886,73 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
+def pvsyst_celltemp(poa_global, wind_speed, temp_air,
+                    eta_m=0.1,
+                    alpha_absorption=0.9,
+                    temp_model='freestanding'):
+    """
+    Calculate PVSyst cell temperature.
+
+    Parameters
+    ------------
+    poa_global : float or Series
+        Total incident irradiance in W/m^2.
+
+    wind_speed : float or Series
+        Wind speed in m/s at a height of 10 meters.
+
+    temp_air : float or Series
+        Ambient dry bulb temperature in degrees C.
+
+    eta_m : numeric
+        PV module efficiency as a fraction
+
+    alpha_absorption : float
+        Absorption coefficient, default is 0.9
+
+    temp_model : string, list, or dict, default 'freestanding'
+        Model to be used.
+
+        If string, can be:
+
+            * 'freestanding' (default)
+            * 'insulated'
+
+        If tuple/list, supply parameters in the following order:
+
+            * natural_convenction_coeff : float
+                Natural convection coefficient. Freestanding default is 29,
+                fully insulated arrays is 15. Recommended values are between
+                23.5 and 26.5.
+
+            * forced_convection_coeff : float
+                Forced convection coefficient, default is 0. Recommended values
+                are between 6.25 and 7.68.
+    Returns
+    --------
+    temp_cell : numeric or Series
+        Cell temperature in degrees Celsius
+    """
+
+    temp_models = {'freestanding': (29.0, 0),
+                   'insulated': (15.0, 0),
+                   }
+
+    if isinstance(temp_model, str):
+        natural_convenction_coeff, forced_convection_coeff = temp_models[temp_model.lower()]
+    elif isinstance(temp_model, (tuple, list)):
+        natural_convenction_coeff, forced_convection_coeff = temp_model
+    else:
+        raise TypeError("Please format temp_model as a str, or tuple/list. See function docstring for guidance")
+
+    combined_convection_coeff = (forced_convection_coeff * wind_speed) + \
+        natural_convenction_coeff
+
+    absorption_coeff = alpha_absorption * poa_global * (1 - eta_m)
+    temp_difference = absorption_coeff/combined_convection_coeff
+    temp_cell = temp_air + temp_difference
+
+    return temp_cell
 
 def sapm_spectral_loss(airmass_absolute, module):
     """

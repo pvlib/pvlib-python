@@ -270,7 +270,7 @@ PVWatts model
    pvsystem.pvwatts_losses
    pvsystem.pvwatts_losses
 
-PVWatts model
+PVsyst model
 -------------
 
 .. autosummary::

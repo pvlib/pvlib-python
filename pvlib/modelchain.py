@@ -629,7 +629,7 @@ class ModelChain(object):
             raise ValueError('could not infer spectral model from '
                              'system.module_parameters. Check that the '
                              'parameters contain valid '
-                             'first_solar_spectral_coefficients or a valid '
+                             'first_solar_spectral_coefficients and a valid '
                              'Material or Technology value')
 
     def first_solar_spectral_loss(self):

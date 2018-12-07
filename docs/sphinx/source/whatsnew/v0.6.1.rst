@@ -46,6 +46,7 @@ Enhancements
 * Add warning message when :py:func:`pvlib.spa` is reloaded.
 * Add option for :py:func:`pvlib.irradiance.disc` to use relative airmass
   by supplying `pressure=None`. (:issue:`449`)
+* Created :py:func:`pvlib.pvsystem.pvsyst_celltemp` to implement PVsyst's cell temperature model. (:issue:`552`)
 
 
 Bug fixes
@@ -72,3 +73,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
+* Cameron Stark (:ghuser:`camerontstark`)

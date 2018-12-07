@@ -268,6 +268,15 @@ PVWatts model
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
+   pvsystem.pvwatts_losses
+
+PVWatts model
+-------------
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.pvsyst_celltemp
 
 Other
 -----

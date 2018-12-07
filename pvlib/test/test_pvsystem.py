@@ -1095,14 +1095,14 @@ def test_pvsyst_celltemp_non_model():
 
 def test_pvsyst_celltemp_model_wrong_type():
     with pytest.raises(TypeError):
-        default = pvsystem.pvsyst_celltemp(
+        pvsystem.pvsyst_celltemp(
             900, 5, 20, 0.1,
             temp_model={"won't": 23.5, "work": 7.68})
 
 
 def test_pvsyst_celltemp_model_non_option():
     with pytest.raises(KeyError):
-        default = pvsystem.pvsyst_celltemp(
+        pvsystem.pvsyst_celltemp(
             900, 5, 20, 0.1,
             temp_model="not_an_option")
 

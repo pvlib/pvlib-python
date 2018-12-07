@@ -73,3 +73,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
+* Jonathan Gaffiot (:ghuser:`jgaffiot`)

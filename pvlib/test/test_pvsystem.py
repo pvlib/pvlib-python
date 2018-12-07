@@ -1093,6 +1093,20 @@ def test_pvsyst_celltemp_non_model():
     assert_allclose(list_non_model, 31.233, 0.001)
 
 
+def test_pvsyst_celltemp_model_wrong_type():
+    with pytest.raises(TypeError):
+        default = pvsystem.pvsyst_celltemp(
+            900, 5, 20, 0.1,
+            temp_model={"won't": 23.5, "work": 7.68})
+
+
+def test_pvsyst_celltemp_model_non_option():
+    with pytest.raises(KeyError):
+        default = pvsystem.pvsyst_celltemp(
+            900, 5, 20, 0.1,
+            temp_model="not_an_option")
+
+
 def test_pvsyst_celltemp_with_index():
     times = pd.DatetimeIndex(start="2015-01-01", end="2015-01-02", freq="12H")
     temps = pd.Series([0, 10, 5], index=times)

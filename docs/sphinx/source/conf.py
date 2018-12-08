@@ -318,3 +318,5 @@ intersphinx_mapping = {
 }
 
 nbsphinx_allow_errors = True
+
+ipython_warning_is_error = False

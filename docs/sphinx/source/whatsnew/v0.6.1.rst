@@ -1,6 +1,6 @@
 .. _whatsnew_0601:
 
-v0.6.1 (EST November, 2018)
+v0.6.1 (EST December, 2018)
 ---------------------------
 
 This is a minor release. We recommend all users of v0.6.0 upgrade to this
@@ -60,6 +60,7 @@ Bug fixes
   returning 0. (:issue:`600`)
 * Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
 * Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
+* Fix documentation errors when using IPython >= 7.0.
 
 
 Testing

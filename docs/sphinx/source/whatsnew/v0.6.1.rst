@@ -55,6 +55,7 @@ Bug fixes
   and < 1900, fix year 2050 which was returning 0.
 * Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
 * Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
+* Fix error in :func:`pvlib.modelchain.ModelChain.infer_spectral_model` (:issue:`619`)
 
 
 Testing
@@ -72,3 +73,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
+* Jonathan Gaffiot (:ghuser:`jgaffiot`)

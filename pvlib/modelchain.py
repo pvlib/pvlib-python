@@ -622,7 +622,7 @@ class ModelChain(object):
             return self.sapm_spectral_loss
         elif ((('Technology' in params or
                 'Material' in params) and
-               (pvsystem._infer_cell_type() is not None)) or
+               (self.system._infer_cell_type() is not None)) or
               'first_solar_spectral_coefficients' in params):
             return self.first_solar_spectral_loss
         else:

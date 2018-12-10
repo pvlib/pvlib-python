@@ -61,6 +61,7 @@ Bug fixes
 * Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
 * Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
 * Fix documentation errors when using IPython >= 7.0.
+* Fix error in :func:`pvlib.modelchain.ModelChain.infer_spectral_model` (:issue:`619`)
 
 
 Testing
@@ -78,3 +79,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
+* Jonathan Gaffiot (:ghuser:`jgaffiot`)

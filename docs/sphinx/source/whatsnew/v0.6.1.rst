@@ -47,7 +47,6 @@ Enhancements
   (:issue:`604`)
 * Change :py:func:`pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
 * Add warning message when :py:func:`pvlib.spa` is reloaded. (:issue:`401`)
-* Add warning message when :py:func:`pvlib.spa` is reloaded.
 * Add option for :py:func:`pvlib.irradiance.disc` to use relative airmass
   by supplying `pressure=None`. (:issue:`449`)
 

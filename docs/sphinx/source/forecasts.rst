@@ -414,6 +414,7 @@ Use the NDFD, among others, for forecasts at all time horizons.
 The NDFD is available for the United States.
 
 .. ipython:: python
+   :okexcept:
 
     model = NDFD()
     data = model.get_processed_data(latitude, longitude, start, end)

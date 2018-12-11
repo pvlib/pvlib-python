@@ -271,7 +271,7 @@ PVWatts model
    pvsystem.pvwatts_losses
 
 PVsyst model
--------------
+------------
 
 .. autosummary::
    :toctree: generated/

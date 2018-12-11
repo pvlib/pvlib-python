@@ -20,12 +20,13 @@ API Changes
   and :py:func:`pvlib.iotools.read_tmy3` instead. (:issue:`261`)
 * Added keyword argument ``horizon`` to :func:`~pvlib.solarposition.pyephem`
   and :func:`~pvlib.solarposition.calc_time` with default value ``'+0:00'``.
+  (:issue:`588`)
 * Add `max_airmass` keyword argument to :py:func:`pvlib.irradiance.disc`.
   Default value (`max_airmass=12`) is consistent with polynomial fit in
   original paper describing the model. Output of
   :py:func:`pvlib.irradiance.dirint` and `:py:func:`pvlib.irradiance.dirindex`,
   are different when `min_cos_zenith` and `max_zenith` kwargs are used.
-  (:issue:`588`)
+  (:issue:`450`)
 * Changed key names for `components` returned from
   :py:func:`pvlib.clearsky.detect_clearsky`. (:issue:`596`)
 * Changed function name from `pvlib.solarposition.get_rise_set_transit`

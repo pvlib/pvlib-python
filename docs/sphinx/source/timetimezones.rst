@@ -272,7 +272,7 @@ Let's first examine how pvlib handles time when it imports a TMY3 file.
     # some gymnastics to find the example file
     pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvlib)))
     file_abspath = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
-    tmy3_data, tmy3_metadata = pvlib.tmy.readtmy3(file_abspath)
+    tmy3_data, tmy3_metadata = pvlib.iotools.read_tmy3(file_abspath)
 
     tmy3_metadata
 

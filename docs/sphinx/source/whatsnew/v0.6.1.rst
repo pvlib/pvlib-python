@@ -1,7 +1,7 @@
 .. _whatsnew_0601:
 
-v0.6.1 (EST October, 2018)
---------------------------
+v0.6.1 (EST December, 2018)
+---------------------------
 
 This is a minor release. We recommend all users of v0.6.0 upgrade to this
 release.
@@ -29,6 +29,14 @@ API Changes
   original paper describing the model. Output of
   :py:func:`pvlib.irradiance.dirint` and `:py:func:`pvlib.irradiance.dirindex`,
   are different when `min_cos_zenith` and `max_zenith` kwargs are used.
+  and :func:`~pvlib.solarposition.calc_time` with default value ``'+0:00'``.
+  (:issue:`588`)
+* Changed key names for `components` returned from
+  :py:func:`pvlib.clearsky.detect_clearsky`. (:issue:`596`)
+* Changed function name from `pvlib.solarposition.get_rise_set_transit`
+  (deprecated) to :py:func:`pvlib.solarposition.sun_rise_set_transit_spa.
+  `sun_rise_set_transit_spa` requires time input to be localized to the
+  specified latitude/longitude. (:issue:`316`)
 
 
 Enhancements
@@ -44,17 +52,25 @@ Enhancements
 * Created :py:func:`pvlib.iotools.read_surfrad` to read NOAA SURFRAD data. (:issue:`590`)
 * Created :py:func:`pvlib.iotools.read_midc` and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`
   to read NREL MIDC data. (:issue:`601`)
+* Use HRRR modeled surface temperature values instead of inferring from
+  isobaric values and modeled wind speed instead of inferring from gust.
+  (:issue:`604`)
 * Change :py:func:`pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
-* Add warning message when :py:func:`pvlib.spa` is reloaded.
+* Add warning message when :py:func:`pvlib.spa` is reloaded. (:issue:`401`)
+* Add option for :py:func:`pvlib.irradiance.disc` to use relative airmass
+  by supplying `pressure=None`. (:issue:`449`)
 
 
 Bug fixes
 ~~~~~~~~~
 * Fix when building documentation using Matplotlib 3.0 or greater.
-* `~pvlib.spa.calculate_deltat`: Fix constant coefficient of the polynomial expression for years >= 1860
-  and < 1900, fix year 2050 which was returning 0.
+* `~pvlib.spa.calculate_deltat`: Fix constant coefficient of the polynomial
+  expression for years >= 1860 and < 1900, fix year 2050 which was
+  returning 0. (:issue:`600`)
 * Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
 * Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
+* Fix documentation errors when using IPython >= 7.0.
+* Fix error in :func:`pvlib.modelchain.ModelChain.infer_spectral_model` (:issue:`619`)
 
 
 Testing
@@ -71,3 +87,5 @@ Contributors
 * Ben Ellis (:ghuser:`bhellis725`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Jonathan Gaffiot (:ghuser:`jgaffiot`)

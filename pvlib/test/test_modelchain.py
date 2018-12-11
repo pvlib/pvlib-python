@@ -55,6 +55,19 @@ def cec_dc_snl_ac_system(sam_data):
 
 
 @pytest.fixture
+def cec_dc_native_snl_ac_system(sam_data):
+    module = 'Canadian_Solar_CS5P_220M'
+    module_parameters = sam_data['cecmod'][module].copy()
+    inverters = sam_data['cecinverter']
+    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module=module,
+                      module_parameters=module_parameters,
+                      inverter_parameters=inverter)
+    return system
+
+
+@pytest.fixture
 def pvsyst_dc_snl_ac_system(sam_data, pvsyst_module_params):
     module = 'PVsyst test module'
     module_parameters = pvsyst_module_params
@@ -249,6 +262,21 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
     mc.run_model(weather.index, weather=weather)
     assert m.call_count == 1
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
+
+
+@pytest.mark.parametrize('dc_model', [
+    'sapm',
+    pytest.param('cec', marks=requires_scipy),
+    pytest.param('cec_native', marks=requires_scipy)])
+def test_infer_spectral_model(location, system, cec_dc_snl_ac_system,
+                              cec_dc_native_snl_ac_system, dc_model):
+    dc_systems = {'sapm': system,
+                  'cec': cec_dc_snl_ac_system,
+                  'cec_native': cec_dc_native_snl_ac_system}
+    system = dc_systems[dc_model]
+    mc = ModelChain(system, location,
+                    orientation_strategy='None', aoi_model='physical')
+    assert isinstance(mc, ModelChain)
 
 
 def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,

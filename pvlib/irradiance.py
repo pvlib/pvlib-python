@@ -1306,6 +1306,13 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     The pvlib implementation limits the clearness index to 1.
 
+    The original report describing the DISC model [1]_ uses the
+    relative airmass rather than the absolute (pressure-corrected)
+    airmass. However, the NREL implementation of the DISC model [2]_
+    uses absolute airmass. PVLib Matlab also uses the absolute airmass.
+    pvlib python defaults to absolute airmass, but the relative airmass
+    can be used by supplying `pressure=None`.
+
     Parameters
     ----------
     ghi : numeric
@@ -1319,8 +1326,9 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
-    pressure : numeric, default 101325
-        Site pressure in Pascal.
+    pressure : None or numeric, default 101325
+        Site pressure in Pascal. If None, relative airmass is used
+        instead of absolute (pressure-corrected) airmass.
 
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
@@ -1349,15 +1357,13 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     References
     ----------
-    [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
-    Global Horizontal to Direct Normal Insolation", Technical
-    Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
-    Institute, 1987.
+    .. [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+       Global Horizontal to Direct Normal Insolation", Technical
+       Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
+       Institute, 1987.
 
-    [2] J.W. "Fourier series representation of the position of the sun".
-    Found at:
-    http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html on
-    January 12, 2012
+    .. [2] Maxwell, E. "DISC Model", Excel Worksheet.
+       https://www.nrel.gov/grid/solar-resource/disc.html
 
     See Also
     --------
@@ -1372,7 +1378,8 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
                          max_clearness_index=1)
 
     am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
-    am = atmosphere.get_absolute_airmass(am, pressure)
+    if pressure is not None:
+        am = atmosphere.get_absolute_airmass(am, pressure)
 
     am = np.minimum(am, max_airmass)  # GH 450
     Kn = _disc_kn(kt, am)

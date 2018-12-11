@@ -1887,9 +1887,8 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
-def pvsyst_celltemp(poa_global, wind_speed, temp_air,
-    eta_m=0.1, alpha_absorption=0.9, temp_model="freestanding",
-):
+def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
+                    alpha_absorption=0.9, temp_model="freestanding"):
     """
     Calculate cell temperature using the PVSyst model.
 
@@ -1916,7 +1915,8 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air,
         If string, can be:
 
             * 'freestanding' (default)
-                Modules with rear surfaces exposed to open air (e.g. rack mounted).
+                Modules with rear surfaces exposed to open air (e.g. rack
+                mounted).
             * 'insulated'
                 Modules with rear surfaces in close proximity to another
                 surface (e.g. roof mounted).

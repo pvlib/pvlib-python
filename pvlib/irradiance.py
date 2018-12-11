@@ -1381,8 +1381,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     if pressure is not None:
         am = atmosphere.get_absolute_airmass(am, pressure)
 
-    am = np.minimum(am, max_airmass)  # GH 450
-    Kn = _disc_kn(kt, am)
+    Kn, am = _disc_kn(kt, am, max_airmass=max_airmass)
     dni = Kn * I0
 
     bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
@@ -1399,13 +1398,29 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     return output
 
 
-def _disc_kn(clearness_index, airmass):
+def _disc_kn(clearness_index, airmass, max_airmass=12):
     """
     Calculate Kn for `disc`
+
+    Parameters
+    ----------
+    clearness_index : numeric
+    airmass : numeric
+    max_airmass : float
+        airmass > max_airmass is set to max_airmass before being used
+        in calculating Kn.
+
+    Returns
+    -------
+    Kn : numeric
+    am : numeric
+        airmass used in the calculation of Kn. am <= max_airmass.
     """
     # short names for equations
     kt = clearness_index
     am = airmass
+
+    am = np.minimum(am, max_airmass)  # GH 450
 
     # powers of kt will be used repeatedly, so compute only once
     kt2 = kt * kt  # about the same as kt ** 2
@@ -1426,7 +1441,7 @@ def _disc_kn(clearness_index, airmass):
 
     Knc = 0.866 - 0.122*am + 0.0121*am**2 - 0.000653*am**3 + 1.4e-05*am**4
     Kn = Knc - delta_kn
-    return Kn
+    return Kn, am
 
 
 def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
@@ -1937,7 +1952,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
 
         # calculate kt and DNI from GTI
         kt = clearness_index(poa_global_i, aoi, I0)  # kt from Marion eqn 2
-        disc_dni = np.maximum(_disc_kn(kt, airmass) * I0, 0)
+        disc_dni = np.maximum(_disc_kn(kt, airmass)[0] * I0, 0)
         kt_prime = clearness_index_zenith_independent(kt, airmass)
         # dirint DNI in Marion eqn 3
         dni = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
@@ -2020,7 +2035,7 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
     airmass = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
     airmass = atmosphere.get_absolute_airmass(airmass, pressure)
     kt = kt_prime_gte_90 * _kt_kt_prime_factor(airmass)
-    disc_dni = np.maximum(_disc_kn(kt, airmass) * I0, 0)
+    disc_dni = np.maximum(_disc_kn(kt, airmass)[0] * I0, 0)
 
     dni_gte_90 = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
                                           False, temp_dew)

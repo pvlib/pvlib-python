@@ -404,28 +404,57 @@ def test_disc_min_cos_zenith_max_zenith():
     times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times)
     expected = pd.DataFrame(np.array(
-        [[0.00000000e+00, 1.16046346e-02, 3.63954476e+01]]),
+        [[0.00000000e+00, 1.16046346e-02, 12.0]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # max_zenith and/or max_airmass keep these results reasonable
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
                           min_cos_zenith=0)
     expected = pd.DataFrame(np.array(
-        [[0.00000000e+00, 1.0, 3.63954476e+01]]),
+        [[0.00000000e+00, 1.0, 12.0]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # still get reasonable values because of max_airmass=12 limit
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
                           max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[0., 1.16046346e-02, 12.0]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # still get reasonable values because of max_airmass=12 limit
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[277.50185968, 1.0, 12.0]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # max_zenith keeps this result reasonable
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_airmass=100)
+    expected = pd.DataFrame(np.array(
+        [[0.00000000e+00, 1.0, 36.39544757]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # allow zenith to be close to 90 and airmass to be infinite
+    # and we get crazy values
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          max_zenith=100, max_airmass=100)
     expected = pd.DataFrame(np.array(
         [[6.68577449e+03, 1.16046346e-02, 3.63954476e+01]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # allow min cos zenith to be 0, zenith to be close to 90,
+    # and airmass to be very big and we get even higher DNI values
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
-                          min_cos_zenith=0, max_zenith=100)
+                          min_cos_zenith=0, max_zenith=100, max_airmass=100)
     expected = pd.DataFrame(np.array(
-        [[7.21238390e+03, 1.00000000e+00, 3.63954476e+01]]),
+        [[7.21238390e+03, 1., 3.63954476e+01]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
@@ -497,13 +526,18 @@ def test_dirint_min_cos_zenith_max_zenith():
     expected = pd.Series([0.0, 0.0], index=times, name='dni')
     assert_series_equal(out, expected)
 
-    out = irradiance.dirint(ghi, solar_zenith, times, max_zenith=100)
-    expected = pd.Series([862.198, 848.387], index=times, name='dni')
+    out = irradiance.dirint(ghi, solar_zenith, times, max_zenith=90)
+    expected = pd.Series([0.0, 0.0], index=times, name='dni')
+    assert_series_equal(out, expected, check_less_precise=True)
+
+    out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0,
+                            max_zenith=90)
+    expected = pd.Series([0.0, 144.264507], index=times, name='dni')
     assert_series_equal(out, expected, check_less_precise=True)
 
     out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0,
                             max_zenith=100)
-    expected = pd.Series([147655.5994, 3749.8542], index=times, name='dni')
+    expected = pd.Series([0.0, 144.264507], index=times, name='dni')
     assert_series_equal(out, expected, check_less_precise=True)
 
 
@@ -670,13 +704,13 @@ def test_dirindex_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected)
 
     out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
-                              times, max_zenith=100)
-    expected = pd.Series([0., 5.], index=times)
+                              times, max_zenith=90)
+    expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
     out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
                               times, min_cos_zenith=0, max_zenith=100)
-    expected = pd.Series([0., 5.], index=times)
+    expected = pd.Series([nan, 5.], index=times)
     assert_series_equal(out, expected)
 
 

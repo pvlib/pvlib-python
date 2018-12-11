@@ -1940,8 +1940,8 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
     [1]"PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
     http://files.pvsyst.com/help/index.html. [Accessed: 10- Dec- 2018].
 
-    [2] Faiman, D. (2008). “Assessing the outdoor operating temperature of
-    photovoltaic modules.” Progress in Photovoltaics 16(4): 307-315.
+    [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+    photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
     """
 
     temp_models = {"freestanding": (29.0, 0), "insulated": (15.0, 0)}

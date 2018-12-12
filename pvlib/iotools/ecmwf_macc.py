@@ -8,6 +8,14 @@ import netCDF4
 import pandas as pd
 
 try:
+    import netCDF4
+except ImportError as exc:
+    class netCDF4:
+        def Dataset(*a, **kw):
+            raise ImportError(
+                'Reading ECMWF data requires netCDF4 to be installed.')
+
+try:
     from ecmwfapi import ECMWFDataServer
 except ImportError:
     def ECMWFDataServer(*a, **kw):

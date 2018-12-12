@@ -100,7 +100,6 @@ class ForecastModel(object):
     catalog_url = 'http://thredds.ucar.edu/thredds/catalog.xml'
     base_tds_url = catalog_url.split('/thredds/')[0]
     data_format = 'netcdf'
-    vert_level = 100000
 
     units = {
         'temp_air': 'C',
@@ -114,11 +113,12 @@ class ForecastModel(object):
         'mid_clouds': '%',
         'high_clouds': '%'}
 
-    def __init__(self, model_type, model_name, set_type):
+    def __init__(self, model_type, model_name, set_type, vert_level=None):
         self.model_type = model_type
         self.model_name = model_name
         self.set_type = set_type
         self.connected = False
+        self.vert_level = vert_level
 
     def connect_to_catalog(self):
         self.catalog = TDSCatalog(self.catalog_url)
@@ -250,7 +250,9 @@ class ForecastModel(object):
         self.end = end
         self.query.time_range(self.start, self.end)
 
-        self.query.vertical_level(self.vert_level)
+        if self.vert_level is not None:
+            self.query.vertical_level(self.vert_level)
+
         self.query.variables(*self.query_variables)
         self.query.accept(self.data_format)
 
@@ -258,7 +260,8 @@ class ForecastModel(object):
 
         # might be better to go to xarray here so that we can handle
         # higher dimensional data for more advanced applications
-        self.data = self._netcdf2pandas(self.netcdf_data, self.query_variables)
+        self.data = self._netcdf2pandas(self.netcdf_data, self.query_variables,
+                                        self.start, self.end)
 
         if close_netcdf_data:
             self.netcdf_data.close()
@@ -321,7 +324,7 @@ class ForecastModel(object):
             variables = self.variables
         return data.rename(columns={y: x for x, y in variables.items()})
 
-    def _netcdf2pandas(self, netcdf_data, query_variables):
+    def _netcdf2pandas(self, netcdf_data, query_variables, start, end):
         """
         Transforms data from netcdf to pandas DataFrame.
 
@@ -331,6 +334,10 @@ class ForecastModel(object):
             Data returned from UNIDATA NCSS query.
         query_variables: list
             The variables requested.
+        start: Timestamp
+            The start time
+        end: Timestamp
+            The end time
 
         Returns
         -------
@@ -345,10 +352,27 @@ class ForecastModel(object):
             time_var = 'time1'
             self.set_time(netcdf_data.variables[time_var])
 
-        data_dict = {key: data[:].squeeze() for key, data in
-                     netcdf_data.variables.items() if key in query_variables}
+        data_dict = {}
+        for key, data in netcdf_data.variables.items():
+            # if accounts for possibility of extra variable returned
+            if key not in query_variables:
+                continue
+            squeezed = data[:].squeeze()
+            if squeezed.ndim == 1:
+                data_dict[key] = squeezed
+            elif squeezed.ndim == 2:
+                for num, data_level in enumerate(squeezed.T):
+                    data_dict[key + '_' + str(num)] = data_level
+            else:
+                raise ValueError('cannot parse ndim > 2')
 
-        return pd.DataFrame(data_dict, index=self.time)
+        data = pd.DataFrame(data_dict, index=self.time)
+        # sometimes data is returned as hours since T0
+        # where T0 is before start. Then the hours between
+        # T0 and start are added *after* end. So sort and slice
+        # to remove the garbage
+        data = data.sort_index().loc[start:end]
+        return data
 
     def set_time(self, time):
         '''
@@ -665,6 +689,8 @@ class GFS(ForecastModel):
 
         model = 'GFS {} Degree Forecast'.format(resolution)
 
+        # isobaric variables will require a vert_level to prevent
+        # excessive data downloads
         self.variables = {
             'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
@@ -695,7 +721,8 @@ class GFS(ForecastModel):
             'mid_clouds',
             'high_clouds']
 
-        super(GFS, self).__init__(model_type, model, set_type)
+        super(GFS, self).__init__(model_type, model, set_type,
+                                  vert_level=100000)
 
     def process_data(self, data, cloud_cover='total_clouds', **kwargs):
         """
@@ -923,16 +950,15 @@ class HRRR(ForecastModel):
         model = 'NCEP HRRR CONUS 2.5km'
 
         self.variables = {
-            'temperature_dew_iso': 'Dewpoint_temperature_isobaric',
-            'temperature_iso': 'Temperature_isobaric',
+            'temp_air': 'Temperature_height_above_ground',
             'pressure': 'Pressure_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
+            'wind_speed_u': 'u-component_of_wind_height_above_ground',
+            'wind_speed_v': 'v-component_of_wind_height_above_ground',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere',
             'low_clouds': 'Low_cloud_cover_low_cloud',
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
-            'high_clouds': 'High_cloud_cover_high_cloud',
-            'condensation_height':
-                'Geopotential_height_adiabatic_condensation_lifted'}
+            'high_clouds': 'High_cloud_cover_high_cloud'}
 
         self.output_variables = [
             'temp_air',
@@ -964,13 +990,17 @@ class HRRR(ForecastModel):
         data: DataFrame
             Processed forecast data.
         """
-
         data = super(HRRR, self).process_data(data, **kwargs)
-        data['temp_air'] = self.isobaric_to_ambient_temperature(data)
+        wind_mapping = {
+            'wind_speed_u': 'u-component_of_wind_height_above_ground_0',
+            'wind_speed_v': 'v-component_of_wind_height_above_ground_0',
+        }
+        data = self.rename(data, variables=wind_mapping)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
-        data['wind_speed'] = self.gust_to_speed(data)
+        data['wind_speed'] = self.uv_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
+        data = data.iloc[:-1, :]  # issue with last point
         return data[self.output_variables]
 
 

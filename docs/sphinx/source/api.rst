@@ -90,7 +90,7 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
-   solarposition.sunrise_sunset_transit_geometric
+   solarposition.sun_rise_set_transit_geometric
 
 
 Clear sky
@@ -268,6 +268,15 @@ PVWatts model
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
+   pvsystem.pvwatts_losses
+
+PVsyst model
+------------
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.pvsyst_celltemp
 
 Other
 -----

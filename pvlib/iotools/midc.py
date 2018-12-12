@@ -185,8 +185,9 @@ def read_midc_raw_data_from_nrel(site, start, end):
     Notes
     -----
     Requests spanning an instrumentation change will yield an error. See the
-    MIDC raw data api page here_ for more details and considerations.
-      .. _here: https://midcdmz.nrel.gov/apps/data_api_doc.pl?_idtextlist
+    MIDC raw data api page
+    `here <https://midcdmz.nrel.gov/apps/data_api_doc.pl?_idtextlist>`_
+    for more details and considerations.
     """
     args = {'site': site,
             'begin': start.strftime('%Y%m%d'),

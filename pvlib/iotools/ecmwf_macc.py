@@ -4,12 +4,11 @@ Read data from ECMWF MACC Reanalysis.
 
 from __future__ import division
 import threading
-import netCDF4
 import pandas as pd
 
 try:
     import netCDF4
-except ImportError as exc:
+except ImportError:
     class netCDF4:
         def Dataset(*a, **kw):
             raise ImportError(

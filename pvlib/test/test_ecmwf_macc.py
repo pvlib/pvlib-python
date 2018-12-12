@@ -6,6 +6,7 @@ from __future__ import division
 import os
 import datetime
 import numpy as np
+from conftest import requires_netCDF4
 from pvlib.iotools import ecmwf_macc
 
 DIRNAME = os.path.dirname(__file__)
@@ -21,6 +22,7 @@ LON_BND = (0, 360.0)
 LAT_BND = (90, -90)
 
 
+@requires_netCDF4
 def test_get_nearest_indices():
     """Test getting indices given latitude, longitude from ECMWF_MACC data."""
     data = ecmwf_macc.ECMWF_MACC(os.path.join(DATADIR, TESTDATA))
@@ -29,6 +31,7 @@ def test_get_nearest_indices():
     assert ilon == 79
 
 
+@requires_netCDF4
 def test_interp_data():
     """Test interpolating UTC time from ECMWF_MACC data."""
     data = ecmwf_macc.ECMWF_MACC(os.path.join(DATADIR, TESTDATA))
@@ -46,6 +49,7 @@ def test_interp_data():
     assert np.isclose(test113301, expected)  # 0.15515305836696536
 
 
+@requires_netCDF4
 def test_read_ecmwf_macc():
     """Test reading ECMWF_MACC data from netCDF4 file."""
     aod = ecmwf_macc.read_ecmwf_macc(os.path.join(DATADIR, TESTDATA), 38, -122)

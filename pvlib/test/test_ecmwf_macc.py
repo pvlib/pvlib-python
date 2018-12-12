@@ -2,6 +2,7 @@
 tests for :mod:`pvlib.iotools.ecmwf_macc`
 """
 
+from __future__ import division
 import os
 import datetime
 import numpy as np
@@ -41,7 +42,7 @@ def test_interp_data():
     test113301 = data.interp_data(
         38, -122, datetime.datetime(2012, 11, 1, 11, 33, 1), data.data,
         'aod550')
-    expected = test9am + (2 + (33 + 1/60)/60)/3 * (test12pm - test9am)
+    expected = test9am + (2 + (33 + 1 / 60) / 60) / 3 * (test12pm - test9am)
     assert np.isclose(test113301, expected)  # 0.15515305836696536
 
 
@@ -51,7 +52,7 @@ def test_read_ecmwf_macc():
     expected_times = [
         1351738800, 1351749600, 1351760400, 1351771200, 1351782000, 1351792800,
         1351803600, 1351814400]
-    assert np.allclose(aod.index.astype(int)//1000000000, expected_times)
+    assert np.allclose(aod.index.astype(int) // 1000000000, expected_times)
     expected = [
         0.39530905, 0.22372988, 0.18373338, 0.15011313, 0.13081389, 0.11171923,
         0.09743233, 0.0921472]

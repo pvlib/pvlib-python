@@ -118,7 +118,7 @@ requires_siphon = pytest.mark.skipif(not has_siphon,
                                      reason='requires siphon')
 
 try:
-    import netCDF4
+    import netCDF4  # noqa: F401
     has_netCDF4 = True
 except ImportError:
     has_netCDF4 = False

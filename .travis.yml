@@ -24,7 +24,7 @@ matrix:
         - CONDA_ENV=py36
         - TASK="coverage"
         - DEPLOY_ENV="true"
-    - python: 3.7
+    - python: 3.7-dev
       env: CONDA_ENV=py37
 
 addons:

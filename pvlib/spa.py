@@ -259,8 +259,8 @@ resize_mapping = {
     'L1': (64, 3), 'L2': (64, 3), 'L3': (64, 3), 'L4': (64, 3), 'L5': (64, 3),
     'B1': (5, 3), 'R1': (40, 3), 'R2': (40, 3), 'R3': (40, 3), 'R4': (40, 3)}
 
-# make arrays uniform size for efficient broadcasting in numba
-# fill with 0s
+# make arrays uniform size for efficient broadcasting in numba, fill with 0s
+# np.resize does not work because it fills with repeated copies
 for key, dims in resize_mapping.items():
     new_rows = dims[0] - TABLE_1_DICT[key].shape[0]
     TABLE_1_DICT[key] = np.append(TABLE_1_DICT[key], np.zeros((new_rows, 3)),

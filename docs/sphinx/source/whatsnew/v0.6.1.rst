@@ -70,6 +70,7 @@ Bug fixes
 * Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
 * Fix documentation errors when using IPython >= 7.0.
 * Fix error in :func:`pvlib.modelchain.ModelChain.infer_spectral_model` (:issue:`619`)
+* Fix error in ``pvlib.spa`` when using Python 3.7 on some platforms.
 
 
 Testing

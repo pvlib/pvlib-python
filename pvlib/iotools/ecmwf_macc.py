@@ -10,6 +10,7 @@ try:
     import netCDF4
 except ImportError:
     class netCDF4:
+        @staticmethod
         def Dataset(*a, **kw):
             raise ImportError(
                 'Reading ECMWF data requires netCDF4 to be installed.')
@@ -26,6 +27,7 @@ except ImportError:
 else:
     SERVER = ECMWFDataServer()
 
+#: map of ECMWF MACC parameter keynames and codes used in API
 PARAMS = {
     "tcwv": "137.128",
     "aod550": "207.210",
@@ -70,18 +72,62 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
         UTC date
     stopdate : datetime.datetime or datetime.date
         UTC date
-    lookup_params : bool
-        optional flag, if ``False``, then codes are already formatted, default
-        is ``True``
+    lookup_params : bool, default True
+        optional flag, if ``False``, then codes are already formatted
     server : ecmwfapi.api.ECMWFDataServer
         optionally provide a server object, default is given
     target : callable
-        optional function that calls ``server.retreive`` to pass to thread
+        optional function that calls ``server.retrieve`` to pass to thread
 
     Returns
     -------
     t : thread
         a thread object, use it to check status by calling `t.is_alive()`
+
+    The keynames available for the ``params`` argument are given by
+    :const:`pvlib.iotools.ecmwf_macc.PARAMS` which maps the keys to codes used
+    in the API. The following keynames are available:
+
+    =======  =========================================
+    keyname  description
+    =======  =========================================
+    tcwv     total column water vapor in kg/m^2 at STP
+    aod550   aerosol optical depth measured at 550-nm
+    aod469   aerosol optical depth measured at 469-nm
+    aod670   aerosol optical depth measured at 670-nm
+    aod865   aerosol optical depth measured at 865-nm
+    aod1240  aerosol optical depth measured at 1240-nm
+    =======  =========================================
+
+    If ``lookup_params`` is ``False`` then ``params`` must contain
+    the codes preformatted according to the ECMWF MACC Reanalysis API. See the
+    `documentation
+    <https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets>`_.
+    This is useful if you want to retrieve codes that are not mapped in 
+    :const:`pvlib.iotools.ecmwf_macc.PARAMS`.
+
+    Examples
+    --------
+    Retrieve the AOD measured at 550-nm and the total column of water vapor for
+    November 1, 2012.
+
+    >>> from datetime import date
+    >>> from pvlib.iotools import ecmwf_macc
+    >>> filename = 'aod_tcwv_20121101.nc'  # .nc extension added if missing
+    >>> params = ('aod550', 'tcwv')
+    >>> start = end = date(2012, 11, 1)
+    >>> t = ecmwf_macc.get_ecmwf_macc(filename, params, start, end)
+    >>> t.is_alive()
+    True
+
+    Notes
+    -----
+    Precipitable water is equivalent to the total column of water vapor, but
+    the units given by ECMWF MACC Reanalysis are kg/m^2 at STP (1-atm, 25-C).
+    Divide by 10 to convert to centimeters of precipitable water:
+
+    .. math::
+       P_{wat}(cm) = TCWV(\frac{kg}{m^2}) \frac{100 \frac{cm}{m}}{1000 \frac{kg}{m^3}}
 
     This is a daemon thread that runs in the background. Exiting Python will
     kill this thread, however this thread will not block the main thread or
@@ -167,7 +213,7 @@ class ECMWF_MACC(object):
         idx_lon = int(round(longitude / self.delta_lon)) % self.lon_size
         return idx_lat, idx_lon
 
-    def interp_data(self, lat, lon, utc_time, data, key):
+    def interp_data(self, lat, lon, utc_time, key):
         """
         Interpolate data for UTC time using nearest indices to (lat, lon).
         """
@@ -175,8 +221,8 @@ class ECMWF_MACC(object):
         ilat, ilon = self.get_nearest_indices(lat, lon)
         # time index before
         before = netCDF4.date2index(utc_time, nctime, select='before')
-        fbefore = data[key][before, ilat, ilon]
-        fafter = data[key][before + 1, ilat, ilon]
+        fbefore = self.data[key][before, ilat, ilon]
+        fafter = self.data[key][before + 1, ilat, ilon]
         dt_num = netCDF4.date2num(utc_time, nctime.units)
         time_ratio = (dt_num - nctime[before]) / self.delta_time
         return fbefore + (fafter - fbefore) * time_ratio

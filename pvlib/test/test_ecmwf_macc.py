@@ -36,15 +36,13 @@ def test_interp_data():
     """Test interpolating UTC time from ECMWF_MACC data."""
     data = ecmwf_macc.ECMWF_MACC(os.path.join(DATADIR, TESTDATA))
     test9am = data.interp_data(
-        38, -122, datetime.datetime(2012, 11, 1, 9, 0, 0), data.data, 'aod550')
+        38, -122, datetime.datetime(2012, 11, 1, 9, 0, 0), 'aod550')
     assert np.isclose(test9am, data.data.variables['aod550'][2, 17, 79])
     test12pm = data.interp_data(
-        38, -122, datetime.datetime(2012, 11, 1, 12, 0, 0), data.data,
-        'aod550')
+        38, -122, datetime.datetime(2012, 11, 1, 12, 0, 0), 'aod550')
     assert np.isclose(test12pm, data.data.variables['aod550'][3, 17, 79])
     test113301 = data.interp_data(
-        38, -122, datetime.datetime(2012, 11, 1, 11, 33, 1), data.data,
-        'aod550')
+        38, -122, datetime.datetime(2012, 11, 1, 11, 33, 1), 'aod550')
     expected = test9am + (2 + (33 + 1 / 60) / 60) / 3 * (test12pm - test9am)
     assert np.isclose(test113301, expected)  # 0.15515305836696536
 

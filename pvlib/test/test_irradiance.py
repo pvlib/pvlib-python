@@ -14,7 +14,8 @@ from pvlib import irradiance
 from pvlib._deprecation import pvlibDeprecationWarning
 
 from conftest import (fail_on_pvlib_version, needs_numpy_1_10, pandas_0_22,
-                      requires_ephem, requires_numba)
+                      requires_ephem, requires_numba, requires_pvfactors,
+                      requires_future, requires_shapely, requires_scipy)
 
 
 # fixtures create realistic test input data
@@ -32,24 +33,24 @@ def times():
 @pytest.fixture
 def irrad_data(times):
     return pd.DataFrame(np.array(
-        [[   0.        ,    0.        ,    0.        ],
-         [  79.73860422,  316.1949056 ,   40.46149818],
-         [1042.48031487,  939.95469881,  118.45831879],
-         [ 257.20751138,  646.22886049,   62.03376265]]),
+        [[0., 0., 0.],
+         [79.73860422, 316.1949056, 40.46149818],
+         [1042.48031487, 939.95469881, 118.45831879],
+         [257.20751138, 646.22886049, 62.03376265]]),
         columns=['ghi', 'dni', 'dhi'], index=times)
 
 
 @pytest.fixture
 def ephem_data(times):
     return pd.DataFrame(np.array(
-        [[124.0390863 , 124.0390863 , -34.0390863 , -34.0390863 ,
-          352.69550699,  -2.36677158],
-         [ 82.85457044,  82.97705621,   7.14542956,   7.02294379,
-           66.71410338,  -2.42072165],
-         [ 10.56413562,  10.56725766,  79.43586438,  79.43274234,
-          144.76567754,  -2.47457321],
-         [ 72.41687122,  72.46903556,  17.58312878,  17.53096444,
-          287.04104128,  -2.52831909]]),
+        [[124.0390863, 124.0390863, -34.0390863, -34.0390863,
+          352.69550699, -2.36677158],
+         [82.85457044, 82.97705621, 7.14542956, 7.02294379,
+          66.71410338, -2.42072165],
+         [10.56413562, 10.56725766, 79.43586438, 79.43274234,
+          144.76567754, -2.47457321],
+         [72.41687122, 72.46903556, 17.58312878, 17.53096444,
+          287.04104128, -2.52831909]]),
         columns=['apparent_zenith', 'zenith', 'apparent_elevation',
                  'elevation', 'azimuth', 'equation_of_time'],
         index=times)
@@ -194,25 +195,25 @@ def test_klucher_series(irrad_data, ephem_data):
 
 def test_haydavies(irrad_data, ephem_data, dni_et):
     result = irradiance.haydavies(40, 180, irrad_data['dhi'], irrad_data['dni'],
-                         dni_et,
-                         ephem_data['apparent_zenith'],
-                         ephem_data['azimuth'])
+                                  dni_et,
+                                  ephem_data['apparent_zenith'],
+                                  ephem_data['azimuth'])
     # values from matlab 1.4 code
     assert_allclose(result, [0, 27.1775, 102.9949, 33.1909], atol=1e-4)
 
 
 def test_reindl(irrad_data, ephem_data, dni_et):
     result = irradiance.reindl(40, 180, irrad_data['dhi'], irrad_data['dni'],
-                      irrad_data['ghi'], dni_et,
-                      ephem_data['apparent_zenith'],
-                      ephem_data['azimuth'])
+                               irrad_data['ghi'], dni_et,
+                               ephem_data['apparent_zenith'],
+                               ephem_data['azimuth'])
     # values from matlab 1.4 code
     assert_allclose(result, [np.nan, 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
 def test_king(irrad_data, ephem_data):
     result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
-                    ephem_data['apparent_zenith'])
+                             ephem_data['apparent_zenith'])
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
@@ -220,10 +221,10 @@ def test_perez(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez(40, 180, irrad_data['dhi'], dni,
-                     dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['azimuth'], relative_airmass)
+                           dni_et, ephem_data['apparent_zenith'],
+                           ephem_data['azimuth'], relative_airmass)
     expected = pd.Series(np.array(
-        [   0.        ,   31.46046871,  np.nan,   45.45539877]),
+        [0., 31.46046871, np.nan, 45.45539877]),
         index=irrad_data.index)
     assert_series_equal(out, expected, check_less_precise=2)
 
@@ -236,10 +237,10 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
                            ephem_data['azimuth'], relative_airmass,
                            return_components=True)
     expected = pd.DataFrame(np.array(
-        [[   0.        ,   31.46046871,  np.nan,   45.45539877],
-         [  0.        ,  26.84138589,          np.nan,  31.72696071],
-         [ 0.        ,  0.        ,         np.nan,  4.47966439],
-         [ 0.        ,  4.62212181,         np.nan,  9.25316454]]).T,
+        [[0., 31.46046871, np.nan, 45.45539877],
+         [0., 26.84138589, np.nan, 31.72696071],
+         [0., 0., np.nan, 4.47966439],
+         [0., 4.62212181, np.nan, 9.25316454]]).T,
         columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
         index=irrad_data.index
     )
@@ -260,10 +261,10 @@ def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez(40, 180, irrad_data['dhi'].values, dni.values,
-                     dni_et, ephem_data['apparent_zenith'].values,
-                     ephem_data['azimuth'].values, relative_airmass.values)
+                           dni_et, ephem_data['apparent_zenith'].values,
+                           ephem_data['azimuth'].values, relative_airmass.values)
     expected = np.array(
-        [   0.        ,   31.46046871,  np.nan,   45.45539877])
+        [0., 31.46046871, np.nan, 45.45539877])
     assert_allclose(out, expected, atol=1e-2)
     assert isinstance(out, np.ndarray)
 
@@ -288,9 +289,9 @@ def test_sky_diffuse_zenith_close_to_90(model):
 
 def test_liujordan():
     expected = pd.DataFrame(np.
-        array([[863.859736967, 653.123094076, 220.65905025]]),
-        columns=['ghi', 'dni', 'dhi'],
-        index=[0])
+                            array([[863.859736967, 653.123094076, 220.65905025]]),
+                            columns=['ghi', 'dni', 'dhi'],
+                            index=[0])
     out = irradiance.liujordan(
         pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]), dni_extra=1400)
     assert_frame_equal(out, expected)
@@ -345,14 +346,14 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
     out = irradiance.poa_components(
         aoi, irrad_data['dni'], diff_perez, gr_sand)
     expected = pd.DataFrame(np.array(
-        [[  0.        ,  -0.        ,   0.        ,   0.        ,
-            0.        ],
-         [ 35.19456561,   0.        ,  35.19456561,  31.4635077 ,
+        [[0., -0., 0., 0.,
+            0.],
+         [35.19456561, 0., 35.19456561, 31.4635077,
             3.73105791],
          [956.18253696, 798.31939281, 157.86314414, 109.08433162,
-           48.77881252],
-         [ 90.99624896,  33.50143401,  57.49481495,  45.45978964,
-           12.03502531]]),
+          48.77881252],
+         [90.99624896, 33.50143401, 57.49481495, 45.45978964,
+          12.03502531]]),
         columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
                  'poa_ground_diffuse'],
         index=irrad_data.index)
@@ -360,12 +361,12 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
 
 
 @pytest.mark.parametrize('pressure,expected', [
-    (93193,  [[830.46567,   0.79742,   0.93505],
-              [676.09497,   0.63776,   3.02102]]),
-    (None,   [[868.72425,   0.79742,   1.01664],
-              [680.66679,   0.63776,   3.28463]]),
-    (101325, [[868.72425,   0.79742,   1.01664],
-              [680.66679,   0.63776,   3.28463]])
+    (93193, [[830.46567, 0.79742, 0.93505],
+             [676.09497, 0.63776, 3.02102]]),
+    (None, [[868.72425, 0.79742, 1.01664],
+            [680.66679, 0.63776, 3.28463]]),
+    (101325, [[868.72425, 0.79742, 1.01664],
+              [680.66679, 0.63776, 3.28463]])
 ])
 def test_disc_value(pressure, expected):
     # see GH 449 for pressure=None vs. 101325.
@@ -460,19 +461,19 @@ def test_disc_min_cos_zenith_max_zenith():
 
 
 def test_dirint_value():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure)
     assert_almost_equal(dirint_data.values,
-                        np.array([ 888. ,  683.7]), 1)
+                        np.array([888., 683.7]), 1)
 
 
 def test_dirint_nans():
     times = pd.DatetimeIndex(start='2014-06-24T12-0700', periods=5, freq='6H')
     ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
-    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567,], index=times)
+    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567, ], index=times)
     pressure = pd.Series([93193., 93193., np.nan, 93193., 93193.], index=times)
     temp_dew = pd.Series([10, 10, 10, np.nan, 10], index=times)
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
@@ -482,39 +483,39 @@ def test_dirint_nans():
 
 
 def test_dirint_tdew():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=10)
     assert_almost_equal(dirint_data.values,
-                        np.array([892.9,  636.5]), 1)
+                        np.array([892.9, 636.5]), 1)
 
 
 def test_dirint_no_delta_kt():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     use_delta_kt_prime=False)
     assert_almost_equal(dirint_data.values,
-                        np.array([861.9,  670.4]), 1)
+                        np.array([861.9, 670.4]), 1)
 
 
 def test_dirint_coeffs():
     coeffs = irradiance._get_dirint_coeffs()
-    assert coeffs[0,0,0,0] == 0.385230
-    assert coeffs[0,1,2,1] == 0.229970
-    assert coeffs[3,2,6,3] == 1.032260
+    assert coeffs[0, 0, 0, 0] == 0.385230
+    assert coeffs[0, 1, 2, 1] == 0.229970
+    assert coeffs[3, 2, 6, 3] == 1.032260
 
 
 def test_dirint_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
     # times don't have any physical relevance
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
     solar_zenith = pd.Series([90, 89.99], index=times)
 
@@ -557,9 +558,9 @@ def test_gti_dirint():
 
     expected_col_order = ['ghi', 'dni', 'dhi']
     expected = pd.DataFrame(array(
-        [[  21.05796198,    0.        ,   21.05796198],
-         [ 288.22574368,   60.59964218,  245.37532576],
-         [ 930.85454521,  695.8504884 ,  276.96897609]]),
+        [[21.05796198, 0., 21.05796198],
+         [288.22574368, 60.59964218, 245.37532576],
+         [930.85454521, 695.8504884, 276.96897609]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -581,9 +582,9 @@ def test_gti_dirint():
         pressure=pressure)
 
     expected = pd.DataFrame(array(
-        [[  21.05796198,    0.        ,   21.05796198],
-         [ 289.81109139,   60.52460392,  247.01373353],
-         [ 932.22047435,  647.68716072,  323.59362885]]),
+        [[21.05796198, 0., 21.05796198],
+         [289.81109139, 60.52460392, 247.01373353],
+         [932.22047435, 647.68716072, 323.59362885]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -595,9 +596,9 @@ def test_gti_dirint():
         albedo=albedo)
 
     expected = pd.DataFrame(array(
-        [[  21.3592591 ,    0.        ,   21.3592591 ],
-         [ 292.5162373 ,   64.42628826,  246.95997198],
-         [ 941.47847463,  727.07261187,  258.25370648]]),
+        [[21.3592591, 0., 21.3592591],
+         [292.5162373, 64.42628826, 246.95997198],
+         [941.47847463, 727.07261187, 258.25370648]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -609,9 +610,9 @@ def test_gti_dirint():
         temp_dew=temp_dew)
 
     expected = pd.DataFrame(array(
-        [[  21.05796198,    0.        ,   21.05796198],
-         [ 292.40468994,   36.79559287,  266.3862767 ],
-         [ 930.72198876,  712.36063132,  261.32196017]]),
+        [[21.05796198, 0., 21.05796198],
+         [292.40468994, 36.79559287, 266.3862767],
+         [930.72198876, 712.36063132, 261.32196017]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -622,11 +623,11 @@ def test_erbs():
     zenith = pd.Series([120, 85, 10, 10])
     doy = pd.Series([1, 1, 1, 180])
     expected = pd.DataFrame(np.
-        array([[ -0.00000000e+00,   0.00000000e+00,  -0.00000000e+00],
-               [  9.67127061e+01,   4.15709323e+01,   4.05715990e-01],
-               [  7.94187742e+02,   2.17877755e+02,   7.18119416e-01],
-               [  8.42358014e+02,   1.70439297e+02,   7.68919470e-01]]),
-        columns=['dni', 'dhi', 'kt'])
+                            array([[-0.00000000e+00, 0.00000000e+00, -0.00000000e+00],
+                                   [9.67127061e+01, 4.15709323e+01, 4.05715990e-01],
+                                   [7.94187742e+02, 2.17877755e+02, 7.18119416e-01],
+                                   [8.42358014e+02, 1.70439297e+02, 7.68919470e-01]]),
+                            columns=['dni', 'dhi', 'kt'])
 
     out = irradiance.erbs(ghi, zenith, doy)
 
@@ -687,7 +688,7 @@ def test_dirindex_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
     # times don't have any physical relevance
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
     ghi_clearsky = pd.Series([0, 1], index=times)
     dni_clearsky = pd.Series([0, 5], index=times)
@@ -733,8 +734,8 @@ def test_dni():
 
 
 @pytest.mark.parametrize(
-    'surface_tilt,surface_azimuth,solar_zenith,' +
-    'solar_azimuth,aoi_expected,aoi_proj_expected',
+    'surface_tilt,surface_azimuth,solar_zenith,'
+    + 'solar_azimuth,aoi_expected,aoi_proj_expected',
     [(0, 0, 0, 0, 0, 1),
      (30, 180, 30, 180, 0, 1),
      (30, 180, 150, 0, 180, -1),
@@ -760,7 +761,7 @@ def airmass_kt():
 
 def test_kt_kt_prime_factor(airmass_kt):
     out = irradiance._kt_kt_prime_factor(airmass_kt)
-    expected = np.array([ 0.999971,  0.723088,  0.548811,  0.471068])
+    expected = np.array([0.999971, 0.723088, 0.548811, 0.471068])
     assert_allclose(out, expected, atol=1e-5)
 
 
@@ -772,29 +773,29 @@ def test_clearness_index():
     out = irradiance.clearness_index(ghi, solar_zenith, 1370)
     # np.set_printoptions(precision=3, floatmode='maxprec', suppress=True)
     expected = np.array(
-        [[0.   , 0.   , 0.011, 2.   ],
-         [0.   , 0.   , 0.011, 2.   ],
-         [0.   , 0.   , 0.011, 2.   ],
-         [0.   , 0.   , 0.001, 0.73 ]])
+        [[0., 0., 0.011, 2.],
+         [0., 0., 0.011, 2.],
+         [0., 0., 0.011, 2.],
+         [0., 0., 0.001, 0.73]])
     assert_allclose(out, expected, atol=0.001)
     # specify min_cos_zenith
     with np.errstate(invalid='ignore', divide='ignore'):
         out = irradiance.clearness_index(ghi, solar_zenith, 1400,
                                          min_cos_zenith=0)
     expected = np.array(
-        [[0.   ,   nan, 2.   , 2.   ],
-         [0.   , 0.   , 2.   , 2.   ],
-         [0.   , 0.   , 2.   , 2.   ],
-         [0.   , 0.   , 0.001, 0.714]])
+        [[0., nan, 2., 2.],
+         [0., 0., 2., 2.],
+         [0., 0., 2., 2.],
+         [0., 0., 0.001, 0.714]])
     assert_allclose(out, expected, atol=0.001)
     # specify max_clearness_index
     out = irradiance.clearness_index(ghi, solar_zenith, 1370,
                                      max_clearness_index=0.82)
     expected = np.array(
-        [[ 0.   ,  0.   ,  0.011,  0.82 ],
-         [ 0.   ,  0.   ,  0.011,  0.82 ],
-         [ 0.   ,  0.   ,  0.011,  0.82 ],
-         [ 0.   ,  0.   ,  0.001,  0.73 ]])
+        [[0., 0., 0.011, 0.82],
+         [0., 0., 0.011, 0.82],
+         [0., 0., 0.011, 0.82],
+         [0., 0., 0.001, 0.73]])
     assert_allclose(out, expected, atol=0.001)
     # specify min_cos_zenith and max_clearness_index
     with np.errstate(invalid='ignore', divide='ignore'):
@@ -802,10 +803,10 @@ def test_clearness_index():
                                          min_cos_zenith=0,
                                          max_clearness_index=0.82)
     expected = np.array(
-        [[ 0.   ,    nan,  0.82 ,  0.82 ],
-         [ 0.   ,  0.   ,  0.82 ,  0.82 ],
-         [ 0.   ,  0.   ,  0.82 ,  0.82 ],
-         [ 0.   ,  0.   ,  0.001,  0.714]])
+        [[0., nan, 0.82, 0.82],
+         [0., 0., 0.82, 0.82],
+         [0., 0., 0.82, 0.82],
+         [0., 0., 0.001, 0.714]])
     assert_allclose(out, expected, atol=0.001)
     # scalars
     out = irradiance.clearness_index(1000, 10, 1400)
@@ -827,19 +828,19 @@ def test_clearness_index_zenith_independent(airmass_kt):
     out = irradiance.clearness_index_zenith_independent(clearness_index,
                                                         airmass_kt)
     expected = np.array(
-        [[0.   , 0.   , 0.1  , 1.   ],
-         [0.   , 0.   , 0.138, 1.383],
-         [0.   , 0.   , 0.182, 1.822],
-         [0.   , 0.   , 0.212, 2.   ]])
+        [[0., 0., 0.1, 1.],
+         [0., 0., 0.138, 1.383],
+         [0., 0., 0.182, 1.822],
+         [0., 0., 0.212, 2.]])
     assert_allclose(out, expected, atol=0.001)
     # test max_clearness_index
     out = irradiance.clearness_index_zenith_independent(
         clearness_index, airmass_kt, max_clearness_index=0.82)
     expected = np.array(
-        [[ 0.   ,  0.   ,  0.1  ,  0.82 ],
-         [ 0.   ,  0.   ,  0.138,  0.82 ],
-         [ 0.   ,  0.   ,  0.182,  0.82 ],
-         [ 0.   ,  0.   ,  0.212,  0.82 ]])
+        [[0., 0., 0.1, 0.82],
+         [0., 0., 0.138, 0.82],
+         [0., 0., 0.182, 0.82],
+         [0., 0., 0.212, 0.82]])
     assert_allclose(out, expected, atol=0.001)
     # scalars
     out = irradiance.clearness_index_zenith_independent(.4, 2)
@@ -853,3 +854,30 @@ def test_clearness_index_zenith_independent(airmass_kt):
                                                         airmass)
     expected = pd.Series([np.nan, 0.553744437562], index=times)
     assert_series_equal(out, expected)
+
+
+@requires_scipy
+@requires_shapely
+@requires_future
+@requires_pvfactors
+def test_pvfactors_bifacial_irradiance():
+
+    solar_azimuth = None
+    solar_zenith = None
+    surface_azimuth = None
+    surface_tilt = None
+    times = None
+    dni = None
+    dhi = None
+    gcr = None
+    pvrow_height = None
+    pvrow_width = None
+    albedo = None
+
+    irradiance.pvfactors_bifacial_irradiance(
+        solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
+        times, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
+        n_pvrows=3, index_observed_pvrow=1,
+        rho_front_pvrow=0.03, rho_back_pvrow=0.05,
+        horizon_band_angle=15.,
+        run_parallel_calculations=True, n_workers_for_parallel_calcs=None)

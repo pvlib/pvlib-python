@@ -84,6 +84,35 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
     t : thread
         a thread object, use it to check status by calling `t.is_alive()`
 
+    Notes
+    -----
+    To download data from ECMWF requires the API client. For more information,
+    see the `documentation
+    <https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets>`_.
+
+    This function returns a daemon thread that runs in the background. Exiting
+    Python will kill this thread, however this thread will not block the main
+    thread or other threads. This thread will terminate when the file is
+    downloaded or if the thread raises an unhandled exception. You may submit
+    multiple requests simultaneously to break up large downloads. You can also
+    check the status and retrieve downloads online at
+    http://apps.ecmwf.int/webmars/joblist/. This is useful if you kill the
+    thread. Downloads expire after 24 hours.
+
+    .. warning:: Your request may be queued online for an hour or more before
+        it begins to download
+
+    Precipitable water :math:`P_{wat}` is equivalent to the total column of
+    water vapor (TCWV), but the units given by ECMWF MACC Reanalysis are kg/m^2
+    at STP (1-atm, 25-C). Divide by ten to convert to centimeters of
+    precipitable water:
+
+    .. math::
+        P_{wat} \\left( \\text{cm} \\right) \
+        = TCWV \\left( \\frac{\\text{kg}}{\\text{m}^2} \\right) \
+        \\frac{100 \\frac{\\text{cm}}{\\text{m}}} \
+        {1000 \\frac{\\text{kg}}{\\text{m}^3}}
+
     The keynames available for the ``params`` argument are given by
     :const:`pvlib.iotools.ecmwf_macc.PARAMS` which maps the keys to codes used
     in the API. The following keynames are available:
@@ -99,12 +128,18 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
     aod1240  aerosol optical depth measured at 1240-nm
     =======  =========================================
 
-    If ``lookup_params`` is ``False`` then ``params`` must contain
-    the codes preformatted according to the ECMWF MACC Reanalysis API. See the
-    `documentation
-    <https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets>`_.
-    This is useful if you want to retrieve codes that are not mapped in 
+    If ``lookup_params`` is ``False`` then ``params`` must contain the codes
+    preformatted according to the ECMWF MACC Reanalysis API. This is useful if
+    you want to retrieve codes that are not mapped in
     :const:`pvlib.iotools.ecmwf_macc.PARAMS`.
+
+    Specify a custom ``target`` function to modify how the ECMWF API function
+    ``server.retrieve`` is called. The ``target`` function must have the
+    following signature in which the parameter definitions are similar to
+    :func:`pvlib.iotools.get_ecmwf_macc`. ::
+
+
+        target(server, startdate, stopdate, params, filename) -> None
 
     Examples
     --------
@@ -119,26 +154,6 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
     >>> t = ecmwf_macc.get_ecmwf_macc(filename, params, start, end)
     >>> t.is_alive()
     True
-
-    Notes
-    -----
-    Precipitable water is equivalent to the total column of water vapor, but
-    the units given by ECMWF MACC Reanalysis are kg/m^2 at STP (1-atm, 25-C).
-    Divide by 10 to convert to centimeters of precipitable water:
-
-    .. math::
-       P_{wat}(cm) = TCWV(\frac{kg}{m^2}) \frac{100 \frac{cm}{m}}{1000 \frac{kg}{m^3}}
-
-    This is a daemon thread that runs in the background. Exiting Python will
-    kill this thread, however this thread will not block the main thread or
-    other threads. This thread will terminate when the file is downloaded or if
-    the thread raises an unhandled exception. You may submit multiple requests
-    simultaneously to break up large downloads. You can also check the status
-    and retrieve downloads online at `http://apps.ecmwf.int/webmars/joblist/`_.
-    This is useful if you kill the thread. Downloads expire after 24 hours.
-
-    .. warning:: Your request may be queued online for an hour or more before
-        it begins to download
 
     """
     if not filename.endswith('nc'):

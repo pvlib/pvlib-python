@@ -147,11 +147,11 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
     November 1, 2012.
 
     >>> from datetime import date
-    >>> from pvlib.iotools import ecmwf_macc
+    >>> from pvlib.iotools import get_ecmwf_macc
     >>> filename = 'aod_tcwv_20121101.nc'  # .nc extension added if missing
     >>> params = ('aod550', 'tcwv')
     >>> start = end = date(2012, 11, 1)
-    >>> t = ecmwf_macc.get_ecmwf_macc(filename, params, start, end)
+    >>> t = get_ecmwf_macc(filename, params, start, end)
     >>> t.is_alive()
     True
 
@@ -231,6 +231,32 @@ class ECMWF_MACC(object):
     def interp_data(self, lat, lon, utc_time, key):
         """
         Interpolate data for UTC time using nearest indices to (lat, lon).
+
+        Parmaeters
+        ----------
+        lat : float
+            Latitude in degrees
+        lon : float
+            Longitude in degrees
+        utc_time : datetime.datetime or datetime.date
+            Naive or UTC date or datetime to interpolate
+        key : str
+            Name of the parameter to interpolate from the data
+
+        Returns
+        -------
+        Interpolated value of ``key`` from data at (``utc_time, lat, lon``)
+
+        Examples
+        --------
+        Use this to get a single value of a parameter in the data at a specific
+        time and set of (lat, lon) coordinates.
+
+        >>> from datetime import datetime
+        >>> from pvlib.iotools import ecmwf_macc
+        >>> data = ecmwf_macc.ECMWF_MACC('aod_tcwv_20121101.nc')
+        >>> dt = datetime(2012, 11, 1, 11, 33, 1)
+        >>> data.interp_data(38.2, -122.1, dt, 'aod550')
         """
         nctime = self.data['time']  # time
         ilat, ilon = self.get_nearest_indices(lat, lon)
@@ -281,7 +307,7 @@ def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
         if ECMWF_MACC.TCWV in df:
             # convert total column water vapor in kg/m^2 at (1-atm, 25-degC) to
             # precipitable water in cm
-            df['precipitable_water'] = ecmwf_macc.data[ECMWF_MACC.TCWV] / 10.0
+            df['precipitable_water'] = df[ECMWF_MACC.TCWV] / 10.0
     finally:
         ecmwf_macc.data.close()
     return pd.DataFrame(df, index=times.astype('datetime64[s]'))

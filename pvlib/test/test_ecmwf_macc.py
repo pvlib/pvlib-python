@@ -12,11 +12,11 @@ from pvlib.iotools import ecmwf_macc
 DIRNAME = os.path.dirname(__file__)
 PROJNAME = os.path.dirname(DIRNAME)
 DATADIR = os.path.join(PROJNAME, 'data')
-TESTDATA = 'aod550_2012Nov1_test.nc'
+TESTDATA = 'aod550_tcwv_20121101_test.nc'
 
 # for creating test data
-DATES = [datetime.date(2012, 11, 1), datetime.date(2012, 11, 2)]
-DATAFILE = 'aod550_2012Nov1.nc'
+START = END = datetime.date(2012, 11, 1)
+DATAFILE = 'aod550_tcwv_20121101.nc'
 RESIZE = 4
 LON_BND = (0, 360.0)
 LAT_BND = (90, -90)
@@ -50,18 +50,31 @@ def test_interp_data():
 @requires_netCDF4
 def test_read_ecmwf_macc():
     """Test reading ECMWF_MACC data from netCDF4 file."""
-    aod = ecmwf_macc.read_ecmwf_macc(os.path.join(DATADIR, TESTDATA), 38, -122)
+    data = ecmwf_macc.read_ecmwf_macc(
+        os.path.join(DATADIR, TESTDATA), 38, -122)
     expected_times = [
         1351738800, 1351749600, 1351760400, 1351771200, 1351782000, 1351792800,
         1351803600, 1351814400]
-    assert np.allclose(aod.index.astype(int) // 1000000000, expected_times)
-    expected = [
-        0.39530905, 0.22372988, 0.18373338, 0.15011313, 0.13081389, 0.11171923,
-        0.09743233, 0.0921472]
-    assert np.allclose(aod.aod550.values, expected)
+    assert np.allclose(data.index.astype(int) // 1000000000, expected_times)
+    expected_aod = np.array([
+        0.39531226, 0.22371339, 0.18373083, 0.15010143, 0.130809, 0.11172834,
+        0.09741255, 0.0921606])
+    expected_tcwv = np.array([
+        26.56172238, 22.75563109, 19.37884304, 16.19186269, 13.31990346,
+        11.65635338, 10.94879802, 10.55725756])
+    assert np.allclose(data.aod550.values, expected_aod)
+    assert np.allclose(data.tcwv.values, expected_tcwv)
+    assert np.allclose(data.precipitable_water.values, expected_tcwv / 10.0)
+    datetimes = (datetime.datetime(2012, 11, 1, 9, 0, 0),
+                 datetime.datetime(2012, 11, 1, 12, 0, 0))
+    data_9am_12pm = ecmwf_macc.read_ecmwf_macc(
+        os.path.join(DATADIR, TESTDATA), 38, -122, datetimes)
+    assert np.allclose(data_9am_12pm.aod550.values, expected_aod[2:4])
+    assert np.allclose(data_9am_12pm.tcwv.values, expected_tcwv[2:4])
 
 
-def _create_test_data():
+def _create_test_data(datafile=DATAFILE, testfile=TESTDATA, start=START,
+                      end=END, resize=RESIZE):
     """
     Create test data from downloaded data.
 
@@ -71,19 +84,19 @@ def _create_test_data():
 
     import netCDF4
 
-    if not os.path.exists(DATAFILE):
-        ecmwf_macc.get_ecmwf_macc(DATAFILE, "aod550", DATES[0], DATES[1])
+    if not os.path.exists(datafile):
+        ecmwf_macc.get_ecmwf_macc(datafile, ("aod550", "tcwv"), start, end)
 
-    data = netCDF4.Dataset(DATAFILE)
-    testdata = netCDF4.Dataset(TESTDATA, 'w', format="NETCDF3_64BIT_OFFSET")
+    data = netCDF4.Dataset(datafile)
+    testdata = netCDF4.Dataset(testfile, 'w', format="NETCDF3_64BIT_OFFSET")
 
     # attributes
     testdata.Conventions = data.Conventions
-    testdata.history = "intensionally blank"
+    testdata.history = "intentionally blank"
 
-    # longitiude
+    # longitude
     lon_name = 'longitude'
-    lon_test = data.variables[lon_name][::RESIZE]
+    lon_test = data.variables[lon_name][::resize]
     lon_size = lon_test.size
     lon = testdata.createDimension(lon_name, lon_size)
     assert not lon.isunlimited()
@@ -96,7 +109,7 @@ def _create_test_data():
 
     # latitude
     lat_name = 'latitude'
-    lat_test = data.variables[lat_name][::RESIZE]
+    lat_test = data.variables[lat_name][::resize]
     lat = testdata.createDimension(lat_name, lat_test.size)
     assert not lat.isunlimited()
     assert lat_test[0] == LAT_BND[0]
@@ -108,8 +121,7 @@ def _create_test_data():
 
     # time
     time_name = 'time'
-    time_size = data.dimensions[time_name].size // 2
-    time_test = data.variables[time_name][:time_size]
+    time_test = data.variables[time_name][:]
     time = testdata.createDimension(time_name, None)
     assert time.isunlimited()
     times = testdata.createVariable(time_name, 'i4', (time_name,))
@@ -129,7 +141,20 @@ def _create_test_data():
         if attr.startswith('_'):
             continue
         setattr(aods, attr, getattr(aod_vars, attr))
-    aods[:] = aod_vars[:time_size, ::RESIZE, ::RESIZE]
+    aods[:] = aod_vars[:, ::resize, ::resize]
+
+    # tcwv
+    tcwv_name = 'tcwv'
+    tcwv_vars = data.variables[tcwv_name]
+    tcwv_dims = (time_name, lat_name, lon_name)
+    tcwv_fill_value = getattr(tcwv_vars, '_FillValue')
+    tcwvs = testdata.createVariable(
+        tcwv_name, 'i2', tcwv_dims, fill_value=tcwv_fill_value)
+    for attr in tcwv_vars.ncattrs():
+        if attr.startswith('_'):
+            continue
+        setattr(tcwvs, attr, getattr(tcwv_vars, attr))
+    tcwvs[:] = tcwv_vars[:, ::resize, ::resize]
 
     data.close()
     testdata.close()

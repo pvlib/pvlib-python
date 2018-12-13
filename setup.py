@@ -45,7 +45,7 @@ INSTALL_REQUIRES = ['numpy >= 1.10.1',
 TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock', 'nose']
 EXTRAS_REQUIRE = {
     'optional': ['scipy', 'tables', 'numba', 'siphon', 'netcdf4',
-                 'ephem', 'cython', 'pvfactors'],
+                 'ephem', 'cython', 'pvfactors==0.1.4'],
     'doc': ['sphinx', 'ipython', 'sphinx_rtd_theme', 'numpydoc',
             'matplotlib'],
     'test': TESTS_REQUIRE

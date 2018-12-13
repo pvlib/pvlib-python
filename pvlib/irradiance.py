@@ -2824,7 +2824,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
 
 def pvfactors_bifacial_irradiance(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
-        times, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
+        timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
         n_pvrows=3, index_observed_pvrow=1,
         rho_front_pvrow=0.03, rho_back_pvrow=0.05,
         horizon_band_angle=15.,
@@ -2849,6 +2849,50 @@ def pvfactors_bifacial_irradiance(
         Calculated incident irradiance on the back surface of the PV modules.
     """
 
+    # Import necessary packages
     from pvfactors.timeseries import (calculate_radiosities_parallel_perez,
                                       calculate_radiosities_serially_perez,
                                       get_average_pvrow_outputs)
+    idx_slice = pd.IndexSlice
+
+    # Build up pv array configuration parameters
+    pvarray_parameters = {
+        'n_pvrows': n_pvrows,
+        'pvrow_height': pvrow_height,
+        'pvrow_width': pvrow_width,
+        'surface_azimuth': surface_azimuth[0],  # not necessary
+        'surface_tilt': surface_tilt[0],        # not necessary
+        'gcr': gcr,
+        'solar_zenith': solar_zenith[0],        # not necessary
+        'solar_azimuth': solar_azimuth[0],      # not necessary
+        'rho_ground': albedo,
+        'rho_front_pvrow': rho_front_pvrow,
+        'rho_back_pvrow': rho_back_pvrow,
+        'horizon_band_angle': horizon_band_angle
+    }
+
+    # Run pvfactors calculations: either in parallel or serially
+    if run_parallel_calculations:
+        df_registries, df_custom_perez = calculate_radiosities_parallel_perez(
+            pvarray_parameters, timestamps, solar_zenith, solar_azimuth,
+            surface_tilt, surface_azimuth, dni, dhi,
+            n_processes=n_workers_for_parallel_calcs)
+    else:
+        inputs = (pvarray_parameters, timestamps, solar_zenith, solar_azimuth,
+                  surface_tilt, surface_azimuth, dni, dhi)
+        df_registries, df_custom_perez = calculate_radiosities_serially_perez(
+            inputs)
+
+    # Get the average surface outputs
+    df_outputs = get_average_pvrow_outputs(df_registries,
+                                           values=['qinc'],
+                                           include_shading=True)
+
+    # Select the calculated outputs from the pvrow to observe
+    ipoa_front = df_outputs.loc[:, idx_slice[index_observed_pvrow,
+                                             'front', 'qinc']].values
+
+    ipoa_back = df_outputs.loc[:, idx_slice[index_observed_pvrow,
+                                            'back', 'qinc']].values
+
+    return ipoa_front, ipoa_back, df_registries

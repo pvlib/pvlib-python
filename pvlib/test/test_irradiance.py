@@ -861,7 +861,7 @@ def test_clearness_index_zenith_independent(airmass_kt):
 @requires_future
 @requires_pvfactors
 def test_pvfactors_bifacial_irradiance():
-    """ Test that pvfactors is functional, using the TLDR inputs of the
+    """ Test that pvfactors is functional, using the TLDR section inputs of the
     package github repo README.md file"""
 
     # Create some inputs
@@ -883,20 +883,35 @@ def test_pvfactors_bifacial_irradiance():
     rho_back_pvrow = 0.05
     horizon_band_angle = 15.
 
-    # Run calculations serially
-    irradiance.pvfactors_bifacial_irradiance(
+    # Expected values
+    expected_ipoa_front = [1034.96216923, 795.4423259]
+    expected_ipoa_back = [92.11871485, 70.39404124]
+    tolerance = 1e-6
+
+    # Test serial calculations
+    ipoa_front, ipoa_back, _ = irradiance.pvfactors_bifacial_irradiance(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
-        times, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
+        timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
         n_pvrows=n_pvrows, index_observed_pvrow=index_observed_pvrow,
         rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
         horizon_band_angle=horizon_band_angle,
         run_parallel_calculations=False, n_workers_for_parallel_calcs=None)
 
+    np.testing.assert_allclose(ipoa_front, expected_ipoa_front,
+                               atol=0, rtol=tolerance)
+    np.testing.assert_allclose(ipoa_back, expected_ipoa_back,
+                               atol=0, rtol=tolerance)
+
     # Run calculations in parallel
-    irradiance.pvfactors_bifacial_irradiance(
+    ipoa_front, ipoa_back, _ = irradiance.pvfactors_bifacial_irradiance(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
-        times, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
+        timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
         n_pvrows=n_pvrows, index_observed_pvrow=index_observed_pvrow,
         rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
         horizon_band_angle=horizon_band_angle,
         run_parallel_calculations=True, n_workers_for_parallel_calcs=None)
+
+    np.testing.assert_allclose(ipoa_front, expected_ipoa_front,
+                               atol=0, rtol=tolerance)
+    np.testing.assert_allclose(ipoa_back, expected_ipoa_back,
+                               atol=0, rtol=tolerance)

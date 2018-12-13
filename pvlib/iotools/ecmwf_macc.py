@@ -199,7 +199,7 @@ class ECMWF_MACC(object):
 
     def get_nearest_indices(self, latitude, longitude):
         """
-        Get nearest indices to (lat, lon).
+        Get nearest indices to (latitude, longitude).
 
         Parmaeters
         ----------
@@ -228,29 +228,30 @@ class ECMWF_MACC(object):
         idx_lon = int(round(longitude / self.delta_lon)) % self.lon_size
         return idx_lat, idx_lon
 
-    def interp_data(self, lat, lon, utc_time, key):
+    def interp_data(self, latitude, longitude, utc_time, param):
         """
-        Interpolate data for UTC time using nearest indices to (lat, lon).
+        Interpolate ``param`` values to ``utc_time`` using indices nearest to
+        (``latitude, longitude``).
 
         Parmaeters
         ----------
-        lat : float
+        latitude : float
             Latitude in degrees
-        lon : float
+        longitude : float
             Longitude in degrees
         utc_time : datetime.datetime or datetime.date
             Naive or UTC date or datetime to interpolate
-        key : str
+        param : str
             Name of the parameter to interpolate from the data
 
         Returns
         -------
-        Interpolated value of ``key`` from data at (``utc_time, lat, lon``)
+        Interpolated ``param`` value at (``utc_time, latitude, longitude``)
 
         Examples
         --------
         Use this to get a single value of a parameter in the data at a specific
-        time and set of (lat, lon) coordinates.
+        time and set of (latitude, longitude) coordinates.
 
         >>> from datetime import datetime
         >>> from pvlib.iotools import ecmwf_macc
@@ -259,11 +260,11 @@ class ECMWF_MACC(object):
         >>> data.interp_data(38.2, -122.1, dt, 'aod550')
         """
         nctime = self.data['time']  # time
-        ilat, ilon = self.get_nearest_indices(lat, lon)
+        ilat, ilon = self.get_nearest_indices(latitude, longitude)
         # time index before
         before = netCDF4.date2index(utc_time, nctime, select='before')
-        fbefore = self.data[key][before, ilat, ilon]
-        fafter = self.data[key][before + 1, ilat, ilon]
+        fbefore = self.data[param][before, ilat, ilon]
+        fafter = self.data[param][before + 1, ilat, ilon]
         dt_num = netCDF4.date2num(utc_time, nctime.units)
         time_ratio = (dt_num - nctime[before]) / self.delta_time
         return fbefore + (fafter - fbefore) * time_ratio

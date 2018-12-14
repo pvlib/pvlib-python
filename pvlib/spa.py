@@ -255,19 +255,16 @@ TABLE_1_DICT = {
         [[4.0, 2.56, 6283.08]])
 }
 
+resize_mapping = {
+    'L1': (64, 3), 'L2': (64, 3), 'L3': (64, 3), 'L4': (64, 3), 'L5': (64, 3),
+    'B1': (5, 3), 'R1': (40, 3), 'R2': (40, 3), 'R3': (40, 3), 'R4': (40, 3)}
 
-TABLE_1_DICT['L1'].resize((64, 3))
-TABLE_1_DICT['L2'].resize((64, 3))
-TABLE_1_DICT['L3'].resize((64, 3))
-TABLE_1_DICT['L4'].resize((64, 3))
-TABLE_1_DICT['L5'].resize((64, 3))
-
-TABLE_1_DICT['B1'].resize((5, 3))
-
-TABLE_1_DICT['R1'].resize((40, 3))
-TABLE_1_DICT['R2'].resize((40, 3))
-TABLE_1_DICT['R3'].resize((40, 3))
-TABLE_1_DICT['R4'].resize((40, 3))
+# make arrays uniform size for efficient broadcasting in numba, fill with 0s
+# np.resize does not work because it fills with repeated copies
+for key, dims in resize_mapping.items():
+    new_rows = dims[0] - TABLE_1_DICT[key].shape[0]
+    TABLE_1_DICT[key] = np.append(TABLE_1_DICT[key], np.zeros((new_rows, 3)),
+                                  axis=0)
 
 
 HELIO_LONG_TABLE = np.array([TABLE_1_DICT['L0'],

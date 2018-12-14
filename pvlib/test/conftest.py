@@ -123,6 +123,15 @@ requires_siphon = pytest.mark.skipif(not has_siphon,
                                      reason='requires siphon')
 
 try:
+    import netCDF4  # noqa: F401
+    has_netCDF4 = True
+except ImportError:
+    has_netCDF4 = False
+
+requires_netCDF4 = pytest.mark.skipif(not has_netCDF4,
+                                      reason='requires netCDF4')
+
+try:
     import pvfactors
     has_pvfactors = True
 except ImportError:

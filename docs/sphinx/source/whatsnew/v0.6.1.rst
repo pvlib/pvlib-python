@@ -50,6 +50,8 @@ Enhancements
 * Created :py:func:`pvlib.iotools.read_surfrad` to read NOAA SURFRAD data. (:issue:`590`)
 * Created :py:func:`pvlib.iotools.read_midc` and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`
   to read NREL MIDC data. (:issue:`601`)
+* Created :py:func:`pvlib.iotools.get_ecmwf_macc` and :py:func:`pvlib.iotools.read_ecmwf_macc`
+  to get and read ECMWF MACC data. (:issue:`602`)
 * Use HRRR modeled surface temperature values instead of inferring from
   isobaric values and modeled wind speed instead of inferring from gust.
   (:issue:`604`)
@@ -70,6 +72,7 @@ Bug fixes
 * Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
 * Fix documentation errors when using IPython >= 7.0.
 * Fix error in :func:`pvlib.modelchain.ModelChain.infer_spectral_model` (:issue:`619`)
+* Fix error in ``pvlib.spa`` when using Python 3.7 on some platforms.
 
 
 Testing

@@ -58,6 +58,7 @@ Enhancements
 * Add option for :py:func:`pvlib.irradiance.disc` to use relative airmass
   by supplying `pressure=None`. (:issue:`449`)
 * Created :py:func:`pvlib.pvsystem.pvsyst_celltemp` to implement PVsyst's cell temperature model. (:issue:`552`)
+* Add `PVSystem` class method :py:func:`~pvlib.pvsystem.PVSystem.pvsyst_celltemp` (:issue:`633`)
 
 
 Bug fixes

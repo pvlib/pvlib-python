@@ -1118,6 +1118,23 @@ def test_pvsyst_celltemp_with_index():
     assert_series_equal(expected, pvtemps)
 
 
+def test_PVSystem_pvsyst_celltemp(mocker):
+    racking_model = 'insulated'
+    system = pvsystem.PVSystem(racking_model=racking_model)
+    mocker.spy(pvsystem, 'pvsyst_celltemp')
+    irrads = 1000
+    temps = 25
+    alpha_absorption = 0.9
+    winds = 1
+    eta_m = 0.1
+    out = system.pvsyst_celltemp(irrads, winds, temps)
+    pvsystem.pvsyst_celltemp.assert_called_once_with(irrads, winds, temps,
+                                                     eta_m, alpha_absorption,
+                                                     temp_model=racking_model)
+    assert isinstance(out, float)
+    assert out == 79.0
+
+
 def test_adrinverter(sam_data):
     inverters = sam_data['adrinverter']
     testinv = 'Ablerex_Electronics_Co___Ltd___' \

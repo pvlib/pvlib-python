@@ -430,8 +430,8 @@ def _golden_sect_DataFrame(params, VL, VH, func):
 
 def enforce_numpy_arrays(f):
     """ This decorator function will convert any inputted pandas dataframe or
-    series to a numpy array, and make sure to convert the outputs to pandas
-    series if any input was a pandas structure """
+    series to a numpy array, and make sure to convert outtputed numpy arrays
+    to pandas series if any input was a pandas structure """
 
     @wraps(f)
     def wrapper(*args, **kwargs):

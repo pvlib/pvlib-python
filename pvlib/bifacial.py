@@ -76,7 +76,7 @@ def pvfactors_timeseries(
         (W/m2)
     df_registries: pandas DataFrame
         DataFrame containing all the detailed outputs and elements calculated
-        for every timestamp of the simulation. Please refer to pvfactors'
+        for every timestamp of the simulation. Please refer to pvfactors
         documentation for more details
 
     References

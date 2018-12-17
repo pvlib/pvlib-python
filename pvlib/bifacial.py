@@ -24,20 +24,20 @@ def pvfactors_timeseries(
 
     Inputs
     ------
-    solar_azimuth: numpy array of numeric
+    solar_azimuth: numeric
         Sun's azimuth angles using pvlib's azimuth convention (deg)
-    solar_zenith: numpy array of numeric
+    solar_zenith: numeric
         Sun's zenith angles (deg)
-    surface_azimuth: numpy array of numeric
+    surface_azimuth: numeric
         Azimuth angle of the front surface of the PV modules, using pvlib's
         convention (deg)
-    surface_tilt: numpy array of numeric
+    surface_tilt: numeric
         Tilt angle of the PV modules, going from 0 to 180 (deg)
     timestamps: array of :class:datetime.datetime objects
         List of simulation timestamps
-    dni: numpy array of numeric values
+    dni: numeric
         Direct normal irradiance (W/m2)
-    dhi: numpy array of numeric values
+    dhi: numeric
         Diffuse horizontal irradiance (W/m2)
     gcr: float
         Ground coverage ratio of the pv array
@@ -68,10 +68,10 @@ def pvfactors_timeseries(
 
     Returns
     -------
-    front_poa_irradiance: numpy array of numeric
+    front_poa_irradiance: numeric
         Calculated incident irradiance on the front surface of the PV modules
         (W/m2)
-    back_poa_irradiance: numpy array of numeric
+    back_poa_irradiance: numeric
         Calculated incident irradiance on the back surface of the PV modules
         (W/m2)
     df_registries: pandas DataFrame

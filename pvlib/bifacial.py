@@ -20,8 +20,8 @@ def pvfactors_timeseries(
     Please refer to pvfactors online documentation for more details:
     https://sunpower.github.io/pvfactors/
 
-    Parameters
-    ----------
+    Inputs
+    ------
     solar_azimuth: numpy array of numeric
         Sun's azimuth angles using pvlib's azimuth convention (deg)
     solar_zenith: numpy array of numeric

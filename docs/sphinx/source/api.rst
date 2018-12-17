@@ -521,3 +521,15 @@ Functions for power modeling.
 
    modelchain.basic_chain
    modelchain.get_orientation
+
+
+Bifacial
+========
+
+Methods for calculating back surface irradiance
+-----------------------------------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   bifacial.pvfactors_timeseries

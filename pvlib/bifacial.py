@@ -4,8 +4,10 @@ plane-of-array irradiance under various conditions.
 """
 
 import pandas as pd
+from pvlib.tools import enforce_numpy_arrays
 
 
+@enforce_numpy_arrays
 def pvfactors_timeseries(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
         timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,

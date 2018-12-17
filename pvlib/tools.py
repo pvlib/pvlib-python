@@ -440,9 +440,13 @@ def enforce_numpy_arrays(f):
 
         new_args = []
         for arg in args:
-            if isinstance(arg, pd.DataFrame) or isinstance(arg, pd.Series):
+            if isinstance(arg, pd.Series):
                 is_return_type_pandas = True
                 new_arg = arg.values
+                new_args.append(new_arg)
+            elif isinstance(arg, pd.DataFrame):
+                is_return_type_pandas = True
+                new_arg = arg.values.ravel()  # make sure that 1D
                 new_args.append(new_arg)
             else:
                 new_args.append(arg)
@@ -461,7 +465,7 @@ def enforce_numpy_arrays(f):
         outputs = f(*new_args, **new_kwargs)
 
         # If inputs were provided as pandas series or dataframe, convert
-        # outputs to pandas series if numpy arrays
+        # outputted numpy arrays to pandas series
         new_outputs = []
         if is_return_type_pandas:
             for output in outputs:

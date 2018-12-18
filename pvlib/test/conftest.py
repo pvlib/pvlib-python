@@ -139,21 +139,3 @@ except ImportError:
 
 requires_pvfactors = pytest.mark.skipif(not has_pvfactors,
                                         reason='requires pvfactors')
-
-try:
-    import future
-    has_future = True
-except ImportError:
-    has_future = False
-
-requires_future = pytest.mark.skipif(not has_future,
-                                     reason='requires future')
-
-try:
-    import shapely
-    has_shapely = True
-except ImportError:
-    has_shapely = False
-
-requires_shapely = pytest.mark.skipif(not has_shapely,
-                                      reason='requires shapely')

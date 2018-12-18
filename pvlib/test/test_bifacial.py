@@ -5,9 +5,6 @@ from conftest import (requires_pvfactors, requires_future, requires_shapely,
                       requires_scipy)
 
 
-@requires_scipy
-@requires_shapely
-@requires_future
 @requires_pvfactors
 def test_pvfactors_timeseries():
     """ Test that pvfactors is functional, using the TLDR section inputs of the

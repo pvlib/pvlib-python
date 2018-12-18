@@ -1,8 +1,7 @@
 import numpy as np
 from datetime import datetime
 from pvlib.bifacial import pvfactors_timeseries
-from conftest import (requires_pvfactors, requires_future, requires_shapely,
-                      requires_scipy)
+from conftest import requires_pvfactors
 
 
 @requires_pvfactors

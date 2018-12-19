@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from datetime import datetime
 from pvlib.bifacial import pvfactors_timeseries
 from conftest import requires_pvfactors
@@ -10,14 +11,14 @@ def test_pvfactors_timeseries():
     package github repo README.md file"""
 
     # Create some inputs
-    timestamps = np.array([datetime(2017, 8, 31, 11),
-                           datetime(2017, 8, 31, 12)])
-    solar_zenith = np.array([20., 10.])
-    solar_azimuth = np.array([110., 140.])
-    surface_tilt = np.array([10., 0.])
-    surface_azimuth = np.array([90., 90.])
-    dni = np.array([1000., 300.])
-    dhi = np.array([50., 500.])
+    timestamps = pd.DatetimeIndex([datetime(2017, 8, 31, 11),
+                                   datetime(2017, 8, 31, 12)])
+    solar_zenith = [20., 10.]
+    solar_azimuth = [110., 140.]
+    surface_tilt = [10., 0.]
+    surface_azimuth = [90., 90.]
+    dni = [1000., 300.]
+    dhi = [50., 500.]
     gcr = 0.4
     pvrow_height = 1.75
     pvrow_width = 2.44

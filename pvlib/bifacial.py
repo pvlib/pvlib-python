@@ -33,7 +33,7 @@ def pvfactors_timeseries(
         convention (deg)
     surface_tilt: numeric
         Tilt angle of the PV modules, going from 0 to 180 (deg)
-    timestamps: array of :class:datetime.datetime objects
+    timestamps: datetime or DatetimeIndex
         List of simulation timestamps
     dni: numeric
         Direct normal irradiance (W/m2)

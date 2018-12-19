@@ -73,9 +73,11 @@ def pvfactors_timeseries(
         Calculated incident irradiance on the back surface of the PV modules
         (W/m2)
     df_registries: pandas DataFrame
-        DataFrame containing all the detailed outputs and elements calculated
-        for every timestamp of the simulation. Please refer to pvfactors
-        documentation for more details
+        DataFrame containing detailed outputs of the simulation; for
+        instance the shapely geometries, the irradiance components incident on
+        all surfaces of the PV array (for all timestamps), etc.
+        In the pvfactors documentation, this is refered to as the "surface
+        registry".
 
     References
     ----------
@@ -109,11 +111,7 @@ def pvfactors_timeseries(
         'n_pvrows': n_pvrows,
         'pvrow_height': pvrow_height,
         'pvrow_width': pvrow_width,
-        'surface_azimuth': surface_azimuth[0],  # not necessary
-        'surface_tilt': surface_tilt[0],        # not necessary
         'gcr': gcr,
-        'solar_zenith': solar_zenith[0],        # not necessary
-        'solar_azimuth': solar_azimuth[0],      # not necessary
         'rho_ground': albedo,
         'rho_front_pvrow': rho_front_pvrow,
         'rho_back_pvrow': rho_back_pvrow,

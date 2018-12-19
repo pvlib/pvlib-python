@@ -132,7 +132,7 @@ requires_netCDF4 = pytest.mark.skipif(not has_netCDF4,
                                       reason='requires netCDF4')
 
 try:
-    import pvfactors
+    import pvfactors  # noqa: F401
     has_pvfactors = True
 except ImportError:
     has_pvfactors = False

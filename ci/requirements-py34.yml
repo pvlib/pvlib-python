@@ -16,7 +16,7 @@ dependencies:
     - pytest-cov
     - pytest-mock
     - nose
-    - pvfactors=0.1.5
     - pip:
         - coveralls
         - pytest-timeout
+        - pvfactors=0.1.5

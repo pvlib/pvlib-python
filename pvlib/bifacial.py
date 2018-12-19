@@ -4,10 +4,8 @@ plane-of-array irradiance under various conditions.
 """
 
 import pandas as pd
-from pvlib.tools import enforce_numpy_arrays
 
 
-@enforce_numpy_arrays
 def pvfactors_timeseries(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
         timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
@@ -24,20 +22,20 @@ def pvfactors_timeseries(
 
     Inputs
     ------
-    solar_azimuth: numeric
+    solar_azimuth: numeric (list, numpy array, or pandas Series)
         Sun's azimuth angles using pvlib's azimuth convention (deg)
-    solar_zenith: numeric
+    solar_zenith: numeric (list, numpy array, or pandas Series)
         Sun's zenith angles (deg)
-    surface_azimuth: numeric
+    surface_azimuth: numeric (list, numpy array, or pandas Series)
         Azimuth angle of the front surface of the PV modules, using pvlib's
         convention (deg)
-    surface_tilt: numeric
+    surface_tilt: numeric (list, numpy array, or pandas Series)
         Tilt angle of the PV modules, going from 0 to 180 (deg)
     timestamps: datetime or DatetimeIndex
         List of simulation timestamps
-    dni: numeric
+    dni: numeric (list, numpy array, or pandas Series)
         Direct normal irradiance (W/m2)
-    dhi: numeric
+    dhi: numeric (list, numpy array, or pandas Series)
         Diffuse horizontal irradiance (W/m2)
     gcr: float
         Ground coverage ratio of the pv array
@@ -85,6 +83,20 @@ def pvfactors_timeseries(
         Bifacial PV and Diffuse Shade on Single-Axis Trackers." 44th IEEE
         Photovoltaic Specialist Conference. 2017.
     """
+
+    # Convert pandas Series inputs to numpy arrays
+    if isinstance(solar_azimuth, pd.Series):
+        solar_azimuth = solar_azimuth.values
+    if isinstance(solar_zenith, pd.Series):
+        solar_zenith = solar_zenith.values
+    if isinstance(surface_azimuth, pd.Series):
+        surface_azimuth = surface_azimuth.values
+    if isinstance(surface_tilt, pd.Series):
+        surface_tilt = surface_tilt.values
+    if isinstance(dni, pd.Series):
+        dni = dni.values
+    if isinstance(dhi, pd.Series):
+        dhi = dhi.values
 
     # Import pvfactors functions for timeseries calculations.
     from pvfactors.timeseries import (calculate_radiosities_parallel_perez,

@@ -1567,9 +1567,9 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
         kt_previous = kt_prime.shift(1)
         kt_next.iloc[-1] = kt_previous.iloc[-1]
         kt_previous.iloc[0] = kt_next.iloc[0]
-        delta_kt_prime = 0.5*((kt_prime - kt_next).abs().add(
-                              (kt_prime - kt_previous).abs(),
-                              fill_value=0))
+        delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
+                                (kt_prime - kt_previous).abs(),
+                                fill_value=0))
     else:
         # do not change unless also modifying _dirint_bins
         delta_kt_prime = pd.Series(-1, index=times)

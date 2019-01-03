@@ -466,19 +466,19 @@ def test_dirint_value():
     pressure = 93193.
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure)
     assert_almost_equal(dirint_data.values,
-                        np.array([ 888. ,  683.7]), 1)
+                        np.array([868.8 ,  699.7]), 1)
 
 
 def test_dirint_nans():
     times = pd.DatetimeIndex(start='2014-06-24T12-0700', periods=5, freq='6H')
     ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
-    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567,], index=times)
+    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567], index=times)
     pressure = pd.Series([93193., 93193., np.nan, 93193., 93193.], index=times)
     temp_dew = pd.Series([10, 10, 10, np.nan, 10], index=times)
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=temp_dew)
     assert_almost_equal(dirint_data.values,
-                        np.array([np.nan, np.nan, np.nan, np.nan, 893.1]), 1)
+                        np.array([np.nan, np.nan, np.nan, np.nan, 883.1]), 1)
 
 
 def test_dirint_tdew():
@@ -489,7 +489,7 @@ def test_dirint_tdew():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=10)
     assert_almost_equal(dirint_data.values,
-                        np.array([892.9,  636.5]), 1)
+                        np.array([882.1,  671.9]), 1)
 
 
 def test_dirint_no_delta_kt():

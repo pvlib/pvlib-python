@@ -1563,8 +1563,12 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
     """
     if use_delta_kt_prime:
         # Perez eqn 2
-        delta_kt_prime = 0.5*((kt_prime - kt_prime.shift(1)).abs().add(
-                              (kt_prime - kt_prime.shift(-1)).abs(),
+        kt_next = kt_prime.shift(-1)
+        kt_previous = kt_prime.shift(1)
+        kt_next.iloc[-1] = kt_previous.iloc[-1]
+        kt_previous.iloc[0] = kt_next.iloc[0]
+        delta_kt_prime = 0.5*((kt_prime - kt_next).abs().add(
+                              (kt_prime - kt_previous).abs(),
                               fill_value=0))
     else:
         # do not change unless also modifying _dirint_bins

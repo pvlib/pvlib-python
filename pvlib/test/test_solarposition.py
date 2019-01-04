@@ -39,6 +39,12 @@ def golden_mst():
 
 @pytest.fixture()
 def expected_solpos():
+    return _expected_solpos_df()
+
+
+# hack to make tests work without too much modification while avoiding
+# pytest 4.0 inability to call features directly
+def _expected_solpos_df():
     return pd.DataFrame({'elevation': 39.872046,
                          'apparent_zenith': 50.111622,
                          'azimuth': 194.340241,
@@ -483,15 +489,14 @@ def test_get_solarposition_error(golden):
                                                      method='error this')
 
 
-@pytest.mark.parametrize(
-    "pressure, expected", [
-    (82000, expected_solpos()),
+@pytest.mark.parametrize("pressure, expected", [
+    (82000, _expected_solpos_df()),
     (90000, pd.DataFrame(
         np.array([[  39.88997,   50.11003,  194.34024,   39.87205,   14.64151,
                      50.12795]]),
-        columns=['apparent_elevation', 'apparent_zenith', 'azimuth', 'elevation',
-                 'equation_of_time', 'zenith'],
-        index=expected_solpos().index))
+        columns=['apparent_elevation', 'apparent_zenith', 'azimuth',
+                 'elevation', 'equation_of_time', 'zenith'],
+        index=['2003-10-17T12:30:30Z']))
     ])
 def test_get_solarposition_pressure(pressure, expected, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
@@ -507,15 +512,14 @@ def test_get_solarposition_pressure(pressure, expected, golden):
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
 
-@pytest.mark.parametrize(
-    "altitude, expected",
-    [(golden().altitude, expected_solpos()),
+@pytest.mark.parametrize("altitude, expected", [
+    (1830.14, _expected_solpos_df()),
     (2000, pd.DataFrame(
         np.array([[  39.88788,   50.11212,  194.34024,   39.87205,   14.64151,
                      50.12795]]),
         columns=['apparent_elevation', 'apparent_zenith', 'azimuth',
                  'elevation', 'equation_of_time', 'zenith'],
-        index=expected_solpos().index))
+        index=['2003-10-17T12:30:30Z']))
     ])
 def test_get_solarposition_altitude(altitude, expected, golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
@@ -531,17 +535,18 @@ def test_get_solarposition_altitude(altitude, expected, golden):
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
 
-@pytest.mark.parametrize(
-    "delta_t, method, expected", [
-        (None, 'nrel_numpy', expected_solpos_multi()),
-        (67.0, 'nrel_numpy', expected_solpos_multi()),
-        pytest.mark.xfail(
+@pytest.mark.parametrize("delta_t, method", [
+    (None, 'nrel_numpy'),
+    (67.0, 'nrel_numpy'),
+    pytest.param(
+        None, 'nrel_numba',
+        marks=[pytest.mark.xfail(
             raises=ValueError,
-            reason='spa.calculate_deltat not implemented for numba yet')
-        ((None, 'nrel_numba', expected_solpos_multi())),
-        (67.0, 'nrel_numba', expected_solpos_multi())
+            reason='spa.calculate_deltat not implemented for numba yet')]),
+    (67.0, 'nrel_numba')
     ])
-def test_get_solarposition_deltat(delta_t, method, expected, golden):
+def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
+                                  golden):
     times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=2, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
@@ -550,7 +555,7 @@ def test_get_solarposition_deltat(delta_t, method, expected, golden):
                                                  delta_t=delta_t,
                                                  temperature=11,
                                                  method=method)
-    this_expected = expected.copy()
+    this_expected = expected_solpos_multi
     this_expected.index = times
     this_expected = np.round(this_expected, 5)
     ephem_data = np.round(ephem_data, 5)
@@ -673,10 +678,8 @@ def test_analytical_azimuth():
                                                        decl, zenith)
 
     idx = np.where(solar_zenith < np.pi/2)
-    assert np.allclose(azimuth_1[idx], solar_azimuth.as_matrix()[idx],
-                       atol=0.01)
-    assert np.allclose(azimuth_2[idx], solar_azimuth.as_matrix()[idx],
-                       atol=0.017)
+    assert np.allclose(azimuth_1[idx], solar_azimuth.values[idx], atol=0.01)
+    assert np.allclose(azimuth_2[idx], solar_azimuth.values[idx], atol=0.017)
 
     # test for NaN values at boundary conditions (PR #431)
     test_angles = np.radians(np.array(

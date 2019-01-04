@@ -1887,6 +1887,87 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
+def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
+                    alpha_absorption=0.9, temp_model="freestanding"):
+    """
+    Calculate cell temperature using the PVSyst model.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance in W/m^2.
+
+    wind_speed : numeric
+        Wind speed in m/s at a height of 10 meters.
+
+    temp_air : numeric
+        Ambient dry bulb temperature in degrees C.
+
+    eta_m : numeric
+        Module external efficiency as a fraction, i.e., DC power / poa_global.
+
+    alpha_absorption : float
+        Absorption coefficient, default is 0.9.
+
+    temp_model : string, tuple, or list, default 'freestanding' (no dict)
+        Model to be used.
+
+        If string, can be:
+
+            * 'freestanding' (default)
+                Modules with rear surfaces exposed to open air (e.g. rack
+                mounted).
+            * 'insulated'
+                Modules with rear surfaces in close proximity to another
+                surface (e.g. roof mounted).
+
+        If tuple/list, supply parameters in the following order:
+
+            * natural_convenction_coeff : float
+                Natural convection coefficient. Freestanding default is 29,
+                fully insulated arrays is 15.
+
+            * forced_convection_coeff : float
+                Forced convection coefficient, default is 0.
+
+    Returns
+    -------
+    temp_cell : numeric or Series
+        Cell temperature in degrees Celsius
+
+    References
+    ----------
+    [1]"PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
+    http://files.pvsyst.com/help/index.html. [Accessed: 10- Dec- 2018].
+
+    [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+    photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+    """
+
+    temp_models = {"freestanding": (29.0, 0), "insulated": (15.0, 0)}
+
+    if isinstance(temp_model, str):
+        natural_convenction_coeff, forced_convection_coeff = temp_models[
+            temp_model.lower()
+        ]
+    elif isinstance(temp_model, (tuple, list)):
+        natural_convenction_coeff, forced_convection_coeff = temp_model
+    else:
+        raise TypeError(
+            "Please format temp_model as a str, or tuple/list."
+        )
+
+    combined_convection_coeff = (
+        forced_convection_coeff * wind_speed
+    ) + natural_convenction_coeff
+
+    absorption_coeff = alpha_absorption * poa_global * (1 - eta_m)
+    temp_difference = absorption_coeff / combined_convection_coeff
+    temp_cell = temp_air + temp_difference
+
+    return temp_cell
+
+
 def sapm_spectral_loss(airmass_absolute, module):
     """
     Calculates the SAPM spectral loss coefficient, F1.
@@ -1914,9 +1995,11 @@ def sapm_spectral_loss(airmass_absolute, module):
     am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],
                 module['A0']]
 
-    spectral_loss = np.maximum(0, np.polyval(am_coeff, airmass_absolute))
+    spectral_loss = np.polyval(am_coeff, airmass_absolute)
 
     spectral_loss = np.where(np.isnan(spectral_loss), 0, spectral_loss)
+
+    spectral_loss = np.maximum(0, spectral_loss)
 
     if isinstance(airmass_absolute, pd.Series):
         spectral_loss = pd.Series(spectral_loss, airmass_absolute.index)

@@ -376,9 +376,7 @@ function if you wanted to.
     def pvusa(poa_global, wind_speed, temp_air, a, b, c, d):
         """
         Calculates system power according to the PVUSA equation
-
         P = I * (a + b*I + c*W + d*T)
-
         where
         P is the output power,
         I is the plane of array irradiance,

@@ -10,9 +10,8 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
-from pvlib import atmosphere, irradiance, solarposition
+from pvlib import irradiance
 from pvlib._deprecation import pvlibDeprecationWarning
-from pvlib.location import Location
 
 from conftest import (fail_on_pvlib_version, needs_numpy_1_10, pandas_0_22,
                       requires_ephem, requires_numba)
@@ -102,7 +101,7 @@ value = 1383.636203
     (timestamp, value)
 ])
 @pytest.mark.parametrize('method', [
-    'asce', 'spencer', 'nrel', requires_ephem('pyephem')])
+    'asce', 'spencer', 'nrel', pytest.param('pyephem', marks=requires_ephem)])
 def test_get_extra_radiation(input, expected, method):
     out = irradiance.get_extra_radiation(input)
     assert_allclose(out, expected, atol=1)
@@ -360,17 +359,23 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_frame_equal(out, expected)
 
 
-def test_disc_value():
+@pytest.mark.parametrize('pressure,expected', [
+    (93193,  [[830.46567,   0.79742,   0.93505],
+              [676.09497,   0.63776,   3.02102]]),
+    (None,   [[868.72425,   0.79742,   1.01664],
+              [680.66679,   0.63776,   3.28463]]),
+    (101325, [[868.72425,   0.79742,   1.01664],
+              [680.66679,   0.63776,   3.28463]])
+])
+def test_disc_value(pressure, expected):
+    # see GH 449 for pressure=None vs. 101325.
     columns = ['dni', 'kt', 'airmass']
     times = pd.DatetimeIndex(['2014-06-24T1200', '2014-06-24T1800'],
                              tz='America/Phoenix')
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
-    pressure = 93193.
     out = irradiance.disc(ghi, zenith, times, pressure=pressure)
-    expected_values = np.array(
-        [[830.46567,   0.79742,   0.93505],
-         [676.09497,   0.63776,   3.02102]])
+    expected_values = np.array(expected)
     expected = pd.DataFrame(expected_values, columns=columns, index=times)
     # check the pandas dataframe. check_less_precise is weird
     assert_frame_equal(out, expected, check_less_precise=True)
@@ -399,28 +404,57 @@ def test_disc_min_cos_zenith_max_zenith():
     times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times)
     expected = pd.DataFrame(np.array(
-        [[0.00000000e+00, 1.16046346e-02, 3.63954476e+01]]),
+        [[0.00000000e+00, 1.16046346e-02, 12.0]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # max_zenith and/or max_airmass keep these results reasonable
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
                           min_cos_zenith=0)
     expected = pd.DataFrame(np.array(
-        [[0.00000000e+00, 1.0, 3.63954476e+01]]),
+        [[0.00000000e+00, 1.0, 12.0]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # still get reasonable values because of max_airmass=12 limit
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
                           max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[0., 1.16046346e-02, 12.0]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # still get reasonable values because of max_airmass=12 limit
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[277.50185968, 1.0, 12.0]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # max_zenith keeps this result reasonable
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_airmass=100)
+    expected = pd.DataFrame(np.array(
+        [[0.00000000e+00, 1.0, 36.39544757]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # allow zenith to be close to 90 and airmass to be infinite
+    # and we get crazy values
+    out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          max_zenith=100, max_airmass=100)
     expected = pd.DataFrame(np.array(
         [[6.68577449e+03, 1.16046346e-02, 3.63954476e+01]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
+    # allow min cos zenith to be 0, zenith to be close to 90,
+    # and airmass to be very big and we get even higher DNI values
     out = irradiance.disc(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
-                          min_cos_zenith=0, max_zenith=100)
+                          min_cos_zenith=0, max_zenith=100, max_airmass=100)
     expected = pd.DataFrame(np.array(
-        [[7.21238390e+03, 1.00000000e+00, 3.63954476e+01]]),
+        [[7.21238390e+03, 1., 3.63954476e+01]]),
         columns=columns, index=times)
     assert_frame_equal(out, expected)
 
@@ -432,13 +466,13 @@ def test_dirint_value():
     pressure = 93193.
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure)
     assert_almost_equal(dirint_data.values,
-                        np.array([ 888. ,  683.7]), 1)
+                        np.array([868.8,  699.7]), 1)
 
 
 def test_dirint_nans():
     times = pd.DatetimeIndex(start='2014-06-24T12-0700', periods=5, freq='6H')
     ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
-    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567,], index=times)
+    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567], index=times)
     pressure = pd.Series([93193., 93193., np.nan, 93193., 93193.], index=times)
     temp_dew = pd.Series([10, 10, 10, np.nan, 10], index=times)
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
@@ -455,7 +489,7 @@ def test_dirint_tdew():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=10)
     assert_almost_equal(dirint_data.values,
-                        np.array([892.9,  636.5]), 1)
+                        np.array([882.1,  672.6]), 1)
 
 
 def test_dirint_no_delta_kt():
@@ -492,13 +526,18 @@ def test_dirint_min_cos_zenith_max_zenith():
     expected = pd.Series([0.0, 0.0], index=times, name='dni')
     assert_series_equal(out, expected)
 
-    out = irradiance.dirint(ghi, solar_zenith, times, max_zenith=100)
-    expected = pd.Series([862.198, 848.387], index=times, name='dni')
+    out = irradiance.dirint(ghi, solar_zenith, times, max_zenith=90)
+    expected = pd.Series([0.0, 0.0], index=times, name='dni')
+    assert_series_equal(out, expected, check_less_precise=True)
+
+    out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0,
+                            max_zenith=90)
+    expected = pd.Series([0.0, 144.264507], index=times, name='dni')
     assert_series_equal(out, expected, check_less_precise=True)
 
     out = irradiance.dirint(ghi, solar_zenith, times, min_cos_zenith=0,
                             max_zenith=100)
-    expected = pd.Series([147655.5994, 3749.8542], index=times, name='dni')
+    expected = pd.Series([0.0, 144.264507], index=times, name='dni')
     assert_series_equal(out, expected, check_less_precise=True)
 
 
@@ -520,7 +559,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 288.22574368,   60.59964218,  245.37532576],
-         [ 930.85454521,  695.8504884 ,  276.96897609]]),
+         [ 931.04078010,  695.94965324,  277.06172442]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -544,7 +583,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 289.81109139,   60.52460392,  247.01373353],
-         [ 932.22047435,  647.68716072,  323.59362885]]),
+         [ 932.46756378,  647.05001357,  323.49974813]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -556,9 +595,9 @@ def test_gti_dirint():
         albedo=albedo)
 
     expected = pd.DataFrame(array(
-        [[  21.3592591 ,    0.        ,   21.3592591 ],
-         [ 292.5162373 ,   64.42628826,  246.95997198],
-         [ 941.47847463,  727.07261187,  258.25370648]]),
+        [[  21.3592591,    0.        ,   21.3592591 ],
+         [ 292.5162373,   64.42628826,  246.95997198],
+         [ 941.6753031,  727.16311901,  258.36548605]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -572,7 +611,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 292.40468994,   36.79559287,  266.3862767 ],
-         [ 930.72198876,  712.36063132,  261.32196017]]),
+         [ 931.79627208,  689.81549269,  283.5817439]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -665,13 +704,13 @@ def test_dirindex_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected)
 
     out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
-                              times, max_zenith=100)
-    expected = pd.Series([0., 5.], index=times)
+                              times, max_zenith=90)
+    expected = pd.Series([nan, nan], index=times)
     assert_series_equal(out, expected)
 
     out = irradiance.dirindex(ghi, ghi_clearsky, dni_clearsky, solar_zenith,
                               times, min_cos_zenith=0, max_zenith=100)
-    expected = pd.Series([0., 5.], index=times)
+    expected = pd.Series([nan, 5.], index=times)
     assert_series_equal(out, expected)
 
 

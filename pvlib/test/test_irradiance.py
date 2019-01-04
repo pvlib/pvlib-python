@@ -466,7 +466,7 @@ def test_dirint_value():
     pressure = 93193.
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure)
     assert_almost_equal(dirint_data.values,
-                        np.array([868.8 ,  699.7]), 1)
+                        np.array([868.8,  699.7]), 1)
 
 
 def test_dirint_nans():
@@ -478,7 +478,7 @@ def test_dirint_nans():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=temp_dew)
     assert_almost_equal(dirint_data.values,
-                        np.array([np.nan, np.nan, np.nan, np.nan, 883.1]), 1)
+                        np.array([np.nan, np.nan, np.nan, np.nan, 893.1]), 1)
 
 
 def test_dirint_tdew():
@@ -489,7 +489,7 @@ def test_dirint_tdew():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=10)
     assert_almost_equal(dirint_data.values,
-                        np.array([882.1,  671.9]), 1)
+                        np.array([882.1,  672.6]), 1)
 
 
 def test_dirint_no_delta_kt():
@@ -559,7 +559,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 288.22574368,   60.59964218,  245.37532576],
-         [ 930.85454521,  695.8504884 ,  276.96897609]]),
+         [ 931.04078010,  695.8504884,   276.96897609]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)

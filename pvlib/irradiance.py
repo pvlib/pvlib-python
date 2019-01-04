@@ -2823,3 +2823,14 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
             (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
     return dni
+
+if __name__ == '__main__':
+    import pandas as pd
+    import numpy as np
+    times = pd.DatetimeIndex(start='2014-06-24T12-0700', periods=5, freq='6H')
+    ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
+    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567], index=times)
+    pressure = pd.Series([93193., 93193., np.nan, 93193., 93193.], index=times)
+    temp_dew = pd.Series([10, 10, 10, np.nan, 10], index=times)
+    res = dirint(ghi, zenith, times, pressure, True, temp_dew)
+    

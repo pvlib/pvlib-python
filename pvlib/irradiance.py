@@ -1558,13 +1558,15 @@ def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime,
 
 def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
     """
-    Calculate delta kt prime (Perez eqn 2), or return a default value
+    Calculate delta_kt_prime (Perez eqn 2 and eqn 3), or return a default value
     for use with :py:func:`_dirint_bins`.
     """
     if use_delta_kt_prime:
         # Perez eqn 2
         kt_next = kt_prime.shift(-1)
         kt_previous = kt_prime.shift(1)
+        # replace nan with values that implement Perez Eq 3 for first and last
+        # positions. Use kt_previous and kt_next to handle series of length 1
         kt_next.iloc[-1] = kt_previous.iloc[-1]
         kt_previous.iloc[0] = kt_next.iloc[0]
         delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(

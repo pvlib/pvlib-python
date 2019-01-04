@@ -583,7 +583,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 289.81109139,   60.52460392,  247.01373353],
-         [ 932.22047435,  647.68716072,  323.59362885]]),
+         [ 932.46756378,  647.05001357,  323.49974813]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -595,9 +595,9 @@ def test_gti_dirint():
         albedo=albedo)
 
     expected = pd.DataFrame(array(
-        [[  21.3592591 ,    0.        ,   21.3592591 ],
-         [ 292.5162373 ,   64.42628826,  246.95997198],
-         [ 941.47847463,  727.07261187,  258.25370648]]),
+        [[  21.3592591,    0.        ,   21.3592591 ],
+         [ 292.5162373,   64.42628826,  246.95997198],
+         [ 941.6753031,  727.16311901,  258.36548605]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -611,7 +611,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 292.40468994,   36.79559287,  266.3862767 ],
-         [ 930.72198876,  712.36063132,  261.32196017]]),
+         [ 931.79627208,  689.81549269,  283.5817439]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)

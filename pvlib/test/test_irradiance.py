@@ -583,7 +583,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 289.81109139,   60.52460392,  247.01373353],
-         [ 932.46756378,  647.05001357,  323.49974813]]),
+         [ 932.46756378,  648.05001357,  323.49974813]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)

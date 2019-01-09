@@ -259,6 +259,7 @@ def _interpolate_turbidity(lts, time):
     # middle of each month. This means that we need to add previous Dec and
     # next Jan to the array so that the interpolation will work for
     # Jan 1 - Jan 15 and Dec 16 - Dec 31.
+    lts = lts.reshape(-1)
     lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
 
     # handle leap years

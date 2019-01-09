@@ -719,3 +719,23 @@ def test_bird():
         testdata2[['Direct Beam', 'Direct Hz', 'Global Hz', 'Dif Hz']].iloc[11],
         rtol=1e-3)
     return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=times)
+
+
+def test__interpolate_turbidity_n_dim_array():
+    lts = np.array([55, 66, 62, 75, 79, 76, 77, 71, 74, 68, 62, 50])
+    time = pd.date_range('2018-01-01', periods=10)
+    expect_values = [
+        52.661290, 52.822580, 52.983870, 53.145161,
+        53.306451, 53.467741, 53.629032, 53.790322,
+        53.95161, 54.112903
+    ]
+
+    test_df = pd.Series(data=expect_values, index=time).round(4)
+    df = clearsky._interpolate_turbidity(lts, time).round(4)
+    # check for 1D array.
+    assert (df == test_df).all().all()
+
+    # reshape to chekc for 2-dim array.
+    lts = lts.reshape(-1, 1)
+    df = clearsky._interpolate_turbidity(lts, time).round(4)
+    assert (df == test_df).all().all()

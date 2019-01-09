@@ -466,13 +466,13 @@ def test_dirint_value():
     pressure = 93193.
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure)
     assert_almost_equal(dirint_data.values,
-                        np.array([ 888. ,  683.7]), 1)
+                        np.array([868.8,  699.7]), 1)
 
 
 def test_dirint_nans():
     times = pd.DatetimeIndex(start='2014-06-24T12-0700', periods=5, freq='6H')
     ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
-    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567,], index=times)
+    zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567], index=times)
     pressure = pd.Series([93193., 93193., np.nan, 93193., 93193.], index=times)
     temp_dew = pd.Series([10, 10, 10, np.nan, 10], index=times)
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
@@ -489,7 +489,7 @@ def test_dirint_tdew():
     dirint_data = irradiance.dirint(ghi, zenith, times, pressure=pressure,
                                     temp_dew=10)
     assert_almost_equal(dirint_data.values,
-                        np.array([892.9,  636.5]), 1)
+                        np.array([882.1,  672.6]), 1)
 
 
 def test_dirint_no_delta_kt():
@@ -559,7 +559,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 288.22574368,   60.59964218,  245.37532576],
-         [ 930.85454521,  695.8504884 ,  276.96897609]]),
+         [ 931.04078010,  695.94965324,  277.06172442]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -583,7 +583,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 289.81109139,   60.52460392,  247.01373353],
-         [ 932.22047435,  647.68716072,  323.59362885]]),
+         [ 932.46756378,  648.05001357,  323.49974813]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -595,9 +595,9 @@ def test_gti_dirint():
         albedo=albedo)
 
     expected = pd.DataFrame(array(
-        [[  21.3592591 ,    0.        ,   21.3592591 ],
-         [ 292.5162373 ,   64.42628826,  246.95997198],
-         [ 941.47847463,  727.07261187,  258.25370648]]),
+        [[  21.3592591,    0.        ,   21.3592591 ],
+         [ 292.5162373,   64.42628826,  246.95997198],
+         [ 941.6753031,  727.16311901,  258.36548605]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -611,7 +611,7 @@ def test_gti_dirint():
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
          [ 292.40468994,   36.79559287,  266.3862767 ],
-         [ 930.72198876,  712.36063132,  261.32196017]]),
+         [ 931.79627208,  689.81549269,  283.5817439]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)

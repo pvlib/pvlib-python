@@ -46,6 +46,16 @@ DC_MODEL_PARAMS = {
 }
 
 
+TEMP_MODELS = {
+    'sapm': {'open_rack_cell_glassback': [-3.47, -.0594, 3],
+             'roof_mount_cell_glassback': [-2.98, -.0471, 1],
+             'open_rack_cell_polymerback': [-3.56, -.0750, 3],
+             'insulated_back_polymerback': [-2.81, -.0455, 0],
+             'open_rack_polymer_thinfilm_steel': [-3.58, -.113, 3],
+             '22x_concentrator_tracker': [-3.23, -.130, 13]},
+    'pvsyst': {'freestanding': (29.0, 0), 'insulated': (15.0, 0)}
+}
+
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
@@ -1876,13 +1886,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     sapm
     '''
 
-    temp_models = {'open_rack_cell_glassback': [-3.47, -.0594, 3],
-                   'roof_mount_cell_glassback': [-2.98, -.0471, 1],
-                   'open_rack_cell_polymerback': [-3.56, -.0750, 3],
-                   'insulated_back_polymerback': [-2.81, -.0455, 0],
-                   'open_rack_polymer_thinfilm_steel': [-3.58, -.113, 3],
-                   '22x_concentrator_tracker': [-3.23, -.130, 13]
-                   }
+    temp_models = TEMP_MODELS['sapm']
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
@@ -1896,9 +1900,9 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
     E0 = 1000.  # Reference irradiance
 
-    temp_module = pd.Series(poa_global*np.exp(a + b*wind_speed) + temp_air)
+    temp_module = pd.Series(poa_global * np.exp(a + b * wind_speed) + temp_air)
 
-    temp_cell = temp_module + (poa_global / E0)*(deltaT)
+    temp_cell = temp_module + (poa_global / E0) * (deltaT)
 
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
@@ -1960,7 +1964,7 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
     """
 
-    temp_models = {"freestanding": (29.0, 0), "insulated": (15.0, 0)}
+    temp_models = TEMP_MODELS['sapm']
 
     if isinstance(temp_model, str):
         natural_convenction_coeff, forced_convection_coeff = temp_models[

@@ -1964,7 +1964,7 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
     """
 
-    temp_models = TEMP_MODELS['sapm']
+    temp_models = TEMP_MODELS['pvsyst']
 
     if isinstance(temp_model, str):
         natural_convenction_coeff, forced_convection_coeff = temp_models[

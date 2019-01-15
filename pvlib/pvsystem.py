@@ -47,12 +47,12 @@ DC_MODEL_PARAMS = {
 
 
 TEMP_MODELS = {
-    'sapm': {'open_rack_cell_glassback': [-3.47, -.0594, 3],
-             'roof_mount_cell_glassback': [-2.98, -.0471, 1],
-             'open_rack_cell_polymerback': [-3.56, -.0750, 3],
-             'insulated_back_polymerback': [-2.81, -.0455, 0],
-             'open_rack_polymer_thinfilm_steel': [-3.58, -.113, 3],
-             '22x_concentrator_tracker': [-3.23, -.130, 13]},
+    'sapm': {'open_rack_cell_glassback': (-3.47, -.0594, 3),
+             'roof_mount_cell_glassback': (-2.98, -.0471, 1),
+             'open_rack_cell_polymerback': (-3.56, -.0750, 3),
+             'insulated_back_polymerback': (-2.81, -.0455, 0),
+             'open_rack_polymer_thinfilm_steel': (-3.58, -.113, 3),
+             '22x_concentrator_tracker': (-3.23, -.130, 13)},
     'pvsyst': {'freestanding': (29.0, 0), 'insulated': (15.0, 0)}
 }
 

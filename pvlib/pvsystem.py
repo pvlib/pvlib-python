@@ -533,7 +533,8 @@ class PVSystem(object):
         -------
         See pvsystem.pvsyst_celltemp for details
         """
-        kwargs = _build_kwargs(['eta_m', 'alpha_absorption'], self.module_parameters)
+        kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
+                               self.module_parameters)
         return pvsyst_celltemp(poa_global, wind_speed, temp_air,
                                temp_model=self.racking_model, **kwargs)
 

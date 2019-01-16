@@ -1120,19 +1120,22 @@ def test_pvsyst_celltemp_with_index():
 
 def test_PVSystem_pvsyst_celltemp(mocker):
     racking_model = 'insulated'
-    system = pvsystem.PVSystem(racking_model=racking_model)
+    alpha_absorption = 0.85
+    eta_m = 0.17
+    module_parameters = {}
+    module_parameters['alpha_absorption'] = alpha_absorption
+    module_parameters['eta_m'] = eta_m
+    system = pvsystem.PVSystem(racking_model=racking_model,
+                               module_parameters=module_parameters)
     mocker.spy(pvsystem, 'pvsyst_celltemp')
-    irrads = 1000
-    temps = 25
-    alpha_absorption = 0.9
-    winds = 1
-    eta_m = 0.1
-    out = system.pvsyst_celltemp(irrads, winds, temps)
-    pvsystem.pvsyst_celltemp.assert_called_once_with(irrads, winds, temps,
-                                                     eta_m, alpha_absorption,
-                                                     temp_model=racking_model)
+    irrad = 800
+    temp = 45
+    wind = 0.5
+    out = system.pvsyst_celltemp(irrad, wind, temp)
+    pvsystem.pvsyst_celltemp.assert_called_once_with(
+        irrad, wind, temp, eta_m, alpha_absorption, racking_model)
     assert isinstance(out, float)
-    assert out == 79.0
+    assert out < 90 and out > 70
 
 
 def test_adrinverter(sam_data):

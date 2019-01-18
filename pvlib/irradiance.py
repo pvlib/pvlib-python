@@ -1131,6 +1131,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # sense for small zenith angles, but...) these values will
     # eventually be used as indicies for coeffecient look ups
     ebin = np.digitize(eps, (0., 1.065, 1.23, 1.5, 1.95, 2.8, 4.5, 6.2))
+    ebin = np.array(ebin)  # GH 642
     ebin[np.isnan(eps)] = 0
 
     # correct for 0 indexing in coeffecient lookup

@@ -273,6 +273,8 @@ def test_perez_scalar():
     out = irradiance.perez(40, 180, 118.45831879, 939.95469881,
                            1321.1655834833093, 10.56413562, 144.76567754,
                            1.01688136)
+    # this will fail. out is ndarry with ndim == 0. fix in future version.
+    # assert np.isscalar(out)
     assert_allclose(out, 109.084332)
 
 

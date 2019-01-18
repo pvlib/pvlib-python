@@ -465,7 +465,7 @@ def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
             I[idx_p] * Rs[idx_p] - a[idx_p] * lambertwterm
 
     if output_is_scalar:
-        return np.asscalar(V)
+        return V.item()
     else:
         return V
 
@@ -528,7 +528,7 @@ def _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                                a[idx_p] / Rs[idx_p]) * lambertwterm
 
     if output_is_scalar:
-        return np.asscalar(I)
+        return I.item()
     else:
         return I
 

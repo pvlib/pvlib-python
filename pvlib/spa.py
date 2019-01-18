@@ -1419,7 +1419,7 @@ def calculate_deltat(year, month):
 
                       -20+32*((y-1820)/100)**2, deltat)
 
-    deltat = np.asscalar(deltat) if np.isscalar(year) & np.isscalar(month)\
+    deltat = deltat.item() if np.isscalar(year) & np.isscalar(month)\
         else deltat
 
     return deltat

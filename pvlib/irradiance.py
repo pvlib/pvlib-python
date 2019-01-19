@@ -154,8 +154,11 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
 
 def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
-    Calculates the dot product of the solar vector and the surface
-    normal.
+    Calculates the dot product of the sun position unit vector and the surface
+    normal unit vector; in other words, the cosine of the angle of incidence.
+
+    Usage note: When the sun is behind the surface the value returned is
+    negative.  For many uses negative values must be set to zero.
 
     Input all angles in degrees.
 

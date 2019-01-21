@@ -8,7 +8,8 @@ from conftest import requires_pvfactors
 @requires_pvfactors
 def test_pvfactors_timeseries():
     """ Test that pvfactors is functional, using the TLDR section inputs of the
-    package github repo README.md file"""
+    package github repo README.md file:
+    https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start"""
 
     # Create some inputs
     timestamps = pd.DatetimeIndex([datetime(2017, 8, 31, 11),

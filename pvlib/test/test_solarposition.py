@@ -541,7 +541,6 @@ def test_get_solarposition_altitude(altitude, expected, golden):
     pytest.param(
         None, 'nrel_numba',
         marks=[pytest.mark.xfail(
-            raises=ValueError,
             reason='spa.calculate_deltat not implemented for numba yet')]),
     (67.0, 'nrel_numba')
     ])

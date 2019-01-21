@@ -76,6 +76,8 @@ Bug fixes
 * Fix error in ``pvlib.spa`` when using Python 3.7 on some platforms.
 * Fix error in :func:`pvlib.irradiance._delta_kt_prime_dirint` (:issue:`637`). The error affects
   the first and last values of DNI calculated by the function :func:`pvlib.irradiance.dirint`
+* Fix errors on Python 2.7 and Numpy 1.6. (:issue:`642`)
+* Replace deprecated `np.asscalar` with `array.item()`. (:issue:`642`)
 
 
 Testing

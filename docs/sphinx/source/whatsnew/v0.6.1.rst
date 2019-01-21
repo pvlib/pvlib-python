@@ -62,6 +62,7 @@ Enhancements
   by supplying `pressure=None`. (:issue:`449`)
 * Created :py:func:`pvlib.pvsystem.pvsyst_celltemp` to implement PVsyst's cell temperature model. (:issue:`552`)
 * Created :py:func:`pvlib.bifacial.pvfactors_timeseries` to use open-source `pvfactors` package to calculate back surface irradiance (:issue:`421`)
+* Add `PVSystem` class method :py:func:`~pvlib.pvsystem.PVSystem.pvsyst_celltemp` (:issue:`633`)
 
 
 Bug fixes
@@ -75,6 +76,8 @@ Bug fixes
 * Fix documentation errors when using IPython >= 7.0.
 * Fix error in :func:`pvlib.modelchain.ModelChain.infer_spectral_model` (:issue:`619`)
 * Fix error in ``pvlib.spa`` when using Python 3.7 on some platforms.
+* Fix error in :func:`pvlib.irradiance._delta_kt_prime_dirint` (:issue:`637`). The error affects
+  the first and last values of DNI calculated by the function :func:`pvlib.irradiance.dirint`
 
 
 Testing

@@ -25,7 +25,10 @@ except ImportError:
         )
     SERVER = None
 else:
-    SERVER = ECMWFDataServer()
+    try:
+        SERVER = ECMWFDataServer()
+    except KeyError:
+        SERVER = None
 
 #: map of ECMWF MACC parameter keynames and codes used in API
 PARAMS = {

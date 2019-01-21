@@ -137,9 +137,12 @@ def pvfactors_timeseries(
 
     # Select the calculated outputs from the pvrow to observe
     ipoa_front = df_outputs.loc[:, idx_slice[index_observed_pvrow,
-                                             'front', 'qinc']].values
+                                             'front', 'qinc']]
 
     ipoa_back = df_outputs.loc[:, idx_slice[index_observed_pvrow,
-                                            'back', 'qinc']].values
+                                            'back', 'qinc']]
+
+    # Set timestamps as index of df_registries for consistency of outputs
+    df_registries = df_registries.set_index('timestamps')
 
     return ipoa_front, ipoa_back, df_registries

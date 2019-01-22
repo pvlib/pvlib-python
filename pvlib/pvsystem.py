@@ -536,7 +536,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
         return pvsyst_celltemp(poa_global, wind_speed, temp_air,
-                               temp_model=self.racking_model, **kwargs)
+                               loss_factors=self.racking_model, **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
@@ -1909,9 +1909,13 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
 
 def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
-                    alpha_absorption=0.9, temp_model="freestanding"):
+                    alpha_absorption=0.9, loss_factors="freestanding"):
     """
-    Calculate cell temperature using the PVSyst model.
+    Calculate cell temperature using an emperical heat loss factor model
+    as implemented in PVsyst.
+
+    The heat loss factors represent the combined effect of convection,
+    radiation and conduction, and their values are experimentally determined.
 
     Parameters
     ----------
@@ -1930,8 +1934,8 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
     alpha_absorption : float
         Absorption coefficient, default is 0.9.
 
-    temp_model : string, tuple, or list, default 'freestanding' (no dict)
-        Model to be used.
+    loss_factors : string, tuple, or list, default 'freestanding' (no dict)
+        Heat loss factors to be used.
 
         If string, can be:
 
@@ -1944,12 +1948,12 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
 
         If tuple/list, supply parameters in the following order:
 
-            * natural_convenction_coeff : float
-                Natural convection coefficient. Freestanding default is 29,
+            * constant_loss_factor : float
+                Combined heat loss factor coefficient. Freestanding default is 29,
                 fully insulated arrays is 15.
 
-            * forced_convection_coeff : float
-                Forced convection coefficient, default is 0.
+            * wind_loss_factor : float
+                Combined heat loss factor influenced by wind. Default is 0.
 
     Returns
     -------
@@ -1965,25 +1969,22 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
     """
 
-    temp_models = TEMP_MODELS['pvsyst']
+    pvsyst_defaults = {"freestanding": (29.0, 0), "insulated": (15.0, 0)}
 
-    if isinstance(temp_model, str):
-        natural_convenction_coeff, forced_convection_coeff = temp_models[
-            temp_model.lower()
+    if isinstance(loss_factors, str):
+        constant_loss_factor, wind_loss_factor = pvsyst_defaults[
+            loss_factors.lower()
         ]
-    elif isinstance(temp_model, (tuple, list)):
-        natural_convenction_coeff, forced_convection_coeff = temp_model
+    elif isinstance(loss_factors, (tuple, list)):
+        constant_loss_factor, wind_loss_factor = loss_factors
     else:
         raise TypeError(
-            "Please format temp_model as a str, or tuple/list."
+            "Please format loss_factors as a str, or tuple/list."
         )
 
-    combined_convection_coeff = (
-        forced_convection_coeff * wind_speed
-    ) + natural_convenction_coeff
-
-    absorption_coeff = alpha_absorption * poa_global * (1 - eta_m)
-    temp_difference = absorption_coeff / combined_convection_coeff
+    total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor
+    heat_input = poa_global * alpha_absorption * (1 - eta_m)
+    temp_difference = heat_input / total_loss_factor
     temp_cell = temp_air + temp_difference
 
     return temp_cell

@@ -23,9 +23,6 @@ except ImportError:
             'To download data from ECMWF requires the API client.\nSee https:/'
             '/confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets'
         )
-    SERVER = None
-else:
-    SERVER = ECMWFDataServer()
 
 #: map of ECMWF MACC parameter keynames and codes used in API
 PARAMS = {
@@ -58,7 +55,7 @@ def _ecmwf(server, startdate, stopdate, params, targetname):
 
 
 def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
-                   server=SERVER, target=_ecmwf):
+                   server=None, target=_ecmwf):
     """
     Download data from ECMWF MACC Reanalysis API.
 
@@ -75,7 +72,7 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
     lookup_params : bool, default True
         optional flag, if ``False``, then codes are already formatted
     server : ecmwfapi.api.ECMWFDataServer
-        optionally provide a server object, default is given
+        optionally provide a server object, default is ``None``
     target : callable
         optional function that calls ``server.retrieve`` to pass to thread
 
@@ -86,9 +83,11 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
 
     Notes
     -----
-    To download data from ECMWF requires the API client. For more information,
-    see the `documentation
+    To download data from ECMWF requires the API client and a registration
+    key. Please read the documentation in `Access ECMWF Public Datasets
     <https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets>`_.
+    Follow the instructions in step 4 and save the ECMWF registration key
+    as `$HOME\.ecmwfapirc` or set `ECMWF_API_KEY` as the path to the key.
 
     This function returns a daemon thread that runs in the background. Exiting
     Python will kill this thread, however this thread will not block the main

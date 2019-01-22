@@ -84,7 +84,7 @@ Testing
 ~~~~~~~
 * Add test for :func:`~pvlib.solarposition.hour_angle` (:issue:`597`)
 * Update tests to be compatible with pytest 4.0. (:issue:`623`)
-* Add tests for :py:func:`pvlib.bifacial.pvfactors_timeseries` implementation and :py:func:`pvlib.tools.enforce_numpy_arrays` decorator function (:issue:`421`)
+* Add tests for :py:func:`pvlib.bifacial.pvfactors_timeseries` implementation (:issue:`421`)
 
 
 Contributors

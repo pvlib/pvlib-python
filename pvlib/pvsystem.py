@@ -46,7 +46,7 @@ DC_MODEL_PARAMS = {
 }
 
 
-TEMP_MODELS = {
+TEMP_MODEL_PARAMS = {
     'sapm': {'open_rack_cell_glassback': (-3.47, -.0594, 3),
              'roof_mount_cell_glassback': (-2.98, -.0471, 1),
              'open_rack_cell_polymerback': (-3.56, -.0750, 3),
@@ -536,7 +536,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
         return pvsyst_celltemp(poa_global, wind_speed, temp_air,
-                               loss_factors=self.racking_model, **kwargs)
+                               model_params=self.racking_model, **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
@@ -1887,7 +1887,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     sapm
     '''
 
-    temp_models = TEMP_MODELS['sapm']
+    temp_models = TEMP_MODEL_PARAMS['sapm']
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
@@ -1908,25 +1908,28 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
-def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
-                    alpha_absorption=0.9, loss_factors="freestanding"):
+def pvsyst_celltemp(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
+                    alpha_absorption=0.9, model_params='freestanding'):
     """
     Calculate cell temperature using an emperical heat loss factor model
     as implemented in PVsyst.
 
-    The heat loss factors represent the combined effect of convection,
-    radiation and conduction, and their values are experimentally determined.
+    The heat loss factors provided through the 'model_params' argument
+    represent the combined effect of convection, radiation and conduction, 
+    and their values are experimentally determined.
 
     Parameters
     ----------
     poa_global : numeric
         Total incident irradiance in W/m^2.
 
-    wind_speed : numeric
-        Wind speed in m/s at a height of 10 meters.
-
     temp_air : numeric
         Ambient dry bulb temperature in degrees C.
+
+    wind_speed : numeric
+        Wind speed in m/s measured at the same height for which the wind loss 
+        factor was determined.  The default value is 1.0, which is the wind 
+        speed at module height used to determine NOCT.   (Sorry André!).
 
     eta_m : numeric
         Module external efficiency as a fraction, i.e., DC power / poa_global.
@@ -1934,7 +1937,7 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
     alpha_absorption : float
         Absorption coefficient, default is 0.9.
 
-    loss_factors : string, tuple, or list, default 'freestanding' (no dict)
+    model_params : string, tuple, or list, default 'freestanding' (no dict)
         Heat loss factors to be used.
 
         If string, can be:
@@ -1949,8 +1952,8 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
         If tuple/list, supply parameters in the following order:
 
             * constant_loss_factor : float
-                Combined heat loss factor coefficient. Freestanding default is 29,
-                fully insulated arrays is 15.
+                Combined heat loss factor coefficient. Freestanding 
+                default is 29, fully insulated arrays is 15.
 
             * wind_loss_factor : float
                 Combined heat loss factor influenced by wind. Default is 0.
@@ -1969,17 +1972,16 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
     """
 
-    pvsyst_defaults = {"freestanding": (29.0, 0), "insulated": (15.0, 0)}
+    pvsyst_presets = TEMP_MODEL_PARAMS['pvsyst']
 
-    if isinstance(loss_factors, str):
-        constant_loss_factor, wind_loss_factor = pvsyst_defaults[
-            loss_factors.lower()
-        ]
-    elif isinstance(loss_factors, (tuple, list)):
-        constant_loss_factor, wind_loss_factor = loss_factors
+    if isinstance(model_params, str):
+        model_params = model_params.lower()
+        constant_loss_factor, wind_loss_factor = pvsyst_presets[model_params]
+    elif isinstance(model_params, (tuple, list)):
+        constant_loss_factor, wind_loss_factor = model_params
     else:
         raise TypeError(
-            "Please format loss_factors as a str, or tuple/list."
+            "Please provide model_params as a str, or tuple/list."
         )
 
     total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor

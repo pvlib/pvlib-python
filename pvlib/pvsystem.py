@@ -1915,7 +1915,7 @@ def pvsyst_celltemp(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     as implemented in PVsyst.
 
     The heat loss factors provided through the 'model_params' argument
-    represent the combined effect of convection, radiation and conduction, 
+    represent the combined effect of convection, radiation and conduction,
     and their values are experimentally determined.
 
     Parameters
@@ -1926,18 +1926,18 @@ def pvsyst_celltemp(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     temp_air : numeric
         Ambient dry bulb temperature in degrees C.
 
-    wind_speed : numeric
-        Wind speed in m/s measured at the same height for which the wind loss 
-        factor was determined.  The default value is 1.0, which is the wind 
-        speed at module height used to determine NOCT.   (Sorry André!).
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value is 1.0, which is the wind
+        speed at module height used to determine NOCT.
 
-    eta_m : numeric
+    eta_m : numeric, default 0.1
         Module external efficiency as a fraction, i.e., DC power / poa_global.
 
-    alpha_absorption : float
-        Absorption coefficient, default is 0.9.
+    alpha_absorption : numeric, default 0.9
+        Absorption coefficient
 
-    model_params : string, tuple, or list, default 'freestanding' (no dict)
+    model_params : string, tuple, or list (no dict), default 'freestanding'
         Heat loss factors to be used.
 
         If string, can be:
@@ -1952,7 +1952,7 @@ def pvsyst_celltemp(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
         If tuple/list, supply parameters in the following order:
 
             * constant_loss_factor : float
-                Combined heat loss factor coefficient. Freestanding 
+                Combined heat loss factor coefficient. Freestanding
                 default is 29, fully insulated arrays is 15.
 
             * wind_loss_factor : float

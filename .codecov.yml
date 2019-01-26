@@ -20,7 +20,7 @@ coverage:
         paths:
           - "pvlib/(\w+/)?[^/]+\.py$"
       tests:
-        target: 96%
+        target: 95%
         paths:
           - "pvlib/test/.*"
 

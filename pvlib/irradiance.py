@@ -1214,12 +1214,8 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
 
     Returns
     -------
-    kt : numeric
-        Clearness index
-
-    References
-    ----------
-    .. [1] None
+    clearsky_index : numeric
+        Clearsky index
     """
     kt = ghi * 1. / clearsky_ghi
     kt = np.maximum(kt, 0)

@@ -521,7 +521,7 @@ class PVSystem(object):
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
 
-    def pvsyst_celltemp(self, poa_global, wind_speed, temp_air):
+    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`pvsyst_celltemp` to calculate module temperatures
         based on ``self.racking_model`` and the input parameters.
 
@@ -535,7 +535,7 @@ class PVSystem(object):
         """
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
-        return pvsyst_celltemp(poa_global, wind_speed, temp_air,
+        return pvsyst_celltemp(poa_global, temp_air, wind_speed,
                                model_params=self.racking_model, **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):

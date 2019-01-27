@@ -1217,10 +1217,10 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     clearsky_index : numeric
         Clearsky index
     """
-    kt = ghi * 1. / clearsky_ghi
-    kt = np.maximum(kt, 0)
-    kt = np.minimum(kt, max_clearsky_index)
-    return kt
+    clearsky_index = ghi * 1. / clearsky_ghi
+    clearsky_index = np.maximum(clearsky_index, 0)
+    clearsky_index = np.minimum(clearsky_index, max_clearsky_index)
+    return clearsky_index
 
 
 def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,

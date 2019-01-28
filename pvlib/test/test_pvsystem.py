@@ -1079,32 +1079,32 @@ def test_PVSystem_sapm_celltemp(mocker):
 
 
 def test_pvsyst_celltemp_default():
-    default = pvsystem.pvsyst_celltemp(900, 5, 20, 0.1)
+    default = pvsystem.pvsyst_celltemp(900, 20, 5)
     assert_allclose(default, 45.137, 0.001)
 
 
 def test_pvsyst_celltemp_non_model():
-    tup_non_model = pvsystem.pvsyst_celltemp(900, 5, 20, 0.1,
-                                             temp_model=(23.5, 6.25))
+    tup_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
+                                             model_params=(23.5, 6.25))
     assert_allclose(tup_non_model, 33.315, 0.001)
 
-    list_non_model = pvsystem.pvsyst_celltemp(900, 5, 20, 0.1,
-                                              temp_model=[26.5, 7.68])
+    list_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
+                                              model_params=[26.5, 7.68])
     assert_allclose(list_non_model, 31.233, 0.001)
 
 
 def test_pvsyst_celltemp_model_wrong_type():
     with pytest.raises(TypeError):
         pvsystem.pvsyst_celltemp(
-            900, 5, 20, 0.1,
-            temp_model={"won't": 23.5, "work": 7.68})
+            900, 20, 5, 0.1,
+            model_params={"won't": 23.5, "work": 7.68})
 
 
 def test_pvsyst_celltemp_model_non_option():
     with pytest.raises(KeyError):
         pvsystem.pvsyst_celltemp(
-            900, 5, 20, 0.1,
-            temp_model="not_an_option")
+            900, 20, 5, 0.1,
+            model_params="not_an_option")
 
 
 def test_pvsyst_celltemp_with_index():
@@ -1113,7 +1113,7 @@ def test_pvsyst_celltemp_with_index():
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
 
-    pvtemps = pvsystem.pvsyst_celltemp(irrads, winds, temps)
+    pvtemps = pvsystem.pvsyst_celltemp(irrads, temps, wind_speed=winds)
     expected = pd.Series([0.0, 23.96551, 5.0], index=times)
     assert_series_equal(expected, pvtemps)
 
@@ -1131,9 +1131,9 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     irrad = 800
     temp = 45
     wind = 0.5
-    out = system.pvsyst_celltemp(irrad, wind, temp)
+    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
     pvsystem.pvsyst_celltemp.assert_called_once_with(
-        irrad, wind, temp, eta_m, alpha_absorption, racking_model)
+        irrad, temp, wind, eta_m, alpha_absorption, racking_model)
     assert isinstance(out, float)
     assert out < 90 and out > 70
 

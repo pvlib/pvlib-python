@@ -46,7 +46,7 @@ DC_MODEL_PARAMS = {
 }
 
 
-TEMP_MODELS = {
+TEMP_MODEL_PARAMS = {
     'sapm': {'open_rack_cell_glassback': (-3.47, -.0594, 3),
              'roof_mount_cell_glassback': (-2.98, -.0471, 1),
              'open_rack_cell_polymerback': (-3.56, -.0750, 3),
@@ -521,7 +521,7 @@ class PVSystem(object):
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
 
-    def pvsyst_celltemp(self, poa_global, wind_speed, temp_air):
+    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`pvsyst_celltemp` to calculate module temperatures
         based on ``self.racking_model`` and the input parameters.
 
@@ -535,8 +535,8 @@ class PVSystem(object):
         """
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
-        return pvsyst_celltemp(poa_global, wind_speed, temp_air,
-                               temp_model=self.racking_model, **kwargs)
+        return pvsyst_celltemp(poa_global, temp_air, wind_speed,
+                               model_params=self.racking_model, **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
@@ -1887,7 +1887,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     sapm
     '''
 
-    temp_models = TEMP_MODELS['sapm']
+    temp_models = TEMP_MODEL_PARAMS['sapm']
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
@@ -1908,30 +1908,37 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
-def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
-                    alpha_absorption=0.9, temp_model="freestanding"):
+def pvsyst_celltemp(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
+                    alpha_absorption=0.9, model_params='freestanding'):
     """
-    Calculate cell temperature using the PVSyst model.
+    Calculate cell temperature using an emperical heat loss factor model
+    as implemented in PVsyst.
+
+    The heat loss factors provided through the 'model_params' argument
+    represent the combined effect of convection, radiation and conduction,
+    and their values are experimentally determined.
 
     Parameters
     ----------
     poa_global : numeric
         Total incident irradiance in W/m^2.
 
-    wind_speed : numeric
-        Wind speed in m/s at a height of 10 meters.
-
     temp_air : numeric
         Ambient dry bulb temperature in degrees C.
 
-    eta_m : numeric
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value is 1.0, which is the wind
+        speed at module height used to determine NOCT.
+
+    eta_m : numeric, default 0.1
         Module external efficiency as a fraction, i.e., DC power / poa_global.
 
-    alpha_absorption : float
-        Absorption coefficient, default is 0.9.
+    alpha_absorption : numeric, default 0.9
+        Absorption coefficient
 
-    temp_model : string, tuple, or list, default 'freestanding' (no dict)
-        Model to be used.
+    model_params : string, tuple, or list (no dict), default 'freestanding'
+        Heat loss factors to be used.
 
         If string, can be:
 
@@ -1944,12 +1951,12 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
 
         If tuple/list, supply parameters in the following order:
 
-            * natural_convenction_coeff : float
-                Natural convection coefficient. Freestanding default is 29,
-                fully insulated arrays is 15.
+            * constant_loss_factor : float
+                Combined heat loss factor coefficient. Freestanding
+                default is 29, fully insulated arrays is 15.
 
-            * forced_convection_coeff : float
-                Forced convection coefficient, default is 0.
+            * wind_loss_factor : float
+                Combined heat loss factor influenced by wind. Default is 0.
 
     Returns
     -------
@@ -1965,25 +1972,21 @@ def pvsyst_celltemp(poa_global, wind_speed, temp_air, eta_m=0.1,
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
     """
 
-    temp_models = TEMP_MODELS['pvsyst']
+    pvsyst_presets = TEMP_MODEL_PARAMS['pvsyst']
 
-    if isinstance(temp_model, str):
-        natural_convenction_coeff, forced_convection_coeff = temp_models[
-            temp_model.lower()
-        ]
-    elif isinstance(temp_model, (tuple, list)):
-        natural_convenction_coeff, forced_convection_coeff = temp_model
+    if isinstance(model_params, str):
+        model_params = model_params.lower()
+        constant_loss_factor, wind_loss_factor = pvsyst_presets[model_params]
+    elif isinstance(model_params, (tuple, list)):
+        constant_loss_factor, wind_loss_factor = model_params
     else:
         raise TypeError(
-            "Please format temp_model as a str, or tuple/list."
+            "Please provide model_params as a str, or tuple/list."
         )
 
-    combined_convection_coeff = (
-        forced_convection_coeff * wind_speed
-    ) + natural_convenction_coeff
-
-    absorption_coeff = alpha_absorption * poa_global * (1 - eta_m)
-    temp_difference = absorption_coeff / combined_convection_coeff
+    total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor
+    heat_input = poa_global * alpha_absorption * (1 - eta_m)
+    temp_difference = heat_input / total_loss_factor
     temp_cell = temp_air + temp_difference
 
     return temp_cell

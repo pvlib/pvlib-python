@@ -101,3 +101,4 @@ Contributors
 * Cameron Stark (:ghuser:`camerontstark`)
 * Jonathan Gaffiot (:ghuser:`jgaffiot`)
 * Marc Anoma (:ghuser:`anomam`)
+* Anton Driesse (:ghuser:`adriesse`)

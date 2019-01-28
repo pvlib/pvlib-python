@@ -521,7 +521,7 @@ class PVSystem(object):
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
 
-    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed):
+    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`pvsyst_celltemp` to calculate module temperatures
         based on ``self.racking_model`` and the input parameters.
 

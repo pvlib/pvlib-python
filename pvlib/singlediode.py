@@ -13,8 +13,9 @@ from pvlib.tools import _golden_sect_DataFrame
 try:
     from scipy.optimize import brentq
 except ImportError:
-    def brentq(): raise NotImplementedError(
-        "brentq can't be imported because scipy isn't installed")
+    def brentq(*a, **kw):
+        raise ImportError(
+            "brentq couldn't be imported. Is SciPy installed?")
 
 # FIXME: change this to newton when scipy-1.2 is released
 try:
@@ -464,7 +465,7 @@ def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
             I[idx_p] * Rs[idx_p] - a[idx_p] * lambertwterm
 
     if output_is_scalar:
-        return np.asscalar(V)
+        return V.item()
     else:
         return V
 
@@ -527,7 +528,7 @@ def _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                                a[idx_p] / Rs[idx_p]) * lambertwterm
 
     if output_is_scalar:
-        return np.asscalar(I)
+        return I.item()
     else:
         return I
 

@@ -129,8 +129,7 @@ def test_brentq_fs_495():
     return isc, voc, imp, vmp, pmp, i, v, pvs
 
 
-@pytest.fixture
-def pvsyst_fs_495():
+def get_pvsyst_fs_495():
     """
     PVsyst parameters for First Solar FS-495 module from PVSyst-6.7.2 database.
 
@@ -156,16 +155,23 @@ def pvsyst_fs_495():
 
 
 @pytest.mark.parametrize(
-    'poa, temp_cell, expected, tol',
-    [(pvsyst_fs_495()['irrad_ref'], pvsyst_fs_495()['temp_ref'],
-      {'pmp': pvsyst_fs_495()['I_mp_ref'] * pvsyst_fs_495()['V_mp_ref'],
-       'isc': pvsyst_fs_495()['I_sc_ref'], 'voc': pvsyst_fs_495()['V_oc_ref']},
-      (5e-4, 0.04)),
-     (POA, TCELL, {'pmp': 76.26, 'isc': 1.387, 'voc': 79.29}, (1e-3, 1e-3))]
+    'poa, temp_cell, expected, tol', [
+        (
+            get_pvsyst_fs_495()['irrad_ref'],
+            get_pvsyst_fs_495()['temp_ref'],
+            {
+                'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *
+                        get_pvsyst_fs_495()['V_mp_ref']),
+                'isc': get_pvsyst_fs_495()['I_sc_ref'],
+                'voc': get_pvsyst_fs_495()['V_oc_ref']
+            },
+            (5e-4, 0.04)
+        ),
+        (POA, TCELL, {'pmp': 76.26, 'isc': 1.387, 'voc': 79.29}, (1e-3, 1e-3))]
 )  # DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
-def test_pvsyst_recombination_loss(pvsyst_fs_495, poa, temp_cell, expected,
-                                   tol):
+def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""
+    pvsyst_fs_495 = get_pvsyst_fs_495()
     # first evaluate PVSyst model with thin-film recombination loss current
     # at reference conditions
     x = pvsystem.calcparams_pvsyst(

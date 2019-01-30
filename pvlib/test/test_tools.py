@@ -2,6 +2,7 @@ import pytest
 
 from pvlib import tools
 
+
 @pytest.mark.parametrize('keys, input_dict, expected', [
     (['a', 'b'], {'a': 1, 'b': 2, 'c': 3}, {'a': 1, 'b': 2}),
     (['a', 'b', 'd'], {'a': 1, 'b': 2, 'c': 3}, {'a': 1, 'b': 2}),

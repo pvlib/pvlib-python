@@ -46,6 +46,16 @@ DC_MODEL_PARAMS = {
 }
 
 
+TEMP_MODEL_PARAMS = {
+    'sapm': {'open_rack_cell_glassback': (-3.47, -.0594, 3),
+             'roof_mount_cell_glassback': (-2.98, -.0471, 1),
+             'open_rack_cell_polymerback': (-3.56, -.0750, 3),
+             'insulated_back_polymerback': (-2.81, -.0455, 0),
+             'open_rack_polymer_thinfilm_steel': (-3.58, -.113, 3),
+             '22x_concentrator_tracker': (-3.23, -.130, 13)},
+    'pvsyst': {'freestanding': (29.0, 0), 'insulated': (15.0, 0)}
+}
+
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
@@ -510,6 +520,23 @@ class PVSystem(object):
         return sapm_effective_irradiance(
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
+
+    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
+        """Uses :py:func:`pvsyst_celltemp` to calculate module temperatures
+        based on ``self.racking_model`` and the input parameters.
+
+        Parameters
+        ----------
+        See pvsystem.pvsyst_celltemp for details
+
+        Returns
+        -------
+        See pvsystem.pvsyst_celltemp for details
+        """
+        kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
+                               self.module_parameters)
+        return pvsyst_celltemp(poa_global, temp_air, wind_speed,
+                               model_params=self.racking_model, **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
@@ -1860,13 +1887,7 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
     sapm
     '''
 
-    temp_models = {'open_rack_cell_glassback': [-3.47, -.0594, 3],
-                   'roof_mount_cell_glassback': [-2.98, -.0471, 1],
-                   'open_rack_cell_polymerback': [-3.56, -.0750, 3],
-                   'insulated_back_polymerback': [-2.81, -.0455, 0],
-                   'open_rack_polymer_thinfilm_steel': [-3.58, -.113, 3],
-                   '22x_concentrator_tracker': [-3.23, -.130, 13]
-                   }
+    temp_models = TEMP_MODEL_PARAMS['sapm']
 
     if isinstance(model, str):
         model = temp_models[model.lower()]
@@ -1880,11 +1901,95 @@ def sapm_celltemp(poa_global, wind_speed, temp_air,
 
     E0 = 1000.  # Reference irradiance
 
-    temp_module = pd.Series(poa_global*np.exp(a + b*wind_speed) + temp_air)
+    temp_module = pd.Series(poa_global * np.exp(a + b * wind_speed) + temp_air)
 
-    temp_cell = temp_module + (poa_global / E0)*(deltaT)
+    temp_cell = temp_module + (poa_global / E0) * (deltaT)
 
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
+
+
+def pvsyst_celltemp(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
+                    alpha_absorption=0.9, model_params='freestanding'):
+    """
+    Calculate cell temperature using an emperical heat loss factor model
+    as implemented in PVsyst.
+
+    The heat loss factors provided through the 'model_params' argument
+    represent the combined effect of convection, radiation and conduction,
+    and their values are experimentally determined.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance in W/m^2.
+
+    temp_air : numeric
+        Ambient dry bulb temperature in degrees C.
+
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value is 1.0, which is the wind
+        speed at module height used to determine NOCT.
+
+    eta_m : numeric, default 0.1
+        Module external efficiency as a fraction, i.e., DC power / poa_global.
+
+    alpha_absorption : numeric, default 0.9
+        Absorption coefficient
+
+    model_params : string, tuple, or list (no dict), default 'freestanding'
+        Heat loss factors to be used.
+
+        If string, can be:
+
+            * 'freestanding' (default)
+                Modules with rear surfaces exposed to open air (e.g. rack
+                mounted).
+            * 'insulated'
+                Modules with rear surfaces in close proximity to another
+                surface (e.g. roof mounted).
+
+        If tuple/list, supply parameters in the following order:
+
+            * constant_loss_factor : float
+                Combined heat loss factor coefficient. Freestanding
+                default is 29, fully insulated arrays is 15.
+
+            * wind_loss_factor : float
+                Combined heat loss factor influenced by wind. Default is 0.
+
+    Returns
+    -------
+    temp_cell : numeric or Series
+        Cell temperature in degrees Celsius
+
+    References
+    ----------
+    [1]"PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
+    http://files.pvsyst.com/help/index.html. [Accessed: 10- Dec- 2018].
+
+    [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+    photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+    """
+
+    pvsyst_presets = TEMP_MODEL_PARAMS['pvsyst']
+
+    if isinstance(model_params, str):
+        model_params = model_params.lower()
+        constant_loss_factor, wind_loss_factor = pvsyst_presets[model_params]
+    elif isinstance(model_params, (tuple, list)):
+        constant_loss_factor, wind_loss_factor = model_params
+    else:
+        raise TypeError(
+            "Please provide model_params as a str, or tuple/list."
+        )
+
+    total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor
+    heat_input = poa_global * alpha_absorption * (1 - eta_m)
+    temp_difference = heat_input / total_loss_factor
+    temp_cell = temp_air + temp_difference
+
+    return temp_cell
 
 
 def sapm_spectral_loss(airmass_absolute, module):

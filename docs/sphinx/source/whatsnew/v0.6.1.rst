@@ -41,6 +41,8 @@ Enhancements
   to read NREL MIDC data. (:issue:`601`)
 * Change :py:func:`pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
 * Add warning message when :py:func:`pvlib.spa` is reloaded.
+* Add :py:func:`pvlib.irradiance.clearsky_index` to calculate clear-sky index
+  from measured GHI and modeled clear-sky GHI. (:issue:`551`)
 
 
 Bug fixes
@@ -65,3 +67,4 @@ Contributors
 * Ben Ellis (:ghuser:`bhellis725`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
+* Kevin Anderson (:ghuser:`kevinsa5`)

@@ -190,6 +190,7 @@ Clearness index models
 
    irradiance.clearness_index
    irradiance.clearness_index_zenith_independent
+   irradiance.clearsky_index
 
 
 PV Modeling

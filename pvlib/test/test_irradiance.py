@@ -733,7 +733,7 @@ def test_clearsky_index():
         out = irradiance.clearsky_index(ghi_measured, ghi_modeled)
     expected = np.array(
         [[1.   , 0.   , 0.   , 0.   , 0.  ],
-         [0.   , nan  , 2.   , 2.   , 2.  ],
+         [0.   , 0.   , 0.   , 0.   , 0.  ],
          [0.   , 0.   , 1.   , 2.   , 2.  ],
          [0.   , 0.   , 0.002, 1.   , 2.  ],
          [0.   , 0.   , 0.001, 0.5  , 1.  ]])
@@ -744,7 +744,7 @@ def test_clearsky_index():
                                         max_clearsky_index=1.5)
     expected = np.array(
         [[1.   , 0.   , 0.   , 0.   , 0.  ],
-         [0.   , nan  , 1.5  , 1.5  , 1.5 ],
+         [0.   , 0.   , 0.   , 0.   , 0. ],
          [0.   , 0.   , 1.   , 1.5  , 1.5 ],
          [0.   , 0.   , 0.002, 1.   , 1.5 ],
          [0.   , 0.   , 0.001, 0.5  , 1.  ]])

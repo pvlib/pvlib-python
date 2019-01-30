@@ -1199,6 +1199,7 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     Calculate the clearsky index.
 
     The clearsky index is the ratio of global to clearsky global irradiance.
+    Negative and non-finite clearsky index values will be truncated to zero.  
 
     Parameters
     ----------
@@ -1217,9 +1218,16 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     clearsky_index : numeric
         Clearsky index
     """
-    clearsky_index = ghi * 1. / clearsky_ghi
+    clearsky_index = ghi / clearsky_ghi
+    # set +inf, -inf, and nans to zero, while preserving input type
+    if isinstance(clearsky_index, pd.Series):
+        clearsky_index[~np.isfinite(clearsky_index)] = 0
+    else:
+        clearsky_index = np.where(~np.isfinite(clearsky_index), 0, clearsky_index)
+
     clearsky_index = np.maximum(clearsky_index, 0)
     clearsky_index = np.minimum(clearsky_index, max_clearsky_index)
+    
     return clearsky_index
 
 

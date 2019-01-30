@@ -1230,7 +1230,7 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
         clearsky_index[~np.isfinite(clearsky_index)] = 0
         clearsky_index[input_is_nan] = np.nan
     else:
-        clearsky_index = np.where(~np.isfinite(clearsky_index), 0, 
+        clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
                                   clearsky_index)
         clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
 

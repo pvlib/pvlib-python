@@ -1,10 +1,7 @@
 from datetime import datetime, timedelta
-import inspect
-from math import isnan
 from pytz import timezone
 import warnings
 
-import numpy as np
 import pandas as pd
 
 import pytest
@@ -14,13 +11,8 @@ from conftest import requires_siphon, has_siphon, skip_windows
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 
-from pvlib.location import Location
 
 if has_siphon:
-    import requests
-    from requests.exceptions import HTTPError
-    from xml.etree.ElementTree import ParseError
-
     from pvlib.forecast import GFS, HRRR_ESRL, HRRR, NAM, NDFD, RAP
 
     # setup times and location to be tested. Tucson, AZ
@@ -31,15 +23,16 @@ if has_siphon:
     _end = _start + pd.Timedelta(days=1)
     _modelclasses = [
         GFS, NAM, HRRR, NDFD, RAP,
-        skip_windows(
-            pytest.mark.xfail(
-                pytest.mark.timeout(HRRR_ESRL, timeout=60),
-                reason="HRRR_ESRL is unreliable"))]
+        pytest.param(
+            HRRR_ESRL, marks=[
+                skip_windows,
+                pytest.mark.xfail(reason="HRRR_ESRL is unreliable"),
+                pytest.mark.timeout(timeout=60)])]
     _working_models = []
     _variables = ['temp_air', 'wind_speed', 'total_clouds', 'low_clouds',
-                  'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi',]
+                  'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi']
     _nonnan_variables = ['temp_air', 'wind_speed', 'total_clouds', 'dni',
-                         'dhi', 'ghi',]
+                         'dhi', 'ghi']
 else:
     _modelclasses = []
 

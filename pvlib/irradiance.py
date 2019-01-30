@@ -154,8 +154,11 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
 
 def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
-    Calculates the dot product of the solar vector and the surface
-    normal.
+    Calculates the dot product of the sun position unit vector and the surface
+    normal unit vector; in other words, the cosine of the angle of incidence.
+
+    Usage note: When the sun is behind the surface the value returned is
+    negative.  For many uses negative values must be set to zero.
 
     Input all angles in degrees.
 
@@ -1131,6 +1134,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # sense for small zenith angles, but...) these values will
     # eventually be used as indicies for coeffecient look ups
     ebin = np.digitize(eps, (0., 1.065, 1.23, 1.5, 1.95, 2.8, 4.5, 6.2))
+    ebin = np.array(ebin)  # GH 642
     ebin[np.isnan(eps)] = 0
 
     # correct for 0 indexing in coeffecient lookup
@@ -1333,7 +1337,7 @@ def _kt_kt_prime_factor(airmass):
 
 
 def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
-         min_cos_zenith=0.065, max_zenith=87):
+         min_cos_zenith=0.065, max_zenith=87, max_airmass=12):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1343,6 +1347,13 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     and direct clearness indices.
 
     The pvlib implementation limits the clearness index to 1.
+
+    The original report describing the DISC model [1]_ uses the
+    relative airmass rather than the absolute (pressure-corrected)
+    airmass. However, the NREL implementation of the DISC model [2]_
+    uses absolute airmass. PVLib Matlab also uses the absolute airmass.
+    pvlib python defaults to absolute airmass, but the relative airmass
+    can be used by supplying `pressure=None`.
 
     Parameters
     ----------
@@ -1357,8 +1368,9 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
-    pressure : numeric, default 101325
-        Site pressure in Pascal.
+    pressure : None or numeric, default 101325
+        Site pressure in Pascal. If None, relative airmass is used
+        instead of absolute (pressure-corrected) airmass.
 
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
@@ -1367,6 +1379,11 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     max_zenith : numeric, default 87
         Maximum value of zenith to allow in DNI calculation. DNI will be
         set to 0 for times with zenith values greater than `max_zenith`.
+
+    max_airmass : numeric, default 12
+        Maximum value of the airmass to allow in Kn calculation.
+        Default value (12) comes from range over which Kn was fit
+        to airmass in the original paper.
 
     Returns
     -------
@@ -1382,15 +1399,13 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
 
     References
     ----------
-    [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
-    Global Horizontal to Direct Normal Insolation", Technical
-    Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
-    Institute, 1987.
+    .. [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+       Global Horizontal to Direct Normal Insolation", Technical
+       Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
+       Institute, 1987.
 
-    [2] J.W. "Fourier series representation of the position of the sun".
-    Found at:
-    http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html on
-    January 12, 2012
+    .. [2] Maxwell, E. "DISC Model", Excel Worksheet.
+       https://www.nrel.gov/grid/solar-resource/disc.html
 
     See Also
     --------
@@ -1405,9 +1420,10 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
                          max_clearness_index=1)
 
     am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
-    am = atmosphere.get_absolute_airmass(am, pressure)
+    if pressure is not None:
+        am = atmosphere.get_absolute_airmass(am, pressure)
 
-    Kn = _disc_kn(kt, am)
+    Kn, am = _disc_kn(kt, am, max_airmass=max_airmass)
     dni = Kn * I0
 
     bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
@@ -1424,16 +1440,29 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     return output
 
 
-def _disc_kn(clearness_index, airmass):
+def _disc_kn(clearness_index, airmass, max_airmass=12):
     """
     Calculate Kn for `disc`
+
+    Parameters
+    ----------
+    clearness_index : numeric
+    airmass : numeric
+    max_airmass : float
+        airmass > max_airmass is set to max_airmass before being used
+        in calculating Kn.
+
+    Returns
+    -------
+    Kn : numeric
+    am : numeric
+        airmass used in the calculation of Kn. am <= max_airmass.
     """
     # short names for equations
     kt = clearness_index
     am = airmass
 
-    # consider adding
-    # am = np.maximum(am, 12)  # GH 450
+    am = np.minimum(am, max_airmass)  # GH 450
 
     # powers of kt will be used repeatedly, so compute only once
     kt2 = kt * kt  # about the same as kt ** 2
@@ -1454,7 +1483,7 @@ def _disc_kn(clearness_index, airmass):
 
     Knc = 0.866 - 0.122*am + 0.0121*am**2 - 0.000653*am**3 + 1.4e-05*am**4
     Kn = Knc - delta_kn
-    return Kn
+    return Kn, am
 
 
 def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
@@ -1571,14 +1600,20 @@ def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime,
 
 def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
     """
-    Calculate delta kt prime (Perez eqn 2), or return a default value
+    Calculate delta_kt_prime (Perez eqn 2 and eqn 3), or return a default value
     for use with :py:func:`_dirint_bins`.
     """
     if use_delta_kt_prime:
         # Perez eqn 2
-        delta_kt_prime = 0.5*((kt_prime - kt_prime.shift(1)).abs().add(
-                              (kt_prime - kt_prime.shift(-1)).abs(),
-                              fill_value=0))
+        kt_next = kt_prime.shift(-1)
+        kt_previous = kt_prime.shift(1)
+        # replace nan with values that implement Perez Eq 3 for first and last
+        # positions. Use kt_previous and kt_next to handle series of length 1
+        kt_next.iloc[-1] = kt_previous.iloc[-1]
+        kt_previous.iloc[0] = kt_next.iloc[0]
+        delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
+                                (kt_prime - kt_previous).abs(),
+                                fill_value=0))
     else:
         # do not change unless also modifying _dirint_bins
         delta_kt_prime = pd.Series(-1, index=times)
@@ -1965,7 +2000,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
 
         # calculate kt and DNI from GTI
         kt = clearness_index(poa_global_i, aoi, I0)  # kt from Marion eqn 2
-        disc_dni = np.maximum(_disc_kn(kt, airmass) * I0, 0)
+        disc_dni = np.maximum(_disc_kn(kt, airmass)[0] * I0, 0)
         kt_prime = clearness_index_zenith_independent(kt, airmass)
         # dirint DNI in Marion eqn 3
         dni = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
@@ -2048,7 +2083,7 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
     airmass = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
     airmass = atmosphere.get_absolute_airmass(airmass, pressure)
     kt = kt_prime_gte_90 * _kt_kt_prime_factor(airmass)
-    disc_dni = np.maximum(_disc_kn(kt, airmass) * I0, 0)
+    disc_dni = np.maximum(_disc_kn(kt, airmass)[0] * I0, 0)
 
     dni_gte_90 = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
                                           False, temp_dew)

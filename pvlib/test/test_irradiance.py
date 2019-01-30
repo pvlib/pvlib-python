@@ -767,28 +767,30 @@ def test_kt_kt_prime_factor(airmass_kt):
 
 
 def test_clearsky_index():
-    ghi = np.array([-1., 0., 1., 500., 1000.])
+    ghi = np.array([-1., 0., 1., 500., 1000., np.nan])
     ghi_measured, ghi_modeled = np.meshgrid(ghi, ghi)
     # default max_clearsky_index
     with np.errstate(invalid='ignore', divide='ignore'):
         out = irradiance.clearsky_index(ghi_measured, ghi_modeled)
     expected = np.array(
-        [[1.   , 0.   , 0.   , 0.   , 0.  ],
-         [0.   , 0.   , 0.   , 0.   , 0.  ],
-         [0.   , 0.   , 1.   , 2.   , 2.  ],
-         [0.   , 0.   , 0.002, 1.   , 2.  ],
-         [0.   , 0.   , 0.001, 0.5  , 1.  ]])
+        [[1.    , 0.    , 0.    , 0.    , 0.    , np.nan],
+         [0.    , 0.    , 0.    , 0.    , 0.    , np.nan],
+         [0.    , 0.    , 1.    , 2.    , 2.    , np.nan],
+         [0.    , 0.    , 0.002 , 1.    , 2.    , np.nan],
+         [0.    , 0.    , 0.001 , 0.5   , 1.    , np.nan],
+         [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]])
     assert_allclose(out, expected, atol=0.001)
     # specify max_clearsky_index
     with np.errstate(invalid='ignore', divide='ignore'):
         out = irradiance.clearsky_index(ghi_measured, ghi_modeled,
                                         max_clearsky_index=1.5)
     expected = np.array(
-        [[1.   , 0.   , 0.   , 0.   , 0.  ],
-         [0.   , 0.   , 0.   , 0.   , 0. ],
-         [0.   , 0.   , 1.   , 1.5  , 1.5 ],
-         [0.   , 0.   , 0.002, 1.   , 1.5 ],
-         [0.   , 0.   , 0.001, 0.5  , 1.  ]])
+        [[1.    , 0.    , 0.    , 0.    , 0.    , np.nan],
+         [0.    , 0.    , 0.    , 0.    , 0.    , np.nan],
+         [0.    , 0.    , 1.    , 1.5   , 1.5   , np.nan],
+         [0.    , 0.    , 0.002 , 1.    , 1.5   , np.nan],
+         [0.    , 0.    , 0.001 , 0.5   , 1.    , np.nan],
+         [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]])
     assert_allclose(out, expected, atol=0.001)
     # scalars
     out = irradiance.clearsky_index(10, 1000)

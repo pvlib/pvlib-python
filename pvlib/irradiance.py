@@ -1227,7 +1227,7 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
                               clearsky_index)
     # but preserve nans in the input arrays
-    input_is_nan = np.isnan(ghi) | np.isnan(clearsky_ghi)
+    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(clearsky_ghi)
     clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
 
     clearsky_index = np.maximum(clearsky_index, 0)

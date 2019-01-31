@@ -63,6 +63,8 @@ Enhancements
 * Created :py:func:`pvlib.pvsystem.pvsyst_celltemp` to implement PVsyst's cell temperature model. (:issue:`552`)
 * Created :py:func:`pvlib.bifacial.pvfactors_timeseries` to use open-source `pvfactors` package to calculate back surface irradiance (:issue:`421`)
 * Add `PVSystem` class method :py:func:`~pvlib.pvsystem.PVSystem.pvsyst_celltemp` (:issue:`633`)
+* Add :py:func:`pvlib.irradiance.clearsky_index` to calculate clear-sky index
+  from measured GHI and modeled clear-sky GHI. (:issue:`551`)
 
 
 Bug fixes
@@ -102,3 +104,4 @@ Contributors
 * Jonathan Gaffiot (:ghuser:`jgaffiot`)
 * Marc Anoma (:ghuser:`anomam`)
 * Anton Driesse (:ghuser:`adriesse`)
+* Kevin Anderson (:ghuser:`kevinsa5`)

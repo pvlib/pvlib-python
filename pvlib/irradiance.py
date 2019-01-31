@@ -1223,19 +1223,19 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
         Clearsky index
     """
     clearsky_index = ghi / clearsky_ghi
-    # set +inf, -inf, and nans to zero, while preserving input type
-    # but preserve nans in the input arrays as well
-    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(clearsky_ghi)
-    if isinstance(clearsky_index, pd.Series):
-        clearsky_index[~np.isfinite(clearsky_index)] = 0
-        clearsky_index[input_is_nan] = np.nan
-    else:
-        clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
-                                  clearsky_index)
-        clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
+    # set +inf, -inf, and nans to zero
+    clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
+                              clearsky_index)
+    # but preserve nans in the input arrays
+    input_is_nan = np.isnan(ghi) | np.isnan(clearsky_ghi)
+    clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
 
     clearsky_index = np.maximum(clearsky_index, 0)
     clearsky_index = np.minimum(clearsky_index, max_clearsky_index)
+
+    # preserve input type
+    if isinstance(ghi, pd.Series):
+        clearsky_index = pd.Series(clearsky_index, index=ghi.index)
 
     return clearsky_index
 

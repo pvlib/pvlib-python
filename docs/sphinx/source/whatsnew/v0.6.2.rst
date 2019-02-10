@@ -1,0 +1,30 @@
+.. _whatsnew_0620:
+
+v0.6.2 (exp. 31 March 2019)
+---------------------------
+
+This is a minor release. We recommend all users of v0.6.1 upgrade to this
+release.
+
+**Python 2.7 support will end on June 1, 2019**. Releases made after this
+date will require Python 3. (:issue:`501`)
+
+
+API Changes
+~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~

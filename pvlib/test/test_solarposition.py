@@ -602,8 +602,8 @@ def test_nrel_earthsun_distance():
 
 
 def test_equation_of_time():
-    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                             freq="H")
+    times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                          freq="H")
     output = solarposition.spa_python(times, 37.8, -122.25, 100)
     eot = output['equation_of_time']
     eot_rng = eot.max() - eot.min()  # range of values, around 30 minutes
@@ -614,8 +614,8 @@ def test_equation_of_time():
 
 
 def test_declination():
-    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                             freq="H")
+    times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                          freq="H")
     atmos_refract = 0.5667
     delta_t = spa.calculate_deltat(times.year, times.month)
     unixtime = np.array([calendar.timegm(t.timetuple()) for t in times])
@@ -633,8 +633,8 @@ def test_declination():
 
 
 def test_analytical_zenith():
-    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                             freq="H").tz_localize('Etc/GMT+8')
+    times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                          freq="H").tz_localize('Etc/GMT+8')
     lat, lon = 37.8, -122.25
     lat_rad = np.deg2rad(lat)
     output = solarposition.spa_python(times, lat, lon, 100)
@@ -654,8 +654,8 @@ def test_analytical_zenith():
 
 
 def test_analytical_azimuth():
-    times = pd.DatetimeIndex(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                             freq="H").tz_localize('Etc/GMT+8')
+    times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
+                          freq="H").tz_localize('Etc/GMT+8')
     lat, lon = 37.8, -122.25
     lat_rad = np.deg2rad(lat)
     output = solarposition.spa_python(times, lat, lon, 100)

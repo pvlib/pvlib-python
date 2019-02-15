@@ -619,8 +619,8 @@ def test_detect_clearsky_irregular_times(detect_clearsky_data):
 
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""
-    times = pd.DatetimeIndex(start='1/1/2015 0:00', end='12/31/2015 23:00',
-                             freq='H')
+    times = pd.date_range(start='1/1/2015 0:00', end='12/31/2015 23:00',
+                          freq='H')
     tz = -7  # test timezone
     gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone

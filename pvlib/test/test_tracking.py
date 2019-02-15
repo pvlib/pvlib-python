@@ -16,7 +16,7 @@ SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
 
 
 def test_solar_noon():
-    index = pd.DatetimeIndex(start='20180701T1200', freq='1s', periods=1)
+    index = pd.date_range(start='20180701T1200', freq='1s', periods=1)
     apparent_zenith = pd.Series([10], index=index)
     apparent_azimuth = pd.Series([180], index=index)
     tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
@@ -385,8 +385,8 @@ def test_get_irradiance():
     system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
                                         axis_azimuth=180, gcr=2.0/7.0,
                                         backtrack=True)
-    times = pd.DatetimeIndex(start='20160101 1200-0700',
-                             end='20160101 1800-0700', freq='6H')
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
     location = Location(latitude=32, longitude=-111)
     solar_position = location.get_solarposition(times)
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},

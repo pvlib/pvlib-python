@@ -20,6 +20,7 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Compatibility with pandas 0.24 deprecations. (:issue:`659`)
 
 
 Testing
@@ -28,3 +29,5 @@ Testing
 
 Contributors
 ~~~~~~~~~~~~
+* cwhanse
+* wholmgren

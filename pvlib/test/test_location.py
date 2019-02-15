@@ -75,12 +75,16 @@ def test_location_print_pytz():
     assert tus.__str__() == expected_str
 
 
+@pytest.fixture
+def times():
+    return pd.date_range(start='20160101T0600-0700',
+                         end='20160101T1800-0700',
+                         freq='3H')
+
+
 @requires_scipy
-def test_get_clearsky(mocker):
+def test_get_clearsky(mocker, times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     m = mocker.spy(pvlib.clearsky, 'ineichen')
     out = tus.get_clearsky(times)
     assert m.call_count == 1
@@ -110,11 +114,8 @@ def test_get_clearsky_ineichen_supply_linke(mocker):
     assert (out.columns.values == ['ghi', 'dni', 'dhi']).all()
 
 
-def test_get_clearsky_haurwitz():
+def test_get_clearsky_haurwitz(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     clearsky = tus.get_clearsky(times, model='haurwitz')
     expected = pd.DataFrame(data=np.array(
                             [[   0.        ],
@@ -127,11 +128,8 @@ def test_get_clearsky_haurwitz():
     assert_frame_equal(expected, clearsky)
 
 
-def test_get_clearsky_simplified_solis():
+def test_get_clearsky_simplified_solis(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     clearsky = tus.get_clearsky(times, model='simplified_solis')
     expected = pd.DataFrame(data=np.
         array([[   0.        ,    0.        ,    0.        ],
@@ -145,11 +143,8 @@ def test_get_clearsky_simplified_solis():
     assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
-def test_get_clearsky_simplified_solis_apparent_elevation():
+def test_get_clearsky_simplified_solis_apparent_elevation(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     solar_position = {'apparent_elevation': pd.Series(80, index=times),
                       'apparent_zenith': pd.Series(10, index=times)}
     clearsky = tus.get_clearsky(times, model='simplified_solis',
@@ -166,11 +161,8 @@ def test_get_clearsky_simplified_solis_apparent_elevation():
     assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
-def test_get_clearsky_simplified_solis_dni_extra():
+def test_get_clearsky_simplified_solis_dni_extra(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 dni_extra=1370)
     expected = pd.DataFrame(data=np.
@@ -185,11 +177,8 @@ def test_get_clearsky_simplified_solis_dni_extra():
     assert_frame_equal(expected, clearsky)
 
 
-def test_get_clearsky_simplified_solis_pressure():
+def test_get_clearsky_simplified_solis_pressure(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 pressure=95000)
     expected = pd.DataFrame(data=np.
@@ -204,11 +193,8 @@ def test_get_clearsky_simplified_solis_pressure():
     assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
-def test_get_clearsky_simplified_solis_aod_pw():
+def test_get_clearsky_simplified_solis_aod_pw(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     clearsky = tus.get_clearsky(times, model='simplified_solis',
                                 aod700=0.25, precipitable_water=2.)
     expected = pd.DataFrame(data=np.
@@ -223,11 +209,8 @@ def test_get_clearsky_simplified_solis_aod_pw():
     assert_frame_equal(expected, clearsky, check_less_precise=2)
 
 
-def test_get_clearsky_valueerror():
+def test_get_clearsky_valueerror(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     with pytest.raises(ValueError):
         clearsky = tus.get_clearsky(times, model='invalid_model')
 
@@ -255,7 +238,7 @@ def test_from_tmy_2():
 
 
 def test_get_solarposition(expected_solpos, golden_mst):
-    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
+    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = golden_mst.get_solarposition(times, temperature=11)
     ephem_data = np.round(ephem_data, 3)
@@ -264,11 +247,8 @@ def test_get_solarposition(expected_solpos, golden_mst):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_get_airmass():
+def test_get_airmass(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     airmass = tus.get_airmass(times)
     expected = pd.DataFrame(data=np.array(
                             [[        nan,         nan],
@@ -292,11 +272,8 @@ def test_get_airmass():
     assert_frame_equal(expected, airmass)
 
 
-def test_get_airmass_valueerror():
+def test_get_airmass_valueerror(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
-    times = pd.DatetimeIndex(start='20160101T0600-0700',
-                             end='20160101T1800-0700',
-                             freq='3H')
     with pytest.raises(ValueError):
         clearsky = tus.get_airmass(times, model='invalid_model')
 
@@ -329,8 +306,8 @@ def test_get_sun_rise_set_transit(golden):
     declination = declination_spencer71(dayofyear)
     eot = equation_of_time_spencer71(dayofyear)
     result = golden.get_sun_rise_set_transit(times, method='geometric',
-                                                   declination=declination,
-                                                   equation_of_time=eot)
+                                             declination=declination,
+                                             equation_of_time=eot)
     assert all(result.columns == ['sunrise', 'sunset', 'transit'])
 
 

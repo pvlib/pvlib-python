@@ -389,8 +389,8 @@ def test_disc_overirradiance():
     columns = ['dni', 'kt', 'airmass']
     ghi = np.array([3000])
     solar_zenith = np.full_like(ghi, 0)
-    times = pd.DatetimeIndex(start='2016-07-19 12:00:00', freq='1s',
-                             periods=len(ghi), tz='America/Phoenix')
+    times = pd.date_range(start='2016-07-19 12:00:00', freq='1s',
+                          periods=len(ghi), tz='America/Phoenix')
     out = irradiance.disc(ghi=ghi, solar_zenith=solar_zenith,
                           datetime_or_doy=times)
     expected = pd.DataFrame(np.array(
@@ -462,7 +462,7 @@ def test_disc_min_cos_zenith_max_zenith():
 
 
 def test_dirint_value():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
@@ -472,7 +472,7 @@ def test_dirint_value():
 
 
 def test_dirint_nans():
-    times = pd.DatetimeIndex(start='2014-06-24T12-0700', periods=5, freq='6H')
+    times = pd.date_range(start='2014-06-24T12-0700', periods=5, freq='6H')
     ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
     zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567], index=times)
     pressure = pd.Series([93193., 93193., np.nan, 93193., 93193.], index=times)
@@ -797,7 +797,7 @@ def test_clearsky_index():
     expected = 0.01
     assert_allclose(out, expected, atol=0.001)
     # series
-    times = pd.DatetimeIndex(start='20180601', periods=2, freq='12H')
+    times = pd.date_range(start='20180601', periods=2, freq='12H')
     ghi_measured = pd.Series([100,  500], index=times)
     ghi_modeled = pd.Series([500, 1000], index=times)
     out = irradiance.clearsky_index(ghi_measured, ghi_modeled)
@@ -853,7 +853,7 @@ def test_clearness_index():
     expected = 0.725
     assert_allclose(out, expected, atol=0.001)
     # series
-    times = pd.DatetimeIndex(start='20180601', periods=2, freq='12H')
+    times = pd.date_range(start='20180601', periods=2, freq='12H')
     ghi = pd.Series([0, 1000], index=times)
     solar_zenith = pd.Series([90, 0], index=times)
     extra_radiation = pd.Series([1360, 1400], index=times)
@@ -887,7 +887,7 @@ def test_clearness_index_zenith_independent(airmass_kt):
     expected = 0.443
     assert_allclose(out, expected, atol=0.001)
     # series
-    times = pd.DatetimeIndex(start='20180601', periods=2, freq='12H')
+    times = pd.date_range(start='20180601', periods=2, freq='12H')
     clearness_index = pd.Series([0, .5], index=times)
     airmass = pd.Series([np.nan, 2], index=times)
     out = irradiance.clearness_index_zenith_independent(clearness_index,

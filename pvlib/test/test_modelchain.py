@@ -488,8 +488,8 @@ def test_deprecated_07():
 
 @requires_scipy
 def test_basic_chain_required(sam_data):
-    times = pd.DatetimeIndex(start='20160101 1200-0700',
-                             end='20160101 1800-0700', freq='6H')
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
     latitude = 32
     longitude = -111
     altitude = 700
@@ -505,8 +505,8 @@ def test_basic_chain_required(sam_data):
 
 @requires_scipy
 def test_basic_chain_alt_az(sam_data):
-    times = pd.DatetimeIndex(start='20160101 1200-0700',
-                             end='20160101 1800-0700', freq='6H')
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
     latitude = 32.2
     longitude = -111
     altitude = 700
@@ -529,8 +529,8 @@ def test_basic_chain_alt_az(sam_data):
 
 @requires_scipy
 def test_basic_chain_strategy(sam_data):
-    times = pd.DatetimeIndex(start='20160101 1200-0700',
-                             end='20160101 1800-0700', freq='6H')
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
     latitude = 32.2
     longitude = -111
     altitude = 700
@@ -551,8 +551,8 @@ def test_basic_chain_strategy(sam_data):
 
 @requires_scipy
 def test_basic_chain_altitude_pressure(sam_data):
-    times = pd.DatetimeIndex(start='20160101 1200-0700',
-                             end='20160101 1800-0700', freq='6H')
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
     latitude = 32.2
     longitude = -111
     altitude = 700

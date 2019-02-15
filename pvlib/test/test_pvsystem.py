@@ -194,7 +194,7 @@ def pvsyst_module_params():
 
 def test_sapm(sapm_module_params):
 
-    times = pd.DatetimeIndex(start='2015-01-01', periods=5, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=5, freq='12H')
     effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
     temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
 
@@ -380,7 +380,7 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
 
 
 def test_calcparams_desoto(cec_module_params):
-    times = pd.DatetimeIndex(start='2015-01-01', periods=3, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
     temp_cell = pd.Series([25, 25, 50], index=times)
 
@@ -408,7 +408,7 @@ def test_calcparams_desoto(cec_module_params):
 
 
 def test_calcparams_cec(cec_module_params):
-    times = pd.DatetimeIndex(start='2015-01-01', periods=3, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
     temp_cell = pd.Series([25, 25, 50], index=times)
 
@@ -437,7 +437,7 @@ def test_calcparams_cec(cec_module_params):
 
 
 def test_calcparams_pvsyst(pvsyst_module_params):
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0], index=times)
     temp_cell = pd.Series([25, 50], index=times)
 
@@ -868,7 +868,7 @@ def test_mpp_series():
 
 @requires_scipy
 def test_singlediode_series(cec_module_params):
-    times = pd.DatetimeIndex(start='2015-01-01', periods=2, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
         effective_irradiance,
@@ -957,7 +957,7 @@ def test_singlediode_floats_ivcurve():
 
 @requires_scipy
 def test_singlediode_series_ivcurve(cec_module_params):
-    times = pd.DatetimeIndex(start='2015-06-01', periods=3, freq='6H')
+    times = pd.date_range(start='2015-06-01', periods=3, freq='6H')
     effective_irradiance = pd.Series([0.0, 400.0, 800.0], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   effective_irradiance,
@@ -1049,7 +1049,7 @@ def test_sapm_celltemp_dict_like():
 
 
 def test_sapm_celltemp_with_index():
-    times = pd.DatetimeIndex(start='2015-01-01', end='2015-01-02', freq='12H')
+    times = pd.date_range(start='2015-01-01', end='2015-01-02', freq='12H')
     temps = pd.Series([0, 10, 5], index=times)
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
@@ -1108,7 +1108,7 @@ def test_pvsyst_celltemp_model_non_option():
 
 
 def test_pvsyst_celltemp_with_index():
-    times = pd.DatetimeIndex(start="2015-01-01", end="2015-01-02", freq="12H")
+    times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12H")
     temps = pd.Series([0, 10, 5], index=times)
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
@@ -1244,8 +1244,8 @@ def test_PVSystem_get_aoi():
 
 def test_PVSystem_get_irradiance():
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
-    times = pd.DatetimeIndex(start='20160101 1200-0700',
-                             end='20160101 1800-0700', freq='6H')
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
     location = Location(latitude=32, longitude=-111)
     solar_position = location.get_solarposition(times)
     irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},

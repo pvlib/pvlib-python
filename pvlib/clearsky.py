@@ -670,7 +670,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
     """
 
     # calculate deltas in units of minutes (matches input window_length units)
-    deltas = np.diff(times) / np.timedelta64(1, '60s')
+    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
 
     # determine the unique deltas and if we can proceed
     unique_deltas = np.unique(deltas)

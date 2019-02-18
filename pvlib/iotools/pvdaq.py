@@ -10,6 +10,7 @@ import requests
 import numpy as np
 import pandas as pd
 
+
 def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011, delim=','):
     """This fuction queries one or more years of raw PV system data from NREL's
      PVDAQ data service: https://maps.nrel.gov/pvdaq/
@@ -75,6 +76,7 @@ def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011, delim=','):
     # convert index to timeseries
     df = standardize_time_axis(df, datetimekey='Date-Time')
     return df
+
 
 def standardize_time_axis(df, datetimekey='Date-Time'):
     '''

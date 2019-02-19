@@ -3,6 +3,7 @@
 
 import pandas as pd
 import numpy as np
+from numpy import dtype
 
 
 HEADERS = 'WBANNO UTC_DATE UTC_TIME LST_DATE LST_TIME CRX_VN LONGITUDE LATITUDE AIR_TEMPERATURE PRECIPITATION SOLAR_RADIATION SR_FLAG SURFACE_TEMPERATURE ST_TYPE ST_FLAG RELATIVE_HUMIDITY RH_FLAG SOIL_MOISTURE_5 SOIL_TEMPERATURE_5 WETNESS WET_FLAG WIND_1_5 WIND_FLAG'  # noqa: E501
@@ -20,12 +21,15 @@ VARIABLE_MAP = {
 }
 
 # specify dtypes for potentially problematic values
-DTYPES = {
-    'AIR_TEMPERATURE': np.float64,
-    'SOLAR_RADIATION': np.float64,
-    'RELATIVE_HUMIDITY': np.float64,
-    'WIND_1_5': np.float64,
-}
+DTYPES = [
+    dtype('int64'), dtype('int64'), dtype('int64'), dtype('int64'),
+    dtype('int64'), dtype('int64'), dtype('float64'), dtype('float64'),
+    dtype('float64'), dtype('float64'), dtype('float64'),
+    dtype('int64'), dtype('float64'), dtype('O'), dtype('int64'),
+    dtype('float64'), dtype('int64'), dtype('float64'),
+    dtype('float64'), dtype('int64'), dtype('int64'), dtype('float64'),
+    dtype('int64')
+]
 
 
 def read_crn(filename):
@@ -62,8 +66,10 @@ def read_crn(filename):
     """
 
     # read in data
-    data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '),
-                       dtype=DTYPES)
+    data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '))
+    # loop here because dtype kwarg not supported in read_fwf until 0.20
+    for (col, _dtype) in zip(data.columns, DTYPES):
+        data[col] = data[col].astype(_dtype)
 
     # set index
     # UTC_TIME does not have leading 0s, so must zfill(4) to comply
@@ -72,6 +78,11 @@ def read_crn(filename):
     dtindex = pd.to_datetime(dts['UTC_DATE'] + dts['UTC_TIME'].str.zfill(4),
                              format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
+    try:
+        # to_datetime(utc=True) does not work in older versions of pandas
+        data = data.tz_localize('UTC')
+    except TypeError:
+        pass
 
     # set nans
     for val in [-99, -999, -9999]:

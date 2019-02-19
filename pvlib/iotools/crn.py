@@ -2,9 +2,30 @@
 """
 
 import pandas as pd
+import numpy as np
 
 
 HEADERS = 'WBANNO UTC_DATE UTC_TIME LST_DATE LST_TIME CRX_VN LONGITUDE LATITUDE AIR_TEMPERATURE PRECIPITATION SOLAR_RADIATION SR_FLAG SURFACE_TEMPERATURE ST_TYPE ST_FLAG RELATIVE_HUMIDITY RH_FLAG SOIL_MOISTURE_5 SOIL_TEMPERATURE_5 WETNESS WET_FLAG WIND_1_5 WIND_FLAG'  # noqa: E501
+
+VARIABLE_MAP = {
+    'LONGITUDE': 'longitude',
+    'LATITUDE': 'latitude',
+    'AIR_TEMPERATURE': 'temp_air',
+    'SOLAR_RADIATION': 'ghi',
+    'SR_FLAG': 'ghi_flag',
+    'RELATIVE_HUMIDITY': 'relative_humidity',
+    'RH_FLAG': 'relative_humidity_flag',
+    'WIND_1_5': 'wind_speed',
+    'WIND_FLAG': 'wind_speed_flag'
+}
+
+# specify dtypes for potentially problematic values
+DTYPES = {
+    'AIR_TEMPERATURE': np.float64,
+    'SOLAR_RADIATION': np.float64,
+    'RELATIVE_HUMIDITY': np.float64,
+    'WIND_1_5': np.float64,
+}
 
 
 def read_crn(filename):
@@ -27,7 +48,9 @@ def read_crn(filename):
     -----
     CRN files contain 5 minute averages labeled by the interval ending
     time. Here, missing data is flagged as NaN, rather than the lowest
-    possible integer for a field (e.g. -999 or -99)
+    possible integer for a field (e.g. -999 or -99).
+    Air temperature in deg C.
+    Wind speed in m/s at a height of 1.5 m above ground level.
 
     References
     ----------
@@ -39,7 +62,8 @@ def read_crn(filename):
     """
 
     # read in data
-    data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '))
+    data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '),
+                       dtype=DTYPES)
 
     # set index
     # UTC_TIME does not have leading 0s, so must zfill(4) to comply
@@ -50,5 +74,11 @@ def read_crn(filename):
     data = data.set_index(dtindex)
 
     # set nans
+    for val in [-99, -999, -9999]:
+        data = data.where(data != val, np.nan)
+
+    # rename and drop unwanted columns
+    data = data.rename(columns=VARIABLE_MAP)
+    data = data.filter(items=VARIABLE_MAP.values())
 
     return data

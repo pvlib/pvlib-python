@@ -22,10 +22,10 @@ def test_read_crn():
         'SURFACE_TEMPERATURE', 'ST_TYPE', 'ST_FLAG', 'relative_humidity',
         'relative_humidity_flag', 'SOIL_MOISTURE_5', 'SOIL_TEMPERATURE_5',
         'WETNESS', 'WET_FLAG', 'wind_speed', 'wind_speed_flag']
-    index = pd.DatetimeIndex(['2019-01-01 00:05:00+00:00',
-                              '2019-01-01 00:10:00+00:00',
-                              '2019-01-01 00:15:00+00:00'],
-                             dtype='datetime64[ns, UTC]', freq=None)
+    index = pd.DatetimeIndex(['2019-01-01 00:05:00',
+                              '2019-01-01 00:10:00',
+                              '2019-01-01 00:15:00'],
+                             freq=None).tz_localize('UTC')
     values = np.array([
        [53131, 20190101, 5, 20181231, 1705, 3, -111.17, 32.24, 10.4, 0.0,
         10.0, 0, 9.0, 'C', 0, 52.0, 0, nan, nan, 1144, 0, 2.2, 0],

@@ -16,7 +16,7 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add US CRN data reader to `pvlib.iotools`.
 
 Bug fixes
 ~~~~~~~~~

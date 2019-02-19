@@ -9,6 +9,8 @@ release.
 **Python 2.7 support will end on June 1, 2019**. Releases made after this
 date will require Python 3. (:issue:`501`)
 
+**Minimum pandas requirement bumped 0.15.0=>0.16.0**
+
 
 API Changes
 ~~~~~~~~~~~

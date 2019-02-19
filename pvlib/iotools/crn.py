@@ -20,6 +20,13 @@ VARIABLE_MAP = {
     'WIND_FLAG': 'wind_speed_flag'
 }
 
+# as specified in CRN README.txt file. excludes 1 space between columns
+WIDTHS = [5, 8, 4, 8, 4, 6, 7, 7, 7, 7, 6, 1, 7, 1, 1, 5, 1, 7, 7, 5, 1, 6, 1]
+# add 1 to make fields contiguous (required by pandas.read_fwf)
+WIDTHS = [w + 1 for w in WIDTHS]
+# no space after last column
+WIDTHS[-1] -= 1
+
 # specify dtypes for potentially problematic values
 DTYPES = [
     dtype('int64'), dtype('int64'), dtype('int64'), dtype('int64'),
@@ -66,7 +73,8 @@ def read_crn(filename):
     """
 
     # read in data
-    data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '))
+    data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '),
+                       widths=WIDTHS)
     # loop here because dtype kwarg not supported in read_fwf until 0.20
     for (col, _dtype) in zip(data.columns, DTYPES):
         data[col] = data[col].astype(_dtype)

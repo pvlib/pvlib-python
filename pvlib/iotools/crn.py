@@ -77,8 +77,6 @@ def read_crn(filename):
     for val in [-99, -999, -9999]:
         data = data.where(data != val, np.nan)
 
-    # rename and drop unwanted columns
     data = data.rename(columns=VARIABLE_MAP)
-    data = data.filter(items=VARIABLE_MAP.values())
 
     return data

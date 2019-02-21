@@ -42,35 +42,39 @@ DTYPES = [
 
 def read_crn(filename):
     """
-    Read NOAA USCRN [1] fixed-width file into pandas dataframe.
+    Read NOAA USCRN [1]_ [2]_ fixed-width file into pandas dataframe.
 
     Parameters
     ----------
     filename: str
-        filepath or url to read for the tsv file.
+        filepath or url to read for the fixed-width file.
 
     Returns
     -------
     data: Dataframe
-        A dataframe with datetime index and all of the variables listed
-        in the `VARIABLE_MAP` dict inside of the map_columns function,
-        along with their associated quality control flags.
+        A dataframe with DatetimeIndex and all of the variables in the
+        file.
 
     Notes
     -----
     CRN files contain 5 minute averages labeled by the interval ending
     time. Here, missing data is flagged as NaN, rather than the lowest
-    possible integer for a field (e.g. -999 or -99).
-    Air temperature in deg C.
-    Wind speed in m/s at a height of 1.5 m above ground level.
+    possible integer for a field (e.g. -999 or -99). Air temperature in
+    deg C. Wind speed in m/s at a height of 1.5 m above ground level.
+
+    Variables corresponding to standard pvlib variables are renamed,
+    e.g. `SOLAR_RADIATION` becomes `ghi`. See the
+    `pvlib.iotools.crn.VARIABLE_MAP` dict for the complete mapping.
 
     References
     ----------
-    [1] U.S. Climate Reference Network
-        `https://www.ncdc.noaa.gov/crn/qcdatasets.html <https://www.ncdc.noaa.gov/crn/qcdatasets.html>`_
-    [2] Diamond, H. J. et. al., 2013: U.S. Climate Reference Network after
-        one decade of operations: status and assessment. Bull. Amer.
-        Meteor. Soc., 94, 489-498. :doi:`10.1175/BAMS-D-12-00170.1`
+    .. [1] U.S. Climate Reference Network
+       `https://www.ncdc.noaa.gov/crn/qcdatasets.html
+       <https://www.ncdc.noaa.gov/crn/qcdatasets.html>`_
+
+    .. [2] Diamond, H. J. et. al., 2013: U.S. Climate Reference Network
+       after one decade of operations: status and assessment. Bull.
+       Amer. Meteor. Soc., 94, 489-498. :doi:`10.1175/BAMS-D-12-00170.1`
     """
 
     # read in data

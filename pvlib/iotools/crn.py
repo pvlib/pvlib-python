@@ -6,7 +6,12 @@ import numpy as np
 from numpy import dtype
 
 
-HEADERS = 'WBANNO UTC_DATE UTC_TIME LST_DATE LST_TIME CRX_VN LONGITUDE LATITUDE AIR_TEMPERATURE PRECIPITATION SOLAR_RADIATION SR_FLAG SURFACE_TEMPERATURE ST_TYPE ST_FLAG RELATIVE_HUMIDITY RH_FLAG SOIL_MOISTURE_5 SOIL_TEMPERATURE_5 WETNESS WET_FLAG WIND_1_5 WIND_FLAG'  # noqa: E501
+HEADERS = (
+    'WBANNO UTC_DATE UTC_TIME LST_DATE LST_TIME CRX_VN LONGITUDE LATITUDE '
+    'AIR_TEMPERATURE PRECIPITATION SOLAR_RADIATION SR_FLAG '
+    'SURFACE_TEMPERATURE ST_TYPE ST_FLAG RELATIVE_HUMIDITY RH_FLAG '
+    'SOIL_MOISTURE_5 SOIL_TEMPERATURE_5 WETNESS WET_FLAG WIND_1_5 WIND_FLAG'
+)
 
 VARIABLE_MAP = {
     'LONGITUDE': 'longitude',
@@ -29,13 +34,10 @@ WIDTHS[-1] -= 1
 
 # specify dtypes for potentially problematic values
 DTYPES = [
-    dtype('int64'), dtype('int64'), dtype('int64'), dtype('int64'),
-    dtype('int64'), dtype('int64'), dtype('float64'), dtype('float64'),
-    dtype('float64'), dtype('float64'), dtype('float64'),
-    dtype('int64'), dtype('float64'), dtype('O'), dtype('int64'),
-    dtype('float64'), dtype('int64'), dtype('float64'),
-    dtype('float64'), dtype('int64'), dtype('int64'), dtype('float64'),
-    dtype('int64')
+    'int64', 'int64', 'int64', 'int64', 'int64', 'int64', 'float64', 'float64',
+    'float64', 'float64', 'float64', 'int64', 'float64', 'O', 'int64',
+    'float64', 'int64', 'float64', 'float64', 'int64', 'int64', 'float64',
+    'int64'
 ]
 
 

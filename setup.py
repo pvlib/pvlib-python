@@ -38,7 +38,7 @@ MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
 INSTALL_REQUIRES = ['numpy >= 1.10.1',
-                    'pandas >= 0.15.0',
+                    'pandas >= 0.16.0',
                     'pytz',
                     'six',
                     ]
@@ -61,7 +61,6 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 2',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',

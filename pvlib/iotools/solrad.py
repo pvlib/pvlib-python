@@ -2,42 +2,35 @@
 """
 
 import pandas as pd
-import numpy as np
 
-
-HEADERS = (
-    'WBANNO UTC_DATE UTC_TIME LST_DATE LST_TIME CRX_VN LONGITUDE LATITUDE '
-    'AIR_TEMPERATURE PRECIPITATION SOLAR_RADIATION SR_FLAG '
-    'SURFACE_TEMPERATURE ST_TYPE ST_FLAG RELATIVE_HUMIDITY RH_FLAG '
-    'SOIL_MOISTURE_5 SOIL_TEMPERATURE_5 WETNESS WET_FLAG WIND_1_5 WIND_FLAG'
+# pvlib conventions
+BASE_HEADERS = (
+    'year', 'julian_day', 'month', 'day', 'hour', 'minute', 'decimal_time',
+    'solar_zenith', 'ghi', 'ghi_flag', 'dni', 'dni_flag', 'dhi', 'dhi_flag',
+    'uvb', 'uvb_flag', 'uvb_temp', 'uvb_temp_flag'
 )
 
-VARIABLE_MAP = {
-    'LONGITUDE': 'longitude',
-    'LATITUDE': 'latitude',
-    'AIR_TEMPERATURE': 'temp_air',
-    'SOLAR_RADIATION': 'ghi',
-    'SR_FLAG': 'ghi_flag',
-    'RELATIVE_HUMIDITY': 'relative_humidity',
-    'RH_FLAG': 'relative_humidity_flag',
-    'WIND_1_5': 'wind_speed',
-    'WIND_FLAG': 'wind_speed_flag'
-}
+# following README_SOLRAD.txt variable names for remaining
+STD_HEADERS = ('std_dw_psp', 'std_direct', 'std_diffuse', 'std_uvb')
 
-# as specified in CRN README.txt file. excludes 1 space between columns
-WIDTHS = [5, 8, 4, 8, 4, 6, 7, 7, 7, 7, 6, 1, 7, 1, 1, 5, 1, 7, 7, 5, 1, 6, 1]
+HEADERS = BASE_HEADERS + STD_HEADERS
+
+DPIR_HEADERS = ('dpir', 'dpir_flag', 'dpirc', 'dpirc_flag', 'dpird',
+                'dpird_flag')
+
+MADISON_HEADERS = BASE_HEADERS + DPIR_HEADERS + STD_HEADERS + (
+    'std_dpir', 'std_dpirc', 'std_dpird')
+
+
+# as specified in README_SOLRAD.txt file. excludes 1 space between columns
+WIDTHS = [4, 3] + 4*[2] + [6, 6] + 5*[7, 1] + 4*[9]
+MADISON_WIDTHS = [4, 3] + 4*[2] + [6, 6] + 8*[7, 1] + 7*[9]
 # add 1 to make fields contiguous (required by pandas.read_fwf)
 WIDTHS = [w + 1 for w in WIDTHS]
+MADISON_WIDTHS = [w + 1 for w in MADISON_WIDTHS]
 # no space after last column
 WIDTHS[-1] -= 1
-
-# specify dtypes for potentially problematic values
-DTYPES = [
-    'int64', 'int64', 'int64', 'int64', 'int64', 'int64', 'float64', 'float64',
-    'float64', 'float64', 'float64', 'int64', 'float64', 'O', 'int64',
-    'float64', 'int64', 'float64', 'float64', 'int64', 'int64', 'float64',
-    'int64'
-]
+MADISON_WIDTHS[-1] -= 1
 
 
 def read_solrad(filename):
@@ -57,51 +50,47 @@ def read_solrad(filename):
 
     Notes
     -----
-    CRN files contain 5 minute averages labeled by the interval ending
-    time. Here, missing data is flagged as NaN, rather than the lowest
-    possible integer for a field (e.g. -999 or -99). Air temperature in
-    deg C. Wind speed in m/s at a height of 1.5 m above ground level.
-
-    Variables corresponding to standard pvlib variables are renamed,
-    e.g. `SOLAR_RADIATION` becomes `ghi`. See the
-    `pvlib.iotools.crn.VARIABLE_MAP` dict for the complete mapping.
+    SOLRAD data resolution is described by the README_SOLRAD.txt:
+    "Before 1-jan. 2015 the data were reported as 3-min averages;
+    on and after 1-Jan. 2015, SOLRAD data are reported as 1-min.
+    averages of 1-sec. samples."
+    Here, missing data is flagged as NaN, rather than -9999.9.
 
     References
     ----------
     .. [1] NOAA SOLRAD Network
-       `https://www.esrl.noaa.gov/gmd/grad/solrad/solradsites.html
-       <https://www.esrl.noaa.gov/gmd/grad/solrad/solradsites.html>`_
+       `https://www.esrl.noaa.gov/gmd/grad/solrad/index.html
+       <https://www.esrl.noaa.gov/gmd/grad/solrad/index.html>`_
 
     .. [2] B. B. Hicks et. al., (1996), The NOAA Integrated Surface
        Irradiance Study (ISIS). A New Surface Radiation Monitoring
        Program. Bull. Amer. Meteor. Soc., 77, 2857-2864.
        :doi:`10.1175/1520-0477(1996)077<2857:TNISIS>2.0.CO;2`
     """
+    if 'msn' in filename:
+        names = MADISON_HEADERS
+        widths = MADISON_WIDTHS
+    else:
+        names = HEADERS
+        widths = WIDTHS
 
     # read in data
-    data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '),
-                       widths=WIDTHS)
-    # loop here because dtype kwarg not supported in read_fwf until 0.20
-    for (col, _dtype) in zip(data.columns, DTYPES):
-        data[col] = data[col].astype(_dtype)
+    data = pd.read_fwf(filename, header=None, skiprows=2, names=names,
+                       widths=widths, na_values=-9999.9)
 
     # set index
-    # UTC_TIME does not have leading 0s, so must zfill(4) to comply
-    # with %H%M format
-    dts = data[['UTC_DATE', 'UTC_TIME']].astype(str)
-    dtindex = pd.to_datetime(dts['UTC_DATE'] + dts['UTC_TIME'].str.zfill(4),
-                             format='%Y%m%d%H%M', utc=True)
+    # columns do not have leading 0s, so must zfill(2) to comply
+    # with %m%d%H%M format
+    dts = data[['month', 'day', 'hour', 'minute']].astype(str).apply(
+        lambda x: x.str.zfill(2))
+    dtindex = pd.to_datetime(
+        data['year'].astype(str) + dts['month'] + dts['day'] + dts['hour'] +
+        dts['minute'], format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
     try:
         # to_datetime(utc=True) does not work in older versions of pandas
         data = data.tz_localize('UTC')
     except TypeError:
         pass
-
-    # set nans
-    for val in [-99, -999, -9999]:
-        data = data.where(data != val, np.nan)
-
-    data = data.rename(columns=VARIABLE_MAP)
 
     return data

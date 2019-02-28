@@ -32,6 +32,19 @@ MADISON_WIDTHS = [w + 1 for w in MADISON_WIDTHS]
 WIDTHS[-1] -= 1
 MADISON_WIDTHS[-1] -= 1
 
+DTYPES = [
+    'int64', 'int64', 'int64', 'int64', 'int64', 'int64', 'float64',
+    'float64', 'float64', 'int64', 'float64', 'int64', 'float64', 'int64',
+    'float64', 'int64', 'float64', 'int64', 'float64', 'float64',
+    'float64', 'float64']
+
+MADISON_DTYPES = [
+    'int64', 'int64', 'int64', 'int64', 'int64', 'int64', 'float64', 'float64',
+    'float64', 'int64', 'float64', 'int64', 'float64', 'int64', 'float64',
+    'int64', 'float64', 'int64', 'float64', 'int64', 'float64', 'int64',
+    'float64', 'int64', 'float64', 'float64', 'float64', 'float64', 'float64',
+    'float64', 'float64']
+
 
 def read_solrad(filename):
     """
@@ -70,13 +83,19 @@ def read_solrad(filename):
     if 'msn' in filename:
         names = MADISON_HEADERS
         widths = MADISON_WIDTHS
+        dtypes = MADISON_DTYPES
     else:
         names = HEADERS
         widths = WIDTHS
+        dtypes = DTYPES
 
     # read in data
     data = pd.read_fwf(filename, header=None, skiprows=2, names=names,
                        widths=widths, na_values=-9999.9)
+
+    # loop here because dtype kwarg not supported in read_fwf until 0.20
+    for (col, _dtype) in zip(data.columns, dtypes):
+        data[col] = data[col].astype(_dtype)
 
     # set index
     # columns do not have leading 0s, so must zfill(2) to comply

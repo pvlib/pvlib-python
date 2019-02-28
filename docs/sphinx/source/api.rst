@@ -338,6 +338,7 @@ relevant to solar energy modeling.
    iotools.read_ecmwf_macc
    iotools.get_ecmwf_macc
    iotools.read_crn
+   iotools.read_solrad
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

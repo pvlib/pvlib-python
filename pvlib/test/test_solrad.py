@@ -9,12 +9,11 @@ from numpy import nan
 import pytest
 
 from pvlib.iotools import solrad
+from conftest import data_dir
 
 
-test_dir = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
-testfile = os.path.join(test_dir, '../data/abq19056.dat')
-testfile_mad = os.path.join(test_dir, '../data/msn19056.dat')
+testfile = os.path.join(data_dir, 'abq19056.dat')
+testfile_mad = os.path.join(data_dir, 'msn19056.dat')
 
 
 columns = [

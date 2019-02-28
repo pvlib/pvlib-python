@@ -1,6 +1,7 @@
 """Functions to read data from the NOAA SOLRAD network.
 """
 
+import numpy as np
 import pandas as pd
 
 # pvlib conventions
@@ -95,7 +96,13 @@ def read_solrad(filename):
 
     # loop here because dtype kwarg not supported in read_fwf until 0.20
     for (col, _dtype) in zip(data.columns, dtypes):
-        data[col] = data[col].astype(_dtype)
+        ser = data[col].astype(_dtype)
+        if _dtype == 'float64':
+            # older verions of pandas/numpy read '-9999.9' as
+            # -9999.8999999999996 and fail to set nan in read_fwf,
+            # so manually set nan
+            ser = ser.where(ser > -9999, other=np.nan)
+        data[col] = ser
 
     # set index
     # columns do not have leading 0s, so must zfill(2) to comply

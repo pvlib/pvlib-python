@@ -19,6 +19,7 @@ API Changes
 Enhancements
 ~~~~~~~~~~~~
 * Add US CRN data reader to `pvlib.iotools`.
+* Add SOLRAD data reader to `pvlib.iotools`.
 
 Bug fixes
 ~~~~~~~~~

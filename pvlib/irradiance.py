@@ -15,7 +15,6 @@ import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
 from pvlib._deprecation import deprecated
-from tools import nanmaximum
 
 # see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
@@ -1152,24 +1151,24 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     F2c = np.vstack((F2c, nans))
 
     F1 = (F1c[ebin, 0] + F1c[ebin, 1] * delta + F1c[ebin, 2] * z)
-    F1 = nanmaximum(F1, 0)
+    F1 = np.where(np.isnan(F1), np.nan, np.maximum(F1, 0))
 
     F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z)
-    F2 = nanmaximum(F2, 0)
+    F2 = np.where(np.isnan(F2), np.nan, np.maximum(F2, 0))
 
     A = aoi_projection(surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth)
-    A = nanmaximum(A, 0)
+    A = np.maximum(A, 0)
 
     B = tools.cosd(solar_zenith)
-    B = nanmaximum(B, tools.cosd(85))
+    B = np.where(np.isnan(B), np.nan, np.maximum(B, tools.cosd(85)))
 
     # Calculate Diffuse POA from sky dome
     term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))
     term2 = F1 * A / B
     term3 = F2 * tools.sind(surface_tilt)
 
-    sky_diffuse = nanmaximum(dhi * (term1 + term2 + term3), 0)
+    sky_diffuse = np.maximum(dhi * (term1 + term2 + term3), 0)
 
     # we've preserved the input type until now, so don't ruin it!
     if isinstance(sky_diffuse, pd.Series):

@@ -86,25 +86,6 @@ def asind(number):
     return res
 
 
-def nanmaximum(x1, x2):
-    """
-    Element-wise maximum preserving nans, without numpy warning
-
-    Parameters
-    ----------
-    array1, array2 : array_like
-        the arrays to be compared, must have the same shape or broadcast to the
-        same shape.
-
-    Returns
-    -------
-    y : array_like
-        the maximum of x1 and x2, element-wise. nan is preserved.
-    """
-
-    return np.where((np.isnan(x1) | np.isnan(x2)), np.nan, np.fmax(x1, x2))
-
-
 def localize_to_utc(time, location):
     """
     Converts or localizes a time series to UTC.

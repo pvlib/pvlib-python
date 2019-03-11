@@ -42,7 +42,7 @@ class Location(object):
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    alitude : float, default 0.
+    altitude : float, default 0.
         Altitude from sea level in meters.
 
     name : None or string, default None.

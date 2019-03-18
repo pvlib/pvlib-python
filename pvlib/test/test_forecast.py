@@ -3,11 +3,14 @@ from pytz import timezone
 import warnings
 
 import pandas as pd
+import os
 
 import pytest
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 
-from conftest import requires_siphon, has_siphon, skip_windows
+from conftest import requires_siphon, has_siphon, skip_windows, requires_darksky, has_darksky_secret_key
+
+from pvlib.location import Location
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 
@@ -148,3 +151,45 @@ def test_cloud_cover_to_ghi_linear():
     assert_allclose(out, 1000)
     out = amodel.cloud_cover_to_ghi_linear(100, ghi_clear, offset=offset)
     assert_allclose(out, 250)
+
+
+if has_darksky_secret_key:
+    from pvlib.forecast import DarkSky
+
+
+@requires_darksky
+def test_darksky_forecast():
+    amodel = DarkSky(os.getenv('DARKSKY_SECRET_KEY'))
+    lat, lon = 40, -80
+    data = amodel.get_data(lat, lon)
+    assert isinstance(data, pd.DataFrame)
+
+    location = Location(lat, lon)
+    processed_data = amodel.process_data(data, location)
+    assert processed_data.columns.tolist() == ['temp_air',
+                                               'wind_speed',
+                                               'ghi',
+                                               'dni',
+                                               'dhi',
+                                               'total_clouds']
+
+
+@requires_darksky
+def test_darksky_time_machine():
+    amodel = DarkSky(os.getenv('DARKSKY_SECRET_KEY'))
+    lat, lon = 40, -80
+    data = amodel.get_data(lat, lon, pd.datetime(2019, 3, 1, 0, 0))
+    assert isinstance(data, pd.DataFrame)
+    assert_array_equal(
+        data.index,
+        pd.date_range(start='2019-03-01T00:00', end='2019-03-01T23:00', freq='H', tz='America/New_York')
+    )
+
+
+@requires_darksky
+def test_darksky_extend():
+    amodel = DarkSky(os.getenv('DARKSKY_SECRET_KEY'))
+    lat, lon = 40, -80
+    data = amodel.get_data(lat, lon, extend=True)
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape[0] == 169

@@ -13,6 +13,7 @@ from pvlib.location import Location
 from pvlib.irradiance import liujordan, get_extra_radiation, disc
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
+import requests
 
 import warnings
 
@@ -646,6 +647,100 @@ class ForecastModel(object):
         wind_speed = data['wind_speed_gust'] * scaling
 
         return wind_speed
+
+
+class DarkSky(object):
+
+    url = 'https://api.darksky.net/forecast/{secret_key}/{point}'
+    _resolutions = ['minutely', 'hourly', 'daily']
+    _excludables = _resolutions + ['currently', 'alerts', 'flags']
+
+    output_variables = [
+        'temp_air',
+        'wind_speed',
+        'ghi',
+        'dni',
+        'dhi',
+        'total_clouds',
+    ]
+
+    variables = {
+        'temp_air': 'temperature',
+        'wind_speed': 'windSpeed',
+        'total_clouds': 'cloudCover',
+    }
+
+    cloud_cover = 'total_clouds'
+
+    def __init__(self, secret_key):
+        self._secret_key = secret_key
+
+    def get_data(self, latitude, longitude, start=None, resolution='hourly', extend=False):
+        if resolution not in self._resolutions:
+            raise ValueError(
+                'resolution must be in {resolutions}. Got {resolution}.'.format(
+                    resolutions=self._resolutions,
+                    resolution=resolution
+                )
+            )
+        if extend and resolution != 'hourly':
+            raise ValueError('extend may onle be True if resolution is hourly')
+
+        point = [latitude, longitude]
+        if start is not None:
+            if not isinstance(start, pd.datetime):
+                raise TypeError('start must be naive local datetime.datetime')
+            if start.tzinfo is not None:
+                raise TypeError('start must be naive local datetime.datetime')
+            point.append(start.strftime('%Y-%m-%dT%H:%M:%S'))
+
+        resp = requests.get(
+            self.url.format(
+                secret_key=self._secret_key,
+                point=','.join([str(p) for p in point])
+            ),
+            params={
+                'exclude': ','.join([k for k in self._excludables if k != resolution]),
+                'extend': 'hourly' if extend else 'false'
+            }
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            time_zone = data['timezone']
+            df = pd.DataFrame.from_records(data[resolution]['data']).set_index('time')
+            df.index = pd.to_datetime(df.index, unit='s').tz_localize('UTC').tz_convert(time_zone)
+            return df
+        else:
+            raise ValueError('request failed with status code {}: {}'.format(resp.status_code, resp.json()['error']))
+
+    @classmethod
+    def cloud_cover_to_irradiance_clearsky_scaling(cls, cloud_cover, location):
+        solar_position = location.get_solarposition(cloud_cover.index)
+        clearsky_irradiance = location.get_clearsky(cloud_cover.index, model='ineichen', solar_position=solar_position)
+
+        ghi = cls.cloud_cover_to_ghi_linear(cloud_cover, clearsky_irradiance['ghi'])
+        dni = disc(ghi, solar_position['zenith'], cloud_cover.index)['dni']
+        dhi = ghi - dni * np.cos(np.radians(solar_position['zenith']))
+        return pd.DataFrame({'ghi': ghi, 'dni': dni, 'dhi': dhi}).fillna(0)
+
+    @staticmethod
+    def cloud_cover_to_ghi_linear(cloud_cover, ghi_clear, offset=35):
+        offset = offset / 100.
+        cloud_cover = cloud_cover / 100.
+        return (offset + (1 - offset) * (1 - cloud_cover)) * ghi_clear
+
+    @classmethod
+    def process_data(cls, data, location):
+        data = data.rename(columns={y: x for x, y in cls.variables.items()})
+        irradiance = cls.cloud_cover_to_irradiance_clearsky_scaling(data[cls.cloud_cover], location)
+        return data.merge(irradiance, left_index=True, right_index=True)[cls.output_variables]
+
+    def get_processed_data(self, latitude, longitude, start=None, resolution='hourly', extend=False):
+        data = self.get_data(latitude, longitude, start, resolution, extend)
+        return self.process_data(
+            data,
+            Location(latitude, longitude),
+        )
 
 
 class GFS(ForecastModel):

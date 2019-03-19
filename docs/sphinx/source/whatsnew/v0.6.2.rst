@@ -24,6 +24,9 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Compatibility with pandas 0.24 deprecations. (:issue:`659`)
+* pvwatts_ac raised ZeroDivisionError when called with scalar pdc=0
+  and a RuntimeWarning for array(0) input. Now correctly returns 0s
+  of the appropriate type. (:issue:`675`)
 
 
 Testing

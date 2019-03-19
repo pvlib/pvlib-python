@@ -2967,8 +2967,15 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pac0 = eta_inv_nom * pdc0
     zeta = pdc / pdc0
 
+    # arrays to help avoid divide by 0 for scalar and array
+    eta = np.zeros_like(pdc, dtype=float)
+    pdc_neq_0 = ~np.equal(pdc, 0)
+
     # eta < 0 if zeta < 0.006. pac is forced to be >= 0 below. GH 541
-    eta = eta_inv_nom / eta_inv_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
+    eta = eta_inv_nom / eta_inv_ref * (
+        - 0.0162*zeta
+        - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
+        + 0.9858)
 
     pac = eta * pdc
     pac = np.minimum(pac0, pac)

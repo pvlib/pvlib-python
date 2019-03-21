@@ -13,7 +13,6 @@ from conftest import fail_on_pvlib_version
 test_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 tmy3_testfile = os.path.join(test_dir, '../data/703165TY.csv')
 tmy2_testfile = os.path.join(test_dir, '../data/12839.tm2')
-epw_testfile = os.path.join(test_dir, '../data/NLD_Amsterdam062400_IWEC.epw')
 
 
 @fail_on_pvlib_version('0.7')
@@ -60,17 +59,3 @@ def test_read_tmy3_no_coerce_year():
 
 def test_read_tmy2():
     tmy.read_tmy2(tmy2_testfile)
-
-    
-def test_read_epw():
-    tmy.read_epw(epw_testfile)
-
-@network
-def test_read_epw_remote():
-    url = 'https://energyplus.net/weather-download/europe_wmo_region_6/NLD//NLD_Amsterdam.062400_IWEC/NLD_Amsterdam.062400_IWEC.epw'
-    tmy.read_epw(url)
-
-def test_read_epw_coerce_year():
-    coerce_year = 1987
-    data, meta = tmy.read_epw(epw_testfile, coerce_year=coerce_year)
-    assert (data.index.year == 1987).all()    

@@ -173,11 +173,9 @@ def read_epw(filename=None, coerce_year=None):
 
     # Update index with correct date information     
     data = data.set_index(pd.to_datetime(data[['year', 'month', 'day', 
-                                               'hour']]))
-     
+                                               'hour']], format='%Y %m %d %H'))
+    
     # Localize time series
     data = data.tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
-
-data, meta = read_epw('https://energyplus.net/weather-download/europe_wmo_region_6/NLD//NLD_Amsterdam.062400_IWEC/NLD_Amsterdam.062400_IWEC.epw', 2001)

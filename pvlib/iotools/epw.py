@@ -179,3 +179,5 @@ def read_epw(filename=None, coerce_year=None):
     data = data.tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
+
+data, meta = read_epw('https://energyplus.net/weather-download/europe_wmo_region_6/NLD//NLD_Amsterdam.062400_IWEC/NLD_Amsterdam.062400_IWEC.epw', 2001)

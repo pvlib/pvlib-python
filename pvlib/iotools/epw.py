@@ -171,11 +171,10 @@ def read_epw(filename=None, coerce_year=None):
         data["year"] = coerce_year
         data['year'].iloc[-1] = coerce_year - 1
 
-    # Update index with correct date information     
-    data = data.set_index(pd.to_datetime(data[['year', 'month', 'day', 
-                                               'hour']], format='%Y %m %d %H'))
-    
-    # Localize time series
-    data = data.tz_localize(int(meta['TZ'] * 3600))
+    # create index that supplies correct date and time zone information     
+    idx = pd.to_datetime(data[['year', 'month', 'day', 'hour']], 
+                         format='%Y %m %d %H')
+    idx = idx.dt.tz_localize(int(meta['TZ'] * 3600))    
+    data.index = idx
 
     return data, meta

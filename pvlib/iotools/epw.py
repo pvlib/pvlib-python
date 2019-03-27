@@ -13,7 +13,7 @@ except ImportError:
 import pandas as pd
 
 
-def read_epw(filename=None, coerce_year=None):
+def read_epw(filename, coerce_year=None):
     '''
     Read an EPW file in to a pandas dataframe.
 

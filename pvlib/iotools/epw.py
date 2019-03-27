@@ -166,7 +166,6 @@ def read_epw(filename=None, coerce_year=None):
     # Change to single year if requested
     if coerce_year is not None:
         data["year"] = coerce_year
-        data['year'].iloc[-1] = coerce_year - 1
 
     # create index that supplies correct date and time zone information
     dts = data[['month', 'day']].astype(str).apply(lambda x: x.str.zfill(2))

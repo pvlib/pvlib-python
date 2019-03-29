@@ -642,7 +642,7 @@ def test_erbs_min_cos_zenith_max_zenith():
     times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
 
     # max_zenith keeps these results reasonable
-    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99999,
+    out = irradiance.erbs(ghi=1.0, zenith=89.99999,
                           datetime_or_doy=times, min_cos_zenith=0)
     expected = pd.DataFrame(np.array(
         [[0., 1., 1.]]),
@@ -650,7 +650,7 @@ def test_erbs_min_cos_zenith_max_zenith():
     assert_frame_equal(out, expected)
 
     # 4-5 9s will produce bad behavior without max_zenith limit
-    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99999,
+    out = irradiance.erbs(ghi=1.0, zenith=89.99999,
                           datetime_or_doy=times, max_zenith=100)
     expected = pd.DataFrame(np.array(
         [[6.00115286e+03, 9.98952601e-01, 1.16377640e-02]]),
@@ -658,7 +658,7 @@ def test_erbs_min_cos_zenith_max_zenith():
     assert_frame_equal(out, expected)
 
     # 1-2 9s will produce bad behavior without either limit
-    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+    out = irradiance.erbs(ghi=1.0, zenith=89.99, datetime_or_doy=times,
                           min_cos_zenith=0, max_zenith=100)
     expected = pd.DataFrame(np.array(
         [[4.78419761e+03, 1.65000000e-01, 1.00000000e+00]]),
@@ -666,8 +666,7 @@ def test_erbs_min_cos_zenith_max_zenith():
     assert_frame_equal(out, expected)
 
     # check default behavior under hardest condition
-    out = irradiance.erbs(ghi=1.0, solar_zenith=90,
-                          datetime_or_doy=times)
+    out = irradiance.erbs(ghi=1.0, zenith=90, datetime_or_doy=times)
     expected = pd.DataFrame(np.array(
         [[0., 1., 0.01163776]]),
         columns=columns, index=times)

@@ -20,8 +20,7 @@ def test_sapm_celltemp():
     default = celltemp.sapm(900, 5, 20)
     assert_allclose(default['temp_cell'], 43.509, 3)
     assert_allclose(default['temp_module'], 40.809, 3)
-    assert_frame_equal(default, celltemp.sapm(900, 5, 20,
-                                                       [-3.47, -.0594, 3]))
+    assert_frame_equal(default, celltemp.sapm(900, 5, 20, [-3.47, -.0594, 3]))
 
 
 def test_sapm_celltemp_dict_like():
@@ -42,8 +41,8 @@ def test_sapm_celltemp_with_index():
 
     pvtemps = celltemp.sapm(irrads, winds, temps)
 
-    expected = pd.DataFrame({'temp_cell':[0., 23.06066166, 5.],
-                             'temp_module':[0., 21.56066166, 5.]},
+    expected = pd.DataFrame({'temp_cell': [0., 23.06066166, 5.],
+                             'temp_module': [0., 21.56066166, 5.]},
                             index=times)
 
     assert_frame_equal(expected, pvtemps)

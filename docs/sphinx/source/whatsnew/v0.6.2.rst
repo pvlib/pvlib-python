@@ -20,6 +20,7 @@ Enhancements
 ~~~~~~~~~~~~
 * Add US CRN data reader to `pvlib.iotools`.
 * Add SOLRAD data reader to `pvlib.iotools`.
+* Add EPW data reader to `pvlib.iotools`. (:issue:`591`)
 
 Bug fixes
 ~~~~~~~~~
@@ -35,5 +36,6 @@ Testing
 
 Contributors
 ~~~~~~~~~~~~
-* cwhanse
-* wholmgren
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Roel Loonen (:ghuser:`roelloonen`)

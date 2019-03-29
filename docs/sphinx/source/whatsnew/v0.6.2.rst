@@ -14,7 +14,10 @@ date will require Python 3. (:issue:`501`)
 
 API Changes
 ~~~~~~~~~~~
-
+* `erbs` `doy` argument changed to `datetime_or_doy` to be consistent with
+  allowed types and similar functions (`disc`, `get_extra_radiation`).
+* Added `min_cos_zenith` and `max_zenith` keyword arguments to `erbs`.
+  (:issue:`681`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -28,6 +31,7 @@ Bug fixes
 * pvwatts_ac raised ZeroDivisionError when called with scalar pdc=0
   and a RuntimeWarning for array(0) input. Now correctly returns 0s
   of the appropriate type. (:issue:`675`)
+* Fixed `erbs` behavior when zenith is near 90 degrees. (:issue:`681`)
 
 
 Testing

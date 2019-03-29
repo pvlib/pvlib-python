@@ -620,19 +620,58 @@ def test_gti_dirint():
 
 
 def test_erbs():
-    ghi = pd.Series([0, 50, 1000, 1000])
-    zenith = pd.Series([120, 85, 10, 10])
-    doy = pd.Series([1, 1, 1, 180])
-    expected = pd.DataFrame(np.
-        array([[ -0.00000000e+00,   0.00000000e+00,  -0.00000000e+00],
-               [  9.67127061e+01,   4.15709323e+01,   4.05715990e-01],
-               [  7.94187742e+02,   2.17877755e+02,   7.18119416e-01],
-               [  8.42358014e+02,   1.70439297e+02,   7.68919470e-01]]),
-        columns=['dni', 'dhi', 'kt'])
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
+    ghi = pd.Series([0, 50, 1000, 1000], index=index)
+    zenith = pd.Series([120, 85, 10, 10], index=index)
+    expected = pd.DataFrame(np.array(
+        [[0.00000000e+00, 0.00000000e+00, 0.00000000e+00],
+         [9.67192672e+01, 4.15703604e+01, 4.05723511e-01],
+         [7.94205651e+02, 2.17860117e+02, 7.18132729e-01],
+         [8.42001578e+02, 1.70790318e+02, 7.68214312e-01]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
 
-    out = irradiance.erbs(ghi, zenith, doy)
+    out = irradiance.erbs(ghi, zenith, index)
 
     assert_frame_equal(np.round(out, 0), np.round(expected, 0))
+
+
+def test_erbs_min_cos_zenith_max_zenith():
+    # map out behavior under difficult conditions with various
+    # limiting kwargs settings
+    columns = ['dni', 'dhi', 'kt']
+    times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
+
+    # max_zenith keeps these results reasonable
+    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99999,
+                          datetime_or_doy=times, min_cos_zenith=0)
+    expected = pd.DataFrame(np.array(
+        [[0., 1., 1.]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # 4-5 9s will produce bad behavior without max_zenith limit
+    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99999,
+                          datetime_or_doy=times, max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[6.00115286e+03, 9.98952601e-01, 1.16377640e-02]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # 1-2 9s will produce bad behavior without either limit
+    out = irradiance.erbs(ghi=1.0, solar_zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[4.78419761e+03, 1.65000000e-01, 1.00000000e+00]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # check default behavior under hardest condition
+    out = irradiance.erbs(ghi=1.0, solar_zenith=90,
+                          datetime_or_doy=times)
+    expected = pd.DataFrame(np.array(
+        [[0., 1., 0.01163776]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
 
 
 def test_erbs_all_scalar():

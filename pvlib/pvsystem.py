@@ -431,13 +431,13 @@ class PVSystem(object):
         ----------
         poa_global : float or Series
             Total incident irradiance in W/m^2.
-    
+
         wind_speed : float or Series
             Wind speed in m/s at a height of 10 meters.
-    
+
         temp_air : float or Series
             Ambient dry bulb temperature in degrees C.
-    
+
         model : string, list, or dict, default 'open_rack_cell_glassback'
             Model to be used. See celltemp.sapm for details
 
@@ -525,21 +525,22 @@ class PVSystem(object):
         ----------
         poa_global : numeric
             Total incident irradiance in W/m^2.
-    
+
         temp_air : numeric
             Ambient dry bulb temperature in degrees C.
-    
+
         wind_speed : numeric, default 1.0
-            Wind speed in m/s measured at the same height for which the wind loss
-            factor was determined.  The default value is 1.0, which is the wind
-            speed at module height used to determine NOCT.
-    
+            Wind speed in m/s measured at the same height for which the wind
+            loss factor was determined.  The default value is 1.0, which is
+            the wind speed at module height used to determine NOCT.
+
         eta_m : numeric, default 0.1
-            Module external efficiency as a fraction, i.e., DC power / poa_global.
-    
+            Module external efficiency as a fraction, i.e.,
+            DC power / poa_global.
+
         alpha_absorption : numeric, default 0.9
             Absorption coefficient
-    
+
         model_params : string, tuple, or list (no dict), default 'freestanding'
             Heat loss factors to be used. See celltemp.pvsyst for details.
 

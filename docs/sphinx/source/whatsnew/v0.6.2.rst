@@ -16,6 +16,8 @@ API Changes
 ~~~~~~~~~~~
 * `erbs` `doy` argument changed to `datetime_or_doy` to be consistent with
   allowed types and similar functions (`disc`, `get_extra_radiation`).
+* `erbs` DataFrame vs. OrderedDict return behavior now determined by type
+  of `datetime_or_doy` instead of `ghi` or `zenith`.
 * Added `min_cos_zenith` and `max_zenith` keyword arguments to `erbs`.
   (:issue:`681`)
 

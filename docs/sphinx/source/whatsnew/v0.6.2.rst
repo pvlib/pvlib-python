@@ -14,26 +14,31 @@ date will require Python 3. (:issue:`501`)
 
 API Changes
 ~~~~~~~~~~~
-* `erbs` `doy` argument changed to `datetime_or_doy` to be consistent with
-  allowed types and similar functions (`disc`, `get_extra_radiation`).
-* `erbs` DataFrame vs. OrderedDict return behavior now determined by type
-  of `datetime_or_doy` instead of `ghi` or `zenith`.
-* Added `min_cos_zenith` and `max_zenith` keyword arguments to `erbs`.
-  (:issue:`681`)
+* :py:func:`~pvlib.irradiance.erbs` *doy* argument changed to
+  *datetime_or_doy* to be consistent with allowed types and similar
+  functions (:py:func:`~pvlib.irradiance.disc`,
+  :py:func:`~pvlib.irradiance.get_extra_radiation`).
+* :py:func:`~pvlib.irradiance.erbs` DataFrame vs. OrderedDict return
+  behavior now determined by type of *datetime_or_doy* instead of
+  *ghi* or *zenith*.
+* Added *min_cos_zenith* and *max_zenith* keyword arguments to
+  :py:func:`~pvlib.irradiance.erbs`. (:issue:`681`)
 
 Enhancements
 ~~~~~~~~~~~~
-* Add US CRN data reader to `pvlib.iotools`.
-* Add SOLRAD data reader to `pvlib.iotools`.
-* Add EPW data reader to `pvlib.iotools`. (:issue:`591`)
+* Add US CRN data reader to :ref:`iotools`.
+* Add SOLRAD data reader to :ref:`iotools`.
+* Add EPW data reader to :ref:`iotools`. (:issue:`591`)
 
 Bug fixes
 ~~~~~~~~~
 * Compatibility with pandas 0.24 deprecations. (:issue:`659`)
-* pvwatts_ac raised ZeroDivisionError when called with scalar pdc=0
-  and a RuntimeWarning for array(0) input. Now correctly returns 0s
-  of the appropriate type. (:issue:`675`)
-* Fixed `erbs` behavior when zenith is near 90 degrees. (:issue:`681`)
+* :py:func:`~pvlib.pvsystem.pvwatts_ac` raised ``ZeroDivisionError``
+  when called with scalar ``pdc=0``
+  and a ``RuntimeWarning`` for ``array(0)`` input. Now correctly returns
+  0s of the appropriate type. (:issue:`675`)
+* Fixed :py:func:`~pvlib.irradiance.erbs` behavior when zenith is
+  near 90 degrees. (:issue:`681`)
 
 
 Testing

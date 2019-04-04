@@ -191,15 +191,28 @@ def test_ineichen_altitude():
 
 
 @requires_tables
-def test_lookup_linke_turbidity():
+@pytest.mark.parametrize('lat,lon,interp_turbidity', [
+    (32.125, -110.875, True),
+    (32.125, -110.875, False),
+    (np.array(32.125), np.array(-110.875), True),
+    (np.array(32.125), np.array(-110.875), False),
+    pytest.param(np.array([32.125]), np.array([-110.875]), True,
+                 marks=pytest.mark.xfail, strict=True),
+    pytest.param(np.array([32.125]), np.array([-110.875]), False,
+                 marks=pytest.mark.xfail, strict=True),
+])
+def test_lookup_linke_turbidity(lat, lon, interp_turbidity):
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
-    # expect same value on 2014-06-24 0000 and 1200, and
-    # diff value on 2014-06-25
-    expected = pd.Series(
-        np.array([3.11803278689, 3.11803278689, 3.13114754098]), index=times
-    )
-    out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875)
+    if interp_turbidity:
+        # expect same value on 2014-06-24 0000 and 1200, and
+        # diff value on 2014-06-25
+        expected = [3.11803278689, 3.11803278689, 3.13114754098]
+    else:
+        expected = [3., 3., 3.]
+    expected = pd.Series(expected, index=times)
+    out = clearsky.lookup_linke_turbidity(times, lat, lon,
+                                          interp_turbidity=interp_turbidity)
     assert_series_equal(expected, out)
 
 

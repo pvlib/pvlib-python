@@ -1,4 +1,5 @@
 .. image:: _images/pvlib_log_horiz.png
+
 ========================================
 
 pvlib python is a community supported tool that provides a set of

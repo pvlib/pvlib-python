@@ -447,9 +447,10 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
 def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     r'''
-    Determine the components of in-plane irradiance.
+    Determine in-plane irradiance components.
 
-    Combines in-plane irradiance components into the total in-plane irradiance.
+    Combines DNI with sky diffuse and ground-reflected irradiance to calculate
+    total, direct and diffuse irradiance components in the plane of array.
 
     Parameters
     ----------

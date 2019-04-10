@@ -1,4 +1,4 @@
-.. image:: _images/pvlib_log_horiz.png
+.. image:: _images/pvlib_logo_horiz.png
 
 ========================================
 

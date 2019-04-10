@@ -1,4 +1,5 @@
 .. image:: _images/pvlib_logo_horiz.png
+  :width: 600
 
 ========================================
 

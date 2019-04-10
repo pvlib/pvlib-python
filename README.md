@@ -1,3 +1,4 @@
+<img src="docs/sphinx/source/_images/pvlib_logo_horiz.png" width="600" height="280">
 ![pvlib-python](docs/sphinx/source/_images/pvlib_logo_horiz.png)
 ============
 

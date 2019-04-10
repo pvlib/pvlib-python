@@ -1,4 +1,4 @@
-[pvlib-python](docs/sphinx/source/_images/pvlib_logo_horiz.png)
+![pvlib-python](docs/sphinx/source/_images/pvlib_logo_horiz.png)
 ============
 
 [![TravisCI](https://travis-ci.org/pvlib/pvlib-python.svg?branch=master)](https://travis-ci.org/pvlib/pvlib-python)

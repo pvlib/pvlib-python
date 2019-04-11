@@ -1,5 +1,4 @@
-pvlib-python
-============
+<img src="docs/sphinx/source/_images/pvlib_logo_horiz.png" width="600" height="260">
 
 [![TravisCI](https://travis-ci.org/pvlib/pvlib-python.svg?branch=master)](https://travis-ci.org/pvlib/pvlib-python)
 [![Build status](https://ci.appveyor.com/api/projects/status/gr2eyhc84tvtkopk?svg=true)](https://ci.appveyor.com/project/wholmgren/pvlib-python-fv2to)
@@ -13,9 +12,9 @@ pvlib-python
 [![Total Alerts](https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/alerts)
 
 
-PVLIB Python is a community supported tool that provides a set of
+pvlib python is a community supported tool that provides a set of
 functions and classes for simulating the performance of photovoltaic
-energy systems. PVLIB Python was originally ported from the PVLIB MATLAB
+energy systems. pvlib python was originally ported from the PVLIB MATLAB
 toolbox developed at Sandia National Laboratories and it implements many
 of the models and methods developed at the Labs. More information on
 Sandia Labs PV performance modeling programs can be found at

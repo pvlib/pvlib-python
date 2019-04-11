@@ -11,7 +11,7 @@ from pvlib import irradiance, atmosphere
 
 class SingleAxisTracker(PVSystem):
     """
-    Inherits the PV modeling methods from :ref:PVSystem:.
+    Inherits the PV modeling methods from :py:class:`~pvlib.pvsystem.PVSystem`.
 
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by

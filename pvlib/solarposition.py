@@ -1299,7 +1299,9 @@ def solar_zenith_analytical(latitude, hourangle, declination):
 
     See Also
     --------
-    declination_spencer71 declination_cooper69 hour_angle
+    declination_spencer71
+    declination_cooper69
+    hour_angle
     """
     return np.arccos(
         np.cos(declination) * np.cos(latitude) * np.cos(hourangle) +

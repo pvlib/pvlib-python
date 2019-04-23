@@ -798,21 +798,19 @@ class ModelChain(object):
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
         weather : None or DataFrame, default None
-            If None, the weather attribute is used. If the weather
-            attribute is also None assumes air temperature is 20 C, wind
+            If ``None``, the weather attribute is used. If the weather
+            attribute is also ``None`` assumes air temperature is 20 C, wind
             speed is 0 m/s and irradiation calculated from clear sky
-            data. Column names must be 'wind_speed', 'temp_air', 'dni',
-            'ghi', 'dhi'. Do not pass incomplete irradiation data. Use
+            data. Column names must be `'wind_speed'`, `'temp_air'`, `'dni'`,
+            `'ghi'`, `'dhi'`. Do not pass incomplete irradiation data. Use
             method
             :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
             instead.
 
-        Returns
-        -------
-        self
-
-        Assigns attributes: times, solar_position, airmass, total_irrad,
-        aoi
+        Notes
+        -----
+        Assigns attributes: `times`, `solar_position`, `airmass`, `total_irrad`,
+        `aoi`
         """
         if weather is not None:
             self.weather = weather

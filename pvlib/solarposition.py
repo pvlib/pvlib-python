@@ -1278,7 +1278,8 @@ def solar_zenith_analytical(latitude, hourangle, declination):
 
     Returns
     -------
-    zenith : numeric Solar zenith angle in radians.
+    zenith : numeric
+        Solar zenith angle in radians.
 
     References
     ----------

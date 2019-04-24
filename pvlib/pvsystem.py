@@ -247,8 +247,8 @@ class PVSystem(object):
         model : String, default 'haydavies'
             Irradiance model.
 
-        **kwargs
-            Passed to :func:`irradiance.total_irrad`.
+        kwargs
+            Extra parameters passed to :func:`irradiance.total_irrad`.
 
         Returns
         -------
@@ -429,7 +429,7 @@ class PVSystem(object):
         aoi : Series
             Angle of incidence (degrees).
 
-        **kwargs
+        kwargs
             See pvsystem.sapm for details
 
         Returns

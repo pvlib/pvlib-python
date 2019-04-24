@@ -13,6 +13,9 @@ class SingleAxisTracker(PVSystem):
     """
     Inherits the PV modeling methods from :py:class:`~pvlib.pvsystem.PVSystem`.
 
+
+    Parameters
+    ----------
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
         axis_azimuth) with respect to horizontal, in decimal degrees.
@@ -40,6 +43,7 @@ class SingleAxisTracker(PVSystem):
         2 meters wide, centered on the tracking axis, with 6 meters
         between the tracking axes has a gcr of 2/6=0.333. If gcr is not
         provided, a gcr of 2/7 is default. gcr must be <=1.
+
     """
 
     def __init__(self, axis_tilt=0, axis_azimuth=0,
@@ -67,6 +71,22 @@ class SingleAxisTracker(PVSystem):
         return sat_repr + '\n' + pvsystem_repr
 
     def singleaxis(self, apparent_zenith, apparent_azimuth):
+        """
+        Get tracking data. See :py:func:`pvlib.tracking.singleaxis` more
+        detail.
+
+        Parameters
+        ----------
+        apparent_zenith : float, 1d array, or Series
+            Solar apparent zenith angles in decimal degrees.
+
+        apparent_azimuth : float, 1d array, or Series
+            Solar apparent azimuth angles in decimal degrees.
+
+        Returns
+        -------
+        tracking data
+        """
         tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
                                    self.axis_tilt, self.axis_azimuth,
                                    self.max_angle,

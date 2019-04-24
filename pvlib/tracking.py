@@ -72,7 +72,8 @@ class SingleAxisTracker(PVSystem):
 
     def singleaxis(self, apparent_zenith, apparent_azimuth):
         """
-        Get tracking data. See :py:func:`pvlib.tracking.singleaxis` more detail.
+        Get tracking data. See :py:func:`pvlib.tracking.singleaxis` more
+        detail.
 
         Parameters
         ----------
@@ -84,7 +85,7 @@ class SingleAxisTracker(PVSystem):
 
         Returns
         -------
-        traciking data
+        tracking data
         """
         tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
                                    self.axis_tilt, self.axis_azimuth,

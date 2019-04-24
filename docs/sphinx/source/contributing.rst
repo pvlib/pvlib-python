@@ -229,7 +229,9 @@ Documentation
 ~~~~~~~~~~~~~
 
 Documentation must be written in
-`numpydoc format <https://numpydoc.readthedocs.io/>`_.
+`numpydoc format <https://numpydoc.readthedocs.io/>`_ format which is rendered
+using the `Sphinx Napoleon extension
+<https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html>`_.
 
 The numpydoc format includes a specification for the allowable input
 types. Python's `duck typing <https://en.wikipedia.org/wiki/Duck_typing>`_

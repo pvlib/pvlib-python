@@ -40,8 +40,7 @@ sys.path.insert(0, os.path.abspath('../../../'))
 
 # -- General configuration ------------------------------------------------
 
-# turns off numpydoc autosummary warnings
-numpydoc_show_class_members = False
+# use napoleon in lieu of numpydoc 2019-04-23
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
@@ -57,12 +56,11 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
-    'numpydoc',
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting'
 ]
 
-napoleon_use_rtype = False
+napoleon_use_rtype = False  # group rtype on same line together with return
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

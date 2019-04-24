@@ -801,16 +801,16 @@ class ModelChain(object):
             If ``None``, the weather attribute is used. If the weather
             attribute is also ``None`` assumes air temperature is 20 C, wind
             speed is 0 m/s and irradiation calculated from clear sky
-            data. Column names must be `'wind_speed'`, `'temp_air'`, `'dni'`,
-            `'ghi'`, `'dhi'`. Do not pass incomplete irradiation data. Use
-            method
+            data. Column names must be ``'wind_speed'``, ``'temp_air'``,
+            ``'dni'``, ``'ghi'``, ``'dhi'``. Do not pass incomplete irradiation
+            data. Use method
             :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
             instead.
 
         Notes
         -----
-        Assigns attributes: `times`, `solar_position`, `airmass`, `total_irrad`,
-        `aoi`
+        Assigns attributes: ``times``, ``solar_position``, ``airmass``,
+        ``total_irrad``, `aoi`
         """
         if weather is not None:
             self.weather = weather

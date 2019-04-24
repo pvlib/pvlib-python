@@ -39,6 +39,8 @@ Bug fixes
   0s of the appropriate type. (:issue:`675`)
 * Fixed :py:func:`~pvlib.irradiance.erbs` behavior when zenith is
   near 90 degrees. (:issue:`681`)
+* :py:func:`~pvlib.irradiance.dni` now referenced in API under
+  Decomposing and Combining irradiance header. (:issue:`686`)  
 
 
 Testing
@@ -50,3 +52,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Roel Loonen (:ghuser:`roelloonen`)
+* Todd Hendricks (:ghuser:`tahentx`)
+

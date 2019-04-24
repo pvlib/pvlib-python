@@ -153,6 +153,7 @@ Decomposing and combining irradiance
    irradiance.beam_component
    irradiance.poa_components
    irradiance.get_ground_diffuse
+   irradiance.dni
 
 Transposition models
 --------------------

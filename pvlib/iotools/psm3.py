@@ -29,9 +29,9 @@ def get_psm3(latitude, longitude, tmy='tmy', interval=60):
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive
     tmy : str
-        PSM3 parameter "name", see notes below for options, default is ``'tmy'``
+        PSM3 parameter "name", see notes below for options, default ``'tmy'``
     interval : integer
-        interval size in minutes, can be only either 30 or 60 minutes
+        interval size in minutes, can be only either 30 or 60, default 60
 
     Returns
     -------

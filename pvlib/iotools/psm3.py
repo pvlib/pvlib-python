@@ -14,9 +14,8 @@ URL = "http://developer.nrel.gov/api/solar/nsrdb_psm3_download.csv"
 
 # 'relative_humidity', 'total_precipitable_water' are note available
 ATTRIBUTES = [
-    'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi',
-    'surface_albedo', 'surface_pressure', 'wind_direction', 'wind_speed'
-]
+    'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
+    'surface_pressure', 'wind_direction', 'wind_speed']
 
 
 def get_psm3(latitude, longitude, tmy='tmy', interval=60):

@@ -22,7 +22,7 @@ HEADER_FIELDS = [
     'Wind Speed', 'Surface Albedo Units', 'Version']
 
 
-def test_psm3():
+def test_get_psm3():
     """test get_psm3"""
     header, data = psm3.get_psm3(LATITUDE, LONGITUDE)
     expected = pd.read_csv(TEST_DATA)
@@ -45,6 +45,8 @@ def test_psm3():
     # check header
     for hf in HEADER_FIELDS:
         assert hf in header
+    # check timezone
+    assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
     # check error
     with pytest.raises(HTTPError):
         psm3.get_psm3(LATITUDE, LONGITUDE, 'bad')

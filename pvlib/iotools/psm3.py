@@ -4,11 +4,8 @@ see https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/
 """
 
 import io
-import csv
-import datetime
 import requests
 import pandas as pd
-import pytz
 
 URL = "http://developer.nrel.gov/api/solar/nsrdb_psm3_download.csv"
 
@@ -111,29 +108,37 @@ def get_psm3(latitude, longitude, names='tmy', interval=60):
         'utc': 'false',
         'interval': interval
     }
-
-    s = requests.get(URL, params=params)
-    if s.ok:
-        f = io.StringIO(s.content.decode('utf-8'))
-        x = csv.reader(f, delimiter=',', lineterminator='\n')
-        y = list(x)
-        z = dict(zip(y[0], y[1]))
-        # in USA all timezones are integers
-        z['Local Time Zone'] = int(z['Local Time Zone'])
-        z['Time Zone'] = int(z['Time Zone'])
-        z['Latitude'] = float(z['Latitude'])
-        z['Longitude'] = float(z['Longitude'])
-        z['Elevation'] = int(z['Elevation'])
-        tz = pytz.timezone('Etc/GMT%+d' % -z['Time Zone'])
-        w = pd.DataFrame(y[3:], columns=y[2], dtype=float)
-        w.Year = w.Year.astype(int)
-        w.Month = w.Month.astype(int)
-        w.Day = w.Day.astype(int)
-        w.Hour = w.Hour.astype(int)
-        w.Minute = w.Minute.astype(int)
-        w.index = w.apply(
-            lambda dt: tz.localize(datetime.datetime(
-                int(dt.Year), int(dt.Month), int(dt.Day),
-                int(dt.Hour), int(dt.Minute))), axis=1)
-        return z, w
-    raise requests.HTTPError(s.json()['errors'])
+    # request CSV download from NREL PSM3
+    response = requests.get(URL, params=params)
+    if not response.ok:
+        raise requests.HTTPError(response.json()['errors'])
+    # the CSV is in the response content as a UTF-8 bytestring
+    # to use pandas we need to create a file buffer from the response
+    fbuf = io.StringIO(response.content.decode('utf-8'))
+    # The first 2 lines of the response are headers with metadat
+    header_fields = fbuf.readline().split(',')
+    header_fields[-1] = header_fields[-1].strip()  # strip trailing newline
+    header_values = fbuf.readline().split(',')
+    header_values[-1] = header_values[-1].strip()  # strip trailing newline
+    header = dict(zip(header_fields, header_values))
+    # the response is all strings, so set some header types to numbers
+    header['Local Time Zone'] = int(header['Local Time Zone'])
+    header['Time Zone'] = int(header['Time Zone'])
+    header['Latitude'] = float(header['Latitude'])
+    header['Longitude'] = float(header['Longitude'])
+    header['Elevation'] = int(header['Elevation'])
+    # get the column names so we can set the dtypes
+    columns = fbuf.readline().split(',')
+    columns[-1] = columns[-1].strip()  # strip trailing newline
+    dtypes = dict.fromkeys(columns, float)  # all floats except datevec
+    dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
+    data = pd.read_csv(
+        fbuf, header=None, names=columns, dtype=dtypes,
+        delimiter=',', lineterminator='\n')  # skip carriage returns \r
+    # the response 1st 5 columns are a date vector, convert to datetime
+    dtidx = pd.to_datetime(
+        data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
+    # # in USA all timezones are intergers
+    tz = 'Etc/GMT%+d' % -header['Time Zone']
+    data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
+    return header, data

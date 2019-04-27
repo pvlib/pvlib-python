@@ -15,7 +15,8 @@ ATTRIBUTES = [
     'surface_pressure', 'wind_direction', 'wind_speed']
 
 
-def get_psm3(latitude, longitude, names='tmy', interval=60):
+def get_psm3(latitude, longitude, names='tmy', interval=60,
+             api_key='DEMO_KEY'):
     """
     Get PSM3 data
 
@@ -30,6 +31,8 @@ def get_psm3(latitude, longitude, names='tmy', interval=60):
         below for options, default: ``'tmy'``
     interval : int
         interval size in minutes, can be only either 30 or 60, default: 60
+    api_key : str
+        optional, supply your NREL Developer Network API key
 
     Returns
     -------
@@ -96,7 +99,7 @@ def get_psm3(latitude, longitude, names='tmy', interval=60):
     longitude = ('%9.4f' % longitude).strip()
     latitude = ('%8.4f' % latitude).strip()
     params = {
-        'api_key': 'DEMO_KEY',
+        'api_key': api_key,
         'full_name': 'Sample User',
         'email': 'sample@email.com',
         'affiliation': 'Test Organization',
@@ -139,7 +142,7 @@ def get_psm3(latitude, longitude, names='tmy', interval=60):
     # the response 1st 5 columns are a date vector, convert to datetime
     dtidx = pd.to_datetime(
         data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
-    # # in USA all timezones are intergers
+    # in USA all timezones are intergers
     tz = 'Etc/GMT%+d' % -header['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
     return header, data

@@ -78,8 +78,7 @@ def get_psm3(latitude, longitude, names='tmy', interval=60):
     * Surface Albedo Units
     * Version
 
-    The second item is dataframe with the timeseries data downloaded. The index
-    is a :py:class:`pandas.DatetimeIndex` of the 
+    The second item is a dataframe with the timeseries data downloaded.
 
     See Also
     --------
@@ -88,8 +87,10 @@ def get_psm3(latitude, longitude, names='tmy', interval=60):
     References
     ----------
 
-    * `NREL Developer Network - Physical Solar Model (PSM) v3 <https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/>`_
-    * `NREL National Solar Radiation Database (NSRDB) <https://nsrdb.nrel.gov/>`_
+    * `NREL Developer Network - Physical Solar Model (PSM) v3
+      <https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/>`_
+    * `NREL National Solar Radiation Database (NSRDB)
+      <https://nsrdb.nrel.gov/>`_
 
     """
     longitude = ('%9.4f' % longitude).strip()

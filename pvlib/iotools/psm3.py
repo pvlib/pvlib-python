@@ -1,3 +1,4 @@
+
 """
 Get PSM3 TMY
 see https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/
@@ -65,8 +66,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     The required NREL developer key, `api_key`, is available for free by
     registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
 
-    .. warning:: The “DEMO_KEY” api key is severely rate limited and may result
-        in rejected requests.
+    .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
+        result in rejected requests.
 
     The PSM3 API `names` parameter must be a single value from the following
     list::

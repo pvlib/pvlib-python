@@ -4,7 +4,6 @@ see https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/
 """
 
 import io
-import json
 import requests
 import pandas as pd
 # Python-2 compatible JSONDecodeError

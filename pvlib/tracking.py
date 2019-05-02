@@ -441,19 +441,20 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # angle convention being used here.
     if backtrack:
         axes_distance = 1/gcr
-        temp = np.minimum(axes_distance*cosd(wid), 1)
+        temp = np.clip(axes_distance*cosd(wid), -1, 1)
 
         # backtrack angle
         # (always positive b/c acosd returns values between 0 and 180)
         wc = np.degrees(np.arccos(temp))
 
         # Eq 4 applied when wid in QIV (wid < 0 evalulates True), QI
-        tracker_theta = np.where(wid < 0, wid + wc, wid - wc)
+        with np.errstate(invalid='ignore'):
+            tracker_theta = np.where(wid < 0, wid + wc, wid - wc)
     else:
         tracker_theta = wid
 
-    tracker_theta[tracker_theta > max_angle] = max_angle
-    tracker_theta[tracker_theta < -max_angle] = -max_angle
+    tracker_theta = np.minimum(tracker_theta, max_angle)
+    tracker_theta = np.maximum(tracker_theta, -max_angle)
 
     # calculate panel normal vector in panel-oriented x, y, z coordinates.
     # y-axis is axis of tracker rotation.  tracker_theta is a compass angle
@@ -560,8 +561,9 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     surface_azimuth = 90 - surface_azimuth + axis_azimuth
 
     # 5. Map azimuth into [0,360) domain.
-    surface_azimuth[surface_azimuth < 0] += 360
-    surface_azimuth[surface_azimuth >= 360] -= 360
+    # surface_azimuth[surface_azimuth < 0] += 360
+    # surface_azimuth[surface_azimuth >= 360] -= 360
+    surface_azimuth = surface_azimuth % 360
 
     # Calculate surface_tilt
     dotproduct = (panel_norm_earth * projected_normal).sum(axis=1)

@@ -58,8 +58,10 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     Raises
     ------
     requests.HTTPError
-        if the request return status is not ok then the ``'errors'`` from the
-        JSON response will be returned as an exception
+        if the request response status is not ok, then the ``'errors'`` field
+        from the JSON response or any error message in the content will be
+        raised as an exception, for example if the `api_key` was rejected or if
+        the coordinates were not found in the NSRDB
 
     Notes
     -----
@@ -103,6 +105,9 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     The second item is a dataframe with the timeseries data downloaded.
 
+    .. warning:: PSM3 is limited to data found in the NSRDB, please consult the
+        references below for locations with available data
+
     See Also
     --------
     pvlib.iotools.read_tmy2, pvlib.iotools.read_tmy3
@@ -116,8 +121,14 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
       <https://nsrdb.nrel.gov/>`_
 
     """
+    # The well know text (WKT) representation of geometry notation is strict.
+    # A POINT object is a string with longitude first, then the latitude, with
+    # four decimals each, and exactly one space between them.
     longitude = ('%9.4f' % longitude).strip()
     latitude = ('%8.4f' % latitude).strip()
+    # TODO: make format_WKT(object_type, *args) in tools.py
+
+    # required query-string parameters for request to PSM3 API
     params = {
         'api_key': api_key,
         'full_name': full_name,
@@ -141,7 +152,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
             errors = response.json()['errors']
         except JSONDecodeError:
             errors = response.content.decode('utf-8')
-        raise requests.HTTPError(errors)
+        raise requests.HTTPError(errors, response=response)
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))

@@ -22,12 +22,13 @@ HEADER_FIELDS = [
     'Temperature Units', 'Pressure Units', 'Wind Direction Units',
     'Wind Speed', 'Surface Albedo Units', 'Version']
 PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
+DEMO_KEY = 'DEMO_KEY'
 
 
 @needs_pandas_0_22
 def test_get_psm3():
     """test get_psm3"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, 'DEMO_KEY', PVLIB_EMAIL)
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL)
     expected = pd.read_csv(TEST_DATA)
     # check datevec columns
     assert np.allclose(data.Year, expected.Year)
@@ -52,6 +53,14 @@ def test_get_psm3():
     assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
     # check errors
     with pytest.raises(HTTPError):
+        # HTTP 403 forbidden because api_key is rejected
         psm3.get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
     with pytest.raises(HTTPError):
-        psm3.get_psm3(51, -5, 'DEMO_KEY', PVLIB_EMAIL)
+        # coordinates were not found in the NSRDB
+        psm3.get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL)
+    with pytest.raises(HTTPError):
+        # names is not one of the available options
+        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
+    with pytest.raises(HTTPError):
+        # intervals can only be 30 or 60 minutes
+        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, interval=15)

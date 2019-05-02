@@ -20,11 +20,12 @@ HEADER_FIELDS = [
     'Dew Point Units', 'DHI Units', 'DNI Units', 'GHI Units',
     'Temperature Units', 'Pressure Units', 'Wind Direction Units',
     'Wind Speed', 'Surface Albedo Units', 'Version']
+PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 
 
 def test_get_psm3():
     """test get_psm3"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE)
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, 'DEMO_KEY', PVLIB_EMAIL)
     expected = pd.read_csv(TEST_DATA)
     # check datevec columns
     assert np.allclose(data.Year, expected.Year)
@@ -47,6 +48,8 @@ def test_get_psm3():
         assert hf in header
     # check timezone
     assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
-    # check error
+    # check errors
     with pytest.raises(HTTPError):
-        psm3.get_psm3(LATITUDE, LONGITUDE, 'bad')
+        psm3.get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
+    with pytest.raises(HTTPError):
+        psm3.get_psm3(51, -5, 'DEMO_KEY', PVLIB_EMAIL)

@@ -4,8 +4,14 @@ see https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/
 """
 
 import io
+import json
 import requests
 import pandas as pd
+# Python-2 compatible JSONDecodeError
+try:
+    from json import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
 
 URL = "http://developer.nrel.gov/api/solar/nsrdb_psm3_download.csv"
 
@@ -13,10 +19,11 @@ URL = "http://developer.nrel.gov/api/solar/nsrdb_psm3_download.csv"
 ATTRIBUTES = [
     'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
     'surface_pressure', 'wind_direction', 'wind_speed']
+PVLIB_PYTHON = 'pvlib python'
 
 
-def get_psm3(latitude, longitude, names='tmy', interval=60,
-             api_key='DEMO_KEY'):
+def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
+             full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON):
     """
     Get PSM3 data
 
@@ -26,13 +33,20 @@ def get_psm3(latitude, longitude, names='tmy', interval=60,
         in decimal degrees, between -90 and 90, north is positive
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive
+    api_key : str
+        required NREL Developer Network API key
+    email : str
+        required, system uses this to automatically communicate messages back
+        to the user only if necessary
     names : str
         PSM3 API parameter specifing year or TMY variant to download, see notes
-        below for options, default: ``'tmy'``
+        below for options, default is ``'tmy'``
     interval : int
-        interval size in minutes, can be only either 30 or 60, default: 60
-    api_key : str
-        optional, supply your NREL Developer Network API key
+        interval size in minutes, can only be either 30 or 60, default is 60
+    full_name : str
+        optional, default is "pvlib python"
+    affiliation : str
+        optional, default is "pvlib python"
 
     Returns
     -------
@@ -49,6 +63,12 @@ def get_psm3(latitude, longitude, names='tmy', interval=60,
 
     Notes
     -----
+    The required NREL developer key, `api_key`, is available for free by
+    registering at the `NREL Developer Network <https://developer.nrel.gov/>`_.
+
+    .. warning:: The “DEMO_KEY” api key is severely rate limited and may result
+        in rejected requests.
+
     The PSM3 API `names` parameter must be a single value from the following
     list::
 
@@ -100,11 +120,11 @@ def get_psm3(latitude, longitude, names='tmy', interval=60,
     latitude = ('%8.4f' % latitude).strip()
     params = {
         'api_key': api_key,
-        'full_name': 'Sample User',
-        'email': 'sample@email.com',
-        'affiliation': 'Test Organization',
-        'reason': 'Example',
-        'mailing_list': 'true',
+        'full_name': full_name,
+        'email': email,
+        'affiliation': affiliation,
+        'reason': PVLIB_PYTHON,
+        'mailing_list': 'false',
         'wkt': 'POINT(%s %s)' % (longitude, latitude),
         'names': names,
         'attributes':  ','.join(ATTRIBUTES),
@@ -115,7 +135,13 @@ def get_psm3(latitude, longitude, names='tmy', interval=60,
     # request CSV download from NREL PSM3
     response = requests.get(URL, params=params)
     if not response.ok:
-        raise requests.HTTPError(response.json()['errors'])
+        # if the API key is rejected, then the response status will be 403
+        # Forbidden, and then the error is in the content and there is no JSON
+        try:
+            errors = response.json()['errors']
+        except JSONDecodeError:
+            errors = response.content.decode('utf-8')
+        raise requests.HTTPError(errors)
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))

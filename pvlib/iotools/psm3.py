@@ -34,9 +34,9 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     longitude : float or int
         in decimal degrees, between -180 and 180, east is positive
     api_key : str
-        required NREL Developer Network API key
+        NREL Developer Network API key
     email : str
-        required, system uses this to automatically communicate messages back
+        NREL API uses this to automatically communicate messages back
         to the user only if necessary
     names : str
         PSM3 API parameter specifing year or TMY variant to download, see notes

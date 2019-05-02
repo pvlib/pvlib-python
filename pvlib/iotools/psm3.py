@@ -38,15 +38,15 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     email : str
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
-    names : str
+    names : str, default 'tmy'
         PSM3 API parameter specifing year or TMY variant to download, see notes
-        below for options, default is ``'tmy'``
-    interval : int
-        interval size in minutes, can only be either 30 or 60, default is 60
-    full_name : str
-        optional, default is "pvlib python"
-    affiliation : str
-        optional, default is "pvlib python"
+        below for options
+    interval : int, default 60
+        interval size in minutes, can only be either 30 or 60
+    full_name : str, default 'pvlib python'
+        optional
+    affiliation : str, default 'pvlib python'
+        optional
 
     Returns
     -------

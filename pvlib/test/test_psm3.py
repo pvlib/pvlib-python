@@ -4,6 +4,7 @@ test iotools for PSM3
 
 import os
 from pvlib.iotools import psm3
+from conftest import needs_pandas_0_22
 import numpy as np
 import pandas as pd
 import pytest
@@ -23,6 +24,7 @@ HEADER_FIELDS = [
 PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 
 
+@needs_pandas_0_22
 def test_get_psm3():
     """test get_psm3"""
     header, data = psm3.get_psm3(LATITUDE, LONGITUDE, 'DEMO_KEY', PVLIB_EMAIL)

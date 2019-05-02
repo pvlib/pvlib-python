@@ -441,6 +441,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # angle convention being used here.
     if backtrack:
         axes_distance = 1/gcr
+        # clip needed for low angles. GH 656
         temp = np.clip(axes_distance*cosd(wid), -1, 1)
 
         # backtrack angle
@@ -449,6 +450,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
         # Eq 4 applied when wid in QIV (wid < 0 evalulates True), QI
         with np.errstate(invalid='ignore'):
+            # errstate for GH 622
             tracker_theta = np.where(wid < 0, wid + wc, wid - wc)
     else:
         tracker_theta = wid

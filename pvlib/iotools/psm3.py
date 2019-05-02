@@ -36,7 +36,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     api_key : str
         NREL Developer Network API key
     email : str
-        required, system uses this to automatically communicate messages back
+        NREL API uses this to automatically communicate messages back
         to the user only if necessary
     names : str
         PSM3 API parameter specifing year or TMY variant to download, see notes

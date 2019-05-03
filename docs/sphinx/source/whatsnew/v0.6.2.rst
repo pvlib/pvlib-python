@@ -49,6 +49,7 @@ Bug fixes
 * Silenced divide by 0 irradiance warnings in
   :py:func:`~pvlib.irradiance.klucher` and
   :py:func:`~pvlib.pvsystem.calcparams_desoto`. (:issue:`698`)
+* Fix :py:class:`~pvlib.forecast.NDFD` model by updating variables.
 
 
 Testing

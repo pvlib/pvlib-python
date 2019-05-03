@@ -414,8 +414,9 @@ class ModelChain(object):
             return self.pvwatts_dc, 'pvwatts'
         else:
             raise ValueError('could not infer DC model from '
-                             'system.module_parameters. Check parameters or '
-                             'explicity set model with dc_model kwarg.')
+                             'system.module_parameters. Check '
+                             'system.module_parameters or explicitly '
+                             'set the model with the dc_model kwarg.')
 
     def sapm(self):
         self.dc = self.system.sapm(self.effective_irradiance/1000.,
@@ -534,8 +535,9 @@ class ModelChain(object):
             return self.pvwatts_inverter
         else:
             raise ValueError('could not infer AC model from '
-                             'system.inverter_parameters. Check parameters or '
-                             'explicity set model with ac_model kwarg.')
+                             'system.inverter_parameters. Check '
+                             'system.inverter_parameters or explicitly '
+                             'set the model with the ac_model kwarg.')
 
     def snlinverter(self):
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
@@ -583,9 +585,10 @@ class ModelChain(object):
         else:
             raise ValueError('could not infer AOI model from '
                              'system.module_parameters. Check that the '
-                             'parameters contain physical, aoi, or ashrae '
-                             'coefficients, explicity set model with '
-                             'aoi_model kwarg, or set aoi_model="no_loss".')
+                             'system.module_parameters contain parameters for '
+                             'the physical, aoi, or ashrae model; explicitly '
+                             'set model with aoi_model kwarg; or set '
+                             'aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
         self.aoi_modifier = self.system.ashraeiam(self.aoi)
@@ -636,7 +639,7 @@ class ModelChain(object):
         else:
             raise ValueError('could not infer spectral model from '
                              'system.module_parameters. Check that the '
-                             'parameters contain valid '
+                             'system.module_parameters contain valid '
                              'first_solar_spectral_coefficients, a valid '
                              'Material or Technology value, or set '
                              'spectral_model="no_loss".')

@@ -17,8 +17,8 @@ from siphon.ncss import NCSS
 import warnings
 
 warnings.warn(
-    'The forecast module algorithms and features are highly experimental. ' +
-    'The API may change, the functionality may be consolidated into an io ' +
+    'The forecast module algorithms and features are highly experimental. '
+    'The API may change, the functionality may be consolidated into an io '
     'module, or the module may be separated into its own package.')
 
 
@@ -97,7 +97,7 @@ class ForecastModel(object):
     """
 
     access_url_key = 'NetcdfSubset'
-    catalog_url = 'http://thredds.ucar.edu/thredds/catalog.xml'
+    catalog_url = 'https://thredds.ucar.edu/thredds/catalog.xml'
     base_tds_url = catalog_url.split('/thredds/')[0]
     data_format = 'netcdf'
 
@@ -787,8 +787,9 @@ class HRRR_ESRL(ForecastModel):                                 # noqa: N801
         model = 'GSD HRRR CONUS 3km surface'
 
         self.variables = {
-            'temp_air': 'Temperature_surface',
-            'wind_speed_gust': 'Wind_speed_gust_surface',
+            'temp_air': 'Temperature_height_above_ground',
+            'wind_speed_u': 'u-component_of_wind_height_above_ground',
+            'wind_speed_v': 'v-component_of_wind_height_above_ground',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere',
             'low_clouds': 'Low_cloud_cover_UnknownLevelType-214',
             'mid_clouds': 'Medium_cloud_cover_UnknownLevelType-224',
@@ -829,7 +830,7 @@ class HRRR_ESRL(ForecastModel):                                 # noqa: N801
 
         data = super(HRRR_ESRL, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
-        data['wind_speed'] = self.gust_to_speed(data)
+        data['wind_speed'] = self.uv_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
         return data[self.output_variables]
@@ -1036,9 +1037,8 @@ class NDFD(ForecastModel):
         model_type = 'Forecast Products and Analyses'
         model = 'National Weather Service CONUS Forecast Grids (CONDUIT)'
         self.variables = {
-            'temp_air': 'Temperature_surface',
-            'wind_speed': 'Wind_speed_surface',
-            'wind_speed_gust': 'Wind_speed_gust_surface',
+            'temp_air': 'Temperature_height_above_ground',
+            'wind_speed': 'Wind_speed_height_above_ground',
             'total_clouds': 'Total_cloud_cover_surface', }
         self.output_variables = [
             'temp_air',

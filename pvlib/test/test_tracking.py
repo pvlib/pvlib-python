@@ -387,8 +387,15 @@ def test_get_irradiance():
                                         backtrack=True)
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
-    location = Location(latitude=32, longitude=-111)
-    solar_position = location.get_solarposition(times)
+    # latitude=32, longitude=-111
+    solar_position = pd.DataFrame(np.array(
+        [[55.36421554,  55.38851771,  34.63578446,  34.61148229,
+          172.32003763,  -3.44516534],
+         [96.50000401,  96.50000401,  -6.50000401,  -6.50000401,
+          246.91581654,  -3.56292888]]),
+        columns=['apparent_zenith', 'zenith', 'apparent_elevation',
+                 'elevation', 'azimuth', 'equation_of_time'],
+        index=times)
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
                           index=times)
     solar_zenith = solar_position['apparent_zenith']

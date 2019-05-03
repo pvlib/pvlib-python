@@ -1,5 +1,6 @@
 import datetime
 from collections import OrderedDict
+import warnings
 
 import numpy as np
 from numpy import array, nan
@@ -107,16 +108,21 @@ def test_get_extra_radiation(input, expected, method):
     assert_allclose(out, expected, atol=1)
 
 
-@requires_numba
-def test_get_extra_radiation_nrel_numba(times):
-    result = irradiance.get_extra_radiation(times, method='nrel', how='numba',
-                                            numthreads=8)
-    assert_allclose(result, [1322.332316, 1322.296282, 1322.261205, 1322.227091])
-
-
 def test_get_extra_radiation_epoch_year():
     out = irradiance.get_extra_radiation(doy, method='nrel', epoch_year=2012)
     assert_allclose(out, 1382.4926804890767, atol=0.1)
+
+
+@requires_numba
+def test_get_extra_radiation_nrel_numba(times):
+    with warnings.catch_warnings():
+        # don't warn on method reload or num threads
+        warnings.simplefilter("ignore")
+        result = irradiance.get_extra_radiation(times, method='nrel',
+                                                how='numba',
+                                                numthreads=4)
+    assert_allclose(result,
+                    [1322.332316, 1322.296282, 1322.261205, 1322.227091])
 
 
 def test_get_extra_radiation_invalid():
@@ -135,13 +141,15 @@ def test_grounddiffuse_simple_series(irrad_data):
 
 
 def test_grounddiffuse_albedo_0(irrad_data):
-    ground_irrad = irradiance.get_ground_diffuse(40, irrad_data['ghi'], albedo=0)
+    ground_irrad = irradiance.get_ground_diffuse(
+        40, irrad_data['ghi'], albedo=0)
     assert 0 == ground_irrad.all()
 
 
 def test_grounddiffuse_albedo_invalid_surface(irrad_data):
     with pytest.raises(KeyError):
-        irradiance.get_ground_diffuse(40, irrad_data['ghi'], surface_type='invalid')
+        irradiance.get_ground_diffuse(
+            40, irrad_data['ghi'], surface_type='invalid')
 
 
 def test_grounddiffuse_albedo_surface(irrad_data):
@@ -193,26 +201,24 @@ def test_klucher_series(irrad_data, ephem_data):
 
 
 def test_haydavies(irrad_data, ephem_data, dni_et):
-    result = irradiance.haydavies(40, 180, irrad_data['dhi'], irrad_data['dni'],
-                         dni_et,
-                         ephem_data['apparent_zenith'],
-                         ephem_data['azimuth'])
+    result = irradiance.haydavies(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'])
     # values from matlab 1.4 code
     assert_allclose(result, [0, 27.1775, 102.9949, 33.1909], atol=1e-4)
 
 
 def test_reindl(irrad_data, ephem_data, dni_et):
-    result = irradiance.reindl(40, 180, irrad_data['dhi'], irrad_data['dni'],
-                      irrad_data['ghi'], dni_et,
-                      ephem_data['apparent_zenith'],
-                      ephem_data['azimuth'])
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
+        dni_et, ephem_data['apparent_zenith'], ephem_data['azimuth'])
     # values from matlab 1.4 code
     assert_allclose(result, [np.nan, 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
 def test_king(irrad_data, ephem_data):
     result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
-                    ephem_data['apparent_zenith'])
+                             ephem_data['apparent_zenith'])
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
@@ -220,8 +226,8 @@ def test_perez(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez(40, 180, irrad_data['dhi'], dni,
-                     dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['azimuth'], relative_airmass)
+                           dni_et, ephem_data['apparent_zenith'],
+                           ephem_data['azimuth'], relative_airmass)
     expected = pd.Series(np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877]),
         index=irrad_data.index)
@@ -260,8 +266,9 @@ def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez(40, 180, irrad_data['dhi'].values, dni.values,
-                     dni_et, ephem_data['apparent_zenith'].values,
-                     ephem_data['azimuth'].values, relative_airmass.values)
+                           dni_et, ephem_data['apparent_zenith'].values,
+                           ephem_data['azimuth'].values,
+                           relative_airmass.values)
     expected = np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877])
     assert_allclose(out, expected, atol=1e-2)
@@ -289,8 +296,8 @@ def test_sky_diffuse_zenith_close_to_90(model):
 
 
 def test_liujordan():
-    expected = pd.DataFrame(np.
-        array([[863.859736967, 653.123094076, 220.65905025]]),
+    expected = pd.DataFrame(np.array(
+        [[863.859736967, 653.123094076, 220.65905025]]),
         columns=['ghi', 'dni', 'dhi'],
         index=[0])
     out = irradiance.liujordan(
@@ -484,7 +491,7 @@ def test_dirint_nans():
 
 
 def test_dirint_tdew():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
@@ -495,7 +502,7 @@ def test_dirint_tdew():
 
 
 def test_dirint_no_delta_kt():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
@@ -507,16 +514,16 @@ def test_dirint_no_delta_kt():
 
 def test_dirint_coeffs():
     coeffs = irradiance._get_dirint_coeffs()
-    assert coeffs[0,0,0,0] == 0.385230
-    assert coeffs[0,1,2,1] == 0.229970
-    assert coeffs[3,2,6,3] == 1.032260
+    assert coeffs[0, 0, 0, 0] == 0.385230
+    assert coeffs[0, 1, 2, 1] == 0.229970
+    assert coeffs[3, 2, 6, 3] == 1.032260
 
 
 def test_dirint_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
     # times don't have any physical relevance
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
     solar_zenith = pd.Series([90, 89.99], index=times)
 
@@ -727,7 +734,7 @@ def test_dirindex_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
     # times don't have any physical relevance
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
     ghi_clearsky = pd.Series([0, 1], index=times)
     dni_clearsky = pd.Series([0, 5], index=times)

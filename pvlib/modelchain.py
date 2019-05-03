@@ -216,6 +216,9 @@ class ModelChain(object):
     interface for all of the modeling steps necessary for calculating PV
     power from a time series of weather inputs.
 
+    See https://pvlib-python.readthedocs.io/en/stable/modelchain.html
+    for examples.
+
     Parameters
     ----------
     system : PVSystem

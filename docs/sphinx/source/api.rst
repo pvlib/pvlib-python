@@ -153,6 +153,7 @@ Decomposing and combining irradiance
    irradiance.beam_component
    irradiance.poa_components
    irradiance.get_ground_diffuse
+   irradiance.dni
 
 Transposition models
 --------------------
@@ -330,6 +331,7 @@ relevant to solar energy modeling.
 
    iotools.read_tmy2
    iotools.read_tmy3
+   iotools.read_epw
    iotools.read_srml
    iotools.read_srml_month_from_solardat
    iotools.read_surfrad
@@ -339,6 +341,7 @@ relevant to solar energy modeling.
    iotools.get_ecmwf_macc
    iotools.read_crn
    iotools.read_solrad
+   iotools.get_psm3
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

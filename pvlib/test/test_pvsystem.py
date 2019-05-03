@@ -1366,6 +1366,10 @@ def test_pvwatts_ac_scalars():
     expected = 85.58556604752516
     out = pvsystem.pvwatts_ac(90, 100, 0.95)
     assert_allclose(out, expected)
+    # GH 675
+    expected = 0.
+    out = pvsystem.pvwatts_ac(0., 100)
+    assert_allclose(out, expected)
 
 
 def test_pvwatts_ac_possible_negative():
@@ -1378,9 +1382,10 @@ def test_pvwatts_ac_possible_negative():
 
 @needs_numpy_1_10
 def test_pvwatts_ac_arrays():
-    pdc = np.array([[np.nan], [50], [100]])
+    pdc = np.array([[np.nan], [0], [50], [100]])
     pdc0 = 100
     expected = np.array([[nan],
+                         [0.],
                          [47.60843624],
                          [95.]])
     out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
@@ -1388,9 +1393,9 @@ def test_pvwatts_ac_arrays():
 
 
 def test_pvwatts_ac_series():
-    pdc = pd.Series([np.nan, 50, 100])
+    pdc = pd.Series([np.nan, 0, 50, 100])
     pdc0 = 100
-    expected = pd.Series(np.array([       nan,  47.608436,  95.      ]))
+    expected = pd.Series(np.array([nan, 0., 47.608436, 95.]))
     out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
     assert_series_equal(expected, out)
 

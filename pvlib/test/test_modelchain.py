@@ -389,7 +389,7 @@ def test_spectral_models(system, location, spectral_model):
 
 def constant_losses(mc):
     mc.losses = 0.9
-    mc.ac *= mc.losses
+    mc.dc *= mc.losses
 
 
 def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,

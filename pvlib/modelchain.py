@@ -913,7 +913,7 @@ class ModelChain(object):
         self.effective_irradiance_model()
         self.temp_model()
         self.dc_model()
-        self.ac_model()
         self.losses_model()
+        self.ac_model()
 
         return self

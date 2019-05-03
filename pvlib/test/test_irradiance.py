@@ -121,6 +121,8 @@ def test_get_extra_radiation_nrel_numba(times):
         result = irradiance.get_extra_radiation(times, method='nrel',
                                                 how='numba',
                                                 numthreads=4)
+        # and reset to no-numba state
+        irradiance.get_extra_radiation(times, method='nrel')
     assert_allclose(result,
                     [1322.332316, 1322.296282, 1322.261205, 1322.227091])
 

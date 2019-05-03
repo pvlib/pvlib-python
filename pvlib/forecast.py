@@ -787,9 +787,11 @@ class HRRR_ESRL(ForecastModel):                                 # noqa: N801
         model = 'GSD HRRR CONUS 3km surface'
 
         self.variables = {
-            'temp_air': 'Temperature_height_above_ground',
-            'wind_speed_u': 'u-component_of_wind_height_above_ground',
-            'wind_speed_v': 'v-component_of_wind_height_above_ground',
+            'temp_air': 'Temperature_surface',
+            'wind_speed_gust': 'Wind_speed_gust_surface',
+            # 'temp_air': 'Temperature_height_above_ground',  # GH 702
+            # 'wind_speed_u': 'u-component_of_wind_height_above_ground',
+            # 'wind_speed_v': 'v-component_of_wind_height_above_ground',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere',
             'low_clouds': 'Low_cloud_cover_UnknownLevelType-214',
             'mid_clouds': 'Medium_cloud_cover_UnknownLevelType-224',
@@ -830,7 +832,8 @@ class HRRR_ESRL(ForecastModel):                                 # noqa: N801
 
         data = super(HRRR_ESRL, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
-        data['wind_speed'] = self.uv_to_speed(data)
+        data['wind_speed'] = self.gust_to_speed(data)
+        # data['wind_speed'] = self.uv_to_speed(data)  # GH 702
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
         return data[self.output_variables]

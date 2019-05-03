@@ -118,9 +118,8 @@ def test_get_extra_radiation_nrel_numba(times):
     with warnings.catch_warnings():
         # don't warn on method reload or num threads
         warnings.simplefilter("ignore")
-        result = irradiance.get_extra_radiation(times, method='nrel',
-                                                how='numba',
-                                                numthreads=4)
+        result = irradiance.get_extra_radiation(
+            times, method='nrel', how='numba', numthreads=4)
         # and reset to no-numba state
         irradiance.get_extra_radiation(times, method='nrel')
     assert_allclose(result,

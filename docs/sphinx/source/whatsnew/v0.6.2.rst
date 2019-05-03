@@ -29,6 +29,7 @@ Enhancements
 * Add US CRN data reader to :ref:`iotools`.
 * Add SOLRAD data reader to :ref:`iotools`.
 * Add EPW data reader to :ref:`iotools`. (:issue:`591`)
+* Add PSM3 reader to :ref:`iotools`. (:issue:`592`)
 
 Bug fixes
 ~~~~~~~~~

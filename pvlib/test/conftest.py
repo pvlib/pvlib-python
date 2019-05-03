@@ -110,7 +110,7 @@ def has_numba():
     try:
         import numba
     except ImportError:
-        return True
+        return False
     else:
         vers = numba.__version__.split('.')
         if int(vers[0] + vers[1]) < 17:

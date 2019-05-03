@@ -411,7 +411,8 @@ class ModelChain(object):
             return self.pvwatts_dc, 'pvwatts'
         else:
             raise ValueError('could not infer DC model from '
-                             'system.module_parameters')
+                             'system.module_parameters. Check parameters or '
+                             'explicity set model with dc_model kwarg.')
 
     def sapm(self):
         self.dc = self.system.sapm(self.effective_irradiance/1000.,
@@ -530,7 +531,8 @@ class ModelChain(object):
             return self.pvwatts_inverter
         else:
             raise ValueError('could not infer AC model from '
-                             'system.inverter_parameters')
+                             'system.inverter_parameters. Check parameters or '
+                             'explicity set model with ac_model kwarg.')
 
     def snlinverter(self):
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
@@ -577,7 +579,10 @@ class ModelChain(object):
             return self.ashrae_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
-                             'system.module_parameters')
+                             'system.module_parameters. Check that the '
+                             'parameters contain physical, aoi, or ashrae '
+                             'coefficients, explicity set model with '
+                             'aoi_model kwarg, or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
         self.aoi_modifier = self.system.ashraeiam(self.aoi)
@@ -629,8 +634,9 @@ class ModelChain(object):
             raise ValueError('could not infer spectral model from '
                              'system.module_parameters. Check that the '
                              'parameters contain valid '
-                             'first_solar_spectral_coefficients or a valid '
-                             'Material or Technology value')
+                             'first_solar_spectral_coefficients, a valid '
+                             'Material or Technology value, or set '
+                             'spectral_model="no_loss".')
 
     def first_solar_spectral_loss(self):
         self.spectral_modifier = self.system.first_solar_spectral_loss(

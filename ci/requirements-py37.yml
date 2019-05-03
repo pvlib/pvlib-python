@@ -18,4 +18,4 @@ dependencies:
     - nose
     - pip:
         - coveralls
-        - pvfactors
+        - pvfactors==0.1.5

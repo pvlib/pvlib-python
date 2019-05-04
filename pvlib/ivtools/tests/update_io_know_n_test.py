@@ -48,4 +48,4 @@ def test_answer16():
     outio7 = update_io_known_n(np.array([-1.]), np.array([-1.]),
                                np.array([-1.]), np.array([-1.]),
                                np.array([-1.]), np.array([-1.]))
-    np.testing.assert_allclose(outio7, np.array([.1738]), atol=.0001)
+    assert np.isnan(outio7)

@@ -1,5 +1,6 @@
 import numpy as np
 
+# A small number used to decide when a slope is equivalent to zero
 EPS = np.finfo('float').eps**(1/3)
 
 
@@ -49,10 +50,6 @@ def schumaker_qspline(x, y):
     [3] M. H. Lam, "Monotone and Convex Quadratic Spline Interpolation",
         Virginia Journal of Science 41(1), Spring 1990
     """
-
-    # A small number used to decide when a slope is equivalent to zero
-    eps = EPS
-
     # Make sure vectors are 1D arrays
     x = x.flatten()
     y = y.flatten()

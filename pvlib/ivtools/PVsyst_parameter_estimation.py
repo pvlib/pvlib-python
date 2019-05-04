@@ -16,9 +16,22 @@ def numdiff(x, f):
     NUMDIFF computes first and second order derivative using possibly unequally
     spaced data.
 
-    Syntax
-    ------
-    df, df2 = numdiff(x,f)
+    Parameters
+    ----------
+    x : numeric
+        a numpy array of values of x
+    f : numeric
+        a numpy array of values of the function f for which derivatives are to
+        be computed. Must be the same length as x.
+
+    Returns
+    -------
+    df : numeric
+        a numpy array of len(x) containing the first derivative of f at each
+        point x except at the first 2 and last 2 points
+    df2 : numeric
+        a numpy array of len(x) containing the second derivative of f at each
+        point x except at the first 2 and last 2 points.
 
     Description
     -----------
@@ -26,19 +39,6 @@ def numdiff(x, f):
     formula that accounts for possibly unequally spaced data. Because a 5th
     order centered difference formula is used, numdiff returns NaNs for the
     first 2 and last 2 points in the input vector for x.
-
-    Parameters
-    ----------
-    x: a numpy array of values of x
-    f: a numpy array of values of the function f for which derivatives are to
-       be computed. Must be the same length as x.
-
-    Returns
-    -------
-    df: a numpy array of len(x) containing the first derivative of f at each
-        point x except at the first 2 and last 2 points
-    df2: a numpy array of len(x) containing the second derivative of f at each
-         point x except at the first 2 and last 2 points.
 
     References
     ----------
@@ -66,48 +66,48 @@ def numdiff(x, f):
     ff = np.vstack((f[0:(n - 4)], f[1:(n - 3)], f[2:(n - 2)], f[3:(n - 1)],
                     f[4:n])).T
 
-    a = np.vstack((x[0:(n - 4)], x[1:(n - 3)], x[2:(n - 2)], x[3:(n - 1)],
+    a0 = np.vstack((x[0:(n - 4)], x[1:(n - 3)], x[2:(n - 2)], x[3:(n - 1)],
                    x[4:n])).T - np.tile(x[2:(n - 2)], [5, 1]).T
 
-    u = np.zeros(a.shape)
-    l = np.zeros(a.shape)
-    u2 = np.zeros(a.shape)
+    u1 = np.zeros(a0.shape)
+    left = np.zeros(a0.shape)
+    u2 = np.zeros(a0.shape)
 
-    u[:, 0] = a[:, 1] * a[:, 2] * a[:, 3] + a[:, 1] * a[:, 2] * a[:, 4] + \
-        a[:, 1] * a[:, 3] * a[:, 4] + a[:, 2] * a[:, 3] * a[:, 4]
-    u[:, 1] = a[:, 0] * a[:, 2] * a[:, 3] + a[:, 0] * a[:, 2] * a[:, 4] + \
-        a[:, 0] * a[:, 3] * a[:, 4] + a[:, 2] * a[:, 3] * a[:, 4]
-    u[:, 2] = a[:, 0] * a[:, 1] * a[:, 3] + a[:, 0] * a[:, 1] * a[:, 4] + \
-        a[:, 0] * a[:, 3] * a[:, 4] + a[:, 1] * a[:, 3] * a[:, 4]
-    u[:, 3] = a[:, 0] * a[:, 1] * a[:, 2] + a[:, 0] * a[:, 1] * a[:, 4] + \
-        a[:, 0] * a[:, 2] * a[:, 4] + a[:, 1] * a[:, 2] * a[:, 4]
-    u[:, 4] = a[:, 0] * a[:, 1] * a[:, 2] + a[:, 0] * a[:, 1] * a[:, 3] + \
-        a[:, 0] * a[:, 2] * a[:, 3] + a[:, 1] * a[:, 2] * a[:, 3]
+    u1[:, 0] = a0[:, 1] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 4] + \
+        a0[:, 1] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4]
+    u1[:, 1] = a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 0] * a0[:, 2] * a0[:, 4] + \
+        a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4]
+    u1[:, 2] = a0[:, 0] * a0[:, 1] * a0[:, 3] + a0[:, 0] * a0[:, 1] * a0[:, 4] + \
+        a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 1] * a0[:, 3] * a0[:, 4]
+    u1[:, 3] = a0[:, 0] * a0[:, 1] * a0[:, 2] + a0[:, 0] * a0[:, 1] * a0[:, 4] + \
+        a0[:, 0] * a0[:, 2] * a0[:, 4] + a0[:, 1] * a0[:, 2] * a0[:, 4]
+    u1[:, 4] = a0[:, 0] * a0[:, 1] * a0[:, 2] + a0[:, 0] * a0[:, 1] * a0[:, 3] + \
+        a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 3]
 
-    l[:, 0] = (a[:, 0] - a[:, 1]) * (a[:, 0] - a[:, 2]) * \
-        (a[:, 0] - a[:, 3]) * (a[:, 0] - a[:, 4])
-    l[:, 1] = (a[:, 1] - a[:, 0]) * (a[:, 1] - a[:, 2]) * \
-        (a[:, 1] - a[:, 3]) * (a[:, 1] - a[:, 4])
-    l[:, 2] = (a[:, 2] - a[:, 0]) * (a[:, 2] - a[:, 1]) * \
-        (a[:, 2] - a[:, 3]) * (a[:, 2] - a[:, 4])
-    l[:, 3] = (a[:, 3] - a[:, 0]) * (a[:, 3] - a[:, 1]) * \
-        (a[:, 3] - a[:, 2]) * (a[:, 3] - a[:, 4])
-    l[:, 4] = (a[:, 4] - a[:, 0]) * (a[:, 4] - a[:, 1]) * \
-        (a[:, 4] - a[:, 2]) * (a[:, 4] - a[:, 3])
+    left[:, 0] = (a0[:, 0] - a0[:, 1]) * (a0[:, 0] - a0[:, 2]) * \
+        (a0[:, 0] - a0[:, 3]) * (a0[:, 0] - a0[:, 4])
+    left[:, 1] = (a0[:, 1] - a0[:, 0]) * (a0[:, 1] - a0[:, 2]) * \
+        (a0[:, 1] - a0[:, 3]) * (a0[:, 1] - a0[:, 4])
+    left[:, 2] = (a0[:, 2] - a0[:, 0]) * (a0[:, 2] - a0[:, 1]) * \
+        (a0[:, 2] - a0[:, 3]) * (a0[:, 2] - a0[:, 4])
+    left[:, 3] = (a0[:, 3] - a0[:, 0]) * (a0[:, 3] - a0[:, 1]) * \
+        (a0[:, 3] - a0[:, 2]) * (a0[:, 3] - a0[:, 4])
+    left[:, 4] = (a0[:, 4] - a0[:, 0]) * (a0[:, 4] - a0[:, 1]) * \
+        (a0[:, 4] - a0[:, 2]) * (a0[:, 4] - a0[:, 3])
 
-    df[2:(n - 2)] = np.sum(-(u / l) * ff, axis=1)
+    df[2:(n - 2)] = np.sum(-(u1 / left) * ff, axis=1)
 
     # second derivative
-    u2[:, 0] = a[:, 1] * a[:, 2] + a[:, 1] * a[:, 3] + a[:, 1] * a[:, 4] + \
-        a[:, 2] * a[:, 3] + a[:, 2] * a[:, 4] + a[:, 3] * a[:, 4]
-    u2[:, 1] = a[:, 0] * a[:, 2] + a[:, 0] * a[:, 3] + a[:, 0] * a[:, 4] + \
-        a[:, 2] * a[:, 3] + a[:, 2] * a[:, 4] + a[:, 3] * a[:, 4]
-    u2[:, 2] = a[:, 0] * a[:, 1] + a[:, 0] * a[:, 3] + a[:, 0] * a[:, 4] + \
-        a[:, 1] * a[:, 3] + a[:, 1] * a[:, 3] + a[:, 3] * a[:, 4]
-    u2[:, 3] = a[:, 0] * a[:, 1] + a[:, 0] * a[:, 2] + a[:, 0] * a[:, 4] + \
-        a[:, 1] * a[:, 2] + a[:, 1] * a[:, 4] + a[:, 2] * a[:, 4]
-    u2[:, 4] = a[:, 0] * a[:, 1] + a[:, 0] * a[:, 2] + a[:, 0] * a[:, 3] + \
-        a[:, 1] * a[:, 2] + a[:, 1] * a[:, 4] + a[:, 2] * a[:, 3]
+    u2[:, 0] = a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 3] + a0[:, 1] * a0[:, 4] + \
+        a0[:, 2] * a0[:, 3] + a0[:, 2] * a0[:, 4] + a0[:, 3] * a0[:, 4]
+    u2[:, 1] = a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3] + a0[:, 0] * a0[:, 4] + \
+        a0[:, 2] * a0[:, 3] + a0[:, 2] * a0[:, 4] + a0[:, 3] * a0[:, 4]
+    u2[:, 2] = a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 3] + a0[:, 0] * a0[:, 4] + \
+        a0[:, 1] * a0[:, 3] + a0[:, 1] * a0[:, 3] + a0[:, 3] * a0[:, 4]
+    u2[:, 3] = a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 4] + \
+        a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 4]
+    u2[:, 4] = a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3] + \
+        a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 3]
 
     df2[2:(n - 2)] = 2. * np.sum(u2 * ff, axis=1)
     return df, df2
@@ -294,33 +294,33 @@ def check_converge(prevparams, result, vmp, imp, graphic, convergeparamsfig,
     convergeparam['pmperrstd'] = np.std(pmperror, axis=0, ddof=1)
 
     if prevparams['state'] != 0.:
-        convergeparam['imperrstdchange'] = \
-            np.abs((convergeparam['imperrstd'] - prevparams['imperrstd']) /
-                   prevparams['imperrstd'])
-        convergeparam['vmperrstdchange'] = \
-            np.abs((convergeparam['vmperrstd'] - prevparams['vmperrstd']) /
-                   prevparams['vmperrstd'])
-        convergeparam['pmperrstdchange'] = \
-            np.abs((convergeparam['pmperrstd'] - prevparams['pmperrstd']) /
-                   prevparams['pmperrstd'])
-        convergeparam['imperrmeanchange'] = \
-            np.abs((convergeparam['imperrmean'] - prevparams['imperrmean']) /
-                   prevparams['imperrmean'])
-        convergeparam['vmperrmeanchange'] = \
-            np.abs((convergeparam['vmperrmean'] - prevparams['vmperrmean']) /
-                   prevparams['vmperrmean'])
-        convergeparam['pmperrmeanchange'] = \
-            np.abs((convergeparam['pmperrmean'] - prevparams['pmperrmean']) /
-                   prevparams['pmperrmean'])
-        convergeparam['imperrabsmaxchange'] = \
-            np.abs((convergeparam['imperrabsmax'] -
-                    prevparams['imperrabsmax']) / prevparams['imperrabsmax'])
-        convergeparam['vmperrabsmaxchange'] = \
-            np.abs((convergeparam['vmperrabsmax'] -
-                    prevparams['vmperrabsmax']) / prevparams['vmperrabsmax'])
-        convergeparam['pmperrabsmaxchange'] = \
-            np.abs((convergeparam['pmperrabsmax'] -
-                    prevparams['pmperrabsmax']) / prevparams['pmperrabsmax'])
+        convergeparam['imperrstdchange'] = np.abs(
+            (convergeparam['imperrstd'] - prevparams['imperrstd'])
+                / prevparams['imperrstd'])
+        convergeparam['vmperrstdchange'] = np.abs(
+            (convergeparam['vmperrstd'] - prevparams['vmperrstd'])
+                / prevparams['vmperrstd'])
+        convergeparam['pmperrstdchange'] = np.abs(
+            (convergeparam['pmperrstd'] - prevparams['pmperrstd'])
+                / prevparams['pmperrstd'])
+        convergeparam['imperrmeanchange'] = np.abs(
+            (convergeparam['imperrmean'] - prevparams['imperrmean'])
+                / prevparams['imperrmean'])
+        convergeparam['vmperrmeanchange'] = np.abs(
+            (convergeparam['vmperrmean'] - prevparams['vmperrmean'])
+                / prevparams['vmperrmean'])
+        convergeparam['pmperrmeanchange'] = np.abs(
+            (convergeparam['pmperrmean'] - prevparams['pmperrmean'])
+                / prevparams['pmperrmean'])
+        convergeparam['imperrabsmaxchange'] =  np.abs(
+            (convergeparam['imperrabsmax'] - prevparams['imperrabsmax'])
+                / prevparams['imperrabsmax'])
+        convergeparam['vmperrabsmaxchange'] = np.abs(
+            (convergeparam['vmperrabsmax'] - prevparams['vmperrabsmax'])
+                / prevparams['vmperrabsmax'])
+        convergeparam['pmperrabsmaxchange'] = np.abs(
+            (convergeparam['pmperrabsmax'] - prevparams['pmperrabsmax'])
+                / prevparams['pmperrabsmax'])
         convergeparam['state'] = 1.
     else:
         convergeparam['imperrstdchange'] = float("Inf")
@@ -404,19 +404,10 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
     pvsyst_parameter_estimation estimates parameters fro the PVsyst module
     performance model
 
-    Syntax
-    ------
-    PVsyst, oflag = pvsyst_paramter_estimation(ivcurves, specs, const, maxiter,
-                                               eps1, graphic)
-
-    Description
-    -----------
-    pvsyst_paramter_estimation estimates parameters for the PVsyst module
-    performance model [2,3,4]. Estimation methods are documented in [5,6,7].
-
     Parameters
     ----------
-    ivcurves: a dict containing IV curve data in the following fields where j
+    ivcurves : a dict
+        containing IV curve data in the following fields where j
     denotes the jth data set
         ivcurves['i'][j] - a numpy array of current (A) (same length as v)
         ivcurves['v'][j] - a numpy array of voltage (V) (same length as i)
@@ -428,19 +419,22 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         ivcurves['imp'][j] - current at max power point of IV curve (A)
         ivcurves['vmp'][j] - voltage at max power point of IV curve (V)
 
-    specs: a dict containing module-level values
+    specs : a dict
+        containing module-level values
         specs['ns'] - number of cells in series
         specs['aisc'] - temperature coefficeint of isc (A/C)
 
-    const: an optional OrderedDict containing physical and other constants
+    const : an optional OrderedDict
+        containing physical and other constants
         const['E0'] - effective irradiance at STC, normally 1000 W/m2
         constp['T0'] - cell temperature at STC, normally 25 C
         const['k'] - 1.38066E-23 J/K (Boltzmann's constant)
         const['q'] - 1.60218E-19 Coulomb (elementary charge)
 
-    maxiter: an optional numpy array input that sets the maximum number of
-             iterations for the parameter updating part of the algorithm.
-             Default value is 5.
+    maxiter : an optional numpy array
+        input that sets the maximum number of
+        iterations for the parameter updating part of the algorithm.
+        Default value is 5.
 
     eps1: the desired tolerance for the IV curve fitting. The iterative
           parameter updating stops when absolute values of the percent change
@@ -478,6 +472,11 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
     oflag: Boolean indicating success or failure of estimation of the diode
            (ideality) factor parameter. If failure, then no parameter values
            are returned
+
+    Description
+    -----------
+    pvsyst_paramter_estimation estimates parameters for the PVsyst module
+    performance model [2,3,4]. Estimation methods are documented in [5,6,7].
 
     References
     ----------

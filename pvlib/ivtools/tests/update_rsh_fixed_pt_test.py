@@ -1,4 +1,4 @@
-from pvlib.update_rsh_fixed_pt import update_rsh_fixed_pt
+from pvlib.ivtools.update_rsh_fixed_pt import update_rsh_fixed_pt
 import numpy as np
 
 

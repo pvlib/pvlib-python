@@ -1,5 +1,5 @@
 import numpy as np
-from pvlib.Schumaker_QSpline import schumaker_qspline
+from pvlib.ivtools.Schumaker_QSpline import schumaker_qspline
 
 
 def estimate_parameters(i, v, nsvth):

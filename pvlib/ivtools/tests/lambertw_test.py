@@ -1,4 +1,4 @@
-from pvlib.lambertw import lambertw
+from pvlib.ivtools.lambertw import lambertw
 import numpy as np
 
 

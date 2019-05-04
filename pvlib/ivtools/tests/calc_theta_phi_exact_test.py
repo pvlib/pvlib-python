@@ -1,4 +1,4 @@
-from pvlib.calc_theta_phi_exact import calc_theta_phi_exact
+from pvlib.ivtools.calc_theta_phi_exact import calc_theta_phi_exact
 import numpy as np
 
 

@@ -1,5 +1,5 @@
 import numpy as np
-from pvlib.est_single_diode_param import estimate_parameters
+from pvlib.ivtools.est_single_diode_param import estimate_parameters
 
 
 def test_answer():

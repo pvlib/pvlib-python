@@ -1,11 +1,14 @@
 import numpy as np
 from collections import OrderedDict
+import os
+
+BASEDIR = os.path.dirname(__file__)
 
 specs = {key: None for key in ['ns', 'aisc', 'bvoc', 'type']}
 keylist = ['isc', 'imp', 'vmp', 'voc', 'poa', 'tc', 'ee']
 ivcurves = {key: None for key in keylist}
 
-with open('PVsyst_demo.txt', 'r') as f:
+with open(os.path.join(BASEDIR, 'PVsyst_demo.txt'), 'r') as f:
 
     Ns, aIsc, bVoc, descr = f.readline().split(',')
 
@@ -55,7 +58,7 @@ paramlist = ['IL_ref', 'Io_ref', 'eG', 'Rsh_ref', 'Rsh0', 'Rshexp', 'Rs_ref',
 varlist = ['Iph', 'Io', 'Rsh', 'Rs', 'u']
 pvsyst = OrderedDict(key=paramlist + varlist)
 
-with open('PVsyst_demo_model.txt', 'r') as f:
+with open(os.path.join(BASEDIR, 'PVsyst_demo_model.txt'), 'r') as f:
 
     Ns, aIsc, bVoc, descr = f.readline().split(',')
 

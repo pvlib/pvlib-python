@@ -1,4 +1,4 @@
-from pvlib.update_io_known_n import update_io_known_n
+from pvlib.ivtools.update_io_known_n import update_io_known_n
 import numpy as np
 
 

@@ -1,4 +1,4 @@
-from pvlib.calc_theta_phi_exact import calc_theta_phi_exact
+from pvlib.ivtools.calc_theta_phi_exact import calc_theta_phi_exact
 
 
 def update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):

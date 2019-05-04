@@ -1,41 +1,45 @@
 import numpy as np
 
+EPS = np.finfo('float').eps**(1/3)
+
 
 def schumaker_qspline(x, y):
     """
     Schumaker_QSpline fits a quadratic spline which preserves monotonicity and
     convexity in the data.
 
-    Syntax
-    ------
-    outa, outxk, outy, kflag = schumaker_qspline(x, y)
+    Parameters
+    ----------
+    x : numeric
+        independent points between which the spline will interpolate.
+    y : numeric
+        dependent points between which the spline will interpolate.
+
+    Returns
+    -------
+    outa : numpy.ndarray
+        a Nx3 matrix of coefficients where the ith row defines the quadratic
+        interpolant between xk_i to xk_(i+1), i.e., y = A[i, 0] *
+        (x - xk[i]] ** 2 + A[i, 1] * (x - xk[i]) + A[i, 2]
+    outxk : numpy.ndarray
+        an ordered vector of knots, i.e., values xk_i where the spline
+        changes coefficients. All values in x are used as knots. However
+        the algorithm may insert additional knots between data points in x
+        where changes in convexity are indicated by the (numerical)
+        derivative. Consequently output outxk has length >= length(x).
+    outy : numpy.ndarray
+        y values corresponding to the knots in outxk. Contains the original
+        data points, y, and also y-values estimated from the spline at the
+        inserted knots.
+    kflag : numpy.ndarray
+        a vector of length(outxk) of logicals, which are set to true for
+        elements of outxk that are knots inserted by the algorithm.
 
     Description
     -----------
     Calculates coefficients for C1 quadratic spline interpolating data X, Y
     where length(x) = N and length(y) = N, which preserves monotonicity and
     convexity in the data.
-
-    Parameters
-    ----------
-    x, y: numpy arrays of length N containing (x, y) points between which the
-          spline will interpolate.
-
-    Returns
-    -------
-    outa: a Nx3 matrix of coefficients where the ith row defines the quadratic
-          interpolant between xk_i to xk_(i+1), i.e., y = A[i, 0] *
-          (x - xk[i]] ** 2 + A[i, 1] * (x - xk[i]) + A[i, 2]
-    outxk: an ordered vector of knots, i.e., values xk_i where the spline
-           changes coefficients. All values in x are used as knots. However
-           the algorithm may insert additional knots between data points in x
-           where changes in convexity are indicated by the (numerical)
-           derivative. Consequently output outxk has length >= length(x).
-    outy: y values corresponding to the knots in outxk. Contains the original
-          data points, y, and also y-values estimated from the spline at the
-          inserted knots.
-    kflag: a vector of length(outxk) of logicals, which are set to true for
-           elements of outxk that are knots inserted by the algorithm.
 
     References
     ----------
@@ -47,15 +51,14 @@ def schumaker_qspline(x, y):
     """
 
     # A small number used to decide when a slope is equivalent to zero
-    eps = 1e-6
+    eps = EPS
 
     # Make sure vectors are 1D arrays
-    if x.ndim != 1.:
-        x = x.flatten([range(x.size)])
-    if y.ndim != 1.:
-        y = y.flatten([range(y.size)])
+    x = x.flatten()
+    y = y.flatten()
 
-    n = len(x)
+    n = x.size
+    assert n == y.size
 
     # compute various values used by the algorithm: differences, length of line
     # segments between data points, and ratios of differences.
@@ -66,7 +69,7 @@ def schumaker_qspline(x, y):
 
     # Calculate first derivative at each x value per [3]
 
-    s = np.zeros(x.shape)
+    s = np.zeros_like(x)
 
     left = np.append(0., delta)
     right = np.append(delta, 0.)
@@ -77,21 +80,23 @@ def schumaker_qspline(x, y):
 
     # [3], Eq. 9 for interior points
     # fix tuning parameters in [2], Eq 9 at chi = .5 and eta = .5
-    s[u] = pdelta[u] / (.5 * left[u] + .5 * right[u])
+    s[u] = pdelta[u] / (0.5*left[u] + 0.5*right[u])
 
     # [3], Eq. 7 for left endpoint
-    if delta[0] * (2. * delta[0] - s[1]) > 0.:
-        s[0] = 2. * delta[0] - s[1]
+    left_end = 2.0 * delta[0] - s[1]
+    if delta[0] * left_end > 0:
+        s[0] = left_end
 
     # [3], Eq. 8 for right endpoint
-    if delta[n - 2] * (2. * delta[n - 2] - s[n - 2]) > 0.:
-        s[n - 1] = 2. * delta[n - 2] - s[n - 2]
+    right_end = 2.0 * delta[n - 2] - s[n - 2]
+    if delta[n - 2] * right_end > 0:
+        s[n - 1] = right_end
 
     # determine knots. Start with initial pointsx
     # [2], Algorithm 4.1 first 'if' condition of step 5 defines intervals
     # which won't get internal knots
-    tests = s[0.:(n - 1)] + s[1:n]
-    u = np.abs(tests - 2. * delta[0:(n - 1)]) <= eps
+    tests = s[0:(n - 1)] + s[1:n]
+    u = np.isclose(tests, 2. * delta[0:(n - 1)], atol=EPS)
     # u = true for an interval which will not get an internal knot
 
     k = n + sum(~u)  # total number of knots = original data + inserted knots
@@ -102,7 +107,7 @@ def schumaker_qspline(x, y):
     yk = np.zeros(k)  # function values at knot locations
     # logicals that will indicate where additional knots are inserted
     flag = np.zeros(k, dtype=bool)
-    a = np.zeros((k, 3.))
+    a = np.zeros((k, 3))
 
     # structures needed to compute coefficients, have to be maintained in
     # association with each knot
@@ -110,13 +115,13 @@ def schumaker_qspline(x, y):
     tmpx = x[0:(n - 1)]
     tmpy = y[0:(n - 1)]
     tmpx2 = x[1:n]
-    tmps = s[0.:(n - 1)]
+    tmps = s[0:(n - 1)]
     tmps2 = s[1:n]
     diffs = np.diff(s)
 
     # structure to contain information associated with each knot, used to
     # calculate coefficients
-    uu = np.zeros((k, 6.))
+    uu = np.zeros((k, 6))
 
     uu[0:(n - 1), :] = np.array([tmpx, tmpx2, tmpy, tmps, tmps2, delta]).T
 

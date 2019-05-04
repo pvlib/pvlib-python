@@ -71,12 +71,12 @@ def schumaker_qspline(x, y):
 
     s = np.zeros_like(x)
 
-    left = np.append(0., delta)
-    right = np.append(delta, 0.)
+    left = np.append(0.0, delta)
+    right = np.append(delta, 0.0)
 
     pdelta = left * right
 
-    u = pdelta > 0.
+    u = pdelta > 0
 
     # [3], Eq. 9 for interior points
     # fix tuning parameters in [2], Eq 9 at chi = .5 and eta = .5
@@ -95,8 +95,8 @@ def schumaker_qspline(x, y):
     # determine knots. Start with initial pointsx
     # [2], Algorithm 4.1 first 'if' condition of step 5 defines intervals
     # which won't get internal knots
-    tests = s[0:(n - 1)] + s[1:n]
-    u = np.isclose(tests, 2. * delta[0:(n - 1)], atol=EPS)
+    tests = s[:(n - 1)] + s[1:]
+    u = np.isclose(tests, 2. * delta[:(n - 1)], atol=EPS)
     # u = true for an interval which will not get an internal knot
 
     k = n + sum(~u)  # total number of knots = original data + inserted knots
@@ -112,36 +112,39 @@ def schumaker_qspline(x, y):
     # structures needed to compute coefficients, have to be maintained in
     # association with each knot
 
-    tmpx = x[0:(n - 1)]
-    tmpy = y[0:(n - 1)]
-    tmpx2 = x[1:n]
-    tmps = s[0:(n - 1)]
-    tmps2 = s[1:n]
+    tmpx = x[:(n - 1)]
+    tmpy = y[:(n - 1)]
+    tmpx2 = x[1:]
+    tmps = s[:(n - 1)]
+    tmps2 = s[1:]
     diffs = np.diff(s)
 
     # structure to contain information associated with each knot, used to
     # calculate coefficients
     uu = np.zeros((k, 6))
 
-    uu[0:(n - 1), :] = np.array([tmpx, tmpx2, tmpy, tmps, tmps2, delta]).T
+    uu[:(n - 1), :] = np.array([tmpx, tmpx2, tmpy, tmps, tmps2, delta]).T
 
     # [2], Algorithm 4.1 subpart 1 of Step 5
     # original x values that are left points of intervals without internal
     # knots
-    xk[u] = tmpx[u]
-    yk[u] = tmpy[u]
+
+    # XXX: MATLAB differs from NumPy, boolean indices must be same size as
+    # array
+    xk[:(n-1)][u] = tmpx[u]
+    yk[:(n-1)][u] = tmpy[u]
     # constant term for each polynomial for intervals without knots
-    a[u, 2] = tmpy[u]
-    a[u, 1] = s[u]
-    a[u, 0] = .5 * diffs[u] / delx[u]  # leading coefficients
+    a[:(n-1), 2][u] = tmpy[u]
+    a[:(n-1), 1][u] = s[:(n-1)][u]
+    a[:(n-1), 0][u] = .5 * diffs[u] / delx[u]  # leading coefficients
 
     # [2], Algorithm 4.1 subpart 2 of Step 5
     # original x values that are left points of intervals with internal knots
-    xk[~u] = tmpx[~u]
-    yk[~u] = tmpy[~u]
+    xk[:(n-1)][~u] = tmpx[~u]
+    yk[:(n-1)][~u] = tmpy[~u]
 
-    aa = s[0:(n - 1)] - delta[0:(n - 1)]
-    b = s[1:n] - delta[0:(n - 1)]
+    aa = s[:(n - 1)] - delta[:(n - 1)]
+    b = s[1:] - delta[:(n - 1)]
 
     sbar = np.zeros(k)
     eta = np.zeros(k)
@@ -151,14 +154,14 @@ def schumaker_qspline(x, y):
 
     t0 = aa * b >= 0
     # first 'else' in Algorithm 4.1 Step 5
-    v = np.logical_and(~u, t0[0:len(u)])
+    v = np.logical_and(~u, t0[:(n-1)])  # len(u) == (n - 1) always
     q = np.sum(v)  # number of this type of knot to add
 
     if q > 0.:
         xk[(n - 1):(n + q - 1)] = .5 * (tmpx[v] + tmpx2[v])  # knot location
         uu[(n - 1):(n + q - 1), :] = np.array([tmpx[v], tmpx2[v], tmpy[v],
                                                tmps[v], tmps2[v], delta[v]]).T
-        xi[v] = xk[(n - 1):(n + q - 1)]
+        xi[:(n-1)][v] = xk[(n - 1):(n + q - 1)]
 
     t1 = np.abs(aa) > np.abs(b)
     w = np.logical_and(~u, ~v)  # second 'else' in Algorithm 4.1 Step 5
@@ -170,7 +173,7 @@ def schumaker_qspline(x, y):
         uu[(n + q - 1):(n + q + r - 1), :] = np.array([tmpx[w], tmpx2[w],
                                                        tmpy[w], tmps[w],
                                                        tmps2[w], delta[w]]).T
-        xi[w] = xk[(n + q - 1):(n + q + r - 1)]
+        xi[:(n-1)][w] = xk[(n + q - 1):(n + q + r - 1)]
 
     z = np.logical_and(~u, ~v)  # last 'else' in Algorithm 4.1 Step 5
     z = np.logical_and(z, ~w)
@@ -186,10 +189,14 @@ def schumaker_qspline(x, y):
 
     # define polynomial coefficients for intervals with added knots
     ff = ~u
-    sbar[ff] = (2 * uu[ff, 5] - uu[ff, 4]) + \
-               (uu[ff, 4] - uu[ff, 3]) * (xi[ff] - uu[ff, 0]) / (uu[ff, 1] -
-                                                                 uu[ff, 0])
-    eta[ff] = (sbar[ff] - uu[ff, 3]) / (xi[ff] - uu[ff, 0])
+    sbar[:(n-1)][ff] = (
+            2 * uu[:(n-1), 5][ff] - uu[:(n-1), 4][ff]
+        ) + (uu[:(n-1), 4][ff] - uu[:(n-1), 3][ff]) * (
+            xi[:(n-1)][ff] - uu[:(n-1), 0][ff]
+        ) / (uu[:(n-1), 1][ff] - uu[:(n-1), 0][ff])
+    eta[:(n-1)][ff] = (
+            sbar[:(n-1)][ff] - uu[:(n-1), 3][ff]
+        ) / (xi[:(n-1)][ff] - uu[:(n-1), 0][ff])
 
     sbar[(n - 1):(n + q + r + ss - 1)] = \
         (2 * uu[(n - 1):(n + q + r + ss - 1), 5] -
@@ -207,9 +214,9 @@ def schumaker_qspline(x, y):
          uu[(n - 1):(n + q + r + ss - 1), 0])
 
     # constant term for polynomial for intervals with internal knots
-    a[~u, 2] = uu[~u, 2]
-    a[~u, 1] = uu[~u, 3]
-    a[~u, 0] = .5 * eta[~u]  # leading coefficient
+    a[:(n-1), 2][~u] = uu[:(n-1), 2][~u]
+    a[:(n-1), 1][~u] = uu[:(n-1), 3][~u]
+    a[:(n-1), 0][~u] = 0.5 * eta[:(n-1)][~u]  # leading coefficient
 
     a[(n - 1):(n + q + r + ss - 1), 2] = \
         uu[(n - 1):(n + q + r + ss - 1), 2] + \

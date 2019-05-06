@@ -5,7 +5,7 @@ Created on Thu May  2 12:42:24 2019
 @author: cwhanse
 """
 
-from PySSC import PySSC
+from PySAM.PySSC import PySSC
 
 def fit_cec_model_with_sam(sam_dir, celltype, Vmp, Imp, Voc, Isc, alpha_sc,
                            beta_voc, gamma_pmp, cells_in_series, temp_ref=25):
@@ -65,7 +65,7 @@ def fit_cec_model_with_sam(sam_dir, celltype, Vmp, Imp, Voc, Isc, alpha_sc,
     '''
 
     try:
-        ssc = PySSC(sam_dir)
+        ssc = PySSC.PySSC()
     except Exception as e:
         raise(e)
 

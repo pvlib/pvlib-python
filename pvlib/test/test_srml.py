@@ -73,3 +73,33 @@ def test_read_srml_month_from_solardat():
     file_data = srml.read_srml(url)
     requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
     assert file_data.equals(requested)
+
+
+@pytest.mark.parametrize('station, year, month, filetype', [
+    ('TW', 2019, 4, 'RQ'),
+])
+def test_15_minute_dt_index(
+        station, year, month, filetype):
+    data = srml.read_srml_month_from_solardat(station, year, month, filetype)
+    start = pd.Timestamp('{:04d}{:02d}01 00:00'.format(year, month))
+    start = start.tz_localize('Etc/GMT+8')
+    end = pd.Timestamp('{:04d}{:02d}30 23:45'.format(year, month))
+    end = end.tz_localize('Etc/GMT+8')
+    assert data.index[0] == start
+    assert data.index[-1] == end
+    assert (data.index[3::4].minute == 45).all()
+
+
+@pytest.mark.parametrize('station, year, month, filetype', [
+    ('CD', 1986, 4, 'PH'),
+])
+def test_hourly_dt_index(
+        station, year, month, filetype):
+    data = srml.read_srml_month_from_solardat(station, year, month, filetype)
+    start = pd.Timestamp('{:04d}{:02d}01 00:00'.format(year, month))
+    start = start.tz_localize('Etc/GMT+8')
+    end = pd.Timestamp('{:04d}{:02d}30 23:00'.format(year, month))
+    end = end.tz_localize('Etc/GMT+8')
+    assert data.index[0] == start
+    assert data.index[-1] == end
+    assert (data.index.minute == 0).all()

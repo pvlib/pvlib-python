@@ -134,11 +134,17 @@ def format_index(df):
     year = int(df.columns[1])
     df_doy = df[df.columns[0]]
     # Times are expressed as integers from 1-2400, we convert to 0-2359 by
-    # subracting one and then correcting the minutes at each former hour.
-    df_time = df[df.columns[1]] - 1
-    fifty_nines = df_time % 100 == 99
-    times = df_time.where(~fifty_nines, df_time - 40)
-
+    # subracting the length of one interval and then correcting the times
+    # at each former hour. interval_length is determined by taking the
+    # difference of the first two rows of the time column.
+    interval_length = int(df[df.columns[1]][:2].diff()[1])
+    df_time = df[df.columns[1]] - interval_length
+    if interval_length == 100:
+        # Hourly files do not require fixing the former hour timestamps.
+        times = df_time
+    else:
+        old_hours = df_time % 100 == (100 - interval_length)
+        times = df_time.where(~old_hours, df_time - 40)
     times = times.apply(lambda x: '{:04.0f}'.format(x))
     doy = df_doy.apply(lambda x: '{:03.0f}'.format(x))
     dts = pd.to_datetime(str(year) + '-' + doy + '-' + times,
@@ -161,13 +167,30 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO'):
     month: int
         Month to request data for.
     filetype: string
-        SRML file type to gather. 'RO' and 'PO' are the
-        only minute resolution files.
+        SRML file type to gather. See notes for explanation.
 
     Returns
     -------
     data: pd.DataFrame
         One month of data from SRML.
+
+    Notes
+    -----
+    File types designate the time interval of a file and if it is
+    raw or processed data. For instance, `RO` designates raw one
+    minute data and `PO` designates processed one minute data. The
+    availability of file types varies between sites. Below is a
+    table of file types and their time intervals. See [1] for site
+    information.
+
+    ============= ============ ==================
+    time interval raw filetype processed filetype
+    ============= ============ ==================
+    1 minute      RO           PO
+    5 minute      RF           PF
+    15 minute     RQ           PQ
+    hourly        RH           PH
+    ============= ============ ==================
 
     References
     ----------

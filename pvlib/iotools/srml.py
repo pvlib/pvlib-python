@@ -138,7 +138,7 @@ def format_index(df):
     # subracting the length of one interval and then correcting the times
     # at each former hour. interval_length is determined by taking the
     # difference of the first two rows of the time column.
-    interval_length = int(df[df.columns[1]][:2].diff()[1])
+    interval_length = df[df.columns[1]][1] - df[df.columns[1]][0]
     df_time = df[df.columns[1]] - interval_length
     if interval_length == 100:
         # Hourly files do not require fixing the former hour timestamps.

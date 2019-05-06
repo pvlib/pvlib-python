@@ -7,7 +7,6 @@ except ImportError:
 
 import numpy as np
 import pandas as pd
-from numpy import nan
 
 from pvlib import modelchain, pvsystem
 from pvlib.modelchain import ModelChain
@@ -16,7 +15,7 @@ from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from pandas.util.testing import assert_series_equal, assert_frame_equal
+from pandas.util.testing import assert_series_equal
 import pytest
 
 from test_pvsystem import sam_data, pvsyst_module_params
@@ -164,7 +163,7 @@ def test_run_model(system, location):
 def test_run_model_with_irradiance(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
+    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
@@ -176,7 +175,7 @@ def test_run_model_with_irradiance(system, location):
 def test_run_model_perez(system, location):
     mc = ModelChain(system, location, transposition_model='perez')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
+    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
@@ -189,7 +188,7 @@ def test_run_model_gueymard_perez(system, location):
     mc = ModelChain(system, location, airmass_model='gueymard1993',
                     transposition_model='perez')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'dni':900, 'ghi':600, 'dhi':150},
+    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
@@ -433,24 +432,24 @@ def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location, weather,
 
 
 def test_invalid_dc_model_params(system, cec_dc_snl_ac_system,
-                        pvwatts_dc_pvwatts_ac_system, location):
+                                 pvwatts_dc_pvwatts_ac_system, location):
     kwargs = {'dc_model': 'sapm', 'ac_model': 'snlinverter',
               'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
               'temp_model': 'sapm', 'losses_model': 'no_loss'}
-    system.module_parameters.pop('A0') # remove a parameter
+    system.module_parameters.pop('A0')  # remove a parameter
     with pytest.raises(ValueError):
-        mc = ModelChain(system, location, **kwargs)
+        ModelChain(system, location, **kwargs)
 
     kwargs['dc_model'] = 'singlediode'
-    cec_dc_snl_ac_system.module_parameters.pop('a_ref') # remove a parameter
+    cec_dc_snl_ac_system.module_parameters.pop('a_ref')  # remove a parameter
     with pytest.raises(ValueError):
-        mc = ModelChain(cec_dc_snl_ac_system, location, **kwargs)
+        ModelChain(cec_dc_snl_ac_system, location, **kwargs)
 
     kwargs['dc_model'] = 'pvwatts'
     kwargs['ac_model'] = 'pvwatts'
     pvwatts_dc_pvwatts_ac_system.module_parameters.pop('pdc0')
     with pytest.raises(ValueError):
-        mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, **kwargs)
+        ModelChain(pvwatts_dc_pvwatts_ac_system, location, **kwargs)
 
 
 @pytest.mark.parametrize('model', [
@@ -463,7 +462,7 @@ def test_invalid_models(model, system, location):
               'temp_model': 'sapm', 'losses_model': 'no_loss'}
     kwargs[model] = 'invalid'
     with pytest.raises(ValueError):
-        mc = ModelChain(system, location, **kwargs)
+        ModelChain(system, location, **kwargs)
 
 
 def test_bad_get_orientation():
@@ -480,10 +479,10 @@ def test_deprecated_07():
                          'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
     system = PVSystem(module_parameters=module_parameters)
     with pytest.warns(pvlibDeprecationWarning):
-        mc = ModelChain(system, location,
-                        dc_model='singlediode',  # this should fail after 0.7
-                        aoi_model='no_loss', spectral_model='no_loss',
-                        ac_model='snlinverter')
+        ModelChain(system, location,
+                   dc_model='singlediode',  # this should fail after 0.7
+                   aoi_model='no_loss', spectral_model='no_loss',
+                   ac_model='snlinverter')
 
 
 @requires_scipy
@@ -496,7 +495,8 @@ def test_basic_chain_required(sam_data):
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     inverters = sam_data['cecinverter']
-    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter_parameters = inverters[
+        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     with pytest.raises(ValueError):
         dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                         module_parameters, inverter_parameters,
@@ -509,13 +509,13 @@ def test_basic_chain_alt_az(sam_data):
                           end='20160101 1800-0700', freq='6H')
     latitude = 32.2
     longitude = -111
-    altitude = 700
     surface_tilt = 0
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     inverters = sam_data['cecinverter']
-    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter_parameters = inverters[
+        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                     module_parameters, inverter_parameters,
@@ -537,12 +537,12 @@ def test_basic_chain_strategy(sam_data):
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     inverters = sam_data['cecinverter']
-    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter_parameters = inverters[
+        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
-                                    orientation_strategy='south_at_latitude_tilt',
-                                    altitude=altitude)
+    dc, ac = modelchain.basic_chain(
+        times, latitude, longitude, module_parameters, inverter_parameters,
+        orientation_strategy='south_at_latitude_tilt', altitude=altitude)
 
     expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
                          index=times)
@@ -561,7 +561,8 @@ def test_basic_chain_altitude_pressure(sam_data):
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     inverters = sam_data['cecinverter']
-    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter_parameters = inverters[
+        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                     module_parameters, inverter_parameters,
@@ -616,7 +617,8 @@ def test_complete_irradiance_clean_run(system, location):
     """The DataFrame should not change if all columns are passed"""
     mc = ModelChain(system, location)
     times = pd.date_range('2010-07-05 9:00:00', periods=2, freq='H')
-    i = pd.DataFrame({'dni': [2, 3], 'dhi': [4, 6], 'ghi': [9, 5]}, index=times)
+    i = pd.DataFrame(
+        {'dni': [2, 3], 'dhi': [4, 6], 'ghi': [9, 5]}, index=times)
 
     mc.complete_irradiance(times, weather=i)
 
@@ -637,12 +639,14 @@ def test_complete_irradiance(system, location):
                       'ghi': [372.103976116, 497.087579068],
                       'dhi': [356.543700, 465.44400]}, index=times)
 
-    mc.complete_irradiance(times, weather=i[['ghi', 'dni']])
+    with pytest.warns(UserWarning):
+        mc.complete_irradiance(times, weather=i[['ghi', 'dni']])
     assert_series_equal(mc.weather['dhi'],
                         pd.Series([356.543700, 465.44400],
                                   index=times, name='dhi'))
 
-    mc.complete_irradiance(times, weather=i[['dhi', 'dni']])
+    with pytest.warns(UserWarning):
+        mc.complete_irradiance(times, weather=i[['dhi', 'dni']])
     assert_series_equal(mc.weather['ghi'],
                         pd.Series([372.103976116, 497.087579068],
                                   index=times, name='ghi'))

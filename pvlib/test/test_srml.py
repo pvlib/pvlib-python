@@ -76,15 +76,11 @@ def test_read_srml_month_from_solardat():
 
 
 @network
-@pytest.mark.parametrize('station, year, month, filetype', [
-    ('TW', 2019, 4, 'RQ'),
-])
-def test_15_minute_dt_index(
-        station, year, month, filetype):
-    data = srml.read_srml_month_from_solardat(station, year, month, filetype)
-    start = pd.Timestamp('{:04d}{:02d}01 00:00'.format(year, month))
+def test_15_minute_dt_index():
+    data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
+    start = pd.Timestamp('20190401 00:00')
     start = start.tz_localize('Etc/GMT+8')
-    end = pd.Timestamp('{:04d}{:02d}30 23:45'.format(year, month))
+    end = pd.Timestamp('20190430 23:45')
     end = end.tz_localize('Etc/GMT+8')
     assert data.index[0] == start
     assert data.index[-1] == end
@@ -92,15 +88,11 @@ def test_15_minute_dt_index(
 
 
 @network
-@pytest.mark.parametrize('station, year, month, filetype', [
-    ('CD', 1986, 4, 'PH'),
-])
-def test_hourly_dt_index(
-        station, year, month, filetype):
-    data = srml.read_srml_month_from_solardat(station, year, month, filetype)
-    start = pd.Timestamp('{:04d}{:02d}01 00:00'.format(year, month))
+def test_hourly_dt_index():
+    data = srml.read_srml_month_from_solardat('CD', 1986, 4, 'PH')
+    start = pd.Timestamp('19860401 00:00')
     start = start.tz_localize('Etc/GMT+8')
-    end = pd.Timestamp('{:04d}{:02d}30 23:00'.format(year, month))
+    end = pd.Timestamp('19860430 23:00')
     end = end.tz_localize('Etc/GMT+8')
     assert data.index[0] == start
     assert data.index[-1] == end

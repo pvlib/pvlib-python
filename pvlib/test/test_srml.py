@@ -75,6 +75,7 @@ def test_read_srml_month_from_solardat():
     assert file_data.equals(requested)
 
 
+@network
 @pytest.mark.parametrize('station, year, month, filetype', [
     ('TW', 2019, 4, 'RQ'),
 ])
@@ -90,6 +91,7 @@ def test_15_minute_dt_index(
     assert (data.index[3::4].minute == 45).all()
 
 
+@network
 @pytest.mark.parametrize('station, year, month, filetype', [
     ('CD', 1986, 4, 'PH'),
 ])

@@ -851,8 +851,8 @@ class ModelChain(object):
 
         if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
             raise ValueError(
-                "Uncompleted irradiance data set. Please check your input " +
-                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n" +
+                "Uncompleted irradiance data set. Please check your input "
+                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n"
                 "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance

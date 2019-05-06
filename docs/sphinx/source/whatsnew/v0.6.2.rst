@@ -23,6 +23,9 @@ API Changes
   *ghi* or *zenith*.
 * Added *min_cos_zenith* and *max_zenith* keyword arguments to
   :py:func:`~pvlib.irradiance.erbs`. (:issue:`681`)
+* Deprecated :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs`
+  assumption of clear sky if no irradiance fields were provided.
+  (:issue:`705`, :issue:`707`)
 
 Enhancements
 ~~~~~~~~~~~~

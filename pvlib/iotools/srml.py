@@ -176,12 +176,11 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO'):
 
     Notes
     -----
-    File types designate the time interval of a file and if it is
-    raw or processed data. For instance, `RO` designates raw one
-    minute data and `PO` designates processed one minute data. The
-    availability of file types varies between sites. Below is a
-    table of file types and their time intervals. See [1] for site
-    information.
+    File types designate the time interval of a file and if it contains
+    raw or processed data. For instance, `RO` designates raw, one minute
+    data and `PO` designates processed one minute data. The availability
+    of file types varies between sites. Below is a table of file types
+    and their time intervals. See [1] for site information.
 
     ============= ============ ==================
     time interval raw filetype processed filetype

@@ -44,9 +44,10 @@ def read_srml(filename):
     -----
     The time index is shifted back by one interval to account for the
     daily endtime of 2400, and to avoid time parsing errors on leap
-    years. The returned data values should be understood to occur
-    during the interval from the time of the row until the time of the
-    next row. This is consistent with pandas' default labeling behavior.
+    years. The returned data values are labeled by the left endpoint of
+    interval, and should be understood to occur during the interval from
+    the time of the row until the time of the next row. This is consistent
+    with pandas' default labeling behavior.
 
     See SRML's `Archival Files`_ page for more information.
 

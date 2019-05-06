@@ -30,6 +30,7 @@ Enhancements
 * Add SOLRAD data reader to :ref:`iotools`.
 * Add EPW data reader to :ref:`iotools`. (:issue:`591`)
 * Add PSM3 reader to :ref:`iotools`. (:issue:`592`)
+* Improve ModelChain inference method error text. (:issue:`621`)
 
 Bug fixes
 ~~~~~~~~~
@@ -60,3 +61,4 @@ Contributors
 * Todd Hendricks (:ghuser:`tahentx`)
 * Kevin Anderson (:ghuser:`kevinsa5`)
 * :ghuser:`bentomlinson`
+* Jonathan Gaffiot (:ghuser:`jgaffiot`)

@@ -51,6 +51,8 @@ Bug fixes
   :py:func:`~pvlib.irradiance.klucher` and
   :py:func:`~pvlib.pvsystem.calcparams_desoto`. (:issue:`698`)
 * Fix :py:class:`~pvlib.forecast.NDFD` model by updating variables.
+* Fix :py:func:`~pvlib.iotools.srml.format_index` to parse non
+  one-minute data correctly. (:issue:`709`)
 
 
 Testing
@@ -67,3 +69,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kevinsa5`)
 * :ghuser:`bentomlinson`
 * Jonathan Gaffiot (:ghuser:`jgaffiot`)
+* Leland Boeman (:ghuser: `lboeman`)

@@ -19,7 +19,7 @@ from pandas.util.testing import assert_series_equal
 import pytest
 
 from test_pvsystem import sam_data, pvsyst_module_params
-from conftest import fail_on_pvlib_version, requires_scipy
+from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
 @pytest.fixture
@@ -485,6 +485,7 @@ def test_deprecated_07():
                    ac_model='snlinverter')
 
 
+@requires_tables
 @fail_on_pvlib_version('0.7')
 def test_deprecated_clearsky_07():
     # explicit system creation call because fail_on_pvlib_version

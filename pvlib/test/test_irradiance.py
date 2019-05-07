@@ -90,7 +90,7 @@ dt_np64 = np.datetime64(dt_datetime)
 value = 1383.636203
 
 
-@pytest.mark.parametrize('input, expected', [
+@pytest.mark.parametrize('testval, expected', [
     (doy, value),
     (np.float64(doy), value),
     (dt_date, value),
@@ -103,9 +103,9 @@ value = 1383.636203
 ])
 @pytest.mark.parametrize('method', [
     'asce', 'spencer', 'nrel', pytest.param('pyephem', marks=requires_ephem)])
-def test_get_extra_radiation(input, expected, method):
-    out = irradiance.get_extra_radiation(input)
-    assert_allclose(out, expected, atol=1)
+def test_get_extra_radiation(testval, expected, method):
+    out = irradiance.get_extra_radiation(testval, method=method)
+    assert_allclose(out, expected, atol=10)
 
 
 def test_get_extra_radiation_epoch_year():

@@ -88,7 +88,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     # consider putting asce and spencer methods in their own functions
     method = method.lower()
     if method == 'asce':
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
+        B = (2. * np.pi / 365.) * (to_doy(datetime_or_doy))
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
     elif method == 'spencer':
         B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))

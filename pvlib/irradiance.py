@@ -80,6 +80,10 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
 
     [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
     Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+
+    [5] ASCE (2005), The ASCE Standardized Reference Evapotranspiration
+    Equation, Environmental and Water Resources Institute of the American
+    Civil Engineers, Ed. R. G. Allen et al.
     """
 
     to_doy, to_datetimeindex, to_output = \

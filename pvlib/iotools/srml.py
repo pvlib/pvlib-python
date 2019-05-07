@@ -138,13 +138,23 @@ def format_index(df):
     # subracting the length of one interval and then correcting the times
     # at each former hour. interval_length is determined by taking the
     # difference of the first two rows of the time column.
+    # e.g. The first two rows of hourly data are 100 and 200
+    #      so interval_length is 100.
     interval_length = df[df.columns[1]][1] - df[df.columns[1]][0]
     df_time = df[df.columns[1]] - interval_length
     if interval_length == 100:
         # Hourly files do not require fixing the former hour timestamps.
         times = df_time
     else:
-        old_hours = df_time % 100 == (100 - interval_length)
+        # Because hours are represented by some multiple of 100, shifting
+        # results in invalid values.
+        #
+        # e.g. 200 (for 02:00) shifted becomes 185, the desired result is
+        #      145 (for 01:45)
+        #
+        # So we find all times with minutes greater than 60 and remove 40
+        # to correct to valid times.
+        old_hours = df_time % 100 > 60
         times = df_time.where(~old_hours, df_time - 40)
     times = times.apply(lambda x: '{:04.0f}'.format(x))
     doy = df_doy.apply(lambda x: '{:03.0f}'.format(x))

@@ -149,8 +149,8 @@ def format_index(df):
         # Because hours are represented by some multiple of 100, shifting
         # results in invalid values.
         #
-        # e.g. 200 (for 02:00) shifted becomes 185, the desired result is
-        #      145 (for 01:45)
+        # e.g. 200 (for 02:00) shifted by 15 minutes becomes 185, the
+        #      desired result is 145 (for 01:45)
         #
         # So we find all times with minutes greater than 60 and remove 40
         # to correct to valid times.

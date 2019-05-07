@@ -750,7 +750,10 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
                             solar_zenith, solar_azimuth)
     cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
-    F = 1 - ((dhi / ghi) ** 2)
+    # silence warning from 0 / 0
+    with np.errstate(invalid='ignore'):
+        F = 1 - ((dhi / ghi) ** 2)
+
     try:
         # fails with single point input
         F.fillna(0, inplace=True)

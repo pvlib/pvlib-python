@@ -13,7 +13,10 @@ pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 
 
 if has_siphon:
-    from pvlib.forecast import GFS, HRRR_ESRL, HRRR, NAM, NDFD, RAP
+    with warnings.catch_warnings():
+        # don't emit import warning
+        warnings.simplefilter("ignore")
+        from pvlib.forecast import GFS, HRRR_ESRL, HRRR, NAM, NDFD, RAP
 
     # setup times and location to be tested. Tucson, AZ
     _latitude = 32.2
@@ -27,7 +30,8 @@ if has_siphon:
             HRRR_ESRL, marks=[
                 skip_windows,
                 pytest.mark.xfail(reason="HRRR_ESRL is unreliable"),
-                pytest.mark.timeout(timeout=60)])]
+                pytest.mark.timeout(timeout=60),
+                pytest.mark.filterwarnings('ignore:.*experimental')])]
     _working_models = []
     _variables = ['temp_air', 'wind_speed', 'total_clouds', 'low_clouds',
                   'mid_clouds', 'high_clouds', 'dni', 'dhi', 'ghi']
@@ -75,21 +79,21 @@ def test_process_data(model):
 def test_vert_level():
     amodel = NAM()
     vert_level = 5000
-    data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
-                                     vert_level=vert_level)
+    amodel.get_processed_data(_latitude, _longitude, _start, _end,
+                              vert_level=vert_level)
+
 
 @requires_siphon
 def test_datetime():
     amodel = NAM()
     start = datetime.now()
     end = start + timedelta(days=1)
-    data = amodel.get_processed_data(_latitude, _longitude , start, end)
+    amodel.get_processed_data(_latitude, _longitude, start, end)
 
 
 @requires_siphon
 def test_queryvariables():
     amodel = GFS()
-    old_variables = amodel.variables
     new_variables = ['u-component_of_wind_height_above_ground']
     data = amodel.get_data(_latitude, _longitude, _start, _end,
                            query_variables=new_variables)

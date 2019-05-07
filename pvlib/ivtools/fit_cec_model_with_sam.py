@@ -7,15 +7,13 @@ Created on Thu May  2 12:42:24 2019
 
 from PySAM.PySSC import PySSC
 
-def fit_cec_model_with_sam(sam_dir, celltype, Vmp, Imp, Voc, Isc, alpha_sc,
-                           beta_voc, gamma_pmp, cells_in_series, temp_ref=25):
+def fit_cec_model_with_sam(celltype, Vmp, Imp, Voc, Isc, alpha_sc, beta_voc,
+                           gamma_pmp, cells_in_series, temp_ref=25):
     '''
-    Estimates parameters for the CEC single diode model using SAM SDK.
+    Estimates parameters for the CEC single diode model using the SAM SDK.
 
     Parameters
     ----------
-    sam_dir : str
-        Full path to folder containing the SAM file ssc.dll
     celltype : str
         Value is one of 'monoSi', 'multiSi', 'polySi', 'cis', 'cigs', 'cdte',
         'amorphous'

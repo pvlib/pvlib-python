@@ -8,8 +8,8 @@ jobs:
 
 - job: 'Test_conda_linux'
 
-  variables:
-  - imageName: 'ubuntu-16.04'
+  pool:
+    vmImage: 'ubuntu-16.04'
 
   strategy:
     matrix:
@@ -21,9 +21,6 @@ jobs:
         python.version: '36'
       Python37:
         python.version: '37'
-
-  pool:
-    vmImage: $(imageName)
 
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
@@ -60,9 +57,10 @@ jobs:
     displayName: 'codecov'
 
 
- job: 'Test_conda_windows'
-  variables:
-  - imageName: 'vs2017-win2016'
+- job: 'Test_conda_windows'
+
+  pool:
+    vmImage: 'vs2017-win2016'
 
   strategy:
     matrix:
@@ -74,9 +72,6 @@ jobs:
         python.version: '36'
       Python37-windows:
         python.version: '37'
-
-  pool:
-    vmImage: $(imageName)
 
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"

@@ -47,6 +47,8 @@ Bug fixes
   near horizon. (:issue:`656`)
 * Fixed numpy warnings in :py:func:`~pvlib.tracking.singleaxis` when
   comparing NaN values to limits. (:issue:`622`)
+* Fixed a bug in the day angle equation for the ASCE
+  extraterrestrial irradiance model. (:issue:`211`)
 * Silenced divide by 0 irradiance warnings in
   :py:func:`~pvlib.irradiance.klucher` and
   :py:func:`~pvlib.pvsystem.calcparams_desoto`. (:issue:`698`)

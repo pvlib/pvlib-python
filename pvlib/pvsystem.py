@@ -1276,7 +1276,9 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # by applying reflection and soiling losses to broadband plane of array
     # irradiance and not applying a spectral loss modifier, i.e.,
     # spectral_modifier = 1.0.
-    Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
+    # use errstate to silence divide by warning
+    with np.errstate(divide='ignore'):
+        Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
     Rs = R_s
 
     return IL, I0, Rs, Rsh, nNsVth

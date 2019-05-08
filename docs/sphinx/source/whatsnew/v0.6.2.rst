@@ -30,6 +30,7 @@ Enhancements
 * Add SOLRAD data reader to :ref:`iotools`.
 * Add EPW data reader to :ref:`iotools`. (:issue:`591`)
 * Add PSM3 reader to :ref:`iotools`. (:issue:`592`)
+* Improve ModelChain inference method error text. (:issue:`621`)
 
 Bug fixes
 ~~~~~~~~~
@@ -48,10 +49,19 @@ Bug fixes
   comparing NaN values to limits. (:issue:`622`)
 * Change ModelChain to apply ``pvwatts_losses`` to ``mc.dc`` instead of
   ``mc.ac``. (:issue:`696`)
+* Fixed a bug in the day angle equation for the ASCE
+  extraterrestrial irradiance model. (:issue:`211`)
+* Silenced divide by 0 irradiance warnings in
+  :py:func:`~pvlib.irradiance.klucher` and
+  :py:func:`~pvlib.pvsystem.calcparams_desoto`. (:issue:`698`)
+* Fix :py:class:`~pvlib.forecast.NDFD` model by updating variables.
+* Fix :py:func:`~pvlib.iotools.srml.format_index` to parse non
+  one-minute data correctly. (:issue:`709`)
 
 
 Testing
 ~~~~~~~
+* Remove most expected warnings emitted by test suite. (:issue:`698`)
 
 
 Contributors
@@ -63,3 +73,5 @@ Contributors
 * Kevin Anderson (:ghuser:`kevinsa5`)
 * :ghuser:`bentomlinson`
 * :ghuser:`yxh289`
+* Jonathan Gaffiot (:ghuser:`jgaffiot`)
+* Leland Boeman (:ghuser: `lboeman`)

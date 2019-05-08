@@ -28,7 +28,7 @@ jobs:
       Python36:
         python.version: '36'
         imageName: 'ubuntu-16.04'
-      Python35-windows:
+      Python36-windows:
         python.version: '36'
         imageName: 'vs2017-win2016'
       Python37:

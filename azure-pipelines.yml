@@ -30,6 +30,7 @@ jobs:
   - script: |
       source activate test_env
       pip install pytest pytest-azurepipelines
+      pip install -e .
     displayName: 'pip dependencies'
   - script: |
       source activate test_env
@@ -81,6 +82,7 @@ jobs:
   - script: |
       call activate myEnvironment
       pip install pytest pytest-azurepipelines
+      pip install -e .
     displayName: 'pip dependencies'
   - script: |
       call activate myEnvironment

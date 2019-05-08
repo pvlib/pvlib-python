@@ -77,14 +77,11 @@ jobs:
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: |
-      call activate myEnvironment
-      conda update conda --yes --quiet
   - script: conda env create --quiet --file ci/requirements-py$(python.version).yml
     displayName: Create Anaconda environment
   - script: |
       call activate myEnvironment
-      pip install pytest pytest-azurepipelines
+      pip install pytest pytest-azurepipelines pytest-mock
       pip install -e .
     displayName: 'pip dependencies'
   - script: |

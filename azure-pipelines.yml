@@ -1,6 +1,3 @@
-# Python package
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
@@ -9,34 +6,21 @@ trigger:
 
 jobs:
 
-- job: 'Test_conda'
+- job: 'Test_conda_linux'
+
+  variables:
+  - imageName: 'ubuntu-16.04'
 
   strategy:
     matrix:
       Python27:
         python.version: '27'
-        imageName: 'ubuntu-16.04'
-      Python27-windows:
-        python.version: '27'
-        imageName: 'vs2017-win2016'
       Python35:
         python.version: '35'
-        imageName: 'ubuntu-16.04'
-      Python35-windows:
-        python.version: '35'
-        imageName: 'vs2017-win2016'
       Python36:
         python.version: '36'
-        imageName: 'ubuntu-16.04'
-      Python36-windows:
-        python.version: '36'
-        imageName: 'vs2017-win2016'
       Python37:
         python.version: '37'
-        imageName: 'ubuntu-16.04'
-      Python37-windows:
-        python.version: '37'
-        imageName: 'vs2017-win2016'
 
   pool:
     vmImage: $(imageName)
@@ -44,15 +28,12 @@ jobs:
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
     displayName: Add conda to PATH
-
   - script: conda env create --quiet --file ci/requirements-py$(python.version).yml
     displayName: Create Anaconda environment
-
   - script: |
       source activate test_env
       pip install pytest pytest-azurepipelines
     displayName: 'pip dependencies'
-
   - script: |
       source activate test_env
       conda list
@@ -68,21 +49,60 @@ jobs:
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: '**/test-results.xml'
-      testRunTitle: 'Python $(python.version)'
-
+      testRunTitle: 'Linux $(python.version)'
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
       reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
-
   - script: |
       bash <(curl https://codecov.io/bash) -t bbc2bdbe-5e67-4fef-9cb7-f52fe0b703a8 -f coverage.xml -F adder -F subtractor -F conda
     displayName: 'codecov'
 
 
+ job: 'Test_conda_windows'
+  variables:
+  - imageName: 'vs2017-win2016'
+
+  strategy:
+    matrix:
+      Python27-windows:
+        python.version: '27'
+      Python35-windows:
+        python.version: '35'
+      Python36-windows:
+        python.version: '36'
+      Python37-windows:
+        python.version: '37'
+
+  pool:
+    vmImage: $(imageName)
+
+  steps:
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+  - script: conda env create --quiet --file ci/requirements-py$(python.version).yml
+    displayName: Create Anaconda environment
+  - script: |
+      call activate myEnvironment
+      pip install pytest pytest-azurepipelines
+    displayName: 'pip dependencies'
+  - script: |
+      call activate myEnvironment
+      conda list
+    displayName: 'List installed dependencies'
+  - script: |
+      call activate myEnvironment
+      pytest pvlib --junitxml=junit/test-results.xml
+    displayName: 'pytest'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Windows $(python.version)'
+
+
 - job: 'Publish'
-  dependsOn: 'Test_conda'
+  dependsOn: 'Test_conda_linux'
   pool:
     vmImage: 'ubuntu-latest'
 

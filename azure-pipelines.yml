@@ -40,10 +40,10 @@ jobs:
       source activate test_env
       pytest pvlib --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
     displayName: 'pytest'
-  - script: |
-      source activate test_env
-      flake8 pvlib
-    displayName: 'flake8'
+  # - script: |
+  #     source activate test_env
+  #     flake8 pvlib
+  #   displayName: 'flake8'
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: '**/test-results.xml'

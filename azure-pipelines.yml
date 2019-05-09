@@ -19,6 +19,7 @@ jobs:
         python.version: '35'
       Python36:
         python.version: '36'
+        coverage: true
       Python37:
         python.version: '37'
 
@@ -38,7 +39,7 @@ jobs:
     displayName: 'List installed dependencies'
   - script: |
       source activate test_env
-      pytest pvlib --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
+      pytest pvlib --junitxml=junit/test-results.xml --napoleon-docstrings --cov --cov-report=xml --cov-report=html
     displayName: 'pytest'
   # - script: |
   #     source activate test_env
@@ -53,9 +54,11 @@ jobs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
       reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+    condition: $(coverage)
   - script: |
       bash <(curl https://codecov.io/bash) -t bbc2bdbe-5e67-4fef-9cb7-f52fe0b703a8 -f coverage.xml -F adder -F subtractor -F conda
     displayName: 'codecov'
+    condition: $(coverage)
 
 
 - job: 'Test_conda_windows'
@@ -90,7 +93,7 @@ jobs:
     displayName: 'List installed dependencies'
   - script: |
       call activate myEnvironment
-      pytest pvlib --junitxml=junit/test-results.xml
+      pytest pvlib --junitxml=junit/test-results.xml --napoleon-docstrings
     displayName: 'pytest'
   - task: PublishTestResults@2
     inputs:

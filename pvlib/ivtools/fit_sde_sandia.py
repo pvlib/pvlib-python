@@ -67,15 +67,16 @@ def fit_sde_sandia(V, I, Voc, Isc, Vmp, Imp, vlim=0.2, ilim=0.1):
     # Start with V < vlim * Voc, extend by adding points until slope is
     # acceptable
     beta = [np.nan for i in range(5)]
-    beta[0] = np.nan
-    beta[1] = np.nan
-    idx = len(V <= vlim * Voc)
+    # get index of largest voltage less than/equal to limit
+    idx = _max_index(V, vlim * Voc)
     while np.isnan(beta[1]) and (idx<=len(V)):
         try:
-            p = np.polyfit(V[:idx], I[:idx], deg=1)
-            if p[1] < 0:
-                beta[0] = p[0]
-                beta[1] = -p[1] # sign change to get positive parameter value
+            coef = np.polyfit(V[:idx], I[:idx], deg=1)
+            if coef[0] < 0:
+                # intercept term
+                beta[0] = coef[1].item()
+                # sign change of slope to get positive parameter value
+                beta[1] = -coef[0].item()
         except:
             pass
         if np.isnan(beta[1]):
@@ -84,12 +85,13 @@ def fit_sde_sandia(V, I, Voc, Isc, Vmp, Imp, vlim=0.2, ilim=0.1):
     if not np.isnan(beta[0]):
         # Find parameters from exponential portion of IV curve
         Y = beta[0] - beta[1] * V - I
-        X = np.array([V, I])
-        idx = len(Y <= ilim * Isc)
+        X = np.array([np.ones_like(V), V, I]).T
+        idx = _min_index(Y, ilim * Isc)
         try:
-            p = np.linalg.lstsq(X, Y)
-            beta[3] = p[1]
-            beta[4] = p[2]
+            result = np.linalg.lstsq(X[idx:,], np.log(Y[idx:]))
+            coef = result[0]
+            beta[3] = coef[1].item()
+            beta[4] = coef[2].item()
         except:
             pass
 
@@ -111,8 +113,19 @@ def fit_sde_sandia(V, I, Voc, Isc, Vmp, Imp, vlim=0.2, ilim=0.1):
             I0 = I0_Voc
         else:
             I0 = np.nan
+    else:
+        IL = I0 = Rs = Rsh = nNsVth = np.nan
+
     return IL, I0, Rs, Rsh, nNsVth
 
 
 def _calc_I0(IL, I, V, Gp, Rs, beta3):
     return (IL - I - Gp * V - Gp * Rs * I) / np.exp(beta3 * (V + Rs * I))
+
+def _max_index(x, xlim):
+    """ Finds maximum index of value of x <= xlim """
+    return int(np.argwhere(x <= xlim)[-1])
+
+def _min_index(x, xlim):
+    """ Finds minimum index of value of x > xlim """
+    return int(np.argwhere(x > xlim)[0])

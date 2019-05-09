@@ -54,11 +54,11 @@ jobs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
       reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
-    condition: $[coverage]
+    condition: eq(variables['coverage'], true)
   - script: |
       bash <(curl https://codecov.io/bash) -t bbc2bdbe-5e67-4fef-9cb7-f52fe0b703a8 -f coverage.xml -F adder -F subtractor -F conda
     displayName: 'codecov'
-    condition: $[coverage]
+    condition: eq(variables['coverage'], true)
 
 
 - job: 'Test_conda_windows'

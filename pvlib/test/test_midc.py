@@ -9,22 +9,23 @@ import pytz
 from pvlib.iotools import midc
 
 
+@pytest.fixture
+def test_mapping():
+    return {
+        'Direct Normal [W/m^2]': 'dni',
+        'Global PSP [W/m^2]': 'ghi',
+        'Rel Humidity [%]': 'relative_humidity',
+        'Temperature @ 2m [deg C]': 'temp_air',
+        'Non Existant': 'variable',
+    }
+
+
 test_dir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 midc_testfile = os.path.join(test_dir, '../data/midc_20181014.txt')
 midc_raw_testfile = os.path.join(test_dir, '../data/midc_raw_20181018.txt')
 midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
                          '?site=UAT&begin=20181018&end=20181019')
-
-
-@pytest.mark.parametrize('field_name,expected', [
-    ('Temperature @ 2m [deg C]', 'temp_air_@_2m'),
-    ('Global PSP [W/m^2]', 'ghi_PSP'),
-    ('Temperature @ 50m [deg C]', 'temp_air_@_50m'),
-    ('Other Variable [units]', 'Other Variable [units]'),
-])
-def test_read_midc_mapper_function(field_name, expected):
-    assert midc.map_midc_to_pvlib(midc.VARIABLE_MAP, field_name) == expected
 
 
 def test_midc_format_index():
@@ -57,11 +58,10 @@ def test_midc_format_index_raw():
     assert data.index[-1] == end
 
 
-def test_read_midc_var_mapping_as_arg():
-    data = midc.read_midc(midc_testfile, variable_map=midc.VARIABLE_MAP)
-    assert 'ghi_PSP' in data.columns
-    assert 'temp_air_@_2m' in data.columns
-    assert 'temp_air_@_50m' in data.columns
+def test_read_midc_var_mapping_as_arg(test_mapping):
+    data = midc.read_midc(midc_testfile, variable_map=test_mapping)
+    assert 'ghi' in data.columns
+    assert 'temp_air' in data.columns
 
 
 @network
@@ -69,5 +69,5 @@ def test_read_midc_raw_data_from_nrel():
     start_ts = pd.Timestamp('20181018')
     end_ts = pd.Timestamp('20181019')
     data = midc.read_midc_raw_data_from_nrel('UAT', start_ts, end_ts)
-    assert 'dni_Normal' in data.columns
+    assert 'Direct Normal [W/m^2]' in data.columns
     assert data.index.size == 2880

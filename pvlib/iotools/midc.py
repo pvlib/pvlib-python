@@ -1,23 +1,7 @@
 """Functions to read NREL MIDC data.
 """
-from functools import partial
 import pandas as pd
 
-# VARIABLE_MAP is a dictionary mapping partial MIDC field names to their
-# pvlib names. See docstring of read_midc for description.
-
-VARIABLE_MAP = {
-    'Direct': 'dni',
-    'Global': 'ghi',
-    'Diffuse': 'dhi',
-    'Airmass': 'airmass',
-    'Azimuth Angle': 'solar_azimuth',
-    'Zenith Angle': 'solar_zenith',
-    'Air Temperature': 'temp_air',
-    'Temperature': 'temp_air',
-    'Dew Point Temp': 'temp_dew',
-    'Relative Humidity': 'relative_humidity',
-}
 
 # Maps problematic timezones to 'Etc/GMT' for parsing.
 
@@ -25,43 +9,6 @@ TZ_MAP = {
     'PST': 'Etc/GMT+8',
     'CST': 'Etc/GMT+6',
 }
-
-
-def map_midc_to_pvlib(variable_map, field_name):
-    """A mapper function to rename Dataframe columns to their pvlib counterparts.
-
-    Parameters
-    ----------
-    variable_map: Dictionary
-        A dictionary for mapping MIDC field name to pvlib name. See
-        VARIABLE_MAP for default value and description of how to construct
-        this argument.
-    field_name: string
-        The Column to map.
-
-    Returns
-    -------
-    label: string
-        The pvlib variable name associated with the MIDC field or the input if
-        a mapping does not exist.
-
-    Notes
-    -----
-    Will fail if field_name to be mapped matches an entry in VARIABLE_MAP and
-    does not contain brackets. This should not be an issue unless MIDC file
-    headers are updated.
-
-    """
-    new_field_name = field_name
-    for midc_name, pvlib_name in variable_map.items():
-        if field_name.startswith(midc_name):
-            # extract the instrument and units field and then remove units
-            instrument_units = field_name[len(midc_name):]
-            units_index = instrument_units.find('[')
-            instrument = instrument_units[:units_index - 1]
-            new_field_name = pvlib_name + instrument.replace(' ', '_')
-            break
-    return new_field_name
 
 
 def format_index(data):
@@ -114,7 +61,7 @@ def format_index_raw(data):
     return data
 
 
-def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
+def read_midc(filename, variable_map={}, raw_data=False):
     """Read in National Renewable Energy Laboratory Measurement and
     Instrumentation Data Center [1]_ weather data.
 
@@ -123,9 +70,9 @@ def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
     filename: string
         Filename or url of data to read.
     variable_map: dictionary
-        Dictionary for mapping MIDC field names to pvlib names. See variable
-        `VARIABLE_MAP` for default and Notes section below for a description of
-        its format.
+        Dictionary for mapping MIDC field names to pvlib names. Used to rename
+        the columns of the resulting DataFrame. Does not map names by default.
+        See Notes for an example.
     raw_data: boolean
         Set to true to use format_index_raw to correctly format the date/time
         columns of MIDC raw data files.
@@ -137,14 +84,18 @@ def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
 
     Notes
     -----
-    Keys of the `variable_map` dictionary should include the first part
-    of a MIDC field name which indicates the variable being measured.
+    The `variable_map` argument should map fields from MIDC data to pvlib
+    names.
 
-        e.g. 'Global PSP [W/m^2]' is entered as a key of 'Global'
+        e.g. If a MIDC file contains the variable 'Global Horizontal [W/m^2]',
+             passing the dictionary below will rename the column to 'ghi' in
+             the returned Dataframe.
 
-    The 'PSP' indicating instrument is appended to the pvlib variable name
-    after mapping to differentiate measurements of the same variable. For a
-    full list of pvlib variable names see the `Variable Style Rules
+             {
+                 'Global Horizontal [W/m^2]': ghi,
+             }
+
+    For a full list of pvlib variable names see the `Variable Style Rules
     <https://pvlib-python.readthedocs.io/en/latest/variables_style_rules.html>`_.
 
     Be sure to check the units for the variables you will use on the
@@ -160,8 +111,7 @@ def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
         data = format_index_raw(data)
     else:
         data = format_index(data)
-    mapper = partial(map_midc_to_pvlib, variable_map)
-    data = data.rename(columns=mapper)
+    data = data.rename(columns=variable_map)
     return data
 
 
@@ -176,6 +126,10 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
         Start date for requested data.
     end: datetime
         End date for requested data.
+    variable_map: dict
+        A dictionary mapping MIDC field names to pvlib names. Used to
+        rename columns of the resulting DataFrame. See Notes of
+        :py:func:`pvlib.iotools.read_midc` for example.
 
     Returns
     -------

@@ -47,6 +47,8 @@ Bug fixes
   near horizon. (:issue:`656`)
 * Fixed numpy warnings in :py:func:`~pvlib.tracking.singleaxis` when
   comparing NaN values to limits. (:issue:`622`)
+* Change ModelChain to apply ``pvwatts_losses`` to ``mc.dc`` instead of
+  ``mc.ac``. (:issue:`696`)
 * Fixed a bug in the day angle equation for the ASCE
   extraterrestrial irradiance model. (:issue:`211`)
 * Silenced divide by 0 irradiance warnings in
@@ -70,5 +72,6 @@ Contributors
 * Todd Hendricks (:ghuser:`tahentx`)
 * Kevin Anderson (:ghuser:`kevinsa5`)
 * :ghuser:`bentomlinson`
+* :ghuser:`yxh289`
 * Jonathan Gaffiot (:ghuser:`jgaffiot`)
 * Leland Boeman (:ghuser: `lboeman`)

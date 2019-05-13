@@ -388,7 +388,7 @@ def test_spectral_models(system, location, spectral_model):
 
 def constant_losses(mc):
     mc.losses = 0.9
-    mc.ac *= mc.losses
+    mc.dc *= mc.losses
 
 
 def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -404,6 +404,14 @@ def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
     m.assert_called_with(age=age)
     assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
     assert not mc.ac.empty
+    # check that we're applying correction to dc
+    # GH 696
+    dc_with_loss = mc.dc
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model='no_loss')
+    mc.run_model(weather.index, weather=weather)
+    assert not np.allclose(mc.dc, dc_with_loss, equal_nan=True)
 
 
 def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,

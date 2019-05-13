@@ -14,9 +14,10 @@ dependencies:
     - siphon
     - pytest
     - pytest-cov
-    - pytest-mock
     - nose
+    - shapely  # pvfactors dependency
     - pip:
         - coveralls
+        - pytest-mock
         - pytest-timeout
         - pvfactors==0.1.5

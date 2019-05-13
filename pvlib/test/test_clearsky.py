@@ -8,7 +8,7 @@ import pandas as pd
 import pytz
 
 import pytest
-from numpy.testing import assert_almost_equal, assert_allclose
+from numpy.testing import assert_allclose
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
@@ -308,8 +308,9 @@ def test_simplified_solis_scalar_neg_elevation():
 
 
 def test_simplified_solis_series_elevation():
-    expected = pd.DataFrame(np.array([[959.335463,  1064.653145,  129.125602]]),
-                            columns=['dni', 'ghi', 'dhi'])
+    expected = pd.DataFrame(
+        np.array([[959.335463,  1064.653145,  129.125602]]),
+        columns=['dni', 'ghi', 'dhi'])
     expected = expected[['ghi', 'dni', 'dhi']]
 
     out = clearsky.simplified_solis(pd.Series(80))

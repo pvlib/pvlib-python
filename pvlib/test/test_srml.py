@@ -73,3 +73,27 @@ def test_read_srml_month_from_solardat():
     file_data = srml.read_srml(url)
     requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
     assert file_data.equals(requested)
+
+
+@network
+def test_15_minute_dt_index():
+    data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
+    start = pd.Timestamp('20190401 00:00')
+    start = start.tz_localize('Etc/GMT+8')
+    end = pd.Timestamp('20190430 23:45')
+    end = end.tz_localize('Etc/GMT+8')
+    assert data.index[0] == start
+    assert data.index[-1] == end
+    assert (data.index[3::4].minute == 45).all()
+
+
+@network
+def test_hourly_dt_index():
+    data = srml.read_srml_month_from_solardat('CD', 1986, 4, 'PH')
+    start = pd.Timestamp('19860401 00:00')
+    start = start.tz_localize('Etc/GMT+8')
+    end = pd.Timestamp('19860430 23:00')
+    end = end.tz_localize('Etc/GMT+8')
+    assert data.index[0] == start
+    assert data.index[-1] == end
+    assert (data.index.minute == 0).all()

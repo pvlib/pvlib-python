@@ -165,7 +165,7 @@ def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
     return data
 
 
-def read_midc_raw_data_from_nrel(site, start, end):
+def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
     """Request and read MIDC data directly from the raw data api.
 
     Parameters
@@ -194,4 +194,4 @@ def read_midc_raw_data_from_nrel(site, start, end):
             'end': end.strftime('%Y%m%d')}
     endpoint = 'https://midcdmz.nrel.gov/apps/data_api.pl?'
     url = endpoint + '&'.join(['{}={}'.format(k, v) for k, v in args.items()])
-    return read_midc(url, raw_data=True)
+    return read_midc(url, variable_map=variable_map, raw_data=True)

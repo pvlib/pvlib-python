@@ -709,7 +709,7 @@ class ModelChain(object):
 
     def pvwatts_losses(self):
         self.losses = (100 - self.system.pvwatts_losses()) / 100.
-        self.ac *= self.losses
+        self.dc *= self.losses
         return self
 
     def no_extra_losses(self):
@@ -929,7 +929,7 @@ class ModelChain(object):
         self.effective_irradiance_model()
         self.temp_model()
         self.dc_model()
-        self.ac_model()
         self.losses_model()
+        self.ac_model()
 
         return self

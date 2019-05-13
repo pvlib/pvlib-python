@@ -42,10 +42,11 @@ def read_srml(filename):
 
     Notes
     -----
-    The time index is shifted back one minute to account for 2400 hours,
-    and to avoid time parsing errors on leap years. The returned data
-    values should be understood to occur during the interval from the
-    time of the row until the time of the next row. This is consistent
+    The time index is shifted back by one interval to account for the
+    daily endtime of 2400, and to avoid time parsing errors on leap
+    years. The returned data values are labeled by the left endpoint of
+    interval, and should be understood to occur during the interval from
+    the time of the row until the time of the next row. This is consistent
     with pandas' default labeling behavior.
 
     See SRML's `Archival Files`_ page for more information.
@@ -134,11 +135,27 @@ def format_index(df):
     year = int(df.columns[1])
     df_doy = df[df.columns[0]]
     # Times are expressed as integers from 1-2400, we convert to 0-2359 by
-    # subracting one and then correcting the minutes at each former hour.
-    df_time = df[df.columns[1]] - 1
-    fifty_nines = df_time % 100 == 99
-    times = df_time.where(~fifty_nines, df_time - 40)
-
+    # subracting the length of one interval and then correcting the times
+    # at each former hour. interval_length is determined by taking the
+    # difference of the first two rows of the time column.
+    # e.g. The first two rows of hourly data are 100 and 200
+    #      so interval_length is 100.
+    interval_length = df[df.columns[1]][1] - df[df.columns[1]][0]
+    df_time = df[df.columns[1]] - interval_length
+    if interval_length == 100:
+        # Hourly files do not require fixing the former hour timestamps.
+        times = df_time
+    else:
+        # Because hours are represented by some multiple of 100, shifting
+        # results in invalid values.
+        #
+        # e.g. 200 (for 02:00) shifted by 15 minutes becomes 185, the
+        #      desired result is 145 (for 01:45)
+        #
+        # So we find all times with minutes greater than 60 and remove 40
+        # to correct to valid times.
+        old_hours = df_time % 100 > 60
+        times = df_time.where(~old_hours, df_time - 40)
     times = times.apply(lambda x: '{:04.0f}'.format(x))
     doy = df_doy.apply(lambda x: '{:03.0f}'.format(x))
     dts = pd.to_datetime(str(year) + '-' + doy + '-' + times,
@@ -161,13 +178,29 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO'):
     month: int
         Month to request data for.
     filetype: string
-        SRML file type to gather. 'RO' and 'PO' are the
-        only minute resolution files.
+        SRML file type to gather. See notes for explanation.
 
     Returns
     -------
     data: pd.DataFrame
         One month of data from SRML.
+
+    Notes
+    -----
+    File types designate the time interval of a file and if it contains
+    raw or processed data. For instance, `RO` designates raw, one minute
+    data and `PO` designates processed one minute data. The availability
+    of file types varies between sites. Below is a table of file types
+    and their time intervals. See [1] for site information.
+
+    ============= ============ ==================
+    time interval raw filetype processed filetype
+    ============= ============ ==================
+    1 minute      RO           PO
+    5 minute      RF           PF
+    15 minute     RQ           PQ
+    hourly        RH           PH
+    ============= ============ ==================
 
     References
     ----------

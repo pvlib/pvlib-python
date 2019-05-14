@@ -20,3 +20,4 @@ dependencies:
         - coveralls
         - pytest-mock
         - pvfactors==0.1.5
+        - nrel-pysam

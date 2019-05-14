@@ -3,6 +3,93 @@
 import pandas as pd
 
 
+# MIDC_VARIABLE_MAP maps some variables of interest at each MIDC site to their
+# pvlib counterparts. The mapping dictionary for a site can be found by looking
+# up the Site's id in the dictionary. It is not a comprehensive list, and may
+# not be the best fit for your application, but should serve as a base for
+# creating your own mappings.
+#
+# In particular, these mappings coincide with the raw ddata files.
+# All site's field list can be found at:
+#     https://midcdmz.nrel.gov/apps/daily.pl?site=<SITE ID>&live=1
+# Where id is the key found in this dictionary
+MIDC_VARIABLE_MAP = {
+    'BMS': {
+        'Global CMP22 (vent/cor) [W/m^2]': 'ghi',
+        'Direct NIP [W/m^2]': 'dni',
+        'Diffuse CM22-1 (vent/cor) [W/m^2]': 'dhi',
+        'Avg Wind Speed @ 6ft [m/s]': 'wind_speed',
+        'Tower Dry Bulb Temp [deg C]': 'temp_air',
+        'Tower RH [%]': 'relative_humidity'},
+    'UOSMRL': {
+        'Global CMP22 [W/m^2]': 'ghi',
+        'Direct NIP [W/m^2]': 'dni',
+        'Diffuse Schenk [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Relative Humidity [%]': 'relative_humidity',
+        'Avg Wind Speed @ 10m [m/s]': 'wind_speed'},
+    'HSU': {
+        'Global Horiz [W/m^2]': 'ghi',
+        'Direct Normal (calc) [W/m^2]': 'dni',
+        'Diffuse Horiz (band_corr) [W/m^2]': 'dhi'},
+    'UTPASRL': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'CHP1 Temp [deg C]': 'temp_air'},
+    'UAT': {
+        'Global Horiz (platform) [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horiz [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Rel Humidity [%]': 'relative_humidity',
+        'Avg Wind Speed @ 3m [m/s]': 'wind_speed'},
+    'STAC': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'Avg Wind Speed @ 10m [m/s]': 'wind_speed',
+        'Air Temperature [deg C]': 'temp_air',
+        'Rel Humidity [%]': 'relative_humidity'},
+    'UNLV': {
+        'Global Horiz [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horiz (calc) [W/m^2]': 'dhi',
+        'Dry Bulb Temp [deg C]': 'temp_air',
+        'Avg Wind Speed @ 30ft [m/s]': 'wind_speed'},
+    'ORNL': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Rel Humidity [%]': 'relative_humidity',
+        'Avg Wind Speed @ 42ft [m/s]': 'wind_speed'},
+    'NELHA': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Air Temperature [W/m^2]': 'temp_air',
+        'Avg Wind Speed @ 10m [m/s]': 'wind_speed',
+        'Rel Humidity [%]': 'relative_humidity'},
+    'ULL': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Rel Humidity [%]': 'relative_humidity',
+        'Avg Wind Speed @ 3m [m/s]': 'wind_speed'},
+    'VTIF': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Avg Wind Speed @ 3m [m/s]': 'wind_speed',
+        'Rel Humidity [%]': 'relative_humidity'},
+    'NWTC': {
+        'Global PSP [W/m^2]': 'ghi',
+        'Temperature @ 2m [deg C]': 'temp_air',
+        'Avg Wind Speed @ 2m [m/s]': 'wind_speed',
+        'Relative Humidity [%]': 'relative_humidity'}}
+
+
 # Maps problematic timezones to 'Etc/GMT' for parsing.
 
 TZ_MAP = {
@@ -95,6 +182,7 @@ def read_midc(filename, variable_map={}, raw_data=False):
                  'Global Horizontal [W/m^2]': ghi,
              }
 
+    See the MIDC_VARIABLE_MAP for collection of mappings by site.
     For a full list of pvlib variable names see the `Variable Style Rules
     <https://pvlib-python.readthedocs.io/en/latest/variables_style_rules.html>`_.
 

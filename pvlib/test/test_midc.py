@@ -68,6 +68,8 @@ def test_read_midc_var_mapping_as_arg(test_mapping):
 def test_read_midc_raw_data_from_nrel():
     start_ts = pd.Timestamp('20181018')
     end_ts = pd.Timestamp('20181019')
-    data = midc.read_midc_raw_data_from_nrel('UAT', start_ts, end_ts)
-    assert 'Direct Normal [W/m^2]' in data.columns
+    var_map = midc.MIDC_VARIABLE_MAP['UAT']
+    data = midc.read_midc_raw_data_from_nrel('UAT', start_ts, end_ts, var_map)
+    for k,v in var_map.items():
+        assert v in data.columns
     assert data.index.size == 2880

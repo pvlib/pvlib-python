@@ -14,8 +14,8 @@ dependencies:
     - siphon
     - pytest
     - pytest-cov
-    - pytest-mock
     - nose
     - pip:
         - coveralls
+        - pytest-mock
         - pytest-timeout

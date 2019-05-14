@@ -1,23 +1,94 @@
 """Functions to read NREL MIDC data.
 """
-from functools import partial
 import pandas as pd
 
-# VARIABLE_MAP is a dictionary mapping partial MIDC field names to their
-# pvlib names. See docstring of read_midc for description.
 
-VARIABLE_MAP = {
-    'Direct': 'dni',
-    'Global': 'ghi',
-    'Diffuse': 'dhi',
-    'Airmass': 'airmass',
-    'Azimuth Angle': 'solar_azimuth',
-    'Zenith Angle': 'solar_zenith',
-    'Air Temperature': 'temp_air',
-    'Temperature': 'temp_air',
-    'Dew Point Temp': 'temp_dew',
-    'Relative Humidity': 'relative_humidity',
-}
+# MIDC_VARIABLE_MAP maps some variables of interest at each MIDC site to their
+# pvlib counterparts. The mapping dictionary for a site can be found by looking
+# up the Site's id in the dictionary. It is not a comprehensive list, and may
+# not be the best fit for your application, but should serve as a base for
+# creating your own mappings.
+#
+# In particular, these mappings coincide with the raw ddata files.
+# All site's field list can be found at:
+#     https://midcdmz.nrel.gov/apps/daily.pl?site=<SITE ID>&live=1
+# Where id is the key found in this dictionary
+MIDC_VARIABLE_MAP = {
+    'BMS': {
+        'Global CMP22 (vent/cor) [W/m^2]': 'ghi',
+        'Direct NIP [W/m^2]': 'dni',
+        'Diffuse CM22-1 (vent/cor) [W/m^2]': 'dhi',
+        'Avg Wind Speed @ 6ft [m/s]': 'wind_speed',
+        'Tower Dry Bulb Temp [deg C]': 'temp_air',
+        'Tower RH [%]': 'relative_humidity'},
+    'UOSMRL': {
+        'Global CMP22 [W/m^2]': 'ghi',
+        'Direct NIP [W/m^2]': 'dni',
+        'Diffuse Schenk [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Relative Humidity [%]': 'relative_humidity',
+        'Avg Wind Speed @ 10m [m/s]': 'wind_speed'},
+    'HSU': {
+        'Global Horiz [W/m^2]': 'ghi',
+        'Direct Normal (calc) [W/m^2]': 'dni',
+        'Diffuse Horiz (band_corr) [W/m^2]': 'dhi'},
+    'UTPASRL': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'CHP1 Temp [deg C]': 'temp_air'},
+    'UAT': {
+        'Global Horiz (platform) [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horiz [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Rel Humidity [%]': 'relative_humidity',
+        'Avg Wind Speed @ 3m [m/s]': 'wind_speed'},
+    'STAC': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'Avg Wind Speed @ 10m [m/s]': 'wind_speed',
+        'Air Temperature [deg C]': 'temp_air',
+        'Rel Humidity [%]': 'relative_humidity'},
+    'UNLV': {
+        'Global Horiz [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horiz (calc) [W/m^2]': 'dhi',
+        'Dry Bulb Temp [deg C]': 'temp_air',
+        'Avg Wind Speed @ 30ft [m/s]': 'wind_speed'},
+    'ORNL': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Rel Humidity [%]': 'relative_humidity',
+        'Avg Wind Speed @ 42ft [m/s]': 'wind_speed'},
+    'NELHA': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Air Temperature [W/m^2]': 'temp_air',
+        'Avg Wind Speed @ 10m [m/s]': 'wind_speed',
+        'Rel Humidity [%]': 'relative_humidity'},
+    'ULL': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Rel Humidity [%]': 'relative_humidity',
+        'Avg Wind Speed @ 3m [m/s]': 'wind_speed'},
+    'VTIF': {
+        'Global Horizontal [W/m^2]': 'ghi',
+        'Direct Normal [W/m^2]': 'dni',
+        'Diffuse Horizontal [W/m^2]': 'dhi',
+        'Air Temperature [deg C]': 'temp_air',
+        'Avg Wind Speed @ 3m [m/s]': 'wind_speed',
+        'Rel Humidity [%]': 'relative_humidity'},
+    'NWTC': {
+        'Global PSP [W/m^2]': 'ghi',
+        'Temperature @ 2m [deg C]': 'temp_air',
+        'Avg Wind Speed @ 2m [m/s]': 'wind_speed',
+        'Relative Humidity [%]': 'relative_humidity'}}
+
 
 # Maps problematic timezones to 'Etc/GMT' for parsing.
 
@@ -25,43 +96,6 @@ TZ_MAP = {
     'PST': 'Etc/GMT+8',
     'CST': 'Etc/GMT+6',
 }
-
-
-def map_midc_to_pvlib(variable_map, field_name):
-    """A mapper function to rename Dataframe columns to their pvlib counterparts.
-
-    Parameters
-    ----------
-    variable_map: Dictionary
-        A dictionary for mapping MIDC field name to pvlib name. See
-        VARIABLE_MAP for default value and description of how to construct
-        this argument.
-    field_name: string
-        The Column to map.
-
-    Returns
-    -------
-    label: string
-        The pvlib variable name associated with the MIDC field or the input if
-        a mapping does not exist.
-
-    Notes
-    -----
-    Will fail if field_name to be mapped matches an entry in VARIABLE_MAP and
-    does not contain brackets. This should not be an issue unless MIDC file
-    headers are updated.
-
-    """
-    new_field_name = field_name
-    for midc_name, pvlib_name in variable_map.items():
-        if field_name.startswith(midc_name):
-            # extract the instrument and units field and then remove units
-            instrument_units = field_name[len(midc_name):]
-            units_index = instrument_units.find('[')
-            instrument = instrument_units[:units_index - 1]
-            new_field_name = pvlib_name + instrument.replace(' ', '_')
-            break
-    return new_field_name
 
 
 def format_index(data):
@@ -114,7 +148,7 @@ def format_index_raw(data):
     return data
 
 
-def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
+def read_midc(filename, variable_map={}, raw_data=False):
     """Read in National Renewable Energy Laboratory Measurement and
     Instrumentation Data Center [1]_ weather data.
 
@@ -123,9 +157,9 @@ def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
     filename: string
         Filename or url of data to read.
     variable_map: dictionary
-        Dictionary for mapping MIDC field names to pvlib names. See variable
-        `VARIABLE_MAP` for default and Notes section below for a description of
-        its format.
+        Dictionary for mapping MIDC field names to pvlib names. Used to rename
+        the columns of the resulting DataFrame. Does not map names by default.
+        See Notes for an example.
     raw_data: boolean
         Set to true to use format_index_raw to correctly format the date/time
         columns of MIDC raw data files.
@@ -137,14 +171,19 @@ def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
 
     Notes
     -----
-    Keys of the `variable_map` dictionary should include the first part
-    of a MIDC field name which indicates the variable being measured.
+    The `variable_map` argument should map fields from MIDC data to pvlib
+    names.
 
-        e.g. 'Global PSP [W/m^2]' is entered as a key of 'Global'
+        e.g. If a MIDC file contains the variable 'Global Horizontal [W/m^2]',
+             passing the dictionary below will rename the column to 'ghi' in
+             the returned Dataframe.
 
-    The 'PSP' indicating instrument is appended to the pvlib variable name
-    after mapping to differentiate measurements of the same variable. For a
-    full list of pvlib variable names see the `Variable Style Rules
+             {
+                 'Global Horizontal [W/m^2]': ghi,
+             }
+
+    See the MIDC_VARIABLE_MAP for collection of mappings by site.
+    For a full list of pvlib variable names see the `Variable Style Rules
     <https://pvlib-python.readthedocs.io/en/latest/variables_style_rules.html>`_.
 
     Be sure to check the units for the variables you will use on the
@@ -160,12 +199,11 @@ def read_midc(filename, variable_map=VARIABLE_MAP, raw_data=False):
         data = format_index_raw(data)
     else:
         data = format_index(data)
-    mapper = partial(map_midc_to_pvlib, variable_map)
-    data = data.rename(columns=mapper)
+    data = data.rename(columns=variable_map)
     return data
 
 
-def read_midc_raw_data_from_nrel(site, start, end):
+def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
     """Request and read MIDC data directly from the raw data api.
 
     Parameters
@@ -176,6 +214,10 @@ def read_midc_raw_data_from_nrel(site, start, end):
         Start date for requested data.
     end: datetime
         End date for requested data.
+    variable_map: dict
+        A dictionary mapping MIDC field names to pvlib names. Used to
+        rename columns of the resulting DataFrame. See Notes of
+        :py:func:`pvlib.iotools.read_midc` for example.
 
     Returns
     -------
@@ -194,4 +236,4 @@ def read_midc_raw_data_from_nrel(site, start, end):
             'end': end.strftime('%Y%m%d')}
     endpoint = 'https://midcdmz.nrel.gov/apps/data_api.pl?'
     url = endpoint + '&'.join(['{}={}'.format(k, v) for k, v in args.items()])
-    return read_midc(url, raw_data=True)
+    return read_midc(url, variable_map=variable_map, raw_data=True)

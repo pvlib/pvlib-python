@@ -26,6 +26,9 @@ API Changes
 * Deprecated :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs`
   assumption of clear sky if no irradiance fields were provided.
   (:issue:`705`, :issue:`707`)
+* Remove automatic column name mapping from :py:func:`~pvlib.iotools.read_midc`
+  and :py:func:`~pvlib.iotools.read_midc_raw_data_from_nrel` and added
+  optional keyword argument `variable_map` to map columns.
 
 Enhancements
 ~~~~~~~~~~~~

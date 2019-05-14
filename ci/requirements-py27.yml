@@ -21,4 +21,3 @@ dependencies:
         - pytest-mock
         - pytest-timeout
         - pvfactors==0.1.5
-        - nrel-pysam

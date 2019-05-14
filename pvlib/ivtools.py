@@ -6,7 +6,6 @@ Created on Fri Mar 29 10:34:10 2019
 """
 
 import numpy as np
-from PySAM import PySSC
 
 
 def fit_cec_with_sam(celltype, Vmp, Imp, Voc, Isc, alpha_sc, beta_voc,
@@ -62,7 +61,15 @@ def fit_cec_with_sam(celltype, Vmp, Imp, Voc, Isc, alpha_sc, beta_voc,
     Adjust : float
         The adjustment to the temperature coefficient for short circuit
         current, in percent
+
+    Raises:
+        ImportError if NREL-PySAM is not installed
     '''
+
+    try:
+        from PySAM import PySSC
+    except ImportError as e:
+        raise(e)
 
     datadict = {"tech_model": '6parsolve', 'celltype': celltype, 'Vmp': Vmp,
                 'Imp': Imp, 'Voc': Voc, 'Isc': Isc, 'alpha_isc': alpha_sc,

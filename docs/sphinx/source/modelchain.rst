@@ -24,7 +24,8 @@ Modeling with a :py:class:`~.ModelChain` typically involves 3 steps:
 1. Creating the :py:class:`~.ModelChain`.
 2. Executing the :py:meth:`ModelChain.run_model() <.ModelChain.run_model>`
    method with prepared weather data.
-3. Examining the model results that :py:meth:`~.ModelChain.run_model` stored in attributes of the :py:class:`~.ModelChain`.
+3. Examining the model results that :py:meth:`~.ModelChain.run_model`
+   stored in attributes of the :py:class:`~.ModelChain`.
 
 A simple ModelChain example
 ---------------------------
@@ -212,8 +213,13 @@ method, :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs`, computes
 parameters such as solar position, airmass, angle of incidence, and
 plane of array irradiance. The
 :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs` method also
-assigns default values for irradiance (clear sky), temperature (20 C),
+assigns default values for temperature (20 C)
 and wind speed (0 m/s) if these inputs are not provided.
+:py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs` requires all irradiance
+components (GHI, DNI, and DHI). See
+:py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance` and
+:ref:`dniestmodels` for methods and functions that can help fully define
+the irradiance inputs.
 
 Next, :py:meth:`~pvlib.modelchain.ModelChain.run_model` calls the
 wrapper methods for AOI loss, spectral loss, effective irradiance, cell

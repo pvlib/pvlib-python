@@ -64,7 +64,7 @@ def fit_cec_with_sam(celltype, Vmp, Imp, Voc, Isc, alpha_sc, beta_voc,
         current, in percent
     '''
 
-    datadict = {"tech_model": '6parsolve' ,'celltype': celltype, 'Vmp': Vmp,
+    datadict = {"tech_model": '6parsolve', 'celltype': celltype, 'Vmp': Vmp,
                 'Imp': Imp, 'Voc': Voc, 'Isc': Isc, 'alpha_isc': alpha_sc,
                 'beta_voc': beta_voc, 'gamma_pmp': gamma_pmp,
                 'Nser': cells_in_series, 'Tref': temp_ref}
@@ -141,7 +141,7 @@ def fit_sde_sandia(V, I, Voc, Isc, Vmp, Imp, vlim=0.2, ilim=0.1):
     beta = [np.nan for i in range(5)]
     # get index of largest voltage less than/equal to limit
     idx = _max_index(V, vlim * Voc)
-    while np.isnan(beta[1]) and (idx<=len(V)):
+    while np.isnan(beta[1]) and (idx <= len(V)):
         try:
             coef = np.polyfit(V[:idx], I[:idx], deg=1)
             if coef[0] < 0:
@@ -149,8 +149,8 @@ def fit_sde_sandia(V, I, Voc, Isc, Vmp, Imp, vlim=0.2, ilim=0.1):
                 beta[0] = coef[1].item()
                 # sign change of slope to get positive parameter value
                 beta[1] = -coef[0].item()
-        except:
-            pass
+        except Exception as e:
+            raise(e)
         if np.isnan(beta[1]):
             idx += 1
 
@@ -160,12 +160,12 @@ def fit_sde_sandia(V, I, Voc, Isc, Vmp, Imp, vlim=0.2, ilim=0.1):
         X = np.array([np.ones_like(V), V, I]).T
         idx = _min_index(Y, ilim * Isc)
         try:
-            result = np.linalg.lstsq(X[idx:,], np.log(Y[idx:]))
+            result = np.linalg.lstsq(X[idx:, ], np.log(Y[idx:]))
             coef = result[0]
             beta[3] = coef[1].item()
             beta[4] = coef[2].item()
-        except:
-            pass
+        except Exception as e:
+            raise(e)
 
     if not any([np.isnan(beta[i]) for i in [0, 1, 3, 4]]):
         # calculate parameters

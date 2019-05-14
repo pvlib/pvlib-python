@@ -70,6 +70,6 @@ def test_read_midc_raw_data_from_nrel():
     end_ts = pd.Timestamp('20181019')
     var_map = midc.MIDC_VARIABLE_MAP['UAT']
     data = midc.read_midc_raw_data_from_nrel('UAT', start_ts, end_ts, var_map)
-    for k,v in var_map.items():
+    for k, v in var_map.items():
         assert v in data.columns
     assert data.index.size == 2880

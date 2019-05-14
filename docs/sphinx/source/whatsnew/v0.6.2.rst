@@ -31,6 +31,8 @@ Enhancements
 * Add EPW data reader to :ref:`iotools`. (:issue:`591`)
 * Add PSM3 reader to :ref:`iotools`. (:issue:`592`)
 * Improve ModelChain inference method error text. (:issue:`621`)
+* Update :py:func:`~pvlib.bifacial.pvfactors_timeseries` and tests to use
+  ``pvfactors`` v1.0.1 (:issue:`709`)
 
 Bug fixes
 ~~~~~~~~~
@@ -75,3 +77,4 @@ Contributors
 * :ghuser:`yxh289`
 * Jonathan Gaffiot (:ghuser:`jgaffiot`)
 * Leland Boeman (:ghuser: `lboeman`)
+* Marc Anoma (:ghuser: `anomam`)

@@ -8,12 +8,14 @@ Created on Thu May  9 10:51:15 2019
 import numpy as np
 from pvlib import pvsystem
 from pvlib.ivtools import fit_sde_sandia
+from conftest import requires_scipy
 
 
 def get_test_iv_params():
     return {'IL': 8.0, 'I0': 5e-10, 'Rsh': 1000, 'Rs': 0.2, 'nNsVth': 1.61864}
 
 
+@requires_scipy
 def test_fit_sde_sandia():
     test_params = get_test_iv_params()
     testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],

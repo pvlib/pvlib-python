@@ -134,13 +134,13 @@ The following code demonstrates how to use
 :py:class:`~pvlib.modelchain.ModelChain` objects to accomplish our
 system modeling goal. ModelChain objects provide convenience methods
 that can provide default selections for models and can also fill
-necessary input data with modeled data. For example, no air temperature
+necessary input with modeled data. For example, no air temperature
 or wind speed data is provided in the input *weather* DataFrame,
 so the ModelChain object defaults to 20 C and 0 m/s. Also, no irradiance
 transposition model is specified (keyword argument `transposition` for
 ModelChain) so the ModelChain defaults to the `haydavies` model. In this
 example, ModelChain infers the DC power model from the module provided
-by examining the parameters defined for module.
+by examining the parameters defined for the module.
 
 .. ipython:: python
 

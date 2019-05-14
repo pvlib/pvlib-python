@@ -30,7 +30,7 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       source activate test_env
-      pip install pytest pytest-azurepipelines
+      pip install pytest-azurepipelines
       pip install -e .
     displayName: 'pip dependencies'
   - script: |
@@ -83,16 +83,16 @@ jobs:
   - script: conda env create --quiet --file ci/requirements-py$(python.version).yml
     displayName: Create Anaconda environment
   - script: |
-      call activate myEnvironment
-      pip install pytest pytest-azurepipelines pytest-mock
+      call activate test_env
+      pip install pytest-azurepipelines
       pip install -e .
     displayName: 'pip dependencies'
   - script: |
-      call activate myEnvironment
+      call activate test_env
       conda list
     displayName: 'List installed dependencies'
   - script: |
-      call activate myEnvironment
+      call activate test_env
       pytest pvlib --junitxml=junit/test-results.xml
     displayName: 'pytest'
   - task: PublishTestResults@2

@@ -11,7 +11,7 @@ dependencies:
     - pytz
     - ephem
     - numba
-#    - siphon
+    - siphon
     - pytest
     - pytest-cov
     - nose
@@ -19,4 +19,5 @@ dependencies:
     - pip:
         - coveralls
         - pytest-mock
+        - pytest-timeout
         - pvfactors==0.1.5

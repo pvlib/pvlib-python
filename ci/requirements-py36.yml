@@ -19,4 +19,5 @@ dependencies:
     - pip:
         - coveralls
         - pytest-mock
+        - pytest-timeout
         - pvfactors==0.1.5

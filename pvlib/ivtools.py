@@ -64,41 +64,18 @@ def fit_cec_with_sam(celltype, Vmp, Imp, Voc, Isc, alpha_sc, beta_voc,
         current, in percent
     '''
 
-    try:
-        ssc = PySSC.PySSC()
-    except Exception as e:
-        raise(e)
+    datadict = {"tech_model": '6parsolve' ,'celltype': celltype, 'Vmp': Vmp,
+                'Imp': Imp, 'Voc': Voc, 'Isc': Isc, 'alpha_isc': alpha_sc,
+                'beta_voc': beta_voc, 'gamma_pmp': gamma_pmp,
+                'Nser': cells_in_series, 'Tref': temp_ref}
 
-    data = ssc.data_create()
-
-    ssc.data_set_string(data, b'celltype', celltype.encode('utf-8'))
-    ssc.data_set_number(data, b'Vmp', Vmp)
-    ssc.data_set_number(data, b'Imp', Imp)
-    ssc.data_set_number(data, b'Voc', Voc)
-    ssc.data_set_number(data, b'Isc', Isc)
-    ssc.data_set_number(data, b'alpha_isc', alpha_sc)
-    ssc.data_set_number(data, b'beta_voc', beta_voc)
-    ssc.data_set_number(data, b'gamma_pmp', gamma_pmp)
-    ssc.data_set_number(data, b'Nser', cells_in_series)
-    ssc.data_set_number(data, b'Tref', temp_ref)
-
-    solver = ssc.module_create(b'6parsolve')
-    ssc.module_exec_set_print(0)
-    if ssc.module_exec(solver, data) == 0:
-        print('IV curve fit error')
-        idx = 1
-        msg = ssc.module_log(solver, 0)
-        while (msg != None):
-            print('	: ' + msg.decode("utf - 8"))
-            msg = ssc.module_log(solver, idx)
-            idx = idx + 1
-    ssc.module_free(solver)
-    a_ref = ssc.data_get_number(data, b'a')
-    I_L_ref = ssc.data_get_number(data, b'Il')
-    I_o_ref = ssc.data_get_number(data, b'Io')
-    R_s = ssc.data_get_number(data, b'Rs')
-    R_sh_ref = ssc.data_get_number(data, b'Rsh')
-    Adjust = ssc.data_get_number(data, b'Adj')
+    result = PySSC.ssc_sim_from_dict(datadict)
+    a_ref = result['a']
+    I_L_ref = result['Il']
+    I_o_ref = result['Io']
+    R_s = result['Rs']
+    R_sh_ref = result['Rsh']
+    Adjust = result['Adj']
 
     return I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust
 

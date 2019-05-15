@@ -83,5 +83,5 @@ Contributors
 * :ghuser:`bentomlinson`
 * :ghuser:`yxh289`
 * Jonathan Gaffiot (:ghuser:`jgaffiot`)
-* Leland Boeman (:ghuser: `lboeman`)
-* Marc Anoma (:ghuser: `anomam`)
+* Leland Boeman (:ghuser:`lboeman`)
+* Marc Anoma (:ghuser:`anomam`)

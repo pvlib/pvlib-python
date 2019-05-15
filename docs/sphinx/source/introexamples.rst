@@ -134,14 +134,13 @@ The following code demonstrates how to use
 :py:class:`~pvlib.modelchain.ModelChain` objects to accomplish our
 system modeling goal. ModelChain objects provide convenience methods
 that can provide default selections for models and can also fill
-necessary input data with modeled data. In our example below, we use
-convenience methods. For example, no irradiance data is provided as
-input, so the ModelChain object substitutes irradiance from a clear-sky
-model via the prepare_inputs method. Also, no irradiance transposition
-model is specified (keyword argument `transposition` for ModelChain) so
-the ModelChain defaults to the `haydavies` model. In this example,
-ModelChain infers the DC power model from the module provided by
-examining the parameters defined for module.
+necessary input with modeled data. For example, no air temperature
+or wind speed data is provided in the input *weather* DataFrame,
+so the ModelChain object defaults to 20 C and 0 m/s. Also, no irradiance
+transposition model is specified (keyword argument `transposition` for
+ModelChain) so the ModelChain defaults to the `haydavies` model. In this
+example, ModelChain infers the DC power model from the module provided
+by examining the parameters defined for the module.
 
 .. ipython:: python
 
@@ -157,12 +156,12 @@ examining the parameters defined for module.
         times = naive_times.tz_localize(timezone)
         location = Location(latitude, longitude, name=name, altitude=altitude,
                             tz=timezone)
-        # very experimental
+        weather = location.get_clearsky(times)
         mc = ModelChain(system, location,
                         orientation_strategy='south_at_latitude_tilt')
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
-        mc.run_model(times)
+        mc.run_model(times=times, weather=weather)
         annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 

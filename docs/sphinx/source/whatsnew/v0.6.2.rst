@@ -41,7 +41,7 @@ Enhancements
 * Add PSM3 reader to :ref:`iotools`. (:issue:`592`)
 * Improve ModelChain inference method error text. (:issue:`621`)
 * Add gold I-V data set for the single-diode model, along with ``i_from_v()``
-and ``v_from_i()`` accuracy and performance benchmarking
+and ``v_from_i()`` accuracy and performance benchmarking (:issue:`411`)
 
 Bug fixes
 ~~~~~~~~~

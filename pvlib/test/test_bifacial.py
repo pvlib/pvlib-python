@@ -2,10 +2,13 @@ import pandas as pd
 from datetime import datetime
 from pvlib.bifacial import pvfactors_timeseries
 from conftest import requires_pvfactors
+import pytest
 
 
 @requires_pvfactors
-def test_pvfactors_timeseries():
+@pytest.mark.parametrize('run_parallel_calculations',
+                         [False, True])
+def test_pvfactors_timeseries(run_parallel_calculations):
     """ Test that pvfactors is functional, using the TLDR section inputs of the
     package github repo README.md file:
     https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start"""
@@ -39,7 +42,7 @@ def test_pvfactors_timeseries():
                                    index=timestamps,
                                    name=('total_inc_back'))
 
-    # Test serial calculations
+    # Run calculation
     ipoa_front, ipoa_back = pvfactors_timeseries(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
         axis_azimuth,
@@ -47,27 +50,17 @@ def test_pvfactors_timeseries():
         n_pvrows=n_pvrows, index_observed_pvrow=index_observed_pvrow,
         rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
         horizon_band_angle=horizon_band_angle,
-        run_parallel_calculations=False, n_workers_for_parallel_calcs=-1)
-
-    pd.testing.assert_series_equal(ipoa_front, expected_ipoa_front)
-    pd.testing.assert_series_equal(ipoa_back, expected_ipoa_back)
-
-    # Run calculations in parallel
-    ipoa_front, ipoa_back = pvfactors_timeseries(
-        solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
-        axis_azimuth,
-        timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
-        n_pvrows=n_pvrows, index_observed_pvrow=index_observed_pvrow,
-        rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
-        horizon_band_angle=horizon_band_angle,
-        run_parallel_calculations=True, n_workers_for_parallel_calcs=-1)
+        run_parallel_calculations=run_parallel_calculations,
+        n_workers_for_parallel_calcs=-1)
 
     pd.testing.assert_series_equal(ipoa_front, expected_ipoa_front)
     pd.testing.assert_series_equal(ipoa_back, expected_ipoa_back)
 
 
 @requires_pvfactors
-def test_pvfactors_timeseries_pandas_inputs():
+@pytest.mark.parametrize('run_parallel_calculations',
+                         [False, True])
+def test_pvfactors_timeseries_pandas_inputs(run_parallel_calculations):
     """ Test that pvfactors is functional, using the TLDR section inputs of the
     package github repo README.md file, but converted to pandas Series:
     https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start"""
@@ -101,7 +94,7 @@ def test_pvfactors_timeseries_pandas_inputs():
                                    index=timestamps,
                                    name=('total_inc_back'))
 
-    # Test serial calculations
+    # Run calculation
     ipoa_front, ipoa_back = pvfactors_timeseries(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
         axis_azimuth,
@@ -109,20 +102,8 @@ def test_pvfactors_timeseries_pandas_inputs():
         n_pvrows=n_pvrows, index_observed_pvrow=index_observed_pvrow,
         rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
         horizon_band_angle=horizon_band_angle,
-        run_parallel_calculations=False, n_workers_for_parallel_calcs=-1)
-
-    pd.testing.assert_series_equal(ipoa_front, expected_ipoa_front)
-    pd.testing.assert_series_equal(ipoa_back, expected_ipoa_back)
-
-    # Run calculations in parallel
-    ipoa_front, ipoa_back = pvfactors_timeseries(
-        solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
-        axis_azimuth,
-        timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
-        n_pvrows=n_pvrows, index_observed_pvrow=index_observed_pvrow,
-        rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
-        horizon_band_angle=horizon_band_angle,
-        run_parallel_calculations=True, n_workers_for_parallel_calcs=-1)
+        run_parallel_calculations=run_parallel_calculations,
+        n_workers_for_parallel_calcs=-1)
 
     pd.testing.assert_series_equal(ipoa_front, expected_ipoa_front)
     pd.testing.assert_series_equal(ipoa_back, expected_ipoa_back)

@@ -1,0 +1,22 @@
+.. _whatsnew_0630:
+
+v0.6.3 (May 15, 2019)
+---------------------
+
+This is a minor release on top of v0.6.2 to fix an installation issue.
+We recommend that all users of v0.6.1 and v0.6.2 upgrade to this release.
+
+**Python 2.7 support will end on June 1, 2019**. Releases made after this
+date will require Python 3. This release is likely to be the last that
+supports Python 2.7. (:issue:`501`)
+
+
+Bug fixes
+~~~~~~~~~
+* Fix installation issue due to missing ``requests`` dependency.
+  (:issue:`725`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Will Holmgren (:ghuser:`wholmgren`)

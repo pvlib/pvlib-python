@@ -57,6 +57,18 @@ Additional functions for quantities closely related to solar position.
    solarposition.nrel_earthsun_distance
    spa.calculate_deltat
 
+
+Functions for calculating sunrise, sunset and transit times.
+
+.. autosummary::
+   :toctree: generated/
+
+   location.Location.get_sun_rise_set_transit
+   solarposition.sun_rise_set_transit_ephem
+   solarposition.sun_rise_set_transit_spa
+   solarposition.sun_rise_set_transit_geometric
+
+
 The spa module contains the implementation of the built-in NREL SPA
 algorithm.
 
@@ -64,7 +76,6 @@ algorithm.
    :toctree: generated/
 
    spa
-
 
 Correlations and analytical expressions for low precision solar position
 calculations.
@@ -79,6 +90,8 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
+   solarposition.sun_rise_set_transit_geometric
+
 
 Clear sky
 =========
@@ -102,8 +115,8 @@ Airmass and atmospheric models
    :toctree: generated/
 
    location.Location.get_airmass
-   atmosphere.absoluteairmass
-   atmosphere.relativeairmass
+   atmosphere.get_absolute_airmass
+   atmosphere.get_relative_airmass
    atmosphere.pres2alt
    atmosphere.alt2pres
    atmosphere.gueymard94_pw
@@ -133,13 +146,14 @@ Decomposing and combining irradiance
 .. autosummary::
    :toctree: generated/
 
-   irradiance.extraradiation
+   irradiance.get_extra_radiation
    irradiance.aoi
    irradiance.aoi_projection
    irradiance.poa_horizontal_ratio
    irradiance.beam_component
-   irradiance.globalinplane
-   irradiance.grounddiffuse
+   irradiance.poa_components
+   irradiance.get_ground_diffuse
+   irradiance.dni
 
 Transposition models
 --------------------
@@ -147,13 +161,16 @@ Transposition models
 .. autosummary::
    :toctree: generated/
 
-   irradiance.total_irrad
+   irradiance.get_total_irradiance
+   irradiance.get_sky_diffuse
    irradiance.isotropic
    irradiance.perez
    irradiance.haydavies
    irradiance.klucher
    irradiance.reindl
    irradiance.king
+
+.. _dniestmodels:
 
 DNI estimation models
 ---------------------
@@ -166,6 +183,17 @@ DNI estimation models
    irradiance.dirindex
    irradiance.erbs
    irradiance.liujordan
+   irradiance.gti_dirint
+
+Clearness index models
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   irradiance.clearness_index
+   irradiance.clearness_index_zenith_independent
+   irradiance.clearsky_index
 
 
 PV Modeling
@@ -193,18 +221,32 @@ AOI modifiers
    pvsystem.ashraeiam
    pvsystem.sapm_aoi_loss
 
-Single diode model
-------------------
+Single diode models
+-------------------
 
-Functions relevant for the single diode model.
+Functions relevant for single diode models.
 
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.calcparams_cec
    pvsystem.calcparams_desoto
+   pvsystem.calcparams_pvsyst
    pvsystem.i_from_v
    pvsystem.singlediode
    pvsystem.v_from_i
+   pvsystem.max_power_point
+
+Low-level functions for solving the single diode equation.
+
+.. autosummary::
+   :toctree: generated/
+
+   singlediode.estimate_voc
+   singlediode.bishop88
+   singlediode.bishop88_i_from_v
+   singlediode.bishop88_v_from_i
+   singlediode.bishop88_mpp
 
 SAPM model
 ----------
@@ -230,7 +272,15 @@ PVWatts model
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
+   pvsystem.pvwatts_losses
 
+PVsyst model
+------------
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.pvsyst_celltemp
 
 Other
 -----
@@ -270,8 +320,47 @@ Functions
    tracking.singleaxis
 
 
+.. _iotools:
+
+IO Tools
+========
+
+Functions for reading and writing data from a variety of file formats
+relevant to solar energy modeling.
+
+.. autosummary::
+   :toctree: generated/
+
+   iotools.read_tmy2
+   iotools.read_tmy3
+   iotools.read_epw
+   iotools.read_srml
+   iotools.read_srml_month_from_solardat
+   iotools.read_surfrad
+   iotools.read_midc
+   iotools.read_midc_raw_data_from_nrel
+   iotools.read_ecmwf_macc
+   iotools.get_ecmwf_macc
+   iotools.read_crn
+   iotools.read_solrad
+   iotools.get_psm3
+
+A :py:class:`~pvlib.location.Location` object may be created from metadata
+in some files.
+
+.. autosummary::
+   :toctree: generated/
+
+   location.Location.from_tmy
+
+
 TMY
 ===
+
+.. warning::
+
+    The :py:mod:`pvlib.tmy` module is deprecated; it will be removed
+    in pvlib 0.7. Please see the :ref:`pvlib.iotools <iotools>` package.
 
 Methods and functions for reading data from TMY files.
 
@@ -396,7 +485,9 @@ ModelChain model definitions.
    :toctree: generated/
 
    modelchain.ModelChain.sapm
-   modelchain.ModelChain.singlediode
+   modelchain.ModelChain.cec
+   modelchain.ModelChain.desoto
+   modelchain.ModelChain.pvsyst
    modelchain.ModelChain.pvwatts_dc
    modelchain.ModelChain.snlinverter
    modelchain.ModelChain.adrinverter
@@ -438,3 +529,15 @@ Functions for power modeling.
 
    modelchain.basic_chain
    modelchain.get_orientation
+
+
+Bifacial
+========
+
+Methods for calculating back surface irradiance
+-----------------------------------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   bifacial.pvfactors_timeseries

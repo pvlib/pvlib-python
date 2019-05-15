@@ -1,7 +1,7 @@
 name: test_env
 channels:
-    - conda-forge
     - defaults
+    - conda-forge
 dependencies:
     - python=3.5
     - numpy
@@ -15,8 +15,10 @@ dependencies:
     - pytest
     - pytest-cov
     - nose
+    - shapely  # pvfactors dependency
     - pip:
         - coveralls
-        - pytest-timeout
+        - pvfactors==1.0.1
         - pyinterval
-
+        - pytest-mock
+        - pytest-timeout

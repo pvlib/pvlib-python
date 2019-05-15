@@ -30,6 +30,7 @@ time and time zone functionality in python and pvlib.
     import pandas as pd
     import pytz
 
+
 Finding a time zone
 *******************
 
@@ -94,7 +95,7 @@ It does not make sense to convert a time stamp that has not been
 localized, and pandas will raise an exception if you try to do so.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     midnight = pd.Timestamp('2015-1-1 00:00')
     midnight.tz_convert('UTC')
@@ -236,7 +237,7 @@ passed to ``Timestamp``.
 You cannot localize a native Python date object.
 
 .. ipython:: python
-    :okexcept:
+   :okexcept:
 
     # fail
     pytz.timezone('US/Mountain').localize(naive_python_date)
@@ -271,7 +272,7 @@ Let's first examine how pvlib handles time when it imports a TMY3 file.
     # some gymnastics to find the example file
     pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvlib)))
     file_abspath = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
-    tmy3_data, tmy3_metadata = pvlib.tmy.readtmy3(file_abspath)
+    tmy3_data, tmy3_metadata = pvlib.iotools.read_tmy3(file_abspath)
 
     tmy3_metadata
 

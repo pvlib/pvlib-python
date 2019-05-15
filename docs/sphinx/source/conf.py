@@ -40,8 +40,7 @@ sys.path.insert(0, os.path.abspath('../../../'))
 
 # -- General configuration ------------------------------------------------
 
-# turns off numpydoc autosummary warnings
-numpydoc_show_class_members = False
+# use napoleon in lieu of numpydoc 2019-04-23
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
@@ -55,12 +54,13 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
     'sphinx.ext.extlinks',
-    'numpydoc',
+    'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
     'IPython.sphinxext.ipython_directive',
-    'IPython.sphinxext.ipython_console_highlighting',
-    'nbsphinx'
+    'IPython.sphinxext.ipython_console_highlighting'
 ]
+
+napoleon_use_rtype = False  # group rtype on same line together with return
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -272,7 +272,8 @@ extlinks = {'issue': ('https://github.com/pvlib/pvlib-python/issues/%s',
                       'GH'),
             'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s',
                      'wiki '),
-            'doi': ('http://dx.doi.org/%s', 'DOI: ')}
+            'doi': ('http://dx.doi.org/%s', 'DOI: '),
+            'ghuser': ('https://github.com/%s', '@')}
 
 # -- Options for manual page output ---------------------------------------
 
@@ -312,9 +313,11 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.5/', None),
-    'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
-    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+    'python': ('https://docs.python.org/3.7/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
 }
 
 nbsphinx_allow_errors = True
+
+ipython_warning_is_error = False

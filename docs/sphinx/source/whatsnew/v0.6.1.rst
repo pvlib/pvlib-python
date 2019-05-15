@@ -1,0 +1,107 @@
+.. _whatsnew_0601:
+
+v0.6.1 (January 31, 2019)
+-------------------------
+
+This is a minor release. We recommend all users of v0.6.0 upgrade to this
+release.
+
+**Python 2.7 support will end on June 1, 2019**. Releases made after this
+date will require Python 3. (:issue:`501`)
+
+**Minimum pandas requirement bumped 0.14.0=>0.15.0**
+
+
+API Changes
+~~~~~~~~~~~
+* Created the ``pvlib.iotools`` subpackage. (:issue:`29`, :issue:`261`)
+* Deprecated ``tmy``, ``tmy.readtmy2`` and ``tmy.readtmy3``;
+  they will be removed in v0.7. Use the new :py:func:`pvlib.iotools.read_tmy2`
+  and :py:func:`pvlib.iotools.read_tmy3` instead. (:issue:`261`)
+* Added keyword argument ``horizon`` to :func:`~pvlib.solarposition.pyephem`
+  and :func:`~pvlib.solarposition.calc_time` with default value ``'+0:00'``.
+  (:issue:`588`)
+* Add `max_airmass` keyword argument to :py:func:`pvlib.irradiance.disc`.
+  Default value (`max_airmass=12`) is consistent with polynomial fit in
+  original paper describing the model. This change may result in different
+  output of functions that use the `disc` *Kn* calculation for times when
+  input zenith angles approach 90 degrees. This includes
+  :py:func:`pvlib.irradiance.dirint` and :py:func:`pvlib.irradiance.dirindex`
+  when `min_cos_zenith` and `max_zenith` kwargs are used, as well as
+  :py:func:`pvlib.irradiance.gti_dirint`. (:issue:`450`)
+* Changed key names for `components` returned from
+  :py:func:`pvlib.clearsky.detect_clearsky`. (:issue:`596`)
+* Changed function name from `pvlib.solarposition.get_rise_set_transit`
+  (deprecated) to :py:func:`pvlib.solarposition.sun_rise_set_transit_spa.
+  `sun_rise_set_transit_spa` requires time input to be localized to the
+  specified latitude/longitude. (:issue:`316`)
+* Created new bifacial section for `pvfactors` limited implementation (:issue:`421`)
+
+
+Enhancements
+~~~~~~~~~~~~
+* Add :py:func:`~pvlib.solarposition.sun_rise_set_transit_ephem`to calculate sunrise, sunset
+  and transit times using pyephem (:issue:`114`)
+* Add geometric functions for sunrise, sunset, and sun transit times,
+  :func:`~pvlib.solarposition.sun_rise_set_transit_geometric` (:issue:`114`)
+* Add `Location` class method :py:func:`~pvlib.location.Location.get_sun_rise_set_transit`
+* Created :py:func:`pvlib.iotools.read_srml` and
+  :py:func:`pvlib.iotools.read_srml_month_from_solardat` to read University of
+  Oregon Solar Radiation Monitoring Laboratory data. (:issue:`589`)
+* Created :py:func:`pvlib.iotools.read_surfrad` to read NOAA SURFRAD data. (:issue:`590`)
+* Created :py:func:`pvlib.iotools.read_midc` and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`
+  to read NREL MIDC data. (:issue:`601`)
+* Created :py:func:`pvlib.iotools.get_ecmwf_macc` and :py:func:`pvlib.iotools.read_ecmwf_macc`
+  to get and read ECMWF MACC data. (:issue:`602`)
+* Use HRRR modeled surface temperature values instead of inferring from
+  isobaric values and modeled wind speed instead of inferring from gust.
+  (:issue:`604`)
+* Change :py:func:`pvlib.pvsystem.sapm_spectral_loss` to avoid numpy warning.
+* Add warning message when :py:func:`pvlib.spa` is reloaded. (:issue:`401`)
+* Add option for :py:func:`pvlib.irradiance.disc` to use relative airmass
+  by supplying `pressure=None`. (:issue:`449`)
+* Created :py:func:`pvlib.pvsystem.pvsyst_celltemp` to implement PVsyst's cell temperature model. (:issue:`552`)
+* Created :py:func:`pvlib.bifacial.pvfactors_timeseries` to use open-source `pvfactors` package to calculate back surface irradiance (:issue:`421`)
+* Add `PVSystem` class method :py:func:`~pvlib.pvsystem.PVSystem.pvsyst_celltemp` (:issue:`633`)
+* Add :py:func:`pvlib.irradiance.clearsky_index` to calculate clear-sky index
+  from measured GHI and modeled clear-sky GHI. (:issue:`551`)
+
+
+Bug fixes
+~~~~~~~~~
+* Fix when building documentation using Matplotlib 3.0 or greater.
+* `~pvlib.spa.calculate_deltat`: Fix constant coefficient of the polynomial
+  expression for years >= 1860 and < 1900, fix year 2050 which was
+  returning 0. (:issue:`600`)
+* Fix and improve :func:`~pvlib.solarposition.hour_angle` (:issue:`598`)
+* Fix error in :func:`pvlib.clearsky.detect_clearsky` (:issue:`506`)
+* Fix documentation errors when using IPython >= 7.0.
+* Fix error in :func:`pvlib.modelchain.ModelChain.infer_spectral_model` (:issue:`619`)
+* Fix error in ``pvlib.spa`` when using Python 3.7 on some platforms.
+* Fix error in :func:`pvlib.irradiance._delta_kt_prime_dirint` (:issue:`637`). The error affects
+  the first and last values of DNI calculated by the function :func:`pvlib.irradiance.dirint`
+* Fix errors on Python 2.7 and Numpy 1.6. (:issue:`642`)
+* Replace deprecated `np.asscalar` with `array.item()`. (:issue:`642`)
+
+
+Testing
+~~~~~~~
+* Add test for :func:`~pvlib.solarposition.hour_angle` (:issue:`597`)
+* Update tests to be compatible with pytest 4.0. (:issue:`623`)
+* Add tests for :py:func:`pvlib.bifacial.pvfactors_timeseries` implementation (:issue:`421`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Will Holmgren (:ghuser:`wholmgren`)
+* Leland Boeman (:ghuser:`lboeman`)
+* Cedric Leroy (:ghuser:`cedricleroy`)
+* Ben Ellis (:ghuser:`bhellis725`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Cameron Stark (:ghuser:`camerontstark`)
+* Jonathan Gaffiot (:ghuser:`jgaffiot`)
+* Marc Anoma (:ghuser:`anomam`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Kevin Anderson (:ghuser:`kevinsa5`)

@@ -9,12 +9,16 @@ dependencies:
     - pytables
     - pandas
     - pytz
-    #- ephem
-    #- numba
-    #- siphon
+    - ephem
+    - numba
+    - siphon
     - pytest
     - pytest-cov
     - nose
+    - shapely  # pvfactors dependency
     - pip:
         - coveralls
+        - pvfactors==1.0.1
         - pyinterval
+        - pytest-mock
+        - pytest-timeout

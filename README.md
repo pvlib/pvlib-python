@@ -1,12 +1,10 @@
 <img src="docs/sphinx/source/_images/pvlib_logo_horiz.png" width="600">
 
 [![TravisCI](https://travis-ci.org/pvlib/pvlib-python.svg?branch=master)](https://travis-ci.org/pvlib/pvlib-python)
-[![Build status](https://ci.appveyor.com/api/projects/status/gr2eyhc84tvtkopk?svg=true)](https://ci.appveyor.com/project/wholmgren/pvlib-python-fv2to)
 [![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
 [![codecov](https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg)](https://codecov.io/gh/pvlib/pvlib-python)
 [![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=latest)](http://pvlib-python.readthedocs.org/en/latest/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2554311.svg)](https://doi.org/10.5281/zenodo.2554311)
-[![Code Health](https://landscape.io/github/pvlib/pvlib-python/master/landscape.svg?style=flat)](https://landscape.io/github/pvlib/pvlib-python/master)
 [![status](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg)](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1)
 [![Code Quality: Python](https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/context:python)
 [![Total Alerts](https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/alerts)

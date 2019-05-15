@@ -66,7 +66,7 @@ def pvfactors_timeseries(
         to run calculations in parallel (recommended) or not.
     n_workers_for_parallel_calcs: int, default 2
         Number of workers to use in the case of parallel calculations. The
-        default value of '-1' will lead to using a value equal to the number
+        '-1' value will lead to using a value equal to the number
         of CPU's on the machine running the model.
 
     Returns

@@ -17,6 +17,7 @@ dependencies:
     - nose
     - pip:
         - coveralls
+        - pvfactors==1.0.1
+        - pyinterval
         - pytest-mock
         - pytest-timeout
-        - pyinterval

@@ -29,6 +29,8 @@ API Changes
 * Remove automatic column name mapping from :py:func:`~pvlib.iotools.read_midc`
   and :py:func:`~pvlib.iotools.read_midc_raw_data_from_nrel` and added
   optional keyword argument `variable_map` to map columns.
+* Update :py:func:`~pvlib.bifacial.pvfactors_timeseries` and tests to use
+  ``pvfactors`` v1.0.1 (:issue:`699`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -81,3 +83,4 @@ Contributors
 * :ghuser:`yxh289`
 * Jonathan Gaffiot (:ghuser:`jgaffiot`)
 * Leland Boeman (:ghuser: `lboeman`)
+* Marc Anoma (:ghuser: `anomam`)

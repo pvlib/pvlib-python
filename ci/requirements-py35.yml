@@ -1,7 +1,7 @@
 name: test_env
 channels:
-    - conda-forge
     - defaults
+    - conda-forge
 dependencies:
     - python=3.5
     - numpy
@@ -20,5 +20,9 @@ dependencies:
         - coveralls
         - pytest-mock
         - pytest-timeout
+<<<<<<< HEAD
         - pvfactors==0.1.5
         - nrel-pysam
+=======
+        - pvfactors==1.0.1
+>>>>>>> f38fe07f786b49b3b21f63bbc8bcec18bb42af7c

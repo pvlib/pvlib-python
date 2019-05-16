@@ -33,13 +33,14 @@ Source code: https://github.com/pvlib/pvlib-python
 
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'
-AUTHOR = 'PVLIB Python Developers'
+AUTHOR = 'pvlib python Developers'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
 INSTALL_REQUIRES = ['numpy >= 1.10.1',
                     'pandas >= 0.16.0',
                     'pytz',
+                    'requests',
                     'six',
                     ]
 TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock', 'nose']

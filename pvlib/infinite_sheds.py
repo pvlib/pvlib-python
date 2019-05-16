@@ -1,7 +1,7 @@
 """
 Modify plane of array irradiance components to account for adjancent rows for
 both monofacial and bifacia infinite sheds. Sheds are defined as fixed tilt or
-trackers that a fixed GCR on horizontant surface. Future version will also
+trackers that a fixed GCR on horizontal surface. Future version will also
 account for sloped surfaces. The process is divide into 7 steps:
 1. transposition
 2. ground illumination
@@ -19,9 +19,24 @@ References
 import numpy as np
 
 
-def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
+def _to_radians(*params, is_rad=False):
+    if is_rad:
+        return params
+    p_rad = []
+    for p in params:
+        p_rad.append(np.radians(p))
+    return p_rad
+
+
+def get_solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth,
+                             is_rad=False):
     """
     Calculate solar projection on YZ-plane, vertical and perpendicular to rows.
+
+    .. math::
+        \\tan \\phi = \\frac{\\cos\\left(\\text{solar azimuth} -
+        \\text{system azimuth}\\right)\\sin\\left(\\text{solar zenith}
+        \\right)}{\\cos\\left(\\text{solar zenith}\\right)}
 
     Parameters
     ----------
@@ -31,21 +46,23 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
         Azimuth in degrees.
     system_azimuth : numeric
         System rotation from north in degrees.
+    is_rad : bool, default is False
+        if true, then input arguments are radians
 
     Returns
     -------
     tanphi : numeric
         tangent of the solar projection
     """
-    solar_zenith_rad = np.radians(solar_zenith)
-    solar_azimuth_rad = np.radians(solar_azimuth)
-    system_azimuth_rad = np.radians(system_azimuth)
+    solar_zenith_rad, solar_azimuth_rad, system_azimuth_rad = _to_radians(
+        solar_zenith, solar_azimuth, system_azimuth, is_rad)
     rotation_rad = solar_azimuth_rad - system_azimuth_rad
     tanphi = np.cos(rotation_rad) * np.tan(solar_zenith_rad)
     return tanphi
 
 
-def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
+def get_solar_projection(solar_zenith, solar_azimuth, system_azimuth,
+                         is_rad=False):
     """
     Calculate solar projection on YZ-plane, vertical and perpendicular to rows.
 
@@ -57,6 +74,8 @@ def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
         Azimuth in degrees.
     system_azimuth : numeric
         System rotation from north in degrees.
+    is_rad : bool, default is False
+        if true, then input arguments are radians
 
     Returns
     -------
@@ -65,9 +84,8 @@ def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
     tanphi : numeric
         tangent of the solar projection
     """
-    solar_zenith_rad = np.radians(solar_zenith)
-    solar_azimuth_rad = np.radians(solar_azimuth)
-    system_azimuth_rad = np.radians(system_azimuth)
+    solar_zenith_rad, solar_azimuth_rad, system_azimuth_rad = _to_radians(
+        solar_zenith, solar_azimuth, system_azimuth, is_rad)
     rotation_rad = solar_azimuth_rad - system_azimuth_rad
     x1 = np.cos(rotation_rad) * np.sin(solar_zenith_rad)
     x2 = np.cos(solar_zenith_rad)
@@ -76,48 +94,56 @@ def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
     return phi, tanphi
 
 
-def ground_illumination(GCR, tilt, tanphi):
+def get_ground_illumination(gcr, tilt, tanphi, is_rad=False):
     """
     Calculate the fraction of the ground visible from the sky.
 
+    .. math::
+        F_{gnd,sky}=1-\\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
+            \\sin \\beta \\tan \\phi \\right|\\right)}
+
     Parameters
     ----------
-    GCR : numeric
-        ratio of module length versus row spacing
+    gcr : numeric
+        ratio of module length to row spacing
     tilt : numeric
         angle of module normal from vertical in degrees, if bifacial use front
     tanphi : numeric
         solar projection tangent
+    is_rad : bool, default is False
+        if true, then input arguments are radians
 
     Returns
     -------
-    Fgnd_sky : numeric
-        fration of ground illumination
+    f_gnd_sky : numeric
+        fration of ground illuminated from sky
     """
-    tilt_rad = np.radians(tilt)
-    Fgnd_sky = 1.0 - np.minimum(
-        1.0, GCR * np.abs(np.cos(tilt_rad) + np.sin(tilt_rad) * tanphi))
-    return Fgnd_sky  # 1 - min(1, abs()) < 1 always
+    tilt_rad = _to_radians(tilt, is_rad)[0]
+    f_gnd_sky = 1.0 - np.minimum(
+        1.0, gcr * np.abs(np.cos(tilt_rad) + np.sin(tilt_rad) * tanphi))
+    return f_gnd_sky  # 1 - min(1, abs()) < 1 always
 
 
-def diffuse_fraction(GHI, DHI):
+def get_diffuse_fraction(ghi, dhi):
     """
     ratio of DHI to GHI
 
     Parameters
     ----------
-    GHI : numeric
-        global horizontal irradiance in W/m^2
-    DHI : numeric
-        diffuse horizontal irradiance in W/m^2
+    ghi : numeric
+        global horizontal irradiance (GHI) in W/m^2
+    dhi : numeric
+        diffuse horizontal irradiance (DHI) in W/m^2
 
-    Returns : numeric
+    Returns
+    -------
+    df : numeric
         diffuse fraction
     """
-    return DHI/GHI
+    return dhi/ghi
 
 
-def poa_gnd_sky(poa_ground, f_gnd_sky, diffuse_fraction):
+def get_poa_gnd_sky(poa_ground, f_gnd_sky, diffuse_fraction):
     """
     transposed ground reflected diffuse component adjusted for ground
     illumination, but not accounting for adjacent rows
@@ -136,19 +162,24 @@ def poa_gnd_sky(poa_ground, f_gnd_sky, diffuse_fraction):
     poa_gnd_sky : numeric
         adjusted irradiance on modules reflected from ground
     """
-    poa_ground * (f_gnd_sky * (1 - diffuse_fraction) + diffuse_fraction)
+    return poa_ground * (f_gnd_sky * (1 - diffuse_fraction) + diffuse_fraction)
 
 
-def shade_line(GCR, tilt, tanphi):
+def get_shade_line(gcr, tilt, tanphi, is_rad=False):
     """
     calculate fraction of module shaded from the bottom
 
+    .. math::
+        F_x = \\max \\left( 0, \\min \\left(1 - \\frac{1}{\\text{GCR} \\left(
+            \\cos \\beta + \\sin \\beta \\tan \\phi \\right)}, 1 \\right)
+            \\right)
+
     Parameters
     ----------
-    GCR : numeric
+    gcr : numeric
         ratio of module length versus row spacing
     tilt : numeric
-        angle of module normal from vertical in degrees, if bifacial use front
+        angle of surface normal from vertical in degrees
     tanphi : numeric
         solar projection tangent
 
@@ -157,14 +188,14 @@ def shade_line(GCR, tilt, tanphi):
     Fx : numeric
         fraction of module shaded from the bottom
     """
-    tilt_rad = np.radians(tilt)
-    Fx = 1.0 - 1.0 / GCR / (np.cos(tilt_rad) + np.sin(tilt_rad) * tanphi)
+    tilt_rad = _to_radians(tilt, is_rad)[0]
+    Fx = 1.0 - 1.0 / gcr / (np.cos(tilt_rad) + np.sin(tilt_rad) * tanphi)
     return np.maximum(0.0, np.minimum(Fx, 1.0))
 
 
-def sky_angle(GCR, tilt, f_x):
+def get_sky_angle_tangent(gcr, tilt, f_x, is_rad=False):
     """
-    angle from shade line to top of next row
+    tangent of angle from shade line to top of next row
 
     .. math::
 
@@ -175,10 +206,10 @@ def sky_angle(GCR, tilt, f_x):
 
     Parameters
     ----------
-    GCR : numeric
+    gcr : numeric
         ratio of module length versus row spacing
     tilt : numeric
-        angle of module normal from vertical in degrees, if bifacial use front
+        angle of surface normal from vertical in degrees
     f_x : numeric
         fraction of module shaded from bottom
 
@@ -187,15 +218,15 @@ def sky_angle(GCR, tilt, f_x):
     psi_top : numeric
         angle from shade line to top of next row
     """
-    tilt_rad = np.radians(tilt)
+    tilt_rad = _to_radians(tilt, is_rad)[0]
     f_y = 1.0 - f_x
-    return f_y * np.sin(tilt_rad) / (1/GCR - f_y * np.cos(tilt_rad))
+    return f_y * np.sin(tilt_rad) / (1/gcr - f_y * np.cos(tilt_rad))
 
 
 
-def sky_angle_0(GCR, tilt):
+def get_sky_angle_0_tangent(gcr, tilt, is_rad=False):
     """
-    angle to top of next row with no shade (shade line at bottom)
+    tangent of angle to top of next row with no shade (shade line at bottom)
 
     .. math::
 
@@ -204,21 +235,192 @@ def sky_angle_0(GCR, tilt):
 
     Parameters
     ----------
-    GCR : numeric
+    gcr : numeric
         ratio of module length versus row spacing
     tilt : numeric
-        angle of module normal from vertical in degrees, if bifacial use front
+        angle of surface normal from vertical in degrees
 
     Returns
     -------
-    psi_top : numeric
-        angle from shade line to top of next row
+    psi_top_0 : numeric
+        angle from bottom, ``x=0``, to top of next row
     """
-    return sky_angle(GCR, tilt, 0.0)
+    return get_sky_angle_tangent(gcr, tilt, 0.0, is_rad)
 
 
-def get_irradiance():
-    """hi"""
+def get_f_sky_pv(tilt, sky_angle_shade_tangent, sky_angle_0_tangent,
+                 is_rad=False):
+    """
+    view factors of sky from shaded and unshaded parts of PV module
+
+    Parameters
+    ----------
+    tilt : numeric
+        angle of surface normal from vertical in degrees
+
+    Returns
+    -------
+    f_sky_pv_shade : numeric
+        view factor of sky from shaded part of surface 
+    f_sky_pv_noshade : numeric
+        view factor of sky from unshaded part of surface
+
+    Notes
+    -----
+    Assuming the view factor various roughly linearly from the top to the
+    bottom of the rack, we can take the average to get integrated view factor.
+    We'll average the shaded and unshaded regions separately to improve the
+    approximation slightly.
+
+    .. math ::
+        \\large{F_{nextrow \\rightarrow shade} = \\frac{ 1 + \\frac{\\cos
+            \\left(\\psi_{next\\ row\\ top \\rightarrow shadeline} + \\beta
+            \\right) + \\cos \\left(\\psi_{next\\ row\\ top \\rightarrow 0} +
+            \\beta \\right)}{2}  }{ 1 + \\cos \\beta}}
+
+    Recall that the view factor from the top of the rack is one because it's
+    view is not obstructued.
+
+    .. math::
+        \\large{F_{nextrow \\rightarrow no\\ shade} = \\frac{1 + \\frac{1 +
+        \\cos \\left(\\psi_{next\\ row\\ top \\rightarrow shadeline} + \\beta
+        \\right)}{1 + \\cos \\beta} }{2}}
+    """
+    tilt_rad = _to_radians(tilt, is_rad)[0]
+    sky_angle_shade = np.arctan(sky_angle_shade_tangent)
+    sky_angle_0 = np.arctan(sky_angle_0_tangent)
+    f_sky_pv_shade = (
+        (1 + (np.cos(sky_angle_shade + tilt_rad)
+              + np.cos(sky_angle_0 + tilt_rad)) / 2) / (1 + np.cos(tilt_rad)))
+
+    f_sky_pv_noshade = (1 + (
+        1 + np.cos(sky_angle_shade + tilt_rad)) / (1 + np.cos(tilt_rad))) / 2
+    return f_sky_pv_shade, f_sky_pv_noshade
+
+
+def get_poa_sky_pv(poa_sky_diffuse, shade_line, f_sky_pv_shade,
+                   f_sky_pv_noshade):
+    """
+    Sky diffuse POA from average view factor weighted by shaded and unshaded
+    parts of the surface.
+    """
+    return poa_sky_diffuse * (
+        shade_line*f_sky_pv_shade + (1 - shade_line)*f_sky_pv_noshade)
+
+
+def get_ground_angle_tangent(gcr, tilt, shade_line, is_rad=False):
+    """
+    tangent of angle from shadeline to bottom of adjacent row
+
+    Parameters
+    ----------
+    tilt : numeric
+        angle of surface normal from vertical in degrees
+
+    """
+    tilt_rad = _to_radians(tilt, is_rad)
+    return shade_line * np.sin(tilt_rad) / (
+        shade_line * np.cos(tilt_rad) + 1/gcr)
+
+
+def get_ground_angle_1_tangent(gcr, tilt, is_rad=False):
+    """
+    tangent of angle to bottom of next row with all shade (shade line at top)
+
+    Parameters
+    ----------
+    tilt : numeric
+        angle of surface normal from vertical in degrees
+
+    """
+    return get_ground_angle_tangent(gcr, tilt, 1.0, is_rad)
+
+
+def get_f_gnd_pv(tilt, ground_angle_tangent, ground_angle_1_tangent,
+                 is_rad=False):
+    """
+    view factors of ground from shaded and unshaded parts of PV module
+
+    Parameters
+    ----------
+    tilt : numeric
+        angle of surface normal from vertical in degrees
+
+    Notes
+    -----
+    Take the average of the shaded and unshaded sections.
+
+    .. math::
+        \\large{F_{gnd \\rightarrow shade} = \\frac{1 + \\frac{1 - \\cos
+        \\left(\\beta - \\psi_{next\\ row\\ bottom \\rightarrow shadeline}
+        \\right)}{1 - \\cos \\beta}}{2}}
+
+    At the bottom of rack, the angle is zero, x=0, and the view factor is 1.
+
+    .. math::
+        \\large{F_{gnd \\rightarrow no\\ shade} = \\frac{1 -
+        \\frac{\\cos \\left(\\beta -
+        \\psi_{next\\ row\\ bottom \\rightarrow shadeline} \\right) +
+        \\cos \\left(\\beta - \\psi_{next\\ row\\ bottom \\rightarrow 1}
+        \\right)}{2}}{1 - \\cos \\beta}}
+    """
+    tilt_rad = _to_radians(tilt, is_rad)
+    ground_angle = np.arctan(ground_angle_tangent)
+    ground_angle_1 = np.arctan(ground_angle_1_tangent)
+    f_gnd_pv_shade = (1 + (1 - np.cos(tilt_rad - ground_angle))
+                      / (1 - np.cos(tilt_rad))) / 2
+    f_gnd_pv_noshade = (
+        (1 - (np.cos(tilt_rad - ground_angle)
+            + np.cos(tilt_rad - ground_angle_1))/2)
+        / (1 - np.cos(tilt_rad)))
+    return f_gnd_pv_shade, f_gnd_pv_noshade
+
+
+def get_poa_gnd_pv(poa_gnd_sky, shade_line, f_gnd_pv_shade, f_gnd_pv_noshade):
+    """
+    Ground diffuse POA from average view factor weighted by shaded and unshaded
+    parts of the surface.
+
+    Parameters
+    ----------
+    poa_gnd_sky : numeric
+        diffuse ground POA accounting for ground shade but not adjacent rows
+    """
+    return poa_gnd_sky * (shade_line*f_gnd_pv_shade
+                          + (1 - shade_line)*f_gnd_pv_noshade)
+
+
+def get_poa_diffuse_pv(poa_gnd_pv, poa_sky_pv):
+    return poa_gnd_pv + poa_sky_pv
+
+
+def get_poa_beam_pv(poa_beam, iam, shade_line):
+    return poa_beam * iam * (1 - shade_line)
+
+
+def get_poa_global_pv(poa_beam_pv, poa_diffuse_pv):
+    return poa_beam_pv + poa_diffuse_pv
+
+
+def get_poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
+                        shade_factor=-0.02, transmission_factor=0):
+    effects = (1+shade_factor)*(1+transmission_factor)
+    return poa_global_front + poa_global_back * bifaciality * effects
+
+
+def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, tilt, ghi,
+                   dhi, poa_ground, poa_beam, is_rad=False):
+    """Get irradiance from infinite sheds model."""
+    solar_zenith, solar_azimuth, system_azimuth, tilt = _to_radians(
+        solar_zenith, solar_azimuth, system_azimuth, tilt, is_rad
+    )
+    tanphi = get_solar_projection_tangent(
+        solar_zenith, solar_azimuth, system_azimuth, is_rad=True)
+    f_gnd_sky = get_ground_illumination(gcr, tilt, tanphi, is_rad=True)
+    df = get_diffuse_fraction(ghi, dhi)
+    poa_gnd_sky = get_poa_gnd_sky(poa_ground, f_gnd_sky, df)
+    f_x = get_shade_line(gcr, tilt, tanphi)
+    sky_angle_tangent = get_sky_angle_tangent(gcr, tilt, f_x, is_rad=True)
     return
 
 

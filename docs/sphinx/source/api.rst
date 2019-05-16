@@ -548,5 +548,8 @@ Infinte Sheds
 .. autosummary::
    :toctree: generated/
 
-   infinite_sheds.sky_angle
-   infinite_sheds.sky_angle_0
+   infinite_sheds.get_solar_projection_tangent
+   infinite_sheds.get_solar_projection
+   infinite_sheds.get_ground_illumination
+   infinite_sheds.get_sky_angle_tangent
+   infinite_sheds.get_sky_angle_0_tangent

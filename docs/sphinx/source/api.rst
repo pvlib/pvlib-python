@@ -139,6 +139,7 @@ Methods for irradiance calculations
    pvsystem.PVSystem.get_irradiance
    pvsystem.PVSystem.get_aoi
    tracking.SingleAxisTracker.get_irradiance
+   infinite_sheds.get_irradiance
 
 Decomposing and combining irradiance
 ------------------------------------
@@ -539,3 +540,13 @@ Methods for calculating back surface irradiance
    :toctree: generated/
 
    bifacial.pvfactors_timeseries
+
+
+Infinte Sheds
+=============
+
+.. autosummary::
+   :toctree: generated/
+
+   infinite_sheds.sky_angle
+   infinite_sheds.sky_angle_0

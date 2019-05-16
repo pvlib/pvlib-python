@@ -166,6 +166,13 @@ def sky_angle(GCR, tilt, f_x):
     """
     angle from shade line to top of next row
 
+    .. math::
+
+        \\tan{\\psi_t} &= \\frac{F_y \\text{GCR}
+            \\sin{\\beta}}{1 - F_y \\text{GCR} \\cos{\\beta}} \\newline
+
+        F_y &= 1 - F_x
+
     Parameters
     ----------
     GCR : numeric
@@ -188,7 +195,12 @@ def sky_angle(GCR, tilt, f_x):
 
 def sky_angle_0(GCR, tilt):
     """
-    angle from bottom to top of next row
+    angle to top of next row with no shade (shade line at bottom)
+
+    .. math::
+
+        \\tan{\\psi_t} &= \\frac{\\text{GCR} \\sin{\\beta}}{1 - \\text{GCR}
+            \\cos{\\beta}}
 
     Parameters
     ----------
@@ -205,3 +217,13 @@ def sky_angle_0(GCR, tilt):
     return sky_angle(GCR, tilt, 0.0)
 
 
+def get_irradiance():
+    """hi"""
+    return
+
+
+class InfiniteSheds():
+    """hi"""
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y

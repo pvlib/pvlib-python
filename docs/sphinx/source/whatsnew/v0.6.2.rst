@@ -33,6 +33,7 @@ API Changes
 * Update :py:func:`~pvlib.bifacial.pvfactors_timeseries` and tests to use
   ``pvfactors`` v1.0.1 (:issue:`699`)
 
+
 Enhancements
 ~~~~~~~~~~~~
 * Add US CRN data reader to :ref:`iotools`. (:issue:`666`)
@@ -40,8 +41,7 @@ Enhancements
 * Add EPW data reader to :ref:`iotools`. (:issue:`591`)
 * Add PSM3 reader to :ref:`iotools`. (:issue:`592`)
 * Improve ModelChain inference method error text. (:issue:`621`)
-* Add gold I-V data set for the single-diode model, along with ``i_from_v()``
-and ``v_from_i()`` accuracy and performance benchmarking (:issue:`411`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -87,4 +87,3 @@ Contributors
 * Jonathan Gaffiot (:ghuser:`jgaffiot`)
 * Leland Boeman (:ghuser:`lboeman`)
 * Marc Anoma (:ghuser:`anomam`)
-* Mark Campanelli (:ghuser:`markcampanelli`)

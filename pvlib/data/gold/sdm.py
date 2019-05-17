@@ -4,8 +4,8 @@ The ``sdm`` module contains functions for generating gold current-voltage
 functions that compute I-V values in terms of accuracy and computation speed.
 
 Run this module from the command line to generate a gold dataset in two
-formats, pvlib/data/gold/sdm.json (lossles, machine-interoperable) and
-pvlib/data/gold/sdm.csv (human readable and lossy) and then guage functions
+formats, pvlib/data/gold/sdm.json (lossless, machine-interoperable) and
+pvlib/data/gold/sdm.csv (human readable and lossy) and then gauge functions
 against it that are compatible with the pvlib API.
 """
 
@@ -23,7 +23,7 @@ import pvlib
 
 
 # Useful constants for photovoltaic modeling that are versioned. Several
-# constants are derived from scipy.constants v1.1.0, which are from
+# constants are derived from scipy.constants v1.2.1, which are from
 # standardized CODATA. See https://physics.nist.gov/cuu/Constants/. We do not
 # import scipy because it is not required in the base pvlib installation. Units
 # appear in the variable suffix to eliminate ambiguity.
@@ -312,7 +312,7 @@ def make_gold_dataset():
                                                    i_l)  # Not a gold value
                     v_oc = pvlib.pvsystem.v_from_i(r_sh, r_s, nNsVth, 0., i_0,
                                                    i_l)  # Not a gold value
-                    # For min diode voltage, go slightly less than Isc, even
+                    # For min diode voltage, go slightly less than zero, even
                     #  when r_s==0
                     v_d_min = i_sc * r_s - 0.02 * v_oc
                     # For max diode voltage, go slightly greater than Voc
@@ -343,10 +343,10 @@ def make_gold_dataset():
                     #  numerically reliable interval
                     current_sum_residual_interval_list = \
                         [interval(i_l) - interval(i_0) * imath.expm1(
-                            (interval(v) + interval(i)*interval(r_s)) /
-                            interval(nNsVth)) - interval(g_sh) *
-                            (interval(v) + interval(i)*interval(r_s)) -
-                            interval(i) for v, i in zip(v_gold, i_gold)]
+                            (interval(v) + interval(i)*interval(r_s))
+                            / interval(nNsVth)) - interval(g_sh)
+                            * (interval(v) + interval(i)*interval(r_s))
+                            - interval(i) for v, i in zip(v_gold, i_gold)]
 
                     # Make sure the computed interval is within the specified
                     #  tolerance, report bad value in exception if not
@@ -435,7 +435,7 @@ def pretty_print_gold_dataset(gold_dataset):
     Create human-readable gold dataset.
 
     From a gold dataset in the lossless, machine-interoperable format, create
-    and return the dataset as a human-readale, comma-separated-value (csv)
+    and return the dataset as a human-readable, comma-separated-value (csv)
     string.
 
     Parameters
@@ -462,12 +462,10 @@ def pretty_print_gold_dataset(gold_dataset):
     gold_dataset_csv = gold_dataset_csv + "G (W/m^2), T (degC)" + "\n"
     gold_dataset_csv = gold_dataset_csv + \
         "r_sh (Ohm), r_s (Ohm), nNsVth (V), i_0 (A), i_l (A)" + "\n"
-    gold_dataset_csv = gold_dataset_csv + \
-        ", ".join(["v_gold_" + str(idx) +
-                   " (V)" for idx in range(num_pts)]) + "\n"
-    gold_dataset_csv = gold_dataset_csv + \
-        ", ".join(["i_gold_" + str(idx) +
-                   " (A)" for idx in range(num_pts)]) + "\n"
+    gold_dataset_csv = gold_dataset_csv + ", ".join(
+        ["v_gold_" + str(idx) + " (V)" for idx in range(num_pts)]) + "\n"
+    gold_dataset_csv = gold_dataset_csv + ", ".join(
+        ["i_gold_" + str(idx) + " (A)" for idx in range(num_pts)]) + "\n"
     gold_dataset_csv = gold_dataset_csv + "\n\n"
 
     for device in gold_dataset_converted["devices"]:
@@ -574,7 +572,7 @@ def gauge_functions(gold_dataset, test_func):
         See ``make_gold_dataset()``.
 
     test_func : dict
-        A dictionary of functions to guage. Supported keys to functions are
+        A dictionary of functions to gauge. Supported keys to functions are
         'i_from_v' and 'v_from_i'.
 
     Returns

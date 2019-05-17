@@ -58,6 +58,6 @@ def test_gauge_functions():
     json_path = os.path.join(os.path.dirname(sdm.__file__), "sdm.json")
     gold_dataset = sdm.load_gold_dataset(json_path=json_path)
     pprint.pprint(sdm.gauge_functions(gold_dataset, {
-            "i_from_v": pvsystem.i_from_v,
-            "v_from_i": pvsystem.v_from_i,
-        }))
+        "i_from_v": pvsystem.i_from_v,
+        "v_from_i": pvsystem.v_from_i,
+    }))

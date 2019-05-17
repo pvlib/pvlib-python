@@ -28,7 +28,7 @@ conditions.
 
 ### Gauging SDM Functions Against a Gold Dataset
 
-Using an existing `sdm.json` gold dataset, you can guage various `i_from_v()`
+Using an existing `sdm.json` gold dataset, you can gauge various `i_from_v()`
 and `v_from_i()` implementations for accuracy/performance using a python script
 such as
 

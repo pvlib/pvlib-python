@@ -551,5 +551,21 @@ Infinte Sheds
    infinite_sheds.get_solar_projection_tangent
    infinite_sheds.get_solar_projection
    infinite_sheds.get_ground_illumination
+   infinite_sheds.get_diffuse_fraction
+   infinite_sheds.get_poa_gnd_sky
+   infinite_sheds.get_shade_line
    infinite_sheds.get_sky_angle_tangent
+   infinite_sheds.get_sky_angle
    infinite_sheds.get_sky_angle_0_tangent
+   infinite_sheds.get_f_sky_pv
+   infinite_sheds.get_poa_sky_pv
+   infinite_sheds.get_ground_angle
+   infinite_sheds.get_ground_angle_tangent
+   infinite_sheds.get_ground_angle_1_tangent
+   infinite_sheds.get_f_gnd_pv
+   infinite_sheds.get_poa_gnd_pv
+   infinite_sheds.get_poa_diffuse_pv
+   infinite_sheds.get_poa_beam_pv
+   infinite_sheds.get_poa_global_pv
+   infinite_sheds.get_poa_global_bifacial
+   infinite_sheds.InfiniteSheds

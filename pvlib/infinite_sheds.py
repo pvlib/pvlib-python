@@ -101,6 +101,7 @@ def get_ground_illumination(gcr, tilt, tanphi, is_rad=False):
     .. math::
         F_{gnd,sky} &= 1 - \\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
             \\sin \\beta \\tan \\phi \\right|\\right)} \\newline
+
         \\beta &= \\text{tilt}
 
     Parameters
@@ -232,13 +233,6 @@ def get_sky_angle(gcr, tilt, f_x, is_rad=False):
     """
     angle from shade line to top of next row
 
-    .. math::
-
-        \\tan{\\psi_t} &= \\frac{F_y \\text{GCR}
-            \\sin{\\beta}}{1 - F_y \\text{GCR} \\cos{\\beta}} \\newline
-
-        F_y &= 1 - F_x
-
     Parameters
     ----------
     gcr : numeric
@@ -273,8 +267,8 @@ def get_sky_angle_0_tangent(gcr, tilt, is_rad=False):
 
     .. math::
 
-        \\tan{\\psi_t} = \\frac{\\text{GCR} \\sin{\\beta}}{1 - \\text{GCR}
-            \\cos{\\beta}}
+        \\tan{\\psi_t\\left(x=0\\right)} = \\frac{\\text{GCR} \\sin{\\beta}}
+            {1 - \\text{GCR} \\cos{\\beta}}
 
     Parameters
     ----------
@@ -324,17 +318,17 @@ def get_f_sky_pv(tilt, sky_angle_tangent, sky_angle_0_tangent, is_rad=False):
     approximation slightly.
 
     .. math ::
-        \\large{F_{nextrow \\rightarrow shade} = \\frac{ 1 + \\frac{\\cos
-            \\left(\\psi_{next\\ row\\ top \\rightarrow shadeline} + \\beta
-            \\right) + \\cos \\left(\\psi_{next\\ row\\ top \\rightarrow 0} +
+        \\large{F_{sky \\rightarrow shade} = \\frac{ 1 + \\frac{\\cos
+            \\left(\\psi_t + \\beta
+            \\right) + \\cos \\left(\\psi_t\\left(x=0\\right) +
             \\beta \\right)}{2}  }{ 1 + \\cos \\beta}}
 
     Recall that the view factor from the top of the rack is one because it's
     view is not obstructued.
 
     .. math::
-        \\large{F_{nextrow \\rightarrow no\\ shade} = \\frac{1 + \\frac{1 +
-        \\cos \\left(\\psi_{next\\ row\\ top \\rightarrow shadeline} + \\beta
+        \\large{F_{sky \\rightarrow no\\ shade} = \\frac{1 + \\frac{1 +
+        \\cos \\left(\\psi_t + \\beta
         \\right)}{1 + \\cos \\beta} }{2}}
     """
     tilt_rad = _to_radians(tilt, is_rad)[0]
@@ -394,6 +388,10 @@ def get_ground_angle_tangent(gcr, tilt, shade_line, is_rad=False):
     """
     tangent of angle from shadeline to bottom of adjacent row
 
+    .. math::
+        \\tan{\\psi_b} = \\frac{F_x \\sin \\beta}{F_x \\cos \\beta +
+            \\frac{1}{\\text{GCR}}}
+
     Parameters
     ----------
     gcr : numeric
@@ -419,6 +417,10 @@ def get_ground_angle_tangent(gcr, tilt, shade_line, is_rad=False):
 def get_ground_angle_1_tangent(gcr, tilt, is_rad=False):
     """
     tangent of angle to bottom of next row with all shade (shade line at top)
+
+    .. math::
+        \\tan{\\psi_b\\left(x=1\\right)} = \\frac{F_x \\sin{\\beta}}{F_x
+            \\cos{\\beta} + \\frac{1}{\\text{GCR}}}
 
     Parameters
     ----------
@@ -467,7 +469,7 @@ def get_f_gnd_pv(tilt, ground_angle_tangent, ground_angle_1_tangent,
 
     .. math::
         \\large{F_{gnd \\rightarrow shade} = \\frac{1 + \\frac{1 - \\cos
-        \\left(\\beta - \\psi_{next\\ row\\ bottom \\rightarrow shadeline}
+        \\left(\\beta - \\psi_b
         \\right)}{1 - \\cos \\beta}}{2}}
 
     At the bottom of rack, ``x = 0``, the angle is zero, and the view factor is
@@ -476,8 +478,8 @@ def get_f_gnd_pv(tilt, ground_angle_tangent, ground_angle_1_tangent,
     .. math::
         \\large{F_{gnd \\rightarrow no\\ shade} = \\frac{1 -
         \\frac{\\cos \\left(\\beta -
-        \\psi_{next\\ row\\ bottom \\rightarrow shadeline} \\right) +
-        \\cos \\left(\\beta - \\psi_{next\\ row\\ bottom \\rightarrow 1}
+        \\psi_b \\right) +
+        \\cos \\left(\\beta - \\psi_b\\left(x=1\\right)
         \\right)}{2}}{1 - \\cos \\beta}}
     """
     tilt_rad = _to_radians(tilt, is_rad)

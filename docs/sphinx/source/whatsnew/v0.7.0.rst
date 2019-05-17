@@ -1,0 +1,15 @@
+.. _whatsnew_0700:
+
+v0.7.0 (MONTH DAY, YEAR)
+---------------------
+
+This is a major release that drops support for Python 2 and Python 3.4. We
+recommend all users of v0.6.3 upgrade to this release.
+
+**Python 2.7 support ended on June 1, 2019**. (:issue:`501`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Mark Campanellli (:ghuser:`markcampanelli`)
+* Will Holmgren (:ghuser:`wholmgren`)

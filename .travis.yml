@@ -11,12 +11,6 @@ sudo: false # if false, use TravisCI's container based build
 # someday add os: osx to specify osx, but python not yet supported on Travis
 matrix:
     include:
-    - python: 2.7
-      env: CONDA_ENV=py27-min
-    - python: 2.7
-      env: CONDA_ENV=py27
-    - python: 3.4
-      env: CONDA_ENV=py34
     - python: 3.5
       env: CONDA_ENV=py35
     - python: 3.6
@@ -24,7 +18,7 @@ matrix:
         - CONDA_ENV=py36
         - TASK="coverage"
         - DEPLOY_ENV="true"
-    - python: 3.6
+    - python: 3.7
       env: CONDA_ENV=py37
 
 addons:
@@ -38,11 +32,7 @@ cache:
 # setup miniconda for numpy, scipy, pandas, etc.
 before_install:
     - echo "before install"
-    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        export PYVER="2";
-      else
-        export PYVER="3";
-      fi
+    - export PYVER="3"
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         export OSSTR="MacOSX-x86_64.sh";
       else

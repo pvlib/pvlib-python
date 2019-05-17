@@ -196,7 +196,7 @@ pvlib python generally follows the `PEP 8 -- Style Guide for Python Code
 <https://www.python.org/dev/peps/pep-0008/>`_. Maximum line length for code
 is 79 characters.
 
-Code must be compatible with python 2.7 and 3.4+.
+Code must be compatible with Python 3.5-7.
 
 pvlib python uses a mix of full and abbreviated variable names. See
 :ref:`variables_style_rules`. We could be better about consistency.

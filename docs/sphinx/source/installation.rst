@@ -216,7 +216,7 @@ environment) when you start a new shell or terminal.
 Compatibility
 -------------
 
-pvlib-python is compatible with Python versions 2.7 and 3.4-3.7.
+pvlib-python is compatible with Python 3.5-7.
 
 pvlib-python requires Pandas and Numpy. The minimum version requirements
 are specified in

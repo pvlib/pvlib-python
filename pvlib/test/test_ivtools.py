@@ -50,8 +50,10 @@ def test_fit_sde_sandia():
     expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rsh', 'Rs',
                      'nNsVth'])
     result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'],
-        v_oc=testcurve['v_oc'], i_sc=testcurve['i_sc'], v_mp=testcurve['v_mp'],
-        i_mp=testcurve['i_mp'])
+                                    v_oc=testcurve['v_oc'],
+                                    i_sc=testcurve['i_sc'],
+                                    v_mp=testcurve['v_mp'],
+                                    i_mp=testcurve['i_mp'])
     assert np.allclose(result, expected, rtol=5e-5)
 
 
@@ -84,5 +86,4 @@ def test_fit_cec_with_SAM(cec_module_parameters):
     expected = pd.Series(index=modeled.index, data=np.nan)
     for k in modeled.keys():
         expected[k] = sam_parameters[k]
-    assert np.isclose(modeled.values, expected.values, rtol=1e-2)
-
+    assert np.allclose(modeled.values, expected.values, rtol=1e-2)

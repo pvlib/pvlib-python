@@ -19,10 +19,7 @@ dependencies:
     - pip:
         - coveralls
         - pytest-mock
-<<<<<<< HEAD
-        - pvfactors==0.1.5
-        - NREL-PySAM==1.2.1
-=======
+        - nrel-pysam==1.2.1
         - pytest-timeout
         - pvfactors==1.0.1
->>>>>>> f38fe07f786b49b3b21f63bbc8bcec18bb42af7c
+s

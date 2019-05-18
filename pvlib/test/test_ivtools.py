@@ -25,14 +25,12 @@ def get_cec_params_cansol_cs5p_220p():
 
 @pytest.fixture()
 def sam_data():
-    data = {}
-    data['cecmod'] = pvsystem.retrieve_sam('cecmod')
-    return data
+    return pvsystem.retrieve_sam('cecmod')
 
 
 @pytest.fixture()
 def cec_module_parameters(sam_data):
-    modules = sam_data['cecmod']
+    modules = sam_data
     module = "Canadian_Solar_CS5P_220P"
     module_parameters = modules[module]
     return module_parameters
@@ -57,7 +55,7 @@ def test_fit_sde_sandia():
     assert np.allclose(result, expected, rtol=5e-5)
 
 
-def test_fit_cec_with_SAM(cec_module_parameters):
+def test_fit_cec_with_sam(cec_module_parameters):
     sam_parameters = cec_module_parameters
     cec_list_data = get_cec_params_cansol_cs5p_220p()
     # convert from %/C to A/C and V/C
@@ -86,4 +84,4 @@ def test_fit_cec_with_SAM(cec_module_parameters):
     expected = pd.Series(index=modeled.index, data=np.nan)
     for k in modeled.keys():
         expected[k] = sam_parameters[k]
-    assert np.allclose(modeled.values, expected.values, rtol=1e-2)
+    assert np.allclose(modeled.values, expected.values, rtol=5e-2)

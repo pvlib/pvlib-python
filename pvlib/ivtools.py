@@ -160,7 +160,7 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
                 # sign change of slope to get positive parameter value
                 beta[1] = -coef[0].item()
         except Exception as e:
-            raise(e)
+            raise e
         if np.isnan(beta[1]):
             idx += 1
 
@@ -175,7 +175,7 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
             beta[3] = coef[1].item()
             beta[4] = coef[2].item()
         except Exception as e:
-            raise(e)
+            raise e
 
     if not any([np.isnan(beta[i]) for i in [0, 1, 3, 4]]):
         # calculate parameters

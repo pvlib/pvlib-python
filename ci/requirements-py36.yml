@@ -22,4 +22,3 @@ dependencies:
         - nrel-pysam==1.2.1
         - pytest-timeout
         - pvfactors==1.0.1
-s

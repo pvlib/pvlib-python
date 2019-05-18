@@ -71,7 +71,8 @@ def fit_cec_with_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     except ImportError as e:
         raise(e)
 
-    datadict = {"tech_model": '6parsolve', 'celltype': celltype, 'Vmp': v_mp,
+    datadict = {'tech_model': '6parsolve', 'financial_model': 'none',
+                'celltype': celltype, 'Vmp': v_mp,
                 'Imp': i_mp, 'Voc': v_oc, 'Isc': i_sc, 'alpha_isc': alpha_sc,
                 'beta_voc': beta_voc, 'gamma_pmp': gamma_pmp,
                 'Nser': cells_in_series, 'Tref': temp_ref}

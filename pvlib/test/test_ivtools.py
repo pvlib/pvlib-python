@@ -55,8 +55,8 @@ def test_fit_sde_sandia():
     assert np.allclose(result, expected, rtol=5e-5)
 
 
-def test_fit_cec_with_SAM():
-    sam_parameters = cec_module_parameters(sam_data)
+def test_fit_cec_with_SAM(cec_module_parameters):
+    sam_parameters = cec_module_parameters
     cec_list_data = get_cec_params_cansol_cs5p_220p()
     # convert from %/C to A/C and V/C
     alpha_sc = cec_list_data['alpha_isc'] * cec_list_data['I_sc_ref']

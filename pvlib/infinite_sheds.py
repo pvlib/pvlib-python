@@ -121,7 +121,7 @@ def diffuse_fraction(ghi, dhi):
     df : numeric
         diffuse fraction
     """
-    return dhi/ghi
+    return np.where(dhi > 0, dhi/ghi, np.nan)
 
 
 def poa_ground_sky(poa_ground, f_gnd_sky, df):

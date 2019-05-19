@@ -11,7 +11,6 @@ BASEDIR = os.path.dirname(__file__)
 PROJDIR = os.path.dirname(BASEDIR)
 DATADIR = os.path.join(PROJDIR, 'data')
 TESTDATA = os.path.join(DATADIR, 'infinite_sheds.csv')
-TESTDATA = pd.read_csv(TESTDATA, parse_dates=True)
 
 # location and irradiance
 LAT, LON, TZ = 37.85, -122.25, -8  # global coordinates
@@ -29,6 +28,11 @@ MAXAOI = 85
 # backside
 BACKSIDE = {'tilt': 180.0 - TILT, 'sysaz': (180.0 + SYSAZ) % 360.0}
 
+# TESTDATA
+TESTDATA = pd.read_csv(TESTDATA, parse_dates=True)
+GHI, DHI = TESTDATA.ghi, TESTDATA.dhi
+DF = np.where(DHI > 0, TESTDATA.df, np.nan).astype(np.float64)
+
 # radians
 SOLAR_ZENITH_RAD = np.radians(TESTDATA.apparent_zenith)
 SOLAR_AZIMUTH_RAD = np.radians(TESTDATA.azimuth)
@@ -36,6 +40,7 @@ SYSAZ_RAD = np.radians(SYSAZ)
 BACK_SYSAZ_RAD = np.radians(BACKSIDE['sysaz'])
 TILT_RAD = np.radians(TILT)
 BACK_TILT_RAD = np.radians(BACKSIDE['tilt'])
+
 
 def test_solar_projection_tangent():
     tan_phi_f = pvlib.infinite_sheds.solar_projection_tangent(
@@ -80,3 +85,8 @@ def test_backside_ground_illumination():
     f_sky_gnd = pvlib.infinite_sheds.ground_illumination(
         GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
     assert np.allclose(f_sky_gnd, TESTDATA['Fsky-gnd'])
+
+
+def test_diffuse_fraction():
+    df = pvlib.infinite_sheds.diffuse_fraction(GHI, DHI)
+    assert np.allclose(df, DF, equal_nan=True)

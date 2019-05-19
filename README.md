@@ -34,7 +34,7 @@ Please see the [Installation page](http://pvlib-python.readthedocs.io/en/latest/
 
 pvlib-python is compatible with Python 3.5-7.
 
-**Python 2.7 support ended on June 1, 2019**.
+**Python 2.7 support ended on June 1, 2019, with pvlib-python 0.6.3.**
 
 
 Contributing

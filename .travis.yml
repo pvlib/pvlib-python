@@ -12,16 +12,17 @@ sudo: false # if false, use TravisCI's container based build
 matrix:
     include:
     - python: 3.5
+      env: CONDA_ENV=py35-min
+    - python: 3.5
       env: CONDA_ENV=py35
     - python: 3.6
       env:
         - CONDA_ENV=py36
         - TASK="coverage"
         - DEPLOY_ENV="true"
-    - python: 3.7
+    - python: 3.6
       env: CONDA_ENV=py37
-      dist: xenial
-      sudo: true
+
 addons:
     apt:
         packages:
@@ -41,7 +42,7 @@ before_install:
         export PATH=/usr/lib/ccache:$PATH;
       fi
     - export BASE="http://repo.continuum.io/miniconda/Miniconda"
-    - export CONDAVER="4.5.4"
+    - export CONDAVER="4.6.14"
     - wget $BASE$PYVER-$CONDAVER-$OSSTR -O miniconda.sh;
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"

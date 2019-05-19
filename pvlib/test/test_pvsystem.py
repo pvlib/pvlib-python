@@ -442,27 +442,28 @@ def test_calcparams_pvsyst(pvsyst_module_params):
     temp_cell = pd.Series([25, 50], index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
-                                  effective_irradiance,
-                                  temp_cell,
-                                  alpha_sc=pvsyst_module_params['alpha_sc'],
-                                  gamma_ref=pvsyst_module_params['gamma_ref'],
-                                  mu_gamma=pvsyst_module_params['mu_gamma'],
-                                  I_L_ref=pvsyst_module_params['I_L_ref'],
-                                  I_o_ref=pvsyst_module_params['I_o_ref'],
-                                  R_sh_ref=pvsyst_module_params['R_sh_ref'],
-                                  R_sh_0=pvsyst_module_params['R_sh_0'],
-                                  R_s=pvsyst_module_params['R_s'],
-                    cells_in_series=pvsyst_module_params['cells_in_series'],
-                                  EgRef=pvsyst_module_params['EgRef'])
+        effective_irradiance,
+        temp_cell,
+        alpha_sc=pvsyst_module_params['alpha_sc'],
+        gamma_ref=pvsyst_module_params['gamma_ref'],
+        mu_gamma=pvsyst_module_params['mu_gamma'],
+        I_L_ref=pvsyst_module_params['I_L_ref'],
+        I_o_ref=pvsyst_module_params['I_o_ref'],
+        R_sh_ref=pvsyst_module_params['R_sh_ref'],
+        R_sh_0=pvsyst_module_params['R_sh_0'],
+        R_s=pvsyst_module_params['R_s'],
+        cells_in_series=pvsyst_module_params['cells_in_series'],
+        EgRef=pvsyst_module_params['EgRef'])
 
-    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 4.8200], index=times))
-    assert_series_equal(np.round(I0, 3),
-                        pd.Series([0.0, 1.47e-7], index=times))
+    assert_series_equal(
+        IL.round(decimals=3), pd.Series([0.0, 4.8200], index=times))
+    assert_series_equal(
+        I0.round(decimals=3), pd.Series([0.0, 1.47e-7], index=times))
     assert_allclose(Rs, 0.500)
-    assert_series_equal(np.round(Rsh, 3),
-                        pd.Series([1000.0, 305.757], index=times))
-    assert_series_equal(np.round(nNsVth, 4),
-                        pd.Series([1.6186, 1.7961], index=times))
+    assert_series_equal(
+        Rsh.round(decimals=3), pd.Series([1000.0, 305.757], index=times))
+    assert_series_equal(
+        nNsVth.round(decimals=4), pd.Series([1.6186, 1.7961], index=times))
 
 
 def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
@@ -1239,7 +1240,7 @@ def test_PVSystem_creation():
 def test_PVSystem_get_aoi():
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
     aoi = system.get_aoi(30, 225)
-    assert np.round(aoi, 4) == 42.7408
+    assert np.around(aoi, decimals=4) == 42.7408
 
 
 def test_PVSystem_get_irradiance():

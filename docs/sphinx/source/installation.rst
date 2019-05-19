@@ -228,7 +228,7 @@ be installed separately using pip or conda. These packages/features
 include:
 
 * scipy: single diode model, clear sky detection
-* pytables: Linke turbidity look up for clear sky models
+* pytables (tables on PyPI): Linke turbidity look up for clear sky models
 * numba: fastest solar position calculations
 * pyephem: solar positions calculations using an astronomical library
 * siphon: forecasting PV power using the pvlib.forecast module

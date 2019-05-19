@@ -32,7 +32,7 @@ Installation
 pvlib-python releases may be installed using the ``pip`` and ``conda`` tools.
 Please see the [Installation page](http://pvlib-python.readthedocs.io/en/latest/installation.html) of the documentation for complete instructions.
 
-pvlib-python is compatible with Python 3.5-7.
+pvlib-python is compatible with Python 3.5 and above.
 
 **Python 2.7 support ended on June 1, 2019, with pvlib-python 0.6.3.**
 

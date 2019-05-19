@@ -1,10 +1,3 @@
-# First ensure proper Python version.
-import sys
-if not ((3, 5) <= sys.version_info and sys.version_info < (3, 8)):
-    raise RuntimeError("Current Python version is {}.{}.{}, but pvlib-python \
-is only compatible with Python 3.5-7.".format(
-        sys.version_info[0], sys.version_info[1], sys.version_info[2]))
-
 from pvlib.version import __version__
 from pvlib import tools
 from pvlib import atmosphere

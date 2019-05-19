@@ -201,8 +201,7 @@ Any changes that you make to this pvlib-python will be available inside
 your environment. If you run a git checkout, branch, or pull command the
 result will be applied to your pvlib-python installation. This
 is great for development. Note, however, that you will need to use
-Python's ``reload`` function (`python 2
-<https://docs.python.org/2/library/functions.html#reload>`_, `python 3
+Python's ``reload`` function (`python 3
 <https://docs.python.org/3/library/importlib.html#importlib.reload>`_)
 if you make changes to pvlib during an interactive Python
 session (including a Jupyter notebook). Restarting the Python
@@ -216,7 +215,7 @@ environment) when you start a new shell or terminal.
 Compatibility
 -------------
 
-pvlib-python is compatible with Python 3.5-7.
+pvlib-python is compatible with Python 3.5 and above.
 
 pvlib-python requires Pandas and Numpy. The minimum version requirements
 are specified in

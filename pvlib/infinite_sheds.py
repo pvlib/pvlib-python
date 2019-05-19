@@ -143,7 +143,7 @@ def poa_ground_sky(poa_ground, f_gnd_sky, df):
     poa_gnd_sky : numeric
         adjusted irradiance on modules reflected from ground
     """
-    return poa_ground * (f_gnd_sky * (1 - df) + df)
+    return poa_ground * np.where(np.isnan(df), 0.0, f_gnd_sky * (1 - df) + df)
 
 
 def shade_line(gcr, tilt, tan_phi):

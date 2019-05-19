@@ -90,3 +90,17 @@ def test_backside_ground_illumination():
 def test_diffuse_fraction():
     df = pvlib.infinite_sheds.diffuse_fraction(GHI, DHI)
     assert np.allclose(df, DF, equal_nan=True)
+
+
+def test_frontside_poa_ground_sky():
+    poa_gnd_sky = pvlib.infinite_sheds.poa_ground_sky(
+        TESTDATA['poa_ground_diffuse_f'], TESTDATA['Fsky-gnd'], DF)
+    # CSV file decimals are truncated
+    assert np.allclose(
+        poa_gnd_sky, TESTDATA['POA_gnd-sky_f'], equal_nan=True, atol=1e-6)
+
+
+def test_backside_poa_ground_sky():
+    poa_gnd_sky = pvlib.infinite_sheds.poa_ground_sky(
+        TESTDATA['poa_ground_diffuse_b'], TESTDATA['Fsky-gnd'], DF)
+    assert np.allclose(poa_gnd_sky, TESTDATA['POA_gnd-sky_b'], equal_nan=True)

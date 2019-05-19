@@ -548,24 +548,33 @@ Infinte Sheds
 .. autosummary::
    :toctree: generated/
 
-   infinite_sheds.solar_projection_tangent
    infinite_sheds.solar_projection
+   infinite_sheds.solar_projection_tangent
    infinite_sheds.ground_illumination
    infinite_sheds.diffuse_fraction
-   infinite_sheds.poa_gnd_sky
+   infinite_sheds.poa_ground_sky
    infinite_sheds.shade_line
-   infinite_sheds.sky_angle_tangent
    infinite_sheds.sky_angle
+   infinite_sheds.sky_angle_tangent
    infinite_sheds.sky_angle_0_tangent
-   infinite_sheds.f_sky_pv
-   infinite_sheds.poa_sky_pv
+   infinite_sheds.f_sky_diffuse_pv
+   infinite_sheds.poa_sky_diffuse_pv
    infinite_sheds.ground_angle
    infinite_sheds.ground_angle_tangent
    infinite_sheds.ground_angle_1_tangent
-   infinite_sheds.f_gnd_pv
-   infinite_sheds.poa_gnd_pv
+   infinite_sheds.f_ground_pv
+   infinite_sheds.poa_ground_pv
    infinite_sheds.poa_diffuse_pv
-   infinite_sheds.poa_beam_pv
+   infinite_sheds.poa_direct_pv
    infinite_sheds.poa_global_pv
    infinite_sheds.poa_global_bifacial
+   infinite_sheds.get_poa_global_bifacial
+
+Class Methods
+-------------
+
+.. autosummary::
+   :toctree: generated/
+
    infinite_sheds.InfiniteSheds
+   infinite_sheds.InfiniteSheds.get_irradiance

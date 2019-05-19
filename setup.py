@@ -68,7 +68,7 @@ setuptools_kwargs = {
     'zip_safe': False,
     'scripts': [],
     'include_package_data': True,
-    'python_requires': '>=3.5, <4'
+    'python_requires': '~=3.5'
 }
 
 # set up pvlib packages to be installed and extensions to be compiled

@@ -1240,7 +1240,7 @@ def test_PVSystem_creation():
 def test_PVSystem_get_aoi():
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
     aoi = system.get_aoi(30, 225)
-    assert np.around(aoi, decimals=4) == 42.7408
+    assert np.round(aoi, 4) == 42.7408
 
 
 def test_PVSystem_get_irradiance():

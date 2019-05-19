@@ -32,6 +32,7 @@ BACKSIDE = {'tilt': 180.0 - TILT, 'sysaz': (180.0 + SYSAZ) % 360.0}
 TESTDATA = pd.read_csv(TESTDATA, parse_dates=True)
 GHI, DHI = TESTDATA.ghi, TESTDATA.dhi
 DF = np.where(DHI > 0, TESTDATA.df, np.nan).astype(np.float64)
+F_GND_SKY = TESTDATA['Fsky-gnd']
 
 # radians
 SOLAR_ZENITH_RAD = np.radians(TESTDATA.apparent_zenith)
@@ -78,13 +79,13 @@ def test_backside_solar_projection_tangent():
 def test_ground_illumination():
     f_sky_gnd = pvlib.infinite_sheds.ground_illumination(
         GCR, TILT_RAD, TESTDATA.tan_phi_f)
-    assert np.allclose(f_sky_gnd, TESTDATA['Fsky-gnd'])
+    assert np.allclose(f_sky_gnd, F_GND_SKY)
 
 
 def test_backside_ground_illumination():
     f_sky_gnd = pvlib.infinite_sheds.ground_illumination(
         GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
-    assert np.allclose(f_sky_gnd, TESTDATA['Fsky-gnd'])
+    assert np.allclose(f_sky_gnd, F_GND_SKY)
 
 
 def test_diffuse_fraction():
@@ -94,7 +95,7 @@ def test_diffuse_fraction():
 
 def test_frontside_poa_ground_sky():
     poa_gnd_sky = pvlib.infinite_sheds.poa_ground_sky(
-        TESTDATA['poa_ground_diffuse_f'], TESTDATA['Fsky-gnd'], DF)
+        TESTDATA.poa_ground_diffuse_f, F_GND_SKY, DF)
     # CSV file decimals are truncated
     assert np.allclose(
         poa_gnd_sky, TESTDATA['POA_gnd-sky_f'], equal_nan=True, atol=1e-6)
@@ -102,5 +103,12 @@ def test_frontside_poa_ground_sky():
 
 def test_backside_poa_ground_sky():
     poa_gnd_sky = pvlib.infinite_sheds.poa_ground_sky(
-        TESTDATA['poa_ground_diffuse_b'], TESTDATA['Fsky-gnd'], DF)
+        TESTDATA.poa_ground_diffuse_b, F_GND_SKY, DF)
     assert np.allclose(poa_gnd_sky, TESTDATA['POA_gnd-sky_b'], equal_nan=True)
+
+
+def test_shade_line():
+    f_x = pvlib.infinite_sheds.shade_line(GCR, TILT_RAD, TESTDATA.tan_phi_f)
+    assert np.allclose(f_x, TESTDATA.Fx_f)
+    f_x = pvlib.infinite_sheds.shade_line(GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
+    assert np.allclose(f_x, TESTDATA.Fx_b)

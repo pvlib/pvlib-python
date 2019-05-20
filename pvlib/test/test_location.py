@@ -1,9 +1,5 @@
 import datetime
-try:
-    from unittest.mock import ANY
-except ImportError:
-    # python 2
-    from mock import ANY
+from unittest.mock import ANY
 
 import numpy as np
 from numpy import nan

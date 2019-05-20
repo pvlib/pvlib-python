@@ -16,8 +16,10 @@ References
 [1] Bill Marion, et al. IEEE PVSC 2017
 """
 
-import numpy as np
 from collections import OrderedDict
+import numpy as np
+import pandas as pd
+from pvlib import irradiance, pvsystem
 
 
 def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
@@ -450,8 +452,7 @@ def f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
     f_gnd_pv_shade = (1 + (1 - np.cos(tilt - psi_bottom))
                       / (1 - np.cos(tilt))) / 2
     f_gnd_pv_noshade = (
-        (1 - (np.cos(tilt - psi_bottom)
-            + np.cos(tilt - psi_bottom_1))/2)
+        (1 - (np.cos(tilt - psi_bottom) + np.cos(tilt - psi_bottom_1))/2)
         / (1 - np.cos(tilt)))
     return f_gnd_pv_shade, f_gnd_pv_noshade
 
@@ -533,37 +534,59 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, tilt, ghi,
     poa_dif_pv = poa_diffuse_pv(poa_gnd_pv, poa_sky_pv)
     poa_dir_pv = poa_direct_pv(poa_direct, iam, f_x)
     poa_glo_pv = poa_global_pv(poa_dir_pv, poa_dif_pv)
-    output = poa_glo_pv, poa_dir_pv, poa_dif_pv, poa_gnd_pv, poa_sky_pv
+    output = OrderedDict(
+        poa_global_pv=poa_glo_pv, poa_direct_pv=poa_dir_pv,
+        poa_diffuse_pv=poa_dif_pv, poa_ground_diffuse_pv=poa_gnd_pv,
+        poa_sky_diffuse_pv=poa_sky_pv)
     if all_output:
-        output += (
-            tan_phi, f_gnd_sky, df, poa_gnd_sky, f_x,
-            tan_psi_top, tan_psi_top_0, f_sky_pv_shade, f_sky_pv_noshade,
-            tan_psi_bottom, tan_psi_bottom_1, f_gnd_pv_shade, f_gnd_pv_noshade)
+        output.update(
+            solar_projection=tan_phi, ground_illumination=f_gnd_sky,
+            diffuse_fraction=df, poa_ground_sky=poa_gnd_sky, shade_line=f_x,
+            sky_angle_tangent=tan_psi_top, sky_angle_0_tangent=tan_psi_top_0,
+            f_sky_diffuse_pv_shade=f_sky_pv_shade,
+            f_sky_diffuse_pv_noshade=f_sky_pv_noshade,
+            ground_angle_tangent=tan_psi_bottom,
+            ground_angle_1_tangent=tan_psi_bottom_1,
+            f_ground_diffuse_pv_shade=f_gnd_pv_shade,
+            f_ground_diffuse_pv_noshade=f_gnd_pv_noshade)
+    if isinstance(poa_global_pv, pd.Series):
+        output = pd.DataFrame(output)
     return output
 
 
 def get_poa_global_bifacial(solar_zenith, solar_azimuth, system_azimuth, gcr,
-                            tilt, ghi, dhi, dni, iam_b0, bifaciality=0.8,
-                            shade_factor=-0.02, transmission_factor=0,
-                            method='haydavies'):
+                            tilt, ghi, dhi, dni, dni_extra, am_rel,
+                            iam_b0_front=0.05, iam_b0_back=0.05,
+                            bifaciality=0.8, shade_factor=-0.02,
+                            transmission_factor=0, method='haydavies'):
     """Get global bifacial irradiance from infinite sheds model."""
     # backside is rotated and flipped relative to front
     backside_tilt, backside_sysaz = _backside(tilt, system_azimuth)
     # AOI
-    aoi_front = pvlib.irradiance.aoi(
+    aoi_front = irradiance.aoi(
         tilt, system_azimuth, solar_zenith, solar_azimuth)
-    aoi_back = pvlib.irradiance.aoi(
+    aoi_back = irradiance.aoi(
         backside_tilt, backside_sysaz, solar_zenith, solar_azimuth)
+    # transposition
+    irrad_front = irradiance.get_total_irradiance(
+        tilt, system_azimuth, solar_zenith, solar_azimuth,
+        dni, ghi, dhi, dni_extra, am_rel, model=method)
+    irrad_back = irradiance.get_total_irradiance(
+        backside_tilt, backside_sysaz, solar_zenith, solar_azimuth,
+        dni, ghi, dhi, dni_extra, am_rel, model=method)
+    # iam
+    iam_front = pvsystem.ashraeiam(aoi_front, iam_b0_front)
+    iam_back = pvsystem.ashraeiam(aoi_back, iam_b0_back)
     # get front side
     poa_global_front = get_irradiance(
         solar_zenith, solar_azimuth, system_azimuth, gcr, tilt, ghi, dhi,
-        poa_ground, poa_sky_diffuse, poa_direct, iam, bifaciality,
-        shade_factor, transmission_factor)
+        irrad_front.poa_ground_diffuse, irrad_front.poa_sky_diffuse,
+        irrad_front.poa_direct, iam_front)
     # get backside
     poa_global_back = get_irradiance(
         solar_zenith, solar_azimuth, backside_sysaz, gcr, backside_tilt, ghi,
-        dhi, poa_ground, poa_sky_diffuse, poa_direct, iam, bifaciality,
-        shade_factor, transmission_factor)
+        dhi, irrad_back.poa_ground_diffuse, irrad_back.poa_sky_diffuse,
+        irrad_back.poa_direct, iam_back)
     # get bifacial
     poa_glo_bifi = poa_global_bifacial(
         poa_global_front[0], poa_global_back[0], bifaciality, shade_factor,
@@ -591,7 +614,6 @@ class InfiniteSheds(object):
         # backside angles
         self.backside_tilt, self.backside_sysaz = _backside(
             self.tilt, self.system_azimuth)
-        
         # sheds parameters
         self.tan_phi = None
         self.f_gnd_sky = None

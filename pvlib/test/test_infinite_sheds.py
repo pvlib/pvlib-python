@@ -38,6 +38,13 @@ TESTDATA.df = DF
 F_GND_SKY = TESTDATA['Fsky-gnd']
 BACK_POA_GND_SKY = TESTDATA['POA_gnd-sky_b']
 FRONT_POA_GND_SKY = TESTDATA['POA_gnd-sky_f']
+BACK_TAN_PSI_TOP = np.tan(TESTDATA.psi_top_b)
+FRONT_TAN_PSI_TOP = np.tan(TESTDATA.psi_top_f)
+
+TAN_PSI_TOP0_F = np.tan(0.312029739)  # GCR*SIN(TILT_f)/(1-GCR*COS(TILT_f))
+TAN_PSI_TOP0_B = np.tan(0.115824807)  # GCR*SIN(TILT_b)/(1-GCR*COS(TILT_b))
+TAN_PSI_BOT1_F = np.tan(0.115824807)  # SIN(TILT_f) / (COS(TILT_f) + 1/GCR)
+TAN_PSI_BOT1_B = np.tan(0.312029739)  # SIN(TILT_b) / (COS(TILT_b) + 1/GCR)
 
 # radians
 SOLAR_ZENITH_RAD = np.radians(TESTDATA.apparent_zenith)
@@ -116,3 +123,36 @@ def test_shade_line():
     f_x = pvlib.infinite_sheds.shade_line(
         GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
     assert np.allclose(f_x, TESTDATA.Fx_b)
+
+
+def test_sky_angles():
+    # frontside
+    psi_top, tan_psi_top = pvlib.infinite_sheds.sky_angle(
+        GCR, TILT_RAD, TESTDATA.Fx_f)
+    assert np.allclose(psi_top, TESTDATA.psi_top_f)
+    assert np.allclose(tan_psi_top, FRONT_TAN_PSI_TOP)
+    # backside
+    psi_top, tan_psi_top = pvlib.infinite_sheds.sky_angle(
+        GCR, BACK_TILT_RAD, TESTDATA.Fx_b)
+    assert np.allclose(psi_top, TESTDATA.psi_top_b)
+    assert np.allclose(tan_psi_top, BACK_TAN_PSI_TOP)
+
+
+def test_sky_angle_tangent():
+    # frontside
+    tan_psi_top = pvlib.infinite_sheds.sky_angle_tangent(
+        GCR, TILT_RAD, TESTDATA.Fx_f)
+    assert np.allclose(tan_psi_top, FRONT_TAN_PSI_TOP)
+    # backside
+    tan_psi_top = pvlib.infinite_sheds.sky_angle_tangent(
+        GCR, BACK_TILT_RAD, TESTDATA.Fx_b)
+    assert np.allclose(tan_psi_top, BACK_TAN_PSI_TOP)
+
+
+def test_sky_angle_0_tangent():
+    # frontside
+    tan_psi_top = pvlib.infinite_sheds.sky_angle_0_tangent(GCR, TILT_RAD)
+    assert np.allclose(tan_psi_top, TAN_PSI_TOP0_F)
+    # backside
+    tan_psi_top = pvlib.infinite_sheds.sky_angle_0_tangent(GCR, BACK_TILT_RAD)
+    assert np.allclose(tan_psi_top, TAN_PSI_TOP0_B)

@@ -31,8 +31,13 @@ BACKSIDE = {'tilt': 180.0 - TILT, 'sysaz': (180.0 + SYSAZ) % 360.0}
 # TESTDATA
 TESTDATA = pd.read_csv(TESTDATA, parse_dates=True)
 GHI, DHI = TESTDATA.ghi, TESTDATA.dhi
-DF = np.where(DHI > 0, TESTDATA.df, np.nan).astype(np.float64)
+# convert #DIV/0 to np.inf, 0/0 to NaN, then convert to float
+DF = np.where(GHI > 0, TESTDATA.df, np.inf)
+DF = np.where(DHI > 0, DF, np.nan).astype(np.float64)
+TESTDATA.df = DF
 F_GND_SKY = TESTDATA['Fsky-gnd']
+BACK_POA_GND_SKY = TESTDATA['POA_gnd-sky_b']
+FRONT_POA_GND_SKY = TESTDATA['POA_gnd-sky_f']
 
 # radians
 SOLAR_ZENITH_RAD = np.radians(TESTDATA.apparent_zenith)
@@ -52,37 +57,34 @@ def test_solar_projection_tangent():
     assert np.allclose(tan_phi_f, -tan_phi_b)
 
 
-def test_frontside_solar_projection():
+def test_solar_projection():
+    # frontside
     phi, tan_phi = pvlib.infinite_sheds.solar_projection(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
     assert np.allclose(tan_phi, TESTDATA.tan_phi_f)
-
-
-def test_frontside_solar_projection_tangent():
-    tan_phi = pvlib.infinite_sheds.solar_projection_tangent(
-        SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
-    assert np.allclose(tan_phi, TESTDATA.tan_phi_f)
-
-
-def test_backside_solar_projection():
+    # backside
     phi, tan_phi = pvlib.infinite_sheds.solar_projection(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, BACK_SYSAZ_RAD)
     assert np.allclose(tan_phi, TESTDATA.tan_phi_b)
 
 
-def test_backside_solar_projection_tangent():
+def test_frontside_solar_projection_tangent():
+    # frontside
+    tan_phi = pvlib.infinite_sheds.solar_projection_tangent(
+        SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
+    assert np.allclose(tan_phi, TESTDATA.tan_phi_f)
+    # backside
     tan_phi = pvlib.infinite_sheds.solar_projection_tangent(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, BACK_SYSAZ_RAD)
     assert np.allclose(tan_phi, TESTDATA.tan_phi_b)
 
 
 def test_ground_illumination():
+    # frontside, same for both sides
     f_sky_gnd = pvlib.infinite_sheds.ground_illumination(
         GCR, TILT_RAD, TESTDATA.tan_phi_f)
     assert np.allclose(f_sky_gnd, F_GND_SKY)
-
-
-def test_backside_ground_illumination():
+    # backside, should be the same as frontside
     f_sky_gnd = pvlib.infinite_sheds.ground_illumination(
         GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
     assert np.allclose(f_sky_gnd, F_GND_SKY)
@@ -93,22 +95,24 @@ def test_diffuse_fraction():
     assert np.allclose(df, DF, equal_nan=True)
 
 
-def test_frontside_poa_ground_sky():
+def test_poa_ground_sky():
+    # front side
     poa_gnd_sky = pvlib.infinite_sheds.poa_ground_sky(
         TESTDATA.poa_ground_diffuse_f, F_GND_SKY, DF)
     # CSV file decimals are truncated
     assert np.allclose(
-        poa_gnd_sky, TESTDATA['POA_gnd-sky_f'], equal_nan=True, atol=1e-6)
-
-
-def test_backside_poa_ground_sky():
+        poa_gnd_sky, FRONT_POA_GND_SKY, equal_nan=True, atol=1e-6)
+    # backside
     poa_gnd_sky = pvlib.infinite_sheds.poa_ground_sky(
         TESTDATA.poa_ground_diffuse_b, F_GND_SKY, DF)
-    assert np.allclose(poa_gnd_sky, TESTDATA['POA_gnd-sky_b'], equal_nan=True)
+    assert np.allclose(poa_gnd_sky, BACK_POA_GND_SKY, equal_nan=True)
 
 
 def test_shade_line():
+    # front side
     f_x = pvlib.infinite_sheds.shade_line(GCR, TILT_RAD, TESTDATA.tan_phi_f)
     assert np.allclose(f_x, TESTDATA.Fx_f)
-    f_x = pvlib.infinite_sheds.shade_line(GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
+    # backside
+    f_x = pvlib.infinite_sheds.shade_line(
+        GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
     assert np.allclose(f_x, TESTDATA.Fx_b)

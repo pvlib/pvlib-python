@@ -16,10 +16,8 @@ import sys
 import os
 
 # Mock modules so RTD works
-try:
-    from mock import Mock as MagicMock
-except ImportError:
-    from unittest.mock import MagicMock
+from unittest.mock import MagicMock
+
 
 class Mock(MagicMock):
     @classmethod

@@ -3,22 +3,25 @@ channels:
     - defaults
     - conda-forge
 dependencies:
-    - python=3.6
-    - numpy
-    - scipy
-    - pytables
-    - pandas
-    - pytz
+    - coveralls
+    - cython
     - ephem
+    - netcdf4
+    - nose
     - numba
-    - siphon
+    - numpy
+    - pandas
+    - pip
+    - pytables  # tables when using pip+PyPI
     - pytest
     - pytest-cov
-    - nose
+    - pytest-mock
+    - pytest-timeout
+    - python=3.6
+    - pytz
+    - requests
+    - scipy
     - shapely  # pvfactors dependency
+    - siphon  # conda-forge
     - pip:
-        - coveralls
         - pvfactors==1.0.1
-        - pyinterval
-        - pytest-mock
-        - pytest-timeout

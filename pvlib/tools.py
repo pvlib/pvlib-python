@@ -9,6 +9,10 @@ import numpy as np
 import pandas as pd
 import pytz
 
+JULIAN_2000 = 2451544.5
+DT_2000 = dt.datetime(2000, 1, 1)
+DAY_SECONDS = 60 * 60 * 24
+
 
 def cosd(angle):
     """
@@ -425,3 +429,25 @@ def _golden_sect_DataFrame(params, VL, VH, func):
             raise Exception("EXCEPTION:iterations exceeded maximum (50)")
 
     return func(df, 'V1'), df['V1']
+
+
+def datetime_to_julian(times):
+    """
+        Transforms pd.DateTimeIndex to Julian days
+
+    Parameters
+    ----------
+    times : :class:`pandas.DatetimeIndex`
+        Corresponding timestamps, must be localized to the timezone for the
+        ``latitude`` and ``longitude``
+    Returns
+    -------
+    Float64Index
+        The float index contains julian dates
+    """
+
+    delta = times - DT_2000
+    return (
+        JULIAN_2000 + delta.days +
+        (delta.seconds + delta.microseconds / 1e6) / DAY_SECONDS
+    )

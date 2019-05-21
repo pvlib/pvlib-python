@@ -24,14 +24,11 @@ import pandas as pd
 import warnings
 
 from pvlib import atmosphere
-from pvlib.tools import datetime_to_djd, djd_to_datetime
+from pvlib.tools import datetime_to_djd, djd_to_datetime, datetime_to_julian
 from pvlib._deprecation import deprecated
 
 NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
 JULIAN_2000 = 2451544.5
-DT_2000 = dt.datetime(2000, 1, 1)
-TIMESTAMP_2000 = DT_2000.timestamp()
-DAY_SECONDS = 60 * 60 * 24
 JULIAN_YEARS = 365.2425
 
 
@@ -1493,7 +1490,7 @@ def spencer_mc(times, latitude, longitude):
      Springer Science & Business Media, 2008.
     """
 
-    julians = datetime2julian(times)
+    julians = datetime_to_julian(times)
     julians_2000 = np.asarray(julians, dtype=np.float) - JULIAN_2000
 
     lat = np.radians(latitude)
@@ -1550,25 +1547,3 @@ def spencer_mc(times, latitude, longitude):
                            'equation_of_time': eot},
                           index=times)
     return result
-
-
-def datetime2julian(times):
-    """
-        Transforms pd.DateTimeIndex to Julian days
-
-    Parameters
-    ----------
-    times : :class:`pandas.DatetimeIndex`
-        Corresponding timestamps, must be localized to the timezone for the
-        ``latitude`` and ``longitude``
-    Returns
-    -------
-    Float64Index
-        The float index contains julian dates
-    """
-
-    delta = times - DT_2000
-    return (
-        JULIAN_2000 + delta.days +
-        (delta.seconds + delta.microseconds / 1e6) / DAY_SECONDS
-    )

@@ -7,6 +7,7 @@ Calculate the solar position using a variety of methods/packages.
 # Will Holmgren (@wholmgren), University of Arizona, 2014
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 # Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
+# Daniel Lassahn (@meteoDaniel), meteocontrol Energy and Weather Services, 2019
 
 from __future__ import division
 import os
@@ -18,7 +19,6 @@ except ImportError:
         from imp import reload
     except ImportError:
         pass
-
 import numpy as np
 import pandas as pd
 import warnings
@@ -27,8 +27,12 @@ from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 from pvlib._deprecation import deprecated
 
-
 NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
+JULIAN_2000 = 2451544.5
+DT_2000 = dt.datetime(2000, 1, 1)
+TIMESTAMP_2000 = DT_2000.timestamp()
+DAY_SECONDS = 60 * 60 * 24
+JULIAN_YEARS = 365.2425
 
 
 def get_solarposition(time, latitude, longitude,
@@ -67,6 +71,9 @@ def get_solarposition(time, latitude, longitude,
 
         'nrel_c' uses the NREL SPA C code [3]: :py:func:`spa_c`
 
+        'spencer_mc' uses the  Spencer formula [4] :py:func:`spencer_mc`
+
+
     temperature : float, default 12
         Degrees C.
 
@@ -81,6 +88,9 @@ def get_solarposition(time, latitude, longitude,
     solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
 
     [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+
+    [4] Spencer (1972) can be found in "Solar energy fundamentals and
+    modeling techniques" from Zekai Sen
     """
 
     if altitude is None and pressure is None:
@@ -114,6 +124,9 @@ def get_solarposition(time, latitude, longitude,
     elif method == 'ephemeris':
         ephem_df = ephemeris(time, latitude, longitude, pressure, temperature,
                              **kwargs)
+    elif method == 'spencer_mc':
+        ephem_df = spencer_mc(time, latitude, longitude)
+
     else:
         raise ValueError('Invalid solar position method')
 
@@ -1440,3 +1453,122 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
     sunset = _local_times_from_hours_since_midnight(times, sunset_hour)
     transit = _local_times_from_hours_since_midnight(times, transit_hour)
     return sunrise, sunset, transit
+
+
+def spencer_mc(times, latitude, longitude):
+    """
+    Calculate the solar position using a python implementation of the
+    Spencer (1972) formulation
+
+    Parameters
+    ----------
+    times : pandas.DatetimeIndex
+        Corresponding timestamps, must be localized to the timezone for the
+        ``latitude`` and ``longitude``.
+    latitude : float
+        Latitude in degrees, positive north of equator, negative to south
+    longitude : float
+        Longitude in degrees, positive east of prime meridian, negative to west
+
+    Returns
+    -------
+    DataFrame
+        The DataFrame will have the following columns:
+        zenith (degrees),
+        elevation (degrees),
+        azimuth (degrees),
+        equation_of_time (seconds),
+        eccentricity,
+        declination (degrees).
+
+    References
+    ----------
+    [4] Spencer (1972) can be found in
+    Sen, Zekai. Solar energy fundamentals and modeling techniques:
+     atmosphere, environment, climate change and renewable energy.
+     Springer Science & Business Media, 2008.
+    """
+
+    julians = datetime2julian(times)
+    julians_2000 = np.asarray(julians, dtype=np.float) - JULIAN_2000
+
+    lat, lat_deg = np.radians(latitude), latitude
+    lon, lon_deg = np.radians(longitude), longitude
+
+    # Compute fractional year (gamma) in radians
+    gamma = 2 * np.pi * (julians_2000 % JULIAN_YEARS) / JULIAN_YEARS
+    cos_gamma = np.cos(gamma), np.cos(gamma * 2), np.cos(gamma * 3)
+    sin_gamma = np.sin(gamma), np.sin(gamma * 2), np.sin(gamma * 3)
+    day_time = (julians_2000 % 1) * 24
+
+    # Eccentricity: correction factor of the earth's orbit.
+    eccentricity = (1.00011 + 0.034221 * cos_gamma[0] + 0.001280 *
+                    sin_gamma[0] + 0.000719 * cos_gamma[1] + 0.000077
+                    * sin_gamma[1])
+
+    # declination.
+    declination = (0.006918 - 0.399912 * cos_gamma[0] +
+                   0.070257 * sin_gamma[0] -
+                   0.006758 * cos_gamma[1] + 0.000907 * sin_gamma[1] -
+                   0.002697 * cos_gamma[2] + 0.001480 * sin_gamma[2])
+
+    # Equation of time (difference between standard time and solar time).
+    eot = (0.000075 + 0.001868 * cos_gamma[0] - 0.032077 * sin_gamma[0] -
+           0.014615 * cos_gamma[1] - 0.040849 * sin_gamma[1]) * 229.18
+
+    # True local time
+    tlt = (day_time + lon_deg / 15 + eot / 60) % 24 - 12
+
+    # Solar hour angle
+    ha = np.radians(tlt * 15)
+
+    # Calculate sun elevation.
+    sin_sun_elevation = (
+            np.sin(declination) * np.sin(lat) + np.cos(declination) *
+            np.cos(lat) * np.cos(ha)
+    )
+
+    # Compute the sun's elevation and zenith angle.
+    elevation = np.arcsin(sin_sun_elevation)
+    zenith = np.pi / 2 - elevation
+
+    # Compute the sun's azimuth angle.
+    y = -(np.sin(lat) * np.sin(elevation) - np.sin(declination)) / \
+        (np.cos(lat) * np.cos(elevation))
+    azimuth = np.arccos(y)
+
+    # Convert azimuth angle from 0-pi to 0-2pi.
+    tlt_filter = 0 <= tlt
+    azimuth[tlt_filter] = 2 * np.pi - azimuth[tlt_filter]
+
+    result = pd.DataFrame({'zenith': np.degrees(zenith),
+                           'elevation': np.degrees(elevation),
+                           'azimuth': np.degrees(azimuth),
+                           'eccentricity': eccentricity,
+                           'declination': declination,
+                           'equation_of_time': eot},
+                          index=times)
+    return result
+
+
+def datetime2julian(times):
+    """
+        Transforms pd.DateTimeIndex to Julian days
+
+    Parameters
+    ----------
+    times : pandas.DatetimeIndex
+        Corresponding timestamps, must be localized to the timezone for the
+        ``latitude`` and ``longitude``.
+
+    Returns
+    -------
+    Float64Index
+        The float index contains julian dates
+    """
+
+    delta = times - DT_2000
+    return (
+        JULIAN_2000 +
+        delta.days + (delta.seconds + delta.microseconds / 1e6) / DAY_SECONDS
+    )

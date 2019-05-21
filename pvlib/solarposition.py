@@ -1492,8 +1492,7 @@ def spencer_mc(times, latitude, longitude):
     julians = datetime2julian(times)
     julians_2000 = np.asarray(julians, dtype=np.float) - JULIAN_2000
 
-    lat, lat_deg = np.radians(latitude), latitude
-    lon, lon_deg = np.radians(longitude), longitude
+    lat = np.radians(latitude)
 
     # Compute fractional year (gamma) in radians
     gamma = 2 * np.pi * (julians_2000 % JULIAN_YEARS) / JULIAN_YEARS
@@ -1502,30 +1501,30 @@ def spencer_mc(times, latitude, longitude):
     day_time = (julians_2000 % 1) * 24
 
     # Eccentricity: correction factor of the earth's orbit.
-    eccentricity = (1.00011 + 0.034221 * cos_gamma[0] + 0.001280 *
-                    sin_gamma[0] + 0.000719 * cos_gamma[1] + 0.000077
+    eccentricity = (1.00011 + 0.034221 * cos_gamma[0] + 0.001280
+                    * sin_gamma[0] + 0.000719 * cos_gamma[1] + 0.000077
                     * sin_gamma[1])
 
     # declination.
-    declination = (0.006918 - 0.399912 * cos_gamma[0] +
-                   0.070257 * sin_gamma[0] -
-                   0.006758 * cos_gamma[1] + 0.000907 * sin_gamma[1] -
-                   0.002697 * cos_gamma[2] + 0.001480 * sin_gamma[2])
+    declination = (0.006918 - 0.399912 * cos_gamma[0]
+                   + 0.070257 * sin_gamma[0] - 0.006758
+                   * cos_gamma[1] + 0.000907 * sin_gamma[1]
+                   - 0.002697 * cos_gamma[2] + 0.001480 * sin_gamma[2])
 
     # Equation of time (difference between standard time and solar time).
-    eot = (0.000075 + 0.001868 * cos_gamma[0] - 0.032077 * sin_gamma[0] -
-           0.014615 * cos_gamma[1] - 0.040849 * sin_gamma[1]) * 229.18
+    eot = (0.000075 + 0.001868 * cos_gamma[0] - 0.032077 * sin_gamma[0]
+           - 0.014615 * cos_gamma[1] - 0.040849 * sin_gamma[1]) * 229.18
 
     # True local time
-    tlt = (day_time + lon_deg / 15 + eot / 60) % 24 - 12
+    tlt = (day_time + longitude / 15 + eot / 60) % 24 - 12
 
     # Solar hour angle
     ha = np.radians(tlt * 15)
 
     # Calculate sun elevation.
     sin_sun_elevation = (
-            np.sin(declination) * np.sin(lat) + np.cos(declination) *
-            np.cos(lat) * np.cos(ha)
+            np.sin(declination) * np.sin(lat) + np.cos(declination)
+            * np.cos(lat) * np.cos(ha)
     )
 
     # Compute the sun's elevation and zenith angle.
@@ -1533,8 +1532,8 @@ def spencer_mc(times, latitude, longitude):
     zenith = np.pi / 2 - elevation
 
     # Compute the sun's azimuth angle.
-    y = -(np.sin(lat) * np.sin(elevation) - np.sin(declination)) / \
-        (np.cos(lat) * np.cos(elevation))
+    y = -(np.sin(lat) * np.sin(elevation) - np.sin(declination)) \
+        / (np.cos(lat) * np.cos(elevation))
     azimuth = np.arccos(y)
 
     # Convert azimuth angle from 0-pi to 0-2pi.

@@ -1,5 +1,3 @@
-import datetime
-
 import numpy as np
 from numpy import nan
 import pandas as pd
@@ -16,7 +14,7 @@ SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
 
 
 def test_solar_noon():
-    index = pd.DatetimeIndex(start='20180701T1200', freq='1s', periods=1)
+    index = pd.date_range(start='20180701T1200', freq='1s', periods=1)
     apparent_zenith = pd.Series([10], index=index)
     apparent_azimuth = pd.Series([180], index=index)
     tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
@@ -96,10 +94,10 @@ def test_arrays_multi():
     apparent_azimuth = np.array([[180, 180], [180, 180]])
     # singleaxis should fail for num dim > 1
     with pytest.raises(ValueError):
-        tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
-                                           axis_tilt=0, axis_azimuth=0,
-                                           max_angle=90, backtrack=True,
-                                           gcr=2.0/7.0)
+        tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                            axis_tilt=0, axis_azimuth=0,
+                            max_angle=90, backtrack=True,
+                            gcr=2.0/7.0)
     # uncomment if we ever get singleaxis to support num dim > 1 arrays
     # assert isinstance(tracker_data, dict)
     # expect = {'tracker_theta': np.full_like(apparent_zenith, 0),
@@ -121,7 +119,7 @@ def test_azimuth_north_south():
 
     expect = pd.DataFrame({'tracker_theta': -60, 'aoi': 0,
                            'surface_azimuth': 90, 'surface_tilt': 60},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -146,7 +144,7 @@ def test_max_angle():
 
     expect = pd.DataFrame({'aoi': 15, 'surface_azimuth': 90,
                            'surface_tilt': 45, 'tracker_theta': 45},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -163,7 +161,7 @@ def test_backtrack():
 
     expect = pd.DataFrame({'aoi': 0, 'surface_azimuth': 90,
                            'surface_tilt': 80, 'tracker_theta': 80},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -175,7 +173,7 @@ def test_backtrack():
 
     expect = pd.DataFrame({'aoi': 52.5716, 'surface_azimuth': 90,
                            'surface_tilt': 27.42833, 'tracker_theta': 27.4283},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -193,7 +191,7 @@ def test_axis_tilt():
     expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 142.65730,
                            'surface_tilt': 35.98741,
                            'tracker_theta': -20.88121},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -205,7 +203,7 @@ def test_axis_tilt():
 
     expect = pd.DataFrame({'aoi': 47.6632, 'surface_azimuth': 50.96969,
                            'surface_tilt': 42.5152, 'tracker_theta': 31.6655},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -222,7 +220,7 @@ def test_axis_azimuth():
 
     expect = pd.DataFrame({'aoi': 30, 'surface_azimuth': 180,
                            'surface_tilt': 0, 'tracker_theta': 0},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -237,7 +235,7 @@ def test_axis_azimuth():
 
     expect = pd.DataFrame({'aoi': 0, 'surface_azimuth': 180,
                            'surface_tilt': 30, 'tracker_theta': 30},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
@@ -277,6 +275,20 @@ def test_horizon_tilted():
     assert_frame_equal(out, expected)
 
 
+def test_low_sun_angles():
+    # GH 656
+    result = tracking.singleaxis(
+        apparent_zenith=80, apparent_azimuth=338, axis_tilt=30,
+        axis_azimuth=180, max_angle=60, backtrack=True, gcr=0.35)
+    expected = {
+        'tracker_theta': np.array([-50.31051385]),
+        'aoi': np.array([61.35300178]),
+        'surface_azimuth': np.array([112.53615425]),
+        'surface_tilt': np.array([56.42233095])}
+    for k, v in result.items():
+        assert_allclose(expected[k], v)
+
+
 def test_SingleAxisTracker_creation():
     system = tracking.SingleAxisTracker(max_angle=45,
                                         gcr=.25,
@@ -299,35 +311,33 @@ def test_SingleAxisTracker_tracking():
 
     tracker_data = system.singleaxis(apparent_zenith, apparent_azimuth)
 
-    expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 142.65730 ,
+    expect = pd.DataFrame({'aoi': 7.286245, 'surface_azimuth': 142.65730,
                            'surface_tilt': 35.98741,
                            'tracker_theta': -20.88121},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
 
-    ### results calculated using PVsyst
+    # results calculated using PVsyst
     pvsyst_solar_azimuth = 7.1609
     pvsyst_solar_height = 27.315
     pvsyst_axis_tilt = 20.
     pvsyst_axis_azimuth = 20.
-    pvsyst_system = tracking.SingleAxisTracker(max_angle=60.,
-                                               axis_tilt=pvsyst_axis_tilt,
-                                               axis_azimuth=180+pvsyst_axis_azimuth,
-                                               backtrack=False)
+    pvsyst_system = tracking.SingleAxisTracker(
+        max_angle=60., axis_tilt=pvsyst_axis_tilt,
+        axis_azimuth=180+pvsyst_axis_azimuth, backtrack=False)
     # the definition of azimuth is different from PYsyst
     apparent_azimuth = pd.Series([180+pvsyst_solar_azimuth])
     apparent_zenith = pd.Series([90-pvsyst_solar_height])
     tracker_data = pvsyst_system.singleaxis(apparent_zenith, apparent_azimuth)
-    expect = pd.DataFrame({'aoi': 41.07852 , 'surface_azimuth': 180-18.432,
-                           'surface_tilt': 24.92122 ,
+    expect = pd.DataFrame({'aoi': 41.07852, 'surface_azimuth': 180-18.432,
+                           'surface_tilt': 24.92122,
                            'tracker_theta': -15.18391},
-                           index=[0], dtype=np.float64)
+                          index=[0], dtype=np.float64)
     expect = expect[SINGLEAXIS_COL_ORDER]
 
     assert_frame_equal(expect, tracker_data)
-
 
 
 def test_LocalizedSingleAxisTracker_creation():
@@ -385,10 +395,17 @@ def test_get_irradiance():
     system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
                                         axis_azimuth=180, gcr=2.0/7.0,
                                         backtrack=True)
-    times = pd.DatetimeIndex(start='20160101 1200-0700',
-                             end='20160101 1800-0700', freq='6H')
-    location = Location(latitude=32, longitude=-111)
-    solar_position = location.get_solarposition(times)
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
+    # latitude=32, longitude=-111
+    solar_position = pd.DataFrame(np.array(
+        [[55.36421554,  55.38851771,  34.63578446,  34.61148229,
+          172.32003763,  -3.44516534],
+         [96.50000401,  96.50000401,  -6.50000401,  -6.50000401,
+          246.91581654,  -3.56292888]]),
+        columns=['apparent_zenith', 'zenith', 'apparent_elevation',
+                 'elevation', 'azimuth', 'equation_of_time'],
+        index=times)
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
                           index=times)
     solar_zenith = solar_position['apparent_zenith']

@@ -1001,19 +1001,21 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     return dist
 
 
-def _calculate_simple_day_angle(dayofyear):
+def _calculate_simple_day_angle(dayofyear, offset=1):
     """
     Calculates the day angle for the Earth's orbit around the Sun.
 
     Parameters
     ----------
     dayofyear : numeric
+    offset : int, default 1
+        For the Spencer method, offset=1; for the ASCE method, offset=0
 
     Returns
     -------
     day_angle : numeric
     """
-    return (2. * np.pi / 365.) * (dayofyear - 1)
+    return (2. * np.pi / 365.) * (dayofyear - offset)
 
 
 def equation_of_time_spencer71(dayofyear):
@@ -1291,7 +1293,8 @@ def solar_zenith_analytical(latitude, hourangle, declination):
 
     Returns
     -------
-    zenith : numeric Solar zenith angle in radians.
+    zenith : numeric
+        Solar zenith angle in radians.
 
     References
     ----------
@@ -1312,7 +1315,9 @@ def solar_zenith_analytical(latitude, hourangle, declination):
 
     See Also
     --------
-    declination_spencer71 declination_cooper69 hour_angle
+    declination_spencer71
+    declination_cooper69
+    hour_angle
     """
     return np.arccos(
         np.cos(declination) * np.cos(latitude) * np.cos(hourangle) +

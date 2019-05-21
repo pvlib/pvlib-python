@@ -247,8 +247,8 @@ class PVSystem(object):
         model : String, default 'haydavies'
             Irradiance model.
 
-        **kwargs
-            Passed to :func:`irradiance.total_irrad`.
+        kwargs
+            Extra parameters passed to :func:`irradiance.total_irrad`.
 
         Returns
         -------
@@ -429,7 +429,7 @@ class PVSystem(object):
         aoi : Series
             Angle of incidence (degrees).
 
-        **kwargs
+        kwargs
             See pvsystem.sapm for details
 
         Returns
@@ -1276,7 +1276,9 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # by applying reflection and soiling losses to broadband plane of array
     # irradiance and not applying a spectral loss modifier, i.e.,
     # spectral_modifier = 1.0.
-    Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
+    # use errstate to silence divide by warning
+    with np.errstate(divide='ignore'):
+        Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
     Rs = R_s
 
     return IL, I0, Rs, Rsh, nNsVth
@@ -2967,8 +2969,15 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pac0 = eta_inv_nom * pdc0
     zeta = pdc / pdc0
 
+    # arrays to help avoid divide by 0 for scalar and array
+    eta = np.zeros_like(pdc, dtype=float)
+    pdc_neq_0 = ~np.equal(pdc, 0)
+
     # eta < 0 if zeta < 0.006. pac is forced to be >= 0 below. GH 541
-    eta = eta_inv_nom / eta_inv_ref * (-0.0162*zeta - 0.0059/zeta + 0.9858)
+    eta = eta_inv_nom / eta_inv_ref * (
+        - 0.0162*zeta
+        - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
+        + 0.9858)
 
     pac = eta * pdc
     pac = np.minimum(pac0, pac)

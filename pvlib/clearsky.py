@@ -327,7 +327,7 @@ def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
 
 def haurwitz(apparent_zenith):
     '''
-    Determine clear sky GHI from Haurwitz model.
+    Determine clear sky GHI using the Haurwitz model.
 
     Implements the Haurwitz clear sky model for global horizontal
     irradiance (GHI) as presented in [1, 2]. A report on clear
@@ -343,11 +343,9 @@ def haurwitz(apparent_zenith):
 
     Returns
     -------
-    pd.DataFrame
-    The modeled global horizonal irradiance in W/m^2 provided
-    by the Haurwitz clear-sky model.
-
-    Initial implementation of this algorithm by Matthew Reno.
+    ghi : DataFrame
+        The modeled global horizonal irradiance in W/m^2 provided
+        by the Haurwitz clear-sky model.
 
     References
     ----------
@@ -670,7 +668,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
     """
 
     # calculate deltas in units of minutes (matches input window_length units)
-    deltas = np.diff(times) / np.timedelta64(1, '60s')
+    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
 
     # determine the unique deltas and if we can proceed
     unique_deltas = np.unique(deltas)

@@ -216,6 +216,9 @@ class ModelChain(object):
     interface for all of the modeling steps necessary for calculating PV
     power from a time series of weather inputs.
 
+    See https://pvlib-python.readthedocs.io/en/stable/modelchain.html
+    for examples.
+
     Parameters
     ----------
     system : PVSystem
@@ -411,7 +414,9 @@ class ModelChain(object):
             return self.pvwatts_dc, 'pvwatts'
         else:
             raise ValueError('could not infer DC model from '
-                             'system.module_parameters')
+                             'system.module_parameters. Check '
+                             'system.module_parameters or explicitly '
+                             'set the model with the dc_model kwarg.')
 
     def sapm(self):
         self.dc = self.system.sapm(self.effective_irradiance/1000.,
@@ -530,7 +535,9 @@ class ModelChain(object):
             return self.pvwatts_inverter
         else:
             raise ValueError('could not infer AC model from '
-                             'system.inverter_parameters')
+                             'system.inverter_parameters. Check '
+                             'system.inverter_parameters or explicitly '
+                             'set the model with the ac_model kwarg.')
 
     def snlinverter(self):
         self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
@@ -577,7 +584,11 @@ class ModelChain(object):
             return self.ashrae_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
-                             'system.module_parameters')
+                             'system.module_parameters. Check that the '
+                             'system.module_parameters contain parameters for '
+                             'the physical, aoi, or ashrae model; explicitly '
+                             'set model with aoi_model kwarg; or set '
+                             'aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
         self.aoi_modifier = self.system.ashraeiam(self.aoi)
@@ -628,9 +639,10 @@ class ModelChain(object):
         else:
             raise ValueError('could not infer spectral model from '
                              'system.module_parameters. Check that the '
-                             'parameters contain valid '
-                             'first_solar_spectral_coefficients or a valid '
-                             'Material or Technology value')
+                             'system.module_parameters contain valid '
+                             'first_solar_spectral_coefficients, a valid '
+                             'Material or Technology value, or set '
+                             'spectral_model="no_loss".')
 
     def first_solar_spectral_loss(self):
         self.spectral_modifier = self.system.first_solar_spectral_loss(
@@ -697,7 +709,7 @@ class ModelChain(object):
 
     def pvwatts_losses(self):
         self.losses = (100 - self.system.pvwatts_losses()) / 100.
-        self.ac *= self.losses
+        self.dc *= self.losses
         return self
 
     def no_extra_losses(self):
@@ -798,21 +810,20 @@ class ModelChain(object):
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
         weather : None or DataFrame, default None
-            If None, the weather attribute is used. If the weather
-            attribute is also None assumes air temperature is 20 C, wind
-            speed is 0 m/s and irradiation calculated from clear sky
-            data. Column names must be 'wind_speed', 'temp_air', 'dni',
-            'ghi', 'dhi'. Do not pass incomplete irradiation data. Use
-            method
-            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
-            instead.
+            If ``None``, the weather attribute is used. Column names
+            must be ``'dni'``, ``'ghi'``, ``'dhi'``, ``'wind_speed'``,
+            ``'temp_air'``. All irradiance components are required.
+            Assumes air temperature is 20 C and wind speed is 0 m/s if
+            not provided.
 
-        Returns
-        -------
-        self
+        Notes
+        -----
+        Assigns attributes: ``times``, ``solar_position``, ``airmass``,
+        ``total_irrad``, `aoi`
 
-        Assigns attributes: times, solar_position, airmass, total_irrad,
-        aoi
+        See also
+        --------
+        ModelChain.complete_irradiance
         """
         if weather is not None:
             self.weather = weather
@@ -829,6 +840,10 @@ class ModelChain(object):
             solar_position=self.solar_position, model=self.airmass_model)
 
         if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
+            warnings.warn('Clear sky assumption for no input irradiance is '
+                          'deprecated and will be removed in v0.7.0. Use '
+                          'location.get_clearsky instead',
+                          pvlibDeprecationWarning)
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 solar_position=self.solar_position,
@@ -836,8 +851,8 @@ class ModelChain(object):
 
         if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
             raise ValueError(
-                "Uncompleted irradiance data set. Please check you input " +
-                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n" +
+                "Uncompleted irradiance data set. Please check your input "
+                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n"
                 "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
@@ -893,12 +908,11 @@ class ModelChain(object):
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
         weather : None or DataFrame, default None
-            If None, assumes air temperature is 20 C, wind speed is 0
-            m/s and irradiation calculated from clear sky data. Column
-            names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
-            Do not pass incomplete irradiation data. Use method
-            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
-            instead.
+            If ``None``, the weather attribute is used. Column names
+            must be ``'dni'``, ``'ghi'``, ``'dhi'``, ``'wind_speed'``,
+            ``'temp_air'``. All irradiance components are required.
+            Assumes air temperature is 20 C and wind speed is 0 m/s if
+            not provided.
 
         Returns
         -------
@@ -915,7 +929,7 @@ class ModelChain(object):
         self.effective_irradiance_model()
         self.temp_model()
         self.dc_model()
-        self.ac_model()
         self.losses_model()
+        self.ac_model()
 
         return self

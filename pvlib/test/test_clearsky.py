@@ -8,7 +8,7 @@ import pandas as pd
 import pytz
 
 import pytest
-from numpy.testing import assert_almost_equal, assert_allclose
+from numpy.testing import assert_allclose
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
@@ -308,8 +308,9 @@ def test_simplified_solis_scalar_neg_elevation():
 
 
 def test_simplified_solis_series_elevation():
-    expected = pd.DataFrame(np.array([[959.335463,  1064.653145,  129.125602]]),
-                            columns=['dni', 'ghi', 'dhi'])
+    expected = pd.DataFrame(
+        np.array([[959.335463,  1064.653145,  129.125602]]),
+        columns=['dni', 'ghi', 'dhi'])
     expected = expected[['ghi', 'dni', 'dhi']]
 
     out = clearsky.simplified_solis(pd.Series(80))
@@ -619,8 +620,8 @@ def test_detect_clearsky_irregular_times(detect_clearsky_data):
 
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""
-    times = pd.DatetimeIndex(start='1/1/2015 0:00', end='12/31/2015 23:00',
-                             freq='H')
+    times = pd.date_range(start='1/1/2015 0:00', end='12/31/2015 23:00',
+                          freq='H')
     tz = -7  # test timezone
     gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone

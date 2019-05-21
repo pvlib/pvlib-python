@@ -42,7 +42,7 @@ class Location(object):
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    alitude : float, default 0.
+    altitude : float, default 0.
         Altitude from sea level in meters.
 
     name : None or string, default None.
@@ -142,7 +142,8 @@ class Location(object):
             :py:func:`atmosphere.alt2pres` and ``self.altitude``.
         temperature : None, float, or array-like, default 12
 
-        kwargs passed to :py:func:`solarposition.get_solarposition`
+        kwargs
+            passed to :py:func:`solarposition.get_solarposition`
 
         Returns
         -------
@@ -178,8 +179,9 @@ class Location(object):
         dni_extra: None or numeric, default None
             If None, will be calculated from times.
 
-        kwargs passed to the relevant functions. Climatological values
-        are assumed in many cases. See source code for details!
+        kwargs
+            Extra parameters passed to the relevant functions. Climatological
+            values are assumed in many cases. See source code for details!
 
         Returns
         -------

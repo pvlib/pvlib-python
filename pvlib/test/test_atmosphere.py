@@ -45,7 +45,7 @@ def test_airmass(model, expected, zeniths):
     assert_allclose(out, expected, equal_nan=True, atol=0.001)
     # test series in/out. index does not matter
     # hits the isinstance() block in get_relative_airmass
-    times = pd.DatetimeIndex(start='20180101', periods=len(zeniths), freq='1s')
+    times = pd.date_range(start='20180101', periods=len(zeniths), freq='1s')
     zeniths = pd.Series(zeniths, index=times)
     expected = pd.Series(expected, index=times)
     out = atmosphere.get_relative_airmass(zeniths, model)

@@ -80,6 +80,10 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
 
     [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
     Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+
+    [5] ASCE, 2005. The ASCE Standardized Reference Evapotranspiration
+    Equation, Environmental and Water Resources Institute of the American
+    Civil Engineers, Ed. R. G. Allen et al.
     """
 
     to_doy, to_datetimeindex, to_output = \
@@ -88,7 +92,8 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     # consider putting asce and spencer methods in their own functions
     method = method.lower()
     if method == 'asce':
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy),
+                                                      offset=0)
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
     elif method == 'spencer':
         B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
@@ -447,11 +452,10 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
 def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     r'''
-    Determine the three components on in-plane irradiance
+    Determine in-plane irradiance components.
 
-    Combines in-plane irradaince compoents from the chosen diffuse
-    translation, ground reflection and beam irradiance algorithms into
-    the total in-plane irradiance.
+    Combines DNI with sky diffuse and ground-reflected irradiance to calculate
+    total, direct and diffuse irradiance components in the plane of array.
 
     Parameters
     ----------
@@ -751,7 +755,10 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
                             solar_zenith, solar_azimuth)
     cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
-    F = 1 - ((dhi / ghi) ** 2)
+    # silence warning from 0 / 0
+    with np.errstate(invalid='ignore'):
+        F = 1 - ((dhi / ghi) ** 2)
+
     try:
         # fails with single point input
         F.fillna(0, inplace=True)
@@ -2152,7 +2159,7 @@ def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times,
     return kt_prime_gte_90
 
 
-def erbs(ghi, zenith, doy):
+def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     r"""
     Estimate DNI and DHI from GHI using the Erbs model.
 
@@ -2179,8 +2186,15 @@ def erbs(ghi, zenith, doy):
         Global horizontal irradiance in W/m^2.
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
-    doy: scalar, array or DatetimeIndex
-        The day of the year.
+    datetime_or_doy : int, float, array, pd.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
 
     Returns
     -------
@@ -2205,14 +2219,10 @@ def erbs(ghi, zenith, doy):
     disc
     """
 
-    dni_extra = get_extra_radiation(doy)
+    dni_extra = get_extra_radiation(datetime_or_doy)
 
-    # This Z needs to be the true Zenith angle, not apparent,
-    # to get extraterrestrial horizontal radiation)
-    i0_h = dni_extra * tools.cosd(zenith)
-
-    kt = ghi / i0_h
-    kt = np.maximum(kt, 0)
+    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+                         max_clearness_index=1)
 
     # For Kt <= 0.22, set the diffuse fraction
     df = 1 - 0.09*kt
@@ -2229,14 +2239,18 @@ def erbs(ghi, zenith, doy):
     dhi = df * ghi
 
     dni = (ghi - dhi) / tools.cosd(zenith)
+    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+    # ensure that closure relationship remains valid
+    dhi = np.where(bad_values, ghi, dhi)
 
     data = OrderedDict()
     data['dni'] = dni
     data['dhi'] = dhi
     data['kt'] = kt
 
-    if isinstance(dni, pd.Series):
-        data = pd.DataFrame(data)
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        data = pd.DataFrame(data, index=datetime_or_doy)
 
     return data
 

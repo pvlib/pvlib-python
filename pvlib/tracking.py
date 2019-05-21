@@ -11,8 +11,11 @@ from pvlib import irradiance, atmosphere
 
 class SingleAxisTracker(PVSystem):
     """
-    Inherits the PV modeling methods from :ref:PVSystem:.
+    Inherits the PV modeling methods from :py:class:`~pvlib.pvsystem.PVSystem`.
 
+
+    Parameters
+    ----------
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
         axis_azimuth) with respect to horizontal, in decimal degrees.
@@ -40,6 +43,7 @@ class SingleAxisTracker(PVSystem):
         2 meters wide, centered on the tracking axis, with 6 meters
         between the tracking axes has a gcr of 2/6=0.333. If gcr is not
         provided, a gcr of 2/7 is default. gcr must be <=1.
+
     """
 
     def __init__(self, axis_tilt=0, axis_azimuth=0,
@@ -67,6 +71,22 @@ class SingleAxisTracker(PVSystem):
         return sat_repr + '\n' + pvsystem_repr
 
     def singleaxis(self, apparent_zenith, apparent_azimuth):
+        """
+        Get tracking data. See :py:func:`pvlib.tracking.singleaxis` more
+        detail.
+
+        Parameters
+        ----------
+        apparent_zenith : float, 1d array, or Series
+            Solar apparent zenith angles in decimal degrees.
+
+        apparent_azimuth : float, 1d array, or Series
+            Solar apparent azimuth angles in decimal degrees.
+
+        Returns
+        -------
+        tracking data
+        """
         tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
                                    self.axis_tilt, self.axis_azimuth,
                                    self.max_angle,
@@ -421,19 +441,22 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # angle convention being used here.
     if backtrack:
         axes_distance = 1/gcr
-        temp = np.minimum(axes_distance*cosd(wid), 1)
+        # clip needed for low angles. GH 656
+        temp = np.clip(axes_distance*cosd(wid), -1, 1)
 
         # backtrack angle
         # (always positive b/c acosd returns values between 0 and 180)
         wc = np.degrees(np.arccos(temp))
 
         # Eq 4 applied when wid in QIV (wid < 0 evalulates True), QI
-        tracker_theta = np.where(wid < 0, wid + wc, wid - wc)
+        with np.errstate(invalid='ignore'):
+            # errstate for GH 622
+            tracker_theta = np.where(wid < 0, wid + wc, wid - wc)
     else:
         tracker_theta = wid
 
-    tracker_theta[tracker_theta > max_angle] = max_angle
-    tracker_theta[tracker_theta < -max_angle] = -max_angle
+    tracker_theta = np.minimum(tracker_theta, max_angle)
+    tracker_theta = np.maximum(tracker_theta, -max_angle)
 
     # calculate panel normal vector in panel-oriented x, y, z coordinates.
     # y-axis is axis of tracker rotation.  tracker_theta is a compass angle
@@ -540,8 +563,9 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     surface_azimuth = 90 - surface_azimuth + axis_azimuth
 
     # 5. Map azimuth into [0,360) domain.
-    surface_azimuth[surface_azimuth < 0] += 360
-    surface_azimuth[surface_azimuth >= 360] -= 360
+    # surface_azimuth[surface_azimuth < 0] += 360
+    # surface_azimuth[surface_azimuth >= 360] -= 360
+    surface_azimuth = surface_azimuth % 360
 
     # Calculate surface_tilt
     dotproduct = (panel_norm_earth * projected_normal).sum(axis=1)

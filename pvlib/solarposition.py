@@ -122,8 +122,7 @@ def get_solarposition(time, latitude, longitude,
                            pressure=pressure,
                            temperature=temperature, **kwargs)
     elif method == 'ephemeris':
-        ephem_df = ephemeris(time, latitude, longitude, pressure, temperature,
-                             **kwargs)
+        ephem_df = ephemeris(time, latitude, longitude, pressure, temperature)
     elif method == 'spencer_mc':
         ephem_df = spencer_mc(time, latitude, longitude)
 
@@ -508,7 +507,7 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
 
     Parameters
     ----------
-    time : pandas.DatetimeIndex
+    times : :class:`pandas.DatetimeIndex`
         Must be localized
     latitude : float
         Latitude in degrees, positive north of equator, negative to south
@@ -1467,7 +1466,7 @@ def spencer_mc(times, latitude, longitude):
 
     Parameters
     ----------
-    times : pandas.DatetimeIndex
+    times : :class:`pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
         ``latitude`` and ``longitude``.
     latitude : float
@@ -1488,7 +1487,7 @@ def spencer_mc(times, latitude, longitude):
 
     References
     ----------
-    [4] Spencer (1972) can be found in
+    [1] Spencer (1972) can be found in
     Sen, Zekai. Solar energy fundamentals and modeling techniques:
      atmosphere, environment, climate change and renewable energy.
      Springer Science & Business Media, 2008.
@@ -1508,14 +1507,12 @@ def spencer_mc(times, latitude, longitude):
     # Eccentricity: correction factor of the earth's orbit.
     eccentricity = (
             1.00011 +
-            0.034221
-            * cos_gamma[0] + 0.001280
-            * sin_gamma[0] + 0.000719
-            * cos_gamma[1] + 0.000077
-            * sin_gamma[1]
+            0.034221 * cos_gamma[0] +
+            0.001280 * sin_gamma[0] +
+            0.000719 * cos_gamma[1] +
+            0.000077 * sin_gamma[1]
     )
 
-    # declination.
     declination = np.array(declination_spencer71(times.dayofyear))
 
     # Equation of time (difference between standard time and solar time).
@@ -1529,10 +1526,8 @@ def spencer_mc(times, latitude, longitude):
     ha = np.radians(tlt * 15)
 
     # Calculate sun elevation.
-    sin_sun_elevation = (
-            np.sin(declination) * np.sin(lat) + np.cos(declination)
-            * np.cos(lat) * np.cos(ha)
-    )
+    sin_sun_elevation = (np.sin(declination) * np.sin(lat) +
+                         np.cos(declination) * np.cos(lat) * np.cos(ha))
 
     # Compute the sun's elevation and zenith angle.
     elevation = np.arcsin(sin_sun_elevation)
@@ -1563,10 +1558,9 @@ def datetime2julian(times):
 
     Parameters
     ----------
-    times : pandas.DatetimeIndex
+    times : :class:`pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
-        ``latitude`` and ``longitude``.
-
+        ``latitude`` and ``longitude``
     Returns
     -------
     Float64Index
@@ -1575,6 +1569,6 @@ def datetime2julian(times):
 
     delta = times - DT_2000
     return (
-        JULIAN_2000 +
-        delta.days + (delta.seconds + delta.microseconds / 1e6) / DAY_SECONDS
+        JULIAN_2000 + delta.days +
+        (delta.seconds + delta.microseconds / 1e6) / DAY_SECONDS
     )

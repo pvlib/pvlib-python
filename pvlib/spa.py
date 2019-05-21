@@ -1161,7 +1161,7 @@ def transit_sunrise_sunset(dates, lat, lon, delta_t, numthreads):
 
     Parameters
     ----------
-    dates : array
+    dates : np.array
         Numpy array of ints/floats corresponding to the Unix time
         for the dates of interest, must be midnight UTC (00:00+00:00)
         on the day of interest.

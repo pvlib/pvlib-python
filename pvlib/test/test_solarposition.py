@@ -16,11 +16,12 @@ from pvlib import solarposition, spa
 from conftest import (fail_on_pvlib_version, requires_ephem, needs_pandas_0_17,
                       requires_spa_c, requires_numba)
 
-# setup times and locations to be tested.
-times = pd.date_range(start=datetime.datetime(2014, 6, 24),
-                      end=datetime.datetime(2014, 6, 26), freq='15Min')
 
-tus = Location(32.2, -111, 'US/Arizona', 700)  # no DST issues possible
+# setup times and locations to be tested.
+times = pd.date_range(start=datetime.datetime(2014,6,24),
+                      end=datetime.datetime(2014,6,26), freq='15Min')
+
+tus = Location(32.2, -111, 'US/Arizona', 700) # no DST issues possible
 times_localized = times.tz_localize(tus.tz)
 
 tol = 5
@@ -57,8 +58,7 @@ def expected_solpos_multi():
                          'apparent_zenith': [50.111622, 50.478260],
                          'azimuth': [194.340241, 194.311132],
                          'apparent_elevation': [39.888378, 39.521740]},
-                        index=[
-                            ['2003-10-17T12:30:30Z', '2003-10-18T12:30:30Z']])
+                        index=[['2003-10-17T12:30:30Z', '2003-10-18T12:30:30Z']])
 
 
 @pytest.fixture()
@@ -126,7 +126,7 @@ def test_deprecated_07():
 
 @requires_spa_c
 def test_spa_c_physical(expected_solpos, golden_mst):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_c(times, golden_mst.latitude,
                                      golden_mst.longitude,
@@ -138,7 +138,7 @@ def test_spa_c_physical(expected_solpos, golden_mst):
 
 @requires_spa_c
 def test_spa_c_physical_dst(expected_solpos, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_c(times, golden.latitude,
                                      golden.longitude,
@@ -149,7 +149,7 @@ def test_spa_c_physical_dst(expected_solpos, golden):
 
 
 def test_spa_python_numpy_physical(expected_solpos, golden_mst):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
                                           golden_mst.longitude,
@@ -162,7 +162,7 @@ def test_spa_python_numpy_physical(expected_solpos, golden_mst):
 
 
 def test_spa_python_numpy_physical_dst(expected_solpos, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_python(times, golden.latitude,
                                           golden.longitude,
@@ -176,7 +176,7 @@ def test_spa_python_numpy_physical_dst(expected_solpos, golden):
 
 @requires_numba
 def test_spa_python_numba_physical(expected_solpos, golden_mst):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.spa_python(times, golden_mst.latitude,
                                           golden_mst.longitude,
@@ -190,7 +190,7 @@ def test_spa_python_numba_physical(expected_solpos, golden_mst):
 
 @requires_numba
 def test_spa_python_numba_physical_dst(expected_solpos, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.spa_python(times, golden.latitude,
                                           golden.longitude, pressure=82000,
@@ -269,20 +269,20 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
                             columns=['sunrise', 'sunset'],
                             dtype='datetime64[ns]')
     expected['sunrise'] = pd.Series(index=times, data=
-    [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
     expected['sunset'] = pd.Series(index=times, data=
-    [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunset']])
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunset']])
     expected['transit'] = pd.Series(index=times, data=
-    [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
 
     result = solarposition.sun_rise_set_transit_ephem(times,
                                                       golden.latitude,
@@ -308,29 +308,24 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
                             columns=['sunrise', 'sunset'],
                             dtype='datetime64[ns]')
     expected['sunrise'] = pd.Series(index=times, data=
-    [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunrise'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
     expected['sunset'] = pd.Series(index=times, data=
-    [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset']])
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset']])
     expected['transit'] = pd.Series(index=times, data=
-    [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-     expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
+       [expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
+        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
 
     result = solarposition.sun_rise_set_transit_ephem(times,
-                                                      golden.latitude,
-                                                      golden.longitude,
-                                                      next_or_previous='previous',
-                                                      altitude=golden.altitude,
-                                                      pressure=0,
-                                                      temperature=11,
-                                                      horizon='-0:34')
+        golden.latitude, golden.longitude, next_or_previous='previous',
+        altitude=golden.altitude, pressure=0, temperature=11, horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
@@ -343,13 +338,8 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     for col, data in expected.iteritems():
         expected[col] = data.dt.tz_convert('UTC')
     result = solarposition.sun_rise_set_transit_ephem(times,
-                                                      golden.latitude,
-                                                      golden.longitude,
-                                                      next_or_previous='previous',
-                                                      altitude=golden.altitude,
-                                                      pressure=0,
-                                                      temperature=11,
-                                                      horizon='-0:34')
+        golden.latitude, golden.longitude, next_or_previous='previous',
+        altitude=golden.altitude, pressure=0, temperature=11, horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     for col, data in result.iteritems():
@@ -378,16 +368,13 @@ def test_sun_rise_set_transit_ephem_horizon(golden):
                               ]).tz_localize('MST')
     # center of sun disk
     center = solarposition.sun_rise_set_transit_ephem(times,
-                                                      latitude=golden.latitude,
-                                                      longitude=golden.longitude)
+        latitude=golden.latitude, longitude=golden.longitude)
     edge = solarposition.sun_rise_set_transit_ephem(times,
-                                                    latitude=golden.latitude,
-                                                    longitude=golden.longitude,
-                                                    horizon='-0:34')
+        latitude=golden.latitude, longitude=golden.longitude, horizon='-0:34')
     result_rounded = (edge['sunrise'] - center['sunrise']).dt.round('min')
 
     sunrise_delta = datetime.datetime(2016, 1, 3, 7, 17, 11) - \
-                    datetime.datetime(2016, 1, 3, 7, 21, 33)
+        datetime.datetime(2016, 1, 3, 7, 21, 33)
     expected = pd.Series(index=times,
                          data=sunrise_delta,
                          name='sunrise').dt.round('min')
@@ -396,7 +383,7 @@ def test_sun_rise_set_transit_ephem_horizon(golden):
 
 @requires_ephem
 def test_pyephem_physical(expected_solpos, golden_mst):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.pyephem(times, golden_mst.latitude,
                                        golden_mst.longitude, pressure=82000,
@@ -408,8 +395,7 @@ def test_pyephem_physical(expected_solpos, golden_mst):
 
 @requires_ephem
 def test_pyephem_physical_dst(expected_solpos, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
-                          periods=1,
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30), periods=1,
                           freq='D', tz=golden.tz)
     ephem_data = solarposition.pyephem(times, golden.latitude,
                                        golden.longitude, pressure=82000,
@@ -425,7 +411,7 @@ def test_calc_time():
     import math
     # validation from USNO solar position calculator online
 
-    epoch = datetime.datetime(1970, 1, 1)
+    epoch = datetime.datetime(1970,1,1)
     epoch_dt = pytz.utc.localize(epoch)
 
     loc = tus
@@ -441,21 +427,21 @@ def test_calc_time():
     actual_timestamp = (actual_time - epoch_dt).total_seconds()
 
     assert_allclose((alt.replace(second=0, microsecond=0) -
-                     epoch_dt).total_seconds(), actual_timestamp)
+                          epoch_dt).total_seconds(), actual_timestamp)
     assert_allclose((az.replace(second=0, microsecond=0) -
-                     epoch_dt).total_seconds(), actual_timestamp)
+                          epoch_dt).total_seconds(), actual_timestamp)
 
 
 @requires_ephem
 def test_earthsun_distance():
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D')
     distance = solarposition.pyephem_earthsun_distance(times).values[0]
     assert_allclose(1, distance, atol=0.1)
 
 
 def test_ephemeris_physical(expected_solpos, golden_mst):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,12,30,30),
                           periods=1, freq='D', tz=golden_mst.tz)
     ephem_data = solarposition.ephemeris(times, golden_mst.latitude,
                                          golden_mst.longitude,
@@ -468,7 +454,7 @@ def test_ephemeris_physical(expected_solpos, golden_mst):
 
 
 def test_ephemeris_physical_dst(expected_solpos, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.ephemeris(times, golden.latitude,
                                          golden.longitude, pressure=82000,
@@ -480,7 +466,7 @@ def test_ephemeris_physical_dst(expected_solpos, golden):
 
 
 def test_ephemeris_physical_no_tz(expected_solpos, golden_mst):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 19, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,19,30,30),
                           periods=1, freq='D')
     ephem_data = solarposition.ephemeris(times, golden_mst.latitude,
                                          golden_mst.longitude,
@@ -493,7 +479,7 @@ def test_ephemeris_physical_no_tz(expected_solpos, golden_mst):
 
 
 def test_get_solarposition_error(golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     with pytest.raises(ValueError):
         ephem_data = solarposition.get_solarposition(times, golden.latitude,
@@ -506,14 +492,14 @@ def test_get_solarposition_error(golden):
 @pytest.mark.parametrize("pressure, expected", [
     (82000, _expected_solpos_df()),
     (90000, pd.DataFrame(
-        np.array([[39.88997, 50.11003, 194.34024, 39.87205, 14.64151,
-                   50.12795]]),
+        np.array([[  39.88997,   50.11003,  194.34024,   39.87205,   14.64151,
+                     50.12795]]),
         columns=['apparent_elevation', 'apparent_zenith', 'azimuth',
                  'elevation', 'equation_of_time', 'zenith'],
         index=['2003-10-17T12:30:30Z']))
-])
+    ])
 def test_get_solarposition_pressure(pressure, expected, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude,
@@ -529,14 +515,14 @@ def test_get_solarposition_pressure(pressure, expected, golden):
 @pytest.mark.parametrize("altitude, expected", [
     (1830.14, _expected_solpos_df()),
     (2000, pd.DataFrame(
-        np.array([[39.88788, 50.11212, 194.34024, 39.87205, 14.64151,
-                   50.12795]]),
+        np.array([[  39.88788,   50.11212,  194.34024,   39.87205,   14.64151,
+                     50.12795]]),
         columns=['apparent_elevation', 'apparent_zenith', 'azimuth',
                  'elevation', 'equation_of_time', 'zenith'],
         index=['2003-10-17T12:30:30Z']))
-])
+    ])
 def test_get_solarposition_altitude(altitude, expected, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude,
@@ -557,10 +543,10 @@ def test_get_solarposition_altitude(altitude, expected, golden):
         marks=[pytest.mark.xfail(
             reason='spa.calculate_deltat not implemented for numba yet')]),
     (67.0, 'nrel_numba')
-])
+    ])
 def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
                                   golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=2, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude,
@@ -576,7 +562,7 @@ def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
 
 
 def test_get_solarposition_no_kwargs(expected_solpos, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+    times = pd.date_range(datetime.datetime(2003,10,17,13,30,30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude)
@@ -601,7 +587,7 @@ def test_get_solarposition_method_pyephem(expected_solpos, golden):
 
 def test_nrel_earthsun_distance():
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
-                              datetime.datetime(2015, 8, 2), ]
+                              datetime.datetime(2015, 8, 2),]
                              ).tz_localize('MST')
     result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
     expected = pd.Series(np.array([0.983289204601, 1.01486146446]),
@@ -690,27 +676,27 @@ def test_analytical_azimuth():
     azimuth_2 = solarposition.solar_azimuth_analytical(lat_rad, hour_angle,
                                                        decl, zenith)
 
-    idx = np.where(solar_zenith < np.pi / 2)
+    idx = np.where(solar_zenith < np.pi/2)
     assert np.allclose(azimuth_1[idx], solar_azimuth.values[idx], atol=0.01)
     assert np.allclose(azimuth_2[idx], solar_azimuth.values[idx], atol=0.017)
 
     # test for NaN values at boundary conditions (PR #431)
     test_angles = np.radians(np.array(
-        [[0., -180., -20.],
-         [0., 0., -5.],
-         [0., 0., 0.],
-         [0., 0., 15.],
-         [0., 180., 20.],
-         [30., 0., -20.],
-         [30., 0., -5.],
-         [30., 0., 0.],
-         [30., 180., 5.],
-         [30., 0., 10.],
-         [-30., 0., -20.],
-         [-30., 0., -15.],
-         [-30., 0., 0.],
-         [-30., -180., 5.],
-         [-30., 180., 10.]]))
+                   [[   0., -180.,  -20.],
+                    [   0.,    0.,   -5.],
+                    [   0.,    0.,    0.],
+                    [   0.,    0.,   15.],
+                    [   0.,  180.,   20.],
+                    [  30.,    0.,  -20.],
+                    [  30.,    0.,   -5.],
+                    [  30.,    0.,    0.],
+                    [  30.,  180.,    5.],
+                    [  30.,    0.,   10.],
+                    [ -30.,    0.,  -20.],
+                    [ -30.,    0.,  -15.],
+                    [ -30.,    0.,    0.],
+                    [ -30., -180.,    5.],
+                    [ -30.,  180.,   10.]]))
 
     zeniths = solarposition.solar_zenith_analytical(*test_angles.T)
     azimuths = solarposition.solar_azimuth_analytical(*test_angles.T,
@@ -790,82 +776,40 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
 
 def test_spencer_mc():
     """ test for the calculation based on spencer 1972 """
-    times = pd.date_range('2018-01-01', periods=24, freq='H')
     latitude = 48.367073
     longitude = 10.868378
-    assert_frame_equal(solarposition.spencer_mc(times, latitude, longitude),
-                       pd.DataFrame([[153.40940267, -63.40940267, 21.07562885,
-                                      1.03506345,
-                                      -0.40158632, -3.18821393],
-                                     [147.78245317, -57.78245317, 47.01029634,
-                                      1.03506418,
-                                      -0.40152783, -3.20679537],
-                                     [139.47329285, -49.47329285, 65.74488069,
-                                      1.03506489,
-                                      -0.40146911, -3.22536965],
-                                     [129.96316706, -39.96316706, 79.89448997,
-                                      1.03506558,
-                                      -0.40141017, -3.24393676],
-                                     [120.04134593, -30.04134593, 91.64276999,
-                                      1.03506625,
-                                      -0.40135099, -3.26249664],
-                                     [110.16576717, -20.16576717, 102.30874903,
-                                      1.0350669,
-                                      -0.40129158, -3.28104929],
-                                     [100.67550276, -10.67550276, 112.71473915,
-                                      1.03506753,
-                                      -0.40123194, -3.29959466],
-                                     [91.89177037, -1.89177037, 123.43188389,
-                                      1.03506814,
-                                      -0.40117207, -3.31813273],
-                                     [84.16861912, 5.83138088, 134.88256108,
-                                      1.03506874,
-                                      -0.40111197, -3.33666346],
-                                     [77.91130514, 12.08869486, 147.34079438,
-                                      1.03506931,
-                                      -0.40105163, -3.35518683],
-                                     [73.55352662, 16.44647338, 160.85682789,
-                                      1.03506987,
-                                      -0.40099107, -3.37370281],
-                                     [71.47824875, 18.52175125, 175.16512108,
-                                      1.03507041,
-                                      -0.40093028, -3.39221136],
-                                     [71.89802747, 18.10197253, 189.6987874,
-                                      1.03507093,
-                                      -0.40086925, -3.41071246],
-                                     [74.76804069, 15.23195931, 203.79458854,
-                                      1.03507142,
-                                      -0.400808, -3.42920608],
-                                     [79.80562508, 10.19437492, 216.97266043,
-                                      1.0350719,
-                                      -0.40074651, -3.44769219],
-                                     [86.59854728, 3.40145272, 229.07943767,
-                                      1.03507237,
-                                      -0.40068479, -3.46617075],
-                                     [94.71660269, -4.71660269, 240.25140046,
-                                      1.03507281,
-                                      -0.40062285, -3.48464174],
-                                     [103.77123543, -13.77123543, 250.81773352,
-                                      1.03507323,
-                                      -0.40056067, -3.50310512],
-                                     [113.42256954, -23.42256954, 261.24657665,
-                                      1.03507363,
-                                      -0.40049826, -3.52156088],
-                                     [123.35015695, -33.35015695, 272.17648044,
-                                      1.03507402,
-                                      -0.40043563, -3.54000897],
-                                     [133.18907815, -43.18907815, 284.56071242,
-                                      1.03507438,
-                                      -0.40037276, -3.55844937],
-                                     [142.4005988, -52.4005988, 299.96695581,
-                                      1.03507473,
-                                      -0.40030966, -3.57688204],
-                                     [150.00459208, -60.00459208, 320.87720374,
-                                      1.03507506,
-                                      -0.40024633, -3.59530697],
-                                     [154.24856743, -64.24856743, 349.27789739,
-                                      1.03507536,
-                                      -0.40018277, -3.61372411]],
+    assert_frame_equal(solarposition.spencer_mc(times[:10],
+                                                latitude,
+                                                longitude),
+                       pd.DataFrame([[107.60190741, -17.60190741, 9.95454033,
+                                      0.96706069, 0.40900622, -2.0908958],
+                                     [107.09533954, -17.09533954, 13.51934494,
+                                      0.96705971,
+                                      0.4090031, -2.09315672],
+                                     [106.43889684, -16.43889684, 17.04622292,
+                                      0.96705874,
+                                      0.40899997, -2.0954175],
+                                     [105.63682427, -15.63682427, 20.52704485,
+                                      0.96705777,
+                                      0.40899683, -2.09767815],
+                                     [104.69411613, -14.69411613, 23.95490053,
+                                      0.9670568,
+                                      0.40899367, -2.09993867],
+                                     [103.61638656, -13.61638656, 27.32420466,
+                                      0.96705583,
+                                      0.4089905, -2.10219905],
+                                     [102.40973635, -12.40973635, 30.63074363,
+                                      0.96705486,
+                                      0.40898732, -2.1044593],
+                                     [101.08062211, -11.08062211, 33.87167089,
+                                      0.9670539,
+                                      0.40898412, -2.10671942],
+                                     [99.63573414, -9.63573414, 37.04545803,
+                                      0.96705293,
+                                      0.40898091, -2.10897939],
+                                     [98.0818867, -8.0818867, 40.15181379,
+                                      0.96705197,
+                                      0.40897769, -2.11123924]],
                                     index=times,
                                     columns=['zenith',
                                              'elevation',
@@ -878,7 +822,6 @@ def test_spencer_mc():
 
 def test_datetime2julians():
     """ test transformation from datetime to julians """
-    times = pd.date_range('2018-01-01', periods=24, freq='H')
     julians = solarposition.datetime2julian(pd.to_datetime(times))
     np.testing.assert_array_almost_equal(julians,
                                          np.array([2458119.5, 2458119.54166667,

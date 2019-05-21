@@ -45,6 +45,7 @@ unless you know that you need a different function.
    solarposition.ephemeris
    solarposition.pyephem
    solarposition.spa_c
+   solarposition.spencer_mc
 
 
 Additional functions for quantities closely related to solar position.
@@ -55,6 +56,7 @@ Additional functions for quantities closely related to solar position.
    solarposition.calc_time
    solarposition.pyephem_earthsun_distance
    solarposition.nrel_earthsun_distance
+   solarposition.datetime2julian
    spa.calculate_deltat
 
 

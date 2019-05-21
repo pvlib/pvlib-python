@@ -1463,7 +1463,7 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
 def spencer_mc(times, latitude, longitude):
     """
     Calculate the solar position using a python implementation of the
-    Spencer (1972) formulation
+    Spencer (1972) formulation provided by meteocontrol
 
     Parameters
     ----------
@@ -1506,15 +1506,17 @@ def spencer_mc(times, latitude, longitude):
     day_time = (julians_2000 % 1) * 24
 
     # Eccentricity: correction factor of the earth's orbit.
-    eccentricity = (1.00011 + 0.034221 * cos_gamma[0] + 0.001280
-                    * sin_gamma[0] + 0.000719 * cos_gamma[1] + 0.000077
-                    * sin_gamma[1])
+    eccentricity = (
+            1.00011 +
+            0.034221
+            * cos_gamma[0] + 0.001280
+            * sin_gamma[0] + 0.000719
+            * cos_gamma[1] + 0.000077
+            * sin_gamma[1]
+    )
 
     # declination.
-    declination = (0.006918 - 0.399912 * cos_gamma[0]
-                   + 0.070257 * sin_gamma[0] - 0.006758
-                   * cos_gamma[1] + 0.000907 * sin_gamma[1]
-                   - 0.002697 * cos_gamma[2] + 0.001480 * sin_gamma[2])
+    declination = np.array(declination_spencer71(times.dayofyear))
 
     # Equation of time (difference between standard time and solar time).
     eot = (0.000075 + 0.001868 * cos_gamma[0] - 0.032077 * sin_gamma[0]

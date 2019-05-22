@@ -447,7 +447,7 @@ def datetime_to_julian(times):
     """
 
     delta = times - DT_2000
+    delta_julians = (delta.seconds + delta.microseconds / 1e6)
     return (
-        JULIAN_2000 + delta.days +
-        (delta.seconds + delta.microseconds / 1e6) / DAY_SECONDS
+        JULIAN_2000 + delta.days + delta_julians / DAY_SECONDS
     )

@@ -1523,8 +1523,8 @@ def spencer_mc(times, latitude, longitude):
     ha = np.radians(tlt * 15)
 
     # Calculate sun elevation.
-    sin_sun_elevation = (np.sin(declination) * np.sin(lat) +
-                         np.cos(declination) * np.cos(lat) * np.cos(ha))
+    sin_sun_elevation = np.sin(declination) * np.sin(lat)
+    sin_sun_elevation += np.cos(declination) * np.cos(lat) * np.cos(ha)
 
     # Compute the sun's elevation and zenith angle.
     elevation = np.arcsin(sin_sun_elevation)

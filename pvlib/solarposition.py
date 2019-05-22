@@ -1502,15 +1502,19 @@ def spencer_mc(times, latitude, longitude):
     day_time = (julians_2000 % 1) * 24
 
     # Eccentricity: correction factor of the earth's orbit.
-    eccentricity = (1.00011 + 0.034221 * cos_gamma[0] + 0.001280 *
-                    sin_gamma[0] + 0.000719 * cos_gamma[1] + 0.000077 *
-                    sin_gamma[1])
+    eccentricity = 1.00011 + 0.034221 * cos_gamma[0]
+    eccentricity += 0.001280 * sin_gamma[0]
+    eccentricity += 0.000719 * cos_gamma[1]
+    eccentricity += 0.000077 * sin_gamma[1]
 
     declination = np.array(declination_spencer71(times.dayofyear))
 
     # Equation of time (difference between standard time and solar time).
-    eot = (0.000075 + 0.001868 * cos_gamma[0] - 0.032077 * sin_gamma[0] -
-           0.014615 * cos_gamma[1] - 0.040849 * sin_gamma[1]) * 229.18
+    eot = 0.000075 + 0.001868 * cos_gamma[0]
+    eot -= 0.032077 * sin_gamma[0]
+    eot -= 0.014615 * cos_gamma[1]
+    eot -= 0.040849 * sin_gamma[1]
+    eot *= 229.18
 
     # True local time
     tlt = (day_time + longitude / 15 + eot / 60) % 24 - 12

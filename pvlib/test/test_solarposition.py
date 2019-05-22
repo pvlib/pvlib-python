@@ -759,8 +759,8 @@ def test_spencer_mc():
     latitude = 48.367073
     longitude = 10.868378
     to_test = solarposition.spencer_mc(times,
-                             latitude,
-                             longitude)
+                                       latitude,
+                                       longitude)
     np.testing.assert_array_almost_equal(
         to_test.zenith.values,
         np.array(

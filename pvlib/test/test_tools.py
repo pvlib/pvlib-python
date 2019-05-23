@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import pvlib.tools
 from pvlib import tools
 
 times = pd.date_range(start=datetime.datetime(2014, 6, 24),
@@ -24,7 +23,7 @@ def test_build_kwargs(keys, input_dict, expected):
 
 def test_datetime_to_julian():
     """ test transformation from datetime to julians """
-    julians = pvlib.tools.datetime_to_julian(pd.to_datetime(times))
+    julians = tools.datetime_to_julian(pd.to_datetime(times))
     np.testing.assert_array_almost_equal(np.array(julians[:10]),
                                          np.array([
                                              2456832.5,

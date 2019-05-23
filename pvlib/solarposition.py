@@ -68,7 +68,7 @@ def get_solarposition(time, latitude, longitude,
 
         'nrel_c' uses the NREL SPA C code [3]: :py:func:`spa_c`
 
-        'spencer_mc' uses the  Spencer formula [4] :py:func:`spencer_mc`
+        'spencer' uses the  Spencer formula [4] :py:func:`spencer`
 
 
     temperature : float, default 12
@@ -120,8 +120,8 @@ def get_solarposition(time, latitude, longitude,
                            temperature=temperature, **kwargs)
     elif method == 'ephemeris':
         ephem_df = ephemeris(time, latitude, longitude, pressure, temperature)
-    elif method == 'spencer_mc':
-        ephem_df = spencer_mc(time, latitude, longitude)
+    elif method == 'spencer':
+        ephem_df = spencer(time, latitude, longitude)
 
     else:
         raise ValueError('Invalid solar position method')
@@ -1456,14 +1456,13 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
     return sunrise, sunset, transit
 
 
-def spencer_mc(times, latitude, longitude):
+def spencer(times, latitude, longitude):
     """
-    Calculate the solar position using a python implementation of the
-    Spencer (1972) formulation provided by meteocontrol
+    Calculate the solar position using a formulation by Spencer 1971/1972.
 
     Parameters
     ----------
-    times : :class:`pandas.DatetimeIndex`
+    times : pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
         ``latitude`` and ``longitude``.
     latitude : float
@@ -1479,7 +1478,6 @@ def spencer_mc(times, latitude, longitude):
         elevation (degrees),
         azimuth (degrees),
         equation_of_time (seconds),
-        eccentricity,
         declination (degrees).
 
     References
@@ -1493,28 +1491,13 @@ def spencer_mc(times, latitude, longitude):
     julians = datetime_to_julian(times)
     julians_2000 = np.asarray(julians, dtype=np.float) - JULIAN_2000
 
-    lat = np.radians(latitude)
-
-    # Compute fractional year (gamma) in radians
-    gamma = 2 * np.pi * (julians_2000 % JULIAN_YEARS) / JULIAN_YEARS
-    cos_gamma = np.cos(gamma), np.cos(gamma * 2), np.cos(gamma * 3)
-    sin_gamma = np.sin(gamma), np.sin(gamma * 2), np.sin(gamma * 3)
+    latitude_radians = np.radians(latitude)
     day_time = (julians_2000 % 1) * 24
-
-    # Eccentricity: correction factor of the earth's orbit.
-    eccentricity = 1.00011 + 0.034221 * cos_gamma[0]
-    eccentricity += 0.001280 * sin_gamma[0]
-    eccentricity += 0.000719 * cos_gamma[1]
-    eccentricity += 0.000077 * sin_gamma[1]
 
     declination = np.array(declination_spencer71(times.dayofyear))
 
     # Equation of time (difference between standard time and solar time).
-    eot = 0.000075 + 0.001868 * cos_gamma[0]
-    eot -= 0.032077 * sin_gamma[0]
-    eot -= 0.014615 * cos_gamma[1]
-    eot -= 0.040849 * sin_gamma[1]
-    eot *= 229.18
+    eot = np.array(equation_of_time_spencer71(times.dayofyear))
 
     # True local time
     tlt = (day_time + longitude / 15 + eot / 60) % 24 - 12
@@ -1523,16 +1506,18 @@ def spencer_mc(times, latitude, longitude):
     ha = np.radians(tlt * 15)
 
     # Calculate sun elevation.
-    sin_sun_elevation = np.sin(declination) * np.sin(lat)
-    sin_sun_elevation += np.cos(declination) * np.cos(lat) * np.cos(ha)
+    sin_sun_elevation = (
+            np.sin(declination) * np.sin(latitude_radians) +
+            np.cos(declination) * np.cos(latitude_radians) * np.cos(ha)
+    )
 
     # Compute the sun's elevation and zenith angle.
     elevation = np.arcsin(sin_sun_elevation)
     zenith = np.pi / 2 - elevation
 
     # Compute the sun's azimuth angle.
-    y = -(np.sin(lat) * np.sin(elevation) - np.sin(declination)) \
-        / (np.cos(lat) * np.cos(elevation))
+    y = -(np.sin(latitude_radians) * np.sin(elevation) - np.sin(declination)) \
+        / (np.cos(latitude_radians) * np.cos(elevation))
     azimuth = np.arccos(y)
 
     # Convert azimuth angle from 0-pi to 0-2pi.
@@ -1542,7 +1527,6 @@ def spencer_mc(times, latitude, longitude):
     result = pd.DataFrame({'zenith': np.degrees(zenith),
                            'elevation': np.degrees(elevation),
                            'azimuth': np.degrees(azimuth),
-                           'eccentricity': eccentricity,
                            'declination': declination,
                            'equation_of_time': eot},
                           index=times)

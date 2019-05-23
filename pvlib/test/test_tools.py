@@ -1,10 +1,14 @@
+import datetime
+
 import numpy as np
 import pandas as pd
 import pytest
 
 import pvlib.tools
 from pvlib import tools
-from pvlib.test.test_solarposition import times
+
+times = pd.date_range(start=datetime.datetime(2014, 6, 24),
+                      end=datetime.datetime(2014, 6, 26), freq='15Min')
 
 
 @pytest.mark.parametrize('keys, input_dict, expected', [

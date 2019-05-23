@@ -45,7 +45,7 @@ unless you know that you need a different function.
    solarposition.ephemeris
    solarposition.pyephem
    solarposition.spa_c
-   solarposition.spencer_mc
+   solarposition.spencer
 
 
 Additional functions for quantities closely related to solar position.

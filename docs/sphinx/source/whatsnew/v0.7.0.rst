@@ -8,8 +8,11 @@ recommend all users of v0.6.3 upgrade to this release.
 
 **Python 2.7 support ended on June 1, 2019**. (:issue:`501`)
 
+- Add a faster way to calculate the solar position (`spencer`)
+
 
 Contributors
 ~~~~~~~~~~~~
 * Mark Campanellli (:ghuser:`markcampanelli`)
 * Will Holmgren (:ghuser:`wholmgren`)
+* Daniel Lassahn (:ghuser:`meteoDaniel`)

@@ -145,6 +145,7 @@ def poa_ground_sky(poa_ground, f_gnd_sky, df):
     poa_gnd_sky : numeric
         adjusted irradiance on modules reflected from ground
     """
+    # FIXME: DHI is reduced by obstruction of panels too
     return poa_ground * np.where(np.isnan(df), 0.0, f_gnd_sky * (1 - df) + df)
 
 
@@ -447,6 +448,7 @@ def f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
         \\left(\\beta - \\psi_b \\right) + \\cos \\left(\\beta - \\psi_b
         \\left(x=1\\right) \\right)}{2}}{1 - \\cos \\beta}}
     """
+    # FIXME: according to Marion, should be difference of cosines
     psi_bottom = np.arctan(tan_psi_bottom)
     psi_bottom_1 = np.arctan(tan_psi_bottom_1)
     f_gnd_pv_shade = (1 + (1 - np.cos(tilt - psi_bottom))

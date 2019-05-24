@@ -139,54 +139,113 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
             product of diode (ideality) factor n (unitless) x number of
             cells in series Ns (unitless) x cell thermal voltage Vth (V), V
 
+    Notes
+    -----
+    :py:func:`fit_sde_sandia` obtains values for the five parameters for the
+    single diode equation [1]
+
+    .. math::
+
+        I = IL - I0*[exp((V+I*Rs)/(nNsVth))-1] - (V + I*Rs)/Rsh
+
+    :py:func:`pvsystem.singlediode` for definition of the parameters.
+
+    The fitting method proceeds in four steps:
+        1) simplify the single diode equation
+
+    .. math::
+
+        I = IL - I0*exp((V+I*Rs)/(nNsVth)) - (V + I*Rs)/Rsh
+
+        2) replace Rsh = 1/Gp and re-arrange
+
+    .. math::
+
+        I = IL/(1+Gp*Rs) - (Gp*V)/(1+Gp*Rs) - I0/(1+Gp*Rs)*exp((V+I*Rs)/(nNsVth)) 
+
+        3) fit the linear portion of the IV curve V <= vlim * v_oc
+
+    .. math::
+
+        I ~ IL/(1+Gp*Rs) - (Gp*V)/(1+Gp*Rs) = beta0 + beta1*V
+
+        4) fit the exponential portion of the IV curve I > ilim * i_sc
+
+    .. math::
+
+        log(beta0 - beta1*V - I) ~ log((I0)/(1+Gp*Rs)) + (V)/(nNsVth) + 
+        (Rs*I)/(nNsVth) = beta2 + beta3*V + beta4*I
+
+    Values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` are calculated from the
+    regression coefficents beta0, beta1, beta3 and beta4.
+
     References
     ----------
-    [1] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
+    [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
+    0 86758 909 4
+    [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
     In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
     Photovoltaic Specialist Conference, Chicago, IL, 2019
     """
-    # Find intercept and slope of linear portion of IV curve.
-    # Start with V < vlim * v_oc, extend by adding points until slope is
-    # acceptable
-    beta = [np.nan for i in range(5)]
-    # get index of largest voltage less than/equal to limit
-    idx = _max_index(v, vlim * v_oc)
-    while np.isnan(beta[1]) and (idx <= len(v)):
-        try:
-            coef = np.polyfit(v[:idx], i[:idx], deg=1)
-            if coef[0] < 0:
-                # intercept term
-                beta[0] = coef[1].item()
-                # sign change of slope to get positive parameter value
-                beta[1] = -coef[0].item()
-        except Exception as e:
-            raise e
-        if np.isnan(beta[1]):
-            idx += 1
 
-    if not np.isnan(beta[0]):
-        # Find parameters from exponential portion of IV curve
-        y = beta[0] - beta[1] * v - i
+    # Find beta0 and beta1 from linear portion of the IV curve
+    beta0, beta1 = _find_beta0_beta1(v, i, vlim, v_oc)
+
+    if not np.isnan(beta0):
+        # Find beta3 and beta4 from exponential portion of IV curve
+        y = beta0 - beta1 * v - i
         x = np.array([np.ones_like(v), v, i]).T
-        idx = _min_index(y, ilim * i_sc)
-        try:
-            result = np.linalg.lstsq(x[idx:, ], np.log(y[idx:]))
-            coef = result[0]
-            beta[3] = coef[1].item()
-            beta[4] = coef[2].item()
-        except Exception as e:
-            raise e
+        beta3, beta4 = _find_beta3_beta4(y, x, ilim, i_sc)
 
-    if not any([np.isnan(beta[i]) for i in [0, 1, 3, 4]]):
-        # calculate parameters
-        nNsVth = 1.0 / beta[3]
-        Rs = beta[4] / beta[3]
-        Gp = beta[1] / (1.0 - Rs * beta[1])
+    # calculate single diode parameters from regression coefficients
+    IL, I0, Rsh, Rs, nNsVth = _calculate_sde_parameters(beta0, beta1, beta3,
+        beta4, v_mp, i_mp, v_oc)
+
+    return IL, I0, Rsh, Rs, nNsVth
+
+
+def _calc_I0(IL, I, V, Gp, Rs, beta3):
+    return (IL - I - Gp * V - Gp * Rs * I) / np.exp(beta3 * (V + Rs * I))
+
+
+def _find_beta0_beta1(v, i, vlim, v_oc):
+    # Get intercept and slope of linear portion of IV curve.
+    # Start with V =< vlim * v_oc, extend by adding points until slope is
+    # acceptable
+    beta0 = np.nan
+    beta1 = np.nan
+    idx = np.searchsorted(v, vlim * v_oc)
+    while idx <= len(v):
+        coef = np.polyfit(v[:idx], i[:idx], deg=1)
+        if coef[0] < 0:
+            # intercept term
+            beta0 = coef[1].item()
+            # sign change of slope to get positive parameter value
+            beta1 = -coef[0].item()
+        else:
+            idx += 1
+    return beta0, beta1
+
+
+def _find_beta3_beta4(y, x, ilim, i_sc):
+    idx = np.searchsorted(y, ilim * i_sc) - 1
+    result = np.linalg.lstsq(x[idx:, ], np.log(y[idx:]))
+    coef = result[0]
+    beta3 = coef[1].item()
+    beta4 = coef[2].item()
+    return beta3, beta4
+
+
+def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
+    if not any(np.isnan([beta0, beta1, beta3, beta4])):
+        nNsVth = 1.0 / beta3
+        Rs = beta4 / beta3
+        Gp = beta1 / (1.0 - Rs * beta1)
         Rsh = 1.0 / Gp
-        IL = (1 + Gp * Rs) * beta[0]
+        IL = (1 + Gp * Rs) * beta0
         # calculate I0
-        I0_v_mp = _calc_I0(IL, i_mp, v_mp, Gp, Rs, beta[3])
-        I0_v_oc = _calc_I0(IL, 0, v_oc, Gp, Rs, beta[3])
+        I0_v_mp = _calc_I0(IL, i_mp, v_mp, Gp, Rs, beta3)
+        I0_v_oc = _calc_I0(IL, 0, v_oc, Gp, Rs, beta3)
         if (I0_v_mp > 0) and (I0_v_oc > 0):
             I0 = 0.5 * (I0_v_mp + I0_v_oc)
         elif (I0_v_mp > 0):
@@ -196,20 +255,5 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
         else:
             I0 = np.nan
     else:
-        IL = I0 = Rs = Rsh = nNsVth = np.nan
-
+        IL = I0 = Rsh = Rs = nNsVth = np.nan
     return IL, I0, Rsh, Rs, nNsVth
-
-
-def _calc_I0(IL, I, V, Gp, Rs, beta3):
-    return (IL - I - Gp * V - Gp * Rs * I) / np.exp(beta3 * (V + Rs * I))
-
-
-def _max_index(x, xlim):
-    """ Finds maximum index of value of x <= xlim """
-    return int(np.argwhere(x <= xlim)[-1])
-
-
-def _min_index(x, xlim):
-    """ Finds minimum index of value of x > xlim """
-    return int(np.argwhere(x > xlim)[0])

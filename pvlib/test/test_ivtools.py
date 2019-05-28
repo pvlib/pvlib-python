@@ -55,6 +55,7 @@ def test_fit_sde_sandia():
     assert np.allclose(result, expected, rtol=5e-5)
 
 
+@requires_pysam
 def test_fit_cec_with_sam(cec_module_parameters):
     sam_parameters = cec_module_parameters
     cec_list_data = get_cec_params_cansol_cs5p_220p()

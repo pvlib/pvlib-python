@@ -161,7 +161,8 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
 
     .. math::
 
-        I = IL/(1+Gp*Rs) - (Gp*V)/(1+Gp*Rs) - I0/(1+Gp*Rs)*exp((V+I*Rs)/(nNsVth)) 
+        I = IL/(1+Gp*Rs) - (Gp*V)/(1+Gp*Rs) -
+          I0/(1+Gp*Rs)*exp((V+I*Rs)/(nNsVth))
 
         3) fit the linear portion of the IV curve V <= vlim * v_oc
 
@@ -173,7 +174,7 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
 
     .. math::
 
-        log(beta0 - beta1*V - I) ~ log((I0)/(1+Gp*Rs)) + (V)/(nNsVth) + 
+        log(beta0 - beta1*V - I) ~ log((I0)/(1+Gp*Rs)) + (V)/(nNsVth) +
         (Rs*I)/(nNsVth) = beta2 + beta3*V + beta4*I
 
     Values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` are calculated from the
@@ -199,7 +200,8 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
 
     # calculate single diode parameters from regression coefficients
     IL, I0, Rsh, Rs, nNsVth = _calculate_sde_parameters(beta0, beta1, beta3,
-        beta4, v_mp, i_mp, v_oc)
+                                                        beta4, v_mp, i_mp,
+                                                        v_oc)
 
     return IL, I0, Rsh, Rs, nNsVth
 

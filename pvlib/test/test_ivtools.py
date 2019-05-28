@@ -64,11 +64,11 @@ def test_fit_cec_with_sam(cec_module_parameters):
     beta_oc = cec_list_data['beta_voc'] * cec_list_data['V_oc_ref']
 
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-        ivtools.fit_cec_with_sam(celltype='polySi',
-            v_mp=cec_list_data['V_mp_ref'], i_mp=cec_list_data['I_mp_ref'],
-            v_oc=cec_list_data['V_oc_ref'], i_sc=cec_list_data['I_sc_ref'],
-            alpha_sc=alpha_sc, beta_voc=beta_oc,
-            gamma_pmp=cec_list_data['gamma_pmp'],
+        ivtools.fit_cec_with_sam(
+            celltype='polySi', v_mp=cec_list_data['V_mp_ref'],
+            i_mp=cec_list_data['I_mp_ref'], v_oc=cec_list_data['V_oc_ref'],
+            i_sc=cec_list_data['I_sc_ref'], alpha_sc=alpha_sc,
+            beta_voc=beta_oc, gamma_pmp=cec_list_data['gamma_pmp'],
             cells_in_series=cec_list_data['cells_in_series'], temp_ref=25)
     modeled = pd.Series(index=sam_parameters.index, data=cec_list_data)
     modeled['a_ref'] = a_ref

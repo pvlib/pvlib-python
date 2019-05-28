@@ -153,7 +153,7 @@ requires_pvfactors = pytest.mark.skipif(not has_pvfactors,
                                         reason='requires pvfactors')
 
 try:
-    import PySAM
+    import PySAM  # noqa: F401
     has_pysam = True
 except ImportError:
     has_pysam = False

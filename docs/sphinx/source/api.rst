@@ -282,6 +282,14 @@ PVsyst model
 
    pvsystem.pvsyst_celltemp
 
+Functions for fitting PV models
+-------------------------------
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.fit_sde_sandia
+    ivtools.fit_cec_with_sam
+
 Other
 -----
 

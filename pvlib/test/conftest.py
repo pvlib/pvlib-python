@@ -110,18 +110,6 @@ def has_spa_c():
 requires_spa_c = pytest.mark.skipif(not has_spa_c(), reason="requires spa_c")
 
 
-def has_pysam():
-    try:
-        import PySAM
-    except ImportError:
-        return False
-    else:
-        return True
-
-
-requires_pysam = pytest.mark.skipif(not has_pysam(), reason="requires PySAM")
-
-
 def has_numba():
     try:
         import numba
@@ -163,3 +151,11 @@ except ImportError:
 
 requires_pvfactors = pytest.mark.skipif(not has_pvfactors,
                                         reason='requires pvfactors')
+
+try:
+    import PySAM
+    has_pysam = True
+except ImportError:
+    has_pysam = False
+
+requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")

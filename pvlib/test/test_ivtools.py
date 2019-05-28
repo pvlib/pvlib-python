@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from pvlib import pvsystem
 from pvlib import ivtools
-from conftest import requires_scipy
+from conftest import requires_scipy, requires_pysam
 
 
 def get_test_iv_params():

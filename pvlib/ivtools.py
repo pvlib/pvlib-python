@@ -224,6 +224,7 @@ def _find_beta0_beta1(v, i, vlim, v_oc):
             beta0 = coef[1].item()
             # sign change of slope to get positive parameter value
             beta1 = -coef[0].item()
+            idx = len(v) + 1 # to exit
         else:
             idx += 1
     return beta0, beta1

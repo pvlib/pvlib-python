@@ -2841,7 +2841,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
 
     Note that the pdc0 is also used as a symbol in :py:func:`pvwatts_ac`. pdc0
     in this function refers to the nameplate DC rating of the modules. pdc0
-    in :py:func:`pvwatts_ac`. refers to the nameplate DC rating of the inverter.    
+    in :py:func:`pvwatts_ac`. refers to the nameplate DC rating of the inverter.
 
     Parameters
     ----------

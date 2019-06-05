@@ -2942,9 +2942,9 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     where :math:`\zeta=P_{dc}/P_{dc0}` and :math:`P_{dc0}=P_{ac0}/\eta_{nom}`.
 
-    Note that the pdc0 is also used as a symbol in :py:func:`pvwatts_ac`. pdc0 in this function
-    refers to the nameplate DC rating of the inverter. pdc0 in :py:func:`pvwatts_ac`. refers to 
-    the nameplate DC rating of the modules. 
+    Note that the pdc0 is also used as a symbol in :py:func:`pvwatts_ac`. pdc0
+    in this function refers to the nameplate DC rating of the inverter. pdc0
+    in :py:func:`pvwatts_ac`. refers to the nameplate DC rating of the modules.
 
     Parameters
     ----------

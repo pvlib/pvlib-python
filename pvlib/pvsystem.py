@@ -736,7 +736,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
                                self.inverter_parameters)
 
-        return pvwatts_ac(pdc, self.module_parameters['pdc0'], **kwargs)
+        return pvwatts_ac(pdc, self.inverter_parameters['pdc0'], **kwargs)
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):

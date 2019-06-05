@@ -1424,7 +1424,7 @@ def test_pvwatts_losses_series():
 
 def make_pvwatts_system_defaults():
     module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003}
-    inverter_parameters = {}
+    inverter_parameters = {'pdc0': 90}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
     return system
@@ -1432,7 +1432,7 @@ def make_pvwatts_system_defaults():
 
 def make_pvwatts_system_kwargs():
     module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003, 'temp_ref': 20}
-    inverter_parameters = {'eta_inv_nom': 0.95, 'eta_inv_ref': 1.0}
+    inverter_parameters = {'pdc0': 90, 'eta_inv_nom': 0.95, 'eta_inv_ref': 1.0}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
     return system
@@ -1477,9 +1477,8 @@ def test_PVSystem_pvwatts_ac(mocker):
     mocker.spy(pvsystem, 'pvwatts_ac')
     system = make_pvwatts_system_defaults()
     pdc = 50
-    pdc0 = system.module_parameters['pdc0']
     out = system.pvwatts_ac(pdc)
-    pvsystem.pvwatts_ac.assert_called_once_with(pdc, pdc0,
+    pvsystem.pvwatts_ac.assert_called_once_with(pdc,
                                                 **system.inverter_parameters)
     assert out < pdc
 
@@ -1488,8 +1487,7 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     mocker.spy(pvsystem, 'pvwatts_ac')
     system = make_pvwatts_system_kwargs()
     pdc = 50
-    pdc0 = system.module_parameters['pdc0']
     out = system.pvwatts_ac(pdc)
-    pvsystem.pvwatts_ac.assert_called_once_with(pdc, pdc0,
+    pvsystem.pvwatts_ac.assert_called_once_with(pdc,
                                                 **system.inverter_parameters)
     assert out < pdc

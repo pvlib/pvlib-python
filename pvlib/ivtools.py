@@ -213,7 +213,7 @@ def _calc_I0(IL, I, V, Gp, Rs, beta3):
 def _find_beta0_beta1(v, i, vlim, v_oc):
     # Get intercept and slope of linear portion of IV curve.
     # Start with V =< vlim * v_oc, extend by adding points until slope is
-    # acceptable
+    # negative (downward).
     beta0 = np.nan
     beta1 = np.nan
     idx = np.searchsorted(v, vlim * v_oc)
@@ -224,7 +224,7 @@ def _find_beta0_beta1(v, i, vlim, v_oc):
             beta0 = coef[1].item()
             # sign change of slope to get positive parameter value
             beta1 = -coef[0].item()
-            idx = len(v) + 1  # to exit
+            break
         else:
             idx += 1
     return beta0, beta1

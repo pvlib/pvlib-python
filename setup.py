@@ -45,7 +45,7 @@ TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'pytest-timeout']
 EXTRAS_REQUIRE = {
     'optional': ['ephem', 'cython', 'netcdf4', 'numba', 'pvfactors', 'scipy',
-                 'siphon', 'tables'],
+                 'siphon', 'tables', 'nrel-pysam'],
     'doc': ['ipython', 'matplotlib', 'sphinx', 'sphinx_rtd_theme'],
     'test': TESTS_REQUIRE
 }

@@ -24,8 +24,5 @@ dependencies:
     - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - pip:
-        - coveralls
-        - pytest-mock
-        - pytest-timeout
         - nrel-pysam
         - pvfactors==1.0.1

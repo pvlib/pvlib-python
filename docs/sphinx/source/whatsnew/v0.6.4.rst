@@ -19,8 +19,8 @@ Bug fixes
 ~~~~~~~~~
 * Fix installation issue due to missing ``requests`` dependency.
   (:issue:`725`)
-
-
+* Fix PVSystem.pvwatts_ac now uses inverter DC input limit instead of module nameplate capacity. 
+  (:issue:`734`)
 Testing
 ~~~~~~~
 
@@ -28,3 +28,4 @@ Testing
 Contributors
 ~~~~~~~~~~~~
 * Will Holmgren (:ghuser:`wholmgren`)
+* Joseph Palakapilly (:ghuser:`JPalakapillyKWH`)

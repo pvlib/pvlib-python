@@ -526,12 +526,11 @@ class ModelChain(object):
 
     def infer_ac_model(self):
         inverter_params = set(self.system.inverter_parameters.keys())
-        module_params = set(self.system.module_parameters.keys())
         if set(['C0', 'C1', 'C2']) <= inverter_params:
             return self.snlinverter
         elif set(['ADRCoefficients']) <= inverter_params:
             return self.adrinverter
-        elif set(['pdc0']) <= module_params:
+        elif set(['pdc0']) <= inverter_params:
             return self.pvwatts_inverter
         else:
             raise ValueError('could not infer AC model from '

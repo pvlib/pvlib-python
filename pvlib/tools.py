@@ -9,9 +9,9 @@ import numpy as np
 import pandas as pd
 import pytz
 
-JULIAN_2000 = 2451544.5
-DT_2000 = dt.datetime(2000, 1, 1)
+JULIAN_2000 = 2451545
 DAY_SECONDS = 60 * 60 * 24
+DT_2000 = pd.to_datetime(dt.datetime(2000, 1, 1)).tz_localize('UTC')
 
 
 def cosd(angle):
@@ -437,17 +437,22 @@ def datetime_to_julian(times):
 
     Parameters
     ----------
-    times : :class:`pandas.DatetimeIndex`
+    times : pandas.DatetimeIndex
         Corresponding timestamps, must be localized to the timezone for the
         ``latitude`` and ``longitude``
     Returns
     -------
     Float64Index
         The float index contains julian dates
+    Float
+        julian 2000 in UTC referenced to local time
     """
-
-    delta = times - DT_2000
+    dt_2000 = DT_2000.tz_convert(times.tzinfo)
+    hours_difference = (DT_2000.tz_localize(None) -
+                        dt_2000.tz_localize(None)).seconds / 3600
+    julian_2000 = JULIAN_2000 - (hours_difference/24)
+    delta = times - dt_2000
     delta_julians = (delta.seconds + delta.microseconds / 1e6)
     return (
-        JULIAN_2000 + delta.days + delta_julians / DAY_SECONDS
-    )
+        julian_2000 + delta.days + delta_julians / DAY_SECONDS
+    ), julian_2000

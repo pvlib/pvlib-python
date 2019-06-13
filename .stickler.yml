@@ -2,7 +2,7 @@ linters:
     flake8:
         python: 3
         max-line-length: 79
-        ignore: E201,E241,E226
+        ignore: E201,E241,E226,W503,W504
 files:
     ignore:
         - 'pvlib/_version.py'

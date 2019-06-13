@@ -28,7 +28,6 @@ from pvlib.tools import datetime_to_djd, djd_to_datetime, datetime_to_julian
 from pvlib._deprecation import deprecated
 
 NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
-JULIAN_2000 = 2451544.5
 JULIAN_YEARS = 365.2425
 
 
@@ -1488,8 +1487,8 @@ def spencer(times, latitude, longitude):
      Springer Science & Business Media, 2008.
     """
 
-    julians = datetime_to_julian(times)
-    julians_2000 = np.asarray(julians, dtype=np.float) - JULIAN_2000
+    julians, julian_2000 = datetime_to_julian(times)
+    julians_2000 = np.asarray(julians, dtype=np.float) - julian_2000
 
     latitude_radians = np.radians(latitude)
     day_time = (julians_2000 % 1) * 24

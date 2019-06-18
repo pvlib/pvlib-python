@@ -8,10 +8,10 @@ Created on Fri Mar 29 10:34:10 2019
 import numpy as np
 
 
-def fit_cec_with_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                     gamma_pmp, cells_in_series, temp_ref=25):
+def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
+                gamma_pmp, cells_in_series, temp_ref=25):
     '''
-    Estimates parameters for the CEC single diode model using the SAM SDK.
+    Estimates parameters for the CEC single diode model [1] using the SAM SDK.
 
     Parameters
     ----------
@@ -19,22 +19,22 @@ def fit_cec_with_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         Value is one of 'monoSi', 'multiSi', 'polySi', 'cis', 'cigs', 'cdte',
         'amorphous'
     v_mp : float
-        Voltage at maximum power point at standard test condition (STC)
+        Voltage at maximum power point at standard test condition (STC) [V]
     i_mp : float
-        Current at maximum power point at STC
-    Voc : float
-        Open circuit voltage at STC
+        Current at maximum power point at STC [A]
+    v_oc : float
+        Open circuit voltage at STC [V]
     i_sc : float
-        Short circuit current at STC
+        Short circuit current at STC [A]
     alpha_sc : float
-        Temperature coefficient of short circuit current at STC, A/C
+        Temperature coefficient of short circuit current at STC [A/C]
     beta_voc : float
-        Temperature coefficient of open circuit voltage at STC, V/C
+        Temperature coefficient of open circuit voltage at STC [V/C]
     gamma_pmp : float
-        Temperature coefficient of power at maximum point point at STC, %/C
+        Temperature coefficient of power at maximum point point at STC [%/C]
     cells_in_series : int
         Number of cells in series
-    temp_ref : float, default 25
+    temp_ref : float, default 25C
         Reference temperature condition
 
     Returns
@@ -60,10 +60,16 @@ def fit_cec_with_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Adjust : float
         The adjustment to the temperature coefficient for short circuit
-        current, in percent
+        current, in percent.
 
     Raises:
         ImportError if NREL-PySAM is not installed
+
+    References
+    ----------
+    [1] A. Dobos, "An Improved Coefficient Calculator for the California
+    Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
+    Solar Energy Engineering, vol 134, 2012.
     '''
 
     try:

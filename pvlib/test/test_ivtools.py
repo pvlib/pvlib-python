@@ -56,7 +56,7 @@ def test_fit_sde_sandia():
 
 
 @requires_pysam
-def test_fit_cec_with_sam(cec_module_parameters):
+def test_fit_cec_sam(cec_module_parameters):
     sam_parameters = cec_module_parameters
     cec_list_data = get_cec_params_cansol_cs5p_220p()
     # convert from %/C to A/C and V/C
@@ -64,7 +64,7 @@ def test_fit_cec_with_sam(cec_module_parameters):
     beta_oc = cec_list_data['beta_voc'] * cec_list_data['V_oc_ref']
 
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-        ivtools.fit_cec_with_sam(
+        ivtools.fit_cec_sam(
             celltype='polySi', v_mp=cec_list_data['V_mp_ref'],
             i_mp=cec_list_data['I_mp_ref'], v_oc=cec_list_data['V_oc_ref'],
             i_sc=cec_list_data['I_sc_ref'], alpha_sc=alpha_sc,

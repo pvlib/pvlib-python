@@ -19,7 +19,7 @@ def get_test_iv_params():
 
 def get_cec_params_cansol_cs5p_220p():
     return {'V_mp_ref': 46.6, 'I_mp_ref': 4.73, 'V_oc_ref': 58.3,
-            'I_sc_ref': 5.05, 'alpha_isc': 0.000495, 'beta_voc': -0.003372,
+            'I_sc_ref': 5.05, 'alpha_sc': 0.0025, 'beta_voc': -0.19659,
             'gamma_pmp': -0.43, 'cells_in_series': 96}
 
 
@@ -59,16 +59,13 @@ def test_fit_sde_sandia():
 def test_fit_cec_sam(cec_module_parameters):
     sam_parameters = cec_module_parameters
     cec_list_data = get_cec_params_cansol_cs5p_220p()
-    # convert from %/C to A/C and V/C
-    alpha_sc = cec_list_data['alpha_isc'] * cec_list_data['I_sc_ref']
-    beta_oc = cec_list_data['beta_voc'] * cec_list_data['V_oc_ref']
-
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
         ivtools.fit_cec_sam(
             celltype='polySi', v_mp=cec_list_data['V_mp_ref'],
             i_mp=cec_list_data['I_mp_ref'], v_oc=cec_list_data['V_oc_ref'],
-            i_sc=cec_list_data['I_sc_ref'], alpha_sc=alpha_sc,
-            beta_voc=beta_oc, gamma_pmp=cec_list_data['gamma_pmp'],
+            i_sc=cec_list_data['I_sc_ref'], alpha_sc=cec_list_data['alpha_sc'],
+            beta_voc=cec_list_data['beta_voc'],
+            gamma_pmp=cec_list_data['gamma_pmp'],
             cells_in_series=cec_list_data['cells_in_series'], temp_ref=25)
     modeled = pd.Series(index=sam_parameters.index, data=cec_list_data)
     modeled['a_ref'] = a_ref
@@ -77,8 +74,6 @@ def test_fit_cec_sam(cec_module_parameters):
     modeled['R_sh_ref'] = R_sh_ref
     modeled['R_s'] = R_s
     modeled['Adjust'] = Adjust
-    modeled['alpha_sc'] = alpha_sc
-    modeled['beta_oc'] = beta_oc
     modeled['gamma_r'] = cec_list_data['gamma_pmp']
     modeled['N_s'] = cec_list_data['cells_in_series']
     modeled = modeled.dropna()

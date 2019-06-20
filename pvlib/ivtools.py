@@ -19,19 +19,19 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         Value is one of 'monoSi', 'multiSi', 'polySi', 'cis', 'cigs', 'cdte',
         'amorphous'
     v_mp : float
-        Voltage at maximum power point at standard test condition (STC) [V]
+        Voltage at maximum power point [V]
     i_mp : float
-        Current at maximum power point at STC [A]
+        Current at maximum power point [A]
     v_oc : float
-        Open circuit voltage at STC [V]
+        Open circuit voltage [V]
     i_sc : float
-        Short circuit current at STC [A]
+        Short circuit current [A]
     alpha_sc : float
-        Temperature coefficient of short circuit current at STC [A/C]
+        Temperature coefficient of short circuit current [A/C]
     beta_voc : float
-        Temperature coefficient of open circuit voltage at STC [V/C]
+        Temperature coefficient of open circuit voltage [V/C]
     gamma_pmp : float
-        Temperature coefficient of power at maximum point point at STC [%/C]
+        Temperature coefficient of power at maximum point point [%/C]
     cells_in_series : int
         Number of cells in series
     temp_ref : float, default 25C
@@ -40,17 +40,17 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Returns
     -------
     a_ref : float
-        The product of the usual diode ideality factor (n, unitless),
-        number of cells in series (Ns), and cell thermal voltage at reference
-        conditions, in units of V.
+        The product of the usual diode ideality factor ``n`` (unitless),
+        number of cells in series ``Ns``, and cell thermal voltage at
+        reference conditions [V]
 
     I_L_ref : float
         The light-generated current (or photocurrent) at reference conditions,
-        in amperes.
+        [A]
 
     I_o_ref : float
-        The dark or diode reverse saturation current at reference conditions,
-        in amperes.
+        The dark or diode reverse saturation current at reference conditions
+        [A]
 
     R_sh_ref : float
         The shunt resistance at reference conditions, in ohms.
@@ -65,6 +65,15 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Raises:
         ImportError if NREL-PySAM is not installed
 
+    Notes
+    -----
+    Inputs v_mp, v_oc, i_mp and i_sc are assumed to be from a single IV curve
+    at constant irradiance and cell temperature. Irradiance is not explicitly
+    required for the fitting procedure, but the irradiance and the specified
+    temperature ``Tref`` are implicitly the reference condition for the
+    output parameters ``I_L_ref``, ``I_o_ref``, ``R_sh_ref``, ``R_s`` and
+    ``Adjust``.
+
     References
     ----------
     [1] A. Dobos, "An Improved Coefficient Calculator for the California
@@ -75,7 +84,8 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     try:
         from PySAM import PySSC
     except ImportError as e:
-        raise(e)
+        raise("Requires NREL's PySAM package at "
+              "https://pypi.org/project/NREL-PySAM/.") from e
 
     datadict = {'tech_model': '6parsolve', 'financial_model': 'none',
                 'celltype': celltype, 'Vmp': v_mp,
@@ -102,38 +112,40 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
     Parameters
     ----------
     v : numeric
-        Voltage at each point on the IV curve, from 0 to v_oc
+        Voltage at each point on the IV curve, increasing from 0 to v_oc
+        inclusive [V]
 
     i : numeric
-        Current at each point on the IV curve, from i_sc to 0
+        Current at each point on the IV curve, decreasing from i_sc to 0 [A]
 
     v_oc : float
-        Open circuit voltage
+        Open circuit voltage [V]
 
     i_sc : float
-        Short circuit current
+        Short circuit current [A]
 
     v_mp : float
-        Voltage at maximum power point
+        Voltage at maximum power point [V]
 
     i_mp : float
-        Current at maximum power point
+        Current at maximum power point [V]
 
     vlim : float, default 0.2
-        defines linear portion of IV curve i.e. V <= vlim * v_oc
+        defines linear portion of IV curve i.e. V <= vlim * v_oc [V]
 
     ilim : float, default 0.1
-        defines exponential portion of IV curve i.e. I > ilim * i_sc
+        defines exponential portion of IV curve, approximately defined by
+        I < (1 - ilim) * i_sc [A]
 
     Returns
     -------
     tuple of the following elements:
 
         photocurrent : float
-            photocurrent, A
+            photocurrent [A]
 
         saturation_current : float
-            dark (saturation) current, A
+            dark (saturation) current [A]
 
         resistance_shunt : float
             shunt (parallel) resistance, ohm
@@ -142,8 +154,8 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
             series resistance, ohm
 
         nNsVth : float
-            product of diode (ideality) factor n (unitless) x number of
-            cells in series Ns (unitless) x cell thermal voltage Vth (V), V
+            product of thermal voltage ``Vth`` [V], diode ideality factor
+            ``n``, and number of series cells ``Ns``
 
     Notes
     -----
@@ -156,7 +168,7 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
 
     :py:func:`pvsystem.singlediode` for definition of the parameters.
 
-    The fitting method proceeds in four steps:
+    The fitting method [2] proceeds in four steps:
         1) simplify the single diode equation
 
     .. math::
@@ -176,15 +188,25 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
 
         I ~ IL/(1+Gp*Rs) - (Gp*V)/(1+Gp*Rs) = beta0 + beta1*V
 
-        4) fit the exponential portion of the IV curve I > ilim * i_sc
+        4) fit the exponential portion of the IV curve
 
     .. math::
+
+        beta0 + beta*V - I > ilim * i_sc
 
         log(beta0 - beta1*V - I) ~ log((I0)/(1+Gp*Rs)) + (V)/(nNsVth) +
         (Rs*I)/(nNsVth) = beta2 + beta3*V + beta4*I
 
     Values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` are calculated from the
     regression coefficents beta0, beta1, beta3 and beta4.
+
+    Returns `nan` for each parameter if the fitting is not successful. If `nan`
+    is returned one likely cause is the input IV curve having too few points.
+    It is recommend that the input IV curve contain 100 or more points, and
+    more points increase the likelihood of extracting reasonable
+    parameters.
+
+    case, providing more IV
 
     References
     ----------
@@ -199,7 +221,9 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
     beta0, beta1 = _find_beta0_beta1(v, i, vlim, v_oc)
 
     if not np.isnan(beta0):
-        # Find beta3 and beta4 from exponential portion of IV curve
+        # Subtract the IV curve from the linear fit. Select points where
+        # beta0 + beta*V - I > ilim * i_sc
+        # in order to find beta3 and beta4 from exponential portion of IV curve
         y = beta0 - beta1 * v - i
         x = np.array([np.ones_like(v), v, i]).T
         beta3, beta4 = _find_beta3_beta4(y, x, ilim, i_sc)
@@ -238,7 +262,7 @@ def _find_beta0_beta1(v, i, vlim, v_oc):
 
 def _find_beta3_beta4(y, x, ilim, i_sc):
     idx = np.searchsorted(y, ilim * i_sc) - 1
-    result = np.linalg.lstsq(x[idx:, ], np.log(y[idx:]))
+    result = np.linalg.lstsq(x[idx:, ], np.log(y[idx:]), rcond=None)
     coef = result[0]
     beta3 = coef[1].item()
     beta4 = coef[2].item()

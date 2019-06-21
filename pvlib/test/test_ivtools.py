@@ -85,6 +85,6 @@ def test_fit_cec_sam(cec_module_parameters):
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
         ivtools.fit_cec_sam(
             celltype='polySi', v_mp=0.45, i_mp=5.25, v_oc=0.55, i_sc=5.5,
-            alpha_sc=0.00275, beta_voc = 0.00275, gamma_pmp=0.0055,
+            alpha_sc=0.00275, beta_voc=0.00275, gamma_pmp=0.0055,
             cells_in_series=1, temp_ref=25)
     assert all(np.isnan([I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust]))

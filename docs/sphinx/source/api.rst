@@ -288,7 +288,7 @@ Functions for fitting PV models
    :toctree: generated/
 
     ivtools.fit_sde_sandia
-    ivtools.fit_cec_with_sam
+    ivtools.fit_cec_sam
 
 Other
 -----

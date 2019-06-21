@@ -39,40 +39,44 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Returns
     -------
-    a_ref : float
-        The product of the usual diode ideality factor ``n`` (unitless),
-        number of cells in series ``Ns``, and cell thermal voltage at
-        reference conditions [V]
+    tuple of the following elements:
 
-    I_L_ref : float
-        The light-generated current (or photocurrent) at reference conditions,
-        [A]
+        a_ref : float
+            The product of the usual diode ideality factor ``n`` (unitless),
+            number of cells in series ``Ns``, and cell thermal voltage at
+            reference conditions [V]
 
-    I_o_ref : float
-        The dark or diode reverse saturation current at reference conditions
-        [A]
+        I_L_ref : float
+            The light-generated current (or photocurrent) at reference
+            conditions [A]
 
-    R_sh_ref : float
-        The shunt resistance at reference conditions, in ohms.
+        I_o_ref : float
+            The dark or diode reverse saturation current at reference
+            conditions [A]
 
-    R_s : float
-        The series resistance at reference conditions, in ohms.
+        R_sh_ref : float
+            The shunt resistance at reference conditions, in ohms.
 
-    Adjust : float
-        The adjustment to the temperature coefficient for short circuit
-        current, in percent.
+        R_s : float
+            The series resistance at reference conditions, in ohms.
+
+        Adjust : float
+            The adjustment to the temperature coefficient for short circuit
+            current, in percent.
 
     Raises:
         ImportError if NREL-PySAM is not installed
 
     Notes
     -----
-    Inputs v_mp, v_oc, i_mp and i_sc are assumed to be from a single IV curve
-    at constant irradiance and cell temperature. Irradiance is not explicitly
-    required for the fitting procedure, but the irradiance and the specified
-    temperature ``Tref`` are implicitly the reference condition for the
-    output parameters ``I_L_ref``, ``I_o_ref``, ``R_sh_ref``, ``R_s`` and
-    ``Adjust``.
+    Inputs ``v_mp``, ``v_oc``, ``i_mp`` and ``i_sc`` are assumed to be from a
+    single IV curve at constant irradiance and cell temperature. Irradiance is
+    not explicitly used by the fitting procedure. The irradiance level at which
+    the input IV curve is determined and the specified cell temperature
+    ``Tref`` are the reference conditions for the output parameters
+    ``I_L_ref``, ``I_o_ref``, ``R_sh_ref``, ``R_s`` and ``Adjust``.
+
+    If the fitting fails, returns NaN in each parameter.
 
     References
     ----------
@@ -94,13 +98,20 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                 'Nser': cells_in_series, 'Tref': temp_ref}
 
     result = PySSC.ssc_sim_from_dict(datadict)
-    a_ref = result['a']
-    I_L_ref = result['Il']
-    I_o_ref = result['Io']
-    R_s = result['Rs']
-    R_sh_ref = result['Rsh']
-    Adjust = result['Adj']
-
+    if result['cmod_success'] == 1:
+        a_ref = result['a']
+        I_L_ref = result['Il']
+        I_o_ref = result['Io']
+        R_s = result['Rs']
+        R_sh_ref = result['Rsh']
+        Adjust = result['Adj']
+    else:
+        a_ref = np.nan
+        I_L_ref = np.nan
+        I_o_ref = np.nan
+        R_s = np.nan
+        R_sh_ref = np.nan
+        Adjust = np.nan
     return I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust
 
 
@@ -159,8 +170,11 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
 
     Notes
     -----
+    Inputs ``v``, ``i``, ``v_mp``, ``v_oc``, ``i_mp`` and ``i_sc`` are assumed
+    to be from a single IV curve at constant irradiance and cell temperature.
+
     :py:func:`fit_sde_sandia` obtains values for the five parameters for the
-    single diode equation [1]
+    single diode equation [1]:
 
     .. math::
 
@@ -200,13 +214,11 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
     Values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` are calculated from the
     regression coefficents beta0, beta1, beta3 and beta4.
 
-    Returns `nan` for each parameter if the fitting is not successful. If `nan`
-    is returned one likely cause is the input IV curve having too few points.
-    It is recommend that the input IV curve contain 100 or more points, and
-    more points increase the likelihood of extracting reasonable
+    Returns ``NaN`` for each parameter if the fitting is not successful. If
+    ``NaN`` is returned one likely cause is the input IV curve having too few
+    points. It is recommend that the input IV curve contain 100 or more points,
+    and more points increase the likelihood of extracting reasonable
     parameters.
-
-    case, providing more IV
 
     References
     ----------

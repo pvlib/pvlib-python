@@ -203,7 +203,7 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
         I ~ IL/(1+Gp*Rs) - (Gp*V)/(1+Gp*Rs) = beta0 + beta1*V
 
         3) fit the exponential portion of the IV curve defined by
-            beta0 + beta1*V - I > ilim * i_sc, where 
+            beta0 + beta1*V - I > ilim * i_sc, where
             exp((V+I*Rs)/(nNsVth)) >> 1 so that
             exp((V+I*Rs)/(nNsVth)) - 1 ≈ exp((V+I*Rs)/(nNsVth))
 

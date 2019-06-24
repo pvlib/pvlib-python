@@ -317,6 +317,7 @@ def _find_beta3_beta4(y, x, ilim, i_sc):
 
 
 def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
+    failed = False
     if any(np.isnan([beta0, beta1, beta3, beta4])):
         failed = True
     else:

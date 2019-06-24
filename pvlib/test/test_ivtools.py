@@ -13,10 +13,12 @@ from pvlib import ivtools
 from pvlib.test.conftest import requires_scipy, requires_pysam
 
 
+@pytest.fixture
 def get_test_iv_params():
     return {'IL': 8.0, 'I0': 5e-10, 'Rsh': 1000, 'Rs': 0.2, 'nNsVth': 1.61864}
 
 
+@pytest.fixture
 def get_cec_params_cansol_cs5p_220p():
     return {'V_mp_ref': 46.6, 'I_mp_ref': 4.73, 'V_oc_ref': 58.3,
             'I_sc_ref': 5.05, 'alpha_sc': 0.0025, 'beta_voc': -0.19659,
@@ -37,8 +39,8 @@ def cec_module_parameters(sam_data):
 
 
 @requires_scipy
-def test_fit_sde_sandia():
-    test_params = get_test_iv_params()
+def test_fit_sde_sandia(get_test_iv_params):
+    test_params = get_test_iv_params
     testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],
                                      saturation_current=test_params['I0'],
                                      resistance_shunt=test_params['Rsh'],
@@ -47,18 +49,27 @@ def test_fit_sde_sandia():
                                      ivcurve_pnts=300)
     expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rsh', 'Rs',
                      'nNsVth'])
+    result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'])
+    assert np.allclose(result, expected, rtol=5e-5)
+    result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'],
+                                    v_oc=testcurve['v_oc'],
+                                    i_sc=testcurve['i_sc'])
+    assert np.allclose(result, expected, rtol=5e-5)
     result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'],
                                     v_oc=testcurve['v_oc'],
                                     i_sc=testcurve['i_sc'],
-                                    v_mp=testcurve['v_mp'],
-                                    i_mp=testcurve['i_mp'])
+                                    mp=(testcurve['v_mp'],
+                                        testcurve['i_mp']))
+    assert np.allclose(result, expected, rtol=5e-5)
+    result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'],
+                                    vlim=0.1)
     assert np.allclose(result, expected, rtol=5e-5)
 
 
 @requires_pysam
-def test_fit_cec_sam(cec_module_parameters):
+def test_fit_cec_sam(cec_module_parameters, get_cec_params_cansol_cs5p_220p):
     sam_parameters = cec_module_parameters
-    cec_list_data = get_cec_params_cansol_cs5p_220p()
+    cec_list_data = get_cec_params_cansol_cs5p_220p
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
         ivtools.fit_cec_sam(
             celltype='polySi', v_mp=cec_list_data['V_mp_ref'],

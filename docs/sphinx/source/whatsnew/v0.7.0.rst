@@ -27,6 +27,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Shifted times in `test_psm3.csv` by 30 minutes to conform to change in NSRDB timestamps (:issue:`731`)
 
 
 Contributors

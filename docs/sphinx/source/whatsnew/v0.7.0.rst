@@ -9,7 +9,13 @@ recommend all users of v0.6.3 upgrade to this release.
 **Python 2.7 support ended on June 1, 2019**. (:issue:`501`)
 
 
+Enhancements
+~~~~~~~~~~~~
+* Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
+
+
 Contributors
 ~~~~~~~~~~~~
 * Mark Campanellli (:ghuser:`markcampanelli`)
 * Will Holmgren (:ghuser:`wholmgren`)
+* Cliff Hansen (:ghuser:`cwhanse`)

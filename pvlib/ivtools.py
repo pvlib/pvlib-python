@@ -65,7 +65,8 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
             current, in percent.
 
     Raises:
-        ImportError if NREL-PySAM is not installed
+        ImportError if NREL-PySAM is not installed.
+        RuntimeError if parameter extraction is not successful.
 
     Notes
     -----
@@ -75,8 +76,6 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     the input IV curve is determined and the specified cell temperature
     ``Tref`` are the reference conditions for the output parameters
     ``I_L_ref``, ``I_o_ref``, ``R_sh_ref``, ``R_s`` and ``Adjust``.
-
-    If the fitting fails, returns NaN in each parameter.
 
     References
     ----------
@@ -99,26 +98,14 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     result = PySSC.ssc_sim_from_dict(datadict)
     if result['cmod_success'] == 1:
-        a_ref = result['a']
-        I_L_ref = result['Il']
-        I_o_ref = result['Io']
-        R_s = result['Rs']
-        R_sh_ref = result['Rsh']
-        Adjust = result['Adj']
+        return tuple([result[k] for k in ['Il', 'Io', 'Rsh', 'Rs', 'a',
+                      'Adj']])
     else:
-        a_ref = np.nan
-        I_L_ref = np.nan
-        I_o_ref = np.nan
-        R_s = np.nan
-        R_sh_ref = np.nan
-        Adjust = np.nan
-    return I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust
+        raise RuntimeError('Parameter estimation failed')
 
 
 def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
     """ Fits the single diode equation to an IV curve.
-
-    If fitting fails, returns NaN in each parameter.
 
     Parameters
     ----------
@@ -169,6 +156,9 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
             product of thermal voltage ``Vth`` [V], diode ideality factor
             ``n``, and number of series cells ``Ns``
 
+    Raises:
+        RuntimeError if parameter extraction is not successful.
+
     Notes
     -----
     Inputs ``v``, ``i``, ``v_mp``, ``v_oc``, ``i_mp`` and ``i_sc`` are assumed
@@ -215,11 +205,6 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
         4) calculate values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` from the
             regression coefficents beta0, beta1, beta3 and beta4.
 
-    Returns ``NaN`` for each parameter if the fitting is not successful. If
-    ``NaN`` is returned one likely cause is the input IV curve having too few
-    points. It is recommend that the input IV curve contain 100 or more points,
-    and more points increase the likelihood of extracting reasonable
-    parameters.
 
     References
     ----------
@@ -252,11 +237,15 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
         beta3, beta4 = _find_beta3_beta4(y, x, ilim, i_sc)
 
     # calculate single diode parameters from regression coefficients
-    IL, I0, Rsh, Rs, nNsVth = _calculate_sde_parameters(beta0, beta1, beta3,
-                                                        beta4, v_mp, i_mp,
-                                                        v_oc)
+    result = _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp,
+                                       v_oc)
 
-    return IL, I0, Rsh, Rs, nNsVth
+    if result is None:
+        raise RuntimeError("Parameter extraction failed. Try increasing the"
+                           "number of data points in the IV curve")
+    else:
+        IL, I0, Rsh, Rs, nNsVth = result
+        return IL, I0, Rsh, Rs, nNsVth
 
 
 def _find_mp(v, i):
@@ -338,5 +327,7 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
         else:
             failed = True
     if failed:
-        IL = I0 = Rsh = Rs = nNsVth = np.nan
-    return IL, I0, Rsh, Rs, nNsVth
+        result = None
+    else:
+        result = (IL, I0, Rsh, Rs, nNsVth)
+    return result

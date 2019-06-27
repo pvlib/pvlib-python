@@ -110,30 +110,32 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
     Parameters
     ----------
     v : ndarray
-        1D array containing voltage at each point on the IV curve, increasing
-        from 0 to v_oc inclusive, of `float` type [V]
+        1D array of `float` type containing voltage at each point on the IV
+        curve, increasing from 0 to v_oc inclusive [V]
 
     i : ndarray
-        1D array containing current at each point on the IV curve, decreasing
-        from i_sc to 0 inclusive, of `float` type [A]
+        1D array of `float` type containing current at each point on the IV
+        curve, from i_sc to 0 inclusive, of `float` type [A]
 
     v_oc : float, default None
-        Open circuit voltage [V]. If not provided, the last value in input
-        ``v`` is taken as ``v_oc``.
+        Open circuit voltage [V]. If not provided, ``v_oc`` is taken as
+        ``v[-1]``.
 
     i_sc : float, default None
-        Short circuit current [A]. If not provided, the first value in input
-        ``i`` is taken as ``i_sc``.
+        Short circuit current [A]. If not provided, ``i_sc`` is taken as
+        ``i[0]``.
 
     mp : tuple of float, default None
         Voltage, current at maximum power point in units of [V], [A].
         If not provided, values are found from inputs ``v`` and ``i``.
 
     vlim : float, default 0.2
-        defines linear portion of IV curve i.e. V <= vlim * v_oc [V]
+        defines portion of IV curve where the exponential term in the single
+        diode equation can be neglected, i.e. V <= vlim * v_oc [V]
 
     ilim : float, default 0.1
-        defines exponential portion of IV curve, approximately defined by
+        defines portion of the IV curve where the exponential term in the
+        single diode equation is signficant, approximately defined by
         I < (1 - ilim) * i_sc [A]
 
     Returns
@@ -229,12 +231,7 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
     beta0, beta1 = _find_beta0_beta1(v, i, vlim, v_oc)
 
     if not np.isnan(beta0):
-        # Subtract the IV curve from the linear fit. Select points where
-        # beta0 + beta*V - I > ilim * i_sc
-        # in order to find beta3 and beta4 from exponential portion of IV curve
-        y = beta0 - beta1 * v - i
-        x = np.array([np.ones_like(v), v, i]).T
-        beta3, beta4 = _find_beta3_beta4(y, x, ilim, i_sc)
+        beta3, beta4 = _find_beta3_beta4(v, i, beta0, beta1, ilim, i_sc)
 
     # calculate single diode parameters from regression coefficients
     result = _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp,
@@ -296,9 +293,13 @@ def _find_beta0_beta1(v, i, vlim, v_oc):
     return beta0, beta1
 
 
-def _find_beta3_beta4(y, x, ilim, i_sc):
-    idx = np.searchsorted(y, ilim * i_sc) - 1
-    result = np.linalg.lstsq(x[idx:, ], np.log(y[idx:]), rcond=None)
+def _find_beta3_beta4(v, i, beta0, beta1, ilim, i_sc):
+    # Subtract the IV curve from the linear fit.
+    y = beta0 - beta1 * v - i
+    x = np.array([np.ones_like(v), v, i]).T
+    # Select points where y > ilim * i_sc to regress log(y) onto x
+    result = np.linalg.lstsq(x[y > ilim * i_sc], np.log(y[y > ilim * i_sc]),
+                             rcond=None)
     coef = result[0]
     beta3 = coef[1].item()
     beta4 = coef[2].item()

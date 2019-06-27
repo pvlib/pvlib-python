@@ -80,3 +80,10 @@ If you use pvlib-python in a published work, please cite:
 Please also cite the DOI corresponding to the specific version of
 pvlib-python that you used. pvlib-python DOIs are listed at
 [Zenodo.org](https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version)
+
+NumFOCUS
+========
+
+pvlib python is a [NumFOCUS Affiliated Project](https://numfocus.org/sponsored-projects/affiliated-projects)
+
+[![NumFocus Affliated Projects](https://i0.wp.com/numfocus.org/wp-content/uploads/2019/06/AffiliatedProject.png)](https://numfocus.org/sponsored-projects/affiliated-projects)

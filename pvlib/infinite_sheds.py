@@ -26,6 +26,11 @@ def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
     """
     Calculate solar projection on YZ-plane, vertical and perpendicular to rows.
 
+    .. math::
+        \\tan \\phi = \\frac{\\cos\\left(\\text{solar azimuth} -
+        \\text{system azimuth}\\right)\\sin\\left(\\text{solar zenith}
+        \\right)}{\\cos\\left(\\text{solar zenith}\\right)}
+
     Parameters
     ----------
     solar_zenith : numeric
@@ -55,9 +60,8 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     Calculate solar projection on YZ-plane, vertical and perpendicular to rows.
 
     .. math::
-        \\tan \\phi = \\frac{\\cos\\left(\\text{solar azimuth} -
-        \\text{system azimuth}\\right)\\sin\\left(\\text{solar zenith}
-        \\right)}{\\cos\\left(\\text{solar zenith}\\right)}
+        \\tan \\phi = \\cos\\left(\\text{solar azimuth}-\\text{system azimuth}
+        \\right)\\tan\\left(\\text{solar zenith}\\right)
 
     Parameters
     ----------
@@ -78,9 +82,9 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     return tan_phi
 
 
-def ground_illumination(gcr, tilt, tan_phi):
+def unshaded_ground_fraction(gcr, tilt, tan_phi):
     """
-    Calculate the fraction of the ground visible from the sky.
+    Calculate the fraction of the ground with incident direct irradiance
 
     .. math::
         F_{gnd,sky} &= 1 - \\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
@@ -105,6 +109,88 @@ def ground_illumination(gcr, tilt, tan_phi):
     f_gnd_sky = 1.0 - np.minimum(
         1.0, gcr * np.abs(np.cos(tilt) + np.sin(tilt) * tan_phi))
     return f_gnd_sky  # 1 - min(1, abs()) < 1 always
+
+
+def _gcr_prime(gcr, height, tilt, pitch):
+    """
+    A parameter that includes the distance from the module lower edge to the
+    point where the module tilt angle intersects the ground in the GCR.
+
+    Parameters
+    ----------
+    gcr : numeric
+        ground coverage ratio
+    height : numeric
+        height of module lower edge above the ground
+    tilt : numeric
+        module tilt in radians, between 0 and 180-degrees
+    pitch : numeric
+        row spacing
+
+    Returns
+    -------
+    gcr_prime : numeric
+        ground coverage ratio including height above ground
+    """
+
+    #  : \\                      \\
+    #  :  \\                      \\
+    #  :   \\ H = module height    \\
+    #  :    \\                      \\
+    #  :.....\\......................\\........ module lower edge
+    #  :       \                       \    :
+    #  :        \                      /\   h = height above ground
+    #  :         \                  tilt \  :
+    #  +----------\<---------P--------|-->\---- ground
+
+    return gcr + height / np.sin(tilt) / pitch
+
+
+def ground_sky_angles(f_z, gcr, height, tilt, pitch):
+    """
+    Angles from point z on ground to tops of next and previous rows.
+
+    .. math::
+        \\tan{\\psi_0} = \\frac{\\sin{\\beta^\\prime}}{\\frac{F_z}
+        {\\text{GCR}^\\prime} + \\cos{\\beta^\\prime}}
+
+        \\tan{\\psi_1} = \\frac{\\sin{\\beta}}{\\frac{F_z^\\prime}
+        {\\text{GCR}^\\prime} + \\cos{\\beta}}
+
+    Parameters
+    ----------
+    f_z : numeric
+        fraction of ground from previous to next row
+    gcr : numeric
+        ground coverage ratio
+    height : numeric
+        height of module lower edge above the ground
+    tilt : numeric
+        module tilt in radians, between 0 and 180-degrees
+    pitch : numeric
+        row spacing
+    """
+    gcr_prime = _gcr_prime(gcr, height, tilt, pitch)
+    tilt_prime = np.pi - tilt
+    opposite_side = np.sin(tilt_prime)
+    adjacent_side = f_z/gcr_prime + np.cos(tilt_prime)
+    # tan_psi_0 = opposite_side / adjacent_side
+    psi_0 = np.arctan2(opposite_side, adjacent_side)
+    f_z_prime = 1 - f_z
+    opposite_side = np.sin(tilt)
+    adjacent_side = f_z_prime/gcr_prime + np.cos(tilt)
+    # tan_psi_1 = opposite_side / adjacent_side
+    psi_1 = np.arctan2(opposite_side, adjacent_side)
+    return psi_0, psi_1
+
+
+def ground_diffuse_view_factor():
+    """
+    Calculate the fraction of diffuse irradiance from the sky incident on the
+    ground.
+    :return:
+    """
+    pass
 
 
 def diffuse_fraction(ghi, dhi):
@@ -253,6 +339,8 @@ def sky_angle_0_tangent(gcr, tilt):
     tan_psi_top_0 : numeric
         tangent angle from bottom, ``x = 0``, to top of next row
     """
+    # f_y = 1  b/c x = 0, so f_x = 0
+    # tan psi_t0 = GCR * sin(tilt) / (1 - GCR * cos(tilt))
     return sky_angle_tangent(gcr, tilt, 0.0)
 
 
@@ -507,7 +595,7 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, tilt, ghi,
     tan_phi = solar_projection_tangent(
         solar_zenith, solar_azimuth, system_azimuth)
     # fraction of ground illuminated accounting from shade from panels
-    f_gnd_sky = ground_illumination(gcr, tilt, tan_phi)
+    f_gnd_sky = unshaded_ground_fraction(gcr, tilt, tan_phi)
     # diffuse fraction
     df = diffuse_fraction(ghi, dhi)
     # diffuse from sky reflected from ground accounting from shade from panels

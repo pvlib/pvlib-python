@@ -86,13 +86,13 @@ def test_frontside_solar_projection_tangent():
     assert np.allclose(tan_phi, TESTDATA.tan_phi_b)
 
 
-def test_ground_illumination():
+def test_unshaded_ground_fraction():
     # frontside, same for both sides
-    f_sky_gnd = pvlib.infinite_sheds.ground_illumination(
+    f_sky_gnd = pvlib.infinite_sheds.unshaded_ground_fraction(
         GCR, TILT_RAD, TESTDATA.tan_phi_f)
     assert np.allclose(f_sky_gnd, F_GND_SKY)
     # backside, should be the same as frontside
-    f_sky_gnd = pvlib.infinite_sheds.ground_illumination(
+    f_sky_gnd = pvlib.infinite_sheds.unshaded_ground_fraction(
         GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
     assert np.allclose(f_sky_gnd, F_GND_SKY)
 

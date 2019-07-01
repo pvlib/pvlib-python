@@ -550,7 +550,7 @@ Infinte Sheds
 
    infinite_sheds.solar_projection
    infinite_sheds.solar_projection_tangent
-   infinite_sheds.ground_illumination
+   infinite_sheds.unshaded_ground_fraction
    infinite_sheds.diffuse_fraction
    infinite_sheds.poa_ground_sky
    infinite_sheds.shade_line

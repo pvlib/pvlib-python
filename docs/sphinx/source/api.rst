@@ -171,6 +171,8 @@ Transposition models
    irradiance.reindl
    irradiance.king
 
+.. _dniestmodels:
+
 DNI estimation models
 ---------------------
 

@@ -1,22 +1,27 @@
 name: test_env
 channels:
-    - conda-forge
     - defaults
+    - conda-forge
 dependencies:
-    - python=3.5
-    - numpy
-    - scipy
-    - pytables
-    - pandas
-    - pytz
+    - coveralls
+    - cython
     - ephem
+    - netcdf4
+    - nose
     - numba
-    - siphon
+    - numpy
+    - pandas
+    - pip
+    - pytables  # tables when using pip+PyPI
     - pytest
     - pytest-cov
     - pytest-mock
-    - nose
+    - pytest-timeout
+    - python=3.5
+    - pytz
+    - requests
+    - scipy
+    - shapely  # pvfactors dependency
+    - siphon  # conda-forge
     - pip:
-        - coveralls
-        - pytest-timeout
-        - pvfactors==0.1.5
+        - pvfactors==1.0.1

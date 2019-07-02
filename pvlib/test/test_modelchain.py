@@ -1,9 +1,4 @@
 import sys
-try:
-    from unittest.mock import ANY
-except ImportError:
-    # python 2
-    from mock import ANY
 
 import numpy as np
 import pandas as pd
@@ -19,7 +14,7 @@ from pandas.util.testing import assert_series_equal
 import pytest
 
 from test_pvsystem import sam_data, pvsyst_module_params
-from conftest import fail_on_pvlib_version, requires_scipy
+from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
 @pytest.fixture
@@ -111,7 +106,7 @@ def pvwatts_dc_snl_ac_system(sam_data):
 @pytest.fixture
 def pvwatts_dc_pvwatts_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    inverter_parameters = {'eta_inv_nom': 0.95}
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
                       inverter_parameters=inverter_parameters)
@@ -153,7 +148,9 @@ def test_orientation_strategy(strategy, expected, system, location):
 def test_run_model(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    ac = mc.run_model(times).ac
+
+    with pytest.warns(pvlibDeprecationWarning):
+        ac = mc.run_model(times).ac
 
     expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
                          index=times)
@@ -374,21 +371,19 @@ def constant_spectral_loss(mc):
 @pytest.mark.parametrize('spectral_model', [
         'sapm', 'first_solar', 'no_loss', constant_spectral_loss
 ])
-def test_spectral_models(system, location, spectral_model):
-    times = pd.date_range('20160101 1200-0700', periods=3, freq='6H')
-    weather = pd.DataFrame(data=[0.3, 0.5, 1.0],
-                           index=times,
-                           columns=['precipitable_water'])
+def test_spectral_models(system, location, spectral_model, weather):
+    # add pw to weather dataframe
+    weather['precipitable_water'] = [0.3, 0.5]
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model=spectral_model)
-    spectral_modifier = mc.run_model(times=times,
+    spectral_modifier = mc.run_model(times=weather.index,
                                      weather=weather).spectral_modifier
     assert isinstance(spectral_modifier, (pd.Series, float, int))
 
 
 def constant_losses(mc):
     mc.losses = 0.9
-    mc.ac *= mc.losses
+    mc.dc *= mc.losses
 
 
 def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -404,6 +399,14 @@ def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
     m.assert_called_with(age=age)
     assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
     assert not mc.ac.empty
+    # check that we're applying correction to dc
+    # GH 696
+    dc_with_loss = mc.dc
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model='no_loss')
+    mc.run_model(weather.index, weather=weather)
+    assert not np.allclose(mc.dc, dc_with_loss, equal_nan=True)
 
 
 def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -483,6 +486,21 @@ def test_deprecated_07():
                    dc_model='singlediode',  # this should fail after 0.7
                    aoi_model='no_loss', spectral_model='no_loss',
                    ac_model='snlinverter')
+
+
+@requires_tables
+@fail_on_pvlib_version('0.7')
+def test_deprecated_clearsky_07():
+    # explicit system creation call because fail_on_pvlib_version
+    # does not support decorators.
+    system = PVSystem(module_parameters={'pdc0': 1, 'gamma_pdc': -0.003})
+    location = Location(32.2, -110.9)
+    mc = ModelChain(system, location, dc_model='pvwatts', ac_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss')
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
+    with pytest.warns(pvlibDeprecationWarning):
+        mc.prepare_inputs(times=times)
 
 
 @requires_scipy

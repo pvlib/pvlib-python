@@ -76,6 +76,40 @@ def test_process_data(model):
 
 
 @requires_siphon
+def test_bad_kwarg_get_data():
+    amodel = NAM()
+    data = amodel.get_data(_latitude, _longitude, _start, _end,
+                           bad_kwarg=False)
+    assert not data.empty
+
+
+@requires_siphon
+def test_bad_kwarg_get_processed_data():
+    amodel = NAM()
+    data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
+                                     bad_kwarg=False)
+    for variable in _nonnan_variables:
+        try:
+            assert not data[variable].isnull().values.any()
+        except AssertionError:
+            warnings.warn('{}, {}, data contained null values'
+                          .format(model, variable))
+
+
+@requires_siphon
+def test_how_kwarg_get_processed_data():
+    amodel = NAM()
+    data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
+                                     how='clearsky_scaling')
+    for variable in _nonnan_variables:
+        try:
+            assert not data[variable].isnull().values.any()
+        except AssertionError:
+            warnings.warn('{}, {}, data contained null values'
+                          .format(model, variable))
+
+
+@requires_siphon
 def test_vert_level():
     amodel = NAM()
     vert_level = 5000

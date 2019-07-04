@@ -20,6 +20,8 @@ LAT, LON, TZ = 37.85, -122.25, -8  # global coordinates
 #   system-azimuth: positive counter-clockwise from north
 TILT, SYSAZ = 20.0, 250.0
 GCR = 0.5  # ground coverage ratio
+HEIGHT = 1  # height above ground
+PITCH = 4  # row spacing
 
 # IAM parameters
 B0 = 0.05
@@ -97,6 +99,87 @@ def test_unshaded_ground_fraction():
     assert np.allclose(f_sky_gnd, F_GND_SKY)
 
 
+ARGS = (GCR, HEIGHT, TILT_RAD, PITCH)
+GCR_PRIME = pvlib.infinite_sheds._gcr_prime(*ARGS)
+
+
+def calc_ground_sky_angles_at_edges(tilt_rad=TILT_RAD, gcr_prime=GCR_PRIME):
+    back_tilt_rad = np.pi - tilt_rad
+    psi_0_x0 = back_tilt_rad
+    opposite_side = gcr_prime * np.sin(back_tilt_rad)
+    adjacent_side = 1 - gcr_prime * np.cos(back_tilt_rad)
+    # tan_psi_1_x0 = opposite_side / adjacent_side
+    psi_1_x0 = np.arctan2(opposite_side, adjacent_side)
+    opposite_side = gcr_prime * np.sin(tilt_rad)
+    adjacent_side = 1 - gcr_prime * np.cos(tilt_rad)
+    # tan_psi_0_x1 = opposite_side / adjacent_side
+    psi_0_x1 = np.arctan2(opposite_side, adjacent_side)
+    psi_1_x1 = tilt_rad
+    return psi_0_x0, psi_1_x0, psi_0_x1, psi_1_x1
+
+
+PSI_0_X0, PSI_1_X0, PSI_0_X1, PSI_1_X1 = calc_ground_sky_angles_at_edges()
+
+
+def test_ground_sky_angles():
+    # check limit at x=0, these are the same as the back edge of the row beyond
+    assert np.allclose(
+        pvlib.infinite_sheds.ground_sky_angles(0, *ARGS), (PSI_0_X0, PSI_1_X0))
+    assert np.allclose(
+        pvlib.infinite_sheds.ground_sky_angles(1, *ARGS), (PSI_0_X1, PSI_1_X1))
+
+
+FZ0_LIMIT = pvlib.infinite_sheds.f_z0_limit(*ARGS)
+PSI_TOP = np.arctan2(GCR * np.sin(TILT_RAD), (1.0 - GCR * np.cos(TILT_RAD)))
+
+
+def test_ground_sky_angles_prev():
+    if HEIGHT > 0:
+        # check limit at z=0, these are the same as z=1 of the previous row
+        assert np.allclose(
+            pvlib.infinite_sheds.ground_sky_angles_prev(0, *ARGS),
+            (PSI_0_X1, PSI_1_X1))
+        # check limit at z=z0_limit, angles must sum to 180
+        assert np.isclose(
+            sum(pvlib.infinite_sheds.ground_sky_angles_prev(FZ0_LIMIT, *ARGS)),
+            np.pi)
+        # directly under panel, angle should be 90 straight upward!
+        z_panel = HEIGHT / PITCH / np.tan(TILT_RAD)
+        assert np.isclose(
+            pvlib.infinite_sheds.ground_sky_angles_prev(z_panel, *ARGS)[1],
+            np.pi / 2.)
+    # angles must be the same as psi_top
+    assert np.isclose(
+        pvlib.infinite_sheds.ground_sky_angles_prev(FZ0_LIMIT, *ARGS)[0],
+        PSI_TOP)
+
+
+FZ1_LIMIT = pvlib.infinite_sheds.f_z1_limit(*ARGS)
+PSI_TOP_BACK = np.arctan2(
+    GCR * np.sin(BACK_TILT_RAD), (1.0 - GCR * np.cos(BACK_TILT_RAD)))
+
+
+def test_ground_sky_angles_next():
+    if HEIGHT > 0:
+        # check limit at z=1, these are the same as z=0 of the next row beyond
+        assert np.allclose(
+            pvlib.infinite_sheds.ground_sky_angles_next(1, *ARGS),
+            (PSI_0_X0, PSI_1_X0))
+        # check limit at zprime=z1_limit, angles must sum to 180
+        assert np.isclose(
+            sum(pvlib.infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS)),
+            np.pi)
+        # directly under panel, angle should be 90 straight upward!
+        z_panel = 1 + HEIGHT / PITCH / np.tan(TILT_RAD)
+        assert np.isclose(
+            pvlib.infinite_sheds.ground_sky_angles_next(z_panel, *ARGS)[0],
+            np.pi / 2.)
+    # angles must be the same as psi_top
+    assert np.isclose(
+        pvlib.infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS)[1],
+        PSI_TOP_BACK)
+
+
 def test_diffuse_fraction():
     df = pvlib.infinite_sheds.diffuse_fraction(GHI, DHI)
     assert np.allclose(df, DF, equal_nan=True)
@@ -156,3 +239,14 @@ def test_sky_angle_0_tangent():
     # backside
     tan_psi_top = pvlib.infinite_sheds.sky_angle_0_tangent(GCR, BACK_TILT_RAD)
     assert np.allclose(tan_psi_top, TAN_PSI_TOP0_B)
+
+
+if __name__ == '__main__':
+    from matplotlib import pyplot as plt
+    plt.ion()
+    plt.plot(*pvlib.infinite_sheds.ground_sky_diffuse_view_factor(*ARGS))
+    plt.title(
+        'combined sky view factor, not including horizon and first/last row')
+    plt.xlabel('fraction of pitch from front to back')
+    plt.ylabel('view factor')
+    plt.grid()

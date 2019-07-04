@@ -299,6 +299,8 @@ def calc_fx_sky(psi_0, psi_1):
     return (np.cos(psi_0) + np.cos(psi_1))/2
 
 
+# TODO: add argument to set number of rows, default is infinite
+# TODO: add option for first or last row, default is middle row
 def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     """
     Calculate the fraction of diffuse irradiance from the sky incident on the
@@ -306,37 +308,42 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     :return:
     """
     args = gcr, height, tilt, pitch
-    gcr_prime = _gcr_prime(*args)
     fz0_limit = f_z0_limit(*args)
     fz1_limit = f_z1_limit(*args)
-    # divide the space between rows into N points, but include extra
-    # space to account for sky visible from adjacent rows
-    anyx = np.linspace(
+    # include extra space to account for sky visible from adjacent rows
+    # divide ground between visible limits into 3x npoints
+    fz = np.linspace(
         0.0 if (1-fz1_limit) > 0 else (1-fz1_limit),
         1.0 if fz0_limit < 1 else fz0_limit,
-        npoints)
+        3*npoints)
     # calculate the angles psi_0 and psi_1 that subtend the sky visible
     # from between rows
-    psi_x = ground_sky_angles(anyx, *args)
+    psi_z = ground_sky_angles(fz, *args)
     # front edge
-    psi_x0 = ground_sky_angles_prev(anyx, *args)
-    fx0_sky_next = []
-    next_row = 0.0
-    while (fz0_limit - next_row) > 0:
-        fx0_sky_next.append(
-            np.interp(anyx + next_row, anyx, calc_fx_sky(*psi_x0)))
-        next_row += 1.0
-    # back edge
-    psi_x1 = ground_sky_angles_next(anyx, *args)
-    fx1_sky_prev = []
+    psi_z0 = ground_sky_angles_prev(fz, *args)
+    fz0_sky_next = []
     prev_row = 0.0
-    while (fz1_limit - prev_row) > 0:
-        fx1_sky_prev.append(
-            np.interp(anyx - prev_row, anyx, calc_fx_sky(*psi_x1)))
+    # loop over rows by adding 1.0 to fz until prev_row < ceil(fz0_limit)
+    while (fz0_limit - prev_row) > 0:
+        fz0_sky_next.append(
+            np.interp(fz + prev_row, fz, calc_fx_sky(*psi_z0)))
         prev_row += 1.0
-    fx_sky = calc_fx_sky(*psi_x) + np.sum(fx0_sky_next, axis=0) + np.sum(fx1_sky_prev, axis=0)
-    x = np.linspace(0, 1, npoints)
-    return x, np.interp(x, anyx, fx_sky)
+    # back edge
+    psi_z1 = ground_sky_angles_next(fz, *args)
+    fz1_sky_prev = []
+    next_row = 0.0
+    # loop over rows by subtracting 1.0 to fz until next_row < ceil(fz1_limit)
+    while (fz1_limit - next_row) > 0:
+        fz1_sky_prev.append(
+            np.interp(fz - next_row, fz, calc_fx_sky(*psi_z1)))
+        next_row += 1.0
+    # calculate the view factor of the sky from the ground at point z
+    fz_sky = (
+        calc_fx_sky(*psi_z)  # current row
+        + np.sum(fz0_sky_next, axis=0)  # sum of all previous rows
+        + np.sum(fz1_sky_prev, axis=0))  # sum of all next rows
+    fz_row = np.linspace(0, 1, npoints)
+    return fz_row, np.interp(fz_row, fz, fz_sky)
 
 
 def diffuse_fraction(ghi, dhi):

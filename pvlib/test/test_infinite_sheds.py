@@ -166,9 +166,9 @@ def test_ground_sky_angles_next():
             pvlib.infinite_sheds.ground_sky_angles_next(1, *ARGS),
             (PSI_0_X0, PSI_1_X0))
         # check limit at zprime=z1_limit, angles must sum to 180
-        assert np.isclose(
-            sum(pvlib.infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS)),
-            np.pi)
+        sum_angles_z1_limit = sum(
+            pvlib.infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS))
+        assert np.isclose(sum_angles_z1_limit, np.pi)
         # directly under panel, angle should be 90 straight upward!
         z_panel = 1 + HEIGHT / PITCH / np.tan(TILT_RAD)
         assert np.isclose(

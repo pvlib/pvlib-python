@@ -176,11 +176,11 @@ class PVFactorsReportBuilder(object):
 
     @staticmethod
     def merge(reports):
-        """Works for dictionary reports. Merges the reports list of 
-        dictionaries by flattening the lists for each key into a single 
+        """Works for dictionary reports. Merges the reports list of
+        dictionaries by flattening the lists for each key into a single
         super list. Returns a dictionary with two list values."""
         # Dictionary comprehension obviates the need to check if there are more
         # than one report, and if one of the elements in reports is None.
-        report = {k:[item for d in reports for item in d[k]]
+        report = {k: [item for d in reports for item in d[k]]
                   for k in reports[0].keys()}
         return report

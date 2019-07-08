@@ -159,8 +159,7 @@ class PVFactorsReportBuilder(object):
         back surface of center pvrow (index=1)"""
         # Initialize the report as a dictionary
         if report is None:
-            list_keys = ['total_inc_back', 'total_inc_front']
-            report = {key: [] for key in list_keys}
+            report = {'total_inc_back': [], 'total_inc_front': []}
         # Add elements to the report
         if pvarray is not None:
             pvrow = pvarray.pvrows[1]  # use center pvrow
@@ -177,13 +176,11 @@ class PVFactorsReportBuilder(object):
 
     @staticmethod
     def merge(reports):
-        """Works for dictionary reports"""
-        report = reports[0]
-        # Merge only if more than 1 report
-        if len(reports) > 1:
-            keys_report = list(reports[0].keys())
-            for other_report in reports[1:]:
-                if other_report is not None:
-                    for key in keys_report:
-                        report[key] += other_report[key]
+        """Works for dictionary reports. Merges the reports list of 
+        dictionaries by flattening the lists for each key into a single 
+        super list. Returns a dictionary with two list values."""
+        # Dictionary comprehension obviates the need to check if there are more
+        # than one report, and if one of the elements in reports is None.
+        report = {k:[item for d in reports for item in d[k]]
+                  for k in reports[0].keys()}
         return report

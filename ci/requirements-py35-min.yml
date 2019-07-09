@@ -4,8 +4,8 @@ channels:
 dependencies:
     - coveralls
     - nose
-    - numpy
-    - pandas
+    - numpy=1.10.1
+    - pandas=0.18.0
     - pip
     - pytest
     - pytest-cov

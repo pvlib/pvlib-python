@@ -4,9 +4,12 @@ v0.7.0 (MONTH DAY, YEAR)
 ---------------------
 
 This is a major release that drops support for Python 2 and Python 3.4. We
-recommend all users of v0.6.3 upgrade to this release.
+recommend all users of v0.6.3 upgrade to this release after checking API
+compatibility notes.
 
 **Python 2.7 support ended on June 1, 2019**. (:issue:`501`)
+
+**Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
 
 Contributors

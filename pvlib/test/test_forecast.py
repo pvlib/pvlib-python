@@ -77,6 +77,8 @@ def test_process_data(model):
 
 @requires_siphon
 def test_bad_kwarg_get_data():
+    # For more information on why you would want to pass an unknown keyword
+    # argument, see Github issue #745.
     amodel = NAM()
     data = amodel.get_data(_latitude, _longitude, _start, _end,
                            bad_kwarg=False)
@@ -85,15 +87,12 @@ def test_bad_kwarg_get_data():
 
 @requires_siphon
 def test_bad_kwarg_get_processed_data():
+    # For more information on why you would want to pass an unknown keyword
+    # argument, see Github issue #745.
     amodel = NAM()
     data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
                                      bad_kwarg=False)
-    for variable in _nonnan_variables:
-        try:
-            assert not data[variable].isnull().values.any()
-        except AssertionError:
-            warnings.warn('{}, {}, data contained null values'
-                          .format(model, variable))
+    assert not data.empty
 
 
 @requires_siphon
@@ -101,12 +100,7 @@ def test_how_kwarg_get_processed_data():
     amodel = NAM()
     data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
                                      how='clearsky_scaling')
-    for variable in _nonnan_variables:
-        try:
-            assert not data[variable].isnull().values.any()
-        except AssertionError:
-            warnings.warn('{}, {}, data contained null values'
-                          .format(model, variable))
+    assert not data.empty
 
 
 @requires_siphon

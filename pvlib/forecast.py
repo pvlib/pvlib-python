@@ -201,7 +201,7 @@ class ForecastModel(object):
 
     def get_data(self, latitude, longitude, start, end,
                  vert_level=None, query_variables=None,
-                 close_netcdf_data=True):
+                 close_netcdf_data=True, **kwargs):
         """
         Submits a query to the UNIDATA servers using Siphon NCSS and
         converts the netcdf data to a pandas DataFrame.
@@ -223,6 +223,8 @@ class ForecastModel(object):
         close_netcdf_data: bool, default True
             Controls if the temporary netcdf data file should be closed.
             Set to False to access the raw data.
+        **kwargs:
+            Additional keyword arguments are silently ignored.
 
         Returns
         -------

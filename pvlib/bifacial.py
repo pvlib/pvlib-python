@@ -181,6 +181,6 @@ class PVFactorsReportBuilder(object):
         super list. Returns a dictionary with two list values."""
         # Dictionary comprehension obviates the need to check if there are more
         # than one report, and if one of the elements in reports is None.
-        report = {k: [item for d in reports for item in d[k]]
-                  for k in reports[0].keys()}
-        return report
+        merged = {key: [item for report in reports for item in report[key]]
+                  for key in reports[0].keys()}
+        return merged

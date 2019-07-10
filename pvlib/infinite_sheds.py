@@ -2,14 +2,17 @@
 Modify plane of array irradiance components to account for adjancent rows for
 both monofacial and bifacia infinite sheds. Sheds are defined as fixed tilt or
 trackers that a fixed GCR on horizontal surface. Future version will also
-account for sloped surfaces. The process is divide into 7 steps:
-1. transposition
-2. ground illumination
-3. shade line
-4. angle of sky/ground subtended by module
-5. view factor of sky/ground from module vs. location of shade line
-6. approximate view factors as linear across shade and light regions
-7. sum up components
+account for sloped surfaces. The process is follows several steps:
+1. transposition of diffuse and direct onto front and back surfaces
+2. view factor of diffuse sky incident on ground between rows, not blocked
+3. fraction of ground unshaded between rows, no direct in shaded fraction
+4. integrated view factor of ground reflected and sky diffuse incident on PV
+    surface
+5. fraction of PV surface shaded, diffuse only
+6. sum up components on each surface
+7. apply bifaciality factor to backside and combine with front
+8. first and last row are different, because they are not blocked on front side
+    for 1st row, or backside for last row
 
 References
 ----------
@@ -295,7 +298,24 @@ def f_z1_limit(gcr, height, tilt, pitch):
     return height/pitch * (1/tan_psi_t_x1 - 1/np.tan(tilt))
 
 
-def calc_fx_sky(psi_0, psi_1):
+def calc_fz_sky(psi_0, psi_1):
+    """
+    Calculate the view factor for point "z" on the ground to the visible
+    diffuse sky subtende by the angles :math:`\\psi_0` and :math:`\\psi_1`.
+
+    Parameters
+    ----------
+    psi_0 : numeric
+        angle from ground to sky before point "z"
+    psi_1 : numeric
+        angle from ground to sky after point "z"
+
+    Returns
+    -------
+    fz_sky : numeric
+        fraction of energy from the diffuse sky dome that is incident on the
+        ground at point "z"
+    """
     return (np.cos(psi_0) + np.cos(psi_1))/2
 
 
@@ -305,7 +325,17 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     """
     Calculate the fraction of diffuse irradiance from the sky incident on the
     ground.
-    :return:
+
+    Parameters
+    ----------
+    gcr : numeric
+        ground coverage ratio
+    height : numeric
+        height of module lower edge above the ground
+    tilt : numeric
+        module tilt in radians, between 0 and 180-degrees
+    pitch : numeric
+        row spacing
     """
     args = gcr, height, tilt, pitch
     fz0_limit = f_z0_limit(*args)
@@ -326,7 +356,7 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     # loop over rows by adding 1.0 to fz until prev_row < ceil(fz0_limit)
     while (fz0_limit - prev_row) > 0:
         fz0_sky_next.append(
-            np.interp(fz + prev_row, fz, calc_fx_sky(*psi_z0)))
+            np.interp(fz + prev_row, fz, calc_fz_sky(*psi_z0)))
         prev_row += 1.0
     # back edge
     psi_z1 = ground_sky_angles_next(fz, *args)
@@ -335,13 +365,13 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     # loop over rows by subtracting 1.0 to fz until next_row < ceil(fz1_limit)
     while (fz1_limit - next_row) > 0:
         fz1_sky_prev.append(
-            np.interp(fz - next_row, fz, calc_fx_sky(*psi_z1)))
+            np.interp(fz - next_row, fz, calc_fz_sky(*psi_z1)))
         next_row += 1.0
     # calculate the view factor of the sky from the ground at point z
     fz_sky = (
-        calc_fx_sky(*psi_z)  # current row
-        + np.sum(fz0_sky_next, axis=0)  # sum of all previous rows
-        + np.sum(fz1_sky_prev, axis=0))  # sum of all next rows
+            calc_fz_sky(*psi_z)  # current row
+            + np.sum(fz0_sky_next, axis=0)  # sum of all previous rows
+            + np.sum(fz1_sky_prev, axis=0))  # sum of all next rows
     fz_row = np.linspace(0, 1, npoints)
     return fz_row, np.interp(fz_row, fz, fz_sky)
 

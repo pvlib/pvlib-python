@@ -181,7 +181,7 @@ class PVFactorsReportBuilder(object):
         dictionary are extended by those of all subsequent lists."""
         report = reports[0]
         keys_report = list(report.keys())
-        for other_report in reports[1:]: # loop won't run if len(reports) < 2
+        for other_report in reports[1:]:  # loop won't run if len(reports) < 2
             for key in keys_report:
                 report[key] += other_report[key]
         return report

@@ -108,6 +108,7 @@ def test_pvfactors_timeseries_pandas_inputs(run_parallel_calculations):
     pd.testing.assert_series_equal(ipoa_front, expected_ipoa_front)
     pd.testing.assert_series_equal(ipoa_back, expected_ipoa_back)
 
+
 def test_build_1():
     """Test that build correctly instantiates a dictionary, when passed a Nones
     for the report and pvarray arguments.
@@ -117,22 +118,25 @@ def test_build_1():
     expected = {'total_inc_back': [], 'total_inc_front': []}
     assert expected == build(report, pvarray)
 
+
 def test_merge_1():
     """Test that merge correctly returns the first element of the reports
     argument when there is only dictionary in reports.
     """
-    test_dict = {'total_inc_back': [1,2,3], 'total_inc_front': [4,5,6]}
+    test_dict = {'total_inc_back': [1, 2, 3], 'total_inc_front': [4, 5, 6]}
     reports = [test_dict]
     assert test_dict == merge(reports)
+
 
 def test_merge_2():
     """Test that merge correctly combines two dictionary reports.
     """
-    test_dict_1 = {'total_inc_back': [1,2], 'total_inc_front': [4,5]}
+    test_dict_1 = {'total_inc_back': [1, 2], 'total_inc_front': [4, 5]}
     test_dict_2 = {'total_inc_back': [3], 'total_inc_front': [6]}
-    expected = {'total_inc_back': [1,2,3], 'total_inc_front': [4,5,6]}
+    expected = {'total_inc_back': [1, 2, 3], 'total_inc_front': [4, 5, 6]}
     reports = [test_dict_1, test_dict_2]
     assert expected == merge(reports)
+
 
 def test_merge_3():
     """Test that merge correctly combines three dictionary reports.

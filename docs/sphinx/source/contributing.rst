@@ -196,7 +196,7 @@ pvlib python generally follows the `PEP 8 -- Style Guide for Python Code
 <https://www.python.org/dev/peps/pep-0008/>`_. Maximum line length for code
 is 79 characters.
 
-Code must be compatible with python 2.7 and 3.4+.
+Code must be compatible with Python 3.5 and above.
 
 pvlib python uses a mix of full and abbreviated variable names. See
 :ref:`variables_style_rules`. We could be better about consistency.
@@ -229,7 +229,9 @@ Documentation
 ~~~~~~~~~~~~~
 
 Documentation must be written in
-`numpydoc format <https://numpydoc.readthedocs.io/>`_.
+`numpydoc format <https://numpydoc.readthedocs.io/>`_ format which is rendered
+using the `Sphinx Napoleon extension
+<https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html>`_.
 
 The numpydoc format includes a specification for the allowable input
 types. Python's `duck typing <https://en.wikipedia.org/wiki/Duck_typing>`_

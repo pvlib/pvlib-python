@@ -1,5 +1,6 @@
 import datetime
 from collections import OrderedDict
+import warnings
 
 import numpy as np
 from numpy import array, nan
@@ -89,7 +90,7 @@ dt_np64 = np.datetime64(dt_datetime)
 value = 1383.636203
 
 
-@pytest.mark.parametrize('input, expected', [
+@pytest.mark.parametrize('testval, expected', [
     (doy, value),
     (np.float64(doy), value),
     (dt_date, value),
@@ -102,21 +103,27 @@ value = 1383.636203
 ])
 @pytest.mark.parametrize('method', [
     'asce', 'spencer', 'nrel', pytest.param('pyephem', marks=requires_ephem)])
-def test_get_extra_radiation(input, expected, method):
-    out = irradiance.get_extra_radiation(input)
-    assert_allclose(out, expected, atol=1)
-
-
-@requires_numba
-def test_get_extra_radiation_nrel_numba(times):
-    result = irradiance.get_extra_radiation(times, method='nrel', how='numba',
-                                            numthreads=8)
-    assert_allclose(result, [1322.332316, 1322.296282, 1322.261205, 1322.227091])
+def test_get_extra_radiation(testval, expected, method):
+    out = irradiance.get_extra_radiation(testval, method=method)
+    assert_allclose(out, expected, atol=10)
 
 
 def test_get_extra_radiation_epoch_year():
     out = irradiance.get_extra_radiation(doy, method='nrel', epoch_year=2012)
     assert_allclose(out, 1382.4926804890767, atol=0.1)
+
+
+@requires_numba
+def test_get_extra_radiation_nrel_numba(times):
+    with warnings.catch_warnings():
+        # don't warn on method reload or num threads
+        warnings.simplefilter("ignore")
+        result = irradiance.get_extra_radiation(
+            times, method='nrel', how='numba', numthreads=4)
+        # and reset to no-numba state
+        irradiance.get_extra_radiation(times, method='nrel')
+    assert_allclose(result,
+                    [1322.332316, 1322.296282, 1322.261205, 1322.227091])
 
 
 def test_get_extra_radiation_invalid():
@@ -135,13 +142,15 @@ def test_grounddiffuse_simple_series(irrad_data):
 
 
 def test_grounddiffuse_albedo_0(irrad_data):
-    ground_irrad = irradiance.get_ground_diffuse(40, irrad_data['ghi'], albedo=0)
+    ground_irrad = irradiance.get_ground_diffuse(
+        40, irrad_data['ghi'], albedo=0)
     assert 0 == ground_irrad.all()
 
 
 def test_grounddiffuse_albedo_invalid_surface(irrad_data):
     with pytest.raises(KeyError):
-        irradiance.get_ground_diffuse(40, irrad_data['ghi'], surface_type='invalid')
+        irradiance.get_ground_diffuse(
+            40, irrad_data['ghi'], surface_type='invalid')
 
 
 def test_grounddiffuse_albedo_surface(irrad_data):
@@ -193,26 +202,24 @@ def test_klucher_series(irrad_data, ephem_data):
 
 
 def test_haydavies(irrad_data, ephem_data, dni_et):
-    result = irradiance.haydavies(40, 180, irrad_data['dhi'], irrad_data['dni'],
-                         dni_et,
-                         ephem_data['apparent_zenith'],
-                         ephem_data['azimuth'])
+    result = irradiance.haydavies(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'])
     # values from matlab 1.4 code
     assert_allclose(result, [0, 27.1775, 102.9949, 33.1909], atol=1e-4)
 
 
 def test_reindl(irrad_data, ephem_data, dni_et):
-    result = irradiance.reindl(40, 180, irrad_data['dhi'], irrad_data['dni'],
-                      irrad_data['ghi'], dni_et,
-                      ephem_data['apparent_zenith'],
-                      ephem_data['azimuth'])
+    result = irradiance.reindl(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
+        dni_et, ephem_data['apparent_zenith'], ephem_data['azimuth'])
     # values from matlab 1.4 code
     assert_allclose(result, [np.nan, 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
 def test_king(irrad_data, ephem_data):
     result = irradiance.king(40, irrad_data['dhi'], irrad_data['ghi'],
-                    ephem_data['apparent_zenith'])
+                             ephem_data['apparent_zenith'])
     assert_allclose(result, [0, 44.629352, 115.182626, 79.719855], atol=1e-4)
 
 
@@ -220,8 +227,8 @@ def test_perez(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez(40, 180, irrad_data['dhi'], dni,
-                     dni_et, ephem_data['apparent_zenith'],
-                     ephem_data['azimuth'], relative_airmass)
+                           dni_et, ephem_data['apparent_zenith'],
+                           ephem_data['azimuth'], relative_airmass)
     expected = pd.Series(np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877]),
         index=irrad_data.index)
@@ -260,8 +267,9 @@ def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
     out = irradiance.perez(40, 180, irrad_data['dhi'].values, dni.values,
-                     dni_et, ephem_data['apparent_zenith'].values,
-                     ephem_data['azimuth'].values, relative_airmass.values)
+                           dni_et, ephem_data['apparent_zenith'].values,
+                           ephem_data['azimuth'].values,
+                           relative_airmass.values)
     expected = np.array(
         [   0.        ,   31.46046871,  np.nan,   45.45539877])
     assert_allclose(out, expected, atol=1e-2)
@@ -289,8 +297,8 @@ def test_sky_diffuse_zenith_close_to_90(model):
 
 
 def test_liujordan():
-    expected = pd.DataFrame(np.
-        array([[863.859736967, 653.123094076, 220.65905025]]),
+    expected = pd.DataFrame(np.array(
+        [[863.859736967, 653.123094076, 220.65905025]]),
         columns=['ghi', 'dni', 'dhi'],
         index=[0])
     out = irradiance.liujordan(
@@ -484,7 +492,7 @@ def test_dirint_nans():
 
 
 def test_dirint_tdew():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
@@ -495,7 +503,7 @@ def test_dirint_tdew():
 
 
 def test_dirint_no_delta_kt():
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     pressure = 93193.
@@ -507,16 +515,16 @@ def test_dirint_no_delta_kt():
 
 def test_dirint_coeffs():
     coeffs = irradiance._get_dirint_coeffs()
-    assert coeffs[0,0,0,0] == 0.385230
-    assert coeffs[0,1,2,1] == 0.229970
-    assert coeffs[3,2,6,3] == 1.032260
+    assert coeffs[0, 0, 0, 0] == 0.385230
+    assert coeffs[0, 1, 2, 1] == 0.229970
+    assert coeffs[3, 2, 6, 3] == 1.032260
 
 
 def test_dirint_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
     # times don't have any physical relevance
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
     solar_zenith = pd.Series([90, 89.99], index=times)
 
@@ -620,19 +628,57 @@ def test_gti_dirint():
 
 
 def test_erbs():
-    ghi = pd.Series([0, 50, 1000, 1000])
-    zenith = pd.Series([120, 85, 10, 10])
-    doy = pd.Series([1, 1, 1, 180])
-    expected = pd.DataFrame(np.
-        array([[ -0.00000000e+00,   0.00000000e+00,  -0.00000000e+00],
-               [  9.67127061e+01,   4.15709323e+01,   4.05715990e-01],
-               [  7.94187742e+02,   2.17877755e+02,   7.18119416e-01],
-               [  8.42358014e+02,   1.70439297e+02,   7.68919470e-01]]),
-        columns=['dni', 'dhi', 'kt'])
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
+    ghi = pd.Series([0, 50, 1000, 1000], index=index)
+    zenith = pd.Series([120, 85, 10, 10], index=index)
+    expected = pd.DataFrame(np.array(
+        [[0.00000000e+00, 0.00000000e+00, 0.00000000e+00],
+         [9.67192672e+01, 4.15703604e+01, 4.05723511e-01],
+         [7.94205651e+02, 2.17860117e+02, 7.18132729e-01],
+         [8.42001578e+02, 1.70790318e+02, 7.68214312e-01]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
 
-    out = irradiance.erbs(ghi, zenith, doy)
+    out = irradiance.erbs(ghi, zenith, index)
 
     assert_frame_equal(np.round(out, 0), np.round(expected, 0))
+
+
+def test_erbs_min_cos_zenith_max_zenith():
+    # map out behavior under difficult conditions with various
+    # limiting kwargs settings
+    columns = ['dni', 'dhi', 'kt']
+    times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
+
+    # max_zenith keeps these results reasonable
+    out = irradiance.erbs(ghi=1.0, zenith=89.99999,
+                          datetime_or_doy=times, min_cos_zenith=0)
+    expected = pd.DataFrame(np.array(
+        [[0., 1., 1.]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # 4-5 9s will produce bad behavior without max_zenith limit
+    out = irradiance.erbs(ghi=1.0, zenith=89.99999,
+                          datetime_or_doy=times, max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[6.00115286e+03, 9.98952601e-01, 1.16377640e-02]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # 1-2 9s will produce bad behavior without either limit
+    out = irradiance.erbs(ghi=1.0, zenith=89.99, datetime_or_doy=times,
+                          min_cos_zenith=0, max_zenith=100)
+    expected = pd.DataFrame(np.array(
+        [[4.78419761e+03, 1.65000000e-01, 1.00000000e+00]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
+
+    # check default behavior under hardest condition
+    out = irradiance.erbs(ghi=1.0, zenith=90, datetime_or_doy=times)
+    expected = pd.DataFrame(np.array(
+        [[0., 1., 0.01163776]]),
+        columns=columns, index=times)
+    assert_frame_equal(out, expected)
 
 
 def test_erbs_all_scalar():
@@ -689,7 +735,7 @@ def test_dirindex_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
     # times don't have any physical relevance
-    times = pd.DatetimeIndex(['2014-06-24T12-0700','2014-06-24T18-0700'])
+    times = pd.DatetimeIndex(['2014-06-24T12-0700', '2014-06-24T18-0700'])
     ghi = pd.Series([0, 1], index=times)
     ghi_clearsky = pd.Series([0, 1], index=times)
     dni_clearsky = pd.Series([0, 5], index=times)

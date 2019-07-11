@@ -4,7 +4,6 @@ channels:
     - defaults
 dependencies:
     - python=3.6
-    - mock  # needed for local python 2.7 builds
     - numpy=1.14.2
     - scipy
     - pytables
@@ -13,7 +12,6 @@ dependencies:
     - ephem
     - numba
     - ipython=6.3
-    - numpydoc
     - matplotlib=2.2.2
     - siphon=0.7.0
     - sphinx=1.7.2

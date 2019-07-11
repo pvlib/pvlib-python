@@ -94,6 +94,10 @@ def pandas_0_22():
     return parse_version(pd.__version__) >= parse_version('0.22.0')
 
 
+needs_pandas_0_22 = pytest.mark.skipif(
+    not pandas_0_22(), reason='requires pandas 0.22 or greater')
+
+
 def has_spa_c():
     try:
         from pvlib.spa_c_files.spa_py import spa_calc
@@ -110,7 +114,7 @@ def has_numba():
     try:
         import numba
     except ImportError:
-        return True
+        return False
     else:
         vers = numba.__version__.split('.')
         if int(vers[0] + vers[1]) < 17:

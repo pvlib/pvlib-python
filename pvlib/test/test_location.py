@@ -1,9 +1,5 @@
 import datetime
-try:
-    from unittest.mock import ANY
-except ImportError:
-    # python 2
-    from mock import ANY
+from unittest.mock import ANY
 
 import numpy as np
 from numpy import nan
@@ -19,14 +15,13 @@ import pvlib
 from pvlib.location import Location
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
-from test_solarposition import expected_solpos, golden_mst
-from test_solarposition import golden
-
+from test_solarposition import expected_solpos, golden, golden_mst
 from conftest import requires_ephem, requires_scipy
 
 
 def test_location_required():
     Location(32.2, -111)
+
 
 def test_location_all():
     Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
@@ -71,7 +66,7 @@ def test_location_print_pytz():
         '  longitude: -111',
         '  altitude: 700',
         '  tz: US/Arizona'
-])
+    ])
     assert tus.__str__() == expected_str
 
 
@@ -212,7 +207,7 @@ def test_get_clearsky_simplified_solis_aod_pw(times):
 def test_get_clearsky_valueerror(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     with pytest.raises(ValueError):
-        clearsky = tus.get_clearsky(times, model='invalid_model')
+        tus.get_clearsky(times, model='invalid_model')
 
 
 def test_from_tmy_3():
@@ -275,7 +270,7 @@ def test_get_airmass(times):
 def test_get_airmass_valueerror(times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     with pytest.raises(ValueError):
-        clearsky = tus.get_airmass(times, model='invalid_model')
+        tus.get_airmass(times, model='invalid_model')
 
 
 def test_Location___repr__():
@@ -288,7 +283,7 @@ def test_Location___repr__():
         '  longitude: -111',
         '  altitude: 700',
         '  tz: US/Arizona'
-])
+    ])
     assert tus.__repr__() == expected
 
 
@@ -315,4 +310,4 @@ def test_get_sun_rise_set_transit_valueerror(golden):
     times = pd.DatetimeIndex(['2015-01-01 07:00:00', '2015-01-01 23:00:00'],
                              tz='MST')
     with pytest.raises(ValueError):
-        result = golden.get_sun_rise_set_transit(times, method='eyeball')
+        golden.get_sun_rise_set_transit(times, method='eyeball')

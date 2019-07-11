@@ -240,8 +240,8 @@ class PVSystem(object):
         model : String, default 'haydavies'
             Irradiance model.
 
-        **kwargs
-            Passed to :func:`irradiance.total_irrad`.
+        kwargs
+            Extra parameters passed to :func:`irradiance.total_irrad`.
 
         Returns
         -------
@@ -413,7 +413,7 @@ class PVSystem(object):
         temp_cell : float or Series
             The average cell temperature of cells within a module in C.
 
-        **kwargs
+        kwargs
             See pvsystem.sapm for details
 
         Returns
@@ -752,7 +752,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
                                self.inverter_parameters)
 
-        return pvwatts_ac(pdc, self.module_parameters['pdc0'], **kwargs)
+        return pvwatts_ac(pdc, self.inverter_parameters['pdc0'], **kwargs)
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
@@ -1292,7 +1292,9 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # by applying reflection and soiling losses to broadband plane of array
     # irradiance and not applying a spectral loss modifier, i.e.,
     # spectral_modifier = 1.0.
-    Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
+    # use errstate to silence divide by warning
+    with np.errstate(divide='ignore'):
+        Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
     Rs = R_s
 
     return IL, I0, Rs, Rsh, nNsVth
@@ -2692,6 +2694,11 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
 
         P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
 
+    Note that the pdc0 is also used as a symbol in :py:func:`pvwatts_ac`. pdc0
+    in this function refers to the DC power of the modules at reference
+    conditions. pdc0 in :py:func:`pvwatts_ac` refers to the DC power input
+    limit of the inverter.
+
     Parameters
     ----------
     g_poa_effective: numeric
@@ -2702,7 +2709,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     temp_cell: numeric
         Cell temperature in degrees C.
     pdc0: numeric
-        Nameplate DC rating.
+        Power of the modules at 1000 W/m2 and cell reference temperature.
     gamma_pdc: numeric
         The temperature coefficient in units of 1/C. Typically -0.002 to
         -0.005 per degree C.
@@ -2795,12 +2802,17 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     where :math:`\zeta=P_{dc}/P_{dc0}` and :math:`P_{dc0}=P_{ac0}/\eta_{nom}`.
 
+    Note that the pdc0 is also used as a symbol in :py:func:`pvwatts_dc`. pdc0
+    in this function refers to the DC power input limit of the inverter.
+    pdc0 in :py:func:`pvwatts_dc` refers to the DC power of the modules
+    at reference conditions.
+
     Parameters
     ----------
     pdc: numeric
         DC power.
     pdc0: numeric
-        Nameplate DC rating.
+        DC input limit of the inverter.
     eta_inv_nom: numeric, default 0.96
         Nominal inverter efficiency.
     eta_inv_ref: numeric, default 0.9637

@@ -1064,6 +1064,20 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     return iam
 
 
+def iam_martin_ruiz(aoi, a_r):
+    '''
+    Determine the incidence angle modifier using the Martin & Ruiz model.
+    '''
+    raise NotImplementedError
+
+
+def iam_interp(aoi, measurements):
+    '''
+    Determine the incidence angle modifier by interpolating measured values.
+    '''
+    raise NotImplementedError
+
+
 def calcparams_desoto(effective_irradiance, temp_cell,
                       alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                       EgRef=1.121, dEgdT=-0.0002677,
@@ -1992,6 +2006,14 @@ def pvsyst_celltemp(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     temp_cell = temp_air + temp_difference
 
     return temp_cell
+
+
+def celltemp_faiman(poa_global, temp_air, wind_speed, u0, u1):
+    '''
+    Calculate cell temperature using an emperical heat loss factor model
+    in the form proposed by Faiman.
+    '''
+    raise NotImplementedError
 
 
 def sapm_spectral_loss(airmass_absolute, module):

@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from pvlib.bifacial import pvfactors_timeseries, build, merge
+from pvlib.bifacial import pvfactors_timeseries, PVFactorsReportBuilder
 from conftest import requires_pvfactors
 import pytest
 
@@ -116,7 +116,7 @@ def test_build_1():
     report = None
     pvarray = None
     expected = {'total_inc_back': [], 'total_inc_front': []}
-    assert expected == build(report, pvarray)
+    assert expected == PVFactorsReportBuilder.build(report, pvarray)
 
 
 def test_merge_1():
@@ -125,7 +125,7 @@ def test_merge_1():
     """
     test_dict = {'total_inc_back': [1, 2, 3], 'total_inc_front': [4, 5, 6]}
     reports = [test_dict]
-    assert test_dict == merge(reports)
+    assert test_dict == PVFactorsReportBuilder.merge(reports)
 
 
 def test_merge_2():
@@ -135,7 +135,7 @@ def test_merge_2():
     test_dict_2 = {'total_inc_back': [3], 'total_inc_front': [6]}
     expected = {'total_inc_back': [1, 2, 3], 'total_inc_front': [4, 5, 6]}
     reports = [test_dict_1, test_dict_2]
-    assert expected == merge(reports)
+    assert expected == PVFactorsReportBuilder.merge(reports)
 
 
 def test_merge_3():
@@ -146,4 +146,4 @@ def test_merge_3():
     test_dict_3 = {'total_inc_back': [3], 'total_inc_front': [6]}
     expected = {'total_inc_back': [1, 2, 3], 'total_inc_front': [4, 5, 6]}
     reports = [test_dict_1, test_dict_2, test_dict_3]
-    assert expected == merge(reports)
+    assert expected == PVFactorsReportBuilder.merge(reports)

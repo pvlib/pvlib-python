@@ -289,14 +289,14 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
         Rsh = 1.0 / Gp
         IL = (1 + Gp * Rs) * beta0
         # calculate I0
-        I0_v_mp = _calc_I0(IL, i_mp, v_mp, Gp, Rs, beta3)
-        I0_v_oc = _calc_I0(IL, 0, v_oc, Gp, Rs, beta3)
-        if (I0_v_mp > 0) and (I0_v_oc > 0):
-            I0 = 0.5 * (I0_v_mp + I0_v_oc)
-        elif (I0_v_mp > 0):
-            I0 = I0_v_mp
-        elif (I0_v_oc > 0):
-            I0 = I0_v_oc
+        I0_vmp = _calc_I0(IL, i_mp, v_mp, Gp, Rs, beta3)
+        I0_voc = _calc_I0(IL, 0, v_oc, Gp, Rs, beta3)
+        if (I0_vmp > 0) and (I0_voc > 0):
+            I0 = 0.5 * (I0_vmp + I0_voc)
+        elif (I0_vmp > 0):
+            I0 = I0_vmp
+        elif (I0_voc > 0):
+            I0 = I0_voc
         else:
             I0 = np.nan
     else:

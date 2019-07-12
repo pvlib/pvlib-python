@@ -273,8 +273,8 @@ class ModelChain(object):
         as the first argument to a user-defined function.
 
     temp_model: str or function, default 'sapm'
-        Valid strings are 'sapm'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+        Valid strings are 'sapm' and 'pvsyst'. The ModelChain instance will be
+        passed as the first argument to a user-defined function.
 
     losses_model: str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
@@ -670,6 +670,8 @@ class ModelChain(object):
             model = model.lower()
             if model == 'sapm':
                 self._temp_model = self.sapm_temp
+            elif model == 'pvsyst':
+                self._temp_model = self.pvsyst_temp
             else:
                 raise ValueError(model + ' is not a valid temp model')
         else:
@@ -680,8 +682,14 @@ class ModelChain(object):
 
     def sapm_temp(self):
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
-                                               self.weather['wind_speed'],
-                                               self.weather['temp_air'])
+                                               self.weather['temp_air'],
+                                               self.weather['wind_speed'])
+        return self
+
+    def pvsyst_temp(self):
+        self.temps = self.system.pvsyst_celltemp(
+            self.total_irrad['poa_global'], self.weather['temp_air'],
+            self.weather['wind_speed'])
         return self
 
     @property

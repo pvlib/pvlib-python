@@ -422,7 +422,7 @@ class PVSystem(object):
         """
         return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
-    def sapm_celltemp(self, poa_global, wind_speed, temp_air):
+    def sapm_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`celltemp.sapm` to calculate module and cell
         temperatures based on ``self.racking_model`` and
         the input parameters.
@@ -432,11 +432,11 @@ class PVSystem(object):
         poa_global : float or Series
             Total incident irradiance in W/m^2.
 
-        wind_speed : float or Series
-            Wind speed in m/s at a height of 10 meters.
-
         temp_air : float or Series
             Ambient dry bulb temperature in degrees C.
+
+        wind_speed : float or Series
+            Wind speed in m/s at a height of 10 meters.
 
         model : string, list, or dict, default 'open_rack_cell_glassback'
             Model to be used. See celltemp.sapm for details

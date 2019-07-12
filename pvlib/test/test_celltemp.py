@@ -17,20 +17,20 @@ from conftest import fail_on_pvlib_version
 
 
 def test_sapm_celltemp():
-    default = celltemp.sapm(900, 5, 20)
+    default = celltemp.sapm(900, 20, 5)
     assert_allclose(default['temp_cell'], 43.509, 3)
     assert_allclose(default['temp_module'], 40.809, 3)
     assert_frame_equal(default, celltemp.sapm(900, 5, 20, [-3.47, -.0594, 3]))
 
 
 def test_sapm_celltemp_dict_like():
-    default = celltemp.sapm(900, 5, 20)
+    default = celltemp.sapm(900, 20, 5)
     assert_allclose(default['temp_cell'], 43.509, 3)
     assert_allclose(default['temp_module'], 40.809, 3)
     model = {'a': -3.47, 'b': -.0594, 'deltaT': 3}
-    assert_frame_equal(default, celltemp.sapm(900, 5, 20, model))
+    assert_frame_equal(default, celltemp.sapm(900, 20, 5, model))
     model = pd.Series(model)
-    assert_frame_equal(default, celltemp.sapm(900, 5, 20, model))
+    assert_frame_equal(default, celltemp.sapm(900, 20, 5, model))
 
 
 def test_sapm_celltemp_with_index():
@@ -39,7 +39,7 @@ def test_sapm_celltemp_with_index():
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
 
-    pvtemps = celltemp.sapm(irrads, winds, temps)
+    pvtemps = celltemp.sapm(irrads, temps, winds)
 
     expected = pd.DataFrame({'temp_cell': [0., 23.06066166, 5.],
                              'temp_module': [0., 21.56066166, 5.]},
@@ -56,7 +56,7 @@ def test_PVSystem_sapm_celltemp(mocker):
     temps = 25
     irrads = 1000
     winds = 1
-    out = system.sapm_celltemp(irrads, winds, temps)
+    out = system.sapm_celltemp(irrads, temps, winds)
     celltemp.sapm.assert_called_once_with(
         irrads, winds, temps, model=racking_model)
     assert isinstance(out, pd.DataFrame)
@@ -126,6 +126,6 @@ def test_PVSystem_pvsyst_celltemp(mocker):
 @fail_on_pvlib_version('0.7')
 def test_deprecated_07():
     with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_celltemp(1000, 1, 25)
+        pvsystem.sapm_celltemp(1000, 25, 1)
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvsyst_celltemp(1000, 25)

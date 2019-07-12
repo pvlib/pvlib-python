@@ -20,7 +20,7 @@ TEMP_MODEL_PARAMS = {
 }
 
 
-def sapm(poa_global, wind_speed, temp_air, model='open_rack_cell_glassback'):
+def sapm(poa_global, temp_air, wind_speed, model='open_rack_cell_glassback'):
     '''
     Estimate cell and module temperatures per the Sandia PV Array
     Performance Model (SAPM, SAND2004-3535), from the incident
@@ -32,11 +32,11 @@ def sapm(poa_global, wind_speed, temp_air, model='open_rack_cell_glassback'):
     poa_global : float or Series
         Total incident irradiance in W/m^2.
 
-    wind_speed : float or Series
-        Wind speed in m/s at a height of 10 meters.
-
     temp_air : float or Series
         Ambient dry bulb temperature in degrees C.
+
+    wind_speed : float or Series
+        Wind speed in m/s at a height of 10 meters.
 
     model : string, list, or dict, default 'open_rack_cell_glassback'
         Model to be used.

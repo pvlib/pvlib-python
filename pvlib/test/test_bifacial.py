@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from pvlib.bifacial import pvfactors_timeseries, PVFactorsReportBuilder
 from conftest import requires_pvfactors
@@ -115,7 +116,7 @@ def test_build_1():
     """
     report = None
     pvarray = None
-    expected = {'total_inc_back': [], 'total_inc_front': []}
+    expected = {'total_inc_back': [np.nan], 'total_inc_front': [np.nan]}
     assert expected == PVFactorsReportBuilder.build(report, pvarray)
 
 

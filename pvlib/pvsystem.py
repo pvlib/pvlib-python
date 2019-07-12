@@ -1647,26 +1647,39 @@ def retrieve_sam(name=None, path=None):
     return _parse_raw_sam_df(csvdata)
 
 
+def _normalize_sam_product_names(names):
+    '''
+    Replace special characters within the product names to make them more
+    suitable fur use as Dataframe column names.
+    '''
+    import warnings
+
+    BAD_CHARS  = ' -.()[]:+/",'
+    GOOD_CHARS = '____________'
+
+    mapping = str.maketrans(BAD_CHARS, GOOD_CHARS)
+    names = pd.Series(data=names)
+    norm_names = names.str.translate(mapping)
+
+    n_duplicates = names.duplicated().sum()
+    if n_duplicates > 0:
+        warnings.warn ('Original names contain %d duplicate(s).' % n_duplicates)
+
+    n_duplicates = norm_names.duplicated().sum()
+    if n_duplicates > 0:
+        warnings.warn ('Normalized names contain %d duplicate(s).' % n_duplicates)
+
+    return norm_names.values
+
+
 def _parse_raw_sam_df(csvdata):
+
     df = pd.read_csv(csvdata, index_col=0, skiprows=[1, 2])
-    colnames = df.columns.values.tolist()
-    parsedcolnames = []
-    for cn in colnames:
-        parsedcolnames.append(cn.replace(' ', '_'))
 
-    df.columns = parsedcolnames
-
-    parsedindex = []
-    for index in df.index:
-        parsedindex.append(index.replace(' ', '_').replace('-', '_')
-                                .replace('.', '_').replace('(', '_')
-                                .replace(')', '_').replace('[', '_')
-                                .replace(']', '_').replace(':', '_')
-                                .replace('+', '_').replace('/', '_')
-                                .replace('"', '_').replace(',', '_'))
-
-    df.index = parsedindex
+    df.columns = df.columns.str.replace(' ', '_')
+    df.index = _normalize_sam_product_names(df.index)
     df = df.transpose()
+
     if 'ADRCoefficients' in df.index:
         ad_ce = 'ADRCoefficients'
         # for each inverter, parses a string of coefficients like

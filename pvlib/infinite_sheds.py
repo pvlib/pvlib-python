@@ -557,26 +557,26 @@ def f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
     approximation slightly.
 
     .. math ::
-        \\large{F_{sky \\rightarrow shade} =
-        \\frac{\\cos \\psi_t + \\cos \\psi_t \\left( x=0 \\right)
-        + 2 \\cos \\beta}{2 \\left(1 + \\cos \\beta \\right)}}
+        \\large{F_{sky \\rightarrow shade} = \\frac{ 1 + \\frac{\\cos
+        \\left(\\psi_t + \\beta \\right) + \\cos \\left(\\psi_t
+        \\left(x=0\\right) + \\beta \\right)}{2}  }{ 1 + \\cos \\beta}}
 
     The view factor from the top of the rack is one because it's view is not
     obstructed.
 
     .. math::
-        \\large{F_{sky \\rightarrow no\\ shade} =
-        \\frac{1 + \\frac{\\cos \\psi_t + \\cos \\beta}{1 + \\cos \\beta}}{2}}
+        \\large{F_{sky \\rightarrow no\\ shade} = \\frac{1 + \\frac{1 +
+        \\cos \\left(\\psi_t + \\beta \\right)}{1 + \\cos \\beta} }{2}}
     """
     # TODO: don't average, return fsky-pv vs. x point on panel
     psi_top = np.arctan(tan_psi_top)
     psi_top_0 = np.arctan(tan_psi_top_0)
     f_sky_pv_shade = (
-        (np.cos(psi_top) + np.cos(psi_top_0) + 2*np.cos(tilt)) / 2
-        / (1 + np.cos(tilt)))
+        (1 + (np.cos(psi_top + tilt)
+              + np.cos(psi_top_0 + tilt)) / 2) / (1 + np.cos(tilt)))
 
-    f_sky_pv_noshade = (
-        1 + (np.cos(psi_top) + np.cos(tilt)) / (1 + np.cos(tilt))) / 2
+    f_sky_pv_noshade = (1 + (
+        1 + np.cos(psi_top + tilt)) / (1 + np.cos(tilt))) / 2
     return f_sky_pv_shade, f_sky_pv_noshade
 
 
@@ -710,23 +710,23 @@ def f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
     factor is one.
 
     .. math::
-        \\large{F_{gnd \\rightarrow shade} =
-        \\frac{1 + \\frac{\\cos \\psi_b - \\cos \\beta}{1 - \\cos \\beta}}{2}}
+        \\large{F_{gnd \\rightarrow shade} = \\frac{1 + \\frac{1 - \\cos
+        \\left(\\beta - \\psi_b \\right)}{1 - \\cos \\beta}}{2}}
 
     Take the average of the shaded and unshaded sections.
 
     .. math::
-        \\large{F_{gnd \\rightarrow no\\ shade} =
-        \\frac{\\cos \\psi_b + \\cos \\psi_b \\left( x=1 \\right)
-        - 2 \\cos \\beta}{2 \\left(1 - \\cos \\beta \\right)}}
+        \\large{F_{gnd \\rightarrow no\\ shade} = \\frac{1 - \\frac{\\cos
+        \\left(\\beta - \\psi_b \\right) + \\cos \\left(\\beta - \\psi_b
+        \\left(x=1\\right) \\right)}{2}}{1 - \\cos \\beta}}
     """
     # TODO: don't average, return fgnd-pv vs. x point on panel
     psi_bottom = np.arctan(tan_psi_bottom)
     psi_bottom_1 = np.arctan(tan_psi_bottom_1)
-    f_gnd_pv_shade = (
-        1 + (np.cos(psi_bottom) - np.cos(tilt)) / (1 - np.cos(tilt))) / 2
+    f_gnd_pv_shade = (1 + (1 - np.cos(tilt - psi_bottom))
+                      / (1 - np.cos(tilt))) / 2
     f_gnd_pv_noshade = (
-        (np.cos(psi_bottom) + np.cos(psi_bottom_1) - 2*np.cos(tilt)) / 2
+        (1 - (np.cos(tilt - psi_bottom) + np.cos(tilt - psi_bottom_1))/2)
         / (1 - np.cos(tilt)))
     return f_gnd_pv_shade, f_gnd_pv_noshade
 

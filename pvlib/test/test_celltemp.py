@@ -52,7 +52,7 @@ def test_PVSystem_sapm_celltemp(mocker):
     racking_model = 'roof_mount_cell_glassback'
 
     system = pvsystem.PVSystem(racking_model=racking_model)
-    mocker.spy(pvsystem, 'sapm_celltemp')
+    mocker.spy(celltemp, 'sapm')
     temps = 25
     irrads = 1000
     winds = 1
@@ -112,12 +112,12 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     module_parameters['eta_m'] = eta_m
     system = pvsystem.PVSystem(racking_model=racking_model,
                                module_parameters=module_parameters)
-    mocker.spy(pvsystem, 'pvsyst_celltemp')
+    mocker.spy(celltemp, 'pvsyst')
     irrad = 800
     temp = 45
     wind = 0.5
     out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
-    pvsystem.pvsyst_celltemp.assert_called_once_with(
+    celltemp.pvsyst.assert_called_once_with(
         irrad, temp, wind, eta_m, alpha_absorption, racking_model)
     assert isinstance(out, float)
     assert out < 90 and out > 70

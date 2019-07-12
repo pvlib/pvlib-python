@@ -106,7 +106,7 @@ def pvwatts_dc_snl_ac_system(sam_data):
 @pytest.fixture
 def pvwatts_dc_pvwatts_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    inverter_parameters = {'eta_inv_nom': 0.95}
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
                       inverter_parameters=inverter_parameters)

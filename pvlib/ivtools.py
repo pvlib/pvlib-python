@@ -65,7 +65,8 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
             current, in percent.
 
     Raises:
-        ImportError if NREL-PySAM is not installed
+        ImportError if NREL-PySAM is not installed.
+        RuntimeError if parameter extraction is not successful.
 
     Notes
     -----
@@ -75,8 +76,6 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     the input IV curve is determined and the specified cell temperature
     ``Tref`` are the reference conditions for the output parameters
     ``I_L_ref``, ``I_o_ref``, ``R_sh_ref``, ``R_s`` and ``Adjust``.
-
-    If the fitting fails, returns NaN in each parameter.
 
     References
     ----------
@@ -99,53 +98,44 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     result = PySSC.ssc_sim_from_dict(datadict)
     if result['cmod_success'] == 1:
-        a_ref = result['a']
-        I_L_ref = result['Il']
-        I_o_ref = result['Io']
-        R_s = result['Rs']
-        R_sh_ref = result['Rsh']
-        Adjust = result['Adj']
+        return tuple([result[k] for k in ['Il', 'Io', 'Rsh', 'Rs', 'a',
+                      'Adj']])
     else:
-        a_ref = np.nan
-        I_L_ref = np.nan
-        I_o_ref = np.nan
-        R_s = np.nan
-        R_sh_ref = np.nan
-        Adjust = np.nan
-    return I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust
+        raise RuntimeError('Parameter estimation failed')
 
 
-def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
+def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
     """ Fits the single diode equation to an IV curve.
-
-    If fitting fails, returns NaN in each parameter.
 
     Parameters
     ----------
-    v : numeric
-        Voltage at each point on the IV curve, increasing from 0 to v_oc
-        inclusive [V]
+    v : ndarray
+        1D array of `float` type containing voltage at each point on the IV
+        curve, increasing from 0 to v_oc inclusive [V]
 
-    i : numeric
-        Current at each point on the IV curve, decreasing from i_sc to 0 [A]
+    i : ndarray
+        1D array of `float` type containing current at each point on the IV
+        curve, from i_sc to 0 inclusive, of `float` type [A]
 
-    v_oc : float
-        Open circuit voltage [V]
+    v_oc : float, default None
+        Open circuit voltage [V]. If not provided, ``v_oc`` is taken as
+        ``v[-1]``.
 
-    i_sc : float
-        Short circuit current [A]
+    i_sc : float, default None
+        Short circuit current [A]. If not provided, ``i_sc`` is taken as
+        ``i[0]``.
 
-    v_mp : float
-        Voltage at maximum power point [V]
-
-    i_mp : float
-        Current at maximum power point [V]
+    mp : tuple of float, default None
+        Voltage, current at maximum power point in units of [V], [A].
+        If not provided, values are found from inputs ``v`` and ``i``.
 
     vlim : float, default 0.2
-        defines linear portion of IV curve i.e. V <= vlim * v_oc [V]
+        defines portion of IV curve where the exponential term in the single
+        diode equation can be neglected, i.e. V <= vlim * v_oc [V]
 
     ilim : float, default 0.1
-        defines exponential portion of IV curve, approximately defined by
+        defines portion of the IV curve where the exponential term in the
+        single diode equation is signficant, approximately defined by
         I < (1 - ilim) * i_sc [A]
 
     Returns
@@ -168,6 +158,9 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
             product of thermal voltage ``Vth`` [V], diode ideality factor
             ``n``, and number of series cells ``Ns``
 
+    Raises:
+        RuntimeError if parameter extraction is not successful.
+
     Notes
     -----
     Inputs ``v``, ``i``, ``v_mp``, ``v_oc``, ``i_mp`` and ``i_sc`` are assumed
@@ -182,43 +175,38 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
 
     :py:func:`pvsystem.singlediode` for definition of the parameters.
 
-    The fitting method [2] proceeds in four steps:
-        1) simplify the single diode equation
+    The extraction method [2] proceeds in four steps:
+        1) In the single diode equation, replace Rsh = 1/Gp and re-arrange
 
     .. math::
 
-        I = IL - I0*exp((V+I*Rs)/(nNsVth)) - (V + I*Rs)/Rsh
-
-        2) replace Rsh = 1/Gp and re-arrange
+        I = IL - I0*exp((V+I*Rs)/(nNsVth) - 1) - (V + I*Rs)/Rsh
 
     .. math::
 
         I = IL/(1+Gp*Rs) - (Gp*V)/(1+Gp*Rs) -
-          I0/(1+Gp*Rs)*exp((V+I*Rs)/(nNsVth))
+          I0/(1+Gp*Rs)*exp((V+I*Rs)/(nNsVth) - 1)
 
-        3) fit the linear portion of the IV curve V <= vlim * v_oc
+        2) fit the linear portion of the IV curve defined as V <= vlim * v_oc,
+            where I0/(1+Gp*Rs)*exp((V+I*Rs)/(nNsVth) - 1) ≈ 0
 
     .. math::
 
         I ~ IL/(1+Gp*Rs) - (Gp*V)/(1+Gp*Rs) = beta0 + beta1*V
 
-        4) fit the exponential portion of the IV curve
+        3) fit the exponential portion of the IV curve defined by
+            beta0 + beta1*V - I > ilim * i_sc, where
+            exp((V+I*Rs)/(nNsVth)) >> 1 so that
+            exp((V+I*Rs)/(nNsVth)) - 1 ≈ exp((V+I*Rs)/(nNsVth))
 
     .. math::
-
-        beta0 + beta*V - I > ilim * i_sc
 
         log(beta0 - beta1*V - I) ~ log((I0)/(1+Gp*Rs)) + (V)/(nNsVth) +
         (Rs*I)/(nNsVth) = beta2 + beta3*V + beta4*I
 
-    Values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` are calculated from the
-    regression coefficents beta0, beta1, beta3 and beta4.
+        4) calculate values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` from the
+            regression coefficents beta0, beta1, beta3 and beta4.
 
-    Returns ``NaN`` for each parameter if the fitting is not successful. If
-    ``NaN`` is returned one likely cause is the input IV curve having too few
-    points. It is recommend that the input IV curve contain 100 or more points,
-    and more points increase the likelihood of extracting reasonable
-    parameters.
 
     References
     ----------
@@ -229,23 +217,56 @@ def fit_sde_sandia(v, i, v_oc, i_sc, v_mp, i_mp, vlim=0.2, ilim=0.1):
     Photovoltaic Specialist Conference, Chicago, IL, 2019
     """
 
+    # If not provided, extract v_oc, i_sc, v_mp and i_mp from the IV curve data
+    if v_oc is None:
+        v_oc = v[-1]
+    if i_sc is None:
+        i_sc = i[0]
+    if mp is not None:
+        v_mp, i_mp = mp
+    else:
+        v_mp, i_mp = _find_mp(v, i)
+
     # Find beta0 and beta1 from linear portion of the IV curve
     beta0, beta1 = _find_beta0_beta1(v, i, vlim, v_oc)
 
     if not np.isnan(beta0):
-        # Subtract the IV curve from the linear fit. Select points where
-        # beta0 + beta*V - I > ilim * i_sc
-        # in order to find beta3 and beta4 from exponential portion of IV curve
-        y = beta0 - beta1 * v - i
-        x = np.array([np.ones_like(v), v, i]).T
-        beta3, beta4 = _find_beta3_beta4(y, x, ilim, i_sc)
+        beta3, beta4 = _find_beta3_beta4(v, i, beta0, beta1, ilim, i_sc)
 
     # calculate single diode parameters from regression coefficients
-    IL, I0, Rsh, Rs, nNsVth = _calculate_sde_parameters(beta0, beta1, beta3,
-                                                        beta4, v_mp, i_mp,
-                                                        v_oc)
+    result = _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp,
+                                       v_oc)
 
-    return IL, I0, Rsh, Rs, nNsVth
+    if result is None:
+        raise RuntimeError("Parameter extraction failed. Try increasing the"
+                           "number of data points in the IV curve")
+    else:
+        IL, I0, Rsh, Rs, nNsVth = result
+        return IL, I0, Rsh, Rs, nNsVth
+
+
+def _find_mp(v, i):
+    """
+    Finds voltage and current at maximum power point.
+
+    Parameters
+    ----------
+    v : ndarray
+        1D array containing voltage at each point on the IV curve, increasing
+        from 0 to v_oc inclusive, of `float` type [V]
+
+    i : ndarray
+        1D array containing current at each point on the IV curve, decreasing
+        from i_sc to 0 inclusive, of `float` type [A]
+
+    Returns
+    -------
+    v, i : tuple
+        voltage ``v`` and current ``i`` at the maximum power point [V], [A]
+    """
+    p = v * i
+    idx = np.argmax(p)
+    return v[idx], i[idx]
 
 
 def _calc_I0(IL, I, V, Gp, Rs, beta3):
@@ -272,9 +293,13 @@ def _find_beta0_beta1(v, i, vlim, v_oc):
     return beta0, beta1
 
 
-def _find_beta3_beta4(y, x, ilim, i_sc):
-    idx = np.searchsorted(y, ilim * i_sc) - 1
-    result = np.linalg.lstsq(x[idx:, ], np.log(y[idx:]), rcond=None)
+def _find_beta3_beta4(v, i, beta0, beta1, ilim, i_sc):
+    # Subtract the IV curve from the linear fit.
+    y = beta0 - beta1 * v - i
+    x = np.array([np.ones_like(v), v, i]).T
+    # Select points where y > ilim * i_sc to regress log(y) onto x
+    result = np.linalg.lstsq(x[y > ilim * i_sc], np.log(y[y > ilim * i_sc]),
+                             rcond=None)
     coef = result[0]
     beta3 = coef[1].item()
     beta4 = coef[2].item()
@@ -282,7 +307,10 @@ def _find_beta3_beta4(y, x, ilim, i_sc):
 
 
 def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
-    if not any(np.isnan([beta0, beta1, beta3, beta4])):
+    failed = False
+    if any(np.isnan([beta0, beta1, beta3, beta4])):
+        failed = True
+    else:
         nNsVth = 1.0 / beta3
         Rs = beta4 / beta3
         Gp = beta1 / (1.0 - Rs * beta1)
@@ -298,7 +326,9 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
         elif (I0_voc > 0):
             I0 = I0_voc
         else:
-            I0 = np.nan
+            failed = True
+    if failed:
+        result = None
     else:
-        IL = I0 = Rsh = Rs = nNsVth = np.nan
-    return IL, I0, Rsh, Rs, nNsVth
+        result = (IL, I0, Rsh, Rs, nNsVth)
+    return result

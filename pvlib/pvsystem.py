@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, irradiance, tools, singlediode as _singlediode
-from pvlib.tools import _build_kwargs
+from pvlib.tools import _build_kwargs, cosd
 from pvlib.location import Location
 
 
@@ -1064,7 +1064,7 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     return iam
 
 
-def iam_martin_ruiz(aoi, a_r):
+def iam_martin_ruiz(θ:'degrees', a_r=0.16):
     '''
     Determine the incidence angle modifier using the Martin
     and Ruiz incident angle model
@@ -1084,26 +1084,21 @@ def iam_martin_ruiz(aoi, a_r):
 
     Parameters
     ----------
-    aoi : numeric, degrees
+    θ : numeric, degrees
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees. Theta must be a numeric scalar or vector.
-        For any values of theta where abs(theta)>90, IAM is set to 0. For any
-        values of theta where -90 < theta < 0, theta is set to abs(theta) and
-        evaluated. A warning will be generated if any(theta<0 or theta>90).
+        iam is 0 where |θ| > 90
 
-    ar : numeric
+    a_r : numeric
         The angular losses coefficient described in equation 3 of [1].
         This is an empirical dimensionless parameter. Values of ar are
-        generally on the order of 0.08 to 0.25 for flat-plate PV modules. ar
-        must be a numeric scalar or vector with all values > 0. If ar
-        is a vector, it must be the same size as all other input vectors.
+        generally on the order of 0.08 to 0.25 for flat-plate PV modules. a_r
+        must be a positive numeric scalar.
 
     Returns
     -------
     iam : numeric
-        The incident angle modifier
-
-
+        The incident angle modifier(s)
 
     References
     ----------
@@ -1118,18 +1113,93 @@ def iam_martin_ruiz(aoi, a_r):
 
     See Also
     --------
-    getaoi
     physicaliam
     ashraeiam
+    iam_interp
     '''
-    raise NotImplementedError
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
+
+    θ = np.asanyarray(θ)
+    a_r = np.asanyarray(a_r)
+
+    if not np.all(np.positive(a_r)):
+        raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
+
+    θ = np.clip(θ, -90, 90)
+    iam = (1 - np.exp(-cosd(θ)/ a_r)) / (1 - np.exp(-1 / a_r))
+
+    return iam
 
 
-def iam_interp(aoi, measurements):
+def iam_interp(θ:'degrees', θ_ref, iam_ref, method='linear', normalize=True):
     '''
-    Determine the incidence angle modifier by interpolating measured values.
+    Determine the incidence angle modifier by interpolating a set of
+    reference values, which are usually measured values.
+
+    Parameters
+    ----------
+    θ : numeric, degrees
+        The angle of incidence between the module normal vector and the
+        sun-beam vector in degrees.
+
+    θ_ref : numeric, degrees
+        Vector of angles at which the iam is known.
+
+    iam_ref :
+        iam values for each angle in θ_ref.
+
+    method :
+        Specifies the intrpolation method.
+        Useful options are: 'linear', 'quadratic','cubic'.
+        See scipy.interpolate.interp1d for more options.
+
+    normalize : boolean
+        When true, the interpolated values are divided by the interpolated
+        value at zero degrees.  This ensures that the iam and normal
+        incidence is equal to 1.0.
+
+    Notes:
+    ------
+    θ_ref must have two or more points and may span any range of angles, but
+    typically there will be a dozen or more points in the range 0-90 degrees.
+    iam beyond the range of θ_ref are extrapolated, but constrained to be
+    non-negative.
+
+    The sign of θ is ignore, only the magnitude is used.
+
+    Returns
+    -------
+    iam : numeric
+        The incident angle modifier(s)
+
+    See Also
+    --------
+    physicaliam
+    ashraeiam
+    iam_martin_ruiz
     '''
-    raise NotImplementedError
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
+
+    from scipy.interpolate import interp1d
+
+    # Scipy doesn't give the clearest feedback, so check number of points here.
+    MIN_REF_VALS = {'linear':2, 'quadratic':3, 'cubic':4, 1:2, 2:3, 3:4}
+
+    if len(θ_ref) < MIN_REF_VALS.get(method, 2):
+        raise ValueError("Too few reference points defined "
+                         "for interpolation method '%s'." % method)
+
+    interpolator = interp1d(θ_ref, iam_ref, kind=method,
+                            fill_value='extrapolate')
+    θ = np.asanyarray(θ)
+    θ = np.abs(θ)
+    iam = interpolator(θ)
+    iam = np.clip(iam, 0, None)
+
+    if normalize:
+        iam /= interpolator(0)
+
+    return iam
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,

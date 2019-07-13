@@ -8,11 +8,20 @@ recommend all users of v0.6.3 upgrade to this release after checking API
 compatibility notes.
 
 **Python 2.7 support ended on June 1, 2019**. (:issue:`501`)
-
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
+
+Bug fixes
+~~~~~~~~~
+* Fix handling of keyword arguments in `forecasts.get_processed_data`.
+  (:issue:`745`)
+
+Testing
+~~~~~~~
+* Added 30 minutes to timestamps in `test_psm3.csv` to match change in NSRDB (:issue:`733`)
 
 
 Contributors
 ~~~~~~~~~~~~
 * Mark Campanellli (:ghuser:`markcampanelli`)
 * Will Holmgren (:ghuser:`wholmgren`)
+* Oscar Dowson (:ghuser:`odow`)

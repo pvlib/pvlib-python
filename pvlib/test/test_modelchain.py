@@ -195,16 +195,29 @@ def test_run_model_gueymard_perez(system, location):
 
 
 def test_run_model_with_weather(system, location, weather, mocker):
-    mc = ModelChain(system, location)
-    m_sapm = mocker.spy(system, 'sapm_celltemp')
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
+    # test with sapm cell temperature model
+    system.racking_model = 'open_rack_cell_glassback'
+    mc = ModelChain(system, location)
+    mc.temp_model = 'sapm'
+    m_sapm = mocker.spy(system, 'sapm_celltemp')
     mc.run_model(weather.index, weather=weather)
     assert m_sapm.call_count == 1
     # assert_called_once_with cannot be used with series, so need to use
     # assert_series_equal on call_args
     assert_series_equal(m_sapm.call_args[0][1], weather['temp_air'])  # temp
     assert_series_equal(m_sapm.call_args[0][2], weather['wind_speed'])  # wind
+    assert not mc.ac.empty
+    # test with pvsyst cell temperature model
+    system.racking_model = 'freestanding'
+    mc = ModelChain(system, location)
+    mc.temp_model = 'pvsyst'
+    m_pvsyst = mocker.spy(system, 'pvsyst_celltemp')
+    mc.run_model(weather.index, weather=weather)
+    assert m_pvsyst.call_count == 1
+    assert_series_equal(m_pvsyst.call_args[0][1], weather['temp_air'])
+    assert_series_equal(m_pvsyst.call_args[0][2], weather['wind_speed'])
     assert not mc.ac.empty
 
 

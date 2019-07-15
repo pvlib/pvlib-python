@@ -186,4 +186,4 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     temp_difference = heat_input / total_loss_factor
     temp_cell = temp_air + temp_difference
 
-    return temp_cell
+    return pd.DataFrame({'temp_cell': temp_cell})

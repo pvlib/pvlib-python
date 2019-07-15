@@ -164,8 +164,8 @@ def basic_chain(times, latitude, longitude,
         weather = {'wind_speed': 0, 'temp_air': 20}
 
     temps = pvsystem.sapm_celltemp(total_irrad['poa_global'],
-                                   weather['wind_speed'],
-                                   weather['temp_air'])
+                                   weather['temp_air'],
+                                   weather['wind_speed'])
 
     effective_irradiance = pvsystem.sapm_effective_irradiance(
         total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,

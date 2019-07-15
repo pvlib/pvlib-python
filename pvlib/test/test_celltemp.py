@@ -20,7 +20,7 @@ def test_sapm_celltemp():
     default = celltemp.sapm(900, 20, 5)
     assert_allclose(default['temp_cell'], 43.509, 3)
     assert_allclose(default['temp_module'], 40.809, 3)
-    assert_frame_equal(default, celltemp.sapm(900, 5, 20, [-3.47, -.0594, 3]))
+    assert_frame_equal(default, celltemp.sapm(900, 20, 5, [-3.47, -.0594, 3]))
 
 
 def test_sapm_celltemp_dict_like():

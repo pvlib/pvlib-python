@@ -106,7 +106,7 @@ def sapm(poa_global, temp_air, wind_speed, model='open_rack_cell_glassback'):
 
 
 def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
-           alpha_absorption=0.9, model_params='freestanding'):
+           alpha_absorption=0.9, model='freestanding'):
     """
     Calculate cell temperature using an emperical heat loss factor model
     as implemented in PVsyst.
@@ -134,7 +134,7 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     alpha_absorption : numeric, default 0.9
         Absorption coefficient
 
-    model_params : string, tuple, or list (no dict), default 'freestanding'
+    model : string, tuple, or list (no dict), default 'freestanding'
         Heat loss factors to be used.
 
         If string, can be:
@@ -171,14 +171,14 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
 
     pvsyst_presets = TEMP_MODEL_PARAMS['pvsyst']
 
-    if isinstance(model_params, str):
-        model_params = model_params.lower()
-        constant_loss_factor, wind_loss_factor = pvsyst_presets[model_params]
-    elif isinstance(model_params, (tuple, list)):
-        constant_loss_factor, wind_loss_factor = model_params
+    if isinstance(model, str):
+        model = model.lower()
+        constant_loss_factor, wind_loss_factor = pvsyst_presets[model]
+    elif isinstance(model, (tuple, list)):
+        constant_loss_factor, wind_loss_factor = model
     else:
         raise TypeError(
-            "Please provide model_params as a str, or tuple/list."
+            "Please provide model as a str, or tuple/list."
         )
 
     total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor

@@ -58,7 +58,7 @@ def test_PVSystem_sapm_celltemp(mocker):
     winds = 1
     out = system.sapm_celltemp(irrads, temps, winds)
     celltemp.sapm.assert_called_once_with(
-        irrads, winds, temps, model=racking_model)
+        irrads, temps, winds, model=racking_model)
     assert isinstance(out, pd.DataFrame)
     assert out.shape == (1, 2)
 

@@ -7,7 +7,7 @@ Created on Fri Mar 29 10:07:25 2019
 import pandas as pd
 
 import pytest
-from pandas.util.testing import assert_series_equal, assert_frame_equal
+from pandas.util.testing import assert_frame_equal
 from numpy.testing import assert_allclose
 
 from pvlib import celltemp, pvsystem

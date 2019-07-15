@@ -117,13 +117,13 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
 
     Parameters
     ----------
-    poa_global : numeric
+    poa_global : float or Series
         Total incident irradiance in W/m^2.
 
-    temp_air : numeric
+    temp_air : float or Series
         Ambient dry bulb temperature in degrees C.
 
-    wind_speed : numeric, default 1.0
+    wind_speed : float or Series, default 1.0
         Wind speed in m/s measured at the same height for which the wind loss
         factor was determined.  The default value is 1.0, which is the wind
         speed at module height used to determine NOCT.
@@ -184,6 +184,6 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor
     heat_input = poa_global * alpha_absorption * (1 - eta_m)
     temp_difference = heat_input / total_loss_factor
-    temp_cell = temp_air + temp_difference
+    temp_cell = pd.Series(temp_air + temp_difference)
 
     return pd.DataFrame({'temp_cell': temp_cell})

@@ -206,13 +206,6 @@ def test_run_model_with_weather(system, location, weather, mocker):
     assert_series_equal(m_sapm.call_args[0][1], weather['temp_air'])  # temp
     assert_series_equal(m_sapm.call_args[0][2], weather['wind_speed'])  # wind
     assert not mc.ac.empty
-    system.racking_model = 'freestanding'
-    mc.temp_model = 'pvsyst'
-    m_pvsyst = mocker.spy(system, 'pvsyst_celltemp')
-    mc.run_model(weather.index, weather=weather)
-    assert m_pvsyst.call_count == 1
-    assert_series_equal(m_pvsyst.call_args[0][1], weather['temp_air'])
-    assert_series_equal(m_pvsyst.call_args[0][2], weather['wind_speed'])
 
 
 def test_run_model_tracker(system, location, weather, mocker):

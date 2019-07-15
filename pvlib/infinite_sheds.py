@@ -24,6 +24,8 @@ import numpy as np
 import pandas as pd
 from pvlib import irradiance, pvsystem
 
+MAXP = 10
+
 
 def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
     """
@@ -336,6 +338,8 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
         module tilt in radians, between 0 and 180-degrees
     pitch : numeric
         row spacing
+    npoints : int
+        divide the ground into discrete points
     """
     args = gcr, height, tilt, pitch
     fz0_limit = f_z0_limit(*args)
@@ -374,6 +378,90 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
             + np.sum(fz1_sky_prev, axis=0))  # sum of all next rows
     fz_row = np.linspace(0, 1, npoints)
     return fz_row, np.interp(fz_row, fz, fz_sky)
+
+
+def _big_z(psi_x_bottom, height, tilt, pitch):
+    # how far on the ground can the point x see?
+    return pitch + height/np.tan(psi_x_bottom) - height / np.tan(tilt)
+
+
+def calc_fgndpv_zsky(x, gcr, height, tilt, pitch, npoints=100, maxp=MAXP):
+    """
+    Calculate the fraction of diffuse irradiance from the sky, reflecting from
+    the ground, incident at a point on the PV surface.
+
+    Parameters
+    ----------
+    x : numeric
+        point on PV surface
+    gcr : numeric
+        ground coverage ratio
+    height : numeric
+        height of module lower edge above the ground
+    tilt : numeric
+        module tilt in radians, between 0 and 180-degrees
+    pitch : numeric
+        row spacing
+    npoints : int
+        divide the ground into discrete points
+    maxp : int
+        maximum number of adjacent rows to consider, default is 10 rows
+    """
+    args = gcr, height, tilt, pitch
+    hmod = gcr * pitch  # height of PV surface
+    fx = x / hmod  # = x/gcr/pitch
+
+    # calculate the view factor of the diffuse sky from the ground between rows
+    z_star, fz_sky = ground_sky_diffuse_view_factor(*args, npoints=npoints)
+
+    # calculate the integrated view factor for all of the ground between rows
+    fgnd_sky = np.trapz(fz_sky, z_star)
+
+    # if fx is zero, point x is at the bottom of the row, psi_x_bottom is zero,
+    # bigz = Inf, and all of the ground is visible, so the view factor is just
+    # Fgnd_pv = (1 - cos(beta)) / 2
+    if fx == 0:
+        fgnd_pv = (1 - np.cos(tilt)) / 2
+        return fgnd_sky*fgnd_pv, fgnd_pv
+
+    # how far on the ground can the point x see?
+    psi_x_bottom, _ = ground_angle(gcr, tilt, fx)
+    bigz = _big_z(psi_x_bottom, height, tilt, pitch)
+
+    # scale bigz by pitch, and limit to maximum number of rows after which the
+    # angle from x to the ground will cover more than a row, so we can just use
+    # the integral fgnd_sky
+    bigz_star = np.maximum(0, np.minimum(bigz/pitch, maxp))
+    num_rows = np.ceil(bigz_star).astype(int)
+
+    # repeat fz_sky num_row times, so we can use it to interpolate the values
+    # to use in the integral with the angle from x on the PV surface to the
+    # ground, note the first & last fz_sky are the same, so skip the last value
+    fz_sky = np.tile(fz_sky[:-1], num_rows)
+    # append the last value so we can interpolate over the entire row
+    fz_sky = np.append(fz_sky, fz_sky[0])
+
+    # increment the ground input segments that are delta wide
+    delta = 1.0 / (npoints - 1)
+    # start at the next row, z=1, and go back toward the previous row, z<1
+    z_star = 1 - np.linspace(num_rows-1, 1, 1 + num_rows * (npoints - 1))
+    # shift by a half delta
+    halfdelta = delta / 2.0
+
+    # max angle
+    psi_ref = tilt - psi_x_bottom
+    # use uniform angles
+    psidelta = psi_ref * halfdelta
+    psi_zuni = np.linspace(psidelta, psi_ref - psidelta, npoints - 1)
+    zuni = np.flip(1-_big_z(tilt-psi_zuni, height, tilt, pitch)/pitch)
+
+    fzuni_sky = np.interp(zuni, z_star, fz_sky, fgnd_sky, fgnd_sky)
+    dfgnd_pv = (np.cos(psi_zuni-psidelta) - np.cos(psi_zuni+psidelta)) / 2
+    fgnd_pv = np.sum(dfgnd_pv)
+    # FIXME: not working for backside
+    # fskyz = np.sum(fzuni_sky * dfgnd_pv)
+    fskyz = fgnd_sky * fgnd_pv
+    return fskyz, fgnd_pv
 
 
 def diffuse_fraction(ghi, dhi):

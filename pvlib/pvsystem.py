@@ -446,7 +446,7 @@ class PVSystem(object):
         DataFrame with columns 'temp_cell' and 'temp_module'.
         Values in degrees C.
         """
-        return celltemp.sapm(poa_global, wind_speed, temp_air,
+        return celltemp.sapm(poa_global, temp_air, wind_speed,
                              self.racking_model)
 
     def sapm_spectral_loss(self, airmass_absolute):

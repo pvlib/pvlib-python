@@ -541,7 +541,7 @@ class PVSystem(object):
         alpha_absorption : numeric, default 0.9
             Absorption coefficient
 
-        model_params : string, tuple, or list (no dict), default 'freestanding'
+        model : string, tuple, or list (no dict), default 'freestanding'
             Heat loss factors to be used. See celltemp.pvsyst for details.
 
         Returns
@@ -552,7 +552,7 @@ class PVSystem(object):
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
         return celltemp.pvsyst(poa_global, temp_air, wind_speed,
-                               model_params=self.racking_model, **kwargs)
+                               model=self.racking_model, **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 

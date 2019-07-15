@@ -111,7 +111,7 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     Calculate cell temperature using an emperical heat loss factor model
     as implemented in PVsyst.
 
-    The heat loss factors provided through the 'model_params' argument
+    The heat loss factors provided through the 'model' argument
     represent the combined effect of convection, radiation and conduction,
     and their values are experimentally determined.
 

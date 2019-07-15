@@ -70,11 +70,11 @@ def test_pvsyst_celltemp_default():
 
 def test_pvsyst_celltemp_non_model():
     tup_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
-                                             model_params=(23.5, 6.25))
+                                             model=(23.5, 6.25))
     assert_allclose(tup_non_model, 33.315, 0.001)
 
     list_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
-                                              model_params=[26.5, 7.68])
+                                              model=[26.5, 7.68])
     assert_allclose(list_non_model, 31.233, 0.001)
 
 
@@ -82,14 +82,14 @@ def test_pvsyst_celltemp_model_wrong_type():
     with pytest.raises(TypeError):
         pvsystem.pvsyst_celltemp(
             900, 20, 5, 0.1,
-            model_params={"won't": 23.5, "work": 7.68})
+            model={"won't": 23.5, "work": 7.68})
 
 
 def test_pvsyst_celltemp_model_non_option():
     with pytest.raises(KeyError):
         pvsystem.pvsyst_celltemp(
             900, 20, 5, 0.1,
-            model_params="not_an_option")
+            model="not_an_option")
 
 
 def test_pvsyst_celltemp_with_index():

@@ -120,8 +120,8 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
     celltemp.pvsyst.assert_called_once_with(
         irrad, temp, wind, eta_m, alpha_absorption, racking_model)
-    assert isinstance(out, float)
-    assert out < 90 and out > 70
+    assert isinstance(out, pd.DataFrame)
+    assert out['temp_cell'] < 90 and out['temp_cell'] > 70
 
 
 @fail_on_pvlib_version('0.7')

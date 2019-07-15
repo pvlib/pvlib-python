@@ -65,17 +65,17 @@ def test_PVSystem_sapm_celltemp(mocker):
 
 def test_pvsyst_celltemp_default():
     default = celltemp.pvsyst(900, 20, 5)
-    assert_allclose(default, 45.137, 0.001)
+    assert_allclose(default['temp_cell'], 45.137, 0.001)
 
 
 def test_pvsyst_celltemp_non_model():
     tup_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
                                              model=(23.5, 6.25))
-    assert_allclose(tup_non_model, 33.315, 0.001)
+    assert_allclose(tup_non_model['temp_cell'], 33.315, 0.001)
 
     list_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
                                               model=[26.5, 7.68])
-    assert_allclose(list_non_model, 31.233, 0.001)
+    assert_allclose(list_non_model['temp_cell'], 31.233, 0.001)
 
 
 def test_pvsyst_celltemp_model_wrong_type():
@@ -99,8 +99,9 @@ def test_pvsyst_celltemp_with_index():
     winds = pd.Series([10, 5, 0], index=times)
 
     pvtemps = pvsystem.pvsyst_celltemp(irrads, temps, wind_speed=winds)
-    expected = pd.Series([0.0, 23.96551, 5.0], index=times)
-    assert_series_equal(expected, pvtemps)
+    expected = pd.DataFrame([0.0, 23.96551, 5.0], index=times,
+                            columns=['temp_cell'])
+    assert_frame_equal(expected, pvtemps)
 
 
 def test_PVSystem_pvsyst_celltemp(mocker):

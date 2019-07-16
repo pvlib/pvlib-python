@@ -226,7 +226,7 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
     # Find beta0 and beta1 from linear portion of the IV curve
     beta0, beta1 = _find_beta0_beta1(v, i, vlim, v_oc)
 
-    if not np.isnan(beta0): # linear fit successful
+    if not np.isnan(beta0):  # linear fit successful
         beta3, beta4 = _find_beta3_beta4(v, i, beta0, beta1, ilim, i_sc)
 
     if any(np.isnan([beta0, beta1, beta3, beta4])):
@@ -322,6 +322,6 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
         I0 = 0.5 * (I0_vmp + I0_voc)
     elif (I0_vmp > 0):
         I0 = I0_vmp
-    else: # I0_voc > 0
+    else:  # I0_voc > 0
         I0 = I0_voc
     return (IL, I0, Rsh, Rs, nNsVth)

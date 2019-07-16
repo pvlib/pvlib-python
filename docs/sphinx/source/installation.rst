@@ -77,6 +77,15 @@ non-editable way, use one of the following commands to install pvlib-python::
     # another option if you know what you are doing
     pip install pvlib[optional]
 
+.. note::
+
+    By default, pvlib will not install some infrequently used dependencies.
+    If you run into an error such as
+    `ModuleNotFoundError: No module named 'netCDF4'`
+    you can either install pvlib with all optional dependencies using
+    `pip install pvlib[optional]`, or you can install pvlib from conda-forge
+    `conda create -n pvlib -c conda-forge pvlib-python; conda activate pvlib`.
+
 If your system complains that you don't have access privileges or asks
 for a password then you're probably trying to install pvlib into your
 system's Python distribution. This is usually a bad idea and you should

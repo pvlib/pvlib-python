@@ -311,13 +311,8 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     # calculate I0
     I0_vmp = _calc_I0(IL, i_mp, v_mp, Gp, Rs, beta3)
     I0_voc = _calc_I0(IL, 0, v_oc, Gp, Rs, beta3)
-    if any(np.isnan([I0_vmp, I0_voc])):
-        raise RuntimeError("Parameter extraction failed: I0 is negative. Try "
-                           "increasing the number of data points in the IV "
-                           "curve")
-        I0 = np.nan
-    elif (I0_vmp <= 0) and (I0_voc <= 0):
-        I0 = np.nan
+    if any(np.isnan([I0_vmp, I0_voc])) or ((I0_vmp <= 0) and (I0_voc <= 0)):
+        raise RuntimeError("Parameter extraction failed: I0 is undetermined. ")
     elif (I0_vmp > 0) and (I0_voc > 0):
         I0 = 0.5 * (I0_vmp + I0_voc)
     elif (I0_vmp > 0):

@@ -34,7 +34,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         Temperature coefficient of power at maximum point point [%/C]
     cells_in_series : int
         Number of cells in series
-    temp_ref : float, default 25C
+    temp_ref : float, default 25
         Reference temperature condition [C]
 
     Returns
@@ -149,10 +149,10 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
             dark (saturation) current [A]
 
         resistance_shunt : float
-            shunt (parallel) resistance, ohm
+            shunt (parallel) resistance, in ohms
 
         resistance_series : float
-            series resistance, ohm
+            series resistance, in ohms
 
         nNsVth : float
             product of thermal voltage ``Vth`` [V], diode ideality factor

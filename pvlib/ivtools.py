@@ -35,16 +35,11 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     cells_in_series : int
         Number of cells in series
     temp_ref : float, default 25C
-        Reference temperature condition
+        Reference temperature condition [C]
 
     Returns
     -------
     tuple of the following elements:
-
-        a_ref : float
-            The product of the usual diode ideality factor ``n`` (unitless),
-            number of cells in series ``Ns``, and cell thermal voltage at
-            reference conditions [V]
 
         I_L_ref : float
             The light-generated current (or photocurrent) at reference
@@ -59,6 +54,11 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
         R_s : float
             The series resistance at reference conditions, in ohms.
+
+        a_ref : float
+            The product of the usual diode ideality factor ``n`` (unitless),
+            number of cells in series ``Ns``, and cell thermal voltage at
+            reference conditions [V]
 
         Adjust : float
             The adjustment to the temperature coefficient for short circuit
@@ -115,7 +115,7 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
 
     i : ndarray
         1D array of `float` type containing current at each point on the IV
-        curve, from i_sc to 0 inclusive, of `float` type [A]
+        curve, from i_sc to 0 inclusive [A]
 
     v_oc : float, default None
         Open circuit voltage [V]. If not provided, ``v_oc`` is taken as
@@ -163,7 +163,7 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
 
     Notes
     -----
-    Inputs ``v``, ``i``, ``v_mp``, ``v_oc``, ``i_mp`` and ``i_sc`` are assumed
+    Inputs ``v``, ``i``, ``v_oc``, ``i_sc`` and ``mp`` are assumed
     to be from a single IV curve at constant irradiance and cell temperature.
 
     :py:func:`fit_sde_sandia` obtains values for the five parameters for the
@@ -177,10 +177,6 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
 
     The extraction method [2] proceeds in four steps:
         1) In the single diode equation, replace Rsh = 1/Gp and re-arrange
-
-    .. math::
-
-        I = IL - I0*exp((V+I*Rs)/(nNsVth) - 1) - (V + I*Rs)/Rsh
 
     .. math::
 
@@ -230,19 +226,20 @@ def fit_sde_sandia(v, i, v_oc=None, i_sc=None, mp=None, vlim=0.2, ilim=0.1):
     # Find beta0 and beta1 from linear portion of the IV curve
     beta0, beta1 = _find_beta0_beta1(v, i, vlim, v_oc)
 
-    if not np.isnan(beta0):
+    if not np.isnan(beta0): # linear fit successful
         beta3, beta4 = _find_beta3_beta4(v, i, beta0, beta1, ilim, i_sc)
 
-    # calculate single diode parameters from regression coefficients
-    result = _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp,
-                                       v_oc)
-
-    if result is None:
-        raise RuntimeError("Parameter extraction failed. Try increasing the"
-                           "number of data points in the IV curve")
+    if any(np.isnan([beta0, beta1, beta3, beta4])):
+        raise RuntimeError("Parameter extraction failed",
+                           "  beta0: {}, beta1: {}, beta3: {}, beta4: {}"
+                           .format(beta0, beta1, beta3, beta4))
+        return (np.nan, np.nan, np.nan, np.nan)
     else:
-        IL, I0, Rsh, Rs, nNsVth = result
-        return IL, I0, Rsh, Rs, nNsVth
+        # calculate single diode parameters from regression coefficients
+        result = _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp,
+                                           i_mp, v_oc)
+
+        return result
 
 
 def _find_mp(v, i):
@@ -279,8 +276,8 @@ def _find_beta0_beta1(v, i, vlim, v_oc):
     # negative (downward).
     beta0 = np.nan
     beta1 = np.nan
-    idx = np.searchsorted(v, vlim * v_oc)
-    while idx <= len(v):
+    first_idx = np.searchsorted(v, vlim * v_oc)
+    for idx in range(first_idx, len(v)):
         coef = np.polyfit(v[:idx], i[:idx], deg=1)
         if coef[0] < 0:
             # intercept term
@@ -288,8 +285,6 @@ def _find_beta0_beta1(v, i, vlim, v_oc):
             # sign change of slope to get positive parameter value
             beta1 = -coef[0].item()
             break
-        else:
-            idx += 1
     return beta0, beta1
 
 
@@ -298,7 +293,8 @@ def _find_beta3_beta4(v, i, beta0, beta1, ilim, i_sc):
     y = beta0 - beta1 * v - i
     x = np.array([np.ones_like(v), v, i]).T
     # Select points where y > ilim * i_sc to regress log(y) onto x
-    result = np.linalg.lstsq(x[y > ilim * i_sc], np.log(y[y > ilim * i_sc]),
+    idx = (y > ilim * i_sc)
+    result = np.linalg.lstsq(x[idx], np.log(y[idx]),
                              rcond=None)
     coef = result[0]
     beta3 = coef[1].item()
@@ -307,28 +303,25 @@ def _find_beta3_beta4(v, i, beta0, beta1, ilim, i_sc):
 
 
 def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
-    failed = False
-    if any(np.isnan([beta0, beta1, beta3, beta4])):
-        failed = True
-    else:
-        nNsVth = 1.0 / beta3
-        Rs = beta4 / beta3
-        Gp = beta1 / (1.0 - Rs * beta1)
-        Rsh = 1.0 / Gp
-        IL = (1 + Gp * Rs) * beta0
-        # calculate I0
-        I0_vmp = _calc_I0(IL, i_mp, v_mp, Gp, Rs, beta3)
-        I0_voc = _calc_I0(IL, 0, v_oc, Gp, Rs, beta3)
-        if (I0_vmp > 0) and (I0_voc > 0):
-            I0 = 0.5 * (I0_vmp + I0_voc)
-        elif (I0_vmp > 0):
-            I0 = I0_vmp
-        elif (I0_voc > 0):
-            I0 = I0_voc
-        else:
-            failed = True
-    if failed:
-        result = None
-    else:
-        result = (IL, I0, Rsh, Rs, nNsVth)
-    return result
+    nNsVth = 1.0 / beta3
+    Rs = beta4 / beta3
+    Gp = beta1 / (1.0 - Rs * beta1)
+    Rsh = 1.0 / Gp
+    IL = (1 + Gp * Rs) * beta0
+    # calculate I0
+    I0_vmp = _calc_I0(IL, i_mp, v_mp, Gp, Rs, beta3)
+    I0_voc = _calc_I0(IL, 0, v_oc, Gp, Rs, beta3)
+    if any(np.isnan([I0_vmp, I0_voc])):
+        raise RuntimeError("Parameter extraction failed: I0 is negative. Try "
+                           "increasing the number of data points in the IV "
+                           "curve")
+        I0 = np.nan
+    elif (I0_vmp <= 0) and (I0_voc <= 0):
+        I0 = np.nan
+    elif (I0_vmp > 0) and (I0_voc > 0):
+        I0 = 0.5 * (I0_vmp + I0_voc)
+    elif (I0_vmp > 0):
+        I0 = I0_vmp
+    else: # I0_voc > 0
+        I0 = I0_voc
+    return (IL, I0, Rsh, Rs, nNsVth)

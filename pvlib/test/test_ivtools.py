@@ -49,19 +49,23 @@ def test_fit_sde_sandia(get_test_iv_params):
                                      ivcurve_pnts=300)
     expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rsh', 'Rs',
                      'nNsVth'])
-    result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'])
+    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
+                                    current=testcurve['i'])
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'],
+    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
+                                    current=testcurve['i'],
                                     v_oc=testcurve['v_oc'],
                                     i_sc=testcurve['i_sc'])
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'],
+    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
+                                    current=testcurve['i'],
                                     v_oc=testcurve['v_oc'],
                                     i_sc=testcurve['i_sc'],
-                                    mp=(testcurve['v_mp'],
-                                        testcurve['i_mp']))
+                                    v_mp_i_mp=(testcurve['v_mp'],
+                                               testcurve['i_mp']))
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_sde_sandia(v=testcurve['v'], i=testcurve['i'],
+    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
+                                    current=testcurve['i'],
                                     vlim=0.1)
     assert np.allclose(result, expected, rtol=5e-5)
 

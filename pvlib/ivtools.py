@@ -108,7 +108,8 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
 def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
                    vlim=0.2, ilim=0.1):
-    """Fits the single diode equation to an IV curve.
+    """
+    Fits the single diode equation to an IV curve.
 
     Parameters
     ----------
@@ -136,29 +137,25 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     vlim : float, default 0.2
         defines portion of IV curve where the exponential term in the single
         diode equation can be neglected, i.e.
-        ``voltage`` <= ``vlim`` * ``v_oc`` [V]
+        ``voltage`` <= ``vlim`` \times ``v_oc`` [V]
 
     ilim : float, default 0.1
         defines portion of the IV curve where the exponential term in the
         single diode equation is signficant, approximately defined by
-        ``current`` < (1 - ``ilim``) * ``i_sc`` [A]
+        ``current`` < (1 - ``ilim``) \times ``i_sc`` [A]
 
     Returns
     -------
-    tuple of the following elements:
+    A tuple of the following elements:
 
         * photocurrent : float
             photocurrent [A]
-
         * saturation_current : float
             dark (saturation) current [A]
-
         * resistance_shunt : float
             shunt (parallel) resistance, in ohms
-
         * resistance_series : float
             series resistance, in ohms
-
         * nNsVth : float
             product of thermal voltage ``Vth`` [V], diode ideality factor
             ``n``, and number of series cells ``Ns``
@@ -177,8 +174,8 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     .. math::
 
-        I = I_{L} - I_{0} \times [\exp \frac{(V + I \times R_{s})}{nNsVth} - 1]
-        - \frac{V + I \times R_{s}}{R_{sh}}
+        I = I_{L} - I_{0} \times \[ \exp \frac{V + I \times R_{s}}{nNsVth}
+        - 1 \] - \frac{V + I \times R_{s}}{R_{sh}}
 
     See :py:func:`pvsystem.singlediode` for definition of the parameters.
 

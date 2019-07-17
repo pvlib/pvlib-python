@@ -1125,15 +1125,15 @@ def iam_martin_ruiz(θ:'degrees', a_r=0.16):
     if not np.all(np.positive(a_r)):
         raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
 
-    θ = np.clip(θ, -90, 90)
-    iam = (1 - np.exp(-cosd(θ)/ a_r)) / (1 - np.exp(-1 / a_r))
+    iam = (1 - np.exp(-cosd(θ) / a_r)) / (1 - np.exp(-1 / a_r))
+    iam = np.where(np.abs(θ) >= 90.0, 0.0, iam)
 
     return iam
 
 
 def iam_interp(θ:'degrees', θ_ref, iam_ref, method='linear', normalize=True):
     '''
-    Determine the incidence angle modifier by interpolating a set of
+    Determine the incidence angle modifier (iam) by interpolating a set of
     reference values, which are usually measured values.
 
     Parameters
@@ -1165,7 +1165,7 @@ def iam_interp(θ:'degrees', θ_ref, iam_ref, method='linear', normalize=True):
     iam beyond the range of θ_ref are extrapolated, but constrained to be
     non-negative.
 
-    The sign of θ is ignore, only the magnitude is used.
+    The sign of θ is ignored; only the magnitude is used.
 
     Returns
     -------
@@ -1188,6 +1188,10 @@ def iam_interp(θ:'degrees', θ_ref, iam_ref, method='linear', normalize=True):
     if len(θ_ref) < MIN_REF_VALS.get(method, 2):
         raise ValueError("Too few reference points defined "
                          "for interpolation method '%s'." % method)
+
+    if np.any(np.less(iam_ref, 0)):
+        raise ValueError("Negative value(s) found in 'iam_ref'. "
+                         "This is not physically possible.")
 
     interpolator = interp1d(θ_ref, iam_ref, kind=method,
                             fill_value='extrapolate')

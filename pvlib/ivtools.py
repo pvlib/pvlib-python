@@ -182,51 +182,51 @@ def fit_single_diode_sandia(voltage, current, v_oc=None, i_sc=None,
 
     The extraction method [2] proceeds in six steps.
 
-        1. In the single diode equation, replace :math:`R_{sh} = 1/G_{p}` and
-           re-arrange
+    1. In the single diode equation, replace :math:`R_{sh} = 1/G_{p}` and
+       re-arrange
 
     .. math::
 
-        `I = \frac{I_{L}}{1 + G_{p} R_{s}} - \frac{G_{p} V}{1 + G_{p} R_{s}}
-        - \frac{I_{0}}{1 + G_{p} R_{s}} (\exp(\frac{V + I R_{s}}{nNsVth}) - 1)`
+        I = \frac{I_{L}}{1 + G_{p} R_{s}} - \frac{G_{p} V}{1 + G_{p} R_{s}}
+        - \frac{I_{0}}{1 + G_{p} R_{s}} (\exp(\frac{V + I R_{s}}{nNsVth}) - 1)
 
-        2. The linear portion of the IV curve is defined as
-           :math:`V \le vlim \times v_oc`. Over this portion of the IV curve,
-
-    .. math::
-
-        `\frac{I_{0}}{1 + G_{p} R_{s}} (\exp(\frac{V + I R_{s}}{nNsVth}) - 1)
-        \approx 0`
-
-        3. Fit the linear portion of the IV curve with a line.
+    2. The linear portion of the IV curve is defined as
+       :math:`V \le vlim \times v_oc`. Over this portion of the IV curve,
 
     .. math::
 
-        `I &\approx \frac{I_{L}}{1 + G_{p} R_{s}} - \frac{G_{p} V}{1 + G_{p}
+        \frac{I_{0}}{1 + G_{p} R_{s}} (\exp(\frac{V + I R_{s}}{nNsVth}) - 1)
+        \approx 0
+
+    3. Fit the linear portion of the IV curve with a line.
+
+    .. math::
+
+        I &\approx \frac{I_{L}}{1 + G_{p} R_{s}} - \frac{G_{p} V}{1 + G_{p}
         R_{s}} \\
-        &= \beta_{0} + \beta_{1} V`
+        &= \beta_{0} + \beta_{1} V
 
-        4. The exponential portion of the IV curve is defined by
-            :math:`\beta_{0} + \beta_{1} \times V - I > ilim \times i_sc`.
-            Over this portion of the curve, :math:`exp((V + IRs)/nNsVth) >> 1`
-            so that
-
-    .. math::
-
-        `\exp(\frac{V + I R_{s}}{nNsVth}) - 1 \approx
-        \exp(\frac{V + I R_{s}}{nNsVth})`
-
-        5. Fit the exponential portion of the IV curve.
+    4. The exponential portion of the IV curve is defined by
+        :math:`\beta_{0} + \beta_{1} \times V - I > ilim \times i_sc`.
+        Over this portion of the curve, :math:`exp((V + IRs)/nNsVth) >> 1`
+        so that
 
     .. math::
 
-        `\log(\beta_{0} - \beta_{1} V - I)
+        \exp(\frac{V + I R_{s}}{nNsVth}) - 1 \approx
+        \exp(\frac{V + I R_{s}}{nNsVth})
+
+    5. Fit the exponential portion of the IV curve.
+
+    .. math::
+
+        \log(\beta_{0} - \beta_{1} V - I)
         &\approx \log(\frac{I_{0}}{1 + G_{p} R_{s}} + \frac{V}{nNsVth}
         + \frac{I R_{s}}{nNsVth} \\
-        &= \beta_{2} + beta_{3} V + \beta_{4} I`
+        &= \beta_{2} + beta_{3} V + \beta_{4} I
 
-        6. Calculate values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` from the
-            regression coefficents beta0, beta1, beta3 and beta4.
+    6. Calculate values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` from the
+        regression coefficents beta0, beta1, beta3 and beta4.
 
 
     References

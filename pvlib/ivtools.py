@@ -108,7 +108,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
 def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
                    vlim=0.2, ilim=0.1):
-    """
+    r"""
     Fits the single diode equation to an IV curve.
 
     Parameters
@@ -223,7 +223,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     .. math::
 
-        \log(\beta_{0} - \beta_{1} \times V - I) &\approx 
+        \log(\beta_{0} - \beta_{1} \times V - I) &\approx
         \log(\frac{I_{0}}{1 + G_{p} \times R_{s}} + \frac{V}{nNsVth}
         + \frac{I R_{s}}{nNsVth} \\
         &= \beta_{2} + beta_{3} \times V + \beta_{4} \times I

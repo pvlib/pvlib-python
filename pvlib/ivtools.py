@@ -135,12 +135,12 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
         ``voltage`` x ``current``.
 
     vlim : float, default 0.2
-        defines portion of IV curve where the exponential term in the single
+        Defines portion of IV curve where the exponential term in the single
         diode equation can be neglected, i.e.
         ``voltage`` <= ``vlim`` x ``v_oc`` [V]
 
     ilim : float, default 0.1
-        defines portion of the IV curve where the exponential term in the
+        Defines portion of the IV curve where the exponential term in the
         single diode equation is signficant, approximately defined by
         ``current`` < (1 - ``ilim``) x ``i_sc`` [A]
 
@@ -173,6 +173,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     single diode equation [1]:
 
     .. math::
+       :wrap:
 
         r"I = I_{L} - I_{0} \times \[ \exp \frac{V + I \times R_{s}}{nNsVth}"
         "- 1 \] - \frac{V + I \times R_{s}}{R_{sh}}"
@@ -180,6 +181,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     See :py:func:`pvsystem.singlediode` for definition of the parameters.
 
     The extraction method [2] proceeds in four steps.
+
         1. In the single diode equation, replace :math:`R_{sh} = 1/Gp` and
            re-arrange
 

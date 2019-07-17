@@ -207,9 +207,9 @@ def fit_single_diode_sandia(voltage, current, v_oc=None, i_sc=None,
         &= \beta_{0} + \beta_{1} V
 
     4. The exponential portion of the IV curve is defined by
-        :math:`\beta_{0} + \beta_{1} \times V - I > ilim \times i_sc`.
-        Over this portion of the curve, :math:`exp((V + IRs)/nNsVth) >> 1`
-        so that
+       :math:`\beta_{0} + \beta_{1} \times V - I > ilim \times i_sc`.
+       Over this portion of the curve, :math:`exp((V + IRs)/nNsVth) >> 1`
+       so that
 
     .. math::
 
@@ -226,7 +226,8 @@ def fit_single_diode_sandia(voltage, current, v_oc=None, i_sc=None,
         &= \beta_{2} + beta_{3} V + \beta_{4} I
 
     6. Calculate values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` from the
-        regression coefficents beta0, beta1, beta3 and beta4.
+       regression coefficents :math:`\beta_[0}, \beta_{1}, \beta_{3}` and
+       :math:\beta_{4}`.
 
 
     References

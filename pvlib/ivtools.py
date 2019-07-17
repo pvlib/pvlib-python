@@ -175,8 +175,8 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     .. math::
        :wrap:
 
-        (r"I = I_{L} - I_{0} \times ( \exp \frac{V + I \times R_{s}}{nNsVth}"
-         r" - 1 ) - \frac{V + I \times R_{s}}{R_{sh}}")
+        I = I_{L} - I_{0} ( \exp \frac{V + I R_{s}}{nNsVth} - 1 )
+        - \frac{V + I R_{s}}{R_{sh}}
 
     See :py:func:`pvsystem.singlediode` for definition of the parameters.
 

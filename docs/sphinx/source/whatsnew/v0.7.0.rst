@@ -14,6 +14,8 @@ Bug fixes
 ~~~~~~~~~
 * Fix handling of keyword arguments in `forecasts.get_processed_data`.
   (:issue:`745`)
+* Fix rounding issue in `clearsky._linearly_scale`.
+  (:issue:`754`)
 
 Testing
 ~~~~~~~
@@ -25,3 +27,4 @@ Contributors
 * Mark Campanellli (:ghuser:`markcampanelli`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Oscar Dowson (:ghuser:`odow`)
+* Alexander Morgan (:ghuser:`alexandermorgan`)

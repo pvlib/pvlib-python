@@ -272,8 +272,10 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter
 
-PVWatts model
+Pvsyst model
 -------------
+
+Functions relevant for the Pvsyst model.
 
 .. autosummary::
    :toctree: generated/

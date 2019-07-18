@@ -124,7 +124,7 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     assert all(out['temp_cell'] < 90) and all(out['temp_cell'] > 70)
 
 
-@fail_on_pvlib_version('0.7')
+@fail_on_pvlib_version('0.8')
 def test_deprecated_07():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_celltemp(1000, 25, 1)

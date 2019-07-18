@@ -12,8 +12,11 @@ compatibility notes.
 
 API Changes
 ~~~~~~~~~~~
-* Moved functions for cell temperature from `pvsystem.py` to `celltemp.py`, renamed from `pvsystem.sapm_celltemp` to `celltemp.sapm`, and from `pvsystem.pvsyst_celltemp` to `celltemp.pvsyst`. Argument order in `celltemp.sapm` changed and output type from `celltemp.pvsyst` have been changed to be consistent in `celltemp.py` for all cell temperature model functions. (:issue:`678')
-* Implemented `pvsyst` as a key value for `ModelChain.temp_model`. (:issue:`678')
+* Moved functions for cell temperature and constant `TEMP_MODEL_PARAMS` from `pvsystem.py` to `celltemp.py`. (:issue:`678')
+* Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp` to
+ `celltemp.sapm` and `celltemp.pvsyst`. (:issue:`678')
+* Argument order and output type of `pvsystem.sapm_celltemp`,  `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` have been altered to be consistent among cell temperature model functions.
+* Implemented `pvsyst` as an option for `ModelChain.temp_model`. (:issue:`678')
 
 Enhancements
 ~~~~~~~~~~~~

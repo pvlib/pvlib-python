@@ -10,7 +10,8 @@ from functools import partial
 import warnings
 import pandas as pd
 
-from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
+from pvlib import (atmosphere, celltemp, clearsky, pvsystem, solarposition,
+                   tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import DC_MODEL_PARAMS
@@ -163,9 +164,8 @@ def basic_chain(times, latitude, longitude,
     if weather is None:
         weather = {'wind_speed': 0, 'temp_air': 20}
 
-    temps = pvsystem.sapm_celltemp(total_irrad['poa_global'],
-                                   weather['temp_air'],
-                                   weather['wind_speed'])
+    temps = celltemp.sapm(total_irrad['poa_global'], weather['temp_air'],
+                          weather['wind_speed'])
 
     effective_irradiance = pvsystem.sapm_effective_irradiance(
         total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,

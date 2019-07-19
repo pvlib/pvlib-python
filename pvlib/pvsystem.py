@@ -1652,6 +1652,8 @@ def _normalize_sam_product_names(names):
     Replace special characters within the product names to make them more
     suitable fur use as Dataframe column names.
     '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
+
     import warnings
 
     BAD_CHARS  = ' -.()[]:+/",'

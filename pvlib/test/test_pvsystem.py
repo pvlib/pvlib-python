@@ -147,6 +147,28 @@ def test_PVSystem_physicaliam(mocker):
     pvsystem.physicaliam.assert_called_once_with(thetas, **module_parameters)
     assert iam < 1.
 
+def test__normalize_sam_product_names():
+
+    BAD_NAMES  = [' -.()[]:+/",', 'Module[1]']
+    NORM_NAMES = ['____________', 'Module_1_']
+
+    norm_names = pvsystem._normalize_sam_product_names(BAD_NAMES)
+    assert list(norm_names) == NORM_NAMES
+
+    BAD_NAMES  = ['Module[1]', 'Module(1)']
+    NORM_NAMES = ['Module_1_', 'Module_1_']
+
+    with pytest.warns(UserWarning):
+        norm_names = pvsystem._normalize_sam_product_names(BAD_NAMES)
+    assert list(norm_names) == NORM_NAMES
+
+    BAD_NAMES  = ['Module[1]', 'Module[1]']
+    NORM_NAMES = ['Module_1_', 'Module_1_']
+
+    with pytest.warns(UserWarning):
+        norm_names = pvsystem._normalize_sam_product_names(BAD_NAMES)
+    assert list(norm_names) == NORM_NAMES
+
 
 # if this completes successfully we'll be able to do more tests below.
 @pytest.fixture(scope="session")

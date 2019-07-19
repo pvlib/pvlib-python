@@ -1663,11 +1663,11 @@ def _normalize_sam_product_names(names):
 
     n_duplicates = names.duplicated().sum()
     if n_duplicates > 0:
-        warnings.warn ('Original names contain %d duplicate(s).' % n_duplicates)
+        warnings.warn('Original names contain %d duplicate(s).' % n_duplicates)
 
     n_duplicates = norm_names.duplicated().sum()
     if n_duplicates > 0:
-        warnings.warn ('Normalized names contain %d duplicate(s).' % n_duplicates)
+        warnings.warn('Normalized names contain %d duplicate(s).' % n_duplicates)
 
     return norm_names.values
 

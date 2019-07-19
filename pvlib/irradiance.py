@@ -365,7 +365,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     poa_sky_diffuse = get_sky_diffuse(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
-        model_perez=model_perez)
+        model_perez=model_perez, **kwargs)
 
     poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
                                             surface_type)
@@ -383,7 +383,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth,
                     dni, ghi, dhi, dni_extra=None, airmass=None,
                     model='isotropic',
-                    model_perez='allsitescomposite1990'):
+                    model_perez='allsitescomposite1990',
+                    **kwargs):
     r"""
     Determine in-plane sky diffuse irradiance component
     using the specified sky diffuse irradiance model.
@@ -444,6 +445,9 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                     solar_zenith, solar_azimuth, airmass,
                     model=model_perez)
+    elif model == 'horizon_adjusted':
+        assert("horizon_profile" in kwargs)
+        sky = horizon_adjusted(dhi, horizon_profile, surface_tilt, surface_azimuth)
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
@@ -1203,6 +1207,30 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return diffuse_components
     else:
         return sky_diffuse
+
+
+def calculate_dtf(dip_angles, surface_tilt, surface_azimuth):
+    tilt_rad = np.radians(surface_tilt)
+    plane_az_rad = np.radians(surface_azimuth)
+    a = np.sin(tilt_rad) * np.cos(plane_az_rad)
+    b = np.sin(tilt_rad) * np.sin(plane_az_rad)
+    c = np.cos(tilt_rad)
+    dtf = 0
+    for pair in dip_angles:
+        az = np.radians(pair[0])
+        dip = np.radians(pair[1])
+        first_term = .5 * (a*np.cos(az) + b*np.sin(az)) * (np.pi/2 - dip - np.sin(dip) * np.cos(dip))
+        second_term = .5 * c * np.cos(dip)**2
+        dtf += (first_term + second_term) / 180
+    return dtf
+
+def horizon_adjusted(dhi, horizon_profile, surface_tilt, surface_azimuth):
+
+    dtf = calculate_dtf(horizon_profile, surface_tilt, surface_azimuth)
+    sky_diffuse = dhi * dtf
+
+    return sky_diffuse
+
 
 
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):

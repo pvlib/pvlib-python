@@ -58,7 +58,7 @@ class Location(object):
     """
 
     def __init__(self, latitude, longitude, tz='UTC', altitude=0,
-                 name=None, **kwargs):
+                 name=None, horizon_profile=None, **kwargs):
 
         self.latitude = latitude
         self.longitude = longitude
@@ -76,7 +76,7 @@ class Location(object):
             raise TypeError('Invalid tz specification')
 
         self.altitude = altitude
-
+        self.horizon_profile = horizon_profile
         self.name = name
 
     def __repr__(self):
@@ -317,3 +317,5 @@ class Location(object):
                              'one of pyephem, spa, geometric'
                              .format(method))
         return result
+
+    

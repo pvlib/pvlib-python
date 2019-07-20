@@ -313,12 +313,12 @@ def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
                      (inputmatrix, inputmax - inputrange, inputmax))
     # round down if input is within half an index or else raise index error
     if outputmatrix > outputmax:
-        if outputmatrix - outputmax <= 0.5:
+        if outputmatrix - outputmax <= 0.500001:
             outputmatrix = outputmax
         else:
             raise err
     elif outputmatrix < outputmin:
-        if outputmin - outputmatrix <= 0.5:
+        if outputmin - outputmatrix <= 0.500001:
             outputmatrix = outputmin
         else:
             raise err

@@ -342,7 +342,7 @@ def _degrees_to_index(degrees, degree_type):
             index = 0
         else:
             raise err
-    # If the index wasn't set to outputmax or 0, round it and case it as an
+    # If the index wasn't set to outputmax or 0, round it and cast it as an
     # integer so it can be used in integer-based indexing.
     else:
         index = int(np.around(index))

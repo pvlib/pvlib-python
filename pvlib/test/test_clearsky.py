@@ -519,6 +519,13 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
 
 
+def test_degrees_to_index_1():
+    """Test that _degrees_to_index raises an error when something other than 
+    'latitude' or 'longitude' is passed."""
+    with pytest.raises(IndexError):  # invalid value for degree_type argument
+        clearsky._degrees_to_index(degrees=22.0, degree_type='width')
+
+
 @pytest.fixture
 def detect_clearsky_data():
     test_dir = os.path.dirname(os.path.abspath(

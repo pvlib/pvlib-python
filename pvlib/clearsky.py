@@ -195,12 +195,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
-    latitude_index = (
-        np.around(_linearly_scale(latitude, 90, -90, 0, 2160))
-        .astype(np.int64))
-    longitude_index = (
-        np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
-        .astype(np.int64))
+    latitude_index = _degrees_to_index(latitude, degree_type='latitude')
+    longitude_index = _degrees_to_index(longitude, degree_type='longitude')
 
     lt_h5_file = tables.open_file(filepath)
     try:
@@ -301,28 +297,63 @@ def _calendar_month_middles(year):
     return middles
 
 
-def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
-    """linearly scale input to output, used by Linke turbidity lookup"""
+def _degrees_to_index(degrees, degree_type):
+    """Transform input degrees to an output index integer. The Linke 
+    turbidity lookup tables have three dimensions, latitude, longitude, and 
+    month. Specify a degree value and either 'latitude' or 'longitude' to get 
+    the appropriate index number for the first two of these index numbers.
+
+    Parameters
+    ----------
+    degrees : float
+        Degrees of either latitude or longitude.
+    degree_type : string
+        Specify whether degrees arg is latitude or longitude. Must be set to
+        either 'latitude' or 'longitude' or an error will be raised.
+
+    Returns
+    -------
+    index : np.int16
+        The latitude or longitude index number to use when looking up values 
+        in the Linke turbidity lookup table.
+    """
+    # Assign inputmin, inputmax, and outputmax based on degree type.
+    if degree_type == 'latitude':
+        inputmin = 90
+        inputmax = -90
+        outputmax = 2160
+    elif degree_type == 'longitude':
+        inputmin = -180
+        inputmax = 180
+        outputmax = 4320
+    else:
+        raise IndexError("degree_type must be 'latitude' or 'longitude'.")
+
     inputrange = inputmax - inputmin
-    outputrange = outputmax - outputmin
-    delta = outputrange/inputrange  # number of indices per input unit
-    inputmin = inputmin + 1.0 / delta / 2.0  # shift to center of index
-    outputmax = outputmax - 1  # shift index to zero indexing
-    outputmatrix = (inputmatrix - inputmin) * delta + outputmin
+    scale = outputmax/inputrange  # number of indices per degree
+    center = inputmin + 1 / scale / 2  # shift to center of index
+    outputmax -= 1  # shift index to zero indexing
+    index = (degrees - center) * scale
     err = IndexError('Input, %g, is out of range (%g, %g).' %
-                     (inputmatrix, inputmax - inputrange, inputmax))
-    # round down if input is within half an index or else raise index error
-    if outputmatrix > outputmax:
-        if outputmatrix - outputmax <= 0.500001:
-            outputmatrix = outputmax
+                     (degrees, inputmin, inputmax))
+
+    # If the index is still out of bounds after rounding, raise an error.
+    if index > outputmax:
+        if index - outputmax <= 0.500001:
+            index = outputmax
         else:
             raise err
-    elif outputmatrix < outputmin:
-        if outputmin - outputmatrix <= 0.500001:
-            outputmatrix = outputmin
+    elif index < 0:
+        if -index <= 0.500001:
+            index = 0
         else:
             raise err
-    return outputmatrix
+    # If the index wasn't set to outputmax or 0, round it and case it as an 
+    # integer so it can be used in integer-based indexing.
+    else:
+        index = int(np.around(index))
+    
+    return index
 
 
 def haurwitz(apparent_zenith):

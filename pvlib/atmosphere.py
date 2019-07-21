@@ -3,8 +3,6 @@ The ``atmosphere`` module contains methods to calculate relative and
 absolute airmass and to determine pressure from altitude or vice versa.
 """
 
-from __future__ import division
-
 from warnings import warn
 
 import numpy as np

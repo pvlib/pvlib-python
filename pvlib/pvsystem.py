@@ -3,8 +3,6 @@ The ``pvsystem`` module contains functions for modeling the output and
 performance of PV modules and inverters.
 """
 
-from __future__ import division
-
 from collections import OrderedDict
 import io
 import os

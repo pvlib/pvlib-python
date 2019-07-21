@@ -299,7 +299,7 @@ def _degrees_to_index(degrees, degree_type):
 
     Parameters
     ----------
-    degrees : float
+    degrees : float or int
         Degrees of either latitude or longitude.
     degree_type : string
         Specify whether degrees arg is latitude or longitude. Must be set to

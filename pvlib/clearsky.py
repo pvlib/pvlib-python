@@ -292,9 +292,9 @@ def _calendar_month_middles(year):
 
 
 def _degrees_to_index(degrees, degree_type):
-    """Transform input degrees to an output index integer. The Linke 
-    turbidity lookup tables have three dimensions, latitude, longitude, and 
-    month. Specify a degree value and either 'latitude' or 'longitude' to get 
+    """Transform input degrees to an output index integer. The Linke
+    turbidity lookup tables have three dimensions, latitude, longitude, and
+    month. Specify a degree value and either 'latitude' or 'longitude' to get
     the appropriate index number for the first two of these index numbers.
 
     Parameters
@@ -308,7 +308,7 @@ def _degrees_to_index(degrees, degree_type):
     Returns
     -------
     index : np.int16
-        The latitude or longitude index number to use when looking up values 
+        The latitude or longitude index number to use when looking up values
         in the Linke turbidity lookup table.
     """
     # Assign inputmin, inputmax, and outputmax based on degree type.
@@ -342,11 +342,11 @@ def _degrees_to_index(degrees, degree_type):
             index = 0
         else:
             raise err
-    # If the index wasn't set to outputmax or 0, round it and case it as an 
+    # If the index wasn't set to outputmax or 0, round it and case it as an
     # integer so it can be used in integer-based indexing.
     else:
         index = int(np.around(index))
-    
+
     return index
 
 

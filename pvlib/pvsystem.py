@@ -6,11 +6,7 @@ performance of PV modules and inverters.
 from collections import OrderedDict
 import io
 import os
-try:
-    from urllib2 import urlopen
-except ImportError:
-    from urllib.request import urlopen
-
+from urllib.request import urlopen
 import numpy as np
 import pandas as pd
 
@@ -1630,14 +1626,8 @@ def retrieve_sam(name=None, path=None):
         else:
             csvdata = path
     elif name is None and path is None:
-        try:
-            # python 2
-            import Tkinter as tkinter
-            from tkFileDialog import askopenfilename
-        except ImportError:
-            # python 3
-            import tkinter
-            from tkinter.filedialog import askopenfilename
+        import tkinter
+        from tkinter.filedialog import askopenfilename
 
         tkinter.Tk().withdraw()
         csvdata = askopenfilename()

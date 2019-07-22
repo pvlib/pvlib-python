@@ -5,13 +5,7 @@ Import functions for TMY2 and TMY3 data files.
 import datetime
 import io
 import re
-
-try:
-    # python 2 compatibility
-    from urllib2 import urlopen, Request
-except ImportError:
-    from urllib.request import urlopen, Request
-
+from urllib.request import urlopen, Request
 import dateutil
 import pandas as pd
 

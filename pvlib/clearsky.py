@@ -151,9 +151,9 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     ----------
     time : pandas.DatetimeIndex
 
-    latitude : numeric
+    latitude : float or int
 
-    longitude : numeric
+    longitude : float or int
 
     filepath : None or string, default None
         The path to the ``.h5`` file.

@@ -151,9 +151,9 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     ----------
     time : pandas.DatetimeIndex
 
-    latitude : float
+    latitude : numeric
 
-    longitude : float
+    longitude : numeric
 
     filepath : None or string, default None
         The path to the ``.h5`` file.
@@ -195,12 +195,11 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
-    latitude_index = _degrees_to_index(latitude, degree_type='latitude')
-    longitude_index = _degrees_to_index(longitude, degree_type='longitude')
+    latitude_index = _degrees_to_index(latitude, coordinate='latitude')
+    longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
-    lt_h5_file = tables.open_file(filepath)
-    lts = lt_h5_file.root.LinkeTurbidity[latitude_index, longitude_index, :]
-    lt_h5_file.close()
+    with tables.open_file(filepath) as lt_h5_file:
+        lts = lt_h5_file.root.LinkeTurbidity[latitude_index, longitude_index, :]
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
@@ -291,7 +290,7 @@ def _calendar_month_middles(year):
     return middles
 
 
-def _degrees_to_index(degrees, degree_type):
+def _degrees_to_index(degrees, coordinate):
     """Transform input degrees to an output index integer. The Linke
     turbidity lookup tables have three dimensions, latitude, longitude, and
     month. Specify a degree value and either 'latitude' or 'longitude' to get
@@ -301,7 +300,7 @@ def _degrees_to_index(degrees, degree_type):
     ----------
     degrees : float or int
         Degrees of either latitude or longitude.
-    degree_type : string
+    coordinate : string
         Specify whether degrees arg is latitude or longitude. Must be set to
         either 'latitude' or 'longitude' or an error will be raised.
 
@@ -312,16 +311,16 @@ def _degrees_to_index(degrees, degree_type):
         in the Linke turbidity lookup table.
     """
     # Assign inputmin, inputmax, and outputmax based on degree type.
-    if degree_type == 'latitude':
+    if coordinate == 'latitude':
         inputmin = 90
         inputmax = -90
         outputmax = 2160
-    elif degree_type == 'longitude':
+    elif coordinate == 'longitude':
         inputmin = -180
         inputmax = 180
         outputmax = 4320
     else:
-        raise IndexError("degree_type must be 'latitude' or 'longitude'.")
+        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
 
     inputrange = inputmax - inputmin
     scale = outputmax/inputrange  # number of indices per degree
@@ -332,6 +331,8 @@ def _degrees_to_index(degrees, degree_type):
                      (degrees, inputmin, inputmax))
 
     # If the index is still out of bounds after rounding, raise an error.
+    # 0.50001 is used in comparisons instead of 0.5 to allow for a small
+    # margin of error which can occur when dealing with floating point numbers.
     if index > outputmax:
         if index - outputmax <= 0.500001:
             index = outputmax

@@ -331,7 +331,7 @@ def _degrees_to_index(degrees, coordinate):
                      (degrees, inputmin, inputmax))
 
     # If the index is still out of bounds after rounding, raise an error.
-    # 0.50001 is used in comparisons instead of 0.5 to allow for a small
+    # 0.500001 is used in comparisons instead of 0.5 to allow for a small
     # margin of error which can occur when dealing with floating point numbers.
     if index > outputmax:
         if index - outputmax <= 0.500001:

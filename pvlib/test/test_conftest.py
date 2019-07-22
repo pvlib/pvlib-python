@@ -3,7 +3,6 @@ import pytest
 from conftest import fail_on_pvlib_version, platform_is_windows
 
 
-# allow xpass for python 2 on windows
 @pytest.mark.xfail(strict=(not platform_is_windows),
                    reason='fail_on_pvlib_version should cause test to fail')
 @fail_on_pvlib_version('0.0')

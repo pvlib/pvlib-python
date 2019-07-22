@@ -522,8 +522,8 @@ def test_linke_turbidity_corners():
 def test_degrees_to_index_1():
     """Test that _degrees_to_index raises an error when something other than
     'latitude' or 'longitude' is passed."""
-    with pytest.raises(IndexError):  # invalid value for degree_type argument
-        clearsky._degrees_to_index(degrees=22.0, degree_type='width')
+    with pytest.raises(IndexError):  # invalid value for coordinate argument
+        clearsky._degrees_to_index(degrees=22.0, coordinate='width')
 
 
 @pytest.fixture

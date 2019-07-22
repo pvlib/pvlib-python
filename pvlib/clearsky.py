@@ -199,7 +199,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
     with tables.open_file(filepath) as lt_h5_file:
-        lts = lt_h5_file.root.LinkeTurbidity[latitude_index, longitude_index, :]
+        lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
+                                             longitude_index, :]
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)

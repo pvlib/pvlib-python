@@ -1,6 +1,6 @@
 import pytest
 
-from conftest import fail_on_pvlib_version, platform_is_windows
+from conftest import fail_on_pvlib_version
 
 
 @pytest.mark.xfail(reason='fail_on_pvlib_version should cause test to fail')

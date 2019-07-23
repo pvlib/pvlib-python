@@ -158,7 +158,7 @@ def test_iam_martin_ruiz():
     iam = pvsystem.iam_martin_ruiz(aoi)
     assert_allclose(iam, expected)
     # will fail of parameter names change
-    iam = pvsystem.iam_martin_ruiz(theta=aoi, a_r=a_r)
+    iam = pvsystem.iam_martin_ruiz(aoi=aoi, a_r=a_r)
     assert_allclose(iam, expected)
 
     a_r = 0.18

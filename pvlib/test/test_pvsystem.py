@@ -210,7 +210,7 @@ def test_iam_interp():
     assert_allclose(iam, expected)
 
     # check normalization
-    iam_mult = np.multiply (0.9, iam_meas)
+    iam_mult = np.multiply(0.9, iam_meas)
     iam = pvsystem.iam_interp(aoi, aoi_meas, iam_mult, normalize=True)
     assert_allclose(iam, expected)
 

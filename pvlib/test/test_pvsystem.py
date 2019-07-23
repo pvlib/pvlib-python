@@ -158,7 +158,7 @@ def test_iam_martin_ruiz():
     iam = pvsystem.iam_martin_ruiz(aoi)
     assert_allclose(iam, expected)
     # will fail of parameter names change
-    iam = pvsystem.iam_martin_ruiz(θ=aoi, a_r=a_r)
+    iam = pvsystem.iam_martin_ruiz(theta=aoi, a_r=a_r)
     assert_allclose(iam, expected)
 
     a_r = 0.18
@@ -210,13 +210,13 @@ def test_iam_interp():
     assert_allclose(iam, expected)
 
     # check normalization
-    iam_mult = np.multiply (0.9, [1.0,  0.9,  0.8,  0.6])
+    iam_mult = np.multiply (0.9, iam_meas)
     iam = pvsystem.iam_interp(aoi, aoi_meas, iam_mult, normalize=True)
     assert_allclose(iam, expected)
 
     # check beyond reference values
     aoi = [-45, 0, 45, 85, 90, 95, 100, 105, 110]
-    expected = [0.9, 1. , 0.9, 0.4, 0.3, 0.2, 0.1, 0. , 0. ]
+    expected = [0.9, 1.0, 0.9, 0.4, 0.3, 0.2, 0.1, 0.0, 0.0]
     iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
     assert_allclose(iam, expected)
 

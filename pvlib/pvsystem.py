@@ -1064,41 +1064,41 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     return iam
 
 
-def iam_martin_ruiz(θ:'degrees', a_r=0.16):
+def iam_martin_ruiz(theta, a_r=0.16):
     '''
-    Determine the incidence angle modifier using the Martin
-    and Ruiz incident angle model
-
-    iam_martin_ruiz calculates the incidence angle modifier (angular
-    factor) as described by Martin and Ruiz in [1]. The information
-    required is the incident angle (theta) and the angular losses
-    coefficient (ar). Please note that [1] has a corrigendum which makes the
-    document much simpler to understand.
-
-    The incident angle modifier is defined as
-    [1-exp(-cos(theta/ar))] / [1-exp(-1/ar)], which is
-    presented as AL(alpha) = 1 - IAM in equation 4 of [1]. Thus IAM is
-    equal to 1 at theta = 0, and equal to 0 at theta = 90. IAM is a
-    column vector with the same number of elements as the largest input
-    vector.
+    Determine the incidence angle modifier (iam) using the Martin
+    and Ruiz incident angle model.
 
     Parameters
     ----------
-    θ : numeric, degrees
+    theta : numeric, degrees
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees. Theta must be a numeric scalar or vector.
-        iam is 0 where |θ| > 90
+        iam is 0 where |theta| > 90.
 
     a_r : numeric
         The angular losses coefficient described in equation 3 of [1].
-        This is an empirical dimensionless parameter. Values of ar are
-        generally on the order of 0.08 to 0.25 for flat-plate PV modules. a_r
-        must be a positive numeric scalar.
+        This is an empirical dimensionless parameter. Values of a_r are
+        generally on the order of 0.08 to 0.25 for flat-plate PV modules.
+        a_r must be a positive numeric scalar or vector (same length as theta).
 
     Returns
     -------
     iam : numeric
         The incident angle modifier(s)
+
+    Notes
+    -----
+    iam_martin_ruiz calculates the incidence angle modifier (iamangular
+    factor) as described by Martin and Ruiz in [1]. The information
+    required is the incident angle (theta) and the angular losses
+    coefficient (a_r). Please note that [1] has a corrigendum which makes
+    the document much simpler to understand.
+
+    The incident angle modifier is defined as
+    [1-exp(-cos(theta/ar))] / [1-exp(-1/ar)], which is
+    presented as AL(alpha) = 1 - IAM in equation 4 of [1]. Thus IAM is
+    equal to 1 at theta = 0, and equal to 0 at theta = 90.
 
     References
     ----------
@@ -1119,58 +1119,58 @@ def iam_martin_ruiz(θ:'degrees', a_r=0.16):
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
-    θ = np.asanyarray(θ)
+    theta = np.asanyarray(theta)
     a_r = np.asanyarray(a_r)
 
-    if not np.all(np.positive(a_r)):
+    if np.any(np.less_equal(a_r, 0)):
         raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
 
-    iam = (1 - np.exp(-cosd(θ) / a_r)) / (1 - np.exp(-1 / a_r))
-    iam = np.where(np.abs(θ) >= 90.0, 0.0, iam)
+    iam = (1 - np.exp(-cosd(theta) / a_r)) / (1 - np.exp(-1 / a_r))
+    iam = np.where(np.abs(theta) >= 90.0, 0.0, iam)
 
     return iam
 
 
-def iam_interp(θ:'degrees', θ_ref, iam_ref, method='linear', normalize=True):
+def iam_interp(theta, theta_ref, iam_ref, method='linear', normalize=True):
     '''
     Determine the incidence angle modifier (iam) by interpolating a set of
     reference values, which are usually measured values.
 
     Parameters
     ----------
-    θ : numeric, degrees
+    theta : numeric, degrees
         The angle of incidence between the module normal vector and the
         sun-beam vector in degrees.
 
-    θ_ref : numeric, degrees
+    theta_ref : numeric, degrees
         Vector of angles at which the iam is known.
 
     iam_ref :
-        iam values for each angle in θ_ref.
+        iam values for each angle in theta_ref.
 
     method :
-        Specifies the intrpolation method.
+        Specifies the interpolation method.
         Useful options are: 'linear', 'quadratic','cubic'.
         See scipy.interpolate.interp1d for more options.
 
     normalize : boolean
         When true, the interpolated values are divided by the interpolated
-        value at zero degrees.  This ensures that the iam and normal
+        value at zero degrees.  This ensures that the iam at normal
         incidence is equal to 1.0.
-
-    Notes:
-    ------
-    θ_ref must have two or more points and may span any range of angles, but
-    typically there will be a dozen or more points in the range 0-90 degrees.
-    iam beyond the range of θ_ref are extrapolated, but constrained to be
-    non-negative.
-
-    The sign of θ is ignored; only the magnitude is used.
 
     Returns
     -------
     iam : numeric
         The incident angle modifier(s)
+
+    Notes:
+    ------
+    theta_ref must have two or more points and may span any range of angles.
+    Typically there will be a dozen or more points in the range 0-90 degrees.
+    iam beyond the range of theta_ref are extrapolated, but constrained to be
+    non-negative.
+
+    The sign of theta is ignored; only the magnitude is used.
 
     See Also
     --------
@@ -1183,9 +1183,9 @@ def iam_interp(θ:'degrees', θ_ref, iam_ref, method='linear', normalize=True):
     from scipy.interpolate import interp1d
 
     # Scipy doesn't give the clearest feedback, so check number of points here.
-    MIN_REF_VALS = {'linear':2, 'quadratic':3, 'cubic':4, 1:2, 2:3, 3:4}
+    MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
 
-    if len(θ_ref) < MIN_REF_VALS.get(method, 2):
+    if len(theta_ref) < MIN_REF_VALS.get(method, 2):
         raise ValueError("Too few reference points defined "
                          "for interpolation method '%s'." % method)
 
@@ -1193,11 +1193,11 @@ def iam_interp(θ:'degrees', θ_ref, iam_ref, method='linear', normalize=True):
         raise ValueError("Negative value(s) found in 'iam_ref'. "
                          "This is not physically possible.")
 
-    interpolator = interp1d(θ_ref, iam_ref, kind=method,
+    interpolator = interp1d(theta_ref, iam_ref, kind=method,
                             fill_value='extrapolate')
-    θ = np.asanyarray(θ)
-    θ = np.abs(θ)
-    iam = interpolator(θ)
+    theta = np.asanyarray(theta)
+    theta = np.abs(theta)
+    iam = interpolator(theta)
     iam = np.clip(iam, 0, None)
 
     if normalize:

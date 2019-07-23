@@ -74,7 +74,7 @@ def test_fit_sde_sandia_bad_iv(get_bad_iv_curves):
     # bad IV curves for coverage of if/then in _calculate_sde_parameters
     v1, i1, v2, i2 = get_bad_iv_curves
     result = ivtools.fit_sde_sandia(voltage=v1, current=i1)
-    assert np.allclose(result, (-2.4322856072799985, 8.854688976836396, 
+    assert np.allclose(result, (-2.4322856072799985, 8.854688976836396,
                                 -63.56227601452038, 111.18558915546389,
                                 -137.9965046659527))
     result = ivtools.fit_sde_sandia(voltage=v2, current=i2)
@@ -117,6 +117,7 @@ def test_fit_sdm_cec_sam(cec_module_parameters,
                 celltype='polySi', v_mp=0.45, i_mp=5.25, v_oc=0.55, i_sc=5.5,
                 alpha_sc=0.00275, beta_voc=0.00275, gamma_pmp=0.0055,
                 cells_in_series=1, temp_ref=25)
+
 
 @pytest.fixture
 def get_bad_iv_curves():

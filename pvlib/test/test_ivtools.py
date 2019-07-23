@@ -67,13 +67,17 @@ def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
     result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
                                     current=testcurve['i'], vlim=0.1)
     assert np.allclose(result, expected, rtol=5e-5)
+
+
+@requires_scipy
+def test_fit_sde_sandia_bad_iv(get_bad_iv_curves):
     # bad IV curves for coverage of if/then in _calculate_sde_parameters
     v1, i1, v2, i2 = get_bad_iv_curves
     result = ivtools.fit_sde_sandia(voltage=v1, current=i1)
     assert np.allclose(result, (-2.4322856072799985, 8.854688976836396, 
                                 -63.56227601452038, 111.18558915546389,
                                 -137.9965046659527))
-    result = ivtools.fit_sde_sandia(voltage=v1, current=i1)
+    result = ivtools.fit_sde_sandia(voltage=v2, current=i2)
     assert np.allclose(result, (2.62405311949227, 1.8657963912925288,
                                 110.35202827739991, -65.652554411442,
                                 174.49362093001415))
@@ -116,7 +120,7 @@ def test_fit_sdm_cec_sam(cec_module_parameters,
 
 @pytest.fixture
 def get_bad_iv_curves():
-    # v1, i1 produce a bad value for I0_voc
+    # v1, i1 produces a bad value for I0_voc
     v1 = np.array([0, 0.338798867469060, 0.677597734938121, 1.01639660240718,
                    1.35519546987624, 1.69399433734530, 2.03279320481436,
                    2.37159207228342, 2.71039093975248, 3.04918980722154,
@@ -183,7 +187,7 @@ def get_bad_iv_curves():
                    2.36052347370628, 2.26785071765738, 2.10868255743462,
                    2.06165739407987, 1.90047259509385, 1.39925575828709,
                    1.24749015957606, 0.867823806536762, 0.432752457749993, 0])
-    # v2, i2 produce a bad value for I0_vmp
+    # v2, i2 produces a bad value for I0_vmp
     v2 = np.array([0, 0.365686097622586, 0.731372195245173, 1.09705829286776,
                    1.46274439049035, 1.82843048811293, 2.19411658573552,
                    2.55980268335810, 2.92548878098069, 3.29117487860328,

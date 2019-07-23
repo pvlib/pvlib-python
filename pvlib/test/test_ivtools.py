@@ -39,7 +39,7 @@ def cec_module_parameters(sam_data):
 
 
 @requires_scipy
-def test_fit_single_diode_sandia(get_test_iv_params):
+def test_fit_sde_sandia(get_test_iv_params):
     test_params = get_test_iv_params
     testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],
                                      saturation_current=test_params['I0'],
@@ -49,33 +49,33 @@ def test_fit_single_diode_sandia(get_test_iv_params):
                                      ivcurve_pnts=300)
     expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rsh', 'Rs',
                      'nNsVth'])
-    result = ivtools.fit_single_diode_sandia(voltage=testcurve['v'],
-                                             current=testcurve['i'])
+    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
+                                    current=testcurve['i'])
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_single_diode_sandia(voltage=testcurve['v'],
-                                             current=testcurve['i'],
-                                             v_oc=testcurve['v_oc'],
-                                             i_sc=testcurve['i_sc'])
+    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
+                                    current=testcurve['i'],
+                                    v_oc=testcurve['v_oc'],
+                                    i_sc=testcurve['i_sc'])
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_single_diode_sandia(voltage=testcurve['v'],
-                                             current=testcurve['i'],
-                                             v_oc=testcurve['v_oc'],
-                                             i_sc=testcurve['i_sc'],
-                                             v_mp_i_mp=(testcurve['v_mp'],
-                                                        testcurve['i_mp']))
+    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
+                                    current=testcurve['i'],
+                                    v_oc=testcurve['v_oc'],
+                                    i_sc=testcurve['i_sc'],
+                                    v_mp_i_mp=(testcurve['v_mp'],
+                                    testcurve['i_mp']))
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_single_diode_sandia(voltage=testcurve['v'],
-                                             current=testcurve['i'],
-                                             vlim=0.1)
+    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
+                                    current=testcurve['i'], vlim=0.1)
     assert np.allclose(result, expected, rtol=5e-5)
 
 
 @requires_pysam
-def test_fit_cec_sam(cec_module_parameters, get_cec_params_cansol_cs5p_220p):
+def test_fit_sdm_cec_sam(cec_module_parameters,
+                         get_cec_params_cansol_cs5p_220p):
     sam_parameters = cec_module_parameters
     cec_list_data = get_cec_params_cansol_cs5p_220p
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-        ivtools.fit_cec_sam(
+        ivtools.fit_sdm_cec_sam(
             celltype='polySi', v_mp=cec_list_data['V_mp_ref'],
             i_mp=cec_list_data['I_mp_ref'], v_oc=cec_list_data['V_oc_ref'],
             i_sc=cec_list_data['I_sc_ref'], alpha_sc=cec_list_data['alpha_sc'],
@@ -99,7 +99,7 @@ def test_fit_cec_sam(cec_module_parameters, get_cec_params_cansol_cs5p_220p):
     # test for fitting failure
     with pytest.raises(RuntimeError):
         I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-            ivtools.fit_cec_sam(
+            ivtools.fit_sdm_cec_sam(
                 celltype='polySi', v_mp=0.45, i_mp=5.25, v_oc=0.55, i_sc=5.5,
                 alpha_sc=0.00275, beta_voc=0.00275, gamma_pmp=0.0055,
                 cells_in_series=1, temp_ref=25)

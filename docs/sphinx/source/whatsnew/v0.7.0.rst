@@ -45,5 +45,4 @@ Contributors
 * Mark Campanellli (:ghuser:`markcampanelli`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
-
 * Oscar Dowson (:ghuser:`odow`)

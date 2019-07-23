@@ -8,10 +8,11 @@ Created on Fri Mar 29 10:34:10 2019
 import numpy as np
 
 
-def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                gamma_pmp, cells_in_series, temp_ref=25):
+def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
+                    gamma_pmp, cells_in_series, temp_ref=25):
     """
-    Estimates parameters for the CEC single diode model [1] using the SAM SDK.
+    Estimates parameters for the CEC single diode model (SDM) using the SAM
+    SDK.
 
     Parameters
     ----------
@@ -106,10 +107,10 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         raise RuntimeError('Parameter estimation failed')
 
 
-def fit_single_diode_sandia(voltage, current, v_oc=None, i_sc=None,
-                            v_mp_i_mp=None, vlim=0.2, ilim=0.1):
+def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
+                   vlim=0.2, ilim=0.1):
     r"""
-    Fits the single diode equation to an IV curve.
+    Fits the single diode equation (SDE) to an IV curve.
 
     Parameters
     ----------
@@ -162,7 +163,7 @@ def fit_single_diode_sandia(voltage, current, v_oc=None, i_sc=None,
 
     Raises
     ------
-        RuntimeError if parameter extraction is not successful.
+    RuntimeError if parameter extraction is not successful.
 
     Notes
     -----
@@ -257,8 +258,8 @@ def fit_single_diode_sandia(voltage, current, v_oc=None, i_sc=None,
                                      i_sc)
 
     # calculate single diode parameters from regression coefficients
-    return _calculate_single_diode_parameters(beta0, beta1, beta3, beta4, v_mp,
-                                              i_mp, v_oc)
+    return _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp,
+                                     v_oc)
 
 
 def _find_mp(voltage, current):
@@ -329,8 +330,7 @@ def _find_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
         return beta3, beta4
 
 
-def _calculate_single_diode_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp,
-                                       v_oc):
+def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     nNsVth = 1.0 / beta3
     Rs = beta4 / beta3
     Gp = beta1 / (1.0 - Rs * beta1)

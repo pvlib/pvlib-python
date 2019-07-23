@@ -715,28 +715,20 @@ class ModelChain(object):
         self.losses = 1
         return self
 
-    def adjust_direct_for_horizon(poa_direct, horizon_profile, solar_azimuth, solar_zenith):
-        # assumes horizon_profile is in 1 deg. azimuth increments
-        dip_angles = {}
-        for pair in horizon_profile:
-            dip_angles[pair[0]] = pair[1]
-        adjusted_irradiance = poa_direct
-        for i in range(len(poa_direct)):
-            rounded_solar_azimuth = round(solar_azimuth[i])
-            horizon_dip = dip_angles[rounded_solar_azimuth]
-            if (solar_zenith > (90 - horizon_dip)):
-                adjusted_irradiance[i] = 0
-
-        return adjusted_irradiance
-
 
     def effective_irradiance_model(self):
         fd = self.system.module_parameters.get('FD', 1.)
         poa_direct = self.total_irrad['poa_direct']
+
         if self.location.horizon_profile != None:
+            horizon_profile = self.location.horizon_profile
             solar_zenith = self.solar_position['apparent_zenith']
             solar_azimuth = self.solar_position['azimuth']
-            poa_direct = adjust_direct_for_horizon(poa_direct, horizon_profile, solar_azimuth, solar_zenith)
+            poa_direct = pvlib.irradiance.adjust_direct_for_horizon(poa_direct,
+                                                                    horizon_profile,
+                                                                    solar_azimuth,
+                                                                    solar_zenith)
+        
         self.effective_irradiance = self.spectral_modifier * (
             poa_direct*self.aoi_modifier +
             fd*self.total_irrad['poa_diffuse'])

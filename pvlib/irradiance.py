@@ -447,7 +447,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     model=model_perez)
     elif model == 'horizon_adjusted':
         assert("horizon_profile" in kwargs)
-        sky = horizon_adjusted(dhi, horizon_profile, surface_tilt, surface_azimuth)
+        sky = horizon_adjusted(dhi, kwargs["horizon_profile"], surface_tilt, surface_azimuth)
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
@@ -684,7 +684,7 @@ def isotropic(surface_tilt, dhi):
     '''
 
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
-
+    # print((1 + tools.cosd(surface_tilt)) * 0.5)
     return sky_diffuse
 
 
@@ -1208,25 +1208,52 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     else:
         return sky_diffuse
 
+def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
+    plane_az = np.radians(surface_azimuth)
+    tilt = np.radians(surface_tilt)
+    az = np.radians(direction)
 
-def calculate_dtf(dip_angles, surface_tilt, surface_azimuth):
+    x = np.cos(az)
+    y = np.sin(az)
+    z = -np.tan(tilt) * (np.cos(plane_az) * np.cos(az) + np.sin(plane_az) * np.sin(az))
+    mask = z <=0
+    numer = x*x + y*y
+    denom = x*x + y*y + z*z
+    dip = np.degrees(np.arccos(np.sqrt(numer/denom)))
+    mask = np.logical_or(np.isnan(dip), z <=0)
+    
+    if isinstance(dip, pd.Series):
+        dip[np.isnan(dip)] = 0
+        dip[mask] = 0
+    else:
+        dip = np.where(mask, 0, dip)
+    return dip
+
+
+def calculate_dtf(horizon_profile, surface_tilt, surface_azimuth):
     tilt_rad = np.radians(surface_tilt)
     plane_az_rad = np.radians(surface_azimuth)
     a = np.sin(tilt_rad) * np.cos(plane_az_rad)
     b = np.sin(tilt_rad) * np.sin(plane_az_rad)
     c = np.cos(tilt_rad)
-    dtf = 0
-    for pair in dip_angles:
-        az = np.radians(pair[0])
-        dip = np.radians(pair[1])
+    
+    dtf = np.zeros(len(surface_tilt))
+    for pair in horizon_profile:
+        az = np.full(len(surface_tilt), np.radians(pair[0]))
+        horizon_dip = np.full(len(surface_tilt), np.radians(pair[1]))
+        temp = np.radians(collection_plane_dip_angle(surface_tilt,
+                                                           surface_azimuth,
+                                                           pair[0]))
+        dip = np.maximum(horizon_dip, temp)
+        #print(dip.shape)
         first_term = .5 * (a*np.cos(az) + b*np.sin(az)) * (np.pi/2 - dip - np.sin(dip) * np.cos(dip))
         second_term = .5 * c * np.cos(dip)**2
         dtf += (first_term + second_term) / 180
     return dtf
 
 def horizon_adjusted(dhi, horizon_profile, surface_tilt, surface_azimuth):
-
     dtf = calculate_dtf(horizon_profile, surface_tilt, surface_azimuth)
+    
     sky_diffuse = dhi * dtf
 
     return sky_diffuse
@@ -2913,3 +2940,20 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
             (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
     return dni
+
+def adjust_direct_for_horizon(poa_direct, horizon_profile,
+                              solar_azimuth, solar_zenith):
+        # assumes horizon_profile is in 1 deg. azimuth increments
+        dip_angles = {}
+        for pair in horizon_profile:
+            dip_angles[pair[0]] = pair[1]
+        adjusted_irradiance = poa_direct
+        for i in range(len(poa_direct)):
+            rounded_solar_azimuth = round(solar_azimuth[i])
+            if rounded_solar_azimuth > 180:
+                rounded_solar_azimuth -= 360
+            horizon_dip = dip_angles[rounded_solar_azimuth]
+            if (solar_zenith[i] > (90 - horizon_dip)):
+                adjusted_irradiance[i] = 0
+
+        return adjusted_irradiance

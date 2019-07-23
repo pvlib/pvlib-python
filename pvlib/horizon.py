@@ -385,3 +385,11 @@ def horizon_from_gmaps(lat, lon, GMAPS_API_KEY):
 	horizon_points = calculate_horizon_points(elev_grid, sampling_method="interpolator", sampling_param=(1000,1000))
 	filtered_points = filter_points(horizon_points, bucket_size=1)
 	return filtered_points
+
+
+def fake_horizon_profile(max_dip):
+    fake_profile = []
+    for i in range(-180, 181):
+        fake_profile.append((i, random.random()*max_dip))
+
+    return fake_profile

@@ -26,10 +26,10 @@ API Changes
 Enhancements
 ~~~~~~~~~~~~
 * Add `ivtools` module to contain functions for IV model fitting.
-* Add :py:func:`~pvlib.ivtools.fit_single_diode_sandia`, a simple method to fit
+* Add :py:func:`~pvlib.ivtools.fit_sde_sandia`, a simple method to fit
   the single diode equation to an IV curve.
-* Add :py:func:`~pvlib.ivtools.fit_cec_sam`, a wrapper to access the
-  model fitting function '6parsolve' from NREL's System Advisor Model.
+* Add :py:func:`~pvlib.ivtools.fit_sdm_cec_sam`, a wrapper for the CEC single
+  diode model fitting function '6parsolve' from NREL's System Advisor Model.
 
 
 Bug fixes

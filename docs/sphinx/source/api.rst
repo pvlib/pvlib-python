@@ -287,8 +287,8 @@ Functions for fitting PV models
 .. autosummary::
    :toctree: generated/
 
-    ivtools.fit_single_diode_sandia
-    ivtools.fit_cec_sam
+    ivtools.fit_sde_sandia
+    ivtools.fit_sdm_cec_sam
 
 Other
 -----

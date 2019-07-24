@@ -1098,7 +1098,9 @@ def iam_martin_ruiz(aoi, a_r=0.16):
     The incident angle modifier is defined as
     [1-exp(-cos(aoi/ar))] / [1-exp(-1/ar)], which is
     presented as AL(alpha) = 1 - IAM in equation 4 of [1]. Thus IAM is
-    equal to 1 at aoi = 0, and equal to 0 at aoi = 90.
+    equal to 1 at aoi = 0, and equal to 0 at aoi = 90.  This equation is only
+    valid for -90 <= aoi <= 90, therefore iam must be constrained to 0.0
+    beyond this range.
 
     References
     ----------

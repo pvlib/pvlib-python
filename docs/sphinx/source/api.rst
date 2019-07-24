@@ -271,6 +271,7 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter
+   celltemp.sapm
 
 Pvsyst model
 -------------

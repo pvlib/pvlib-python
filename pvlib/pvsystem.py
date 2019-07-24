@@ -1849,14 +1849,14 @@ def sapm(effective_irradiance, temp_cell, module):
 
 sapm_celltemp = deprecated('0.7', alternative='celltemp.sapm',
                            name='sapm_celltemp', removal='0.8',
-                           addedum='Note that the argument order for '
+                           addendum='Note that the argument order for '
                            'celltemp.sapm is different than for '
                            'sapm_celltemp')(celltemp.sapm)
 
 
 pvsyst_celltemp = deprecated('0.7', alternative='celltemp.pvsyst',
                              name='pvsyst_celltemp',
-                             removal='0.8', addedum='Note that '
+                             removal='0.8', addendum='Note that '
                              'celltemp.pvsyst returns a DataFrame instead '
                              'of numeric or Series')(celltemp.pvsyst)
 

@@ -63,6 +63,7 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
 
         T_{m} = E \times \exp (a + b \times WS) + T_{a}
 
+    .. :math::
         :label: eq2
 
         T_{C} = T_{m} + \frac{E}{E0} \Delta T
@@ -74,12 +75,17 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
     its mounting. Parameter sets are provided in [1] for representative modules
     and mounting.
 
-    | Module | Mounting | a | b | :math:`\Delta T [\degree C]` |
-    |:-------|:---------|---:|---:|-----------------------------:|
-    | glass/cell/glass | open rack | -3.47 | -0.0594 | 3 |
-    | glass/cell/glass | close roof mount | -2.98 | -0.0471 | 1 |
-    | glass/cell/polymer | open rack | -3.56 | -0.075 | 3 |
-    | glass/cell/polymer | insulated back | -2.81 | -0.0455 | 0 |
+    +--------------------+------------------+-----------------+---------------------+
+    | Module             | Mounting         | a     | b       | :math:`\Delta T [C]`|
+    +====================+==================+===+===+===============================+
+    | glass/cell/glass   | open rack        | -3.47 | -0.0594 | 3                   |
+    +--------------------+------------------+-------+---------+---------------------+
+    | glass/cell/glass   | close roof mount | -2.98 | -0.0471 | 1                   |
+    +--------------------+------------------+-------+---------+---------------------+
+    | glass/cell/polymer | open rack        | -3.56 | -0.075  | 3                   |
+    +--------------------+------------------+-------+---------+---------------------+
+    | glass/cell/polymer | insulated back   | -2.81 | -0.0455 | 0                   |
+    +--------------------+------------------+-------+---------+---------------------+
 
     References
     ----------

@@ -40,3 +40,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Oscar Dowson (:ghuser:`odow`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Alexander Morgan (:ghuser:`alexandermorgan`)

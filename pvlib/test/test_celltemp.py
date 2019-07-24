@@ -16,49 +16,52 @@ from pvlib._deprecation import pvlibDeprecationWarning
 from conftest import fail_on_pvlib_version
 
 
-def test_sapm_celltemp():
-    default = celltemp.sapm(900, 20, 5)
+@pytest.fixture
+def celltemp_sapm_default():
+    return celltemp.TEMP_MODEL_PARAMS['sapm']['open_rack_cell_glassback']
+
+
+def test_sapm_celltemp(celltemp_sapm_default):
+    a, b, deltaT = celltemp_sapm_default
+    default = celltemp.sapm(900, 20, 5, a, b, deltaT)
     assert_allclose(default['temp_cell'], 43.509, 3)
     assert_allclose(default['temp_module'], 40.809, 3)
-    assert_frame_equal(default, celltemp.sapm(900, 20, 5, [-3.47, -.0594, 3]))
+#    assert_frame_equal(default, celltemp.sapm(900, 20, 5, [-3.47, -.0594, 3]))
 
 
-def test_sapm_celltemp_dict_like():
-    default = celltemp.sapm(900, 20, 5)
-    assert_allclose(default['temp_cell'], 43.509, 3)
-    assert_allclose(default['temp_module'], 40.809, 3)
-    model = {'a': -3.47, 'b': -.0594, 'deltaT': 3}
-    assert_frame_equal(default, celltemp.sapm(900, 20, 5, model))
-    model = pd.Series(model)
-    assert_frame_equal(default, celltemp.sapm(900, 20, 5, model))
+#def test_sapm_celltemp_dict_like():
+#    default = celltemp.sapm(900, 20, 5)
+#    assert_allclose(default['temp_cell'], 43.509, 3)
+#    assert_allclose(default['temp_module'], 40.809, 3)
+#    model = {'a': -3.47, 'b': -.0594, 'deltaT': 3}
+#    assert_frame_equal(default, celltemp.sapm(900, 20, 5, model))
+#    model = pd.Series(model)
+#    assert_frame_equal(default, celltemp.sapm(900, 20, 5, model))
 
 
-def test_sapm_celltemp_with_index():
+def test_sapm_celltemp_with_index(celltemp_sapm_default):
+    a, b, deltaT = celltemp_sapm_default
     times = pd.date_range(start='2015-01-01', end='2015-01-02', freq='12H')
     temps = pd.Series([0, 10, 5], index=times)
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
-
-    pvtemps = celltemp.sapm(irrads, temps, winds)
-
+    pvtemps = celltemp.sapm(irrads, temps, winds, a, b, deltaT)
     expected = pd.DataFrame({'temp_cell': [0., 23.06066166, 5.],
                              'temp_module': [0., 21.56066166, 5.]},
                             index=times)
-
     assert_frame_equal(expected, pvtemps)
 
 
 def test_PVSystem_sapm_celltemp(mocker):
     racking_model = 'roof_mount_cell_glassback'
-
     system = pvsystem.PVSystem(racking_model=racking_model)
+    a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm'][racking_model]
     mocker.spy(celltemp, 'sapm')
     temps = 25
     irrads = 1000
     winds = 1
-    out = system.sapm_celltemp(irrads, temps, winds)
-    celltemp.sapm.assert_called_once_with(
-        irrads, temps, winds, model=racking_model)
+    out = system.sapm_celltemp(irrads, temps, winds, a, b, deltaT)
+    celltemp.sapm.assert_called_once_with(irrads, temps, winds, a, b, deltaT)
     assert isinstance(out, pd.DataFrame)
     assert out.shape == (1, 2)
 

@@ -422,7 +422,8 @@ class PVSystem(object):
         """
         return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
-    def sapm_celltemp(self, poa_global, temp_air, wind_speed):
+    def sapm_celltemp(self, poa_global, temp_air, wind_speed,
+                      model='open_rack_cell_glassback'):
         """Uses :py:func:`celltemp.sapm` to calculate module and cell
         temperatures based on ``self.racking_model`` and
         the input parameters.
@@ -446,8 +447,14 @@ class PVSystem(object):
         DataFrame with columns 'temp_cell' and 'temp_module'.
         Values in degrees C.
         """
-        return celltemp.sapm(poa_global, temp_air, wind_speed,
-                             self.racking_model)
+        try:
+            a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm'][model]
+        except KeyError:
+            msg = ('{} is not a named set of parameters for the {} cell'
+                   ' temperature model. See pvlib.celltemp.TEMP_MODEL_PARAMS'
+                   ' for names'.format(model, 'sapm'))
+            raise KeyError(msg)
+        return celltemp.sapm(poa_global, temp_air, wind_speed, a, b, deltaT)
 
     def sapm_spectral_loss(self, airmass_absolute):
         """

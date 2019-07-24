@@ -20,12 +20,10 @@ TEMP_MODEL_PARAMS = {
 }
 
 
-def sapm(poa_global, temp_air, wind_speed, model='open_rack_cell_glassback'):
-    '''
+def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
+    r'''
     Estimate cell and module temperatures per the Sandia PV Array
-    Performance Model (SAPM, SAND2004-3535), from the incident
-    irradiance, wind speed, ambient temperature, and SAPM module
-    parameters.
+    Performance Model [1].
 
     Parameters
     ----------
@@ -38,40 +36,50 @@ def sapm(poa_global, temp_air, wind_speed, model='open_rack_cell_glassback'):
     wind_speed : float or Series
         Wind speed in m/s at a height of 10 meters.
 
-    model : string, list, or dict, default 'open_rack_cell_glassback'
-        Model to be used.
+    a : float
+        Parameter `a` in :eq:`eq1`.
 
-        If string, can be:
+    b : float
+        Parameter `b` in :eq:`eq1`.
 
-            * 'open_rack_cell_glassback' (default)
-            * 'roof_mount_cell_glassback'
-            * 'open_rack_cell_polymerback'
-            * 'insulated_back_polymerback'
-            * 'open_rack_polymer_thinfilm_steel'
-            * '22x_concentrator_tracker'
+    deltaT : float, [C]
+        Parameter :math:`\Delta T` in :eq:`eq2`.
 
-        If dict, supply the following parameters
-        (if list, in the following order):
-
-            * a : float
-                SAPM module parameter for establishing the upper
-                limit for module temperature at low wind speeds and
-                high solar irradiance.
-
-            * b : float
-                SAPM module parameter for establishing the rate at
-                which the module temperature drops as wind speed increases
-                (see SAPM eqn. 11).
-
-            * deltaT : float
-                SAPM module parameter giving the temperature difference
-                between the cell and module back surface at the
-                reference irradiance, E0.
+    irrad_ref : float, default 1000 [W/m2]
+        Reference irradiance, parameter :math:`E0` in :eq:`eq2`.
 
     Returns
     --------
     DataFrame with columns 'temp_cell' and 'temp_module'.
     Values in degrees C.
+
+    Notes
+    -----
+    The model for cell temperature :math:`T_{C}` and module temperature
+    :math:`T_{m}` is given by a pair of equations (Eq. 11 and 12 in [1]).
+
+    .. :math::
+        :label: eq1
+
+        T_{m} = E \times \exp (a + b \times WS) + T_{a}
+
+        :label: eq2
+
+        T_{C} = T_{m} + \frac{E}{E0} \Delta T
+
+    Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
+    ambient air temperature :math:`T_{a}` (C). Model outputs are surface
+    temperature at the back of the module :math:`T_{m}` and cell temperature
+    :math:`T_{C}`. Model parameters depend both on the module construction and
+    its mounting. Parameter sets are provided in [1] for representative modules
+    and mounting.
+
+    | Module | Mounting | a | b | :math:`\Delta T [\degree C]` |
+    |:-------|:---------|---:|---:|-----------------------------:|
+    | glass/cell/glass | open rack | -3.47 | -0.0594 | 3 |
+    | glass/cell/glass | close roof mount | -2.98 | -0.0471 | 1 |
+    | glass/cell/polymer | open rack | -3.56 | -0.075 | 3 |
+    | glass/cell/polymer | insulated back | -2.81 | -0.0455 | 0 |
 
     References
     ----------
@@ -79,29 +87,9 @@ def sapm(poa_global, temp_air, wind_speed, model='open_rack_cell_glassback'):
     Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
     NM.
 
-    See Also
-    --------
-    sapm
     '''
-
-    temp_models = TEMP_MODEL_PARAMS['sapm']
-
-    if isinstance(model, str):
-        model = temp_models[model.lower()]
-
-    elif isinstance(model, (dict, pd.Series)):
-        model = [model['a'], model['b'], model['deltaT']]
-
-    a = model[0]
-    b = model[1]
-    deltaT = model[2]
-
-    E0 = 1000.  # Reference irradiance
-
     temp_module = pd.Series(poa_global * np.exp(a + b * wind_speed) + temp_air)
-
-    temp_cell = temp_module + (poa_global / E0) * (deltaT)
-
+    temp_cell = temp_module + (poa_global / irrad_ref) * (deltaT)
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 

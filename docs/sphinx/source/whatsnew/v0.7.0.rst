@@ -16,6 +16,8 @@ API Changes
 * Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp` to
  `celltemp.sapm` and `celltemp.pvsyst`. (:issue:`678')
 * Argument order and output type of `pvsystem.sapm_celltemp`,  `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` have been altered to be consistent among cell temperature model functions.
+* Removed `model` as a kwarg from `celltemp.sapm` and `celltemp.pvsyst`. These
+functions now require model parameters as kwargs.
 * Implemented `pvsyst` as an option for `ModelChain.temp_model`. (:issue:`678')
 
 Enhancements
@@ -39,5 +41,5 @@ Contributors
 * Mark Campanellli (:ghuser:`markcampanelli`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Oscar Dowson (:ghuser:`odow`)
-* Cliff Hansen (:ghuser:`cwhanse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
+* Cliff Hansen (:ghuser:`cwhanse`)

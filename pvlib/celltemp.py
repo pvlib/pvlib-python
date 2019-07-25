@@ -37,16 +37,16 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
         Wind speed in m/s at a height of 10 meters.
 
     a : float
-        Parameter `a` in :eq:`eq1`.
+        Parameter :math:`a` in :eq:`sapm1`.
 
     b : float
-        Parameter `b` in :eq:`eq1`.
+        Parameter :math:`b` in :eq:`sapm1`.
 
     deltaT : float, [C]
-        Parameter :math:`\Delta T` in :eq:`eq2`.
+        Parameter :math:`\Delta T` in :eq:`sapm2`.
 
     irrad_ref : float, default 1000 [W/m2]
-        Reference irradiance, parameter :math:`E0` in :eq:`eq2`.
+        Reference irradiance, parameter :math:`E_{0}` in :eq:`sapm2`.
 
     Returns
     --------
@@ -59,14 +59,14 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
     :math:`T_{m}` is given by a pair of equations (Eq. 11 and 12 in [1]).
 
     .. math::
-       :label: eq1
+       :label: sapm1
 
         T_{m} = E \times \exp (a + b \times WS) + T_{a}
 
     .. math::
-       :label: eq2
+       :label: sapm2
 
-        T_{C} = T_{m} + \frac{E}{E0} \Delta T
+        T_{C} = T_{m} + \frac{E}{E_{0}} \Delta T
 
     Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
     ambient air temperature :math:`T_{a}` (C). Model outputs are surface
@@ -99,10 +99,10 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
     return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
 
 
-def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
-           alpha_absorption=0.9, model='freestanding'):
-    """
-    Calculate cell temperature using an emperical heat loss factor model
+def pvsyst(poa_global, temp_air, wind_speed=1.0, constant_loss_factor=29.0,
+           wind_loss_factor=0.0, eta_m=0.1, alpha_absorption=0.9):
+    r"""
+    Calculate cell temperature using an empirical heat loss factor model
     as implemented in PVsyst.
 
     The heat loss factors provided through the 'model' argument
@@ -112,48 +112,60 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     Parameters
     ----------
     poa_global : float or Series
-        Total incident irradiance in W/m^2.
+        Total incident irradiance [:math:`\frac{W}{m^2} ].
 
     temp_air : float or Series
-        Ambient dry bulb temperature in degrees C.
+        Ambient dry bulb temperature [C].
 
-    wind_speed : float or Series, default 1.0
+    wind_speed : float or Series, default 1.0 [m/s]
         Wind speed in m/s measured at the same height for which the wind loss
         factor was determined.  The default value is 1.0, which is the wind
         speed at module height used to determine NOCT.
 
+    constant_loss_factor : float, default 29.0 [:math:`\frac{W}{m^2 C}]
+        Combined heat loss factor coefficient. The default value is
+        representative of freestanding modules with the rear surfaces exposed
+        to open air (e.g., rack mounted). Parameter :math:`U_{c}` in
+        :eq:`pvsyst`.
+
+    wind_loss_factor : float, default 0.0 [:math:`\frac{W}{m^2 C} \frac{m}{s}`]
+        Combined heat loss factor influenced by wind. Parameter :math:`U_{c}`
+        in :eq:`pvsyst`.
+
     eta_m : numeric, default 0.1
         Module external efficiency as a fraction, i.e., DC power / poa_global.
+        Parameter :math:`\eta_{m}` in :eq:`pvsyst`.
 
     alpha_absorption : numeric, default 0.9
-        Absorption coefficient
-
-    model : string, tuple, or list (no dict), default 'freestanding'
-        Heat loss factors to be used.
-
-        If string, can be:
-
-            * 'freestanding' (default)
-                Modules with rear surfaces exposed to open air (e.g. rack
-                mounted).
-            * 'insulated'
-                Modules with rear surfaces in close proximity to another
-                surface (e.g. roof mounted).
-
-        If tuple/list, supply parameters in the following order:
-
-            * constant_loss_factor : float
-                Combined heat loss factor coefficient. Freestanding
-                default is 29, fully insulated arrays is 15.
-
-            * wind_loss_factor : float
-                Combined heat loss factor influenced by wind. Default is 0.
+        Absorption coefficient. Parameter :math:`\alpha` in :eq:`pvsyst`.
 
     Returns
     -------
-    temp_cell : numeric or Series
-        Cell temperature in degrees Celsius
+    DataFrame with columns 'temp_cell', values in degrees Celsius
 
+    Notes
+    -----
+    The Pvsyst model for cell temperature :math:`T_{C}` is given by
+
+    .. math::
+       :label: pvsyst
+
+        T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} WS}
+
+    Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
+    ambient air temperature :math:`T_{a}` (C). Model output is cell temperature
+    :math:`T_{C}`. Model parameters depend both on the module construction and
+    its mounting. Parameter sets are provided in [1] for open (freestanding)
+    close (insulated) mounting configurations.
+
+    +--------------+---------------+---------------+
+    | Mounting     | :math:`U_{c}` | :math:`U_{v}` |
+    +==============+===============+===============+
+    | freestanding | 29.0          | 0.0           |
+    +--------------+---------------+---------------+
+    | insulated    | 15.0          | 0.0           |
+    +--------------+---------------+---------------+
+    
     References
     ----------
     [1]"PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
@@ -162,18 +174,6 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
     [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
     """
-
-    pvsyst_presets = TEMP_MODEL_PARAMS['pvsyst']
-
-    if isinstance(model, str):
-        model = model.lower()
-        constant_loss_factor, wind_loss_factor = pvsyst_presets[model]
-    elif isinstance(model, (tuple, list)):
-        constant_loss_factor, wind_loss_factor = model
-    else:
-        raise TypeError(
-            "Please provide model as a str, or tuple/list."
-        )
 
     total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor
     heat_input = poa_global * alpha_absorption * (1 - eta_m)

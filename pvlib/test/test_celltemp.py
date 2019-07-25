@@ -72,27 +72,29 @@ def test_pvsyst_celltemp_default():
 
 
 def test_pvsyst_celltemp_non_model():
-    tup_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
-                                             model=(23.5, 6.25))
+    tup_non_model = pvsystem.pvsyst_celltemp(900, 20, wind_speed=5.0,
+                                             constant_loss_factor=23.5,
+                                             wind_loss_factor=6.25, eta_m=0.1)
     assert_allclose(tup_non_model['temp_cell'], 33.315, 0.001)
 
-    list_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
-                                              model=[26.5, 7.68])
+    list_non_model = pvsystem.pvsyst_celltemp(900, 20, wind_speed=5.0,
+                                             constant_loss_factor=26.5,
+                                             wind_loss_factor=7.68, eta_m=0.1)
     assert_allclose(list_non_model['temp_cell'], 31.233, 0.001)
 
 
-def test_pvsyst_celltemp_model_wrong_type():
-    with pytest.raises(TypeError):
-        pvsystem.pvsyst_celltemp(
-            900, 20, 5, 0.1,
-            model={"won't": 23.5, "work": 7.68})
+#def test_pvsyst_celltemp_model_wrong_type():
+#    with pytest.raises(TypeError):
+#        pvsystem.pvsyst_celltemp(
+#            900, 20, 5, 0.1,
+#            model={"won't": 23.5, "work": 7.68})
 
 
-def test_pvsyst_celltemp_model_non_option():
-    with pytest.raises(KeyError):
-        pvsystem.pvsyst_celltemp(
-            900, 20, 5, 0.1,
-            model="not_an_option")
+#def test_pvsyst_celltemp_model_non_option():
+#    with pytest.raises(KeyError):
+#        pvsystem.pvsyst_celltemp(
+#            900, 20, 5, 0.1,
+#            model="not_an_option")
 
 
 def test_pvsyst_celltemp_with_index():
@@ -109,6 +111,8 @@ def test_pvsyst_celltemp_with_index():
 
 def test_PVSystem_pvsyst_celltemp(mocker):
     racking_model = 'insulated'
+    constant_loss_factor, wind_loss_factor = \
+        celltemp.TEMP_MODEL_PARAMS['pvsyst']['freestanding']
     alpha_absorption = 0.85
     eta_m = 0.17
     module_parameters = {}
@@ -122,7 +126,8 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     wind = 0.5
     out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
     celltemp.pvsyst.assert_called_once_with(
-        irrad, temp, wind, eta_m, alpha_absorption, racking_model)
+        irrad, temp, wind, constant_loss_factor, wind_loss_factor, eta_m,
+        alpha_absorption)
     assert isinstance(out, pd.DataFrame)
     assert all(out['temp_cell'] < 90) and all(out['temp_cell'] > 70)
 

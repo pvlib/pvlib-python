@@ -425,8 +425,7 @@ class PVSystem(object):
     def sapm_celltemp(self, poa_global, temp_air, wind_speed,
                       model='open_rack_cell_glassback'):
         """Uses :py:func:`celltemp.sapm` to calculate module and cell
-        temperatures based on ``self.racking_model`` and
-        the input parameters.
+        temperatures.
 
         Parameters
         ----------
@@ -439,8 +438,8 @@ class PVSystem(object):
         wind_speed : float or Series
             Wind speed in m/s at a height of 10 meters.
 
-        model : string, list, or dict, default 'open_rack_cell_glassback'
-            Model to be used. See celltemp.sapm for details
+        model : string, default 'open_rack_cell_glassback'
+            Model parameters to be used. See celltemp.sapm for details
 
         Returns
         -------
@@ -524,9 +523,9 @@ class PVSystem(object):
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
 
-    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
-        """Uses :py:func:`celltemp.pvsyst` to calculate module temperatures
-        based on ``self.racking_model`` and the input parameters.
+    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0,
+                        model='freestanding'):
+        """Uses :py:func:`celltemp.pvsyst` to calculate cell temperature.
 
         Parameters
         ----------
@@ -548,18 +547,26 @@ class PVSystem(object):
         alpha_absorption : numeric, default 0.9
             Absorption coefficient
 
-        model : string, tuple, or list (no dict), default 'freestanding'
-            Heat loss factors to be used. See celltemp.pvsyst for details.
+        model : string, default 'freestanding'
+            Heat loss model factors to be used. See celltemp.pvsyst for details.
 
         Returns
         -------
-        temp_cell : numeric or Series
-            Cell temperature in degrees C.
+        DataFrame with column 'temp_cell', values in degrees C.
         """
+        try:
+            constant_loss_factor, wind_loss_factor = \
+                celltemp.TEMP_MODEL_PARAMS['pvsyst'][model]
+        except KeyError:
+            msg = ('{} is not a named set of parameters for the {} cell'
+                   ' temperature model. See pvlib.celltemp.TEMP_MODEL_PARAMS'
+                   ' for names'.format(model, 'pvsyst'))
+            raise KeyError(msg)
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
         return celltemp.pvsyst(poa_global, temp_air, wind_speed,
-                               model=self.racking_model, **kwargs)
+                               constant_loss_factor, wind_loss_factor,
+                               **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 

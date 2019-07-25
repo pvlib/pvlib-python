@@ -1129,8 +1129,9 @@ def iam_martin_ruiz(aoi, a_r=0.16):
     if np.any(np.less_equal(a_r, 0)):
         raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
 
-    iam = (1 - np.exp(-cosd(aoi) / a_r)) / (1 - np.exp(-1 / a_r))
-    iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
+    with np.errstate(invalid='ignore'):
+        iam = (1 - np.exp(-cosd(aoi) / a_r)) / (1 - np.exp(-1 / a_r))
+        iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
 
     if isinstance(aoi_input, pd.Series):
         iam = pd.Series(iam, index=aoi_input.index)

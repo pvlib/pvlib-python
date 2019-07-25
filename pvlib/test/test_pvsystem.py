@@ -165,24 +165,24 @@ def test_iam_martin_ruiz():
     aoi = [-100, -60, 0, 60, 100, np.nan, np.inf]
     expected = [0.0, 0.9414631, 1.0, 0.9414631, 0.0, np.nan, 0.0]
 
-    with np.errstate(invalid='ignore'):
-        # check out of range of inputs as list
-        iam = pvsystem.iam_martin_ruiz(aoi, a_r)
-        assert_allclose(iam, expected, equal_nan=True)
+    # check out of range of inputs as list
+    iam = pvsystem.iam_martin_ruiz(aoi, a_r)
+    assert_allclose(iam, expected, equal_nan=True)
 
-        # check out of range of inputs as array
-        iam = pvsystem.iam_martin_ruiz(np.array(aoi), a_r)
-        assert_allclose(iam, expected, equal_nan=True)
+    # check out of range of inputs as array
+    iam = pvsystem.iam_martin_ruiz(np.array(aoi), a_r)
+    assert_allclose(iam, expected, equal_nan=True)
 
-        # check out of range of inputs as Series
-        iam = pvsystem.iam_martin_ruiz(pd.Series(aoi), a_r)
-        assert_allclose(iam, expected, equal_nan=True)
+    # check out of range of inputs as Series
+    iam = pvsystem.iam_martin_ruiz(pd.Series(aoi), a_r)
+    assert_allclose(iam, expected, equal_nan=True)
 
     # check exception clause
     with pytest.raises(RuntimeError):
         pvsystem.iam_martin_ruiz(0.0, a_r=0.0)
 
 
+@requires_scipy
 def test_iam_interp():
 
     aoi_meas = [0.0, 45.0, 65.0, 75.0]
@@ -191,9 +191,6 @@ def test_iam_interp():
     # simple default linear method
     aoi = 55.0
     expected = 0.85
-    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
-    assert_allclose(iam, expected)
-
     iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
     assert_allclose(iam, expected)
 
@@ -209,8 +206,8 @@ def test_iam_interp():
     iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
     assert_allclose(iam, expected)
 
-    # check normalization
-    iam_mult = np.multiply(0.9, iam_meas)
+    # check normalization and Series
+    iam_mult = pd.Series(np.multiply(0.9, iam_meas))
     iam = pvsystem.iam_interp(aoi, aoi_meas, iam_mult, normalize=True)
     assert_allclose(iam, expected)
 

@@ -186,7 +186,7 @@ def test_run_model_with_irradiance(system, location):
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
-    expected = pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([187.80746495e+02, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -198,7 +198,7 @@ def test_run_model_perez(system, location):
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
-    expected = pd.Series(np.array([  190.194545796,  -2.00000000e-02]),
+    expected = pd.Series(np.array([187.94295642, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -211,7 +211,7 @@ def test_run_model_gueymard_perez(system, location):
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
-    expected = pd.Series(np.array([  190.194760203,  -2.00000000e-02]),
+    expected = pd.Series(np.array([187.94317405, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 

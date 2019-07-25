@@ -27,14 +27,14 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
 
     Parameters
     ----------
-    poa_global : float or Series
-        Total incident irradiance in W/m^2.
+    poa_global : float or Series [W/m^2]
+        Total incident irradiance.
 
-    temp_air : float or Series
-        Ambient dry bulb temperature in degrees C.
+    temp_air : float or Series [C]
+        Ambient dry bulb temperature.
 
-    wind_speed : float or Series
-        Wind speed in m/s at a height of 10 meters.
+    wind_speed : float or Series [m/s]
+        Wind speed at a height of 10 meters.
 
     a : float
         Parameter :math:`a` in :eq:`sapm1`.
@@ -42,10 +42,10 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
     b : float
         Parameter :math:`b` in :eq:`sapm1`.
 
-    deltaT : float, [C]
+    deltaT : float [C]
         Parameter :math:`\Delta T` in :eq:`sapm2`.
 
-    irrad_ref : float, default 1000 [W/m2]
+    irrad_ref : float, default 1000 [W/m^2]
         Reference irradiance, parameter :math:`E_{0}` in :eq:`sapm2`.
 
     Returns
@@ -75,17 +75,17 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
     its mounting. Parameter sets are provided in [1] for representative modules
     and mounting.
 
-    +--------------------+------------------+-------+---------+---------------------+  # noqa: E501
-    | Module             | Mounting         | a     | b       | :math:`\Delta T [C]`|  # noqa: E501
-    +====================+==================+=======+=========+=====================+  # noqa: E501
-    | glass/cell/glass   | open rack        | -3.47 | -0.0594 | 3                   |  # noqa: E501
-    +--------------------+------------------+-------+---------+---------------------+  # noqa: E501
-    | glass/cell/glass   | close roof mount | -2.98 | -0.0471 | 1                   |  # noqa: E501
-    +--------------------+------------------+-------+---------+---------------------+  # noqa: E501
-    | glass/cell/polymer | open rack        | -3.56 | -0.075  | 3                   |  # noqa: E501
-    +--------------------+------------------+-------+---------+---------------------+  # noqa: E501
-    | glass/cell/polymer | insulated back   | -2.81 | -0.0455 | 0                   |  # noqa: E501
-    +--------------------+------------------+-------+---------+---------------------+  # noqa: E501
+    +---------------+----------------+-------+---------+---------------------+
+    | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
+    +===============+================+=======+=========+=====================+
+    | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
+    +---------------+----------------+-------+---------+---------------------+
+    | glass/glass   | close roof     | -2.98 | -0.0471 | 1                   |
+    +---------------+----------------+-------+---------+---------------------+
+    | glass/polymer | open rack      | -3.56 | -0.075  | 3                   |
+    +---------------+----------------+-------+---------+---------------------+
+    | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
+    +---------------+----------------+-------+---------+---------------------+
 
     References
     ----------
@@ -111,24 +111,24 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, constant_loss_factor=29.0,
 
     Parameters
     ----------
-    poa_global : float or Series
-        Total incident irradiance [:math:`\frac{W}{m^2} ].
+    poa_global : float or Series [W/m^2]
+        Total incident irradiance.
 
-    temp_air : float or Series
-        Ambient dry bulb temperature [C].
+    temp_air : float or Series [C]
+        Ambient dry bulb temperature.
 
     wind_speed : float or Series, default 1.0 [m/s]
         Wind speed in m/s measured at the same height for which the wind loss
         factor was determined.  The default value is 1.0, which is the wind
         speed at module height used to determine NOCT.
 
-    constant_loss_factor : float, default 29.0 [:math:`\frac{W}{m^2 C}]
+    constant_loss_factor : float, default 29.0 [W/(m^2 C)]
         Combined heat loss factor coefficient. The default value is
         representative of freestanding modules with the rear surfaces exposed
         to open air (e.g., rack mounted). Parameter :math:`U_{c}` in
         :eq:`pvsyst`.
 
-    wind_loss_factor : float, default 0.0 [:math:`\frac{W}{m^2 C} \frac{m}{s}`]
+    wind_loss_factor : float, default 0.0 [(W/m^2 C)(m/s)]
         Combined heat loss factor influenced by wind. Parameter :math:`U_{c}`
         in :eq:`pvsyst`.
 

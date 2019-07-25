@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from pvlib import modelchain, pvsystem
+from pvlib import modelchain, celltemp, pvsystem
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
@@ -22,13 +22,29 @@ def system(sam_data):
     modules = sam_data['sandiamod']
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = modules[module].copy()
+    # transfer temperature model parameters
+    temp_model_params = {'a': module_parameters['A'],
+                                    'b': module_parameters['B'],
+                                    'deltaT': module_parameters['DTC']}
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters = temp_model_params,
                       inverter_parameters=inverter)
     return system
+
+
+def get_sapm_temp_model_params(sam_data):
+    # SAPM temperature model parameters for Canadian_Solar_CS5P_220M in open
+    # rack
+    modules = sam_data['sandiamod']
+    module = 'Canadian_Solar_CS5P_220M___2009_'
+    module_parameters = modules[module].copy()
+    # transfer temperature model parameters
+    return {'a': module_parameters['A'], 'b': module_parameters['B'],
+            'deltaT': module_parameters['DTC']}
 
 
 @pytest.fixture
@@ -39,11 +55,13 @@ def cec_dc_snl_ac_system(sam_data):
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
+    temp_model_params = get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -52,11 +70,13 @@ def cec_dc_snl_ac_system(sam_data):
 def cec_dc_native_snl_ac_system(sam_data):
     module = 'Canadian_Solar_CS5P_220M'
     module_parameters = sam_data['cecmod'][module].copy()
+    temp_model_params = get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 

@@ -19,7 +19,8 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def basic_chain(times, latitude, longitude,
-                module_parameters, inverter_parameters,
+                module_parameters, temperature_model_parameters,
+                inverter_parameters,
                 irradiance=None, weather=None,
                 surface_tilt=None, surface_azimuth=None,
                 orientation_strategy=None,
@@ -48,6 +49,9 @@ def basic_chain(times, latitude, longitude,
 
     module_parameters : None, dict or Series
         Module parameters as defined by the SAPM.
+
+    temperature_model_parameters : None, dict or Series, default None.
+        Temperature model parameters as defined by the SAPM.
 
     inverter_parameters : None, dict or Series
         Inverter parameters as defined by the CEC.
@@ -165,7 +169,10 @@ def basic_chain(times, latitude, longitude,
         weather = {'wind_speed': 0, 'temp_air': 20}
 
     temps = celltemp.sapm(total_irrad['poa_global'], weather['temp_air'],
-                          weather['wind_speed'])
+                          weather['wind_speed'],
+                          temperature_model_parameters['a'],
+                          temperature_model_parameters['b'],
+                          temperature_model_parameters['deltaT'])
 
     effective_irradiance = pvsystem.sapm_effective_irradiance(
         total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,

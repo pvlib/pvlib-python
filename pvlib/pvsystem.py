@@ -18,10 +18,10 @@ import pandas as pd
 
 from pvlib._deprecation import deprecated
 
-from pvlib import atmosphere, irradiance, tools, singlediode as _singlediode
+from pvlib import atmosphere, celltemp, irradiance, singlediode as _singlediode
+from pvlib import tools
 from pvlib.tools import _build_kwargs
 from pvlib.location import Location
-from pvlib import celltemp
 
 
 # a dict of required parameter names for each DC power model

@@ -26,17 +26,6 @@ def test_sapm_celltemp(celltemp_sapm_default):
     default = celltemp.sapm(900, 20, 5, a, b, deltaT)
     assert_allclose(default['temp_cell'], 43.509, 3)
     assert_allclose(default['temp_module'], 40.809, 3)
-#    assert_frame_equal(default, celltemp.sapm(900, 20, 5, [-3.47, -.0594, 3]))
-
-
-#def test_sapm_celltemp_dict_like():
-#    default = celltemp.sapm(900, 20, 5)
-#    assert_allclose(default['temp_cell'], 43.509, 3)
-#    assert_allclose(default['temp_module'], 40.809, 3)
-#    model = {'a': -3.47, 'b': -.0594, 'deltaT': 3}
-#    assert_frame_equal(default, celltemp.sapm(900, 20, 5, model))
-#    model = pd.Series(model)
-#    assert_frame_equal(default, celltemp.sapm(900, 20, 5, model))
 
 
 def test_sapm_celltemp_with_index(celltemp_sapm_default):
@@ -67,20 +56,6 @@ def test_pvsyst_celltemp_non_model():
                                              constant_loss_factor=26.5,
                                              wind_loss_factor=7.68, eta_m=0.1)
     assert_allclose(list_non_model['temp_cell'], 31.233, 0.001)
-
-
-#def test_pvsyst_celltemp_model_wrong_type():
-#    with pytest.raises(TypeError):
-#        pvsystem.pvsyst_celltemp(
-#            900, 20, 5, 0.1,
-#            model={"won't": 23.5, "work": 7.68})
-
-
-#def test_pvsyst_celltemp_model_non_option():
-#    with pytest.raises(KeyError):
-#        pvsystem.pvsyst_celltemp(
-#            900, 20, 5, 0.1,
-#            model="not_an_option")
 
 
 def test_pvsyst_celltemp_with_index():

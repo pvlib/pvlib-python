@@ -381,11 +381,10 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
 
 
 def test_PVSystem_sapm_celltemp(mocker):
-    racking_model = 'roof_mount_cell_glassback'
-    a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm'][racking_model]
+    a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm'] \
+                                             ['roof_mount_cell_glassback']
     temp_model_params = {'a': a, 'b': b, 'deltaT': deltaT}
-    system = pvsystem.PVSystem(racking_model=racking_model,
-                               temperature_model_parameters=temp_model_params)
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(celltemp, 'sapm')
     temps = 25
     irrads = 1000
@@ -399,7 +398,7 @@ def test_PVSystem_sapm_celltemp(mocker):
 def test_PVSystem_pvsyst_celltemp(mocker):
     racking_model = 'insulated'
     constant_loss_factor, wind_loss_factor = \
-        celltemp.TEMP_MODEL_PARAMS['pvsyst']['insulated']
+        celltemp.TEMP_MODEL_PARAMS['pvsyst'][racking_model]
     temp_model_params = {'constant_loss_factor': constant_loss_factor,
                          'wind_loss_factor': wind_loss_factor}
     alpha_absorption = 0.85
@@ -1227,7 +1226,9 @@ def test_PVSystem_localize_with_latlon():
 def test_PVSystem___repr__():
     system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
 
-    expected = 'PVSystem: \n  name: pv ftw\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+    expected = ('PVSystem: \n  name: pv ftw\n  surface_tilt: 0\n  '
+                'surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  '
+                'albedo: 0.25\n  racking_model: open_rack')
 
     assert system.__repr__() == expected
 
@@ -1236,7 +1237,10 @@ def test_PVSystem_localize___repr__():
     system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
     localized_system = system.localize(latitude=32, longitude=-111)
 
-    expected = 'LocalizedPVSystem: \n  name: None\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+    expected = ('LocalizedPVSystem: \n  name: None\n  latitude: 32\n  '
+                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
+                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
+                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
 
     assert localized_system.__repr__() == expected
 

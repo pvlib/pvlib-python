@@ -106,8 +106,15 @@ class PVSystem(object):
         May be used to look up the module_parameters dictionary
         via some other method.
 
+    module_type : None or string, default 'glass_polymer'
+         Describes the module's construction. Valid strings are 'glass_polymer'
+         and 'glass_glass'. Used for cell and module temperature calculations.
+
     module_parameters : None, dict or Series, default None
         Module parameters as defined by the SAPM, CEC, or other.
+
+    temperature_model_parameters : None, dict or Series, default None.
+        Temperature model parameters as defined by the SAPM, Pvsyst, or other.
 
     modules_per_string: int or float, default 1
         See system topology discussion above.
@@ -123,8 +130,9 @@ class PVSystem(object):
     inverter_parameters : None, dict or Series, default None
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : None or string, default 'open_rack_cell_glassback'
-        Used for cell and module temperature calculations.
+    racking_model : None or string, default 'open_rack'
+        Valid strings are 'open_rack' and 'close_mount'. Used for cell and
+        module temperature calculations.
 
     losses_parameters : None, dict or Series, default None
         Losses parameters as defined by PVWatts or other.
@@ -145,13 +153,13 @@ class PVSystem(object):
     def __init__(self,
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
-                 module=None, module_parameters=None,
+                 module=None, module_type='glass_polymer',
+                 module_parameters=None,
+                 temperature_model_parameters=None,
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
-                 racking_model='open_rack_cell_glassback',
-                 losses_parameters=None, name=None, **kwargs):
-
-        self.name = name
+                 racking_model='open_rack', losses_parameters=None, name=None,
+                 **kwargs):
 
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
@@ -170,6 +178,13 @@ class PVSystem(object):
         else:
             self.module_parameters = module_parameters
 
+        self.module_type = module_type
+
+        if temperature_model_parameters is None:
+            self.temperature_model_parameters = {}
+        else:
+            self.temperature_model_parameters = temperature_model_parameters
+
         self.modules_per_string = modules_per_string
         self.strings_per_inverter = strings_per_inverter
 
@@ -185,6 +200,8 @@ class PVSystem(object):
             self.losses_parameters = losses_parameters
 
         self.racking_model = racking_model
+
+        self.name = name
 
     def __repr__(self):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
@@ -422,8 +439,7 @@ class PVSystem(object):
         """
         return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
-    def sapm_celltemp(self, poa_global, temp_air, wind_speed,
-                      model='open_rack_cell_glassback'):
+    def sapm_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`celltemp.sapm` to calculate module and cell
         temperatures.
 
@@ -438,22 +454,14 @@ class PVSystem(object):
         wind_speed : float or Series
             Wind speed in m/s at a height of 10 meters.
 
-        model : string, default 'open_rack_cell_glassback'
-            Model parameters to be used. See celltemp.sapm for details
-
         Returns
         -------
         DataFrame with columns 'temp_cell' and 'temp_module'.
         Values in degrees C.
         """
-        try:
-            a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm'][model]
-        except KeyError:
-            msg = ('{} is not a named set of parameters for the {} cell'
-                   ' temperature model. See pvlib.celltemp.TEMP_MODEL_PARAMS'
-                   ' for names'.format(model, 'sapm'))
-            raise KeyError(msg)
-        return celltemp.sapm(poa_global, temp_air, wind_speed, a, b, deltaT)
+        kwargs = _build_kwargs(['a', 'b', 'deltaT'],
+                               self.temperature_model_parameters)
+        return celltemp.sapm(poa_global, temp_air, wind_speed, **kwargs)
 
     def sapm_spectral_loss(self, airmass_absolute):
         """
@@ -564,9 +572,10 @@ class PVSystem(object):
             raise KeyError(msg)
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
-        return celltemp.pvsyst(poa_global, temp_air, wind_speed,
-                               constant_loss_factor, wind_loss_factor,
-                               **kwargs)
+        kwargs.update(_build_kwargs(['constant_loss_factor',
+                                     'wind_loss_factor'],
+                                    self.temperature_model_parameters))
+        return celltemp.pvsyst(poa_global, temp_air, wind_speed, **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 

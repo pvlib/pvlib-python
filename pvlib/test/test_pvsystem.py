@@ -17,6 +17,7 @@ from pvlib import irradiance
 from pvlib import atmosphere
 from pvlib import solarposition
 from pvlib.location import Location
+from pvlib import celltemp
 
 from conftest import needs_numpy_1_10, requires_scipy
 
@@ -377,6 +378,46 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
         poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params,
         reference_irradiance=reference_irradiance)
     assert_allclose(out, 1, atol=0.1)
+
+
+def test_PVSystem_sapm_celltemp(mocker):
+    racking_model = 'roof_mount_cell_glassback'
+    a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm'][racking_model]
+    temp_model_params = {'a': a, 'b': b, 'deltaT': deltaT}
+    system = pvsystem.PVSystem(racking_model=racking_model,
+                               temperature_model_parameters=temp_model_params)
+    mocker.spy(celltemp, 'sapm')
+    temps = 25
+    irrads = 1000
+    winds = 1
+    out = system.sapm_celltemp(irrads, temps, winds)
+    celltemp.sapm.assert_called_once_with(irrads, temps, winds, a, b, deltaT)
+    assert isinstance(out, pd.DataFrame)
+    assert out.shape == (1, 2)
+
+
+def test_PVSystem_pvsyst_celltemp(mocker):
+    racking_model = 'insulated'
+    constant_loss_factor, wind_loss_factor = \
+        celltemp.TEMP_MODEL_PARAMS['pvsyst']['insulated']
+    temp_model_params = {'constant_loss_factor': constant_loss_factor,
+                         'wind_loss_factor': wind_loss_factor}
+    alpha_absorption = 0.85
+    eta_m = 0.17
+    module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
+    system = pvsystem.PVSystem(racking_model=racking_model,
+                               module_parameters=module_parameters,
+                               temperature_model_parameters=temp_model_params)
+    mocker.spy(celltemp, 'pvsyst')
+    irrad = 800
+    temp = 45
+    wind = 0.5
+    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
+    celltemp.pvsyst.assert_called_once_with(
+        irrad, temp, wind, constant_loss_factor, wind_loss_factor, eta_m,
+        alpha_absorption)
+    assert isinstance(out, pd.DataFrame)
+    assert all(out['temp_cell'] < 90) and all(out['temp_cell'] > 70)
 
 
 def test_calcparams_desoto(cec_module_params):

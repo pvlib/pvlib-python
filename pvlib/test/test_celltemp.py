@@ -52,20 +52,6 @@ def test_sapm_celltemp_with_index(celltemp_sapm_default):
     assert_frame_equal(expected, pvtemps)
 
 
-def test_PVSystem_sapm_celltemp(mocker):
-    racking_model = 'roof_mount_cell_glassback'
-    system = pvsystem.PVSystem(racking_model=racking_model)
-    a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm'][racking_model]
-    mocker.spy(celltemp, 'sapm')
-    temps = 25
-    irrads = 1000
-    winds = 1
-    out = system.sapm_celltemp(irrads, temps, winds, a, b, deltaT)
-    celltemp.sapm.assert_called_once_with(irrads, temps, winds, a, b, deltaT)
-    assert isinstance(out, pd.DataFrame)
-    assert out.shape == (1, 2)
-
-
 def test_pvsyst_celltemp_default():
     default = celltemp.pvsyst(900, 20, 5)
     assert_allclose(default['temp_cell'], 45.137, 0.001)
@@ -107,29 +93,6 @@ def test_pvsyst_celltemp_with_index():
     expected = pd.DataFrame([0.0, 23.96551, 5.0], index=times,
                             columns=['temp_cell'])
     assert_frame_equal(expected, pvtemps)
-
-
-def test_PVSystem_pvsyst_celltemp(mocker):
-    racking_model = 'insulated'
-    constant_loss_factor, wind_loss_factor = \
-        celltemp.TEMP_MODEL_PARAMS['pvsyst']['freestanding']
-    alpha_absorption = 0.85
-    eta_m = 0.17
-    module_parameters = {}
-    module_parameters['alpha_absorption'] = alpha_absorption
-    module_parameters['eta_m'] = eta_m
-    system = pvsystem.PVSystem(racking_model=racking_model,
-                               module_parameters=module_parameters)
-    mocker.spy(celltemp, 'pvsyst')
-    irrad = 800
-    temp = 45
-    wind = 0.5
-    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
-    celltemp.pvsyst.assert_called_once_with(
-        irrad, temp, wind, constant_loss_factor, wind_loss_factor, eta_m,
-        alpha_absorption)
-    assert isinstance(out, pd.DataFrame)
-    assert all(out['temp_cell'] < 90) and all(out['temp_cell'] > 70)
 
 
 @fail_on_pvlib_version('0.8')

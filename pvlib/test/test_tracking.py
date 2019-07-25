@@ -459,7 +459,7 @@ def test_LocalizedSingleAxisTracker___repr__():
                 'axis_azimuth: 0\n  max_angle: 90\n  backtrack: True\n  '
                 'gcr: 0.25\n  name: None\n  surface_tilt: None\n  '
                 'surface_azimuth: None\n  module: blah\n  inverter: blarg\n  '
-                'albedo: 0.25\n  racking_model: open_rack_cell_glassback\n  '
+                'albedo: 0.25\n  racking_model: open_rack\n  '
                 'latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC')
 
     assert localized_system.__repr__() == expected

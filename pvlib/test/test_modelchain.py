@@ -23,15 +23,13 @@ def system(sam_data):
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = modules[module].copy()
     # transfer temperature model parameters
-    temp_model_params = {'a': module_parameters['A'],
-                                    'b': module_parameters['B'],
-                                    'deltaT': module_parameters['DTC']}
+    temp_model_params = get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
-                      temperature_model_parameters = temp_model_params,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -91,6 +89,7 @@ def pvsyst_dc_snl_ac_system(sam_data, pvsyst_module_params):
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters={},
                       inverter_parameters=inverter)
     return system
 
@@ -108,6 +107,7 @@ def cec_dc_adr_ac_system(sam_data):
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters={},
                       inverter_parameters=inverter)
     return system
 
@@ -119,6 +119,7 @@ def pvwatts_dc_snl_ac_system(sam_data):
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
+                      temperature_model_parameters={},
                       inverter_parameters=inverter)
     return system
 
@@ -129,6 +130,7 @@ def pvwatts_dc_pvwatts_ac_system(sam_data):
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
+                      temperature_model_parameters={},
                       inverter_parameters=inverter_parameters)
     return system
 
@@ -545,12 +547,15 @@ def test_basic_chain_required(sam_data):
     altitude = 700
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
+    temp_model_params = get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     with pytest.raises(ValueError):
         dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                        module_parameters, inverter_parameters,
+                                        module_parameters,
+                                        temp_model_params,
+                                        inverter_parameters,
                                         altitude=altitude)
 
 
@@ -564,12 +569,14 @@ def test_basic_chain_alt_az(sam_data):
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
+    temp_model_params = get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, temp_model_params,
+                                    inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth)
 
@@ -587,12 +594,14 @@ def test_basic_chain_strategy(sam_data):
     altitude = 700
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
+    temp_model_params = get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(
-        times, latitude, longitude, module_parameters, inverter_parameters,
+        times, latitude, longitude, module_parameters, temp_model_params,
+        inverter_parameters,
         orientation_strategy='south_at_latitude_tilt', altitude=altitude)
 
     expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
@@ -611,12 +620,14 @@ def test_basic_chain_altitude_pressure(sam_data):
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
+    temp_model_params = get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, temp_model_params,
+                                    inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth,
                                     pressure=93194)
@@ -626,7 +637,8 @@ def test_basic_chain_altitude_pressure(sam_data):
     assert_series_equal(ac, expected, check_less_precise=1)
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, temp_model_params,
+                                    inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth,
                                     altitude=altitude)

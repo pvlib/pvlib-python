@@ -58,13 +58,13 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
     The model for cell temperature :math:`T_{C}` and module temperature
     :math:`T_{m}` is given by a pair of equations (Eq. 11 and 12 in [1]).
 
-    .. :math::
-        :label: eq1
+    .. math::
+       :label: eq1
 
         T_{m} = E \times \exp (a + b \times WS) + T_{a}
 
-    .. :math::
-        :label: eq2
+    .. math::
+       :label: eq2
 
         T_{C} = T_{m} + \frac{E}{E0} \Delta T
 
@@ -75,9 +75,9 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
     its mounting. Parameter sets are provided in [1] for representative modules
     and mounting.
 
-    +--------------------+------------------+-----------------+---------------------+
+    +--------------------+------------------+-------+---------+---------------------+
     | Module             | Mounting         | a     | b       | :math:`\Delta T [C]`|
-    +====================+==================+===+===+===============================+
+    +====================+==================+=======+=========+=====================+
     | glass/cell/glass   | open rack        | -3.47 | -0.0594 | 3                   |
     +--------------------+------------------+-------+---------+---------------------+
     | glass/cell/glass   | close roof mount | -2.98 | -0.0471 | 1                   |

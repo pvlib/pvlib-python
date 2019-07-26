@@ -293,13 +293,20 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
                          'pvsyst': 'calcparams_pvsyst',
                          'singlediode': 'calcparams_desoto',
                          'pvwatts_dc': 'pvwatts_dc'}
+    temp_model_function = {'sapm': 'sapm',
+                           'cec': 'sapm',
+                           'desoto': 'sapm',
+                           'pvsyst': 'pvsyst',
+                           'singlediode': 'sapm',
+                           'pvwatts_dc': 'sapm'}
     system = dc_systems[dc_model]
     # remove Adjust from model parameters for desoto, singlediode
     if dc_model in ['desoto', 'singlediode']:
         system.module_parameters.pop('Adjust')
     m = mocker.spy(system, dc_model_function[dc_model])
     mc = ModelChain(system, location,
-                    aoi_model='no_loss', spectral_model='no_loss')
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    temp_model=temp_model_function[dc_model])
     mc.run_model(weather.index, weather=weather)
     assert m.call_count == 1
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
@@ -328,7 +335,8 @@ def test_infer_temp_model(location, system, pvsyst_dc_snl_ac_system,
                   'pvsyst': pvsyst_dc_snl_ac_system}
     system = dc_systems[temp_model]
     mc = ModelChain(system, location,
-                    orientation_strategy='None', aoi_model='physical')
+                    orientation_strategy='None', aoi_model='physical',
+                    spectral_model='no_loss')
     assert isinstance(mc, ModelChain)
 
 
@@ -642,7 +650,7 @@ def test_basic_chain_altitude_pressure(sam_data):
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    temp_model_params = get_sapm_temp_model_params(sam_data)
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']

@@ -10,10 +10,16 @@ compatibility notes.
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
+Enhancements
+~~~~~~~~~~~~
+* Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
+  and :py:func:`pvlib.pvsystem.iam_interp`. (:issue:`751`)
+
 Bug fixes
 ~~~~~~~~~
 * Fix handling of keyword arguments in `forecasts.get_processed_data`.
   (:issue:`745`)
+* Fix output as Series feature in :py:func:`pvlib.pvsystem.ashraeiam`.
 
 Testing
 ~~~~~~~
@@ -26,4 +32,5 @@ Contributors
 * Mark Campanellli (:ghuser:`markcampanelli`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Oscar Dowson (:ghuser:`odow`)
+* Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)

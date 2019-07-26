@@ -381,8 +381,7 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
 
 
 def test_PVSystem_sapm_celltemp(mocker):
-    a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm']\
-                                             ['roof_mount_cell_glassback']
+    a, b, deltaT = (-3.47, -.0594, 3)  # open_rack_cell_glassback
     temp_model_params = {'a': a, 'b': b, 'deltaT': deltaT}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(celltemp, 'sapm')

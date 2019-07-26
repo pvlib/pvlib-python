@@ -305,7 +305,7 @@ class ModelChain(object):
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model=None, temp_model='sapm',
+                 spectral_model=None, temp_model=None,
                  losses_model='no_loss', name=None, **kwargs):
 
         self.name = name

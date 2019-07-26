@@ -28,6 +28,11 @@ def _get_sapm_temp_model_params(sam_data):
             'deltaT': module_parameters['DTC']}
 
 
+def _get_pvsyst_temp_model_params():
+    # Pvsyst temperature model parameters for freestanding system
+    return {'constant_loss_factor': 29.0, 'wind_loss_factor': 0.0}
+
+
 @pytest.fixture
 def system(sam_data):
     modules = sam_data['sandiamod']
@@ -84,7 +89,7 @@ def pvsyst_dc_snl_ac_system(sam_data, pvsyst_module_params):
     module = 'PVsyst test module'
     module_parameters = pvsyst_module_params
     module_parameters['b'] = 0.05
-    temp_model_params = _get_sapm_temp_model_params(sam_data)
+    temp_model_params = _get_pvsyst_temp_model_params()
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
@@ -310,6 +315,18 @@ def test_infer_spectral_model(location, system, cec_dc_snl_ac_system,
                   'cec': cec_dc_snl_ac_system,
                   'cec_native': cec_dc_native_snl_ac_system}
     system = dc_systems[dc_model]
+    mc = ModelChain(system, location,
+                    orientation_strategy='None', aoi_model='physical')
+    assert isinstance(mc, ModelChain)
+
+
+@pytest.mark.parametrize('temp_model', [
+    'sapm', pytest.param('pvsyst', marks=requires_scipy)])
+def test_infer_temp_model(location, system, pvsyst_dc_snl_ac_system,
+                          temp_model):
+    dc_systems = {'sapm': system,
+                  'pvsyst': pvsyst_dc_snl_ac_system}
+    system = dc_systems[temp_model]
     mc = ModelChain(system, location,
                     orientation_strategy='None', aoi_model='physical')
     assert isinstance(mc, ModelChain)
@@ -552,7 +569,7 @@ def test_basic_chain_required(sam_data):
     altitude = 700
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    temp_model_params = get_sapm_temp_model_params(sam_data)
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']

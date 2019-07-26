@@ -150,13 +150,13 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, constant_loss_factor=29.0,
     .. math::
        :label: pvsyst
 
-        T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} WS}
+        T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} \times WS}
 
-    Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
-    ambient air temperature :math:`T_{a}` (C). Model output is cell temperature
-    :math:`T_{C}`. Model parameters depend both on the module construction and
-    its mounting. Parameter sets are provided in [1] for open (freestanding)
-    close (insulated) mounting configurations.
+    Inputs to the model are plane-of-array irradiance :math:`E` (W/m2), ambient
+    air temperature :math:`T_{a}` (C) and wind speed :math:`WS` (m/s). Model
+    output is cell temperature :math:`T_{C}`. Model parameters depend both on
+    the module construction and its mounting. Parameter sets are provided in
+    [1] for open (freestanding) close (insulated) mounting configurations.
 
     +--------------+---------------+---------------+
     | Mounting     | :math:`U_{c}` | :math:`U_{v}` |

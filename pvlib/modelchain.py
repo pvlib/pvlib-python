@@ -48,13 +48,16 @@ def basic_chain(times, latitude, longitude,
         Use decimal degrees notation.
 
     module_parameters : None, dict or Series
-        Module parameters as defined by the SAPM.
+        Module parameters as defined by the SAPM. See pvsystem.sapm for
+        details.
 
     temperature_model_parameters : None, dict or Series, default None.
-        Temperature model parameters as defined by the SAPM.
+        Temperature model parameters as defined by the SAPM. See celltemp.sapm
+        for details.
 
     inverter_parameters : None, dict or Series
-        Inverter parameters as defined by the CEC.
+        Inverter parameters as defined by the CEC. See pvsystem.snlinverter for
+        details.
 
     irradiance : None or DataFrame, default None
         If None, calculates clear sky data.
@@ -685,7 +688,15 @@ class ModelChain(object):
             self._temp_model = partial(model, self)
 
     def infer_temp_model(self):
-        raise NotImplementedError
+        params = set(self.system.temperature_model_parameters.keys())
+        if set(['a', 'b', 'deltaT']) <= params:
+            return self.sapm_temp
+        elif set(['constant_loss_factor', 'wind_loss_factor']) <= params:
+            return self.pvsyst_temp
+        else:
+            raise ValueError('could not infer temperature model from '
+                             'system.temperature_module_parameters {}.'
+                             .format(self.system.temperature_model_parameters))
 
     def sapm_temp(self):
         self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],

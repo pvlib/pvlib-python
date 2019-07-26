@@ -174,8 +174,10 @@ def test_iam_martin_ruiz():
     assert_allclose(iam, expected, equal_nan=True)
 
     # check out of range of inputs as Series
-    iam = pvsystem.iam_martin_ruiz(pd.Series(aoi), a_r)
-    assert_allclose(iam, expected, equal_nan=True)
+    aoi = pd.Series(aoi)
+    expected = pd.Series(expected)
+    iam = pvsystem.iam_martin_ruiz(aoi, a_r)
+    assert_series_equal(iam, expected)
 
     # check exception clause
     with pytest.raises(RuntimeError):
@@ -207,9 +209,11 @@ def test_iam_interp():
     assert_allclose(iam, expected)
 
     # check normalization and Series
-    iam_mult = pd.Series(np.multiply(0.9, iam_meas))
+    aoi = pd.Series(aoi)
+    expected = pd.Series(expected)
+    iam_mult = np.multiply(0.9, iam_meas)
     iam = pvsystem.iam_interp(aoi, aoi_meas, iam_mult, normalize=True)
-    assert_allclose(iam, expected)
+    assert_series_equal(iam, expected)
 
     # check beyond reference values
     aoi = [-45, 0, 45, 85, 90, 95, 100, 105, 110]

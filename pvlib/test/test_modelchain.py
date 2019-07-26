@@ -17,13 +17,24 @@ from test_pvsystem import sam_data, pvsyst_module_params
 from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
+def _get_sapm_temp_model_params(sam_data):
+    # SAPM temperature model parameters for Canadian_Solar_CS5P_220M
+    # (glass/polymer) in open rack
+    modules = sam_data['sandiamod']
+    module = 'Canadian_Solar_CS5P_220M___2009_'
+    module_parameters = modules[module].copy()
+    # transfer temperature model parameters
+    return {'a': module_parameters['A'], 'b': module_parameters['B'],
+            'deltaT': module_parameters['DTC']}
+
+
 @pytest.fixture
 def system(sam_data):
     modules = sam_data['sandiamod']
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = modules[module].copy()
     # transfer temperature model parameters
-    temp_model_params = get_sapm_temp_model_params(sam_data)
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
@@ -34,17 +45,6 @@ def system(sam_data):
     return system
 
 
-def get_sapm_temp_model_params(sam_data):
-    # SAPM temperature model parameters for Canadian_Solar_CS5P_220M in open
-    # rack
-    modules = sam_data['sandiamod']
-    module = 'Canadian_Solar_CS5P_220M___2009_'
-    module_parameters = modules[module].copy()
-    # transfer temperature model parameters
-    return {'a': module_parameters['A'], 'b': module_parameters['B'],
-            'deltaT': module_parameters['DTC']}
-
-
 @pytest.fixture
 def cec_dc_snl_ac_system(sam_data):
     modules = sam_data['cecmod']
@@ -53,7 +53,7 @@ def cec_dc_snl_ac_system(sam_data):
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
-    temp_model_params = get_sapm_temp_model_params(sam_data)
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
@@ -68,7 +68,7 @@ def cec_dc_snl_ac_system(sam_data):
 def cec_dc_native_snl_ac_system(sam_data):
     module = 'Canadian_Solar_CS5P_220M'
     module_parameters = sam_data['cecmod'][module].copy()
-    temp_model_params = get_sapm_temp_model_params(sam_data)
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
@@ -119,7 +119,6 @@ def pvwatts_dc_snl_ac_system(sam_data):
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
-                      temperature_model_parameters={},
                       inverter_parameters=inverter)
     return system
 
@@ -127,10 +126,11 @@ def pvwatts_dc_snl_ac_system(sam_data):
 @pytest.fixture
 def pvwatts_dc_pvwatts_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
-                      temperature_model_parameters={},
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter_parameters)
     return system
 
@@ -174,7 +174,7 @@ def test_run_model(system, location):
     with pytest.warns(pvlibDeprecationWarning):
         ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
+    expected = pd.Series(np.array([183.522449305, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=1)
 
@@ -186,7 +186,7 @@ def test_run_model_with_irradiance(system, location):
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
-    expected = pd.Series(np.array([187.80746495e+02, -2.00000000e-02]),
+    expected = pd.Series(np.array([187.80746495, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 

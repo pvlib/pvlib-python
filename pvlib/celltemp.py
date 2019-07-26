@@ -27,14 +27,14 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
 
     Parameters
     ----------
-    poa_global : float or Series [W/m^2]
-        Total incident irradiance.
+    poa_global : float or Series
+        Total incident irradiance [W/m^2].
 
-    temp_air : float or Series [C]
-        Ambient dry bulb temperature.
+    temp_air : float or Series
+        Ambient dry bulb temperature [C].
 
-    wind_speed : float or Series [m/s]
-        Wind speed at a height of 10 meters.
+    wind_speed : float or Series
+        Wind speed at a height of 10 meters [m/s].
 
     a : float
         Parameter :math:`a` in :eq:`sapm1`.
@@ -42,11 +42,11 @@ def sapm(poa_global, temp_air, wind_speed, a, b, deltaT, irrad_ref=1000):
     b : float
         Parameter :math:`b` in :eq:`sapm1`.
 
-    deltaT : float [C]
-        Parameter :math:`\Delta T` in :eq:`sapm2`.
+    deltaT : float
+        Parameter :math:`\Delta T` in :eq:`sapm2` [C].
 
-    irrad_ref : float, default 1000 [W/m^2]
-        Reference irradiance, parameter :math:`E_{0}` in :eq:`sapm2`.
+    irrad_ref : float, default 1000
+        Reference irradiance, parameter :math:`E_{0}` in :eq:`sapm2` [W/m^2].
 
     Returns
     --------
@@ -111,26 +111,26 @@ def pvsyst(poa_global, temp_air, wind_speed=1.0, constant_loss_factor=29.0,
 
     Parameters
     ----------
-    poa_global : float or Series [W/m^2]
-        Total incident irradiance.
+    poa_global : float or Series
+        Total incident irradiance [W/m^2].
 
-    temp_air : float or Series [C]
-        Ambient dry bulb temperature.
+    temp_air : float or Series
+        Ambient dry bulb temperature [C].
 
-    wind_speed : float or Series, default 1.0 [m/s]
+    wind_speed : float or Series, default 1.0
         Wind speed in m/s measured at the same height for which the wind loss
-        factor was determined.  The default value is 1.0, which is the wind
-        speed at module height used to determine NOCT.
+        factor was determined.  The default value 1.0 m/2 is the wind
+        speed at module height used to determine NOCT. [m/s]
 
-    constant_loss_factor : float, default 29.0 [W/(m^2 C)]
+    constant_loss_factor : float, default 29.0
         Combined heat loss factor coefficient. The default value is
         representative of freestanding modules with the rear surfaces exposed
         to open air (e.g., rack mounted). Parameter :math:`U_{c}` in
-        :eq:`pvsyst`.
+        :eq:`pvsyst` [W/(m^2 C)].
 
-    wind_loss_factor : float, default 0.0 [(W/m^2 C)(m/s)]
+    wind_loss_factor : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{c}`
-        in :eq:`pvsyst`.
+        in :eq:`pvsyst` [(W/m^2 C)(m/s)].
 
     eta_m : numeric, default 0.1
         Module external efficiency as a fraction, i.e., DC power / poa_global.

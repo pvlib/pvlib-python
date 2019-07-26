@@ -41,30 +41,25 @@ def test_sapm_celltemp_with_index(celltemp_sapm_default):
     assert_frame_equal(expected, pvtemps)
 
 
-def test_pvsyst_celltemp_default():
+def test_celltemp_pvsyst_default():
     default = celltemp.pvsyst(900, 20, 5)
     assert_allclose(default['temp_cell'], 45.137, 0.001)
 
 
-def test_pvsyst_celltemp_non_model():
-    tup_non_model = pvsystem.pvsyst_celltemp(900, 20, wind_speed=5.0,
-                                             constant_loss_factor=23.5,
-                                             wind_loss_factor=6.25, eta_m=0.1)
-    assert_allclose(tup_non_model['temp_cell'], 33.315, 0.001)
-
-    list_non_model = pvsystem.pvsyst_celltemp(900, 20, wind_speed=5.0,
-                                             constant_loss_factor=26.5,
-                                             wind_loss_factor=7.68, eta_m=0.1)
-    assert_allclose(list_non_model['temp_cell'], 31.233, 0.001)
+def test_celltemp_pvsyst_kwargs():
+    result = celltemp.pvsyst(900, 20, wind_speed=5.0,
+                             constant_loss_factor=23.5, wind_loss_factor=6.25,
+                             eta_m=0.1)
+    assert_allclose(result['temp_cell'], 33.315, 0.001)
 
 
-def test_pvsyst_celltemp_with_index():
+def test_celltemp_pvsyst_with_index():
     times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12H")
     temps = pd.Series([0, 10, 5], index=times)
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
 
-    pvtemps = pvsystem.pvsyst_celltemp(irrads, temps, wind_speed=winds)
+    pvtemps = celltemp.pvsyst(irrads, temps, wind_speed=winds)
     expected = pd.DataFrame([0.0, 23.96551, 5.0], index=times,
                             columns=['temp_cell'])
     assert_frame_equal(expected, pvtemps)

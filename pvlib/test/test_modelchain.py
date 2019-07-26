@@ -84,12 +84,13 @@ def pvsyst_dc_snl_ac_system(sam_data, pvsyst_module_params):
     module = 'PVsyst test module'
     module_parameters = pvsyst_module_params
     module_parameters['b'] = 0.05
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
-                      temperature_model_parameters={},
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -102,12 +103,13 @@ def cec_dc_adr_ac_system(sam_data):
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['adrinverter']
     inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
-                      temperature_model_parameters={},
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -115,10 +117,12 @@ def cec_dc_adr_ac_system(sam_data):
 @pytest.fixture
 def pvwatts_dc_snl_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 

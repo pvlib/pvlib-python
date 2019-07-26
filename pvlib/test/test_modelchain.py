@@ -591,7 +591,7 @@ def test_basic_chain_alt_az(sam_data):
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    temp_model_params = get_sapm_temp_model_params(sam_data)
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
@@ -616,7 +616,7 @@ def test_basic_chain_strategy(sam_data):
     altitude = 700
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    temp_model_params = get_sapm_temp_model_params(sam_data)
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']

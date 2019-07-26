@@ -556,7 +556,8 @@ class PVSystem(object):
             Absorption coefficient
 
         model : string, default 'freestanding'
-            Heat loss model factors to be used. See celltemp.pvsyst for details.
+            Heat loss model factors to be used. See celltemp.pvsyst for
+            details.
 
         Returns
         -------

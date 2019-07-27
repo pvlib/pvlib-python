@@ -561,7 +561,9 @@ def test_deprecated_07():
 def test_deprecated_clearsky_07():
     # explicit system creation call because fail_on_pvlib_version
     # does not support decorators.
-    system = PVSystem(module_parameters={'pdc0': 1, 'gamma_pdc': -0.003})
+    system = PVSystem(module_parameters={'pdc0': 1, 'gamma_pdc': -0.003},
+                      temperature_model_parameters={'a': -3.5, 'b': -0.05,
+                                                    'deltaT': 3})
     location = Location(32.2, -110.9)
     mc = ModelChain(system, location, dc_model='pvwatts', ac_model='pvwatts',
                     aoi_model='no_loss', spectral_model='no_loss')

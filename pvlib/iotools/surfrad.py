@@ -2,13 +2,7 @@
 Import functions for NOAA SURFRAD Data.
 """
 import io
-
-try:
-    # python 2 compatibility
-    from urllib2 import urlopen, Request
-except ImportError:
-    from urllib.request import urlopen, Request
-
+from urllib.request import urlopen, Request
 import pandas as pd
 import numpy as np
 

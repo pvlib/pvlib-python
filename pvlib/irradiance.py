@@ -447,7 +447,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     model=model_perez)
     elif model == 'horizon_adjusted':
         assert("horizon_profile" in kwargs)
-        sky = horizon_adjusted(surface_tilt, surface_azimuth, dhi, kwargs["horizon_profile"]) 
+        sky = horizon_adjusted(surface_tilt, surface_azimuth, dhi,
+                               kwargs["horizon_profile"])
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
@@ -1208,6 +1209,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     else:
         return sky_diffuse
 
+
 def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
     """
     Determine the dip angle created by the surface of a tilted plane
@@ -1243,13 +1245,13 @@ def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
 
     x = np.cos(az)
     y = np.sin(az)
-    z = -np.tan(tilt) * (np.cos(plane_az) * np.cos(az) + \
+    z = -np.tan(tilt) * (np.cos(plane_az) * np.cos(az) +
                          np.sin(plane_az) * np.sin(az))
-    mask = z <=0
+    mask = z <= 0
     numer = x*x + y*y
     denom = x*x + y*y + z*z
     dip = np.degrees(np.arccos(np.sqrt(numer/denom)))
-    mask = np.logical_or(np.isnan(dip), z <=0)
+    mask = np.logical_or(np.isnan(dip), z <= 0)
 
     if isinstance(dip, pd.Series):
         dip[np.isnan(dip)] = 0
@@ -1262,28 +1264,30 @@ def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
 def calculate_dtf(horizon_profile, surface_tilt, surface_azimuth):
     """
     Calculate the diffuse tilt factor that is adjusted with the horizon
-    profile. 
+    profile.
     """
     tilt_rad = np.radians(surface_tilt)
     plane_az_rad = np.radians(surface_azimuth)
     a = np.sin(tilt_rad) * np.cos(plane_az_rad)
     b = np.sin(tilt_rad) * np.sin(plane_az_rad)
     c = np.cos(tilt_rad)
-    
+
     # this gets either an int or an array of zeros
     dtf = 0.0 * surface_tilt
     for pair in horizon_profile:
         az = np.radians(pair[0])
         horizon_dip = np.radians(pair[1])
         temp = np.radians(collection_plane_dip_angle(surface_tilt,
-                                                   surface_azimuth,
-                                                   pair[0]))
+                                                     surface_azimuth,
+                                                     pair[0]))
         dip = np.maximum(horizon_dip, temp)
 
-        first_term = .5 * (a*np.cos(az) + b*np.sin(az)) * (np.pi/2 - dip - np.sin(dip) * np.cos(dip))
+        first_term = .5 * (a*np.cos(az) + b*np.sin(az)) * \
+                          (np.pi/2 - dip - np.sin(dip) * np.cos(dip))
         second_term = .5 * c * np.cos(dip)**2
         dtf += 2 * (first_term + second_term) / len(horizon_profile)
     return dtf
+
 
 def horizon_adjusted(surface_tilt, surface_azimuth, dhi, horizon_profile):
     '''
@@ -1321,7 +1325,6 @@ def horizon_adjusted(surface_tilt, surface_azimuth, dhi, horizon_profile):
     sky_diffuse = dhi * dtf
 
     return sky_diffuse
-
 
 
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
@@ -3005,6 +3008,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
             (dni > max_dni)] = max_dni
     return dni
 
+
 def adjust_direct_for_horizon(poa_direct, horizon_profile,
                               solar_azimuth, solar_zenith):
     '''
@@ -3015,7 +3019,7 @@ def adjust_direct_for_horizon(poa_direct, horizon_profile,
     Parameters
     ----------
     poa_direct : numeric
-        The modeled direct normal irradiance in the plane of array. 
+        The modeled direct normal irradiance in the plane of array.
     solar_zenith : numeric
         Solar zenith angle.
     solar_azimuth : numeric

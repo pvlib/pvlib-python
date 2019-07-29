@@ -715,22 +715,21 @@ class ModelChain(object):
         self.losses = 1
         return self
 
-
     def effective_irradiance_model(self):
         fd = self.system.module_parameters.get('FD', 1.)
         poa_direct = self.total_irrad['poa_direct']
 
-        if self.location.horizon_profile != None:
-            horizon_profile = self.location.horizon_profile
+        if self.location.horizon_profile is not None:
+            horizon = self.location.horizon_profile
             solar_zenith = self.solar_position['apparent_zenith']
-            solar_azimuth = self.solar_position['azimuth']
-            poa_direct = pvlib.irradiance.adjust_direct_for_horizon(poa_direct,
-                                                                    horizon_profile,
-                                                                    solar_azimuth,
-                                                                    solar_zenith)
-        
+            solar_az = self.solar_position['azimuth']
+            adjusted = pvlib.irradiance.adjust_direct_for_horizon(poa_direct,
+                                                                  horizon,
+                                                                  solar_az,
+                                                                  solar_zenith)
+
         self.effective_irradiance = self.spectral_modifier * (
-            poa_direct*self.aoi_modifier +
+            adjusted*self.aoi_modifier +
             fd*self.total_irrad['poa_diffuse'])
         return self
 

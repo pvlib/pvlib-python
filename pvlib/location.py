@@ -317,5 +317,3 @@ class Location(object):
                              'one of pyephem, spa, geometric'
                              .format(method))
         return result
-
-    

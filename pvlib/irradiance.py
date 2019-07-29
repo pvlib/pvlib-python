@@ -1245,8 +1245,8 @@ def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
 
     x = np.cos(az)
     y = np.sin(az)
-    z = -np.tan(tilt) * (np.cos(plane_az) * np.cos(az) +
-                         np.sin(plane_az) * np.sin(az))
+    z = -np.tan(tilt) * (np.cos(plane_az) * np.cos(az)
+                         + np.sin(plane_az) * np.sin(az))
     mask = z <= 0
     numer = x*x + y*y
     denom = x*x + y*y + z*z

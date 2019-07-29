@@ -13,8 +13,6 @@ from scipy.interpolate import RegularGridInterpolator
 
 import matplotlib.pyplot as plt
 
-import googlemaps
-
 
 def latitude_to_geocentric(phi):
     """
@@ -130,6 +128,9 @@ def grid_elevations_from_gmaps(in_grid, GMAPS_API_KEY):
     point. Outputs the original grid with the elevation data appended along
     the third axis so the shape is grid_size+1 x grid_size+1 x 3.
     """
+
+    import googlemaps
+
     in_shape = in_grid.shape
     lats = in_grid.T[0].flatten()
     longs = in_grid.T[1].flatten()
@@ -217,15 +218,15 @@ def dip_calc(pt1, pt2):
     delta = np.subtract(v1, v2)
 
     normal = np.array((2*x1/a**2, 2*y1/a**2, 2*z1/b**2))
-    beta = np.arccos(np.dot(delta, normal)/np.linalg.norm(delta) /
-                     np.linalg.norm(normal))
+    beta = np.arccos(np.dot(delta, normal)/np.linalg.norm(delta)
+                     / np.linalg.norm(normal))
     dip_angle = beta - np.pi/2
     dip_angle_deg = dip_angle*180.0/np.pi
 
     # might wanna double check this formula (haversine?)
     bearing = np.arctan2(np.sin(theta2-theta1)*np.cos(phi2),
-                         np.cos(phi1) * np.sin(phi2) -
-                         np.sin(phi1) * np.cos(phi2) * np.cos(theta2-theta1))
+                         np.cos(phi1) * np.sin(phi2)
+                         - np.sin(phi1) * np.cos(phi2) * np.cos(theta2-theta1))
     bearing_deg = bearing*180.0/np.pi
 
     return (bearing_deg, dip_angle_deg)
@@ -569,6 +570,7 @@ def horizon_from_gmaps(lat, lon, GMAPS_API_KEY):
     profile for a location (specified by lat/lon). An API key for the
     googlemaps elevation API is needeed.
     """
+
     grid = grid_lat_lon(lat, lon, grid_size=400, grid_step=.002)
     elev_grid = grid_elevations_from_gmaps(grid, GMAPS_API_KEY)
     horizon_points = calculate_horizon_points(elev_grid,

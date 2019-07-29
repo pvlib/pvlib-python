@@ -684,7 +684,7 @@ def isotropic(surface_tilt, dhi):
     '''
 
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
-    # print((1 + tools.cosd(surface_tilt)) * 0.5)
+
     return sky_diffuse
 
 

@@ -4,8 +4,6 @@ horizontal irradiance, direct normal irradiance, diffuse horizontal
 irradiance, and total irradiance under various conditions.
 """
 
-from __future__ import division
-
 import datetime
 from collections import OrderedDict
 from functools import partial

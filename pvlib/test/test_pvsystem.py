@@ -149,6 +149,88 @@ def test_PVSystem_physicaliam(mocker):
     assert iam < 1.
 
 
+def test_iam_martin_ruiz():
+
+    aoi = 45.
+    a_r = 0.16
+    expected = 0.98986965
+
+    # will fail of default values change
+    iam = pvsystem.iam_martin_ruiz(aoi)
+    assert_allclose(iam, expected)
+    # will fail of parameter names change
+    iam = pvsystem.iam_martin_ruiz(aoi=aoi, a_r=a_r)
+    assert_allclose(iam, expected)
+
+    a_r = 0.18
+    aoi = [-100, -60, 0, 60, 100, np.nan, np.inf]
+    expected = [0.0, 0.9414631, 1.0, 0.9414631, 0.0, np.nan, 0.0]
+
+    # check out of range of inputs as list
+    iam = pvsystem.iam_martin_ruiz(aoi, a_r)
+    assert_allclose(iam, expected, equal_nan=True)
+
+    # check out of range of inputs as array
+    iam = pvsystem.iam_martin_ruiz(np.array(aoi), a_r)
+    assert_allclose(iam, expected, equal_nan=True)
+
+    # check out of range of inputs as Series
+    aoi = pd.Series(aoi)
+    expected = pd.Series(expected)
+    iam = pvsystem.iam_martin_ruiz(aoi, a_r)
+    assert_series_equal(iam, expected)
+
+    # check exception clause
+    with pytest.raises(RuntimeError):
+        pvsystem.iam_martin_ruiz(0.0, a_r=0.0)
+
+
+@requires_scipy
+def test_iam_interp():
+
+    aoi_meas = [0.0, 45.0, 65.0, 75.0]
+    iam_meas = [1.0,  0.9,  0.8,  0.6]
+
+    # simple default linear method
+    aoi = 55.0
+    expected = 0.85
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
+    assert_allclose(iam, expected)
+
+    # simple non-default method
+    aoi = 55.0
+    expected = 0.8878062
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas, method='cubic')
+    assert_allclose(iam, expected)
+
+    # check with all reference values
+    aoi = aoi_meas
+    expected = iam_meas
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
+    assert_allclose(iam, expected)
+
+    # check normalization and Series
+    aoi = pd.Series(aoi)
+    expected = pd.Series(expected)
+    iam_mult = np.multiply(0.9, iam_meas)
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_mult, normalize=True)
+    assert_series_equal(iam, expected)
+
+    # check beyond reference values
+    aoi = [-45, 0, 45, 85, 90, 95, 100, 105, 110]
+    expected = [0.9, 1.0, 0.9, 0.4, 0.3, 0.2, 0.1, 0.0, 0.0]
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
+    assert_allclose(iam, expected)
+
+    # check exception clause
+    with pytest.raises(ValueError):
+        pvsystem.iam_interp(0.0, [0], [1])
+
+    # check exception clause
+    with pytest.raises(ValueError):
+        pvsystem.iam_interp(0.0, [0, 90], [1, -1])
+
+
 # if this completes successfully we'll be able to do more tests below.
 @pytest.fixture(scope="session")
 def sam_data():
@@ -381,8 +463,7 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
 
 
 def test_PVSystem_sapm_celltemp(mocker):
-    a, b, deltaT = celltemp.TEMP_MODEL_PARAMS['sapm']\
-                                             ['roof_mount_cell_glassback']
+    a, b, deltaT = (-3.47, -.0594, 3)  # open_rack_cell_glassback
     temp_model_params = {'a': a, 'b': b, 'deltaT': deltaT}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(celltemp, 'sapm')

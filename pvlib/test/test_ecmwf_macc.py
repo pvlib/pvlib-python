@@ -2,7 +2,6 @@
 tests for :mod:`pvlib.iotools.ecmwf_macc`
 """
 
-from __future__ import division
 import os
 import datetime
 import numpy as np

@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from pvlib import modelchain, celltemp, pvsystem
+from pvlib import modelchain, pvsystem
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
@@ -545,11 +545,14 @@ def test_deprecated_07():
     # does not matter what the parameters are, just fake it until we make it
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
                          'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
-    system = PVSystem(module_parameters=module_parameters)
+    temp_model_params = {'a': -3.5, 'b': -0.05, 'deltaT': 3}
+    system = PVSystem(module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params)
     with pytest.warns(pvlibDeprecationWarning):
         ModelChain(system, location,
                    dc_model='singlediode',  # this should fail after 0.7
                    aoi_model='no_loss', spectral_model='no_loss',
+                   temp_model='sapm',
                    ac_model='snlinverter')
 
 
@@ -558,7 +561,9 @@ def test_deprecated_07():
 def test_deprecated_clearsky_07():
     # explicit system creation call because fail_on_pvlib_version
     # does not support decorators.
-    system = PVSystem(module_parameters={'pdc0': 1, 'gamma_pdc': -0.003})
+    system = PVSystem(module_parameters={'pdc0': 1, 'gamma_pdc': -0.003},
+                      temperature_model_parameters={'a': -3.5, 'b': -0.05,
+                                                    'deltaT': 3})
     location = Location(32.2, -110.9)
     mc = ModelChain(system, location, dc_model='pvwatts', ac_model='pvwatts',
                     aoi_model='no_loss', spectral_model='no_loss')

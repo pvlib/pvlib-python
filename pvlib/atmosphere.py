@@ -3,8 +3,6 @@ The ``atmosphere`` module contains methods to calculate relative and
 absolute airmass and to determine pressure from altitude or vice versa.
 """
 
-from __future__ import division
-
 from warnings import warn
 
 import numpy as np
@@ -211,8 +209,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     Sandia Report, (2012).
     '''
 
-    # need to filter first because python 2.7 does not support raising a
-    # negative number to a negative power.
+    # set zenith values greater than 90 to nans
     z = np.where(zenith > 90, np.nan, zenith)
     zenith_rad = np.radians(z)
 

@@ -3,8 +3,6 @@ The ``clearsky`` module contains several methods
 to calculate clear sky GHI, DNI, and DHI.
 """
 
-from __future__ import division
-
 import os
 from collections import OrderedDict
 import calendar

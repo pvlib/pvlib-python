@@ -2,7 +2,6 @@
 Read data from ECMWF MACC Reanalysis.
 """
 
-from __future__ import division
 import threading
 import pandas as pd
 

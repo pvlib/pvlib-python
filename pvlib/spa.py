@@ -6,7 +6,6 @@ numpy arrays or compiling the code to machine language with numba.
 # Contributors:
 # Created by Tony Lorenzo (@alorenzo175), Univ. of Arizona, 2015
 
-from __future__ import division
 import os
 import threading
 import warnings

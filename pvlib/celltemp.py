@@ -20,6 +20,18 @@ TEMPERATURE_MODEL_PARAMETERS = {
 }
 
 
+def _temperature_model_params(model, parameter_set):
+    try:
+        params = TEMPERATURE_MODEL_PARAMETERS[model]
+        return params[parameter_set]
+    except KeyError:
+        msg = ('{} is not a named set of parameters for the {} cell'
+               ' temperature model.'
+               ' See pvlib.celltemp.TEMPERATURE_MODEL_PARAMETERS'
+               ' for names'.format(parameter_set, model))
+        raise KeyError(msg)
+
+
 def sapm_cell(poa_global, air_temperature, wind_speed, a, b, deltaT,
               irrad_ref=1000):
     r'''
@@ -163,9 +175,8 @@ def sapm_module(poa_global, air_temperature, wind_speed, a, b):
     return poa_global * np.exp(a + b * wind_speed) + air_temperature
 
 
-def pvsyst_cell(poa_global, air_temperature, wind_speed=1.0,
-                constant_loss_factor=29.0, wind_loss_factor=0.0, eta_m=0.1,
-                alpha_absorption=0.9):
+def pvsyst_cell(poa_global, air_temperature, wind_speed=1.0, u_c=29.0, u_v=0.0,
+                eta_m=0.1, alpha_absorption=0.9):
     r"""
     Calculate cell temperature using an empirical heat loss factor model
     as implemented in PVsyst.
@@ -238,7 +249,7 @@ def pvsyst_cell(poa_global, air_temperature, wind_speed=1.0,
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
     """
 
-    total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor
+    total_loss_factor = u_c + u_v * wind_speed
     heat_input = poa_global * alpha_absorption * (1 - eta_m)
     temp_difference = heat_input / total_loss_factor
     return air_temperature + temp_difference

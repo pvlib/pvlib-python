@@ -463,41 +463,72 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
 
 
 def test_PVSystem_sapm_celltemp(mocker):
-    a, b, deltaT = (-3.47, -.0594, 3)  # open_rack_cell_glassback
+    a, b, deltaT = (-3.47, -0.0594, 3) # open_rack_glass_glass
     temp_model_params = {'a': a, 'b': b, 'deltaT': deltaT}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
-    mocker.spy(celltemp, 'sapm')
+    mocker.spy(celltemp, 'sapm_cell')
     temps = 25
     irrads = 1000
     winds = 1
     out = system.sapm_celltemp(irrads, temps, winds)
     celltemp.sapm.assert_called_once_with(irrads, temps, winds, a, b, deltaT)
-    assert isinstance(out, pd.DataFrame)
-    assert out.shape == (1, 2)
+    assert_allclose(out, 57, atol=1)
+
+
+def test_PVSystem_sapm_celltemp_kwargs(mocker):
+    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['sapm']\
+        ['open_rack_glass_glass']
+    system = pvsystem.PVSystem()
+    mocker.spy(celltemp, 'sapm_cell')
+    temps = 25
+    irrads = 1000
+    winds = 1
+    out = system.sapm_celltemp(irrads, temps, winds,
+                               parameter_set='open_rack_glass_glass')
+    celltemp.sapm.assert_called_once_with(irrads, temps, winds,
+                                          temp_model_params['a'],
+                                          temp_model_params['b'],
+                                          temp_model_params['deltaT'])
+    assert_allclose(out, 57, atol=1)
 
 
 def test_PVSystem_pvsyst_celltemp(mocker):
-    racking_model = 'insulated'
-    constant_loss_factor, wind_loss_factor = \
-        celltemp.TEMP_MODEL_PARAMS['pvsyst'][racking_model]
-    temp_model_params = {'constant_loss_factor': constant_loss_factor,
-                         'wind_loss_factor': wind_loss_factor}
+    parameter_set = 'insulated'
+    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['pvsyst']\
+        [parameter_set]
     alpha_absorption = 0.85
     eta_m = 0.17
     module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
-    system = pvsystem.PVSystem(racking_model=racking_model,
-                               module_parameters=module_parameters,
+    system = pvsystem.PVSystem(module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params)
-    mocker.spy(celltemp, 'pvsyst')
+    mocker.spy(celltemp, 'pvsyst_cell')
     irrad = 800
     temp = 45
     wind = 0.5
     out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
     celltemp.pvsyst.assert_called_once_with(
-        irrad, temp, wind, constant_loss_factor, wind_loss_factor, eta_m,
-        alpha_absorption)
-    assert isinstance(out, pd.DataFrame)
-    assert all(out['temp_cell'] < 90) and all(out['temp_cell'] > 70)
+        irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
+        eta_m, alpha_absorption)
+    assert all(out < 90) and all(out > 70)
+
+
+def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
+    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['pvsyst']\
+        ['insulated']
+    alpha_absorption = 0.85
+    eta_m = 0.17
+    module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
+    system = pvsystem.PVSystem(module_parameters=module_parameters)
+    mocker.spy(celltemp, 'pvsyst_cell')
+    irrad = 800
+    temp = 45
+    wind = 0.5
+    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind,
+                                 parameter_set='insulated')
+    celltemp.pvsyst.assert_called_once_with(
+        irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
+        eta_m, alpha_absorption)
+    assert all(out < 90) and all(out > 70)
 
 
 def test_calcparams_desoto(cec_module_params):

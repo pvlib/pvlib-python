@@ -100,3 +100,11 @@ def test_deprecated_07():
         pvsystem.sapm_celltemp(1000, 25, 1, -3.47, -0.0594, 3)
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvsyst_celltemp(1000, 25)
+
+def test__temperature_model_params():
+    params = celltemp._temperature_model_params('sapm',
+                                                'open_rack_glass_glass')
+    assert params == celltemp.TEMPERATURE_MODEL_PARAMETERS['sapm']\
+        ['open_rack_glass_glass']
+    with pytest.raises(KeyError):
+        celltemp._temperature_model_params('sapm', 'not_a_parameter_set')

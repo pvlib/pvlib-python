@@ -433,29 +433,37 @@ class PVSystem(object):
         """
         return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
-    def sapm_celltemp(self, poa_global, temp_air, wind_speed):
-        """Uses :py:func:`celltemp.sapm` to calculate module and cell
-        temperatures.
+    def sapm_celltemp(self, poa_global, air_temperature, wind_speed,
+                      parameter_set=None):
+        """Uses :py:func:`celltemp.sapm_cell` to calculate cell temperatures.
 
         Parameters
         ----------
         poa_global : float or Series
             Total incident irradiance in W/m^2.
 
-        temp_air : float or Series
+        air_temperature : float or Series
             Ambient dry bulb temperature in degrees C.
 
         wind_speed : float or Series
             Wind speed in m/s at a height of 10 meters.
 
+        parameter_set : string, default None
+            Heat loss model parameters to be used.
+            See celltemp.TEMPERATURE_MODEL_PARAMETERS for available parameter
+            sets.
+
         Returns
         -------
-        DataFrame with columns 'temp_cell' and 'temp_module'.
-        Values in degrees C.
+        float or Series, values in degrees C.
         """
-        kwargs = _build_kwargs(['a', 'b', 'deltaT'],
-                               self.temperature_model_parameters)
-        return celltemp.sapm(poa_global, temp_air, wind_speed, **kwargs)
+        if parameter_set is not None:
+            kwargs = celltemp._temperature_model_params('sapm', parameter_set)
+        else:
+            kwargs = _build_kwargs(['a', 'b', 'deltaT'],
+                                   self.temperature_model_parameters)
+        return celltemp.sapm_cell(poa_global, air_temperature, wind_speed,
+                                  **kwargs)
 
     def sapm_spectral_loss(self, airmass_absolute):
         """
@@ -525,16 +533,16 @@ class PVSystem(object):
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
 
-    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0,
-                        model='freestanding'):
-        """Uses :py:func:`celltemp.pvsyst` to calculate cell temperature.
+    def pvsyst_celltemp(self, poa_global, air_temperature, wind_speed=1.0,
+                        parameter_set=None):
+        """Uses :py:func:`celltemp.pvsyst_cell` to calculate cell temperature.
 
         Parameters
         ----------
         poa_global : numeric
             Total incident irradiance in W/m^2.
 
-        temp_air : numeric
+        air_temperature : numeric
             Ambient dry bulb temperature in degrees C.
 
         wind_speed : numeric, default 1.0
@@ -549,28 +557,25 @@ class PVSystem(object):
         alpha_absorption : numeric, default 0.9
             Absorption coefficient
 
-        model : string, default 'freestanding'
-            Heat loss model factors to be used. See celltemp.pvsyst for
-            details.
+        parameter_set : string, default None
+            Heat loss model parameters to be used.
+            See celltemp.TEMPERATURE_MODEL_PARAMETERS for available parameter
+            sets.
 
         Returns
         -------
-        DataFrame with column 'temp_cell', values in degrees C.
+        float or Series, values in degrees C.
         """
-        try:
-            constant_loss_factor, wind_loss_factor = \
-                celltemp.TEMP_MODEL_PARAMS['pvsyst'][model]
-        except KeyError:
-            msg = ('{} is not a named set of parameters for the {} cell'
-                   ' temperature model. See pvlib.celltemp.TEMP_MODEL_PARAMS'
-                   ' for names'.format(model, 'pvsyst'))
-            raise KeyError(msg)
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
-        kwargs.update(_build_kwargs(['constant_loss_factor',
-                                     'wind_loss_factor'],
-                                    self.temperature_model_parameters))
-        return celltemp.pvsyst(poa_global, temp_air, wind_speed, **kwargs)
+        if parameter_set is not None:
+            kwargs.update(celltemp._temperature_model_params('pvsyst',
+                                                             parameter_set))
+        else:
+            kwargs.update(_build_kwargs(['u_c', 'u_v'],
+                            self.temperature_model_parameters))
+        return celltemp.pvsyst(poa_global, air_temperature, wind_speed,
+                               **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 

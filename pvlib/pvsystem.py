@@ -2012,18 +2012,18 @@ def sapm(effective_irradiance, temp_cell, module):
     return out
 
 
-sapm_celltemp = deprecated('0.7', alternative='celltemp.sapm',
+sapm_celltemp = deprecated('0.7', alternative='celltemp.sapm_cell',
                            name='sapm_celltemp', removal='0.8',
-                           addendum='Note that the argument order for '
-                           'celltemp.sapm is different than for '
+                           addendum='Note that the argument names and order '
+                           'for celltemp.sapm_cell are different than for '
                            'sapm_celltemp')(celltemp.sapm)
 
 
-pvsyst_celltemp = deprecated('0.7', alternative='celltemp.pvsyst',
+pvsyst_celltemp = deprecated('0.7', alternative='celltemp.pvsyst_cell',
                              name='pvsyst_celltemp',
-                             removal='0.8', addendum='Note that '
-                             'celltemp.pvsyst returns a DataFrame instead '
-                             'of numeric or Series')(celltemp.pvsyst)
+                             removal='0.8', addendum='Note that the argument '
+                             'names for celltemp.pvsyst_cell are different '
+                             'than for pvsyst_celltemp')(celltemp.pvsyst)
 
 
 def sapm_spectral_loss(airmass_absolute, module):

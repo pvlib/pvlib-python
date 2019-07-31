@@ -225,8 +225,8 @@ def dip_calc(pt1, pt2):
 
     # might wanna double check this formula (haversine?)
     bearing = np.arctan2(np.sin(theta2-theta1)*np.cos(phi2),
-                         np.cos(phi1) * np.sin(phi2)
-                         - np.sin(phi1) * np.cos(phi2) * np.cos(theta2-theta1))
+                         (np.cos(phi1) * np.sin(phi2)
+                          - np.sin(phi1) * np.cos(phi2)*np.cos(theta2-theta1)))
     bearing_deg = bearing*180.0/np.pi
 
     return (bearing_deg, dip_angle_deg)

@@ -40,7 +40,8 @@ URL = 'https://github.com/pvlib/pvlib-python'
 INSTALL_REQUIRES = ['numpy >= 1.10.4',
                     'pandas >= 0.18.1',
                     'pytz',
-                    'requests']
+                    'requests',
+                    'scipy']
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'pytest-timeout']
 EXTRAS_REQUIRE = {

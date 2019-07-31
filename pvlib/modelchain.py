@@ -52,7 +52,7 @@ def basic_chain(times, latitude, longitude,
         details.
 
     temperature_model_parameters : None, dict or Series, default None.
-        Temperature model parameters as defined by the SAPM. 
+        Temperature model parameters as defined by the SAPM.
         See celltemp.sapm_cell for details.
 
     inverter_parameters : None, dict or Series

@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
-Created on Fri Mar 29 09:40:42 2019
-
-@author: cwhanse
+The ``temperature`` module contains functions for modeling temperature of
+PV modules and cells.
 """
 
 import numpy as np

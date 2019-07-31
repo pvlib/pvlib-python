@@ -2016,14 +2016,14 @@ sapm_celltemp = deprecated('0.7', alternative='celltemp.sapm_cell',
                            name='sapm_celltemp', removal='0.8',
                            addendum='Note that the argument names and order '
                            'for celltemp.sapm_cell are different than for '
-                           'sapm_celltemp')(celltemp.sapm)
+                           'sapm_celltemp')(celltemp.sapm_cell)
 
 
 pvsyst_celltemp = deprecated('0.7', alternative='celltemp.pvsyst_cell',
                              name='pvsyst_celltemp',
                              removal='0.8', addendum='Note that the argument '
                              'names for celltemp.pvsyst_cell are different '
-                             'than for pvsyst_celltemp')(celltemp.pvsyst)
+                             'than for pvsyst_celltemp')(celltemp.pvsyst_cell)
 
 
 def sapm_spectral_loss(airmass_absolute, module):

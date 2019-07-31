@@ -30,7 +30,7 @@ def _get_sapm_temp_model_params(sam_data):
 
 def _get_pvsyst_temp_model_params():
     # Pvsyst temperature model parameters for freestanding system
-    return {'constant_loss_factor': 29.0, 'wind_loss_factor': 0.0}
+    return {'u_c': 29.0, 'u_v': 0.0}
 
 
 @pytest.fixture

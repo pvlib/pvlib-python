@@ -507,7 +507,7 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     temp = 45
     wind = 0.5
     out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
-    celltemp.pvsyst.assert_called_once_with(
+    celltemp.pvsyst_cell.assert_called_once_with(
         irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
         eta_m, alpha_absorption)
     assert all(out < 90) and all(out > 70)
@@ -526,7 +526,7 @@ def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
     wind = 0.5
     out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind,
                                  parameter_set='insulated')
-    celltemp.pvsyst.assert_called_once_with(
+    celltemp.pvsyst_cell.assert_called_once_with(
         irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
         eta_m, alpha_absorption)
     assert all(out < 90) and all(out > 70)

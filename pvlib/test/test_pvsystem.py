@@ -510,7 +510,7 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     celltemp.pvsyst_cell.assert_called_once_with(
         irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
         eta_m, alpha_absorption)
-    assert all(out < 90) and all(out > 70)
+    assert (out < 90) and (out > 70)
 
 
 def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
@@ -529,7 +529,7 @@ def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
     celltemp.pvsyst_cell.assert_called_once_with(
         irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
         eta_m, alpha_absorption)
-    assert all(out < 90) and all(out > 70)
+    assert (out < 90) and (out > 70)
 
 
 def test_calcparams_desoto(cec_module_params):

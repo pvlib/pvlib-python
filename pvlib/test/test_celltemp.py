@@ -30,7 +30,8 @@ def test_sapm_cell(sapm_default):
 
 
 def test_sapm_module(sapm_default):
-    default = celltemp.sapm(900, 20, 5, sapm_default['a'], sapm_default['b'])
+    default = celltemp.sapm_module(900, 20, 5, sapm_default['a'],
+                                   sapm_default['b'])
     assert_allclose(default, 40.809, 3)
 
 

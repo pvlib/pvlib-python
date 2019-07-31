@@ -32,7 +32,7 @@ def _temperature_model_params(model, parameter_set):
         raise KeyError(msg)
 
 
-def sapm_cell(poa_global, air_temperature, wind_speed, a, b, deltaT,
+def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
               irrad_ref=1000):
     r'''
     Calculate cell temperature per the Sandia PV Array Performance Model [1].
@@ -42,7 +42,7 @@ def sapm_cell(poa_global, air_temperature, wind_speed, a, b, deltaT,
     poa_global : float or Series
         Total incident irradiance [W/m^2].
 
-    air_temperature : float or Series
+    temp_air : float or Series
         Ambient dry bulb temperature [C].
 
     wind_speed : float or Series
@@ -107,12 +107,12 @@ def sapm_cell(poa_global, air_temperature, wind_speed, a, b, deltaT,
     NM.
 
     '''
-    module_temperature = sapm_module(poa_global, air_temperature, wind_speed,
+    module_temperature = sapm_module(poa_global, temp_air, wind_speed,
                                      a, b)
     return module_temperature + (poa_global / irrad_ref) * (deltaT)
 
 
-def sapm_module(poa_global, air_temperature, wind_speed, a, b):
+def sapm_module(poa_global, temp_air, wind_speed, a, b):
     r'''
     Calculate module back surface temperature per the Sandia PV Array
     Performance Model [1].
@@ -122,7 +122,7 @@ def sapm_module(poa_global, air_temperature, wind_speed, a, b):
     poa_global : float or Series
         Total incident irradiance [W/m^2].
 
-    air_temperature : float or Series
+    temp_air : float or Series
         Ambient dry bulb temperature [C].
 
     wind_speed : float or Series
@@ -172,10 +172,10 @@ def sapm_module(poa_global, air_temperature, wind_speed, a, b):
     NM.
 
     '''
-    return poa_global * np.exp(a + b * wind_speed) + air_temperature
+    return poa_global * np.exp(a + b * wind_speed) + temp_air
 
 
-def pvsyst_cell(poa_global, air_temperature, wind_speed=1.0, u_c=29.0, u_v=0.0,
+def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
                 eta_m=0.1, alpha_absorption=0.9):
     r"""
     Calculate cell temperature using an empirical heat loss factor model
@@ -186,7 +186,7 @@ def pvsyst_cell(poa_global, air_temperature, wind_speed=1.0, u_c=29.0, u_v=0.0,
     poa_global : float or Series
         Total incident irradiance [W/m^2].
 
-    air_temperature : float or Series
+    temp_air : float or Series
         Ambient dry bulb temperature [C].
 
     wind_speed : float or Series, default 1.0
@@ -252,4 +252,4 @@ def pvsyst_cell(poa_global, air_temperature, wind_speed=1.0, u_c=29.0, u_v=0.0,
     total_loss_factor = u_c + u_v * wind_speed
     heat_input = poa_global * alpha_absorption * (1 - eta_m)
     temp_difference = heat_input / total_loss_factor
-    return air_temperature + temp_difference
+    return temp_air + temp_difference

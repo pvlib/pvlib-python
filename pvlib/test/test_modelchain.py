@@ -229,7 +229,7 @@ def test_run_model_with_weather(system, location, weather, mocker):
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
     # test with sapm cell temperature model
-    system.racking_model = 'open_rack_cell_glassback'
+    system.racking_model = 'open_rack_glass_glass'
     mc = ModelChain(system, location)
     mc.temp_model = 'sapm'
     m_sapm = mocker.spy(system, 'sapm_celltemp')

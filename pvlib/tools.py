@@ -425,3 +425,100 @@ def _golden_sect_DataFrame(params, VL, VH, func):
             raise Exception("EXCEPTION:iterations exceeded maximum (50)")
 
     return func(df, 'V1'), df['V1']
+
+
+def latitude_to_geocentric(phi):
+    """
+    Converts a geodetic (common) latitude to a geocentric latitude.
+    [1] https://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
+    """
+    a = 6378.137
+    b = 6356.752
+    return np.arctan(b**2/a**2*np.tan(phi))
+
+
+def latitude_to_geodetic(phi):
+    """
+    Converts a geocentric latitude to a geodetic (common) latitude.
+    [1] https://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
+    """
+    a = 6378.137
+    b = 6356.752
+    return np.arctan(a**2/b**2*np.tan(phi))
+
+
+def lle_to_xyz(point):
+    """
+    Converts a (lat, lon, elev) tuple into a (x, y, z) tuple.
+    The center of the earth is the origin in the xyz-space.
+    The input latitude is assumed to be a common latitude (geodetic).
+    """
+    lat = point[0]
+    lon = point[1]
+    elev = point[2]
+
+    a = 6378137.0
+    b = 6356752.0
+
+    # convert to radians
+    phi = lat*np.pi/180.0
+    theta = lon*np.pi/180.0
+
+    # compute radius of earth at each point
+    r = (a**2 * np.cos(phi))**2 + (b**2 * np.sin(phi))**2
+    r = r / (a**2 * np.cos(phi)**2 + b**2 * np.sin(phi)**2)
+    r = np.sqrt(r)
+
+    h = r + elev
+    alpha = latitude_to_geocentric(phi)
+    beta = theta
+    x = h * np.cos(alpha) * np.cos(beta)
+    y = h * np.cos(alpha) * np.sin(beta)
+    z = h * np.sin(alpha)
+    v = np.array((x, y, z))
+    return v
+
+
+def xyz_to_lle(point):
+    """
+    Converts a (x, y, z) tuple into a (lat, lon, elev) tuple.
+    The center of the earth is the origin in the xyz-space.
+    The output latitude is assumed to be a common latitude (geodetic).
+    """
+    a = 6378137.0
+    b = 6356752.0
+
+    x = point[0]
+    y = point[1]
+    z = point[2]
+
+    # get corresponding point on earth's surface
+    t = np.sqrt((a*b)**2/(b**2*(x**2+y**2)+a**2*z**2))
+    point_s = t * point
+    z_s = point_s[2]
+
+    elev = np.linalg.norm(point-point_s)
+    r = np.linalg.norm(point_s)
+
+    alpha = np.arcsin(z_s / r)
+    phi = latitude_to_geodetic(alpha)
+    lat = phi*180.0/np.pi
+
+    lon = np.arctan2(y, x)*180/np.pi
+    return (lat, lon, elev)
+
+
+def polar_to_cart(rho, phi):
+    """
+    Converts polar coordiantes to cartesian coordinates in 2-d space.
+    """
+    x = rho * np.cos(phi)
+    y = rho * np.sin(phi)
+    return (x, y)
+
+
+def round_to_nearest(x, base):
+    """
+    Helper function to round x to nearest base.
+    """
+    return base * round(float(x) / base)

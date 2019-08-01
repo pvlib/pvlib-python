@@ -729,8 +729,7 @@ class ModelChain(object):
                                                                 solar_zenith)
 
         self.effective_irradiance = self.spectral_modifier * (
-            direct*self.aoi_modifier
-            + fd*self.total_irrad['poa_diffuse'])
+            direct*self.aoi_modifier + fd*self.total_irrad['poa_diffuse'])
         return self
 
     def complete_irradiance(self, times=None, weather=None):

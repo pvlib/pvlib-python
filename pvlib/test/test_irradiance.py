@@ -940,3 +940,51 @@ def test_clearness_index_zenith_independent(airmass_kt):
                                                         airmass)
     expected = pd.Series([np.nan, 0.553744437562], index=times)
     assert_series_equal(out, expected)
+
+
+def test_adjust_direct_for_horizon(irrad_data, ephem_data):
+    zero_horizon = []
+    max_horizon = []
+    for i in range(-180, 181):
+        zero_horizon.append((i, 0.0))
+        max_horizon.append((i, 90.0))
+
+    zero_adjusted = irradiance.adjust_direct_for_horizon(irrad_data["dni"],
+                                                         zero_horizon,
+                                                         ephem_data["azimuth"],
+                                                         ephem_data["zenith"])
+    zero_expected = irrad_data["dni"]
+    assert_allclose(zero_adjusted.values, zero_expected.values)
+
+    max_adjusted = irradiance.adjust_direct_for_horizon(irrad_data["dni"],
+                                                        max_horizon,
+                                                        ephem_data["azimuth"],
+                                                        ephem_data["zenith"])
+
+    max_expected = pd.Series([0, 0, 0, 0])
+    assert_allclose(max_adjusted.values, max_expected.values, atol=1e-7)
+
+
+def test_horizon_adjusted():
+    zero_horizon = []
+    max_horizon = []
+    for i in range(-180, 181):
+        zero_horizon.append((i, 0.0))
+        max_horizon.append((i, 90.0))
+
+    surface_tilts = [0, 5, 20, 38, 89]
+    surface_azimuths = [0, 90, 180, 235, 355]
+
+    adjusted = irradiance.horizon_adjusted(surface_tilts,
+                                           surface_azimuths,
+                                           1.0,
+                                           zero_horizon)
+    expected = irradiance.isotropic(surface_tilts, np.ones(5))
+    assert_allclose(adjusted, expected, atol=2e-3)
+
+    adjusted = irradiance.horizon_adjusted(surface_tilts,
+                                           surface_azimuths,
+                                           1.0,
+                                           max_horizon)
+    expected = np.zeros(5)
+    assert_allclose(adjusted, expected, atol=1e-7)

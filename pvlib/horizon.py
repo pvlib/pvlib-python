@@ -11,97 +11,8 @@ import itertools
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 
+from pvlib import tools
 import matplotlib.pyplot as plt
-
-
-def latitude_to_geocentric(phi):
-    """
-    Converts a geodetic (common) latitude to a geocentric latitude.
-    [1] https://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
-    """
-    a = 6378.137
-    b = 6356.752
-    return np.arctan(b**2/a**2*np.tan(phi))
-
-
-def latitude_to_geodetic(phi):
-    """
-    Converts a geocentric latitude to a geodetic (common) latitude.
-    [1] https://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
-    """
-    a = 6378.137
-    b = 6356.752
-    return np.arctan(a**2/b**2*np.tan(phi))
-
-
-def xyz_from_lle(point):
-    """
-    Converts a (lat, lon, elev) tuple into a (x, y, z) tuple.
-    The center of the earth is the origin in the xyz-space.
-    The input latitude is assumed to be a common latitude (geodetic).
-    """
-    lat = point[0]
-    lon = point[1]
-    elev = point[2]
-
-    a = 6378137.0
-    b = 6356752.0
-
-    # convert to radians
-    phi = lat*np.pi/180.0
-    theta = lon*np.pi/180.0
-
-    # compute radius of earth at each point
-    r = (a**2 * np.cos(phi))**2 + (b**2 * np.sin(phi))**2
-    r = r / (a**2 * np.cos(phi)**2 + b**2 * np.sin(phi)**2)
-    r = np.sqrt(r)
-
-    h = r + elev
-    alpha = latitude_to_geocentric(phi)
-    beta = theta
-    x = h * np.cos(alpha) * np.cos(beta)
-    y = h * np.cos(alpha) * np.sin(beta)
-    z = h * np.sin(alpha)
-    v = np.array((x, y, z))
-    return v
-
-
-def lle_from_xyz(point):
-    """
-    Converts a (x, y, z) tuple into a (lat, lon, elev) tuple.
-    The center of the earth is the origin in the xyz-space.
-    The output latitude is assumed to be a common latitude (geodetic).
-    """
-    a = 6378137.0
-    b = 6356752.0
-
-    x = point[0]
-    y = point[1]
-    z = point[2]
-
-    # get corresponding point on earth's surface
-    t = np.sqrt((a*b)**2/(b**2*(x**2+y**2)+a**2*z**2))
-    point_s = t * point
-    z_s = point_s[2]
-
-    elev = np.linalg.norm(point-point_s)
-    r = np.linalg.norm(point_s)
-
-    alpha = np.arcsin(z_s / r)
-    phi = latitude_to_geodetic(alpha)
-    lat = phi*180.0/np.pi
-
-    lon = np.arctan2(y, x)*180/np.pi
-    return (lat, lon, elev)
-
-
-def pol2cart(rho, phi):
-    """
-    Converts polar coordiantes to cartesian coordinates in 2-d space.
-    """
-    x = rho * np.cos(phi)
-    y = rho * np.sin(phi)
-    return (x, y)
 
 
 def grid_lat_lon(lat, lon, grid_size=200, grid_step=.001):
@@ -208,8 +119,8 @@ def dip_calc(pt1, pt2):
     phi2 = lat2*np.pi/180.0
     theta2 = lon2*np.pi/180.0
 
-    v1 = xyz_from_lle((lat1, lon1, elev1))
-    v2 = xyz_from_lle((lat2, lon2, elev2))
+    v1 = tools.lle_to_xyz((lat1, lon1, elev1))
+    v2 = tools.lle_to_xyz((lat2, lon2, elev2))
 
     x1 = v1[0]
     y1 = v1[1]
@@ -407,7 +318,7 @@ def sample_using_interpolator(grid, num_samples):
     theta = np.linspace(0, 2 * np.pi, num_samples[1])
     polar_pts = np.array(list(itertools.product(r, theta)))
 
-    pts = np.array([pol2cart(e[0], e[1]) for e in polar_pts])
+    pts = np.array([tools.polar_to_cart(e[0], e[1]) for e in polar_pts])
     pts += np.array((site_lat, site_lon))
     total_num_samples = num_samples[0]*num_samples[1]
 
@@ -442,9 +353,9 @@ def uniformly_sample_triangle(p1, p2, p3, num_samples):
 
     [1] http://graphics.stanford.edu/courses/cs468-08-fall/pdf/osada.pdf
     """
-    c1 = xyz_from_lle(p1)
-    c2 = xyz_from_lle(p2)
-    c3 = xyz_from_lle(p3)
+    c1 = tools.lle_to_xyz(p1)
+    c2 = tools.lle_to_xyz(p2)
+    c3 = tools.lle_to_xyz(p3)
 
     points = []
     for i in range(num_samples):
@@ -453,15 +364,8 @@ def uniformly_sample_triangle(p1, p2, p3, num_samples):
         sqrt_r1 = np.sqrt(r1)
 
         random_pt = (1-sqrt_r1)*c1 + sqrt_r1*(1-r2)*c2 + sqrt_r1*r2*c3
-        points.append(lle_from_xyz(random_pt))
+        points.append(tools.xyz_to_lle(random_pt))
     return points
-
-
-def round_to_nearest(x, base):
-    """
-    Helper function to round x to nearest base.
-    """
-    return base * round(float(x) / base)
 
 
 def filter_points(horizon_points, bin_size=1):
@@ -488,7 +392,7 @@ def filter_points(horizon_points, bin_size=1):
     for pair in horizon_points:
         azimuth = pair[0]
         dip = pair[1]
-        azimuth_wedge = round_to_nearest(azimuth, bin_size)
+        azimuth_wedge = tools.round_to_nearest(azimuth, bin_size)
 
         if azimuth_wedge in wedges:
             wedges[azimuth_wedge] = max(dip, wedges[azimuth_wedge])

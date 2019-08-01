@@ -1273,7 +1273,7 @@ def calculate_dtf(horizon_profile, surface_tilt, surface_azimuth):
     c = np.cos(tilt_rad)
 
     # this gets either an int or an array of zeros
-    dtf = 0.0 * surface_tilt
+    dtf = np.multiply(0.0, surface_tilt)
     for pair in horizon_profile:
         az = np.radians(pair[0])
         horizon_dip = np.radians(pair[1])

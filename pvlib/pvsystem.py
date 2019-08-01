@@ -12,7 +12,8 @@ import pandas as pd
 
 from pvlib._deprecation import deprecated
 
-from pvlib import atmosphere, celltemp, irradiance, singlediode as _singlediode
+from pvlib import (atmosphere, irradiance, singlediode as _singlediode,
+                   temperature)
 from pvlib import tools
 from pvlib.tools import _build_kwargs, cosd
 from pvlib.location import Location
@@ -435,7 +436,8 @@ class PVSystem(object):
 
     def sapm_celltemp(self, poa_global, temp_air, wind_speed,
                       parameter_set=None):
-        """Uses :py:func:`celltemp.sapm_cell` to calculate cell temperatures.
+        """Uses :py:func:`temperature.sapm_cell` to calculate cell
+        temperatures.
 
         Parameters
         ----------
@@ -450,19 +452,21 @@ class PVSystem(object):
 
         parameter_set : string, default None
             Heat loss model parameters to be used.
-            See celltemp.TEMPERATURE_MODEL_PARAMETERS for available parameter
-            sets.
+            See temperature.TEMPERATURE_MODEL_PARAMETERS for available
+            parameter sets.
 
         Returns
         -------
         float or Series, values in degrees C.
         """
         if parameter_set is not None:
-            kwargs = celltemp._temperature_model_params('sapm', parameter_set)
+            kwargs = temperature._temperature_model_params('sapm',
+                                                           parameter_set)
         else:
             kwargs = _build_kwargs(['a', 'b', 'deltaT'],
                                    self.temperature_model_parameters)
-        return celltemp.sapm_cell(poa_global, temp_air, wind_speed, **kwargs)
+        return temperature.sapm_cell(poa_global, temp_air, wind_speed,
+                                     **kwargs)
 
     def sapm_spectral_loss(self, airmass_absolute):
         """
@@ -534,7 +538,8 @@ class PVSystem(object):
 
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0,
                         parameter_set=None):
-        """Uses :py:func:`celltemp.pvsyst_cell` to calculate cell temperature.
+        """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
+        temperature.
 
         Parameters
         ----------
@@ -558,8 +563,8 @@ class PVSystem(object):
 
         parameter_set : string, default None
             Heat loss model parameters to be used.
-            See celltemp.TEMPERATURE_MODEL_PARAMETERS for available parameter
-            sets.
+            See temperature.TEMPERATURE_MODEL_PARAMETERS for available
+            parameter sets.
 
         Returns
         -------
@@ -568,12 +573,13 @@ class PVSystem(object):
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
         if parameter_set is not None:
-            kwargs.update(celltemp._temperature_model_params('pvsyst',
+            kwargs.update(temperature._temperature_model_params('pvsyst',
                                                              parameter_set))
         else:
             kwargs.update(_build_kwargs(['u_c', 'u_v'],
                           self.temperature_model_parameters))
-        return celltemp.pvsyst_cell(poa_global, temp_air, wind_speed, **kwargs)
+        return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
+                                       **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
@@ -2010,18 +2016,18 @@ def sapm(effective_irradiance, temp_cell, module):
     return out
 
 
-sapm_celltemp = deprecated('0.7', alternative='celltemp.sapm_cell',
+sapm_celltemp = deprecated('0.7', alternative='temperature.sapm_cell',
                            name='sapm_celltemp', removal='0.8',
                            addendum='Note that the argument names and order '
-                           'for celltemp.sapm_cell are different than for '
-                           'sapm_celltemp')(celltemp.sapm_cell)
+                           'for temperature.sapm_cell are different than for '
+                           'sapm_celltemp')(temperature.sapm_cell)
 
 
-pvsyst_celltemp = deprecated('0.7', alternative='celltemp.pvsyst_cell',
-                             name='pvsyst_celltemp',
-                             removal='0.8', addendum='Note that the argument '
-                             'names for celltemp.pvsyst_cell are different '
-                             'than for pvsyst_celltemp')(celltemp.pvsyst_cell)
+pvsyst_celltemp = deprecated(
+    '0.7', alternative='temperature.pvsyst_cell', name='pvsyst_celltemp',
+    removal='0.8', addendum='Note that the argument names for '
+    'temperature.pvsyst_cell are different than '
+    'for pvsyst_celltemp')(temperature.pvsyst_cell)
 
 
 def sapm_spectral_loss(airmass_absolute, module):

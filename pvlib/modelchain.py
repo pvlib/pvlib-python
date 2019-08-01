@@ -10,7 +10,7 @@ from functools import partial
 import warnings
 import pandas as pd
 
-from pvlib import (atmosphere, celltemp, clearsky, pvsystem, solarposition,
+from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
                    tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
@@ -53,7 +53,7 @@ def basic_chain(times, latitude, longitude,
 
     temperature_model_parameters : None, dict or Series, default None.
         Temperature model parameters as defined by the SAPM.
-        See celltemp.sapm_cell for details.
+        See temperature.sapm_cell for details.
 
     inverter_parameters : None, dict or Series
         Inverter parameters as defined by the CEC. See pvsystem.snlinverter for
@@ -171,7 +171,7 @@ def basic_chain(times, latitude, longitude,
     if weather is None:
         weather = {'wind_speed': 0, 'temp_air': 20}
 
-    cell_temperature = celltemp.sapm_cell(
+    cell_temperature = temperature.sapm_cell(
         total_irrad['poa_global'], weather['temp_air'], weather['wind_speed'],
         temperature_model_parameters['a'], temperature_model_parameters['b'],
         temperature_model_parameters['deltaT'])

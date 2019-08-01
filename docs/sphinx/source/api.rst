@@ -227,8 +227,9 @@ PV temperature models
 .. autosummary::
    :toctree: generated/
 
-   celltemp.sapm
-   celltemp.pvsyst
+   temperature.sapm_cell
+   temperature.sapm_module
+   temperature.pvsyst_cell
 
 Single diode models
 -------------------
@@ -271,7 +272,7 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter
-   celltemp.sapm
+   temperature.sapm_cell
 
 Pvsyst model
 -------------
@@ -281,7 +282,7 @@ Functions relevant for the Pvsyst model.
 .. autosummary::
    :toctree: generated/
 
-   celltemp.pvsyst
+   temperature.pvsyst_cell
 
 PVWatts model
 -------------

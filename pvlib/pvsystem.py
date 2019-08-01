@@ -572,7 +572,7 @@ class PVSystem(object):
                                                              parameter_set))
         else:
             kwargs.update(_build_kwargs(['u_c', 'u_v'],
-                            self.temperature_model_parameters))
+                          self.temperature_model_parameters))
         return celltemp.pvsyst_cell(poa_global, temp_air, wind_speed, **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):

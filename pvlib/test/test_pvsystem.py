@@ -477,8 +477,8 @@ def test_PVSystem_sapm_celltemp(mocker):
 
 
 def test_PVSystem_sapm_celltemp_kwargs(mocker):
-    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['sapm']\
-        ['open_rack_glass_glass']
+    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
     system = pvsystem.PVSystem()
     mocker.spy(celltemp, 'sapm_cell')
     temps = 25
@@ -495,8 +495,8 @@ def test_PVSystem_sapm_celltemp_kwargs(mocker):
 
 def test_PVSystem_pvsyst_celltemp(mocker):
     parameter_set = 'insulated'
-    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['pvsyst']\
-        [parameter_set]
+    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][
+        parameter_set]
     alpha_absorption = 0.85
     eta_m = 0.17
     module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
@@ -514,8 +514,8 @@ def test_PVSystem_pvsyst_celltemp(mocker):
 
 
 def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
-    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['pvsyst']\
-        ['insulated']
+    temp_model_params = celltemp.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][
+        'insulated']
     alpha_absorption = 0.85
     eta_m = 0.17
     module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}

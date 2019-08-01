@@ -19,8 +19,8 @@ from conftest import fail_on_pvlib_version
 
 @pytest.fixture
 def sapm_default():
-    return celltemp.TEMPERATURE_MODEL_PARAMETERS['sapm']\
-        ['open_rack_glass_glass']
+    return celltemp.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
 
 
 def test_sapm_cell(sapm_default):

@@ -12,7 +12,7 @@ TEMPERATURE_MODEL_PARAMETERS = {
         'close_mount_glass_glass': {'a': -2.98, 'b': -.0471, 'deltaT': 1},
         'open_rack_glass_polymer': {'a': -3.56, 'b': -.0750, 'deltaT': 3},
         'insulated_back_glass_polymer': {'a': -2.81, 'b': -.0455, 'deltaT': 0},
-            },
+    },
     'pvsyst': {'freestanding': {'u_c': 29.0, 'u_v': 0},
                'insulated': {'u_c': 15.0, 'u_v': 0}}
 }

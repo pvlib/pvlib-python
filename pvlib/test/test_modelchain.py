@@ -253,7 +253,8 @@ def test_run_model_with_weather(system, location, weather, mocker):
 
 
 def test_run_model_tracker(system, location, weather, mocker):
-    system = SingleAxisTracker(module_parameters=system.module_parameters,
+    system = SingleAxisTracker(
+        module_parameters=system.module_parameters,
         temperature_model_parameters=system.temperature_model_parameters,
         inverter_parameters=system.inverter_parameters)
     mocker.spy(system, 'singleaxis')

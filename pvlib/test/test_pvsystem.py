@@ -472,7 +472,7 @@ def test_PVSystem_sapm_celltemp(mocker):
     winds = 1
     out = system.sapm_celltemp(irrads, temps, winds)
     temperature.sapm_cell.assert_called_once_with(irrads, temps, winds, a, b,
-                                               deltaT)
+                                                  deltaT)
     assert_allclose(out, 57, atol=1)
 
 
@@ -487,9 +487,9 @@ def test_PVSystem_sapm_celltemp_kwargs(mocker):
     out = system.sapm_celltemp(irrads, temps, winds,
                                parameter_set='open_rack_glass_glass')
     temperature.sapm_cell.assert_called_once_with(irrads, temps, winds,
-                                               temp_model_params['a'],
-                                               temp_model_params['b'],
-                                               temp_model_params['deltaT'])
+                                                  temp_model_params['a'],
+                                                  temp_model_params['b'],
+                                                  temp_model_params['deltaT'])
     assert_allclose(out, 57, atol=1)
 
 

@@ -574,7 +574,7 @@ class PVSystem(object):
                                self.module_parameters)
         if parameter_set is not None:
             kwargs.update(temperature._temperature_model_params('pvsyst',
-                                                             parameter_set))
+                                                                parameter_set))
         else:
             kwargs.update(_build_kwargs(['u_c', 'u_v'],
                           self.temperature_model_parameters))

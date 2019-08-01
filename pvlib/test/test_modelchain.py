@@ -120,19 +120,6 @@ def cec_dc_adr_ac_system(sam_data):
 
 
 @pytest.fixture
-def pvwatts_dc_snl_ac_system(sam_data):
-    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    temp_model_params = _get_sapm_temp_model_params(sam_data)
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
-                      module_parameters=module_parameters,
-                      temperature_model_parameters=temp_model_params,
-                      inverter_parameters=inverter)
-    return system
-
-
-@pytest.fixture
 def pvwatts_dc_pvwatts_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     temp_model_params = _get_sapm_temp_model_params(sam_data)

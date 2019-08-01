@@ -106,7 +106,7 @@ def test_deprecated_07():
 def test__temperature_model_params():
     params = celltemp._temperature_model_params('sapm',
                                                 'open_rack_glass_glass')
-    assert params == celltemp.TEMPERATURE_MODEL_PARAMETERS['sapm']\
-        ['open_rack_glass_glass']
+    assert params == celltemp.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
     with pytest.raises(KeyError):
         celltemp._temperature_model_params('sapm', 'not_a_parameter_set')

@@ -20,6 +20,10 @@ Bug fixes
 * Fix handling of keyword arguments in `forecasts.get_processed_data`.
   (:issue:`745`)
 * Fix output as Series feature in :py:func:`pvlib.pvsystem.ashraeiam`.
+* Fix rounding issue in `clearsky._linearly_scale`, a function that converts
+  longitude or latitude degree to an index number in a Linke turbidity lookup
+  table. Also rename the function to `clearsky._degrees_to_index`.
+  (:issue:`754`)
 
 Testing
 ~~~~~~~

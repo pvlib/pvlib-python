@@ -114,7 +114,7 @@ def test_collection_plane_dip_angle():
     assert_allclose(dips_hard, expected_hard)
 
 
-def calculate_dtf():
+def test_calculate_dtf():
     zero_horizon = []
     max_horizon = []
     for i in range(-180, 181):

@@ -536,26 +536,6 @@ def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
 
     return dip
 
-    # if temp < 0:
-    #     temp = 90.0
-
-    # x = np.cos(az)
-    # y = np.sin(az)
-    # z = -np.tan(tilt) * (np.cos(plane_az) * np.cos(az)
-    #                      + np.sin(plane_az) * np.sin(az))
-    # mask = z <= 0
-    # numer = x*x + y*y
-    # denom = x*x + y*y + z*z
-    # dip = np.degrees(np.arccos(np.sqrt(numer/denom)))
-    # mask = np.logical_or(np.isnan(dip), z <= 0)
-
-    # if isinstance(dip, pd.Series):
-    #     dip[np.isnan(dip)] = 0
-    #     dip[mask] = 0
-    # else:
-    #     dip = np.where(mask, 0, dip)
-    # return dip
-
 
 def calculate_dtf(horizon_profile, surface_tilt, surface_azimuth):
     """

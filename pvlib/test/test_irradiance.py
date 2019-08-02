@@ -160,12 +160,12 @@ def test_grounddiffuse_albedo_surface(irrad_data):
 
 
 def test_isotropic_float():
-    result = irradiance.isotropic(40, 100)
+    result = irradiance.isotropic(40, 45, 100)
     assert_allclose(result, 88.30222215594891)
 
 
 def test_isotropic_series(irrad_data):
-    result = irradiance.isotropic(40, irrad_data['dhi'])
+    result = irradiance.isotropic(40, 45, irrad_data['dhi'])
     assert_allclose(result, [0, 35.728402, 104.601328, 54.777191], atol=1e-4)
 
 
@@ -965,7 +965,7 @@ def test_adjust_direct_for_horizon(irrad_data, ephem_data):
     assert_allclose(max_adjusted.values, max_expected.values, atol=1e-7)
 
 
-def test_horizon_adjusted():
+def test_horizon_adjusted_isotropic():
     zero_horizon = []
     max_horizon = []
     for i in range(-180, 181):
@@ -975,16 +975,18 @@ def test_horizon_adjusted():
     surface_tilts = np.array([0, 5, 20, 38, 89])
     surface_azimuths = np.array([0, 90, 180, 235, 355])
 
-    adjusted = irradiance.horizon_adjusted(surface_tilts,
-                                           surface_azimuths,
-                                           1.0,
-                                           zero_horizon)
-    expected = irradiance.isotropic(surface_tilts, np.ones(5))
+    adjusted = irradiance.isotropic(surface_tilts,
+                                    surface_azimuths,
+                                    1.0,
+                                    horizon_profile=zero_horizon)
+    expected = irradiance.isotropic(surface_tilts,
+                                    surface_azimuths,
+                                    np.ones(5))
     assert_allclose(adjusted, expected, atol=2e-3)
 
-    adjusted = irradiance.horizon_adjusted(surface_tilts,
-                                           surface_azimuths,
-                                           1.0,
-                                           max_horizon)
+    adjusted = irradiance.isotropic(surface_tilts,
+                                    surface_azimuths,
+                                    1.0,
+                                    horizon_profile=max_horizon)
     expected = np.zeros(5)
     assert_allclose(adjusted, expected, atol=1e-7)

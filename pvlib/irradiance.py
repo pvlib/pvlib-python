@@ -429,7 +429,11 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     model = model.lower()
     if model == 'isotropic':
-        sky = isotropic(surface_tilt, dhi)
+        if "horizon_profile" in kwargs:
+            sky = isotropic(surface_tilt, surface_azimuth, dhi,
+                            horizon_profile=kwargs["horizon_profile"])
+        else:
+            sky = isotropic(surface_tilt, surface_azimuth, dhi)
     elif model == 'klucher':
         sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
                       solar_zenith, solar_azimuth)
@@ -644,7 +648,7 @@ grounddiffuse = deprecated('0.6', alternative='get_ground_diffuse',
                            get_ground_diffuse)
 
 
-def isotropic(surface_tilt, dhi):
+def isotropic(surface_tilt, surface_azimuth, dhi, horizon_profile=None):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     the isotropic sky model.
@@ -657,7 +661,8 @@ def isotropic(surface_tilt, dhi):
     diffuse irradiance. Thus the diffuse irradiance from the sky (ground
     reflected irradiance is not included in this algorithm) on a tilted
     surface can be found from the diffuse horizontal irradiance and the
-    tilt angle of the surface.
+    tilt angle of the surface. If a horizon profile is given as an argument
+    to the function then a numerical integration over the visible part of
 
     Parameters
     ----------
@@ -666,8 +671,17 @@ def isotropic(surface_tilt, dhi):
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
     dhi : numeric
         Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+    
+    horizon_profile : list
+        A list of (azimuth, dip_angle) tuples that defines the horizon
+        profile
 
     Returns
     -------
@@ -684,8 +698,28 @@ def isotropic(surface_tilt, dhi):
     heat collector. Trans. ASME 64, 91.
     '''
 
-    sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
+    '''
+    Determine diffuse irradiance from the sky on a tilted surface using
+    an isotropic model that is adjusted with a horizon profile.
 
+
+
+    Returns
+    --------
+
+    sky_diffuse : numeric
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+    '''
+
+    if horizon_profile is not None:
+        dtf = horizon.calculate_dtf(horizon_profile,
+                                    surface_tilt,
+                                    surface_azimuth)
+    else:
+        dtf = (1 + tools.cosd(surface_tilt)) * 0.5
+
+    sky_diffuse = dhi * dtf
     return sky_diffuse
 
 

@@ -139,6 +139,8 @@ def dip_calc(pt1, pt2):
                          (np.cos(phi1) * np.sin(phi2)
                           - np.sin(phi1) * np.cos(phi2)*np.cos(theta2-theta1)))
     bearing_deg = bearing*180.0/np.pi
+    if bearing_deg < 0:
+        bearing_deg += 360
 
     return (bearing_deg, dip_angle_deg)
 
@@ -306,8 +308,8 @@ def sample_using_interpolator(grid, num_samples):
     x_range = x[-1] - x[0]
 
     grid_shape = grid.shape
-    grid_center_i = (grid_shape[0] - 1) / 2
-    grid_center_j = (grid_shape[1] - 1) / 2
+    grid_center_i = (grid_shape[0] - 1) // 2
+    grid_center_j = (grid_shape[1] - 1) // 2
     site_lat = grid[grid_center_i, grid_center_j, 0]
     site_lon = grid[grid_center_i, grid_center_j, 1]
 
@@ -493,3 +495,91 @@ def fake_horizon_profile(max_dip):
     for i in range(-180, 181):
         fake_profile.append((i, random.random() * max_dip))
     return fake_profile
+
+
+def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
+    """
+    Determine the dip angle created by the surface of a tilted plane
+    in a given direction. The dip angle is limited to be non-negative.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        and <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    direction : numeric
+        The direction along which the dip angle is to be calculated in
+        decimal degrees. The convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    Returns
+    --------
+
+    dip_angle : numeric
+        The dip angle in direction created by the tilted plane.
+
+    """
+    tilt = np.radians(surface_tilt)
+    bearing = np.radians(direction - surface_azimuth - 180.0)
+
+    declination = np.degrees(np.arctan(1.0/np.tan(tilt)/np.cos(bearing)))
+    mask = (declination <= 0)
+    dip = 90.0 - declination
+    dip[mask] = 0.0
+
+    return dip
+
+    # if temp < 0:
+    #     temp = 90.0
+
+    # x = np.cos(az)
+    # y = np.sin(az)
+    # z = -np.tan(tilt) * (np.cos(plane_az) * np.cos(az)
+    #                      + np.sin(plane_az) * np.sin(az))
+    # mask = z <= 0
+    # numer = x*x + y*y
+    # denom = x*x + y*y + z*z
+    # dip = np.degrees(np.arccos(np.sqrt(numer/denom)))
+    # mask = np.logical_or(np.isnan(dip), z <= 0)
+
+    # if isinstance(dip, pd.Series):
+    #     dip[np.isnan(dip)] = 0
+    #     dip[mask] = 0
+    # else:
+    #     dip = np.where(mask, 0, dip)
+    # return dip
+
+
+def calculate_dtf(horizon_profile, surface_tilt, surface_azimuth):
+    """
+    Calculate the diffuse tilt factor that is adjusted with the horizon
+    profile.
+    """
+    tilt_rad = np.radians(surface_tilt)
+    plane_az_rad = np.radians(surface_azimuth)
+    a = np.sin(tilt_rad) * np.cos(plane_az_rad)
+    b = np.sin(tilt_rad) * np.sin(plane_az_rad)
+    c = np.cos(tilt_rad)
+
+    # this gets either an int or an array of zeros
+    dtf = np.multiply(0.0, surface_tilt)
+    for pair in horizon_profile:
+        az = np.radians(pair[0])
+        horizon_dip = np.radians(pair[1])
+        temp = np.radians(collection_plane_dip_angle(surface_tilt,
+                                                     surface_azimuth,
+                                                     pair[0]))
+        dip = np.maximum(horizon_dip, temp)
+
+        first_term = .5 * (a*np.cos(az) + b*np.sin(az)) * \
+                          (np.pi/2 - dip - np.sin(dip) * np.cos(dip))
+        second_term = .5 * c * np.cos(dip)**2
+        dtf += 2 * (first_term + second_term) / len(horizon_profile)
+    return dtf

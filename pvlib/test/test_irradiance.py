@@ -972,8 +972,8 @@ def test_horizon_adjusted():
         zero_horizon.append((i, 0.0))
         max_horizon.append((i, 90.0))
 
-    surface_tilts = [0, 5, 20, 38, 89]
-    surface_azimuths = [0, 90, 180, 235, 355]
+    surface_tilts = np.array([0, 5, 20, 38, 89])
+    surface_azimuths = np.array([0, 90, 180, 235, 355])
 
     adjusted = irradiance.horizon_adjusted(surface_tilts,
                                            surface_azimuths,

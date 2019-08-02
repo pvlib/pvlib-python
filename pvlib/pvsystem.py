@@ -3,21 +3,15 @@ The ``pvsystem`` module contains functions for modeling the output and
 performance of PV modules and inverters.
 """
 
-from __future__ import division
-
 from collections import OrderedDict
 import io
 import os
-try:
-    from urllib2 import urlopen
-except ImportError:
-    from urllib.request import urlopen
-
+from urllib.request import urlopen
 import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, irradiance, tools, singlediode as _singlediode
-from pvlib.tools import _build_kwargs
+from pvlib.tools import _build_kwargs, cosd
 from pvlib.location import Location
 
 
@@ -946,7 +940,7 @@ def ashraeiam(aoi, b=0.05):
     iam = np.where(aoi_gte_90, 0, iam)
     iam = np.maximum(0, iam)
 
-    if isinstance(iam, pd.Series):
+    if isinstance(aoi, pd.Series):
         iam = pd.Series(iam, index=aoi.index)
 
     return iam
@@ -1057,6 +1051,161 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
         # for light coming from behind the plane, none can enter the module
         iam = np.where(aoi > 90, 0, iam)
+
+    if isinstance(aoi_input, pd.Series):
+        iam = pd.Series(iam, index=aoi_input.index)
+
+    return iam
+
+
+def iam_martin_ruiz(aoi, a_r=0.16):
+    '''
+    Determine the incidence angle modifier (iam) using the Martin
+    and Ruiz incident angle model.
+
+    Parameters
+    ----------
+    aoi : numeric, degrees
+        The angle of incidence between the module normal vector and the
+        sun-beam vector in degrees. Theta must be a numeric scalar or vector.
+        iam is 0 where |aoi| > 90.
+
+    a_r : numeric
+        The angular losses coefficient described in equation 3 of [1].
+        This is an empirical dimensionless parameter. Values of a_r are
+        generally on the order of 0.08 to 0.25 for flat-plate PV modules.
+        a_r must be a positive numeric scalar or vector (same length as aoi).
+
+    Returns
+    -------
+    iam : numeric
+        The incident angle modifier(s)
+
+    Notes
+    -----
+    iam_martin_ruiz calculates the incidence angle modifier (iam)
+    as described by Martin and Ruiz in [1]. The information
+    required is the incident angle (aoi) and the angular losses
+    coefficient (a_r). Please note that [1] has a corrigendum which makes
+    the document much simpler to understand.
+
+    The incident angle modifier is defined as
+    [1-exp(-cos(aoi/ar))] / [1-exp(-1/ar)], which is
+    presented as AL(alpha) = 1 - IAM in equation 4 of [1]. Thus IAM is
+    equal to 1 at aoi = 0, and equal to 0 at aoi = 90.  This equation is only
+    valid for -90 <= aoi <= 90, therefore iam must be constrained to 0.0
+    beyond this range.
+
+    References
+    ----------
+    [1] N. Martin and J. M. Ruiz, "Calculation of the PV modules angular
+    losses under field conditions by means of an analytical model", Solar
+    Energy Materials & Solar Cells, vol. 70, pp. 25-38, 2001.
+
+    [2] N. Martin and J. M. Ruiz, "Corrigendum to 'Calculation of the PV
+    modules angular losses under field conditions by means of an
+    analytical model'", Solar Energy Materials & Solar Cells, vol. 110,
+    pp. 154, 2013.
+
+    See Also
+    --------
+    physicaliam
+    ashraeiam
+    iam_interp
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
+
+    aoi_input = aoi
+
+    aoi = np.asanyarray(aoi)
+    a_r = np.asanyarray(a_r)
+
+    if np.any(np.less_equal(a_r, 0)):
+        raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
+
+    with np.errstate(invalid='ignore'):
+        iam = (1 - np.exp(-cosd(aoi) / a_r)) / (1 - np.exp(-1 / a_r))
+        iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
+
+    if isinstance(aoi_input, pd.Series):
+        iam = pd.Series(iam, index=aoi_input.index)
+
+    return iam
+
+
+def iam_interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
+    '''
+    Determine the incidence angle modifier (iam) by interpolating a set of
+    reference values, which are usually measured values.
+
+    Parameters
+    ----------
+    aoi : numeric, degrees
+        The angle of incidence between the module normal vector and the
+        sun-beam vector in degrees.
+
+    theta_ref : numeric, degrees
+        Vector of angles at which the iam is known.
+
+    iam_ref : numeric, unitless
+        iam values for each angle in theta_ref.
+
+    method : str, default 'linear'
+        Specifies the interpolation method.
+        Useful options are: 'linear', 'quadratic','cubic'.
+        See scipy.interpolate.interp1d for more options.
+
+    normalize : boolean
+        When true, the interpolated values are divided by the interpolated
+        value at zero degrees.  This ensures that the iam at normal
+        incidence is equal to 1.0.
+
+    Returns
+    -------
+    iam : numeric
+        The incident angle modifier(s)
+
+    Notes:
+    ------
+    theta_ref must have two or more points and may span any range of angles.
+    Typically there will be a dozen or more points in the range 0-90 degrees.
+    iam beyond the range of theta_ref are extrapolated, but constrained to be
+    non-negative.
+
+    The sign of aoi is ignored; only the magnitude is used.
+
+    See Also
+    --------
+    physicaliam
+    ashraeiam
+    iam_martin_ruiz
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
+
+    from scipy.interpolate import interp1d
+
+    # Scipy doesn't give the clearest feedback, so check number of points here.
+    MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
+
+    if len(theta_ref) < MIN_REF_VALS.get(method, 2):
+        raise ValueError("Too few reference points defined "
+                         "for interpolation method '%s'." % method)
+
+    if np.any(np.less(iam_ref, 0)):
+        raise ValueError("Negative value(s) found in 'iam_ref'. "
+                         "This is not physically possible.")
+
+    interpolator = interp1d(theta_ref, iam_ref, kind=method,
+                            fill_value='extrapolate')
+    aoi_input = aoi
+
+    aoi = np.asanyarray(aoi)
+    aoi = np.abs(aoi)
+    iam = interpolator(aoi)
+    iam = np.clip(iam, 0, None)
+
+    if normalize:
+        iam /= interpolator(0)
 
     if isinstance(aoi_input, pd.Series):
         iam = pd.Series(iam, index=aoi_input.index)
@@ -1632,14 +1781,8 @@ def retrieve_sam(name=None, path=None):
         else:
             csvdata = path
     elif name is None and path is None:
-        try:
-            # python 2
-            import Tkinter as tkinter
-            from tkFileDialog import askopenfilename
-        except ImportError:
-            # python 3
-            import tkinter
-            from tkinter.filedialog import askopenfilename
+        import tkinter
+        from tkinter.filedialog import askopenfilename
 
         tkinter.Tk().withdraw()
         csvdata = askopenfilename()

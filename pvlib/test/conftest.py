@@ -41,8 +41,6 @@ test_dir = os.path.dirname(
 data_dir = os.path.join(test_dir, os.pardir, 'data')
 
 
-has_python2 = parse_version(platform.python_version()) < parse_version('3')
-
 platform_is_windows = platform.system() == 'Windows'
 skip_windows = pytest.mark.skipif(platform_is_windows,
                                   reason='does not run on windows')

@@ -5,7 +5,6 @@ as well as a method that uses the googlemaps elevation API to create a
 horizon profile.
 """
 
-import random
 import itertools
 
 import numpy as np
@@ -30,48 +29,6 @@ def grid_lat_lon(lat, lon, grid_size=200, grid_step=.001):
             grid[i, j, 1] = lon + (j - grid_size / 2) * grid_step
 
     return grid
-
-
-def grid_elevations_from_gmaps(in_grid, GMAPS_API_KEY):
-    """
-    Takes in a grid of lat lon values (shape: grid_size+1 x grid_size+1 x 2).
-    Queries the googlemaps elevation API to get elevation data at each lat/lon
-    point. Outputs the original grid with the elevation data appended along
-    the third axis so the shape is grid_size+1 x grid_size+1 x 3.
-    """
-
-    import googlemaps
-
-    in_shape = in_grid.shape
-    lats = in_grid.T[0].flatten()
-    longs = in_grid.T[1].flatten()
-    locations = zip(lats, longs)
-    gmaps = googlemaps.Client(key=GMAPS_API_KEY)
-
-    out_grid = np.ndarray((in_shape[0], in_shape[1], 3))
-
-    # Get elevation data from gmaps
-    elevations = []
-    responses = []
-
-    while len(locations) > 512:
-        locations_to_request = locations[:512]
-        locations = locations[512:]
-        responses += gmaps.elevation(locations=locations_to_request)
-    responses += gmaps.elevation(locations=locations)
-    for entry in responses:
-        elevations.append(entry["elevation"])
-
-    for i in range(in_shape[0]):
-        for j in range(in_shape[1]):
-            lat = in_grid[i, j, 0]
-            lon = in_grid[i, j, 1]
-            elevation = elevations[i + j * in_shape[1]]
-
-            out_grid[i, j, 0] = lat
-            out_grid[i, j, 1] = lon
-            out_grid[i, j, 2] = elevation
-    return out_grid
 
 
 def dip_calc(pt1, pt2):
@@ -468,33 +425,6 @@ def invert_for_pvsyst(horizon_points, hemisphere="north"):
         inverted_points.append((azimuth, pair[1]))
     sorted_points = sorted(inverted_points, key=lambda tup: tup[0])
     return sorted_points
-
-
-def horizon_from_gmaps(lat, lon, GMAPS_API_KEY):
-    """
-    Uses the functions defined in this modules to generate a complete horizon
-    profile for a location (specified by lat/lon). An API key for the
-    googlemaps elevation API is needeed.
-    """
-
-    grid = grid_lat_lon(lat, lon, grid_size=400, grid_step=.002)
-    elev_grid = grid_elevations_from_gmaps(grid, GMAPS_API_KEY)
-    horizon_points = calculate_horizon_points(elev_grid,
-                                              sampling_method="interpolator",
-                                              sampling_param=(1000, 1000))
-    filtered_points = filter_points(horizon_points, bin_size=1)
-    return filtered_points
-
-
-def fake_horizon_profile(max_dip):
-    """
-    Creates a bogus horizon profile by randomly generating dip_angles at
-    integral azimuth values. Used for testing purposes.
-    """
-    fake_profile = []
-    for i in range(-180, 181):
-        fake_profile.append((i, random.random() * max_dip))
-    return fake_profile
 
 
 def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):

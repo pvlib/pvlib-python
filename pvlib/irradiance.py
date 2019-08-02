@@ -449,10 +449,6 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                     solar_zenith, solar_azimuth, airmass,
                     model=model_perez)
-    elif model == 'horizon_adjusted':
-        assert("horizon_profile" in kwargs)
-        sky = horizon_adjusted(surface_tilt, surface_azimuth, dhi,
-                               kwargs["horizon_profile"])
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
@@ -663,6 +659,7 @@ def isotropic(surface_tilt, surface_azimuth, dhi, horizon_profile=None):
     surface can be found from the diffuse horizontal irradiance and the
     tilt angle of the surface. If a horizon profile is given as an argument
     to the function then a numerical integration over the visible part of
+    the sky dome is used as the conversion factor.
 
     Parameters
     ----------
@@ -678,8 +675,8 @@ def isotropic(surface_tilt, surface_azimuth, dhi, horizon_profile=None):
 
     dhi : numeric
         Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
-    
-    horizon_profile : list
+
+    horizon_profile : list (optional)
         A list of (azimuth, dip_angle) tuples that defines the horizon
         profile
 
@@ -1242,44 +1239,6 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return diffuse_components
     else:
         return sky_diffuse
-
-
-def horizon_adjusted(surface_tilt, surface_azimuth, dhi, horizon_profile):
-    '''
-    Determine diffuse irradiance from the sky on a tilted surface using
-    an isotropic model that is adjusted with a horizon profile.
-
-    Parameters
-    ----------
-    surface_tilt : numeric
-        Surface tilt angles in decimal degrees. surface_tilt must be >=0
-        and <=180. The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90)
-
-    surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. surface_azimuth must
-        be >=0 and <=360. The azimuth convention is defined as degrees
-        east of north (e.g. North = 0, South=180 East = 90, West = 270).
-
-    dhi : numeric
-        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
-
-    horizon_profile : list
-        A list of (azimuth, dip_angle) tuples that defines the horizon
-        profile
-
-
-    Returns
-    --------
-
-    sky_diffuse : numeric
-        The sky diffuse component of the solar radiation on a tilted
-        surface.
-    '''
-    dtf = horizon.calculate_dtf(horizon_profile, surface_tilt, surface_azimuth)
-    sky_diffuse = dhi * dtf
-
-    return sky_diffuse
 
 
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):

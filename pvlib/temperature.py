@@ -37,13 +37,13 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
 
     Parameters
     ----------
-    poa_global : float or Series
+    poa_global : numeric or Series
         Total incident irradiance [W/m^2].
 
-    temp_air : float or Series
+    temp_air : numeric or Series
         Ambient dry bulb temperature [C].
 
-    wind_speed : float or Series
+    wind_speed : numeric or Series
         Wind speed at a height of 10 meters [m/s].
 
     a : float
@@ -60,7 +60,7 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
 
     Returns
     -------
-    float or Series, values in degrees C.
+    numeric or Series, values in degrees C.
 
     Notes
     -----
@@ -117,13 +117,13 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
 
     Parameters
     ----------
-    poa_global : float or Series
+    poa_global : numeric or Series
         Total incident irradiance [W/m^2].
 
-    temp_air : float or Series
+    temp_air : numeric or Series
         Ambient dry bulb temperature [C].
 
-    wind_speed : float or Series
+    wind_speed : numeric or Series
         Wind speed at a height of 10 meters [m/s].
 
     a : float
@@ -134,7 +134,7 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
 
     Returns
     -------
-    float or Series, values in degrees C.
+    numeric or Series, values in degrees C.
 
     Notes
     -----
@@ -181,13 +181,13 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     Parameters
     ----------
-    poa_global : float or Series
+    poa_global : numeric or Series
         Total incident irradiance [W/m^2].
 
-    temp_air : float or Series
+    temp_air : numeric or Series
         Ambient dry bulb temperature [C].
 
-    wind_speed : float or Series, default 1.0
+    wind_speed : numeric or Series, default 1.0
         Wind speed in m/s measured at the same height for which the wind loss
         factor was determined.  The default value 1.0 m/2 is the wind
         speed at module height used to determine NOCT. [m/s]
@@ -211,7 +211,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     Returns
     -------
-    float or Series, values in degrees Celsius
+    numeric or Series, values in degrees Celsius
 
     Notes
     -----

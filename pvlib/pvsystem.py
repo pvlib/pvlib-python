@@ -441,13 +441,13 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_global : float or Series
+        poa_global : numeric or Series
             Total incident irradiance in W/m^2.
 
-        temp_air : float or Series
+        temp_air : numeric or Series
             Ambient dry bulb temperature in degrees C.
 
-        wind_speed : float or Series
+        wind_speed : numeric or Series
             Wind speed in m/s at a height of 10 meters.
 
         parameter_set : string, default None
@@ -457,7 +457,7 @@ class PVSystem(object):
 
         Returns
         -------
-        float or Series, values in degrees C.
+        numeric or Series, values in degrees C.
         """
         if parameter_set is not None:
             kwargs = temperature._temperature_model_params('sapm',
@@ -543,13 +543,13 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_global : numeric
+        poa_global : numeric or Series
             Total incident irradiance in W/m^2.
 
-        temp_air : numeric
+        temp_air : numeric or Series
             Ambient dry bulb temperature in degrees C.
 
-        wind_speed : numeric, default 1.0
+        wind_speed : numeric or Series, default 1.0
             Wind speed in m/s measured at the same height for which the wind
             loss factor was determined.  The default value is 1.0, which is
             the wind speed at module height used to determine NOCT.
@@ -568,7 +568,7 @@ class PVSystem(object):
 
         Returns
         -------
-        float or Series, values in degrees C.
+        numeric or Series, values in degrees C.
         """
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)

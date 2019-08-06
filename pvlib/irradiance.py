@@ -1742,11 +1742,13 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """
-    Determine DNI from GHI using the DIRINDEX model, which is a modification of
-    the DIRINT model with information from a clear sky model.
+    Determine DNI from GHI using the DIRINDEX model.
 
-    DIRINDEX [1] improves upon the DIRINT model by taking into account
-    turbidity when used with the Ineichen clear sky model results.
+    The DIRINDEX model [1] modifies the DIRINT model implemented in
+    :py:func:``pvlib.irradiance.dirint`` by taking into account information
+    from a clear sky model. It is recommended that ``ghi_clearsky`` be
+    calculated using the Ineichen clear sky model
+    :py:func:``pvlib.clearsky.ineichen`` with ``perez_enhancement=True``.
 
     The pvlib implementation limits the clearness index to 1.
 

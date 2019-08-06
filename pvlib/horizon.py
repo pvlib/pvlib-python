@@ -64,12 +64,12 @@ def dip_calc(pt1, pt2):
     pt1 : ndarray
         Nx3 array that contains lat, lon, and elev values that correspond
         to the origin points from which the dip angles are to be calculated.
-        The observer points.
+        The observer points. (will also take a 1darray with 3 elements)
 
     pt2 : ndarray
         Nx3 array that contains lat, lon, and elev values that correspond
         to the target points to which the dip angles are to be calculated.
-        The observee points.
+        The observee points. (will also take a 1darray with 3 elements)
 
     Returns
     -------
@@ -157,9 +157,13 @@ def calculate_horizon_points(lat_grid, lon_grid, elev_grid,
 
     Returns
     -------
-    horizon_points: list
-        List of (azimuth, dip_angle) tuples that define the horizon at the
-        point at the center of the grid.
+    bearing_deg: Nx1 ndarray
+        The bearings from the "site" to sampled points in degrees
+        East of North.
+
+    dip_angle_dip: Nx1 ndarray
+        The dip angles that the sampled points make with the horizontal
+        as observed from the the "site".
 
     """
     assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
@@ -189,9 +193,27 @@ def calculate_horizon_points(lat_grid, lon_grid, elev_grid,
 def sample_using_grid(lat_grid, lon_grid, elev_grid):
     """
     Calculates the dip angle from the site (center of the grid)
-    to every point on the grid and uses the results as the
-    horizon profile.
+    to every point on the grid.
 
+    Parameters
+    ----------
+    lat_grid : ndarray
+        A 2d array containing latitude values that correspond to the other
+        two input grids.
+
+    lon_grid : ndarray
+        A 2d array containing longitude values that correspond to the other
+        two input grids.
+
+    elev_grid : ndarray
+        A 2d array containing elevation values that correspond to the other
+        two input grids.
+
+
+    Returns
+    -------
+    all_samples: Nx3 ndarray
+        Array of lat, lon, elev points that are grid points.
     """
     assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
@@ -199,10 +221,9 @@ def sample_using_grid(lat_grid, lon_grid, elev_grid):
     lons = lon_grid.flatten()
     elevs = elev_grid.flatten()
     samples = np.stack([lats, lons, elevs], axis=1)
-    assert(samples.shape[1] == 3)
     # remove site from samples
+
     all_samples = np.delete(samples, samples.shape[0]//2, axis=0)
-    assert(all_samples.shape[1] == 3)
     return all_samples
 
 
@@ -214,8 +235,17 @@ def sample_using_triangles(lat_grid, lon_grid, elev_grid,
 
     Parameters
     ----------
-    grid : ndarray
-        Grid that contains lat lon and elev information.
+    lat_grid : ndarray
+        A 2d array containing latitude values that correspond to the other
+        two input grids.
+
+    lon_grid : ndarray
+        A 2d array containing longitude values that correspond to the other
+        two input grids.
+
+    elev_grid : ndarray
+        A 2d array containing elevation values that correspond to the other
+        two input grids.
 
     samples_per_triangle : numeric
         The number of random samples to be uniformly taken from the surface
@@ -223,8 +253,8 @@ def sample_using_triangles(lat_grid, lon_grid, elev_grid,
 
     Returns
     -------
-    all_samples: list
-        List of (azimuth, dip_angle) tuples that were sampled from the grid
+    all_samples: Nx3 ndarray
+        Array of [lat, lon, elev] points that were sampled from the grid.
 
     [1] http://graphics.stanford.edu/courses/cs468-08-fall/pdf/osada.pdf
     """
@@ -302,8 +332,17 @@ def sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
 
     Parameters
     ----------
-    grid : ndarray
-        Grid that contains lat lon and elev information.
+    lat_grid : ndarray
+        A 2d array containing latitude values that correspond to the other
+        two input grids.
+
+    lon_grid : ndarray
+        A 2d array containing longitude values that correspond to the other
+        two input grids.
+
+    elev_grid : ndarray
+        A 2d array containing elevation values that correspond to the other
+        two input grids.
 
     num_samples : tuple
         A tuple containing two integers. The first is the desired number of
@@ -314,7 +353,7 @@ def sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
     Returns
     -------
     all_samples: list
-        List of (azimuth, dip_angle) tuples taken from the polar grid
+       Array of [lat, lon, elev] points that were sampled using the polar grid.
 
     """
     assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
@@ -352,12 +391,15 @@ def uniformly_sample_triangle(p1, p2, p3, num_samples):
 
     Parameters
     ----------
-    pt1 : tuple
-        A (lat, lon, elev) tuple that defines one vertex of the triangle.
-    pt2 : tuple
-        A (lat, lon, elev) tuple that defines another vertex of the triangle.
-    pt3 : tuple
-        A (lat, lon, elev) tuple that defines the last vertex of the triangle.
+    pt1 : ndarray
+        An array conaining (lat, lon, elev) values that define one vertex
+        of the triangle.
+    pt2 : ndarray
+        An array conaining (lat, lon, elev) values that define another vertex
+        of the triangle.
+    pt3 : ndarray
+        An array conaining (lat, lon, elev) values that define the last vertex
+        of the triangle.
 
     num_samples : tuple
         The number of random samples to be uniformly taken from the surface
@@ -365,8 +407,8 @@ def uniformly_sample_triangle(p1, p2, p3, num_samples):
 
     Returns
     -------
-    points: list
-        List of (lat, lon, elev) tuples that lie on the surface of the
+    points: Nx3 ndarray
+        Array with N (lat, lon, elev) points that lie on the surface of the
         triangle.
 
     [1] http://graphics.stanford.edu/courses/cs468-08-fall/pdf/osada.pdf
@@ -393,14 +435,29 @@ def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
 
     Parameters
     ----------
-    horizon_points : list
-        List of (azimuth, dip_angle) tuples that define the horizon.
+    horizon_azimuths: numeric
+        Azimuth values for points that define the horizon profile. The ith
+        element in this array corresponds to the ith element in horizon_angles.
+
+    horizon_angle: numeric
+        Dip angle values for points that define the horizon profile. The ith
+        element in this array corresponds to the ith element in
+        horizon_azimuths.
 
     bin_size : int
-        The bin size of azimuth values.
+        The width of the bins for the azimuth values.
 
     Returns
     -------
+    filtered_azimuths: numeric
+        Azimuth values for points that define the horizon profile. The ith
+        element in this array corresponds to the ith element in
+        filtered_angles.
+
+    filtered_angles: numeric
+        Dip angle values for points that define the horizon profile. The ith
+        element in this array corresponds to the ith element in
+        filtered_azimuths.
 
     """
     assert(horizon_azimuths.shape[0] == horizon_angles.shape[0])
@@ -472,6 +529,36 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
     """
     Calculate the diffuse tilt factor that is adjusted with the horizon
     profile.
+
+    Parameters
+    ----------
+    horizon_azimuths: Nx1 numeric
+        Azimuth values for points that define the horizon profile. The ith
+        element in this array corresponds to the ith element in horizon_angles.
+
+    horizon_angles: Nx1 numeric
+        Dip angle values for points that define the horizon profile. The ith
+        element in this array corresponds to the ith element in
+        horizon_azimuths.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        and <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    Returns
+    -------
+    dtf: numeric
+        The diffuse tilt factor that can be multiplied with the diffuse
+        horizontal irradiance (DHI) to get the incident irradiance from
+        the sky that is adjusted for the horizon profile and the tilt of
+        the plane.
+
     """
     assert(horizon_azimuths.shape[0] == horizon_angles.shape[0])
     tilt_rad = np.radians(surface_tilt)

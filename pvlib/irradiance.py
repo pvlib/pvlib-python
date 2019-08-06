@@ -678,9 +678,14 @@ def isotropic(surface_tilt, surface_azimuth, dhi,
     dhi : numeric
         Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
 
-    horizon_profile : list (optional)
-        A list of (azimuth, dip_angle) tuples that defines the horizon
-        profile
+    horizon_azimuths: numeric (optional)
+        Azimuth values for points that define the horizon profile. The ith
+        element in this array corresponds to the ith element in horizon_angles.
+
+    horizon_angle: numeric (optional)
+        Dip angle values for points that define the horizon profile. The ith
+        element in this array corresponds to the ith element in
+        horizon_azimuths.
 
     Returns
     -------
@@ -2939,7 +2944,9 @@ def adjust_direct_for_horizon(poa_direct, horizon_angles,
         The modeled direct normal irradiance in the plane of array.
     horizon_angles : numeric
         A list or vector of 361 values where the ith element corresponds
-        to the dip angle of the horizon at i degrees of azimuth.
+        to the dip angle of the horizon at i degrees of azimuth. Note that
+        0 and 360 degrees of azimuth correspond to the same direction
+        but both are required.
     solar_zenith : numeric
         Solar zenith angle.
     solar_azimuth : numeric

@@ -453,16 +453,16 @@ def lle_to_xyz(point):
     The center of the earth is the origin in the xyz-space.
     The input latitude is assumed to be a common latitude (geodetic).
     """
-    lat = point[0]
-    lon = point[1]
-    elev = point[2]
+    lat = np.atleast_1d(point.T[0])
+    lon = np.atleast_1d(point.T[1])
+    elev = np.atleast_1d(point.T[2])
 
     a = 6378137.0
     b = 6356752.0
 
     # convert to radians
-    phi = lat*np.pi/180.0
-    theta = lon*np.pi/180.0
+    phi = np.radians(lat)
+    theta = np.radians(lon)
 
     # compute radius of earth at each point
     r = (a**2 * np.cos(phi))**2 + (b**2 * np.sin(phi))**2
@@ -475,7 +475,7 @@ def lle_to_xyz(point):
     x = h * np.cos(alpha) * np.cos(beta)
     y = h * np.cos(alpha) * np.sin(beta)
     z = h * np.sin(alpha)
-    v = np.array((x, y, z))
+    v = np.stack([x, y, z], axis=1)
     return v
 
 
@@ -488,24 +488,26 @@ def xyz_to_lle(point):
     a = 6378137.0
     b = 6356752.0
 
-    x = point[0]
-    y = point[1]
-    z = point[2]
+    x = np.atleast_1d(point.T[0])
+    y = np.atleast_1d(point.T[1])
+    z = np.atleast_1d(point.T[2])
 
     # get corresponding point on earth's surface
-    t = np.sqrt((a*b)**2/(b**2*(x**2+y**2)+a**2*z**2))
-    point_s = t * point
-    z_s = point_s[2]
 
-    elev = np.linalg.norm(point-point_s)
-    r = np.linalg.norm(point_s)
+    t = np.sqrt((a*b)**2/(b**2*(x**2+y**2)+a**2*z**2))
+    t = t.reshape(point.shape[0], 1)
+    point_s = t * point
+    z_s = point_s.T[2]
+
+    elev = np.linalg.norm(point-point_s, axis=1)
+
+    r = np.linalg.norm(point_s, axis=1)
 
     alpha = np.arcsin(z_s / r)
     phi = latitude_to_geodetic(alpha)
-    lat = phi*180.0/np.pi
-
-    lon = np.arctan2(y, x)*180/np.pi
-    return (lat, lon, elev)
+    lat = np.degrees(phi)
+    lon = np.degrees(np.arctan2(y, x))
+    return np.stack([lat, lon, elev], axis=1)
 
 
 def polar_to_cart(rho, phi):
@@ -514,11 +516,11 @@ def polar_to_cart(rho, phi):
     """
     x = rho * np.cos(phi)
     y = rho * np.sin(phi)
-    return (x, y)
+    return(x, y)
 
 
 def round_to_nearest(x, base):
     """
     Helper function to round x to nearest base.
     """
-    return base * round(float(x) / base)
+    return base * np.round(x / base)

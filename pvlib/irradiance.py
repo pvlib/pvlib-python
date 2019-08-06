@@ -429,9 +429,10 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     model = model.lower()
     if model == 'isotropic':
-        if "horizon_profile" in kwargs:
+        if "horizon_azimuths" in kwargs and "horizon_angles" in kwargs:
             sky = isotropic(surface_tilt, surface_azimuth, dhi,
-                            horizon_profile=kwargs["horizon_profile"])
+                            horizon_azimuths=kwargs["horizon_azimuths"],
+                            horizon_angles=kwargs["horizon_angles"])
         else:
             sky = isotropic(surface_tilt, surface_azimuth, dhi)
     elif model == 'klucher':
@@ -644,7 +645,8 @@ grounddiffuse = deprecated('0.6', alternative='get_ground_diffuse',
                            get_ground_diffuse)
 
 
-def isotropic(surface_tilt, surface_azimuth, dhi, horizon_profile=None):
+def isotropic(surface_tilt, surface_azimuth, dhi,
+              horizon_azimuths=None, horizon_angles=None):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     the isotropic sky model.
@@ -709,8 +711,9 @@ def isotropic(surface_tilt, surface_azimuth, dhi, horizon_profile=None):
         surface.
     '''
 
-    if horizon_profile is not None:
-        dtf = horizon.calculate_dtf(horizon_profile,
+    if horizon_azimuths is not None and horizon_angles is not None:
+        dtf = horizon.calculate_dtf(horizon_azimuths,
+                                    horizon_angles,
                                     surface_tilt,
                                     surface_azimuth)
     else:
@@ -2923,7 +2926,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
     return dni
 
 
-def adjust_direct_for_horizon(poa_direct, horizon_profile,
+def adjust_direct_for_horizon(poa_direct, horizon_angles,
                               solar_azimuth, solar_zenith):
     '''
     Adjusts modeled DNI to account for the presence of a horizon. At
@@ -2934,30 +2937,23 @@ def adjust_direct_for_horizon(poa_direct, horizon_profile,
     ----------
     poa_direct : numeric
         The modeled direct normal irradiance in the plane of array.
+    horizon_angles : numeric
+        A list or vector of 361 values where the ith element corresponds
+        to the dip angle of the horizon at i degrees of azimuth.
     solar_zenith : numeric
         Solar zenith angle.
     solar_azimuth : numeric
         Solar azimuth angle.
-    horizon_profile : list
-        A list of (azimuth, dip_angle) tuples that defines the horizon
-        profile given. Every azimuth from -180 to 180, in 1 degree
-        increments, must be in this list.
 
     Returns
     -------
     adjusted_irradiance : Series
         POA direct normal irradiance after adjusting for the horizon.
     '''
-    dip_angles = {}
-    for pair in horizon_profile:
-        dip_angles[pair[0]] = pair[1]
-    adjusted_irradiance = poa_direct
-    for i in range(len(poa_direct)):
-        rounded_solar_azimuth = round(solar_azimuth[i])
-        if rounded_solar_azimuth > 180:
-            rounded_solar_azimuth -= 360
-        horizon_dip = dip_angles[rounded_solar_azimuth]
-        if (solar_zenith[i] > (90 - horizon_dip)):
-            adjusted_irradiance[i] = 0
 
+    adjusted_irradiance = poa_direct
+    rounded_solar_azimuth = np.round(solar_azimuth).astype(int)
+    horizon_zenith = 90 - horizon_angles[rounded_solar_azimuth]
+    mask = solar_zenith > horizon_zenith
+    adjusted_irradiance[mask] = 0
     return adjusted_irradiance

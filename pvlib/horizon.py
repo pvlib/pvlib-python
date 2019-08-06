@@ -4,6 +4,7 @@ There are various geometric utilities that are useful in horizon calculations
 as well as a method that uses the googlemaps elevation API to create a
 horizon profile.
 """
+from __future__ import division
 
 import itertools
 
@@ -11,31 +12,48 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 
 from pvlib import tools
-import matplotlib.pyplot as plt
 
 
-def grid_lat_lon(lat, lon, grid_size=200, grid_step=.001):
+def grid_lat_lon(lat, lon, grid_radius=200, grid_step=.001):
     '''
-    Creates a grid around a location (lat/lon pair) with a specified
-    grid size and step. The returned grid will be a 3-d matrix with
-    shape: grid_size+1 x grid_size+1 x 2.
+    Uses numpy's meshgrid to create grids around a location (lat/lon pair)
+    with a specified grid radius and step. The grid will be a square with
+    (2xgrid_radius)+1 points along each side.
+
+    Parameters
+    ----------
+    lat : numeric
+        The latitude of the location that is to be the center of the grid.
+
+    lon : numeric
+        The longitude of the location that is to be the center of the grid.
+
+    Returns
+    -------
+    lat_grid: 2d-array
+        Latitude values at each point on the grid. Values will vary along
+        axis=1 and will be constant along axis=0.
+
+    lon_grid: 2d-array
+        Longitude values at each point on the grid. Values will vary along
+        axis=0 and will be constant along axis=1.
     '''
-    grid = np.ndarray((grid_size + 1, grid_size + 1, 2))
 
-    # fill out grid
-    for i in range(grid_size + 1):
-        for j in range(grid_size + 1):
-            grid[i, j, 0] = lat + (i - grid_size / 2) * grid_step
-            grid[i, j, 1] = lon + (j - grid_size / 2) * grid_step
+    lat_start = lat - (grid_radius * grid_step)
+    lat_stop = lat + (grid_radius * grid_step)
+    lats = np.linspace(lat_start, lat_stop, 2*grid_radius + 1)
 
-    return grid
+    lon_start = lon - (grid_radius * grid_step)
+    lon_stop = lon + (grid_radius * grid_step)
+    lons = np.linspace(lon_start, lon_stop, 2*grid_radius + 1)
+
+    lat_grid, lon_grid = np.meshgrid(lats, lons)
+
+    return lat_grid, lon_grid
 
 
 def dip_calc(pt1, pt2):
     '''
-    input: two LLE tuples
-    output: distance, dip angle, azimuth
-
     Calculates the dip angle from pt1 to pt2 where dip angle is defined as
     the angle that the line connecting pt1 to pt2 makes with the plane normal
     to the Earth's surface at pt2. Also computes the azimuth defined as degrees
@@ -43,74 +61,91 @@ def dip_calc(pt1, pt2):
 
     Parameters
     ----------
-    pt1 : tuple
-        (lat, lon, elev) tuple that corresponds to the origin from which
-        the dip angle is to be calculated. The observer point.
+    pt1 : ndarray
+        Nx3 array that contains lat, lon, and elev values that correspond
+        to the origin points from which the dip angles are to be calculated.
+        The observer points.
 
-    pt1 : tuple
-        (lat, lon, elev) tuple that corresponds to the origin from which
-        the dip angle is to be calculated. The observee point.
+    pt2 : ndarray
+        Nx3 array that contains lat, lon, and elev values that correspond
+        to the target points to which the dip angles are to be calculated.
+        The observee points.
 
     Returns
     -------
-    bearing_deg: numeric
-        The bearing from pt1 to pt2 in degrees East of North
+    bearing_deg: Nx1 ndarray
+        The bearings from pt1 to pt2 in degrees East of North.
 
-    dip_angle:
-        The dip angle that pt2 makes with the horizontal as observed at pt1.
+    dip_angle: Nx1 ndarray
+        The dip angles that the points in pt2 make with the horizontal
+        as observed from the points in pt1.
 
     '''
     a = 6378137.0
     b = 6356752.0
 
-    lat1 = pt1[0]
-    lon1 = pt1[1]
-    elev1 = pt1[2]
-    lat2 = pt2[0]
-    lon2 = pt2[1]
-    elev2 = pt2[2]
+    lat1 = np.atleast_1d(pt1.T[0])
+    lon1 = np.atleast_1d(pt1.T[1])
+    elev1 = np.atleast_1d(pt1.T[2])
+    lat2 = np.atleast_1d(pt2.T[0])
+    lon2 = np.atleast_1d(pt2.T[1])
+    elev2 = np.atleast_1d(pt2.T[2])
 
     # convert to radians
-    phi1 = lat1*np.pi/180.0
-    theta1 = lon1*np.pi/180.0
-    phi2 = lat2*np.pi/180.0
-    theta2 = lon2*np.pi/180.0
+    phi1 = np.radians(lat1)
+    theta1 = np.radians(lon1)
+    phi2 = np.radians(lat2)
+    theta2 = np.radians(lon2)
 
-    v1 = tools.lle_to_xyz((lat1, lon1, elev1))
-    v2 = tools.lle_to_xyz((lat2, lon2, elev2))
+    v1 = tools.lle_to_xyz(np.stack([lat1, lon1, elev1], axis=1))
+    v2 = tools.lle_to_xyz(np.stack([lat2, lon2, elev2], axis=1))
+    x1 = np.atleast_1d(v1.T[0])
+    y1 = np.atleast_1d(v1.T[1])
+    z1 = np.atleast_1d(v1.T[2])
 
-    x1 = v1[0]
-    y1 = v1[1]
-    z1 = v1[2]
+    delta = np.atleast_2d(np.subtract(v1, v2))
 
-    delta = np.subtract(v1, v2)
+    normal = np.atleast_2d(np.stack([2*x1/a**2, 2*y1/a**2, 2*z1/b**2], axis=1))
 
-    normal = np.array((2*x1/a**2, 2*y1/a**2, 2*z1/b**2))
-    beta = np.arccos(np.dot(delta, normal)/np.linalg.norm(delta)
-                     / np.linalg.norm(normal))
+    # Take the dot product of corresponding vectors
+    dot = np.sum(np.multiply(delta, normal), axis=1)
+    beta = np.arccos(dot / np.linalg.norm(delta, axis=1)
+                     / np.linalg.norm(normal, axis=1))
     dip_angle = beta - np.pi/2
-    dip_angle_deg = dip_angle*180.0/np.pi
 
-    # might wanna double check this formula (haversine?)
+    dip_angle_deg = np.degrees(dip_angle)
+
     bearing = np.arctan2(np.sin(theta2-theta1)*np.cos(phi2),
                          (np.cos(phi1) * np.sin(phi2)
                           - np.sin(phi1) * np.cos(phi2)*np.cos(theta2-theta1)))
-    bearing_deg = bearing*180.0/np.pi
-    if bearing_deg < 0:
-        bearing_deg += 360
+    bearing_deg = np.degrees(bearing)
 
-    return (bearing_deg, dip_angle_deg)
+    mask = (bearing_deg < 0)
+    bearing_deg[mask] += 360
+
+    return bearing_deg, dip_angle_deg
 
 
-def calculate_horizon_points(grid, sampling_method="grid", sampling_param=400):
+def calculate_horizon_points(lat_grid, lon_grid, elev_grid,
+                             sampling_method="grid", sampling_param=400):
     """
-    Calculates a horizon profile from a grid of (lat, lon, elev) tuples.
-    The "site" is assumed to be at the center of the grid.
+    Calculates a horizon profile from a three grids containing lat, lon,
+    and elevation values. The "site" is assumed to be at the center of the
+    grid.
 
     Parameters
     ----------
-    grid : ndarray
-        Assumes
+    lat_grid : ndarray
+        A 2d array containing latitude values that correspond to the other
+        two input grids.
+
+    lon_grid : ndarray
+        A 2d array containing longitude values that correspond to the other
+        two input grids.
+
+    elev_grid : ndarray
+        A 2d array containing elevation values that correspond to the other
+        two input grids.
 
     sampling_method : string
         A string that specifies the sampling method used to generate the
@@ -127,54 +162,52 @@ def calculate_horizon_points(grid, sampling_method="grid", sampling_param=400):
         point at the center of the grid.
 
     """
+    assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
-    grid_shape = grid.shape
-    grid_center_i = (grid_shape[0] - 1) / 2
-    grid_center_j = (grid_shape[1] - 1) / 2
-    site_lat = grid[grid_center_i, grid_center_j, 0]
-    site_lon = grid[grid_center_i, grid_center_j, 1]
-    site_elev = grid[grid_center_i, grid_center_j, 2]
-    site = (site_lat, site_lon, site_elev)
-
-    horizon_points = []
+    grid_shape = lat_grid.shape
+    grid_center_i = (grid_shape[0] - 1) // 2
+    grid_center_j = (grid_shape[1] - 1) // 2
+    site_lat = lat_grid[grid_center_i, grid_center_j]
+    site_lon = lon_grid[grid_center_i, grid_center_j]
+    site_elev = elev_grid[grid_center_i, grid_center_j]
+    site = np.array([site_lat, site_lon, site_elev])
 
     if sampling_method == "grid":
-        samples = sample_using_grid(grid)
+        samples = sample_using_grid(lat_grid, lon_grid, elev_grid)
     elif sampling_method == "triangles":
-        samples = sample_using_triangles(grid, sampling_param)
+        samples = sample_using_triangles(lat_grid, lon_grid, elev_grid,
+                                         sampling_param)
     elif sampling_method == "interpolator":
-        samples = sample_using_interpolator(grid, sampling_param)
+        samples = sample_using_interpolator(lat_grid, lon_grid, elev_grid,
+                                            sampling_param)
 
-    horizon_points = np.array(list(map(lambda pt: dip_calc(site, pt),
-                                       samples)))
+    bearing_deg, dip_angle_deg = dip_calc(site, samples)
 
-    return horizon_points
+    return bearing_deg, dip_angle_deg
 
 
-def sample_using_grid(grid):
+def sample_using_grid(lat_grid, lon_grid, elev_grid):
     """
     Calculates the dip angle from the site (center of the grid)
     to every point on the grid and uses the results as the
     horizon profile.
 
     """
-    grid_shape = grid.shape
-    grid_center_i = (grid_shape[0] - 1) / 2
-    grid_center_j = (grid_shape[1] - 1) / 2
+    assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
-    all_samples = []
-    for i in range(grid_shape[0]):
-        for j in range(grid_shape[1]):
-            # make sure the site is excluded
-            if i != grid_center_i or j != grid_center_j:
-                lat = grid[i, j, 0]
-                lon = grid[i, j, 1]
-                elev = grid[i, j, 2]
-                all_samples.append((lat, lon, elev))
+    lats = lat_grid.flatten()
+    lons = lon_grid.flatten()
+    elevs = elev_grid.flatten()
+    samples = np.stack([lats, lons, elevs], axis=1)
+    assert(samples.shape[1] == 3)
+    # remove site from samples
+    all_samples = np.delete(samples, samples.shape[0]//2, axis=0)
+    assert(all_samples.shape[1] == 3)
     return all_samples
 
 
-def sample_using_triangles(grid, samples_per_triangle=10):
+def sample_using_triangles(lat_grid, lon_grid, elev_grid,
+                           samples_per_triangle=10):
     """
     Creates triangles using nearest neighbors for every grid point and randomly
     samples each of these triangles to find dip angles for the horizon profile.
@@ -195,46 +228,71 @@ def sample_using_triangles(grid, samples_per_triangle=10):
 
     [1] http://graphics.stanford.edu/courses/cs468-08-fall/pdf/osada.pdf
     """
+    assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
-    all_samples = []
-    for i in range(grid.shape[0]):
-        for j in range(grid.shape[1]):
-            center = (grid[i, j, 0], grid[i, j, 1], grid[i, j, 2])
+    # start with empty array
+    all_samples = np.array([], dtype=np.float64).reshape(0, 3)
+
+    for i in range(lat_grid.shape[0]):
+        for j in range(lat_grid.shape[1]):
+            center = np.array([lat_grid[i, j],
+                               lon_grid[i, j],
+                               elev_grid[i, j]])
             if i != 0 and j != 0:
-                left = (grid[i, j-1, 0], grid[i, j-1, 1], grid[i, j-1, 2])
-                top = (grid[i-1, j, 0], grid[i-1, j, 1], grid[i-1, j, 2])
-                all_samples += uniformly_sample_triangle(center,
-                                                         top,
-                                                         left,
-                                                         samples_per_triangle)
+                left = np.array([lat_grid[i, j-1],
+                                 lon_grid[i, j-1],
+                                 elev_grid[i, j-1]])
+                top = np.array([lat_grid[i-1, j],
+                                lon_grid[i-1, j],
+                                elev_grid[i-1, j]])
+                samples = uniformly_sample_triangle(center,
+                                                    top,
+                                                    left,
+                                                    samples_per_triangle)
+                all_samples = np.vstack([all_samples, samples])
 
-            if i != 0 and j != grid.shape[1] - 1:
-                right = (grid[i, j+1, 0], grid[i, j+1, 1], grid[i, j+1, 2])
-                top = (grid[i-1, j, 0], grid[i-1, j, 1], grid[i-1, j, 2])
-                all_samples += uniformly_sample_triangle(center,
-                                                         top,
-                                                         right,
-                                                         samples_per_triangle)
+            if i != 0 and j != lat_grid.shape[1] - 1:
+                right = np.array([lat_grid[i, j+1],
+                                  lon_grid[i, j+1],
+                                  elev_grid[i, j+1]])
+                top = np.array([lat_grid[i-1, j],
+                                lon_grid[i-1, j],
+                                elev_grid[i-1, j]])
+                samples = uniformly_sample_triangle(center,
+                                                    top,
+                                                    right,
+                                                    samples_per_triangle)
+                all_samples = np.vstack([all_samples, samples])
 
-            if i != grid.shape[0] - 1 and j != 0:
-                left = (grid[i, j-1, 0], grid[i, j-1, 1], grid[i, j-1, 2])
-                bottom = (grid[i+1, j, 0], grid[i+1, j, 1], grid[i+1, j, 2])
-                all_samples += uniformly_sample_triangle(center,
-                                                         bottom,
-                                                         left,
-                                                         samples_per_triangle)
+            if i != lat_grid.shape[0] - 1 and j != 0:
+                left = np.array([lat_grid[i, j-1],
+                                 lon_grid[i, j-1],
+                                 elev_grid[i, j-1]])
+                bottom = np.array([lat_grid[i+1, j],
+                                   lon_grid[i+1, j],
+                                   elev_grid[i+1, j]])
+                samples = uniformly_sample_triangle(center,
+                                                    bottom,
+                                                    left,
+                                                    samples_per_triangle)
+                all_samples = np.vstack([all_samples, samples])
 
-            if i != grid.shape[0] - 1 and j != grid.shape[1] - 1:
-                right = (grid[i, j+1, 0], grid[i, j+1, 1], grid[i, j+1, 2])
-                bottom = (grid[i+1, j, 0], grid[i+1, j, 1], grid[i+1, j, 2])
-                all_samples += uniformly_sample_triangle(center,
-                                                         bottom,
-                                                         right,
-                                                         samples_per_triangle)
-    return all_samples
+            if i != lat_grid.shape[0] - 1 and j != lat_grid.shape[1] - 1:
+                right = np.array([lat_grid[i, j+1],
+                                  lon_grid[i, j+1],
+                                  elev_grid[i, j+1]])
+                bottom = np.array([lat_grid[i+1, j],
+                                   lon_grid[i+1, j],
+                                   elev_grid[i+1, j]])
+                samples = uniformly_sample_triangle(center,
+                                                    bottom,
+                                                    right,
+                                                    samples_per_triangle)
+                all_samples = np.vstack([all_samples, samples])
+    return np.array(all_samples)
 
 
-def sample_using_interpolator(grid, num_samples):
+def sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
     """
     Creates a "grid" using polar coordinates and uses the scipy's grid
     interpolator to estimate elevation values at each point on the polar grid
@@ -259,21 +317,22 @@ def sample_using_interpolator(grid, num_samples):
         List of (azimuth, dip_angle) tuples taken from the polar grid
 
     """
-    x = grid.T[0][0]
-    y = grid.T[1].T[0]
+    assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
-    x_range = x[-1] - x[0]
+    lats = lat_grid[0]
+    lons = lon_grid.T[0]
 
-    grid_shape = grid.shape
+    lat_range = lats[-1] - lats[0]
+
+    grid_shape = lat_grid.shape
     grid_center_i = (grid_shape[0] - 1) // 2
     grid_center_j = (grid_shape[1] - 1) // 2
-    site_lat = grid[grid_center_i, grid_center_j, 0]
-    site_lon = grid[grid_center_i, grid_center_j, 1]
+    site_lat = lat_grid[grid_center_i, grid_center_j]
+    site_lon = lon_grid[grid_center_i, grid_center_j]
 
-    elevs = grid.T[2].T
-    interpolator = RegularGridInterpolator((x, y), elevs)
+    interpolator = RegularGridInterpolator((lats, lons), elev_grid.T)
 
-    r = np.linspace(0, x_range/2, num_samples[0])
+    r = np.linspace(0, lat_range//2, num_samples[0])
     theta = np.linspace(0, 2 * np.pi, num_samples[1])
     polar_pts = np.array(list(itertools.product(r, theta)))
 
@@ -282,7 +341,7 @@ def sample_using_interpolator(grid, num_samples):
     total_num_samples = num_samples[0]*num_samples[1]
 
     interpolated_elevs = interpolator(pts).reshape(total_num_samples, 1)
-    samples = np.concatenate((pts, interpolated_elevs), axis=1)
+    samples = np.hstack((pts, interpolated_elevs))
     return samples
 
 
@@ -316,18 +375,17 @@ def uniformly_sample_triangle(p1, p2, p3, num_samples):
     c2 = tools.lle_to_xyz(p2)
     c3 = tools.lle_to_xyz(p3)
 
-    points = []
-    for i in range(num_samples):
-        r1 = np.random.rand()
-        r2 = np.random.rand()
-        sqrt_r1 = np.sqrt(r1)
+    r1 = np.random.rand(num_samples).reshape((num_samples, 1))
+    r2 = np.random.rand(num_samples).reshape((num_samples, 1))
+    sqrt_r1 = np.sqrt(r1)
 
-        random_pt = (1-sqrt_r1)*c1 + sqrt_r1*(1-r2)*c2 + sqrt_r1*r2*c3
-        points.append(tools.xyz_to_lle(random_pt))
-    return points
+    random_pts = (1-sqrt_r1)*c1 + sqrt_r1*(1-r2)*c2 + sqrt_r1*r2*c3
+    random_pts = tools.xyz_to_lle(random_pts)
+
+    return random_pts
 
 
-def filter_points(horizon_points, bin_size=1):
+def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
     """
     Bins the horizon_points by azimuth values. The azimuth value of each
     point in horizon_points is rounded to the nearest bin and then the
@@ -343,14 +401,14 @@ def filter_points(horizon_points, bin_size=1):
 
     Returns
     -------
-    sorted_points: list
-        List of (azimuth, dip_angle) values that correspond to the greatest
-        dip_angle in each azimuth bin.
+
     """
+    assert(horizon_azimuths.shape[0] == horizon_angles.shape[0])
+
     wedges = {}
-    for pair in horizon_points:
-        azimuth = pair[0]
-        dip = pair[1]
+    for i in range(horizon_angles.shape[0]):
+        azimuth = horizon_azimuths[i]
+        dip = horizon_angles[i]
         azimuth_wedge = tools.round_to_nearest(azimuth, bin_size)
 
         if azimuth_wedge in wedges:
@@ -358,73 +416,15 @@ def filter_points(horizon_points, bin_size=1):
         else:
             wedges[azimuth_wedge] = dip
 
-    filtered_points = []
-    for key in wedges.keys():
-        filtered_points.append((key, wedges[key]))
+    filtered_azimuths = []
+    filtered_angles = []
+    for key in sorted(wedges.keys()):
+        filtered_azimuths.append(key)
+        filtered_angles.append(wedges[key])
 
-    sorted_points = sorted(filtered_points, key=lambda tup: tup[0])
-    return sorted_points
-
-
-def visualize(horizon_profile, pvsyst_scale=False):
-    """
-    Plots a horizon profile with azimuth on the x-axis and dip angle on the y.
-    """
-    azimuths = []
-    dips = []
-    for pair in horizon_profile:
-        azimuth = pair[0]
-        azimuths.append(azimuth)
-        dips.append(pair[1])
-    plt.figure(figsize=(10, 6))
-    if pvsyst_scale:
-        plt.ylim(0, 90)
-    plt.plot(azimuths, dips, "-")
-    plt.show
-
-
-def polar_plot(horizon_profile):
-    """
-    Plots a horizon profile on a polar plot with dip angle as the raidus and
-    azimuth as the theta value. An offset of 5 is added to the dip_angle to
-    make the plot more readable with low dip angles.
-    """
-    azimuths = []
-    dips = []
-    for pair in horizon_profile:
-        azimuth = pair[0]
-        azimuths.append(np.radians(azimuth))
-        dips.append(pair[1] + 5)
-    plt.figure(figsize=(10, 6))
-    sp = plt.subplot(1, 1, 1, projection='polar')
-    sp.set_theta_zero_location('N')
-    sp.set_theta_direction(-1)
-    plt.plot(azimuths, dips, "o")
-    plt.show
-
-
-def invert_for_pvsyst(horizon_points, hemisphere="north"):
-    """
-    Modify the azimuth values in horizon_points to match PVSyst's azimuth
-    convention (which is dependent on hemisphere)
-    """
-
-    # look at that northern hemisphere bias right there
-    # not even sorry.
-    assert hemisphere == "north" or hemisphere == "south"
-
-    inverted_points = []
-    for pair in horizon_points:
-        azimuth = pair[0]
-        if hemisphere == "north":
-            azimuth -= 180
-            if azimuth < -180:
-                azimuth += 360
-        elif hemisphere == "south":
-            azimuth = -azimuth
-        inverted_points.append((azimuth, pair[1]))
-    sorted_points = sorted(inverted_points, key=lambda tup: tup[0])
-    return sorted_points
+    filtered_angles = np.array(filtered_angles)
+    filtered_azimuths = np.array(filtered_azimuths)
+    return filtered_azimuths, filtered_angles
 
 
 def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
@@ -467,29 +467,32 @@ def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
     return dip
 
 
-def calculate_dtf(horizon_profile, surface_tilt, surface_azimuth):
+def calculate_dtf(horizon_azimuths, horizon_angles,
+                  surface_tilt, surface_azimuth):
     """
     Calculate the diffuse tilt factor that is adjusted with the horizon
     profile.
     """
+    assert(horizon_azimuths.shape[0] == horizon_angles.shape[0])
     tilt_rad = np.radians(surface_tilt)
     plane_az_rad = np.radians(surface_azimuth)
     a = np.sin(tilt_rad) * np.cos(plane_az_rad)
     b = np.sin(tilt_rad) * np.sin(plane_az_rad)
     c = np.cos(tilt_rad)
 
-    # this gets either an int or an array of zeros
+    # this gets either a float or an array of zeros
     dtf = np.multiply(0.0, surface_tilt)
-    for pair in horizon_profile:
-        az = np.radians(pair[0])
-        horizon_dip = np.radians(pair[1])
+    num_points = horizon_azimuths.shape[0]
+    for i in range(horizon_azimuths.shape[0]):
+        az = np.radians(horizon_azimuths[i])
+        horizon_dip = np.radians(horizon_angles[i])
         temp = np.radians(collection_plane_dip_angle(surface_tilt,
                                                      surface_azimuth,
-                                                     pair[0]))
+                                                     horizon_azimuths[i]))
         dip = np.maximum(horizon_dip, temp)
 
         first_term = .5 * (a*np.cos(az) + b*np.sin(az)) * \
                           (np.pi/2 - dip - np.sin(dip) * np.cos(dip))
         second_term = .5 * c * np.cos(dip)**2
-        dtf += 2 * (first_term + second_term) / len(horizon_profile)
+        dtf += 2 * (first_term + second_term) / num_points
     return dtf

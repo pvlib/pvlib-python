@@ -719,14 +719,22 @@ class ModelChain(object):
         fd = self.system.module_parameters.get('FD', 1.)
         direct = self.total_irrad['poa_direct']
 
-        if self.location.horizon_profile is not None:
-            horizon = self.location.horizon_profile
-            solar_zenith = self.solar_position['apparent_zenith']
-            solar_az = self.solar_position['azimuth']
-            direct = pvlib.irradiance.adjust_direct_for_horizon(direct,
-                                                                horizon,
-                                                                solar_az,
-                                                                solar_zenith)
+        if self.location.horizon_angles is not None:
+            horizon = self.location.horizon_angles
+            if len(horizon) != 361:
+                warnings.warn('The location used in modelchain has specified'
+                              'horizon_angles but does not contain 361 values.'
+                              'The horizon is not being used to correct DNI.'
+                              'To correct DNI with the horizon, horizon_angles'
+                              'must contain 361 values.',
+                              pvlibDeprecationWarning)
+            else:
+                zenith = self.solar_position['apparent_zenith']
+                solar_az = self.solar_position['azimuth']
+                direct = pvlib.irradiance.adjust_direct_for_horizon(direct,
+                                                                    horizon,
+                                                                    solar_az,
+                                                                    zenith)
 
         self.effective_irradiance = self.spectral_modifier * (
             direct*self.aoi_modifier + fd*self.total_irrad['poa_diffuse'])
@@ -900,7 +908,8 @@ class ModelChain(object):
             self.weather['dhi'],
             airmass=self.airmass['airmass_relative'],
             model=self.transposition_model,
-            horizon_profile=self.location.horizon_profile)
+            horizon_azimuths=self.location.horizon_azimuths,
+            horizon_angles=self.location.horizon_angles)
 
         if self.weather.get('wind_speed') is None:
             self.weather['wind_speed'] = 0

@@ -661,7 +661,9 @@ def isotropic(surface_tilt, surface_azimuth, dhi,
     surface can be found from the diffuse horizontal irradiance and the
     tilt angle of the surface. If a horizon profile is given as an argument
     to the function then a numerical integration over the visible part of
-    the sky dome is used as the conversion factor.
+    the sky dome is used as the conversion factor. Note that the horizon
+    correction is designed for satellite irradiance data, not irradiance
+    data from ground stations.
 
     Parameters
     ----------

@@ -19,7 +19,7 @@ def test_grid_lat_lon():
     assert_allclose(lat_grid[30][72], lat + 22*grid_step)
 
 
-def test_dip_calc():
+def test_elev_calc():
     pt1 = np.array((71.23, -34.70, 1234))
     pt2 = np.array((71.12, -34.16, 124))
     pt3 = np.array((71.29, -35.23, 30044))
@@ -28,15 +28,16 @@ def test_dip_calc():
     reverse_test_pts = np.vstack([pt2, pt1])
 
     expected_bearings = np.array([121.9895, 302.5061])
-    expected_dips = np.array([-2.8654, 2.6593])
+    expected_elevs = np.array([-2.8654, 2.6593])
 
     expected13 = np.array([[289.8132], [54.8663]])
 
-    act_bearings, act_dips = horizon.dip_calc(test_pts, reverse_test_pts)
+    act_bearings, act_elevs = horizon.elevation_angle_calc(test_pts,
+                                                           reverse_test_pts)
     assert_allclose(act_bearings, expected_bearings, rtol=1e-3)
-    assert_allclose(act_dips, expected_dips, rtol=1e-3)
+    assert_allclose(act_elevs, expected_elevs, rtol=1e-3)
 
-    actual13 = horizon.dip_calc(pt1, pt3)
+    actual13 = horizon.elevation_angle_calc(pt1, pt3)
     assert_allclose(expected13, actual13, rtol=1e-3)
 
 
@@ -53,29 +54,29 @@ def test_calculate_horizon_points():
                                [212, 135, 1],
                                [36, 145, 5]])
 
-    bearings, dips = horizon.calculate_horizon_points(test_lat_grid,
-                                                      test_lon_grid,
-                                                      test_elev_grid,
-                                                      sampling_method="grid")
+    dirs, elevs = horizon.calculate_horizon_points(test_lat_grid,
+                                                   test_lon_grid,
+                                                   test_elev_grid,
+                                                   sampling_method="grid")
 
-    expected_bearings = np.array([0, 90, 45, 270, 135])
-    rounded_bearings = np.round(bearings).astype(int)
-    assert(bearings.shape == dips.shape)
-    assert(np.all(np.in1d(expected_bearings, rounded_bearings)))
+    expected_dirs = np.array([0, 90, 45, 270, 135])
+    rounded_dirs = np.round(dirs).astype(int)
+    assert(dirs.shape == elevs.shape)
+    assert(np.all(np.in1d(expected_dirs, rounded_dirs)))
 
-    bears, dips = horizon.calculate_horizon_points(test_lat_grid,
+    dirs, elevs = horizon.calculate_horizon_points(test_lat_grid,
                                                    test_lon_grid,
                                                    test_elev_grid,
                                                    sampling_method="triangles",
                                                    sampling_param=5)
-    assert(bears.shape == dips.shape)
+    assert(dirs.shape == elevs.shape)
 
-    bears, _ = horizon.calculate_horizon_points(test_lat_grid,
-                                                test_lon_grid,
-                                                test_elev_grid,
-                                                sampling_method="interpolator",
-                                                sampling_param=(10, 10))
-    assert(bears.shape[0] == 100)
+    dirs, _ = horizon.calculate_horizon_points(test_lat_grid,
+                                               test_lon_grid,
+                                               test_elev_grid,
+                                               sampling_method="interpolator",
+                                               sampling_param=(10, 10))
+    assert(dirs.shape[0] == 100)
 
 
 def test_sample_using_grid():
@@ -173,7 +174,7 @@ def test_filter_points():
     assert(filtered_angles[1] == 10)
 
 
-def test_collection_plane_dip_angle():
+def test_collection_plane_elev_angle():
     surface_tilts = np.array([0, 5, 20, 38, 89])
     surface_azimuths = np.array([0, 90, 180, 235, 355])
     directions_easy = np.array([78, 270, 0, 145, 355])
@@ -182,15 +183,15 @@ def test_collection_plane_dip_angle():
     expected_easy = np.array([0, 5, 20, 0, 0])
     expected_hard = np.array([0, 3.21873120519, 10.3141048156,
                               21.3377447931, 0])
-    dips_easy = horizon.collection_plane_dip_angle(surface_tilts,
-                                                   surface_azimuths,
-                                                   directions_easy)
-    assert_allclose(dips_easy, expected_easy)
+    elevs_easy = horizon.collection_plane_elev_angle(surface_tilts,
+                                                     surface_azimuths,
+                                                     directions_easy)
+    assert_allclose(elevs_easy, expected_easy)
 
-    dips_hard = horizon.collection_plane_dip_angle(surface_tilts,
-                                                   surface_azimuths,
-                                                   directions_hard)
-    assert_allclose(dips_hard, expected_hard)
+    elevs_hard = horizon.collection_plane_elev_angle(surface_tilts,
+                                                     surface_azimuths,
+                                                     directions_hard)
+    assert_allclose(elevs_hard, expected_hard)
 
 
 def test_calculate_dtf():

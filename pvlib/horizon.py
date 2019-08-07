@@ -52,33 +52,36 @@ def grid_lat_lon(lat, lon, grid_radius=200, grid_step=.001):
     return lat_grid, lon_grid
 
 
-def dip_calc(pt1, pt2):
+def elevation_angle_calc(pt1, pt2):
     '''
-    Calculates the dip angle from pt1 to pt2 where dip angle is defined as
-    the angle that the line connecting pt1 to pt2 makes with the plane normal
-    to the Earth's surface at pt2. Also computes the azimuth defined as degrees
-    East of North the bearing of pt2 from pt1. This uses the Haversine formula.
+    Calculates the elevation angle from pt1 to pt2 where elevation angle is
+    defined as the angle between the line connecting pt1 to pt2 and the plane
+    normal to the Earth's surface at pt1. A point that appears above the
+    horizontal has a positive elevation angle. Also computes the azimuth
+    defined as degrees East of North the bearing of pt2 from pt1.
+    This uses the Haversine formula.
 
     Parameters
     ----------
     pt1 : ndarray
         Nx3 array that contains lat, lon, and elev values that correspond
-        to the origin points from which the dip angles are to be calculated.
-        The observer points. (will also take a 1darray with 3 elements)
+        to the origin points from which the elevation angles are to be
+        calculated. The observer points.
 
     pt2 : ndarray
         Nx3 array that contains lat, lon, and elev values that correspond
-        to the target points to which the dip angles are to be calculated.
-        The observee points. (will also take a 1darray with 3 elements)
+        to the target points to which the elevation angles are to be
+        calculated. The observee points.
 
     Returns
     -------
-    bearing_deg: Nx1 ndarray
+    bearing_deg: numeric
         The bearings from pt1 to pt2 in degrees East of North.
 
-    dip_angle: Nx1 ndarray
-        The dip angles that the points in pt2 make with the horizontal
-        as observed from the points in pt1.
+    elevation_angle_deg: numeric
+        The elevation angles that the points in pt2 make with the horizontal
+        as observed from the points in pt1. Given in degrees above the
+        horizontal.
 
     '''
     a = 6378137.0
@@ -111,9 +114,9 @@ def dip_calc(pt1, pt2):
     dot = np.sum(np.multiply(delta, normal), axis=1)
     beta = np.arccos(dot / np.linalg.norm(delta, axis=1)
                      / np.linalg.norm(normal, axis=1))
-    dip_angle = beta - np.pi/2
+    elevation_angle = beta - np.pi/2
 
-    dip_angle_deg = np.degrees(dip_angle)
+    elevation_angle_deg = np.degrees(elevation_angle)
 
     bearing = np.arctan2(np.sin(theta2-theta1)*np.cos(phi2),
                          (np.cos(phi1) * np.sin(phi2)
@@ -123,7 +126,7 @@ def dip_calc(pt1, pt2):
     mask = (bearing_deg < 0)
     bearing_deg[mask] += 360
 
-    return bearing_deg, dip_angle_deg
+    return bearing_deg, elevation_angle_deg
 
 
 def calculate_horizon_points(lat_grid, lon_grid, elev_grid,
@@ -161,9 +164,10 @@ def calculate_horizon_points(lat_grid, lon_grid, elev_grid,
         The bearings from the "site" to sampled points in degrees
         East of North.
 
-    dip_angle_dip: Nx1 ndarray
-        The dip angles that the sampled points make with the horizontal
-        as observed from the the "site".
+    elevation_angle_deg: numeric
+        The angles that the sampled points make with the horizontal
+        as observed from the "site". Given in degrees above the
+        horizontal.
 
     """
     assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
@@ -185,14 +189,14 @@ def calculate_horizon_points(lat_grid, lon_grid, elev_grid,
         samples = sample_using_interpolator(lat_grid, lon_grid, elev_grid,
                                             sampling_param)
 
-    bearing_deg, dip_angle_deg = dip_calc(site, samples)
+    bearing_deg, elevation_angle_deg = elevation_angle_calc(site, samples)
 
-    return bearing_deg, dip_angle_deg
+    return bearing_deg, elevation_angle_deg
 
 
 def sample_using_grid(lat_grid, lon_grid, elev_grid):
     """
-    Calculates the dip angle from the site (center of the grid)
+    Calculates the Elevation angle from the site (center of the grid)
     to every point on the grid.
 
     Parameters
@@ -231,7 +235,7 @@ def sample_using_triangles(lat_grid, lon_grid, elev_grid,
                            samples_per_triangle=10):
     """
     Creates triangles using nearest neighbors for every grid point and randomly
-    samples each of these triangles to find dip angles for the horizon profile.
+    samples each of these triangles to find Elevation angles for the horizon profile.
 
     Parameters
     ----------
@@ -326,7 +330,7 @@ def sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
     """
     Creates a "grid" using polar coordinates and uses the scipy's grid
     interpolator to estimate elevation values at each point on the polar grid
-    from the input (rectangular) grid that has true elevation values. Dip
+    from the input (rectangular) grid that has true elevation values. Elevation
     calculations are done at each point on the polar grid and the results
     are returned.
 
@@ -439,12 +443,11 @@ def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
         Azimuth values for points that define the horizon profile. The ith
         element in this array corresponds to the ith element in horizon_angles.
 
-    horizon_angle: numeric
-        Dip angle values for points that define the horizon profile. The dip
-        angle of the horizon is the angle that the horizon makes with the
-        horizontal. It is given in degrees. If the horizon appears above
-        the horizontal, then the dip angle is positive. The ith element in
-        this array corresponds to the ith element in
+    horizon_angles: numeric
+        Elevation angle values for points that define the horizon profile. The
+        elevation angle of the horizon is the angle that the horizon makes with
+        the horizontal. It is given in degrees above the horizontal. The ith
+        element in this array corresponds to the ith element in
         horizon_azimuths.
 
     bin_size : int
@@ -458,9 +461,9 @@ def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
         filtered_angles.
 
     filtered_angles: numeric
-        Dip angle values for points that define the horizon profile. The ith
-        element in this array corresponds to the ith element in
-        filtered_azimuths.
+        elevation angle values for points that define the horizon profile given
+        in degrees above the horizontal. The ith element in this array
+        corresponds to the ith element in filtered_azimuths.
 
     """
     assert(horizon_azimuths.shape[0] == horizon_angles.shape[0])
@@ -468,13 +471,13 @@ def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
     wedges = {}
     for i in range(horizon_angles.shape[0]):
         azimuth = horizon_azimuths[i]
-        dip = horizon_angles[i]
+        elevation = horizon_angles[i]
         azimuth_wedge = tools.round_to_nearest(azimuth, bin_size)
 
         if azimuth_wedge in wedges:
-            wedges[azimuth_wedge] = max(dip, wedges[azimuth_wedge])
+            wedges[azimuth_wedge] = max(elevation, wedges[azimuth_wedge])
         else:
-            wedges[azimuth_wedge] = dip
+            wedges[azimuth_wedge] = elevation
 
     filtered_azimuths = []
     filtered_angles = []
@@ -487,10 +490,10 @@ def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
     return filtered_azimuths, filtered_angles
 
 
-def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
+def collection_plane_elev_angle(surface_tilt, surface_azimuth, direction):
     """
-    Determine the dip angle created by the surface of a tilted plane
-    in a given direction. The dip angle is limited to be non-negative.
+    Determine the elevation angle created by the surface of a tilted plane
+    in a given direction. The angle is limited to be non-negative.
 
     Parameters
     ----------
@@ -505,15 +508,17 @@ def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     direction : numeric
-        The direction along which the dip angle is to be calculated in
+        The direction along which the elevation angle is to be calculated in
         decimal degrees. The convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     Returns
     --------
 
-    dip_angle : numeric
-        The dip angle in direction created by the tilted plane.
+    elevation_angle : numeric
+        The angle between the surface of the tilted plane and the horizontal
+        when looking in the specified direction. Given in degrees above the
+        horizontal and limited to be non-negative.
 
     """
     tilt = np.radians(surface_tilt)
@@ -521,10 +526,10 @@ def collection_plane_dip_angle(surface_tilt, surface_azimuth, direction):
 
     declination = np.degrees(np.arctan(1.0/np.tan(tilt)/np.cos(bearing)))
     mask = (declination <= 0)
-    dip = 90.0 - declination
-    dip[mask] = 0.0
+    elevation_angle = 90.0 - declination
+    elevation_angle[mask] = 0.0
 
-    return dip
+    return elevation_angle
 
 
 def calculate_dtf(horizon_azimuths, horizon_angles,
@@ -540,11 +545,10 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
         element in this array corresponds to the ith element in horizon_angles.
 
     horizon_angles: numeric
-        Dip angle values for points that define the horizon profile. The dip
-        angle of the horizon is the angle that the horizon makes with the
-        horizontal. It is given in degrees. If the horizon appears above
-        the horizontal, then the dip angle is positive. The ith element in
-        this array corresponds to the ith element in
+        Elevation angle values for points that define the horizon profile. The
+        elevation angle of the horizon is the angle that the horizon makes with
+        the horizontal. It is given in degrees above the horizontal. The ith
+        element in this array corresponds to the ith element in
         horizon_azimuths.
 
     surface_tilt : numeric
@@ -578,14 +582,14 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
     num_points = horizon_azimuths.shape[0]
     for i in range(horizon_azimuths.shape[0]):
         az = np.radians(horizon_azimuths[i])
-        horizon_dip = np.radians(horizon_angles[i])
-        temp = np.radians(collection_plane_dip_angle(surface_tilt,
-                                                     surface_azimuth,
-                                                     horizon_azimuths[i]))
-        dip = np.maximum(horizon_dip, temp)
+        horizon_elev = np.radians(horizon_angles[i])
+        temp = np.radians(collection_plane_elev_angle(surface_tilt,
+                                                      surface_azimuth,
+                                                      horizon_azimuths[i]))
+        elev = np.maximum(horizon_elev, temp)
 
         first_term = .5 * (a*np.cos(az) + b*np.sin(az)) * \
-                          (np.pi/2 - dip - np.sin(dip) * np.cos(dip))
-        second_term = .5 * c * np.cos(dip)**2
+                          (np.pi/2 - elev - np.sin(elev) * np.cos(elev))
+        second_term = .5 * c * np.cos(elev)**2
         dtf += 2 * (first_term + second_term) / num_points
     return dtf

@@ -13,7 +13,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 
-from pvlib import atmosphere, solarposition, tools, horizon
+from pvlib import atmosphere, horizon, solarposition, tools
 from pvlib._deprecation import deprecated
 
 # see References section of grounddiffuse function
@@ -682,9 +682,12 @@ def isotropic(surface_tilt, surface_azimuth, dhi,
         Azimuth values for points that define the horizon profile. The ith
         element in this array corresponds to the ith element in horizon_angles.
 
-    horizon_angle: numeric (optional)
-        Dip angle values for points that define the horizon profile. The ith
-        element in this array corresponds to the ith element in
+    horizon_angles: numeric (optional)
+        Dip angle values for points that define the horizon profile. The dip
+        angle of the horizon is the angle that the horizon makes with the
+        horizontal. It is given in degrees. If the horizon appears above
+        the horizontal, then the dip angle is positive. The ith element in
+        this array corresponds to the ith element in
         horizon_azimuths.
 
     Returns

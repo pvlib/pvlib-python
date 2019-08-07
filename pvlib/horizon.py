@@ -440,8 +440,11 @@ def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
         element in this array corresponds to the ith element in horizon_angles.
 
     horizon_angle: numeric
-        Dip angle values for points that define the horizon profile. The ith
-        element in this array corresponds to the ith element in
+        Dip angle values for points that define the horizon profile. The dip
+        angle of the horizon is the angle that the horizon makes with the
+        horizontal. It is given in degrees. If the horizon appears above
+        the horizontal, then the dip angle is positive. The ith element in
+        this array corresponds to the ith element in
         horizon_azimuths.
 
     bin_size : int
@@ -532,13 +535,16 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
 
     Parameters
     ----------
-    horizon_azimuths: Nx1 numeric
+    horizon_azimuths: numeric
         Azimuth values for points that define the horizon profile. The ith
         element in this array corresponds to the ith element in horizon_angles.
 
-    horizon_angles: Nx1 numeric
-        Dip angle values for points that define the horizon profile. The ith
-        element in this array corresponds to the ith element in
+    horizon_angles: numeric
+        Dip angle values for points that define the horizon profile. The dip
+        angle of the horizon is the angle that the horizon makes with the
+        horizontal. It is given in degrees. If the horizon appears above
+        the horizontal, then the dip angle is positive. The ith element in
+        this array corresponds to the ith element in
         horizon_azimuths.
 
     surface_tilt : numeric

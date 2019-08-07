@@ -235,7 +235,8 @@ def sample_using_triangles(lat_grid, lon_grid, elev_grid,
                            samples_per_triangle=10):
     """
     Creates triangles using nearest neighbors for every grid point and randomly
-    samples each of these triangles to find Elevation angles for the horizon profile.
+    samples each of these triangles to find elevation angles for the horizon
+    profile.
 
     Parameters
     ----------

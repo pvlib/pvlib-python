@@ -48,18 +48,6 @@ class Location(object):
     name : None or string, default None.
         Sets the name attribute of the Location object.
 
-    horizon_azimuths: numeric
-        Azimuth values for points that define the horizon profile. The ith
-        element in this array corresponds to the ith element in horizon_angles.
-    
-    horizon_angles: numeric
-        Dip angle values for points that define the horizon profile. The dip
-        angle of the horizon is the angle that the horizon makes with the
-        horizontal. It is given in degrees. If the horizon appears above
-        the horizontal, then the dip angle is positive. The ith element in
-        this array corresponds to the ith element in
-        horizon_azimuths.
-
     **kwargs
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
@@ -70,8 +58,7 @@ class Location(object):
     """
 
     def __init__(self, latitude, longitude, tz='UTC', altitude=0,
-                 name=None, horizon_azimuths=None, horizon_angles=None,
-                 **kwargs):
+                 name=None, **kwargs):
 
         self.latitude = latitude
         self.longitude = longitude
@@ -89,8 +76,7 @@ class Location(object):
             raise TypeError('Invalid tz specification')
 
         self.altitude = altitude
-        self.horizon_angles = horizon_angles
-        self.horizon_azimuths = horizon_azimuths
+
         self.name = name
 
     def __repr__(self):

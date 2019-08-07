@@ -160,12 +160,12 @@ def test_grounddiffuse_albedo_surface(irrad_data):
 
 
 def test_isotropic_float():
-    result = irradiance.isotropic(40, 45, 100)
+    result = irradiance.isotropic(40, 100)
     assert_allclose(result, 88.30222215594891)
 
 
 def test_isotropic_series(irrad_data):
-    result = irradiance.isotropic(40, 45, irrad_data['dhi'])
+    result = irradiance.isotropic(40, irrad_data['dhi'])
     assert_allclose(result, [0, 35.728402, 104.601328, 54.777191], atol=1e-4)
 
 
@@ -940,70 +940,3 @@ def test_clearness_index_zenith_independent(airmass_kt):
                                                         airmass)
     expected = pd.Series([np.nan, 0.553744437562], index=times)
     assert_series_equal(out, expected)
-
-
-def test_adjust_direct_for_horizon(irrad_data, ephem_data):
-    zero_horizon = np.zeros(361)
-    max_horizon = np.full((361), 90.0)
-
-    zero_adjusted = irradiance.adjust_direct_for_horizon(irrad_data["dni"],
-                                                         zero_horizon,
-                                                         ephem_data["azimuth"],
-                                                         ephem_data["zenith"])
-    zero_expected = irrad_data["dni"]
-    assert_allclose(zero_adjusted.values, zero_expected.values)
-
-    max_adjusted = irradiance.adjust_direct_for_horizon(irrad_data["dni"],
-                                                        max_horizon,
-                                                        ephem_data["azimuth"],
-                                                        ephem_data["zenith"])
-
-    max_expected = pd.Series([0, 0, 0, 0])
-    assert_allclose(max_adjusted.values, max_expected.values, atol=1e-7)
-
-
-def test_horizon_adjusted_isotropic():
-    num_points = 360
-    test_azimuths = np.arange(0, num_points, dtype=np.float64)
-    zero_horizon = np.zeros(num_points)
-    max_horizon = np.full((num_points), 90.0)
-    uniform_horizon = np.full((num_points), 7.0)
-    random_horizon = np.random.random(num_points) * 7
-
-    surface_tilts = np.array([0, 5, 20, 38, 89])
-    surface_azimuths = np.array([0, 90, 180, 235, 355])
-
-    adjusted = irradiance.isotropic(surface_tilts,
-                                    surface_azimuths,
-                                    1.0,
-                                    horizon_azimuths=test_azimuths,
-                                    horizon_angles=zero_horizon)
-    expected = irradiance.isotropic(surface_tilts,
-                                    surface_azimuths,
-                                    1.0)
-    assert_allclose(adjusted, expected, atol=2e-3)
-
-    adjusted = irradiance.isotropic(surface_tilts,
-                                    surface_azimuths,
-                                    1.0,
-                                    horizon_azimuths=test_azimuths,
-                                    horizon_angles=max_horizon)
-    expected = np.zeros(5)
-    assert_allclose(adjusted, expected, atol=1e-7)
-
-    adjusted = irradiance.isotropic(surface_tilts,
-                                    surface_azimuths,
-                                    1.0,
-                                    horizon_azimuths=test_azimuths,
-                                    horizon_angles=random_horizon)
-    min_random_dtf = irradiance.isotropic(surface_tilts,
-                                          surface_azimuths,
-                                          1.0,
-                                          horizon_azimuths=test_azimuths,
-                                          horizon_angles=uniform_horizon)
-    max_random_dtf = irradiance.isotropic(surface_tilts,
-                                          surface_azimuths,
-                                          1.0)
-    mask = np.logical_and((adjusted >= min_random_dtf),
-                          (adjusted <= max_random_dtf))
-    assert(np.all(mask))

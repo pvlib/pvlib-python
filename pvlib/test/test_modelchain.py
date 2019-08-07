@@ -117,13 +117,6 @@ def pvwatts_dc_pvwatts_ac_system(sam_data):
 def location():
     return Location(32.2, -111, altitude=700)
 
-@pytest.fixture
-def location_with_horizon():
-    horizon_azimuths = np.arange(0, 361, dtype=np.float64)
-    horizon_angles = np.full((361), 10.0)
-    return Location(32.2, -111, altitude=700,
-                    horizon_azimuths=horizon_azimuths,
-                    horizon_angles=horizon_angles)
 
 @pytest.fixture
 def weather():
@@ -172,31 +165,6 @@ def test_run_model_with_irradiance(system, location):
     ac = mc.run_model(times, weather=irradiance).ac
 
     expected = pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
-
-
-def test_run_model_with_full_horizon(system, location_with_horizon):
-    mc = ModelChain(system, location_with_horizon)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
-                              index=times)
-    ac = mc.run_model(times, weather=irradiance).ac
-
-    expected = pd.Series(np.array([1.90054749e+02,  -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
-
-
-def test_run_model_with_partial_horizon(system, location):
-    location.horizon_angles = np.array([0, 0, 0])
-    mc = ModelChain(system, location)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
-                              index=times)
-    ac = mc.run_model(times, weather=irradiance).ac
-
-    expected = pd.Series(np.array([1.90054749e+02,  -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 

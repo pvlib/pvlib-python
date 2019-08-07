@@ -13,7 +13,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 
-from pvlib import atmosphere, horizon, solarposition, tools
+from pvlib import atmosphere, solarposition, tools
 from pvlib._deprecation import deprecated
 
 # see References section of grounddiffuse function
@@ -365,7 +365,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     poa_sky_diffuse = get_sky_diffuse(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
-        model_perez=model_perez, **kwargs)
+        model_perez=model_perez)
 
     poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
                                             surface_type)
@@ -383,8 +383,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth,
                     dni, ghi, dhi, dni_extra=None, airmass=None,
                     model='isotropic',
-                    model_perez='allsitescomposite1990',
-                    **kwargs):
+                    model_perez='allsitescomposite1990'):
     r"""
     Determine in-plane sky diffuse irradiance component
     using the specified sky diffuse irradiance model.
@@ -429,12 +428,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     model = model.lower()
     if model == 'isotropic':
-        if "horizon_azimuths" in kwargs and "horizon_angles" in kwargs:
-            sky = isotropic(surface_tilt, surface_azimuth, dhi,
-                            horizon_azimuths=kwargs["horizon_azimuths"],
-                            horizon_angles=kwargs["horizon_angles"])
-        else:
-            sky = isotropic(surface_tilt, surface_azimuth, dhi)
+        sky = isotropic(surface_tilt, dhi)
     elif model == 'klucher':
         sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
                       solar_zenith, solar_azimuth)
@@ -645,8 +639,7 @@ grounddiffuse = deprecated('0.6', alternative='get_ground_diffuse',
                            get_ground_diffuse)
 
 
-def isotropic(surface_tilt, surface_azimuth, dhi,
-              horizon_azimuths=None, horizon_angles=None):
+def isotropic(surface_tilt, dhi):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     the isotropic sky model.
@@ -659,11 +652,7 @@ def isotropic(surface_tilt, surface_azimuth, dhi,
     diffuse irradiance. Thus the diffuse irradiance from the sky (ground
     reflected irradiance is not included in this algorithm) on a tilted
     surface can be found from the diffuse horizontal irradiance and the
-    tilt angle of the surface. If a horizon profile is given as an argument
-    to the function then a numerical integration over the visible part of
-    the sky dome is used as the conversion factor. Note that the horizon
-    correction is designed for satellite irradiance data, not irradiance
-    data from ground stations.
+    tilt angle of the surface.
 
     Parameters
     ----------
@@ -672,25 +661,8 @@ def isotropic(surface_tilt, surface_azimuth, dhi,
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. surface_azimuth must
-        be >=0 and <=360. The azimuth convention is defined as degrees
-        east of north (e.g. North = 0, South=180 East = 90, West = 270).
-
     dhi : numeric
         Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
-
-    horizon_azimuths: numeric (optional)
-        Azimuth values for points that define the horizon profile. The ith
-        element in this array corresponds to the ith element in horizon_angles.
-
-    horizon_angles: numeric (optional)
-        Dip angle values for points that define the horizon profile. The dip
-        angle of the horizon is the angle that the horizon makes with the
-        horizontal. It is given in degrees. If the horizon appears above
-        the horizontal, then the dip angle is positive. The ith element in
-        this array corresponds to the ith element in
-        horizon_azimuths.
 
     Returns
     -------
@@ -707,29 +679,8 @@ def isotropic(surface_tilt, surface_azimuth, dhi,
     heat collector. Trans. ASME 64, 91.
     '''
 
-    '''
-    Determine diffuse irradiance from the sky on a tilted surface using
-    an isotropic model that is adjusted with a horizon profile.
+    sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
-
-
-    Returns
-    --------
-
-    sky_diffuse : numeric
-        The sky diffuse component of the solar radiation on a tilted
-        surface.
-    '''
-
-    if horizon_azimuths is not None and horizon_angles is not None:
-        dtf = horizon.calculate_dtf(horizon_azimuths,
-                                    horizon_angles,
-                                    surface_tilt,
-                                    surface_azimuth)
-    else:
-        dtf = (1 + tools.cosd(surface_tilt)) * 0.5
-
-    sky_diffuse = dhi * dtf
     return sky_diffuse
 
 
@@ -2934,38 +2885,3 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
             (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
     return dni
-
-
-def adjust_direct_for_horizon(poa_direct, horizon_angles,
-                              solar_azimuth, solar_zenith):
-    '''
-    Adjusts modeled DNI to account for the presence of a horizon. At
-    each time step check to see if the sun is behind the horizon. If so,
-    set the DNI to zero.
-
-    Parameters
-    ----------
-    poa_direct : numeric
-        The modeled direct normal irradiance in the plane of array.
-    horizon_angles : numeric
-        A list or vector of 361 values where the ith element corresponds
-        to the dip angle of the horizon at i degrees of azimuth. Note that
-        0 and 360 degrees of azimuth correspond to the same direction
-        but both are required.
-    solar_zenith : numeric
-        Solar zenith angle.
-    solar_azimuth : numeric
-        Solar azimuth angle.
-
-    Returns
-    -------
-    adjusted_irradiance : Series
-        POA direct normal irradiance after adjusting for the horizon.
-    '''
-
-    adjusted_irradiance = poa_direct
-    rounded_solar_azimuth = np.round(solar_azimuth).astype(int)
-    horizon_zenith = 90 - horizon_angles[rounded_solar_azimuth]
-    mask = solar_zenith > horizon_zenith
-    adjusted_irradiance[mask] = 0
-    return adjusted_irradiance

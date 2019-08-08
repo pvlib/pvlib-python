@@ -9,6 +9,8 @@ from __future__ import division
 import itertools
 
 import numpy as np
+import warnings
+
 from scipy.interpolate import RegularGridInterpolator
 
 from pvlib import tools
@@ -594,3 +596,51 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
         second_term = .5 * c * np.cos(elev)**2
         dtf += 2 * (first_term + second_term) / num_points
     return dtf
+
+
+def DNI_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
+    '''
+    Calculates an adjustment to DNI based on a horizon profile. The adjustment
+    is a vector of binary values with the same length as the provided
+    solar position values. Where the sun is below the horizon, the adjustment
+    vector is 0 and it is 1 elsewhere. The horizon profile must be given as a
+    vector with 361 values where the ith value corresponds to the ith degree
+    of azimuth (0-360).
+
+
+    Parameters
+    ----------
+    horizon_angles: numeric
+        Elevation angle values for points that define the horizon profile. The
+        elevation angle of the horizon is the angle that the horizon makes with
+        the horizontal. It is given in degrees above the horizontal. The ith
+        element in this array corresponds to the ith degree of azimuth.
+
+    solar_zenith : numeric
+        Solar zenith angle.
+
+    solar_azimuth : numeric
+        Solar azimuth angle.
+
+    Returns
+    -------
+    adjustment : numeric
+        A vector of binary values with the same shape as the inputted solar
+        position values. 0 when the sun is below the horizon and 1 elsewhere.
+    '''
+    adjustment = np.ones(solar_zenith.shape)
+
+    if (horizon_angles.shape[0] != 361):
+        warnings.warn('For DNI adjustment, horizon_angles needs to contain'
+                      'exactly 361 values (for each degree of azimuth 0-360).'
+                      'Since the provided horizon_angles contains {} values,'
+                      'no adjustment is calculated. A vector of ones is'
+                      'returned.'.format(horizon_angles.shape[0]),
+                      UserWarning)
+        return adjustment
+
+    rounded_solar_azimuth = np.round(solar_azimuth).astype(int)
+    horizon_zenith = 90 - horizon_angles[rounded_solar_azimuth]
+    mask = solar_zenith > horizon_zenith
+    adjustment[mask] = 0
+    return adjustment

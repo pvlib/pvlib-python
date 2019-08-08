@@ -1,6 +1,9 @@
 import numpy as np
+import pandas as pd
 from numpy.testing import assert_allclose
 from pvlib import horizon, tools
+
+from test_irradiance import ephem_data, times
 
 
 def test_grid_lat_lon():
@@ -232,3 +235,33 @@ def test_calculate_dtf():
     mask = np.logical_and((adjusted >= min_random_dtf),
                           (adjusted <= max_random_dtf))
     assert(np.all(mask))
+
+
+def test_DNI_horizon_adjustment(ephem_data):
+    zero_horizon = np.zeros(361)
+    max_horizon = np.full((361), 90.0)
+
+    zero_adjusted = horizon.DNI_horizon_adjustment(zero_horizon,
+                                                   ephem_data["zenith"],
+                                                   ephem_data["azimuth"])
+    zero_expected = np.array([0, 1, 1, 1])
+    assert_allclose(zero_adjusted, zero_expected, atol=1e-7)
+
+    max_adjusted = horizon.DNI_horizon_adjustment(max_horizon,
+                                                  ephem_data["zenith"],
+                                                  ephem_data["azimuth"])
+
+    max_expected = np.array([0, 0, 0, 0])
+    assert_allclose(max_adjusted, max_expected, atol=1e-7)
+
+    test_horizon = np.zeros(361)
+    test_horizon[145] = 75
+    test_horizon[287] = 20
+    test_horizon[67] = 10
+
+    adjusted = horizon.DNI_horizon_adjustment(test_horizon,
+                                              ephem_data["zenith"],
+                                              ephem_data["azimuth"])
+
+    expected = np.array([0, 0, 1, 0])
+    assert_allclose(adjusted, expected, atol=1e-7)

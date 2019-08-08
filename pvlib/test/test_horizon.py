@@ -156,9 +156,9 @@ def test_uniformly_sample_triangle():
         alpha = 0.5 * np.linalg.norm(np.cross(p2-p, p3-p)) / area
         beta = 0.5 * np.linalg.norm(np.cross(p3-p, p1-p)) / area
         gamma = 1 - alpha - beta
-        assert(0 <= alpha <= 1)
-        assert(0 <= beta <= 1)
-        assert(0 <= gamma <= 1)
+        assert(-.02 <= alpha <= 1.02)
+        assert(-.02 <= beta <= 1.02)
+        assert(-.02 <= gamma <= 1.02)
 
 
 def test_filter_points():

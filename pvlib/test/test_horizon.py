@@ -239,29 +239,32 @@ def test_calculate_dtf():
 
 def test_DNI_horizon_adjustment(ephem_data):
     zero_horizon = np.zeros(361)
-    max_horizon = np.full((361), 90.0)
-
+    zero_expected = np.array([0, 1, 1, 1])
     zero_adjusted = horizon.DNI_horizon_adjustment(zero_horizon,
                                                    ephem_data["zenith"],
                                                    ephem_data["azimuth"])
-    zero_expected = np.array([0, 1, 1, 1])
     assert_allclose(zero_adjusted, zero_expected, atol=1e-7)
 
+    max_horizon = np.full((361), 90.0)
+    max_expected = np.array([0, 0, 0, 0])
     max_adjusted = horizon.DNI_horizon_adjustment(max_horizon,
                                                   ephem_data["zenith"],
                                                   ephem_data["azimuth"])
-
-    max_expected = np.array([0, 0, 0, 0])
     assert_allclose(max_adjusted, max_expected, atol=1e-7)
 
     test_horizon = np.zeros(361)
     test_horizon[145] = 75
     test_horizon[287] = 20
     test_horizon[67] = 10
-
+    expected = np.array([0, 0, 1, 0])
     adjusted = horizon.DNI_horizon_adjustment(test_horizon,
                                               ephem_data["zenith"],
                                               ephem_data["azimuth"])
-
-    expected = np.array([0, 0, 1, 0])
     assert_allclose(adjusted, expected, atol=1e-7)
+
+    bad_horizon = np.ones(360)
+    bad_expected = np.array([1, 1, 1, 1])
+    bad_adjusted = horizon.DNI_horizon_adjustment(bad_horizon,
+                                                  ephem_data["zenith"],
+                                                  ephem_data["azimuth"])
+    assert_allclose(bad_adjusted, bad_expected, atol=1e-7)

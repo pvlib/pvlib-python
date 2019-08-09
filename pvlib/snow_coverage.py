@@ -15,14 +15,11 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-def snow_slide_amount(poa_irradiance,
-                      temperature,
-                      surface_tilt,
-                      m=-80,
-                      sliding_coefficient=1.97):
+def snow_slide_amount(poa_irradiance, temperature, surface_tilt,
+                      m=-80, sliding_coefficient=1.97):
     '''
-    Calculates the amount of snow that slides off of a module following
-    the equations given in Marion et. al 2013 [1]
+    Calculates the amount of snow that slides off of the surface of a module
+    following the equations given in Marion et. al 2013 [1]
 
     Parameters
     ----------
@@ -38,16 +35,24 @@ def snow_slide_amount(poa_irradiance,
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     m : numeric
-        an empirically determined value from Marion et al. 2013 in W/m^2
+        A coefficient used in the equations defined in [1]. It is empirically
+        determined value given in W/m^2.
 
     sliding coefficient : numeric
-        also determined in Marion's paper for rooftop systems
+        Another empirically determined coefficient used in [1]. It determines
+        how much snow slides off of the panel if a sliding event occurs.
 
     Returns
     ----------
     slide_amount : numeric
         The amount of snow that slides off of the panel
-        in tenths of the panel area.
+        in tenths of the panel area at each time step.
+
+    References
+    ----------
+    [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
+    “Measured and modeled photovoltaic system energy losses from snow for
+    Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
     '''
 
     tilt_radians = np.radians(surface_tilt)
@@ -57,20 +62,13 @@ def snow_slide_amount(poa_irradiance,
     return slide_amount
 
 
-def snow_coverage_step(snowfall, 
-                       snow_data, 
-                       prev_data, 
-                       prev_coverage, 
-                       poa_irradiance, 
-                       temperature, 
-                       tilt, 
-                       time_step_minutes,
-                       m=-80,
-                       sliding_coefficient=1.97):
-                      
+def snow_coverage_step(snowfall, snow_data, prev_data, prev_coverage,
+                       poa_irradiance, temperature, tilt,
+                       time_step_minutes, m=-80, sliding_coefficient=1.97):
+
     '''
     Calculates the fraction of a module covered by snow at one time point following Marion et. al
-   
+
     inputs:
     snowfall: boolean. If True then snow_data is snowfall data (cm/hr). If False then snow_data is snow_depth data (cm).
     snow_data: either snowfall or snow_depth data. The original model was designed for snow_depth only.
@@ -82,13 +80,11 @@ def snow_coverage_step(snowfall,
     time_step_minutes: period of the data in minutes. (minutes between data points)
     m=-80: an empirically determined value from Marion et al. 2013 in W/m^2
     sliding coefficient=1.97: also determined in Marion's paper for rooftop systems
-    
+
     returns:
     the fraction of a module covered by snow
     '''
-    
 
-    assert prev_coverage >= 0 and prev_coverage <= 1
     time_step_hours = time_step_minutes / 60.0
 
     if snowfall:
@@ -103,10 +99,11 @@ def snow_coverage_step(snowfall,
             coverage = 0
         else:
             coverage = prev_coverage
-        
+
     slide_amount = time_step_hours * 0.1 * snow_slide_amount(poa_irradiance, temperature, tilt, m, sliding_coefficient)
     return max(0, coverage - slide_amount) 
-    
+
+
 def DC_loss_factor(snow_coverage, num_strings_per_row):
     '''
     Calculates the DC loss due to snow coverage.
@@ -119,9 +116,7 @@ def DC_loss_factor(snow_coverage, num_strings_per_row):
     returns:
     DC loss due to snow coverage. 
     '''
-    assert snow_coverage >= 0 and snow_coverage <= 1
     temp = np.ceil(snow_coverage * num_strings_per_row) / num_strings_per_row
-    assert  temp >= 0 and temp <=1
     return temp
 
 def apply_snow_model(input_data, 

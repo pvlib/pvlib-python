@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from numpy.testing import assert_allclose
 from pvlib import horizon, tools
 
@@ -35,12 +34,12 @@ def test_elev_calc():
 
     expected13 = np.array([[289.8132], [54.8663]])
 
-    act_bearings, act_elevs = horizon.elevation_angle_calc(test_pts,
-                                                           reverse_test_pts)
+    act_bearings, act_elevs = horizon.elevation_and_azimuth(test_pts,
+                                                            reverse_test_pts)
     assert_allclose(act_bearings, expected_bearings, rtol=1e-3)
     assert_allclose(act_elevs, expected_elevs, rtol=1e-3)
 
-    actual13 = horizon.elevation_angle_calc(pt1, pt3)
+    actual13 = horizon.elevation_and_azimuth(pt1, pt3)
     assert_allclose(expected13, actual13, rtol=1e-3)
 
 
@@ -71,14 +70,14 @@ def test_calculate_horizon_points():
                                                    test_lon_grid,
                                                    test_elev_grid,
                                                    sampling_method="triangles",
-                                                   sampling_param=5)
+                                                   num_samples=5)
     assert(dirs.shape == elevs.shape)
 
     dirs, _ = horizon.calculate_horizon_points(test_lat_grid,
                                                test_lon_grid,
                                                test_elev_grid,
-                                               sampling_method="interpolator",
-                                               sampling_param=(10, 10))
+                                               sampling_method="polar",
+                                               num_samples=(10, 10))
     assert(dirs.shape[0] == 100)
 
 
@@ -95,9 +94,9 @@ def test_sample_using_grid():
                                [212, 135, 1],
                                [36, 145, 5]])
 
-    samples = horizon.sample_using_grid(test_lat_grid,
-                                        test_lon_grid,
-                                        test_elev_grid)
+    samples = horizon._sample_using_grid(test_lat_grid,
+                                         test_lon_grid,
+                                         test_elev_grid)
     assert(len(samples) == 8)
 
 
@@ -113,10 +112,10 @@ def test_sample_using_triangles():
     test_elev_grid = np.array([[15, 18, 43],
                                [212, 135, 1],
                                [36, 145, 5]])
-    samples = horizon.sample_using_triangles(test_lat_grid,
-                                             test_lon_grid,
-                                             test_elev_grid,
-                                             samples_per_triangle=2)
+    samples = horizon._sample_using_triangles(test_lat_grid,
+                                              test_lon_grid,
+                                              test_elev_grid,
+                                              samples_per_triangle=2)
     assert(len(samples) == 32)
 
 
@@ -132,10 +131,10 @@ def test_using_interpolator():
     test_elev_grid = np.array([[15, 18, 43],
                                [212, 135, 1],
                                [36, 145, 5]])
-    samples = horizon.sample_using_interpolator(test_lat_grid,
-                                                test_lon_grid,
-                                                test_elev_grid,
-                                                num_samples=(5, 5))
+    samples = horizon._sample_using_interpolator(test_lat_grid,
+                                                 test_lon_grid,
+                                                 test_elev_grid,
+                                                 num_samples=(5, 5))
     assert(len(samples) == 25)
 
 
@@ -237,34 +236,34 @@ def test_calculate_dtf():
     assert(np.all(mask))
 
 
-def test_DNI_horizon_adjustment(ephem_data):
-    zero_horizon = np.zeros(361)
+def test_dni_horizon_adjustment(ephem_data):
+    zero_horizon = np.zeros(360)
     zero_expected = np.array([0, 1, 1, 1])
-    zero_adjusted = horizon.DNI_horizon_adjustment(zero_horizon,
+    zero_adjusted = horizon.dni_horizon_adjustment(zero_horizon,
                                                    ephem_data["zenith"],
                                                    ephem_data["azimuth"])
     assert_allclose(zero_adjusted, zero_expected, atol=1e-7)
 
-    max_horizon = np.full((361), 90.0)
+    max_horizon = np.full((360), 90.0)
     max_expected = np.array([0, 0, 0, 0])
-    max_adjusted = horizon.DNI_horizon_adjustment(max_horizon,
+    max_adjusted = horizon.dni_horizon_adjustment(max_horizon,
                                                   ephem_data["zenith"],
                                                   ephem_data["azimuth"])
     assert_allclose(max_adjusted, max_expected, atol=1e-7)
 
-    test_horizon = np.zeros(361)
+    test_horizon = np.zeros(360)
     test_horizon[145] = 75
     test_horizon[287] = 20
     test_horizon[67] = 10
     expected = np.array([0, 0, 1, 0])
-    adjusted = horizon.DNI_horizon_adjustment(test_horizon,
+    adjusted = horizon.dni_horizon_adjustment(test_horizon,
                                               ephem_data["zenith"],
                                               ephem_data["azimuth"])
     assert_allclose(adjusted, expected, atol=1e-7)
 
-    bad_horizon = np.ones(360)
+    bad_horizon = np.ones(361)
     bad_expected = np.array([1, 1, 1, 1])
-    bad_adjusted = horizon.DNI_horizon_adjustment(bad_horizon,
+    bad_adjusted = horizon.dni_horizon_adjustment(bad_horizon,
                                                   ephem_data["zenith"],
                                                   ephem_data["azimuth"])
     assert_allclose(bad_adjusted, bad_expected, atol=1e-7)

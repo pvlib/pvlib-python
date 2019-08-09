@@ -11,8 +11,6 @@ import itertools
 import numpy as np
 import warnings
 
-from scipy.interpolate import RegularGridInterpolator
-
 from pvlib import tools
 
 
@@ -29,6 +27,14 @@ def grid_lat_lon(lat, lon, grid_radius=200, grid_step=.001):
 
     lon : numeric
         The longitude of the location that is to be the center of the grid.
+
+    grid_radius : numeric
+        The number of points to generate in each of the cardinal directions
+        for the grid. The resulting grid will be a square with
+        (2xgrid_radius)+1 points along each side. Unitless.
+
+    grid_step : numeric
+        The degrees of latitude/longitude between adjacent points in the grid.
 
     Returns
     -------
@@ -54,26 +60,31 @@ def grid_lat_lon(lat, lon, grid_radius=200, grid_step=.001):
     return lat_grid, lon_grid
 
 
-def elevation_angle_calc(pt1, pt2):
+def elevation_and_azimuth(pt1, pt2):
     '''
-    Calculates the elevation angle from pt1 to pt2 where elevation angle is
+    Calculates the elevation angle from pt1 to pt2. Elevation angle is
     defined as the angle between the line connecting pt1 to pt2 and the plane
-    normal to the Earth's surface at pt1. A point that appears above the
+    tangent to the Earth's surface at pt1. A point that appears above the
     horizontal has a positive elevation angle. Also computes the azimuth
-    defined as degrees East of North the bearing of pt2 from pt1.
+    defined as degrees East of North of the bearing from pt1 to pt2.
     This uses the Haversine formula.
 
     Parameters
     ----------
     pt1 : ndarray
-        Nx3 array that contains lat, lon, and elev values that correspond
-        to the origin points from which the elevation angles are to be
-        calculated. The observer points.
+        Nx3 array that contains latitude, longitude, and elevation values
+        that correspond to the origin (observer) points from which the
+        elevation angles are to be calculated. Longitude should be given in
+        degrees East of the Prime Meridian and latitude in degrees North of the
+        Equator. Units are [deg, deg, meters]
+
 
     pt2 : ndarray
-        Nx3 array that contains lat, lon, and elev values that correspond
-        to the target points to which the elevation angles are to be
-        calculated. The observee points.
+        Nx3 array that contains latitude, longitude, and elevation values
+        that correspond to the target (observee) points to which the elevation
+        angles are to be calculated. Longitude should be given in
+        degrees East of the Prime Meridian and latitude in degrees North of the
+        Equator. Units are [deg, deg, meters]
 
     Returns
     -------
@@ -132,74 +143,74 @@ def elevation_angle_calc(pt1, pt2):
 
 
 def calculate_horizon_points(lat_grid, lon_grid, elev_grid,
-                             sampling_method="grid", sampling_param=400):
+                             sampling_method="grid", num_samples=None):
     """
-    Calculates a horizon profile from a three grids containing lat, lon,
-    and elevation values. The "site" is assumed to be at the center of the
-    grid.
+    Calculates a horizon profile viewed from the center of a latitude,
+    longitude, elevation grid.
 
     Parameters
     ----------
     lat_grid : ndarray
-        A 2d array containing latitude values that correspond to the other
-        two input grids.
+        A 2d array of latitude values for the grid.
 
     lon_grid : ndarray
-        A 2d array containing longitude values that correspond to the other
-        two input grids.
+        A 2d array of longitude values for the grid.
 
     elev_grid : ndarray
-        A 2d array containing elevation values that correspond to the other
-        two input grids.
+        A 2d array of elevation values for the grid.
 
-    sampling_method : string
+    sampling_method : string, default "grid"
         A string that specifies the sampling method used to generate the
-        horizon profile.
+        horizon profile. Acceptable values are: "grid", "triangles", "polar".
 
-    sampling_param : variable
+    num_samples : variable, default None
         A parameter that is passed into the function specified by
         sampling_method.
+        If the sampling method is "triangles" this corresponds
+        to the number of samples taken from each triangle.
+        See _sampling_using_triangles for more info.
+        If the sampling method is "polar" this should be a tuple with 2 values
+        that define the number of points along each polar axis to sample.
+        See _sampling_using_interpolator for more info.
 
     Returns
     -------
     bearing_deg: Nx1 ndarray
-        The bearings from the "site" to sampled points in degrees
-        East of North.
+        The bearings from the grid_center to horizon points.
 
     elevation_angle_deg: numeric
         The angles that the sampled points make with the horizontal
-        as observed from the "site". Given in degrees above the
+        as observed from the grid center. Given in degrees above the
         horizontal.
 
     """
-    assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
     grid_shape = lat_grid.shape
     grid_center_i = (grid_shape[0] - 1) // 2
     grid_center_j = (grid_shape[1] - 1) // 2
-    site_lat = lat_grid[grid_center_i, grid_center_j]
-    site_lon = lon_grid[grid_center_i, grid_center_j]
-    site_elev = elev_grid[grid_center_i, grid_center_j]
-    site = np.array([site_lat, site_lon, site_elev])
+    center_lat = lat_grid[grid_center_i, grid_center_j]
+    center_lon = lon_grid[grid_center_i, grid_center_j]
+    center_elev = elev_grid[grid_center_i, grid_center_j]
+    center = np.array([center_lat, center_lon, center_elev])
 
     if sampling_method == "grid":
-        samples = sample_using_grid(lat_grid, lon_grid, elev_grid)
+        samples = _sample_using_grid(lat_grid, lon_grid, elev_grid)
     elif sampling_method == "triangles":
-        samples = sample_using_triangles(lat_grid, lon_grid, elev_grid,
-                                         sampling_param)
-    elif sampling_method == "interpolator":
-        samples = sample_using_interpolator(lat_grid, lon_grid, elev_grid,
-                                            sampling_param)
+        samples = _sample_using_triangles(lat_grid, lon_grid, elev_grid,
+                                          num_samples)
+    elif sampling_method == "polar":
+        samples = _sample_using_interpolator(lat_grid, lon_grid, elev_grid,
+                                             num_samples)
 
-    bearing_deg, elevation_angle_deg = elevation_angle_calc(site, samples)
+    bearing_deg, elevation_angle_deg = elevation_and_azimuth(center, samples)
 
     return bearing_deg, elevation_angle_deg
 
 
-def sample_using_grid(lat_grid, lon_grid, elev_grid):
+def _sample_using_grid(lat_grid, lon_grid, elev_grid):
     """
-    Calculates the Elevation angle from the site (center of the grid)
-    to every point on the grid.
+    Returns every point on the grid excluding the grid center as samples
+    for horizon calculations.
 
     Parameters
     ----------
@@ -221,24 +232,22 @@ def sample_using_grid(lat_grid, lon_grid, elev_grid):
     all_samples: Nx3 ndarray
         Array of lat, lon, elev points that are grid points.
     """
-    assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
     lats = lat_grid.flatten()
     lons = lon_grid.flatten()
     elevs = elev_grid.flatten()
     samples = np.stack([lats, lons, elevs], axis=1)
-    # remove site from samples
+    # remove grid center from samples
 
     all_samples = np.delete(samples, samples.shape[0]//2, axis=0)
     return all_samples
 
 
-def sample_using_triangles(lat_grid, lon_grid, elev_grid,
-                           samples_per_triangle=10):
+def _sample_using_triangles(lat_grid, lon_grid, elev_grid,
+                            samples_per_triangle=10):
     """
     Creates triangles using nearest neighbors for every grid point and randomly
-    samples each of these triangles to find elevation angles for the horizon
-    profile.
+    samples each of these triangles.
 
     Parameters
     ----------
@@ -265,7 +274,6 @@ def sample_using_triangles(lat_grid, lon_grid, elev_grid,
 
     [1] http://graphics.stanford.edu/courses/cs468-08-fall/pdf/osada.pdf
     """
-    assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
     # start with empty array
     all_samples = np.array([], dtype=np.float64).reshape(0, 3)
@@ -329,13 +337,11 @@ def sample_using_triangles(lat_grid, lon_grid, elev_grid,
     return np.array(all_samples)
 
 
-def sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
+def _sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
     """
     Creates a "grid" using polar coordinates and uses the scipy's grid
     interpolator to estimate elevation values at each point on the polar grid
-    from the input (rectangular) grid that has true elevation values. Elevation
-    calculations are done at each point on the polar grid and the results
-    are returned.
+    from the input (rectangular) grid that has true elevation values. 
 
     Parameters
     ----------
@@ -363,7 +369,6 @@ def sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
        Array of [lat, lon, elev] points that were sampled using the polar grid.
 
     """
-    assert(lat_grid.shape == lon_grid.shape == elev_grid.shape)
 
     lats = lat_grid[0]
     lons = lon_grid.T[0]
@@ -373,8 +378,13 @@ def sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
     grid_shape = lat_grid.shape
     grid_center_i = (grid_shape[0] - 1) // 2
     grid_center_j = (grid_shape[1] - 1) // 2
-    site_lat = lat_grid[grid_center_i, grid_center_j]
-    site_lon = lon_grid[grid_center_i, grid_center_j]
+    center_lat = lat_grid[grid_center_i, grid_center_j]
+    center_lon = lon_grid[grid_center_i, grid_center_j]
+
+    try:
+        from scipy.interpolate import RegularGridInterpolator
+    except ImportError:
+        raise ImportError('The polar sampling function requires scipy')
 
     interpolator = RegularGridInterpolator((lats, lons), elev_grid.T)
 
@@ -383,7 +393,7 @@ def sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
     polar_pts = np.array(list(itertools.product(r, theta)))
 
     pts = np.array([tools.polar_to_cart(e[0], e[1]) for e in polar_pts])
-    pts += np.array((site_lat, site_lon))
+    pts += np.array((center_lat, center_lon))
     total_num_samples = num_samples[0]*num_samples[1]
 
     interpolated_elevs = interpolator(pts).reshape(total_num_samples, 1)
@@ -434,27 +444,28 @@ def uniformly_sample_triangle(p1, p2, p3, num_samples):
     return random_pts
 
 
-def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
+def filter_points(azimuths, elevation_angles, bin_size=1):
     """
-    Bins the horizon_points by azimuth values. The azimuth value of each
-    point in horizon_points is rounded to the nearest bin and then the
-    max value in each bin is returned.
+    Bins the horizon points by azimuth values. The azimuth value of each
+    point is rounded to the nearest bin and then the
+    max elevation angle in each bin is returned.
 
     Parameters
     ----------
-    horizon_azimuths: numeric
+    azimuths: numeric
         Azimuth values for points that define the horizon profile. The ith
-        element in this array corresponds to the ith element in horizon_angles.
+        element in this array corresponds to the ith element in
+        elevation_angles.
 
-    horizon_angles: numeric
+    elevation_angles: numeric
         Elevation angle values for points that define the horizon profile. The
         elevation angle of the horizon is the angle that the horizon makes with
         the horizontal. It is given in degrees above the horizontal. The ith
         element in this array corresponds to the ith element in
-        horizon_azimuths.
+        azimuths.
 
     bin_size : int
-        The width of the bins for the azimuth values.
+        The width of the bins for the azimuth values. (degrees)
 
     Returns
     -------
@@ -469,34 +480,25 @@ def filter_points(horizon_azimuths, horizon_angles, bin_size=1):
         corresponds to the ith element in filtered_azimuths.
 
     """
-    assert(horizon_azimuths.shape[0] == horizon_angles.shape[0])
+    assert(azimuths.shape[0] == elevation_angles.shape[0])
 
-    wedges = {}
-    for i in range(horizon_angles.shape[0]):
-        azimuth = horizon_azimuths[i]
-        elevation = horizon_angles[i]
-        azimuth_wedge = tools.round_to_nearest(azimuth, bin_size)
+    rounded_azimuths = tools.round_to_nearest(azimuths, bin_size)
+    bins = np.unique(rounded_azimuths)
 
-        if azimuth_wedge in wedges:
-            wedges[azimuth_wedge] = max(elevation, wedges[azimuth_wedge])
-        else:
-            wedges[azimuth_wedge] = elevation
+    filtered = np.column_stack((bins, np.nan * bins))
 
-    filtered_azimuths = []
-    filtered_angles = []
-    for key in sorted(wedges.keys()):
-        filtered_azimuths.append(key)
-        filtered_angles.append(wedges[key])
+    for i in range(filtered.shape[0]):
+        idx = (rounded_azimuths == filtered[i, 0])
+        filtered[i, 1] = np.max(elevation_angles[idx])
 
-    filtered_angles = np.array(filtered_angles)
-    filtered_azimuths = np.array(filtered_azimuths)
-    return filtered_azimuths, filtered_angles
+    return filtered[:, 0], filtered[:, 1]
 
 
 def collection_plane_elev_angle(surface_tilt, surface_azimuth, direction):
     """
     Determine the elevation angle created by the surface of a tilted plane
-    in a given direction. The angle is limited to be non-negative.
+    intersecting the plane tangent to the Earth's surface in a given direction.
+    The angle is limited to be non-negative.
 
     Parameters
     ----------
@@ -598,14 +600,14 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
     return dtf
 
 
-def DNI_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
+def dni_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
     '''
-    Calculates an adjustment to DNI based on a horizon profile. The adjustment
-    is a vector of binary values with the same length as the provided
-    solar position values. Where the sun is below the horizon, the adjustment
-    vector is 0 and it is 1 elsewhere. The horizon profile must be given as a
-    vector with 361 values where the ith value corresponds to the ith degree
-    of azimuth (0-360).
+    Calculates an adjustment to direct normal irradiance based on a horizon
+    profile. The adjustment is a vector of binary values with the same length
+    as the provided solar position values. Where the sun is below the horizon,
+    the adjustment vector is 0 and it is 1 elsewhere. The horizon profile must
+    be given as a vector with 360 values where the ith value corresponds to the
+    ith degree of azimuth (0-359).
 
 
     Parameters
@@ -630,9 +632,9 @@ def DNI_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
     '''
     adjustment = np.ones(solar_zenith.shape)
 
-    if (horizon_angles.shape[0] != 361):
+    if (horizon_angles.shape[0] != 360):
         warnings.warn('For DNI adjustment, horizon_angles needs to contain'
-                      'exactly 361 values (for each degree of azimuth 0-360).'
+                      'exactly 360 values (for each degree of azimuth 0-359).'
                       'Since the provided horizon_angles contains {} values,'
                       'no adjustment is calculated. A vector of ones is'
                       'returned.'.format(horizon_angles.shape[0]),
@@ -640,6 +642,7 @@ def DNI_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
         return adjustment
 
     rounded_solar_azimuth = np.round(solar_azimuth).astype(int)
+    rounded_solar_azimuth[rounded_solar_azimuth == 360] = 0
     horizon_zenith = 90 - horizon_angles[rounded_solar_azimuth]
     mask = solar_zenith > horizon_zenith
     adjustment[mask] = 0

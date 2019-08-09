@@ -2473,7 +2473,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
 
 def max_power_point(photocurrent, saturation_current, resistance_series,
-                    resistance_shunt, nNsVth, method='brentq'):
+                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                    method='brentq'):
     """
     Given the single diode equation coefficients, calculates the maximum power
     point (MPP).
@@ -2508,7 +2509,8 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     """
     i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,
-        resistance_shunt, nNsVth, method=method.lower()
+        resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+        method=method.lower()
     )
     if isinstance(photocurrent, pd.Series):
         ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}

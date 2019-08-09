@@ -295,7 +295,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
 
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
-                 resistance_shunt, nNsVth, method='newton'):
+                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                 method='newton'):
     """
     Find max power point.
 
@@ -324,7 +325,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
+            resistance_shunt, nNsVth, d2mutau, NsVbi)
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
@@ -334,8 +335,8 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     if method.lower() == 'brentq':
         # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
-            lambda voc, iph, isat, rs, rsh, gamma:
-                brentq(fmpp, 0.0, voc, args=(iph, isat, rs, rsh, gamma))
+            lambda voc, iph, isat, rs, rsh, gamma, d2mutau, NsVbi:
+                brentq(fmpp, 0.0, voc, args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi))
         )
         vd = vec_fun(voc_est, *args)
     elif method.lower() == 'newton':

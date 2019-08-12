@@ -430,20 +430,26 @@ def _golden_sect_DataFrame(params, VL, VH, func):
 def latitude_to_geocentric(phi):
     """
     Converts a geodetic (common) latitude to a geocentric latitude.
+    Latitude must be given in radians.
     [1] https://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
     """
-    a = 6378.137
-    b = 6356.752
+    # Equatorial Radius of the Earth (ellipsoid model) in meters
+    a = 6378137.0
+    # Polar Radius of the Earth (ellipsoid model) in meters
+    b = 6356752.0
     return np.arctan(b**2/a**2*np.tan(phi))
 
 
 def latitude_to_geodetic(phi):
     """
     Converts a geocentric latitude to a geodetic (common) latitude.
+    Latitude must be given in radians.
     [1] https://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
     """
-    a = 6378.137
-    b = 6356.752
+    # Equatorial Radius of the Earth (ellipsoid model) in meters
+    a = 6378137.0
+    # Polar Radius of the Earth (ellipsoid model) in meters
+    b = 6356752.0
     return np.arctan(a**2/b**2*np.tan(phi))
 
 
@@ -457,7 +463,9 @@ def lle_to_xyz(point):
     lon = np.atleast_1d(point.T[1])
     elev = np.atleast_1d(point.T[2])
 
+    # Equatorial Radius of the Earth (ellipsoid model) in meters
     a = 6378137.0
+    # Polar Radius of the Earth (ellipsoid model) in meters
     b = 6356752.0
 
     # convert to radians
@@ -485,7 +493,9 @@ def xyz_to_lle(point):
     The center of the earth is the origin in the xyz-space.
     The output latitude is assumed to be a common latitude (geodetic).
     """
+    # Equatorial Radius of the Earth (ellipsoid model) in meters
     a = 6378137.0
+    # Polar Radius of the Earth (ellipsoid model) in meters
     b = 6356752.0
 
     x = np.atleast_1d(point.T[0])

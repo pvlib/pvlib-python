@@ -1,8 +1,6 @@
 """
 The ``horizon`` module contains functions for horizon profile modeling.
-There are various geometric utilities that are useful in horizon calculations
-as well as a method that uses the googlemaps elevation API to create a
-horizon profile.
+There are various geometric utilities that are useful in horizon calculations.
 """
 from __future__ import division
 
@@ -68,6 +66,7 @@ def elevation_and_azimuth(pt1, pt2):
     horizontal has a positive elevation angle. Also computes the azimuth
     defined as degrees East of North of the bearing from pt1 to pt2.
     This uses the Haversine formula.
+    The method used to calculate the elevation angle is discussed in [1].
 
     Parameters
     ----------
@@ -97,7 +96,9 @@ def elevation_and_azimuth(pt1, pt2):
         horizontal.
 
     '''
+    # Equatorial Radius of the Earth (ellipsoid model) in meters
     a = 6378137.0
+    # Polar Radius of the Earth (ellipsoid model) in meters
     b = 6356752.0
 
     lat1 = np.atleast_1d(pt1.T[0])
@@ -341,7 +342,7 @@ def _sample_using_interpolator(lat_grid, lon_grid, elev_grid, num_samples):
     """
     Creates a "grid" using polar coordinates and uses the scipy's grid
     interpolator to estimate elevation values at each point on the polar grid
-    from the input (rectangular) grid that has true elevation values. 
+    from the input (rectangular) grid that has true elevation values.
 
     Parameters
     ----------
@@ -447,8 +448,9 @@ def uniformly_sample_triangle(p1, p2, p3, num_samples):
 def filter_points(azimuths, elevation_angles, bin_size=1):
     """
     Bins the horizon points by azimuth values. The azimuth value of each
-    point is rounded to the nearest bin and then the
-    max elevation angle in each bin is returned.
+    point is rounded to the nearest bin and then the max elevation angle
+    in each bin is returned. The bins will have azimuth values of n*bin_size
+    where n is some integer.
 
     Parameters
     ----------

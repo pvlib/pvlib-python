@@ -1,42 +1,29 @@
-import os
-import inspect
+
+from __future__ import division
+
 import datetime
-import random
 import pytz
 
 import numpy as np
 import scipy as sp
 import pandas as pd
 
+
 import pvlib
-import pvlib.pvsystem as pvsystem
-
-import matplotlib
-import matplotlib.pyplot as plt
 
 
-def snow_slide_amount(poa_irradiance, temperature, surface_tilt,
-                      m=-80, sliding_coefficient=1.97):
+def snow_slide_amount(surface_tilt, sliding_coefficient=1.97):
     '''
     Calculates the amount of snow that slides off of the surface of a module
     following the equations given in Marion et. al 2013 [1]
 
     Parameters
     ----------
-    poa_irradiance : numeric
-        Total in-plane irradiance (W/m^2)
-
-    temperature : numeric
-        Ambient air temperature at the surface (C)
-
     surface_tilt : numeric
         Surface tilt angles in decimal degrees. Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
-    m : numeric
-        A coefficient used in the equations defined in [1]. It is empirically
-        determined value given in W/m^2.
 
     sliding coefficient : numeric
         Another empirically determined coefficient used in [1]. It determines
@@ -57,15 +44,94 @@ def snow_slide_amount(poa_irradiance, temperature, surface_tilt,
 
     tilt_radians = np.radians(surface_tilt)
     slide_amount = sliding_coefficient * np.sin(tilt_radians)
-    mask = temperature <= poa_irradiance / m
-    slide_amount[mask] = 0
     return slide_amount
 
 
-def snow_coverage_step(snowfall, snow_data, prev_data, prev_coverage,
-                       poa_irradiance, temperature, tilt,
-                       time_step_minutes, m=-80, sliding_coefficient=1.97):
+def snow_slide_event(poa_irradiance, temperature,
+                     m=-80):
+    '''
+    Calculates when snow sliding events will occur
+    following the equations given in Marion et. al 2013 [1]
 
+    Parameters
+    ----------
+    poa_irradiance : numeric
+        Total in-plane irradiance (W/m^2)
+
+    temperature : numeric
+        Ambient air temperature at the surface (C)
+
+    m : numeric
+        A coefficient used in the equations defined in [1]. It is empirically
+        determined value given in W/m^2.
+
+    Returns
+    ----------
+    slide_event : boolean array
+        True if the condiditions are suitable for a snow slide event.
+        False elsewhere.
+
+    References
+    ----------
+    [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
+    “Measured and modeled photovoltaic system energy losses from snow for
+    Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
+    '''
+
+    slide_event = temperature > poa_irradiance / m
+    return slide_event
+
+
+def snow_covered_panel(snow_data, time_step_hours=1,
+                       snow_data_type="snowfall"):
+    '''
+
+
+    Parameters
+    ----------
+    snow_data : numeric
+        Time series data on either snowfall or ground snow depth. The type of
+        data should be specified in snow_data_type. The original model was
+        designed for ground snowdepth only. (cm/hr or cm)
+
+    time_step_hours: float
+        Period of the data in hours. (hours between data points)
+
+    snow_data_type : string
+        Defines what type of data is being passed as snow_data. Acceptable
+        values are "snowfall" and "snow_depth". "snowfall" will be in units of
+        cm/hr. "snow_depth" is in units of cm.
+
+    Returns
+    ----------
+    panel_covered : numeric
+        1 where the snowfall exceeds the defined threshold to fully cover the
+        panel. NaN elsewhere.
+
+    References
+    ----------
+    [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
+    “Measured and modeled photovoltaic system energy losses from snow for
+    Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
+    '''
+    if snow_data_type == "snow_depth":
+        prev_data = snow_data.shift(1)
+        prev_data[0] = 0
+        snowfall = snow_data - prev_data
+    elif snow_data_type == "snowfall":
+        snowfall = snow_data
+    time_adjusted = snowfall / time_step_hours
+    mask = time_adjusted >= 1
+    panel_covered = np.full(snow_data.shape[0], np.nan)
+    panel_covered[mask] = 1
+    if isinstance(snow_data, pd.Series):
+        panel_covered = pd.Series(panel_covered)
+    return panel_covered
+
+
+def snow_coverage(snow_data, snow_data_type,
+                  poa_irradiance, temperature, surface_tilt,
+                  time_step_hours=1, m=-80, sliding_coefficient=1.97):
     '''
     Calculates the fraction of a module covered by snow at one time point following Marion et. al
 
@@ -84,24 +150,46 @@ def snow_coverage_step(snowfall, snow_data, prev_data, prev_coverage,
     returns:
     the fraction of a module covered by snow
     '''
+    snow_coverage = snow_covered_panel(snow_data,
+                                       time_step_hours=time_step_hours,
+                                       snow_data_type=snow_data_type)
+    slide_events = snow_slide_event(poa_irradiance, temperature)
+    slide_amount = snow_slide_amount(surface_tilt, sliding_coefficient)
 
-    time_step_hours = time_step_minutes / 60.0
+    max_slides = int(np.ceil(10 / slide_amount))
 
-    if snowfall:
-        if snow_data / time_step_hours > 1:
-            coverage = 1
-        else:
-            coverage = prev_coverage
-    else:
-        if snow_data > 1 and (snow_data - prev_data) / time_step_hours > 1:
-            coverage = 1
-        elif snow_data == 0:
-            coverage = 0
-        else:
-            coverage = prev_coverage
+    slidable_snow = ~np.isnan(snow_coverage)
+    for i in range(max_slides - 1):
+        new_slides = np.logical_and(slide_events, slidable_snow)
+        snow_coverage[new_slides] -= slide_amount
+        new_snow_coverage = snow_coverage.fillna(method="ffill", limit=1)
+        slidable_snow = np.logical_and(~np.isnan(new_snow_coverage),
+                                       np.isnan(snow_coverage))
+        snow_coverage = new_snow_coverage
 
-    slide_amount = time_step_hours * 0.1 * snow_slide_amount(poa_irradiance, temperature, tilt, m, sliding_coefficient)
-    return max(0, coverage - slide_amount) 
+    new_slides = np.logical_and(slide_events, slidable_snow)
+    snow_coverage[new_slides] -= slide_amount
+    snow_coverage = snow_coverage.fillna(method="ffill")
+
+    return snow_coverage
+
+    # time_step_hours = time_step_minutes / 60.0
+
+    # if snowfall:
+    #     if snow_data / time_step_hours > 1:
+    #         coverage = 1
+    #     else:
+    #         coverage = prev_coverage
+    # else:
+    #     if snow_data > 1 and (snow_data - prev_data) / time_step_hours > 1:
+    #         coverage = 1
+    #     elif snow_data == 0:
+    #         coverage = 0
+    #     else:
+    #         coverage = prev_coverage
+
+    # slide_amount = time_step_hours * 0.1 * snow_slide_amount(poa_irradiance, temperature, tilt, m, sliding_coefficient)
+    # return max(0, coverage - slide_amount) 
 
 
 def DC_loss_factor(snow_coverage, num_strings_per_row):
@@ -116,8 +204,8 @@ def DC_loss_factor(snow_coverage, num_strings_per_row):
     returns:
     DC loss due to snow coverage. 
     '''
-    temp = np.ceil(snow_coverage * num_strings_per_row) / num_strings_per_row
-    return temp
+    loss_factor = np.ceil(snow_coverage * num_strings_per_row) / num_strings_per_row
+    return loss_factor
 
 def apply_snow_model(input_data, 
                      surface_tilt, 

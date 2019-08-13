@@ -2,7 +2,6 @@
 The ``horizon`` module contains functions for horizon profile modeling.
 There are various geometric utilities that are useful in horizon calculations.
 """
-from __future__ import division
 
 import itertools
 
@@ -65,7 +64,7 @@ def elevation_and_azimuth(pt1, pt2):
     horizontal has a positive elevation angle. Also computes the azimuth
     defined as degrees East of North of the bearing from pt1 to pt2.
     This uses the Haversine formula.
-    The method used to calculate the elevation angle is discussed in [1].
+    The trigonometry used to calculate the elevation angle is described in [1].
 
     Parameters
     ----------
@@ -100,6 +99,9 @@ def elevation_and_azimuth(pt1, pt2):
                             [36, 35, 231],
                             [36, 35, 21]])
     bearing, elev_angles = elevation_and_azimuth(site_loc, target_locs)
+
+
+    [1] https://aty.sdsu.edu/explain/atmos_refr/dip.html
     '''
     # Equatorial Radius of the Earth (ellipsoid model) in meters
     a = 6378137.0
@@ -612,11 +614,15 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
     integral is the cosine of the angle between the incoming radiation and the
     vector normal to the surface. The method calculates a sum of integrations
     from the "peak" of the sky dome down to the elevation angle of the horizon.
+    A similar method is used in [2] although it accounts for albedo and doesn't
+    account for the horizon.
 
     [1] Goss et al. (2014) Solar Energy 110, 410-419
-
+    [2] Wright D. (2019) IEEE Journal of Photovoltaics 9(2), 391-396
     """
-    assert(horizon_azimuths.shape[0] == horizon_angles.shape[0])
+    if horizon_azimuths.shape[0] != horizon_angles.shape[0]:
+        raise ValueError('azimuths and elevation_angles must be of the same'
+                         'length.')
     tilt_rad = np.radians(surface_tilt)
     plane_az_rad = np.radians(surface_azimuth)
     a = np.sin(tilt_rad) * np.cos(plane_az_rad)

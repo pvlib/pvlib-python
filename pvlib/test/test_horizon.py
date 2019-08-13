@@ -22,9 +22,9 @@ def test_grid_lat_lon():
 
 
 def test_elev_calc():
-    pt1 = np.array((71.23, -34.70, 1234))
-    pt2 = np.array((71.12, -34.16, 124))
-    pt3 = np.array((71.29, -35.23, 30044))
+    pt1 = np.array([[71.23, -34.70, 1234]])
+    pt2 = np.array([[71.12, -34.16, 124]])
+    pt3 = np.array([[71.29, -35.23, 30044]])
 
     test_pts = np.vstack([pt1, pt2])
     reverse_test_pts = np.vstack([pt2, pt1])
@@ -142,7 +142,7 @@ def test_uniformly_sample_triangle():
     pt1 = np.array((71.23, -34.70, 1234))
     pt2 = np.array((69.12, -38.16, 124))
     pt3 = np.array((78.23, -36.23, 344))
-    points = horizon.uniformly_sample_triangle(pt1, pt2, pt3, 5)
+    points = horizon._uniformly_sample_triangle(pt1, pt2, pt3, 5)
 
     p1 = tools.lle_to_xyz(pt1)
     p2 = tools.lle_to_xyz(pt2)
@@ -263,7 +263,10 @@ def test_dni_horizon_adjustment(ephem_data):
 
     bad_horizon = np.ones(361)
     bad_expected = np.array([1, 1, 1, 1])
-    bad_adjusted = horizon.dni_horizon_adjustment(bad_horizon,
-                                                  ephem_data["zenith"],
-                                                  ephem_data["azimuth"])
-    assert_allclose(bad_adjusted, bad_expected, atol=1e-7)
+    try:
+        bad_adjusted = horizon.dni_horizon_adjustment(bad_horizon,
+                                                      ephem_data["zenith"],
+                                                      ephem_data["azimuth"])
+        assert(False)
+    except ValueError:
+        pass

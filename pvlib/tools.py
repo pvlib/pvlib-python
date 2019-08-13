@@ -9,6 +9,10 @@ import numpy as np
 import pandas as pd
 import pytz
 
+# Ellipsoid model of the Earth
+earth_radius_equatorial = 6378137.0
+earth_radius_polar = 6356752.0
+
 
 def cosd(angle):
     """
@@ -433,10 +437,9 @@ def latitude_to_geocentric(phi):
     Latitude must be given in radians.
     [1] https://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
     """
-    # Equatorial Radius of the Earth (ellipsoid model) in meters
-    a = 6378137.0
-    # Polar Radius of the Earth (ellipsoid model) in meters
-    b = 6356752.0
+
+    a = earth_radius_equatorial
+    b = earth_radius_polar
     return np.arctan(b**2/a**2*np.tan(phi))
 
 
@@ -446,10 +449,9 @@ def latitude_to_geodetic(phi):
     Latitude must be given in radians.
     [1] https://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
     """
-    # Equatorial Radius of the Earth (ellipsoid model) in meters
-    a = 6378137.0
-    # Polar Radius of the Earth (ellipsoid model) in meters
-    b = 6356752.0
+
+    a = earth_radius_equatorial
+    b = earth_radius_polar
     return np.arctan(a**2/b**2*np.tan(phi))
 
 
@@ -463,18 +465,16 @@ def lle_to_xyz(point):
     lon = np.atleast_1d(point.T[1])
     elev = np.atleast_1d(point.T[2])
 
-    # Equatorial Radius of the Earth (ellipsoid model) in meters
-    a = 6378137.0
-    # Polar Radius of the Earth (ellipsoid model) in meters
-    b = 6356752.0
+    a_sqrd = earth_radius_equatorial**2
+    b_sqrd = earth_radius_polar**2
 
     # convert to radians
     phi = np.radians(lat)
     theta = np.radians(lon)
 
     # compute radius of earth at each point
-    r = (a**2 * np.cos(phi))**2 + (b**2 * np.sin(phi))**2
-    r = r / (a**2 * np.cos(phi)**2 + b**2 * np.sin(phi)**2)
+    r = (a_sqrd * np.cos(phi))**2 + (b_sqrd * np.sin(phi))**2
+    r = r / (a_sqrd * np.cos(phi)**2 + b_sqrd * np.sin(phi)**2)
     r = np.sqrt(r)
 
     h = r + elev
@@ -493,10 +493,8 @@ def xyz_to_lle(point):
     The center of the earth is the origin in the xyz-space.
     The output latitude is assumed to be a common latitude (geodetic).
     """
-    # Equatorial Radius of the Earth (ellipsoid model) in meters
-    a = 6378137.0
-    # Polar Radius of the Earth (ellipsoid model) in meters
-    b = 6356752.0
+    a_sqrd = earth_radius_equatorial**2
+    b_sqrd = earth_radius_polar**2
 
     x = np.atleast_1d(point.T[0])
     y = np.atleast_1d(point.T[1])
@@ -504,7 +502,7 @@ def xyz_to_lle(point):
 
     # get corresponding point on earth's surface
 
-    t = np.sqrt((a*b)**2/(b**2*(x**2+y**2)+a**2*z**2))
+    t = np.sqrt(a_sqrd*b_sqrd/(b_sqrd*(x**2+y**2)+a_sqrd*z**2))
     t = t.reshape(point.shape[0], 1)
     point_s = t * point
     z_s = point_s.T[2]

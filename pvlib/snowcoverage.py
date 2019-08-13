@@ -224,5 +224,6 @@ def DC_loss_factor(snow_coverage, num_strings_per_row):
     loss_factor : numeric
         DC loss due to snow coverage at each time step.
     '''
-    loss_factor = np.ceil(snow_coverage * num_strings_per_row) / num_strings_per_row
+    loss_factor = np.ceil(snow_coverage *
+                          num_strings_per_row) / num_strings_per_row
     return loss_factor

@@ -2492,6 +2492,14 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of serices cells ``Ns``
+    d2mutau : numeric
+        PVSyst thin-film recombination parameter that is the ratio of thickness
+        of the intrinsic layer squared :math:`d^2` and the diffusion length of
+        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
+    NsVbi : numeric
+        PVSyst thin-film recombination parameter that is the product of the PV
+        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
+        the intrinsic layer, in volts [V], defaults to ``np.inf``
     method : str
         either ``'newton'`` or ``'brentq'``
 

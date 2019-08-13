@@ -614,10 +614,9 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
     integral is the cosine of the angle between the incoming radiation and the
     vector normal to the surface. The method calculates a sum of integrations
     from the "peak" of the sky dome down to the elevation angle of the horizon.
-    A similar method is used in [2] although it accounts for albedo and doesn't
-    account for the horizon.
+    A similar method is used in section II of [1] although it is looking at
+    both ground and sky diffuse irradiation.
 
-    [1] Goss et al. (2014) Solar Energy 110, 410-419
     [2] Wright D. (2019) IEEE Journal of Photovoltaics 9(2), 391-396
     """
     if horizon_azimuths.shape[0] != horizon_angles.shape[0]:

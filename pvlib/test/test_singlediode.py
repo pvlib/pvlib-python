@@ -4,7 +4,8 @@ testing single-diode methods using JW Bishop 1988
 
 import numpy as np
 from pvlib import pvsystem
-from pvlib.singlediode import bishop88, estimate_voc, VOLTAGE_BUILTIN
+from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
+                               bishop88, bishop88_i_from_v, bishop88_v_from_i)
 import pytest
 from conftest import requires_scipy
 
@@ -205,3 +206,16 @@ def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
     # test open circuit current
     voc_pvsyst = np.interp(0, pvsyst[0][::-1], pvsyst[1][::-1])
     assert np.isclose(voc_pvsyst, expected['voc'], *tol)
+
+    # repeat tests as above with specialized bishop88 functions
+    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
+             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
+
+    mpp_88 = bishop88_mpp(*x, **y)
+    assert np.isclose(mpp_88[2], expected['pmp'], *tol)
+
+    isc_88 = bishop88_i_from_v(0, *x, **y)
+    assert np.isclose(isc_88, expected['isc'], *tol)
+
+    voc_88 = bishop88_v_from_i(0, *x, **y)
+    assert np.isclose(voc_88, expected['voc'], *tol)

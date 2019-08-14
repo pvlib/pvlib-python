@@ -156,6 +156,7 @@ def get_pvsyst_fs_495():
 
 # DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
 
+@requires_scipy
 @pytest.mark.parametrize(
     'poa, temp_cell, expected, tol', [
         # reference conditions

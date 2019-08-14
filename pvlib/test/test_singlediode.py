@@ -256,4 +256,3 @@ def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
 
     vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method='brentq')
     assert np.isclose(vsc_88, 0.0, *tol)
-

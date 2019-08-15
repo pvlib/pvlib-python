@@ -184,22 +184,23 @@ def snow_coverage_model(snow_data, snow_data_type,
                                                time_step_hours=time_step_hours,
                                                snow_data_type=snow_data_type)
     snow_coverage = pd.Series(np.full(len(snow_data), np.nan))
+    snow_coverage = snow_coverage.reindex(snow_data.index)
     snow_coverage[full_coverage_events] = 1
     slide_events = snow_slide_event(poa_irradiance, temperature)
     slide_amount = snow_slide_amount(surface_tilt, sliding_coefficient)
-    max_slides = int(np.ceil(10 / slide_amount))
-
     slidable_snow = ~np.isnan(snow_coverage)
-    for i in range(max_slides - 1):
+    while(np.any(slidable_snow)):
         new_slides = np.logical_and(slide_events, slidable_snow)
         snow_coverage[new_slides] -= slide_amount*.1
         new_snow_coverage = snow_coverage.fillna(method="ffill", limit=1)
         slidable_snow = np.logical_and(~np.isnan(new_snow_coverage),
                                        np.isnan(snow_coverage))
+        slidable_snow = np.logical_and(slidable_snow, new_snow_coverage > 0)
         snow_coverage = new_snow_coverage
 
     new_slides = np.logical_and(slide_events, slidable_snow)
     snow_coverage[new_slides] -= slide_amount
+
     snow_coverage = snow_coverage.fillna(method="ffill")
     snow_coverage = snow_coverage.fillna(value=0)
     snow_coverage[snow_coverage < 0] = 0

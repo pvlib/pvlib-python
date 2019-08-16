@@ -129,7 +129,7 @@ def fully_covered_panel(snow_data, time_step_hours=1,
                          'valid option (snowfall, snow_depth).')
 
     time_adjusted = snowfall / time_step_hours
-    fully_covered_mask = time_adjusted >= .1
+    fully_covered_mask = time_adjusted >= 1
     return fully_covered_mask
 
 

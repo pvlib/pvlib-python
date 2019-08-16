@@ -8,11 +8,12 @@ import numpy as np
 import pandas as pd
 
 
-def snow_slide_amount(surface_tilt, sliding_coefficient=1.97):
+def snow_slide_amount(surface_tilt, sliding_coefficient=1.97,
+                      time_step_hours=1):
     '''
     Calculates the amount of snow that slides off of the surface of a module
     following the model first described in [1] and later implemented with minor
-    improvements in SAM [2].
+    improvements in SAM [2] in tenths of panel height.
 
     Parameters
     ----------
@@ -22,7 +23,7 @@ def snow_slide_amount(surface_tilt, sliding_coefficient=1.97):
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
 
-    sliding coefficient : numeric
+    sliding_coefficient : numeric
         Another empirically determined coefficient used in [1]. It determines
         how much snow slides off of the panel if a sliding event occurs.
 
@@ -41,8 +42,8 @@ def snow_slide_amount(surface_tilt, sliding_coefficient=1.97):
     of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
     '''
 
-    tilt_radians = np.radians(surface_tilt)
-    slide_amount = sliding_coefficient * np.sin(tilt_radians)
+    tilt = np.radians(surface_tilt)
+    slide_amount = sliding_coefficient / 10 * np.sin(tilt) * time_step_hours
     return slide_amount
 
 
@@ -128,7 +129,7 @@ def fully_covered_panel(snow_data, time_step_hours=1,
                          'valid option (snowfall, snow_depth).')
 
     time_adjusted = snowfall / time_step_hours
-    fully_covered_mask = time_adjusted >= 1
+    fully_covered_mask = time_adjusted >= .1
     return fully_covered_mask
 
 
@@ -136,14 +137,14 @@ def snow_coverage_model(snow_data, snow_data_type,
                         poa_irradiance, temperature, surface_tilt,
                         time_step_hours=1, m=-80, sliding_coefficient=1.97):
     '''
-    Calculates the fraction of a module covered by snow at every time step
-    following the same model first described in [1] and later
-    implemented in SAM [2]. Currently only implemented for fixed tilt systems
-    but could be generalized for tracking systems.
+    Calculates the fraction of the slant height of a row of modules covered by
+    snow at every time step following the same model first described in [1]
+    and later implemented in SAM [2]. Currently only validated for fixed tilt
+    systems.    
 
     Parameters
     ----------
-    snow_data : numeric
+    snow_data : Series
         Time series data on either snowfall or ground snow depth. The type of
         data should be specified in snow_data_type. The original model was
         designed for ground snowdepth only. (cm/hr or cm)
@@ -153,10 +154,10 @@ def snow_coverage_model(snow_data, snow_data_type,
         values are "snowfall" and "snow_depth". "snowfall" will be in units of
         cm/hr. "snow_depth" is in units of cm.
 
-    poa_irradiance : numeric
+    poa_irradiance : Series
         Total in-plane irradiance (W/m^2)
 
-    temperature : numeric
+    temperature : Series
         Ambient air temperature at the surface (C)
 
     surface_tilt : numeric
@@ -170,9 +171,10 @@ def snow_coverage_model(snow_data, snow_data_type,
     sliding coefficient : numeric
         Another empirically determined coefficient used in [1]. It determines
         how much snow slides off of the panel if a sliding event occurs.
+
     m : numeric
         A coefficient used in the model described in [1]. It is an
-        empirically determined value given in W/m^2.
+        empirically determined value given in W/(m^2 C).
 
     Returns
     -------
@@ -187,11 +189,12 @@ def snow_coverage_model(snow_data, snow_data_type,
     snow_coverage = snow_coverage.reindex(snow_data.index)
     snow_coverage[full_coverage_events] = 1
     slide_events = snow_slide_event(poa_irradiance, temperature)
-    slide_amount = snow_slide_amount(surface_tilt, sliding_coefficient)
+    slide_amount = snow_slide_amount(surface_tilt, sliding_coefficient,
+                                     time_step_hours)
     slidable_snow = ~np.isnan(snow_coverage)
     while(np.any(slidable_snow)):
         new_slides = np.logical_and(slide_events, slidable_snow)
-        snow_coverage[new_slides] -= slide_amount*.1
+        snow_coverage[new_slides] -= slide_amount
         new_snow_coverage = snow_coverage.fillna(method="ffill", limit=1)
         slidable_snow = np.logical_and(~np.isnan(new_snow_coverage),
                                        np.isnan(snow_coverage))
@@ -207,7 +210,7 @@ def snow_coverage_model(snow_data, snow_data_type,
     return snow_coverage
 
 
-def DC_loss_factor(snow_coverage, num_strings_per_row):
+def DC_loss_factor(snow_coverage, num_strings):
     '''
     Calculates the DC loss due to snow coverage. Assumes that if a string is
     even partially covered by snow, it produces 0W.
@@ -215,15 +218,15 @@ def DC_loss_factor(snow_coverage, num_strings_per_row):
     Parameters
     ----------
     snow_coverage : numeric
-        The fraction of a module covered by snow at each time step.
+        The fraction of row slant height covered by snow at each time step.
 
-    num_strings_per_row: int
-        The number of separate strings per module/row.
+    num_strings: int
+        The number of parallel-connected strings along a row slant height.
 
     Returns
     -------
     loss : numeric
         DC loss due to snow coverage at each time step.
     '''
-    loss = np.ceil(snow_coverage * num_strings_per_row) / num_strings_per_row
+    loss = np.ceil(snow_coverage * num_strings) / num_strings
     return loss

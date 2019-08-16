@@ -27,6 +27,9 @@ def snow_slide_amount(surface_tilt, sliding_coefficient=1.97,
         Another empirically determined coefficient used in [1]. It determines
         how much snow slides off of the panel if a sliding event occurs.
 
+    time_step_hours: float
+        Period of the data in hours. (hours between data points)
+
     Returns
     ----------
     slide_amount : numeric
@@ -140,7 +143,7 @@ def snow_coverage_model(snow_data, snow_data_type,
     Calculates the fraction of the slant height of a row of modules covered by
     snow at every time step following the same model first described in [1]
     and later implemented in SAM [2]. Currently only validated for fixed tilt
-    systems.    
+    systems.
 
     Parameters
     ----------

@@ -11,8 +11,8 @@ from pvlib import snowcoverage
 def test_snow_slide_amount():
     tilt = 45
     sc = 2
-    expected_specified = 2**.5
-    expected_default = 1.97/2*2**.5
+    expected_specified = 2**.5 / 10
+    expected_default = 1.97/2*2**.5 / 10
     actual_default = snowcoverage.snow_slide_amount(tilt)
     assert_almost_equal(expected_default, actual_default)
     actual_specified = snowcoverage.snow_slide_amount(tilt,
@@ -47,7 +47,7 @@ def test_snow_coverage_model():
     tilt = 45
     poa_irradiance = pd.Series([400, 200, 100, 1234, 134, 982, 100, 100])
     temperature = pd.Series([10, 2, 10, 1234, 34, 982, 10, 10])
-    slide = snowcoverage.snow_slide_amount(tilt)*.1
+    slide = snowcoverage.snow_slide_amount(tilt)
 
     snowfall_data = pd.Series([1, .5, .6, .4, .23, -5, .1, .1])
     snow_coverage = snowcoverage.snow_coverage_model(snowfall_data, "snowfall",

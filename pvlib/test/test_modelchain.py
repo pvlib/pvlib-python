@@ -328,6 +328,14 @@ def test_infer_temp_model(location, system, pvsyst_dc_snl_ac_system,
     assert isinstance(mc, ModelChain)
 
 
+@requires_scipy
+def test_infer_temp_model_invalid(location, system):
+    system.temperature_model_parameters.pop('a')
+    with pytest.raises(ValueError):
+        ModelChain(system, location, orientation_strategy='None',
+                   aoi_model='physical', spectral_model='no_loss')
+
+
 def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
                             mocker):
     m = mocker.spy(sys.modules[__name__], 'poadc')

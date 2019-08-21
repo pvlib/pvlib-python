@@ -274,10 +274,14 @@ def test_retrieve_sam_cecmod():
         'Adjust',
         'gamma_r',
         'Version',
+        'STC',
         'PTC',
         'Technology',
+        'Bifacial',
+        'Length',
+        'Width',
     ]
-    module = 'iTek_iT_300_HE'
+    module = 'Itek_Energy_LLC_iT_300_HE'
     assert module in data
     assert set(data[module].keys()) == set(keys)
 
@@ -304,8 +308,10 @@ def test_retrieve_sam_cecinverter():
         'Idcmax',
         'Mppt_low',
         'Mppt_high',
+        'CEC_Date',
+        'CEC_Type',
     ]
-    inverter = 'Solectria__PVI_5300_5300_P_208V__CEC_2008_'
+    inverter = 'Yaskawa_Solectria_Solar__PVI_5300_208__208V_'
     assert inverter in data
     assert set(data[inverter].keys()) == set(keys)
 

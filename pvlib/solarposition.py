@@ -8,7 +8,6 @@ Calculate the solar position using a variety of methods/packages.
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 # Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
 
-from __future__ import division
 import os
 import datetime as dt
 try:

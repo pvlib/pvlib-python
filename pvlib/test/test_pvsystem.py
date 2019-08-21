@@ -148,6 +148,88 @@ def test_PVSystem_physicaliam(mocker):
     assert iam < 1.
 
 
+def test_iam_martin_ruiz():
+
+    aoi = 45.
+    a_r = 0.16
+    expected = 0.98986965
+
+    # will fail of default values change
+    iam = pvsystem.iam_martin_ruiz(aoi)
+    assert_allclose(iam, expected)
+    # will fail of parameter names change
+    iam = pvsystem.iam_martin_ruiz(aoi=aoi, a_r=a_r)
+    assert_allclose(iam, expected)
+
+    a_r = 0.18
+    aoi = [-100, -60, 0, 60, 100, np.nan, np.inf]
+    expected = [0.0, 0.9414631, 1.0, 0.9414631, 0.0, np.nan, 0.0]
+
+    # check out of range of inputs as list
+    iam = pvsystem.iam_martin_ruiz(aoi, a_r)
+    assert_allclose(iam, expected, equal_nan=True)
+
+    # check out of range of inputs as array
+    iam = pvsystem.iam_martin_ruiz(np.array(aoi), a_r)
+    assert_allclose(iam, expected, equal_nan=True)
+
+    # check out of range of inputs as Series
+    aoi = pd.Series(aoi)
+    expected = pd.Series(expected)
+    iam = pvsystem.iam_martin_ruiz(aoi, a_r)
+    assert_series_equal(iam, expected)
+
+    # check exception clause
+    with pytest.raises(RuntimeError):
+        pvsystem.iam_martin_ruiz(0.0, a_r=0.0)
+
+
+@requires_scipy
+def test_iam_interp():
+
+    aoi_meas = [0.0, 45.0, 65.0, 75.0]
+    iam_meas = [1.0,  0.9,  0.8,  0.6]
+
+    # simple default linear method
+    aoi = 55.0
+    expected = 0.85
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
+    assert_allclose(iam, expected)
+
+    # simple non-default method
+    aoi = 55.0
+    expected = 0.8878062
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas, method='cubic')
+    assert_allclose(iam, expected)
+
+    # check with all reference values
+    aoi = aoi_meas
+    expected = iam_meas
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
+    assert_allclose(iam, expected)
+
+    # check normalization and Series
+    aoi = pd.Series(aoi)
+    expected = pd.Series(expected)
+    iam_mult = np.multiply(0.9, iam_meas)
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_mult, normalize=True)
+    assert_series_equal(iam, expected)
+
+    # check beyond reference values
+    aoi = [-45, 0, 45, 85, 90, 95, 100, 105, 110]
+    expected = [0.9, 1.0, 0.9, 0.4, 0.3, 0.2, 0.1, 0.0, 0.0]
+    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
+    assert_allclose(iam, expected)
+
+    # check exception clause
+    with pytest.raises(ValueError):
+        pvsystem.iam_interp(0.0, [0], [1])
+
+    # check exception clause
+    with pytest.raises(ValueError):
+        pvsystem.iam_interp(0.0, [0, 90], [1, -1])
+
+
 # if this completes successfully we'll be able to do more tests below.
 @pytest.fixture(scope="session")
 def sam_data():
@@ -442,27 +524,28 @@ def test_calcparams_pvsyst(pvsyst_module_params):
     temp_cell = pd.Series([25, 50], index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
-                                  effective_irradiance,
-                                  temp_cell,
-                                  alpha_sc=pvsyst_module_params['alpha_sc'],
-                                  gamma_ref=pvsyst_module_params['gamma_ref'],
-                                  mu_gamma=pvsyst_module_params['mu_gamma'],
-                                  I_L_ref=pvsyst_module_params['I_L_ref'],
-                                  I_o_ref=pvsyst_module_params['I_o_ref'],
-                                  R_sh_ref=pvsyst_module_params['R_sh_ref'],
-                                  R_sh_0=pvsyst_module_params['R_sh_0'],
-                                  R_s=pvsyst_module_params['R_s'],
-                    cells_in_series=pvsyst_module_params['cells_in_series'],
-                                  EgRef=pvsyst_module_params['EgRef'])
+        effective_irradiance,
+        temp_cell,
+        alpha_sc=pvsyst_module_params['alpha_sc'],
+        gamma_ref=pvsyst_module_params['gamma_ref'],
+        mu_gamma=pvsyst_module_params['mu_gamma'],
+        I_L_ref=pvsyst_module_params['I_L_ref'],
+        I_o_ref=pvsyst_module_params['I_o_ref'],
+        R_sh_ref=pvsyst_module_params['R_sh_ref'],
+        R_sh_0=pvsyst_module_params['R_sh_0'],
+        R_s=pvsyst_module_params['R_s'],
+        cells_in_series=pvsyst_module_params['cells_in_series'],
+        EgRef=pvsyst_module_params['EgRef'])
 
-    assert_series_equal(np.round(IL, 3), pd.Series([0.0, 4.8200], index=times))
-    assert_series_equal(np.round(I0, 3),
-                        pd.Series([0.0, 1.47e-7], index=times))
+    assert_series_equal(
+        IL.round(decimals=3), pd.Series([0.0, 4.8200], index=times))
+    assert_series_equal(
+        I0.round(decimals=3), pd.Series([0.0, 1.47e-7], index=times))
     assert_allclose(Rs, 0.500)
-    assert_series_equal(np.round(Rsh, 3),
-                        pd.Series([1000.0, 305.757], index=times))
-    assert_series_equal(np.round(nNsVth, 4),
-                        pd.Series([1.6186, 1.7961], index=times))
+    assert_series_equal(
+        Rsh.round(decimals=3), pd.Series([1000.0, 305.757], index=times))
+    assert_series_equal(
+        nNsVth.round(decimals=4), pd.Series([1.6186, 1.7961], index=times))
 
 
 def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
@@ -1423,7 +1506,7 @@ def test_pvwatts_losses_series():
 
 def make_pvwatts_system_defaults():
     module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003}
-    inverter_parameters = {}
+    inverter_parameters = {'pdc0': 90}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
     return system
@@ -1431,7 +1514,7 @@ def make_pvwatts_system_defaults():
 
 def make_pvwatts_system_kwargs():
     module_parameters = {'pdc0': 100, 'gamma_pdc': -0.003, 'temp_ref': 20}
-    inverter_parameters = {'eta_inv_nom': 0.95, 'eta_inv_ref': 1.0}
+    inverter_parameters = {'pdc0': 90, 'eta_inv_nom': 0.95, 'eta_inv_ref': 1.0}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
     return system
@@ -1476,9 +1559,8 @@ def test_PVSystem_pvwatts_ac(mocker):
     mocker.spy(pvsystem, 'pvwatts_ac')
     system = make_pvwatts_system_defaults()
     pdc = 50
-    pdc0 = system.module_parameters['pdc0']
     out = system.pvwatts_ac(pdc)
-    pvsystem.pvwatts_ac.assert_called_once_with(pdc, pdc0,
+    pvsystem.pvwatts_ac.assert_called_once_with(pdc,
                                                 **system.inverter_parameters)
     assert out < pdc
 
@@ -1487,8 +1569,7 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     mocker.spy(pvsystem, 'pvwatts_ac')
     system = make_pvwatts_system_kwargs()
     pdc = 50
-    pdc0 = system.module_parameters['pdc0']
     out = system.pvwatts_ac(pdc)
-    pvsystem.pvwatts_ac.assert_called_once_with(pdc, pdc0,
+    pvsystem.pvwatts_ac.assert_called_once_with(pdc,
                                                 **system.inverter_parameters)
     assert out < pdc

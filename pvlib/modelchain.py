@@ -526,12 +526,11 @@ class ModelChain(object):
 
     def infer_ac_model(self):
         inverter_params = set(self.system.inverter_parameters.keys())
-        module_params = set(self.system.module_parameters.keys())
         if set(['C0', 'C1', 'C2']) <= inverter_params:
             return self.snlinverter
         elif set(['ADRCoefficients']) <= inverter_params:
             return self.adrinverter
-        elif set(['pdc0']) <= module_params:
+        elif set(['pdc0']) <= inverter_params:
             return self.pvwatts_inverter
         else:
             raise ValueError('could not infer AC model from '
@@ -810,19 +809,20 @@ class ModelChain(object):
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
         weather : None or DataFrame, default None
-            If ``None``, the weather attribute is used. If the weather
-            attribute is also ``None`` assumes air temperature is 20 C, wind
-            speed is 0 m/s and irradiation calculated from clear sky
-            data. Column names must be ``'wind_speed'``, ``'temp_air'``,
-            ``'dni'``, ``'ghi'``, ``'dhi'``. Do not pass incomplete irradiation
-            data. Use method
-            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
-            instead.
+            If ``None``, the weather attribute is used. Column names
+            must be ``'dni'``, ``'ghi'``, ``'dhi'``, ``'wind_speed'``,
+            ``'temp_air'``. All irradiance components are required.
+            Assumes air temperature is 20 C and wind speed is 0 m/s if
+            not provided.
 
         Notes
         -----
         Assigns attributes: ``times``, ``solar_position``, ``airmass``,
         ``total_irrad``, `aoi`
+
+        See also
+        --------
+        ModelChain.complete_irradiance
         """
         if weather is not None:
             self.weather = weather
@@ -839,6 +839,10 @@ class ModelChain(object):
             solar_position=self.solar_position, model=self.airmass_model)
 
         if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
+            warnings.warn('Clear sky assumption for no input irradiance is '
+                          'deprecated and will be removed in v0.7.0. Use '
+                          'location.get_clearsky instead',
+                          pvlibDeprecationWarning)
             self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
                 self.solar_position.index, self.clearsky_model,
                 solar_position=self.solar_position,
@@ -846,8 +850,8 @@ class ModelChain(object):
 
         if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
             raise ValueError(
-                "Uncompleted irradiance data set. Please check you input " +
-                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n" +
+                "Uncompleted irradiance data set. Please check your input "
+                "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n"
                 "Detected data: {0}".format(list(self.weather.columns)))
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
@@ -903,12 +907,11 @@ class ModelChain(object):
             Times at which to evaluate the model. Can be None if
             attribute `times` is already set.
         weather : None or DataFrame, default None
-            If None, assumes air temperature is 20 C, wind speed is 0
-            m/s and irradiation calculated from clear sky data. Column
-            names must be 'wind_speed', 'temp_air', 'dni', 'ghi', 'dhi'.
-            Do not pass incomplete irradiation data. Use method
-            :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
-            instead.
+            If ``None``, the weather attribute is used. Column names
+            must be ``'dni'``, ``'ghi'``, ``'dhi'``, ``'wind_speed'``,
+            ``'temp_air'``. All irradiance components are required.
+            Assumes air temperature is 20 C and wind speed is 0 m/s if
+            not provided.
 
         Returns
         -------

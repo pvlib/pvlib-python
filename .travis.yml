@@ -11,12 +11,8 @@ sudo: false # if false, use TravisCI's container based build
 # someday add os: osx to specify osx, but python not yet supported on Travis
 matrix:
     include:
-    - python: 2.7
-      env: CONDA_ENV=py27-min
-    - python: 2.7
-      env: CONDA_ENV=py27
-    - python: 3.4
-      env: CONDA_ENV=py34
+    - python: 3.5
+      env: CONDA_ENV=py35-min
     - python: 3.5
       env: CONDA_ENV=py35
     - python: 3.6
@@ -38,11 +34,7 @@ cache:
 # setup miniconda for numpy, scipy, pandas, etc.
 before_install:
     - echo "before install"
-    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        export PYVER="2";
-      else
-        export PYVER="3";
-      fi
+    - export PYVER="3"
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         export OSSTR="MacOSX-x86_64.sh";
       else
@@ -50,7 +42,7 @@ before_install:
         export PATH=/usr/lib/ccache:$PATH;
       fi
     - export BASE="http://repo.continuum.io/miniconda/Miniconda"
-    - export CONDAVER="4.5.4"
+    - export CONDAVER="4.6.14"
     - wget $BASE$PYVER-$CONDAVER-$OSSTR -O miniconda.sh;
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
@@ -63,14 +55,6 @@ install:
     - echo "install"
     - conda env create --file ci/requirements-$CONDA_ENV.yml
     - source activate test_env # all envs are named test_env in the yml files
-    # needed to make sure that pandas is compiled against the right
-    # version of numpy
-    - if [[ "$CONDA_ENV" == "py27-min" ]]; then
-        pip uninstall numpy --yes;
-        pip uninstall pandas --yes;
-        pip install --no-cache-dir numpy==1.10.1;
-        pip install --no-cache-dir pandas==0.16.0;
-      fi
     - conda list
     - echo $PATH
     - ls -l /home/travis/miniconda/envs/test_env/lib

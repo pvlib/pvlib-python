@@ -7,11 +7,7 @@ see https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/
 import io
 import requests
 import pandas as pd
-# Python-2 compatible JSONDecodeError
-try:
-    from json import JSONDecodeError
-except ImportError:
-    JSONDecodeError = ValueError
+from json import JSONDecodeError
 
 URL = "http://developer.nrel.gov/api/solar/nsrdb_psm3_download.csv"
 

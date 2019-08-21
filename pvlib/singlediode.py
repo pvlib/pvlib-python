@@ -12,10 +12,11 @@ from pvlib.tools import _golden_sect_DataFrame
 # ImportError when 'brentq' method is specified for those methods.
 try:
     from scipy.optimize import brentq
+    from scipy.optimize import root
 except ImportError:
     def brentq(*a, **kw):
         raise ImportError(
-            "brentq couldn't be imported. Is SciPy installed?")
+            "brentq or root couldn't be imported. Is SciPy installed?")
 
 # FIXME: change this to newton when scipy-1.2 is released
 try:
@@ -27,6 +28,185 @@ newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
 
 # intrinsic voltage per cell junction for a:Si, CdTe, Mertens et al.
 VOLTAGE_BUILTIN = 0.9  # [V]
+
+
+def getparams_from_specs(I_sc, V_oc, I_mp, V_mp, alpha_sc,
+                         beta_oc=None, N_s=60):
+    """
+    Calculates the five parameters for the single diode equation at
+    standard irradiance and standard cell temperature using the De Soto et al.
+    procedure described in [1]. This procedure has the advantage of using
+    common specifications given by manufacturers in the datasheets of
+    PV modules.
+    The six values returned by getparams_desoto
+    can be used by calcparams_desoto to calculate the values at different
+    irradiance and cell temperature.
+
+    Parameters
+    ----------
+    I_sc : numeric
+        Short-circuit current at std conditions in A.
+
+    V_oc : numeric
+        Open-circuit voltage at std conditions in V.
+
+    I_mp : numeric
+        Module current at the maximum-power point at std conditions in A.
+
+    V_mp : numeric
+        Module voltage at the maximum-power point at std conditions in V.
+
+    alpha_sc : numeric
+        The short-circuit current (I_sc) temperature coefficient of the
+        module in units of %/K. It is converted in A/K for the computing
+        process.
+
+    N_s : numeric
+        Number of cell in the module.
+        Optional input, but helps to insure the convergence of the computing.
+
+    beta_oc : numeric
+        The open-circuit voltage (V_oc) temperature coefficient of the
+        module in units of %/K. It is converted in V/K for the computing
+        process.
+        Optional input, but makes faster the computing.
+
+    Returns
+    -------
+    Dictionnary with the following elements:
+
+    photocurrent 'I_L_ref': numeric
+        Light-generated current in amperes at std conditions.
+
+    saturation_current 'I_o_ref': numeric
+        Diode saturation curent in amperes at std conditions
+
+    resistance_series 'R_s': numeric
+        Series resistance in ohms. Note that '_ref' is not mentionned
+        in the name because this resistance is not sensible to the
+        conditions of test.
+
+    resistance_shunt 'R_sh_ref': numeric
+        Shunt resistance in ohms at std conditions.
+
+    'a_ref' (= nNsVth): numeric
+        Diode factor at std conditions.
+        The product of the usual diode ideality factor (n, unitless),
+        number of cells in series (Ns), and cell thermal voltage at
+        specified effective irradiance and cell temperature.
+
+    'alpha_sc': numeric
+        Caution!: Different from the input because of the unit.
+        The short-circuit current (I_sc) temperature coefficient of the
+        module in units of A/K.
+
+    References
+    ----------
+    [1] W. De Soto et al., "Improvement and validation of a model for
+    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+    2006.
+    """
+    # Constants
+    k = 1.381e-23  # Boltzmann
+    q = 1.602e-19  # electron charge in J/V
+    Tref = 25.0 + 273.15
+    C = 0.0002677
+    Eg = 1.796e-19
+
+    # Conversion from %/K to A/K & V/K
+    alpha_sc = alpha_sc*I_sc/100
+    beta_oc = beta_oc*V_oc/100
+
+    def pv_fct(x, param):
+        """Returns the system of equations used for computing the
+        single-diode 5 parameters.
+        To avoid the confusion in names with variables of container function
+        the '_' of the variables were removed.
+        """
+
+        Isc = param[0]
+        Voc = param[1]
+        Imp = param[2]
+        Vmp = param[3]
+        betaoc = param[4]
+        alphasc = param[5]
+
+        # five parameters vector
+        IL = x[0]
+        Io = x[1]
+        a = x[2]
+        Rsh = x[3]
+        Rs = x[4]
+        # five equation vector
+        y = [0, 0, 0, 0, 0]
+
+        Idsc = Io*(np.exp(Isc*Rs/a) - 1.0)
+        Idoc = Io*(np.exp(Voc/a) - 1.0)
+        exm = np.exp((Vmp+Imp*Rs)/a)
+        Idm = Io*(exm - 1.0)
+        # 1st equation - short-circuit
+        y[0] = Isc - IL + Idsc + Isc*Rs/Rsh
+        # 2nd equation - open-circuit ref
+        y[1] = -IL + Idoc + Voc/Rsh
+        # 3rd equation - max Imp
+        y[2] = Imp - IL + Idm + (Vmp+Imp*Rs)/Rsh
+        # 4th equation - max Imp der
+        y[3] = Imp - Vmp*(Io*exm/a + 1.0/Rsh)/(1.0+Io*exm*Rs/a+Rs/Rsh)
+        # 5th equation - open-circuit T2
+        if betaoc is None:  # option 1 - doesn't work yet-DeSoto method
+            raise NotImplementedError(
+                'The function getparams_desoto needs beta_oc '
+                'for computing the five parameters for now. This can be '
+                'avoided if the code followed the exact same procedure than '
+                'described in DeSoto&al(2006)'
+                )
+            T2 = Tref + 2
+            a2 = a*T2/Tref
+            IL2 = IL + alphasc*(T2-Tref)
+            Eg2 = Eg*(1-C*(T2-Tref))
+            Io2 = Io*(T2/Tref)**3*np.exp(Eg2/(k*Tref) - Eg2/(k*T2))
+
+            def fct_5(Voc2):
+                return IL2-Io2*(np.exp(Voc2/a2)-1)-Voc2/Rsh
+            sol5 = root(fct_5, xi, args=param, method='lm')
+        else:
+            # option 2 - open-circuit T2
+            T2 = Tref + 2
+            Voc2 = (T2-Tref)*betaoc + Voc
+            a2 = a*T2/Tref
+            IL2 = IL + alphasc*(T2-Tref)
+            Eg2 = Eg*(1-C*(T2-Tref))
+            Io2 = Io*(T2/Tref)**3*np.exp(Eg2/(k*Tref) - Eg2/(k*T2))
+            Idoc2 = Io2*(np.exp(Voc2/a2) - 1.0)
+        y[4] = -IL2 + Idoc2 + Voc2/Rsh
+
+        return y
+
+    # initialization of variables for computing convergence:
+    # Values are taken from Duffie & Beckman (2013), p753
+    Rsh1 = 100.0
+    a1 = 1.5*k*Tref*N_s/q
+    IL1 = I_sc
+#    Io1 = (IL1-V_oc/Rsh1) / (np.exp(V_oc/a1)-1)
+    Io1 = I_sc * np.exp(-V_oc/a1)
+    Rs1 = (a1*np.log((IL1-I_mp)/Io1+1) - V_mp)/I_mp
+    # xi : initial values vector
+    xi = np.array([IL1, Io1, a1, Rsh1, Rs1])
+    # params of module
+    param = np.array([I_sc, V_oc, I_mp, V_mp, beta_oc, alpha_sc])
+    # computing
+    res = root(pv_fct, xi, args=param, method='lm')
+    sol = res.x
+
+    # results
+    res = {'I_L_ref': sol[0],
+           'I_o_ref': sol[1],
+           'a_ref': sol[2],
+           'R_sh_ref': sol[3],
+           'R_s': sol[4],
+           'alpha_sc': alpha_sc
+           }
+    return res
 
 
 def estimate_voc(photocurrent, saturation_current, nNsVth):

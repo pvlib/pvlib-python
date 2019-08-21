@@ -221,6 +221,16 @@ AOI modifiers
    pvsystem.ashraeiam
    pvsystem.sapm_aoi_loss
 
+PV temperature models
+---------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   temperature.sapm_cell
+   temperature.sapm_module
+   temperature.pvsyst_cell
+
 Single diode models
 -------------------
 
@@ -262,6 +272,17 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter
+   temperature.sapm_cell
+
+Pvsyst model
+-------------
+
+Functions relevant for the Pvsyst model.
+
+.. autosummary::
+   :toctree: generated/
+
+   temperature.pvsyst_cell
 
 PVWatts model
 -------------
@@ -273,14 +294,6 @@ PVWatts model
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
    pvsystem.pvwatts_losses
-
-PVsyst model
-------------
-
-.. autosummary::
-   :toctree: generated/
-
-   pvsystem.pvsyst_celltemp
 
 Other
 -----
@@ -500,6 +513,7 @@ ModelChain model definitions.
    modelchain.ModelChain.sapm_spectral_loss
    modelchain.ModelChain.no_spectral_loss
    modelchain.ModelChain.sapm_temp
+   modelchain.ModelChain.pvsyst_temp
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 

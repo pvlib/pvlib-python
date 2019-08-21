@@ -10,6 +10,36 @@ compatibility notes.
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
+API Changes
+~~~~~~~~~~~
+* Changes to functions and methods for cell temperature models:
+  (:issue:`678')
+    - Moved functions for cell temperature and constant 
+      `TEMP_MODEL_PARAMS` from `pvsystem.py` to `temperature.py`.
+    - Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp`
+      to `temperature.sapm_cell` and `temperature.pvsyst_cell`.
+    - Created `temperature.sapm_module`.
+    - Argument order and output type of `pvsystem.sapm_celltemp`,
+      `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` have
+      been altered to be consistent among cell temperature model
+      functions.
+    - Removed `model` as a kwarg from `temperature.sapm_cell` and
+      `temperature.pvsyst_cell`. These functions now require model-specific
+      parameters as kwargs.
+    - Renamed `pvsystem.TEMP_MODEL_PARAMS` to `temperature.TEMPERATURE_MODEL_PARAMETERS`.
+    - `temperature.TEMPERATURE_MODEL_PARAMETERS` uses dicts rather than tuple for parameter sets. dict keys for `temperature.TEMPERATURE_MODEL_PARAMETERS` have changed.
+    - Added attribute `PVSystem.module_type` (str) to record module
+      front and back materials, default is `glass_polymer`.
+    - Added attribute `PVSystem.temperature_model_parameters` (dict)
+      to contain temperature model parameters.
+    - Changed meaning of `PVSystem.racking_model` to describe racking
+      only, e.g., default is `open_rack`.
+    - In `PVSystem.sapm_celltemp` and `PVSystem.pvsyst_celltemp`, changed kwarg `model` to `parameter_set`. `parameter_set` expects a str which is a valid key for `temperature.TEMPERATURE_MODEL_PARAMETERS` for the corresponding temperature model.
+    - Implemented `pvsyst` as an option for `ModelChain.temp_model`.
+    - `ModelChain.temp_model` now defaults to `None. The temperature
+       model can be inferred from
+      `PVSystem.temperature_model_parameters`.
+
 Enhancements
 ~~~~~~~~~~~~
 * Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
@@ -17,7 +47,7 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-* Fix handling of keyword arguments in `forecasts.get_processed_data`.
+* Fix handling of keyword arguments in forecasts.get_processed_data`.
   (:issue:`745`)
 * Fix output as Series feature in :py:func:`pvlib.pvsystem.ashraeiam`.
 * Fix rounding issue in `clearsky._linearly_scale`, a function that converts
@@ -27,9 +57,14 @@ Bug fixes
 
 Testing
 ~~~~~~~
-* Added 30 minutes to timestamps in `test_psm3.csv` to match change in NSRDB (:issue:`733`)
+* Added 30 minutes to timestamps in `test_psm3.csv` to match change
+  in NSRDB (:issue:`733`)
 * Added tests for methods in bifacial.py.
+* Added tests for changes to cell temperature models.
 
+Documentation
+~~~~~~~~~~~~~
+* Corrected docstring for `pvsystem.PVSystem.sapm`
 
 Contributors
 ~~~~~~~~~~~~
@@ -38,3 +73,4 @@ Contributors
 * Oscar Dowson (:ghuser:`odow`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
+* Cliff Hansen (:ghuser:`cwhanse`)

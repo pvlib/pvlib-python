@@ -10,7 +10,8 @@ from functools import partial
 import warnings
 import pandas as pd
 
-from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
+from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
+                   tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import DC_MODEL_PARAMS
@@ -18,7 +19,8 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def basic_chain(times, latitude, longitude,
-                module_parameters, inverter_parameters,
+                module_parameters, temperature_model_parameters,
+                inverter_parameters,
                 irradiance=None, weather=None,
                 surface_tilt=None, surface_azimuth=None,
                 orientation_strategy=None,
@@ -46,10 +48,16 @@ def basic_chain(times, latitude, longitude,
         Use decimal degrees notation.
 
     module_parameters : None, dict or Series
-        Module parameters as defined by the SAPM.
+        Module parameters as defined by the SAPM. See pvsystem.sapm for
+        details.
+
+    temperature_model_parameters : None, dict or Series, default None.
+        Temperature model parameters as defined by the SAPM.
+        See temperature.sapm_cell for details.
 
     inverter_parameters : None, dict or Series
-        Inverter parameters as defined by the CEC.
+        Inverter parameters as defined by the CEC. See pvsystem.snlinverter for
+        details.
 
     irradiance : None or DataFrame, default None
         If None, calculates clear sky data.
@@ -163,15 +171,16 @@ def basic_chain(times, latitude, longitude,
     if weather is None:
         weather = {'wind_speed': 0, 'temp_air': 20}
 
-    temps = pvsystem.sapm_celltemp(total_irrad['poa_global'],
-                                   weather['wind_speed'],
-                                   weather['temp_air'])
+    cell_temperature = temperature.sapm_cell(
+        total_irrad['poa_global'], weather['temp_air'], weather['wind_speed'],
+        temperature_model_parameters['a'], temperature_model_parameters['b'],
+        temperature_model_parameters['deltaT'])
 
     effective_irradiance = pvsystem.sapm_effective_irradiance(
         total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,
         module_parameters)
 
-    dc = pvsystem.sapm(effective_irradiance, temps['temp_cell'],
+    dc = pvsystem.sapm(effective_irradiance, cell_temperature,
                        module_parameters)
 
     ac = pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter_parameters)
@@ -273,8 +282,8 @@ class ModelChain(object):
         as the first argument to a user-defined function.
 
     temp_model: str or function, default 'sapm'
-        Valid strings are 'sapm'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+        Valid strings are 'sapm' and 'pvsyst'. The ModelChain instance will be
+        passed as the first argument to a user-defined function.
 
     losses_model: str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
@@ -295,7 +304,7 @@ class ModelChain(object):
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model=None, temp_model='sapm',
+                 spectral_model=None, temp_model=None,
                  losses_model='no_loss', name=None, **kwargs):
 
         self.name = name
@@ -420,7 +429,7 @@ class ModelChain(object):
 
     def sapm(self):
         self.dc = self.system.sapm(self.effective_irradiance/1000.,
-                                   self.temps['temp_cell'])
+                                   self.cell_temperature)
 
         self.dc = self.system.scale_voltage_current_power(self.dc)
 
@@ -430,7 +439,7 @@ class ModelChain(object):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
             self.system.calcparams_desoto(self.effective_irradiance,
-                                          self.temps['temp_cell']))
+                                          self.cell_temperature))
 
         self.diode_params = (photocurrent, saturation_current,
                              resistance_series,
@@ -448,7 +457,7 @@ class ModelChain(object):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
             self.system.calcparams_cec(self.effective_irradiance,
-                                       self.temps['temp_cell']))
+                                       self.cell_temperature))
 
         self.diode_params = (photocurrent, saturation_current,
                              resistance_series,
@@ -466,7 +475,7 @@ class ModelChain(object):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
             self.system.calcparams_pvsyst(self.effective_irradiance,
-                                          self.temps['temp_cell']))
+                                          self.cell_temperature))
 
         self.diode_params = (photocurrent, saturation_current,
                              resistance_series,
@@ -485,7 +494,7 @@ class ModelChain(object):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
             self.system.calcparams_desoto(self.effective_irradiance,
-                                          self.temps['temp_cell']))
+                                          self.cell_temperature))
 
         self.desoto = (photocurrent, saturation_current, resistance_series,
                        resistance_shunt, nNsVth)
@@ -500,7 +509,7 @@ class ModelChain(object):
 
     def pvwatts_dc(self):
         self.dc = self.system.pvwatts_dc(self.effective_irradiance,
-                                         self.temps['temp_cell'])
+                                         self.cell_temperature)
         return self
 
     @property
@@ -670,18 +679,34 @@ class ModelChain(object):
             model = model.lower()
             if model == 'sapm':
                 self._temp_model = self.sapm_temp
+            elif model == 'pvsyst':
+                self._temp_model = self.pvsyst_temp
             else:
                 raise ValueError(model + ' is not a valid temp model')
         else:
             self._temp_model = partial(model, self)
 
     def infer_temp_model(self):
-        raise NotImplementedError
+        params = set(self.system.temperature_model_parameters.keys())
+        if set(['a', 'b', 'deltaT']) <= params:
+            return self.sapm_temp
+        elif set(['u_c', 'u_v']) <= params:
+            return self.pvsyst_temp
+        else:
+            raise ValueError('could not infer temperature model from '
+                             'system.temperature_module_parameters {}.'
+                             .format(self.system.temperature_model_parameters))
 
     def sapm_temp(self):
-        self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
-                                               self.weather['wind_speed'],
-                                               self.weather['temp_air'])
+        self.cell_temperature = self.system.sapm_celltemp(
+            self.total_irrad['poa_global'], self.weather['temp_air'],
+            self.weather['wind_speed'])
+        return self
+
+    def pvsyst_temp(self):
+        self.cell_temperature = self.system.pvsyst_celltemp(
+            self.total_irrad['poa_global'], self.weather['temp_air'],
+            self.weather['wind_speed'])
         return self
 
     @property
@@ -918,7 +943,7 @@ class ModelChain(object):
         self
 
         Assigns attributes: times, solar_position, airmass, irradiance,
-        total_irrad, effective_irradiance, weather, temps, aoi,
+        total_irrad, effective_irradiance, weather, cell_temperature, aoi,
         aoi_modifier, spectral_modifier, dc, ac, losses.
         """
 

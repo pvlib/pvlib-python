@@ -17,16 +17,35 @@ from test_pvsystem import sam_data, pvsyst_module_params
 from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
+def _get_sapm_temp_model_params(sam_data):
+    # SAPM temperature model parameters for Canadian_Solar_CS5P_220M
+    # (glass/polymer) in open rack
+    modules = sam_data['sandiamod']
+    module = 'Canadian_Solar_CS5P_220M___2009_'
+    module_parameters = modules[module].copy()
+    # transfer temperature model parameters
+    return {'a': module_parameters['A'], 'b': module_parameters['B'],
+            'deltaT': module_parameters['DTC']}
+
+
+def _get_pvsyst_temp_model_params():
+    # Pvsyst temperature model parameters for freestanding system
+    return {'u_c': 29.0, 'u_v': 0.0}
+
+
 @pytest.fixture
 def system(sam_data):
     modules = sam_data['sandiamod']
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = modules[module].copy()
+    # transfer temperature model parameters
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -39,11 +58,13 @@ def cec_dc_snl_ac_system(sam_data):
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -52,11 +73,13 @@ def cec_dc_snl_ac_system(sam_data):
 def cec_dc_native_snl_ac_system(sam_data):
     module = 'Canadian_Solar_CS5P_220M'
     module_parameters = sam_data['cecmod'][module].copy()
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -66,11 +89,13 @@ def pvsyst_dc_snl_ac_system(sam_data, pvsyst_module_params):
     module = 'PVsyst test module'
     module_parameters = pvsyst_module_params
     module_parameters['b'] = 0.05
+    temp_model_params = _get_pvsyst_temp_model_params()
     inverters = sam_data['cecinverter']
     inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -83,22 +108,13 @@ def cec_dc_adr_ac_system(sam_data):
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['adrinverter']
     inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
-                      inverter_parameters=inverter)
-    return system
-
-
-@pytest.fixture
-def pvwatts_dc_snl_ac_system(sam_data):
-    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
-    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
-                      module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter)
     return system
 
@@ -106,9 +122,11 @@ def pvwatts_dc_snl_ac_system(sam_data):
 @pytest.fixture
 def pvwatts_dc_pvwatts_ac_system(sam_data):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
                       inverter_parameters=inverter_parameters)
     return system
 
@@ -152,7 +170,7 @@ def test_run_model(system, location):
     with pytest.warns(pvlibDeprecationWarning):
         ac = mc.run_model(times).ac
 
-    expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
+    expected = pd.Series(np.array([183.522449305, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=1)
 
@@ -164,7 +182,7 @@ def test_run_model_with_irradiance(system, location):
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
-    expected = pd.Series(np.array([  1.90054749e+02,  -2.00000000e-02]),
+    expected = pd.Series(np.array([187.80746495, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -176,7 +194,7 @@ def test_run_model_perez(system, location):
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
-    expected = pd.Series(np.array([  190.194545796,  -2.00000000e-02]),
+    expected = pd.Series(np.array([187.94295642, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -189,28 +207,43 @@ def test_run_model_gueymard_perez(system, location):
                               index=times)
     ac = mc.run_model(times, weather=irradiance).ac
 
-    expected = pd.Series(np.array([  190.194760203,  -2.00000000e-02]),
+    expected = pd.Series(np.array([187.94317405, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
 
 def test_run_model_with_weather(system, location, weather, mocker):
-    mc = ModelChain(system, location)
-    m = mocker.spy(system, 'sapm_celltemp')
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
+    # test with sapm cell temperature model
+    system.racking_model = 'open_rack_glass_glass'
+    mc = ModelChain(system, location)
+    mc.temp_model = 'sapm'
+    m_sapm = mocker.spy(system, 'sapm_celltemp')
     mc.run_model(weather.index, weather=weather)
-    assert m.call_count == 1
+    assert m_sapm.call_count == 1
     # assert_called_once_with cannot be used with series, so need to use
     # assert_series_equal on call_args
-    assert_series_equal(m.call_args[0][1], weather['wind_speed'])  # wind
-    assert_series_equal(m.call_args[0][2], weather['temp_air'])  # temp
+    assert_series_equal(m_sapm.call_args[0][1], weather['temp_air'])  # temp
+    assert_series_equal(m_sapm.call_args[0][2], weather['wind_speed'])  # wind
+    assert not mc.ac.empty
+    # test with pvsyst cell temperature model
+    system.racking_model = 'freestanding'
+    mc = ModelChain(system, location)
+    mc.temp_model = 'pvsyst'
+    m_pvsyst = mocker.spy(system, 'pvsyst_celltemp')
+    mc.run_model(weather.index, weather=weather)
+    assert m_pvsyst.call_count == 1
+    assert_series_equal(m_pvsyst.call_args[0][1], weather['temp_air'])
+    assert_series_equal(m_pvsyst.call_args[0][2], weather['wind_speed'])
     assert not mc.ac.empty
 
 
 def test_run_model_tracker(system, location, weather, mocker):
-    system = SingleAxisTracker(module_parameters=system.module_parameters,
-                               inverter_parameters=system.inverter_parameters)
+    system = SingleAxisTracker(
+        module_parameters=system.module_parameters,
+        temperature_model_parameters=system.temperature_model_parameters,
+        inverter_parameters=system.inverter_parameters)
     mocker.spy(system, 'singleaxis')
     mc = ModelChain(system, location)
     mc.run_model(weather.index, weather=weather)
@@ -248,13 +281,20 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
                          'pvsyst': 'calcparams_pvsyst',
                          'singlediode': 'calcparams_desoto',
                          'pvwatts_dc': 'pvwatts_dc'}
+    temp_model_function = {'sapm': 'sapm',
+                           'cec': 'sapm',
+                           'desoto': 'sapm',
+                           'pvsyst': 'pvsyst',
+                           'singlediode': 'sapm',
+                           'pvwatts_dc': 'sapm'}
     system = dc_systems[dc_model]
     # remove Adjust from model parameters for desoto, singlediode
     if dc_model in ['desoto', 'singlediode']:
         system.module_parameters.pop('Adjust')
     m = mocker.spy(system, dc_model_function[dc_model])
     mc = ModelChain(system, location,
-                    aoi_model='no_loss', spectral_model='no_loss')
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    temp_model=temp_model_function[dc_model])
     mc.run_model(weather.index, weather=weather)
     assert m.call_count == 1
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
@@ -273,6 +313,27 @@ def test_infer_spectral_model(location, system, cec_dc_snl_ac_system,
     mc = ModelChain(system, location,
                     orientation_strategy='None', aoi_model='physical')
     assert isinstance(mc, ModelChain)
+
+
+@pytest.mark.parametrize('temp_model', [
+    'sapm', pytest.param('pvsyst', marks=requires_scipy)])
+def test_infer_temp_model(location, system, pvsyst_dc_snl_ac_system,
+                          temp_model):
+    dc_systems = {'sapm': system,
+                  'pvsyst': pvsyst_dc_snl_ac_system}
+    system = dc_systems[temp_model]
+    mc = ModelChain(system, location,
+                    orientation_strategy='None', aoi_model='physical',
+                    spectral_model='no_loss')
+    assert isinstance(mc, ModelChain)
+
+
+@requires_scipy
+def test_infer_temp_model_invalid(location, system):
+    system.temperature_model_parameters.pop('a')
+    with pytest.raises(ValueError):
+        ModelChain(system, location, orientation_strategy='None',
+                   aoi_model='physical', spectral_model='no_loss')
 
 
 def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -480,11 +541,14 @@ def test_deprecated_07():
     # does not matter what the parameters are, just fake it until we make it
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
                          'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
-    system = PVSystem(module_parameters=module_parameters)
+    temp_model_params = {'a': -3.5, 'b': -0.05, 'deltaT': 3}
+    system = PVSystem(module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params)
     with pytest.warns(pvlibDeprecationWarning):
         ModelChain(system, location,
                    dc_model='singlediode',  # this should fail after 0.7
                    aoi_model='no_loss', spectral_model='no_loss',
+                   temp_model='sapm',
                    ac_model='snlinverter')
 
 
@@ -493,7 +557,9 @@ def test_deprecated_07():
 def test_deprecated_clearsky_07():
     # explicit system creation call because fail_on_pvlib_version
     # does not support decorators.
-    system = PVSystem(module_parameters={'pdc0': 1, 'gamma_pdc': -0.003})
+    system = PVSystem(module_parameters={'pdc0': 1, 'gamma_pdc': -0.003},
+                      temperature_model_parameters={'a': -3.5, 'b': -0.05,
+                                                    'deltaT': 3})
     location = Location(32.2, -110.9)
     mc = ModelChain(system, location, dc_model='pvwatts', ac_model='pvwatts',
                     aoi_model='no_loss', spectral_model='no_loss')
@@ -512,12 +578,15 @@ def test_basic_chain_required(sam_data):
     altitude = 700
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     with pytest.raises(ValueError):
         dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                        module_parameters, inverter_parameters,
+                                        module_parameters,
+                                        temp_model_params,
+                                        inverter_parameters,
                                         altitude=altitude)
 
 
@@ -531,12 +600,14 @@ def test_basic_chain_alt_az(sam_data):
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, temp_model_params,
+                                    inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth)
 
@@ -554,12 +625,14 @@ def test_basic_chain_strategy(sam_data):
     altitude = 700
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(
-        times, latitude, longitude, module_parameters, inverter_parameters,
+        times, latitude, longitude, module_parameters, temp_model_params,
+        inverter_parameters,
         orientation_strategy='south_at_latitude_tilt', altitude=altitude)
 
     expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
@@ -578,12 +651,14 @@ def test_basic_chain_altitude_pressure(sam_data):
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
+    temp_model_params = _get_sapm_temp_model_params(sam_data)
     inverters = sam_data['cecinverter']
     inverter_parameters = inverters[
         'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, temp_model_params,
+                                    inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth,
                                     pressure=93194)
@@ -593,7 +668,8 @@ def test_basic_chain_altitude_pressure(sam_data):
     assert_series_equal(ac, expected, check_less_precise=1)
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, temp_model_params,
+                                    inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth,
                                     altitude=altitude)

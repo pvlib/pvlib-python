@@ -30,8 +30,7 @@ newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
 VOLTAGE_BUILTIN = 0.9  # [V]
 
 
-def getparams_from_specs(I_sc, V_oc, I_mp, V_mp, alpha_sc,
-                         beta_oc=None, N_s=60):
+def getparams_from_specs(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc, N_s=60):
     """
     Calculates the five parameters for the single diode equation at
     standard irradiance and standard cell temperature using the De Soto et al.
@@ -90,7 +89,7 @@ def getparams_from_specs(I_sc, V_oc, I_mp, V_mp, alpha_sc,
         Shunt resistance in ohms at std conditions.
 
     'a_ref' (= nNsVth): numeric
-        Diode factor at std conditions.
+        Modified ideality factor at std conditions.
         The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at
         specified effective irradiance and cell temperature.
@@ -105,98 +104,79 @@ def getparams_from_specs(I_sc, V_oc, I_mp, V_mp, alpha_sc,
     [1] W. De Soto et al., "Improvement and validation of a model for
     photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
     2006.
+
+    [2] John A Dufﬁe ,William A Beckman, "Solar Engineering of Thermal
+    Processes", Wiley, 2013
     """
     # Constants
-    k = 1.381e-23  # Boltzmann
-    q = 1.602e-19  # electron charge in J/V
-    Tref = 25.0 + 273.15
-    C = 0.0002677
-    Eg = 1.796e-19
+    k = 1.381e-23  # Boltzmann constant, in J/K, or 8.617e-5 eV/K
+    q = 1.602e-19  # electron charge in J/V, or 1 eV
+    Tref = 25.0 + 273.15  # in K
+    C = 0.0002677  # valid for silicon
+    Eg = 1.796e-19  # in J, valid for silicon
 
     # Conversion from %/K to A/K & V/K
     alpha_sc = alpha_sc*I_sc/100
     beta_oc = beta_oc*V_oc/100
 
-    def pv_fct(x, param):
+    def pv_fct(params, specs):
         """Returns the system of equations used for computing the
         single-diode 5 parameters.
-        To avoid the confusion in names with variables of container function
-        the '_' of the variables were removed.
+        To avoid the confusion in names with variables of container
+        function the '_' of the variables were removed.
         """
-
-        Isc = param[0]
-        Voc = param[1]
-        Imp = param[2]
-        Vmp = param[3]
-        betaoc = param[4]
-        alphasc = param[5]
-
-        # five parameters vector
-        IL = x[0]
-        Io = x[1]
-        a = x[2]
-        Rsh = x[3]
-        Rs = x[4]
+        # six input known variables
+        Isc = specs[0]
+        Voc = specs[1]
+        Imp = specs[2]
+        Vmp = specs[3]
+        betaoc = specs[4]
+        alphasc = specs[5]
+        # five parameters vector to find
+        IL = params[0]
+        Io = params[1]
+        a = params[2]
+        Rsh = params[3]
+        Rs = params[4]
         # five equation vector
         y = [0, 0, 0, 0, 0]
 
-        Idsc = Io*(np.exp(Isc*Rs/a) - 1.0)
-        Idoc = Io*(np.exp(Voc/a) - 1.0)
-        exm = np.exp((Vmp+Imp*Rs)/a)
-        Idm = Io*(exm - 1.0)
-        # 1st equation - short-circuit
-        y[0] = Isc - IL + Idsc + Isc*Rs/Rsh
-        # 2nd equation - open-circuit ref
-        y[1] = -IL + Idoc + Voc/Rsh
-        # 3rd equation - max Imp
-        y[2] = Imp - IL + Idm + (Vmp+Imp*Rs)/Rsh
-        # 4th equation - max Imp der
-        y[3] = Imp - Vmp*(Io*exm/a + 1.0/Rsh)/(1.0+Io*exm*Rs/a+Rs/Rsh)
-        # 5th equation - open-circuit T2
-        if betaoc is None:  # option 1 - doesn't work yet-DeSoto method
-            raise NotImplementedError(
-                'The function getparams_desoto needs beta_oc '
-                'for computing the five parameters for now. This can be '
-                'avoided if the code followed the exact same procedure than '
-                'described in DeSoto&al(2006)'
-                )
-            T2 = Tref + 2
-            a2 = a*T2/Tref
-            IL2 = IL + alphasc*(T2-Tref)
-            Eg2 = Eg*(1-C*(T2-Tref))
-            Io2 = Io*(T2/Tref)**3*np.exp(Eg2/(k*Tref) - Eg2/(k*T2))
-
-            def fct_5(Voc2):
-                return IL2-Io2*(np.exp(Voc2/a2)-1)-Voc2/Rsh
-            sol5 = root(fct_5, xi, args=param, method='lm')
-        else:
-            # option 2 - open-circuit T2
-            T2 = Tref + 2
-            Voc2 = (T2-Tref)*betaoc + Voc
-            a2 = a*T2/Tref
-            IL2 = IL + alphasc*(T2-Tref)
-            Eg2 = Eg*(1-C*(T2-Tref))
-            Io2 = Io*(T2/Tref)**3*np.exp(Eg2/(k*Tref) - Eg2/(k*T2))
-            Idoc2 = Io2*(np.exp(Voc2/a2) - 1.0)
-        y[4] = -IL2 + Idoc2 + Voc2/Rsh
+        # 1st equation - short-circuit - eq(3) in [1]
+        y[0] = Isc - IL + Io*(np.exp(Isc*Rs/a) - 1.0) + Isc*Rs/Rsh
+        # 2nd equation - open-circuit Tref - eq(4) in [1]
+        y[1] = -IL + Io*(np.exp(Voc/a) - 1.0) + Voc/Rsh
+        # 3rd equation - Imp & Vmp - eq(5) in [1]
+        y[2] = Imp - IL + Io*(np.exp((Vmp+Imp*Rs)/a) - 1.0) + \
+            (Vmp+Imp*Rs)/Rsh
+        # 4th equation - Pmp derivated=0 - eq(6) in [1]
+        y[3] = Imp - Vmp * ((-Io/a)*np.exp((Vmp+Imp*Rs)/a) - 1.0/Rsh) / \
+            (1.0 + (Io*Rs/a)*np.exp((Vmp+Imp*Rs)/a) + Rs/Rsh)
+        # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
+        T2 = Tref + 2
+        Voc2 = (T2 - Tref)*betaoc + Voc  # eq (7) in [1]
+        a2 = a*T2/Tref  # eq (8) in [1]
+        IL2 = IL + alphasc*(T2-Tref)  # eq (11) in [1]
+        Eg2 = Eg*(1-C*(T2-Tref))  # eq (10) in [1]
+        Io2 = Io * (T2/Tref)**3 * np.exp(1/k * (Eg/Tref-Eg2/T2))  # eq (9)
+        y[4] = -IL2 + Io2*(np.exp(Voc2/a2) - 1.0) + Voc2/Rsh  # eq (4) at T2
 
         return y
 
-    # initialization of variables for computing convergence:
-    # Values are taken from Duffie & Beckman (2013), p753
-    Rsh1 = 100.0
-    a1 = 1.5*k*Tref*N_s/q
-    IL1 = I_sc
-#    Io1 = (IL1-V_oc/Rsh1) / (np.exp(V_oc/a1)-1)
-    Io1 = I_sc * np.exp(-V_oc/a1)
-    Rs1 = (a1*np.log((IL1-I_mp)/Io1+1) - V_mp)/I_mp
-    # xi : initial values vector
-    xi = np.array([IL1, Io1, a1, Rsh1, Rs1])
-    # params of module
-    param = np.array([I_sc, V_oc, I_mp, V_mp, beta_oc, alpha_sc])
+    # initial guesses of variables for computing convergence:
+    # Values are taken [2], p753
+    Rsh_i = 100.0
+    a_i = 1.5*k*Tref*N_s/q
+    IL_i = I_sc
+    Io_i = I_sc * np.exp(-V_oc/a_i)
+    Rs_i = (a_i*np.log((IL_i-I_mp)/Io_i+1) - V_mp)/I_mp
+    # params_i : initial values vector
+    params_i = np.array([IL_i, Io_i, a_i, Rsh_i, Rs_i])
+
+    # specs of module
+    specs = np.array([I_sc, V_oc, I_mp, V_mp, beta_oc, alpha_sc])
+
     # computing
-    res = root(pv_fct, xi, args=param, method='lm')
-    sol = res.x
+    sol = root(pv_fct, x0=params_i, args=specs, method='lm').x
 
     # results
     res = {'I_L_ref': sol[0],

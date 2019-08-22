@@ -3,6 +3,7 @@ testing single-diode methods using JW Bishop 1988
 """
 
 import numpy as np
+import pvlib
 from pvlib import pvsystem
 from pvlib.singlediode import bishop88, estimate_voc, VOLTAGE_BUILTIN
 import pytest
@@ -11,6 +12,19 @@ from conftest import requires_scipy
 POA = 888
 TCELL = 55
 CECMOD = pvsystem.retrieve_sam('cecmod')
+
+
+# run this test solely:
+# pytest.main(['test_singlediode.py::test_getparams_from_specs'])
+def test_getparams_from_specs():
+    """test singlediode.getparams_from_specs with specs of the
+    Sunpower SPR-E20-327 module.
+    """
+    params = pvlib.singlediode.getparams_from_specs(I_sc=6.46, V_oc=64.9,
+                                                    I_mp=5.98, V_mp=54.7,
+                                                    alpha_sc=0.05,
+                                                    beta_oc=-0.270,
+                                                    N_s=96)
 
 
 @requires_scipy

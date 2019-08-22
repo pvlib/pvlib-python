@@ -148,8 +148,9 @@ def getparams_from_specs(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc, N_s=60):
         # 3rd equation - Imp & Vmp - eq(5) in [1]
         y[2] = Imp - IL + Io*(np.exp((Vmp+Imp*Rs)/a) - 1.0) + \
             (Vmp+Imp*Rs)/Rsh
-        # 4th equation - Pmp derivated=0 - eq(6) in [1]
-        y[3] = Imp - Vmp * ((-Io/a)*np.exp((Vmp+Imp*Rs)/a) - 1.0/Rsh) / \
+        # 4th equation - Pmp derivated=0 -
+        # caution: eq(6) in [1] is incorrect, take eq23.2.6 in [2]
+        y[3] = Imp - Vmp * ((Io/a)*np.exp((Vmp+Imp*Rs)/a) + 1.0/Rsh) / \
             (1.0 + (Io*Rs/a)*np.exp((Vmp+Imp*Rs)/a) + Rs/Rsh)
         # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
         T2 = Tref + 2

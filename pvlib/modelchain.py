@@ -775,7 +775,7 @@ class ModelChain(object):
 
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
-                times, solar_position=self.solar_position)
+                self.weather.index, solar_position=self.solar_position)
             self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
                 self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
                 self.solar_position.zenith,

@@ -17,9 +17,10 @@ API Changes
       `TEMP_MODEL_PARAMS` from `pvsystem.py` to `temperature.py`.
     - Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp`
       to `temperature.sapm_cell` and `temperature.pvsyst_cell`.
-    - Created `temperature.sapm_module`.
-    - Argument order and output type of `pvsystem.sapm_celltemp`,
-      `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` have
+    - `temperature.sapm_cell` returns only the cell temperature, whereas the old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
+    - Created `temperature.sapm_module` to return module temperature using the SAPM temperature model.
+    - Argument order for`pvsystem.sapm_celltemp`,
+      `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` has
       been altered to be consistent among cell temperature model
       functions.
     - Removed `model` as a kwarg from `temperature.sapm_cell` and
@@ -45,6 +46,7 @@ API Changes
       `temperature.TEMPERATURE_MODEL_PARAMETERS` for the corresponding
       temperature model.
     - `ModelChain.temp_model` renamed to `ModelChain.temperature_model`.
+    - `ModelChain.temps` attribute renamed to `ModelChain.cell_temperature`, and its datatype is now `numeric` rather than `DataFrame`.
     - `ModelChain.temperature_model` now defaults to `None`. The temperature
       model can be inferred from `PVSystem.temperature_model_parameters`.
     - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.

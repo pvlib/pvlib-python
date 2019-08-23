@@ -25,7 +25,7 @@ def _temperature_model_params(model, parameter_set):
     except KeyError:
         msg = ('{} is not a named set of parameters for the {} cell'
                ' temperature model.'
-               ' See pvlib.celltemp.TEMPERATURE_MODEL_PARAMETERS'
+               ' See pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS'
                ' for names'.format(parameter_set, model))
         raise KeyError(msg)
 
@@ -157,7 +157,8 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     temperature at the back of the module :math:`T_{m}` and cell temperature
     :math:`T_{C}`. Model parameters depend both on the module construction and
     its mounting. Parameter sets are provided in [1] for representative modules
-    and mounting.
+    and mounting, and are coded for convenience in
+    ``temperature.TEMPERATURE_MODEL_PARAMETERS``.
 
     +---------------+----------------+-------+---------+---------------------+
     | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
@@ -234,9 +235,11 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     air temperature :math:`T_{a}` (C) and wind speed :math:`WS` (m/s). Model
     output is cell temperature :math:`T_{C}`. Model parameters depend both on
     the module construction and its mounting. Parameters are provided in
-    [1] for open (freestanding) and close (insulated) mounting configurations.
-    The heat loss factors provided represent the combined effect of convection,
-    radiation and conduction, and their values are experimentally determined.
+    [1] for open (freestanding) and close (insulated) mounting configurations,
+    , and are coded for convenience in
+    ``temperature.TEMPERATURE_MODEL_PARAMETERS``. The heat loss factors
+    provided represent the combined effect of convection, radiation and
+    conduction, and their values are experimentally determined.
 
     +--------------+---------------+---------------+
     | Mounting     | :math:`U_{c}` | :math:`U_{v}` |

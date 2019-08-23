@@ -2027,12 +2027,12 @@ def _sapm_celltemp_translator(*args, **kwargs):
     # determine value for new kwarg 'model'
     try:
         model = new_kwargs['model']
-    except KeyError():
+    except KeyError:
         # 'model' not in positional arguments, check kwargs
         try:
             model = kwargs['model']
             kwargs.pop('model')
-        except KeyError():
+        except KeyError:
             # 'model' not in kwargs, use old default value
             model = 'open_rack_cell_glassback'
     new_kwargs.update({
@@ -2065,12 +2065,12 @@ def _pvsyst_celltemp_translator(*args, **kwargs):
     # determine value for new kwarg 'model'
     try:
         model = new_kwargs['model_params']
-    except KeyError():
+    except KeyError:
         # 'model' not in positional arguments, check kwargs
         try:
             model = kwargs['model_params']
             kwargs.pop('model_params')
-        except KeyError():
+        except KeyError:
             # 'model' not in kwargs, use old default value
             model = 'freestanding'
     new_kwargs.update({

@@ -1550,7 +1550,7 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
 @fail_on_pvlib_version('0.8')
 def test_deprecated_07():
     with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_celltemp(1000, 25, 1, -3.47, -0.0594, 3)
+        pvsystem.sapm_celltemp(1000, 25, 1)
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvsyst_celltemp(1000, 25)
 

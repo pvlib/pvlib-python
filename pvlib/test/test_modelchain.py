@@ -218,7 +218,7 @@ def test_run_model_with_weather(system, location, weather, mocker):
     # test with sapm cell temperature model
     system.racking_model = 'open_rack_glass_glass'
     mc = ModelChain(system, location)
-    mc.temp_model = 'sapm'
+    mc.temperature_model = 'sapm'
     m_sapm = mocker.spy(system, 'sapm_celltemp')
     mc.run_model(weather.index, weather=weather)
     assert m_sapm.call_count == 1
@@ -230,7 +230,7 @@ def test_run_model_with_weather(system, location, weather, mocker):
     # test with pvsyst cell temperature model
     system.racking_model = 'freestanding'
     mc = ModelChain(system, location)
-    mc.temp_model = 'pvsyst'
+    mc.temperature_model = 'pvsyst'
     m_pvsyst = mocker.spy(system, 'pvsyst_celltemp')
     mc.run_model(weather.index, weather=weather)
     assert m_pvsyst.call_count == 1
@@ -294,7 +294,7 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
     m = mocker.spy(system, dc_model_function[dc_model])
     mc = ModelChain(system, location,
                     aoi_model='no_loss', spectral_model='no_loss',
-                    temp_model=temp_model_function[dc_model])
+                    temperature_model=temp_model_function[dc_model])
     mc.run_model(weather.index, weather=weather)
     assert m.call_count == 1
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
@@ -499,7 +499,7 @@ def test_invalid_dc_model_params(system, cec_dc_snl_ac_system,
                                  pvwatts_dc_pvwatts_ac_system, location):
     kwargs = {'dc_model': 'sapm', 'ac_model': 'snlinverter',
               'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
-              'temp_model': 'sapm', 'losses_model': 'no_loss'}
+              'temperature_model': 'sapm', 'losses_model': 'no_loss'}
     system.module_parameters.pop('A0')  # remove a parameter
     with pytest.raises(ValueError):
         ModelChain(system, location, **kwargs)
@@ -518,12 +518,12 @@ def test_invalid_dc_model_params(system, cec_dc_snl_ac_system,
 
 @pytest.mark.parametrize('model', [
     'dc_model', 'ac_model', 'aoi_model', 'spectral_model', 'losses_model',
-    'temp_model', 'losses_model'
+    'temperature_model', 'losses_model'
 ])
 def test_invalid_models(model, system, location):
     kwargs = {'dc_model': 'pvwatts', 'ac_model': 'pvwatts',
               'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
-              'temp_model': 'sapm', 'losses_model': 'no_loss'}
+              'temperature_model': 'sapm', 'losses_model': 'no_loss'}
     kwargs[model] = 'invalid'
     with pytest.raises(ValueError):
         ModelChain(system, location, **kwargs)
@@ -548,7 +548,7 @@ def test_deprecated_07():
         ModelChain(system, location,
                    dc_model='singlediode',  # this should fail after 0.7
                    aoi_model='no_loss', spectral_model='no_loss',
-                   temp_model='sapm',
+                   temperature_model='sapm',
                    ac_model='snlinverter')
 
 
@@ -699,7 +699,7 @@ def test_ModelChain___repr__(system, location, strategy, strategy_str):
         '  ac_model: snlinverter',
         '  aoi_model: sapm_aoi_loss',
         '  spectral_model: sapm_spectral_loss',
-        '  temp_model: sapm_temp',
+        '  temperature_model: sapm_temp',
         '  losses_model: no_extra_losses'
     ])
 

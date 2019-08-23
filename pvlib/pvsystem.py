@@ -1952,7 +1952,8 @@ def sapm(effective_irradiance, temp_cell, module):
     See Also
     --------
     retrieve_sam
-    sapm_celltemp
+    temperature.sapm_cell
+    temperature.sapm_module
     '''
 
     T0 = 25
@@ -2016,18 +2017,76 @@ def sapm(effective_irradiance, temp_cell, module):
     return out
 
 
+def _sapm_celltemp_translator(*args, **kwargs):
+    #TODO: remove this function after deprecation period for sapm_celltemp
+    new_kwargs = {}
+    # convert position arguments to kwargs
+    old_arg_list = ['poa_global', 'wind_speed', 'temp_air', 'model']
+    for pos in range(len(args)):
+        new_kwargs[old_arg_list[pos]] = args[pos]
+    # determine value for new kwarg 'model'
+    try:
+        model = new_kwargs['model']
+    except KeyError():
+        # 'model' not in positional arguments, check kwargs
+        try:
+            model = kwargs['model']
+            kwargs.pop('model')
+        except KeyError():
+            # 'model' not in kwargs, use old default value
+            model = 'open_rack_cell_glassback'
+    new_kwargs.update({
+        'a': temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][model]['a'],
+        'b': temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][model]['b'],
+        'deltaT': temperature.TEMPERATURE_MODEL_PARAMETERS[
+            'sapm'][model]['deltaT']
+        })
+    new_kwargs.update(kwargs)  # kwargs with unchanged names
+    new_kwargs['irrad_ref'] = 1000  # default for new kwarg
+    # convert old positional arguments to named kwargs
+    return temperature.sapm_cell(**new_kwargs)
+
+
 sapm_celltemp = deprecated('0.7', alternative='temperature.sapm_cell',
                            name='sapm_celltemp', removal='0.8',
-                           addendum='Note that the argument names and order '
-                           'for temperature.sapm_cell are different than for '
-                           'sapm_celltemp')(temperature.sapm_cell)
+                           addendum='Note that the arguments and argument '
+                           'order for temperature.sapm_cell are different '
+                           'than for sapm_celltemp')(_sapm_celltemp_translator)
+
+
+def _pvsyst_celltemp_translator(*args, **kwargs):
+    #TODO: remove this function after deprecation period for pvsyst_celltemp
+    new_kwargs = {}
+    # convert position arguments to kwargs
+    old_arg_list = ['poa_global', 'temp_air', 'wind_speed', 'eta_m',
+                    'alpha_absorption', 'model_params']
+    for pos in range(len(args)):
+        new_kwargs[old_arg_list[pos]] = args[pos]
+    # determine value for new kwarg 'model'
+    try:
+        model = new_kwargs['model_params']
+    except KeyError():
+        # 'model' not in positional arguments, check kwargs
+        try:
+            model = kwargs['model_params']
+            kwargs.pop('model_params')
+        except KeyError():
+            # 'model' not in kwargs, use old default value
+            model = 'freestanding'
+    new_kwargs.update({
+        'u_c': temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][model]['a'],
+        'u_v': temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][model]['b']
+        })
+    new_kwargs.update(kwargs)  # kwargs with unchanged names
+    # convert old positional arguments to named kwargs
+    return temperature.pvsyst_cell(**new_kwargs)
 
 
 pvsyst_celltemp = deprecated(
     '0.7', alternative='temperature.pvsyst_cell', name='pvsyst_celltemp',
     removal='0.8', addendum='Note that the argument names for '
     'temperature.pvsyst_cell are different than '
-    'for pvsyst_celltemp')(temperature.pvsyst_cell)
+    'for pvsyst_celltemp')(_pvsyst_celltemp_translator)
 
 
 def sapm_spectral_loss(airmass_absolute, module):

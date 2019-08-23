@@ -281,7 +281,7 @@ class ModelChain(object):
         'first_solar', 'no_loss'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
 
-    temp_model: str or function, default 'sapm'
+    temperature_model: str or function, default 'sapm'
         Valid strings are 'sapm' and 'pvsyst'. The ModelChain instance will be
         passed as the first argument to a user-defined function.
 
@@ -305,6 +305,7 @@ class ModelChain(object):
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temp_model=None,
+                 temperature_model=None,
                  losses_model='no_loss', name=None, **kwargs):
 
         self.name = name
@@ -320,7 +321,22 @@ class ModelChain(object):
         self.ac_model = ac_model
         self.aoi_model = aoi_model
         self.spectral_model = spectral_model
-        self.temp_model = temp_model
+
+        # TODO: deprecated kwarg temp_model. Remove in v0.8
+        if temp_model is not None:
+            warnings.warn('The temp_model keyword argument is deprecated. Use '
+                          'temperature_model instead', pvlibDeprecationWarning)
+            if temperature_model is None:
+                temperature_model = temp_model
+            elif temp_model == temperature_model:
+                raise warnings.warn('Provide only one of temperature_model or '
+                                    'temp_model (deprecated).')
+            else:
+                raise ValueError('Conflicting values for temperature_model and'
+                                 ' temp_model (deprecated). Specify only '
+                                 'temperature_model.')
+        self.temperature_model = temperature_model
+
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
 
@@ -333,7 +349,7 @@ class ModelChain(object):
             'name', 'orientation_strategy', 'clearsky_model',
             'transposition_model', 'solar_position_method',
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
-            'spectral_model', 'temp_model', 'losses_model'
+            'spectral_model', 'temperature_model', 'losses_model'
             ]
 
         def getmcattr(self, attr):
@@ -668,23 +684,23 @@ class ModelChain(object):
         return self
 
     @property
-    def temp_model(self):
-        return self._temp_model
+    def temperature_model(self):
+        return self._temperature_model
 
-    @temp_model.setter
-    def temp_model(self, model):
+    @temperature_model.setter
+    def temperature_model(self, model):
         if model is None:
-            self._temp_model = self.infer_temp_model()
+            self._temperature_model = self.infer_temp_model()
         elif isinstance(model, str):
             model = model.lower()
             if model == 'sapm':
-                self._temp_model = self.sapm_temp
+                self._temperature_model = self.sapm_temp
             elif model == 'pvsyst':
-                self._temp_model = self.pvsyst_temp
+                self._temperature_model = self.pvsyst_temp
             else:
-                raise ValueError(model + ' is not a valid temp model')
+                raise ValueError(model + ' is not a valid temperature model')
         else:
-            self._temp_model = partial(model, self)
+            self._temperature_model = partial(model, self)
 
     def infer_temp_model(self):
         params = set(self.system.temperature_model_parameters.keys())
@@ -951,7 +967,7 @@ class ModelChain(object):
         self.aoi_model()
         self.spectral_model()
         self.effective_irradiance_model()
-        self.temp_model()
+        self.temperature_model()
         self.dc_model()
         self.losses_model()
         self.ac_model()

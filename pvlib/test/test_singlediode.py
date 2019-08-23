@@ -11,20 +11,28 @@ from conftest import requires_scipy
 
 POA = 888
 TCELL = 55
-CECMOD = pvsystem.retrieve_sam('cecmod')
+#CECMOD = pvsystem.retrieve_sam('cecmod')
 
 
 # run this test solely:
-# pytest.main(['test_singlediode.py::test_getparams_from_specs'])
-def test_getparams_from_specs():
+# pytest.main(['test_singlediode.py::test_getparams_from_specs_desoto'])
+def test_getparams_from_specs_desoto():
     """test singlediode.getparams_from_specs with specs of the
     Sunpower SPR-E20-327 module.
     """
-    params = pvlib.singlediode.getparams_from_specs(I_sc=6.46, V_oc=64.9,
-                                                    I_mp=5.98, V_mp=54.7,
-                                                    alpha_sc=0.05,
-                                                    beta_oc=-0.270,
-                                                    N_s=96)
+    params = pvlib.singlediode.getparams_from_specs_desoto(
+            I_sc=6.46, V_oc=64.9, I_mp=5.98, V_mp=54.7, alpha_sc=0.05,
+            beta_oc=-0.270, N_s=96
+            )
+    params_expected = {'I_L_ref': 6.47200,
+                       'I_o_ref': 6.05276e-12,
+                       'a_ref': 2.34662,
+                       'R_sh_ref': 248.450,
+                       'R_s': 0.461519,
+                       'alpha_sc': 0.003230}
+    np.testing.assert_allclose(list(params.values()),
+                               list(params_expected.values()),
+                               rtol=1e-4)
 
 
 @requires_scipy

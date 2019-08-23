@@ -14,7 +14,7 @@ from pandas.util.testing import assert_series_equal
 import pytest
 
 from test_pvsystem import sam_data, pvsyst_module_params
-from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
+from conftest import requires_scipy, requires_tables
 
 
 @pytest.fixture
@@ -174,6 +174,7 @@ def test_prepare_inputs_times(system, location):
         mc.prepare_inputs(irradiance, times=times)
 
 
+@requires_tables
 def test_complete_irradiance_times(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')

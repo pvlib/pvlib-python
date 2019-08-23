@@ -268,7 +268,6 @@ Functions relevant for the SAPM model.
 
    pvsystem.sapm
    pvsystem.sapm_effective_irradiance
-   pvsystem.sapm_celltemp
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter

@@ -68,7 +68,7 @@ returns a :py:class:`pandas.DataFrame`.
 
     In [1]: tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 
-    In [1]: times = pd.DatetimeIndex(start='2016-07-01', end='2016-07-04', freq='1min', tz=tus.tz)
+    In [1]: times = pd.date_range(start='2016-07-01', end='2016-07-04', freq='1min', tz=tus.tz)
 
     In [1]: cs = tus.get_clearsky(times)  # ineichen with climatology table by default
 
@@ -168,7 +168,7 @@ varies from 300 m to 1500 m.
 
 .. ipython::
 
-    In [1]: times = pd.DatetimeIndex(start='2015-01-01', end='2016-01-01', freq='1D')
+    In [1]: times = pd.date_range(start='2015-01-01', end='2016-01-01', freq='1D')
 
     In [1]: sites = [(32, -111, 'Tucson1'), (32.2, -110.9, 'Tucson2'),
        ...:          (33.5, -112.1, 'Phoenix'), (35.1, -106.6, 'Albuquerque')]
@@ -608,7 +608,7 @@ GHI data. We first generate and plot the clear sky and measured data.
 
     abq = Location(35.04, -106.62, altitude=1619)
 
-    times = pd.DatetimeIndex(start='2012-04-01 10:30:00', tz='Etc/GMT+7', periods=30, freq='1min')
+    times = pd.date_range(start='2012-04-01 10:30:00', tz='Etc/GMT+7', periods=30, freq='1min')
 
     cs = abq.get_clearsky(times)
 

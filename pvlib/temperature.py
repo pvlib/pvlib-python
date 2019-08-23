@@ -56,7 +56,8 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
         Parameter :math:`\Delta T` in :eq:`sapm2` [C].
 
     irrad_ref : float, default 1000
-        Reference irradiance, parameter :math:`E_{0}` in :eq:`sapm2` [W/m^2].
+        Reference irradiance, parameter :math:`E_{0}` in
+        :eq:`sapm2` [W/m^2].
 
     Returns
     -------
@@ -70,21 +71,21 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     .. math::
        :label: sapm1
 
-        T_{m} = E \times \exp (a + b \times WS) + T_{a}
+       T_{m} = E \times \exp (a + b \times WS) + T_{a}
 
     .. math::
        :label: sapm2
 
-        T_{C} = T_{m} + \frac{E}{E_{0}} \Delta T
+       T_{C} = T_{m} + \frac{E}{E_{0}} \Delta T
 
     The module back surface temperature :math:`T_{m}` is implemented in
-    ``cell_temperature.sapm_module``.
+    :py:func:`~pvlib.temperature.sapm_module`.
 
     Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
     ambient air temperature :math:`T_{a}` (C). Model parameters depend both on
     the module construction and its mounting. Parameter sets are provided in
     [1] for representative modules and mounting, and are coded for convenience
-    in ``cell_temperature.TEMPERATURE_MODEL_PARAMETERS``.
+    in ``pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS``.
 
     +---------------+----------------+-------+---------+---------------------+
     | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
@@ -104,6 +105,12 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
     NM.
 
+    Examples
+    --------
+    >>> from pvlib.temperature import sapm_cell, TEMPERATURE_MODEL_PARAMETERS
+    >>> params = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+    >>> sapm_cell(1000, 10, 0, **params)
+    44.11703066106086
     '''
     module_temperature = sapm_module(poa_global, temp_air, wind_speed,
                                      a, b)
@@ -127,10 +134,10 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
         Wind speed at a height of 10 meters [m/s].
 
     a : float
-        Parameter :math:`a` in :eq:`sapm1`.
+        Parameter :math:`a` in :eq:`sapm1mod`.
 
     b : float
-        Parameter :math:`b` in :eq:`sapm1`.
+        Parameter :math:`b` in :eq:`sapm1mod`.
 
     Returns
     -------
@@ -141,8 +148,9 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     The model for module temperature :math:`T_{m}` is given by Eq. 11 in [1].
 
     .. math::
-       :label: sapm1
-        T_{m} = E \times \exp (a + b \times WS) + T_{a}
+       :label: sapm1mod
+
+       T_{m} = E \times \exp (a + b \times WS) + T_{a}
 
     Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
     ambient air temperature :math:`T_{a}` (C). Model outputs are surface
@@ -245,6 +253,13 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+
+    Examples
+    --------
+    >>> from pvlib.temperature import pvsyst_cell, TEMPERATURE_MODEL_PARAMETERS
+    >>> params = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']
+    >>> pvsyst_cell(1000, 10, **params)
+    37.93103448275862
     """
 
     total_loss_factor = u_c + u_v * wind_speed

@@ -268,7 +268,6 @@ Functions relevant for the SAPM model.
 
    pvsystem.sapm
    pvsystem.sapm_effective_irradiance
-   pvsystem.sapm_celltemp
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter
@@ -485,7 +484,7 @@ ModelChain properties that are aliases for your specific modeling functions.
    modelchain.ModelChain.ac_model
    modelchain.ModelChain.aoi_model
    modelchain.ModelChain.spectral_model
-   modelchain.ModelChain.temp_model
+   modelchain.ModelChain.temperature_model
    modelchain.ModelChain.losses_model
    modelchain.ModelChain.effective_irradiance_model
 
@@ -530,7 +529,7 @@ on the information in the associated :py:class:`~pvsystem.PVSystem` object.
    modelchain.ModelChain.infer_ac_model
    modelchain.ModelChain.infer_aoi_model
    modelchain.ModelChain.infer_spectral_model
-   modelchain.ModelChain.infer_temp_model
+   modelchain.ModelChain.infer_temperature_model
    modelchain.ModelChain.infer_losses_model
 
 Functions

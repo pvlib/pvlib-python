@@ -18,8 +18,9 @@ from pvlib import atmosphere
 from pvlib import solarposition
 from pvlib.location import Location
 from pvlib import temperature
+from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import needs_numpy_1_10, requires_scipy
+from conftest import needs_numpy_1_10, requires_scipy, fail_on_pvlib_version
 
 
 def test_systemdef_tmy3():
@@ -1544,3 +1545,42 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     pvsystem.pvwatts_ac.assert_called_once_with(pdc,
                                                 **system.inverter_parameters)
     assert out < pdc
+
+
+@fail_on_pvlib_version('0.8')
+def test_deprecated_07():
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.sapm_celltemp(1000, 25, 1)
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.pvsyst_celltemp(1000, 25)
+
+
+@fail_on_pvlib_version('0.8')
+def test__pvsyst_celltemp_translator():
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, 5)
+    assert_allclose(result, 45.137, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(poa_global=900, temp_air=20,
+                                                  wind_speed=5)
+    assert_allclose(result, 45.137, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5)
+    assert_allclose(result, 45.137, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
+                                                  u_c=23.5, u_v=6.25,
+                                                  eta_m=0.1)
+    assert_allclose(result, 33.315, 0.001)
+
+
+@pytest.fixture
+def sapm_default():
+    return temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
+
+
+@fail_on_pvlib_version('0.8')
+def test__sapm_celltemp_translator(sapm_default):
+    result = pvsystem._sapm_celltemp_translator(900, 5, 20,
+                                                'open_rack_glass_glass')
+    assert_allclose(result, 43.509, 3)
+    result = pvsystem._sapm_celltemp_translator(900, 5, temp_air=20,
+                                                model='open_rack_glass_glass')
+    assert_allclose(result, 43.509, 3)

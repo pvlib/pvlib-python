@@ -5,10 +5,7 @@ import pytest
 from pandas.util.testing import assert_series_equal
 from numpy.testing import assert_allclose
 
-from pvlib import pvsystem, temperature
-from pvlib._deprecation import pvlibDeprecationWarning
-
-from conftest import fail_on_pvlib_version
+from pvlib import temperature
 
 
 @pytest.fixture
@@ -91,14 +88,6 @@ def test_pvsyst_cell_series():
     result = temperature.pvsyst_cell(irrads, temps, wind_speed=winds)
     expected = pd.Series([0.0, 23.96551, 5.0], index=times)
     assert_series_equal(expected, result)
-
-
-@fail_on_pvlib_version('0.8')
-def test_deprecated_07():
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_celltemp(1000, 25, 1, -3.47, -0.0594, 3)
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.pvsyst_celltemp(1000, 25)
 
 
 def test__temperature_model_params():

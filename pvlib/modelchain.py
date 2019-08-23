@@ -304,8 +304,7 @@ class ModelChain(object):
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model=None, temp_model=None,
-                 temperature_model=None,
+                 spectral_model=None, temperature_model=None,
                  losses_model='no_loss', name=None, **kwargs):
 
         self.name = name
@@ -323,6 +322,7 @@ class ModelChain(object):
         self.spectral_model = spectral_model
 
         # TODO: deprecated kwarg temp_model. Remove in v0.8
+        temp_model = kwargs.pop('temp_model', None)
         if temp_model is not None:
             warnings.warn('The temp_model keyword argument is deprecated. Use '
                           'temperature_model instead', pvlibDeprecationWarning)
@@ -690,7 +690,7 @@ class ModelChain(object):
     @temperature_model.setter
     def temperature_model(self, model):
         if model is None:
-            self._temperature_model = self.infer_temp_model()
+            self._temperature_model = self.infer_temperature_model()
         elif isinstance(model, str):
             model = model.lower()
             if model == 'sapm':
@@ -702,7 +702,7 @@ class ModelChain(object):
         else:
             self._temperature_model = partial(model, self)
 
-    def infer_temp_model(self):
+    def infer_temperature_model(self):
         params = set(self.system.temperature_model_parameters.keys())
         if set(['a', 'b', 'deltaT']) <= params:
             return self.sapm_temp

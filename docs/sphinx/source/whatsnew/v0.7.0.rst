@@ -27,14 +27,12 @@ API Changes
     - Added the argument `irrad_ref`, default value 1000, to `temperature.sapm_cell`.
     - Renamed `pvsystem.TEMP_MODEL_PARAMS` to `temperature.TEMPERATURE_MODEL_PARAMETERS`.
     - `temperature.TEMPERATURE_MODEL_PARAMETERS` uses dict rather than
-      tuple for a parameter set. dict keys for
-      `temperature.TEMPERATURE_MODEL_PARAMETERS` have changed.
+      tuple for a parameter set.
+    - Parameter set names for `temperature.TEMPERATURE_MODEL_PARAMETERS` have changed.
     - Parameter sets for the SAPM cell temperature model named
       'open_rack_polymer_thinfilm_steel' and '22x_concentrator_tracker'
       are considered obsolete and have been removed.
     - `temperature.TEMPERATURE_MODEL_PARAMETERS` uses dict rather than tuple for a parameter set.
-    - Parameter set names for `temperature.TEMPERATURE_MODEL_PARAMETERS` have changed.
-    - Parameter sets for the SAPM cell temperature model named 'open_rack_polymer_thinfilm_steel' and '22x_concentrator_tracker' are considered obsolete and have been removed.
     - Added attribute `PVSystem.module_type` (str) to record module
       front and back materials, default is `glass_polymer`.
     - Added attribute `PVSystem.temperature_model_parameters` (dict)
@@ -46,18 +44,13 @@ API Changes
       a str which is a valid key for
       `temperature.TEMPERATURE_MODEL_PARAMETERS` for the corresponding
       temperature model.
-    - Implemented `pvsyst` as an option for `ModelChain.temp_model`.
-    - `ModelChain.temp_model` now defaults to `None`. The temperature
+    - `ModelChain.temp_model` renamed to `ModelChain.temperature_model`.
+    - `ModelChain.temperature_model` now defaults to `None`. The temperature
       model can be inferred from `PVSystem.temperature_model_parameters`.
+    - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
     - `modelchain.basic_chain` has a new required argument
       `temperature_model_parameters`.
-    - In `PVSystem.sapm_celltemp` and `PVSystem.pvsyst_celltemp`, changed kwarg `model` to `parameter_set`. `parameter_set` expects a str which is a valid key for `temperature.TEMPERATURE_MODEL_PARAMETERS` for the corresponding temperature model.
-    - `ModelChain.temp_model` renamed to `ModelChain.temperature_model`.
-    - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
-    - `ModelChain.temperature_model` now defaults to `None`. The temperature
-       model can be inferred from
-      `PVSystem.temperature_model_parameters`.
-    - `modelchain.basic_chain` has a new required argument `temperature_model_parameters`. 
+
 
 Enhancements
 ~~~~~~~~~~~~

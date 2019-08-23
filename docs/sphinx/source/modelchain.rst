@@ -447,7 +447,7 @@ function if you wanted to.
 
     mc = ModelChain(pvusa_system, location,
                     dc_model=pvusa_mc_wrapper, ac_model=pvusa_ac_mc,
-                    temp_model=no_loss_temperature,
+                    temperature_model=no_loss_temperature,
                     aoi_model='no_loss', spectral_model='no_loss')
 
 A ModelChain object uses Python’s functools.partial function to assign

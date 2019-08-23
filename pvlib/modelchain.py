@@ -51,7 +51,7 @@ def basic_chain(times, latitude, longitude,
         Module parameters as defined by the SAPM. See pvsystem.sapm for
         details.
 
-    temperature_model_parameters : None, dict or Series, default None.
+    temperature_model_parameters : None, dict or Series.
         Temperature model parameters as defined by the SAPM.
         See temperature.sapm_cell for details.
 
@@ -329,8 +329,8 @@ class ModelChain(object):
             if temperature_model is None:
                 temperature_model = temp_model
             elif temp_model == temperature_model:
-                raise warnings.warn('Provide only one of temperature_model or '
-                                    'temp_model (deprecated).')
+                warnings.warn('Provide only one of temperature_model or '
+                              'temp_model (deprecated).')
             else:
                 raise ValueError('Conflicting values for temperature_model and'
                                  ' temp_model (deprecated). Specify only '

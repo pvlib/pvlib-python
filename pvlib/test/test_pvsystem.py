@@ -1548,7 +1548,7 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
 
 
 @fail_on_pvlib_version('0.8')
-def test_deprecated_07():
+def test_deprecated_08():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_celltemp(1000, 25, 1)
     with pytest.warns(pvlibDeprecationWarning):
@@ -1568,12 +1568,14 @@ def test__pvsyst_celltemp_translator():
                                                   u_c=23.5, u_v=6.25,
                                                   eta_m=0.1)
     assert_allclose(result, 33.315, 0.001)
-
-
-@pytest.fixture
-def sapm_default():
-    return temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
-        'open_rack_glass_glass']
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
+                                                  eta_m=0.1,
+                                                  model_params=[23.5, 6.25])
+    assert_allclose(result, 33.315, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
+                                                  eta_m=0.1,
+                                                  model_params=(23.5, 6.25))
+    assert_allclose(result, 33.315, 0.001)
 
 
 @fail_on_pvlib_version('0.8')
@@ -1583,4 +1585,12 @@ def test__sapm_celltemp_translator(sapm_default):
     assert_allclose(result, 43.509, 3)
     result = pvsystem._sapm_celltemp_translator(900, 5, temp_air=20,
                                                 model='open_rack_glass_glass')
+    assert_allclose(result, 43.509, 3)
+    result = pvsystem._sapm_celltemp_translator(900, 5, 20, sapm_default)
+    assert_allclose(result, 43.509, 3)
+    params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
+    result = pvsystem._sapm_celltemp_translator(900, 5, 20,
+                                                [params['a'], params['b'],
+                                                 params['deltaT']])
     assert_allclose(result, 43.509, 3)

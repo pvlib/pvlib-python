@@ -309,6 +309,20 @@ class ModelChain(object):
 
         self.name = name
         self.system = system
+
+        # TODO: deprecated behavior if PVSystem.temperature_model_parameters
+        # is not specified. Remove in v0.8
+        if self.system.temperature_model_parameters is None:
+            warnings.warn('PVSystem temperature_model_parameters attribute '
+                          'is not assigned. Reverting to deprecated default: '
+                          'the SAPM cell temperature model with parameters '
+                          'representing a glass/glass module in open racking.'
+                          'In the future PVSystem.temperature_model_parameters'
+                          ' will be required', pvlibDeprecationWarning)
+            params = temperature._temperature_model_params('sapm')
+            self.system.temperature_model_parameters = params[
+                'open_rack_glass_glass']
+
         self.location = location
         self.clearsky_model = clearsky_model
         self.transposition_model = transposition_model

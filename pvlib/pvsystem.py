@@ -2026,21 +2026,26 @@ def _sapm_celltemp_translator(*args, **kwargs):
         new_kwargs[old_arg_list[pos]] = args[pos]
     # determine value for new kwarg 'model'
     try:
-        model = new_kwargs['model']
+        param_set = new_kwargs['model']
     except KeyError:
         # 'model' not in positional arguments, check kwargs
         try:
-            model = kwargs['model']
+            param_set = kwargs['model']
             kwargs.pop('model')
         except KeyError:
             # 'model' not in kwargs, use old default value
-            model = 'open_rack_cell_glassback'
-    new_kwargs.update({
-        'a': temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][model]['a'],
-        'b': temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][model]['b'],
-        'deltaT': temperature.TEMPERATURE_MODEL_PARAMETERS[
-            'sapm'][model]['deltaT']
-        })
+            param_set = 'open_rack_glass_glass'
+    if type(param_set) is list:
+        new_kwargs.update({'a': param_set[0],
+                           'b': param_set[1],
+                           'deltaT': param_set[2]})
+    elif type(param_set) is dict:
+        new_kwargs.update(param_set)
+    else:  # string
+        params = temperature._temperature_model_params('sapm')
+        new_kwargs.update({'a': params[param_set]['a'],
+                           'b': params[param_set]['b'],
+                           'deltaT': params[param_set]['deltaT']})
     new_kwargs.update(kwargs)  # kwargs with unchanged names
     new_kwargs['irrad_ref'] = 1000  # default for new kwarg
     # convert old positional arguments to named kwargs
@@ -2064,19 +2069,22 @@ def _pvsyst_celltemp_translator(*args, **kwargs):
         new_kwargs[old_arg_list[pos]] = args[pos]
     # determine value for new kwarg 'model'
     try:
-        model = new_kwargs['model_params']
+        param_set = new_kwargs['model_params']
     except KeyError:
-        # 'model' not in positional arguments, check kwargs
+        # 'model_params' not in positional arguments, check kwargs
         try:
-            model = kwargs['model_params']
+            param_set = kwargs['model_params']
             kwargs.pop('model_params')
         except KeyError:
-            # 'model' not in kwargs, use old default value
-            model = 'freestanding'
-    new_kwargs.update({
-        'u_c': temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][model]['a'],
-        'u_v': temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][model]['b']
-        })
+            # 'model_params' not in kwargs, use old default value
+            param_set = 'freestanding'
+    if type(param_set) in (list, tuple):
+        new_kwargs.update({'u_c': param_set[0],
+                           'u_v': param_set[1]})
+    else:  # string
+        params = temperature._temperature_model_params('pvsyst')
+        new_kwargs.update({'u_c': params[param_set]['u_c'],
+                           'u_v': params[param_set]['u_v']})
     new_kwargs.update(kwargs)  # kwargs with unchanged names
     # convert old positional arguments to named kwargs
     return temperature.pvsyst_cell(**new_kwargs)

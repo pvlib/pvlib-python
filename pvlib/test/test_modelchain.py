@@ -552,6 +552,23 @@ def test_deprecated_07():
                    ac_model='snlinverter')
 
 
+@fail_on_pvlib_version('0.8')
+def test_deprecated_08():
+    # explicit system creation call because fail_on_pvlib_version
+    # does not support decorators.
+    # does not matter what the parameters are, just fake it until we make it
+    module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
+                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
+    # do not assign PVSystem.temperature_model_parameters
+    system = PVSystem(module_parameters=module_parameters)
+    with pytest.warns(pvlibDeprecationWarning):
+        ModelChain(system, location,
+                   dc_model='desoto',
+                   aoi_model='no_loss', spectral_model='no_loss',
+                   temperature_model='sapm',
+                   ac_model='snlinverter')
+
+
 @requires_tables
 @fail_on_pvlib_version('0.7')
 def test_deprecated_clearsky_07():

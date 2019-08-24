@@ -149,3 +149,31 @@ except ImportError:
 
 requires_pvfactors = pytest.mark.skipif(not has_pvfactors,
                                         reason='requires pvfactors')
+
+
+@pytest.fixture(scope='function')
+def cec_inverter_parameters():
+    """
+    Define some CEC inverter parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'ABB: MICRO-0.25-I-OUTD-US-208 208V [CEC 2014]',
+        'Vac': 208.0,
+        'Paco': 250.0,
+        'Pdco': 259.5220505,
+        'Vdco': 40.24260317,
+        'Pso': 1.771614224,
+        'C0': -2.48e-5,
+        'C1': -9.01e-5,
+        'C2': 6.69e-4,
+        'C3': -0.0189,
+        'Pnt': 0.02,
+        'Vdcmax': 65.0,
+        'Idcmax': 10.0,
+        'Mppt_low': 20.0,
+        'Mppt_high': 50.0,
+    }
+    return parameters

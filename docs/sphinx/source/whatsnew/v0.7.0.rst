@@ -49,6 +49,7 @@ API Changes
     - `ModelChain.temps` attribute renamed to `ModelChain.cell_temperature`, and its datatype is now `numeric` rather than `DataFrame`.
     - `ModelChain.temperature_model` now defaults to `None`. The temperature
       model can be inferred from `PVSystem.temperature_model_parameters`.
+    - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain` defaults to old behavior, using the SAPM temperautre model with parameters for a glass/glass model on open racking. This behavior is deprecated, and will be removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will be required for `ModelChain`.
     - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
     - `modelchain.basic_chain` has a new required argument
       `temperature_model_parameters`.

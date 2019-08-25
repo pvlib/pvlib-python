@@ -2018,7 +2018,7 @@ def sapm(effective_irradiance, temp_cell, module):
 
 
 def _sapm_celltemp_translator(*args, **kwargs):
-    #TODO: remove this function after deprecation period for sapm_celltemp
+    # TODO: remove this function after deprecation period for sapm_celltemp
     new_kwargs = {}
     # convert position arguments to kwargs
     old_arg_list = ['poa_global', 'wind_speed', 'temp_air', 'model']
@@ -2060,7 +2060,7 @@ sapm_celltemp = deprecated('0.7', alternative='temperature.sapm_cell',
 
 
 def _pvsyst_celltemp_translator(*args, **kwargs):
-    #TODO: remove this function after deprecation period for pvsyst_celltemp
+    # TODO: remove this function after deprecation period for pvsyst_celltemp
     new_kwargs = {}
     # convert position arguments to kwargs
     old_arg_list = ['poa_global', 'temp_air', 'wind_speed', 'eta_m',

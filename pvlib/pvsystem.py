@@ -2027,6 +2027,7 @@ def _sapm_celltemp_translator(*args, **kwargs):
     # determine value for new kwarg 'model'
     try:
         param_set = new_kwargs['model']
+        new_kwargs.pop('model')  # model is not a new kwarg
     except KeyError:
         # 'model' not in positional arguments, check kwargs
         try:
@@ -2068,6 +2069,7 @@ def _pvsyst_celltemp_translator(*args, **kwargs):
     # determine value for new kwarg 'model'
     try:
         param_set = new_kwargs['model_params']
+        new_kwargs.pop('model_params')  # model_params is not a new kwarg
     except KeyError:
         # 'model_params' not in positional arguments, check kwargs
         try:

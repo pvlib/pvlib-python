@@ -2042,10 +2042,8 @@ def _sapm_celltemp_translator(*args, **kwargs):
     elif type(param_set) is dict:
         new_kwargs.update(param_set)
     else:  # string
-        params = temperature._temperature_model_params('sapm')
-        new_kwargs.update({'a': params[param_set]['a'],
-                           'b': params[param_set]['b'],
-                           'deltaT': params[param_set]['deltaT']})
+        params = temperature._temperature_model_params('sapm', param_set)
+        new_kwargs.update(params)
     new_kwargs.update(kwargs)  # kwargs with unchanged names
     new_kwargs['irrad_ref'] = 1000  # default for new kwarg
     # convert old positional arguments to named kwargs
@@ -2082,9 +2080,8 @@ def _pvsyst_celltemp_translator(*args, **kwargs):
         new_kwargs.update({'u_c': param_set[0],
                            'u_v': param_set[1]})
     else:  # string
-        params = temperature._temperature_model_params('pvsyst')
-        new_kwargs.update({'u_c': params[param_set]['u_c'],
-                           'u_v': params[param_set]['u_v']})
+        params = temperature._temperature_model_params('pvsyst', param_set)
+        new_kwargs.update(params)
     new_kwargs.update(kwargs)  # kwargs with unchanged names
     # convert old positional arguments to named kwargs
     return temperature.pvsyst_cell(**new_kwargs)

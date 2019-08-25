@@ -347,9 +347,9 @@ class ModelChain(object):
                           'representing a glass/glass module in open racking.'
                           'In the future PVSystem.temperature_model_parameters'
                           ' will be required', pvlibDeprecationWarning)
-            params = temperature._temperature_model_params('sapm')
-            self.system.temperature_model_parameters = params[
-                'open_rack_glass_glass']
+            params = temperature._temperature_model_params(
+                'sapm', 'open_rack_glass_glass')
+            self.system.temperature_model_parameters = params
 
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy

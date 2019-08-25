@@ -1579,7 +1579,7 @@ def test__pvsyst_celltemp_translator():
 
 
 @fail_on_pvlib_version('0.8')
-def test__sapm_celltemp_translator(sapm_default):
+def test__sapm_celltemp_translator():
     result = pvsystem._sapm_celltemp_translator(900, 5, 20,
                                                 'open_rack_glass_glass')
     assert_allclose(result, 43.509, 3)

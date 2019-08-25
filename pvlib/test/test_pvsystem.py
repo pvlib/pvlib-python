@@ -1586,10 +1586,10 @@ def test__sapm_celltemp_translator():
     result = pvsystem._sapm_celltemp_translator(900, 5, temp_air=20,
                                                 model='open_rack_glass_glass')
     assert_allclose(result, 43.509, 3)
-    result = pvsystem._sapm_celltemp_translator(900, 5, 20, sapm_default)
-    assert_allclose(result, 43.509, 3)
     params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
         'open_rack_glass_glass']
+    result = pvsystem._sapm_celltemp_translator(900, 5, 20, params)
+    assert_allclose(result, 43.509, 3)
     result = pvsystem._sapm_celltemp_translator(900, 5, 20,
                                                 [params['a'], params['b'],
                                                  params['deltaT']])

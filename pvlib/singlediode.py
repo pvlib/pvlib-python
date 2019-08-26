@@ -94,14 +94,17 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of series cells ``Ns``
-    d2mutau : numeric
-        PVSyst thin-film recombination parameter that is the ratio of thickness
-        of the intrinsic layer squared :math:`d^2` and the diffusion length of
-        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
-    NsVbi : numeric
-        PVSyst thin-film recombination parameter that is the product of the PV
-        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
-        the intrinsic layer, in volts [V], defaults to ``np.inf``
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon '
+        '(a-Si) modules that accounts for recombination current in the '
+        'intrinsic layer. The value is the ratio of instrinsic layer thickness'
+        ' squared :math:`d^2` to the diffusion length of charge carriers '
+        ':math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon '
+        '(a-Si) modules that is the product of the PV module number of series '
+        'cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.'
+        '[V]'
     gradients : bool
         False returns only I, V, and P. True also returns gradients
 
@@ -116,8 +119,8 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     Notes
     -----
     The PVSyst thin-film recombination losses parameters ``d2mutau`` and
-    ``NsVbi`` are only applied to cadmium-telluride (CdTe) and amorphous-
-    silicon (a:Si) PV modules, [2]_, [3]_. The builtin voltage :math:`V_{bi}`
+    ``NsVbi`` should only be applied to cadmium-telluride (CdTe) and amorphous-
+    silicon (a-Si) PV modules, [2]_, [3]_. The builtin voltage :math:`V_{bi}`
     should account for all junctions. For example: tandem and triple junction
     cells would have builtin voltages of 1.8[V] and 2.7[V] respectively, based
     on the default of 0.9[V] for a single junction. The parameter ``NsVbi``
@@ -192,14 +195,17 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
-    d2mutau : numeric
-        PVSyst thin-film recombination parameter that is the ratio of thickness
-        of the intrinsic layer squared :math:`d^2` and the diffusion length of
-        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
-    NsVbi : numeric
-        PVSyst thin-film recombination parameter that is the product of the PV
-        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
-        the intrinsic layer, in volts [V], defaults to ``np.inf``
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon '
+        '(a-Si) modules that accounts for recombination current in the '
+        'intrinsic layer. The value is the ratio of instrinsic layer thickness'
+        ' squared :math:`d^2` to the diffusion length of charge carriers '
+        ':math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon '
+        '(a-Si) modules that is the product of the PV module number of series '
+        'cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.'
+        '[V]'
     method : str
         one of two optional search methods: either ``'brentq'``, a reliable and
         bounded method or ``'newton'`` which is the default.
@@ -263,14 +269,17 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
-    d2mutau : numeric
-        PVSyst thin-film recombination parameter that is the ratio of thickness
-        of the intrinsic layer squared :math:`d^2` and the diffusion length of
-        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
-    NsVbi : numeric
-        PVSyst thin-film recombination parameter that is the product of the PV
-        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
-        the intrinsic layer, in volts [V], defaults to ``np.inf``
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon '
+        '(a-Si) modules that accounts for recombination current in the '
+        'intrinsic layer. The value is the ratio of instrinsic layer thickness'
+        ' squared :math:`d^2` to the diffusion length of charge carriers '
+        ':math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon '
+        '(a-Si) modules that is the product of the PV module number of series '
+        'cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.'
+        '[V]'
     method : str
         one of two optional search methods: either ``'brentq'``, a reliable and
         bounded method or ``'newton'`` which is the default.
@@ -331,14 +340,17 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
-    d2mutau : numeric
-        PVSyst thin-film recombination parameter that is the ratio of thickness
-        of the intrinsic layer squared :math:`d^2` and the diffusion length of
-        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
-    NsVbi : numeric
-        PVSyst thin-film recombination parameter that is the product of the PV
-        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
-        the intrinsic layer, in volts [V], defaults to ``np.inf``
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon '
+        '(a-Si) modules that accounts for recombination current in the '
+        'intrinsic layer. The value is the ratio of instrinsic layer thickness'
+        ' squared :math:`d^2` to the diffusion length of charge carriers '
+        ':math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon '
+        '(a-Si) modules that is the product of the PV module number of series '
+        'cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.'
+        '[V]'
     method : str
         one of two optional search methods: either ``'brentq'``, a reliable and
         bounded method or ``'newton'`` which is the default.

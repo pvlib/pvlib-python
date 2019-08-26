@@ -581,7 +581,7 @@ def test_deprecated_08():
                    temperature_model='pvsyst',
                    temp_model='sapm',
                    ac_model='snlinverter')
-    with pytest.warns():
+    with pytest.warns(UserWarning):
         ModelChain(system, location,
                    dc_model='desoto',
                    aoi_model='no_loss', spectral_model='no_loss',

@@ -354,7 +354,7 @@ class ModelChain(object):
                 params = temperature._temperature_model_params(
                     'sapm', 'open_rack_glass_glass')
                 self.system.temperature_model_parameters = params
-            elif self.temperature_model==self.sapm_pvsyst:
+            elif self.temperature_model==self.pvsyst_temp:
                 raise ValueError(
                     'Pvsyst temperature model is specified but no temperature '
                     'model parameters are provided. Assign temperature model '

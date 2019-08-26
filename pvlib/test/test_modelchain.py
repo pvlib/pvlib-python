@@ -565,7 +565,33 @@ def test_deprecated_08():
         ModelChain(system, location,
                    dc_model='desoto',
                    aoi_model='no_loss', spectral_model='no_loss',
+                   temp_model='sapm',
+                   ac_model='snlinverter')
+    with pytest.warns(pvlibDeprecationWarning):
+        ModelChain(system, location,
+                   dc_model='desoto',
+                   aoi_model='no_loss', spectral_model='no_loss',
                    temperature_model='sapm',
+                   temp_model='sapm',
+                   ac_model='snlinverter')
+    with pytest.raises(ValueError):
+        ModelChain(system, location,
+                   dc_model='desoto',
+                   aoi_model='no_loss', spectral_model='no_loss',
+                   temperature_model='pvsyst',
+                   temp_model='sapm',
+                   ac_model='snlinverter')
+    with pytest.warns(pvlibDeprecationWarning):
+        ModelChain(system, location,
+                   dc_model='desoto',
+                   aoi_model='no_loss', spectral_model='no_loss',
+                   temperature_model='sapm',
+                   ac_model='snlinverter')
+    with pytest.raises(ValueError):
+        ModelChain(system, location,
+                   dc_model='desoto',
+                   aoi_model='no_loss', spectral_model='no_loss',
+                   temperature_model='pvsyst',
                    ac_model='snlinverter')
 
 
@@ -716,7 +742,7 @@ def test_ModelChain___repr__(system, location, strategy, strategy_str):
         '  ac_model: snlinverter',
         '  aoi_model: sapm_aoi_loss',
         '  spectral_model: sapm_spectral_loss',
-        '  temperature_model: sapm_temp',
+        '  temperature_model: None',
         '  losses_model: no_extra_losses'
     ])
 

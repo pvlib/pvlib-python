@@ -281,7 +281,7 @@ class ModelChain(object):
         'first_solar', 'no_loss'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
 
-    temperature_model: str or function, default 'sapm'
+    temperature_model: None, str or function, default None
         Valid strings are 'sapm' and 'pvsyst'. The ModelChain instance will be
         passed as the first argument to a user-defined function.
 
@@ -333,24 +333,32 @@ class ModelChain(object):
                 warnings.warn('Provide only one of temperature_model or '
                               'temp_model (deprecated).')
             else:
-                raise ValueError('Conflicting values for temperature_model and'
-                                 ' temp_model (deprecated). Specify only '
-                                 'temperature_model.')
+                raise ValueError('Conflicting values for temperature_model {}'
+                                 ' and temp_model (deprecated) {}. Specify '
+                                 'only temperature_model.'.format(
+                                      temperature_model, temp_model))
         self.temperature_model = temperature_model
 
         # TODO: deprecated behavior if PVSystem.temperature_model_parameters
         # is not specified. Remove in v0.8
         if not any(self.system.temperature_model_parameters):
             warnings.warn('PVSystem temperature_model_parameters attribute '
-                          'is not assigned. Reverting to deprecated default: '
-                          'the SAPM cell temperature model with parameters '
-                          'representing a glass/glass module in open racking.'
-                          'In the future PVSystem.temperature_model_parameters'
-                          ' will be required', pvlibDeprecationWarning)
-            params = temperature._temperature_model_params(
-                'sapm', 'open_rack_glass_glass')
-            self.system.temperature_model_parameters = params
-
+                          'is not assigned.')
+            if self.temperature_model=='sapm':
+                warnings.warn(
+                    'Reverting to deprecated default SAPM cell temperature '
+                    'model parameters representing a glass/glass module in '
+                    'open racking. In the future '
+                    'PVSystem.temperature_model_parameters will be required',
+                    pvlibDeprecationWarning)
+                params = temperature._temperature_model_params(
+                    'sapm', 'open_rack_glass_glass')
+                self.system.temperature_model_parameters = params
+            elif self.temperature_model=='pvsyst':
+                raise ValueError(
+                    'ModelChain assigned Pvsyst temperature model but no '
+                    'parameters provided. Assign temperature model parameters '
+                    'to PVSystem.temperature_model_parameters')
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
 
@@ -707,9 +715,9 @@ class ModelChain(object):
             self._temperature_model = self.infer_temperature_model()
         elif isinstance(model, str):
             model = model.lower()
-            if model == 'sapm':
+            if model=='sapm':
                 self._temperature_model = self.sapm_temp
-            elif model == 'pvsyst':
+            elif model=='pvsyst':
                 self._temperature_model = self.pvsyst_temp
             else:
                 raise ValueError(model + ' is not a valid temperature model')

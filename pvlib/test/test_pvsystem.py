@@ -1559,6 +1559,9 @@ def test_deprecated_08():
 def test__pvsyst_celltemp_translator():
     result = pvsystem._pvsyst_celltemp_translator(900, 20, 5)
     assert_allclose(result, 45.137, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, 5, 0.1, 0.9,
+                                                  [29.0, 0.0])
+    assert_allclose(result, 45.137, 0.001)
     result = pvsystem._pvsyst_celltemp_translator(poa_global=900, temp_air=20,
                                                   wind_speed=5)
     assert_allclose(result, 45.137, 0.001)

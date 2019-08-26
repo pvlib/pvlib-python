@@ -342,10 +342,10 @@ class ModelChain(object):
         # TODO: deprecated behavior if PVSystem.temperature_model_parameters
         # is not specified. Remove in v0.8
         if not any(self.system.temperature_model_parameters):
-            warnings.warn('PVSystem temperature_model_parameters attribute '
-                          'is not assigned.')
             if self.temperature_model=='sapm':
                 warnings.warn(
+                    'SAPM temperature model is specified but PVSystem '
+                    'temperature_model_parameters attribute is not assigned.'
                     'Reverting to deprecated default SAPM cell temperature '
                     'model parameters representing a glass/glass module in '
                     'open racking. In the future '
@@ -356,9 +356,9 @@ class ModelChain(object):
                 self.system.temperature_model_parameters = params
             elif self.temperature_model=='pvsyst':
                 raise ValueError(
-                    'ModelChain assigned Pvsyst temperature model but no '
-                    'parameters provided. Assign temperature model parameters '
-                    'to PVSystem.temperature_model_parameters')
+                    'Pvsyst temperature model is specified but no temperature '
+                    'model parameters are provided. Assign temperature model '
+                    'parameters to PVSystem.temperature_model_parameters')
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
 

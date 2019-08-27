@@ -274,6 +274,15 @@ def pvsyst_module_params():
     return module_parameters
 
 
+def test_retrieve_sam_raise_no_parameters():
+    """
+    Raise an exception if no parameters are provided to `retrieve_sam()`.
+    """
+    with pytest.raises(ValueError) as error:
+        pvsystem.retrieve_sam()
+    assert 'A name or path must be provided!' == str(error.value)
+
+
 def test_sapm(sapm_module_params):
 
     times = pd.date_range(start='2015-01-01', periods=5, freq='12H')

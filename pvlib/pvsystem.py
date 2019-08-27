@@ -1717,15 +1717,17 @@ def retrieve_sam(name=None, path=None):
     path : None or string, default None
         Path to the SAM file. May also be a URL.
 
-    If both name and path are None, a dialogue will open allowing the
-    user to select a file.
-
     Returns
     -------
     samfile : DataFrame
         A DataFrame containing all the elements of the desired database.
         Each column represents a module or inverter, and a specific
         dataset can be retrieved by the command
+
+    Raises
+    ------
+    ValueError
+        If no name or path is provided.
 
     Notes
     -----
@@ -1781,11 +1783,7 @@ def retrieve_sam(name=None, path=None):
         else:
             csvdata = path
     elif name is None and path is None:
-        import tkinter
-        from tkinter.filedialog import askopenfilename
-
-        tkinter.Tk().withdraw()
-        csvdata = askopenfilename()
+        raise ValueError("A name or path must be provided!")
 
     return _parse_raw_sam_df(csvdata)
 

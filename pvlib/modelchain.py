@@ -322,23 +322,6 @@ class ModelChain(object):
         self.aoi_model = aoi_model
         self.spectral_model = spectral_model
 
-        # TODO: deprecated kwarg temp_model. Remove in v0.8
-        temp_model = kwargs.pop('temp_model', None)
-        if temp_model is not None:
-            warnings.warn('The temp_model keyword argument is deprecated. Use '
-                          'temperature_model instead', pvlibDeprecationWarning)
-            if temperature_model is None:
-                temperature_model = temp_model
-            elif temp_model == temperature_model:
-                warnings.warn('Provide only one of temperature_model or '
-                              'temp_model (deprecated).')
-            else:
-                raise ValueError('Conflicting values for temperature_model {}'
-                                 ' and temp_model (deprecated) {}. Specify '
-                                 'only temperature_model.'.format(
-                                      temperature_model, temp_model))
-        self.temperature_model = temperature_model
-
         # TODO: deprecated behavior if PVSystem.temperature_model_parameters
         # is not specified. Remove in v0.8
         if not any(self.system.temperature_model_parameters):
@@ -359,6 +342,24 @@ class ModelChain(object):
                     'Pvsyst temperature model is specified but no temperature '
                     'model parameters are provided. Assign temperature model '
                     'parameters to PVSystem.temperature_model_parameters')
+
+        # TODO: deprecated kwarg temp_model. Remove in v0.8
+        temp_model = kwargs.pop('temp_model', None)
+        if temp_model is not None:
+            warnings.warn('The temp_model keyword argument is deprecated. Use '
+                          'temperature_model instead', pvlibDeprecationWarning)
+            if temperature_model is None:
+                temperature_model = temp_model
+            elif temp_model == temperature_model:
+                warnings.warn('Provide only one of temperature_model or '
+                              'temp_model (deprecated).')
+            else:
+                raise ValueError('Conflicting values for temperature_model {}'
+                                 ' and temp_model (deprecated) {}. Specify '
+                                 'only temperature_model.'.format(
+                                      temperature_model, temp_model))
+        self.temperature_model = temperature_model
+
 
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy

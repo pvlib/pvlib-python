@@ -567,6 +567,7 @@ def test_deprecated_08():
                    aoi_model='no_loss', spectral_model='no_loss',
                    temp_model='sapm',
                    ac_model='snlinverter')
+    system = PVSystem(module_parameters=module_parameters)
     with pytest.warns(pvlibDeprecationWarning):
         ModelChain(system, location,
                    dc_model='desoto',
@@ -574,6 +575,7 @@ def test_deprecated_08():
                    temperature_model='sapm',
                    temp_model='sapm',
                    ac_model='snlinverter')
+    system = PVSystem(module_parameters=module_parameters)
     with pytest.raises(ValueError):
         ModelChain(system, location,
                    dc_model='desoto',
@@ -581,12 +583,14 @@ def test_deprecated_08():
                    temperature_model='pvsyst',
                    temp_model='sapm',
                    ac_model='snlinverter')
+    system = PVSystem(module_parameters=module_parameters)
     with pytest.warns(pvlibDeprecationWarning):
         ModelChain(system, location,
                    dc_model='desoto',
                    aoi_model='no_loss', spectral_model='no_loss',
                    temperature_model='sapm',
                    ac_model='snlinverter')
+    system = PVSystem(module_parameters=module_parameters)
     with pytest.raises(ValueError):
         ModelChain(system, location,
                    dc_model='desoto',

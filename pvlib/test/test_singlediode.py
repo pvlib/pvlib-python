@@ -4,7 +4,8 @@ testing single-diode methods using JW Bishop 1988
 
 import numpy as np
 from pvlib import pvsystem
-from pvlib.singlediode import bishop88, estimate_voc, VOLTAGE_BUILTIN
+from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
+                               bishop88, bishop88_i_from_v, bishop88_v_from_i)
 import pytest
 from conftest import requires_scipy
 
@@ -153,9 +154,13 @@ def get_pvsyst_fs_495():
         'temp_ref': 25, 'irrad_ref': 1000, 'I_L_ref': 1.5743233463848496
     }
 
+# DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
 
+
+@requires_scipy
 @pytest.mark.parametrize(
     'poa, temp_cell, expected, tol', [
+        # reference conditions
         (
             get_pvsyst_fs_495()['irrad_ref'],
             get_pvsyst_fs_495()['temp_ref'],
@@ -167,9 +172,21 @@ def get_pvsyst_fs_495():
             },
             (5e-4, 0.04)
         ),
-        (POA, TCELL, {'pmp': 76.26, 'isc': 1.387, 'voc': 79.29}, (1e-3, 1e-3))]
-)  # DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
-def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
+        # other conditions
+        (
+            POA,
+            TCELL,
+            {
+                'pmp': 76.262,
+                'isc': 1.3868,
+                'voc': 79.292
+            },
+            (1e-4, 1e-4)
+        )
+    ]
+)
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     # first evaluate PVSyst model with thin-film recombination loss current
@@ -199,9 +216,30 @@ def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
     )
     # test max power
     assert np.isclose(max(pvsyst[2]), expected['pmp'], *tol)
+
     # test short circuit current
     isc_pvsyst = np.interp(0, pvsyst[1], pvsyst[0])
     assert np.isclose(isc_pvsyst, expected['isc'], *tol)
-    # test open circuit current
+
+    # test open circuit voltage
     voc_pvsyst = np.interp(0, pvsyst[0][::-1], pvsyst[1][::-1])
     assert np.isclose(voc_pvsyst, expected['voc'], *tol)
+
+    # repeat tests as above with specialized bishop88 functions
+    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
+             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
+
+    mpp_88 = bishop88_mpp(*x, **y, method=method)
+    assert np.isclose(mpp_88[2], expected['pmp'], *tol)
+
+    isc_88 = bishop88_i_from_v(0, *x, **y, method=method)
+    assert np.isclose(isc_88, expected['isc'], *tol)
+
+    voc_88 = bishop88_v_from_i(0, *x, **y, method=method)
+    assert np.isclose(voc_88, expected['voc'], *tol)
+
+    ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method)
+    assert np.isclose(ioc_88, 0.0, *tol)
+
+    vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method)
+    assert np.isclose(vsc_88, 0.0, *tol)

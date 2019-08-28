@@ -14,6 +14,8 @@ Enhancements
 ~~~~~~~~~~~~
 * Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
   and :py:func:`pvlib.pvsystem.iam_interp`. (:issue:`751`)
+* Added recombination current parameters to bishop88 single-diode functions and also
+  to :py:func:`pvlib.pvsystem.max_power_point`. (:issue:`762`)
 
 Bug fixes
 ~~~~~~~~~

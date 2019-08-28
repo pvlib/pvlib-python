@@ -185,8 +185,6 @@ def get_pvsyst_fs_495():
         )
     ]
 )
-
-
 @pytest.mark.parametrize('method', ['newton', 'brentq'])
 def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""

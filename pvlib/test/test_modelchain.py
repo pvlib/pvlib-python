@@ -30,26 +30,23 @@ def system(sam_data, cec_inverter_parameters):
 
 
 @pytest.fixture
-def cec_dc_snl_ac_system(sam_data, cec_inverter_parameters):
-    modules = sam_data['cecmod']
-    module = 'Canadian_Solar_CS5P_220M'
-    module_parameters = modules[module].copy()
+def cec_dc_snl_ac_system(cec_module_cs5p_220m, cec_inverter_parameters):
+    module_parameters = cec_module_cs5p_220m.copy()
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
-                      module=module,
+                      module=module_parameters['Name'],
                       module_parameters=module_parameters,
                       inverter_parameters=cec_inverter_parameters)
     return system
 
 
 @pytest.fixture
-def cec_dc_native_snl_ac_system(sam_data, cec_inverter_parameters):
-    module = 'Canadian_Solar_CS5P_220M'
-    module_parameters = sam_data['cecmod'][module].copy()
+def cec_dc_native_snl_ac_system(cec_module_cs5p_220m, cec_inverter_parameters):
+    module_parameters = cec_module_cs5p_220m.copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
-                      module=module,
+                      module=module_parameters['Name'],
                       module_parameters=module_parameters,
                       inverter_parameters=cec_inverter_parameters)
     return system
@@ -68,17 +65,15 @@ def pvsyst_dc_snl_ac_system(pvsyst_module_params, cec_inverter_parameters):
 
 
 @pytest.fixture
-def cec_dc_adr_ac_system(sam_data):
-    modules = sam_data['cecmod']
-    module = 'Canadian_Solar_CS5P_220M'
-    module_parameters = modules[module].copy()
+def cec_dc_adr_ac_system(sam_data, cec_module_cs5p_220m):
+    module_parameters = cec_module_cs5p_220m.copy()
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
     inverters = sam_data['adrinverter']
     inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
-                      module=module,
+                      module=module_parameters['Name'],
                       module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system

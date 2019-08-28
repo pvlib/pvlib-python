@@ -234,7 +234,6 @@ def test_iam_interp():
 @pytest.fixture(scope="session")
 def sam_data():
     data = {}
-    data['cecmod'] = pvsystem.retrieve_sam('cecmod')
     data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
     data['adrinverter'] = pvsystem.retrieve_sam('adrinverter')
     return data

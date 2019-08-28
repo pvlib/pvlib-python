@@ -273,6 +273,69 @@ def test_retrieve_sam_raise_no_parameters():
     assert 'A name or path must be provided!' == str(error.value)
 
 
+def test_retrieve_sam_cecmod():
+    """
+    Test the expected data is retrieved from the CEC module database. In
+    particular, check for a known module in the database and check for the
+    expected keys for that module.
+    """
+    data = pvsystem.retrieve_sam('cecmod')
+    keys = [
+        'BIPV',
+        'Date',
+        'T_NOCT',
+        'A_c',
+        'N_s',
+        'I_sc_ref',
+        'V_oc_ref',
+        'I_mp_ref',
+        'V_mp_ref',
+        'alpha_sc',
+        'beta_oc',
+        'a_ref',
+        'I_L_ref',
+        'I_o_ref',
+        'R_s',
+        'R_sh_ref',
+        'Adjust',
+        'gamma_r',
+        'Version',
+        'PTC',
+        'Technology',
+    ]
+    module = 'iTek_iT_300_HE'
+    assert module in data
+    assert set(data[module].keys()) == set(keys)
+
+
+def test_retrieve_sam_cecinverter():
+    """
+    Test the expected data is retrieved from the CEC inverter database. In
+    particular, check for a known inverter in the database and check for the
+    expected keys for that inverter.
+    """
+    data = pvsystem.retrieve_sam('cecinverter')
+    keys = [
+        'Vac',
+        'Paco',
+        'Pdco',
+        'Vdco',
+        'Pso',
+        'C0',
+        'C1',
+        'C2',
+        'C3',
+        'Pnt',
+        'Vdcmax',
+        'Idcmax',
+        'Mppt_low',
+        'Mppt_high',
+    ]
+    inverter = 'Solectria__PVI_5300_5300_P_208V__CEC_2008_'
+    assert inverter in data
+    assert set(data[inverter].keys()) == set(keys)
+
+
 def test_sapm(sapm_module_params):
 
     times = pd.date_range(start='2015-01-01', periods=5, freq='12H')

@@ -248,14 +248,6 @@ def sapm_module_params(sam_data):
     return module_parameters
 
 
-@pytest.fixture(scope="session")
-def cec_module_params(sam_data):
-    modules = sam_data['cecmod']
-    module = 'Example_Module'
-    module_parameters = modules[module]
-    return module_parameters
-
-
 @pytest.fixture()
 def pvsyst_module_params():
     module_parameters = {}
@@ -1008,9 +1000,7 @@ def test_singlediode_array():
 
 
 @requires_scipy
-def test_singlediode_floats(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
+def test_singlediode_floats():
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, method='lambertw')
     expected = {'i_xx': 4.2498,
                 'i_mp': 6.1275,

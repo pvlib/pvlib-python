@@ -177,3 +177,38 @@ def cec_inverter_parameters():
         'Mppt_high': 50.0,
     }
     return parameters
+
+
+@pytest.fixture(scope='function')
+def cec_module_params():
+    """
+    Define some CEC module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'Example Module',
+        'BIPV': 'Y',
+        'Date': '4/28/2008',
+        'T_NOCT': 65,
+        'A_c': 0.67,
+        'N_s': 18,
+        'I_sc_ref': 7.5,
+        'V_oc_ref': 10.4,
+        'I_mp_ref': 6.6,
+        'V_mp_ref': 8.4,
+        'alpha_sc': 0.003,
+        'beta_oc': -0.04,
+        'a_ref': 0.473,
+        'I_L_ref': 7.545,
+        'I_o_ref': 1.94e-09,
+        'R_s': 0.094,
+        'R_sh_ref': 15.72,
+        'Adjust': 10.6,
+        'gamma_r': -0.5,
+        'Version': 'MM105',
+        'PTC': 48.9,
+        'Technology': 'Multi-c-Si',
+    }
+    return parameters

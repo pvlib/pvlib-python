@@ -230,15 +230,6 @@ def test_iam_interp():
         pvsystem.iam_interp(0.0, [0, 90], [1, -1])
 
 
-# if this completes successfully we'll be able to do more tests below.
-@pytest.fixture(scope="session")
-def sam_data():
-    data = {}
-    data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
-    data['adrinverter'] = pvsystem.retrieve_sam('adrinverter')
-    return data
-
-
 @pytest.fixture(scope="session")
 def sapm_module_params(sam_data):
     modules = sam_data['sandiamod']

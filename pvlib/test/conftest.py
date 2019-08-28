@@ -151,6 +151,14 @@ requires_pvfactors = pytest.mark.skipif(not has_pvfactors,
                                         reason='requires pvfactors')
 
 
+@pytest.fixture(scope="session")
+def sam_data():
+    data = {}
+    data['sandiamod'] = pvlib.pvsystem.retrieve_sam('sandiamod')
+    data['adrinverter'] = pvlib.pvsystem.retrieve_sam('adrinverter')
+    return data
+
+
 @pytest.fixture(scope='function')
 def cec_inverter_parameters():
     """

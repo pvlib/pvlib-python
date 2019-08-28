@@ -185,7 +185,10 @@ def get_pvsyst_fs_495():
         )
     ]
 )
-def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
+
+
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     # first evaluate PVSyst model with thin-film recombination loss current
@@ -228,33 +231,17 @@ def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
     y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
              NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
 
-    mpp_88 = bishop88_mpp(*x, **y, method='newton')
+    mpp_88 = bishop88_mpp(*x, **y, method=method)
     assert np.isclose(mpp_88[2], expected['pmp'], *tol)
 
-    isc_88 = bishop88_i_from_v(0, *x, **y, method='newton')
+    isc_88 = bishop88_i_from_v(0, *x, **y, method=method)
     assert np.isclose(isc_88, expected['isc'], *tol)
 
-    voc_88 = bishop88_v_from_i(0, *x, **y, method='newton')
+    voc_88 = bishop88_v_from_i(0, *x, **y, method=method)
     assert np.isclose(voc_88, expected['voc'], *tol)
 
-    ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method='newton')
+    ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method)
     assert np.isclose(ioc_88, 0.0, *tol)
 
-    vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method='newton')
-    assert np.isclose(vsc_88, 0.0, *tol)
-
-    # now repeat with brentq
-    mpp_88 = bishop88_mpp(*x, **y, method='brentq')
-    assert np.isclose(mpp_88[2], expected['pmp'], *tol)
-
-    isc_88 = bishop88_i_from_v(0, *x, **y, method='brentq')
-    assert np.isclose(isc_88, expected['isc'], *tol)
-
-    voc_88 = bishop88_v_from_i(0, *x, **y, method='brentq')
-    assert np.isclose(voc_88, expected['voc'], *tol)
-
-    ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method='brentq')
-    assert np.isclose(ioc_88, 0.0, *tol)
-
-    vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method='brentq')
+    vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method)
     assert np.isclose(vsc_88, 0.0, *tol)

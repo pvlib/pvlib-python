@@ -247,3 +247,73 @@ def cec_module_cs5p_220m():
         'Technology': 'Mono-c-Si',
     }
     return parameters
+
+
+@pytest.fixture(scope='function')
+def cec_module_spr_e20_327():
+    """
+    Define SunPower SPR-E20-327 module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'SunPower SPR-E20-327',
+        'BIPV': 'N',
+        'Date': '1/14/2013',
+        'T_NOCT': 46,
+        'A_c': 1.631,
+        'N_s': 96,
+        'I_sc_ref': 6.46,
+        'V_oc_ref': 65.1,
+        'I_mp_ref': 5.98,
+        'V_mp_ref': 54.7,
+        'alpha_sc': 0.004522,
+        'beta_oc': -0.23176,
+        'a_ref': 2.6868,
+        'I_L_ref': 6.468,
+        'I_o_ref': 1.88e-10,
+        'R_s': 0.37,
+        'R_sh_ref': 298.13,
+        'Adjust': -0.1862,
+        'gamma_r': -0.386,
+        'Version': 'NRELv1',
+        'PTC': 301.4,
+        'Technology': 'Mono-c-Si',
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def cec_module_fs_495():
+    """
+    Define First Solar FS-495 module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'First Solar FS-495',
+        'BIPV': 'N',
+        'Date': '9/18/2014',
+        'T_NOCT': 44.6,
+        'A_c': 0.72,
+        'N_s': 216,
+        'I_sc_ref': 1.55,
+        'V_oc_ref': 86.5,
+        'I_mp_ref': 1.4,
+        'V_mp_ref': 67.9,
+        'alpha_sc': 0.000924,
+        'beta_oc': -0.22741,
+        'a_ref': 2.9482,
+        'I_L_ref': 1.563,
+        'I_o_ref': 2.64e-13,
+        'R_s': 6.804,
+        'R_sh_ref': 806.27,
+        'Adjust': -10.65,
+        'gamma_r': -0.264,
+        'Version': 'NRELv1',
+        'PTC': 89.7,
+        'Technology': 'CdTe',
+    }
+    return parameters

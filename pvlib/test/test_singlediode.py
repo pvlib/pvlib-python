@@ -11,19 +11,18 @@ from conftest import requires_scipy
 
 POA = 888
 TCELL = 55
-CECMOD = pvsystem.retrieve_sam('cecmod')
 
 
 @requires_scipy
 @pytest.mark.parametrize('method', ['brentq', 'newton'])
-def test_method_spr_e20_327(method):
+def test_method_spr_e20_327(method, cec_module_spr_e20_327):
     """test pvsystem.singlediode with different methods on SPR-E20-327"""
-    spr_e20_327 = CECMOD.SunPower_SPR_E20_327
+    spr_e20_327 = cec_module_spr_e20_327
     x = pvsystem.calcparams_desoto(
         effective_irradiance=POA, temp_cell=TCELL,
-        alpha_sc=spr_e20_327.alpha_sc, a_ref=spr_e20_327.a_ref,
-        I_L_ref=spr_e20_327.I_L_ref, I_o_ref=spr_e20_327.I_o_ref,
-        R_sh_ref=spr_e20_327.R_sh_ref, R_s=spr_e20_327.R_s,
+        alpha_sc=spr_e20_327['alpha_sc'], a_ref=spr_e20_327['a_ref'],
+        I_L_ref=spr_e20_327['I_L_ref'], I_o_ref=spr_e20_327['I_o_ref'],
+        R_sh_ref=spr_e20_327['R_sh_ref'], R_s=spr_e20_327['R_s'],
         EgRef=1.121, dEgdT=-0.0002677)
     il, io, rs, rsh, nnsvt = x
     pvs = pvsystem.singlediode(*x, method='lambertw')
@@ -45,13 +44,14 @@ def test_method_spr_e20_327(method):
 
 @requires_scipy
 @pytest.mark.parametrize('method', ['brentq', 'newton'])
-def test_newton_fs_495(method):
+def test_newton_fs_495(method, cec_module_fs_495):
     """test pvsystem.singlediode with different methods on FS495"""
-    fs_495 = CECMOD.First_Solar_FS_495
+    fs_495 = cec_module_fs_495
     x = pvsystem.calcparams_desoto(
         effective_irradiance=POA, temp_cell=TCELL,
-        alpha_sc=fs_495.alpha_sc, a_ref=fs_495.a_ref, I_L_ref=fs_495.I_L_ref,
-        I_o_ref=fs_495.I_o_ref, R_sh_ref=fs_495.R_sh_ref, R_s=fs_495.R_s,
+        alpha_sc=fs_495['alpha_sc'], a_ref=fs_495['a_ref'],
+        I_L_ref=fs_495['I_L_ref'], I_o_ref=fs_495['I_o_ref'],
+        R_sh_ref=fs_495['R_sh_ref'], R_s=fs_495['R_s'],
         EgRef=1.475, dEgdT=-0.0003)
     il, io, rs, rsh, nnsvt = x
     x += (101, )

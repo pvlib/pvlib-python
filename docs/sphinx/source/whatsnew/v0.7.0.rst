@@ -10,6 +10,11 @@ compatibility notes.
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
+API Changes
+~~~~~~~~~~~
+* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
+  an exception instead of displaying a dialog.
+
 Enhancements
 ~~~~~~~~~~~~
 * Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
@@ -40,3 +45,4 @@ Contributors
 * Oscar Dowson (:ghuser:`odow`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)

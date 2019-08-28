@@ -13,7 +13,6 @@ from pvlib._deprecation import pvlibDeprecationWarning
 from pandas.util.testing import assert_series_equal
 import pytest
 
-from test_pvsystem import pvsyst_module_params
 from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 

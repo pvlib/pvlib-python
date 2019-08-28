@@ -159,6 +159,30 @@ def sam_data():
     return data
 
 
+@pytest.fixture(scope="function")
+def pvsyst_module_params():
+    """
+    Define some PVSyst module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'gamma_ref': 1.05,
+        'mu_gamma': 0.001,
+        'I_L_ref': 6.0,
+        'I_o_ref': 5e-9,
+        'EgRef': 1.121,
+        'R_sh_ref': 300,
+        'R_sh_0': 1000,
+        'R_s': 0.5,
+        'R_sh_exp': 5.5,
+        'cells_in_series': 60,
+        'alpha_sc': 0.001,
+    }
+    return parameters
+
+
 @pytest.fixture(scope='function')
 def cec_inverter_parameters():
     """

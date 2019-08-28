@@ -238,23 +238,6 @@ def sapm_module_params(sam_data):
     return module_parameters
 
 
-@pytest.fixture()
-def pvsyst_module_params():
-    module_parameters = {}
-    module_parameters['gamma_ref'] = 1.05
-    module_parameters['mu_gamma'] = 0.001
-    module_parameters['I_L_ref'] = 6.0
-    module_parameters['I_o_ref'] = 5e-9
-    module_parameters['EgRef'] = 1.121
-    module_parameters['R_sh_ref'] = 300
-    module_parameters['R_sh_0'] = 1000
-    module_parameters['R_s'] = 0.5
-    module_parameters['R_sh_exp'] = 5.5
-    module_parameters['cells_in_series'] = 60
-    module_parameters['alpha_sc'] = 0.001
-    return module_parameters
-
-
 def test_retrieve_sam_raise_no_parameters():
     """
     Raise an exception if no parameters are provided to `retrieve_sam()`.

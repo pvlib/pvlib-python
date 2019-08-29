@@ -2,27 +2,13 @@ import inspect
 import os
 
 from pandas.util.testing import network
-import pytest
 
-from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.iotools import tmy
 
-from conftest import fail_on_pvlib_version
-
-
-test_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+test_dir = os.path.dirname(
+    os.path.abspath(inspect.getfile(inspect.currentframe())))
 tmy3_testfile = os.path.join(test_dir, '../data/703165TY.csv')
 tmy2_testfile = os.path.join(test_dir, '../data/12839.tm2')
-
-
-@fail_on_pvlib_version('0.7')
-def test_deprecated_07():
-    with pytest.warns(pvlibDeprecationWarning):
-        from pvlib.tmy import readtmy2
-        readtmy2(tmy2_testfile)
-    with pytest.warns(pvlibDeprecationWarning):
-        from pvlib.tmy import readtmy3
-        readtmy3(tmy3_testfile)
 
 
 def test_read_tmy3():

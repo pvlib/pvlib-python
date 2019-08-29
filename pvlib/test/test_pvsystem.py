@@ -230,17 +230,6 @@ def test_iam_interp():
         pvsystem.iam_interp(0.0, [0, 90], [1, -1])
 
 
-# if this completes successfully we'll be able to do more tests below.
-@pytest.fixture(scope="session")
-def sam_data():
-    data = {}
-    data['cecmod'] = pvsystem.retrieve_sam('cecmod')
-    data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
-    data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
-    data['adrinverter'] = pvsystem.retrieve_sam('adrinverter')
-    return data
-
-
 @pytest.fixture(scope="session")
 def sapm_module_params(sam_data):
     modules = sam_data['sandiamod']
@@ -249,29 +238,76 @@ def sapm_module_params(sam_data):
     return module_parameters
 
 
-@pytest.fixture(scope="session")
-def cec_module_params(sam_data):
-    modules = sam_data['cecmod']
-    module = 'Example_Module'
-    module_parameters = modules[module]
-    return module_parameters
+def test_retrieve_sam_raise_no_parameters():
+    """
+    Raise an exception if no parameters are provided to `retrieve_sam()`.
+    """
+    with pytest.raises(ValueError) as error:
+        pvsystem.retrieve_sam()
+    assert 'A name or path must be provided!' == str(error.value)
 
 
-@pytest.fixture()
-def pvsyst_module_params():
-    module_parameters = {}
-    module_parameters['gamma_ref'] = 1.05
-    module_parameters['mu_gamma'] = 0.001
-    module_parameters['I_L_ref'] = 6.0
-    module_parameters['I_o_ref'] = 5e-9
-    module_parameters['EgRef'] = 1.121
-    module_parameters['R_sh_ref'] = 300
-    module_parameters['R_sh_0'] = 1000
-    module_parameters['R_s'] = 0.5
-    module_parameters['R_sh_exp'] = 5.5
-    module_parameters['cells_in_series'] = 60
-    module_parameters['alpha_sc'] = 0.001
-    return module_parameters
+def test_retrieve_sam_cecmod():
+    """
+    Test the expected data is retrieved from the CEC module database. In
+    particular, check for a known module in the database and check for the
+    expected keys for that module.
+    """
+    data = pvsystem.retrieve_sam('cecmod')
+    keys = [
+        'BIPV',
+        'Date',
+        'T_NOCT',
+        'A_c',
+        'N_s',
+        'I_sc_ref',
+        'V_oc_ref',
+        'I_mp_ref',
+        'V_mp_ref',
+        'alpha_sc',
+        'beta_oc',
+        'a_ref',
+        'I_L_ref',
+        'I_o_ref',
+        'R_s',
+        'R_sh_ref',
+        'Adjust',
+        'gamma_r',
+        'Version',
+        'PTC',
+        'Technology',
+    ]
+    module = 'iTek_iT_300_HE'
+    assert module in data
+    assert set(data[module].keys()) == set(keys)
+
+
+def test_retrieve_sam_cecinverter():
+    """
+    Test the expected data is retrieved from the CEC inverter database. In
+    particular, check for a known inverter in the database and check for the
+    expected keys for that inverter.
+    """
+    data = pvsystem.retrieve_sam('cecinverter')
+    keys = [
+        'Vac',
+        'Paco',
+        'Pdco',
+        'Vdco',
+        'Pso',
+        'C0',
+        'C1',
+        'C2',
+        'C3',
+        'Pnt',
+        'Vdcmax',
+        'Idcmax',
+        'Mppt_low',
+        'Mppt_high',
+    ]
+    inverter = 'Solectria__PVI_5300_5300_P_208V__CEC_2008_'
+    assert inverter in data
+    assert set(data[inverter].keys()) == set(keys)
 
 
 def test_sapm(sapm_module_params):
@@ -1000,9 +1036,7 @@ def test_singlediode_array():
 
 
 @requires_scipy
-def test_singlediode_floats(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
+def test_singlediode_floats():
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, method='lambertw')
     expected = {'i_xx': 4.2498,
                 'i_mp': 6.1275,
@@ -1266,22 +1300,20 @@ def test_adrinverter_invalid_and_night(sam_data):
     assert_allclose(pacs, np.array([np.nan, -0.25, np.nan, np.nan]))
 
 
-def test_snlinverter(sam_data):
-    inverters = sam_data['cecinverter']
-    testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
+def test_snlinverter(cec_inverter_parameters):
     vdcs = pd.Series(np.linspace(0,50,3))
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
+    pacs = pvsystem.snlinverter(vdcs, pdcs, cec_inverter_parameters)
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
-def test_PVSystem_snlinverter(sam_data):
-    inverters = sam_data['cecinverter']
-    testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
-    system = pvsystem.PVSystem(inverter=testinv,
-                               inverter_parameters=inverters[testinv])
+def test_PVSystem_snlinverter(cec_inverter_parameters):
+    system = pvsystem.PVSystem(
+        inverter=cec_inverter_parameters['Name'],
+        inverter_parameters=cec_inverter_parameters,
+    )
     vdcs = pd.Series(np.linspace(0,50,3))
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
@@ -1290,26 +1322,43 @@ def test_PVSystem_snlinverter(sam_data):
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
-def test_snlinverter_float(sam_data):
-    inverters = sam_data['cecinverter']
-    testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
+def test_snlinverter_float(cec_inverter_parameters):
     vdcs = 25.
     idcs = 5.5
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
+    pacs = pvsystem.snlinverter(vdcs, pdcs, cec_inverter_parameters)
     assert_allclose(pacs, 132.004278, 5)
 
 
-def test_snlinverter_Pnt_micro(sam_data):
-    inverters = sam_data['cecinverter']
-    testinv = 'Enphase_Energy__M250_60_2LL_S2x___ZC____NA__208V_208V__CEC_2013_'
+def test_snlinverter_Pnt_micro():
+    """
+    Test for issue #140, where some microinverters were giving a positive AC
+    power output when the DC power was 0.
+    """
+    inverter_parameters = {
+        'Name': 'Enphase Energy: M250-60-2LL-S2x (-ZC) (-NA) 208V [CEC 2013]',
+        'Vac': 208.0,
+        'Paco': 240.0,
+        'Pdco': 250.5311318,
+        'Vdco': 32.06160667,
+        'Pso': 1.12048857,
+        'C0': -5.76E-05,
+        'C1': -6.24E-04,
+        'C2': 8.09E-02,
+        'C3': -0.111781106,
+        'Pnt': 0.043,
+        'Vdcmax': 48.0,
+        'Idcmax': 9.8,
+        'Mppt_low': 27.0,
+        'Mppt_high': 39.0,
+    }
     vdcs = pd.Series(np.linspace(0,50,3))
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
-    assert_series_equal(pacs, pd.Series([-0.043000, 132.545914746, 240.000000]))
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverter_parameters)
+    assert_series_equal(pacs, pd.Series([-0.043, 132.545914746, 240.0]))
 
 
 def test_PVSystem_creation():

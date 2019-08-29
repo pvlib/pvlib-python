@@ -10,10 +10,17 @@ compatibility notes.
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
+API Changes
+~~~~~~~~~~~
+* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
+  an exception instead of displaying a dialog.
+
 Enhancements
 ~~~~~~~~~~~~
 * Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
   and :py:func:`pvlib.pvsystem.iam_interp`. (:issue:`751`)
+* Added recombination current parameters to bishop88 single-diode functions and also
+  to :py:func:`pvlib.pvsystem.max_power_point`. (:issue:`762`)
 
 Bug fixes
 ~~~~~~~~~
@@ -30,6 +37,16 @@ Testing
 * Added 30 minutes to timestamps in `test_psm3.csv` to match change in NSRDB (:issue:`733`)
 * Added tests for methods in bifacial.py.
 
+Removal of prior version deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Removed `irradiance.extraradiation`.
+* Removed `irradiance.grounddiffuse`.
+* Removed `irradiance.total_irrad`.
+* Removed `irradiance.globalinplane`.
+* Removed `atmosphere.relativeairmass`.
+* Removed `atmosphere.relativeairmass`.
+* Removed `solarposition.get_sun_rise_set_transit`.
+* Removed `tmy` module.
 
 Contributors
 ~~~~~~~~~~~~
@@ -38,3 +55,4 @@ Contributors
 * Oscar Dowson (:ghuser:`odow`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)

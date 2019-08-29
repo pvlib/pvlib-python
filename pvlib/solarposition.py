@@ -443,12 +443,6 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
                                            'transit': transit})
 
 
-get_sun_rise_set_transit = deprecated('0.6.1',
-                                      alternative='sun_rise_set_transit_spa',
-                                      name='get_sun_rise_set_transit',
-                                      removal='0.7')(sun_rise_set_transit_spa)
-
-
 def _ephem_convert_to_seconds_and_microseconds(date):
     # utility from unreleased PyEphem 3.6.7.1
     """Converts a PyEphem date into seconds"""

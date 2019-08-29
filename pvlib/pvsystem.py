@@ -126,8 +126,8 @@ class PVSystem(object):
         Inverter parameters as defined by the SAPM, CEC, or other.
 
     racking_model : None or string, default 'open_rack'
-        Valid strings are 'open_rack' and 'close_mount'. Used for cell and
-        module temperature calculations.
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
 
     losses_parameters : None, dict or Series, default None
         Losses parameters as defined by PVWatts or other.
@@ -174,9 +174,11 @@ class PVSystem(object):
             self.module_parameters = module_parameters
 
         self.module_type = module_type
+        self.racking_model = racking_model
 
         if temperature_model_parameters is None:
-            self.temperature_model_parameters = {}
+            self.temperature_model_parameters = \
+                self._infer_temperature_model_params()
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
@@ -193,8 +195,6 @@ class PVSystem(object):
             self.losses_parameters = {}
         else:
             self.losses_parameters = losses_parameters
-
-        self.racking_model = racking_model
 
         self.name = name
 
@@ -467,6 +467,15 @@ class PVSystem(object):
                                    self.temperature_model_parameters)
         return temperature.sapm_cell(poa_global, temp_air, wind_speed,
                                      **kwargs)
+
+    def _infer_temperature_model_params(self):
+        # try to infer temperature model parameters from from racking_model
+        # and module_type
+        param_set = self.racking_model + '_' + self.module_type
+        if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
+            return temperature._temperature_model_params('sapm', param_set)
+        else:
+            return {}
 
     def sapm_spectral_loss(self, airmass_absolute):
         """

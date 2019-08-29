@@ -13,8 +13,7 @@ compatibility notes.
 API Changes
 ~~~~~~~~~~~
 * Changes to functions and methods for cell temperature models (:issue:`678`):
-    - Moved functions for cell temperature and constant
-      `TEMP_MODEL_PARAMS` from `pvsystem.py` to `temperature.py`.
+    - Moved functions for cell temperature from `pvsystem.py` to `temperature.py`.
     - Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp`
       to `temperature.sapm_cell` and `temperature.pvsyst_cell`.
     - `temperature.sapm_cell` returns only the cell temperature, whereas the old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
@@ -33,7 +32,6 @@ API Changes
     - Parameter sets for the SAPM cell temperature model named
       'open_rack_polymer_thinfilm_steel' and '22x_concentrator_tracker'
       are considered obsolete and have been removed.
-    - `temperature.TEMPERATURE_MODEL_PARAMETERS` uses dict rather than tuple for a parameter set.
     - Added attribute `PVSystem.module_type` (str) to record module
       front and back materials, default is `glass_polymer`.
     - Added attribute `PVSystem.temperature_model_parameters` (dict)

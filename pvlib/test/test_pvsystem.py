@@ -533,6 +533,18 @@ def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
     assert (out < 90) and (out > 70)
 
 
+def test__infer_temperature_model_params():
+    system = pvsystem.PVSystem(module_parameters={},
+                               racking_model='open_rack',
+                               module_type='glass_polymer')
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'sapm']['open_rack_glass_polymer']
+    assert expected == system._infer_temperature_model_params()
+    system = pvsystem.PVSystem(module_parameters={},
+                               racking_model='freestanding',
+                               module_type='glass_polymer')
+    assert {} == system._infer_temperature_model_params()
+
 def test_calcparams_desoto(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)

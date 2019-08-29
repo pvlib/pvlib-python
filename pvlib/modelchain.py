@@ -325,7 +325,7 @@ class ModelChain(object):
         # TODO: deprecated behavior if PVSystem.temperature_model_parameters
         # is not specified. Remove in v0.8
         if not any(self.system.temperature_model_parameters):
-            if temperature_model=='sapm':
+            if temperature_model == 'sapm':
                 warnings.warn(
                     'SAPM temperature model is specified but PVSystem '
                     'temperature_model_parameters attribute is not assigned.'
@@ -337,7 +337,7 @@ class ModelChain(object):
                 params = temperature._temperature_model_params(
                     'sapm', 'open_rack_glass_glass')
                 self.system.temperature_model_parameters = params
-            elif temperature_model=='pvsyst':
+            elif temperature_model == 'pvsyst':
                 raise ValueError(
                     'Pvsyst temperature model is specified but no temperature '
                     'model parameters are provided. Assign temperature model '
@@ -354,10 +354,10 @@ class ModelChain(object):
                 warnings.warn('Provide only one of temperature_model or '
                               'temp_model (deprecated).')
             else:
-                raise ValueError('Conflicting values for temperature_model {}'
-                                 ' and temp_model (deprecated) {}. Specify '
-                                 'only temperature_model.'.format(
-                                      temperature_model, temp_model))
+                raise ValueError(
+                    'Conflicting temperature_model {} and temp_model {}. '
+                    'temp_model is deprecated. Specify only temperature_model.'
+                    .format(temperature_model, temp_model))
         self.temperature_model = temperature_model
 
 
@@ -717,9 +717,9 @@ class ModelChain(object):
             self._temperature_model = self.infer_temperature_model()
         elif isinstance(model, str):
             model = model.lower()
-            if model=='sapm':
+            if model == 'sapm':
                 self._temperature_model = self.sapm_temp
-            elif model=='pvsyst':
+            elif model == 'pvsyst':
                 self._temperature_model = self.pvsyst_temp
             else:
                 raise ValueError(model + ' is not a valid temperature model')

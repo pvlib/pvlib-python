@@ -8,7 +8,6 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
-from pvlib._deprecation import deprecated
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')
@@ -135,11 +134,6 @@ def get_absolute_airmass(airmass_relative, pressure=101325.):
     return airmass_absolute
 
 
-absoluteairmass = deprecated('0.6', alternative='get_absolute_airmass',
-                             name='absoluteairmass', removal='0.7')(
-                             get_absolute_airmass)
-
-
 def get_relative_airmass(zenith, model='kastenyoung1989'):
     '''
     Gives the relative (not pressure-corrected) airmass.
@@ -244,11 +238,6 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
         am = pd.Series(am, index=zenith.index)
 
     return am
-
-
-relativeairmass = deprecated('0.6', alternative='get_relative_airmass',
-                             name='relativeairmass', removal='0.7')(
-                             get_relative_airmass)
 
 
 def gueymard94_pw(temp_air, relative_humidity):

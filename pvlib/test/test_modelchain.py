@@ -13,93 +13,77 @@ from pvlib._deprecation import pvlibDeprecationWarning
 from pandas.util.testing import assert_series_equal
 import pytest
 
-from test_pvsystem import sam_data, pvsyst_module_params
 from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
 @pytest.fixture
-def system(sam_data):
+def system(sam_data, cec_inverter_parameters):
     modules = sam_data['sandiamod']
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = modules[module].copy()
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
-                      inverter_parameters=inverter)
+                      inverter_parameters=cec_inverter_parameters)
     return system
 
 
 @pytest.fixture
-def cec_dc_snl_ac_system(sam_data):
-    modules = sam_data['cecmod']
-    module = 'Canadian_Solar_CS5P_220M'
-    module_parameters = modules[module].copy()
+def cec_dc_snl_ac_system(cec_module_cs5p_220m, cec_inverter_parameters):
+    module_parameters = cec_module_cs5p_220m.copy()
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
-                      module=module,
+                      module=module_parameters['Name'],
                       module_parameters=module_parameters,
-                      inverter_parameters=inverter)
+                      inverter_parameters=cec_inverter_parameters)
     return system
 
 
 @pytest.fixture
-def cec_dc_native_snl_ac_system(sam_data):
-    module = 'Canadian_Solar_CS5P_220M'
-    module_parameters = sam_data['cecmod'][module].copy()
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
+def cec_dc_native_snl_ac_system(cec_module_cs5p_220m, cec_inverter_parameters):
+    module_parameters = cec_module_cs5p_220m.copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
-                      module=module,
+                      module=module_parameters['Name'],
                       module_parameters=module_parameters,
-                      inverter_parameters=inverter)
+                      inverter_parameters=cec_inverter_parameters)
     return system
 
 
 @pytest.fixture
-def pvsyst_dc_snl_ac_system(sam_data, pvsyst_module_params):
+def pvsyst_dc_snl_ac_system(pvsyst_module_params, cec_inverter_parameters):
     module = 'PVsyst test module'
     module_parameters = pvsyst_module_params
     module_parameters['b'] = 0.05
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
                       module_parameters=module_parameters,
-                      inverter_parameters=inverter)
+                      inverter_parameters=cec_inverter_parameters)
     return system
 
 
 @pytest.fixture
-def cec_dc_adr_ac_system(sam_data):
-    modules = sam_data['cecmod']
-    module = 'Canadian_Solar_CS5P_220M'
-    module_parameters = modules[module].copy()
+def cec_dc_adr_ac_system(sam_data, cec_module_cs5p_220m):
+    module_parameters = cec_module_cs5p_220m.copy()
     module_parameters['b'] = 0.05
     module_parameters['EgRef'] = 1.121
     module_parameters['dEgdT'] = -0.0002677
     inverters = sam_data['adrinverter']
     inverter = inverters['Zigor__Sunzet_3_TL_US_240V__CEC_2011_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
-                      module=module,
+                      module=module_parameters['Name'],
                       module_parameters=module_parameters,
                       inverter_parameters=inverter)
     return system
 
 
 @pytest.fixture
-def pvwatts_dc_snl_ac_system(sam_data):
+def pvwatts_dc_snl_ac_system(cec_inverter_parameters):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    inverters = sam_data['cecinverter']
-    inverter = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'].copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
-                      inverter_parameters=inverter)
+                      inverter_parameters=cec_inverter_parameters)
     return system
 
 
@@ -504,7 +488,7 @@ def test_deprecated_clearsky_07():
 
 
 @requires_scipy
-def test_basic_chain_required(sam_data):
+def test_basic_chain_required(sam_data, cec_inverter_parameters):
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     latitude = 32
@@ -512,17 +496,15 @@ def test_basic_chain_required(sam_data):
     altitude = 700
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    inverters = sam_data['cecinverter']
-    inverter_parameters = inverters[
-        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
     with pytest.raises(ValueError):
-        dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                        module_parameters, inverter_parameters,
-                                        altitude=altitude)
+        dc, ac = modelchain.basic_chain(
+            times, latitude, longitude, module_parameters,
+            cec_inverter_parameters, altitude=altitude
+        )
 
 
 @requires_scipy
-def test_basic_chain_alt_az(sam_data):
+def test_basic_chain_alt_az(sam_data, cec_inverter_parameters):
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     latitude = 32.2
@@ -531,12 +513,9 @@ def test_basic_chain_alt_az(sam_data):
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    inverters = sam_data['cecinverter']
-    inverter_parameters = inverters[
-        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, cec_inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth)
 
@@ -546,7 +525,7 @@ def test_basic_chain_alt_az(sam_data):
 
 
 @requires_scipy
-def test_basic_chain_strategy(sam_data):
+def test_basic_chain_strategy(sam_data, cec_inverter_parameters):
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     latitude = 32.2
@@ -554,12 +533,9 @@ def test_basic_chain_strategy(sam_data):
     altitude = 700
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    inverters = sam_data['cecinverter']
-    inverter_parameters = inverters[
-        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(
-        times, latitude, longitude, module_parameters, inverter_parameters,
+        times, latitude, longitude, module_parameters, cec_inverter_parameters,
         orientation_strategy='south_at_latitude_tilt', altitude=altitude)
 
     expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
@@ -568,7 +544,7 @@ def test_basic_chain_strategy(sam_data):
 
 
 @requires_scipy
-def test_basic_chain_altitude_pressure(sam_data):
+def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters):
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     latitude = 32.2
@@ -578,12 +554,9 @@ def test_basic_chain_altitude_pressure(sam_data):
     surface_azimuth = 0
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    inverters = sam_data['cecinverter']
-    inverter_parameters = inverters[
-        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, cec_inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth,
                                     pressure=93194)
@@ -593,7 +566,7 @@ def test_basic_chain_altitude_pressure(sam_data):
     assert_series_equal(ac, expected, check_less_precise=1)
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters, inverter_parameters,
+                                    module_parameters, cec_inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth,
                                     altitude=altitude)

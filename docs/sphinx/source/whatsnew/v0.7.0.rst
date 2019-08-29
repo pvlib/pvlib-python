@@ -52,11 +52,15 @@ API Changes
     - `modelchain.basic_chain` has a new required argument
       `temperature_model_parameters`.
 
+* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
+  an exception instead of displaying a dialog.
 
 Enhancements
 ~~~~~~~~~~~~
 * Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
   and :py:func:`pvlib.pvsystem.iam_interp`. (:issue:`751`)
+* Added recombination current parameters to bishop88 single-diode functions and also
+  to :py:func:`pvlib.pvsystem.max_power_point`. (:issue:`762`)
 
 Bug fixes
 ~~~~~~~~~
@@ -78,6 +82,16 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
+Removal of prior version deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Removed `irradiance.extraradiation`.
+* Removed `irradiance.grounddiffuse`.
+* Removed `irradiance.total_irrad`.
+* Removed `irradiance.globalinplane`.
+* Removed `atmosphere.relativeairmass`.
+* Removed `atmosphere.relativeairmass`.
+* Removed `solarposition.get_sun_rise_set_transit`.
+* Removed `tmy` module.
 
 Contributors
 ~~~~~~~~~~~~
@@ -87,3 +101,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)

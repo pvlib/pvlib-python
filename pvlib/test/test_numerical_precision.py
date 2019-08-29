@@ -32,15 +32,19 @@ PVLIB_PATH = os.path.dirname(TEST_PATH)
 DATA_PATH = os.path.join(PVLIB_PATH, 'data', TEST_DATA)
 POA = 888
 TCELL = 55
-CECMOD = pvsystem.retrieve_sam('cecmod')
-# get module from cecmod and apply temp/irrad desoto corrections
-SPR_E20_327 = CECMOD.SunPower_SPR_E20_327
+# module parameters from CEC module SunPower SPR-E20-327
+SPR_E20_327 = {
+    'alpha_sc': 0.004522,
+    'a_ref': 2.6868,
+    'I_L_ref': 6.468,
+    'I_o_ref': 1.88e-10,
+    'R_s': 0.37,
+    'R_sh_ref': 298.13,
+}
+# apply temp/irrad desoto corrections
 ARGS = pvsystem.calcparams_desoto(
     effective_irradiance=POA, temp_cell=TCELL,
-    alpha_sc=SPR_E20_327.alpha_sc, a_ref=SPR_E20_327.a_ref,
-    I_L_ref=SPR_E20_327.I_L_ref, I_o_ref=SPR_E20_327.I_o_ref,
-    R_sh_ref=SPR_E20_327.R_sh_ref, R_s=SPR_E20_327.R_s,
-    EgRef=1.121, dEgdT=-0.0002677
+    EgRef=1.121, dEgdT=-0.0002677, **SPR_E20_327,
 )
 IL, I0, RS, RSH, NNSVTH = ARGS
 IVCURVE_NPTS = 100

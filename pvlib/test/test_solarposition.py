@@ -9,11 +9,10 @@ from pandas.util.testing import assert_frame_equal, assert_series_equal
 from numpy.testing import assert_allclose
 import pytest
 
-from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.location import Location
 from pvlib import solarposition, spa
 
-from conftest import (fail_on_pvlib_version, requires_ephem, needs_pandas_0_17,
+from conftest import (requires_ephem, needs_pandas_0_17,
                       requires_spa_c, requires_numba)
 
 
@@ -109,15 +108,6 @@ def expected_rise_set_ephem():
                          'sunset': sunset,
                          'transit': transit},
                         index=times)
-
-
-@fail_on_pvlib_version('0.7')
-def test_deprecated_07():
-    tt = pd.DatetimeIndex(['2015-01-01 00:00:00']).tz_localize('MST')
-    with pytest.warns(pvlibDeprecationWarning):
-        solarposition.get_sun_rise_set_transit(tt,
-                                               39.7,
-                                               -105.2)
 
 
 # the physical tests are run at the same time as the NREL SPA test.

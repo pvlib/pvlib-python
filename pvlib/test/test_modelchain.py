@@ -102,9 +102,9 @@ def pvwatts_dc_snl_ac_system(cec_inverter_parameters):
 
 
 @pytest.fixture
-def pvwatts_dc_pvwatts_ac_system(sam_data):
+def pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    temp_model_params = _get_sapm_temp_model_params(sam_data)
+    temp_model_params = sapm_temperature_cs5p_220m.copy()
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
@@ -628,10 +628,6 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    inverters = sam_data['cecinverter']
-    inverter_parameters = inverters[
-        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
-
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                     module_parameters,  temp_model_params,
                                     cec_inverter_parameters,
@@ -654,10 +650,6 @@ def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    inverters = sam_data['cecinverter']
-    inverter_parameters = inverters[
-        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
-
     dc, ac = modelchain.basic_chain(
         times, latitude, longitude, module_parameters, temp_model_params,
         cec_inverter_parameters, orientation_strategy='south_at_latitude_tilt',
@@ -681,10 +673,6 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    inverters = sam_data['cecinverter']
-    inverter_parameters = inverters[
-        'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
-
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                     module_parameters, temp_model_params,
                                     cec_inverter_parameters,

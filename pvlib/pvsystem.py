@@ -181,7 +181,7 @@ class PVSystem(object):
         if temperature_model_parameters is None:
             self.temperature_model_parameters = \
                 self._infer_temperature_model_params()
-                # TODO: in v0.8 check for empty dict and raise error
+# TODO: in v0.8 check for empty dict and raise error
         else:
             self.temperature_model_parameters = temperature_model_parameters
 

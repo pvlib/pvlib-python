@@ -576,10 +576,17 @@ def test__infer_temperature_model_params():
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'sapm']['open_rack_glass_polymer']
     assert expected == system._infer_temperature_model_params()
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'pvsyst']['freestanding']
     system = pvsystem.PVSystem(module_parameters={},
                                racking_model='freestanding',
                                module_type='glass_polymer')
+    assert expected == system._infer_temperature_model_params()
+    system = pvsystem.PVSystem(module_parameters={},
+                               racking_model='not_a_rack_model',
+                               module_type='glass_polymer')
     assert {} == system._infer_temperature_model_params()
+
 
 def test_calcparams_desoto(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
@@ -1614,6 +1621,11 @@ def test_deprecated_08():
         pvsystem.sapm_celltemp(1000, 25, 1)
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvsyst_celltemp(1000, 25)
+    module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
+                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.PVSystem(module_parameters=module_parameters,
+                          racking_model='open', module_type='glass_glass')
 
 
 @fail_on_pvlib_version('0.8')

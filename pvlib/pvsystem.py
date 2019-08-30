@@ -7,6 +7,7 @@ from collections import OrderedDict
 import io
 import os
 from urllib.request import urlopen
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -17,6 +18,7 @@ from pvlib import (atmosphere, irradiance, singlediode as _singlediode,
 from pvlib import tools
 from pvlib.tools import _build_kwargs, cosd
 from pvlib.location import Location
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # a dict of required parameter names for each DC power model
@@ -179,8 +181,24 @@ class PVSystem(object):
         if temperature_model_parameters is None:
             self.temperature_model_parameters = \
                 self._infer_temperature_model_params()
+                # TODO: in v0.8 check for empty dict and raise error
         else:
             self.temperature_model_parameters = temperature_model_parameters
+
+        # TODO: deprecated behavior if PVSystem.temperature_model_parameters
+        # are not specified. Remove in v0.8
+        if not any(self.temperature_model_parameters):
+            warnings.warn(
+                'Required temperature_model_parameters is not specified '
+                'and parameters are not inferred from racking_model and '
+                'module_type. Reverting to deprecated default: SAPM cell '
+                'temperature model parameters for a glass/glass module in '
+                'open racking. In the future '
+                'PVSystem.temperature_model_parameters will be required',
+                pvlibDeprecationWarning)
+            params = temperature._temperature_model_params(
+                'sapm', 'open_rack_glass_glass')
+            self.temperature_model_parameters = params
 
         self.modules_per_string = modules_per_string
         self.strings_per_inverter = strings_per_inverter
@@ -474,6 +492,12 @@ class PVSystem(object):
         param_set = self.racking_model + '_' + self.module_type
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
             return temperature._temperature_model_params('sapm', param_set)
+        elif 'freestanding' in param_set:
+            return temperature._temperature_model_params('pvsyst',
+                                                         'freestanding')
+        elif 'insulated' in param_set:  # after SAPM to avoid confusing keys
+            return temperature._temperature_model_params('pvsyst',
+                                                         'insulated')
         else:
             return {}
 

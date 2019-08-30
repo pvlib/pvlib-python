@@ -318,6 +318,14 @@ def test_infer_temp_model_invalid(location, system):
                    aoi_model='physical', spectral_model='no_loss')
 
 
+@requires_scipy
+def test_temperature_model_inconsistent(location, system):
+    with pytest.raises(ValueError):
+        ModelChain(system, location, orientation_strategy='None',
+                   aoi_model='physical', spectral_model='no_loss',
+                   temperature_model='pvsyst')
+
+
 def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
                             mocker):
     m = mocker.spy(sys.modules[__name__], 'poadc')
@@ -564,21 +572,6 @@ def test_deprecated_08():
                    aoi_model='no_loss', spectral_model='no_loss',
                    temperature_model='pvsyst',
                    temp_model='sapm',
-                   ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters,
-                      racking_model='close_mount')
-    with pytest.warns(pvlibDeprecationWarning):
-        ModelChain(system, location,
-                   dc_model='desoto',
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temperature_model='sapm',
-                   ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters)
-    with pytest.raises(ValueError):
-        ModelChain(system, location,
-                   dc_model='desoto',
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temperature_model='pvsyst',
                    ac_model='snlinverter')
 
 

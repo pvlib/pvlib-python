@@ -322,28 +322,7 @@ class ModelChain(object):
         self.aoi_model = aoi_model
         self.spectral_model = spectral_model
 
-        # TODO: deprecated behavior if PVSystem.temperature_model_parameters
-        # is not specified. Remove in v0.8
-        if not any(self.system.temperature_model_parameters):
-            if temperature_model == 'sapm':
-                warnings.warn(
-                    'SAPM temperature model is specified but PVSystem '
-                    'temperature_model_parameters attribute is not assigned.'
-                    'Reverting to deprecated default SAPM cell temperature '
-                    'model parameters representing a glass/glass module in '
-                    'open racking. In the future '
-                    'PVSystem.temperature_model_parameters will be required',
-                    pvlibDeprecationWarning)
-                params = temperature._temperature_model_params(
-                    'sapm', 'open_rack_glass_glass')
-                self.system.temperature_model_parameters = params
-            elif temperature_model == 'pvsyst':
-                raise ValueError(
-                    'Pvsyst temperature model is specified but no temperature '
-                    'model parameters are provided. Assign temperature model '
-                    'parameters to PVSystem.temperature_model_parameters')
-
-        # TODO: deprecated kwarg temp_model. Remove in v0.8
+        # TODO: deprecated kwarg temp_model. Remove use of temp_model in v0.8
         temp_model = kwargs.pop('temp_model', None)
         if temp_model is not None:
             warnings.warn('The temp_model keyword argument is deprecated. Use '
@@ -359,7 +338,6 @@ class ModelChain(object):
                     'temp_model is deprecated. Specify only temperature_model.'
                     .format(temperature_model, temp_model))
         self.temperature_model = temperature_model
-
 
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
@@ -723,6 +701,13 @@ class ModelChain(object):
                 self._temperature_model = self.pvsyst_temp
             else:
                 raise ValueError(model + ' is not a valid temperature model')
+            # check system.temperature_model_parameters for consistency
+            if self._temperature_model != self.infer_temperature_model():
+                raise ValueError(
+                    'Temperature model {} is inconsistent with '
+                    'PVsystem.temperature_model_parameters {}'.format(
+                        self._temperature_model,
+                        self.system.temperature_model_parameters))
         else:
             self._temperature_model = partial(model, self)
 

@@ -565,7 +565,8 @@ def test_deprecated_08():
                    temperature_model='pvsyst',
                    temp_model='sapm',
                    ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters)
+    system = PVSystem(module_parameters=module_parameters,
+                      self.racking_model='close_mount')
     with pytest.warns(pvlibDeprecationWarning):
         ModelChain(system, location,
                    dc_model='desoto',

@@ -12,45 +12,62 @@ compatibility notes.
 
 API Changes
 ~~~~~~~~~~~
-* Changes to functions and methods for cell temperature models (:issue:`678`):
-    - Moved functions for cell temperature from `pvsystem.py` to `temperature.py`.
-    - Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp`
-      to `temperature.sapm_cell` and `temperature.pvsyst_cell`.
-    - `temperature.sapm_cell` returns only the cell temperature, whereas the old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
-    - Created `temperature.sapm_module` to return module temperature using the SAPM temperature model.
-    - Argument order for`pvsystem.sapm_celltemp`,
-      `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` has
-      been altered to be consistent among cell temperature model
-      functions.
-    - Removed `model` as a kwarg from `temperature.sapm_cell` and
-      `temperature.pvsyst_cell`. These functions now require model-specific parameters.
-    - Added the argument `irrad_ref`, default value 1000, to `temperature.sapm_cell`.
-    - Renamed `pvsystem.TEMP_MODEL_PARAMS` to `temperature.TEMPERATURE_MODEL_PARAMETERS`.
-    - `temperature.TEMPERATURE_MODEL_PARAMETERS` uses dict rather than
-      tuple for a parameter set.
-    - Parameter set names for `temperature.TEMPERATURE_MODEL_PARAMETERS` have changed.
-    - Parameter sets for the SAPM cell temperature model named
-      'open_rack_polymer_thinfilm_steel' and '22x_concentrator_tracker'
-      are considered obsolete and have been removed.
-    - Added attribute `PVSystem.module_type` (str) to record module
-      front and back materials, default is `glass_polymer`.
-    - Added attribute `PVSystem.temperature_model_parameters` (dict)
-      to contain temperature model parameters.
-    - Changed meaning of `PVSystem.racking_model` to describe racking
-      only, e.g., default is `open_rack`.
-    - In `PVSystem.sapm_celltemp` and `PVSystem.pvsyst_celltemp`,
-      changed kwarg `model` to `parameter_set`. `parameter_set` expects
-      a str which is a valid key for
-      `temperature.TEMPERATURE_MODEL_PARAMETERS` for the corresponding
-      temperature model.
-    - `ModelChain.temp_model` renamed to `ModelChain.temperature_model`.
-    - `ModelChain.temps` attribute renamed to `ModelChain.cell_temperature`, and its datatype is now `numeric` rather than `DataFrame`.
-    - `ModelChain.temperature_model` now defaults to `None`. The temperature
-      model can be inferred from `PVSystem.temperature_model_parameters`.
-    - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain` defaults to old behavior, using the SAPM temperautre model with parameters for a glass/glass model on open racking. This behavior is deprecated, and will be removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will be required for `ModelChain`.
-    - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
-    - `modelchain.basic_chain` has a new required argument
-      `temperature_model_parameters`.
+* Changes related to cell temperature models (:issue:`678`):
+   * Changes to functions
+      - Moved functions for cell temperature from `pvsystem.py` to `temperature.py`.
+      - Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp`
+        to `temperature.sapm_cell` and `temperature.pvsyst_cell`.
+      - `temperature.sapm_cell` returns only the cell temperature, whereas the
+         old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
+      - Created `temperature.sapm_module` to return module temperature using the SAPM temperature model.
+      - Changed the order of arguments for`pvsystem.sapm_celltemp`,
+        `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` to be consistent 
+        among cell temperature model functions.
+      - Removed `model` as a kwarg from `temperature.sapm_cell` and
+        `temperature.pvsyst_cell`. These functions now require model-specific parameters.
+      - Added the argument `irrad_ref`, default value 1000, to `temperature.sapm_cell`.
+   * Changes to named temperature model parameter sets
+      - Renamed `pvsystem.TEMP_MODEL_PARAMS` to `temperature.TEMPERATURE_MODEL_PARAMETERS`.
+      - `temperature.TEMPERATURE_MODEL_PARAMETERS` uses dict rather than
+        tuple for a parameter set.
+      - Names for parameter sets in `temperature.TEMPERATURE_MODEL_PARAMETERS` have changed.
+      - Parameter sets for the SAPM cell temperature model named
+        'open_rack_polymer_thinfilm_steel' and '22x_concentrator_tracker'
+        are considered obsolete and have been removed.
+   * Changes to `PVSystem` class
+      - Changed the `model` kwarg in `PVSystem.sapm_celltemp` and 
+        `PVSystem.pvsyst_celltemp` to `parameter_set`. `parameter_set` expects
+        a str which is a valid key for `temperature.TEMPERATURE_MODEL_PARAMETERS`
+        for the corresponding temperature model.
+      - Added an attribute `PVSystem.module_type` (str) to record module
+        front and back materials, default is `glass_polymer`.
+      - Changed meaning of `PVSystem.racking_model` to describe racking
+        only, e.g., default is `open_rack`.
+      - Added an attribute `PVSystem.temperature_model_parameters` (dict).
+        to contain temperature model parameters.
+      - If `PVSystem.temperature_model_parameters` is not specified and
+        `PVSystem.racking_model` and `PVSystem.module_type` combine to a valid
+        parameter set name for the SAPM cell temperature model, that parameter
+        set is assigned to `PVSystem.temperature_model_parameters`. Otherwise
+        `PVSystem.temperature_model_parameters` is assigned an empty dict. The
+        result is that the default parameter set for SAPM cell temperature model
+        is `open_rack_glass_polymer`; the old default was `open_rack_glass_glass`.
+   * Changes to `ModelChain` class
+      - `ModelChain.temp_model` renamed to `ModelChain.temperature_model`.
+      - `ModelChain.temperature_model` now defaults to `None`. The temperature
+        model can be inferred from `PVSystem.temperature_model_parameters`.
+      - `ModelChain.temperature_model_parameters` now defaults to `None`. The temperature
+        model can be inferred from `PVSystem.temperature_model_parameters`.
+      - `ModelChain.temps` attribute renamed to `ModelChain.cell_temperature`,
+         and its datatype is now `numeric` rather than `DataFrame`.
+      - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain`
+        defaults to old behavior, using the SAPM temperature model with parameter
+        set `open_rack_glass_glass`. This behavior is deprecated, and will be
+         removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
+          be required for `ModelChain`.
+      - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
+      - `modelchain.basic_chain` has a new required argument
+        `temperature_model_parameters`.
 
 * Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
   an exception instead of displaying a dialog.

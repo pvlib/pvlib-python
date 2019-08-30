@@ -703,11 +703,11 @@ class ModelChain(object):
                 raise ValueError(model + ' is not a valid temperature model')
             # check system.temperature_model_parameters for consistency
             name_from_params = self.infer_temperature_model().__name__
-            if self._temperature_model__name__ != name_from_params:
+            if self._temperature_model.__name__ != name_from_params:
                 raise ValueError(
                     'Temperature model {} is inconsistent with '
                     'PVsystem.temperature_model_parameters {}'.format(
-                        self._temperature_model__name__,
+                        self._temperature_model.__name__,
                         self.system.temperature_model_parameters))
         else:
             self._temperature_model = partial(model, self)

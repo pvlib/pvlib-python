@@ -93,7 +93,7 @@ def cec_dc_adr_ac_system(sam_data, cec_module_cs5p_220m,
 
 
 @pytest.fixture
-def pvwatts_dc_snl_ac_system(cec_inverter_parameters)
+def pvwatts_dc_snl_ac_system(cec_inverter_parameters):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,

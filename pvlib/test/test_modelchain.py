@@ -609,8 +609,6 @@ def test_basic_chain_required(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    inverters = sam_data['cecinverter']
-    inverter_parameters = inverters[
     with pytest.raises(ValueError):
         dc, ac = modelchain.basic_chain(
             times, latitude, longitude, module_parameters, temp_model_params,

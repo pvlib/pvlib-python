@@ -45,6 +45,27 @@ DC_MODEL_PARAMS = {
 }
 
 
+def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
+    """
+    Get and combine attributes from the pvsystem and/or location
+    with the rest of the kwargs.
+    """
+    if pvsystem is not None:
+        pv_dict = pvsystem.__dict__
+    else:
+        pv_dict = {}
+
+    if location is not None:
+        loc_dict = location.__dict__
+    else:
+        loc_dict = {}
+
+    new_kwargs = dict(
+        list(pv_dict.items()) + list(loc_dict.items()) + list(kwargs.items())
+    )
+    return new_kwargs
+
+
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
@@ -830,22 +851,11 @@ class LocalizedPVSystem(PVSystem, Location):
     """
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
-        # get and combine attributes from the pvsystem and/or location
-        # with the rest of the kwargs
-
-        if pvsystem is not None:
-            pv_dict = pvsystem.__dict__
-        else:
-            pv_dict = {}
-
-        if location is not None:
-            loc_dict = location.__dict__
-        else:
-            loc_dict = {}
-
-        new_kwargs = dict(list(pv_dict.items()) +
-                          list(loc_dict.items()) +
-                          list(kwargs.items()))
+        new_kwargs = _combine_localized_attributes(
+            pvsystem=pvsystem,
+            location=location,
+            **kwargs,
+        )
 
         PVSystem.__init__(self, **new_kwargs)
         Location.__init__(self, **new_kwargs)

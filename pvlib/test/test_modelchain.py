@@ -514,7 +514,7 @@ def test_invalid_dc_model_params(system, cec_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('model', [
-    'dc_model', 'ac_model', 'aoi_model', 'spectral_model', 'losses_model',
+    'dc_model', 'ac_model', 'aoi_model', 'spectral_model',
     'temperature_model', 'losses_model'
 ])
 def test_invalid_models(model, system, location):

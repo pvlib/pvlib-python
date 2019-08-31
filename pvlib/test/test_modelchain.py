@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from pvlib import modelchain, pvsystem
+from pvlib import modelchain, pvsystem, temperature
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
@@ -198,7 +198,8 @@ def test_run_model_with_weather(system, location, weather, mocker):
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
     # test with sapm cell temperature model
-    system.racking_model = 'open_rack_glass_glass'
+    system.racking_model = 'open_rack'
+    system.module_type = 'glass_glass'
     mc = ModelChain(system, location)
     mc.temperature_model = 'sapm'
     m_sapm = mocker.spy(system, 'sapm_celltemp')
@@ -211,6 +212,8 @@ def test_run_model_with_weather(system, location, weather, mocker):
     assert not mc.ac.empty
     # test with pvsyst cell temperature model
     system.racking_model = 'freestanding'
+    system.temperature_model_parameters = \
+        temperature._temperature_model_params('pvsyst', 'freestanding')
     mc = ModelChain(system, location)
     mc.temperature_model = 'pvsyst'
     m_pvsyst = mocker.spy(system, 'pvsyst_celltemp')
@@ -269,7 +272,11 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
                            'pvsyst': 'pvsyst',
                            'singlediode': 'sapm',
                            'pvwatts_dc': 'sapm'}
+    temp_model_params = {'sapm': {'a': -3.40641, 'b': -0.0842075, 'deltaT': 3},
+                         'pvsyst': {'u_c': 29.0, 'u_v': 0}}
     system = dc_systems[dc_model]
+    system.temperature_model_parameters = temp_model_params[
+        temp_model_function[dc_model]]
     # remove Adjust from model parameters for desoto, singlediode
     if dc_model in ['desoto', 'singlediode']:
         system.module_parameters.pop('Adjust')

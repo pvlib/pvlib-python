@@ -15,8 +15,7 @@ from pvlib._deprecation import deprecated
 
 from pvlib import (atmosphere, irradiance, singlediode as _singlediode,
                    temperature)
-from pvlib import tools
-from pvlib.tools import _build_kwargs, cosd
+from pvlib.tools import _build_kwargs, cosd, asind, sind, tand
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
@@ -181,7 +180,7 @@ class PVSystem(object):
         if temperature_model_parameters is None:
             self.temperature_model_parameters = \
                 self._infer_temperature_model_params()
-# TODO: in v0.8 check if an empty dict is returned and raise error
+            # TODO: in v0.8 check if an empty dict is returned and raise error
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
@@ -459,13 +458,13 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_global : numeric or Series
+        poa_global : numeric
             Total incident irradiance in W/m^2.
 
-        temp_air : numeric or Series
+        temp_air : numeric
             Ambient dry bulb temperature in degrees C.
 
-        wind_speed : numeric or Series
+        wind_speed : numeric
             Wind speed in m/s at a height of 10 meters.
 
         parameter_set : string, default None
@@ -475,7 +474,7 @@ class PVSystem(object):
 
         Returns
         -------
-        numeric or Series, values in degrees C.
+        numeric, values in degrees C.
         """
         if parameter_set is not None:
             kwargs = temperature._temperature_model_params('sapm',
@@ -576,13 +575,13 @@ class PVSystem(object):
 
         Parameters
         ----------
-        poa_global : numeric or Series
+        poa_global : numeric
             Total incident irradiance in W/m^2.
 
-        temp_air : numeric or Series
+        temp_air : numeric
             Ambient dry bulb temperature in degrees C.
 
-        wind_speed : numeric or Series, default 1.0
+        wind_speed : numeric, default 1.0
             Wind speed in m/s measured at the same height for which the wind
             loss factor was determined.  The default value is 1.0, which is
             the wind speed at module height used to determine NOCT.
@@ -601,7 +600,7 @@ class PVSystem(object):
 
         Returns
         -------
-        numeric or Series, values in degrees C.
+        numeric, values in degrees C.
         """
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
@@ -1102,20 +1101,20 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     aoi = np.where(aoi == 0, zeroang, aoi)
 
     # angle of reflection
-    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
+    thetar_deg = asind(1.0 / n * (sind(aoi)))
 
     # reflectance and transmittance for normal incidence light
     rho_zero = ((1-n) / (1+n)) ** 2
     tau_zero = np.exp(-K*L)
 
     # reflectance for parallel and perpendicular polarized light
-    rho_para = (tools.tand(thetar_deg - aoi) /
-                tools.tand(thetar_deg + aoi)) ** 2
-    rho_perp = (tools.sind(thetar_deg - aoi) /
-                tools.sind(thetar_deg + aoi)) ** 2
+    rho_para = (tand(thetar_deg - aoi) /
+                tand(thetar_deg + aoi)) ** 2
+    rho_perp = (sind(thetar_deg - aoi) /
+                sind(thetar_deg + aoi)) ** 2
 
     # transmittance for non-normal light
-    tau = np.exp(-K*L / tools.cosd(thetar_deg))
+    tau = np.exp(-K * L / cosd(thetar_deg))
 
     # iam is ratio of non-normal to normal incidence transmitted light
     # after deducting the reflected portion of each

@@ -99,6 +99,7 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
+
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Removed `irradiance.extraradiation`.

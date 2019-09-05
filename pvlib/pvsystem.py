@@ -1088,10 +1088,8 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     tau_zero = np.exp(-K*L)
 
     # reflectance for parallel and perpendicular polarized light
-    rho_para = (tand(thetar_deg - aoi) /
-                tand(thetar_deg + aoi)) ** 2
-    rho_perp = (sind(thetar_deg - aoi) /
-                sind(thetar_deg + aoi)) ** 2
+    rho_para = (tand(thetar_deg - aoi) / tand(thetar_deg + aoi)) ** 2
+    rho_perp = (sind(thetar_deg - aoi) / sind(thetar_deg + aoi)) ** 2
 
     # transmittance for non-normal light
     tau = np.exp(-K * L / cosd(thetar_deg))

@@ -451,8 +451,7 @@ class PVSystem(object):
         """
         return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
-    def sapm_celltemp(self, poa_global, temp_air, wind_speed,
-                      parameter_set=None):
+    def sapm_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`temperature.sapm_cell` to calculate cell
         temperatures.
 
@@ -467,21 +466,12 @@ class PVSystem(object):
         wind_speed : numeric
             Wind speed in m/s at a height of 10 meters.
 
-        parameter_set : string, default None
-            Heat loss model parameters to be used.
-            See temperature.TEMPERATURE_MODEL_PARAMETERS for available
-            parameter sets.
-
         Returns
         -------
         numeric, values in degrees C.
         """
-        if parameter_set is not None:
-            kwargs = temperature._temperature_model_params('sapm',
-                                                           parameter_set)
-        else:
-            kwargs = _build_kwargs(['a', 'b', 'deltaT'],
-                                   self.temperature_model_parameters)
+        kwargs = _build_kwargs(['a', 'b', 'deltaT'],
+                               self.temperature_model_parameters)
         return temperature.sapm_cell(poa_global, temp_air, wind_speed,
                                      **kwargs)
 
@@ -568,8 +558,7 @@ class PVSystem(object):
             poa_direct, poa_diffuse, airmass_absolute, aoi,
             self.module_parameters, reference_irradiance=reference_irradiance)
 
-    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0,
-                        parameter_set=None):
+    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
         temperature.
 
@@ -593,23 +582,14 @@ class PVSystem(object):
         alpha_absorption : numeric, default 0.9
             Absorption coefficient
 
-        parameter_set : string, default None
-            Heat loss model parameters to be used.
-            See temperature.TEMPERATURE_MODEL_PARAMETERS for available
-            parameter sets.
-
         Returns
         -------
         numeric, values in degrees C.
         """
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
-        if parameter_set is not None:
-            kwargs.update(temperature._temperature_model_params('pvsyst',
-                                                                parameter_set))
-        else:
-            kwargs.update(_build_kwargs(['u_c', 'u_v'],
-                          self.temperature_model_parameters))
+        kwargs.update(_build_kwargs(['u_c', 'u_v'],
+                                    self.temperature_model_parameters))
         return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
                                        **kwargs)
 

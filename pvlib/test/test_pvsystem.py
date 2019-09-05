@@ -516,13 +516,12 @@ def test_PVSystem_sapm_celltemp(mocker):
 def test_PVSystem_sapm_celltemp_kwargs(mocker):
     temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
         'open_rack_glass_glass']
-    system = pvsystem.PVSystem()
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(temperature, 'sapm_cell')
     temps = 25
     irrads = 1000
     winds = 1
-    out = system.sapm_celltemp(irrads, temps, winds,
-                               parameter_set='open_rack_glass_glass')
+    out = system.sapm_celltemp(irrads, temps, winds)
     temperature.sapm_cell.assert_called_once_with(irrads, temps, winds,
                                                   temp_model_params['a'],
                                                   temp_model_params['b'],
@@ -556,13 +555,13 @@ def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
     alpha_absorption = 0.85
     eta_m = 0.17
     module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
-    system = pvsystem.PVSystem(module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=module_parameters,
+                               temperature_model_parameters=temp_model_params)
     mocker.spy(temperature, 'pvsyst_cell')
     irrad = 800
     temp = 45
     wind = 0.5
-    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind,
-                                 parameter_set='insulated')
+    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
     temperature.pvsyst_cell.assert_called_once_with(
         irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
         eta_m, alpha_absorption)

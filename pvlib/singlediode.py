@@ -30,7 +30,8 @@ newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
 VOLTAGE_BUILTIN = 0.9  # [V]
 
 
-def getparams_from_specs_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc, N_s=60):
+def getparams_from_specs_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc,
+                                N_s=60):
     """
     Calculates the five parameters for the single diode equation at
     standard irradiance and standard cell temperature using the De Soto et al.

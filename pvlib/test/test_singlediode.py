@@ -11,7 +11,7 @@ from conftest import requires_scipy
 
 POA = 888
 TCELL = 55
-#CECMOD = pvsystem.retrieve_sam('cecmod')
+CECMOD = pvsystem.retrieve_sam('cecmod')
 
 
 # run this test solely:

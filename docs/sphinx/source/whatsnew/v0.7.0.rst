@@ -19,6 +19,10 @@ Enhancements
 ~~~~~~~~~~~~
 * Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
   and :py:func:`pvlib.pvsystem.iam_interp`. (:issue:`751`)
+* Updated the file for module parameters for the CEC model, from the SAM file
+  dated 2017-6-5 to the SAM file dated 2019-03-05. (:issue:`761`)
+* Updated the file for inverter parameters for the CEC model, from the SAM file
+  dated 2018-3-18 to the SAM file dated 2019-03-05. (:issue:`761`)
 * Added recombination current parameters to bishop88 single-diode functions and also
   to :py:func:`pvlib.pvsystem.max_power_point`. (:issue:`762`)
 

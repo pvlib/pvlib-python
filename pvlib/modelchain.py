@@ -453,11 +453,11 @@ class ModelChain(object):
 
         return self
 
-    def desoto(self):
+    def _singlediode(self, calcparams_model_function):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
-            self.system.calcparams_desoto(self.effective_irradiance,
-                                          self.cell_temperature))
+            calcparams_model_function(self.effective_irradiance,
+                                      self.cell_temperature))
 
         self.diode_params = (photocurrent, saturation_current,
                              resistance_series,
@@ -470,42 +470,15 @@ class ModelChain(object):
         self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
 
         return self
+
+    def desoto(self):
+        return self._singlediode(self.system.calcparams_desoto)
 
     def cec(self):
-        (photocurrent, saturation_current, resistance_series,
-         resistance_shunt, nNsVth) = (
-            self.system.calcparams_cec(self.effective_irradiance,
-                                       self.cell_temperature))
-
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
-
-        self.dc = self.system.singlediode(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-
-        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
-
-        return self
+        return self._singlediode(self.system.calcparams_cec)
 
     def pvsyst(self):
-        (photocurrent, saturation_current, resistance_series,
-         resistance_shunt, nNsVth) = (
-            self.system.calcparams_pvsyst(self.effective_irradiance,
-                                          self.cell_temperature))
-
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
-
-        self.dc = self.system.singlediode(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-
-        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
-
-        return self
+        return self._singlediode(self.system.calcparams_pvsyst)
 
     def singlediode(self):
         """Deprecated"""

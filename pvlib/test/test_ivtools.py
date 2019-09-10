@@ -28,14 +28,6 @@ def get_cec_params_cansol_cs5p_220p():
                        'R_sh_ref': 837.51, 'R_s': 1.004, 'Adjust': 2.3}}
 
 
-@pytest.fixture()
-def cec_module_parameters(sam_data):
-    modules = sam_data
-    module = "Canadian_Solar_CS5P_220P"
-    module_parameters = modules[module]
-    return module_parameters
-
-
 @requires_scipy
 def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
     test_params = get_test_iv_params
@@ -93,7 +85,7 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
             beta_voc=input_data['beta_voc'],
             gamma_pmp=input_data['gamma_pmp'],
             cells_in_series=input_data['cells_in_series'])
-    modeled = pd.Series(index=expected.index, data=np.nan)
+    modeled = pd.Series(index=expected.keys(), data=np.nan)
     modeled['a_ref'] = a_ref
     modeled['I_L_ref'] = I_L_ref
     modeled['I_o_ref'] = I_o_ref

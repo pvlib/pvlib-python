@@ -89,9 +89,9 @@ def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     try:
         from PySAM import PySSC
-    except ImportError as e:
-        raise("Requires NREL's PySAM package at "
-              "https://pypi.org/project/NREL-PySAM/.") from e
+    except ImportError:
+        raise ImportError("Requires NREL's PySAM package at "
+                          "https://pypi.org/project/NREL-PySAM/.")
 
     datadict = {'tech_model': '6parsolve', 'financial_model': 'none',
                 'celltype': celltype, 'Vmp': v_mp,

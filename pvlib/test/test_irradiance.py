@@ -12,9 +12,8 @@ from numpy.testing import assert_almost_equal, assert_allclose
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
 from pvlib import irradiance
-from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import (fail_on_pvlib_version, needs_numpy_1_10, pandas_0_22,
+from conftest import (needs_numpy_1_10, pandas_0_22,
                       requires_ephem, requires_numba)
 
 
@@ -66,18 +65,6 @@ def dni_et(times):
 @pytest.fixture
 def relative_airmass(times):
     return pd.Series([np.nan, 7.58831596, 1.01688136, 3.27930443], times)
-
-
-@fail_on_pvlib_version('0.7')
-def test_deprecated_07():
-    with pytest.warns(pvlibDeprecationWarning):
-        irradiance.extraradiation(300)
-    with pytest.warns(pvlibDeprecationWarning):
-        irradiance.grounddiffuse(40, 900)
-    with pytest.warns(pvlibDeprecationWarning):
-        irradiance.total_irrad(32, 180, 10, 180, 0, 0, 0, 1400, 1)
-    with pytest.warns(pvlibDeprecationWarning):
-        irradiance.globalinplane(0, 1000, 100, 10)
 
 
 # setup for et rad test. put it here for readability

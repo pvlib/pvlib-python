@@ -13,6 +13,3 @@ from pvlib import pvsystem
 from pvlib import spa
 from pvlib import modelchain
 from pvlib import singlediode
-
-# for backwards compatibility for pvlib.tmy module
-from pvlib import tmy

@@ -221,6 +221,16 @@ AOI modifiers
    pvsystem.ashraeiam
    pvsystem.sapm_aoi_loss
 
+PV temperature models
+---------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   temperature.sapm_cell
+   temperature.sapm_module
+   temperature.pvsyst_cell
+
 Single diode models
 -------------------
 
@@ -258,10 +268,20 @@ Functions relevant for the SAPM model.
 
    pvsystem.sapm
    pvsystem.sapm_effective_irradiance
-   pvsystem.sapm_celltemp
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter
+   temperature.sapm_cell
+
+Pvsyst model
+-------------
+
+Functions relevant for the Pvsyst model.
+
+.. autosummary::
+   :toctree: generated/
+
+   temperature.pvsyst_cell
 
 PVWatts model
 -------------
@@ -273,14 +293,6 @@ PVWatts model
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
    pvsystem.pvwatts_losses
-
-PVsyst model
-------------
-
-.. autosummary::
-   :toctree: generated/
-
-   pvsystem.pvsyst_celltemp
 
 Functions for fitting PV models
 -------------------------------
@@ -480,7 +492,7 @@ ModelChain properties that are aliases for your specific modeling functions.
    modelchain.ModelChain.ac_model
    modelchain.ModelChain.aoi_model
    modelchain.ModelChain.spectral_model
-   modelchain.ModelChain.temp_model
+   modelchain.ModelChain.temperature_model
    modelchain.ModelChain.losses_model
    modelchain.ModelChain.effective_irradiance_model
 
@@ -508,6 +520,7 @@ ModelChain model definitions.
    modelchain.ModelChain.sapm_spectral_loss
    modelchain.ModelChain.no_spectral_loss
    modelchain.ModelChain.sapm_temp
+   modelchain.ModelChain.pvsyst_temp
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 
@@ -524,7 +537,7 @@ on the information in the associated :py:class:`~pvsystem.PVSystem` object.
    modelchain.ModelChain.infer_ac_model
    modelchain.ModelChain.infer_aoi_model
    modelchain.ModelChain.infer_spectral_model
-   modelchain.ModelChain.infer_temp_model
+   modelchain.ModelChain.infer_temperature_model
    modelchain.ModelChain.infer_losses_model
 
 Functions

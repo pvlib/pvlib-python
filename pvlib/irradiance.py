@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
-from pvlib._deprecation import deprecated
 
 # see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
@@ -112,11 +111,6 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     Ea = to_output(Ea)
 
     return Ea
-
-
-extraradiation = deprecated('0.6', alternative='get_extra_radiation',
-                            name='extraradiation', removal='0.7')(
-                            get_extra_radiation)
 
 
 def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
@@ -372,11 +366,6 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     return irrads
 
 
-total_irrad = deprecated('0.6', alternative='get_total_irradiance',
-                         name='total_irrad', removal='0.7')(
-                         get_total_irradiance)
-
-
 def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth,
                     dni, ghi, dhi, dni_extra=None, airmass=None,
@@ -508,65 +497,6 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
-# globalinplane returns less data than poa_components, so better
-# to copy it
-@deprecated('0.6', alternative='poa_components', removal='0.7')
-def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
-    r'''
-    Determine the three components on in-plane irradiance
-
-    Combines in-plane irradaince compoents from the chosen diffuse
-    translation, ground reflection and beam irradiance algorithms into
-    the total in-plane irradiance.
-
-    Parameters
-    ----------
-    aoi : numeric
-        Angle of incidence of solar rays with respect to the module
-        surface, from :func:`aoi`.
-
-    dni : numeric
-        Direct normal irradiance (W/m^2), as measured from a TMY file or
-        calculated with a clearsky model.
-
-    poa_sky_diffuse : numeric
-        Diffuse irradiance (W/m^2) in the plane of the modules, as
-        calculated by a diffuse irradiance translation function
-
-    poa_ground_diffuse : numeric
-        Ground reflected irradiance (W/m^2) in the plane of the modules,
-        as calculated by an albedo model (eg. :func:`grounddiffuse`)
-
-    Returns
-    -------
-    irrads : OrderedDict or DataFrame
-        Contains the following keys:
-
-        * ``poa_global`` : Total in-plane irradiance (W/m^2)
-        * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
-        * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
-
-    Notes
-    ------
-    Negative beam irradiation due to aoi :math:`> 90^{\circ}` or AOI
-    :math:`< 0^{\circ}` is set to zero.
-    '''
-
-    poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
-    poa_global = poa_direct + poa_sky_diffuse + poa_ground_diffuse
-    poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
-
-    irrads = OrderedDict()
-    irrads['poa_global'] = poa_global
-    irrads['poa_direct'] = poa_direct
-    irrads['poa_diffuse'] = poa_diffuse
-
-    if isinstance(poa_direct, pd.Series):
-        irrads = pd.DataFrame(irrads)
-
-    return irrads
-
-
 def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
@@ -630,11 +560,6 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         pass
 
     return diffuse_irrad
-
-
-grounddiffuse = deprecated('0.6', alternative='get_ground_diffuse',
-                           name='grounddiffuse', removal='0.7')(
-                           get_ground_diffuse)
 
 
 def isotropic(surface_tilt, dhi):
@@ -1742,11 +1667,13 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """
-    Determine DNI from GHI using the DIRINDEX model, which is a modification of
-    the DIRINT model with information from a clear sky model.
+    Determine DNI from GHI using the DIRINDEX model.
 
-    DIRINDEX [1] improves upon the DIRINT model by taking into account
-    turbidity when used with the Ineichen clear sky model results.
+    The DIRINDEX model [1] modifies the DIRINT model implemented in
+    :py:func:``pvlib.irradiance.dirint`` by taking into account information
+    from a clear sky model. It is recommended that ``ghi_clearsky`` be
+    calculated using the Ineichen clear sky model
+    :py:func:``pvlib.clearsky.ineichen`` with ``perez_enhancement=True``.
 
     The pvlib implementation limits the clearness index to 1.
 

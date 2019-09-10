@@ -8,9 +8,6 @@ from pandas.util.testing import assert_series_equal
 import pytest
 
 from pvlib import atmosphere
-from pvlib._deprecation import pvlibDeprecationWarning
-
-from conftest import fail_on_pvlib_version
 
 
 def test_pres2alt():
@@ -72,14 +69,6 @@ def test_get_absolute_airmass():
     out = atmosphere.get_absolute_airmass(relative_am, pressure=90000)
     expected = np.array([nan, 35.529, 1.776, 0.887])
     assert_allclose(out, expected, equal_nan=True, atol=0.001)
-
-
-@fail_on_pvlib_version('0.7')
-def test_deprecated_07():
-    with pytest.warns(pvlibDeprecationWarning):
-        atmosphere.relativeairmass(2)
-    with pytest.warns(pvlibDeprecationWarning):
-        atmosphere.absoluteairmass(2)
 
 
 def test_gueymard94_pw():

@@ -17,8 +17,10 @@ from pvlib import irradiance
 from pvlib import atmosphere
 from pvlib import solarposition
 from pvlib.location import Location
+from pvlib import temperature
+from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import needs_numpy_1_10, requires_scipy
+from conftest import needs_numpy_1_10, requires_scipy, fail_on_pvlib_version
 
 
 def test_systemdef_tmy3():
@@ -230,17 +232,6 @@ def test_iam_interp():
         pvsystem.iam_interp(0.0, [0, 90], [1, -1])
 
 
-# if this completes successfully we'll be able to do more tests below.
-@pytest.fixture(scope="session")
-def sam_data():
-    data = {}
-    data['cecmod'] = pvsystem.retrieve_sam('cecmod')
-    data['sandiamod'] = pvsystem.retrieve_sam('sandiamod')
-    data['cecinverter'] = pvsystem.retrieve_sam('cecinverter')
-    data['adrinverter'] = pvsystem.retrieve_sam('adrinverter')
-    return data
-
-
 @pytest.fixture(scope="session")
 def sapm_module_params(sam_data):
     modules = sam_data['sandiamod']
@@ -249,29 +240,82 @@ def sapm_module_params(sam_data):
     return module_parameters
 
 
-@pytest.fixture(scope="session")
-def cec_module_params(sam_data):
-    modules = sam_data['cecmod']
-    module = 'Example_Module'
-    module_parameters = modules[module]
-    return module_parameters
+def test_retrieve_sam_raise_no_parameters():
+    """
+    Raise an exception if no parameters are provided to `retrieve_sam()`.
+    """
+    with pytest.raises(ValueError) as error:
+        pvsystem.retrieve_sam()
+    assert 'A name or path must be provided!' == str(error.value)
 
 
-@pytest.fixture()
-def pvsyst_module_params():
-    module_parameters = {}
-    module_parameters['gamma_ref'] = 1.05
-    module_parameters['mu_gamma'] = 0.001
-    module_parameters['I_L_ref'] = 6.0
-    module_parameters['I_o_ref'] = 5e-9
-    module_parameters['EgRef'] = 1.121
-    module_parameters['R_sh_ref'] = 300
-    module_parameters['R_sh_0'] = 1000
-    module_parameters['R_s'] = 0.5
-    module_parameters['R_sh_exp'] = 5.5
-    module_parameters['cells_in_series'] = 60
-    module_parameters['alpha_sc'] = 0.001
-    return module_parameters
+def test_retrieve_sam_cecmod():
+    """
+    Test the expected data is retrieved from the CEC module database. In
+    particular, check for a known module in the database and check for the
+    expected keys for that module.
+    """
+    data = pvsystem.retrieve_sam('cecmod')
+    keys = [
+        'BIPV',
+        'Date',
+        'T_NOCT',
+        'A_c',
+        'N_s',
+        'I_sc_ref',
+        'V_oc_ref',
+        'I_mp_ref',
+        'V_mp_ref',
+        'alpha_sc',
+        'beta_oc',
+        'a_ref',
+        'I_L_ref',
+        'I_o_ref',
+        'R_s',
+        'R_sh_ref',
+        'Adjust',
+        'gamma_r',
+        'Version',
+        'STC',
+        'PTC',
+        'Technology',
+        'Bifacial',
+        'Length',
+        'Width',
+    ]
+    module = 'Itek_Energy_LLC_iT_300_HE'
+    assert module in data
+    assert set(data[module].keys()) == set(keys)
+
+
+def test_retrieve_sam_cecinverter():
+    """
+    Test the expected data is retrieved from the CEC inverter database. In
+    particular, check for a known inverter in the database and check for the
+    expected keys for that inverter.
+    """
+    data = pvsystem.retrieve_sam('cecinverter')
+    keys = [
+        'Vac',
+        'Paco',
+        'Pdco',
+        'Vdco',
+        'Pso',
+        'C0',
+        'C1',
+        'C2',
+        'C3',
+        'Pnt',
+        'Vdcmax',
+        'Idcmax',
+        'Mppt_low',
+        'Mppt_high',
+        'CEC_Date',
+        'CEC_Type',
+    ]
+    inverter = 'Yaskawa_Solectria_Solar__PVI_5300_208__208V_'
+    assert inverter in data
+    assert set(data[inverter].keys()) == set(keys)
 
 
 def test_sapm(sapm_module_params):
@@ -459,6 +503,94 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
         poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params,
         reference_irradiance=reference_irradiance)
     assert_allclose(out, 1, atol=0.1)
+
+
+def test_PVSystem_sapm_celltemp(mocker):
+    a, b, deltaT = (-3.47, -0.0594, 3)  # open_rack_glass_glass
+    temp_model_params = {'a': a, 'b': b, 'deltaT': deltaT}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'sapm_cell')
+    temps = 25
+    irrads = 1000
+    winds = 1
+    out = system.sapm_celltemp(irrads, temps, winds)
+    temperature.sapm_cell.assert_called_once_with(irrads, temps, winds, a, b,
+                                                  deltaT)
+    assert_allclose(out, 57, atol=1)
+
+
+def test_PVSystem_sapm_celltemp_kwargs(mocker):
+    temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'sapm_cell')
+    temps = 25
+    irrads = 1000
+    winds = 1
+    out = system.sapm_celltemp(irrads, temps, winds)
+    temperature.sapm_cell.assert_called_once_with(irrads, temps, winds,
+                                                  temp_model_params['a'],
+                                                  temp_model_params['b'],
+                                                  temp_model_params['deltaT'])
+    assert_allclose(out, 57, atol=1)
+
+
+def test_PVSystem_pvsyst_celltemp(mocker):
+    parameter_set = 'insulated'
+    temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][
+        parameter_set]
+    alpha_absorption = 0.85
+    eta_m = 0.17
+    module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
+    system = pvsystem.PVSystem(module_parameters=module_parameters,
+                               temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'pvsyst_cell')
+    irrad = 800
+    temp = 45
+    wind = 0.5
+    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
+    temperature.pvsyst_cell.assert_called_once_with(
+        irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
+        eta_m, alpha_absorption)
+    assert (out < 90) and (out > 70)
+
+
+def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
+    temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][
+        'insulated']
+    alpha_absorption = 0.85
+    eta_m = 0.17
+    module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
+    system = pvsystem.PVSystem(module_parameters=module_parameters,
+                               temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'pvsyst_cell')
+    irrad = 800
+    temp = 45
+    wind = 0.5
+    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
+    temperature.pvsyst_cell.assert_called_once_with(
+        irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
+        eta_m, alpha_absorption)
+    assert (out < 90) and (out > 70)
+
+
+def test__infer_temperature_model_params():
+    system = pvsystem.PVSystem(module_parameters={},
+                               racking_model='open_rack',
+                               module_type='glass_polymer')
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'sapm']['open_rack_glass_polymer']
+    assert expected == system._infer_temperature_model_params()
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'pvsyst']['freestanding']
+    system = pvsystem.PVSystem(module_parameters={},
+                               racking_model='freestanding',
+                               module_type='glass_polymer')
+    assert expected == system._infer_temperature_model_params()
+    system = pvsystem.PVSystem(module_parameters={},
+                               racking_model='not_a_rack_model',
+                               module_type='glass_polymer')
+    assert {} == system._infer_temperature_model_params()
 
 
 def test_calcparams_desoto(cec_module_params):
@@ -1000,9 +1132,7 @@ def test_singlediode_array():
 
 
 @requires_scipy
-def test_singlediode_floats(sam_data):
-    module = 'Example_Module'
-    module_parameters = sam_data['cecmod'][module]
+def test_singlediode_floats():
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, method='lambertw')
     expected = {'i_xx': 4.2498,
                 'i_mp': 6.1275,
@@ -1113,114 +1243,6 @@ def test_PVSystem_scale_voltage_current_power(mocker):
     m.assert_called_once_with(data, voltage=2, current=3)
 
 
-def test_sapm_celltemp():
-    default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(default['temp_cell'], 43.509, 3)
-    assert_allclose(default['temp_module'], 40.809, 3)
-    assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20,
-                                                       [-3.47, -.0594, 3]))
-
-
-def test_sapm_celltemp_dict_like():
-    default = pvsystem.sapm_celltemp(900, 5, 20)
-    assert_allclose(default['temp_cell'], 43.509, 3)
-    assert_allclose(default['temp_module'], 40.809, 3)
-    model = {'a': -3.47, 'b': -.0594, 'deltaT': 3}
-    assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
-    model = pd.Series(model)
-    assert_frame_equal(default, pvsystem.sapm_celltemp(900, 5, 20, model))
-
-
-def test_sapm_celltemp_with_index():
-    times = pd.date_range(start='2015-01-01', end='2015-01-02', freq='12H')
-    temps = pd.Series([0, 10, 5], index=times)
-    irrads = pd.Series([0, 500, 0], index=times)
-    winds = pd.Series([10, 5, 0], index=times)
-
-    pvtemps = pvsystem.sapm_celltemp(irrads, winds, temps)
-
-    expected = pd.DataFrame({'temp_cell':[0., 23.06066166, 5.],
-                             'temp_module':[0., 21.56066166, 5.]},
-                            index=times)
-
-    assert_frame_equal(expected, pvtemps)
-
-
-def test_PVSystem_sapm_celltemp(mocker):
-    racking_model = 'roof_mount_cell_glassback'
-
-    system = pvsystem.PVSystem(racking_model=racking_model)
-    mocker.spy(pvsystem, 'sapm_celltemp')
-    temps = 25
-    irrads = 1000
-    winds = 1
-    out = system.sapm_celltemp(irrads, winds, temps)
-    pvsystem.sapm_celltemp.assert_called_once_with(
-        irrads, winds, temps, model=racking_model)
-    assert isinstance(out, pd.DataFrame)
-    assert out.shape == (1, 2)
-
-
-def test_pvsyst_celltemp_default():
-    default = pvsystem.pvsyst_celltemp(900, 20, 5)
-    assert_allclose(default, 45.137, 0.001)
-
-
-def test_pvsyst_celltemp_non_model():
-    tup_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
-                                             model_params=(23.5, 6.25))
-    assert_allclose(tup_non_model, 33.315, 0.001)
-
-    list_non_model = pvsystem.pvsyst_celltemp(900, 20, 5, 0.1,
-                                              model_params=[26.5, 7.68])
-    assert_allclose(list_non_model, 31.233, 0.001)
-
-
-def test_pvsyst_celltemp_model_wrong_type():
-    with pytest.raises(TypeError):
-        pvsystem.pvsyst_celltemp(
-            900, 20, 5, 0.1,
-            model_params={"won't": 23.5, "work": 7.68})
-
-
-def test_pvsyst_celltemp_model_non_option():
-    with pytest.raises(KeyError):
-        pvsystem.pvsyst_celltemp(
-            900, 20, 5, 0.1,
-            model_params="not_an_option")
-
-
-def test_pvsyst_celltemp_with_index():
-    times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12H")
-    temps = pd.Series([0, 10, 5], index=times)
-    irrads = pd.Series([0, 500, 0], index=times)
-    winds = pd.Series([10, 5, 0], index=times)
-
-    pvtemps = pvsystem.pvsyst_celltemp(irrads, temps, wind_speed=winds)
-    expected = pd.Series([0.0, 23.96551, 5.0], index=times)
-    assert_series_equal(expected, pvtemps)
-
-
-def test_PVSystem_pvsyst_celltemp(mocker):
-    racking_model = 'insulated'
-    alpha_absorption = 0.85
-    eta_m = 0.17
-    module_parameters = {}
-    module_parameters['alpha_absorption'] = alpha_absorption
-    module_parameters['eta_m'] = eta_m
-    system = pvsystem.PVSystem(racking_model=racking_model,
-                               module_parameters=module_parameters)
-    mocker.spy(pvsystem, 'pvsyst_celltemp')
-    irrad = 800
-    temp = 45
-    wind = 0.5
-    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
-    pvsystem.pvsyst_celltemp.assert_called_once_with(
-        irrad, temp, wind, eta_m, alpha_absorption, racking_model)
-    assert isinstance(out, float)
-    assert out < 90 and out > 70
-
-
 def test_adrinverter(sam_data):
     inverters = sam_data['adrinverter']
     testinv = 'Ablerex_Electronics_Co___Ltd___' \
@@ -1266,22 +1288,20 @@ def test_adrinverter_invalid_and_night(sam_data):
     assert_allclose(pacs, np.array([np.nan, -0.25, np.nan, np.nan]))
 
 
-def test_snlinverter(sam_data):
-    inverters = sam_data['cecinverter']
-    testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
+def test_snlinverter(cec_inverter_parameters):
     vdcs = pd.Series(np.linspace(0,50,3))
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
+    pacs = pvsystem.snlinverter(vdcs, pdcs, cec_inverter_parameters)
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
-def test_PVSystem_snlinverter(sam_data):
-    inverters = sam_data['cecinverter']
-    testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
-    system = pvsystem.PVSystem(inverter=testinv,
-                               inverter_parameters=inverters[testinv])
+def test_PVSystem_snlinverter(cec_inverter_parameters):
+    system = pvsystem.PVSystem(
+        inverter=cec_inverter_parameters['Name'],
+        inverter_parameters=cec_inverter_parameters,
+    )
     vdcs = pd.Series(np.linspace(0,50,3))
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
@@ -1290,26 +1310,43 @@ def test_PVSystem_snlinverter(sam_data):
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
-def test_snlinverter_float(sam_data):
-    inverters = sam_data['cecinverter']
-    testinv = 'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_'
+def test_snlinverter_float(cec_inverter_parameters):
     vdcs = 25.
     idcs = 5.5
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
+    pacs = pvsystem.snlinverter(vdcs, pdcs, cec_inverter_parameters)
     assert_allclose(pacs, 132.004278, 5)
 
 
-def test_snlinverter_Pnt_micro(sam_data):
-    inverters = sam_data['cecinverter']
-    testinv = 'Enphase_Energy__M250_60_2LL_S2x___ZC____NA__208V_208V__CEC_2013_'
+def test_snlinverter_Pnt_micro():
+    """
+    Test for issue #140, where some microinverters were giving a positive AC
+    power output when the DC power was 0.
+    """
+    inverter_parameters = {
+        'Name': 'Enphase Energy: M250-60-2LL-S2x (-ZC) (-NA) 208V [CEC 2013]',
+        'Vac': 208.0,
+        'Paco': 240.0,
+        'Pdco': 250.5311318,
+        'Vdco': 32.06160667,
+        'Pso': 1.12048857,
+        'C0': -5.76E-05,
+        'C1': -6.24E-04,
+        'C2': 8.09E-02,
+        'C3': -0.111781106,
+        'Pnt': 0.043,
+        'Vdcmax': 48.0,
+        'Idcmax': 9.8,
+        'Mppt_low': 27.0,
+        'Mppt_high': 39.0,
+    }
     vdcs = pd.Series(np.linspace(0,50,3))
     idcs = pd.Series(np.linspace(0,11,3))
     pdcs = idcs * vdcs
 
-    pacs = pvsystem.snlinverter(vdcs, pdcs, inverters[testinv])
-    assert_series_equal(pacs, pd.Series([-0.043000, 132.545914746, 240.000000]))
+    pacs = pvsystem.snlinverter(vdcs, pdcs, inverter_parameters)
+    assert_series_equal(pacs, pd.Series([-0.043, 132.545914746, 240.0]))
 
 
 def test_PVSystem_creation():
@@ -1376,7 +1413,9 @@ def test_PVSystem_localize_with_latlon():
 def test_PVSystem___repr__():
     system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
 
-    expected = 'PVSystem: \n  name: pv ftw\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+    expected = ('PVSystem: \n  name: pv ftw\n  surface_tilt: 0\n  '
+                'surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  '
+                'albedo: 0.25\n  racking_model: open_rack')
 
     assert system.__repr__() == expected
 
@@ -1385,7 +1424,10 @@ def test_PVSystem_localize___repr__():
     system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
     localized_system = system.localize(latitude=32, longitude=-111)
 
-    expected = 'LocalizedPVSystem: \n  name: None\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+    expected = ('LocalizedPVSystem: \n  name: None\n  latitude: 32\n  '
+                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
+                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
+                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
 
     assert localized_system.__repr__() == expected
 
@@ -1414,7 +1456,10 @@ def test_LocalizedPVSystem___repr__():
                                                   inverter='blarg',
                                                   name='my name')
 
-    expected = 'LocalizedPVSystem: \n  name: my name\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC\n  surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+    expected = ('LocalizedPVSystem: \n  name: my name\n  latitude: 32\n  '
+                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
+                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
+                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
 
     assert localized_system.__repr__() == expected
 
@@ -1573,3 +1618,60 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     pvsystem.pvwatts_ac.assert_called_once_with(pdc,
                                                 **system.inverter_parameters)
     assert out < pdc
+
+
+@fail_on_pvlib_version('0.8')
+def test_deprecated_08():
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.sapm_celltemp(1000, 25, 1)
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.pvsyst_celltemp(1000, 25)
+    module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
+                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.PVSystem(module_parameters=module_parameters,
+                          racking_model='open', module_type='glass_glass')
+
+
+@fail_on_pvlib_version('0.8')
+def test__pvsyst_celltemp_translator():
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, 5)
+    assert_allclose(result, 45.137, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, 5, 0.1, 0.9,
+                                                  [29.0, 0.0])
+    assert_allclose(result, 45.137, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(poa_global=900, temp_air=20,
+                                                  wind_speed=5)
+    assert_allclose(result, 45.137, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5)
+    assert_allclose(result, 45.137, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
+                                                  u_c=23.5, u_v=6.25,
+                                                  eta_m=0.1)
+    assert_allclose(result, 33.315, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
+                                                  eta_m=0.1,
+                                                  model_params=[23.5, 6.25])
+    assert_allclose(result, 33.315, 0.001)
+    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
+                                                  eta_m=0.1,
+                                                  model_params=(23.5, 6.25))
+    assert_allclose(result, 33.315, 0.001)
+
+
+@fail_on_pvlib_version('0.8')
+def test__sapm_celltemp_translator():
+    result = pvsystem._sapm_celltemp_translator(900, 5, 20,
+                                                'open_rack_glass_glass')
+    assert_allclose(result, 43.509, 3)
+    result = pvsystem._sapm_celltemp_translator(900, 5, temp_air=20,
+                                                model='open_rack_glass_glass')
+    assert_allclose(result, 43.509, 3)
+    params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
+    result = pvsystem._sapm_celltemp_translator(900, 5, 20, params)
+    assert_allclose(result, 43.509, 3)
+    result = pvsystem._sapm_celltemp_translator(900, 5, 20,
+                                                [params['a'], params['b'],
+                                                 params['deltaT']])
+    assert_allclose(result, 43.509, 3)

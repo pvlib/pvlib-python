@@ -76,7 +76,6 @@ def test_fit_sde_sandia_bad_iv(get_bad_iv_curves):
 @requires_pysam
 def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
     input_data = get_cec_params_cansol_cs5p_220p['input']
-    expected = get_cec_params_cansol_cs5p_220p['output']
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
         ivtools.fit_sdm_cec_sam(
             celltype='polySi', v_mp=input_data['V_mp_ref'],
@@ -85,7 +84,8 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
             beta_voc=input_data['beta_voc'],
             gamma_pmp=input_data['gamma_pmp'],
             cells_in_series=input_data['cells_in_series'])
-    modeled = pd.Series(index=expected.keys(), data=np.nan)
+    expected = pd.Series(get_cec_params_cansol_cs5p_220p['output'])
+    modeled = pd.Series(index=expected.index, data=np.nan)
     modeled['a_ref'] = a_ref
     modeled['I_L_ref'] = I_L_ref
     modeled['I_o_ref'] = I_o_ref

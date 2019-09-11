@@ -472,24 +472,6 @@ class ModelChain(object):
     def pvsyst(self):
         return self._singlediode(self.system.calcparams_pvsyst)
 
-    def singlediode(self):
-        """Deprecated"""
-        (photocurrent, saturation_current, resistance_series,
-         resistance_shunt, nNsVth) = (
-            self.system.calcparams_desoto(self.effective_irradiance,
-                                          self.cell_temperature))
-
-        self.desoto = (photocurrent, saturation_current, resistance_series,
-                       resistance_shunt, nNsVth)
-
-        self.dc = self.system.singlediode(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-
-        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
-
-        return self
-
     def pvwatts_dc(self):
         self.dc = self.system.pvwatts_dc(self.effective_irradiance,
                                          self.cell_temperature)

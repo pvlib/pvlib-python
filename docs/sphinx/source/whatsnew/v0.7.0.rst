@@ -71,6 +71,11 @@ API Changes
 
 * Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
   an exception instead of displaying a dialog.
+* The `times` keyword argument has been deprecated in the
+  :py:meth:`pvlib.modelchain.ModelChain.run_model`,
+  :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`, and
+  :py:meth:`pvlib.modelchain.ModelChain.complete_irradiance` methods.
+  Model times are now determined by the input weather DataFrame index.
 
 Enhancements
 ~~~~~~~~~~~~

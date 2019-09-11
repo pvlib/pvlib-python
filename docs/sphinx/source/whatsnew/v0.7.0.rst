@@ -128,5 +128,4 @@ Contributors
 * Oscar Dowson (:ghuser:`odow`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
-* Cliff Hansen (:ghuser:`cwhanse`)
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)

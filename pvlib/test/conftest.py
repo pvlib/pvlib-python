@@ -349,3 +349,10 @@ def cec_module_fs_495():
         'Technology': 'CdTe',
     }
     return parameters
+
+
+@pytest.fixture(scope='function')
+def sapm_temperature_cs5p_220m():
+    # SAPM temperature model parameters for Canadian_Solar_CS5P_220M
+    # (glass/polymer) in open rack
+    return {'a': -3.40641, 'b': -0.0842075, 'deltaT': 3}

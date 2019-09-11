@@ -151,7 +151,7 @@ def test_run_model_with_irradiance(system, location):
                               index=times)
     ac = mc.run_model(irradiance).ac
 
-    expected = pd.Series(np.array([1.90054749e+02, -2.00000000e-02]),
+    expected = pd.Series(np.array([187.80746494643176, -0.02]),
                          index=times)
     assert_series_equal(ac, expected)
 

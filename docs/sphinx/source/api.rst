@@ -294,6 +294,14 @@ PVWatts model
    pvsystem.pvwatts_losses
    pvsystem.pvwatts_losses
 
+Functions for fitting PV models
+-------------------------------
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.fit_sde_sandia
+    ivtools.fit_sdm_cec_sam
+
 Other
 -----
 

@@ -24,4 +24,5 @@ dependencies:
     - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - pip:
+        - nrel-pysam
         - pvfactors==1.0.1

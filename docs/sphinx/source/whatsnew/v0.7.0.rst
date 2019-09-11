@@ -82,6 +82,11 @@ Enhancements
   dated 2018-3-18 to the SAM file dated 2019-03-05. (:issue:`761`)
 * Added recombination current parameters to bishop88 single-diode functions and also
   to :py:func:`pvlib.pvsystem.max_power_point`. (:issue:`762`)
+* Add `ivtools` module to contain functions for IV model fitting.
+* Add :py:func:`~pvlib.ivtools.fit_sde_sandia`, a simple method to fit
+  the single diode equation to an IV curve.
+* Add :py:func:`~pvlib.ivtools.fit_sdm_cec_sam`, a wrapper for the CEC single
+  diode model fitting function '6parsolve' from NREL's System Advisor Model.
 
 Bug fixes
 ~~~~~~~~~
@@ -104,26 +109,6 @@ Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
 
-API Changes
-~~~~~~~~~~~
-
-
-Enhancements
-~~~~~~~~~~~~
-* Add `ivtools` module to contain functions for IV model fitting.
-* Add :py:func:`~pvlib.ivtools.fit_sde_sandia`, a simple method to fit
-  the single diode equation to an IV curve.
-* Add :py:func:`~pvlib.ivtools.fit_sdm_cec_sam`, a wrapper for the CEC single
-  diode model fitting function '6parsolve' from NREL's System Advisor Model.
-
-
-Bug fixes
-~~~~~~~~~
-
-
-Testing
-~~~~~~~
-
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Removed `irradiance.extraradiation`.
@@ -143,5 +128,4 @@ Contributors
 * Oscar Dowson (:ghuser:`odow`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
-* Cliff Hansen (:ghuser:`cwhanse`)
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)

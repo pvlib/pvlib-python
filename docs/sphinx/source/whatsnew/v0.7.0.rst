@@ -120,6 +120,8 @@ Removal of prior version deprecations
 * Removed `solarposition.get_sun_rise_set_transit`.
 * Removed `tmy` module.
 * Removed `ModelChain.singlediode` method.
+* Removed `ModelChain.prepare_inputs` clearsky assumption when no irradiance
+  data was provided.
 
 Contributors
 ~~~~~~~~~~~~

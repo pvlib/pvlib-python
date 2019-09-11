@@ -174,6 +174,13 @@ def test_prepare_inputs_times(system, location):
         mc.prepare_inputs(irradiance, times=times)
 
 
+def test_prepare_inputs_no_irradiance(system, location):
+    mc = ModelChain(system, location)
+    weather = pd.DataFrame()
+    with pytest.raises(ValueError):
+        mc.prepare_inputs(weather)
+
+
 @requires_tables
 def test_complete_irradiance_times(system, location):
     mc = ModelChain(system, location)

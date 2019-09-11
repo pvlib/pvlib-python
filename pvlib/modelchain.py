@@ -432,9 +432,11 @@ class ModelChain(object):
             self.system.calcparams_desoto(self.effective_irradiance,
                                           self.temps['temp_cell']))
 
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
+        self.diode_params = pd.DataFrame({'I_L': photocurrent,
+                                          'I_o': saturation_current,
+                                          'R_s': resistance_series,
+                                          'R_sh': resistance_shunt,
+                                          'nNsVth': nNsVth})
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
@@ -450,9 +452,11 @@ class ModelChain(object):
             self.system.calcparams_cec(self.effective_irradiance,
                                        self.temps['temp_cell']))
 
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
+        self.diode_params = pd.DataFrame({'I_L': photocurrent,
+                                          'I_o': saturation_current,
+                                          'R_s': resistance_series,
+                                          'R_sh': resistance_shunt,
+                                          'nNsVth': nNsVth})
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
@@ -468,9 +472,11 @@ class ModelChain(object):
             self.system.calcparams_pvsyst(self.effective_irradiance,
                                           self.temps['temp_cell']))
 
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
+        self.diode_params = pd.DataFrame({'I_L': photocurrent,
+                                          'I_o': saturation_current,
+                                          'R_s': resistance_series,
+                                          'R_sh': resistance_shunt,
+                                          'nNsVth': nNsVth})
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,

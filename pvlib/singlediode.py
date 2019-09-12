@@ -89,7 +89,7 @@ def getparams_from_specs_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc,
     resistance_shunt 'R_sh_ref': numeric
         Shunt resistance in ohms at std conditions.
 
-    'a_ref' (= nNsVth): numeric
+    'nNsVth_ref' : numeric
         Modified ideality factor at std conditions.
         The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at
@@ -183,7 +183,7 @@ def getparams_from_specs_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc,
     # results
     res = {'I_L_ref': sol[0],
            'I_o_ref': sol[1],
-           'a_ref': sol[2],
+           'nNsVth_ref': sol[2],
            'R_sh_ref': sol[3],
            'R_s': sol[4],
            'alpha_sc': alpha_sc

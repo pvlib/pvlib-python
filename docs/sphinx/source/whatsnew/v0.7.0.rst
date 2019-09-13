@@ -75,7 +75,11 @@ API Changes
   :py:meth:`pvlib.modelchain.ModelChain.run_model`,
   :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`, and
   :py:meth:`pvlib.modelchain.ModelChain.complete_irradiance` methods.
-  Model times are now determined by the input weather DataFrame index.
+  Model times are now determined by the input `weather`. `DataFrame`.
+  Therefore, the `weather` DataFrame must have a `DatetimeIndex`.
+  The `weather` argument of the above methods is now the first, required
+  positional argument and the `times` argument is kept as the second keyword
+  argument for capability during the deprecation period.
 
 Enhancements
 ~~~~~~~~~~~~

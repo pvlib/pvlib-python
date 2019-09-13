@@ -767,8 +767,8 @@ class ModelChain(object):
 
         if times is not None:
             warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. Set the index of the weather '
-                          'argument instead.', pvlibDeprecationWarning)
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
 
         self.solar_position = self.location.get_solarposition(
             self.weather.index, method=self.solar_position_method)
@@ -835,8 +835,10 @@ class ModelChain(object):
 
         if times is not None:
             warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. Set the index of the weather '
-                          'argument instead.', pvlibDeprecationWarning)
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
+
+        self.times = self.weather.index
 
         self.solar_position = self.location.get_solarposition(
             self.weather.index, method=self.solar_position_method)
@@ -911,8 +913,8 @@ class ModelChain(object):
         """
         if times is not None:
             warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. Set the index of the weather '
-                          'argument instead.', pvlibDeprecationWarning)
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
 
         self.prepare_inputs(weather)
         self.aoi_model()

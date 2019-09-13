@@ -793,6 +793,8 @@ class ModelChain(object):
             self.weather = weather
         if times is not None:
             self.times = times
+        elif isinstance(weather.index, pd.DatetimeIndex):
+            self.times = weather.index
         self.solar_position = self.location.get_solarposition(
             self.times, method=self.solar_position_method)
         icolumns = set(self.weather.columns)

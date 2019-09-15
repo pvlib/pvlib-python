@@ -738,7 +738,9 @@ class ModelChain(object):
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
         times : None, deprecated
-            Deprecated argument included for backwards compatibility.
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Returns
         -------
@@ -813,7 +815,9 @@ class ModelChain(object):
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
         times : None, deprecated
-            Deprecated argument included for backwards compatibility.
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Notes
         -----
@@ -901,7 +905,9 @@ class ModelChain(object):
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
         times : None, deprecated
-            Deprecated argument included for backwards compatibility.
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Returns
         -------

@@ -21,7 +21,7 @@ API Changes
          old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
       - Created `temperature.sapm_module` to return module temperature using the SAPM temperature model.
       - Changed the order of arguments for`pvsystem.sapm_celltemp`,
-        `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` to be consistent 
+        `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` to be consistent
         among cell temperature model functions.
       - Removed `model` as a kwarg from `temperature.sapm_cell` and
         `temperature.pvsyst_cell`. These functions now require model-specific parameters.
@@ -35,7 +35,7 @@ API Changes
         'open_rack_polymer_thinfilm_steel' and '22x_concentrator_tracker'
         are considered obsolete and have been removed.
    * Changes to `PVSystem` class
-      - Changed the `model` kwarg in `PVSystem.sapm_celltemp` and 
+      - Changed the `model` kwarg in `PVSystem.sapm_celltemp` and
         `PVSystem.pvsyst_celltemp` to `parameter_set`. `parameter_set` expects
         a str which is a valid key for `temperature.TEMPERATURE_MODEL_PARAMETERS`
         for the corresponding temperature model.
@@ -71,6 +71,15 @@ API Changes
 
 * Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
   an exception instead of displaying a dialog.
+* The `times` keyword argument has been deprecated in the
+  :py:meth:`pvlib.modelchain.ModelChain.run_model`,
+  :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`, and
+  :py:meth:`pvlib.modelchain.ModelChain.complete_irradiance` methods.
+  Model times are now determined by the input `weather`. `DataFrame`.
+  Therefore, the `weather` DataFrame must have a `DatetimeIndex`.
+  The `weather` argument of the above methods is now the first, required
+  positional argument and the `times` argument is kept as the second keyword
+  argument for capability during the deprecation period.
 
 Enhancements
 ~~~~~~~~~~~~
@@ -119,6 +128,9 @@ Removal of prior version deprecations
 * Removed `atmosphere.relativeairmass`.
 * Removed `solarposition.get_sun_rise_set_transit`.
 * Removed `tmy` module.
+* Removed `ModelChain.singlediode` method.
+* Removed `ModelChain.prepare_inputs` clearsky assumption when no irradiance
+  data was provided.
 
 Contributors
 ~~~~~~~~~~~~

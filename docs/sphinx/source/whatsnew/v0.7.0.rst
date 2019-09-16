@@ -132,6 +132,11 @@ Removal of prior version deprecations
 * Removed `ModelChain.prepare_inputs` clearsky assumption when no irradiance
   data was provided.
 
+Enhancements
+~~~~~~~~~~~~
+* Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
+
+
 Contributors
 ~~~~~~~~~~~~
 * Mark Campanellli (:ghuser:`markcampanelli`)

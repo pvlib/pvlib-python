@@ -19,7 +19,7 @@ PVLIB_PYTHON = 'pvlib python'
 
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
-             full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON):
+             full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON, timeout=30):
     """
     Get PSM3 data
 
@@ -43,6 +43,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         optional
     affiliation : str, default 'pvlib python'
         optional
+    timeout : int, default 30
+        time in seconds to wait for server response before timeout
 
     Returns
     -------
@@ -140,7 +142,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         'interval': interval
     }
     # request CSV download from NREL PSM3
-    response = requests.get(URL, params=params)
+    response = requests.get(URL, params=params, timeout=timeout)
     if not response.ok:
         # if the API key is rejected, then the response status will be 403
         # Forbidden, and then the error is in the content and there is no JSON

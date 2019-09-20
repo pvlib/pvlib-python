@@ -41,8 +41,6 @@ test_dir = os.path.dirname(
 data_dir = os.path.join(test_dir, os.pardir, 'data')
 
 
-has_python2 = parse_version(platform.python_version()) < parse_version('3')
-
 platform_is_windows = platform.system() == 'Windows'
 skip_windows = pytest.mark.skipif(platform_is_windows,
                                   reason='does not run on windows')
@@ -151,3 +149,219 @@ except ImportError:
 
 requires_pvfactors = pytest.mark.skipif(not has_pvfactors,
                                         reason='requires pvfactors')
+
+
+try:
+    import PySAM  # noqa: F401
+    has_pysam = True
+except ImportError:
+    has_pysam = False
+
+requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
+
+
+@pytest.fixture(scope="session")
+def sam_data():
+    data = {}
+    data['sandiamod'] = pvlib.pvsystem.retrieve_sam('sandiamod')
+    data['adrinverter'] = pvlib.pvsystem.retrieve_sam('adrinverter')
+    return data
+
+
+@pytest.fixture(scope="function")
+def pvsyst_module_params():
+    """
+    Define some PVSyst module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'gamma_ref': 1.05,
+        'mu_gamma': 0.001,
+        'I_L_ref': 6.0,
+        'I_o_ref': 5e-9,
+        'EgRef': 1.121,
+        'R_sh_ref': 300,
+        'R_sh_0': 1000,
+        'R_s': 0.5,
+        'R_sh_exp': 5.5,
+        'cells_in_series': 60,
+        'alpha_sc': 0.001,
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def cec_inverter_parameters():
+    """
+    Define some CEC inverter parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'ABB: MICRO-0.25-I-OUTD-US-208 208V [CEC 2014]',
+        'Vac': 208.0,
+        'Paco': 250.0,
+        'Pdco': 259.5220505,
+        'Vdco': 40.24260317,
+        'Pso': 1.771614224,
+        'C0': -2.48e-5,
+        'C1': -9.01e-5,
+        'C2': 6.69e-4,
+        'C3': -0.0189,
+        'Pnt': 0.02,
+        'Vdcmax': 65.0,
+        'Idcmax': 10.0,
+        'Mppt_low': 20.0,
+        'Mppt_high': 50.0,
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def cec_module_params():
+    """
+    Define some CEC module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'Example Module',
+        'BIPV': 'Y',
+        'Date': '4/28/2008',
+        'T_NOCT': 65,
+        'A_c': 0.67,
+        'N_s': 18,
+        'I_sc_ref': 7.5,
+        'V_oc_ref': 10.4,
+        'I_mp_ref': 6.6,
+        'V_mp_ref': 8.4,
+        'alpha_sc': 0.003,
+        'beta_oc': -0.04,
+        'a_ref': 0.473,
+        'I_L_ref': 7.545,
+        'I_o_ref': 1.94e-09,
+        'R_s': 0.094,
+        'R_sh_ref': 15.72,
+        'Adjust': 10.6,
+        'gamma_r': -0.5,
+        'Version': 'MM105',
+        'PTC': 48.9,
+        'Technology': 'Multi-c-Si',
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def cec_module_cs5p_220m():
+    """
+    Define Canadian Solar CS5P-220M module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'Canadian Solar CS5P-220M',
+        'BIPV': 'N',
+        'Date': '10/5/2009',
+        'T_NOCT': 42.4,
+        'A_c': 1.7,
+        'N_s': 96,
+        'I_sc_ref': 5.1,
+        'V_oc_ref': 59.4,
+        'I_mp_ref': 4.69,
+        'V_mp_ref': 46.9,
+        'alpha_sc': 0.004539,
+        'beta_oc': -0.22216,
+        'a_ref': 2.6373,
+        'I_L_ref': 5.114,
+        'I_o_ref': 8.196e-10,
+        'R_s': 1.065,
+        'R_sh_ref': 381.68,
+        'Adjust': 8.7,
+        'gamma_r': -0.476,
+        'Version': 'MM106',
+        'PTC': 200.1,
+        'Technology': 'Mono-c-Si',
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def cec_module_spr_e20_327():
+    """
+    Define SunPower SPR-E20-327 module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'SunPower SPR-E20-327',
+        'BIPV': 'N',
+        'Date': '1/14/2013',
+        'T_NOCT': 46,
+        'A_c': 1.631,
+        'N_s': 96,
+        'I_sc_ref': 6.46,
+        'V_oc_ref': 65.1,
+        'I_mp_ref': 5.98,
+        'V_mp_ref': 54.7,
+        'alpha_sc': 0.004522,
+        'beta_oc': -0.23176,
+        'a_ref': 2.6868,
+        'I_L_ref': 6.468,
+        'I_o_ref': 1.88e-10,
+        'R_s': 0.37,
+        'R_sh_ref': 298.13,
+        'Adjust': -0.1862,
+        'gamma_r': -0.386,
+        'Version': 'NRELv1',
+        'PTC': 301.4,
+        'Technology': 'Mono-c-Si',
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def cec_module_fs_495():
+    """
+    Define First Solar FS-495 module parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'First Solar FS-495',
+        'BIPV': 'N',
+        'Date': '9/18/2014',
+        'T_NOCT': 44.6,
+        'A_c': 0.72,
+        'N_s': 216,
+        'I_sc_ref': 1.55,
+        'V_oc_ref': 86.5,
+        'I_mp_ref': 1.4,
+        'V_mp_ref': 67.9,
+        'alpha_sc': 0.000924,
+        'beta_oc': -0.22741,
+        'a_ref': 2.9482,
+        'I_L_ref': 1.563,
+        'I_o_ref': 2.64e-13,
+        'R_s': 6.804,
+        'R_sh_ref': 806.27,
+        'Adjust': -10.65,
+        'gamma_r': -0.264,
+        'Version': 'NRELv1',
+        'PTC': 89.7,
+        'Technology': 'CdTe',
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def sapm_temperature_cs5p_220m():
+    # SAPM temperature model parameters for Canadian_Solar_CS5P_220M
+    # (glass/polymer) in open rack
+    return {'a': -3.40641, 'b': -0.0842075, 'deltaT': 3}

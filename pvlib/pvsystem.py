@@ -3,22 +3,21 @@ The ``pvsystem`` module contains functions for modeling the output and
 performance of PV modules and inverters.
 """
 
-from __future__ import division
-
 from collections import OrderedDict
 import io
 import os
-try:
-    from urllib2 import urlopen
-except ImportError:
-    from urllib.request import urlopen
-
+from urllib.request import urlopen
+import warnings
 import numpy as np
 import pandas as pd
 
-from pvlib import atmosphere, irradiance, tools, singlediode as _singlediode
-from pvlib.tools import _build_kwargs
+from pvlib._deprecation import deprecated
+
+from pvlib import (atmosphere, irradiance, singlediode as _singlediode,
+                   temperature)
+from pvlib.tools import _build_kwargs, cosd, asind, sind, tand
 from pvlib.location import Location
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # a dict of required parameter names for each DC power model
@@ -46,15 +45,26 @@ DC_MODEL_PARAMS = {
 }
 
 
-TEMP_MODEL_PARAMS = {
-    'sapm': {'open_rack_cell_glassback': (-3.47, -.0594, 3),
-             'roof_mount_cell_glassback': (-2.98, -.0471, 1),
-             'open_rack_cell_polymerback': (-3.56, -.0750, 3),
-             'insulated_back_polymerback': (-2.81, -.0455, 0),
-             'open_rack_polymer_thinfilm_steel': (-3.58, -.113, 3),
-             '22x_concentrator_tracker': (-3.23, -.130, 13)},
-    'pvsyst': {'freestanding': (29.0, 0), 'insulated': (15.0, 0)}
-}
+def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
+    """
+    Get and combine attributes from the pvsystem and/or location
+    with the rest of the kwargs.
+    """
+    if pvsystem is not None:
+        pv_dict = pvsystem.__dict__
+    else:
+        pv_dict = {}
+
+    if location is not None:
+        loc_dict = location.__dict__
+    else:
+        loc_dict = {}
+
+    new_kwargs = dict(
+        list(pv_dict.items()) + list(loc_dict.items()) + list(kwargs.items())
+    )
+    return new_kwargs
+
 
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
@@ -113,8 +123,15 @@ class PVSystem(object):
         May be used to look up the module_parameters dictionary
         via some other method.
 
+    module_type : None or string, default 'glass_polymer'
+         Describes the module's construction. Valid strings are 'glass_polymer'
+         and 'glass_glass'. Used for cell and module temperature calculations.
+
     module_parameters : None, dict or Series, default None
         Module parameters as defined by the SAPM, CEC, or other.
+
+    temperature_model_parameters : None, dict or Series, default None.
+        Temperature model parameters as defined by the SAPM, Pvsyst, or other.
 
     modules_per_string: int or float, default 1
         See system topology discussion above.
@@ -130,8 +147,9 @@ class PVSystem(object):
     inverter_parameters : None, dict or Series, default None
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : None or string, default 'open_rack_cell_glassback'
-        Used for cell and module temperature calculations.
+    racking_model : None or string, default 'open_rack'
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
 
     losses_parameters : None, dict or Series, default None
         Losses parameters as defined by PVWatts or other.
@@ -152,13 +170,13 @@ class PVSystem(object):
     def __init__(self,
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
-                 module=None, module_parameters=None,
+                 module=None, module_type='glass_polymer',
+                 module_parameters=None,
+                 temperature_model_parameters=None,
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
-                 racking_model='open_rack_cell_glassback',
-                 losses_parameters=None, name=None, **kwargs):
-
-        self.name = name
+                 racking_model='open_rack', losses_parameters=None, name=None,
+                 **kwargs):
 
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
@@ -177,6 +195,31 @@ class PVSystem(object):
         else:
             self.module_parameters = module_parameters
 
+        self.module_type = module_type
+        self.racking_model = racking_model
+
+        if temperature_model_parameters is None:
+            self.temperature_model_parameters = \
+                self._infer_temperature_model_params()
+            # TODO: in v0.8 check if an empty dict is returned and raise error
+        else:
+            self.temperature_model_parameters = temperature_model_parameters
+
+        # TODO: deprecated behavior if PVSystem.temperature_model_parameters
+        # are not specified. Remove in v0.8
+        if not any(self.temperature_model_parameters):
+            warnings.warn(
+                'Required temperature_model_parameters is not specified '
+                'and parameters are not inferred from racking_model and '
+                'module_type. Reverting to deprecated default: SAPM cell '
+                'temperature model parameters for a glass/glass module in '
+                'open racking. In the future '
+                'PVSystem.temperature_model_parameters will be required',
+                pvlibDeprecationWarning)
+            params = temperature._temperature_model_params(
+                'sapm', 'open_rack_glass_glass')
+            self.temperature_model_parameters = params
+
         self.modules_per_string = modules_per_string
         self.strings_per_inverter = strings_per_inverter
 
@@ -191,7 +234,7 @@ class PVSystem(object):
         else:
             self.losses_parameters = losses_parameters
 
-        self.racking_model = racking_model
+        self.name = name
 
     def __repr__(self):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
@@ -410,24 +453,15 @@ class PVSystem(object):
         """
         Use the :py:func:`sapm` function, the input parameters,
         and ``self.module_parameters`` to calculate
-        Voc, Isc, Ix, Ixx, Vmp/Imp.
+        Voc, Isc, Ix, Ixx, Vmp, and Imp.
 
         Parameters
         ----------
-        poa_direct : Series
-            The direct irradiance incident upon the module (W/m^2).
+        effective_irradiance : numeric
+            The irradiance (W/m2) that is converted to photocurrent.
 
-        poa_diffuse : Series
-            The diffuse irradiance incident on module.
-
-        temp_cell : Series
-            The cell temperature (degrees C).
-
-        airmass_absolute : Series
-            Absolute airmass.
-
-        aoi : Series
-            Angle of incidence (degrees).
+        temp_cell : float or Series
+            The average cell temperature of cells within a module in C.
 
         kwargs
             See pvsystem.sapm for details
@@ -438,20 +472,44 @@ class PVSystem(object):
         """
         return sapm(effective_irradiance, temp_cell, self.module_parameters)
 
-    def sapm_celltemp(self, irrad, wind, temp):
-        """Uses :py:func:`sapm_celltemp` to calculate module and cell
-        temperatures based on ``self.racking_model`` and
-        the input parameters.
+    def sapm_celltemp(self, poa_global, temp_air, wind_speed):
+        """Uses :py:func:`temperature.sapm_cell` to calculate cell
+        temperatures.
 
         Parameters
         ----------
-        See pvsystem.sapm_celltemp for details
+        poa_global : numeric
+            Total incident irradiance in W/m^2.
+
+        temp_air : numeric
+            Ambient dry bulb temperature in degrees C.
+
+        wind_speed : numeric
+            Wind speed in m/s at a height of 10 meters.
 
         Returns
         -------
-        See pvsystem.sapm_celltemp for details
+        numeric, values in degrees C.
         """
-        return sapm_celltemp(irrad, wind, temp, self.racking_model)
+        kwargs = _build_kwargs(['a', 'b', 'deltaT'],
+                               self.temperature_model_parameters)
+        return temperature.sapm_cell(poa_global, temp_air, wind_speed,
+                                     **kwargs)
+
+    def _infer_temperature_model_params(self):
+        # try to infer temperature model parameters from from racking_model
+        # and module_type
+        param_set = self.racking_model + '_' + self.module_type
+        if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
+            return temperature._temperature_model_params('sapm', param_set)
+        elif 'freestanding' in param_set:
+            return temperature._temperature_model_params('pvsyst',
+                                                         'freestanding')
+        elif 'insulated' in param_set:  # after SAPM to avoid confusing keys
+            return temperature._temperature_model_params('pvsyst',
+                                                         'insulated')
+        else:
+            return {}
 
     def sapm_spectral_loss(self, airmass_absolute):
         """
@@ -522,21 +580,39 @@ class PVSystem(object):
             self.module_parameters, reference_irradiance=reference_irradiance)
 
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
-        """Uses :py:func:`pvsyst_celltemp` to calculate module temperatures
-        based on ``self.racking_model`` and the input parameters.
+        """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
+        temperature.
 
         Parameters
         ----------
-        See pvsystem.pvsyst_celltemp for details
+        poa_global : numeric
+            Total incident irradiance in W/m^2.
+
+        temp_air : numeric
+            Ambient dry bulb temperature in degrees C.
+
+        wind_speed : numeric, default 1.0
+            Wind speed in m/s measured at the same height for which the wind
+            loss factor was determined.  The default value is 1.0, which is
+            the wind speed at module height used to determine NOCT.
+
+        eta_m : numeric, default 0.1
+            Module external efficiency as a fraction, i.e.,
+            DC power / poa_global.
+
+        alpha_absorption : numeric, default 0.9
+            Absorption coefficient
 
         Returns
         -------
-        See pvsystem.pvsyst_celltemp for details
+        numeric, values in degrees C.
         """
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self.module_parameters)
-        return pvsyst_celltemp(poa_global, temp_air, wind_speed,
-                               model_params=self.racking_model, **kwargs)
+        kwargs.update(_build_kwargs(['u_c', 'u_v'],
+                                    self.temperature_model_parameters))
+        return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
+                                       **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
@@ -775,22 +851,11 @@ class LocalizedPVSystem(PVSystem, Location):
     """
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
-        # get and combine attributes from the pvsystem and/or location
-        # with the rest of the kwargs
-
-        if pvsystem is not None:
-            pv_dict = pvsystem.__dict__
-        else:
-            pv_dict = {}
-
-        if location is not None:
-            loc_dict = location.__dict__
-        else:
-            loc_dict = {}
-
-        new_kwargs = dict(list(pv_dict.items()) +
-                          list(loc_dict.items()) +
-                          list(kwargs.items()))
+        new_kwargs = _combine_localized_attributes(
+            pvsystem=pvsystem,
+            location=location,
+            **kwargs,
+        )
 
         PVSystem.__init__(self, **new_kwargs)
         Location.__init__(self, **new_kwargs)
@@ -946,7 +1011,7 @@ def ashraeiam(aoi, b=0.05):
     iam = np.where(aoi_gte_90, 0, iam)
     iam = np.maximum(0, iam)
 
-    if isinstance(iam, pd.Series):
+    if isinstance(aoi, pd.Series):
         iam = pd.Series(iam, index=aoi.index)
 
     return iam
@@ -1026,20 +1091,18 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
     aoi = np.where(aoi == 0, zeroang, aoi)
 
     # angle of reflection
-    thetar_deg = tools.asind(1.0 / n*(tools.sind(aoi)))
+    thetar_deg = asind(1.0 / n * (sind(aoi)))
 
     # reflectance and transmittance for normal incidence light
     rho_zero = ((1-n) / (1+n)) ** 2
     tau_zero = np.exp(-K*L)
 
     # reflectance for parallel and perpendicular polarized light
-    rho_para = (tools.tand(thetar_deg - aoi) /
-                tools.tand(thetar_deg + aoi)) ** 2
-    rho_perp = (tools.sind(thetar_deg - aoi) /
-                tools.sind(thetar_deg + aoi)) ** 2
+    rho_para = (tand(thetar_deg - aoi) / tand(thetar_deg + aoi)) ** 2
+    rho_perp = (sind(thetar_deg - aoi) / sind(thetar_deg + aoi)) ** 2
 
     # transmittance for non-normal light
-    tau = np.exp(-K*L / tools.cosd(thetar_deg))
+    tau = np.exp(-K * L / cosd(thetar_deg))
 
     # iam is ratio of non-normal to normal incidence transmitted light
     # after deducting the reflected portion of each
@@ -1057,6 +1120,161 @@ def physicaliam(aoi, n=1.526, K=4., L=0.002):
 
         # for light coming from behind the plane, none can enter the module
         iam = np.where(aoi > 90, 0, iam)
+
+    if isinstance(aoi_input, pd.Series):
+        iam = pd.Series(iam, index=aoi_input.index)
+
+    return iam
+
+
+def iam_martin_ruiz(aoi, a_r=0.16):
+    '''
+    Determine the incidence angle modifier (iam) using the Martin
+    and Ruiz incident angle model.
+
+    Parameters
+    ----------
+    aoi : numeric, degrees
+        The angle of incidence between the module normal vector and the
+        sun-beam vector in degrees. Theta must be a numeric scalar or vector.
+        iam is 0 where |aoi| > 90.
+
+    a_r : numeric
+        The angular losses coefficient described in equation 3 of [1].
+        This is an empirical dimensionless parameter. Values of a_r are
+        generally on the order of 0.08 to 0.25 for flat-plate PV modules.
+        a_r must be a positive numeric scalar or vector (same length as aoi).
+
+    Returns
+    -------
+    iam : numeric
+        The incident angle modifier(s)
+
+    Notes
+    -----
+    iam_martin_ruiz calculates the incidence angle modifier (iam)
+    as described by Martin and Ruiz in [1]. The information
+    required is the incident angle (aoi) and the angular losses
+    coefficient (a_r). Please note that [1] has a corrigendum which makes
+    the document much simpler to understand.
+
+    The incident angle modifier is defined as
+    [1-exp(-cos(aoi/ar))] / [1-exp(-1/ar)], which is
+    presented as AL(alpha) = 1 - IAM in equation 4 of [1]. Thus IAM is
+    equal to 1 at aoi = 0, and equal to 0 at aoi = 90.  This equation is only
+    valid for -90 <= aoi <= 90, therefore iam must be constrained to 0.0
+    beyond this range.
+
+    References
+    ----------
+    [1] N. Martin and J. M. Ruiz, "Calculation of the PV modules angular
+    losses under field conditions by means of an analytical model", Solar
+    Energy Materials & Solar Cells, vol. 70, pp. 25-38, 2001.
+
+    [2] N. Martin and J. M. Ruiz, "Corrigendum to 'Calculation of the PV
+    modules angular losses under field conditions by means of an
+    analytical model'", Solar Energy Materials & Solar Cells, vol. 110,
+    pp. 154, 2013.
+
+    See Also
+    --------
+    physicaliam
+    ashraeiam
+    iam_interp
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
+
+    aoi_input = aoi
+
+    aoi = np.asanyarray(aoi)
+    a_r = np.asanyarray(a_r)
+
+    if np.any(np.less_equal(a_r, 0)):
+        raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
+
+    with np.errstate(invalid='ignore'):
+        iam = (1 - np.exp(-cosd(aoi) / a_r)) / (1 - np.exp(-1 / a_r))
+        iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
+
+    if isinstance(aoi_input, pd.Series):
+        iam = pd.Series(iam, index=aoi_input.index)
+
+    return iam
+
+
+def iam_interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
+    '''
+    Determine the incidence angle modifier (iam) by interpolating a set of
+    reference values, which are usually measured values.
+
+    Parameters
+    ----------
+    aoi : numeric, degrees
+        The angle of incidence between the module normal vector and the
+        sun-beam vector in degrees.
+
+    theta_ref : numeric, degrees
+        Vector of angles at which the iam is known.
+
+    iam_ref : numeric, unitless
+        iam values for each angle in theta_ref.
+
+    method : str, default 'linear'
+        Specifies the interpolation method.
+        Useful options are: 'linear', 'quadratic','cubic'.
+        See scipy.interpolate.interp1d for more options.
+
+    normalize : boolean
+        When true, the interpolated values are divided by the interpolated
+        value at zero degrees.  This ensures that the iam at normal
+        incidence is equal to 1.0.
+
+    Returns
+    -------
+    iam : numeric
+        The incident angle modifier(s)
+
+    Notes:
+    ------
+    theta_ref must have two or more points and may span any range of angles.
+    Typically there will be a dozen or more points in the range 0-90 degrees.
+    iam beyond the range of theta_ref are extrapolated, but constrained to be
+    non-negative.
+
+    The sign of aoi is ignored; only the magnitude is used.
+
+    See Also
+    --------
+    physicaliam
+    ashraeiam
+    iam_martin_ruiz
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
+
+    from scipy.interpolate import interp1d
+
+    # Scipy doesn't give the clearest feedback, so check number of points here.
+    MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
+
+    if len(theta_ref) < MIN_REF_VALS.get(method, 2):
+        raise ValueError("Too few reference points defined "
+                         "for interpolation method '%s'." % method)
+
+    if np.any(np.less(iam_ref, 0)):
+        raise ValueError("Negative value(s) found in 'iam_ref'. "
+                         "This is not physically possible.")
+
+    interpolator = interp1d(theta_ref, iam_ref, kind=method,
+                            fill_value='extrapolate')
+    aoi_input = aoi
+
+    aoi = np.asanyarray(aoi)
+    aoi = np.abs(aoi)
+    iam = interpolator(aoi)
+    iam = np.clip(iam, 0, None)
+
+    if normalize:
+        iam /= interpolator(0)
 
     if isinstance(aoi_input, pd.Series):
         iam = pd.Series(iam, index=aoi_input.index)
@@ -1568,15 +1786,17 @@ def retrieve_sam(name=None, path=None):
     path : None or string, default None
         Path to the SAM file. May also be a URL.
 
-    If both name and path are None, a dialogue will open allowing the
-    user to select a file.
-
     Returns
     -------
     samfile : DataFrame
         A DataFrame containing all the elements of the desired database.
         Each column represents a module or inverter, and a specific
         dataset can be retrieved by the command
+
+    Raises
+    ------
+    ValueError
+        If no name or path is provided.
 
     Notes
     -----
@@ -1612,7 +1832,7 @@ def retrieve_sam(name=None, path=None):
             os.path.dirname(os.path.abspath(__file__)), 'data')
         if name == 'cecmod':
             csvdata = os.path.join(
-                data_path, 'sam-library-cec-modules-2017-6-5.csv')
+                data_path, 'sam-library-cec-modules-2019-03-05.csv')
         elif name == 'sandiamod':
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
@@ -1622,7 +1842,7 @@ def retrieve_sam(name=None, path=None):
             # Allowing either, to provide for old code,
             # while aligning with current expectations
             csvdata = os.path.join(
-                data_path, 'sam-library-cec-inverters-2018-3-18.csv')
+                data_path, 'sam-library-cec-inverters-2019-03-05.csv')
         else:
             raise ValueError('invalid name {}'.format(name))
     elif path is not None:
@@ -1632,17 +1852,7 @@ def retrieve_sam(name=None, path=None):
         else:
             csvdata = path
     elif name is None and path is None:
-        try:
-            # python 2
-            import Tkinter as tkinter
-            from tkFileDialog import askopenfilename
-        except ImportError:
-            # python 3
-            import tkinter
-            from tkinter.filedialog import askopenfilename
-
-        tkinter.Tk().withdraw()
-        csvdata = askopenfilename()
+        raise ValueError("A name or path must be provided!")
 
     return _parse_raw_sam_df(csvdata)
 
@@ -1760,7 +1970,8 @@ def sapm(effective_irradiance, temp_cell, module):
     See Also
     --------
     retrieve_sam
-    sapm_celltemp
+    temperature.sapm_cell
+    temperature.sapm_module
     '''
 
     T0 = 25
@@ -1824,174 +2035,83 @@ def sapm(effective_irradiance, temp_cell, module):
     return out
 
 
-def sapm_celltemp(poa_global, wind_speed, temp_air,
-                  model='open_rack_cell_glassback'):
-    '''
-    Estimate cell and module temperatures per the Sandia PV Array
-    Performance Model (SAPM, SAND2004-3535), from the incident
-    irradiance, wind speed, ambient temperature, and SAPM module
-    parameters.
-
-    Parameters
-    ----------
-    poa_global : float or Series
-        Total incident irradiance in W/m^2.
-
-    wind_speed : float or Series
-        Wind speed in m/s at a height of 10 meters.
-
-    temp_air : float or Series
-        Ambient dry bulb temperature in degrees C.
-
-    model : string, list, or dict, default 'open_rack_cell_glassback'
-        Model to be used.
-
-        If string, can be:
-
-            * 'open_rack_cell_glassback' (default)
-            * 'roof_mount_cell_glassback'
-            * 'open_rack_cell_polymerback'
-            * 'insulated_back_polymerback'
-            * 'open_rack_polymer_thinfilm_steel'
-            * '22x_concentrator_tracker'
-
-        If dict, supply the following parameters
-        (if list, in the following order):
-
-            * a : float
-                SAPM module parameter for establishing the upper
-                limit for module temperature at low wind speeds and
-                high solar irradiance.
-
-            * b : float
-                SAPM module parameter for establishing the rate at
-                which the module temperature drops as wind speed increases
-                (see SAPM eqn. 11).
-
-            * deltaT : float
-                SAPM module parameter giving the temperature difference
-                between the cell and module back surface at the
-                reference irradiance, E0.
-
-    Returns
-    --------
-    DataFrame with columns 'temp_cell' and 'temp_module'.
-    Values in degrees C.
-
-    References
-    ----------
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
-    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
-    NM.
-
-    See Also
-    --------
-    sapm
-    '''
-
-    temp_models = TEMP_MODEL_PARAMS['sapm']
-
-    if isinstance(model, str):
-        model = temp_models[model.lower()]
-
-    elif isinstance(model, (dict, pd.Series)):
-        model = [model['a'], model['b'], model['deltaT']]
-
-    a = model[0]
-    b = model[1]
-    deltaT = model[2]
-
-    E0 = 1000.  # Reference irradiance
-
-    temp_module = pd.Series(poa_global * np.exp(a + b * wind_speed) + temp_air)
-
-    temp_cell = temp_module + (poa_global / E0) * (deltaT)
-
-    return pd.DataFrame({'temp_cell': temp_cell, 'temp_module': temp_module})
+def _sapm_celltemp_translator(*args, **kwargs):
+    # TODO: remove this function after deprecation period for sapm_celltemp
+    new_kwargs = {}
+    # convert position arguments to kwargs
+    old_arg_list = ['poa_global', 'wind_speed', 'temp_air', 'model']
+    for pos in range(len(args)):
+        new_kwargs[old_arg_list[pos]] = args[pos]
+    # determine value for new kwarg 'model'
+    try:
+        param_set = new_kwargs['model']
+        new_kwargs.pop('model')  # model is not a new kwarg
+    except KeyError:
+        # 'model' not in positional arguments, check kwargs
+        try:
+            param_set = kwargs['model']
+            kwargs.pop('model')
+        except KeyError:
+            # 'model' not in kwargs, use old default value
+            param_set = 'open_rack_glass_glass'
+    if type(param_set) is list:
+        new_kwargs.update({'a': param_set[0],
+                           'b': param_set[1],
+                           'deltaT': param_set[2]})
+    elif type(param_set) is dict:
+        new_kwargs.update(param_set)
+    else:  # string
+        params = temperature._temperature_model_params('sapm', param_set)
+        new_kwargs.update(params)
+    new_kwargs.update(kwargs)  # kwargs with unchanged names
+    new_kwargs['irrad_ref'] = 1000  # default for new kwarg
+    # convert old positional arguments to named kwargs
+    return temperature.sapm_cell(**new_kwargs)
 
 
-def pvsyst_celltemp(poa_global, temp_air, wind_speed=1.0, eta_m=0.1,
-                    alpha_absorption=0.9, model_params='freestanding'):
-    """
-    Calculate cell temperature using an emperical heat loss factor model
-    as implemented in PVsyst.
+sapm_celltemp = deprecated('0.7', alternative='temperature.sapm_cell',
+                           name='sapm_celltemp', removal='0.8',
+                           addendum='Note that the arguments and argument '
+                           'order for temperature.sapm_cell are different '
+                           'than for sapm_celltemp')(_sapm_celltemp_translator)
 
-    The heat loss factors provided through the 'model_params' argument
-    represent the combined effect of convection, radiation and conduction,
-    and their values are experimentally determined.
 
-    Parameters
-    ----------
-    poa_global : numeric
-        Total incident irradiance in W/m^2.
+def _pvsyst_celltemp_translator(*args, **kwargs):
+    # TODO: remove this function after deprecation period for pvsyst_celltemp
+    new_kwargs = {}
+    # convert position arguments to kwargs
+    old_arg_list = ['poa_global', 'temp_air', 'wind_speed', 'eta_m',
+                    'alpha_absorption', 'model_params']
+    for pos in range(len(args)):
+        new_kwargs[old_arg_list[pos]] = args[pos]
+    # determine value for new kwarg 'model'
+    try:
+        param_set = new_kwargs['model_params']
+        new_kwargs.pop('model_params')  # model_params is not a new kwarg
+    except KeyError:
+        # 'model_params' not in positional arguments, check kwargs
+        try:
+            param_set = kwargs['model_params']
+            kwargs.pop('model_params')
+        except KeyError:
+            # 'model_params' not in kwargs, use old default value
+            param_set = 'freestanding'
+    if type(param_set) in (list, tuple):
+        new_kwargs.update({'u_c': param_set[0],
+                           'u_v': param_set[1]})
+    else:  # string
+        params = temperature._temperature_model_params('pvsyst', param_set)
+        new_kwargs.update(params)
+    new_kwargs.update(kwargs)  # kwargs with unchanged names
+    # convert old positional arguments to named kwargs
+    return temperature.pvsyst_cell(**new_kwargs)
 
-    temp_air : numeric
-        Ambient dry bulb temperature in degrees C.
 
-    wind_speed : numeric, default 1.0
-        Wind speed in m/s measured at the same height for which the wind loss
-        factor was determined.  The default value is 1.0, which is the wind
-        speed at module height used to determine NOCT.
-
-    eta_m : numeric, default 0.1
-        Module external efficiency as a fraction, i.e., DC power / poa_global.
-
-    alpha_absorption : numeric, default 0.9
-        Absorption coefficient
-
-    model_params : string, tuple, or list (no dict), default 'freestanding'
-        Heat loss factors to be used.
-
-        If string, can be:
-
-            * 'freestanding' (default)
-                Modules with rear surfaces exposed to open air (e.g. rack
-                mounted).
-            * 'insulated'
-                Modules with rear surfaces in close proximity to another
-                surface (e.g. roof mounted).
-
-        If tuple/list, supply parameters in the following order:
-
-            * constant_loss_factor : float
-                Combined heat loss factor coefficient. Freestanding
-                default is 29, fully insulated arrays is 15.
-
-            * wind_loss_factor : float
-                Combined heat loss factor influenced by wind. Default is 0.
-
-    Returns
-    -------
-    temp_cell : numeric or Series
-        Cell temperature in degrees Celsius
-
-    References
-    ----------
-    [1]"PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
-    http://files.pvsyst.com/help/index.html. [Accessed: 10- Dec- 2018].
-
-    [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
-    photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
-    """
-
-    pvsyst_presets = TEMP_MODEL_PARAMS['pvsyst']
-
-    if isinstance(model_params, str):
-        model_params = model_params.lower()
-        constant_loss_factor, wind_loss_factor = pvsyst_presets[model_params]
-    elif isinstance(model_params, (tuple, list)):
-        constant_loss_factor, wind_loss_factor = model_params
-    else:
-        raise TypeError(
-            "Please provide model_params as a str, or tuple/list."
-        )
-
-    total_loss_factor = wind_loss_factor * wind_speed + constant_loss_factor
-    heat_input = poa_global * alpha_absorption * (1 - eta_m)
-    temp_difference = heat_input / total_loss_factor
-    temp_cell = temp_air + temp_difference
-
-    return temp_cell
+pvsyst_celltemp = deprecated(
+    '0.7', alternative='temperature.pvsyst_cell', name='pvsyst_celltemp',
+    removal='0.8', addendum='Note that the argument names for '
+    'temperature.pvsyst_cell are different than '
+    'for pvsyst_celltemp')(_pvsyst_celltemp_translator)
 
 
 def sapm_spectral_loss(airmass_absolute, module):
@@ -2330,7 +2450,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
 
 def max_power_point(photocurrent, saturation_current, resistance_series,
-                    resistance_shunt, nNsVth, method='brentq'):
+                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                    method='brentq'):
     """
     Given the single diode equation coefficients, calculates the maximum power
     point (MPP).
@@ -2348,6 +2469,17 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of serices cells ``Ns``
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that accounts for recombination current in the
+        intrinsic layer. The value is the ratio of intrinsic layer thickness
+        squared :math:`d^2` to the diffusion length of charge carriers
+        :math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that is the product of the PV module number of series
+        cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
+        [V].
     method : str
         either ``'newton'`` or ``'brentq'``
 
@@ -2365,7 +2497,8 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     """
     i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
         photocurrent, saturation_current, resistance_series,
-        resistance_shunt, nNsVth, method=method.lower()
+        resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+        method=method.lower()
     )
     if isinstance(photocurrent, pd.Series):
         ivp = {'i_mp': i_mp, 'v_mp': v_mp, 'p_mp': p_mp}

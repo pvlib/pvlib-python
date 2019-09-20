@@ -5,13 +5,7 @@ Import functions for TMY2 and TMY3 data files.
 import datetime
 import io
 import re
-
-try:
-    # python 2 compatibility
-    from urllib2 import urlopen, Request
-except ImportError:
-    from urllib.request import urlopen, Request
-
+from urllib.request import urlopen, Request
 import dateutil
 import pandas as pd
 
@@ -160,7 +154,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
         try:
             filename = _interactive_load()
         except ImportError:
-            raise ImportError('Interactive load failed. Tkinter not supported '
+            raise ImportError('Interactive load failed. tkinter not supported '
                               'on this system. Try installing X-Quartz and '
                               'reloading')
 
@@ -210,9 +204,9 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
 
 
 def _interactive_load():
-    import Tkinter
-    from tkFileDialog import askopenfilename
-    Tkinter.Tk().withdraw()  # Start interactive file input
+    import tkinter
+    from tkinter.filedialog import askopenfilename
+    tkinter.Tk().withdraw()  # Start interactive file input
     return askopenfilename()
 
 
@@ -406,7 +400,7 @@ def read_tmy2(filename):
         try:
             filename = _interactive_load()
         except ImportError:
-            raise ImportError('Interactive load failed. Tkinter not supported '
+            raise ImportError('Interactive load failed. tkinter not supported '
                               'on this system. Try installing X-Quartz and '
                               'reloading')
 

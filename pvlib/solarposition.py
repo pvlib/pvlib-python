@@ -8,7 +8,6 @@ Calculate the solar position using a variety of methods/packages.
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 # Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
 
-from __future__ import division
 import os
 import datetime as dt
 try:
@@ -442,12 +441,6 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     return pd.DataFrame(index=times, data={'sunrise': sunrise,
                                            'sunset': sunset,
                                            'transit': transit})
-
-
-get_sun_rise_set_transit = deprecated('0.6.1',
-                                      alternative='sun_rise_set_transit_spa',
-                                      name='get_sun_rise_set_transit',
-                                      removal='0.7')(sun_rise_set_transit_spa)
 
 
 def _ephem_convert_to_seconds_and_microseconds(date):

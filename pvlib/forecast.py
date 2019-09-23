@@ -441,7 +441,7 @@ class ForecastModel(object):
            cloud_cover e.g.
            :py:meth:`~ForecastModel.cloud_cover_to_ghi_linear`
         3. Estimate cloudy sky DNI using the DISC model.
-        4. Calculate DHI from DNI and DHI.
+        4. Calculate DHI from DNI and GHI.
 
         Parameters
         ----------

@@ -160,9 +160,11 @@ def read_epw(filename, coerce_year=None):
     if coerce_year is not None:
         data["year"] = coerce_year
 
-    # Convert precipitable water data from mm to cm
-    # https://energyplus.net/AuxiliaryPrograms.pdf  ->  p.14
-    data['precipitable_water'] = data['precipitable_water']/10
+#    # Convert precipitable water data from mm to cm if data comes from TMY3
+#    # https://energyplus.net/AuxiliaryPrograms.pdf  ->  p.14
+#    if filename.split(".")[-2].lower() is 'tmy3':
+    if 'tmy3' in filename.lower():
+        data['precipitable_water'] = data['precipitable_water']/10
 
     # create index that supplies correct date and time zone information
     dts = data[['month', 'day']].astype(str).apply(lambda x: x.str.zfill(2))

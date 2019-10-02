@@ -343,9 +343,9 @@ class PVSystem(object):
         Deprecated. Use ``PVSystem.iam_ashrae`` instead.
         """
         import warnings
-        warnings.warn(
-        'PVSystem.ashraeiam is deprecated and will be removed in v0.8,'
-        ' use PVSystem.iam_ashrae instead', pvlibDeprecationWarning)
+        warnings.warn('PVSystem.ashraeiam is deprecated and will be removed in'
+                      'v0.8, use PVSystem.iam_ashrae instead',
+                      pvlibDeprecationWarning)
         return PVSystem.iam_ashrae(self, aoi)
 
     def iam_physical(self, aoi):
@@ -378,9 +378,9 @@ class PVSystem(object):
         Deprecated. Use ``PVSystem.iam_physical`` instead.
         """
         import warnings
-        warnings.warn(
-        'PVSystem.physicaliam is deprecated and will be removed in v0.8,'
-        ' use PVSystem.iam_physical instead', pvlibDeprecationWarning)
+        warnings.warn('PVSystem.physicaliam is deprecated and will be removed'
+                      ' in v0.8, use PVSystem.iam_physical instead',
+                      pvlibDeprecationWarning)
         return PVSystem.iam_physical(self, aoi)
 
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
@@ -553,9 +553,9 @@ class PVSystem(object):
         Deprecated. Use ``PVSystem.iam_sapm`` instead.
         """
         import warnings
-        warnings.warn(
-        'PVSystem.sapm_aoi_loss is deprecated and will be removed in v0.8,'
-        ' use PVSystem.iam_sapm instead', pvlibDeprecationWarning)
+        warnings.warn('PVSystem.sapm_aoi_loss is deprecated and will be'
+                      ' removed in v0.8, use PVSystem.iam_sapm instead',
+                      pvlibDeprecationWarning)
         return PVSystem.iam_sapm(self, aoi)
 
     def iam_sapm(self, aoi):
@@ -2771,11 +2771,9 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     return pac
 
 
-ashraeiam = deprecated('0.7', alternative='iam.ashrae',
-                       name='ashraeiam', removal='0.8',
-                       )(iam.ashrae)
+ashraeiam = deprecated('0.7', alternative='iam.ashrae', name='ashraeiam',
+                       removal='0.8')(iam.ashrae)
 
 
-physicaliam = deprecated('0.7', alternative='iam.physical',
-                       name='physicaliam', removal='0.8',
-                       )(iam.physical)
+physicaliam = deprecated('0.7', alternative='iam.physical', name='physicaliam',
+                         removal='0.8')(iam.physical)

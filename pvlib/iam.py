@@ -6,11 +6,11 @@ Created on Wed Oct  2 09:04:01 2019
 """
 import numpy as np
 import pandas as pd
-from tools import cosd, sind, tand, asind
+from pvlib.tools import cosd, sind, tand, asind
 
 
 def ashrae(aoi, b=0.05):
-    '''
+    r"""
     Determine the incidence angle modifier using the ASHRAE transmission
     model.
 
@@ -40,7 +40,7 @@ def ashrae(aoi, b=0.05):
 
     .. math::
 
-        IAM = 1 - b \times (\sec(aoi) - 1)
+        IAM = 1 - b x (\sec(aoi) - 1)
 
     As AOI approaches 90 degrees, the model yields negative values for IAM.
     Negative IAM values are set to zero in this implementation.
@@ -62,7 +62,7 @@ def ashrae(aoi, b=0.05):
     iam.physical
     iam.martin_ruiz
     iam.interp
-    '''
+    """
 
     iam = 1 - b * ((1 / np.cos(np.radians(aoi)) - 1))
     aoi_gte_90 = np.full_like(aoi, False, dtype='bool')
@@ -77,7 +77,7 @@ def ashrae(aoi, b=0.05):
 
 
 def physical(aoi, n=1.526, K=4., L=0.002):
-    '''
+    r"""
     Determine the incidence angle modifier using refractive index ``n``,
     extinction coefficient ``K``, and glazing thickness ``L``.
 
@@ -132,7 +132,7 @@ def physical(aoi, n=1.526, K=4., L=0.002):
     iam.martin_ruiz
     iam.ashrae
     iam.interp
-    '''
+    """
     zeroang = 1e-06
 
     # hold a new reference to the input aoi object since we're going to
@@ -180,7 +180,7 @@ def physical(aoi, n=1.526, K=4., L=0.002):
 
 
 def martin_ruiz(aoi, a_r=0.16):
-    '''
+    r'''
     Determine the incidence angle modifier (IAM) using the Martin
     and Ruiz incident angle model.
 
@@ -257,7 +257,7 @@ def martin_ruiz(aoi, a_r=0.16):
 
 
 def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
-    '''
+    r'''
     Determine the incidence angle modifier (IAM) by interpolating a set of
     reference values, which are usually measured values.
 
@@ -337,7 +337,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
 
 def sapm(aoi, module, upper=None):
-    """
+    r"""
     Determine the incidence angle modifier (IAM) using the SAPM model.
 
     Parameters

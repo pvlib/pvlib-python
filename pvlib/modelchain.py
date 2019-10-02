@@ -452,11 +452,8 @@ class ModelChain(object):
             calcparams_model_function(self.effective_irradiance,
                                       self.cell_temperature))
 
-        self.diode_params = pd.DataFrame({'I_L': photocurrent,
-                                          'I_o': saturation_current,
-                                          'R_s': resistance_series,
-                                          'R_sh': resistance_shunt,
-                                          'nNsVth': nNsVth})
+        self.diode_params = (photocurrent, saturation_current,
+                             resistance_series, resistance_shunt, nNsVth)
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,

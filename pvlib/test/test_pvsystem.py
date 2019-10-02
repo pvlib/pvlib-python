@@ -1,6 +1,5 @@
 import inspect
 import os
-import datetime
 from collections import OrderedDict
 
 import numpy as np
@@ -12,10 +11,8 @@ from pandas.util.testing import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
 from pvlib import pvsystem
-from pvlib import clearsky
-from pvlib import irradiance
 from pvlib import atmosphere
-from pvlib import solarposition
+from pvlib import iam as _iam
 from pvlib.location import Location
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -82,23 +79,23 @@ def test_systemdef_dict():
     assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
 
 
-def test_PVSystem_ashraeiam(mocker):
-    mocker.spy(pvsystem, 'ashraeiam')
+def test_PVSystem_iam_ashrae(mocker):
+    mocker.spy(_iam, 'ashrae')
     module_parameters = pd.Series({'b': 0.05})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = 1
-    iam = system.ashraeiam(thetas)
-    pvsystem.ashraeiam.assert_called_once_with(thetas, b=0.05)
+    iam = system.iam_ashrae(thetas)
+    _iam.ashrae.assert_called_once_with(thetas, b=0.05)
     assert iam < 1.
 
 
-def test_PVSystem_physicaliam(mocker):
+def test_PVSystem_iam_physical(mocker):
     module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
     system = pvsystem.PVSystem(module_parameters=module_parameters)
-    mocker.spy(pvsystem, 'physicaliam')
+    mocker.spy(_iam, 'physical')
     thetas = 1
-    iam = system.physicaliam(thetas)
-    pvsystem.physicaliam.assert_called_once_with(thetas, **module_parameters)
+    iam = system.iam_physical(thetas)
+    _iam.physical.assert_called_once_with(thetas, **module_parameters)
     assert iam < 1.
 
 
@@ -1501,6 +1498,10 @@ def test_deprecated_08():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.PVSystem(module_parameters=module_parameters,
                           racking_model='open', module_type='glass_glass')
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.ashraeiam(45)
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.physicaliam(45)
 
 
 @fail_on_pvlib_version('0.8')

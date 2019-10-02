@@ -550,8 +550,18 @@ class PVSystem(object):
 
     def sapm_aoi_loss(self, aoi):
         """
-        Use the :py:func:`sapm_aoi_loss` function, the input parameters,
-        and ``self.module_parameters`` to calculate F2.
+        Deprecated. Use ``PVSystem.iam_sapm`` instead.
+        """
+        import warnings
+        warnings.warn(
+        'PVSystem.sapm_aoi_loss is deprecated and will be removed in v0.8,'
+        ' use PVSystem.iam_sapm instead', pvlibDeprecationWarning)
+        return PVSystem.iam_sapm(self, aoi)
+
+    def iam_sapm(self, aoi):
+        """
+        Use the :py:func:`iam.sapm` function, the input parameters,
+        and ``self.module_parameters`` to calculate iam.
 
         Parameters
         ----------
@@ -560,10 +570,10 @@ class PVSystem(object):
 
         Returns
         -------
-        F2 : numeric
-            The SAPM angle of incidence loss coefficient.
+        iam : numeric
+            The SAPM angle of incidence loss coefficient F2.
         """
-        return sapm_aoi_loss(aoi, self.module_parameters)
+        return iam.sapm(aoi, self.module_parameters)
 
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
@@ -1846,67 +1856,6 @@ def sapm_spectral_loss(airmass_absolute, module):
     return spectral_loss
 
 
-def sapm_aoi_loss(aoi, module, upper=None):
-    """
-    Calculates the SAPM angle of incidence loss coefficient, F2.
-
-    Parameters
-    ----------
-    aoi : numeric
-        Angle of incidence in degrees. Negative input angles will return
-        zeros.
-
-    module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more
-        details.
-
-    upper : None or float, default None
-        Upper limit on the results.
-
-    Returns
-    -------
-    F2 : numeric
-        The SAPM angle of incidence loss coefficient.
-
-    Notes
-    -----
-    The SAPM traditionally does not define an upper limit on the AOI
-    loss function and values slightly exceeding 1 may exist for moderate
-    angles of incidence (15-40 degrees). However, users may consider
-    imposing an upper limit of 1.
-
-    References
-    ----------
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
-    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
-    NM.
-
-    [2] B.H. King et al, "Procedure to Determine Coefficients for the
-    Sandia Array Performance Model (SAPM)," SAND2016-5284, Sandia
-    National Laboratories (2016).
-
-    [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
-    Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
-    DOI: 10.1109/PVSC.2015.7355849
-    """
-
-    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
-                 module['B1'], module['B0']]
-
-    aoi_loss = np.polyval(aoi_coeff, aoi)
-    aoi_loss = np.clip(aoi_loss, 0, upper)
-    # nan tolerant masking
-    aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
-    np.less(aoi, 0, where=~np.isnan(aoi), out=aoi_lt_0)
-    aoi_loss = np.where(aoi_lt_0, 0, aoi_loss)
-
-    if isinstance(aoi, pd.Series):
-        aoi_loss = pd.Series(aoi_loss, aoi.index)
-
-    return aoi_loss
-
-
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
                               module, reference_irradiance=1000):
     """
@@ -1942,7 +1891,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     """
 
     F1 = sapm_spectral_loss(airmass_absolute, module)
-    F2 = sapm_aoi_loss(aoi, module)
+    F2 = _iam.sapm(aoi, module)
 
     E0 = reference_irradiance
 

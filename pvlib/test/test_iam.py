@@ -148,3 +148,24 @@ def test_iam_interp():
     # check exception clause
     with pytest.raises(ValueError):
         _iam.interp(0.0, [0, 90], [1, -1])
+
+
+def test_sapm(sapm_module_params, aoi, expected):
+
+    out = _iam.sapm(aoi, sapm_module_params)
+
+    if isinstance(aoi, pd.Series):
+        assert_series_equal(out, expected, check_less_precise=4)
+    else:
+        assert_allclose(out, expected, atol=1e-4)
+
+
+def test_sapm_limits():
+    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert _iam.sapm_aoi_loss(1, module_parameters) == 5
+
+    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert _iam.sapm_aoi_loss(1, module_parameters, upper=1) == 1
+
+    module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
+    assert _iam.sapm_aoi_loss(1, module_parameters) == 0

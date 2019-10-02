@@ -334,3 +334,64 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
         iam = pd.Series(iam, index=aoi_input.index)
 
     return iam
+
+
+def sapm(aoi, module, upper=None):
+    """
+    Determine the incidence angle modifier (IAM) using the SAPM model.
+
+    Parameters
+    ----------
+    aoi : numeric
+        Angle of incidence in degrees. Negative input angles will return
+        zeros.
+
+    module : dict-like
+        A dict, Series, or DataFrame defining the SAPM performance
+        parameters. See the :py:func:`sapm` notes section for more
+        details.
+
+    upper : None or float, default None
+        Upper limit on the results.
+
+    Returns
+    -------
+    iam : numeric
+        The SAPM angle of incidence loss coefficient F2.
+
+    Notes
+    -----
+    The SAPM [1] traditionally does not define an upper limit on the AOI
+    loss function and values slightly exceeding 1 may exist for moderate
+    angles of incidence (15-40 degrees). However, users may consider
+    imposing an upper limit of 1.
+
+    References
+    ----------
+    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
+    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
+    NM.
+
+    [2] B.H. King et al, "Procedure to Determine Coefficients for the
+    Sandia Array Performance Model (SAPM)," SAND2016-5284, Sandia
+    National Laboratories (2016).
+
+    [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
+    Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
+    DOI: 10.1109/PVSC.2015.7355849
+    """
+
+    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
+                 module['B1'], module['B0']]
+
+    iam = np.polyval(aoi_coeff, aoi)
+    iam = np.clip(iam, 0, upper)
+    # nan tolerant masking
+    aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
+    np.less(aoi, 0, where=~np.isnan(aoi), out=aoi_lt_0)
+    iam = np.where(aoi_lt_0, 0, iam)
+
+    if isinstance(aoi, pd.Series):
+        iam = pd.Series(iam, aoi.index)
+
+    return iam

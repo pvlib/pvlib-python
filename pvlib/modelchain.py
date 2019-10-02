@@ -590,15 +590,15 @@ class ModelChain(object):
                              'aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
-        self.aoi_modifier = self.system.ashraeiam(self.aoi)
+        self.aoi_modifier = self.system.iam_ashrae(self.aoi)
         return self
 
     def physical_aoi_loss(self):
-        self.aoi_modifier = self.system.physicaliam(self.aoi)
+        self.aoi_modifier = self.system.iam_physical(self.aoi)
         return self
 
     def sapm_aoi_loss(self):
-        self.aoi_modifier = self.system.sapm_aoi_loss(self.aoi)
+        self.aoi_modifier = self.system.iam_sapm(self.aoi)
         return self
 
     def no_aoi_loss(self):

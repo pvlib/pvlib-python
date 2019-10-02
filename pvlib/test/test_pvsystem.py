@@ -293,33 +293,14 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
      np.array([[0, 1.007572, 0, np.nan]])),
     (pd.Series([80]), pd.Series([0.597472]))
 ])
-def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
-
-    out = pvsystem.sapm_aoi_loss(aoi, sapm_module_params)
-
-    if isinstance(aoi, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
-    else:
-        assert_allclose(out, expected, atol=1e-4)
 
 
-def test_sapm_aoi_loss_limits():
-    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 5
-
-    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(1, module_parameters, upper=1) == 1
-
-    module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 0
-
-
-def test_PVSystem_sapm_aoi_loss(sapm_module_params, mocker):
+def test_PVSystem_aoi_sapm(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-    mocker.spy(pvsystem, 'sapm_aoi_loss')
+    mocker.spy(_iam, 'sapm')
     aoi = 0
-    out = system.sapm_aoi_loss(aoi)
-    pvsystem.sapm_aoi_loss.assert_called_once_with(aoi, sapm_module_params)
+    out = system.aoi_sapm(aoi)
+    _iam.sapm.assert_called_once_with(aoi, sapm_module_params)
     assert_allclose(out, 1.0, atol=0.01)
 
 

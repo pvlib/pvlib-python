@@ -271,13 +271,12 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                    cells_in_series=60, temp_ref=25):
     """
-    Calculates the five parameters for the single diode equation at
-    standard irradiance and standard cell temperature using the De Soto et al.
-    procedure described in [1]. This procedure has the advantage of using
-    common specifications given by manufacturers in the datasheets of
-    PV modules.
-    The six values returned by getparams_desoto
-    can be used by calcparams_desoto to calculate the values at different
+    Calculates the five parameters for the single diode equation using
+    the De Soto et al. procedure described in [1]. This procedure has the
+    advantage of using common specifications given by manufacturers in the
+    datasheets of PV modules.
+    The six values returned by this function can be used by
+    pvsystem.calcparams_desoto to calculate the values at different
     irradiance and cell temperature.
 
     Parameters
@@ -326,7 +325,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     * 'R_sh_ref': numeric
         Shunt resistance in ohms at std conditions.
 
-    * 'nNsVth_ref' : numeric
+    * 'a_ref' : numeric
         Modified ideality factor at std conditions.
         The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at
@@ -430,7 +429,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     # results
     return {'I_L_ref': sol[0],
             'I_o_ref': sol[1],
-            'nNsVth_ref': sol[2],
+            'a_ref': sol[2],
             'R_sh_ref': sol[3],
             'R_s': sol[4],
             'alpha_sc': alpha_sc}

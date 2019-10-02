@@ -150,6 +150,12 @@ def test_iam_interp():
         _iam.interp(0.0, [0, 90], [1, -1])
 
 
+@pytest.mark.parametrize('aoi,expected', [
+    (45, 0.9975036250000002),
+    (np.array([[-30, 30, 100, np.nan]]),
+     np.array([[0, 1.007572, 0, np.nan]])),
+    (pd.Series([80]), pd.Series([0.597472]))
+])
 def test_sapm(sapm_module_params, aoi, expected):
 
     out = _iam.sapm(aoi, sapm_module_params)

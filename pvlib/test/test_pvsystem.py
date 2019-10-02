@@ -287,19 +287,12 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
     assert_allclose(out, 1, atol=0.5)
 
 
-@pytest.mark.parametrize('aoi,expected', [
-    (45, 0.9975036250000002),
-    (np.array([[-30, 30, 100, np.nan]]),
-     np.array([[0, 1.007572, 0, np.nan]])),
-    (pd.Series([80]), pd.Series([0.597472]))
-])
 
-
-def test_PVSystem_aoi_sapm(sapm_module_params, mocker):
+def test_PVSystem_iam_sapm(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     mocker.spy(_iam, 'sapm')
     aoi = 0
-    out = system.aoi_sapm(aoi)
+    out = system.iam_sapm(aoi)
     _iam.sapm.assert_called_once_with(aoi, sapm_module_params)
     assert_allclose(out, 1.0, atol=0.01)
 

@@ -13,9 +13,9 @@ import pandas as pd
 
 from pvlib._deprecation import deprecated
 
-from pvlib import (atmosphere, irradiance, singlediode as _singlediode,
+from pvlib import (atmosphere, iam, irradiance, singlediode as _singlediode,
                    temperature)
-from pvlib.tools import _build_kwargs, cosd, asind, sind, tand
+from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
@@ -316,11 +316,11 @@ class PVSystem(object):
                                                albedo=self.albedo,
                                                **kwargs)
 
-    def ashraeiam(self, aoi):
+    def iam_ashrae(self, aoi):
         """
         Determine the incidence angle modifier using
         ``self.module_parameters['b']``, ``aoi``,
-        and the :py:func:`ashraeiam` function.
+        and the :py:func:`iam.ashrae` function.
 
         Uses default arguments if keys not in module_parameters.
 
@@ -336,16 +336,26 @@ class PVSystem(object):
         """
         kwargs = _build_kwargs(['b'], self.module_parameters)
 
-        return ashraeiam(aoi, **kwargs)
+        return iam.ashrae(aoi, **kwargs)
 
-    def physicaliam(self, aoi):
+    def ashraeiam(self, aoi):
+        """
+        Deprecated. Use ``PVSystem.iam_ashrae`` instead.
+        """
+        import warnings
+        warnings.warn(
+        'PVSystem.ashraeiam is deprecated and will be removed in v0.8,'
+        ' use PVSystem.iam_ashrae instead', pvlibDeprecationWarning)
+        return PVSystem.iam_ashrae(self, aoi)
+
+    def iam_physical(self, aoi):
         """
         Determine the incidence angle modifier using ``aoi``,
         ``self.module_parameters['K']``,
         ``self.module_parameters['L']``,
         ``self.module_parameters['n']``,
         and the
-        :py:func:`physicaliam` function.
+        :py:func:`iam.physical` function.
 
         Uses default arguments if keys not in module_parameters.
 
@@ -361,7 +371,17 @@ class PVSystem(object):
         """
         kwargs = _build_kwargs(['K', 'L', 'n'], self.module_parameters)
 
-        return physicaliam(aoi, **kwargs)
+        return iam.physical(aoi, **kwargs)
+
+    def physicaliam(self, aoi):
+        """
+        Deprecated. Use ``PVSystem.iam_physical`` instead.
+        """
+        import warnings
+        warnings.warn(
+        'PVSystem.physicaliam is deprecated and will be removed in v0.8,'
+        ' use PVSystem.iam_physical instead', pvlibDeprecationWarning)
+        return PVSystem.iam_physical(self, aoi)
 
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -2800,3 +2820,13 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pac = np.maximum(0, pac)     # GH 541
 
     return pac
+
+
+ashraeiam = deprecated('0.7', alternative='iam.ashrae',
+                       name='ashraeiam', removal='0.8',
+                       )(iam.ashrae)
+
+
+physicaliam = deprecated('0.7', alternative='iam.physical',
+                       name='physicaliam', removal='0.8',
+                       )(iam.physical)

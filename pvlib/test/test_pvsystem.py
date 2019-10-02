@@ -99,14 +99,6 @@ def test_PVSystem_iam_physical(mocker):
     assert iam < 1.
 
 
-@pytest.fixture(scope="session")
-def sapm_module_params(sam_data):
-    modules = sam_data['sandiamod']
-    module = 'Canadian_Solar_CS5P_220M___2009_'
-    module_parameters = modules[module]
-    return module_parameters
-
-
 def test_retrieve_sam_raise_no_parameters():
     """
     Raise an exception if no parameters are provided to `retrieve_sam()`.

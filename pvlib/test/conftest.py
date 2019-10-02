@@ -365,3 +365,46 @@ def sapm_temperature_cs5p_220m():
     # SAPM temperature model parameters for Canadian_Solar_CS5P_220M
     # (glass/polymer) in open rack
     return {'a': -3.40641, 'b': -0.0842075, 'deltaT': 3}
+
+
+@pytest.fixture(scope='function')
+def sapm_module_params():
+    """
+    Define SAPM model parameters for Canadian Solar CS5P 220M module.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {'A0': 0.928385,
+                  'A1': 0.068093,
+                  'A2': -0.0157738,
+                  'A3': 0.0016606,
+                  'A4': -6.93E-05,
+                  'B0': 1,
+                  'B1': 002438,
+                  'B2': 003103,
+                  'B3': 00001246,
+                  'B4': 1E-07,
+                  'B5': -1.36E-09,
+                  'C0': 1.01284,
+                  'C1':-0.0128398,
+                  'C2' : 0.279317,
+                  'C3': -7.24463,
+                  'C3': 0.996446,
+                  'C4': 0.003554,
+                  'C6': 1.15535,
+                  'C7': -0.155353,
+                  'Isco': 5.09115,
+                  'Impo': 4.54629,
+                  'Aisc': 0.000397,
+                  'Aimp': 0.000181,
+                  'Bvoco': -0.21696,
+                  'Mbvoc': 0.0,
+                  'Bvmpo': -0.235488,
+                  'Mbvmp': 0.0,
+                  'N': 1.4032,
+                  'Cells_in_Series': 96,
+                  'IXO': 4.97599,
+                  'IXXO': 3.18803,
+                  'FD': 1}
+    return parameters

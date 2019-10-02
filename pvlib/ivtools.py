@@ -7,6 +7,12 @@ Created on Fri Mar 29 10:34:10 2019
 
 import numpy as np
 
+try:
+    from scipy.optimize import root
+except ImportError:
+    raise ImportError(
+        "'scipy.optimize.root' couldn't be imported. Is SciPy installed?")
+
 
 def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                     gamma_pmp, cells_in_series, temp_ref=25):
@@ -262,8 +268,8 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
                                      v_oc)
 
 
-def fit_sdm_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc,
-                                N_s=60):
+def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
+                   cells_in_series=60, temp_ref=25):
     """
     Calculates the five parameters for the single diode equation at
     standard irradiance and standard cell temperature using the De Soto et al.
@@ -276,60 +282,59 @@ def fit_sdm_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc,
 
     Parameters
     ----------
-    I_sc : numeric
-        Short-circuit current at std conditions in A.
-
-    V_oc : numeric
-        Open-circuit voltage at std conditions in V.
-
-    I_mp : numeric
-        Module current at the maximum-power point at std conditions in A.
-
-    V_mp : numeric
+    celltype : str, case insensitive
+        Value is one of 'monosi', 'multisi', 'polysi' or'gaas'.
+        Others like 'cis', 'cigs', 'cdte', 'amorphous' are not implemented yet
+    v_mp : numeric
         Module voltage at the maximum-power point at std conditions in V.
-
+    i_mp : numeric
+        Module current at the maximum-power point at std conditions in A.
+    v_oc : numeric
+        Open-circuit voltage at std conditions in V.
+    i_sc : numeric
+        Short-circuit current at std conditions in A.
     alpha_sc : numeric
-        The short-circuit current (I_sc) temperature coefficient of the
+        The short-circuit current (i_sc) temperature coefficient of the
         module in units of %/K. It is converted in A/K for the computing
         process.
-
-    N_s : numeric
-        Number of cell in the module.
-        Optional input, but helps to insure the convergence of the computing.
-
-    beta_oc : numeric
-        The open-circuit voltage (V_oc) temperature coefficient of the
+    beta_voc : numeric
+        The open-circuit voltage (v_oc) temperature coefficient of the
         module in units of %/K. It is converted in V/K for the computing
         process.
-        Optional input, but makes faster the computing.
+    cells_in_series : numeric, default 60
+        Number of cell in the module.
+        Optional input, but helps to insure the convergence of the computing.
+    temp_ref : numeric, default 25
+        Reference temperature condition [C]
+
 
     Returns
     -------
     Dictionnary with the following elements:
 
-    photocurrent 'I_L_ref': numeric
+    * 'I_L_ref': numeric
         Light-generated current in amperes at std conditions.
 
-    saturation_current 'I_o_ref': numeric
+    * 'I_o_ref': numeric
         Diode saturation curent in amperes at std conditions
 
-    resistance_series 'R_s': numeric
+    * 'R_s': numeric
         Series resistance in ohms. Note that '_ref' is not mentionned
         in the name because this resistance is not sensible to the
         conditions of test.
 
-    resistance_shunt 'R_sh_ref': numeric
+    * 'R_sh_ref': numeric
         Shunt resistance in ohms at std conditions.
 
-    'nNsVth_ref' : numeric
+    * 'nNsVth_ref' : numeric
         Modified ideality factor at std conditions.
         The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at
         specified effective irradiance and cell temperature.
 
-    'alpha_sc': numeric
+    * 'alpha_sc': numeric
         Caution!: Different from the input because of the unit.
-        The short-circuit current (I_sc) temperature coefficient of the
+        The short-circuit current (i_sc) temperature coefficient of the
         module in units of A/K.
 
     References
@@ -344,13 +349,23 @@ def fit_sdm_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc,
     # Constants
     k = 1.381e-23  # Boltzmann constant, in J/K, or 8.617e-5 eV/K
     q = 1.602e-19  # electron charge in J/V, or 1 eV
-    Tref = 25.0 + 273.15  # in K
-    C = 0.0002677  # valid for silicon
-    Eg = 1.796e-19  # in J, valid for silicon
+
+    Tref = temp_ref + 273.15  # in K
+
+    if celltype.lower() in ['monosi', 'polysi', 'multisi']:
+        C = 0.0002677  # valid for silicon
+        Eg = 1.796e-19  # in J, valid for silicon
+    elif celltype.lower() in ['gaas']:
+        C = 0.0003174  # valid for gallium arsenide
+        Eg = 2.163e-19  # in J, valid for gallium arsenide
+    elif celltype.lower() in ['cis', 'cigs', 'cdte', 'amorphous']:
+        raise NotImplementedError
+    else:
+        raise ValueError('Unknown cell type.')
 
     # Conversion from %/K to A/K & V/K
-    alpha_sc = alpha_sc*I_sc/100
-    beta_oc = beta_oc*V_oc/100
+    alpha_sc = alpha_sc*i_sc/100
+    beta_voc = beta_voc*v_oc/100
 
     def pv_fct(params, specs):
         """Returns the system of equations used for computing the
@@ -382,7 +397,7 @@ def fit_sdm_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc,
         y[2] = Imp - IL + Io*(np.exp((Vmp+Imp*Rs)/a) - 1.0) + \
             (Vmp+Imp*Rs)/Rsh
         # 4th equation - Pmp derivated=0 -
-        # caution: eq(6) in [1] is incorrect, take eq23.2.6 in [2]
+        # caution: eq(6) in [1] seems to be incorrect, take eq23.2.6 in [2]
         y[3] = Imp - Vmp * ((Io/a)*np.exp((Vmp+Imp*Rs)/a) + 1.0/Rsh) / \
             (1.0 + (Io*Rs/a)*np.exp((Vmp+Imp*Rs)/a) + Rs/Rsh)
         # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
@@ -397,30 +412,30 @@ def fit_sdm_desoto(I_sc, V_oc, I_mp, V_mp, alpha_sc, beta_oc,
         return y
 
     # initial guesses of variables for computing convergence:
-    # Values are taken [2], p753
+    # Values are taken from [2], p753
     Rsh_i = 100.0
-    a_i = 1.5*k*Tref*N_s/q
-    IL_i = I_sc
-    Io_i = I_sc * np.exp(-V_oc/a_i)
-    Rs_i = (a_i*np.log((IL_i-I_mp)/Io_i+1) - V_mp)/I_mp
+    a_i = 1.5*k*Tref*cells_in_series/q
+    IL_i = i_sc
+    Io_i = i_sc * np.exp(-v_oc/a_i)
+    Rs_i = (a_i*np.log((IL_i-i_mp)/Io_i+1) - v_mp)/i_mp
     # params_i : initial values vector
     params_i = np.array([IL_i, Io_i, a_i, Rsh_i, Rs_i])
 
     # specs of module
-    specs = np.array([I_sc, V_oc, I_mp, V_mp, beta_oc, alpha_sc])
+    specs = np.array([i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc])
 
     # computing
     sol = root(pv_fct, x0=params_i, args=specs, method='lm').x
 
     # results
-    res = {'I_L_ref': sol[0],
-           'I_o_ref': sol[1],
-           'nNsVth_ref': sol[2],
-           'R_sh_ref': sol[3],
-           'R_s': sol[4],
-           'alpha_sc': alpha_sc
-           }
-    return res
+    return {'I_L_ref': sol[0],
+            'I_o_ref': sol[1],
+            'nNsVth_ref': sol[2],
+            'R_sh_ref': sol[3],
+            'R_s': sol[4],
+            'alpha_sc': alpha_sc}
+
+
 def _find_mp(voltage, current):
     """
     Finds voltage and current at maximum power point.

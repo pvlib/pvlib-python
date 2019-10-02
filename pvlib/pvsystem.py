@@ -1858,7 +1858,7 @@ def retrieve_sam(name=None, path=None):
 
 
 def _parse_raw_sam_df(csvdata):
-    df = pd.read_csv(csvdata, index_col=0, skiprows=[1, 2], engine='python')
+    df = pd.read_csv(csvdata, index_col=0, skiprows=[1, 2])
     colnames = df.columns.values.tolist()
     parsedcolnames = []
     for cn in colnames:

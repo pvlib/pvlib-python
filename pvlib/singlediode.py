@@ -12,7 +12,6 @@ from pvlib.tools import _golden_sect_DataFrame
 # ImportError when 'brentq' method is specified for those methods.
 try:
     from scipy.optimize import brentq
-
 except ImportError:
     def brentq(*a, **kw):
         raise ImportError(

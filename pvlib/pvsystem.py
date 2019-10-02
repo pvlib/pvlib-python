@@ -1891,7 +1891,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     """
 
     F1 = sapm_spectral_loss(airmass_absolute, module)
-    F2 = _iam.sapm(aoi, module)
+    F2 = iam.sapm(aoi, module)
 
     E0 = reference_irradiance
 

@@ -8,7 +8,6 @@ the time to read the source code for the module.
 
 from functools import partial
 import warnings
-import pandas as pd
 
 from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
                    tools)
@@ -453,7 +452,8 @@ class ModelChain(object):
                                       self.cell_temperature))
 
         self.diode_params = (photocurrent, saturation_current,
-                             resistance_series, resistance_shunt, nNsVth)
+                             resistance_series,
+                             resistance_shunt, nNsVth)
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,

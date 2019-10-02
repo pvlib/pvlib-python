@@ -6,7 +6,6 @@ __pycache__/
 # emacs temp files
 *~
 #*#
-pvlib/temp.py
 
 # C extensions
 *.so

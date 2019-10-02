@@ -12,11 +12,11 @@ from pvlib.tools import _golden_sect_DataFrame
 # ImportError when 'brentq' method is specified for those methods.
 try:
     from scipy.optimize import brentq
-    from scipy.optimize import root
+
 except ImportError:
     def brentq(*a, **kw):
         raise ImportError(
-            "brentq or root couldn't be imported. Is SciPy installed?")
+            "brentq couldn't be imported. Is SciPy installed?")
 
 # FIXME: change this to newton when scipy-1.2 is released
 try:

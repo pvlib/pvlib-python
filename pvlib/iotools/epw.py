@@ -99,7 +99,7 @@ def read_epw(filename, coerce_year=None):
     ceiling_height                      Height of cloud base above local terrain (7777=unlimited), meter
     present_weather_observation         Indicator for remaining fields: If 0, then the observed weather codes are taken from the following field. If 9, then missing weather is assumed.
     present_weather_codes               Present weather code, see [1], chapter 2.9.1.28
-    precipitable_water                  Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, mm
+    precipitable_water                  Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm
     aerosol_optical_depth               The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless
     snow_depth                          Snow depth in centimeters on the day indicated, (999 = missing data)
     days_since_last_snowfall            Number of days since last snowfall (maximum value of 88, where 88 = 88 or greater days; 99 = missing data)
@@ -159,12 +159,6 @@ def read_epw(filename, coerce_year=None):
     # Change to single year if requested
     if coerce_year is not None:
         data["year"] = coerce_year
-
-#    # Convert precipitable water data from mm to cm if data comes from TMY3
-#    # https://energyplus.net/AuxiliaryPrograms.pdf  ->  p.14
-#    if filename.split(".")[-2].lower() is 'tmy3':
-    if 'tmy3' in filename.lower():
-        data['precipitable_water'] = data['precipitable_water']/10
 
     # create index that supplies correct date and time zone information
     dts = data[['month', 'day']].astype(str).apply(lambda x: x.str.zfill(2))

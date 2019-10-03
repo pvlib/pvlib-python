@@ -218,10 +218,6 @@ def test_sapm(sapm_module_params):
     # just make sure it works with Series input
     pvsystem.sapm(effective_irradiance, temp_cell,
                   pd.Series(sapm_module_params))
-    # just make sure it works with DataFrame input
-    pvsystem.sapm(effective_irradiance, temp_cell,
-                  pd.DataFrame(data=sapm_module_params, index=[0],
-                               columns=sapm_module_params.keys()))
 
 
 def test_PVSystem_sapm(sapm_module_params, mocker):
@@ -281,7 +277,6 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
     atmosphere.first_solar_spectral_correction.assert_called_once_with(
         pw, airmass_absolute, module_type, coefficients)
     assert_allclose(out, 1, atol=0.5)
-
 
 
 def test_PVSystem_iam_sapm(sapm_module_params, mocker):

@@ -215,9 +215,13 @@ def test_sapm(sapm_module_params):
     for k, v in expected.items():
         assert_allclose(out[k], v, atol=1e-4)
 
-    # just make sure it works with a dict input
+    # just make sure it works with Series input
     pvsystem.sapm(effective_irradiance, temp_cell,
-                  sapm_module_params.to_dict())
+                  pd.Series(sapm_module_params))
+    # just make sure it works with DataFrame input
+    pvsystem.sapm(effective_irradiance, temp_cell,
+                  pd.DataFrame(data=sapm_module_params, index=[0],
+                               columns=sapm_module_params.keys()))
 
 
 def test_PVSystem_sapm(sapm_module_params, mocker):

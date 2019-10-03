@@ -385,8 +385,8 @@ def constant_aoi_loss(mc):
 
 
 @pytest.mark.parametrize('aoi_model, method', [
-    ('sapm', 'sapm_aoi_loss'), ('ashrae', 'ashraeiam'),
-    ('physical', 'physicaliam')])
+    ('sapm', 'iam_sapm'), ('ashrae', 'iam_ashrae'),
+    ('physical', 'iam_physical')])
 def test_aoi_models(system, location, aoi_model, method, weather, mocker):
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model=aoi_model, spectral_model='no_loss')

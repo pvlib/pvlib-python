@@ -25,7 +25,7 @@ DC_MODEL_PARAMS = {
     'sapm': set([
         'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
         'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-        'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
+        'C7', 'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
         'IXO', 'IXXO', 'FD']),
     'desoto': set([
@@ -1643,6 +1643,8 @@ def sapm(effective_irradiance, temp_cell, module):
                        Imp, Vmp, Ix, and Ixx to effective irradiance
     Isco               Short circuit current at reference condition (amps)
     Impo               Maximum power current at reference condition (amps)
+    Voco               Open circuit voltage at reference condition (amps)
+    Vmpo               Maximum power voltage at reference condition (amps)
     Aisc               Short circuit current temperature coefficient at
                        reference condition (1/C)
     Aimp               Maximum power current temperature coefficient at

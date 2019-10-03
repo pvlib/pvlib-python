@@ -168,10 +168,10 @@ def test_sapm(sapm_module_params, aoi, expected):
 
 def test_sapm_limits():
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm_aoi_loss(1, module_parameters) == 5
+    assert _iam.sapm(1, module_parameters) == 5
 
     module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm_aoi_loss(1, module_parameters, upper=1) == 1
+    assert _iam.sapm(1, module_parameters, upper=1) == 1
 
     module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert _iam.sapm_aoi_loss(1, module_parameters) == 0
+    assert _iam.sapm(1, module_parameters) == 0

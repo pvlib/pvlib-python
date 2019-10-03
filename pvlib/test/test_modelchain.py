@@ -17,10 +17,9 @@ from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
 @pytest.fixture
-def system(sam_data, cec_inverter_parameters, sapm_temperature_cs5p_220m):
-    modules = sam_data['sandiamod']
+def system(sapm_module_params, cec_inverter_parameters, sapm_temperature_cs5p_220m):
     module = 'Canadian_Solar_CS5P_220M___2009_'
-    module_parameters = modules[module].copy()
+    module_parameters = sapm_module_params.copy()
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
@@ -384,13 +383,13 @@ def constant_aoi_loss(mc):
     mc.aoi_modifier = 0.9
 
 
-@pytest.mark.parametrize('aoi_model, method', [
-    ('sapm', 'iam_sapm'), ('ashrae', 'iam_ashrae'),
-    ('physical', 'iam_physical')])
+@pytest.mark.parametrize('aoi_model', [
+    ('sapm', 'ashrae', 'physical', 'martin_ruiz')
+    ])
 def test_aoi_models(system, location, aoi_model, method, weather, mocker):
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model=aoi_model, spectral_model='no_loss')
-    m = mocker.spy(system, method)
+    m = mocker.spy(system, 'get_iam')
     mc.run_model(weather.index, weather=weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, pd.Series)

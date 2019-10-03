@@ -79,24 +79,28 @@ def test_systemdef_dict():
     assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
 
 
-def test_PVSystem_iam_ashrae(mocker):
-    mocker.spy(_iam, 'ashrae')
-    module_parameters = pd.Series({'b': 0.05})
+@pytest.mark.parametrize('iam_model','model_params', [
+    ('ashrae', {'b': 0.05}),
+    ('physical', {'K': 4, 'L': 0.002, 'n': 1.526}),
+    ('martin_ruiz', {'a_r': 0.16}),
+    ])
+def test_PVSystem_get_iam(mocker, iam_model, model_params):
+    mocker.spy(_iam, iam_model)
+    module_parameters = pd.Series(model_params)
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = 1
-    iam = system.iam_ashrae(thetas)
-    _iam.ashrae.assert_called_once_with(thetas, b=0.05)
+    iam = system.get_iam(thetas, iam_model=iam_model)
+    _iam.ashrae.assert_called_once_with(thetas, **module_parameters)
     assert iam < 1.
 
 
-def test_PVSystem_iam_physical(mocker):
-    module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
-    system = pvsystem.PVSystem(module_parameters=module_parameters)
-    mocker.spy(_iam, 'physical')
-    thetas = 1
-    iam = system.iam_physical(thetas)
-    _iam.physical.assert_called_once_with(thetas, **module_parameters)
-    assert iam < 1.
+def test_PVSystem_get_iam_sapm(sapm_module_params, mocker):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    mocker.spy(_iam, 'sapm')
+    aoi = 0
+    out = system.get_iam(aoi, 'sapm')
+    _iam.sapm.assert_called_once_with(aoi, sapm_module_params)
+    assert_allclose(out, 1.0, atol=0.01)
 
 
 def test_retrieve_sam_raise_no_parameters():
@@ -277,15 +281,6 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
     atmosphere.first_solar_spectral_correction.assert_called_once_with(
         pw, airmass_absolute, module_type, coefficients)
     assert_allclose(out, 1, atol=0.5)
-
-
-def test_PVSystem_iam_sapm(sapm_module_params, mocker):
-    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-    mocker.spy(_iam, 'sapm')
-    aoi = 0
-    out = system.iam_sapm(aoi)
-    _iam.sapm.assert_called_once_with(aoi, sapm_module_params)
-    assert_allclose(out, 1.0, atol=0.01)
 
 
 @pytest.mark.parametrize('test_input,expected', [
@@ -1453,7 +1448,7 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
 
 
 @fail_on_pvlib_version('0.8')
-def test_deprecated_08():
+def test_deprecated_08(sapm_module_params):
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_celltemp(1000, 25, 1)
     with pytest.warns(pvlibDeprecationWarning):
@@ -1467,6 +1462,8 @@ def test_deprecated_08():
         pvsystem.ashraeiam(45)
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.physicaliam(45)
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.sapm_aoi_loss(45, sapm_module_params)
 
 
 @fail_on_pvlib_version('0.8')

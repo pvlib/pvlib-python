@@ -9,6 +9,17 @@ import pandas as pd
 from pvlib.tools import cosd, sind, tand, asind
 
 
+# a dict of required parameter names for each IAM model
+# keys are the function names for the IAM models
+IAM_MODEL_PARAMS = {
+    'ashrae': set(['b']),
+    'physical': set(['n', 'K', 'L']),
+    'martin_ruiz': set(['a_r']),
+    'sapm': set(['B0', 'B1', 'B2', 'B3', 'B4', 'B5']),
+    'interp': set([])
+}
+
+
 def ashrae(aoi, b=0.05):
     r"""
     Determine the incidence angle modifier using the ASHRAE transmission
@@ -347,7 +358,7 @@ def sapm(aoi, module, upper=None):
         zeros.
 
     module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
+        A dict or Series with the SAPM IAM model parameters.
         parameters. See the :py:func:`sapm` notes section for more
         details.
 

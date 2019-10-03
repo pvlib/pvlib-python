@@ -316,62 +316,55 @@ class PVSystem(object):
                                                albedo=self.albedo,
                                                **kwargs)
 
-    def iam_ashrae(self, aoi):
+    def get_iam(self, aoi, iam_model='physical'):
         """
-        Determine the incidence angle modifier using
-        ``self.module_parameters['b']``, ``aoi``,
-        and the :py:func:`iam.ashrae` function.
+        Determine the incidence angle modifier using the method specified by
+        ``iam_model``.
 
-        Uses default arguments if keys not in module_parameters.
+        Parameters for the selected IAM model are expected to be in
+        ``PVSystem.module_parameters``.
 
         Parameters
         ----------
         aoi : numeric
             The angle of incidence in degrees.
 
+        aoi_model : string, default 'physical'
+            The IAM model to be used. Valid strings are 'physical', 'ashrae',
+            'martin_ruiz' and 'sapm'.
+
         Returns
         -------
-        modifier : numeric
+        iam : numeric
             The AOI modifier.
-        """
-        kwargs = _build_kwargs(['b'], self.module_parameters)
 
-        return iam.ashrae(aoi, **kwargs)
+        Raises
+        ------
+        ValueError if `iam_model` is not a valid model name.
+        """
+        model = iam_model.lower()
+        if model in ['ashrae', 'physical', 'martin_ruiz']:
+            param_names = iam.IAM_MODEL_PARAMS[model]
+            kwargs = _build_kwargs(param_names, self.module_parameters)
+            func = iam.__getattribute__(model)
+            return func(aoi, **kwargs)
+        elif model=='sapm':
+            return iam.sapm(aoi, self.module_parameters)
+        elif model=='interp':
+            raise ValueError(model + ' is not implemented as an IAM model'
+                             'option for PVSystem')
+        else:
+            raise ValueError(model + ' is not a valid IAM model')
 
     def ashraeiam(self, aoi):
         """
-        Deprecated. Use ``PVSystem.iam_ashrae`` instead.
+        Deprecated. Use ``PVSystem.iam`` instead.
         """
         import warnings
         warnings.warn('PVSystem.ashraeiam is deprecated and will be removed in'
-                      'v0.8, use PVSystem.iam_ashrae instead',
+                      'v0.8, use PVSystem.get_iam instead',
                       pvlibDeprecationWarning)
-        return PVSystem.iam_ashrae(self, aoi)
-
-    def iam_physical(self, aoi):
-        """
-        Determine the incidence angle modifier using ``aoi``,
-        ``self.module_parameters['K']``,
-        ``self.module_parameters['L']``,
-        ``self.module_parameters['n']``,
-        and the
-        :py:func:`iam.physical` function.
-
-        Uses default arguments if keys not in module_parameters.
-
-        Parameters
-        ----------
-        aoi : numeric
-            The angle of incidence in degrees.
-
-        Returns
-        -------
-        modifier : numeric
-            The AOI modifier.
-        """
-        kwargs = _build_kwargs(['K', 'L', 'n'], self.module_parameters)
-
-        return iam.physical(aoi, **kwargs)
+        return PVSystem.get_iam(self, aoi, iam_model='ashrae')
 
     def physicaliam(self, aoi):
         """
@@ -379,9 +372,9 @@ class PVSystem(object):
         """
         import warnings
         warnings.warn('PVSystem.physicaliam is deprecated and will be removed'
-                      ' in v0.8, use PVSystem.iam_physical instead',
+                      ' in v0.8, use PVSystem.get_iam instead',
                       pvlibDeprecationWarning)
-        return PVSystem.iam_physical(self, aoi)
+        return PVSystem.get_iam(self, aoi, iam_model='physical')
 
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -550,30 +543,13 @@ class PVSystem(object):
 
     def sapm_aoi_loss(self, aoi):
         """
-        Deprecated. Use ``PVSystem.iam_sapm`` instead.
+        Deprecated. Use ``PVSystem.iam`` instead.
         """
         import warnings
         warnings.warn('PVSystem.sapm_aoi_loss is deprecated and will be'
-                      ' removed in v0.8, use PVSystem.iam_sapm instead',
+                      ' removed in v0.8, use PVSystem.get_iam instead',
                       pvlibDeprecationWarning)
-        return PVSystem.iam_sapm(self, aoi)
-
-    def iam_sapm(self, aoi):
-        """
-        Use the :py:func:`iam.sapm` function, the input parameters,
-        and ``self.module_parameters`` to calculate iam.
-
-        Parameters
-        ----------
-        aoi : numeric
-            Angle of incidence in degrees.
-
-        Returns
-        -------
-        iam : numeric
-            The SAPM angle of incidence loss coefficient F2.
-        """
-        return iam.sapm(aoi, self.module_parameters)
+        return PVSystem.get_iam(self, aoi, iam_model='sapm')
 
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
@@ -2779,3 +2755,7 @@ ashraeiam = deprecated('0.7', alternative='iam.ashrae', name='ashraeiam',
 
 physicaliam = deprecated('0.7', alternative='iam.physical', name='physicaliam',
                          removal='0.8')(iam.physical)
+
+
+sapm_aoi_loss = deprecated('0.7', alternative='iam.sapm', name='sapm_aoi_loss',
+                           removal='0.8')(iam.sapm)

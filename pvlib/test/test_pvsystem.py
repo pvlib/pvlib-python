@@ -79,11 +79,11 @@ def test_systemdef_dict():
     assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
 
 
-@pytest.mark.parametrize('iam_model','model_params', [
+@pytest.mark.parametrize('iam_model,model_params', [
     ('ashrae', {'b': 0.05}),
     ('physical', {'K': 4, 'L': 0.002, 'n': 1.526}),
     ('martin_ruiz', {'a_r': 0.16}),
-    ])
+])
 def test_PVSystem_get_iam(mocker, iam_model, model_params):
     mocker.spy(_iam, iam_model)
     module_parameters = pd.Series(model_params)

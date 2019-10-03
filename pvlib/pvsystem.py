@@ -348,9 +348,9 @@ class PVSystem(object):
             kwargs = _build_kwargs(param_names, self.module_parameters)
             func = iam.__getattribute__(model)
             return func(aoi, **kwargs)
-        elif model=='sapm':
+        elif model == 'sapm':
             return iam.sapm(aoi, self.module_parameters)
-        elif model=='interp':
+        elif model == 'interp':
             raise ValueError(model + ' is not implemented as an IAM model'
                              'option for PVSystem')
         else:

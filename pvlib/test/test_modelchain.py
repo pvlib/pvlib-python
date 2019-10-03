@@ -17,7 +17,8 @@ from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
 @pytest.fixture
-def system(sapm_module_params, cec_inverter_parameters, sapm_temperature_cs5p_220m):
+def system(sapm_module_params, cec_inverter_parameters,
+           sapm_temperature_cs5p_220m):
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = sapm_module_params.copy()
     temp_model_params = sapm_temperature_cs5p_220m.copy()
@@ -385,7 +386,7 @@ def constant_aoi_loss(mc):
 
 @pytest.mark.parametrize('aoi_model', [
     ('sapm', 'ashrae', 'physical', 'martin_ruiz')
-    ])
+])
 def test_aoi_models(system, location, aoi_model, method, weather, mocker):
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model=aoi_model, spectral_model='no_loss')

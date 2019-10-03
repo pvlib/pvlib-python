@@ -8,7 +8,6 @@ the time to read the source code for the module.
 
 from functools import partial
 import warnings
-import pandas as pd
 
 from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
                    tools)
@@ -412,13 +411,6 @@ class ModelChain(object):
                     self._dc_model = self.pvsyst
                 elif model == 'pvwatts':
                     self._dc_model = self.pvwatts_dc
-                elif model == 'singlediode':
-                    warnings.warn('DC model keyword singlediode used for '
-                                  'ModelChain object. singlediode is '
-                                  'ambiguous, use desoto instead. singlediode '
-                                  'keyword will be removed in v0.7.0 and '
-                                  'later', pvlibDeprecationWarning)
-                    self._dc_model = self.desoto
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
@@ -479,24 +471,6 @@ class ModelChain(object):
 
     def pvsyst(self):
         return self._singlediode(self.system.calcparams_pvsyst)
-
-    def singlediode(self):
-        """Deprecated"""
-        (photocurrent, saturation_current, resistance_series,
-         resistance_shunt, nNsVth) = (
-            self.system.calcparams_desoto(self.effective_irradiance,
-                                          self.cell_temperature))
-
-        self.desoto = (photocurrent, saturation_current, resistance_series,
-                       resistance_shunt, nNsVth)
-
-        self.dc = self.system.singlediode(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-
-        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
-
-        return self
 
     def pvwatts_dc(self):
         self.dc = self.system.pvwatts_dc(self.effective_irradiance,
@@ -746,7 +720,7 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def complete_irradiance(self, times=None, weather=None):
+    def complete_irradiance(self, weather, times=None):
         """
         Determine the missing irradiation columns. Only two of the
         following data columns (dni, ghi, dhi) are needed to calculate
@@ -758,19 +732,21 @@ class ModelChain(object):
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
-            Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
-        weather : None or pandas.DataFrame, default None
-            Table with at least two columns containing one of the
-            following data sets: dni, dhi, ghi. Can be None if attribute
-            `weather` is already set.
+        weather : DataFrame
+            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
+            ``'wind_speed'``, ``'temp_air'``. All irradiance components
+            are required. Air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame if not provided.
+        times : None, deprecated
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Returns
         -------
         self
 
-        Assigns attributes: times, weather
+        Assigns attributes: weather
 
         Examples
         --------
@@ -782,19 +758,23 @@ class ModelChain(object):
 
         >>> # my_weather containing 'dhi' and 'ghi'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
-        >>> mc.complete_irradiance(my_datetime, my_weather)  # doctest: +SKIP
-        >>> mc.run_model()  # doctest: +SKIP
+        >>> mc.complete_irradiance(my_weather)  # doctest: +SKIP
+        >>> mc.run_model(mc.weather)  # doctest: +SKIP
 
         >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
-        >>> mc.run_model(my_datetime, my_weather)  # doctest: +SKIP
+        >>> mc.run_model(my_weather)  # doctest: +SKIP
         """
-        if weather is not None:
-            self.weather = weather
+        self.weather = weather
+
         if times is not None:
-            self.times = times
+            warnings.warn('times keyword argument is deprecated and will be '
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
+
         self.solar_position = self.location.get_solarposition(
-            self.times, method=self.solar_position_method)
+            self.weather.index, method=self.solar_position_method)
+
         icolumns = set(self.weather.columns)
         wrn_txt = ("This function is not safe at the moment.\n" +
                    "Results can be too high or negative.\n" +
@@ -803,7 +783,7 @@ class ModelChain(object):
 
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
-                times, solar_position=self.solar_position)
+                self.weather.index, solar_position=self.solar_position)
             self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
                 self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
                 self.solar_position.zenith,
@@ -822,61 +802,53 @@ class ModelChain(object):
 
         return self
 
-    def prepare_inputs(self, times=None, weather=None):
+    def prepare_inputs(self, weather, times=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
-            Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
-        weather : None or DataFrame, default None
-            If ``None``, the weather attribute is used. Column names
-            must be ``'dni'``, ``'ghi'``, ``'dhi'``, ``'wind_speed'``,
-            ``'temp_air'``. All irradiance components are required.
-            Assumes air temperature is 20 C and wind speed is 0 m/s if
-            not provided.
+        weather : DataFrame
+            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
+            ``'wind_speed'``, ``'temp_air'``. All irradiance components
+            are required. Air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame if not provided.
+        times : None, deprecated
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Notes
         -----
-        Assigns attributes: ``times``, ``solar_position``, ``airmass``,
+        Assigns attributes: ``solar_position``, ``airmass``,
         ``total_irrad``, `aoi`
 
         See also
         --------
         ModelChain.complete_irradiance
         """
-        if weather is not None:
-            self.weather = weather
-        if self.weather is None:
-            self.weather = pd.DataFrame(index=times)
 
-        if times is not None:
-            self.times = times
-
-        self.solar_position = self.location.get_solarposition(
-            self.times, method=self.solar_position_method)
-
-        self.airmass = self.location.get_airmass(
-            solar_position=self.solar_position, model=self.airmass_model)
-
-        if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
-            warnings.warn('Clear sky assumption for no input irradiance is '
-                          'deprecated and will be removed in v0.7.0. Use '
-                          'location.get_clearsky instead',
-                          pvlibDeprecationWarning)
-            self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
-                self.solar_position.index, self.clearsky_model,
-                solar_position=self.solar_position,
-                airmass_absolute=self.airmass['airmass_absolute'])
-
-        if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
+        if not {'ghi', 'dni', 'dhi'} <= set(weather.columns):
             raise ValueError(
                 "Uncompleted irradiance data set. Please check your input "
                 "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n"
-                "Detected data: {0}".format(list(self.weather.columns)))
+                "Detected data: {0}".format(list(weather.columns)))
+
+        self.weather = weather
+
+        if times is not None:
+            warnings.warn('times keyword argument is deprecated and will be '
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
+
+        self.times = self.weather.index
+
+        self.solar_position = self.location.get_solarposition(
+            self.weather.index, method=self.solar_position_method)
+
+        self.airmass = self.location.get_airmass(
+            solar_position=self.solar_position, model=self.airmass_model)
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
@@ -921,32 +893,36 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, times=None, weather=None):
+    def run_model(self, weather, times=None):
         """
         Run the model.
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
-            Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
-        weather : None or DataFrame, default None
-            If ``None``, the weather attribute is used. Column names
-            must be ``'dni'``, ``'ghi'``, ``'dhi'``, ``'wind_speed'``,
-            ``'temp_air'``. All irradiance components are required.
-            Assumes air temperature is 20 C and wind speed is 0 m/s if
-            not provided.
+        weather : DataFrame
+            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
+            ``'wind_speed'``, ``'temp_air'``. All irradiance components
+            are required. Air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame if not provided.
+        times : None, deprecated
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Returns
         -------
         self
 
-        Assigns attributes: times, solar_position, airmass, irradiance,
+        Assigns attributes: solar_position, airmass, irradiance,
         total_irrad, effective_irradiance, weather, cell_temperature, aoi,
         aoi_modifier, spectral_modifier, dc, ac, losses.
         """
+        if times is not None:
+            warnings.warn('times keyword argument is deprecated and will be '
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
 
-        self.prepare_inputs(times, weather)
+        self.prepare_inputs(weather)
         self.aoi_model()
         self.spectral_model()
         self.effective_irradiance_model()

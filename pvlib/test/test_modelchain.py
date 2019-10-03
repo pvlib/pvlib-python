@@ -127,7 +127,7 @@ def weather():
 
 
 def test_ModelChain_creation(system, location):
-    mc = ModelChain(system, location)
+    ModelChain(system, location)
 
 
 @pytest.mark.parametrize('strategy, expected', [
@@ -144,29 +144,50 @@ def test_orientation_strategy(strategy, expected, system, location):
     assert system.surface_azimuth == expected[1]
 
 
-@requires_scipy
-def test_run_model(system, location):
-    mc = ModelChain(system, location)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-
-    with pytest.warns(pvlibDeprecationWarning):
-        ac = mc.run_model(times).ac
-
-    expected = pd.Series(np.array([183.522449305, -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
-
-
 def test_run_model_with_irradiance(system, location):
     mc = ModelChain(system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
-    ac = mc.run_model(times, weather=irradiance).ac
+    ac = mc.run_model(irradiance).ac
 
-    expected = pd.Series(np.array([187.80746495, -2.00000000e-02]),
+    expected = pd.Series(np.array([187.80746494643176, -0.02]),
                          index=times)
     assert_series_equal(ac, expected)
+
+
+def test_run_model_times(system, location):
+    mc = ModelChain(system, location)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
+                              index=times)
+    with pytest.warns(pvlibDeprecationWarning):
+        mc.run_model(irradiance, times=times)
+
+
+def test_prepare_inputs_times(system, location):
+    mc = ModelChain(system, location)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
+                              index=times)
+    with pytest.warns(pvlibDeprecationWarning):
+        mc.prepare_inputs(irradiance, times=times)
+
+
+def test_prepare_inputs_no_irradiance(system, location):
+    mc = ModelChain(system, location)
+    weather = pd.DataFrame()
+    with pytest.raises(ValueError):
+        mc.prepare_inputs(weather)
+
+
+@requires_tables
+def test_complete_irradiance_times(system, location):
+    mc = ModelChain(system, location)
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    irradiance = pd.DataFrame({'ghi': 600., 'dhi': 150.}, index=times)
+    with pytest.warns(pvlibDeprecationWarning):
+        mc.complete_irradiance(irradiance, times=times)
 
 
 def test_run_model_perez(system, location):
@@ -174,7 +195,7 @@ def test_run_model_perez(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
-    ac = mc.run_model(times, weather=irradiance).ac
+    ac = mc.run_model(irradiance).ac
 
     expected = pd.Series(np.array([187.94295642, -2.00000000e-02]),
                          index=times)
@@ -187,7 +208,7 @@ def test_run_model_gueymard_perez(system, location):
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
-    ac = mc.run_model(times, weather=irradiance).ac
+    ac = mc.run_model(irradiance).ac
 
     expected = pd.Series(np.array([187.94317405, -2.00000000e-02]),
                          index=times)
@@ -203,7 +224,7 @@ def test_run_model_with_weather(system, location, weather, mocker):
     mc = ModelChain(system, location)
     mc.temperature_model = 'sapm'
     m_sapm = mocker.spy(system, 'sapm_celltemp')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m_sapm.call_count == 1
     # assert_called_once_with cannot be used with series, so need to use
     # assert_series_equal on call_args
@@ -217,7 +238,7 @@ def test_run_model_with_weather(system, location, weather, mocker):
     mc = ModelChain(system, location)
     mc.temperature_model = 'pvsyst'
     m_pvsyst = mocker.spy(system, 'pvsyst_celltemp')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m_pvsyst.call_count == 1
     assert_series_equal(m_pvsyst.call_args[0][1], weather['temp_air'])
     assert_series_equal(m_pvsyst.call_args[0][2], weather['wind_speed'])
@@ -231,7 +252,7 @@ def test_run_model_tracker(system, location, weather, mocker):
         inverter_parameters=system.inverter_parameters)
     mocker.spy(system, 'singleaxis')
     mc = ModelChain(system, location)
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert system.singleaxis.call_count == 1
     assert (mc.tracking.columns == ['tracker_theta', 'aoi', 'surface_azimuth',
                                     'surface_tilt']).all()
@@ -284,7 +305,7 @@ def test_infer_dc_model(system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
     mc = ModelChain(system, location,
                     aoi_model='no_loss', spectral_model='no_loss',
                     temperature_model=temp_model_function[dc_model])
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
 
@@ -338,7 +359,7 @@ def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
     m = mocker.spy(sys.modules[__name__], 'poadc')
     mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model=poadc,
                     aoi_model='no_loss', spectral_model='no_loss')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
     assert not mc.ac.empty
@@ -362,7 +383,7 @@ def test_ac_models(system, cec_dc_adr_ac_system, pvwatts_dc_pvwatts_ac_system,
     if ac_model == 'pvwatts':
         ac_model += '_ac'
     m = mocker.spy(system, ac_model)
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, pd.Series)
     assert not mc.ac.empty
@@ -374,7 +395,7 @@ def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
     m = mocker.spy(sys.modules[__name__], 'acdc')
     mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, ac_model=acdc,
                     aoi_model='no_loss', spectral_model='no_loss')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m.call_count == 1
     assert_series_equal(mc.ac, mc.dc)
     assert not mc.ac.empty
@@ -402,7 +423,7 @@ def test_aoi_models(system, location, aoi_model, method, weather, mocker):
 def test_aoi_model_no_loss(system, location, weather):
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model='no_loss')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert mc.aoi_modifier == 1.0
     assert not mc.ac.empty
     assert mc.ac[0] > 150 and mc.ac[0] < 200
@@ -413,7 +434,7 @@ def test_aoi_model_user_func(system, location, weather, mocker):
     m = mocker.spy(sys.modules[__name__], 'constant_aoi_loss')
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model=constant_aoi_loss, spectral_model='no_loss')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m.call_count == 1
     assert mc.aoi_modifier == 0.9
     assert not mc.ac.empty
@@ -434,8 +455,7 @@ def test_spectral_models(system, location, spectral_model, weather):
     weather['precipitable_water'] = [0.3, 0.5]
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model=spectral_model)
-    spectral_modifier = mc.run_model(times=weather.index,
-                                     weather=weather).spectral_modifier
+    spectral_modifier = mc.run_model(weather).spectral_modifier
     assert isinstance(spectral_modifier, (pd.Series, float, int))
 
 
@@ -452,7 +472,7 @@ def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
     mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
                     aoi_model='no_loss', spectral_model='no_loss',
                     losses_model='pvwatts')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m.call_count == 1
     m.assert_called_with(age=age)
     assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
@@ -463,7 +483,7 @@ def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
     mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
                     aoi_model='no_loss', spectral_model='no_loss',
                     losses_model='no_loss')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert not np.allclose(mc.dc, dc_with_loss, equal_nan=True)
 
 
@@ -473,7 +493,7 @@ def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
     mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
                     aoi_model='no_loss', spectral_model='no_loss',
                     losses_model=constant_losses)
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
     assert mc.losses == 0.9
@@ -487,7 +507,7 @@ def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location, weather,
                     aoi_model='no_loss', spectral_model='no_loss',
                     losses_model='no_loss')
     assert mc.losses_model == mc.no_extra_losses
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather)
     assert m.call_count == 0
     assert mc.losses == 1
 
@@ -531,24 +551,6 @@ def test_bad_get_orientation():
         modelchain.get_orientation('bad value')
 
 
-@fail_on_pvlib_version('0.7')
-def test_deprecated_07():
-    # explicit system creation call because fail_on_pvlib_version
-    # does not support decorators.
-    # does not matter what the parameters are, just fake it until we make it
-    module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
-                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
-    temp_model_params = {'a': -3.5, 'b': -0.05, 'deltaT': 3}
-    system = PVSystem(module_parameters=module_parameters,
-                      temperature_model_parameters=temp_model_params)
-    with pytest.warns(pvlibDeprecationWarning):
-        ModelChain(system, location,
-                   dc_model='singlediode',  # this should fail after 0.7
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temperature_model='sapm',
-                   ac_model='snlinverter')
-
-
 @fail_on_pvlib_version('0.8')
 def test_deprecated_08():
     # explicit system creation call because fail_on_pvlib_version
@@ -580,23 +582,6 @@ def test_deprecated_08():
                    temperature_model='pvsyst',
                    temp_model='sapm',
                    ac_model='snlinverter')
-
-
-@requires_tables
-@fail_on_pvlib_version('0.7')
-def test_deprecated_clearsky_07():
-    # explicit system creation call because fail_on_pvlib_version
-    # does not support decorators.
-    system = PVSystem(module_parameters={'pdc0': 1, 'gamma_pdc': -0.003},
-                      temperature_model_parameters={'a': -3.5, 'b': -0.05,
-                                                    'deltaT': 3})
-    location = Location(32.2, -110.9)
-    mc = ModelChain(system, location, dc_model='pvwatts', ac_model='pvwatts',
-                    aoi_model='no_loss', spectral_model='no_loss')
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
-    with pytest.warns(pvlibDeprecationWarning):
-        mc.prepare_inputs(times=times)
 
 
 @requires_scipy
@@ -635,7 +620,7 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth)
 
-    expected = pd.Series(np.array([  115.40352679,  -2.00000000e-02]),
+    expected = pd.Series(np.array([115.40352679, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=1)
 
@@ -656,7 +641,7 @@ def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
         cec_inverter_parameters, orientation_strategy='south_at_latitude_tilt',
         altitude=altitude)
 
-    expected = pd.Series(np.array([  183.522449305,  -2.00000000e-02]),
+    expected = pd.Series(np.array([183.522449305, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=1)
 
@@ -681,7 +666,7 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                     surface_azimuth=surface_azimuth,
                                     pressure=93194)
 
-    expected = pd.Series(np.array([  116.595664887,  -2.00000000e-02]),
+    expected = pd.Series(np.array([116.595664887, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=1)
 
@@ -692,7 +677,7 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                     surface_azimuth=surface_azimuth,
                                     altitude=altitude)
 
-    expected = pd.Series(np.array([  116.595664887,  -2.00000000e-02]),
+    expected = pd.Series(np.array([116.595664887, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected, check_less_precise=1)
 
@@ -732,7 +717,7 @@ def test_complete_irradiance_clean_run(system, location):
     i = pd.DataFrame(
         {'dni': [2, 3], 'dhi': [4, 6], 'ghi': [9, 5]}, index=times)
 
-    mc.complete_irradiance(times, weather=i)
+    mc.complete_irradiance(i)
 
     assert_series_equal(mc.weather['dni'],
                         pd.Series([2, 3], index=times, name='dni'))
@@ -752,18 +737,18 @@ def test_complete_irradiance(system, location):
                       'dhi': [356.543700, 465.44400]}, index=times)
 
     with pytest.warns(UserWarning):
-        mc.complete_irradiance(times, weather=i[['ghi', 'dni']])
+        mc.complete_irradiance(i[['ghi', 'dni']])
     assert_series_equal(mc.weather['dhi'],
                         pd.Series([356.543700, 465.44400],
                                   index=times, name='dhi'))
 
     with pytest.warns(UserWarning):
-        mc.complete_irradiance(times, weather=i[['dhi', 'dni']])
+        mc.complete_irradiance(i[['dhi', 'dni']])
     assert_series_equal(mc.weather['ghi'],
                         pd.Series([372.103976116, 497.087579068],
                                   index=times, name='ghi'))
 
-    mc.complete_irradiance(times, weather=i[['dhi', 'ghi']])
+    mc.complete_irradiance(i[['dhi', 'ghi']])
     assert_series_equal(mc.weather['dni'],
                         pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))

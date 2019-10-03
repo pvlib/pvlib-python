@@ -85,12 +85,12 @@ def test_systemdef_dict():
     ('martin_ruiz', {'a_r': 0.16}),
 ])
 def test_PVSystem_get_iam(mocker, iam_model, model_params):
-    mocker.spy(_iam, iam_model)
+    m = mocker.spy(_iam, iam_model)
     module_parameters = pd.Series(model_params)
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     thetas = 1
     iam = system.get_iam(thetas, iam_model=iam_model)
-    _iam.ashrae.assert_called_once_with(thetas, **module_parameters)
+    assert m.call_count == 1
     assert iam < 1.
 
 

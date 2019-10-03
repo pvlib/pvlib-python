@@ -375,7 +375,10 @@ def sapm_module_params():
     The scope of the fixture is set to ``'function'`` to allow tests to modify
     parameters if required without affecting other tests.
     """
-    parameters = {'A0': 0.928385,
+    parameters = {'Material': 'c-Si',
+                  'Cells_in_Series': 96,
+                  'Parallel_Strings': 1,
+                  'A0': 0.928385,
                   'A1': 0.068093,
                   'A2': -0.0157738,
                   'A3': 0.0016606,
@@ -405,7 +408,6 @@ def sapm_module_params():
                   'Bvmpo': -0.235488,
                   'Mbvmp': 0.0,
                   'N': 1.4032,
-                  'Cells_in_Series': 96,
                   'IXO': 4.97599,
                   'IXXO': 3.18803,
                   'FD': 1}

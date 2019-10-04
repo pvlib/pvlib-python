@@ -103,6 +103,18 @@ def test_PVSystem_get_iam_sapm(sapm_module_params, mocker):
     assert_allclose(out, 1.0, atol=0.01)
 
 
+def test_PVSystem_get_iam_interp(sapm_module_params, mocker):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    with pytest.raises(ValueError):
+        system.get_iam(45, iam_model='interp')
+
+
+def test_PVSystem_get_iam_invalid(sapm_module_params, mocker):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    with pytest.raises(ValueError):
+        system.get_iam(45, iam_model='not_a_model')
+
+
 def test_retrieve_sam_raise_no_parameters():
     """
     Raise an exception if no parameters are provided to `retrieve_sam()`.
@@ -1454,14 +1466,36 @@ def test_deprecated_08():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvsyst_celltemp(1000, 25)
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
-                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
+                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1,
+                         'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
+                         'B1': 0.0, 'B0': 1.0,
+                         'b': 0.05, 'K': 4, 'L': 0.002, 'n': 1.526,
+                         'a_r': 0.16}
+    temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
+    # for missing temperature_model_parameters
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.PVSystem(module_parameters=module_parameters,
                           racking_model='open', module_type='glass_glass')
+    pv = pvsystem.PVSystem(module_parameters=module_parameters,
+                           temperature_model_parameters=temp_model_params,
+                           racking_model='open', module_type='glass_glass')
+    # deprecated method PVSystem.ashraeiam
+    with pytest.warns(pvlibDeprecationWarning):
+        pv.ashraeiam(45)
+    # deprecated function ashraeiam
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.ashraeiam(45)
+    # deprecated method PVSystem.physicaliam
+    with pytest.warns(pvlibDeprecationWarning):
+        pv.physicaliam(45)
+    # deprecated function physicaliam
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.physicaliam(45)
+    # deprecated method PVSystem.sapm_aoi_loss
+    with pytest.warns(pvlibDeprecationWarning):
+        pv.sapm_aoi_loss(45)
+    # deprecated function sapm_aoi_loss
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_aoi_loss(45, {'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
                                     'B1': 0.0, 'B0': 1.0})

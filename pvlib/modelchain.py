@@ -271,8 +271,8 @@ class ModelChain(object):
     aoi_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'physical',
-        'ashrae', 'sapm', 'no_loss'. The ModelChain instance will be
-        passed as the first argument to a user-defined function.
+        'ashrae', 'sapm', 'martin_ruiz', 'no_loss'. The ModelChain instance
+        will be passed as the first argument to a user-defined function.
 
     spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
@@ -563,9 +563,9 @@ class ModelChain(object):
             raise ValueError('could not infer AOI model from '
                              'system.module_parameters. Check that the '
                              'system.module_parameters contain parameters for '
-                             'the physical, aoi, or ashrae model; explicitly '
-                             'set model with aoi_model kwarg; or set '
-                             'aoi_model="no_loss".')
+                             'the physical, aoi, ashrae or martin_ruiz model; '
+                             'explicitly set the model with the aoi_model '
+                             'kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
         self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='ashrae')

@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from pvlib import modelchain, pvsystem, temperature
+from pvlib import iam, modelchain, pvsystem, temperature
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
@@ -16,7 +16,7 @@ import pytest
 from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def system(sapm_module_params, cec_inverter_parameters,
            sapm_temperature_cs5p_220m):
     module = 'Canadian_Solar_CS5P_220M___2009_'
@@ -442,8 +442,29 @@ def test_aoi_model_user_func(system, location, weather, mocker):
     assert mc.ac[1] < 1
 
 
-def constant_spectral_loss(mc):
-    mc.spectral_modifier = 0.9
+@pytest.mark.parametrize('aoi_model', [
+    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+])
+def test_infer_aoi_model(location, pvwatts_dc_pvwatts_ac_system, aoi_model):
+    # use pvwatts/pvwatts fixture because it has no AOI model parameters
+    temp = pvwatts_dc_pvwatts_ac_system.copy()
+    for k in iam.IAM_MODEL_PARAMS[aoi_model]:
+        temp.module_parameters.update({k: 1.0})
+    mc = ModelChain(system, location,
+                    orientation_strategy='None',
+                    spectral_model='no_loss')
+    assert isinstance(mc, ModelChain)
+    # remove added parameters
+    for k in iam.IAM_MODEL_PARAMS[aoi_model]:
+        system.module_parameters.pop(k)
+
+
+@requires_scipy
+def test_infer_temp_model_invalid(location, system):
+    system.temperature_model_parameters.pop('a')
+    with pytest.raises(ValueError):
+        ModelChain(system, location, orientation_strategy='None',
+                   aoi_model='physical', spectral_model='no_loss')
 
 
 @requires_scipy

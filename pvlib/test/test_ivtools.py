@@ -31,9 +31,8 @@ def get_cec_params_cansol_cs5p_220p():
 @pytest.fixture
 def get_test_specs_params():
     """Specifications of module Kyocera KU270-6MCA"""
-    return {'celltype': 'polysi', 'v_mp': 31.0, 'i_mp': 8.71,
-            'v_oc': 38.3, 'i_sc': 9.43, 'alpha_sc': 0.06, 'beta_voc': -0.36,
-            'cells_in_series': 60}
+    return {'v_mp': 31.0, 'i_mp': 8.71, 'v_oc': 38.3,
+            'i_sc': 9.43, 'alpha_sc': 0.06, 'beta_voc': -0.36}
 
 
 @requires_scipy
@@ -112,15 +111,29 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
 
 @requires_scipy
 def test_fit_sdm_desoto(get_test_specs_params):
-    result = ivtools.fit_sdm_desoto(**get_test_specs_params)
-    result_expected = {'I_L_ref': 9.452306515003592,
-                       'I_o_ref': 3.244967717785086e-10,
-                       'a_ref': 1.59170284124638,
-                       'R_sh_ref': 125.85822206469133,
-                       'R_s': 0.2977156014170881,
-                       'alpha_sc': 0.005658}
+    result = ivtools.fit_sdm_desoto(celltype='polysi', cells_in_series=60,
+                                    **get_test_specs_params)
+    result_expected = {'I_L_ref': 9.452323061192306,
+                       'I_o_ref': 3.2262431300525453e-10,
+                       'a_ref': 1.5913209607827592,
+                       'R_sh_ref': 125.80348604299812,
+                       'R_s': 0.29780686327583955,
+                       'alpha_sc': 0.005658,
+                       'EgRef': 1.796e-19,
+                       'dEgdT': -0.0002677,
+                       'irrad_ref': 1000,
+                       'temp_ref': 25}
     assert np.allclose(pd.Series(result), pd.Series(result_expected),
-                       rtol=5e-2)
+                       rtol=1e-4)
+    with pytest.raises(NotImplementedError):
+        ivtools.fit_sdm_desoto(celltype='CDTE', cells_in_series=60,
+                               **get_test_specs_params)
+    with pytest.raises(ValueError):
+        ivtools.fit_sdm_desoto(celltype='apple', cells_in_series=60,
+                               **get_test_specs_params)
+    with pytest.raises(RuntimeError):
+        ivtools.fit_sdm_desoto(celltype='polysi', cells_in_series=1,
+                               **get_test_specs_params)
 
 
 @pytest.fixture

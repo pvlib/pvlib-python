@@ -356,13 +356,11 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Tref = temp_ref + 273.15  # in K
 
-    if celltype.lower() in ['monosi', 'polysi', 'multisi']:
+    if celltype.lower() in ['monosi', 'polysi', 'multisi',
+                            'mono-c-si', 'multi-c-si']:
         dEgdT = -0.0002677  # valid for silicon
         EgRef = 1.796e-19  # in J, valid for silicon
-    elif celltype.lower() in ['gaas']:
-        dEgdT = -0.0003174  # valid for gallium arsenide
-        EgRef = 2.163e-19  # in J, valid for gallium arsenide
-    elif celltype.lower() in ['cis', 'cigs', 'cdte', 'amorphous']:
+    elif celltype.lower() in ['cis', 'cigs', 'cdte', 'amorphous', 'thin film']:
         raise NotImplementedError
     else:
         raise ValueError('Unknown cell type.')
@@ -378,18 +376,11 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         function the '_' of the variables were removed.
         """
         # six input known variables
-        Isc = specs[0]
-        Voc = specs[1]
-        Imp = specs[2]
-        Vmp = specs[3]
-        betaoc = specs[4]
-        alphasc = specs[5]
+        Isc, Voc, Imp, Vmp, betaoc, alphasc = specs
+
         # five parameters vector to find
-        IL = params[0]
-        Io = params[1]
-        a = params[2]
-        Rsh = params[3]
-        Rs = params[4]
+        IL, Io, a, Rsh, Rs = params
+
         # five equation vector
         y = [0, 0, 0, 0, 0]
 
@@ -535,3 +526,8 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     else:  # I0_voc > 0
         I0 = I0_voc
     return (IL, I0, Rsh, Rs, nNsVth)
+
+if __name__ == '__main__':
+    print(fit_sdm_desoto(celltype='polysi', v_mp= 31.0, i_mp= 8.71,
+            v_oc= 38.3, i_sc= 9.43, alpha_sc= 0.001, beta_voc= -0.36,
+            cells_in_series= 60))

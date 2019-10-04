@@ -467,6 +467,10 @@ def test_infer_temp_model_invalid(location, system):
                    aoi_model='physical', spectral_model='no_loss')
 
 
+def constant_spectral_loss(mc):
+    mc.spectral_modifier = 0.9
+
+
 @requires_scipy
 @pytest.mark.parametrize('spectral_model', [
         'sapm', 'first_solar', 'no_loss', constant_spectral_loss

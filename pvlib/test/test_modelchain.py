@@ -459,12 +459,10 @@ def test_infer_aoi_model(location, pvwatts_dc_pvwatts_ac_system, aoi_model):
         system.module_parameters.pop(k)
 
 
-@requires_scipy
-def test_infer_temp_model_invalid(location, system):
-    system.temperature_model_parameters.pop('a')
+def test_infer_aoi_model_invalid(location, pvwatts_dc_pvwatts_ac_system):
     with pytest.raises(ValueError):
         ModelChain(system, location, orientation_strategy='None',
-                   aoi_model='physical', spectral_model='no_loss')
+                   spectral_model='no_loss')
 
 
 def constant_spectral_loss(mc):

@@ -113,7 +113,6 @@ def pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
     return system
 
 
-
 @pytest.fixture(scope="function")
 def system_no_aoi(cec_module_cs5p_220m, sapm_temperature_cs5p_220m,
                   cec_inverter_parameters):

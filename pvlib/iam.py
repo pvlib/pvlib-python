@@ -51,10 +51,10 @@ def ashrae(aoi, b=0.05):
 
     .. math::
 
-        IAM = 1 - b x (\sec(aoi) - 1)
+        IAM = 1 - b (\sec(aoi) - 1)
 
-    As AOI approaches 90 degrees, the model yields negative values for IAM.
-    Negative IAM values are set to zero in this implementation.
+    As AOI approaches 90 degrees, the model yields negative values for IAM;
+    negative IAM values are set to zero in this implementation.
 
     References
     ----------
@@ -92,7 +92,7 @@ def physical(aoi, n=1.526, K=4., L=0.002):
     Determine the incidence angle modifier using refractive index ``n``,
     extinction coefficient ``K``, and glazing thickness ``L``.
 
-    ``physical`` calculates the incidence angle modifier as described in
+    ``iam.physical`` calculates the incidence angle modifier as described in
     [1], Section 3. The calculation is based on a physical model of absorbtion
     and transmission through a transparent cover.
 
@@ -124,9 +124,9 @@ def physical(aoi, n=1.526, K=4., L=0.002):
 
     Notes
     -----
-    The authors of this function believe that Eqn. 14 in [1] is
+    The pvlib python authors believe that Eqn. 14 in [1] is
     incorrect, which presents :math:`\theta_{r} = \arcsin(n \sin(AOI))`.
-    Here, :math:`\theta_{r} = \arcsin(1/n \times \sin(AOI))
+    Here, :math:`\theta_{r} = \arcsin(1/n \times \sin(AOI))`
 
     References
     ----------
@@ -220,15 +220,16 @@ def martin_ruiz(aoi, a_r=0.16):
 
     The incident angle modifier is defined as
 
-    ..math::
+    .. math::
 
-        IAM = \frac{1 - \exp(-\cos(\frac{aoi}{a_r}))}
-        {1 - \exp(\frac{-1}{a_r}}
+       IAM = \frac{1 - \exp(-\cos(\frac{aoi}{a_r}))}
+       {1 - \exp(\frac{-1}{a_r}}
 
-    which is presented as AL(alpha) = 1 - IAM in equation 4 of [1], with alpha
-    representing the angle of incidence AOI. Thus IAM = 1 at AOI = 0, and
-    IAM = 0 at AOI = 90.  This equation is only valid for -90 <= aoi <= 90,
-    therefore iam is constrained to 0.0 beyond this range.
+    which is presented as :math:`AL(\alpha) = 1 - IAM` in equation 4 of [1],
+    with :math:`\alpha` representing the angle of incidence AOI. Thus IAM = 1
+    at AOI = 0, and IAM = 0 at AOI = 90.  This equation is only valid for 
+    -90 <= aoi <= 90, therefore `iam` is constrained to 0.0 outside this
+    interval.
 
     References
     ----------
@@ -274,33 +275,33 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
     Parameters
     ----------
-    aoi : numeric, degrees
+    aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
+        sun-beam vector [degrees].
 
-    theta_ref : numeric, degrees
-        Vector of angles at which the IAM is known.
+    theta_ref : numeric
+        Vector of angles at which the IAM is known [degrees].
 
-    iam_ref : numeric, unitless
-        IAM values for each angle in ``theta_ref``.
+    iam_ref : numeric
+        IAM values for each angle in ``theta_ref`` [unitless].
 
     method : str, default 'linear'
         Specifies the interpolation method.
         Useful options are: 'linear', 'quadratic','cubic'.
         See scipy.interpolate.interp1d for more options.
 
-    normalize : boolean
+    normalize : boolean, default True
         When true, the interpolated values are divided by the interpolated
-        value at zero degrees.  This ensures that the iam at normal
-        incidence is equal to 1.0.
+        value at zero degrees.  This ensures that ``iam``=1.0 at normal
+        incidence.
 
     Returns
     -------
     iam : numeric
-        The incident angle modifier(s)
+        The incident angle modifier(s) [unitless]
 
-    Notes:
-    ------
+    Notes
+    -----
     ``theta_ref`` must have two or more points and may span any range of
     angles. Typically there will be a dozen or more points in the range 0-90
     degrees. Beyond the range of ``theta_ref``, IAM values are extrapolated,
@@ -359,8 +360,7 @@ def sapm(aoi, module, upper=None):
 
     module : dict-like
         A dict or Series with the SAPM IAM model parameters.
-        parameters. See the :py:func:`sapm` notes section for more
-        details.
+        See the :py:func:`sapm` notes section for more details.
 
     upper : None or float, default None
         Upper limit on the results.
@@ -368,7 +368,7 @@ def sapm(aoi, module, upper=None):
     Returns
     -------
     iam : numeric
-        The SAPM angle of incidence loss coefficient F2.
+        The SAPM angle of incidence loss coefficient, termed F2 in [1].
 
     Notes
     -----

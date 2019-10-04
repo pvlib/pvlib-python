@@ -540,6 +540,8 @@ class ModelChain(object):
                 self._aoi_model = self.physical_aoi_loss
             elif model == 'sapm':
                 self._aoi_model = self.sapm_aoi_loss
+            elif model == 'martin_ruiz':
+                self._aoi_model = self.martin_ruiz_aoi_loss
             elif model == 'no_loss':
                 self._aoi_model = self.no_aoi_loss
             else:
@@ -555,6 +557,8 @@ class ModelChain(object):
             return self.sapm_aoi_loss
         elif set(['b']) <= params:
             return self.ashrae_aoi_loss
+        elif set(['a_r']) <= params:
+            return self.martin_ruiz_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
                              'system.module_parameters. Check that the '

@@ -9,6 +9,7 @@ import numpy as np
 
 try:
     from scipy.optimize import root
+    from scipy import constants
 except ImportError:
     raise ImportError(
         "'scipy.optimize.root' couldn't be imported. Is SciPy installed?")
@@ -269,7 +270,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
 
 def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                   cells_in_series=None, temp_ref=25):
+                   cells_in_series, temp_ref=25, irrad_ref=1000):
     """
     Calculates the five parameters for the single diode equation using
     the De Soto et al. procedure described in [1]. This procedure has the
@@ -281,31 +282,32 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Parameters
     ----------
-    celltype : str, case insensitive
+    celltype: str, case insensitive
         Value is one of 'monosi', 'multisi', 'polysi' or'gaas'.
         Others like 'cis', 'cigs', 'cdte', 'amorphous' are not implemented yet
-    v_mp : numeric
+    v_mp: numeric
         Module voltage at the maximum-power point at std conditions in V.
-    i_mp : numeric
+    i_mp: numeric
         Module current at the maximum-power point at std conditions in A.
-    v_oc : numeric
+    v_oc: numeric
         Open-circuit voltage at std conditions in V.
-    i_sc : numeric
+    i_sc: numeric
         Short-circuit current at std conditions in A.
-    alpha_sc : numeric
+    alpha_sc: numeric
         The short-circuit current (i_sc) temperature coefficient of the
         module in units of %/K. It is converted in A/K for the computing
         process.
-    beta_voc : numeric
+    beta_voc: numeric
         The open-circuit voltage (v_oc) temperature coefficient of the
         module in units of %/K. It is converted in V/K for the computing
         process.
-    cells_in_series : numeric, default None
+    cells_in_series: numeric
         Number of cell in the module.
         Optional input, but helps to insure the convergence of the computing.
-    temp_ref : numeric, default 25
+    temp_ref: numeric, default 25
         Reference temperature condition [C]
-
+    irrad_ref: numeric, default 1000
+        Reference irradiance condition [W/m2]
 
     Returns
     -------
@@ -313,28 +315,31 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     * 'I_L_ref': numeric
         Light-generated current in amperes at std conditions.
-
     * 'I_o_ref': numeric
         Diode saturation curent in amperes at std conditions
-
     * 'R_s': numeric
         Series resistance in ohms. Note that '_ref' is not mentionned
         in the name because this resistance is not sensible to the
         conditions of test.
-
     * 'R_sh_ref': numeric
         Shunt resistance in ohms at std conditions.
-
     * 'a_ref' : numeric
         Modified ideality factor at std conditions.
         The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at
         specified effective irradiance and cell temperature.
-
     * 'alpha_sc': numeric
         Caution!: Different from the input because of the unit.
         The short-circuit current (i_sc) temperature coefficient of the
         module in units of A/K.
+    * 'EgRef': numeric
+        Energy of bandgap of semi-conductor used (depending on celltype) [J]
+    * 'dEgdT': numeric
+        Variation of bandgap according to temperature [J/K]
+    * 'irrad_ref': numeric
+        Reference irradiance condition [W/m2]
+    * 'temp_ref': numeric
+        Reference temperature condition [C]
 
     References
     ----------
@@ -346,18 +351,17 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Processes", Wiley, 2013
     """
     # Constants
-    k = 1.381e-23  # Boltzmann constant, in J/K, or 8.617e-5 eV/K
-    q = 1.602e-19  # electron charge in J/V, or 1 eV
+    k = constants.Boltzmann  # in J/K, or 8.617e-5 eV/K
+    q = constants.elementary_charge  # in J/V, or 1 eV
 
     Tref = temp_ref + 273.15  # in K
 
     if celltype.lower() in ['monosi', 'polysi', 'multisi']:
-        C = 0.0002677  # valid for silicon
-        Eg = 1.796e-19  # in J, valid for silicon
-
+        dEgdT = -0.0002677  # valid for silicon
+        EgRef = 1.796e-19  # in J, valid for silicon
     elif celltype.lower() in ['gaas']:
-        C = 0.0003174  # valid for gallium arsenide
-        Eg = 2.163e-19  # in J, valid for gallium arsenide
+        dEgdT = -0.0003174  # valid for gallium arsenide
+        EgRef = 2.163e-19  # in J, valid for gallium arsenide
     elif celltype.lower() in ['cis', 'cigs', 'cdte', 'amorphous']:
         raise NotImplementedError
     else:
@@ -390,11 +394,11 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         y = [0, 0, 0, 0, 0]
 
         # 1st equation - short-circuit - eq(3) in [1]
-        y[0] = Isc - IL + Io*(np.exp(Isc*Rs/a) - 1.0) + Isc*Rs/Rsh
+        y[0] = Isc - IL + Io*np.expm1(Isc*Rs/a) + Isc*Rs/Rsh
         # 2nd equation - open-circuit Tref - eq(4) in [1]
-        y[1] = -IL + Io*(np.exp(Voc/a) - 1.0) + Voc/Rsh
+        y[1] = -IL + Io*np.expm1(Voc/a) + Voc/Rsh
         # 3rd equation - Imp & Vmp - eq(5) in [1]
-        y[2] = Imp - IL + Io*(np.exp((Vmp+Imp*Rs)/a) - 1.0) + \
+        y[2] = Imp - IL + Io*np.exp((Vmp+Imp*Rs)/a) + \
             (Vmp+Imp*Rs)/Rsh
         # 4th equation - Pmp derivated=0 -
         # caution: eq(6) in [1] seems to be incorrect, take eq23.2.6 in [2]
@@ -405,9 +409,9 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         Voc2 = (T2 - Tref)*betaoc + Voc  # eq (7) in [1]
         a2 = a*T2/Tref  # eq (8) in [1]
         IL2 = IL + alphasc*(T2-Tref)  # eq (11) in [1]
-        Eg2 = Eg*(1-C*(T2-Tref))  # eq (10) in [1]
-        Io2 = Io * (T2/Tref)**3 * np.exp(1/k * (Eg/Tref-Eg2/T2))  # eq (9)
-        y[4] = -IL2 + Io2*(np.exp(Voc2/a2) - 1.0) + Voc2/Rsh  # eq (4) at T2
+        Eg2 = EgRef*(1 + dEgdT*(T2-Tref))  # eq (10) in [1]
+        Io2 = Io * (T2/Tref)**3 * np.exp(1/k * (EgRef/Tref-Eg2/T2))  # eq (9)
+        y[4] = -IL2 + Io2*np.expm1(Voc2/a2) + Voc2/Rsh  # eq (4) at T2
 
         return y
 
@@ -417,7 +421,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     a_i = 1.5*k*Tref*cells_in_series/q
     IL_i = i_sc
     Io_i = i_sc * np.exp(-v_oc/a_i)
-    Rs_i = (a_i*np.log((IL_i-i_mp)/Io_i+1) - v_mp)/i_mp
+    Rs_i = (a_i*np.log1p((IL_i-i_mp)/Io_i) - v_mp)/i_mp
     # params_i : initial values vector
     params_i = np.array([IL_i, Io_i, a_i, Rsh_i, Rs_i])
 
@@ -425,15 +429,24 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     specs = np.array([i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc])
 
     # computing
-    sol = root(pv_fct, x0=params_i, args=specs, method='lm').x
+    result = root(pv_fct, x0=params_i, args=specs, method='lm')
+
+    if result.success:
+        sdm_params = result.x
+    else:
+        raise RuntimeError('Parameter estimation failed')
 
     # results
-    return {'I_L_ref': sol[0],
-            'I_o_ref': sol[1],
-            'a_ref': sol[2],
-            'R_sh_ref': sol[3],
-            'R_s': sol[4],
-            'alpha_sc': alpha_sc}
+    return {'I_L_ref': sdm_params[0],
+            'I_o_ref': sdm_params[1],
+            'a_ref': sdm_params[2],
+            'R_sh_ref': sdm_params[3],
+            'R_s': sdm_params[4],
+            'alpha_sc': alpha_sc,
+            'EgRef': EgRef,
+            'dEgdT': dEgdT,
+            'irrad_ref': irrad_ref,
+            'temp_ref': temp_ref}
 
 
 def _find_mp(voltage, current):

@@ -129,7 +129,7 @@ def system_no_aoi(cec_module_cs5p_220m, sapm_temperature_cs5p_220m,
     return system
 
 
-    @pytest.fixture
+@pytest.fixture
 def location():
     return Location(32.2, -111, altitude=700)
 

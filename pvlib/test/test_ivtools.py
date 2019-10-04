@@ -112,7 +112,7 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
 
 @requires_scipy
 def test_fit_sdm_desoto(get_test_specs_params):
-    result = pvlib.ivtools.fit_sdm_desoto(**get_test_specs_params)
+    result = ivtools.fit_sdm_desoto(**get_test_specs_params)
     result_expected = {'I_L_ref': 9.452306515003592,
                        'I_o_ref': 3.244967717785086e-10,
                        'a_ref': 1.59170284124638,

@@ -269,7 +269,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
 
 def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                   cells_in_series=60, temp_ref=25):
+                   cells_in_series=None, temp_ref=25):
     """
     Calculates the five parameters for the single diode equation using
     the De Soto et al. procedure described in [1]. This procedure has the
@@ -300,7 +300,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         The open-circuit voltage (v_oc) temperature coefficient of the
         module in units of %/K. It is converted in V/K for the computing
         process.
-    cells_in_series : numeric, default 60
+    cells_in_series : numeric, default None
         Number of cell in the module.
         Optional input, but helps to insure the convergence of the computing.
     temp_ref : numeric, default 25
@@ -354,6 +354,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     if celltype.lower() in ['monosi', 'polysi', 'multisi']:
         C = 0.0002677  # valid for silicon
         Eg = 1.796e-19  # in J, valid for silicon
+
     elif celltype.lower() in ['gaas']:
         C = 0.0003174  # valid for gallium arsenide
         Eg = 2.163e-19  # in J, valid for gallium arsenide

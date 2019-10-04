@@ -412,7 +412,7 @@ def test_aoi_models(system, location, aoi_model, weather, mocker):
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model=aoi_model, spectral_model='no_loss')
     m = mocker.spy(system, 'get_iam')
-    mc.run_model(weather.index, weather=weather)
+    mc.run_model(weather=weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, pd.Series)
     assert not mc.ac.empty

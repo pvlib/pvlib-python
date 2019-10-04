@@ -1463,7 +1463,8 @@ def test_deprecated_08():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.physicaliam(45)
     with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_aoi_loss(45, {})
+        pvsystem.sapm_aoi_loss(45, {'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
+                                    'B1': 0.0, 'B0': 1.0})
 
 
 @fail_on_pvlib_version('0.8')

@@ -575,6 +575,11 @@ class ModelChain(object):
         self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='sapm')
         return self
 
+    def martin_ruiz_aoi_loss(self):
+        self.aoi_modifier = self.system.get_iam(self.aoi,
+                                                iam_model='martin_ruiz')
+        return self
+
     def no_aoi_loss(self):
         self.aoi_modifier = 1.0
         return self

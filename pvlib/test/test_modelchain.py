@@ -101,7 +101,7 @@ def pvwatts_dc_snl_ac_system(cec_inverter_parameters):
     return system
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     temp_model_params = sapm_temperature_cs5p_220m.copy()
@@ -447,7 +447,7 @@ def test_aoi_model_user_func(system, location, weather, mocker):
 ])
 def test_infer_aoi_model(location, pvwatts_dc_pvwatts_ac_system, aoi_model):
     # use pvwatts/pvwatts fixture because it has no AOI model parameters
-    temp = pvwatts_dc_pvwatts_ac_system.copy()
+    temp = pvwatts_dc_pvwatts_ac_system
     for k in iam.IAM_MODEL_PARAMS[aoi_model]:
         temp.module_parameters.update({k: 1.0})
     mc = ModelChain(system, location,

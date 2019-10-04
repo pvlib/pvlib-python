@@ -406,7 +406,7 @@ def constant_aoi_loss(mc):
 
 
 @pytest.mark.parametrize('aoi_model', [
-    ('sapm', 'ashrae', 'physical', 'martin_ruiz')
+    'sapm', 'ashrae', 'physical', 'martin_ruiz'
 ])
 def test_aoi_models(system, location, aoi_model, weather, mocker):
     mc = ModelChain(system, location, dc_model='sapm',

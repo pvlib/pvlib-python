@@ -1448,7 +1448,7 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
 
 
 @fail_on_pvlib_version('0.8')
-def test_deprecated_08(sapm_module_params):
+def test_deprecated_08():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_celltemp(1000, 25, 1)
     with pytest.warns(pvlibDeprecationWarning):
@@ -1463,7 +1463,7 @@ def test_deprecated_08(sapm_module_params):
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.physicaliam(45)
     with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_aoi_loss(45, sapm_module_params)
+        pvsystem.sapm_aoi_loss(45, {})
 
 
 @fail_on_pvlib_version('0.8')

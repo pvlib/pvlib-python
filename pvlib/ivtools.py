@@ -526,8 +526,3 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     else:  # I0_voc > 0
         I0 = I0_voc
     return (IL, I0, Rsh, Rs, nNsVth)
-
-if __name__ == '__main__':
-    print(fit_sdm_desoto(celltype='polysi', v_mp= 31.0, i_mp= 8.71,
-            v_oc= 38.3, i_sc= 9.43, alpha_sc= 0.001, beta_voc= -0.36,
-            cells_in_series= 60))

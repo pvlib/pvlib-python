@@ -6,13 +6,8 @@ Created on Fri Mar 29 10:34:10 2019
 """
 
 import numpy as np
-
-try:
-    from scipy.optimize import root
-    from scipy import constants
-except ImportError:
-    raise ImportError(
-        "'scipy.optimize.root' couldn't be imported. Is SciPy installed?")
+from scipy.optimize import root
+from scipy import constants
 
 
 def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,

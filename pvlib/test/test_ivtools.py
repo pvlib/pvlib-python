@@ -274,6 +274,3 @@ def get_bad_iv_curves():
                    2.02963773590165, 1.49291145092070, 0.818343889647352, 0])
 
     return v1, i1, v2, i2
-
-if __name__ == '__main__':
-    pytest.main(['test_ivtools.py::test_fit_sdm_desoto'])

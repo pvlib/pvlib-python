@@ -132,7 +132,7 @@ the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
     modules = pvsystem.retrieve_sam('cecmod')
     module_parameters = modules['Example_Module']
     inverters = pvsystem.retrieve_sam('cecinverter')
-    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
     system = pvsystem.PVSystem(module_parameters=module_parameters, inverter_parameters=inverter_parameters)
 
 

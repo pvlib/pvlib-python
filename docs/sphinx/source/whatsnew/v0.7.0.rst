@@ -1,4 +1,4 @@
-.. _whatsnew_0700:
+﻿.. _whatsnew_0700:
 
 v0.7.0 (MONTH DAY, YEAR)
 ------------------------
@@ -96,6 +96,8 @@ Enhancements
   the single diode equation to an IV curve.
 * Add :py:func:`~pvlib.ivtools.fit_sdm_cec_sam`, a wrapper for the CEC single
   diode model fitting function '6parsolve' from NREL's System Advisor Model.
+* Add :py:func:`~pvlib.ivtools.fit_sdm_desoto`, a method to fit the single
+  diode equation to the typical specifications given in manufacturers datasheets.
 
 Bug fixes
 ~~~~~~~~~

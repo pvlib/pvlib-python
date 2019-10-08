@@ -132,8 +132,10 @@ def test_fit_sdm_desoto(get_test_specs_params):
         ivtools.fit_sdm_desoto(celltype='apple', cells_in_series=60,
                                **get_test_specs_params)
     with pytest.raises(RuntimeError):
-        ivtools.fit_sdm_desoto(celltype='polysi', cells_in_series=1,
-                               **get_test_specs_params)
+        ivtools.fit_sdm_desoto(celltype='polysi', cells_in_series=10,
+                               v_mp=31.0, i_mp=8.71, v_oc=38.3,
+                               i_sc=9.43, alpha_sc=0.06,
+                               beta_voc=-0.36)
 
 
 @pytest.fixture

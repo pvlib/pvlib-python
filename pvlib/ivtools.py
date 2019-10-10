@@ -265,75 +265,81 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
 
 def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                   cells_in_series, temp_ref=25, irrad_ref=1000):
+                   cells_in_series, temp_ref=25, irrad_ref=1000,
+                   solver_method='lm'):
     """
-    Calculates the five parameters for the single diode equation using
-    the De Soto et al. procedure described in [1]. This procedure has the
+    Calculates the parameters for the De Soto single diode model using the
+    procedure described in [1]. This procedure has the
     advantage of using common specifications given by manufacturers in the
     datasheets of PV modules.
-    The six values returned by this function can be used by
+    The parameters returned by this function can be used by
     pvsystem.calcparams_desoto to calculate the values at different
     irradiance and cell temperature.
 
     Parameters
     ----------
     celltype: str, case insensitive
-        Value is one of 'monosi', 'multisi', 'polysi' or'gaas'.
-        Others like 'cis', 'cigs', 'cdte', 'amorphous' are not implemented yet
-    v_mp: numeric
-        Module voltage at the maximum-power point at std conditions in V.
-    i_mp: numeric
-        Module current at the maximum-power point at std conditions in A.
-    v_oc: numeric
-        Open-circuit voltage at std conditions in V.
-    i_sc: numeric
-        Short-circuit current at std conditions in A.
-    alpha_sc: numeric
+        Value is one of 'monosi', 'multisi', 'polysi', 'mono-c-si',
+        'multi-c-si'.
+        Others like 'cis', 'cigs', 'cdte', 'amorphous', 'thin film', 'gaas'
+        are not implemented yet.
+    v_mp: float
+        Module voltage at the maximum-power point at reference conditions [V].
+    i_mp: float
+        Module current at the maximum-power point at reference conditions [A].
+    v_oc: float
+        Open-circuit voltage at reference conditions [V].
+    i_sc: float
+        Short-circuit current at reference conditions [A].
+    alpha_sc: float
         The short-circuit current (i_sc) temperature coefficient of the
-        module in units of %/K. It is converted in A/K for the computing
+        module [%/K].
+        It is converted in A/K for the computing
         process.
-    beta_voc: numeric
+    beta_voc: float
         The open-circuit voltage (v_oc) temperature coefficient of the
-        module in units of %/K. It is converted in V/K for the computing
+        module [%/K].
+        It is converted in V/K for the computing
         process.
-    cells_in_series: numeric
+    cells_in_series: float
         Number of cell in the module.
-        Optional input, but helps to insure the convergence of the computing.
-    temp_ref: numeric, default 25
+    temp_ref: float, default 25
         Reference temperature condition [C]
-    irrad_ref: numeric, default 1000
+    irrad_ref: float, default 1000
         Reference irradiance condition [W/m2]
+    solver_method: str, default 'lm'
+        See help of scipy.optimize.root() for more details.
 
     Returns
     -------
-    Dictionnary with the following elements:
+    Dictionary with the following elements:
 
-    * 'I_L_ref': numeric
-        Light-generated current in amperes at std conditions.
-    * 'I_o_ref': numeric
-        Diode saturation curent in amperes at std conditions
-    * 'R_s': numeric
-        Series resistance in ohms. Note that '_ref' is not mentionned
-        in the name because this resistance is not sensible to the
-        conditions of test.
-    * 'R_sh_ref': numeric
-        Shunt resistance in ohms at std conditions.
-    * 'a_ref' : numeric
-        Modified ideality factor at std conditions.
+    * I_L_ref: float
+        Light-generated current at reference conditions [A]
+    * I_o_ref: float
+        Diode saturation current at reference conditions [A]
+    * R_s: float
+        Series resistance [ohms]
+        Note that '_ref' is not mentionned in the name because
+        this resistance is not sensible to the conditions of test.
+    * R_sh_ref: float
+        Shunt resistance at reference conditions [ohms].
+    * a_ref: float
+        Modified ideality factor at reference conditions.
         The product of the usual diode ideality factor (n, unitless),
         number of cells in series (Ns), and cell thermal voltage at
         specified effective irradiance and cell temperature.
-    * 'alpha_sc': numeric
+    * alpha_sc: float
         Caution!: Different from the input because of the unit.
         The short-circuit current (i_sc) temperature coefficient of the
-        module in units of A/K.
-    * 'EgRef': numeric
-        Energy of bandgap of semi-conductor used (depending on celltype) [J]
-    * 'dEgdT': numeric
-        Variation of bandgap according to temperature [J/K]
-    * 'irrad_ref': numeric
+        module [A/K].
+    * EgRef: float
+        Energy of bandgap of semi-conductor used (depending on celltype) [eV]
+    * dEgdT: float
+        Variation of bandgap according to temperature [eV/K]
+    * irrad_ref: float
         Reference irradiance condition [W/m2]
-    * 'temp_ref': numeric
+    * temp_ref: float
         Reference temperature condition [C]
 
     References
@@ -346,15 +352,14 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Processes", Wiley, 2013
     """
     # Constants
-    k = constants.Boltzmann  # in J/K, or 8.617e-5 eV/K
-    q = constants.elementary_charge  # in J/V, or 1 eV
+    k = constants.constants.value('Boltzmann constant in eV/K')
 
-    Tref = temp_ref + 273.15  # in K
+    Tref = temp_ref + 273.15  # [K]
 
     if celltype.lower() in ['monosi', 'polysi', 'multisi',
                             'mono-c-si', 'multi-c-si']:
-        dEgdT = -0.0002677  # valid for silicon
-        EgRef = 1.796e-19  # in J, valid for silicon
+        dEgdT = -0.0002677  # [eV/K]
+        EgRef = 1.121  # [eV]
     elif celltype.lower() in ['cis', 'cigs', 'cdte', 'amorphous', 'thin film']:
         raise NotImplementedError
     else:
@@ -365,8 +370,8 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     beta_voc = beta_voc*v_oc/100
 
     def pv_fct(params, specs):
-        """Returns the system of equations used for computing the
-        single-diode 5 parameters.
+        """Evaluates the systems of equations used to solve for the single
+        diode equation parameters.
         To avoid the confusion in names with variables of container
         function the '_' of the variables were removed.
         """
@@ -386,8 +391,8 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         # 3rd equation - Imp & Vmp - eq(5) in [1]
         y[2] = Imp - IL + Io*np.exp((Vmp+Imp*Rs)/a) + \
             (Vmp+Imp*Rs)/Rsh
-        # 4th equation - Pmp derivated=0 -
-        # caution: eq(6) in [1] seems to be incorrect, take eq23.2.6 in [2]
+        # 4th equation - Pmp derivated=0 - eq23.2.6 in [2]
+        # caution: eq(6) in [1] has a sign error
         y[3] = Imp - Vmp * ((Io/a)*np.exp((Vmp+Imp*Rs)/a) + 1.0/Rsh) / \
             (1.0 + (Io*Rs/a)*np.exp((Vmp+Imp*Rs)/a) + Rs/Rsh)
         # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
@@ -404,7 +409,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     # initial guesses of variables for computing convergence:
     # Values are taken from [2], p753
     Rsh_i = 100.0
-    a_i = 1.5*k*Tref*cells_in_series/q
+    a_i = 1.5*k*Tref*cells_in_series
     IL_i = i_sc
     Io_i = i_sc * np.exp(-v_oc/a_i)
     Rs_i = (a_i*np.log1p((IL_i-i_mp)/Io_i) - v_mp)/i_mp
@@ -415,7 +420,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     specs = np.array([i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc])
 
     # computing
-    result = root(pv_fct, x0=params_i, args=specs, method='lm')
+    result = root(pv_fct, x0=params_i, args=specs, method=solver_method)
 
     if result.success:
         sdm_params = result.x

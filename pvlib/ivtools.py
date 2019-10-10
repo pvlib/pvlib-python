@@ -352,7 +352,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Processes", Wiley, 2013
     """
     # Constants
-    k = constants.constants.value('Boltzmann constant in eV/K')
+    k = constants.value('Boltzmann constant in eV/K')
 
     Tref = temp_ref + 273.15  # [K]
 

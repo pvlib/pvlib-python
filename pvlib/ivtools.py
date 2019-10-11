@@ -389,7 +389,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         # 2nd equation - open-circuit Tref - eq(4) in [1]
         y[1] = -IL + Io*np.expm1(Voc/a) + Voc/Rsh
         # 3rd equation - Imp & Vmp - eq(5) in [1]
-        y[2] = Imp - IL + Io*np.exp((Vmp+Imp*Rs)/a) + \
+        y[2] = Imp - IL + Io*np.expm1((Vmp+Imp*Rs)/a) + \
             (Vmp+Imp*Rs)/Rsh
         # 4th equation - Pmp derivated=0 - eq23.2.6 in [2]
         # caution: eq(6) in [1] has a sign error

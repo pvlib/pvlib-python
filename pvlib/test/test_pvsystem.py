@@ -86,11 +86,10 @@ def test_systemdef_dict():
 ])
 def test_PVSystem_get_iam(mocker, iam_model, model_params):
     m = mocker.spy(_iam, iam_model)
-    module_parameters = pd.Series(model_params)
-    system = pvsystem.PVSystem(module_parameters=module_parameters)
+    system = pvsystem.PVSystem(module_parameters=model_params)
     thetas = 1
     iam = system.get_iam(thetas, iam_model=iam_model)
-    assert m.call_count == 1
+    assert m.assert_called_once_with(thetas, model_params)
     assert iam < 1.
 
 

@@ -322,7 +322,8 @@ class PVSystem(object):
         ``iam_model``.
 
         Parameters for the selected IAM model are expected to be in
-        ``PVSystem.module_parameters``.
+        ``PVSystem.module_parameters``. Default parameters are available for
+        the 'physical', 'ashrae' and 'martin_ruiz' models.
 
         Parameters
         ----------
@@ -346,7 +347,7 @@ class PVSystem(object):
         if model in ['ashrae', 'physical', 'martin_ruiz']:
             param_names = iam.IAM_MODEL_PARAMS[model]
             kwargs = _build_kwargs(param_names, self.module_parameters)
-            func = iam.__getattribute__(model)
+            func = getattr(iam, model)
             return func(aoi, **kwargs)
         elif model == 'sapm':
             return iam.sapm(aoi, self.module_parameters)
@@ -358,7 +359,7 @@ class PVSystem(object):
 
     def ashraeiam(self, aoi):
         """
-        Deprecated. Use ``PVSystem.iam`` instead.
+        Deprecated. Use ``PVSystem.get_iam`` instead.
         """
         import warnings
         warnings.warn('PVSystem.ashraeiam is deprecated and will be removed in'
@@ -368,7 +369,7 @@ class PVSystem(object):
 
     def physicaliam(self, aoi):
         """
-        Deprecated. Use ``PVSystem.iam_physical`` instead.
+        Deprecated. Use ``PVSystem.get_iam`` instead.
         """
         import warnings
         warnings.warn('PVSystem.physicaliam is deprecated and will be removed'
@@ -543,7 +544,7 @@ class PVSystem(object):
 
     def sapm_aoi_loss(self, aoi):
         """
-        Deprecated. Use ``PVSystem.iam`` instead.
+        Deprecated. Use ``PVSystem.get_iam`` instead.
         """
         import warnings
         warnings.warn('PVSystem.sapm_aoi_loss is deprecated and will be'

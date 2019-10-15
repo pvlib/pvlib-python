@@ -1,9 +1,13 @@
-# -*- coding: utf-8 -*-
+r"""
+The ``iam`` module contains functions that implement models for the incidence
+angle modifier (IAM). The IAM quantifies the fraction of direct irradiance on
+a module's front surface that is transmitted through the module materials to
+the cells. Stated differently, the quantity 1 - IAM is the fraction of direct
+irradiance that is reflected away or absorbed by the module's front materials.
+IAM is typically a function of the angle of incidence (AOI) of the direct
+irradiance to the module's surface.
 """
-Created on Wed Oct  2 09:04:01 2019
 
-@author: cwhanse
-"""
 import numpy as np
 import pandas as pd
 from pvlib.tools import cosd, sind, tand, asind
@@ -65,8 +69,8 @@ def ashrae(aoi, b=0.05):
     [2] ASHRAE standard 93-77
 
     [3] PVsyst Contextual Help.
-    http://files.pvsyst.com/help/index.html?iam_loss.htm retrieved on
-    September 10, 2012
+    https://files.pvsyst.com/help/index.html?iam_loss.htm retrieved on
+    October 14, 2019
 
     See Also
     --------
@@ -143,6 +147,7 @@ def physical(aoi, n=1.526, K=4., L=0.002):
     iam.martin_ruiz
     iam.ashrae
     iam.interp
+    iam.sapm
     """
     zeroang = 1e-06
 
@@ -247,6 +252,7 @@ def martin_ruiz(aoi, a_r=0.16):
     iam.physical
     iam.ashrae
     iam.interp
+    iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
@@ -314,6 +320,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     iam.physical
     iam.ashrae
     iam.martin_ruiz
+    iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
@@ -390,6 +397,13 @@ def sapm(aoi, module, upper=None):
     [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
     Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
     DOI: 10.1109/PVSC.2015.7355849
+
+    See Also
+    --------
+    iam.physical
+    iam.ashrae
+    iam.martin_ruiz
+    iam.interp
     """
 
     aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],

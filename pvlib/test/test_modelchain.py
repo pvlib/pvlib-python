@@ -467,15 +467,13 @@ def test_infer_aoi_model(location, system_no_aoi, aoi_model):
                     orientation_strategy='None',
                     spectral_model='no_loss')
     assert isinstance(mc, ModelChain)
-    # remove added parameters
-    for k in iam.IAM_MODEL_PARAMS[aoi_model]:
-        system_no_aoi.module_parameters.pop(k)
 
 
 def test_infer_aoi_model_invalid(location, system_no_aoi):
     with pytest.raises(ValueError):
         ModelChain(system_no_aoi, location, orientation_strategy='None',
                    spectral_model='no_loss')
+    assert 'could not infer AOI model' in str(sys.exc_info())
 
 
 def constant_spectral_loss(mc):

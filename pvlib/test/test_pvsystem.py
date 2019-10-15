@@ -89,7 +89,7 @@ def test_PVSystem_get_iam(mocker, iam_model, model_params):
     system = pvsystem.PVSystem(module_parameters=model_params)
     thetas = 1
     iam = system.get_iam(thetas, iam_model=iam_model)
-    assert m.assert_called_once_with(thetas, model_params)
+    assert m.assert_called_once_with(thetas, **model_params)
     assert iam < 1.
 
 

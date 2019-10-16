@@ -264,9 +264,9 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
                                      v_oc)
 
 
-def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                   cells_in_series, temp_ref=25, irrad_ref=1000,
-                   solver_method='lm'):
+def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
+                   cells_in_series, EgRef=1.121, dEgdT=-0.0002677,
+                   temp_ref=25, irrad_ref=1000, solver_method='lm'):
     """
     Calculates the parameters for the De Soto single diode model using the
     procedure described in [1]. This procedure has the
@@ -278,12 +278,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Parameters
     ----------
-    celltype: str, case insensitive
-        Value is one of 'monosi', 'multisi', 'polysi', 'mono-c-si',
-        'multi-c-si'.
-        Others like 'cis', 'cigs', 'cdte', 'amorphous', 'thin film', 'gaas'
-        are not implemented yet.
-    v_mp: float
+     v_mp: float
         Module voltage at the maximum-power point at reference conditions [V].
     i_mp: float
         Module current at the maximum-power point at reference conditions [A].
@@ -293,16 +288,16 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         Short-circuit current at reference conditions [A].
     alpha_sc: float
         The short-circuit current (i_sc) temperature coefficient of the
-        module [%/K].
-        It is converted in A/K for the computing
-        process.
+        module [A/K].
     beta_voc: float
         The open-circuit voltage (v_oc) temperature coefficient of the
-        module [%/K].
-        It is converted in V/K for the computing
-        process.
+        module [V/K].
     cells_in_series: float
         Number of cell in the module.
+    EgRef: float, default 1.121 eV - value for silicon
+        Energy of bandgap of semi-conductor used [eV]
+    dEgdT: float, default -0.0002677 - value for silicon
+        Variation of bandgap according to temperature [eV/K]
     temp_ref: float, default 25
         Reference temperature condition [C]
     irrad_ref: float, default 1000
@@ -334,7 +329,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         The short-circuit current (i_sc) temperature coefficient of the
         module [A/K].
     * EgRef: float
-        Energy of bandgap of semi-conductor used (depending on celltype) [eV]
+        Energy of bandgap of semi-conductor used [eV]
     * dEgdT: float
         Variation of bandgap according to temperature [eV/K]
     * irrad_ref: float
@@ -353,21 +348,7 @@ def fit_sdm_desoto(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     """
     # Constants
     k = constants.value('Boltzmann constant in eV/K')
-
     Tref = temp_ref + 273.15  # [K]
-
-    if celltype.lower() in ['monosi', 'polysi', 'multisi',
-                            'mono-c-si', 'multi-c-si']:
-        dEgdT = -0.0002677  # [eV/K]
-        EgRef = 1.121  # [eV]
-    elif celltype.lower() in ['cis', 'cigs', 'cdte', 'amorphous', 'thin film']:
-        raise NotImplementedError
-    else:
-        raise ValueError('Unknown cell type.')
-
-    # Conversion from %/K to A/K & V/K
-    alpha_sc = alpha_sc*i_sc/100
-    beta_voc = beta_voc*v_oc/100
 
     def pv_fct(params, specs):
         """Evaluates the systems of equations used to solve for the single

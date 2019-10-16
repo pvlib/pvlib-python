@@ -113,6 +113,7 @@ Testing
   in NSRDB (:issue:`733`)
 * Added tests for methods in bifacial.py.
 * Added tests for changes to cell temperature models.
+* Add tests for bare environment. (:issue:`727`)
 
 Documentation
 ~~~~~~~~~~~~~

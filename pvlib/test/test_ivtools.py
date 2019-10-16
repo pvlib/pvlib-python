@@ -125,6 +125,11 @@ def test_fit_sdm_desoto(get_test_specs_params):
                        'temp_ref': 25}
     assert np.allclose(pd.Series(result), pd.Series(result_expected),
                        rtol=1e-4)
+    with pytest.raises(RuntimeError):
+        ivtools.fit_sdm_desoto(cells_in_series=10,
+                               v_mp=31.0, i_mp=8.71, v_oc=38.3,
+                               i_sc=9.43, alpha_sc=0.06,
+                               beta_voc=-0.36)
 
 
 @pytest.fixture

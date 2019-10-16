@@ -470,10 +470,10 @@ def test_infer_aoi_model(location, system_no_aoi, aoi_model):
 
 
 def test_infer_aoi_model_invalid(location, system_no_aoi):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
         ModelChain(system_no_aoi, location, orientation_strategy='None',
                    spectral_model='no_loss')
-    assert 'could not infer AOI model' in str(sys.exc_info())
+    assert 'could not infer AOI model' in str(excinfo)
 
 
 def constant_spectral_loss(mc):

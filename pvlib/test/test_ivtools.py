@@ -111,20 +111,22 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
 
 @requires_scipy
 def test_fit_sdm_desoto(get_test_specs_params):
-    result = ivtools.fit_sdm_desoto(cells_in_series=60,
-                                    **get_test_specs_params)
-    result_expected = {'I_L_ref': 9.452324509050774,
-                       'I_o_ref': 3.2246097466679494e-10,
-                       'a_ref': 1.5912875522463978,
-                       'R_sh_ref': 125.79869968976132,
-                       'R_s': 0.2978148476600744,
-                       'alpha_sc': 0.005658,
-                       'EgRef': 1.121,
-                       'dEgdT': -0.0002677,
-                       'irrad_ref': 1000,
-                       'temp_ref': 25}
-    assert np.allclose(pd.Series(result), pd.Series(result_expected),
-                       rtol=1e-4)
+    for solver_method in ('hybr', 'lm'):
+        result = ivtools.fit_sdm_desoto(cells_in_series=60,
+                                        **get_test_specs_params,
+                                        solver_method=solver_method)
+        result_expected = {'I_L_ref': 9.452324509050774,
+                           'I_o_ref': 3.2246097466679494e-10,
+                           'a_ref': 1.5912875522463978,
+                           'R_sh_ref': 125.79869968976132,
+                           'R_s': 0.2978148476600744,
+                           'alpha_sc': 0.005658,
+                           'EgRef': 1.121,
+                           'dEgdT': -0.0002677,
+                           'irrad_ref': 1000,
+                           'temp_ref': 25}
+        assert np.allclose(pd.Series(result), pd.Series(result_expected),
+                           rtol=1e-4)
     with pytest.raises(RuntimeError):
         ivtools.fit_sdm_desoto(cells_in_series=10,
                                v_mp=31.0, i_mp=8.71, v_oc=38.3,

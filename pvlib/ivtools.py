@@ -6,8 +6,6 @@ Created on Fri Mar 29 10:34:10 2019
 """
 
 import numpy as np
-from scipy.optimize import root
-from scipy import constants
 
 
 def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
@@ -346,6 +344,13 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     [2] John A Dufﬁe ,William A Beckman, "Solar Engineering of Thermal
     Processes", Wiley, 2013
     """
+
+    try:
+        from scipy.optimize import root
+        from scipy import constants
+    except ImportError:
+        raise ImportError("The fit_sdm_desoto function requires scipy.")
+
     # Constants
     k = constants.value('Boltzmann constant in eV/K')
     Tref = temp_ref + 273.15  # [K]

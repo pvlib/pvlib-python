@@ -461,7 +461,7 @@ for details.
     mc = ModelChain(system, fx_model.location)
 
     # extract relevant data for model chain
-    mc.run_model(fx_data.index, weather=fx_data);
+    mc.run_model(fx_data);
 
 Now we plot a couple of modeling intermediates and the forecast power.
 Here's the forecast plane of array irradiance...

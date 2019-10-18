@@ -264,12 +264,14 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
 def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                    cells_in_series, EgRef=1.121, dEgdT=-0.0002677,
-                   temp_ref=25, irrad_ref=1000, solver_method='lm'):
+                   temp_ref=25, irrad_ref=1000):
     """
     Calculates the parameters for the De Soto single diode model using the
-    procedure described in [1]. This procedure has the
-    advantage of using common specifications given by manufacturers in the
-    datasheets of PV modules.
+    procedure described in [1]. This procedure has the advantage of
+    using common specifications given by manufacturers in the
+    datasheets of PV modules. The solution is found using the
+    scipy.optimize.root() function, with the correpsonding default solver
+    method 'hybr'.
     The parameters returned by this function can be used by
     pvsystem.calcparams_desoto to calculate the values at different
     irradiance and cell temperature.
@@ -300,8 +302,6 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         Reference temperature condition [C]
     irrad_ref: float, default 1000
         Reference irradiance condition [W/m2]
-    solver_method: str, default 'lm'
-        See help of scipy.optimize.root() for more details.
 
     Returns
     -------
@@ -323,7 +323,6 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         number of cells in series (Ns), and cell thermal voltage at
         specified effective irradiance and cell temperature.
     * alpha_sc: float
-        Caution!: Different from the input because of the unit.
         The short-circuit current (i_sc) temperature coefficient of the
         module [A/K].
     * EgRef: float
@@ -334,6 +333,9 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         Reference irradiance condition [W/m2]
     * temp_ref: float
         Reference temperature condition [C]
+    * result: scipy.optimize.OptimizeResult
+        Optimization result of scipy.optimize.root().
+        See scipy.optimize.OptimizeResult for more details.
 
     References
     ----------
@@ -406,12 +408,12 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     specs = np.array([i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc])
 
     # computing
-    result = root(pv_fct, x0=params_i, args=specs, method=solver_method)
+    result = root(pv_fct, x0=params_i, args=specs)
 
     if result.success:
         sdm_params = result.x
     else:
-        raise RuntimeError('Parameter estimation failed')
+        raise RuntimeError('Parameter estimation failed:\n' + result.message)
 
     # results
     return {'I_L_ref': sdm_params[0],
@@ -423,7 +425,8 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
             'EgRef': EgRef,
             'dEgdT': dEgdT,
             'irrad_ref': irrad_ref,
-            'temp_ref': temp_ref}
+            'temp_ref': temp_ref,
+            'optimize_result': result}
 
 
 def _find_mp(voltage, current):

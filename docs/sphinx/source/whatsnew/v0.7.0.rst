@@ -117,6 +117,7 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
+* Fixed broken ipython examples from CEC data updates
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,3 +147,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Veronica Guo (:ghuser:`veronicaguo`)

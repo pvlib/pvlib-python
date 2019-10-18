@@ -271,8 +271,8 @@ class ModelChain(object):
     aoi_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'physical',
-        'ashrae', 'sapm', 'no_loss'. The ModelChain instance will be
-        passed as the first argument to a user-defined function.
+        'ashrae', 'sapm', 'martin_ruiz', 'no_loss'. The ModelChain instance
+        will be passed as the first argument to a user-defined function.
 
     spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
@@ -540,6 +540,8 @@ class ModelChain(object):
                 self._aoi_model = self.physical_aoi_loss
             elif model == 'sapm':
                 self._aoi_model = self.sapm_aoi_loss
+            elif model == 'martin_ruiz':
+                self._aoi_model = self.martin_ruiz_aoi_loss
             elif model == 'no_loss':
                 self._aoi_model = self.no_aoi_loss
             else:
@@ -555,24 +557,31 @@ class ModelChain(object):
             return self.sapm_aoi_loss
         elif set(['b']) <= params:
             return self.ashrae_aoi_loss
+        elif set(['a_r']) <= params:
+            return self.martin_ruiz_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
                              'system.module_parameters. Check that the '
                              'system.module_parameters contain parameters for '
-                             'the physical, aoi, or ashrae model; explicitly '
-                             'set model with aoi_model kwarg; or set '
-                             'aoi_model="no_loss".')
+                             'the physical, aoi, ashrae or martin_ruiz model; '
+                             'explicitly set the model with the aoi_model '
+                             'kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
-        self.aoi_modifier = self.system.ashraeiam(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='ashrae')
         return self
 
     def physical_aoi_loss(self):
-        self.aoi_modifier = self.system.physicaliam(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='physical')
         return self
 
     def sapm_aoi_loss(self):
-        self.aoi_modifier = self.system.sapm_aoi_loss(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='sapm')
+        return self
+
+    def martin_ruiz_aoi_loss(self):
+        self.aoi_modifier = self.system.get_iam(self.aoi,
+                                                iam_model='martin_ruiz')
         return self
 
     def no_aoi_loss(self):

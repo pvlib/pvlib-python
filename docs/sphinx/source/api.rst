@@ -211,15 +211,17 @@ wrap the functions listed below. See its documentation for details.
    pvsystem.PVSystem
    pvsystem.LocalizedPVSystem
 
-AOI modifiers
--------------
+Incident angle modifiers
+------------------------
 
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.physicaliam
-   pvsystem.ashraeiam
-   pvsystem.sapm_aoi_loss
+   iam.physical
+   iam.ashrae
+   iam.martin_ruiz
+   iam.sapm
+   iam.interp
 
 PV temperature models
 ---------------------

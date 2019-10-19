@@ -11,7 +11,7 @@ irradiance to the module's surface.
 import numpy as np
 import pandas as pd
 from pvlib.tools import cosd, sind, tand, asind
-
+import warnings
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -272,6 +272,102 @@ def martin_ruiz(aoi, a_r=0.16):
         iam = pd.Series(iam, index=aoi_input.index)
 
     return iam
+
+
+def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
+    '''
+    Determine the incidence angle modifiers (iam) for diffuse irradiance using
+    the Martin and Ruiz incident angle model.
+
+    Parameters
+    ----------
+    slope : numeric, degrees
+        The slope or tilt angle of of the module, where 0 is horizontal.
+
+    a_r : numeric
+        The angular losses coefficient described in equation 3 of [1].
+        This is an empirical dimensionless parameter. Values of a_r are
+        generally on the order of 0.08 to 0.25 for flat-plate PV modules.
+        a_r must be a positive numeric scalar.
+
+    c1 :
+
+    c2 :
+
+
+    Returns
+    -------
+    iam_sky : numeric
+        The incident angle modifier(s) for sky diffuse
+
+    iam_gnd : numeric
+        The incident angle modifier(s) for ground reflected diffuse
+
+    Notes
+    -----
+    Sky and ground modifiers are complementary, and equal for vertical surfaces
+
+    References
+    ----------
+    [1] N. Martin and J. M. Ruiz, "Calculation of the PV modules angular
+    losses under field conditions by means of an analytical model", Solar
+    Energy Materials & Solar Cells, vol. 70, pp. 25-38, 2001.
+
+    [2] N. Martin and J. M. Ruiz, "Corrigendum to 'Calculation of the PV
+    modules angular losses under field conditions by means of an
+    analytical model'", Solar Energy Materials & Solar Cells, vol. 110,
+    pp. 154, 2013.
+
+    See Also
+    --------
+    iam.physical
+    iam.ashrae
+    iam.interp
+    iam.sapm
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
+
+    if isinstance(slope, pd.Series):
+        out_index = slope.index
+    else:
+        out_index = None
+
+    slope = np.asanyarray(slope)
+
+    # undo possible surface rotations
+    slope = (slope + 180) % 360 - 180
+
+    # flip backward tilts forward
+    slope = np.abs(slope)
+
+    # avoid undefined results for horizontal or upside-down surfaces
+    slope = np.clip(slope, 0.001, 180 - 0.001)
+
+    if np.any(np.less_equal(a_r, 0)):
+        raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
+
+    if c2 is None:
+        # See IEC 61853-3; valid for 0.16 <= a_r <= 0.18; to be explained above
+        c2 = 0.5 * a_r - 0.154
+        if np.any(np.less(a_r, 0.15)) or np.any(np.greater(a_r, 0.19)):
+            warnings.warn('A calculated value for c2 lies outside the range'
+                      'reported in the literature. See docstring for details.')
+
+    from numpy import pi, radians, sin, cos, exp
+
+    beta = radians(slope)
+
+    trig_term_sky = sin(beta) + (pi - beta - sin(beta)) / (1 + cos(beta))
+    trig_term_gnd = sin(beta) +      (beta - sin(beta)) / (1 - cos(beta))
+
+    iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky ) * trig_term_sky / a_r)
+    iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd ) * trig_term_gnd / a_r)
+
+    if out_index is not None:
+        iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')
+        iam_gnd = pd.Series(iam_gnd, index=out_index, name='iam_ground')
+
+    return iam_sky, iam_gnd
 
 
 def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):

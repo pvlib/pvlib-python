@@ -104,6 +104,20 @@ def test_martin_ruiz():
         _iam.martin_ruiz(0.0, a_r=0.0)
 
 
+def test_martin_ruiz_diffuse():
+
+    slope = 30.
+    a_r = 0.16
+    expected = (0.9549735, 0.7944426)
+
+    # will fail if default values change
+    iam = _iam.martin_ruiz_diffuse(slope)
+    assert_allclose(iam, expected)
+    # will fail if parameter names change
+    iam = _iam.martin_ruiz_diffuse(slope=slope, a_r=a_r)
+    assert_allclose(iam, expected)
+
+
 @requires_scipy
 def test_iam_interp():
 

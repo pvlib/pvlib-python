@@ -11,7 +11,6 @@ irradiance to the module's surface.
 import numpy as np
 import pandas as pd
 from pvlib.tools import cosd, sind, tand, asind
-import warnings
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -220,8 +219,8 @@ def martin_ruiz(aoi, a_r=0.16):
     -----
     `martin_ruiz` calculates the incidence angle modifier (IAM) as described in
     [1]. The information required is the incident angle (AOI) and the angular
-    losses coefficient (a_r). Note that [1] has a corrigendum [2] which makes
-    the document much simpler to understand.
+    losses coefficient (a_r). Note that [1] has a corrigendum [2] which
+    clarifies a mix-up of 'alpha's and 'a's in the former.
 
     The incident angle modifier is defined as
 
@@ -249,6 +248,7 @@ def martin_ruiz(aoi, a_r=0.16):
 
     See Also
     --------
+    iam.martin_ruiz_diffuse
     iam.physical
     iam.ashrae
     iam.interp
@@ -290,10 +290,11 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
         generally on the order of 0.08 to 0.25 for flat-plate PV modules.
         a_r must be a positive numeric scalar.
 
-    c1 :
-
-    c2 :
-
+    c1, c2 : numeric scalar
+        Two fitting parameters for the expressions that approximate the
+        integral of diffuse irradiance coming from different directions.
+        c1 is contant at 4 / 3 / pi (0.4244) and c2 varies with a_r.  The
+        calculation of c2 from a_r is according to [3].
 
     Returns
     -------
@@ -305,7 +306,9 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
 
     Notes
     -----
-    Sky and ground modifiers are complementary, and equal for vertical surfaces
+    Sky and ground modifiers are complementary, so iam_sky for slope = 30 is
+    equal to iam_gnd for slope = 180 - 30.  For vertical surfaces, slope = 90,
+    the two factors are equal.
 
     References
     ----------
@@ -318,8 +321,12 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
     analytical model'", Solar Energy Materials & Solar Cells, vol. 110,
     pp. 154, 2013.
 
+    [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+    rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+
     See Also
     --------
+    iam.martin_ruiz
     iam.physical
     iam.ashrae
     iam.interp
@@ -347,11 +354,7 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
         raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
 
     if c2 is None:
-        # See IEC 61853-3; valid for 0.16 <= a_r <= 0.18; to be explained above
         c2 = 0.5 * a_r - 0.154
-        if np.any(np.less(a_r, 0.15)) or np.any(np.greater(a_r, 0.19)):
-            warnings.warn('A calculated value for c2 lies outside the range'
-                      'reported in the literature. See docstring for details.')
 
     from numpy import pi, radians, sin, cos, exp
 
@@ -360,8 +363,8 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
     trig_term_sky = sin(beta) + (pi - beta - sin(beta)) / (1 + cos(beta))
     trig_term_gnd = sin(beta) +      (beta - sin(beta)) / (1 - cos(beta))
 
-    iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky ) * trig_term_sky / a_r)
-    iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd ) * trig_term_gnd / a_r)
+    iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
+    iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
 
     if out_index is not None:
         iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')

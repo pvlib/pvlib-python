@@ -69,6 +69,20 @@ API Changes
       - `modelchain.basic_chain` has a new required argument
         `temperature_model_parameters`.
 
+* Changes related to IAM (AOI loss) functions (:issue:`680`):
+   * Changes to functions
+      - Moved functions from `pvsystem.py` to `iam.py`. `pvsystem` IAM
+       functions are deprecated and will be removed in v0.8.
+      - Functions are renamed to a consistent pattern:
+         - `pvsystem.physicaliam` is `iam.physical`
+         - `pvsystem.ashraeiam` is `iam.ashrae`
+         - `pvsystem.sapm_aoi_loss` is `iam.sapm`
+      - Created dict `iam.IAM_MODEL_PARAMS` to aid in identifying IAM models
+   * Changes to `PVSystem` class
+      - IAM models are provided by `PVSystem.get_iam` with kwarg `iam_model`.
+      - Methods `PVSystem.ashraeiam`, `PVSystem.physicaliam` and
+       `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
+
 * Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
   an exception instead of displaying a dialog.
 * The `times` keyword argument has been deprecated in the
@@ -83,8 +97,9 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-* Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
-  and :py:func:`pvlib.pvsystem.iam_interp`. (:issue:`751`)
+* Created two new incidence angle modifier (IAM) functions:
+  :py:func:`pvlib.iam.martin_ruiz` and :py:func:`pvlib.iam.interp`. (:issue:`751`)
+* Add the `martin_ruiz` IAM function as an option for `ModelChain.aoi_model`.
 * Updated the file for module parameters for the CEC model, from the SAM file
   dated 2017-6-5 to the SAM file dated 2019-03-05. (:issue:`761`)
 * Updated the file for inverter parameters for the CEC model, from the SAM file
@@ -96,6 +111,7 @@ Enhancements
   the single diode equation to an IV curve.
 * Add :py:func:`~pvlib.ivtools.fit_sdm_cec_sam`, a wrapper for the CEC single
   diode model fitting function '6parsolve' from NREL's System Advisor Model.
+* Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
 
 Bug fixes
 ~~~~~~~~~
@@ -113,10 +129,13 @@ Testing
   in NSRDB (:issue:`733`)
 * Added tests for methods in bifacial.py.
 * Added tests for changes to cell temperature models.
+* Added tests for changes to IAM models.
+* Added test for `ModelChain.infer_aoi_model`.
 
 Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
+* Fixed broken ipython examples from CEC data updates
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,11 +151,6 @@ Removal of prior version deprecations
 * Removed `ModelChain.prepare_inputs` clearsky assumption when no irradiance
   data was provided.
 
-Enhancements
-~~~~~~~~~~~~
-* Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
-
-
 Contributors
 ~~~~~~~~~~~~
 * Mark Campanellli (:ghuser:`markcampanelli`)
@@ -146,3 +160,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Veronica Guo (:ghuser:`veronicaguo`)

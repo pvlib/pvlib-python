@@ -53,7 +53,7 @@ objects, module data, and inverter data.
     cec_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
 
     sandia_module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
 
 Now we create a Location object, a PVSystem object, and a ModelChain
 object.

@@ -341,14 +341,16 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
 
     slope = np.asanyarray(slope)
 
-    # undo possible surface rotations
-    slope = (slope + 180) % 360 - 180
+    with np.errstate(invalid='ignore'):
+        # undo possible surface rotations
+        slope = (slope + 180) % 360 - 180
 
-    # flip backward tilts forward
-    slope = np.abs(slope)
+        # flip backward tilts forward
+        slope = np.abs(slope)
 
-    # avoid undefined results for horizontal or upside-down surfaces
-    slope = np.clip(slope, 0.001, 180 - 0.001)
+        # avoid undefined results for horizontal or upside-down surfaces
+        small_angle = 1e-06
+        slope = np.clip(slope, small_angle, 180 - small_angle)
 
     if np.any(np.less_equal(a_r, 0)):
         raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
@@ -360,11 +362,15 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
 
     beta = radians(slope)
 
-    trig_term_sky = sin(beta) + (pi - beta - sin(beta)) / (1 + cos(beta))
-    trig_term_gnd = sin(beta) +      (beta - sin(beta)) / (1 - cos(beta))
+    with np.errstate(invalid='ignore'):
+        # because sin(pi) isn't exactly zero
+        sin_beta = np.where(slope < 90, sin(beta), sin(pi - beta))
 
-    iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
-    iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
+        trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
+        trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta))
+
+        iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
+        iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
 
     if out_index is not None:
         iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')

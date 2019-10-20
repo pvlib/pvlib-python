@@ -117,6 +117,34 @@ def test_martin_ruiz_diffuse():
     iam = _iam.martin_ruiz_diffuse(slope=slope, a_r=a_r)
     assert_allclose(iam, expected)
 
+    a_r = 0.18
+    slope = [0, 30, 90, 120, -30, np.nan, np.inf]
+    expected_sky = [0.9407678, 0.9452250, 0.9407678, 0.9055541, 0.9452250,
+                    np.nan, np.nan]
+    expected_gnd = [0.0000000, 0.7610849, 0.9407678, 0.9483508, 0.7610849,
+                    np.nan, np.nan]
+
+    # check various inputs as list
+    iam = _iam.martin_ruiz_diffuse(slope, a_r)
+    assert_allclose(iam[0], expected_sky, atol=1e-7, equal_nan=True)
+    assert_allclose(iam[1], expected_gnd, atol=1e-7, equal_nan=True)
+
+    # check various inputs as array
+    iam = _iam.martin_ruiz_diffuse(np.array(slope), a_r)
+    assert_allclose(iam[0], expected_sky, atol=1e-7, equal_nan=True)
+    assert_allclose(iam[1], expected_gnd, atol=1e-7, equal_nan=True)
+
+    # check various inputs as Series
+    slope = pd.Series(slope)
+    expected_sky = pd.Series(expected_sky, name='iam_sky')
+    expected_gnd = pd.Series(expected_gnd, name='iam_ground')
+    iam = _iam.martin_ruiz_diffuse(slope, a_r)
+    assert_series_equal(iam[0], expected_sky)
+    assert_series_equal(iam[1], expected_gnd)
+
+    # check exception clause
+    with pytest.raises(RuntimeError):
+        _iam.martin_ruiz_diffuse(0.0, a_r=0.0)
 
 @requires_scipy
 def test_iam_interp():

@@ -262,7 +262,7 @@ def martin_ruiz(aoi, a_r=0.16):
     a_r = np.asanyarray(a_r)
 
     if np.any(np.less_equal(a_r, 0)):
-        raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
+        raise ValueError("The parameter 'a_r' cannot be zero or negative.")
 
     with np.errstate(invalid='ignore'):
         iam = (1 - np.exp(-cosd(aoi) / a_r)) / (1 - np.exp(-1 / a_r))
@@ -274,15 +274,17 @@ def martin_ruiz(aoi, a_r=0.16):
     return iam
 
 
-def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
+def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     '''
     Determine the incidence angle modifiers (iam) for diffuse sky and
     ground-reflected irradiance using the Martin and Ruiz incident angle model.
 
     Parameters
     ----------
-    slope : numeric, degrees
-        The slope or tilt angle of the module, where 0 is horizontal.
+    surface_tilt: float or array-like, default 0
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
 
     a_r : numeric
         The angular losses coefficient described in equation 3 of [1].
@@ -293,22 +295,22 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
     c1, c2 : numeric scalar
         Two fitting parameters for the expressions that approximate the
         integral of diffuse irradiance coming from different directions.
-        c1 is contant at 4 / 3 / pi (0.4244) and c2 varies with a_r.  The
+        c1 is constant at 4 / 3 / pi (0.4244) and c2 varies with a_r.  The
         calculation of c2 from a_r is according to [3].
 
     Returns
     -------
     iam_sky : numeric
-        The incident angle modifier(s) for sky diffuse
+        The incident angle modifier for sky diffuse
 
     iam_ground : numeric
-        The incident angle modifier(s) for ground-reflected diffuse
+        The incident angle modifier for ground-reflected diffuse
 
     Notes
     -----
-    Sky and ground modifiers are complementary: iam_sky for slope = 30 is
-    equal to iam_ground for slope = 180 - 30.  For vertical surfaces,
-    slope = 90, the two factors are equal.
+    Sky and ground modifiers are complementary: iam_sky for tilt = 30 is
+    equal to iam_ground for tilt = 180 - 30.  For vertical surfaces,
+    tilt = 90, the two factors are equal.
 
     References
     ----------
@@ -334,37 +336,38 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
 
-    if isinstance(slope, pd.Series):
-        out_index = slope.index
+    if isinstance(surface_tilt, pd.Series):
+        out_index = surface_tilt.index
     else:
         out_index = None
 
-    slope = np.asanyarray(slope)
+    surface_tilt = np.asanyarray(surface_tilt)
 
     with np.errstate(invalid='ignore'):
         # undo possible surface rotations
-        slope = (slope + 180) % 360 - 180
+        surface_tilt = (surface_tilt + 180) % 360 - 180
 
         # flip backward tilts forward
-        slope = np.abs(slope)
+        surface_tilt = np.abs(surface_tilt)
 
         # avoid undefined results for horizontal or upside-down surfaces
         small_angle = 1e-06
-        slope = np.clip(slope, small_angle, 180 - small_angle)
+        surface_tilt = np.clip(surface_tilt, small_angle, 180 - small_angle)
 
     if np.any(np.less_equal(a_r, 0)):
-        raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
+        raise ValueError("The parameter 'a_r' cannot be zero or negative.")
 
     if c2 is None:
+        # This equation is from [3] Sect. 7.2
         c2 = 0.5 * a_r - 0.154
 
     from numpy import pi, radians, sin, cos, exp
 
-    beta = radians(slope)
+    beta = radians(surface_tilt)
 
     with np.errstate(invalid='ignore'):
         # because sin(pi) isn't exactly zero
-        sin_beta = np.where(slope < 90, sin(beta), sin(pi - beta))
+        sin_beta = np.where(surface_tilt < 90, sin(beta), sin(pi - beta))
 
         trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
         trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta))

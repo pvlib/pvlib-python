@@ -100,50 +100,50 @@ def test_martin_ruiz():
     assert_series_equal(iam, expected)
 
     # check exception clause
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         _iam.martin_ruiz(0.0, a_r=0.0)
 
 
 def test_martin_ruiz_diffuse():
 
-    slope = 30.
+    surface_tilt = 30.
     a_r = 0.16
     expected = (0.9549735, 0.7944426)
 
     # will fail if default values change
-    iam = _iam.martin_ruiz_diffuse(slope)
+    iam = _iam.martin_ruiz_diffuse(surface_tilt)
     assert_allclose(iam, expected)
     # will fail if parameter names change
-    iam = _iam.martin_ruiz_diffuse(slope=slope, a_r=a_r)
+    iam = _iam.martin_ruiz_diffuse(surface_tilt=surface_tilt, a_r=a_r)
     assert_allclose(iam, expected)
 
     a_r = 0.18
-    slope = [0, 30, 90, 120, -30, np.nan, np.inf]
+    surface_tilt = [0, 30, 90, 120, -30, np.nan, np.inf]
     expected_sky = [0.9407678, 0.9452250, 0.9407678, 0.9055541, 0.9452250,
                     np.nan, np.nan]
     expected_gnd = [0.0000000, 0.7610849, 0.9407678, 0.9483508, 0.7610849,
                     np.nan, np.nan]
 
     # check various inputs as list
-    iam = _iam.martin_ruiz_diffuse(slope, a_r)
+    iam = _iam.martin_ruiz_diffuse(surface_tilt, a_r)
     assert_allclose(iam[0], expected_sky, atol=1e-7, equal_nan=True)
     assert_allclose(iam[1], expected_gnd, atol=1e-7, equal_nan=True)
 
     # check various inputs as array
-    iam = _iam.martin_ruiz_diffuse(np.array(slope), a_r)
+    iam = _iam.martin_ruiz_diffuse(np.array(surface_tilt), a_r)
     assert_allclose(iam[0], expected_sky, atol=1e-7, equal_nan=True)
     assert_allclose(iam[1], expected_gnd, atol=1e-7, equal_nan=True)
 
     # check various inputs as Series
-    slope = pd.Series(slope)
+    surface_tilt = pd.Series(surface_tilt)
     expected_sky = pd.Series(expected_sky, name='iam_sky')
     expected_gnd = pd.Series(expected_gnd, name='iam_ground')
-    iam = _iam.martin_ruiz_diffuse(slope, a_r)
+    iam = _iam.martin_ruiz_diffuse(surface_tilt, a_r)
     assert_series_equal(iam[0], expected_sky)
     assert_series_equal(iam[1], expected_gnd)
 
     # check exception clause
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         _iam.martin_ruiz_diffuse(0.0, a_r=0.0)
 
 @requires_scipy

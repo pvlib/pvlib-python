@@ -360,41 +360,6 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     k = constants.value('Boltzmann constant in eV/K')
     Tref = temp_ref + 273.15  # [K]
 
-    def pv_fct(params, specs):
-        """Evaluates the systems of equations used to solve for the single
-        diode equation parameters.
-        """
-        # six input known variables
-        Isc, Voc, Imp, Vmp, betaoc, alphasc = specs
-
-        # five parameters vector to find
-        IL, Io, a, Rsh, Rs = params
-
-        # five equation vector
-        y = [0, 0, 0, 0, 0]
-
-        # 1st equation - short-circuit - eq(3) in [1]
-        y[0] = Isc - IL + Io*np.expm1(Isc*Rs/a) + Isc*Rs/Rsh
-        # 2nd equation - open-circuit Tref - eq(4) in [1]
-        y[1] = -IL + Io*np.expm1(Voc/a) + Voc/Rsh
-        # 3rd equation - Imp & Vmp - eq(5) in [1]
-        y[2] = Imp - IL + Io*np.expm1((Vmp+Imp*Rs)/a) + \
-            (Vmp+Imp*Rs)/Rsh
-        # 4th equation - Pmp derivated=0 - eq23.2.6 in [2]
-        # caution: eq(6) in [1] has a sign error
-        y[3] = Imp - Vmp * ((Io/a)*np.exp((Vmp+Imp*Rs)/a) + 1.0/Rsh) / \
-            (1.0 + (Io*Rs/a)*np.exp((Vmp+Imp*Rs)/a) + Rs/Rsh)
-        # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
-        T2 = Tref + 2
-        Voc2 = (T2 - Tref)*betaoc + Voc  # eq (7) in [1]
-        a2 = a*T2/Tref  # eq (8) in [1]
-        IL2 = IL + alphasc*(T2-Tref)  # eq (11) in [1]
-        Eg2 = EgRef*(1 + dEgdT*(T2-Tref))  # eq (10) in [1]
-        Io2 = Io * (T2/Tref)**3 * np.exp(1/k * (EgRef/Tref-Eg2/T2))  # eq (9)
-        y[4] = -IL2 + Io2*np.expm1(Voc2/a2) + Voc2/Rsh  # eq (4) at T2
-
-        return y
-
     # initial guesses of variables for computing convergence:
     # Values are taken from [2], p753
     Rsh_i = 100.0
@@ -406,10 +371,11 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     params_i = np.array([IL_i, Io_i, a_i, Rsh_i, Rs_i])
 
     # specs of module
-    specs = ((i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc),)
+    specs = ((i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT,
+              Tref),)
 
     # computing
-    optimize_result = root(pv_fct, x0=params_i, args=specs)
+    optimize_result = root(_system_of_equations, x0=params_i, args=specs)
 
     if optimize_result.success:
         sdm_params = optimize_result.x
@@ -517,3 +483,62 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     else:  # I0_voc > 0
         I0 = I0_voc
     return (IL, I0, Rsh, Rs, nNsVth)
+
+
+def _system_of_equations(params, specs):
+    """Evaluates the systems of equations used to solve for the single
+    diode equation parameters. Function designed to be used by
+    scipy.optimize.root() in fit_sdm_desoto().
+
+    Parameters
+    ----------
+    params: ndarray
+        Array with parameters of the De Soto single diode model. Must be
+        given in the following order: IL, Io, a, Rsh, Rs
+    specs: tuple
+        Specifications of pv module given by manufacturer. Must be given
+        in the following order: Isc, Voc, Imp, Vmp, betaoc, alphasc
+
+    Returns
+    -------
+    system of equations to solve with scipy.optimize.root().
+    """
+    try:
+        from scipy import constants
+    except ImportError:
+        raise ImportError("The fit_sdm_desoto function requires scipy.")
+
+    # Constants
+    k = constants.value('Boltzmann constant in eV/K')
+
+    # six input known variables
+    Isc, Voc, Imp, Vmp, betaoc, alphasc, EgRef, dEgdT, Tref = specs
+
+    # five parameters vector to find
+    IL, Io, a, Rsh, Rs = params
+
+    # five equation vector
+    y = [0, 0, 0, 0, 0]
+
+    # 1st equation - short-circuit - eq(3) in [1]
+    y[0] = Isc - IL + Io*np.expm1(Isc*Rs/a) + Isc*Rs/Rsh
+    # 2nd equation - open-circuit Tref - eq(4) in [1]
+    y[1] = -IL + Io*np.expm1(Voc/a) + Voc/Rsh
+    # 3rd equation - Imp & Vmp - eq(5) in [1]
+    y[2] = Imp - IL + Io*np.expm1((Vmp+Imp*Rs)/a) + \
+        (Vmp+Imp*Rs)/Rsh
+    # 4th equation - Pmp derivated=0 - eq23.2.6 in [2]
+    # caution: eq(6) in [1] has a sign error
+    y[3] = Imp - Vmp * ((Io/a)*np.exp((Vmp+Imp*Rs)/a) + 1.0/Rsh) / \
+        (1.0 + (Io*Rs/a)*np.exp((Vmp+Imp*Rs)/a) + Rs/Rsh)
+    # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
+    T2 = Tref + 2
+    Voc2 = (T2 - Tref)*betaoc + Voc  # eq (7) in [1]
+    a2 = a*T2/Tref  # eq (8) in [1]
+    IL2 = IL + alphasc*(T2-Tref)  # eq (11) in [1]
+    Eg2 = EgRef*(1 + dEgdT*(T2-Tref))  # eq (10) in [1]
+    Io2 = Io * (T2/Tref)**3 * np.exp(1/k * (EgRef/Tref-Eg2/T2))  # eq (9)
+    y[4] = -IL2 + Io2*np.expm1(Voc2/a2) + Voc2/Rsh  # eq (4) at T2
+
+    return y
+

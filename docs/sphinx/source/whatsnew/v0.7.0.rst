@@ -129,6 +129,8 @@ Testing
   in NSRDB (:issue:`733`)
 * Added tests for methods in bifacial.py.
 * Added tests for changes to cell temperature models.
+* Add tests configuration for bare python environment (no conda).
+  (:issue:`727`)
 * Added tests for changes to IAM models.
 * Added test for `ModelChain.infer_aoi_model`.
 

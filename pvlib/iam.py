@@ -276,13 +276,13 @@ def martin_ruiz(aoi, a_r=0.16):
 
 def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
     '''
-    Determine the incidence angle modifiers (iam) for diffuse irradiance using
-    the Martin and Ruiz incident angle model.
+    Determine the incidence angle modifiers (iam) for diffuse sky and
+    ground-reflected irradiance using the Martin and Ruiz incident angle model.
 
     Parameters
     ----------
     slope : numeric, degrees
-        The slope or tilt angle of of the module, where 0 is horizontal.
+        The slope or tilt angle of the module, where 0 is horizontal.
 
     a_r : numeric
         The angular losses coefficient described in equation 3 of [1].
@@ -301,14 +301,14 @@ def martin_ruiz_diffuse(slope, a_r=0.16, c1=0.4244, c2=None):
     iam_sky : numeric
         The incident angle modifier(s) for sky diffuse
 
-    iam_gnd : numeric
-        The incident angle modifier(s) for ground reflected diffuse
+    iam_ground : numeric
+        The incident angle modifier(s) for ground-reflected diffuse
 
     Notes
     -----
-    Sky and ground modifiers are complementary, so iam_sky for slope = 30 is
-    equal to iam_gnd for slope = 180 - 30.  For vertical surfaces, slope = 90,
-    the two factors are equal.
+    Sky and ground modifiers are complementary: iam_sky for slope = 30 is
+    equal to iam_ground for slope = 180 - 30.  For vertical surfaces,
+    slope = 90, the two factors are equal.
 
     References
     ----------

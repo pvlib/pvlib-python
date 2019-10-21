@@ -112,6 +112,8 @@ Enhancements
 * Add :py:func:`~pvlib.ivtools.fit_sdm_cec_sam`, a wrapper for the CEC single
   diode model fitting function '6parsolve' from NREL's System Advisor Model.
 * Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
+* Created one new incidence angle modifier (IAM) function for diffuse irradiance:
+  :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
 
 Bug fixes
 ~~~~~~~~~

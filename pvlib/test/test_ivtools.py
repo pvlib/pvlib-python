@@ -28,13 +28,6 @@ def get_cec_params_cansol_cs5p_220p():
                        'R_sh_ref': 837.51, 'R_s': 1.004, 'Adjust': 2.3}}
 
 
-@pytest.fixture
-def get_test_specs_params():
-    """Specifications of module Kyocera KU270-6MCA"""
-    return {'v_mp': 31.0, 'i_mp': 8.71, 'v_oc': 38.3,
-            'i_sc': 9.43, 'alpha_sc': 0.005658, 'beta_voc': -0.13788}
-
-
 @requires_scipy
 def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
     test_params = get_test_iv_params
@@ -110,9 +103,11 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
 
 
 @requires_scipy
-def test_fit_sdm_desoto(get_test_specs_params):
-    result = ivtools.fit_sdm_desoto(cells_in_series=60,
-                                    **get_test_specs_params)
+def test_fit_sdm_desoto():
+    result, _ = ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3,
+                                       i_sc=9.43, alpha_sc=0.005658,
+                                       beta_voc=-0.13788,
+                                       cells_in_series=60)
     result_expected = {'I_L_ref': 9.452324509050774,
                        'I_o_ref': 3.2246097466679494e-10,
                        'a_ref': 1.5912875522463978,
@@ -123,14 +118,15 @@ def test_fit_sdm_desoto(get_test_specs_params):
                        'dEgdT': -0.0002677,
                        'irrad_ref': 1000,
                        'temp_ref': 25}
-    del result['optimize_result']
     assert np.allclose(pd.Series(result), pd.Series(result_expected),
                        rtol=1e-4)
+
+
+def test_fit_sdm_desoto_failure():
     with pytest.raises(RuntimeError) as exc:
-        ivtools.fit_sdm_desoto(cells_in_series=10,
-                               v_mp=31.0, i_mp=8.71, v_oc=38.3,
-                               i_sc=9.43, alpha_sc=0.06,
-                               beta_voc=-0.36)
+        ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
+                               alpha_sc=0.005658, beta_voc=-0.13788,
+                               cells_in_series=10)
     assert ('Parameter estimation failed') in str(exc.value)
 
 
@@ -272,3 +268,7 @@ def get_bad_iv_curves():
                    2.02963773590165, 1.49291145092070, 0.818343889647352, 0])
 
     return v1, i1, v2, i2
+
+if __name__ == '__main__':
+    pytest.main(['test_ivtools.py::test_fit_sdm_desoto'])
+    pytest.main(['test_ivtools.py::test_fit_sdm_desoto_failure'])

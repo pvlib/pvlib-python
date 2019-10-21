@@ -269,16 +269,20 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Calculates the parameters for the De Soto single diode model using the
     procedure described in [1]. This procedure has the advantage of
     using common specifications given by manufacturers in the
-    datasheets of PV modules. The solution is found using the
-    scipy.optimize.root() function, with the correpsonding default solver
-    method 'hybr'.
+    datasheets of PV modules.
+    The solution is found using the scipy.optimize.root() function,
+    with the corresponding default solver method 'hybr'.
+    No restriction is put on the fit variables, i.e. series
+    or shunt resistance could go negative. Nevertheless, if it happens,
+    check carefully the inputs and their units, alpha_sc and beta_voc are
+    often given in %/K in manufacturers datasheets.
     The parameters returned by this function can be used by
     pvsystem.calcparams_desoto to calculate the values at different
     irradiance and cell temperature.
 
     Parameters
     ----------
-     v_mp: float
+    v_mp: float
         Module voltage at the maximum-power point at reference conditions [V].
     i_mp: float
         Module current at the maximum-power point at reference conditions [A].
@@ -305,37 +309,36 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Returns
     -------
-    Dictionary with the following elements:
+    Tuple of the following elements:
 
-    * I_L_ref: float
-        Light-generated current at reference conditions [A]
-    * I_o_ref: float
-        Diode saturation current at reference conditions [A]
-    * R_s: float
-        Series resistance [ohms]
-        Note that '_ref' is not mentionned in the name because
-        this resistance is not sensible to the conditions of test.
-    * R_sh_ref: float
-        Shunt resistance at reference conditions [ohms].
-    * a_ref: float
-        Modified ideality factor at reference conditions.
-        The product of the usual diode ideality factor (n, unitless),
-        number of cells in series (Ns), and cell thermal voltage at
-        specified effective irradiance and cell temperature.
-    * alpha_sc: float
-        The short-circuit current (i_sc) temperature coefficient of the
-        module [A/K].
-    * EgRef: float
-        Energy of bandgap of semi-conductor used [eV]
-    * dEgdT: float
-        Variation of bandgap according to temperature [eV/K]
-    * irrad_ref: float
-        Reference irradiance condition [W/m2]
-    * temp_ref: float
-        Reference temperature condition [C]
-    * result: scipy.optimize.OptimizeResult
-        Optimization result of scipy.optimize.root().
-        See scipy.optimize.OptimizeResult for more details.
+        * Dictionary with the following elements:
+            I_L_ref: float
+                Light-generated current at reference conditions [A]
+            I_o_ref: float
+                Diode saturation current at reference conditions [A]
+            R_s: float
+                Series resistance [ohms]
+            R_sh_ref: float
+                Shunt resistance at reference conditions [ohms].
+            a_ref: float
+                Modified ideality factor at reference conditions.
+                The product of the usual diode ideality factor (n, unitless),
+                number of cells in series (Ns), and cell thermal voltage at
+                specified effective irradiance and cell temperature.
+            alpha_sc: float
+                The short-circuit current (i_sc) temperature coefficient of the
+                module [A/K].
+            EgRef: float
+                Energy of bandgap of semi-conductor used [eV]
+            dEgdT: float
+                Variation of bandgap according to temperature [eV/K]
+            irrad_ref: float
+                Reference irradiance condition [W/m2]
+            temp_ref: float
+                Reference temperature condition [C]
+        * scipy.optimize.OptimizeResult
+            Optimization result of scipy.optimize.root().
+            See scipy.optimize.OptimizeResult for more details.
 
     References
     ----------
@@ -343,7 +346,7 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
     2006.
 
-    [2] John A Dufﬁe ,William A Beckman, "Solar Engineering of Thermal
+    [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
     Processes", Wiley, 2013
     """
 
@@ -360,8 +363,6 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     def pv_fct(params, specs):
         """Evaluates the systems of equations used to solve for the single
         diode equation parameters.
-        To avoid the confusion in names with variables of container
-        function the '_' of the variables were removed.
         """
         # six input known variables
         Isc, Voc, Imp, Vmp, betaoc, alphasc = specs
@@ -405,28 +406,29 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     params_i = np.array([IL_i, Io_i, a_i, Rsh_i, Rs_i])
 
     # specs of module
-    specs = np.array([i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc])
+    specs = ((i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc),)
 
     # computing
-    result = root(pv_fct, x0=params_i, args=specs)
+    optimize_result = root(pv_fct, x0=params_i, args=specs)
 
-    if result.success:
-        sdm_params = result.x
+    if optimize_result.success:
+        sdm_params = optimize_result.x
     else:
-        raise RuntimeError('Parameter estimation failed:\n' + result.message)
+        raise RuntimeError('Parameter estimation failed:\n' +
+                           optimize_result.message)
 
     # results
-    return {'I_L_ref': sdm_params[0],
-            'I_o_ref': sdm_params[1],
-            'a_ref': sdm_params[2],
-            'R_sh_ref': sdm_params[3],
-            'R_s': sdm_params[4],
-            'alpha_sc': alpha_sc,
-            'EgRef': EgRef,
-            'dEgdT': dEgdT,
-            'irrad_ref': irrad_ref,
-            'temp_ref': temp_ref,
-            'optimize_result': result}
+    return ({'I_L_ref': sdm_params[0],
+             'I_o_ref': sdm_params[1],
+             'a_ref': sdm_params[2],
+             'R_sh_ref': sdm_params[3],
+             'R_s': sdm_params[4],
+             'alpha_sc': alpha_sc,
+             'EgRef': EgRef,
+             'dEgdT': dEgdT,
+             'irrad_ref': irrad_ref,
+             'temp_ref': temp_ref},
+            optimize_result)
 
 
 def _find_mp(voltage, current):

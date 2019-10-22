@@ -375,7 +375,7 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     specs = ((i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT,
               Tref, k),)
 
-    # computing
+    # computing with system of equations described in [1]
     optimize_result = root(_system_of_equations, x0=params_i, args=specs)
 
     if optimize_result.success:
@@ -503,6 +503,16 @@ def _system_of_equations(params, specs):
     Returns
     -------
     system of equations to solve with scipy.optimize.root().
+
+
+    References
+    ----------
+    [1] W. De Soto et al., "Improvement and validation of a model for
+    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+    2006.
+
+    [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
+    Processes", Wiley, 2013
     """
 
     # six input known variables

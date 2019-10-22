@@ -593,14 +593,16 @@ def test_deprecated_08():
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
                          'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
     # do not assign PVSystem.temperature_model_parameters
+    # without PVSystem.racking_model and PVSystem.module_type
     system = PVSystem(module_parameters=module_parameters)
+    # deprecated temp_model kwarg
     with pytest.warns(pvlibDeprecationWarning):
         ModelChain(system, location,
                    dc_model='desoto',
                    aoi_model='no_loss', spectral_model='no_loss',
                    temp_model='sapm',
                    ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters)
+    # provide both temp_model and temperature_model kwargs
     with pytest.warns(pvlibDeprecationWarning):
         ModelChain(system, location,
                    dc_model='desoto',
@@ -608,7 +610,7 @@ def test_deprecated_08():
                    temperature_model='sapm',
                    temp_model='sapm',
                    ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters)
+    # conflicting temp_model and temperature_model kwargs
     with pytest.raises(ValueError):
         ModelChain(system, location,
                    dc_model='desoto',

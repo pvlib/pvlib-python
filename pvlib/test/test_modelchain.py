@@ -601,20 +601,20 @@ def test_deprecated_08():
                    spectral_model='no_loss', ac_model='snlinverter',
                    temp_model='sapm')
         w = recw.pop(pvlibDeprecationWarning)
-        assert 'temp_model keyword argument is deprecated' in str(w.message)
+    assert 'temp_model keyword argument is deprecated' in str(w.message)
     # provide both temp_model and temperature_model kwargs
     with pytest.warns(pvlibDeprecationWarning) as recw:
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temperature_model='sapm', temp_model='sapm')
         w = recw.pop(pvlibDeprecationWarning)
-        assert 'Provide only one of temperature_model' in str(w.message)
+    assert 'Provide only one of temperature_model' in str(w.message)
     # conflicting temp_model and temperature_model kwargs
     with pytest.raises(ValueError) as exc:
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temperature_model='pvsyst', temp_model='sapm')
-        assert 'Conflicting temperature_model' in str(exc.info)
+    assert 'Conflicting temperature_model' in str(exc.info)
 
 
 @requires_scipy

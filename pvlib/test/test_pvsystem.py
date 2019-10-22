@@ -433,7 +433,7 @@ def test__infer_temperature_model_params_deprec_warning():
                           racking_model='not_a_rack_model',
                           module_type='glass_polymer')
         w = recw.pop(pvlibDeprecationWarning)
-        assert 'Reverting to deprecated default' in str(w.message)
+    assert 'Reverting to deprecated default' in str(w.message)
 
 
 def test_calcparams_desoto(cec_module_params):

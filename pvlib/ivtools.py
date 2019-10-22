@@ -274,8 +274,9 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     with the corresponding default solver method 'hybr'.
     No restriction is put on the fit variables, i.e. series
     or shunt resistance could go negative. Nevertheless, if it happens,
-    check carefully the inputs and their units, alpha_sc and beta_voc are
-    often given in %/K in manufacturers datasheets.
+    check carefully the inputs and their units; alpha_sc and beta_voc are
+    often given in %/K in manufacturers datasheets and should be given
+    in A/K and V/K here.
     The parameters returned by this function can be used by
     pvsystem.calcparams_desoto to calculate the values at different
     irradiance and cell temperature.
@@ -380,8 +381,8 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     if optimize_result.success:
         sdm_params = optimize_result.x
     else:
-        raise RuntimeError('Parameter estimation failed:\n' +
-                           optimize_result.message)
+        raise RuntimeError('Parameter estimation failed:\n'
+                           + optimize_result.message)
 
     # results
     return ({'I_L_ref': sdm_params[0],
@@ -534,4 +535,3 @@ def _system_of_equations(params, specs):
     y[4] = -IL2 + Io2*np.expm1(Voc2/a2) + Voc2/Rsh  # eq (4) at T2
 
     return y
-

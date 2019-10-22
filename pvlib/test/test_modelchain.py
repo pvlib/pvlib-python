@@ -593,21 +593,21 @@ def test_deprecated_08():
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
                          'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
     # do not assign PVSystem.temperature_model_parameters
-    # without PVSystem.racking_model and PVSystem.module_type
+    # leave out PVSystem.racking_model and PVSystem.module_type
     system = PVSystem(module_parameters=module_parameters)
     # deprecated temp_model kwarg
     with pytest.warns(pvlibDeprecationWarning) as recw:
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temp_model='sapm')
-        w = recw.pop(pvlibDeprecationWarning)
+    w = recw.pop(pvlibDeprecationWarning)
     assert 'temp_model keyword argument is deprecated' in str(w.message)
     # provide both temp_model and temperature_model kwargs
     with pytest.warns(pvlibDeprecationWarning) as recw:
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temperature_model='sapm', temp_model='sapm')
-        w = recw.pop(pvlibDeprecationWarning)
+    w = recw.pop(pvlibDeprecationWarning)
     assert 'Provide only one of temperature_model' in str(w.message)
     # conflicting temp_model and temperature_model kwargs
     with pytest.raises(ValueError) as exc:

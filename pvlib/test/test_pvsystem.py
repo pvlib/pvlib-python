@@ -432,7 +432,7 @@ def test__infer_temperature_model_params_deprec_warning():
         pvsystem.PVSystem(module_parameters={},
                           racking_model='not_a_rack_model',
                           module_type='glass_polymer')
-        w = recw.pop(pvlibDeprecationWarning)
+    w = recw.pop(pvlibDeprecationWarning)
     assert 'Reverting to deprecated default' in str(w.message)
 
 

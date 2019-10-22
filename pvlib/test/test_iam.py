@@ -77,6 +77,7 @@ def test_martin_ruiz():
     # will fail if default values change
     iam = _iam.martin_ruiz(aoi)
     assert_allclose(iam, expected)
+
     # will fail if parameter names change
     iam = _iam.martin_ruiz(aoi=aoi, a_r=a_r)
     assert_allclose(iam, expected)
@@ -99,7 +100,9 @@ def test_martin_ruiz():
     iam = _iam.martin_ruiz(aoi, a_r)
     assert_series_equal(iam, expected)
 
-    # check exception clause
+
+def test_martin_ruiz_exception():
+
     with pytest.raises(ValueError):
         _iam.martin_ruiz(0.0, a_r=0.0)
 
@@ -113,6 +116,7 @@ def test_martin_ruiz_diffuse():
     # will fail if default values change
     iam = _iam.martin_ruiz_diffuse(surface_tilt)
     assert_allclose(iam, expected)
+
     # will fail if parameter names change
     iam = _iam.martin_ruiz_diffuse(surface_tilt=surface_tilt, a_r=a_r)
     assert_allclose(iam, expected)
@@ -142,9 +146,12 @@ def test_martin_ruiz_diffuse():
     assert_series_equal(iam[0], expected_sky)
     assert_series_equal(iam[1], expected_gnd)
 
-    # check exception clause
+
+def test_martin_ruiz_diffuse_exception():
+
     with pytest.raises(ValueError):
         _iam.martin_ruiz_diffuse(0.0, a_r=0.0)
+
 
 @requires_scipy
 def test_iam_interp():

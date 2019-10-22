@@ -290,13 +290,18 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
         The angular losses coefficient described in equation 3 of [1].
         This is an empirical dimensionless parameter. Values of a_r are
         generally on the order of 0.08 to 0.25 for flat-plate PV modules.
-        a_r must be a positive numeric scalar.
+        a_r must be greater than zero.
 
-    c1, c2 : numeric scalar
-        Two fitting parameters for the expressions that approximate the
+    c1 : numeric scalar
+        First fitting parameter for the expressions that approximates the
         integral of diffuse irradiance coming from different directions.
-        c1 is constant at 4 / 3 / pi (0.4244) and c2 varies with a_r.  The
-        calculation of c2 from a_r is according to [3].
+        c1 is given as the constant 4 / 3 / pi (0.4244) in [1].
+
+    c2 : numeric scalar
+        Second fitting parameter for the expressions that approximates the
+        integral of diffuse irradiance coming from different directions.
+        If c2 is None, it will be calculated according to the linear
+        relationship given in [3].
 
     Returns
     -------
@@ -343,16 +348,16 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     surface_tilt = np.asanyarray(surface_tilt)
 
+    # undo possible surface rotations
     with np.errstate(invalid='ignore'):
-        # undo possible surface rotations
         surface_tilt = (surface_tilt + 180) % 360 - 180
 
-        # flip backward tilts forward
-        surface_tilt = np.abs(surface_tilt)
+    # flip backward tilts forward
+    surface_tilt = np.abs(surface_tilt)
 
-        # avoid undefined results for horizontal or upside-down surfaces
-        small_angle = 1e-06
-        surface_tilt = np.clip(surface_tilt, small_angle, 180 - small_angle)
+    # avoid undefined results for horizontal or upside-down surfaces
+    small_angle = 1e-06
+    surface_tilt = np.clip(surface_tilt, small_angle, 180 - small_angle)
 
     if np.any(np.less_equal(a_r, 0)):
         raise ValueError("The parameter 'a_r' cannot be zero or negative.")
@@ -370,7 +375,7 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
         sin_beta = np.where(surface_tilt < 90, sin(beta), sin(pi - beta))
 
         trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
-        trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta))
+        trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta)) # noqa: E222
 
         iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
         iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)

@@ -384,7 +384,7 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         sdm_params = optimize_result.x
     else:
         raise RuntimeError(
-                'Parameter estimation failed:\n' + optimize_result.message)
+            'Parameter estimation failed:\n' + optimize_result.message)
 
     # results
     return ({'I_L_ref': sdm_params[0],

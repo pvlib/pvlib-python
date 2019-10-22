@@ -614,7 +614,7 @@ def test_deprecated_08():
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temperature_model='pvsyst', temp_model='sapm')
-    assert 'Conflicting temperature_model' in str(exc.info)
+    assert 'Conflicting temperature_model' in str(exc.value)
 
 
 @requires_scipy

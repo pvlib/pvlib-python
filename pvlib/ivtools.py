@@ -372,7 +372,7 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     # specs of module
     specs = ((i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT,
-              Tref),)
+              Tref, k),)
 
     # computing
     optimize_result = root(_system_of_equations, x0=params_i, args=specs)
@@ -503,16 +503,9 @@ def _system_of_equations(params, specs):
     -------
     system of equations to solve with scipy.optimize.root().
     """
-    try:
-        from scipy import constants
-    except ImportError:
-        raise ImportError("The fit_sdm_desoto function requires scipy.")
-
-    # Constants
-    k = constants.value('Boltzmann constant in eV/K')
 
     # six input known variables
-    Isc, Voc, Imp, Vmp, betaoc, alphasc, EgRef, dEgdT, Tref = specs
+    Isc, Voc, Imp, Vmp, betaoc, alphasc, EgRef, dEgdT, Tref, k = specs
 
     # five parameters vector to find
     IL, Io, a, Rsh, Rs = params

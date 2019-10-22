@@ -428,12 +428,11 @@ def test__infer_temperature_model_params():
 
 
 def test__infer_temperature_model_params_deprec_warning():
-    with pytest.warns(pvlibDeprecationWarning) as recw:
+    warn_txt = "Reverting to deprecated default"
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         pvsystem.PVSystem(module_parameters={},
                           racking_model='not_a_rack_model',
                           module_type='glass_polymer')
-    w = recw.pop(pvlibDeprecationWarning)
-    assert 'Reverting to deprecated default' in str(w.message)
 
 
 def test_calcparams_desoto(cec_module_params):

@@ -470,10 +470,10 @@ def test_infer_aoi_model(location, system_no_aoi, aoi_model):
 
 
 def test_infer_aoi_model_invalid(location, system_no_aoi):
-    with pytest.raises(ValueError) as excinfo:
+    exc_text = 'could not infer AOI model'
+    with pytest.raises(ValueError, match=exc_text):
         ModelChain(system_no_aoi, location, orientation_strategy='None',
                    spectral_model='no_loss')
-    assert 'could not infer AOI model' in str(excinfo.value)
 
 
 def constant_spectral_loss(mc):
@@ -596,25 +596,23 @@ def test_deprecated_08():
     # leave out PVSystem.racking_model and PVSystem.module_type
     system = PVSystem(module_parameters=module_parameters)
     # deprecated temp_model kwarg
-    with pytest.warns(pvlibDeprecationWarning) as recw:
+    warn_txt = 'temp_model keyword argument is deprecated'
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temp_model='sapm')
-    w = recw.pop(pvlibDeprecationWarning)
-    assert 'temp_model keyword argument is deprecated' in str(w.message)
     # provide both temp_model and temperature_model kwargs
-    with pytest.warns(pvlibDeprecationWarning) as recw:
+    warn_txt = 'Provide only one of temperature_model'
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temperature_model='sapm', temp_model='sapm')
-    w = recw.pop(pvlibDeprecationWarning)
-    assert 'Provide only one of temperature_model' in str(w.message)
     # conflicting temp_model and temperature_model kwargs
-    with pytest.raises(ValueError) as exc:
+    exc_text = 'Conflicting temperature_model'
+    with pytest.raises(ValueError, match=exc_text):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temperature_model='pvsyst', temp_model='sapm')
-    assert 'Conflicting temperature_model' in str(exc.value)
 
 
 @requires_scipy

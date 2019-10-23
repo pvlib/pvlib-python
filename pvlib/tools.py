@@ -212,7 +212,7 @@ def _scalar_out(input):
     else:  #
         # works if it's a 1 length array and
         # will throw a ValueError otherwise
-        output = input.values.item()
+        output = np.asarray(input).item()
 
     return output
 

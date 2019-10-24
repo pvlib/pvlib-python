@@ -470,10 +470,10 @@ def test_infer_aoi_model(location, system_no_aoi, aoi_model):
 
 
 def test_infer_aoi_model_invalid(location, system_no_aoi):
-    with pytest.raises(ValueError) as excinfo:
+    exc_text = 'could not infer AOI model'
+    with pytest.raises(ValueError, match=exc_text):
         ModelChain(system_no_aoi, location, orientation_strategy='None',
                    spectral_model='no_loss')
-    assert 'could not infer AOI model' in str(excinfo.value)
 
 
 def constant_spectral_loss(mc):
@@ -593,29 +593,26 @@ def test_deprecated_08():
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
                          'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
     # do not assign PVSystem.temperature_model_parameters
+    # leave out PVSystem.racking_model and PVSystem.module_type
     system = PVSystem(module_parameters=module_parameters)
-    with pytest.warns(pvlibDeprecationWarning):
-        ModelChain(system, location,
-                   dc_model='desoto',
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temp_model='sapm',
-                   ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters)
-    with pytest.warns(pvlibDeprecationWarning):
-        ModelChain(system, location,
-                   dc_model='desoto',
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temperature_model='sapm',
-                   temp_model='sapm',
-                   ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters)
-    with pytest.raises(ValueError):
-        ModelChain(system, location,
-                   dc_model='desoto',
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temperature_model='pvsyst',
-                   temp_model='sapm',
-                   ac_model='snlinverter')
+    # deprecated temp_model kwarg
+    warn_txt = 'temp_model keyword argument is deprecated'
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
+                   spectral_model='no_loss', ac_model='snlinverter',
+                   temp_model='sapm')
+    # provide both temp_model and temperature_model kwargs
+    warn_txt = 'Provide only one of temperature_model'
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
+                   spectral_model='no_loss', ac_model='snlinverter',
+                   temperature_model='sapm', temp_model='sapm')
+    # conflicting temp_model and temperature_model kwargs
+    exc_text = 'Conflicting temperature_model'
+    with pytest.raises(ValueError, match=exc_text):
+        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
+                   spectral_model='no_loss', ac_model='snlinverter',
+                   temperature_model='pvsyst', temp_model='sapm')
 
 
 @requires_scipy

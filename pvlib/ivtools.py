@@ -264,7 +264,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
 def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                    cells_in_series, EgRef=1.121, dEgdT=-0.0002677,
-                   temp_ref=25, irrad_ref=1000):
+                   temp_ref=25, irrad_ref=1000, root_kwargs={}):
     """
     Calculates the parameters for the De Soto single diode model using the
     procedure described in [1]. This procedure has the advantage of
@@ -299,7 +299,7 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     beta_voc: float
         The open-circuit voltage (v_oc) temperature coefficient of the
         module [V/K].
-    cells_in_series: float
+    cells_in_series: integer
         Number of cell in the module.
     EgRef: float, default 1.121 eV - value for silicon
         Energy of bandgap of semi-conductor used [eV]
@@ -309,6 +309,8 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         Reference temperature condition [C]
     irrad_ref: float, default 1000
         Reference irradiance condition [W/m2]
+    root_kwargs: dictionary, default None
+        Dictionary of arguments to pass onto scipy.optimize.root()
 
     Returns
     -------
@@ -365,20 +367,21 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     # initial guesses of variables for computing convergence:
     # Values are taken from [2], p753
-    Rsh_i = 100.0
-    a_i = 1.5*k*Tref*cells_in_series
-    IL_i = i_sc
-    Io_i = i_sc * np.exp(-v_oc/a_i)
-    Rs_i = (a_i*np.log1p((IL_i-i_mp)/Io_i) - v_mp)/i_mp
+    Rsh_0 = 100.0
+    a_0 = 1.5*k*Tref*cells_in_series
+    IL_0 = i_sc
+    Io_0 = i_sc * np.exp(-v_oc/a_0)
+    Rs_0 = (a_0*np.log1p((IL_0-i_mp)/Io_0) - v_mp)/i_mp
     # params_i : initial values vector
-    params_i = np.array([IL_i, Io_i, a_i, Rsh_i, Rs_i])
+    params_i = np.array([IL_0, Io_0, a_0, Rsh_0, Rs_0])
 
     # specs of module
-    specs = ((i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT,
-              Tref, k),)
+    specs = (i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT,
+             Tref, k)
 
     # computing with system of equations described in [1]
-    optimize_result = root(_system_of_equations, x0=params_i, args=specs)
+    optimize_result = root(_system_of_equations_desoto, x0=params_i,
+                           args=(specs,), **root_kwargs)
 
     if optimize_result.success:
         sdm_params = optimize_result.x
@@ -488,7 +491,7 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     return (IL, I0, Rsh, Rs, nNsVth)
 
 
-def _system_of_equations(params, specs):
+def _system_of_equations_desoto(params, specs):
     """Evaluates the systems of equations used to solve for the single
     diode equation parameters. Function designed to be used by
     scipy.optimize.root() in fit_sdm_desoto().
@@ -500,7 +503,7 @@ def _system_of_equations(params, specs):
         given in the following order: IL, Io, a, Rsh, Rs
     specs: tuple
         Specifications of pv module given by manufacturer. Must be given
-        in the following order: Isc, Voc, Imp, Vmp, betaoc, alphasc
+        in the following order: Isc, Voc, Imp, Vmp, beta_oc, alpha_sc
 
     Returns
     -------
@@ -518,7 +521,7 @@ def _system_of_equations(params, specs):
     """
 
     # six input known variables
-    Isc, Voc, Imp, Vmp, betaoc, alphasc, EgRef, dEgdT, Tref, k = specs
+    Isc, Voc, Imp, Vmp, beta_oc, alpha_sc, EgRef, dEgdT, Tref, k = specs
 
     # five parameters vector to find
     IL, Io, a, Rsh, Rs = params
@@ -527,23 +530,28 @@ def _system_of_equations(params, specs):
     y = [0, 0, 0, 0, 0]
 
     # 1st equation - short-circuit - eq(3) in [1]
-    y[0] = Isc - IL + Io*np.expm1(Isc*Rs/a) + Isc*Rs/Rsh
+    y[0] = Isc - IL + Io * np.expm1(Isc * Rs / a) + Isc * Rs / Rsh
+
     # 2nd equation - open-circuit Tref - eq(4) in [1]
-    y[1] = -IL + Io*np.expm1(Voc/a) + Voc/Rsh
+    y[1] = -IL + Io * np.expm1(Voc / a) + Voc / Rsh
+
     # 3rd equation - Imp & Vmp - eq(5) in [1]
-    y[2] = Imp - IL + Io*np.expm1((Vmp+Imp*Rs)/a) + \
-        (Vmp+Imp*Rs)/Rsh
+    y[2] = Imp - IL + Io * np.expm1((Vmp + Imp * Rs) / a) \
+        + (Vmp + Imp * Rs) / Rsh
+
     # 4th equation - Pmp derivated=0 - eq23.2.6 in [2]
     # caution: eq(6) in [1] has a sign error
-    y[3] = Imp - Vmp * ((Io/a)*np.exp((Vmp+Imp*Rs)/a) + 1.0/Rsh) / \
-        (1.0 + (Io*Rs/a)*np.exp((Vmp+Imp*Rs)/a) + Rs/Rsh)
+    y[3] = Imp \
+        - Vmp * ((Io / a) * np.exp((Vmp + Imp * Rs) / a) + 1.0 / Rsh) \
+        / (1.0 + (Io * Rs / a) * np.exp((Vmp + Imp * Rs) / a) + Rs / Rsh)
+
     # 5th equation - open-circuit T2 - eq (4) at temperature T2 in [1]
     T2 = Tref + 2
-    Voc2 = (T2 - Tref)*betaoc + Voc  # eq (7) in [1]
-    a2 = a*T2/Tref  # eq (8) in [1]
-    IL2 = IL + alphasc*(T2-Tref)  # eq (11) in [1]
-    Eg2 = EgRef*(1 + dEgdT*(T2-Tref))  # eq (10) in [1]
-    Io2 = Io * (T2/Tref)**3 * np.exp(1/k * (EgRef/Tref-Eg2/T2))  # eq (9)
-    y[4] = -IL2 + Io2*np.expm1(Voc2/a2) + Voc2/Rsh  # eq (4) at T2
+    Voc2 = (T2 - Tref) * beta_oc + Voc  # eq (7) in [1]
+    a2 = a * T2 / Tref  # eq (8) in [1]
+    IL2 = IL + alpha_sc * (T2 - Tref)  # eq (11) in [1]
+    Eg2 = EgRef * (1 + dEgdT * (T2 - Tref))  # eq (10) in [1]
+    Io2 = Io * (T2 / Tref)**3 * np.exp(1 / k * (EgRef/Tref - Eg2/T2))  # eq (9)
+    y[4] = -IL2 + Io2 * np.expm1(Voc2 / a2) + Voc2 / Rsh  # eq (4) at T2
 
     return y

@@ -122,6 +122,7 @@ def test_fit_sdm_desoto():
                        rtol=1e-4)
 
 
+@requires_scipy
 def test_fit_sdm_desoto_failure():
     with pytest.raises(RuntimeError) as exc:
         ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,

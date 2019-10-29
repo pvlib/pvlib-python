@@ -292,13 +292,13 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
         generally on the order of 0.08 to 0.25 for flat-plate PV modules.
         a_r must be greater than zero.
 
-    c1 : numeric scalar
-        First fitting parameter for the expressions that approximates the
+    c1 : float
+        First fitting parameter for the expressions that approximate the
         integral of diffuse irradiance coming from different directions.
         c1 is given as the constant 4 / 3 / pi (0.4244) in [1].
 
-    c2 : numeric scalar
-        Second fitting parameter for the expressions that approximates the
+    c2 : float
+        Second fitting parameter for the expressions that approximate the
         integral of diffuse irradiance coming from different directions.
         If c2 is None, it will be calculated according to the linear
         relationship given in [3].

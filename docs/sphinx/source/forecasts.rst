@@ -447,7 +447,7 @@ for details.
     sandia_modules = retrieve_sam('sandiamod')
     cec_inverters = retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    inverter = cec_inverters['SMA_America__SC630CP_US_315V__CEC_2012_']
+    inverter = cec_inverters['SMA_America__SC630CP_US__with_ABB_EcoDry_Ultra_transformer_']
     temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
     # model a big tracker for more fun
@@ -461,7 +461,7 @@ for details.
     mc = ModelChain(system, fx_model.location)
 
     # extract relevant data for model chain
-    mc.run_model(fx_data.index, weather=fx_data);
+    mc.run_model(fx_data);
 
 Now we plot a couple of modeling intermediates and the forecast power.
 Here's the forecast plane of array irradiance...

@@ -148,3 +148,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Tanguy Lunel (:ghuser:`tylunel`)

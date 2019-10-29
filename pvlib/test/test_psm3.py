@@ -24,7 +24,7 @@ HEADER_FIELDS = [
 PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 DEMO_KEY = 'DEMO_KEY'
 
-
+@pytest.mark.xfail(strict=True)
 @needs_pandas_0_22
 def test_get_psm3():
     """test get_psm3"""

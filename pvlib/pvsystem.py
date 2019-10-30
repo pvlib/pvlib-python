@@ -21,7 +21,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # a dict of required parameter names for each DC power model
-DC_MODEL_PARAMS = {
+_DC_MODEL_PARAMS = {
     'sapm': set([
         'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
         'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
@@ -345,7 +345,7 @@ class PVSystem(object):
         """
         model = iam_model.lower()
         if model in ['ashrae', 'physical', 'martin_ruiz']:
-            param_names = iam.IAM_MODEL_PARAMS[model]
+            param_names = iam._IAM_MODEL_PARAMS[model]
             kwargs = _build_kwargs(param_names, self.module_parameters)
             func = getattr(iam, model)
             return func(aoi, **kwargs)

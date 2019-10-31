@@ -206,22 +206,22 @@ def _datetimelike_scalar_to_datetimeindex(time):
     return pd.DatetimeIndex([pd.Timestamp(time)])
 
 
-def _scalar_out(input):
-    if np.isscalar(input):
-        output = input
+def _scalar_out(arg):
+    if np.isscalar(arg):
+        output = arg
     else:  #
         # works if it's a 1 length array and
         # will throw a ValueError otherwise
-        output = np.asarray(input).item()
+        output = np.asarray(arg).item()
 
     return output
 
 
-def _array_out(input):
-    if isinstance(input, pd.Series):
-        output = input.values
+def _array_out(arg):
+    if isinstance(arg, pd.Series):
+        output = arg.values
     else:
-        output = input
+        output = arg
 
     return output
 

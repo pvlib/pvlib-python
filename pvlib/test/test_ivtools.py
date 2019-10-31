@@ -102,6 +102,35 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
                 cells_in_series=1, temp_ref=25)
 
 
+@requires_scipy
+def test_fit_sdm_desoto():
+    result, _ = ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3,
+                                       i_sc=9.43, alpha_sc=0.005658,
+                                       beta_voc=-0.13788,
+                                       cells_in_series=60)
+    result_expected = {'I_L_ref': 9.45232,
+                       'I_o_ref': 3.22460e-10,
+                       'a_ref': 1.59128,
+                       'R_sh_ref': 125.798,
+                       'R_s': 0.297814,
+                       'alpha_sc': 0.005658,
+                       'EgRef': 1.121,
+                       'dEgdT': -0.0002677,
+                       'irrad_ref': 1000,
+                       'temp_ref': 25}
+    assert np.allclose(pd.Series(result), pd.Series(result_expected),
+                       rtol=1e-4)
+
+
+@requires_scipy
+def test_fit_sdm_desoto_failure():
+    with pytest.raises(RuntimeError) as exc:
+        ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
+                               alpha_sc=0.005658, beta_voc=-0.13788,
+                               cells_in_series=10)
+    assert ('Parameter estimation failed') in str(exc.value)
+
+
 @pytest.fixture
 def get_bad_iv_curves():
     # v1, i1 produces a bad value for I0_voc

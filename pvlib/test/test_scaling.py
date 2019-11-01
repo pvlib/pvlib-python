@@ -61,10 +61,28 @@ def test_latlon_to_dist_array():
     assert_almost_equal(ypos, expect_ypos, decimal=1)
 
 
+def test_latlon_to_dist_list():
+    xpos, ypos = scaling._latlon_to_dist(lon.tolist(), lat.tolist())
+    assert_almost_equal(xpos, expect_xpos, decimal=1)
+    assert_almost_equal(ypos, expect_ypos, decimal=1)
+
+
 @requires_scipy
 def test_compute_distances_invalid():
     with pytest.raises(ValueError):
         scaling._compute_distances(0, 0, method='invalid')
+
+
+@requires_scipy
+def test_compute_distances_square():
+    with pytest.raises(NotImplementedError):
+        scaling._compute_distances(0, 0, method='square')
+
+
+@requires_scipy
+def test_compute_distances_polygon():
+    with pytest.raises(NotImplementedError):
+        scaling._compute_distances(0, 0, method='polygon')
 
 
 @requires_scipy

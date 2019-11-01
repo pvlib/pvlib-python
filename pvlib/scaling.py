@@ -5,8 +5,6 @@ or other variables to account for temporal or spatial characteristics.
 
 import numpy as np
 import pandas as pd
-from scipy.spatial.distance import pdist
-import scipy.optimize
 
 
 def wvm(cs_series, latitude, longitude, cloud_speed,
@@ -48,7 +46,7 @@ def wvm(cs_series, latitude, longitude, cloud_speed,
 
     density : numeric, default 41
         The density of installed PV in W/m^2. Must be specified for 'square'
-        method, ignored otherwise. Default value of 41 W/m^2 is 1MW per 6 acres.
+        method, ignored otherwise. Default of 41 W/m^2 is 1MW per 6 acres.
 
     dt : numeric
         The time series time delta. By default, is inferred from the cs_series.
@@ -81,12 +79,19 @@ def wvm(cs_series, latitude, longitude, cloud_speed,
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
 
+    try:
+        import scipy.optimize
+    except ImportError:
+        raise ImportError("The WVM function requires scipy.")
+
     dist = _compute_distances(longitude, latitude, method, capacity, density)
     wavelet, tmscales = _compute_wavelet(cs_series, dt)
 
     n_pairs = len(dist)
     # Find eff length of position vector, 'dist' is full pairwise
-    fn = lambda x: np.abs((x ** 2 - x) / 2 - n_pairs)
+
+    def fn(x):
+        return np.abs((x ** 2 - x) / 2 - n_pairs)
     n_dist = np.round(scipy.optimize.fmin(fn, np.sqrt(n_pairs), disp=False))
 
     # Compute VR
@@ -183,9 +188,6 @@ def _compute_distances(longitude, latitude, method, capacity=None, density=41):
         'polygon' uses a list of lat/lon points representing the corners of
         a polygon making up the site.
 
-    cloud_speed : numeric
-        Speed of cloud movement in meters per second
-
     method : string
         The type of plant distribution to model.
         Options are ``'discrete', 'square', 'polygon'``.
@@ -196,7 +198,7 @@ def _compute_distances(longitude, latitude, method, capacity=None, density=41):
 
     density : numeric, default 41
         The density of installed PV in W/m^2. Must be specified for 'square'
-        method, ignored otherwise. Default value of 41 W/m^2 is 1MW per 6 acres.
+        method, ignored otherwise. Default of 41 W/m^2 is 1MW per 6 acres.
 
     Returns
     -------
@@ -210,6 +212,11 @@ def _compute_distances(longitude, latitude, method, capacity=None, density=41):
     [1] Wavelet Variability Model - Matlab Code:
     https://pvpmc.sandia.gov/applications/wavelet-variability-model/
     """
+
+    try:
+        from scipy.spatial.distance import pdist
+    except ImportError:
+        raise ImportError("The WVM function requires scipy.")
 
     # Convert latitude and longitude points to distances in meters
     ypos, xpos = _latlon_to_dist(latitude, longitude)
@@ -291,9 +298,9 @@ def _compute_wavelet(cs_series, dt=None):
     for i in np.arange(0, maxdt):
         j = i+1
         tmscales[i] = 2**j * dt  # Wavelet integration time scale
-        intvllen = 2**j  # Wavelet integration time series interval
+        intvlen = 2**j  # Wavelet integration time series interval
         # Rolling average, retains only lower frequencies than interval
-        df = cs_long.rolling(window=intvllen, center=True, min_periods=1).mean()
+        df = cs_long.rolling(window=intvlen, center=True, min_periods=1).mean()
         # Fill nan's in both directions
         df = df.fillna(method='bfill').fillna(method='ffill')
         # Pop values back out of the dataframe and store

@@ -5,6 +5,7 @@ import pytest
 from numpy.testing import assert_almost_equal
 
 from pvlib import scaling
+from conftest import requires_scipy
 
 # All expected_xxxxxx variable results computed in Matlab code
 
@@ -29,9 +30,9 @@ expect_ypos = np.array([1106611.8, 1107719.5, 1108827.2])
 expect_tmscale = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
 
 # Expected wavelet for indices 5000:5004 using clear_sky_index above
-expect_wavelet = np.array([[-0.025, 0.05, 0. ,-0.05, 0.025],
-                           [ 0.025, 0.  , 0. , 0.  ,-0.025],
-                           [ 0.,    0.  , 0. , 0.  , 0.]])
+expect_wavelet = np.array([[-0.025, 0.05, 0., -0.05, 0.025],
+                           [0.025, 0., 0., 0., -0.025],
+                           [0., 0., 0., 0., 0.]])
 
 # Expected smoothed clear sky index for indices 5000:5004 using inputs above
 expect_cs_smooth = np.array([1., 1.0289, 1., 0.9711, 1.])
@@ -60,17 +61,20 @@ def test_latlon_to_dist_array():
     assert_almost_equal(ypos, expect_ypos, decimal=1)
 
 
+@requires_scipy
 def test_compute_distances_invalid():
     with pytest.raises(ValueError):
         scaling._compute_distances(0, 0, method='invalid')
 
 
+@requires_scipy
 def test_compute_distances_discrete_zero():
     lat = np.array((0, 0))
     lon = np.array((0, 0))
     assert_almost_equal(scaling._compute_distances(lon, lat, 'discrete'), 0)
 
 
+@requires_scipy
 def test_compute_distances_discrete_array():
 
     dist = scaling._compute_distances(lon, lat, 'discrete')
@@ -95,18 +99,21 @@ def test_compute_wavelet_array_invalid():
         scaling._compute_wavelet(clear_sky_index)
 
 
+@requires_scipy
 def test_wvm_series():
     csi_series = pd.Series(clear_sky_index, index=time)
     cs_sm, _, _ = scaling.wvm(csi_series, lat, lon, cloud_speed, "discrete")
     assert_almost_equal(cs_sm[5000:5005], expect_cs_smooth, decimal=4)
 
 
-def test_compute_wvm_array():
+@requires_scipy
+def test_wvm_array():
     cs_sm, _, _ = scaling.wvm(clear_sky_index, lat, lon, cloud_speed,
                               "discrete", dt=dt)
     assert_almost_equal(cs_sm[5000:5005], expect_cs_smooth, decimal=4)
 
 
-def test_compute_wvm_array_invalid():
+@requires_scipy
+def test_wvm_array_invalid():
     with pytest.raises(ValueError):
         scaling.wvm(clear_sky_index, lat, lon, cloud_speed, "discrete")

@@ -122,10 +122,10 @@ def test_martin_ruiz_diffuse():
     assert_allclose(iam, expected)
 
     a_r = 0.18
-    surface_tilt = [0, 30, 90, 120, -30, np.nan, np.inf]
-    expected_sky = [0.9407678, 0.9452250, 0.9407678, 0.9055541, 0.9452250,
+    surface_tilt = [0, 30, 90, 120, 180, np.nan, np.inf]
+    expected_sky = [0.9407678, 0.9452250, 0.9407678, 0.9055541, 0.0000000,
                     np.nan, np.nan]
-    expected_gnd = [0.0000000, 0.7610849, 0.9407678, 0.9483508, 0.7610849,
+    expected_gnd = [0.0000000, 0.7610849, 0.9407678, 0.9483508, 0.9407678,
                     np.nan, np.nan]
 
     # check various inputs as list
@@ -145,12 +145,6 @@ def test_martin_ruiz_diffuse():
     iam = _iam.martin_ruiz_diffuse(surface_tilt, a_r)
     assert_series_equal(iam[0], expected_sky)
     assert_series_equal(iam[1], expected_gnd)
-
-
-def test_martin_ruiz_diffuse_exception():
-
-    with pytest.raises(ValueError):
-        _iam.martin_ruiz_diffuse(0.0, a_r=0.0)
 
 
 @requires_scipy

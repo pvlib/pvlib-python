@@ -285,6 +285,7 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
+        surface_tilt must be in the range [0, 180]
 
     a_r : numeric
         The angular losses coefficient described in equation 3 of [1].
@@ -348,37 +349,28 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     surface_tilt = np.asanyarray(surface_tilt)
 
-    # undo possible surface rotations
-    with np.errstate(invalid='ignore'):
-        surface_tilt = (surface_tilt + 180) % 360 - 180
-
-    # flip backward tilts forward
-    surface_tilt = np.abs(surface_tilt)
-
     # avoid undefined results for horizontal or upside-down surfaces
-    small_angle = 1e-06
-    surface_tilt = np.clip(surface_tilt, small_angle, 180 - small_angle)
+    zeroang = 1e-06
 
-    if np.any(np.less_equal(a_r, 0)):
-        raise ValueError("The parameter 'a_r' cannot be zero or negative.")
+    surface_tilt = np.where(surface_tilt == 0, zeroang, surface_tilt)
+    surface_tilt = np.where(surface_tilt == 180, 180 - zeroang, surface_tilt)
 
     if c2 is None:
         # This equation is from [3] Sect. 7.2
         c2 = 0.5 * a_r - 0.154
 
-    from numpy import pi, radians, sin, cos, exp
+    beta = np.radians(surface_tilt)
 
-    beta = radians(surface_tilt)
+    from numpy import pi, sin, cos, exp
 
-    with np.errstate(invalid='ignore'):
-        # because sin(pi) isn't exactly zero
-        sin_beta = np.where(surface_tilt < 90, sin(beta), sin(pi - beta))
+    # because sin(pi) isn't exactly zero
+    sin_beta = np.where(surface_tilt < 90, sin(beta), sin(pi - beta))
 
-        trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
-        trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta)) # noqa: E222 E261 E501
+    trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
+    trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta)) # noqa: E222 E261 E501
 
-        iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
-        iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
+    iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
+    iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
 
     if out_index is not None:
         iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')

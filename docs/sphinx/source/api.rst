@@ -220,6 +220,7 @@ Incident angle modifiers
    iam.physical
    iam.ashrae
    iam.martin_ruiz
+   iam.martin_ruiz_diffuse
    iam.sapm
    iam.interp
 

@@ -115,7 +115,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     ghi = cg1 * dni_extra * cos_zenith * tl / tl * np.fmax(ghi, 0)
 
     # BncI = "normal beam clear sky radiation"
-    b = 0.664 + 0.163/fh1
+    b = 0.664 + 0.16268/fh1
     bnci = b * np.exp(-0.09 * airmass_absolute * (tl - 1))
     bnci = dni_extra * np.fmax(bnci, 0)
 

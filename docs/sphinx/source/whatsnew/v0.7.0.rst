@@ -114,6 +114,8 @@ Enhancements
 * Add :py:func:`~pvlib.ivtools.fit_sdm_desoto`, a method to fit the De Soto single
   diode model to the typical specifications given in manufacturers datasheets.
 * Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
+* Add :py:func:`~pvlib.scaling.wvm`, a port of the wavelet variability model for
+  computing reductions in variability due to a spatially distributed plant.
 
 Bug fixes
 ~~~~~~~~~

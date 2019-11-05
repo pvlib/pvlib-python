@@ -3,7 +3,7 @@
 [![TravisCI](https://travis-ci.org/pvlib/pvlib-python.svg?branch=master)](https://travis-ci.org/pvlib/pvlib-python)
 [![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
 [![codecov](https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg)](https://codecov.io/gh/pvlib/pvlib-python)
-[![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=latest)](http://pvlib-python.readthedocs.org/en/latest/)
+[![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=stable)](http://pvlib-python.readthedocs.org/en/stable/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2554311.svg)](https://doi.org/10.5281/zenodo.2554311)
 [![status](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg)](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1)
 [![Code Quality: Python](https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/context:python)
@@ -23,14 +23,14 @@ but operate independently of it.
 Documentation
 =============
 
-Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/latest/).
+Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/).
 
 
 Installation
 ============
 
 pvlib-python releases may be installed using the ``pip`` and ``conda`` tools.
-Please see the [Installation page](http://pvlib-python.readthedocs.io/en/latest/installation.html) of the documentation for complete instructions.
+Please see the [Installation page](http://pvlib-python.readthedocs.io/en/stable/installation.html) of the documentation for complete instructions.
 
 pvlib-python is compatible with Python 3.5 and above.
 
@@ -41,7 +41,7 @@ Contributing
 ============
 
 We need your help to make pvlib-python a great tool!
-Please see the [Contributing page](http://pvlib-python.readthedocs.io/en/latest/contributing.html) for more on how you can contribute.
+Please see the [Contributing page](http://pvlib-python.readthedocs.io/en/stable/contributing.html) for more on how you can contribute.
 The long-term success of pvlib-python requires substantial community support.
 
 

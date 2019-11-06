@@ -195,7 +195,7 @@ def test_retrieve_sam_cecinverter():
 def test_sapm(sapm_module_params):
 
     times = pd.date_range(start='2015-01-01', periods=5, freq='12H')
-    effective_irradiance = pd.Series([-1, 0.5, 1.1, np.nan, 1], index=times)
+    effective_irradiance = pd.Series([-1000, 500, 1100, np.nan, 1000], index=times)
     temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
 
     out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
@@ -216,7 +216,7 @@ def test_sapm(sapm_module_params):
 
     assert_frame_equal(out, expected, check_less_precise=4)
 
-    out = pvsystem.sapm(1, 25, sapm_module_params)
+    out = pvsystem.sapm(1000, 25, sapm_module_params)
 
     expected = OrderedDict()
     expected['i_sc'] = 5.09115
@@ -238,7 +238,7 @@ def test_sapm(sapm_module_params):
 def test_PVSystem_sapm(sapm_module_params, mocker):
     mocker.spy(pvsystem, 'sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-    effective_irradiance = 0.5
+    effective_irradiance = 500
     temp_cell = 25
     out = system.sapm(effective_irradiance, temp_cell)
     pvsystem.sapm.assert_called_once_with(effective_irradiance, temp_cell,
@@ -295,28 +295,21 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
 
 
 @pytest.mark.parametrize('test_input,expected', [
-    ([1000, 100, 5, 45, 1000], 1.1400510967821877),
+    ([1000, 100, 5, 45], 1140.0510967821877),
     ([np.array([np.nan, 1000, 1000]),
       np.array([100, np.nan, 100]),
       np.array([1.1, 1.1, 1.1]),
-      np.array([10, 10, 10]),
-      1000],
-     np.array([np.nan, np.nan, 1.081157])),
+      np.array([10, 10, 10])],
+     np.array([np.nan, np.nan, 1081.157])),
     ([pd.Series([1000]), pd.Series([100]), pd.Series([1.1]),
-      pd.Series([10]), 1370],
-     pd.Series([0.789166]))
+      pd.Series([10])],
+     pd.Series([1081.1574]))
 ])
 def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
 
-    try:
-        kwargs = {'reference_irradiance': test_input[4]}
-        test_input = test_input[:-1]
-    except IndexError:
-        kwargs = {}
-
     test_input.append(sapm_module_params)
 
-    out = pvsystem.sapm_effective_irradiance(*test_input, **kwargs)
+    out = pvsystem.sapm_effective_irradiance(*test_input)
 
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
@@ -1463,7 +1456,7 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
 
 
 @fail_on_pvlib_version('0.8')
-def test_deprecated_08():
+def test_deprecated_08(sapm_module_params):
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_celltemp(1000, 25, 1)
     with pytest.warns(pvlibDeprecationWarning):
@@ -1502,6 +1495,13 @@ def test_deprecated_08():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_aoi_loss(45, {'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
                                     'B1': 0.0, 'B0': 1.0})
+    # deprecation warning for change in effective_irradiance units in
+    # pvsystem.sapm
+    effective_irradiance = np.array([0.1, 0.2, 1.3])
+    temp_cell = np.array([25, 25, 50])
+    warn_txt = 'Effective irradiance input to SAPM'
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
 
 @fail_on_pvlib_version('0.8')

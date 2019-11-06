@@ -1571,7 +1571,7 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(effective_irradiance, temp_cell, module):
+def sapm(effective_irradiance, temp_cell, module, irrad_ref=1000, temp_ref=25):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
@@ -1580,14 +1580,20 @@ def sapm(effective_irradiance, temp_cell, module):
     Parameters
     ----------
     effective_irradiance : numeric
-        Effective irradiance (suns).
+        Effective irradiance [W/m^2].
 
     temp_cell : numeric
-        The cell temperature (degrees C).
+        Cell temperature [C].
 
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the notes section for more details.
+
+    irrad_ref : float (optional, default=1000)
+        Reference irradiance [W/m^2].
+
+    temp_ref : float (optional, default=25)
+        Reference cell temperature [C]
 
     Returns
     -------
@@ -1659,12 +1665,19 @@ def sapm(effective_irradiance, temp_cell, module):
     temperature.sapm_module
     '''
 
-    T0 = 25
+    # TODO: remove this check after deprecation period for change in effective
+    # irradiance units, made in v0.7
+    if np.all(effective_irradiance < 2.0):
+        import warnings
+        warnings.warn('Effective irradiance input to SAPM appears low.'
+                      ' Units changed in v0.7 from suns to W/m2',
+                      pvlibDeprecationWarning)
+
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
-    Ee = np.array(effective_irradiance, dtype='float64')
+    Ee = np.array(effective_irradiance, dtype='float64') / irrad_ref
 
     # set up masking for 0, positive, and nan inputs
     Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
@@ -1687,32 +1700,32 @@ def sapm(effective_irradiance, temp_cell, module):
     out = OrderedDict()
 
     out['i_sc'] = (
-        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - T0)))
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - temp_ref)))
 
     out['i_mp'] = (
         module['Impo'] * (module['C0']*Ee + module['C1']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - T0)))
+        (1 + module['Aimp']*(temp_cell - temp_ref)))
 
     out['v_oc'] = np.maximum(0, (
         module['Voco'] + cells_in_series * delta * logEe +
-        Bvoco*(temp_cell - T0)))
+        Bvoco*(temp_cell - temp_ref)))
 
     out['v_mp'] = np.maximum(0, (
         module['Vmpo'] +
         module['C2'] * cells_in_series * delta * logEe +
         module['C3'] * cells_in_series * ((delta * logEe) ** 2) +
-        Bvmpo*(temp_cell - T0)))
+        Bvmpo*(temp_cell - temp_ref)))
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
 
     out['i_x'] = (
         module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - T0)))
+        (1 + module['Aisc']*(temp_cell - temp_ref)))
 
     # the Ixx calculation in King 2004 has a typo (mixes up Aisc and Aimp)
     out['i_xx'] = (
         module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - T0)))
+        (1 + module['Aisc']*(temp_cell - temp_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)
@@ -1847,24 +1860,21 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     Parameters
     ----------
     poa_direct : numeric
-        The direct irradiance incident upon the module.
+        The direct irradiance incident upon the module. [W/m2]
 
     poa_diffuse : numeric
-        The diffuse irradiance incident on module.
+        The diffuse irradiance incident on module.  [W/m2]
 
     airmass_absolute : numeric
-        Absolute airmass.
+        Absolute airmass. [unitless]
 
     aoi : numeric
-        Angle of incidence in degrees.
+        Angle of incidence. [degrees]
 
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the :py:func:`sapm` notes section for more
         details.
-
-    reference_irradiance : numeric, default 1000
-        Reference irradiance by which to divide the input irradiance.
 
     Returns
     -------
@@ -1875,9 +1885,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     F1 = sapm_spectral_loss(airmass_absolute, module)
     F2 = iam.sapm(aoi, module)
 
-    E0 = reference_irradiance
-
-    Ee = F1 * (poa_direct*F2 + module['FD']*poa_diffuse) / E0
+    Ee = F1 * (poa_direct*F2 + module['FD']*poa_diffuse)
 
     return Ee
 

@@ -1853,7 +1853,7 @@ def sapm_spectral_loss(airmass_absolute, module):
 
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
                               module, reference_irradiance=1000):
-    """
+    r"""
     Calculates the SAPM effective irradiance using the SAPM spectral
     loss and SAPM angle of incidence loss functions.
 
@@ -1879,7 +1879,36 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     Returns
     -------
     effective_irradiance : numeric
-        The SAPM effective irradiance.
+        Effective irradiance accounting for reflections and spectral content.
+        [W/m2]
+
+    Notes
+    -----
+    The SAPM model for effective irradiance [1] translates broadband direct and
+    diffuse irradiance on the plane of array to the irradiance absorbed by a
+    module's cells.
+
+    The model is
+    .. math::
+
+        Ee = f_1(AM_a) (E_b f_2(AOI) + f_d E_d)
+
+    where :math:`Ee` is effective irradiance (W/m2), :math:`f_1` is a fourth
+    degree polynomial in air mass :math:`AM_a`, :math:`E_b` is beam (direct)
+    irradiance on the plane of array, :math:`E_d` is diffuse irradiance on the
+    plane of array, :math:`f_2` is a fifth degree polynomial in the angle of
+    incidence :math:`AOI`, and :math:`f_d` is the fraction of diffuse
+    irradiance on the plane of array that is not reflected away.
+
+    References
+    ----------
+    [1] D. King et al, "Sandia Photovoltaic Array Performance Model",
+    SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
+
+    See also
+    --------
+    pvlib.iam.sapm
+    pvlib.pvsystem.sapm_spectral_loss
     """
 
     F1 = sapm_spectral_loss(airmass_absolute, module)
@@ -2000,7 +2029,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     the IV curve are linearly spaced.
 
     References
-    -----------
+    ----------
     [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
     0 86758 909 4
 

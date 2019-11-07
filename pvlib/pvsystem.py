@@ -1586,8 +1586,8 @@ def sapm(effective_irradiance, temp_cell, module, irrad_ref=1000, temp_ref=25):
         Cell temperature [C].
 
     module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the notes section for more details.
+        A dict or Series defining the SAPM parameters. See the notes section
+        for more details.
 
     irrad_ref : float (optional, default=1000)
         Reference irradiance [W/m^2].
@@ -1611,11 +1611,11 @@ def sapm(effective_irradiance, temp_cell, module, irrad_ref=1000, temp_ref=25):
 
     Notes
     -----
-    The coefficients from SAPM which are required in ``module`` are
+    The SAPM parameters which are required in ``module`` are
     listed in the following table.
 
-    The modules in the Sandia module database contain these
-    coefficients, but the modules in the CEC module database do not.
+    The Sandia module database contains parameter values for a limited set
+    of modules. The CEC module database does not contain these parameters.
     Both databases can be accessed using :py:func:`retrieve_sam`.
 
     ================   ========================================================

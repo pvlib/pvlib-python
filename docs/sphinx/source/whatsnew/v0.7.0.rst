@@ -149,6 +149,9 @@ Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
 * Fixed broken ipython examples from CEC data updates
+* Edited docstring for `pvsystem.sapm` to remove DataFrame option for input
+  `module`. The DataFrame option was never tested and would cause an error if
+  used. (:issue:`785`)
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

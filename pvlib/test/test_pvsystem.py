@@ -318,11 +318,8 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
      pd.Series([1081.1574]))
 ])
 def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
-
     test_input.append(sapm_module_params)
-
     out = pvsystem.sapm_effective_irradiance(*test_input)
-
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
     else:
@@ -338,14 +335,18 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
     airmass_absolute = 1.5
     aoi = 0
     reference_irradiance = 1000
-
+    p = (sapm_module_params['A4'], sapm_module_params['A3'],
+         sapm_module_params['A2'], sapm_module_params['A1'],
+         sapm_module_params['A0'])
+    f1 = np.polyval(p, airmass_absolute)
+    expected = f1 * (poa_direct + sapm_module_params['FD'] * poa_diffuse)
     out = system.sapm_effective_irradiance(
         poa_direct, poa_diffuse, airmass_absolute,
         aoi, reference_irradiance=reference_irradiance)
     pvsystem.sapm_effective_irradiance.assert_called_once_with(
         poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params,
         reference_irradiance=reference_irradiance)
-    assert_allclose(out, 1000, atol=0.1)
+    assert_allclose(out, expected, atol=0.1)
 
 
 def test_PVSystem_sapm_celltemp(mocker):

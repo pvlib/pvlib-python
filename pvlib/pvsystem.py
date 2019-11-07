@@ -1608,7 +1608,7 @@ def sapm(effective_irradiance, temp_cell, module):
     The SAPM parameters which are required in ``module`` are
     listed in the following table.
 
-    The Sandia module database contains these parameters for a limited set
+    The Sandia module database contains parameter values for a limited set
     of modules. The CEC module database does not contain these parameters.
     Both databases can be accessed using :py:func:`retrieve_sam`.
 

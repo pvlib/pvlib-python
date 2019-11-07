@@ -1,13 +1,90 @@
 <img src="docs/sphinx/source/_images/pvlib_logo_horiz.png" width="600">
 
 [![TravisCI](https://travis-ci.org/pvlib/pvlib-python.svg?branch=master)](https://travis-ci.org/pvlib/pvlib-python)
-[![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
-[![codecov](https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg)](https://codecov.io/gh/pvlib/pvlib-python)
+#[![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
+#[![codecov](https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg)](https://codecov.io/gh/pvlib/pvlib-python)
 [![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=stable)](http://pvlib-python.readthedocs.org/en/stable/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2554311.svg)](https://doi.org/10.5281/zenodo.2554311)
 [![status](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg)](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1)
 [![Code Quality: Python](https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/context:python)
 [![Total Alerts](https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/alerts)
+
+<table>
+<tr>
+  <td>Latest Release</td>
+  <td>
+    <a href="https://pypi.org/project/pandas/">
+    <img src="https://img.shields.io/pypi/v/pandas.svg" alt="latest release" />
+    </a>
+  </td>
+</tr>
+  <td></td>
+  <td>
+    <a href="https://anaconda.org/anaconda/pandas/">
+    <img src="https://anaconda.org/conda-forge/pandas/badges/version.svg" alt="latest release" />
+    </a>
+</td>
+</tr>
+<tr>
+  <td>Package Status</td>
+  <td>
+		<a href="https://pypi.org/project/pandas/">
+		<img src="https://img.shields.io/pypi/status/pandas.svg" alt="status" />
+		</a>
+  </td>
+</tr>
+<tr>
+  <td>License</td>
+  <td>
+    <a href="https://github.com/pandas-dev/pandas/blob/master/LICENSE">
+    <img src="https://img.shields.io/pypi/l/pandas.svg" alt="license" />
+    </a>
+</td>
+</tr>
+<tr>
+  <td>Build Status</td>
+  <td>
+    <a href="https://travis-ci.org/pandas-dev/pandas">
+    <img src="https://travis-ci.org/pandas-dev/pandas.svg?branch=master" alt="travis build status" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td></td>
+  <td>
+    <a href="https://dev.azure.com/pandas-dev/pandas/_build/latest?definitionId=1&branch=master">
+      <img src="https://dev.azure.com/pandas-dev/pandas/_apis/build/status/pandas-dev.pandas?branch=master" alt="Azure Pipelines build status" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Coverage</td>
+  <td>
+    <a href="https://coveralls.io/r/pvlib/pvlib-python">
+    <img src="https://img.shields.io/coveralls/pvlib/pvlib-python.svg" alt="coveralls coverage" />
+    </a>
+    <a href="https://codecov.io/gh/pvlib/pvlib-python">
+    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg" alt="codecov coverage" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Downloads</td>
+  <td>
+    <a href="https://pandas.pydata.org">
+    <img src="https://anaconda.org/conda-forge/pandas/badges/downloads.svg" alt="conda-forge downloads" />
+    </a>
+  </td>
+</tr>
+<tr>
+	<td>Gitter</td>
+	<td>
+		<a href="https://gitter.im/pydata/pandas">
+		<img src="https://badges.gitter.im/Join%20Chat.svg" />
+		</a>
+	</td>
+</tr>
+</table>
 
 
 pvlib python is a community supported tool that provides a set of

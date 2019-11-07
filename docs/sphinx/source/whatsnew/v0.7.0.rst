@@ -94,6 +94,13 @@ API Changes
   The `weather` argument of the above methods is now the first, required
   positional argument and the `times` argument is kept as the second keyword
   argument for capability during the deprecation period.
+* New kwargs `irrad_ref` and `temp_ref` added to :py:func:`pvsystem.sapm`.
+  Previously, the reference irradiance and cell temperature were hard-coded.
+* The `effective_irradiance` argument for :py:func:`pvsystem.sapm` now requires
+  units of W/m^2. Previously, units for this input were suns. A deprecation
+  warning is raised if all `effective_irradiance` values are extremely low.
+* The output of :py:func:`pvsystem.sapm_effective_irradiance` is now in units
+  of W/m2 rather than suns.
 
 Enhancements
 ~~~~~~~~~~~~

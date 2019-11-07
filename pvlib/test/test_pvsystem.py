@@ -195,7 +195,8 @@ def test_retrieve_sam_cecinverter():
 def test_sapm(sapm_module_params):
 
     times = pd.date_range(start='2015-01-01', periods=5, freq='12H')
-    effective_irradiance = pd.Series([-1000, 500, 1100, np.nan, 1000], index=times)
+    effective_irradiance = pd.Series([-1000, 500, 1100, np.nan, 1000],
+                                     index=times)
     temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
 
     out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)

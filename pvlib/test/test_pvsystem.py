@@ -236,6 +236,17 @@ def test_sapm(sapm_module_params):
                   pd.Series(sapm_module_params))
 
 
+def test_pvsystem_sapm_warning(sapm_module_params):
+    # deprecation warning for change in effective_irradiance units in
+    # pvsystem.sapm
+    # TODO: remove after deprecation period (v0.8)
+    effective_irradiance = np.array([0.1, 0.2, 1.3])
+    temp_cell = np.array([25, 25, 50])
+    warn_txt = 'Effective irradiance input to SAPM'
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
+
+
 def test_PVSystem_sapm(sapm_module_params, mocker):
     mocker.spy(pvsystem, 'sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
@@ -301,7 +312,7 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
       np.array([100, np.nan, 100]),
       np.array([1.1, 1.1, 1.1]),
       np.array([10, 10, 10])],
-     np.array([np.nan, np.nan, 1081.157])),
+     np.array([np.nan, np.nan, 1081.1574])),
     ([pd.Series([1000]), pd.Series([100]), pd.Series([1.1]),
       pd.Series([10])],
      pd.Series([1081.1574]))
@@ -315,7 +326,7 @@ def test_sapm_effective_irradiance(sapm_module_params, test_input, expected):
     if isinstance(test_input, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)
     else:
-        assert_allclose(out, expected, atol=1e-4)
+        assert_allclose(out, expected, atol=1e-1)
 
 
 def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
@@ -334,7 +345,7 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
     pvsystem.sapm_effective_irradiance.assert_called_once_with(
         poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params,
         reference_irradiance=reference_irradiance)
-    assert_allclose(out, 1, atol=0.1)
+    assert_allclose(out, 1000, atol=0.1)
 
 
 def test_PVSystem_sapm_celltemp(mocker):
@@ -1457,9 +1468,11 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
 
 
 @fail_on_pvlib_version('0.8')
-def test_deprecated_08(sapm_module_params):
+def test_deprecated_08():
+    # deprecated function pvsystem.sapm_celltemp
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_celltemp(1000, 25, 1)
+    # deprecated function pvsystem.pvsyst_celltemp
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvsyst_celltemp(1000, 25)
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
@@ -1496,13 +1509,6 @@ def test_deprecated_08(sapm_module_params):
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.sapm_aoi_loss(45, {'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
                                     'B1': 0.0, 'B0': 1.0})
-    # deprecation warning for change in effective_irradiance units in
-    # pvsystem.sapm
-    effective_irradiance = np.array([0.1, 0.2, 1.3])
-    temp_cell = np.array([25, 25, 50])
-    warn_txt = 'Effective irradiance input to SAPM'
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
-        pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
 
 @fail_on_pvlib_version('0.8')

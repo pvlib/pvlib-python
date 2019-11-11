@@ -1,6 +1,5 @@
 import inspect
 import os
-import datetime
 from collections import OrderedDict
 
 import numpy as np
@@ -12,10 +11,8 @@ from pandas.util.testing import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
 from pvlib import pvsystem
-from pvlib import clearsky
-from pvlib import irradiance
 from pvlib import atmosphere
-from pvlib import solarposition
+from pvlib import iam as _iam
 from pvlib.location import Location
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -82,162 +79,39 @@ def test_systemdef_dict():
     assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
 
 
-@needs_numpy_1_10
-def test_ashraeiam():
-    thetas = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5, 89.,  90. , np.nan])
-    iam = pvsystem.ashraeiam(thetas, .05)
-    expected = np.array([        0,  0.9193437 ,  0.97928932,  0.99588039,  1.        ,
-        0.99588039,  0.97928932,  0.9193437 ,         0, 0,  np.nan])
-    assert_allclose(iam, expected, equal_nan=True)
-
-
-@needs_numpy_1_10
-def test_ashraeiam_scalar():
-    thetas = -45.
-    iam = pvsystem.ashraeiam(thetas, .05)
-    expected = 0.97928932
-    assert_allclose(iam, expected, equal_nan=True)
-    thetas = np.nan
-    iam = pvsystem.ashraeiam(thetas, .05)
-    expected = np.nan
-    assert_allclose(iam, expected, equal_nan=True)
-
-
-def test_PVSystem_ashraeiam(mocker):
-    mocker.spy(pvsystem, 'ashraeiam')
-    module_parameters = pd.Series({'b': 0.05})
-    system = pvsystem.PVSystem(module_parameters=module_parameters)
+@pytest.mark.parametrize('iam_model,model_params', [
+    ('ashrae', {'b': 0.05}),
+    ('physical', {'K': 4, 'L': 0.002, 'n': 1.526}),
+    ('martin_ruiz', {'a_r': 0.16}),
+])
+def test_PVSystem_get_iam(mocker, iam_model, model_params):
+    m = mocker.spy(_iam, iam_model)
+    system = pvsystem.PVSystem(module_parameters=model_params)
     thetas = 1
-    iam = system.ashraeiam(thetas)
-    pvsystem.ashraeiam.assert_called_once_with(thetas, b=0.05)
+    iam = system.get_iam(thetas, iam_model=iam_model)
+    m.assert_called_with(thetas, **model_params)
     assert iam < 1.
 
 
-@needs_numpy_1_10
-def test_physicaliam():
-    aoi = np.array([-90. , -67.5, -45. , -22.5,   0. ,  22.5,  45. ,  67.5,  90. , np.nan])
-    iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
-    expected = np.array([        0,  0.8893998,  0.98797788,  0.99926198,         1,
-        0.99926198,  0.98797788,  0.8893998,         0, np.nan])
-    assert_allclose(iam, expected, equal_nan=True)
-
-    # GitHub issue 397
-    aoi = pd.Series(aoi)
-    iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
-    expected = pd.Series(expected)
-    assert_series_equal(iam, expected)
+def test_PVSystem_get_iam_sapm(sapm_module_params, mocker):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
+    mocker.spy(_iam, 'sapm')
+    aoi = 0
+    out = system.get_iam(aoi, 'sapm')
+    _iam.sapm.assert_called_once_with(aoi, sapm_module_params)
+    assert_allclose(out, 1.0, atol=0.01)
 
 
-@needs_numpy_1_10
-def test_physicaliam_scalar():
-    aoi = -45.
-    iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
-    expected = 0.98797788
-    assert_allclose(iam, expected, equal_nan=True)
-    aoi = np.nan
-    iam = pvsystem.physicaliam(aoi, 1.526, 0.002, 4)
-    expected = np.nan
-    assert_allclose(iam, expected, equal_nan=True)
-
-
-def test_PVSystem_physicaliam(mocker):
-    module_parameters = pd.Series({'K': 4, 'L': 0.002, 'n': 1.526})
-    system = pvsystem.PVSystem(module_parameters=module_parameters)
-    mocker.spy(pvsystem, 'physicaliam')
-    thetas = 1
-    iam = system.physicaliam(thetas)
-    pvsystem.physicaliam.assert_called_once_with(thetas, **module_parameters)
-    assert iam < 1.
-
-
-def test_iam_martin_ruiz():
-
-    aoi = 45.
-    a_r = 0.16
-    expected = 0.98986965
-
-    # will fail of default values change
-    iam = pvsystem.iam_martin_ruiz(aoi)
-    assert_allclose(iam, expected)
-    # will fail of parameter names change
-    iam = pvsystem.iam_martin_ruiz(aoi=aoi, a_r=a_r)
-    assert_allclose(iam, expected)
-
-    a_r = 0.18
-    aoi = [-100, -60, 0, 60, 100, np.nan, np.inf]
-    expected = [0.0, 0.9414631, 1.0, 0.9414631, 0.0, np.nan, 0.0]
-
-    # check out of range of inputs as list
-    iam = pvsystem.iam_martin_ruiz(aoi, a_r)
-    assert_allclose(iam, expected, equal_nan=True)
-
-    # check out of range of inputs as array
-    iam = pvsystem.iam_martin_ruiz(np.array(aoi), a_r)
-    assert_allclose(iam, expected, equal_nan=True)
-
-    # check out of range of inputs as Series
-    aoi = pd.Series(aoi)
-    expected = pd.Series(expected)
-    iam = pvsystem.iam_martin_ruiz(aoi, a_r)
-    assert_series_equal(iam, expected)
-
-    # check exception clause
-    with pytest.raises(RuntimeError):
-        pvsystem.iam_martin_ruiz(0.0, a_r=0.0)
-
-
-@requires_scipy
-def test_iam_interp():
-
-    aoi_meas = [0.0, 45.0, 65.0, 75.0]
-    iam_meas = [1.0,  0.9,  0.8,  0.6]
-
-    # simple default linear method
-    aoi = 55.0
-    expected = 0.85
-    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
-    assert_allclose(iam, expected)
-
-    # simple non-default method
-    aoi = 55.0
-    expected = 0.8878062
-    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas, method='cubic')
-    assert_allclose(iam, expected)
-
-    # check with all reference values
-    aoi = aoi_meas
-    expected = iam_meas
-    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
-    assert_allclose(iam, expected)
-
-    # check normalization and Series
-    aoi = pd.Series(aoi)
-    expected = pd.Series(expected)
-    iam_mult = np.multiply(0.9, iam_meas)
-    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_mult, normalize=True)
-    assert_series_equal(iam, expected)
-
-    # check beyond reference values
-    aoi = [-45, 0, 45, 85, 90, 95, 100, 105, 110]
-    expected = [0.9, 1.0, 0.9, 0.4, 0.3, 0.2, 0.1, 0.0, 0.0]
-    iam = pvsystem.iam_interp(aoi, aoi_meas, iam_meas)
-    assert_allclose(iam, expected)
-
-    # check exception clause
+def test_PVSystem_get_iam_interp(sapm_module_params, mocker):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     with pytest.raises(ValueError):
-        pvsystem.iam_interp(0.0, [0], [1])
+        system.get_iam(45, iam_model='interp')
 
-    # check exception clause
+
+def test_PVSystem_get_iam_invalid(sapm_module_params, mocker):
+    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     with pytest.raises(ValueError):
-        pvsystem.iam_interp(0.0, [0, 90], [1, -1])
-
-
-@pytest.fixture(scope="session")
-def sapm_module_params(sam_data):
-    modules = sam_data['sandiamod']
-    module = 'Canadian_Solar_CS5P_220M___2009_'
-    module_parameters = modules[module]
-    return module_parameters
+        system.get_iam(45, iam_model='not_a_model')
 
 
 def test_retrieve_sam_raise_no_parameters():
@@ -356,9 +230,9 @@ def test_sapm(sapm_module_params):
     for k, v in expected.items():
         assert_allclose(out[k], v, atol=1e-4)
 
-    # just make sure it works with a dict input
+    # just make sure it works with Series input
     pvsystem.sapm(effective_irradiance, temp_cell,
-                  sapm_module_params.to_dict())
+                  pd.Series(sapm_module_params))
 
 
 def test_PVSystem_sapm(sapm_module_params, mocker):
@@ -418,42 +292,6 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
     atmosphere.first_solar_spectral_correction.assert_called_once_with(
         pw, airmass_absolute, module_type, coefficients)
     assert_allclose(out, 1, atol=0.5)
-
-
-@pytest.mark.parametrize('aoi,expected', [
-    (45, 0.9975036250000002),
-    (np.array([[-30, 30, 100, np.nan]]),
-     np.array([[0, 1.007572, 0, np.nan]])),
-    (pd.Series([80]), pd.Series([0.597472]))
-])
-def test_sapm_aoi_loss(sapm_module_params, aoi, expected):
-
-    out = pvsystem.sapm_aoi_loss(aoi, sapm_module_params)
-
-    if isinstance(aoi, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
-    else:
-        assert_allclose(out, expected, atol=1e-4)
-
-
-def test_sapm_aoi_loss_limits():
-    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 5
-
-    module_parameters = {'B0': 5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(1, module_parameters, upper=1) == 1
-
-    module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
-    assert pvsystem.sapm_aoi_loss(1, module_parameters) == 0
-
-
-def test_PVSystem_sapm_aoi_loss(sapm_module_params, mocker):
-    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-    mocker.spy(pvsystem, 'sapm_aoi_loss')
-    aoi = 0
-    out = system.sapm_aoi_loss(aoi)
-    pvsystem.sapm_aoi_loss.assert_called_once_with(aoi, sapm_module_params)
-    assert_allclose(out, 1.0, atol=0.01)
 
 
 @pytest.mark.parametrize('test_input,expected', [
@@ -581,16 +419,20 @@ def test__infer_temperature_model_params():
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'sapm']['open_rack_glass_polymer']
     assert expected == system._infer_temperature_model_params()
-    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
-        'pvsyst']['freestanding']
     system = pvsystem.PVSystem(module_parameters={},
                                racking_model='freestanding',
                                module_type='glass_polymer')
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'pvsyst']['freestanding']
     assert expected == system._infer_temperature_model_params()
-    system = pvsystem.PVSystem(module_parameters={},
-                               racking_model='not_a_rack_model',
-                               module_type='glass_polymer')
-    assert {} == system._infer_temperature_model_params()
+
+
+def test__infer_temperature_model_params_deprec_warning():
+    warn_txt = "Reverting to deprecated default"
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        pvsystem.PVSystem(module_parameters={},
+                          racking_model='not_a_rack_model',
+                          module_type='glass_polymer')
 
 
 def test_calcparams_desoto(cec_module_params):
@@ -1627,10 +1469,39 @@ def test_deprecated_08():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvsyst_celltemp(1000, 25)
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
-                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
+                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1,
+                         'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
+                         'B1': 0.0, 'B0': 1.0,
+                         'b': 0.05, 'K': 4, 'L': 0.002, 'n': 1.526,
+                         'a_r': 0.16}
+    temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
+    # for missing temperature_model_parameters
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.PVSystem(module_parameters=module_parameters,
                           racking_model='open', module_type='glass_glass')
+    pv = pvsystem.PVSystem(module_parameters=module_parameters,
+                           temperature_model_parameters=temp_model_params,
+                           racking_model='open', module_type='glass_glass')
+    # deprecated method PVSystem.ashraeiam
+    with pytest.warns(pvlibDeprecationWarning):
+        pv.ashraeiam(45)
+    # deprecated function ashraeiam
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.ashraeiam(45)
+    # deprecated method PVSystem.physicaliam
+    with pytest.warns(pvlibDeprecationWarning):
+        pv.physicaliam(45)
+    # deprecated function physicaliam
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.physicaliam(45)
+    # deprecated method PVSystem.sapm_aoi_loss
+    with pytest.warns(pvlibDeprecationWarning):
+        pv.sapm_aoi_loss(45)
+    # deprecated function sapm_aoi_loss
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.sapm_aoi_loss(45, {'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
+                                    'B1': 0.0, 'B0': 1.0})
 
 
 @fail_on_pvlib_version('0.8')

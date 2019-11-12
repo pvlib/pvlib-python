@@ -115,6 +115,8 @@ Enhancements
 * Add :py:func:`~pvlib.ivtools.fit_sdm_desoto`, a method to fit the De Soto single
   diode model to the typical specifications given in manufacturers datasheets.
 * Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
+* Created one new incidence angle modifier (IAM) function for diffuse irradiance:
+  :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
 
 Bug fixes
 ~~~~~~~~~
@@ -141,6 +143,9 @@ Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
 * Fixed broken ipython examples from CEC data updates
+* Edited docstring for `pvsystem.sapm` to remove DataFrame option for input
+  `module`. The DataFrame option was never tested and would cause an error if
+  used. (:issue:`785`)
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

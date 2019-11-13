@@ -26,8 +26,8 @@
     <a href="http://pvlib-python.readthedocs.org/en/stable/">
     <img src="https://readthedocs.org/projects/pvlib-python/badge/?version=stable" alt="documentation build status" />
     </a>
-    <a href="https://dev.azure.com/pandas-dev/pandas/_build/latest?definitionId=1&branch=master">
-      <img src="https://dev.azure.com/pandas-dev/pandas/_apis/build/status/pandas-dev.pandas?branch=master" alt="Azure Pipelines build status" />
+    <a href="https://dev.azure.com/solararbiter/pvlib%20python/_build/latest?definitionId=4&branchName=master">
+      <img src="https://dev.azure.com/solararbiter/pvlib%20python/_apis/build/status/pvlib.pvlib-python?branchName=master" alt="Azure Pipelines build status" />
     </a>
   </td>
 </tr>

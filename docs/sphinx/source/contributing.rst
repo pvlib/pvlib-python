@@ -215,7 +215,7 @@ Remove any ``logging`` calls and ``print`` statements that you added
 during development. ``warning`` is ok.
 
 We typically use GitHub's
-"`squash and merge` <https://help.github.com/articles/about-pull-request-merges/#squash-and-merge-your-pull-request-commits>_"
+"`squash and merge <https://help.github.com/articles/about-pull-request-merges/#squash-and-merge-your-pull-request-commits>`_"
 feature to merge your pull request into pvlib. GitHub will condense the
 commit history of your branch into a single commit when merging into
 pvlib-python/master (the commit history on your branch remains
@@ -245,23 +245,31 @@ specific types may be used:
 
 Parameters that specify a specific type require that specific input type.
 
-A relatively easy way to test your documentation is to build it on
-`readthedocs.org <https://readthedocs.org>` by following their
-`Import Your Docs <http://docs.readthedocs.io/en/stable/getting_started.html#import-your-docs>`_
-instructions and enabling your branch on the readthedocs
-`versions admin page <http://docs.readthedocs.io/en/stable/features.html#versions>`_.
+Read the Docs will automatically build the documentation for each pull
+request. Please confirm the documentation renders correctly by following
+the ``continuous-documentation/read-the-docs`` link within the checks
+status box at the bottom of the pull request.
 
-Another option is to install the required dependencies in your virtual/conda
-environment. See
-`docs/environment.yml <https://github.com/pvlib/pvlib-python/blob/master/docs/environment.yml>`_
-for the latest dependences for building the complete documentation. Some
-doc files can be compiled with fewer dependencies, but this is beyond
-the scope of this guide.
+To build the docs locally, install the ``doc`` dependencies specified in the
+`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
+file.
 
 .. _testing:
 
 Testing
 ~~~~~~~
+
+Developers **must** include comprehensive tests for any additions or
+modifications to pvlib.
+
+A pull request will automatically run the tests for you on a variety of
+platforms (Linux, Mac, Windows) and python versions. However, it is
+typically more efficient to run and debug the tests in your own local
+environment.
+
+To run the tests locally, install the ``test`` dependencies specified in the
+`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
+file.
 
 pvlib's unit tests can easily be run by executing ``pytest`` on the
 pvlib directory:
@@ -289,9 +297,6 @@ to the test suite (with rare exceptions).
 
 New unit test code should be placed in the corresponding test module in
 the pvlib/test directory.
-
-Developers **must** include comprehensive tests for any additions or
-modifications to pvlib.
 
 pvlib-python contains 3 "layers" of code: functions, PVSystem/Location,
 and ModelChain. Contributors will need to add tests that correspond to

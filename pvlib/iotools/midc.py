@@ -178,9 +178,7 @@ def read_midc(filename, variable_map={}, raw_data=False):
              passing the dictionary below will rename the column to 'ghi' in
              the returned Dataframe.
 
-             {
-                 'Global Horizontal [W/m^2]': ghi,
-             }
+             {'Global Horizontal [W/m^2]': 'ghi'}
 
     See the MIDC_VARIABLE_MAP for collection of mappings by site.
     For a full list of pvlib variable names see the `Variable Style Rules

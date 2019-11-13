@@ -328,7 +328,7 @@ below? The solar position calculator will assume UTC time.
 
 .. ipython:: python
 
-    index = pd.DatetimeIndex(start='1997-01-01 01:00', freq='1h', periods=24)
+    index = pd.date_range(start='1997-01-01 01:00', freq='1h', periods=24)
     index
 
     solar_position_notz = pvlib.solarposition.get_solarposition(index,

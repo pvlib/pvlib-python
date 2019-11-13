@@ -81,7 +81,7 @@ Next, we run a model with some simple weather data.
                            columns=['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed'],
                            index=[pd.Timestamp('20170401 1200', tz='US/Arizona')])
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
 
 ModelChain stores the modeling results on a series of attributes. A few
 examples are shown below.
@@ -157,7 +157,7 @@ model, AC model, AOI loss model, and spectral loss model.
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
     mc.ac
 
 Alternatively, we could have specified single diode or PVWatts related
@@ -180,7 +180,7 @@ information to determine which of those models to choose.
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
     mc.ac
 
 User-supplied keyword arguments override ModelChain’s inspection
@@ -198,7 +198,7 @@ functions for a PVSystem that contains SAPM-specific parameters.
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
     mc.ac
 
 Of course, these choices can also lead to failure when executing
@@ -461,5 +461,5 @@ The end result is that ModelChain.run_model works as expected!
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
     mc.dc

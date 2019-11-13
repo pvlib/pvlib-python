@@ -63,8 +63,8 @@ API Changes
       - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain`
         defaults to old behavior, using the SAPM temperature model with parameter
         set `open_rack_glass_glass`. This behavior is deprecated, and will be
-         removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
-          be required for `ModelChain`.
+        removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
+        be required for `ModelChain`.
       - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
       - `modelchain.basic_chain` has a new required argument
         `temperature_model_parameters`.
@@ -72,7 +72,7 @@ API Changes
 * Changes related to IAM (AOI loss) functions (:issue:`680`):
    * Changes to functions
       - Moved functions from `pvsystem.py` to `iam.py`. `pvsystem` IAM
-       functions are deprecated and will be removed in v0.8.
+        functions are deprecated and will be removed in v0.8.
       - Functions are renamed to a consistent pattern:
          - `pvsystem.physicaliam` is `iam.physical`
          - `pvsystem.ashraeiam` is `iam.ashrae`
@@ -80,7 +80,7 @@ API Changes
    * Changes to `PVSystem` class
       - IAM models are provided by `PVSystem.get_iam` with kwarg `iam_model`.
       - Methods `PVSystem.ashraeiam`, `PVSystem.physicaliam` and
-       `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
+        `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
 
 * Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
   an exception instead of displaying a dialog.

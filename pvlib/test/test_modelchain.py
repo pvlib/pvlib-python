@@ -461,7 +461,7 @@ def test_aoi_model_user_func(system, location, weather, mocker):
     'sapm', 'ashrae', 'physical', 'martin_ruiz'
 ])
 def test_infer_aoi_model(location, system_no_aoi, aoi_model):
-    for k in iam.IAM_MODEL_PARAMS[aoi_model]:
+    for k in iam._IAM_MODEL_PARAMS[aoi_model]:
         system_no_aoi.module_parameters.update({k: 1.0})
     mc = ModelChain(system_no_aoi, location,
                     orientation_strategy='None',

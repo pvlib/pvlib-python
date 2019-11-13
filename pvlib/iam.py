@@ -14,7 +14,7 @@ from pvlib.tools import cosd, sind, tand, asind
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
-IAM_MODEL_PARAMS = {
+_IAM_MODEL_PARAMS = {
     'ashrae': set(['b']),
     'physical': set(['n', 'K', 'L']),
     'martin_ruiz': set(['a_r']),

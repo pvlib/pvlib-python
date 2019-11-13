@@ -77,7 +77,6 @@ API Changes
          - `pvsystem.physicaliam` is `iam.physical`
          - `pvsystem.ashraeiam` is `iam.ashrae`
          - `pvsystem.sapm_aoi_loss` is `iam.sapm`
-      - Created dict `iam._IAM_MODEL_PARAMS` to aid in identifying IAM models
    * Changes to `PVSystem` class
       - IAM models are provided by `PVSystem.get_iam` with kwarg `iam_model`.
       - Methods `PVSystem.ashraeiam`, `PVSystem.physicaliam` and
@@ -94,7 +93,8 @@ API Changes
   The `weather` argument of the above methods is now the first, required
   positional argument and the `times` argument is kept as the second keyword
   argument for capability during the deprecation period.
-* Parameter `pvsystem.DC_MODEL_PARAMS` is renamed to `pvsystem._DC_MODEL_PARAMS`
+* Parameter `pvsystem.DC_MODEL_PARAMS` is renamed to `pvsystem._DC_MODEL_PARAMS`.
+  Users should not rely on this dictionary's existence or structure.
 
 Enhancements
 ~~~~~~~~~~~~

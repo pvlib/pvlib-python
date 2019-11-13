@@ -170,3 +170,4 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Tanguy Lunel (:ghuser:`tylunel`)
 * Veronica Guo (:ghuser:`veronicaguo`)
+* Joseph Ranalli (:ghuser:`jranalli`)

@@ -83,6 +83,12 @@ API Changes
       - Methods `PVSystem.ashraeiam`, `PVSystem.physicaliam` and
        `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
 
+* Changes related to spectral modifier (:issue:`782`):
+   * Changes to functions
+      - Added the argument `pw_min` and `pw_max`, default values 0.1 and 8 resp., 
+	to `atmosphere.first_solar_spectral_correction`. This function now returns NaN
+	if pw value higher than `pw_max`.
+
 * Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
   an exception instead of displaying a dialog.
 * The `times` keyword argument has been deprecated in the
@@ -145,6 +151,8 @@ Documentation
 * Edited docstring for `pvsystem.sapm` to remove DataFrame option for input
   `module`. The DataFrame option was never tested and would cause an error if
   used. (:issue:`785`)
+* Note warning about _TMY3.epw files retrieved from energyplus.net in docstring 
+  of `epw.read_epw`
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

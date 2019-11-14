@@ -252,7 +252,7 @@ status box at the bottom of the pull request.
 
 To build the docs locally, install the ``doc`` dependencies specified in the
 `setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
-file.
+file. See :ref:`installation` instructions for more information.
 
 .. _testing:
 
@@ -269,7 +269,7 @@ environment.
 
 To run the tests locally, install the ``test`` dependencies specified in the
 `setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
-file.
+file. See :ref:`installation` instructions for more information.
 
 pvlib's unit tests can easily be run by executing ``pytest`` on the
 pvlib directory:

@@ -7,7 +7,12 @@
     <a href="https://pypi.org/project/pvlib/">
     <img src="https://img.shields.io/pypi/v/pvlib.svg" alt="latest release" />
     </a>
-  </td>
+    <a href="https://anaconda.org/conda-forge/pvlib-python">
+    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/version.svg" />
+    </a>
+    <a href="https://anaconda.org/conda-forge/pvlib-python">
+    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/latest_release_date.svg" />
+    </a>
 </tr>
 <tr>
   <td>License</td>

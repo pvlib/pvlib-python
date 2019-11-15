@@ -1,13 +1,86 @@
 <img src="docs/sphinx/source/_images/pvlib_logo_horiz.png" width="600">
 
-[![TravisCI](https://travis-ci.org/pvlib/pvlib-python.svg?branch=master)](https://travis-ci.org/pvlib/pvlib-python)
-[![Coverage Status](https://img.shields.io/coveralls/pvlib/pvlib-python.svg)](https://coveralls.io/r/pvlib/pvlib-python)
-[![codecov](https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg)](https://codecov.io/gh/pvlib/pvlib-python)
-[![Documentation Status](https://readthedocs.org/projects/pvlib-python/badge/?version=stable)](http://pvlib-python.readthedocs.org/en/stable/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2554311.svg)](https://doi.org/10.5281/zenodo.2554311)
-[![status](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg)](http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1)
-[![Code Quality: Python](https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/context:python)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pvlib/pvlib-python/alerts)
+<table>
+<tr>
+  <td>Latest Release</td>
+  <td>
+    <a href="https://pypi.org/project/pvlib/">
+    <img src="https://img.shields.io/pypi/v/pvlib.svg" alt="latest release" />
+    </a>
+    <a href="https://anaconda.org/conda-forge/pvlib-python">
+    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/version.svg" />
+    </a>
+    <a href="https://anaconda.org/conda-forge/pvlib-python">
+    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/latest_release_date.svg" />
+    </a>
+</tr>
+<tr>
+  <td>License</td>
+  <td>
+    <a href="https://github.com/pvlib/pvlib-python/blob/master/LICENSE">
+    <img src="https://img.shields.io/pypi/l/pvlib.svg" alt="license" />
+    </a>
+</td>
+</tr>
+<tr>
+  <td>Build Status</td>
+  <td>
+    <a href="https://travis-ci.org/pvlib/pvlib-python">
+    <img src="https://travis-ci.org/pvlib/pvlib-python.svg?branch=master" alt="travis build status" />
+    </a>
+    <a href="http://pvlib-python.readthedocs.org/en/stable/">
+    <img src="https://readthedocs.org/projects/pvlib-python/badge/?version=stable" alt="documentation build status" />
+    </a>
+    <a href="https://dev.azure.com/solararbiter/pvlib%20python/_build/latest?definitionId=4&branchName=master">
+      <img src="https://dev.azure.com/solararbiter/pvlib%20python/_apis/build/status/pvlib.pvlib-python?branchName=master" alt="Azure Pipelines build status" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Code Quality</td>
+  <td>
+    <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/context:python">
+    <img src="https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm quality grade" />
+    </a>
+    <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/alerts">
+    <img src="https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm alters" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Coverage</td>
+  <td>
+    <a href="https://coveralls.io/r/pvlib/pvlib-python">
+    <img src="https://img.shields.io/coveralls/pvlib/pvlib-python.svg" alt="coveralls coverage" />
+    </a>
+    <a href="https://codecov.io/gh/pvlib/pvlib-python">
+    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg" alt="codecov coverage" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Publications</td>
+  <td>
+    <a href="https://doi.org/10.5281/zenodo.2554311">
+    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.2554311.svg" alt="zenodo reference" />
+    </a>
+    <a href="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1">
+    <img src="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg" alt="JOSS reference" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Downloads</td>
+  <td>
+    <a href="https://pypi.org/project/pvlib/">
+    <img src="https://img.shields.io/pypi/dm/pvlib" alt="PyPI downloads" />
+    </a>
+    <a href="https://anaconda.org/conda-forge/pvlib-python">
+    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/downloads.svg" alt="conda-forge downloads" />
+    </a>
+  </td>
+</tr>
+</table>
 
 
 pvlib python is a community supported tool that provides a set of

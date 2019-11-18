@@ -84,7 +84,7 @@ API Changes
 
 * Changes related to spectral modifier (:issue:`782`):
    * Changes to functions
-      - Added the argument `pw_min` and `pw_max`, default values 0.1 and 8 resp., 
+      - Added the argument `pw_min` and `pw_max`, default values 0.1 and 8 resp.,
 	to `atmosphere.first_solar_spectral_correction`. This function now returns NaN
 	if pw value higher than `pw_max`.
 
@@ -101,6 +101,8 @@ API Changes
   argument for capability during the deprecation period.
 * Parameter `pvsystem.DC_MODEL_PARAMS` is renamed to `pvsystem._DC_MODEL_PARAMS`.
   Users should not rely on this dictionary's existence or structure.
+* :py:func:`pvlib.iotools.midc.read_midc` now passes additional keyword
+  arguments to `pandas.read_csv`
 
 Enhancements
 ~~~~~~~~~~~~
@@ -133,6 +135,8 @@ Bug fixes
   longitude or latitude degree to an index number in a Linke turbidity lookup
   table. Also rename the function to `clearsky._degrees_to_index`.
   (:issue:`754`)
+* Fix reading raw MIDC CSV files from NREL where the number of header
+  columns does not match the number of data columns.
 
 Testing
 ~~~~~~~
@@ -152,7 +156,7 @@ Documentation
 * Edited docstring for `pvsystem.sapm` to remove DataFrame option for input
   `module`. The DataFrame option was never tested and would cause an error if
   used. (:issue:`785`)
-* Note warning about _TMY3.epw files retrieved from energyplus.net in docstring 
+* Note warning about _TMY3.epw files retrieved from energyplus.net in docstring
   of `epw.read_epw`
 
 Removal of prior version deprecations
@@ -180,3 +184,4 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Tanguy Lunel (:ghuser:`tylunel`)
 * Veronica Guo (:ghuser:`veronicaguo`)
+* Tony Lorenzo (:ghuser:`alorenzo175`)

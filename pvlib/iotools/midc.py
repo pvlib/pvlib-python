@@ -168,7 +168,7 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
         Set to true to use format_index_raw to correctly format the date/time
         columns of MIDC raw data files.
     kwargs : dict
-       Additonal keyword arguments to pass to `pandas.read_csv`
+       Additional keyword arguments to pass to `pandas.read_csv`
 
     Returns
     -------

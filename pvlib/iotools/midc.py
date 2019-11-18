@@ -209,7 +209,8 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     return data
 
 
-def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
+def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
+                                 timeout=30):
     """Request and read MIDC data directly from the raw data api.
 
     Parameters
@@ -224,6 +225,9 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
         A dictionary mapping MIDC field names to pvlib names. Used to
         rename columns of the resulting DataFrame. See Notes of
         :py:func:`pvlib.iotools.read_midc` for example.
+    timeout : float, default 30
+        Number of seconds to wait to connect/read from the API before
+        failing.
 
     Returns
     -------
@@ -234,6 +238,8 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
     ------
     requests.HTTPError
        For any error in retrieving the CSV file from the MIDC API
+    requests.Timeout
+       If data is not received in within ``timeout`` seconds
 
     Notes
     -----
@@ -250,7 +256,7 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
     # number of header columns and data columns do not always match,
     # so first parse the header to determine the number of data columns
     # to parse
-    csv_request = requests.get(url)
+    csv_request = requests.get(url, timeout=timeout)
     csv_request.raise_for_status()
     raw_csv = io.StringIO(csv_request.text)
     first_row = pd.read_csv(raw_csv, nrows=0)

@@ -103,6 +103,7 @@ API Changes
   Users should not rely on this dictionary's existence or structure.
 * :py:func:`pvlib.iotools.midc.read_midc` now passes additional keyword
   arguments to `pandas.read_csv`
+* Add `timeout` argument to :py:func:`pvlib.iotools.midc.read_midc_raw_data_from_nrel`
 
 Enhancements
 ~~~~~~~~~~~~

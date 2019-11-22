@@ -492,14 +492,15 @@ def test_calc_axis_tilt():
     sat = tracking.singleaxis(
         expected['zen'], expected['azim'], axis_tilt, axis_azimuth, max_angle,
         backtrack=True, gcr=gcr, side_slope=side_slope)
-    low_sun_cases_gh656 = [
+    # they six timestamps, all low sun angles, are a mystery
+    mystery_errors = [
         '2017-03-14 18:30:00-03:00',
         '2017-10-30 18:30:00-03:00',
         '2017-10-31 18:30:00-03:00',
         '2017-11-01 18:30:00-03:00',
         '2017-11-02 18:30:00-03:00',
         '2017-11-03 18:30:00-03:00']
-    for idx in low_sun_cases_gh656:
+    for idx in mystery_errors:
         sat['tracker_theta'][idx] = np.nan
         sat.loc[idx]['aoi'] = np.nan
         expected['trrot'][idx] = np.nan

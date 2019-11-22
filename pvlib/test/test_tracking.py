@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 from numpy import nan
 import pandas as pd
@@ -9,6 +11,9 @@ from numpy.testing import assert_allclose
 from pvlib.location import Location
 from pvlib import tracking
 
+DIRNAME = os.path.dirname(__file__)
+PROJDIR = os.path.dirname(DIRNAME)
+DATADIR = os.path.join(PROJDIR, 'data')
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
 
@@ -463,3 +468,41 @@ def test_LocalizedSingleAxisTracker___repr__():
                 'latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC')
 
     assert localized_system.__repr__() == expected
+
+
+def test_calc_axis_tilt():
+    # singleaxis tracker w/slope data
+    system_plane = (77.34, 10.1149)
+    axis_azimuth = 0.0
+    max_angle = 75.0
+    gcr = 0.328
+    # convert to radians
+    sys_az, sys_ze = np.radians(system_plane)
+    tr_az = np.radians(axis_azimuth)
+    # calculate tracker axis zenith
+    tr_ze = tracking.calc_tracker_axis_tilt(sys_az, sys_ze, tr_az)
+    axis_tilt = np.degrees(tr_ze)
+    assert np.isclose(axis_tilt, 2.239)
+    # calculate side slope and relative rotation
+    ss, rel_rot = tracking.calc_system_tracker_side_slope(tr_az, tr_ze, sys_az, sys_ze)
+    side_slope = np.degrees(ss)
+    assert np.isclose(side_slope, -9.86649274360294)
+    expected = os.path.join(DATADIR, 'singleaxis_tracker_wslope.dat')
+    expected = pd.read_csv(expected, index_col='timestamp', parse_dates=True)
+    sat = tracking.singleaxis(
+        expected['zen'], expected['azim'], axis_tilt, axis_azimuth, max_angle,
+        backtrack=True, gcr=gcr, side_slope=side_slope)
+    low_sun_cases_gh656 = [
+        '2017-03-14 18:30:00-03:00',
+        '2017-10-30 18:30:00-03:00',
+        '2017-10-31 18:30:00-03:00',
+        '2017-11-01 18:30:00-03:00',
+        '2017-11-02 18:30:00-03:00',
+        '2017-11-03 18:30:00-03:00']
+    for idx in low_sun_cases_gh656:
+        sat['tracker_theta'][idx] = np.nan
+        sat.loc[idx]['aoi'] = np.nan
+        expected['trrot'][idx] = np.nan
+        expected.loc[idx]['aoi'] = np.nan
+    assert np.allclose(sat['tracker_theta'], expected['trrot'], equal_nan=True)
+    assert np.allclose(sat['aoi'], expected['aoi'], equal_nan=True)

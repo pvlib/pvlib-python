@@ -609,16 +609,6 @@ def _get_rotation_matrix(angle, axis=0):
     return rot
 
 
-def _get_solar_vector(solar_zenith, solar_azimuth):
-    solar_ze_rad = np.radians(solar_zenith)
-    solar_az_rad = np.radians(solar_azimuth)
-    sin_solar_ze = np.sin(solar_ze_rad)
-    x_solar = sin_solar_ze * np.sin(solar_az_rad)
-    y_solar = sin_solar_ze * np.cos(solar_az_rad)
-    z_solar = np.cos(solar_ze_rad)
-    return np.stack((x_solar, y_solar, z_solar), axis=0)
-
-
 def calc_tracker_axis_tilt(system_azimuth, system_zenith, tracker_azimuth):
     """
     Calculate tracker axis tilt in the global reference frame when on a sloped
@@ -684,7 +674,7 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, tracker_azimuth):
 
 
 def calc_system_tracker_side_slope(
-    tracker_azimuth, tracker_zenith, system_azimuth, system_zenith):
+        tracker_azimuth, tracker_zenith, system_azimuth, system_zenith):
     """
     Calculate the slope perpendicular to the tracker axis relative to the
     system plane containing the axes as well as the rotation of the tracker

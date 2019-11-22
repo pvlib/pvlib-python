@@ -484,7 +484,8 @@ def test_calc_axis_tilt():
     axis_tilt = np.degrees(tr_ze)
     assert np.isclose(axis_tilt, 2.239)
     # calculate side slope and relative rotation
-    ss, rel_rot = tracking.calc_system_tracker_side_slope(tr_az, tr_ze, sys_az, sys_ze)
+    ss, rel_rot = tracking.calc_system_tracker_side_slope(
+        tr_az, tr_ze, sys_az, sys_ze)
     side_slope = np.degrees(ss)
     assert np.isclose(side_slope, -9.86649274360294)
     expected = os.path.join(DATADIR, 'singleaxis_tracker_wslope.dat')
@@ -505,5 +506,6 @@ def test_calc_axis_tilt():
         sat.loc[idx]['aoi'] = np.nan
         expected['trrot'][idx] = np.nan
         expected.loc[idx]['aoi'] = np.nan
-    assert np.allclose(-sat['tracker_theta'], expected['trrot'], equal_nan=True)
+    assert np.allclose(
+        -sat['tracker_theta'], expected['trrot'], equal_nan=True)
     assert np.allclose(sat['aoi'], expected['aoi'], equal_nan=True)

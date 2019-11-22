@@ -445,9 +445,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # TODO: use np.clip
     # "Equivalent to but faster than np.maximum(a_min, np.minimum(a, a_max))"
-    tracker_theta = np.minimum(tracker_theta + side_slope, max_angle)
+    tracker_theta += side_slope
+    tracker_theta = np.minimum(tracker_theta, max_angle)
     tracker_theta = np.maximum(tracker_theta, -max_angle)
-    tracker_theta = side_slope - tracker_theta
+    tracker_theta -= side_slope
 
     # calculate panel normal vector in panel-oriented x, y, z coordinates.
     # y-axis is axis of tracker rotation.  tracker_theta is a compass angle

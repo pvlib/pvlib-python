@@ -504,5 +504,5 @@ def test_calc_axis_tilt():
         sat.loc[idx]['aoi'] = np.nan
         expected['trrot'][idx] = np.nan
         expected.loc[idx]['aoi'] = np.nan
-    assert np.allclose(sat['tracker_theta'], expected['trrot'], equal_nan=True)
+    assert np.allclose(-sat['tracker_theta'], expected['trrot'], equal_nan=True)
     assert np.allclose(sat['aoi'], expected['aoi'], equal_nan=True)

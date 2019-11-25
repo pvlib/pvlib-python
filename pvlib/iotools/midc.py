@@ -1,5 +1,9 @@
 """Functions to read NREL MIDC data.
 """
+import io
+
+
+import requests
 import pandas as pd
 
 
@@ -148,14 +152,14 @@ def format_index_raw(data):
     return data
 
 
-def read_midc(filename, variable_map={}, raw_data=False):
+def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     """Read in National Renewable Energy Laboratory Measurement and
     Instrumentation Data Center [1]_ weather data.
 
     Parameters
     ----------
-    filename: string
-        Filename or url of data to read.
+    filename: string or file-like object
+        Filename, url, or file-like object of data to read.
     variable_map: dictionary
         Dictionary for mapping MIDC field names to pvlib names. Used to rename
         the columns of the resulting DataFrame. Does not map names by default.
@@ -163,6 +167,8 @@ def read_midc(filename, variable_map={}, raw_data=False):
     raw_data: boolean
         Set to true to use format_index_raw to correctly format the date/time
         columns of MIDC raw data files.
+    kwargs : dict
+       Additional keyword arguments to pass to `pandas.read_csv`
 
     Returns
     -------
@@ -194,7 +200,7 @@ def read_midc(filename, variable_map={}, raw_data=False):
     .. [1] NREL: Measurement and Instrumentation Data Center
         `https://midcdmz.nrel.gov/ <https://midcdmz.nrel.gov/>`_
     """
-    data = pd.read_csv(filename)
+    data = pd.read_csv(filename, **kwargs)
     if raw_data:
         data = format_index_raw(data)
     else:
@@ -203,7 +209,8 @@ def read_midc(filename, variable_map={}, raw_data=False):
     return data
 
 
-def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
+def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
+                                 timeout=30):
     """Request and read MIDC data directly from the raw data api.
 
     Parameters
@@ -218,11 +225,21 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
         A dictionary mapping MIDC field names to pvlib names. Used to
         rename columns of the resulting DataFrame. See Notes of
         :py:func:`pvlib.iotools.read_midc` for example.
+    timeout : float, default 30
+        Number of seconds to wait to connect/read from the API before
+        failing.
 
     Returns
     -------
     data:
         Dataframe with DatetimeIndex localized to the station location.
+
+    Raises
+    ------
+    requests.HTTPError
+       For any error in retrieving the CSV file from the MIDC API
+    requests.Timeout
+       If data is not received in within ``timeout`` seconds
 
     Notes
     -----
@@ -236,4 +253,14 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={}):
             'end': end.strftime('%Y%m%d')}
     endpoint = 'https://midcdmz.nrel.gov/apps/data_api.pl?'
     url = endpoint + '&'.join(['{}={}'.format(k, v) for k, v in args.items()])
-    return read_midc(url, variable_map=variable_map, raw_data=True)
+    # number of header columns and data columns do not always match,
+    # so first parse the header to determine the number of data columns
+    # to parse
+    csv_request = requests.get(url, timeout=timeout)
+    csv_request.raise_for_status()
+    raw_csv = io.StringIO(csv_request.text)
+    first_row = pd.read_csv(raw_csv, nrows=0)
+    col_length = len(first_row.columns)
+    raw_csv.seek(0)
+    return read_midc(raw_csv, variable_map=variable_map, raw_data=True,
+                     usecols=range(col_length))

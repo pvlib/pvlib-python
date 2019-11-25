@@ -1571,7 +1571,7 @@ def _parse_raw_sam_df(csvdata):
     return df
 
 
-def sapm(effective_irradiance, temp_cell, module, irrad_ref=1000, temp_ref=25):
+def sapm(effective_irradiance, temp_cell, module, irrad_ref=1., temp_ref=25):
     '''
     The Sandia PV Array Performance Model (SAPM) generates 5 points on a
     PV module's I-V curve (Voc, Isc, Ix, Ixx, Vmp/Imp) according to
@@ -1580,7 +1580,8 @@ def sapm(effective_irradiance, temp_cell, module, irrad_ref=1000, temp_ref=25):
     Parameters
     ----------
     effective_irradiance : numeric
-        Effective irradiance [W/m^2].
+        Effective irradiance in suns (deprecated unit) or W/m2. Unit must be
+        the same as for irrad_ref.
 
     temp_cell : numeric
         Cell temperature [C].
@@ -1589,8 +1590,9 @@ def sapm(effective_irradiance, temp_cell, module, irrad_ref=1000, temp_ref=25):
         A dict or Series defining the SAPM parameters. See the notes section
         for more details.
 
-    irrad_ref : float (optional, default=1000)
-        Reference irradiance [W/m^2].
+    irrad_ref : float (optional, default=1.0)
+        Reference irradiance in suns (deprecated unit) or W/m2. Unit must be
+        the same as for effective_irradiance
 
     temp_ref : float (optional, default=25)
         Reference cell temperature [C]
@@ -1665,12 +1667,14 @@ def sapm(effective_irradiance, temp_cell, module, irrad_ref=1000, temp_ref=25):
     temperature.sapm_module
     '''
 
-    # TODO: remove this check after deprecation period for change in effective
-    # irradiance units, made in v0.7
-    if np.all(effective_irradiance < 2.0):
+    # TODO: remove this warning in v0.8 after deprecation period for change in
+    # effective irradiance units, made in v0.7
+    if irrad_ref == 1.0:
         import warnings
-        warnings.warn('Effective irradiance input to SAPM appears low.'
-                      ' Units changed in v0.7 from suns to W/m2',
+        warnings.warn('Reference irradiance is 1.0 suns. Default value and '
+                      'unit changing to 1000 W/m2 in pvlib v0.8. Set '
+                      'irrad_ref=1000 to silence this warning and maintain '
+                      'future compatibility.',
                       pvlibDeprecationWarning)
 
     q = 1.60218e-19  # Elementary charge in units of coulombs
@@ -1852,7 +1856,7 @@ def sapm_spectral_loss(airmass_absolute, module):
 
 
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
-                              module, reference_irradiance=1000):
+                              module, reference_irradiance=1.):
     r"""
     Calculates the SAPM effective irradiance using the SAPM spectral
     loss and SAPM angle of incidence loss functions.
@@ -1876,11 +1880,14 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
         parameters. See the :py:func:`sapm` notes section for more
         details.
 
+    reference_irradiance : float (optional, default=1.0)
+        Reference irradiance in suns (deprecated unit) or W/m2.
+
     Returns
     -------
     effective_irradiance : numeric
         Effective irradiance accounting for reflections and spectral content.
-        [W/m2]
+        Returned in units of reference_irradiance.
 
     Notes
     -----
@@ -1912,10 +1919,24 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     pvlib.pvsystem.sapm
     """
 
+    # TODO: remove this warning in v0.8 after deprecation period for change in
+    # effective irradiance units, made in v0.7
+    if reference_irradiance == 1.0:
+        import warnings
+        warnings.warn('reference_irradiance is 1.0 suns, output in suns. '
+                      'Output unit is changing to W/m2 in pvlib v0.8. Set '
+                      'reference_irradiance=1000 to silence this warning and '
+                      'maintain future compatibility.',
+                      pvlibDeprecationWarning)
+        divisor = 1000  # input in W/m2, set output units to suns
+    else:  # assume reference_irradiance in W/m2
+        divisor = 1.0
+
     F1 = sapm_spectral_loss(airmass_absolute, module)
     F2 = iam.sapm(aoi, module)
 
-    Ee = F1 * (poa_direct*F2 + module['FD']*poa_diffuse)
+    Ee = F1 * (poa_direct * F2 + module['FD'] * poa_diffuse) / \
+        divisor
 
     return Ee
 

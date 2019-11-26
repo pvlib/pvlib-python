@@ -242,8 +242,8 @@ def test_pvsystem_sapm_warning(sapm_module_params):
     # TODO: remove after deprecation period (v0.8)
     effective_irradiance = np.array([0.1, 0.2, 1.3])
     temp_cell = np.array([25, 25, 50])
-    warn_txt = 'All effective_irradiance inputs to SAPM'
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+    warn_txt = 'effective_irradiance inputs appear to be in suns'
+    with pytest.warns(RuntimeWarning, match=warn_txt):
         pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
 

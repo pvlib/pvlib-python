@@ -1176,7 +1176,7 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
     Calculate the clearness index.
 
     The clearness index is the ratio of global to extraterrestrial
-    irradiance on a horizontal plane.
+    irradiance on a horizontal plane [1]_.
 
     Parameters
     ----------
@@ -1226,7 +1226,7 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
 def clearness_index_zenith_independent(clearness_index, airmass,
                                        max_clearness_index=2.0):
     """
-    Calculate the zenith angle independent clearness index.
+    Calculate the zenith angle independent clearness index [1]_.
 
     Parameters
     ----------
@@ -1764,7 +1764,8 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
                model='perez', model_perez='allsitescomposite1990',
                calculate_gt_90=True, max_iterations=30):
     """
-    Determine GHI, DNI, DHI from POA global using the GTI DIRINT model.
+    Determine GHI, DNI, DHI from POA global using the GTI DIRINT model
+    [1]_.
 
     .. warning::
 

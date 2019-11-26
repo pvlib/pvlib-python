@@ -10,8 +10,16 @@ compatibility notes.
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
-API Changes
-~~~~~~~~~~~
+API Breaking Changes
+~~~~~~~~~~~~~~~~~~~~
+* The `effective_irradiance` argument for :py:func:`pvsystem.sapm` now requires
+  units of W/m^2. Previously, units for this input were suns. A RuntimeWarning
+  warning is raised if all `effective_irradiance < 2.0`.
+* The output of :py:func:`pvsystem.sapm_effective_irradiance` is now in units
+  of W/m2 rather than suns.
+
+API Changes with Deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Changes related to cell temperature models (:issue:`678`):
    * Changes to functions
       - Moved functions for cell temperature from `pvsystem.py` to `temperature.py`.

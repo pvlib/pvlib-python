@@ -260,7 +260,10 @@ Testing
 ~~~~~~~
 
 Developers **must** include comprehensive tests for any additions or
-modifications to pvlib.
+modifications to pvlib. New unit test code should be placed in the
+corresponding test module in the
+`pvlib/test <https://github.com/pvlib/pvlib-python/tree/master/pvlib/test>`_
+directory.
 
 A pull request will automatically run the tests for you on a variety of
 platforms (Linux, Mac, Windows) and python versions. However, it is
@@ -294,9 +297,6 @@ will drop you into the
 location of a test failure. As described in :ref:`code-style`, pvlib
 code does not use ``print`` or ``logging`` calls, and this also applies
 to the test suite (with rare exceptions).
-
-New unit test code should be placed in the corresponding test module in
-the pvlib/test directory.
 
 pvlib-python contains 3 "layers" of code: functions, PVSystem/Location,
 and ModelChain. Contributors will need to add tests that correspond to

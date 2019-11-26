@@ -440,7 +440,7 @@ class ModelChain(object):
                              'set the model with the dc_model kwarg.')
 
     def sapm(self):
-        self.dc = self.system.sapm(self.effective_irradiance/1000.,
+        self.dc = self.system.sapm(self.effective_irradiance,
                                    self.cell_temperature)
 
         self.dc = self.system.scale_voltage_current_power(self.dc)

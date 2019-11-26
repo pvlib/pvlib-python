@@ -563,28 +563,25 @@ class PVSystem(object):
         Parameters
         ----------
         poa_direct : numeric
-            The direct irradiance incident upon the module.
+            The direct irradiance incident upon the module.  [W/m2]
 
         poa_diffuse : numeric
-            The diffuse irradiance incident on module.
+            The diffuse irradiance incident on module.  [W/m2]
 
         airmass_absolute : numeric
-            Absolute airmass.
+            Absolute airmass. [unitless]
 
         aoi : numeric
-            Angle of incidence in degrees.
-
-        reference_irradiance : numeric, default 1000
-            Reference irradiance by which to divide the input irradiance.
+            Angle of incidence. [degrees]
 
         Returns
         -------
         effective_irradiance : numeric
-            The SAPM effective irradiance.
+            The SAPM effective irradiance. [W/m2]
         """
         return sapm_effective_irradiance(
             poa_direct, poa_diffuse, airmass_absolute, aoi,
-            self.module_parameters, reference_irradiance=reference_irradiance)
+            self.module_parameters)
 
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
@@ -1668,9 +1665,9 @@ def sapm(effective_irradiance, temp_cell, module):
     # effective irradiance units, made in v0.7
     if np.all(effective_irradiance) < 2.0:
         import warnings
-        warnings.warn('All effective_irradiance inputs to SAPM are low.'
+        warnings.warn('effective_irradiance inputs appear to be in suns.'
                       ' Units changed in v0.7 from suns to W/m2',
-                      pvlibDeprecationWarning)
+                      RuntimeWarning)
 
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
@@ -1879,7 +1876,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     -------
     effective_irradiance : numeric
         Effective irradiance accounting for reflections and spectral content.
-        Returned in units of reference_irradiance.
+        [W/m2]
 
     Notes
     -----

@@ -242,7 +242,7 @@ def test_pvsystem_sapm_warning(sapm_module_params):
     # TODO: remove after deprecation period (v0.8)
     effective_irradiance = np.array([0.1, 0.2, 1.3])
     temp_cell = np.array([25, 25, 50])
-    warn_txt = 'Effective irradiance input to SAPM'
+    warn_txt = 'All effective_irradiance inputs to SAPM'
     with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
@@ -334,18 +334,15 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
     poa_diffuse = 100
     airmass_absolute = 1.5
     aoi = 0
-    reference_irradiance = 1000
     p = (sapm_module_params['A4'], sapm_module_params['A3'],
          sapm_module_params['A2'], sapm_module_params['A1'],
          sapm_module_params['A0'])
     f1 = np.polyval(p, airmass_absolute)
     expected = f1 * (poa_direct + sapm_module_params['FD'] * poa_diffuse)
     out = system.sapm_effective_irradiance(
-        poa_direct, poa_diffuse, airmass_absolute,
-        aoi, reference_irradiance=reference_irradiance)
+        poa_direct, poa_diffuse, airmass_absolute, aoi)
     pvsystem.sapm_effective_irradiance.assert_called_once_with(
-        poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params,
-        reference_irradiance=reference_irradiance)
+        poa_direct, poa_diffuse, airmass_absolute, aoi, sapm_module_params)
     assert_allclose(out, expected, atol=0.1)
 
 

@@ -398,12 +398,12 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
     method : str, default 'linear'
         Specifies the interpolation method.
-        Useful options are: 'linear', 'quadratic','cubic'.
+        Useful options are: 'linear', 'quadratic', 'cubic'.
         See scipy.interpolate.interp1d for more options.
 
     normalize : boolean, default True
         When true, the interpolated values are divided by the interpolated
-        value at zero degrees.  This ensures that ``iam``=1.0 at normal
+        value at zero degrees.  This ensures that ``iam=1.0`` at normal
         incidence.
 
     Returns

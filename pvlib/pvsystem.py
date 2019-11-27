@@ -1650,7 +1650,7 @@ def retrieve_sam(name=None, path=None):
 def _normalize_sam_product_names(names):
     '''
     Replace special characters within the product names to make them more
-    suitable fur use as Dataframe column names.
+    suitable for use as Dataframe column names.
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 

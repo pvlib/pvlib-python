@@ -210,13 +210,13 @@ def _compute_wavelet(clearsky_index, dt=None):
     cs_long = pd.DataFrame(cs_long)
 
     # Compute wavelet time scales
-    mindt = np.ceil(np.log(dt)/np.log(2))  # Minimum wavelet dt
-    maxdt = int(12 - mindt)  # maximum wavelet dt
+    min_tmscale = np.ceil(np.log(dt)/np.log(2))  # Minimum wavelet timescale
+    max_tmscale = int(12 - min_tmscale)  # maximum wavelet timescale
 
-    tmscales = np.zeros(maxdt)
-    csi_mean = np.zeros([maxdt, len(cs_long)])
+    tmscales = np.zeros(max_tmscale)
+    csi_mean = np.zeros([max_tmscale, len(cs_long)])
     # Loop for all time scales we will consider
-    for i in np.arange(0, maxdt):
+    for i in np.arange(0, max_tmscale):
         j = i+1
         tmscales[i] = 2**j * dt  # Wavelet integration time scale
         intvlen = 2**j  # Wavelet integration time series interval
@@ -229,13 +229,13 @@ def _compute_wavelet(clearsky_index, dt=None):
 
     # Calculate the wavelets by isolating the rolling mean frequency ranges
     wavelet_long = np.zeros(csi_mean.shape)
-    for i in np.arange(0, maxdt-1):
+    for i in np.arange(0, max_tmscale-1):
         wavelet_long[i, :] = csi_mean[i, :] - csi_mean[i+1, :]
-    wavelet_long[maxdt-1, :] = csi_mean[maxdt-1, :]  # Lowest frequency
+    wavelet_long[max_tmscale-1, :] = csi_mean[max_tmscale-1, :]  # Lowest freq
 
     # Clip off the padding and just return the original time window
-    wavelet = np.zeros([maxdt, len(vals)])
-    for i in np.arange(0, maxdt):
+    wavelet = np.zeros([max_tmscale, len(vals)])
+    for i in np.arange(0, max_tmscale):
         wavelet[i, :] = wavelet_long[i, len(vals)+1: 2*len(vals)+1]
 
     return wavelet, tmscales

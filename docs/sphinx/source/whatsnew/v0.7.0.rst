@@ -10,8 +10,18 @@ compatibility notes.
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
-API Changes
-~~~~~~~~~~~
+API Breaking Changes
+~~~~~~~~~~~~~~~~~~~~
+* The `effective_irradiance` argument for :py:func:`pvsystem.sapm` now requires
+  units of W/m^2. Previously, units for this input were suns. A RuntimeWarning
+  warning is raised if all `effective_irradiance < 2.0`.
+* The output of :py:func:`pvsystem.sapm_effective_irradiance` is now in units
+  of W/m2 rather than suns.
+* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
+  an exception instead of displaying a dialog.
+
+API Changes with Deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Changes related to cell temperature models (:issue:`678`):
    * Changes to functions
       - Moved functions for cell temperature from `pvsystem.py` to `temperature.py`.
@@ -63,8 +73,8 @@ API Changes
       - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain`
         defaults to old behavior, using the SAPM temperature model with parameter
         set `open_rack_glass_glass`. This behavior is deprecated, and will be
-         removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
-          be required for `ModelChain`.
+        removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
+        be required for `ModelChain`.
       - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
       - `modelchain.basic_chain` has a new required argument
         `temperature_model_parameters`.
@@ -72,19 +82,21 @@ API Changes
 * Changes related to IAM (AOI loss) functions (:issue:`680`):
    * Changes to functions
       - Moved functions from `pvsystem.py` to `iam.py`. `pvsystem` IAM
-       functions are deprecated and will be removed in v0.8.
+        functions are deprecated and will be removed in v0.8.
       - Functions are renamed to a consistent pattern:
          - `pvsystem.physicaliam` is `iam.physical`
          - `pvsystem.ashraeiam` is `iam.ashrae`
          - `pvsystem.sapm_aoi_loss` is `iam.sapm`
-      - Created dict `iam.IAM_MODEL_PARAMS` to aid in identifying IAM models
    * Changes to `PVSystem` class
       - IAM models are provided by `PVSystem.get_iam` with kwarg `iam_model`.
       - Methods `PVSystem.ashraeiam`, `PVSystem.physicaliam` and
-       `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
+        `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
 
-* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
-  an exception instead of displaying a dialog.
+* Changes related to spectral modifier (:issue:`782`):
+   * Changes to functions
+      - Added the argument `pw_min` and `pw_max`, default values 0.1 and 8 resp.,
+	to `atmosphere.first_solar_spectral_correction`. This function now returns NaN
+	if pw value higher than `pw_max`.
 * The `times` keyword argument has been deprecated in the
   :py:meth:`pvlib.modelchain.ModelChain.run_model`,
   :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`, and
@@ -94,6 +106,16 @@ API Changes
   The `weather` argument of the above methods is now the first, required
   positional argument and the `times` argument is kept as the second keyword
   argument for capability during the deprecation period.
+* Parameter `pvsystem.DC_MODEL_PARAMS` is renamed to `pvsystem._DC_MODEL_PARAMS`.
+  Users should not rely on this dictionary's existence or structure.
+
+Other API Changes
+~~~~~~~~~~~~~~~~~
+* :py:func:`pvlib.iotools.midc.read_midc` now passes additional keyword
+  arguments to `pandas.read_csv`
+* Add `timeout` argument to :py:func:`pvlib.iotools.midc.read_midc_raw_data_from_nrel`
+* :py:mod:`pvlib.bifacial` is now imported when ``pvlib`` is imported.
+  (:issue:`766`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -128,6 +150,8 @@ Bug fixes
   longitude or latitude degree to an index number in a Linke turbidity lookup
   table. Also rename the function to `clearsky._degrees_to_index`.
   (:issue:`754`)
+* Fix reading raw MIDC CSV files from NREL where the number of header
+  columns does not match the number of data columns.
 
 Testing
 ~~~~~~~
@@ -144,6 +168,11 @@ Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
 * Fixed broken ipython examples from CEC data updates
+* Edited docstring for `pvsystem.sapm` to remove DataFrame option for input
+  `module`. The DataFrame option was never tested and would cause an error if
+  used. (:issue:`785`)
+* Note warning about _TMY3.epw files retrieved from energyplus.net in docstring
+  of `epw.read_epw`
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -171,3 +200,5 @@ Contributors
 * Tanguy Lunel (:ghuser:`tylunel`)
 * Veronica Guo (:ghuser:`veronicaguo`)
 * Joseph Ranalli (:ghuser:`jranalli`)
+* Tony Lorenzo (:ghuser:`alorenzo175`)
+* Todd Karin (:ghuser:`toddkarin`)

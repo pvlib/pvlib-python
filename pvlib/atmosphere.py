@@ -320,8 +320,9 @@ def gueymard94_pw(temp_air, relative_humidity):
     return pw
 
 
-def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
-                                    coefficients=None):
+def first_solar_spectral_correction(pw, airmass_absolute,
+                                    module_type=None, coefficients=None,
+                                    min_pw=0.1, max_pw=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure corrected) airmass.
@@ -363,6 +364,14 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     airmass_absolute : array-like
         absolute (pressure corrected) airmass.
+
+    min_pw : float, default 0.1
+        minimum atmospheric precipitable water (cm). A lower pw value will be
+        automatically set to this minimum value to avoid model divergence.
+
+    max_pw : float, default 8
+        maximum atmospheric precipitable water (cm). If a higher value is
+        encountered it will be set to np.nan to avoid model divergence.
 
     module_type : None or string, default None
         a string specifying a cell type. Can be lower or upper case
@@ -422,16 +431,18 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     # *** Pwat ***
     # Replace Pwat Values below 0.1 cm with 0.1 cm to prevent model from
     # diverging"
-
-    if np.min(pw) < 0.1:
-        pw = np.maximum(pw, 0.1)
-        warn('Exceptionally low Pwat values replaced with 0.1 cm to prevent' +
-             ' model divergence')
+    pw = np.atleast_1d(pw)
+    pw = pw.astype('float64')
+    if np.min(pw) < min_pw:
+        pw = np.maximum(pw, min_pw)
+        warn('Exceptionally low pw values replaced with {0} cm to prevent '
+             'model divergence'.format(min_pw))
 
     # Warn user about Pwat data that is exceptionally high
-    if np.max(pw) > 8:
-        warn('Exceptionally high Pwat values. Check input data:' +
-             ' model may diverge in this range')
+    if np.max(pw) > max_pw:
+        pw[pw > max_pw] = np.nan
+        warn('Exceptionally high pw values replaced by np.nan: '
+             'check input data.')
 
     # *** AMa ***
     # Replace Extremely High AM with AM 10 to prevent model divergence

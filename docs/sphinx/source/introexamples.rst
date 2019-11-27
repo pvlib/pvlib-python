@@ -164,7 +164,7 @@ by examining the parameters defined for the module.
                         orientation_strategy='south_at_latitude_tilt')
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
-        mc.run_model(times=times, weather=weather)
+        mc.run_model(weather)
         annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 

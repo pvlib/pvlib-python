@@ -13,7 +13,7 @@ from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
                    tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
-from pvlib.pvsystem import DC_MODEL_PARAMS
+from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 
 
@@ -395,9 +395,9 @@ class ModelChain(object):
         # Set model and validate parameters
         if isinstance(model, str):
             model = model.lower()
-            if model in DC_MODEL_PARAMS.keys():
+            if model in _DC_MODEL_PARAMS.keys():
                 # validate module parameters
-                missing_params = DC_MODEL_PARAMS[model] - \
+                missing_params = _DC_MODEL_PARAMS[model] - \
                                  set(self.system.module_parameters.keys())
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
@@ -440,7 +440,7 @@ class ModelChain(object):
                              'set the model with the dc_model kwarg.')
 
     def sapm(self):
-        self.dc = self.system.sapm(self.effective_irradiance/1000.,
+        self.dc = self.system.sapm(self.effective_irradiance,
                                    self.cell_temperature)
 
         self.dc = self.system.scale_voltage_current_power(self.dc)

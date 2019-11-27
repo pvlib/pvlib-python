@@ -14,7 +14,7 @@ from pvlib.tools import cosd, sind, tand, asind
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
-IAM_MODEL_PARAMS = {
+_IAM_MODEL_PARAMS = {
     'ashrae': set(['b']),
     'physical': set(['n', 'K', 'L']),
     'martin_ruiz': set(['a_r']),
@@ -398,12 +398,12 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
     method : str, default 'linear'
         Specifies the interpolation method.
-        Useful options are: 'linear', 'quadratic','cubic'.
+        Useful options are: 'linear', 'quadratic', 'cubic'.
         See scipy.interpolate.interp1d for more options.
 
     normalize : boolean, default True
         When true, the interpolated values are divided by the interpolated
-        value at zero degrees.  This ensures that ``iam``=1.0 at normal
+        value at zero degrees.  This ensures that ``iam=1.0`` at normal
         incidence.
 
     Returns

@@ -1,4 +1,4 @@
-.. _whatsnew_0700:
+﻿.. _whatsnew_0700:
 
 v0.7.0 (MONTH DAY, YEAR)
 ------------------------
@@ -10,8 +10,16 @@ compatibility notes.
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
-API Changes
-~~~~~~~~~~~
+API Breaking Changes
+~~~~~~~~~~~~~~~~~~~~
+* The `effective_irradiance` argument for :py:func:`pvsystem.sapm` now requires
+  units of W/m^2. Previously, units for this input were suns. A RuntimeWarning
+  warning is raised if all `effective_irradiance < 2.0`.
+* The output of :py:func:`pvsystem.sapm_effective_irradiance` is now in units
+  of W/m2 rather than suns.
+
+API Changes with Deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Changes related to cell temperature models (:issue:`678`):
    * Changes to functions
       - Moved functions for cell temperature from `pvsystem.py` to `temperature.py`.
@@ -63,11 +71,30 @@ API Changes
       - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain`
         defaults to old behavior, using the SAPM temperature model with parameter
         set `open_rack_glass_glass`. This behavior is deprecated, and will be
-         removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
-          be required for `ModelChain`.
+        removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
+        be required for `ModelChain`.
       - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
       - `modelchain.basic_chain` has a new required argument
         `temperature_model_parameters`.
+
+* Changes related to IAM (AOI loss) functions (:issue:`680`):
+   * Changes to functions
+      - Moved functions from `pvsystem.py` to `iam.py`. `pvsystem` IAM
+        functions are deprecated and will be removed in v0.8.
+      - Functions are renamed to a consistent pattern:
+         - `pvsystem.physicaliam` is `iam.physical`
+         - `pvsystem.ashraeiam` is `iam.ashrae`
+         - `pvsystem.sapm_aoi_loss` is `iam.sapm`
+   * Changes to `PVSystem` class
+      - IAM models are provided by `PVSystem.get_iam` with kwarg `iam_model`.
+      - Methods `PVSystem.ashraeiam`, `PVSystem.physicaliam` and
+        `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
+
+* Changes related to spectral modifier (:issue:`782`):
+   * Changes to functions
+      - Added the argument `pw_min` and `pw_max`, default values 0.1 and 8 resp.,
+	to `atmosphere.first_solar_spectral_correction`. This function now returns NaN
+	if pw value higher than `pw_max`.
 
 * Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
   an exception instead of displaying a dialog.
@@ -80,11 +107,17 @@ API Changes
   The `weather` argument of the above methods is now the first, required
   positional argument and the `times` argument is kept as the second keyword
   argument for capability during the deprecation period.
+* Parameter `pvsystem.DC_MODEL_PARAMS` is renamed to `pvsystem._DC_MODEL_PARAMS`.
+  Users should not rely on this dictionary's existence or structure.
+* :py:func:`pvlib.iotools.midc.read_midc` now passes additional keyword
+  arguments to `pandas.read_csv`
+* Add `timeout` argument to :py:func:`pvlib.iotools.midc.read_midc_raw_data_from_nrel`
 
 Enhancements
 ~~~~~~~~~~~~
-* Created two new incidence angle modifier functions: :py:func:`pvlib.pvsystem.iam_martin_ruiz`
-  and :py:func:`pvlib.pvsystem.iam_interp`. (:issue:`751`)
+* Created two new incidence angle modifier (IAM) functions:
+  :py:func:`pvlib.iam.martin_ruiz` and :py:func:`pvlib.iam.interp`. (:issue:`751`)
+* Add the `martin_ruiz` IAM function as an option for `ModelChain.aoi_model`.
 * Updated the file for module parameters for the CEC model, from the SAM file
   dated 2017-6-5 to the SAM file dated 2019-03-05. (:issue:`761`)
 * Updated the file for inverter parameters for the CEC model, from the SAM file
@@ -96,6 +129,11 @@ Enhancements
   the single diode equation to an IV curve.
 * Add :py:func:`~pvlib.ivtools.fit_sdm_cec_sam`, a wrapper for the CEC single
   diode model fitting function '6parsolve' from NREL's System Advisor Model.
+* Add :py:func:`~pvlib.ivtools.fit_sdm_desoto`, a method to fit the De Soto single
+  diode model to the typical specifications given in manufacturers datasheets.
+* Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
+* Created one new incidence angle modifier (IAM) function for diffuse irradiance:
+  :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
 
 Bug fixes
 ~~~~~~~~~
@@ -106,6 +144,8 @@ Bug fixes
   longitude or latitude degree to an index number in a Linke turbidity lookup
   table. Also rename the function to `clearsky._degrees_to_index`.
   (:issue:`754`)
+* Fix reading raw MIDC CSV files from NREL where the number of header
+  columns does not match the number of data columns.
 
 Testing
 ~~~~~~~
@@ -113,10 +153,20 @@ Testing
   in NSRDB (:issue:`733`)
 * Added tests for methods in bifacial.py.
 * Added tests for changes to cell temperature models.
+* Add tests configuration for bare python environment (no conda).
+  (:issue:`727`)
+* Added tests for changes to IAM models.
+* Added test for `ModelChain.infer_aoi_model`.
 
 Documentation
 ~~~~~~~~~~~~~
 * Corrected docstring for `pvsystem.PVSystem.sapm`
+* Fixed broken ipython examples from CEC data updates
+* Edited docstring for `pvsystem.sapm` to remove DataFrame option for input
+  `module`. The DataFrame option was never tested and would cause an error if
+  used. (:issue:`785`)
+* Note warning about _TMY3.epw files retrieved from energyplus.net in docstring
+  of `epw.read_epw`
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,11 +182,6 @@ Removal of prior version deprecations
 * Removed `ModelChain.prepare_inputs` clearsky assumption when no irradiance
   data was provided.
 
-Enhancements
-~~~~~~~~~~~~
-* Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
-
-
 Contributors
 ~~~~~~~~~~~~
 * Mark Campanellli (:ghuser:`markcampanelli`)
@@ -146,3 +191,6 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Tanguy Lunel (:ghuser:`tylunel`)
+* Veronica Guo (:ghuser:`veronicaguo`)
+* Tony Lorenzo (:ghuser:`alorenzo175`)

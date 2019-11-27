@@ -13,19 +13,19 @@ import pandas as pd
 
 from pvlib._deprecation import deprecated
 
-from pvlib import (atmosphere, irradiance, singlediode as _singlediode,
+from pvlib import (atmosphere, iam, irradiance, singlediode as _singlediode,
                    temperature)
-from pvlib.tools import _build_kwargs, cosd, asind, sind, tand
+from pvlib.tools import _build_kwargs
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # a dict of required parameter names for each DC power model
-DC_MODEL_PARAMS = {
+_DC_MODEL_PARAMS = {
     'sapm': set([
         'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
         'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-        'C7', 'Isco', 'Impo', 'Aisc', 'Aimp', 'Bvoco',
+        'C7', 'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
         'IXO', 'IXXO', 'FD']),
     'desoto': set([
@@ -316,52 +316,66 @@ class PVSystem(object):
                                                albedo=self.albedo,
                                                **kwargs)
 
-    def ashraeiam(self, aoi):
+    def get_iam(self, aoi, iam_model='physical'):
         """
-        Determine the incidence angle modifier using
-        ``self.module_parameters['b']``, ``aoi``,
-        and the :py:func:`ashraeiam` function.
+        Determine the incidence angle modifier using the method specified by
+        ``iam_model``.
 
-        Uses default arguments if keys not in module_parameters.
+        Parameters for the selected IAM model are expected to be in
+        ``PVSystem.module_parameters``. Default parameters are available for
+        the 'physical', 'ashrae' and 'martin_ruiz' models.
 
         Parameters
         ----------
         aoi : numeric
             The angle of incidence in degrees.
 
+        aoi_model : string, default 'physical'
+            The IAM model to be used. Valid strings are 'physical', 'ashrae',
+            'martin_ruiz' and 'sapm'.
+
         Returns
         -------
-        modifier : numeric
+        iam : numeric
             The AOI modifier.
-        """
-        kwargs = _build_kwargs(['b'], self.module_parameters)
 
-        return ashraeiam(aoi, **kwargs)
+        Raises
+        ------
+        ValueError if `iam_model` is not a valid model name.
+        """
+        model = iam_model.lower()
+        if model in ['ashrae', 'physical', 'martin_ruiz']:
+            param_names = iam._IAM_MODEL_PARAMS[model]
+            kwargs = _build_kwargs(param_names, self.module_parameters)
+            func = getattr(iam, model)
+            return func(aoi, **kwargs)
+        elif model == 'sapm':
+            return iam.sapm(aoi, self.module_parameters)
+        elif model == 'interp':
+            raise ValueError(model + ' is not implemented as an IAM model'
+                             'option for PVSystem')
+        else:
+            raise ValueError(model + ' is not a valid IAM model')
+
+    def ashraeiam(self, aoi):
+        """
+        Deprecated. Use ``PVSystem.get_iam`` instead.
+        """
+        import warnings
+        warnings.warn('PVSystem.ashraeiam is deprecated and will be removed in'
+                      'v0.8, use PVSystem.get_iam instead',
+                      pvlibDeprecationWarning)
+        return PVSystem.get_iam(self, aoi, iam_model='ashrae')
 
     def physicaliam(self, aoi):
         """
-        Determine the incidence angle modifier using ``aoi``,
-        ``self.module_parameters['K']``,
-        ``self.module_parameters['L']``,
-        ``self.module_parameters['n']``,
-        and the
-        :py:func:`physicaliam` function.
-
-        Uses default arguments if keys not in module_parameters.
-
-        Parameters
-        ----------
-        aoi : numeric
-            The angle of incidence in degrees.
-
-        Returns
-        -------
-        modifier : numeric
-            The AOI modifier.
+        Deprecated. Use ``PVSystem.get_iam`` instead.
         """
-        kwargs = _build_kwargs(['K', 'L', 'n'], self.module_parameters)
-
-        return physicaliam(aoi, **kwargs)
+        import warnings
+        warnings.warn('PVSystem.physicaliam is deprecated and will be removed'
+                      ' in v0.8, use PVSystem.get_iam instead',
+                      pvlibDeprecationWarning)
+        return PVSystem.get_iam(self, aoi, iam_model='physical')
 
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -530,20 +544,13 @@ class PVSystem(object):
 
     def sapm_aoi_loss(self, aoi):
         """
-        Use the :py:func:`sapm_aoi_loss` function, the input parameters,
-        and ``self.module_parameters`` to calculate F2.
-
-        Parameters
-        ----------
-        aoi : numeric
-            Angle of incidence in degrees.
-
-        Returns
-        -------
-        F2 : numeric
-            The SAPM angle of incidence loss coefficient.
+        Deprecated. Use ``PVSystem.get_iam`` instead.
         """
-        return sapm_aoi_loss(aoi, self.module_parameters)
+        import warnings
+        warnings.warn('PVSystem.sapm_aoi_loss is deprecated and will be'
+                      ' removed in v0.8, use PVSystem.get_iam instead',
+                      pvlibDeprecationWarning)
+        return PVSystem.get_iam(self, aoi, iam_model='sapm')
 
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
@@ -556,28 +563,25 @@ class PVSystem(object):
         Parameters
         ----------
         poa_direct : numeric
-            The direct irradiance incident upon the module.
+            The direct irradiance incident upon the module.  [W/m2]
 
         poa_diffuse : numeric
-            The diffuse irradiance incident on module.
+            The diffuse irradiance incident on module.  [W/m2]
 
         airmass_absolute : numeric
-            Absolute airmass.
+            Absolute airmass. [unitless]
 
         aoi : numeric
-            Angle of incidence in degrees.
-
-        reference_irradiance : numeric, default 1000
-            Reference irradiance by which to divide the input irradiance.
+            Angle of incidence. [degrees]
 
         Returns
         -------
         effective_irradiance : numeric
-            The SAPM effective irradiance.
+            The SAPM effective irradiance. [W/m2]
         """
         return sapm_effective_irradiance(
             poa_direct, poa_diffuse, airmass_absolute, aoi,
-            self.module_parameters, reference_irradiance=reference_irradiance)
+            self.module_parameters)
 
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
@@ -953,333 +957,6 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
               'altitude': meta['altitude']}
 
     return system
-
-
-def ashraeiam(aoi, b=0.05):
-    '''
-    Determine the incidence angle modifier using the ASHRAE transmission
-    model.
-
-    ashraeiam calculates the incidence angle modifier as developed in
-    [1], and adopted by ASHRAE (American Society of Heating,
-    Refrigeration, and Air Conditioning Engineers) [2]. The model has
-    been used by model programs such as PVSyst [3].
-
-    Note: For incident angles near 90 degrees, this model has a
-    discontinuity which has been addressed in this function.
-
-    Parameters
-    ----------
-    aoi : numeric
-        The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees. Angles of nan will result in nan.
-
-    b : float, default 0.05
-        A parameter to adjust the modifier as a function of angle of
-        incidence. Typical values are on the order of 0.05 [3].
-
-    Returns
-    -------
-    IAM : numeric
-        The incident angle modifier calculated as 1-b*(sec(aoi)-1) as
-        described in [2,3].
-
-        Returns zeros for all abs(aoi) >= 90 and for all IAM values that
-        would be less than 0.
-
-    References
-    ----------
-    [1] Souka A.F., Safwat H.H., "Determination of the optimum
-    orientations for the double exposure flat-plate collector and its
-    reflections". Solar Energy vol .10, pp 170-174. 1966.
-
-    [2] ASHRAE standard 93-77
-
-    [3] PVsyst Contextual Help.
-    http://files.pvsyst.com/help/index.html?iam_loss.htm retrieved on
-    September 10, 2012
-
-    See Also
-    --------
-    irradiance.aoi
-    physicaliam
-    '''
-
-    iam = 1 - b * ((1 / np.cos(np.radians(aoi)) - 1))
-    aoi_gte_90 = np.full_like(aoi, False, dtype='bool')
-    np.greater_equal(np.abs(aoi), 90, where=~np.isnan(aoi), out=aoi_gte_90)
-    iam = np.where(aoi_gte_90, 0, iam)
-    iam = np.maximum(0, iam)
-
-    if isinstance(aoi, pd.Series):
-        iam = pd.Series(iam, index=aoi.index)
-
-    return iam
-
-
-def physicaliam(aoi, n=1.526, K=4., L=0.002):
-    '''
-    Determine the incidence angle modifier using refractive index,
-    extinction coefficient, and glazing thickness.
-
-    physicaliam calculates the incidence angle modifier as described in
-    De Soto et al. "Improvement and validation of a model for
-    photovoltaic array performance", section 3. The calculation is based
-    on a physical model of absorbtion and transmission through a
-    cover.
-
-    Note: The authors of this function believe that eqn. 14 in [1] is
-    incorrect. This function uses the following equation in its place:
-    theta_r = arcsin(1/n * sin(aoi))
-
-    Parameters
-    ----------
-    aoi : numeric
-        The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees. Angles of 0 are replaced with 1e-06
-        to ensure non-nan results. Angles of nan will result in nan.
-
-    n : numeric, default 1.526
-        The effective index of refraction (unitless). Reference [1]
-        indicates that a value of 1.526 is acceptable for glass. n must
-        be a numeric scalar or vector with all values >=0. If n is a
-        vector, it must be the same size as all other input vectors.
-
-    K : numeric, default 4.0
-        The glazing extinction coefficient in units of 1/meters.
-        Reference [1] indicates that a value of  4 is reasonable for
-        "water white" glass. K must be a numeric scalar or vector with
-        all values >=0. If K is a vector, it must be the same size as
-        all other input vectors.
-
-    L : numeric, default 0.002
-        The glazing thickness in units of meters. Reference [1]
-        indicates that 0.002 meters (2 mm) is reasonable for most
-        glass-covered PV panels. L must be a numeric scalar or vector
-        with all values >=0. If L is a vector, it must be the same size
-        as all other input vectors.
-
-    Returns
-    -------
-    iam : numeric
-        The incident angle modifier
-
-    References
-    ----------
-    [1] W. De Soto et al., "Improvement and validation of a model for
-    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-    2006.
-
-    [2] Duffie, John A. & Beckman, William A.. (2006). Solar Engineering
-    of Thermal Processes, third edition. [Books24x7 version] Available
-    from http://common.books24x7.com/toc.aspx?bookid=17160.
-
-    See Also
-    --------
-    getaoi
-    ephemeris
-    spa
-    ashraeiam
-    '''
-    zeroang = 1e-06
-
-    # hold a new reference to the input aoi object since we're going to
-    # overwrite the aoi reference below, but we'll need it for the
-    # series check at the end of the function
-    aoi_input = aoi
-
-    aoi = np.where(aoi == 0, zeroang, aoi)
-
-    # angle of reflection
-    thetar_deg = asind(1.0 / n * (sind(aoi)))
-
-    # reflectance and transmittance for normal incidence light
-    rho_zero = ((1-n) / (1+n)) ** 2
-    tau_zero = np.exp(-K*L)
-
-    # reflectance for parallel and perpendicular polarized light
-    rho_para = (tand(thetar_deg - aoi) / tand(thetar_deg + aoi)) ** 2
-    rho_perp = (sind(thetar_deg - aoi) / sind(thetar_deg + aoi)) ** 2
-
-    # transmittance for non-normal light
-    tau = np.exp(-K * L / cosd(thetar_deg))
-
-    # iam is ratio of non-normal to normal incidence transmitted light
-    # after deducting the reflected portion of each
-    iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
-
-    with np.errstate(invalid='ignore'):
-        # angles near zero produce nan, but iam is defined as one
-        small_angle = 1e-06
-        iam = np.where(np.abs(aoi) < small_angle, 1.0, iam)
-
-        # angles at 90 degrees can produce tiny negative values,
-        # which should be zero. this is a result of calculation precision
-        # rather than the physical model
-        iam = np.where(iam < 0, 0, iam)
-
-        # for light coming from behind the plane, none can enter the module
-        iam = np.where(aoi > 90, 0, iam)
-
-    if isinstance(aoi_input, pd.Series):
-        iam = pd.Series(iam, index=aoi_input.index)
-
-    return iam
-
-
-def iam_martin_ruiz(aoi, a_r=0.16):
-    '''
-    Determine the incidence angle modifier (iam) using the Martin
-    and Ruiz incident angle model.
-
-    Parameters
-    ----------
-    aoi : numeric, degrees
-        The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees. Theta must be a numeric scalar or vector.
-        iam is 0 where |aoi| > 90.
-
-    a_r : numeric
-        The angular losses coefficient described in equation 3 of [1].
-        This is an empirical dimensionless parameter. Values of a_r are
-        generally on the order of 0.08 to 0.25 for flat-plate PV modules.
-        a_r must be a positive numeric scalar or vector (same length as aoi).
-
-    Returns
-    -------
-    iam : numeric
-        The incident angle modifier(s)
-
-    Notes
-    -----
-    iam_martin_ruiz calculates the incidence angle modifier (iam)
-    as described by Martin and Ruiz in [1]. The information
-    required is the incident angle (aoi) and the angular losses
-    coefficient (a_r). Please note that [1] has a corrigendum which makes
-    the document much simpler to understand.
-
-    The incident angle modifier is defined as
-    [1-exp(-cos(aoi/ar))] / [1-exp(-1/ar)], which is
-    presented as AL(alpha) = 1 - IAM in equation 4 of [1]. Thus IAM is
-    equal to 1 at aoi = 0, and equal to 0 at aoi = 90.  This equation is only
-    valid for -90 <= aoi <= 90, therefore iam must be constrained to 0.0
-    beyond this range.
-
-    References
-    ----------
-    [1] N. Martin and J. M. Ruiz, "Calculation of the PV modules angular
-    losses under field conditions by means of an analytical model", Solar
-    Energy Materials & Solar Cells, vol. 70, pp. 25-38, 2001.
-
-    [2] N. Martin and J. M. Ruiz, "Corrigendum to 'Calculation of the PV
-    modules angular losses under field conditions by means of an
-    analytical model'", Solar Energy Materials & Solar Cells, vol. 110,
-    pp. 154, 2013.
-
-    See Also
-    --------
-    physicaliam
-    ashraeiam
-    iam_interp
-    '''
-    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
-
-    aoi_input = aoi
-
-    aoi = np.asanyarray(aoi)
-    a_r = np.asanyarray(a_r)
-
-    if np.any(np.less_equal(a_r, 0)):
-        raise RuntimeError("The parameter 'a_r' cannot be zero or negative.")
-
-    with np.errstate(invalid='ignore'):
-        iam = (1 - np.exp(-cosd(aoi) / a_r)) / (1 - np.exp(-1 / a_r))
-        iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
-
-    if isinstance(aoi_input, pd.Series):
-        iam = pd.Series(iam, index=aoi_input.index)
-
-    return iam
-
-
-def iam_interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
-    '''
-    Determine the incidence angle modifier (iam) by interpolating a set of
-    reference values, which are usually measured values.
-
-    Parameters
-    ----------
-    aoi : numeric, degrees
-        The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees.
-
-    theta_ref : numeric, degrees
-        Vector of angles at which the iam is known.
-
-    iam_ref : numeric, unitless
-        iam values for each angle in theta_ref.
-
-    method : str, default 'linear'
-        Specifies the interpolation method.
-        Useful options are: 'linear', 'quadratic','cubic'.
-        See scipy.interpolate.interp1d for more options.
-
-    normalize : boolean
-        When true, the interpolated values are divided by the interpolated
-        value at zero degrees.  This ensures that the iam at normal
-        incidence is equal to 1.0.
-
-    Returns
-    -------
-    iam : numeric
-        The incident angle modifier(s)
-
-    Notes:
-    ------
-    theta_ref must have two or more points and may span any range of angles.
-    Typically there will be a dozen or more points in the range 0-90 degrees.
-    iam beyond the range of theta_ref are extrapolated, but constrained to be
-    non-negative.
-
-    The sign of aoi is ignored; only the magnitude is used.
-
-    See Also
-    --------
-    physicaliam
-    ashraeiam
-    iam_martin_ruiz
-    '''
-    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
-
-    from scipy.interpolate import interp1d
-
-    # Scipy doesn't give the clearest feedback, so check number of points here.
-    MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
-
-    if len(theta_ref) < MIN_REF_VALS.get(method, 2):
-        raise ValueError("Too few reference points defined "
-                         "for interpolation method '%s'." % method)
-
-    if np.any(np.less(iam_ref, 0)):
-        raise ValueError("Negative value(s) found in 'iam_ref'. "
-                         "This is not physically possible.")
-
-    interpolator = interp1d(theta_ref, iam_ref, kind=method,
-                            fill_value='extrapolate')
-    aoi_input = aoi
-
-    aoi = np.asanyarray(aoi)
-    aoi = np.abs(aoi)
-    iam = interpolator(aoi)
-    iam = np.clip(iam, 0, None)
-
-    if normalize:
-        iam /= interpolator(0)
-
-    if isinstance(aoi_input, pd.Series):
-        iam = pd.Series(iam, index=aoi_input.index)
-
-    return iam
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,
@@ -1800,7 +1477,10 @@ def retrieve_sam(name=None, path=None):
 
     Notes
     -----
-    Files available at https://sam.nrel.gov/sites/default/files/
+    Files available at
+        https://github.com/NREL/SAM/tree/develop/deploy/libraries
+    Documentation for module and inverter data sets:
+        https://sam.nrel.gov/photovoltaic/pv-sub-page-2.html
 
     Examples
     --------
@@ -1897,14 +1577,15 @@ def sapm(effective_irradiance, temp_cell, module):
     Parameters
     ----------
     effective_irradiance : numeric
-        Effective irradiance (suns).
+        Irradiance reaching the module's cells, after reflections and
+        adjustment for spectrum. [W/m2]
 
     temp_cell : numeric
-        The cell temperature (degrees C).
+        Cell temperature [C].
 
     module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the notes section for more details.
+        A dict or Series defining the SAPM parameters. See the notes section
+        for more details.
 
     Returns
     -------
@@ -1922,11 +1603,11 @@ def sapm(effective_irradiance, temp_cell, module):
 
     Notes
     -----
-    The coefficients from SAPM which are required in ``module`` are
+    The SAPM parameters which are required in ``module`` are
     listed in the following table.
 
-    The modules in the Sandia module database contain these
-    coefficients, but the modules in the CEC module database do not.
+    The Sandia module database contains parameter values for a limited set
+    of modules. The CEC module database does not contain these parameters.
     Both databases can be accessed using :py:func:`retrieve_sam`.
 
     ================   ========================================================
@@ -1940,6 +1621,8 @@ def sapm(effective_irradiance, temp_cell, module):
                        Imp, Vmp, Ix, and Ixx to effective irradiance
     Isco               Short circuit current at reference condition (amps)
     Impo               Maximum power current at reference condition (amps)
+    Voco               Open circuit voltage at reference condition (amps)
+    Vmpo               Maximum power voltage at reference condition (amps)
     Aisc               Short circuit current temperature coefficient at
                        reference condition (1/C)
     Aimp               Maximum power current temperature coefficient at
@@ -1974,12 +1657,23 @@ def sapm(effective_irradiance, temp_cell, module):
     temperature.sapm_module
     '''
 
-    T0 = 25
+    # TODO: someday, change temp_ref and irrad_ref to reference_temperature and
+    # reference_irradiance and expose
+    temp_ref = 25
+    irrad_ref = 1000
+    # TODO: remove this warning in v0.8 after deprecation period for change in
+    # effective irradiance units, made in v0.7
+    if np.all(effective_irradiance) < 2.0:
+        import warnings
+        warnings.warn('effective_irradiance inputs appear to be in suns.'
+                      ' Units changed in v0.7 from suns to W/m2',
+                      RuntimeWarning)
+
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
-    Ee = np.array(effective_irradiance, dtype='float64')
+    Ee = np.array(effective_irradiance, dtype='float64') / irrad_ref
 
     # set up masking for 0, positive, and nan inputs
     Ee_gt_0 = np.full_like(Ee, False, dtype='bool')
@@ -2002,32 +1696,32 @@ def sapm(effective_irradiance, temp_cell, module):
     out = OrderedDict()
 
     out['i_sc'] = (
-        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - T0)))
+        module['Isco'] * Ee * (1 + module['Aisc']*(temp_cell - temp_ref)))
 
     out['i_mp'] = (
         module['Impo'] * (module['C0']*Ee + module['C1']*(Ee**2)) *
-        (1 + module['Aimp']*(temp_cell - T0)))
+        (1 + module['Aimp']*(temp_cell - temp_ref)))
 
     out['v_oc'] = np.maximum(0, (
         module['Voco'] + cells_in_series * delta * logEe +
-        Bvoco*(temp_cell - T0)))
+        Bvoco*(temp_cell - temp_ref)))
 
     out['v_mp'] = np.maximum(0, (
         module['Vmpo'] +
         module['C2'] * cells_in_series * delta * logEe +
         module['C3'] * cells_in_series * ((delta * logEe) ** 2) +
-        Bvmpo*(temp_cell - T0)))
+        Bvmpo*(temp_cell - temp_ref)))
 
     out['p_mp'] = out['i_mp'] * out['v_mp']
 
     out['i_x'] = (
         module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - T0)))
+        (1 + module['Aisc']*(temp_cell - temp_ref)))
 
     # the Ixx calculation in King 2004 has a typo (mixes up Aisc and Aimp)
     out['i_xx'] = (
         module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - T0)))
+        (1 + module['Aisc']*(temp_cell - temp_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)
@@ -2153,107 +1847,71 @@ def sapm_spectral_loss(airmass_absolute, module):
     return spectral_loss
 
 
-def sapm_aoi_loss(aoi, module, upper=None):
-    """
-    Calculates the SAPM angle of incidence loss coefficient, F2.
-
-    Parameters
-    ----------
-    aoi : numeric
-        Angle of incidence in degrees. Negative input angles will return
-        zeros.
-
-    module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more
-        details.
-
-    upper : None or float, default None
-        Upper limit on the results.
-
-    Returns
-    -------
-    F2 : numeric
-        The SAPM angle of incidence loss coefficient.
-
-    Notes
-    -----
-    The SAPM traditionally does not define an upper limit on the AOI
-    loss function and values slightly exceeding 1 may exist for moderate
-    angles of incidence (15-40 degrees). However, users may consider
-    imposing an upper limit of 1.
-
-    References
-    ----------
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
-    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
-    NM.
-
-    [2] B.H. King et al, "Procedure to Determine Coefficients for the
-    Sandia Array Performance Model (SAPM)," SAND2016-5284, Sandia
-    National Laboratories (2016).
-
-    [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
-    Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
-    DOI: 10.1109/PVSC.2015.7355849
-    """
-
-    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
-                 module['B1'], module['B0']]
-
-    aoi_loss = np.polyval(aoi_coeff, aoi)
-    aoi_loss = np.clip(aoi_loss, 0, upper)
-    # nan tolerant masking
-    aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
-    np.less(aoi, 0, where=~np.isnan(aoi), out=aoi_lt_0)
-    aoi_loss = np.where(aoi_lt_0, 0, aoi_loss)
-
-    if isinstance(aoi, pd.Series):
-        aoi_loss = pd.Series(aoi_loss, aoi.index)
-
-    return aoi_loss
-
-
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
-                              module, reference_irradiance=1000):
-    """
+                              module):
+    r"""
     Calculates the SAPM effective irradiance using the SAPM spectral
     loss and SAPM angle of incidence loss functions.
 
     Parameters
     ----------
     poa_direct : numeric
-        The direct irradiance incident upon the module.
+        The direct irradiance incident upon the module. [W/m2]
 
     poa_diffuse : numeric
-        The diffuse irradiance incident on module.
+        The diffuse irradiance incident on module.  [W/m2]
 
     airmass_absolute : numeric
-        Absolute airmass.
+        Absolute airmass. [unitless]
 
     aoi : numeric
-        Angle of incidence in degrees.
+        Angle of incidence. [degrees]
 
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance
         parameters. See the :py:func:`sapm` notes section for more
         details.
 
-    reference_irradiance : numeric, default 1000
-        Reference irradiance by which to divide the input irradiance.
-
     Returns
     -------
     effective_irradiance : numeric
-        The SAPM effective irradiance.
+        Effective irradiance accounting for reflections and spectral content.
+        [W/m2]
+
+    Notes
+    -----
+    The SAPM model for effective irradiance [1] translates broadband direct and
+    diffuse irradiance on the plane of array to the irradiance absorbed by a
+    module's cells.
+
+    The model is
+    .. math::
+
+        `Ee = f_1(AM_a) (E_b f_2(AOI) + f_d E_d)`
+
+    where :math:`Ee` is effective irradiance (W/m2), :math:`f_1` is a fourth
+    degree polynomial in air mass :math:`AM_a`, :math:`E_b` is beam (direct)
+    irradiance on the plane of array, :math:`E_d` is diffuse irradiance on the
+    plane of array, :math:`f_2` is a fifth degree polynomial in the angle of
+    incidence :math:`AOI`, and :math:`f_d` is the fraction of diffuse
+    irradiance on the plane of array that is not reflected away.
+
+    References
+    ----------
+    [1] D. King et al, "Sandia Photovoltaic Array Performance Model",
+    SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
+
+    See also
+    --------
+    pvlib.iam.sapm
+    pvlib.pvsystem.sapm_spectral_loss
+    pvlib.pvsystem.sapm
     """
 
     F1 = sapm_spectral_loss(airmass_absolute, module)
-    F2 = sapm_aoi_loss(aoi, module)
+    F2 = iam.sapm(aoi, module)
 
-    E0 = reference_irradiance
-
-    Ee = F1 * (poa_direct*F2 + module['FD']*poa_diffuse) / E0
+    Ee = F1 * (poa_direct * F2 + module['FD'] * poa_diffuse)
 
     return Ee
 
@@ -2368,7 +2026,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     the IV curve are linearly spaced.
 
     References
-    -----------
+    ----------
     [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
     0 86758 909 4
 
@@ -3127,3 +2785,15 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pac = np.maximum(0, pac)     # GH 541
 
     return pac
+
+
+ashraeiam = deprecated('0.7', alternative='iam.ashrae', name='ashraeiam',
+                       removal='0.8')(iam.ashrae)
+
+
+physicaliam = deprecated('0.7', alternative='iam.physical', name='physicaliam',
+                         removal='0.8')(iam.physical)
+
+
+sapm_aoi_loss = deprecated('0.7', alternative='iam.sapm', name='sapm_aoi_loss',
+                           removal='0.8')(iam.sapm)

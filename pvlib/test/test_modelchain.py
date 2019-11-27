@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from pvlib import modelchain, pvsystem, temperature
+from pvlib import iam, modelchain, pvsystem, temperature
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
@@ -16,11 +16,11 @@ import pytest
 from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
 
 
-@pytest.fixture
-def system(sam_data, cec_inverter_parameters, sapm_temperature_cs5p_220m):
-    modules = sam_data['sandiamod']
+@pytest.fixture(scope='function')
+def system(sapm_module_params, cec_inverter_parameters,
+           sapm_temperature_cs5p_220m):
     module = 'Canadian_Solar_CS5P_220M___2009_'
-    module_parameters = modules[module].copy()
+    module_parameters = sapm_module_params.copy()
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module=module,
@@ -101,11 +101,26 @@ def pvwatts_dc_snl_ac_system(cec_inverter_parameters):
     return system
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
+                      inverter_parameters=inverter_parameters)
+    return system
+
+
+@pytest.fixture(scope="function")
+def system_no_aoi(cec_module_cs5p_220m, sapm_temperature_cs5p_220m,
+                  cec_inverter_parameters):
+    module_parameters = cec_module_cs5p_220m.copy()
+    module_parameters['EgRef'] = 1.121
+    module_parameters['dEgdT'] = -0.0002677
+    temp_model_params = sapm_temperature_cs5p_220m.copy()
+    inverter_parameters = cec_inverter_parameters.copy()
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
                       temperature_model_parameters=temp_model_params,
@@ -405,14 +420,14 @@ def constant_aoi_loss(mc):
     mc.aoi_modifier = 0.9
 
 
-@pytest.mark.parametrize('aoi_model, method', [
-    ('sapm', 'sapm_aoi_loss'), ('ashrae', 'ashraeiam'),
-    ('physical', 'physicaliam')])
-def test_aoi_models(system, location, aoi_model, method, weather, mocker):
+@pytest.mark.parametrize('aoi_model', [
+    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+])
+def test_aoi_models(system, location, aoi_model, weather, mocker):
     mc = ModelChain(system, location, dc_model='sapm',
                     aoi_model=aoi_model, spectral_model='no_loss')
-    m = mocker.spy(system, method)
-    mc.run_model(weather)
+    m = mocker.spy(system, 'get_iam')
+    mc.run_model(weather=weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, pd.Series)
     assert not mc.ac.empty
@@ -440,6 +455,25 @@ def test_aoi_model_user_func(system, location, weather, mocker):
     assert not mc.ac.empty
     assert mc.ac[0] > 140 and mc.ac[0] < 200
     assert mc.ac[1] < 1
+
+
+@pytest.mark.parametrize('aoi_model', [
+    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+])
+def test_infer_aoi_model(location, system_no_aoi, aoi_model):
+    for k in iam._IAM_MODEL_PARAMS[aoi_model]:
+        system_no_aoi.module_parameters.update({k: 1.0})
+    mc = ModelChain(system_no_aoi, location,
+                    orientation_strategy='None',
+                    spectral_model='no_loss')
+    assert isinstance(mc, ModelChain)
+
+
+def test_infer_aoi_model_invalid(location, system_no_aoi):
+    exc_text = 'could not infer AOI model'
+    with pytest.raises(ValueError, match=exc_text):
+        ModelChain(system_no_aoi, location, orientation_strategy='None',
+                   spectral_model='no_loss')
 
 
 def constant_spectral_loss(mc):
@@ -559,29 +593,26 @@ def test_deprecated_08():
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
                          'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
     # do not assign PVSystem.temperature_model_parameters
+    # leave out PVSystem.racking_model and PVSystem.module_type
     system = PVSystem(module_parameters=module_parameters)
-    with pytest.warns(pvlibDeprecationWarning):
-        ModelChain(system, location,
-                   dc_model='desoto',
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temp_model='sapm',
-                   ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters)
-    with pytest.warns(pvlibDeprecationWarning):
-        ModelChain(system, location,
-                   dc_model='desoto',
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temperature_model='sapm',
-                   temp_model='sapm',
-                   ac_model='snlinverter')
-    system = PVSystem(module_parameters=module_parameters)
-    with pytest.raises(ValueError):
-        ModelChain(system, location,
-                   dc_model='desoto',
-                   aoi_model='no_loss', spectral_model='no_loss',
-                   temperature_model='pvsyst',
-                   temp_model='sapm',
-                   ac_model='snlinverter')
+    # deprecated temp_model kwarg
+    warn_txt = 'temp_model keyword argument is deprecated'
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
+                   spectral_model='no_loss', ac_model='snlinverter',
+                   temp_model='sapm')
+    # provide both temp_model and temperature_model kwargs
+    warn_txt = 'Provide only one of temperature_model'
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
+                   spectral_model='no_loss', ac_model='snlinverter',
+                   temperature_model='sapm', temp_model='sapm')
+    # conflicting temp_model and temperature_model kwargs
+    exc_text = 'Conflicting temperature_model'
+    with pytest.raises(ValueError, match=exc_text):
+        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
+                   spectral_model='no_loss', ac_model='snlinverter',
+                   temperature_model='pvsyst', temp_model='sapm')
 
 
 @requires_scipy

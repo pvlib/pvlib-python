@@ -128,6 +128,27 @@ def test_first_solar_spectral_correction_ambiguous():
         atmosphere.first_solar_spectral_correction(1, 1)
 
 
+def test_first_solar_spectral_correction_range():
+    with pytest.warns(UserWarning, match='Exceptionally high pw values'):
+        out = atmosphere.first_solar_spectral_correction(np.array([.1, 3, 10]),
+                                                         np.array([1, 3, 5]),
+                                                         module_type='monosi')
+    expected = np.array([0.96080878, 1.03055092,        nan])
+    assert_allclose(out, expected, atol=1e-3)
+    with pytest.warns(UserWarning, match='Exceptionally high pw values'):
+        out = atmosphere.first_solar_spectral_correction(6, 1.5, max_pw=5,
+                                                         module_type='monosi')
+    with pytest.warns(UserWarning, match='Exceptionally low pw values'):
+        out = atmosphere.first_solar_spectral_correction(np.array([0, 3, 8]),
+                                                         np.array([1, 3, 5]),
+                                                         module_type='monosi')
+    expected = np.array([0.96080878, 1.03055092, 1.04932727])
+    assert_allclose(out, expected, atol=1e-3)
+    with pytest.warns(UserWarning, match='Exceptionally low pw values'):
+        out = atmosphere.first_solar_spectral_correction(0.2, 1.5, min_pw=1,
+                                                         module_type='monosi')
+
+
 def test_kasten96_lt():
     """Test Linke turbidity factor calculated from AOD, Pwat and AM"""
     amp = np.array([1, 3, 5])

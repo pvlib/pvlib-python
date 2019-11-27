@@ -212,15 +212,18 @@ wrap the functions listed below. See its documentation for details.
    pvsystem.PVSystem
    pvsystem.LocalizedPVSystem
 
-AOI modifiers
--------------
+Incident angle modifiers
+------------------------
 
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.physicaliam
-   pvsystem.ashraeiam
-   pvsystem.sapm_aoi_loss
+   iam.physical
+   iam.ashrae
+   iam.martin_ruiz
+   iam.martin_ruiz_diffuse
+   iam.sapm
+   iam.interp
 
 PV temperature models
 ---------------------
@@ -302,6 +305,7 @@ Functions for fitting PV models
 
     ivtools.fit_sde_sandia
     ivtools.fit_sdm_cec_sam
+    ivtools.fit_sdm_desoto
 
 Other
 -----

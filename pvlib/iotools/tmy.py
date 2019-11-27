@@ -468,7 +468,7 @@ def _read_tmy2(string, columns, hdr_columns, fname):
                     continue
 
                 # Read the next increment from the marker list
-                increment = int(re.findall('\d+', marker)[0])
+                increment = int(re.findall(r'\d+', marker)[0])
                 next_cursor = cursor + increment
 
                 # Extract the value from the line in the file

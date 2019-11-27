@@ -45,7 +45,7 @@ configuration at a handful of sites listed below.
     sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
     sapm_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
     temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
     # specify constant ambient air temp and wind for simplicity
@@ -164,7 +164,7 @@ by examining the parameters defined for the module.
                         orientation_strategy='south_at_latitude_tilt')
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
-        mc.run_model(times=times, weather=weather)
+        mc.run_model(weather)
         annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 

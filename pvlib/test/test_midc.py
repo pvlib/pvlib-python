@@ -24,6 +24,8 @@ test_dir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 midc_testfile = os.path.join(test_dir, '../data/midc_20181014.txt')
 midc_raw_testfile = os.path.join(test_dir, '../data/midc_raw_20181018.txt')
+midc_raw_short_header_testfile = os.path.join(
+    test_dir, '../data/midc_raw_short_header_20191115.txt')
 midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
                          '?site=UAT&begin=20181018&end=20181019')
 
@@ -73,3 +75,17 @@ def test_read_midc_raw_data_from_nrel():
     for k, v in var_map.items():
         assert v in data.columns
     assert data.index.size == 2880
+
+
+def test_read_midc_header_length_mismatch(mocker):
+    mock_data = mocker.MagicMock()
+    with open(midc_raw_short_header_testfile, 'r') as f:
+        mock_data.text = f.read()
+    mocker.patch('pvlib.iotools.midc.requests.get',
+                 return_value=mock_data)
+    start = pd.Timestamp('2019-11-15T00:00:00-06:00')
+    end = pd.Timestamp('2019-11-15T23:59:00-06:00')
+    data = midc.read_midc_raw_data_from_nrel('', start, end)
+    assert isinstance(data.index, pd.DatetimeIndex)
+    assert data.index[0] == start
+    assert data.index[-1] == end

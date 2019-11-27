@@ -13,7 +13,7 @@ from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
                    tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
-from pvlib.pvsystem import DC_MODEL_PARAMS
+from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 
 
@@ -271,8 +271,8 @@ class ModelChain(object):
     aoi_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'physical',
-        'ashrae', 'sapm', 'no_loss'. The ModelChain instance will be
-        passed as the first argument to a user-defined function.
+        'ashrae', 'sapm', 'martin_ruiz', 'no_loss'. The ModelChain instance
+        will be passed as the first argument to a user-defined function.
 
     spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
@@ -324,13 +324,15 @@ class ModelChain(object):
         # TODO: deprecated kwarg temp_model. Remove use of temp_model in v0.8
         temp_model = kwargs.pop('temp_model', None)
         if temp_model is not None:
-            warnings.warn('The temp_model keyword argument is deprecated. Use '
-                          'temperature_model instead', pvlibDeprecationWarning)
             if temperature_model is None:
+                warnings.warn('The temp_model keyword argument is deprecated.'
+                              ' Use temperature_model instead',
+                              pvlibDeprecationWarning)
                 temperature_model = temp_model
             elif temp_model == temperature_model:
                 warnings.warn('Provide only one of temperature_model or '
-                              'temp_model (deprecated).')
+                              'temp_model (deprecated).',
+                              pvlibDeprecationWarning)
             else:
                 raise ValueError(
                     'Conflicting temperature_model {} and temp_model {}. '
@@ -393,9 +395,9 @@ class ModelChain(object):
         # Set model and validate parameters
         if isinstance(model, str):
             model = model.lower()
-            if model in DC_MODEL_PARAMS.keys():
+            if model in _DC_MODEL_PARAMS.keys():
                 # validate module parameters
-                missing_params = DC_MODEL_PARAMS[model] - \
+                missing_params = _DC_MODEL_PARAMS[model] - \
                                  set(self.system.module_parameters.keys())
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
@@ -438,7 +440,7 @@ class ModelChain(object):
                              'set the model with the dc_model kwarg.')
 
     def sapm(self):
-        self.dc = self.system.sapm(self.effective_irradiance/1000.,
+        self.dc = self.system.sapm(self.effective_irradiance,
                                    self.cell_temperature)
 
         self.dc = self.system.scale_voltage_current_power(self.dc)
@@ -540,6 +542,8 @@ class ModelChain(object):
                 self._aoi_model = self.physical_aoi_loss
             elif model == 'sapm':
                 self._aoi_model = self.sapm_aoi_loss
+            elif model == 'martin_ruiz':
+                self._aoi_model = self.martin_ruiz_aoi_loss
             elif model == 'no_loss':
                 self._aoi_model = self.no_aoi_loss
             else:
@@ -555,24 +559,31 @@ class ModelChain(object):
             return self.sapm_aoi_loss
         elif set(['b']) <= params:
             return self.ashrae_aoi_loss
+        elif set(['a_r']) <= params:
+            return self.martin_ruiz_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
                              'system.module_parameters. Check that the '
                              'system.module_parameters contain parameters for '
-                             'the physical, aoi, or ashrae model; explicitly '
-                             'set model with aoi_model kwarg; or set '
-                             'aoi_model="no_loss".')
+                             'the physical, aoi, ashrae or martin_ruiz model; '
+                             'explicitly set the model with the aoi_model '
+                             'kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
-        self.aoi_modifier = self.system.ashraeiam(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='ashrae')
         return self
 
     def physical_aoi_loss(self):
-        self.aoi_modifier = self.system.physicaliam(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='physical')
         return self
 
     def sapm_aoi_loss(self):
-        self.aoi_modifier = self.system.sapm_aoi_loss(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='sapm')
+        return self
+
+    def martin_ruiz_aoi_loss(self):
+        self.aoi_modifier = self.system.get_iam(self.aoi,
+                                                iam_model='martin_ruiz')
         return self
 
     def no_aoi_loss(self):

@@ -10,8 +10,16 @@ compatibility notes.
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
 **Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
 
-API Changes
-~~~~~~~~~~~
+API Breaking Changes
+~~~~~~~~~~~~~~~~~~~~
+* The `effective_irradiance` argument for :py:func:`pvsystem.sapm` now requires
+  units of W/m^2. Previously, units for this input were suns. A RuntimeWarning
+  warning is raised if all `effective_irradiance < 2.0`.
+* The output of :py:func:`pvsystem.sapm_effective_irradiance` is now in units
+  of W/m2 rather than suns.
+
+API Changes with Deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Changes related to cell temperature models (:issue:`678`):
    * Changes to functions
       - Moved functions for cell temperature from `pvsystem.py` to `temperature.py`.
@@ -63,8 +71,8 @@ API Changes
       - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain`
         defaults to old behavior, using the SAPM temperature model with parameter
         set `open_rack_glass_glass`. This behavior is deprecated, and will be
-         removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
-          be required for `ModelChain`.
+        removed in v0.8. In v0.8 `PVSystem.temperature_model_parameters` will
+        be required for `ModelChain`.
       - Implemented `pvsyst` as an option for `ModelChain.temperature_model`.
       - `modelchain.basic_chain` has a new required argument
         `temperature_model_parameters`.
@@ -72,7 +80,7 @@ API Changes
 * Changes related to IAM (AOI loss) functions (:issue:`680`):
    * Changes to functions
       - Moved functions from `pvsystem.py` to `iam.py`. `pvsystem` IAM
-       functions are deprecated and will be removed in v0.8.
+        functions are deprecated and will be removed in v0.8.
       - Functions are renamed to a consistent pattern:
          - `pvsystem.physicaliam` is `iam.physical`
          - `pvsystem.ashraeiam` is `iam.ashrae`
@@ -80,7 +88,7 @@ API Changes
    * Changes to `PVSystem` class
       - IAM models are provided by `PVSystem.get_iam` with kwarg `iam_model`.
       - Methods `PVSystem.ashraeiam`, `PVSystem.physicaliam` and
-       `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
+        `PVSystem.sapm_aoi_loss` are deprecated and will be removed in v0.8.
 
 * Changes related to spectral modifier (:issue:`782`):
    * Changes to functions

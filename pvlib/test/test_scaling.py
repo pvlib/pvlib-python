@@ -107,7 +107,8 @@ def test_compute_wavelet_series_numindex(clear_sky_index, time,
     assert_almost_equal(wavelet[0:3, 5000:5005], expect_wavelet)
 
 
-def test_compute_wavelet_array(clear_sky_index, expect_tmscale, expect_wavelet):
+def test_compute_wavelet_array(clear_sky_index,
+                               expect_tmscale, expect_wavelet):
     wavelet, tmscale = scaling._compute_wavelet(clear_sky_index, dt)
     assert_almost_equal(tmscale, expect_tmscale)
     assert_almost_equal(wavelet[0:3, 5000:5005], expect_wavelet)

@@ -560,7 +560,6 @@ Bifacial
 ========
 
 Methods for calculating back surface irradiance
------------------------------------------------
 
 .. autosummary::
    :toctree: generated/
@@ -569,10 +568,9 @@ Methods for calculating back surface irradiance
 
 
 Scaling
-========
+=======
 
 Methods for manipulating irradiance for temporal or spatial considerations
---------------------------------------------------------------------------
 
 .. autosummary::
    :toctree: generated/

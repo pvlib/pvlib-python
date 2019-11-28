@@ -196,14 +196,15 @@ def _compute_wavelet(clearsky_index, dt=None):
 
     try:  # Assume it's a pandas type
         vals = clearsky_index.values.flatten()
-        try:  # Assume it's a time series type index
-            dt = (clearsky_index.index[1] - clearsky_index.index[0]).seconds
-        except AttributeError:  # It must just be a numeric index
-            dt = (clearsky_index.index[1] - clearsky_index.index[0])
     except AttributeError:  # Assume it's a numpy type
         vals = clearsky_index.flatten()
         if dt is None:
             raise ValueError("dt must be specified for numpy type inputs.")
+    else: # flatten() succeeded, thus it's a pandas type, so get its dt
+        try:  # Assume it's a time series type index
+            dt = (clearsky_index.index[1] - clearsky_index.index[0]).seconds
+        except AttributeError:  # It must just be a numeric index
+            dt = (clearsky_index.index[1] - clearsky_index.index[0])
 
     # Pad the series on both ends in time and place in a dataframe
     cs_long = np.pad(vals, (len(vals), len(vals)), 'symmetric')

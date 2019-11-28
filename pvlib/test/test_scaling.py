@@ -73,6 +73,14 @@ def test_compute_wavelet_series():
     assert_almost_equal(wavelet[0:3, 5000:5005], expect_wavelet)
 
 
+def test_compute_wavelet_series_numindex():
+    dtindex = pd.to_datetime(time, unit='s')
+    csi_series = pd.Series(clear_sky_index, index=dtindex)
+    wavelet, tmscale = scaling._compute_wavelet(csi_series)
+    assert_almost_equal(tmscale, expect_tmscale)
+    assert_almost_equal(wavelet[0:3, 5000:5005], expect_wavelet)
+
+
 def test_compute_wavelet_array():
     wavelet, tmscale = scaling._compute_wavelet(clear_sky_index, dt)
     assert_almost_equal(tmscale, expect_tmscale)

@@ -200,7 +200,7 @@ def _compute_wavelet(clearsky_index, dt=None):
         vals = clearsky_index.flatten()
         if dt is None:
             raise ValueError("dt must be specified for numpy type inputs.")
-    else: # flatten() succeeded, thus it's a pandas type, so get its dt
+    else:  # flatten() succeeded, thus it's a pandas type, so get its dt
         try:  # Assume it's a time series type index
             dt = (clearsky_index.index[1] - clearsky_index.index[0]).seconds
         except AttributeError:  # It must just be a numeric index

@@ -54,7 +54,7 @@ def expect_tmscale():
 
 @pytest.fixture
 def expect_wavelet():
-    # Expected wavelet for indices 5000:5004 with clear_sky_index above (Matlab)
+    # Expected wavelet for indices 5000:5004 for clear_sky_index above (Matlab)
     return np.array([[-0.025, 0.05, 0., -0.05, 0.025],
                      [0.025, 0., 0., 0., -0.025],
                      [0., 0., 0., 0., 0.]])

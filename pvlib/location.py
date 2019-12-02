@@ -125,6 +125,42 @@ class Location(object):
         # not sure if this should be assigned regardless of input.
         if tmy_data is not None:
             new_object.tmy_data = tmy_data
+            new_object.weather = tmy_data
+
+        return new_object
+
+    @classmethod
+    def from_epw(cls, epw_metadata, epw_data=None, **kwargs):
+        """
+        Create a Location object based on a metadata
+        dictionary from epw data readers.
+
+        Parameters
+        ----------
+        epw_metadata : dict
+            Returned from epw.read_epw
+        epw_data : None or DataFrame, default None
+            Optionally attach the epw data to this object.
+
+        Returns
+        -------
+        Location object (or the child class of Location that you
+        called this method from).
+        """
+
+        latitude = epw_metadata['latitude']
+        longitude = epw_metadata['longitude']
+
+        name = epw_metadata['city']
+
+        tz = epw_metadata['TZ']
+        altitude = epw_metadata['altitude']
+
+        new_object = cls(latitude, longitude, tz=tz, altitude=altitude,
+                         name=name, **kwargs)
+
+        if epw_data is not None:
+            new_object.weather = epw_data
 
         return new_object
 

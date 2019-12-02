@@ -560,9 +560,19 @@ Bifacial
 ========
 
 Methods for calculating back surface irradiance
------------------------------------------------
 
 .. autosummary::
    :toctree: generated/
 
    bifacial.pvfactors_timeseries
+
+
+Scaling
+=======
+
+Methods for manipulating irradiance for temporal or spatial considerations
+
+.. autosummary::
+   :toctree: generated/
+
+   scaling.wvm

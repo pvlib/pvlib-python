@@ -8,6 +8,7 @@ import pytest
 from pandas.util.testing import assert_frame_equal
 from numpy.testing import assert_allclose
 
+import pvlib
 from pvlib.location import Location
 from pvlib import tracking
 
@@ -471,6 +472,17 @@ def test_LocalizedSingleAxisTracker___repr__():
 
 
 def test_calc_axis_tilt():
+    # expected values
+    expected_axis_tilt = 2.239  # [degrees]
+    expected_side_slope = -9.86649274360294  # [degrees]
+    expected = os.path.join(DATADIR, 'singleaxis_tracker_wslope.dat')
+    expected = pd.read_csv(expected, index_col='timestamp', parse_dates=True)
+    # solar positions
+    starttime = '2017-01-01T00:30:00-0300'
+    stoptime = '2017-12-31T23:59:59-0300'
+    lat, lon = -27.597300, -48.549610
+    times = pd.DatetimeIndex(pd.date_range(starttime, stoptime, freq='H'))
+    solpos = pvlib.solarposition.get_solarposition(times, lat, lon)
     # singleaxis tracker w/slope data
     system_plane = (77.34, 10.1149)
     axis_azimuth = 0.0
@@ -482,30 +494,19 @@ def test_calc_axis_tilt():
     # calculate tracker axis zenith
     tr_ze = tracking.calc_tracker_axis_tilt(sys_az, sys_ze, tr_az)
     axis_tilt = np.degrees(tr_ze)
-    assert np.isclose(axis_tilt, 2.239)
+    assert np.isclose(axis_tilt, expected_axis_tilt)
     # calculate side slope and relative rotation
     ss, rel_rot = tracking.calc_system_tracker_side_slope(
         tr_az, tr_ze, sys_az, sys_ze)
     side_slope = np.degrees(ss)
-    assert np.isclose(side_slope, -9.86649274360294)
-    expected = os.path.join(DATADIR, 'singleaxis_tracker_wslope.dat')
-    expected = pd.read_csv(expected, index_col='timestamp', parse_dates=True)
+    assert np.isclose(side_slope, expected_side_slope)
     sat = tracking.singleaxis(
-        expected['zen'], expected['azim'], axis_tilt, axis_azimuth, max_angle,
-        backtrack=True, gcr=gcr, side_slope=side_slope)
-    # they six timestamps, all low sun angles, are a mystery
-    mystery_errors = [
-        '2017-03-14 18:30:00-03:00',
-        '2017-10-30 18:30:00-03:00',
-        '2017-10-31 18:30:00-03:00',
-        '2017-11-01 18:30:00-03:00',
-        '2017-11-02 18:30:00-03:00',
-        '2017-11-03 18:30:00-03:00']
-    for idx in mystery_errors:
-        sat['tracker_theta'][idx] = np.nan
-        sat.loc[idx]['aoi'] = np.nan
-        expected['trrot'][idx] = np.nan
-        expected.loc[idx]['aoi'] = np.nan
+        solpos.apparent_zenith, solpos.azimuth, axis_tilt, axis_azimuth,
+        max_angle, backtrack=True, gcr=gcr, side_slope=side_slope)
     assert np.allclose(
-        -sat['tracker_theta'], expected['trrot'], equal_nan=True)
+        sat['tracker_theta'], expected['tracker_theta'], equal_nan=True)
     assert np.allclose(sat['aoi'], expected['aoi'], equal_nan=True)
+    assert np.allclose(
+        sat['surface_azimuth'], expected['surface_azimuth'], equal_nan=True)
+    assert np.allclose(
+        sat['surface_tilt'], expected['surface_tilt'], equal_nan=True)

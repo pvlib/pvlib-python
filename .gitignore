@@ -86,4 +86,6 @@ coverage.xml
 #Ignore some notebooks
 *.ipynb
 !docs/tutorials/*.ipynb
-*.idea
+
+#Ignore Mac DS_store files
+*.DS_Store

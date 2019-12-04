@@ -8,7 +8,7 @@ import pandas as pd
 import pytz
 
 import pytest
-from numpy.testing import assert_almost_equal, assert_allclose
+from numpy.testing import assert_allclose
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
@@ -308,8 +308,9 @@ def test_simplified_solis_scalar_neg_elevation():
 
 
 def test_simplified_solis_series_elevation():
-    expected = pd.DataFrame(np.array([[959.335463,  1064.653145,  129.125602]]),
-                            columns=['dni', 'ghi', 'dhi'])
+    expected = pd.DataFrame(
+        np.array([[959.335463,  1064.653145,  129.125602]]),
+        columns=['dni', 'ghi', 'dhi'])
     expected = expected[['ghi', 'dni', 'dhi']]
 
     out = clearsky.simplified_solis(pd.Series(80))
@@ -516,6 +517,13 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(-91, -122)  # exceeds min latitude
     with pytest.raises(IndexError):
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
+
+
+def test_degrees_to_index_1():
+    """Test that _degrees_to_index raises an error when something other than
+    'latitude' or 'longitude' is passed."""
+    with pytest.raises(IndexError):  # invalid value for coordinate argument
+        clearsky._degrees_to_index(degrees=22.0, coordinate='width')
 
 
 @pytest.fixture

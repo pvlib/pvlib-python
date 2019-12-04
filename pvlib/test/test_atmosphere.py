@@ -8,9 +8,6 @@ from pandas.util.testing import assert_series_equal
 import pytest
 
 from pvlib import atmosphere
-from pvlib._deprecation import pvlibDeprecationWarning
-
-from conftest import fail_on_pvlib_version
 
 
 def test_pres2alt():
@@ -74,14 +71,6 @@ def test_get_absolute_airmass():
     assert_allclose(out, expected, equal_nan=True, atol=0.001)
 
 
-@fail_on_pvlib_version('0.7')
-def test_deprecated_07():
-    with pytest.warns(pvlibDeprecationWarning):
-        atmosphere.relativeairmass(2)
-    with pytest.warns(pvlibDeprecationWarning):
-        atmosphere.absoluteairmass(2)
-
-
 def test_gueymard94_pw():
     temp_air = np.array([0, 20, 40])
     relative_humidity = np.array([0, 30, 100])
@@ -137,6 +126,27 @@ def test_first_solar_spectral_correction_supplied():
 def test_first_solar_spectral_correction_ambiguous():
     with pytest.raises(TypeError):
         atmosphere.first_solar_spectral_correction(1, 1)
+
+
+def test_first_solar_spectral_correction_range():
+    with pytest.warns(UserWarning, match='Exceptionally high pw values'):
+        out = atmosphere.first_solar_spectral_correction(np.array([.1, 3, 10]),
+                                                         np.array([1, 3, 5]),
+                                                         module_type='monosi')
+    expected = np.array([0.96080878, 1.03055092,        nan])
+    assert_allclose(out, expected, atol=1e-3)
+    with pytest.warns(UserWarning, match='Exceptionally high pw values'):
+        out = atmosphere.first_solar_spectral_correction(6, 1.5, max_pw=5,
+                                                         module_type='monosi')
+    with pytest.warns(UserWarning, match='Exceptionally low pw values'):
+        out = atmosphere.first_solar_spectral_correction(np.array([0, 3, 8]),
+                                                         np.array([1, 3, 5]),
+                                                         module_type='monosi')
+    expected = np.array([0.96080878, 1.03055092, 1.04932727])
+    assert_allclose(out, expected, atol=1e-3)
+    with pytest.warns(UserWarning, match='Exceptionally low pw values'):
+        out = atmosphere.first_solar_spectral_correction(0.2, 1.5, min_pw=1,
+                                                         module_type='monosi')
 
 
 def test_kasten96_lt():

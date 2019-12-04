@@ -30,7 +30,7 @@ configuration at a handful of sites listed below.
     import pandas as pd
     import matplotlib.pyplot as plt
 
-    naive_times = pd.DatetimeIndex(start='2015', end='2016', freq='1h')
+    naive_times = pd.date_range(start='2015', end='2016', freq='1h')
 
     # very approximate
     # latitude, longitude, name, altitude, timezone
@@ -45,7 +45,8 @@ configuration at a handful of sites listed below.
     sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
     sapm_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
+    temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
     # specify constant ambient air temp and wind for simplicity
     temp_air = 20
@@ -88,12 +89,13 @@ to accomplish our system modeling goal:
                                                             cs['dni'], cs['ghi'], cs['dhi'],
                                                             dni_extra=dni_extra,
                                                             model='haydavies')
-        temps = pvlib.pvsystem.sapm_celltemp(total_irrad['poa_global'],
-                                             wind_speed, temp_air)
+        tcell = pvlib.temperature.sapm_cell(total_irrad['poa_global'],
+                                            temp_air, wind_speed,
+                                            **temperature_model_parameters)
         effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
             total_irrad['poa_direct'], total_irrad['poa_diffuse'],
             am_abs, aoi, module)
-        dc = pvlib.pvsystem.sapm(effective_irradiance, temps['temp_cell'], module)
+        dc = pvlib.pvsystem.sapm(effective_irradiance, tcell, module)
         ac = pvlib.pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter)
         annual_energy = ac.sum()
         energies[name] = annual_energy
@@ -134,14 +136,13 @@ The following code demonstrates how to use
 :py:class:`~pvlib.modelchain.ModelChain` objects to accomplish our
 system modeling goal. ModelChain objects provide convenience methods
 that can provide default selections for models and can also fill
-necessary input data with modeled data. In our example below, we use
-convenience methods. For example, no irradiance data is provided as
-input, so the ModelChain object substitutes irradiance from a clear-sky
-model via the prepare_inputs method. Also, no irradiance transposition
-model is specified (keyword argument `transposition` for ModelChain) so
-the ModelChain defaults to the `haydavies` model. In this example,
-ModelChain infers the DC power model from the module provided by
-examining the parameters defined for module.
+necessary input with modeled data. For example, no air temperature
+or wind speed data is provided in the input *weather* DataFrame,
+so the ModelChain object defaults to 20 C and 0 m/s. Also, no irradiance
+transposition model is specified (keyword argument `transposition` for
+ModelChain) so the ModelChain defaults to the `haydavies` model. In this
+example, ModelChain infers the DC power model from the module provided
+by examining the parameters defined for the module.
 
 .. ipython:: python
 
@@ -150,19 +151,20 @@ examining the parameters defined for module.
     from pvlib.modelchain import ModelChain
 
     system = PVSystem(module_parameters=module,
-                      inverter_parameters=inverter)
+                      inverter_parameters=inverter,
+                      temperature_model_parameters=temperature_model_parameters)
 
     energies = {}
     for latitude, longitude, name, altitude, timezone in coordinates:
         times = naive_times.tz_localize(timezone)
         location = Location(latitude, longitude, name=name, altitude=altitude,
                             tz=timezone)
-        # very experimental
+        weather = location.get_clearsky(times)
         mc = ModelChain(system, location,
                         orientation_strategy='south_at_latitude_tilt')
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
-        mc.run_model(times)
+        mc.run_model(weather)
         annual_energy = mc.ac.sum()
         energies[name] = annual_energy
 
@@ -215,6 +217,7 @@ modeling goal:
     for latitude, longitude, name, altitude, timezone in coordinates:
         localized_system = LocalizedPVSystem(module_parameters=module,
                                              inverter_parameters=inverter,
+                                             temperature_model_parameters=temperature_model_parameters,
                                              surface_tilt=latitude,
                                              surface_azimuth=180,
                                              latitude=latitude,
@@ -230,15 +233,15 @@ modeling goal:
                                                       clearsky['dni'],
                                                       clearsky['ghi'],
                                                       clearsky['dhi'])
-        temps = localized_system.sapm_celltemp(total_irrad['poa_global'],
-                                               wind_speed, temp_air)
+        tcell = localized_system.sapm_celltemp(total_irrad['poa_global'],
+                                               temp_air, wind_speed)
         aoi = localized_system.get_aoi(solar_position['apparent_zenith'],
                                        solar_position['azimuth'])
         airmass = localized_system.get_airmass(solar_position=solar_position)
         effective_irradiance = localized_system.sapm_effective_irradiance(
             total_irrad['poa_direct'], total_irrad['poa_diffuse'],
             airmass['airmass_absolute'], aoi)
-        dc = localized_system.sapm(effective_irradiance, temps['temp_cell'])
+        dc = localized_system.sapm(effective_irradiance, tcell)
         ac = localized_system.snlinverter(dc['v_mp'], dc['p_mp'])
         annual_energy = ac.sum()
         energies[name] = annual_energy

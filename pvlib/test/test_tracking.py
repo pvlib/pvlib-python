@@ -397,8 +397,15 @@ def test_get_irradiance():
                                         backtrack=True)
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
-    location = Location(latitude=32, longitude=-111)
-    solar_position = location.get_solarposition(times)
+    # latitude=32, longitude=-111
+    solar_position = pd.DataFrame(np.array(
+        [[55.36421554,  55.38851771,  34.63578446,  34.61148229,
+          172.32003763,  -3.44516534],
+         [96.50000401,  96.50000401,  -6.50000401,  -6.50000401,
+          246.91581654,  -3.56292888]]),
+        columns=['apparent_zenith', 'zenith', 'apparent_elevation',
+                 'elevation', 'azimuth', 'equation_of_time'],
+        index=times)
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
                           index=times)
     solar_zenith = solar_position['apparent_zenith']
@@ -433,7 +440,11 @@ def test_get_irradiance():
 def test_SingleAxisTracker___repr__():
     system = tracking.SingleAxisTracker(max_angle=45, gcr=.25,
                                         module='blah', inverter='blarg')
-    expected = 'SingleAxisTracker: \n  axis_tilt: 0\n  axis_azimuth: 0\n  max_angle: 45\n  backtrack: True\n  gcr: 0.25\n  name: None\n  surface_tilt: None\n  surface_azimuth: None\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback'
+    expected = ('SingleAxisTracker: \n  axis_tilt: 0\n  axis_azimuth: 0\n  '
+                'max_angle: 45\n  backtrack: True\n  gcr: 0.25\n  '
+                'name: None\n  surface_tilt: None\n  surface_azimuth: None\n  '
+                'module: blah\n  inverter: blarg\n  albedo: 0.25\n  '
+                'racking_model: open_rack')
     assert system.__repr__() == expected
 
 
@@ -444,6 +455,11 @@ def test_LocalizedSingleAxisTracker___repr__():
                                                            inverter='blarg',
                                                            gcr=0.25)
 
-    expected = 'LocalizedSingleAxisTracker: \n  axis_tilt: 0\n  axis_azimuth: 0\n  max_angle: 90\n  backtrack: True\n  gcr: 0.25\n  name: None\n  surface_tilt: None\n  surface_azimuth: None\n  module: blah\n  inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack_cell_glassback\n  latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC'
+    expected = ('LocalizedSingleAxisTracker: \n  axis_tilt: 0\n  '
+                'axis_azimuth: 0\n  max_angle: 90\n  backtrack: True\n  '
+                'gcr: 0.25\n  name: None\n  surface_tilt: None\n  '
+                'surface_azimuth: None\n  module: blah\n  inverter: blarg\n  '
+                'albedo: 0.25\n  racking_model: open_rack\n  '
+                'latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC')
 
     assert localized_system.__repr__() == expected

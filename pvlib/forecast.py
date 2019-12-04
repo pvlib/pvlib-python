@@ -17,8 +17,8 @@ from siphon.ncss import NCSS
 import warnings
 
 warnings.warn(
-    'The forecast module algorithms and features are highly experimental. ' +
-    'The API may change, the functionality may be consolidated into an io ' +
+    'The forecast module algorithms and features are highly experimental. '
+    'The API may change, the functionality may be consolidated into an io '
     'module, or the module may be separated into its own package.')
 
 
@@ -97,7 +97,7 @@ class ForecastModel(object):
     """
 
     access_url_key = 'NetcdfSubset'
-    catalog_url = 'http://thredds.ucar.edu/thredds/catalog.xml'
+    catalog_url = 'https://thredds.ucar.edu/thredds/catalog.xml'
     base_tds_url = catalog_url.split('/thredds/')[0]
     data_format = 'netcdf'
 
@@ -201,7 +201,7 @@ class ForecastModel(object):
 
     def get_data(self, latitude, longitude, start, end,
                  vert_level=None, query_variables=None,
-                 close_netcdf_data=True):
+                 close_netcdf_data=True, **kwargs):
         """
         Submits a query to the UNIDATA servers using Siphon NCSS and
         converts the netcdf data to a pandas DataFrame.
@@ -223,6 +223,8 @@ class ForecastModel(object):
         close_netcdf_data: bool, default True
             Controls if the temporary netcdf data file should be closed.
             Set to False to access the raw data.
+        **kwargs:
+            Additional keyword arguments are silently ignored.
 
         Returns
         -------
@@ -439,7 +441,7 @@ class ForecastModel(object):
            cloud_cover e.g.
            :py:meth:`~ForecastModel.cloud_cover_to_ghi_linear`
         3. Estimate cloudy sky DNI using the DISC model.
-        4. Calculate DHI from DNI and DHI.
+        4. Calculate DHI from DNI and GHI.
 
         Parameters
         ----------
@@ -789,6 +791,9 @@ class HRRR_ESRL(ForecastModel):                                 # noqa: N801
         self.variables = {
             'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
+            # 'temp_air': 'Temperature_height_above_ground',  # GH 702
+            # 'wind_speed_u': 'u-component_of_wind_height_above_ground',
+            # 'wind_speed_v': 'v-component_of_wind_height_above_ground',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere',
             'low_clouds': 'Low_cloud_cover_UnknownLevelType-214',
             'mid_clouds': 'Medium_cloud_cover_UnknownLevelType-224',
@@ -830,6 +835,7 @@ class HRRR_ESRL(ForecastModel):                                 # noqa: N801
         data = super(HRRR_ESRL, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
+        # data['wind_speed'] = self.uv_to_speed(data)  # GH 702
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
         return data[self.output_variables]
@@ -1036,9 +1042,8 @@ class NDFD(ForecastModel):
         model_type = 'Forecast Products and Analyses'
         model = 'National Weather Service CONUS Forecast Grids (CONDUIT)'
         self.variables = {
-            'temp_air': 'Temperature_surface',
-            'wind_speed': 'Wind_speed_surface',
-            'wind_speed_gust': 'Wind_speed_gust_surface',
+            'temp_air': 'Temperature_height_above_ground',
+            'wind_speed': 'Wind_speed_height_above_ground',
             'total_clouds': 'Total_cloud_cover_surface', }
         self.output_variables = [
             'temp_air',

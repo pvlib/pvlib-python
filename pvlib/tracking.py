@@ -1,9 +1,8 @@
-from __future__ import division
-
 import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind
+from pvlib.pvsystem import _combine_localized_attributes
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
@@ -229,22 +228,11 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
 
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
-        # get and combine attributes from the pvsystem and/or location
-        # with the rest of the kwargs
-
-        if pvsystem is not None:
-            pv_dict = pvsystem.__dict__
-        else:
-            pv_dict = {}
-
-        if location is not None:
-            loc_dict = location.__dict__
-        else:
-            loc_dict = {}
-
-        new_kwargs = dict(list(pv_dict.items()) +
-                          list(loc_dict.items()) +
-                          list(kwargs.items()))
+        new_kwargs = _combine_localized_attributes(
+            pvsystem=pvsystem,
+            location=location,
+            **kwargs,
+        )
 
         SingleAxisTracker.__init__(self, **new_kwargs)
         Location.__init__(self, **new_kwargs)

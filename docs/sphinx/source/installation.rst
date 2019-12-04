@@ -77,6 +77,15 @@ non-editable way, use one of the following commands to install pvlib-python::
     # another option if you know what you are doing
     pip install pvlib[optional]
 
+.. note::
+
+    By default, pvlib will not install some infrequently used dependencies.
+    If you run into an error such as
+    `ModuleNotFoundError: No module named 'netCDF4'`
+    you can either install pvlib with all optional dependencies using
+    `pip install pvlib[optional]`, or you can install pvlib from conda-forge
+    `conda create -n pvlib -c conda-forge pvlib-python; conda activate pvlib`.
+
 If your system complains that you don't have access privileges or asks
 for a password then you're probably trying to install pvlib into your
 system's Python distribution. This is usually a bad idea and you should
@@ -201,8 +210,7 @@ Any changes that you make to this pvlib-python will be available inside
 your environment. If you run a git checkout, branch, or pull command the
 result will be applied to your pvlib-python installation. This
 is great for development. Note, however, that you will need to use
-Python's ``reload`` function (`python 2
-<https://docs.python.org/2/library/functions.html#reload>`_, `python 3
+Python's ``reload`` function (`python 3
 <https://docs.python.org/3/library/importlib.html#importlib.reload>`_)
 if you make changes to pvlib during an interactive Python
 session (including a Jupyter notebook). Restarting the Python
@@ -216,7 +224,7 @@ environment) when you start a new shell or terminal.
 Compatibility
 -------------
 
-pvlib-python is compatible with Python versions 2.7 and 3.4-3.7.
+pvlib-python is compatible with Python 3.5 and above.
 
 pvlib-python requires Pandas and Numpy. The minimum version requirements
 are specified in
@@ -228,7 +236,7 @@ be installed separately using pip or conda. These packages/features
 include:
 
 * scipy: single diode model, clear sky detection
-* pytables: Linke turbidity look up for clear sky models
+* pytables (tables on PyPI): Linke turbidity look up for clear sky models
 * numba: fastest solar position calculations
 * pyephem: solar positions calculations using an astronomical library
 * siphon: forecasting PV power using the pvlib.forecast module

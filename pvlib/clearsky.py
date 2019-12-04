@@ -3,8 +3,6 @@ The ``clearsky`` module contains several methods
 to calculate clear sky GHI, DNI, and DHI.
 """
 
-from __future__ import division
-
 import os
 from collections import OrderedDict
 import calendar
@@ -116,8 +114,10 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     # reinsert tl nans
     ghi = cg1 * dni_extra * cos_zenith * tl / tl * np.fmax(ghi, 0)
 
-    # BncI = "normal beam clear sky radiation"
+    # From [1] (Following [2] leads to 0.664 + 0.16268 / fh1)
+    # See https://github.com/pvlib/pvlib-python/pull/808
     b = 0.664 + 0.163/fh1
+    # BncI = "normal beam clear sky radiation"
     bnci = b * np.exp(-0.09 * airmass_absolute * (tl - 1))
     bnci = dni_extra * np.fmax(bnci, 0)
 
@@ -151,9 +151,9 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     ----------
     time : pandas.DatetimeIndex
 
-    latitude : float
+    latitude : float or int
 
-    longitude : float
+    longitude : float or int
 
     filepath : None or string, default None
         The path to the ``.h5`` file.
@@ -195,22 +195,12 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
-    latitude_index = (
-        np.around(_linearly_scale(latitude, 90, -90, 0, 2160))
-        .astype(np.int64))
-    longitude_index = (
-        np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
-        .astype(np.int64))
+    latitude_index = _degrees_to_index(latitude, coordinate='latitude')
+    longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
-    lt_h5_file = tables.open_file(filepath)
-    try:
+    with tables.open_file(filepath) as lt_h5_file:
         lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
                                              longitude_index, :]
-    except IndexError:
-        raise IndexError('Latitude should be between 90 and -90, '
-                         'longitude between -180 and 180.')
-    finally:
-        lt_h5_file.close()
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
@@ -301,28 +291,65 @@ def _calendar_month_middles(year):
     return middles
 
 
-def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
-    """linearly scale input to output, used by Linke turbidity lookup"""
+def _degrees_to_index(degrees, coordinate):
+    """Transform input degrees to an output index integer. The Linke
+    turbidity lookup tables have three dimensions, latitude, longitude, and
+    month. Specify a degree value and either 'latitude' or 'longitude' to get
+    the appropriate index number for the first two of these index numbers.
+
+    Parameters
+    ----------
+    degrees : float or int
+        Degrees of either latitude or longitude.
+    coordinate : string
+        Specify whether degrees arg is latitude or longitude. Must be set to
+        either 'latitude' or 'longitude' or an error will be raised.
+
+    Returns
+    -------
+    index : np.int16
+        The latitude or longitude index number to use when looking up values
+        in the Linke turbidity lookup table.
+    """
+    # Assign inputmin, inputmax, and outputmax based on degree type.
+    if coordinate == 'latitude':
+        inputmin = 90
+        inputmax = -90
+        outputmax = 2160
+    elif coordinate == 'longitude':
+        inputmin = -180
+        inputmax = 180
+        outputmax = 4320
+    else:
+        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
+
     inputrange = inputmax - inputmin
-    outputrange = outputmax - outputmin
-    delta = outputrange/inputrange  # number of indices per input unit
-    inputmin = inputmin + 1.0 / delta / 2.0  # shift to center of index
-    outputmax = outputmax - 1  # shift index to zero indexing
-    outputmatrix = (inputmatrix - inputmin) * delta + outputmin
+    scale = outputmax/inputrange  # number of indices per degree
+    center = inputmin + 1 / scale / 2  # shift to center of index
+    outputmax -= 1  # shift index to zero indexing
+    index = (degrees - center) * scale
     err = IndexError('Input, %g, is out of range (%g, %g).' %
-                     (inputmatrix, inputmax - inputrange, inputmax))
-    # round down if input is within half an index or else raise index error
-    if outputmatrix > outputmax:
-        if np.around(outputmatrix - outputmax, 1) <= 0.5:
-            outputmatrix = outputmax
+                     (degrees, inputmin, inputmax))
+
+    # If the index is still out of bounds after rounding, raise an error.
+    # 0.500001 is used in comparisons instead of 0.5 to allow for a small
+    # margin of error which can occur when dealing with floating point numbers.
+    if index > outputmax:
+        if index - outputmax <= 0.500001:
+            index = outputmax
         else:
             raise err
-    elif outputmatrix < outputmin:
-        if np.around(outputmin - outputmatrix, 1) <= 0.5:
-            outputmatrix = outputmin
+    elif index < 0:
+        if -index <= 0.500001:
+            index = 0
         else:
             raise err
-    return outputmatrix
+    # If the index wasn't set to outputmax or 0, round it and cast it as an
+    # integer so it can be used in integer-based indexing.
+    else:
+        index = int(np.around(index))
+
+    return index
 
 
 def haurwitz(apparent_zenith):

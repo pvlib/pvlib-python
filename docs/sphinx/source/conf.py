@@ -16,10 +16,8 @@ import sys
 import os
 
 # Mock modules so RTD works
-try:
-    from mock import Mock as MagicMock
-except ImportError:
-    from unittest.mock import MagicMock
+from unittest.mock import MagicMock
+
 
 class Mock(MagicMock):
     @classmethod
@@ -268,12 +266,13 @@ latex_documents = [
 #latex_domain_indices = True
 
 # extlinks alias
-extlinks = {'issue': ('https://github.com/pvlib/pvlib-python/issues/%s',
-                      'GH'),
-            'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s',
-                     'wiki '),
-            'doi': ('http://dx.doi.org/%s', 'DOI: '),
-            'ghuser': ('https://github.com/%s', '@')}
+extlinks = {
+    'issue': ('https://github.com/pvlib/pvlib-python/issues/%s', 'GH'),
+    'pull': ('https://github.com/pvlib/pvlib-python/pull/%s', 'GH'),
+    'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s', 'wiki '),
+    'doi': ('http://dx.doi.org/%s', 'DOI: '),
+    'ghuser': ('https://github.com/%s', '@')
+}
 
 # -- Options for manual page output ---------------------------------------
 

@@ -33,23 +33,20 @@ Source code: https://github.com/pvlib/pvlib-python
 
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'
-AUTHOR = 'PVLIB Python Developers'
+AUTHOR = 'pvlib python Developers'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
-INSTALL_REQUIRES = ['numpy >= 1.10.1',
-                    'pandas >= 0.16.0',
+INSTALL_REQUIRES = ['numpy >= 1.10.4',
+                    'pandas >= 0.18.1',
                     'pytz',
-                    'six',
-                    'matplotlib',
-                    'scipy',
-                    'statsmodels'
-                    ]
-TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock', 'nose']
+                    'requests']
+TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
+                 'pytest-timeout']
 EXTRAS_REQUIRE = {
-    'optional': ['scipy', 'tables', 'numba', 'siphon', 'netcdf4',
-                 'ephem', 'cython', 'pvfactors'],
-    'doc': ['sphinx', 'ipython', 'sphinx_rtd_theme', 'matplotlib'],
+    'optional': ['ephem', 'cython', 'matplotlib', 'netcdf4', 'nrel-pysam', 'numba',
+                 'pvfactors', 'scipy', 'siphon', 'statsmodels', 'tables'],
+    'doc': ['ipython', 'matplotlib', 'sphinx', 'sphinx_rtd_theme'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
@@ -60,10 +57,7 @@ CLASSIFIERS = [
     'Operating System :: OS Independent',
     'Intended Audience :: Science/Research',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
@@ -73,7 +67,8 @@ CLASSIFIERS = [
 setuptools_kwargs = {
     'zip_safe': False,
     'scripts': [],
-    'include_package_data': True
+    'include_package_data': True,
+    'python_requires': '~=3.5'
 }
 
 # set up pvlib packages to be installed and extensions to be compiled

@@ -4,28 +4,29 @@ testing single-diode methods using JW Bishop 1988
 
 import numpy as np
 from pvlib import pvsystem
-from pvlib.singlediode import bishop88, estimate_voc, VOLTAGE_BUILTIN
+from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
+                               bishop88, bishop88_i_from_v, bishop88_v_from_i)
 import pytest
 from conftest import requires_scipy
 
 POA = 888
 TCELL = 55
-CECMOD = pvsystem.retrieve_sam('cecmod')
 
 
 @requires_scipy
-def test_newton_spr_e20_327():
-    """test pvsystem.singlediode with Newton method on SPR-E20-327"""
-    spr_e20_327 = CECMOD.SunPower_SPR_E20_327
+@pytest.mark.parametrize('method', ['brentq', 'newton'])
+def test_method_spr_e20_327(method, cec_module_spr_e20_327):
+    """test pvsystem.singlediode with different methods on SPR-E20-327"""
+    spr_e20_327 = cec_module_spr_e20_327
     x = pvsystem.calcparams_desoto(
         effective_irradiance=POA, temp_cell=TCELL,
-        alpha_sc=spr_e20_327.alpha_sc, a_ref=spr_e20_327.a_ref,
-        I_L_ref=spr_e20_327.I_L_ref, I_o_ref=spr_e20_327.I_o_ref,
-        R_sh_ref=spr_e20_327.R_sh_ref, R_s=spr_e20_327.R_s,
+        alpha_sc=spr_e20_327['alpha_sc'], a_ref=spr_e20_327['a_ref'],
+        I_L_ref=spr_e20_327['I_L_ref'], I_o_ref=spr_e20_327['I_o_ref'],
+        R_sh_ref=spr_e20_327['R_sh_ref'], R_s=spr_e20_327['R_s'],
         EgRef=1.121, dEgdT=-0.0002677)
     il, io, rs, rsh, nnsvt = x
     pvs = pvsystem.singlediode(*x, method='lambertw')
-    out = pvsystem.singlediode(*x, method='newton')
+    out = pvsystem.singlediode(*x, method=method)
     isc, voc, imp, vmp, pmp, ix, ixx = out.values()
     assert np.isclose(pvs['i_sc'], isc)
     assert np.isclose(pvs['v_oc'], voc)
@@ -39,22 +40,23 @@ def test_newton_spr_e20_327():
     pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
                                 method='lambertw')
     assert np.isclose(pvs_ixx, ixx)
-    return isc, voc, imp, vmp, pmp, pvs
 
 
 @requires_scipy
-def test_newton_fs_495():
-    """test pvsystem.singlediode with Newton method on FS495"""
-    fs_495 = CECMOD.First_Solar_FS_495
+@pytest.mark.parametrize('method', ['brentq', 'newton'])
+def test_newton_fs_495(method, cec_module_fs_495):
+    """test pvsystem.singlediode with different methods on FS495"""
+    fs_495 = cec_module_fs_495
     x = pvsystem.calcparams_desoto(
         effective_irradiance=POA, temp_cell=TCELL,
-        alpha_sc=fs_495.alpha_sc, a_ref=fs_495.a_ref, I_L_ref=fs_495.I_L_ref,
-        I_o_ref=fs_495.I_o_ref, R_sh_ref=fs_495.R_sh_ref, R_s=fs_495.R_s,
+        alpha_sc=fs_495['alpha_sc'], a_ref=fs_495['a_ref'],
+        I_L_ref=fs_495['I_L_ref'], I_o_ref=fs_495['I_o_ref'],
+        R_sh_ref=fs_495['R_sh_ref'], R_s=fs_495['R_s'],
         EgRef=1.475, dEgdT=-0.0003)
     il, io, rs, rsh, nnsvt = x
     x += (101, )
     pvs = pvsystem.singlediode(*x, method='lambertw')
-    out = pvsystem.singlediode(*x, method='newton')
+    out = pvsystem.singlediode(*x, method=method)
     isc, voc, imp, vmp, pmp, ix, ixx, i, v = out.values()
     assert np.isclose(pvs['i_sc'], isc)
     assert np.isclose(pvs['v_oc'], voc)
@@ -68,65 +70,6 @@ def test_newton_fs_495():
     pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
                                 method='lambertw')
     assert np.isclose(pvs_ixx, ixx)
-    return isc, voc, imp, vmp, pmp, i, v, pvs
-
-
-@requires_scipy
-def test_brentq_spr_e20_327():
-    """test pvsystem.singlediode with Brent method on SPR-E20-327"""
-    spr_e20_327 = CECMOD.SunPower_SPR_E20_327
-    x = pvsystem.calcparams_desoto(
-        effective_irradiance=POA, temp_cell=TCELL,
-        alpha_sc=spr_e20_327.alpha_sc, a_ref=spr_e20_327.a_ref,
-        I_L_ref=spr_e20_327.I_L_ref, I_o_ref=spr_e20_327.I_o_ref,
-        R_sh_ref=spr_e20_327.R_sh_ref, R_s=spr_e20_327.R_s,
-        EgRef=1.121, dEgdT=-0.0002677)
-    il, io, rs, rsh, nnsvt = x
-    pvs = pvsystem.singlediode(*x, method='lambertw')
-    out = pvsystem.singlediode(*x, method='brentq')
-    isc, voc, imp, vmp, pmp, ix, ixx = out.values()
-    assert np.isclose(pvs['i_sc'], isc)
-    assert np.isclose(pvs['v_oc'], voc)
-    # the singlediode method doesn't actually get the MPP correct
-    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il, method='lambertw')
-    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il, method='lambertw')
-    assert np.isclose(pvs_imp, imp)
-    assert np.isclose(pvs_vmp, vmp)
-    assert np.isclose(pvs['p_mp'], pmp)
-    assert np.isclose(pvs['i_x'], ix)
-    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
-                                method='lambertw')
-    assert np.isclose(pvs_ixx, ixx)
-    return isc, voc, imp, vmp, pmp, pvs
-
-
-@requires_scipy
-def test_brentq_fs_495():
-    """test pvsystem.singlediode with Brent method on FS495"""
-    fs_495 = CECMOD.First_Solar_FS_495
-    x = pvsystem.calcparams_desoto(
-        effective_irradiance=POA, temp_cell=TCELL,
-        alpha_sc=fs_495.alpha_sc, a_ref=fs_495.a_ref, I_L_ref=fs_495.I_L_ref,
-        I_o_ref=fs_495.I_o_ref, R_sh_ref=fs_495.R_sh_ref, R_s=fs_495.R_s,
-        EgRef=1.475, dEgdT=-0.0003)
-    il, io, rs, rsh, nnsvt = x
-    x += (101, )
-    pvs = pvsystem.singlediode(*x, method='lambertw')
-    out = pvsystem.singlediode(*x, method='brentq')
-    isc, voc, imp, vmp, pmp, ix, ixx, i, v = out.values()
-    assert np.isclose(pvs['i_sc'], isc)
-    assert np.isclose(pvs['v_oc'], voc)
-    # the singlediode method doesn't actually get the MPP correct
-    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il, method='lambertw')
-    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il, method='lambertw')
-    assert np.isclose(pvs_imp, imp)
-    assert np.isclose(pvs_vmp, vmp)
-    assert np.isclose(pvs['p_mp'], pmp)
-    assert np.isclose(pvs['i_x'], ix)
-    pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
-                                method='lambertw')
-    assert np.isclose(pvs_ixx, ixx)
-    return isc, voc, imp, vmp, pmp, i, v, pvs
 
 
 def get_pvsyst_fs_495():
@@ -153,9 +96,13 @@ def get_pvsyst_fs_495():
         'temp_ref': 25, 'irrad_ref': 1000, 'I_L_ref': 1.5743233463848496
     }
 
+# DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
 
+
+@requires_scipy
 @pytest.mark.parametrize(
     'poa, temp_cell, expected, tol', [
+        # reference conditions
         (
             get_pvsyst_fs_495()['irrad_ref'],
             get_pvsyst_fs_495()['temp_ref'],
@@ -167,9 +114,21 @@ def get_pvsyst_fs_495():
             },
             (5e-4, 0.04)
         ),
-        (POA, TCELL, {'pmp': 76.26, 'isc': 1.387, 'voc': 79.29}, (1e-3, 1e-3))]
-)  # DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
-def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
+        # other conditions
+        (
+            POA,
+            TCELL,
+            {
+                'pmp': 76.262,
+                'isc': 1.3868,
+                'voc': 79.292
+            },
+            (1e-4, 1e-4)
+        )
+    ]
+)
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     # first evaluate PVSyst model with thin-film recombination loss current
@@ -199,9 +158,30 @@ def test_pvsyst_recombination_loss(poa, temp_cell, expected, tol):
     )
     # test max power
     assert np.isclose(max(pvsyst[2]), expected['pmp'], *tol)
+
     # test short circuit current
     isc_pvsyst = np.interp(0, pvsyst[1], pvsyst[0])
     assert np.isclose(isc_pvsyst, expected['isc'], *tol)
-    # test open circuit current
+
+    # test open circuit voltage
     voc_pvsyst = np.interp(0, pvsyst[0][::-1], pvsyst[1][::-1])
     assert np.isclose(voc_pvsyst, expected['voc'], *tol)
+
+    # repeat tests as above with specialized bishop88 functions
+    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
+             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
+
+    mpp_88 = bishop88_mpp(*x, **y, method=method)
+    assert np.isclose(mpp_88[2], expected['pmp'], *tol)
+
+    isc_88 = bishop88_i_from_v(0, *x, **y, method=method)
+    assert np.isclose(isc_88, expected['isc'], *tol)
+
+    voc_88 = bishop88_v_from_i(0, *x, **y, method=method)
+    assert np.isclose(voc_88, expected['voc'], *tol)
+
+    ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method)
+    assert np.isclose(ioc_88, 0.0, *tol)
+
+    vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method)
+    assert np.isclose(vsc_88, 0.0, *tol)

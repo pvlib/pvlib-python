@@ -3,13 +3,7 @@ Import functions for EPW data files.
 """
 
 import io
-
-try:
-    # python 2 compatibility
-    from urllib2 import urlopen, Request
-except ImportError:
-    from urllib.request import urlopen, Request
-
+from urllib.request import urlopen, Request
 import pandas as pd
 
 
@@ -73,9 +67,9 @@ def read_epw(filename, coerce_year=None):
     ===============   ======  =========================================
 
 
-    =============================       ==============================================================================================================================================================
+    =============================       ==================================================================================================================================================================================================================  # noqa: E501
     EPWData field                       description
-    =============================       ==============================================================================================================================================================
+    =============================       ==================================================================================================================================================================================================================
     index                               A pandas datetime index. NOTE, times are set to local standard time (daylight savings is not included). Days run from 0-23h to comply with PVLIB's convention
     year                                Year, from original EPW file. Can be overwritten using coerce function.
     month                               Month, from original EPW file
@@ -105,14 +99,14 @@ def read_epw(filename, coerce_year=None):
     ceiling_height                      Height of cloud base above local terrain (7777=unlimited), meter
     present_weather_observation         Indicator for remaining fields: If 0, then the observed weather codes are taken from the following field. If 9, then missing weather is assumed.
     present_weather_codes               Present weather code, see [1], chapter 2.9.1.28
-    precipitable_water                  Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm
+    precipitable_water                  Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm. Note that some old *_TMY3.epw files may have incorrect unit if it was retrieved from www.energyplus.net.
     aerosol_optical_depth               The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless
     snow_depth                          Snow depth in centimeters on the day indicated, (999 = missing data)
     days_since_last_snowfall            Number of days since last snowfall (maximum value of 88, where 88 = 88 or greater days; 99 = missing data)
     albedo                              The ratio of reflected solar irradiance to global horizontal irradiance, unitless
     liquid_precipitation_depth          The amount of liquid precipitation observed at indicated time for the period indicated in the liquid precipitation quantity field, millimeter
     liquid_precipitation_quantity       The period of accumulation for the liquid precipitation depth field, hour
-    =============================       ==============================================================================================================================================================
+    =============================       ==================================================================================================================================================================================================================
 
     References
     ----------

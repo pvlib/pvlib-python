@@ -94,7 +94,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     TMYData.ZenithlumUncertainty        Uncertainty based on random and bias error estimates                        see [1] section 2.10
     TMYData.TotCld                      Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
     TMYData.TotCldSource                See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.TotCldUncertainty            See [1], Table 1-6
+    TMYData.TotCldUncertainty           See [1], Table 1-6
     TMYData.OpqCld                      Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
     TMYData.OpqCldSource                See [1], Table 1-5, 8760x1 cell array of strings
     TMYData.OpqCldUncertainty           See [1], Table 1-6

@@ -17,6 +17,8 @@ API Breaking Changes
   warning is raised if all `effective_irradiance < 2.0`.
 * The output of :py:func:`pvsystem.sapm_effective_irradiance` is now in units
   of W/m2 rather than suns.
+* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
+  an exception instead of displaying a dialog.
 
 API Changes with Deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,9 +97,6 @@ API Changes with Deprecations
       - Added the argument `pw_min` and `pw_max`, default values 0.1 and 8 resp.,
 	to `atmosphere.first_solar_spectral_correction`. This function now returns NaN
 	if pw value higher than `pw_max`.
-
-* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
-  an exception instead of displaying a dialog.
 * The `times` keyword argument has been deprecated in the
   :py:meth:`pvlib.modelchain.ModelChain.run_model`,
   :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`, and
@@ -109,9 +108,14 @@ API Changes with Deprecations
   argument for capability during the deprecation period.
 * Parameter `pvsystem.DC_MODEL_PARAMS` is renamed to `pvsystem._DC_MODEL_PARAMS`.
   Users should not rely on this dictionary's existence or structure.
+
+Other API Changes
+~~~~~~~~~~~~~~~~~
 * :py:func:`pvlib.iotools.midc.read_midc` now passes additional keyword
   arguments to `pandas.read_csv`
 * Add `timeout` argument to :py:func:`pvlib.iotools.midc.read_midc_raw_data_from_nrel`
+* :py:mod:`pvlib.bifacial` is now imported when ``pvlib`` is imported.
+  (:issue:`766`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -132,6 +136,8 @@ Enhancements
 * Add :py:func:`~pvlib.ivtools.fit_sdm_desoto`, a method to fit the De Soto single
   diode model to the typical specifications given in manufacturers datasheets.
 * Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
+* Add :py:func:`~pvlib.scaling.wvm`, a port of the wavelet variability model for
+  computing reductions in variability due to a spatially distributed plant.
 * Created one new incidence angle modifier (IAM) function for diffuse irradiance:
   :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
 
@@ -193,4 +199,6 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Tanguy Lunel (:ghuser:`tylunel`)
 * Veronica Guo (:ghuser:`veronicaguo`)
+* Joseph Ranalli (:ghuser:`jranalli`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
+* Todd Karin (:ghuser:`toddkarin`)

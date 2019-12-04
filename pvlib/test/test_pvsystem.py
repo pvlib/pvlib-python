@@ -107,6 +107,28 @@ def test_PVSystem_get_iam_interp(sapm_module_params, mocker):
     with pytest.raises(ValueError):
         system.get_iam(45, iam_model='interp')
 
+def test__normalize_sam_product_names():
+
+    BAD_NAMES  = [' -.()[]:+/",', 'Module[1]']
+    NORM_NAMES = ['____________', 'Module_1_']
+
+    norm_names = pvsystem._normalize_sam_product_names(BAD_NAMES)
+    assert list(norm_names) == NORM_NAMES
+
+    BAD_NAMES  = ['Module[1]', 'Module(1)']
+    NORM_NAMES = ['Module_1_', 'Module_1_']
+
+    with pytest.warns(UserWarning):
+        norm_names = pvsystem._normalize_sam_product_names(BAD_NAMES)
+    assert list(norm_names) == NORM_NAMES
+
+    BAD_NAMES  = ['Module[1]', 'Module[1]']
+    NORM_NAMES = ['Module_1_', 'Module_1_']
+
+    with pytest.warns(UserWarning):
+        norm_names = pvsystem._normalize_sam_product_names(BAD_NAMES)
+    assert list(norm_names) == NORM_NAMES
+
 
 def test_PVSystem_get_iam_invalid(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)

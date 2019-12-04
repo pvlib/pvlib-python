@@ -94,7 +94,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     TMYData.ZenithlumUncertainty        Uncertainty based on random and bias error estimates                        see [1] section 2.10
     TMYData.TotCld                      Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
     TMYData.TotCldSource                See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.TotCldUnertainty            See [1], Table 1-6
+    TMYData.TotCldUncertainty            See [1], Table 1-6
     TMYData.OpqCld                      Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
     TMYData.OpqCldSource                See [1], Table 1-5, 8760x1 cell array of strings
     TMYData.OpqCldUncertainty           See [1], Table 1-6
@@ -246,7 +246,7 @@ def _recolumn(tmy3_dataframe):
         'DNillum', 'DNillumSource', 'DNillumUncertainty', 'DHillum',
         'DHillumSource', 'DHillumUncertainty', 'Zenithlum',
         'ZenithlumSource', 'ZenithlumUncertainty', 'TotCld', 'TotCldSource',
-        'TotCldUnertainty', 'OpqCld', 'OpqCldSource', 'OpqCldUncertainty',
+        'TotCldUncertainty', 'OpqCld', 'OpqCldSource', 'OpqCldUncertainty',
         'DryBulb', 'DryBulbSource', 'DryBulbUncertainty', 'DewPoint',
         'DewPointSource', 'DewPointUncertainty', 'RHum', 'RHumSource',
         'RHumUncertainty', 'Pressure', 'PressureSource',
@@ -346,7 +346,7 @@ def read_tmy2(filename):
     ZenithlumUncertainty            See [1], Table 3-4
     TotCld                          Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
     TotCldSource                    See [1], Table 3-5, 8760x1 cell array of strings
-    TotCldUnertainty                See [1], Table 3-6
+    TotCldUncertainty                See [1], Table 3-6
     OpqCld                          Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
     OpqCldSource                    See [1], Table 3-5, 8760x1 cell array of strings
     OpqCldUncertainty               See [1], Table 3-6
@@ -406,7 +406,7 @@ def read_tmy2(filename):
 
     # paste in the column info as one long line
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'  # noqa: E501
-    columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'  # noqa: E501
+    columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUncertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'  # noqa: E501
     hdr_columns = 'WBAN,City,State,TZ,latitude,longitude,altitude'
 
     tmy2, tmy2_meta = _read_tmy2(string, columns, hdr_columns, filename)

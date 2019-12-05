@@ -71,7 +71,7 @@ def estimate_parameters(i, v, nsvth):
     xk1 = xk[0:(xn - 1)]
     delx = xk2 - xk1
     tmp = np.array([1. / 3., .5, 1.])
-    ss = np.tile(tmp, [xn - 1., 1.])
+    ss = np.tile(tmp, [xn - 1, 1])
     cc = a * ss
     tmpint = np.sum(cc * np.array([delx ** 3, delx ** 2, delx]).T, 1)
     tmpint = np.append(0., tmpint)

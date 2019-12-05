@@ -182,7 +182,7 @@ def schumaker_qspline(x, y):
         uu[(n + q + r - 1):(n + q + r + ss - 1), :] = \
             np.array([tmpx[z], tmpx2[z], tmpy[z], tmps[z], tmps2[z],
                       delta[z]]).T
-        xi[z] = xk[(n + q + r - 1):(n + q + r + ss - 1)]
+        xi[:(n-1)][z] = xk[(n + q + r - 1):(n + q + r + ss - 1)]
 
     # define polynomial coefficients for intervals with added knots
     ff = ~u

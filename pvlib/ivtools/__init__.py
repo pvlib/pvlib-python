@@ -6,6 +6,8 @@ Created on Fri Mar 29 10:34:10 2019
 """
 
 import numpy as np
+from pvlib.ivtools.PVsyst_parameter_estimation import (
+    pvsyst_parameter_estimation)  # noqa: F401
 
 
 def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,

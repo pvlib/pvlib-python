@@ -55,6 +55,16 @@ requires_scipy = pytest.mark.skipif(not has_scipy, reason='requires scipy')
 
 
 try:
+    import statsmodels.api as sm
+    has_statsmodels = True
+except ImportError:
+    has_statsmodels = False
+
+requires_statsmodels = pytest.mark.skipif(
+    not has_statsmodels, reason='requires statsmodels')
+
+
+try:
     import tables
     has_tables = True
 except ImportError:

@@ -305,6 +305,7 @@ Functions for fitting PV models
     ivtools.fit_sde_sandia
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
+    ivtools.pvsyst_parameter_estimation
 
 Other
 -----

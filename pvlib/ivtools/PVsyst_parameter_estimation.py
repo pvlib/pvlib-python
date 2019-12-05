@@ -1,8 +1,6 @@
 import logging
-from scipy import optimize
-import statsmodels.api as sm
+import warnings
 import numpy as np
-import matplotlib.pyplot as plt
 from collections import OrderedDict
 from pvlib.ivtools.est_single_diode_param import estimate_parameters
 from pvlib.ivtools.update_io_known_n import update_io_known_n
@@ -10,10 +8,14 @@ from pvlib.ivtools.update_rsh_fixed_pt import update_rsh_fixed_pt
 from pvlib.ivtools.calc_theta_phi_exact import calc_theta_phi_exact
 from pvlib.pvsystem import singlediode
 
+# optional imports used by pvsyst_parameter_estimation
+# from scipy import optimize
+# import statsmodels.api as sm
+warnings.warn('pvsyst_parameter_estimation requires scipy and statsmodels')
+
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
-plt.ion()
 
 
 def numdiff(x, f):
@@ -241,8 +243,7 @@ def filter_params(io, rsh, rs, ee, isc):
     return u
 
 
-def check_converge(prevparams, result, vmp, imp, graphic, convergeparamsfig,
-                   i):
+def check_converge(prevparams, result, vmp, imp, i):
     """
     Function check_converge computes convergence metrics for all IV curves.
 
@@ -254,8 +255,6 @@ def check_converge(prevparams, result, vmp, imp, graphic, convergeparamsfig,
             which includes Voc, Vmp, Imp, Pmp and Isc
     vmp: measured values for each IV curve
     imp: measured values for each IV curve
-    graphic: argument to determine whether to display Figures
-    convergeparamsfig: Hangle to the ConvergeParam Plot
     i: Index of current iteration in cec_parameter_estimation
 
     Returns
@@ -349,57 +348,6 @@ def check_converge(prevparams, result, vmp, imp, graphic, convergeparamsfig,
         convergeparam['vmperrabsmaxchange'] = float("Inf")
         convergeparam['pmperrabsmaxchange'] = float("Inf")
         convergeparam['state'] = 1.
-
-    if graphic:
-        ax1 = convergeparamsfig.add_subplot(331)
-        ax2 = convergeparamsfig.add_subplot(332)
-        ax3 = convergeparamsfig.add_subplot(333)
-        ax4 = convergeparamsfig.add_subplot(334)
-        ax5 = convergeparamsfig.add_subplot(335)
-        ax6 = convergeparamsfig.add_subplot(336)
-        ax7 = convergeparamsfig.add_subplot(337)
-        ax8 = convergeparamsfig.add_subplot(338)
-        ax9 = convergeparamsfig.add_subplot(339)
-        ax1.plot(i, convergeparam['pmperrmean'], 'x-')
-        ax1.set_ylabel('mean((pPmp-Pmp)/Pmp*100)')
-        ax1.set_title('Mean of Err in Pmp')
-        ax1.hold(True)
-        ax2.plot(i, convergeparam['vmperrmean'], 'x-')
-        ax2.set_ylabel('mean((pVmp-Vmp)/Vmp*100)')
-        ax2.set_title('Mean of Err in Vmp')
-        ax2.hold(True)
-        ax3.plot(i, convergeparam['imperrmean'], 'x-')
-        ax3.set_ylabel('mean((pImp-Imp)/Imp*100)')
-        ax3.set_title('Mean of Err in Imp')
-        ax3.hold(True)
-        ax4.plot(i, convergeparam['pmperrstd'], 'x-')
-        ax4.set_ylabel('std((pPmp-Pmp)/Pmp*100)')
-        ax4.set_title('Std of Err in Pmp')
-        ax4.hold(True)
-        ax5.plot(i, convergeparam['vmperrstd'], 'x-')
-        ax5.set_ylabel('std((pVmp-Vmp)/Vmp*100)')
-        ax5.set_title('Std of Err in Vmp')
-        ax5.hold(True)
-        ax6.plot(i, convergeparam['imperrstd'], 'x-')
-        ax6.set_ylabel('std((pImp-Imp)/Imp*100)')
-        ax6.set_title('Std of Err in Imp')
-        ax6.hold(True)
-        ax7.plot(i, convergeparam['pmperrabsmax'], 'x-')
-        ax7.set_xlabel('Iteration')
-        ax7.set_ylabel('max(abs((pPmp-Pmp)/Pmp*100))')
-        ax7.set_title('AbsMax of Err in Pmp')
-        ax7.hold(True)
-        ax8.plot(i, convergeparam['vmperrabsmax'], 'x-')
-        ax8.set_xlabel('Iteration')
-        ax8.set_ylabel('max(abs((pVmp-Vmp)/Vmp*100))')
-        ax8.set_title('AbsMax of Err in Vmp')
-        ax8.hold(True)
-        ax9.plot(i, convergeparam['imperrabsmax'], 'x-')
-        ax9.set_xlabel('Iteration')
-        ax9.set_ylabel('max(abs((pImp-Imp)/Imp*100))')
-        ax9.set_title('AbsMax of Err in Imp')
-        ax9.hold(True)
-        plt.show()
     return convergeparam
 
 const_default = OrderedDict()
@@ -415,7 +363,7 @@ def fun_rsh(x, rshexp, ee, e0, rsh):
 
 
 def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
-                                maxiter=5, eps1=1.e-3, graphic=False):
+                                maxiter=5, eps1=1.e-3):
     """
     pvsyst_parameter_estimation estimates parameters fro the PVsyst module
     performance model
@@ -458,9 +406,6 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
           iterations are all less than eps1, or when the number of iterations
           exceeds maxiter. Default value is 1e-3 (.0001%).
 
-    graphic: a boolean, if true then plots are produced during the parameter
-             estimation process. Default is false
-
     Returns
     -------
     pvsyst: a OrderedDict containing the model parameters
@@ -484,10 +429,6 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
                        for each IV curve
         pvsyst.u - filter indicating IV curves with parameter values deemed
                    reasonable by the private function filter_params
-
-    oflag: Boolean indicating success or failure of estimation of the diode
-           (ideality) factor parameter. If failure, then no parameter values
-           are returned
 
     Description
     -----------
@@ -513,6 +454,8 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
     [7] C. Hansen, Estimation of Parameters for Single Diode Models using
         Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
     """
+    from scipy import optimize
+    import statsmodels.api as sm
     ee = ivcurves['ee']
     tc = ivcurves['tc']
     tck = tc + 273.15
@@ -574,19 +517,6 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
 
     if ~badgamma:
         gamma = gamma_ref + mugamma * (tc - const['T0'])
-
-        if graphic:
-            f1 = plt.figure()
-            ax10 = f1.add_subplot(111)
-            ax10.plot(x2, y, 'b+', x2, x * alpha, 'r.')
-            ax10.set_xlabel('X = Voc / Ns * Vth')
-            ax10.set_ylabel('Y = log(Isc - Voc/Rsh)')
-            ax10.legend(['I-V Data', 'Regression Model'], loc=2)
-            ax10.text(np.min(x2) + 0.85 * (np.max(x2) - np.min(x2)), 1.05 *
-                      np.max(y), ['$\\gamma_0 = %s$' % gamma_ref])
-            ax10.text(np.min(x2) + 0.85 * (np.max(x2) - np.min(x2)), 0.98 *
-                      np.max(y), ['$\\mu_\\gamma = %s$' % mugamma])
-            plt.show()
 
         nnsvth = gamma * (vth * specs['ns'])
 
@@ -656,13 +586,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         counter = 1.  # counter variable for parameter updating while loop,
         # counts iterations
         prevconvergeparams = OrderedDict()
-        prevconvergeparams['state'] = 0.
-
-        if graphic:
-            h = plt.figure()
-        if graphic:
-            # create a new handle for the converge parameter figure
-            convergeparamsfig = plt.figure()
+        prevconvergeparams['state'] = 0.0
 
         t14 = np.array([True])
 
@@ -670,15 +594,6 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
             # update rsh to match max power point using a fixed point method.
             tmprsh = update_rsh_fixed_pt(rsh[u], rs[u], io[u], iph[u],
                                          nnsvth[u], imp[u], vmp[u])
-
-            if graphic:
-                ax11 = h.add_subplot(111)
-                ax11.plot(counter, np.mean(np.abs(tmprsh - rsh[u])), 'k')
-                ax11.hold(True)
-                ax11.set_xlabel('Iteration')
-                ax11.set_ylabel('mean(abs(tmprsh[u] - rsh[u]))')
-                ax11.set_title('Update Rsh')
-                plt.show()
 
             rsh[u] = tmprsh
 
@@ -713,14 +628,8 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
             # check convergence criteria
             LOGGER.debug('step %d: checking convergence', counter)
             # [5] Step 3d
-            if graphic:
-                convergeparams = check_converge(prevconvergeparams, result,
-                                                vmp[u], imp[u], graphic,
-                                                convergeparamsfig, counter)
-            else:
-                convergeparams = check_converge(prevconvergeparams, result,
-                                                vmp[u], imp[u], graphic, 0.,
-                                                counter)
+            convergeparams = check_converge(
+                prevconvergeparams, result, vmp[u], imp[u], counter)
 
             prevconvergeparams = convergeparams
             counter += 1.
@@ -753,95 +662,12 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         io0 = np.exp(beta[0])
         eg = beta[1]
 
-        if graphic:
-            # Predict Io and Eg
-            pio = io0 * ((tc[u] + 273.15) / const['T0'] + 273.15) ** 3. * \
-                  np.exp((const['q'] / const['k']) * (eg / gamma[u]) *
-                         (1. / (const['T0'] + 273.15) - 1. / (tc[u] + 273.15)))
-
-            iofig = plt.figure()
-            ax12 = iofig.add_subplot(311)
-            ax13 = iofig.add_subplot(312)
-            ax14 = iofig.add_subplot(313)
-            ax12.hold(True)
-            ax12.plot(tc[u], y, 'r+', tc[u], beta[0] + x * beta[1], 'b.')
-            ax12.set_xlabel('Cell temp. (C)')
-            ax12.set_ylabel('log(Io)-3log(T_C/T_0)')
-            ax12.legend(['Data', 'Model'], loc=2)
-            ax13.hold(True)
-            ax13.plot(tc[u], io[u], 'r+', tc[u], pio, '.')
-            ax13.set_xlabel('Cell temp. (C)')
-            ax13.set_ylabel('I_O (A)')
-            ax13.legend(['Extracted', 'Predicted'], loc=2)
-            ax14.hold(True)
-            ax14.plot(tc[u], (pio - io[u]) / io[u] * 100., 'x')
-            ax14.set_xlabel('Cell temp. (C)')
-            ax14.set_ylabel('Percent Deviation in I_O')
-
-            iofig1 = plt.figure()
-            ax15 = iofig1.add_subplot(111)
-            ax15.hold(True)
-            ax15.plot(tc[u], y + 3. * (tc[u] / const['T0']), 'k.', tc[u],
-                      beta[0] + x * beta[1] + 3 * (tc[u] / const['T0']), 'g.')
-            ax15.set_xlabel('Cell temp. (C)')
-            ax15.set_ylabel('log(Io)-3log(T_C/T_0)')
-            ax15.legend(['Data', 'Regression Model'], loc=2)
-
-            iofig2 = plt.figure()
-            ax16 = iofig2.add_subplot(111)
-            ax16.hold(True)
-            ax16.plot(tc[u], io[u], 'b+', tc[u], pio, 'r.')
-            ax16.set_xlabel('Cell temp. (C)')
-            ax16.set_ylabel('I_O (A)')
-            ax16.legend(['Extracted from IV Curves', 'Predicted by Eq. 3'],
-                        loc=2)
-            ax16.text(np.min(tc[u]), np.min(io[u]) + .83 *
-                      (np.max(io[u]) - np.min(io[u])), ['I_{O0} = %s' % io0])
-            ax16.text(np.min(tc[u]), np.min(io[u]) + .83 *
-                      (np.max(io[u]) - np.min(io[u])), ['eG = %s' % eg])
-
         # Estimate Iph0
         x = tc[u] - const['T0']
         y = iph[u] * (const['E0'] / ee[u])
         # average over non-NaN values of Y and X
         nans = np.isnan(y - specs['aisc'] * x)
         iph0 = np.mean(y[~nans] - specs['aisc'] * x[~nans])
-
-        if graphic:
-            # Predict Iph
-            piph = (ee[u] / const['E0']) * (iph0 + specs['aisc'] *
-                                            (tc[u] - const['T0']))
-
-            iphfig = plt.figure()
-            ax17 = iphfig.add_subplot(311)
-            ax18 = iphfig.add_subplot(312)
-            ax19 = iphfig.add_subplot(313)
-            ax17.hold(True)
-            ax17.plot(ee[u], piph, 'r+', [0., np.max(ee[u])], [iph0, iph0])
-            ax17.set_xlabel('Irradiance (W/m^2)')
-            ax17.set_ylabel('I_L')
-            ax17.legend(['Data', 'I_L at STC'], loc=4)
-            ax18.hold(True)
-            ax18.plot(ee[u], iph[u], 'r+', ee[u], piph, '.')
-            ax18.set_xlabel('Irradiance (W/m^2)')
-            ax18.set_ylabel('I_L (A)')
-            ax18.legend(['Extracted', 'Predicted'], loc=2)
-            ax19.hold(True)
-            ax19.plot(ee[u], (piph - iph[u]) / iph[u] * 100., 'x',
-                      [np.min(ee[u]), np.max(ee[u])], [0., 0.])
-            ax19.set_xlabel('Irradiance (W/m^2)')
-            ax19.set_ylabel('Percent Deviation from I_L')
-
-            iphfig1 = plt.figure()
-            ax20 = iphfig1.add_subplot(111)
-            ax20.hold(True)
-            ax20.plot(tc[u], iph[u], 'b+', tc[u], piph, 'r.', [0., 80.],
-                      [iph0, iph0])
-            ax20.set_xlabel('Cell temp. (C)')
-            ax20.set_ylabel('I_L (W/m^2)')
-            ax20.legend(['Extracted from IV Curves', 'Predicted by Eq. 2',
-                         'I_L at STC'], loc=2)
-            ax20.text(1.1 * np.min(tc[u]), 1.05 * iph0, ['I_{L0} = %s' % iph0])
 
         # Additional filter for Rsh and Rs; Restrict effective irradiance to be
         # greater than 400 W/m^2
@@ -877,71 +703,9 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         rsh0 = beta.x[0]
         rshref = beta.x[1]
 
-        if graphic:
-            # Predict Rsh
-            prsh = estrsh(beta, rshexp, ee, const['E0'])
-
-            rshfig = plt.figure()
-            ax21 = rshfig.add_subplot(211)
-            ax22 = rshfig.add_subplot(212)
-            ax21.hold(True)
-            ax21.plot(ee[u], np.log10(rsh[u]), 'r.', ee[u], np.log10(prsh[u]),
-                      'b.')
-            ax21.set_xlabel('Irradiance (W/m^2)')
-            ax21.set_ylabel('log_{10}(R_{sh})')
-            ax21.legend(['Extracted', 'Predicted'], loc=2)
-            ax22.hold(True)
-            ax22.plot(ee[u], (np.log10(prsh[u]) - np.log10(rsh[u])) /
-                      np.log10(rsh[u]) * 100., 'x',
-                      [np.min(ee[u]), np.max(ee[u])], [0., 0.])
-            ax22.set_xlabel('Irradiance (W/m^2)')
-            ax22.set_ylabel('Percent Deviation in log_{10}(R_{sh})')
-
-            rshfig1 = plt.figure()
-            ax23 = rshfig1.add_subplot(111)
-            ax23.hold(True)
-            ax23.plot(ee[u], np.log10(rsh[u]), 'b.', ee[u], np.log10(prsh[u]),
-                      'r.')
-            ax23.set_xlabel('Irradiance (W/m^2)')
-            ax23.set_ylabel('log_{10}(R_{sh})')
-            ax23.legend(['Extracted from IV Curves', 'Predicted by Eq. 5'],
-                        loc=3)
-            ax23.text(150, 3.65, ['R_{SH0} = %s' % rsh0])
-            ax23.text(150, 3.5, ['R_{SH,ref} = %s' % rshref])
-            ax23.text(150, 3.35, ['R_{SHexp} = %s' % rshexp])
-
         # Estimate Rs0
         t15 = np.logical_and(u, vfil)
         rs0 = np.mean(rs[t15])
-
-        if graphic:
-            rsfig = plt.figure()
-            ax24 = rsfig.add_subplot(211)
-            ax25 = rsfig.add_subplot(212)
-            ax24.hold(True)
-            ax24.plot(ee[t15], rs[t15], 'r.', ee[t15],
-                      rs0 * np.ones(len(ee[t15])), 'b.')
-            ax24.set_xlabel('Irradiance (W/m^2)')
-            ax24.set_ylabel('R_S')
-            ax24.legend(['R_S values', 'Model'])
-            ax24.set_xlim([0, 1])
-            ax24.set_ylin([0, 1200])
-            ax25.hold(True)
-            ax25.plot(ee[u], (rs0 - rs[u]) / rs[u] * 100., 'x',
-                      [np.min(ee[u]), np.max(ee[u])], [0., 0.])
-            ax25.set_xlabel('Irradiance (W/m^2)')
-            ax25.set_ylabel('Percent Deviation in R_S')
-
-            rsfig1 = plt.figure()
-            ax26 = rsfig1.add_subplot(111)
-            ax26.hold(True)
-            ax26.plot(ee[t15], rs[t15], 'b.', [0., np.max(ee[u])], [rs0, rs0],
-                      'r')
-            ax26.set_xlabel('Irradiance (W/m^2)')
-            ax26.set_ylabel('R_S')
-            ax26.legend(['Extracted from IV Curves', 'Predicted by Eq. 7'],
-                        loc=3)
-            ax26.text(800, 1.2 * rs0, ['R_{S0} = %s' % rs0])
 
         # Save parameter estimates in output structure
         pvsyst['IL_ref'] = iph0
@@ -960,23 +724,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         pvsyst['Ns'] = specs['ns']
         pvsyst['u'] = u
 
-        oflag = True
     else:
-        oflag = False
-
-        pvsyst['IL_ref'] = float("Nan")
-        pvsyst['Io_ref'] = float("Nan")
-        pvsyst['eG'] = float("Nan")
-        pvsyst['Rs_ref'] = float("Nan")
-        pvsyst['gamma_ref'] = float("Nan")
-        pvsyst['mugamma'] = float("Nan")
-        pvsyst['Iph'] = float("Nan")
-        pvsyst['Io'] = float("Nan")
-        pvsyst['Rsh0'] = float("Nan")
-        pvsyst['Rsh_ref'] = float("Nan")
-        pvsyst['Rshexp'] = float("Nan")
-        pvsyst['Rs'] = float("Nan")
-        pvsyst['Rsh'] = float("Nan")
-        pvsyst['Ns'] = specs['ns']
-        pvsyst['u'] = np.zeros(n)
-    return pvsyst, oflag
+        raise RuntimeError(
+            "Failed to estimate the diode (ideality) factor parameter.")
+    return pvsyst

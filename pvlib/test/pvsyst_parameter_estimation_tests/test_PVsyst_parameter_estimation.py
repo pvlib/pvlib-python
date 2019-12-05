@@ -3,9 +3,13 @@ from collections import OrderedDict
 import os
 import pvlib
 from pvlib.ivtools import PVsyst_parameter_estimation
+from conftest import requires_scipy, requires_statsmodels
 
 BASEDIR = os.path.dirname(__file__)
 
+
+@requires_scipy
+@requires_statsmodels
 def test_pvsyst_parameter_estimation(disp=False, npts=3000):
     spec_list = ['ns', 'aisc', 'bvoc', 'descr']
     iv_specs = dict.fromkeys(spec_list)
@@ -90,7 +94,7 @@ def test_pvsyst_parameter_estimation(disp=False, npts=3000):
 
     pvsyst.update(zip(varlist, [Iph, Io, Rsh, Rs, u]))
 
-    expected, oflag = PVsyst_parameter_estimation.pvsyst_parameter_estimation(
+    expected = PVsyst_parameter_estimation.pvsyst_parameter_estimation(
         ivcurves, iv_specs)
     param_res = pvlib.pvsystem.calcparams_pvsyst(
         effective_irradiance=ivcurves['ee'], temp_cell=ivcurves['tc'],
@@ -103,7 +107,7 @@ def test_pvsyst_parameter_estimation(disp=False, npts=3000):
 
     ivcurves['pmp'] = ivcurves['vmp'] * ivcurves['imp']  # power
     if disp:
-        return expected, oflag, pvsyst, ivcurves, iv_specs, param_res, iv_res
+        return expected, pvsyst, ivcurves, iv_specs, param_res, iv_res
 
     # assertions
     assert np.allclose(
@@ -146,7 +150,6 @@ def test_pvsyst_parameter_estimation(disp=False, npts=3000):
 
 if __name__ == "__main__":
     (expected,
-     oflag,
      pvsyst,
      ivcurves,
      iv_specs,

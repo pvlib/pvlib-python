@@ -6,6 +6,7 @@ dependencies:
     - coveralls
     - cython
     - ephem
+    - matplotlib
     - netcdf4
     - nose
     - numba
@@ -23,6 +24,7 @@ dependencies:
     - scipy
     - shapely  # pvfactors dependency
     - siphon  # conda-forge
+    - statsmodels
     - pip:
         - nrel-pysam
         - pvfactors==1.0.1

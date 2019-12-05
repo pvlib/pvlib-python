@@ -104,7 +104,7 @@ def numdiff(x, f):
     left[:, 4] = (a0[:, 4] - a0[:, 0]) * (a0[:, 4] - a0[:, 1]) * \
         (a0[:, 4] - a0[:, 2]) * (a0[:, 4] - a0[:, 3])
 
-    df[2:(n - 2)] = np.sum(-(u1 / left) * ff, axis=1)
+    df[2:-2] = np.sum(-(u1 / left) * ff, axis=1)
 
     # second derivative
     u2[:, 0] = (
@@ -123,7 +123,7 @@ def numdiff(x, f):
         a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3]
         + a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 3])
 
-    df2[2:(n - 2)] = 2. * np.sum(u2 * ff, axis=1)
+    df2[2:-2] = 2. * np.sum(u2 * ff, axis=1)
     return df, df2
 
 

@@ -3,9 +3,9 @@ import pandas as pd
 from pvlib.ivtools.PVsyst_parameter_estimation import numdiff
 import numpy as np
 
-TESTDIR = os.path.dirname(__file__)
-IVTOOLS = os.path.dirname(TESTDIR)
-PROJDIR = os.path.dirname(IVTOOLS)
+BASEDIR = os.path.dirname(__file__)
+TESTDIR = os.path.dirname(BASEDIR)
+PROJDIR = os.path.dirname(TESTDIR)
 DATADIR = os.path.join(PROJDIR, 'data')
 TESTDATA = os.path.join(DATADIR, 'ivtools_numdiff.dat')
 

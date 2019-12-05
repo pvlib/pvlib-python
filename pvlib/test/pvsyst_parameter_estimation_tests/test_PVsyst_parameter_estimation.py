@@ -1,11 +1,25 @@
-import numpy as np
 from collections import OrderedDict
 import os
+import numpy as np
+import pandas as pd
 import pvlib
+from pvlib.ivtools.PVsyst_parameter_estimation import numdiff
 from pvlib.ivtools import PVsyst_parameter_estimation
 from conftest import requires_scipy, requires_statsmodels
 
 BASEDIR = os.path.dirname(__file__)
+TESTDIR = os.path.dirname(BASEDIR)
+PROJDIR = os.path.dirname(TESTDIR)
+DATADIR = os.path.join(PROJDIR, 'data')
+TESTDATA = os.path.join(DATADIR, 'ivtools_numdiff.dat')
+
+
+def test_numdiff():
+    iv = pd.read_csv(
+        TESTDATA, names=['I', 'V', 'dIdV', 'd2IdV2'], dtype=float)
+    df, d2f = numdiff(iv.V, iv.I)
+    assert np.allclose(iv.dIdV, df, equal_nan=True)
+    assert np.allclose(iv.d2IdV2, d2f, equal_nan=True)
 
 
 @requires_scipy

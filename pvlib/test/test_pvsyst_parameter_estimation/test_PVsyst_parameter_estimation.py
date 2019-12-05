@@ -87,9 +87,10 @@ with open(os.path.join(BASEDIR, 'PVsyst_demo_model.txt'), 'r') as f:
 
 pvsyst.update(zip(varlist, [Iph, Io, Rsh, Rs, u]))
 
-assert all((iv_specs[spec] == pvsyst_specs[spec]) for spec in spec_list)
+def test_pvsyst_parameter_estimation():
+    assert all((iv_specs[spec] == pvsyst_specs[spec]) for spec in spec_list)
 
-expected, oflag = PVsyst_parameter_estimation.pvsyst_parameter_estimation(
-    ivcurves, iv_specs)
-print(expected)
-assert np.allclose(expected['IL_ref'],pvsyst['IL_ref'])
+    expected, oflag = PVsyst_parameter_estimation.pvsyst_parameter_estimation(
+        ivcurves, iv_specs)
+    print(expected)
+    assert np.allclose(expected['IL_ref'], pvsyst['IL_ref'], atol=0.002)

@@ -1,3 +1,4 @@
+import logging
 from scipy import optimize
 import statsmodels.api as sm
 import numpy as np
@@ -8,6 +9,10 @@ from pvlib.ivtools.update_io_known_n import update_io_known_n
 from pvlib.ivtools.update_rsh_fixed_pt import update_rsh_fixed_pt
 from pvlib.ivtools.calc_theta_phi_exact import calc_theta_phi_exact
 from pvlib.pvsystem import singlediode
+
+logging.basicConfig()
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
 plt.ion()
 
 
@@ -50,16 +55,16 @@ def numdiff(x, f):
 
     n = len(f)
 
-    df = np.zeros(len(f))
-    df2 = np.zeros(len(f))
+    df = np.zeros(n)
+    df2 = np.zeros(n)
 
     # first two points are special
-    df[0:2] = float("Nan")
-    df2[0:2] = float("Nan")
+    df[:2] = float("Nan")
+    df2[:2] = float("Nan")
 
     # Last two points are special
-    df[(n - 2):n] = float("Nan")
-    df2[(n - 2):n] = float("Nan")
+    df[-2:] = float("Nan")
+    df2[-2:] = float("Nan")
 
     # Rest of points. Take reference point to be the middle of each group of 5
     # points. Calculate displacements
@@ -73,16 +78,21 @@ def numdiff(x, f):
     left = np.zeros(a0.shape)
     u2 = np.zeros(a0.shape)
 
-    u1[:, 0] = a0[:, 1] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 4] + \
-        a0[:, 1] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4]
-    u1[:, 1] = a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 0] * a0[:, 2] * a0[:, 4] + \
-        a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4]
-    u1[:, 2] = a0[:, 0] * a0[:, 1] * a0[:, 3] + a0[:, 0] * a0[:, 1] * a0[:, 4] + \
-        a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 1] * a0[:, 3] * a0[:, 4]
-    u1[:, 3] = a0[:, 0] * a0[:, 1] * a0[:, 2] + a0[:, 0] * a0[:, 1] * a0[:, 4] + \
-        a0[:, 0] * a0[:, 2] * a0[:, 4] + a0[:, 1] * a0[:, 2] * a0[:, 4]
-    u1[:, 4] = a0[:, 0] * a0[:, 1] * a0[:, 2] + a0[:, 0] * a0[:, 1] * a0[:, 3] + \
-        a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 3]
+    u1[:, 0] = (
+        a0[:, 1] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 4]
+        + a0[:, 1] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4])
+    u1[:, 1] = (
+        a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 0] * a0[:, 2] * a0[:, 4] 
+        + a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4])
+    u1[:, 2] = (
+        a0[:, 0] * a0[:, 1] * a0[:, 3] + a0[:, 0] * a0[:, 1] * a0[:, 4]
+        + a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 1] * a0[:, 3] * a0[:, 4])
+    u1[:, 3] = (
+        a0[:, 0] * a0[:, 1] * a0[:, 2] + a0[:, 0] * a0[:, 1] * a0[:, 4]
+        + a0[:, 0] * a0[:, 2] * a0[:, 4] + a0[:, 1] * a0[:, 2] * a0[:, 4])
+    u1[:, 4] = (
+        a0[:, 0] * a0[:, 1] * a0[:, 2] + a0[:, 0] * a0[:, 1] * a0[:, 3]
+        + a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 3])
 
     left[:, 0] = (a0[:, 0] - a0[:, 1]) * (a0[:, 0] - a0[:, 2]) * \
         (a0[:, 0] - a0[:, 3]) * (a0[:, 0] - a0[:, 4])
@@ -98,16 +108,21 @@ def numdiff(x, f):
     df[2:(n - 2)] = np.sum(-(u1 / left) * ff, axis=1)
 
     # second derivative
-    u2[:, 0] = a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 3] + a0[:, 1] * a0[:, 4] + \
-        a0[:, 2] * a0[:, 3] + a0[:, 2] * a0[:, 4] + a0[:, 3] * a0[:, 4]
-    u2[:, 1] = a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3] + a0[:, 0] * a0[:, 4] + \
-        a0[:, 2] * a0[:, 3] + a0[:, 2] * a0[:, 4] + a0[:, 3] * a0[:, 4]
-    u2[:, 2] = a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 3] + a0[:, 0] * a0[:, 4] + \
-        a0[:, 1] * a0[:, 3] + a0[:, 1] * a0[:, 3] + a0[:, 3] * a0[:, 4]
-    u2[:, 3] = a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 4] + \
-        a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 4]
-    u2[:, 4] = a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3] + \
-        a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 3]
+    u2[:, 0] = (
+        a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 3] + a0[:, 1] * a0[:, 4]
+        + a0[:, 2] * a0[:, 3] + a0[:, 2] * a0[:, 4] + a0[:, 3] * a0[:, 4])
+    u2[:, 1] = (
+        a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3] + a0[:, 0] * a0[:, 4]
+        + a0[:, 2] * a0[:, 3] + a0[:, 2] * a0[:, 4] + a0[:, 3] * a0[:, 4])
+    u2[:, 2] = (
+        a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 3] + a0[:, 0] * a0[:, 4]
+        + a0[:, 1] * a0[:, 3] + a0[:, 1] * a0[:, 3] + a0[:, 3] * a0[:, 4])
+    u2[:, 3] = (
+        a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 4]
+        + a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 4])
+    u2[:, 4] = (
+        a0[:, 0] * a0[:, 1] + a0[:, 0] * a0[:, 2] + a0[:, 0] * a0[:, 3]
+        + a0[:, 1] * a0[:, 2] + a0[:, 1] * a0[:, 4] + a0[:, 2] * a0[:, 3])
 
     df2[2:(n - 2)] = 2. * np.sum(u2 * ff, axis=1)
     return df, df2
@@ -569,9 +584,9 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
             ax10.set_ylabel('Y = log(Isc - Voc/Rsh)')
             ax10.legend(['I-V Data', 'Regression Model'], loc=2)
             ax10.text(np.min(x2) + 0.85 * (np.max(x2) - np.min(x2)), 1.05 *
-                      np.max(y), ['\gamma_0 = %s' % gamma_ref])
+                      np.max(y), ['$\\gamma_0 = %s$' % gamma_ref])
             ax10.text(np.min(x2) + 0.85 * (np.max(x2) - np.min(x2)), 0.98 *
-                      np.max(y), ['\mu_\gamma = %s' % mugamma])
+                      np.max(y), ['$\\mu_\\gamma = %s$' % mugamma])
             plt.show()
 
         nnsvth = gamma * (vth * specs['ns'])

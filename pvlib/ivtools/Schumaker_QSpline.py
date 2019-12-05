@@ -85,15 +85,15 @@ def schumaker_qspline(x, y):
         s[0] = left_end
 
     # [3], Eq. 8 for right endpoint
-    right_end = 2.0 * delta[n - 2] - s[n - 2]
-    if delta[n - 2] * right_end > 0:
-        s[n - 1] = right_end
+    right_end = 2.0 * delta[-1] - s[-2]
+    if delta[-1] * right_end > 0:
+        s[-1] = right_end
 
-    # determine knots. Start with initial pointsx
+    # determine knots. Start with initial points x
     # [2], Algorithm 4.1 first 'if' condition of step 5 defines intervals
     # which won't get internal knots
-    tests = s[:(n - 1)] + s[1:]
-    u = np.isclose(tests, 2. * delta[:(n - 1)], atol=EPS)
+    tests = s[:-1] + s[1:]
+    u = np.isclose(tests, 2.0 * delta, atol=EPS)
     # u = true for an interval which will not get an internal knot
 
     k = n + sum(~u)  # total number of knots = original data + inserted knots
@@ -109,10 +109,10 @@ def schumaker_qspline(x, y):
     # structures needed to compute coefficients, have to be maintained in
     # association with each knot
 
-    tmpx = x[:(n - 1)]
-    tmpy = y[:(n - 1)]
+    tmpx = x[:-1]
+    tmpy = y[:-1]
     tmpx2 = x[1:]
-    tmps = s[:(n - 1)]
+    tmps = s[:-1]
     tmps2 = s[1:]
     diffs = np.diff(s)
 
@@ -132,16 +132,16 @@ def schumaker_qspline(x, y):
     yk[:(n-1)][u] = tmpy[u]
     # constant term for each polynomial for intervals without knots
     a[:(n-1), 2][u] = tmpy[u]
-    a[:(n-1), 1][u] = s[:(n-1)][u]
-    a[:(n-1), 0][u] = .5 * diffs[u] / delx[u]  # leading coefficients
+    a[:(n-1), 1][u] = s[:-1][u]
+    a[:(n-1), 0][u] = 0.5 * diffs[u] / delx[u]  # leading coefficients
 
     # [2], Algorithm 4.1 subpart 2 of Step 5
     # original x values that are left points of intervals with internal knots
     xk[:(n-1)][~u] = tmpx[~u]
     yk[:(n-1)][~u] = tmpy[~u]
 
-    aa = s[:(n - 1)] - delta[:(n - 1)]
-    b = s[1:] - delta[:(n - 1)]
+    aa = s[:-1] - delta
+    b = s[1:] - delta
 
     sbar = np.zeros(k)
     eta = np.zeros(k)
@@ -151,7 +151,7 @@ def schumaker_qspline(x, y):
 
     t0 = aa * b >= 0
     # first 'else' in Algorithm 4.1 Step 5
-    v = np.logical_and(~u, t0[:(n-1)])  # len(u) == (n - 1) always
+    v = np.logical_and(~u, t0)  # len(u) == (n - 1) always
     q = np.sum(v)  # number of this type of knot to add
 
     if q > 0.:
@@ -177,8 +177,8 @@ def schumaker_qspline(x, y):
     ss = np.sum(z)
 
     if ss > 0.:
-        xk[(n + q + r - 1):(n + q + r + ss - 1)] = tmpx[z] + b[z] * delx[z] / \
-                                                             diffs[z]
+        xk[(n + q + r - 1):(n + q + r + ss - 1)] = \
+            tmpx[z] + b[z] * delx[z] / diffs[z]
         uu[(n + q + r - 1):(n + q + r + ss - 1), :] = \
             np.array([tmpx[z], tmpx2[z], tmpy[z], tmps[z], tmps2[z],
                       delta[z]]).T

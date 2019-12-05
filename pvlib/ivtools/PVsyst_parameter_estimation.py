@@ -129,35 +129,35 @@ def numdiff(x, f):
 
 def rectify_iv_curve(ti, tv, voc, isc):
     """
-    rectify_IV_curve ensures that Isc and Voc are included in a IV curve and
-    removes duplicate voltage and current points.
-
-    Syntax
-    ------
-    I, V = rectify_IV_curve(ti, tv, voc, isc)
-
-    Description
-    -----------
-    rectify_IV_curve ensures that the IV curve data
-        * increases in voltage
-        * contain no negative current or voltage values
-        * have the first data point as (0, Isc)
-        * have the last data point as (Voc, 0)
-        * contain no duplicate voltage values. Where voltage values are
-          repeated, a single data point is substituted with current equal to
-          the average of current at each repeated voltage.
+    ``rectify_IV_curve`` ensures that Isc and Voc are included in a IV curve
+    and removes duplicate voltage and current points.
 
     Parameters
     ----------
-    ti: a numpy array of length N containing the current data
-    tv: a numpy array of length N containing the voltage data
-    voc: a int or float containing the open circuit voltage
-    isc: a int or float containing the short circuit current
+    ti : numeric
+        test currents [A]
+    tv : numeric
+        test voltages [V]
+    voc : numeric
+        open circuit voltages [V]
+    isc : numeric
+        short circuit current [A]
 
     Returns
     -------
-    I, V: numpy arrays of equal length containing the current and voltage
-          respectively
+    current (I [A]), voltage (V [V])
+
+    Description
+    -----------
+    ``rectify_IV_curve`` ensures that the IV curve data
+
+    * increases in voltage
+    * contain no negative current or voltage values
+    * have the first data point as (0, Isc)
+    * have the last data point as (Voc, 0)
+    * contain no duplicate voltage values. Where voltage values are
+      repeated, a single data point is substituted with current equal to
+      the average of current at each repeated voltage.
     """
     # Filter out negative voltage and current values
     data_filter = []
@@ -208,8 +208,8 @@ def estrsh(x, rshexp, g, go):
     rsho = x[0]
     rshref = x[1]
 
-    rshb = np.max((rshref - rsho * np.exp(-rshexp)) / (1. - np.exp(-rshexp)),
-                  0.)
+    rshb = np.maximum(
+        (rshref - rsho * np.exp(-rshexp)) / (1. - np.exp(-rshexp)), 0.)
     prsh = rshb + (rsho - rshb) * np.exp(-rshexp * g / go)
     return prsh
 
@@ -635,10 +635,12 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
                 iph[j] = float("Nan")
 
         # Filter IV curves for good initial values
+        LOGGER.debug('filtering params ... may take awhile')
         # [5] Step 3b
         u = filter_params(io, rsh, rs, ee, isc)
 
-        # Refine Io to match Voc
+        # Refine Io to match Voc        
+        LOGGER.debug('Refine Io to match Voc')
         # [5] Step 3c
         tmpiph = iph
         tmpio = update_io_known_n(rsh[u], rs[u], nnsvth[u], io[u], tmpiph[u],
@@ -646,6 +648,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         io[u] = tmpio
 
         # Calculate Iph to be consistent with Isc and current values of other
+        LOGGER.debug('Calculate Iph to be consistent with Isc, ...')
         # parameters [6], Step 3c
         iph = isc - io + io * np.exp(rs * isc / nnsvth) + isc * rs / rsh
 
@@ -680,6 +683,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
             rsh[u] = tmprsh
 
             # Calculate Rs to be consistent with Rsh and maximum power point
+            LOGGER.debug('step %d: calculate Rs', counter)
             [a, phi] = calc_theta_phi_exact(imp[u], iph[u], vmp[u], io[u],
                                             nnsvth[u], rs[u], rsh[u])
             rs[u] = (iph[u] + io[u] - imp[u]) * rsh[u] / imp[u] - \
@@ -689,20 +693,25 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
             u = filter_params(io, rsh, rs, ee, isc)
 
             # Update value for io to match voc
+            LOGGER.debug('step %d: calculate dark/saturation current (Io)',
+                         counter)
             tmpio = update_io_known_n(rsh[u], rs[u], nnsvth[u], io[u], iph[u],
                                       voc[u])
             io[u] = tmpio
 
             # Calculate Iph to be consistent with Isc and other parameters
+            LOGGER.debug('step %d: calculate Iph', counter)
             iph = isc - io + io * np.exp(rs * isc / nnsvth) + isc * rs / rsh
 
             # update filter for good parameters
             u = filter_params(io, rsh, rs, ee, isc)
 
             # compute the IV curve from the current parameter values
+            LOGGER.debug('step %d: compute IV curve', counter)
             result = singlediode(iph[u], io[u], rs[u], rsh[u], nnsvth[u])
 
             # check convergence criteria
+            LOGGER.debug('step %d: checking convergence', counter)
             # [5] Step 3d
             if graphic:
                 convergeparams = check_converge(prevconvergeparams, result,
@@ -861,8 +870,8 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         x0 = np.array([grsh0, grshref])
         beta = optimize.least_squares(fun_rsh, x0, args=(rshexp, ee[u],
                                                          const['E0'], rsh[u]),
-                                      bounds=np.array([[1., 1.], [1.e7, 1.e6]])
-                                      )
+                                      bounds=np.array([[1., 1.], [1.e7, 1.e6]]),
+                                      verbose=2)
 
         # Extract PVsyst parameter values
         rsh0 = beta.x[0]

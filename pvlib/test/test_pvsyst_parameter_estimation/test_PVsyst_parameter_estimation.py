@@ -46,14 +46,14 @@ with open(os.path.join(BASEDIR, 'PVsyst_demo.txt'), 'r') as f:
             tmp.append(np.nan)
         i[k, :] = tmp
 
-ivcurves['isc'] = isc
-ivcurves['imp'] = imp
-ivcurves['voc'] = voc
-ivcurves['vmp'] = vmp
-ivcurves['ee'] = ee
-ivcurves['tc'] = tc
-ivcurves['v'] = v
-ivcurves['i'] = i
+ivcurves['isc'] = isc[:100]
+ivcurves['imp'] = imp[:100]
+ivcurves['voc'] = voc[:100]
+ivcurves['vmp'] = vmp[:100]
+ivcurves['ee'] = ee[:100]
+ivcurves['tc'] = tc[:100]
+ivcurves['v'] = v[:100]
+ivcurves['i'] = i[:100]
 
 pvsyst_specs = dict.fromkeys(spec_list)
 paramlist = ['IL_ref', 'Io_ref', 'eG', 'Rsh_ref', 'Rsh0', 'Rshexp', 'Rs_ref',
@@ -89,5 +89,7 @@ pvsyst.update(zip(varlist, [Iph, Io, Rsh, Rs, u]))
 
 assert all((iv_specs[spec] == pvsyst_specs[spec]) for spec in spec_list)
 
-expected = PVsyst_parameter_estimation.pvsyst_parameter_estimation(
+expected, oflag = PVsyst_parameter_estimation.pvsyst_parameter_estimation(
     ivcurves, iv_specs)
+print(expected)
+assert np.allclose(expected['IL_ref'],pvsyst['IL_ref'])

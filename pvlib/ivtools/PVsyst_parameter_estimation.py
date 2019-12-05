@@ -68,11 +68,10 @@ def numdiff(x, f):
 
     # Rest of points. Take reference point to be the middle of each group of 5
     # points. Calculate displacements
-    ff = np.vstack((f[0:(n - 4)], f[1:(n - 3)], f[2:(n - 2)], f[3:(n - 1)],
-                    f[4:n])).T
+    ff = np.vstack((f[:-4], f[1:-3], f[2:-2], f[3:-1], f[4:])).T
 
-    a0 = np.vstack((x[0:(n - 4)], x[1:(n - 3)], x[2:(n - 2)], x[3:(n - 1)],
-                   x[4:n])).T - np.tile(x[2:(n - 2)], [5, 1]).T
+    a0 = (np.vstack((x[:-4], x[1:-3], x[2:-2], x[3:-1], x[4:])).T
+          - np.tile(x[2:-2], [5, 1]).T)
 
     u1 = np.zeros(a0.shape)
     left = np.zeros(a0.shape)

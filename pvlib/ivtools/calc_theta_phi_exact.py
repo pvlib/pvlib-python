@@ -52,16 +52,21 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
 
     # Argument for Lambert W function involved in V = V(I) [2] Eq. 12; [3]
     # Eq. 3
-    if any(nnsvth == 0.):
-        argw = []
-        for i in nnsvth:
-            if i == 0.:
-                argw.append(float("Inf"))
-            else:
-                argw.append(rsh * io / i * np.exp(rsh * (il + io - imp) / i))
-        argw = np.array(argw)
-    else:
-        argw = rsh * io / nnsvth * np.exp(rsh * (il + io - imp) / nnsvth)
+    # TODO: delete this, b/c replaced with np.where() below
+    # if any(nnsvth == 0.):
+    #     argw = []
+    #     for i in nnsvth:
+    #         if i == 0.:
+    #             argw.append(float("Inf"))
+    #         else:
+    #             argw.append(rsh * io / i * np.exp(rsh * (il + io - imp) / i))
+    #     argw = np.array(argw)
+    # else:
+    #     argw = rsh * io / nnsvth * np.exp(rsh * (il + io - imp) / nnsvth)
+    argw = np.where(
+        nnsvth == 0,
+        np.inf,
+        rsh * io / nnsvth * np.exp(rsh * (il + io - imp) / nnsvth))
     u = argw > 0
     w = np.zeros(len(u))
     w[~u] = float("Nan")
@@ -72,7 +77,7 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
                 tmp.append(float("Nan"))
             else:
                 tmp.append(lambertw(i).real)
-        tmp = np.array(tmp)
+        tmp = np.array(tmp, dtype=float)
     else:
         tmp = lambertw(argw[u]).real
     ff = np.isnan(tmp)
@@ -94,19 +99,25 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
 
     # Argument for Lambert W function involved in I = I(V) [2] Eq. 11; [3]
     # E1. 2
-    if any(nnsvth == 0.):
-        argw = []
-        for i in nnsvth:
-            if i == 0.:
-                argw.append(float("Inf"))
-            else:
-                argw.append(rsh / (rsh + rs) * rs * io / i *
-                            np.exp(rsh / (rsh + rs) * (rs * (il + io) + vmp) /
-                                   i))
-        argw = np.array(argw)
-    else:
-        argw = rsh / (rsh + rs) * rs * io / nnsvth * \
-               np.exp(rsh / (rsh + rs) * (rs * (il + io) + vmp) / nnsvth)
+    # TODO: delete this, b/c replaced with np.where() below
+    # if any(nnsvth == 0.):
+    #     argw = []
+    #     for i in nnsvth:
+    #         if i == 0.:
+    #             argw.append(float("Inf"))
+    #         else:
+    #             argw.append(rsh / (rsh + rs) * rs * io / i *
+    #                         np.exp(rsh / (rsh + rs) * (rs * (il + io) + vmp) /
+    #                                i))
+    #     argw = np.array(argw)
+    # else:
+    #     argw = rsh / (rsh + rs) * rs * io / nnsvth * \
+    #            np.exp(rsh / (rsh + rs) * (rs * (il + io) + vmp) / nnsvth)
+    argw = np.where(
+        nnsvth == 0,
+        np.inf,
+        rsh / (rsh + rs) * rs * io / nnsvth * np.exp(
+            rsh / (rsh + rs) * (rs * (il + io) + vmp) / nnsvth))
     u = argw > 0
     w = np.zeros(len(u))
     w[~u] = float("Nan")
@@ -117,7 +128,7 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
                 tmp.append(float("Nan"))
             else:
                 tmp.append(lambertw(i).real)
-        tmp = np.array(tmp)
+        tmp = np.array(tmp, dtype=float)
     else:
         tmp = lambertw(argw[u]).real
     ff = np.isnan(tmp)

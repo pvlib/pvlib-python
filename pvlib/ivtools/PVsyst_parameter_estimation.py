@@ -147,21 +147,23 @@ def rectify_iv_curve(ti, tv, voc, isc):
     """
     # Filter out negative voltage and current values
     data_filter = []
-    for n, i in enumerate(ti):
+    for i, v in zip(ti, tv):
         if i < 0:
             continue
-        if tv[n] > voc:
+        if v > voc:
             continue
-        if tv[n] < 0:
+        if v < 0:
             continue
-        data_filter.append(n)
+        if np.isnan(i) or np.isnan(v):
+            continue
+        data_filter.append((i, v))
 
     current = np.array([isc])
     voltage = np.array([0.])
 
-    for i in data_filter:
-        current = np.append(current, ti[i])
-        voltage = np.append(voltage, tv[i])
+    for i, v in data_filter:
+        current = np.append(current, i)
+        voltage = np.append(voltage, v)
 
     # Add in Voc and Isc
     current = np.append(current, 0.)

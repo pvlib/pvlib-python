@@ -43,6 +43,7 @@ def lambertw(z):
         vol. 5, 1996
     """
 
+    z = np.atleast_1d(z)
     if any(z < 0):
         f = []
         for i in z:
@@ -73,7 +74,7 @@ def lambertw(z):
                 if np.abs(dw) < 0.7e-16 * (2 + np.abs(w)):
                     f.append(w)
                     break
-        w = np.array(f)
+        w = np.array(f)  # can be either float or complex!
     else:
         # Use asymptotic expansion w = log(z) - log(log(z)) for most z
         tmp = np.log(z + (z == 0))

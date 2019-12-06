@@ -328,7 +328,7 @@ def check_converge(prevparams, result, vmp, imp, i):
         convergeparam['pmperrmeanchange'] = np.abs(
             (convergeparam['pmperrmean'] - prevparams['pmperrmean'])
             / prevparams['pmperrmean'])
-        convergeparam['imperrabsmaxchange'] =  np.abs(
+        convergeparam['imperrabsmaxchange'] = np.abs(
             (convergeparam['imperrabsmax'] - prevparams['imperrabsmax'])
             / prevparams['imperrabsmax'])
         convergeparam['vmperrabsmaxchange'] = np.abs(
@@ -549,9 +549,8 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
                 tmp = -rsh[j] * didv - 1.
                 v = np.logical_and(u, tmp > 0)
                 if np.sum(v) > 0:
-                    vtrs = (
-                        nnsvth[j] / isc[j]
-                        * (np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j]))
+                    vtrs = (nnsvth[j] / isc[j] * (
+                        np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j]))
                         - volt[v] / nnsvth[j]))
                     rs[j] = np.mean(vtrs[vtrs > 0], axis=0)
                 else:

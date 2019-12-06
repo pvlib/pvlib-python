@@ -39,8 +39,8 @@ def estimate_parameters(i, v, nsvth):
     stable. The other parameters, ``Rs``, ``Io`` and ``n`` may be negative or
     imaginary even for IV curve data without obvious flaws. Method coded here
     uses a principal component transformation of ``(V, I)`` prior to regression
-    to attempt to overcome effects of strong colinearity between ``v`` and ``i``
-    over much of the I-V curve.
+    to attempt to overcome effects of strong colinearity between ``v`` and
+    ``i`` over much of the I-V curve.
 
     References
     ----------

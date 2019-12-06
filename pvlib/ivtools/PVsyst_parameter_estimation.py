@@ -83,7 +83,7 @@ def numdiff(x, f):
         a0[:, 1] * a0[:, 2] * a0[:, 3] + a0[:, 1] * a0[:, 2] * a0[:, 4]
         + a0[:, 1] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4])
     u1[:, 1] = (
-        a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 0] * a0[:, 2] * a0[:, 4] 
+        a0[:, 0] * a0[:, 2] * a0[:, 3] + a0[:, 0] * a0[:, 2] * a0[:, 4]
         + a0[:, 0] * a0[:, 3] * a0[:, 4] + a0[:, 2] * a0[:, 3] * a0[:, 4])
     u1[:, 2] = (
         a0[:, 0] * a0[:, 1] * a0[:, 3] + a0[:, 0] * a0[:, 1] * a0[:, 4]
@@ -308,35 +308,36 @@ def check_converge(prevparams, result, vmp, imp, i):
     # std error Pmp
     convergeparam['pmperrstd'] = np.std(pmperror, axis=0, ddof=1)
 
-    if prevparams['state'] != 0.:
+    # TODO: use abs(x/y - 1) instead of abs(x-y)/y
+    if prevparams['state'] != 0.0:
         convergeparam['imperrstdchange'] = np.abs(
             (convergeparam['imperrstd'] - prevparams['imperrstd'])
-                / prevparams['imperrstd'])
+            / prevparams['imperrstd'])
         convergeparam['vmperrstdchange'] = np.abs(
             (convergeparam['vmperrstd'] - prevparams['vmperrstd'])
-                / prevparams['vmperrstd'])
+            / prevparams['vmperrstd'])
         convergeparam['pmperrstdchange'] = np.abs(
             (convergeparam['pmperrstd'] - prevparams['pmperrstd'])
-                / prevparams['pmperrstd'])
+            / prevparams['pmperrstd'])
         convergeparam['imperrmeanchange'] = np.abs(
             (convergeparam['imperrmean'] - prevparams['imperrmean'])
-                / prevparams['imperrmean'])
+            / prevparams['imperrmean'])
         convergeparam['vmperrmeanchange'] = np.abs(
             (convergeparam['vmperrmean'] - prevparams['vmperrmean'])
-                / prevparams['vmperrmean'])
+            / prevparams['vmperrmean'])
         convergeparam['pmperrmeanchange'] = np.abs(
             (convergeparam['pmperrmean'] - prevparams['pmperrmean'])
-                / prevparams['pmperrmean'])
+            / prevparams['pmperrmean'])
         convergeparam['imperrabsmaxchange'] =  np.abs(
             (convergeparam['imperrabsmax'] - prevparams['imperrabsmax'])
-                / prevparams['imperrabsmax'])
+            / prevparams['imperrabsmax'])
         convergeparam['vmperrabsmaxchange'] = np.abs(
             (convergeparam['vmperrabsmax'] - prevparams['vmperrabsmax'])
-                / prevparams['vmperrabsmax'])
+            / prevparams['vmperrabsmax'])
         convergeparam['pmperrabsmaxchange'] = np.abs(
             (convergeparam['pmperrabsmax'] - prevparams['pmperrabsmax'])
-                / prevparams['pmperrabsmax'])
-        convergeparam['state'] = 1.
+            / prevparams['pmperrabsmax'])
+        convergeparam['state'] = 1.0
     else:
         convergeparam['imperrstdchange'] = float("Inf")
         convergeparam['vmperrstdchange'] = float("Inf")
@@ -350,9 +351,10 @@ def check_converge(prevparams, result, vmp, imp, i):
         convergeparam['state'] = 1.
     return convergeparam
 
+
 const_default = OrderedDict()
-const_default['E0'] = 1000.
-const_default['T0'] = 25.
+const_default['E0'] = 1000.0
+const_default['T0'] = 25.0
 const_default['k'] = 1.38066e-23
 const_default['q'] = 1.60218e-19
 
@@ -547,9 +549,10 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
                 tmp = -rsh[j] * didv - 1.
                 v = np.logical_and(u, tmp > 0)
                 if np.sum(v) > 0:
-                    vtrs = nnsvth[j] / isc[j] * \
-                           (np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j])) -
-                            volt[v] / nnsvth[j])
+                    vtrs = (
+                        nnsvth[j] / isc[j]
+                        * (np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j]))
+                        - volt[v] / nnsvth[j]))
                     rs[j] = np.mean(vtrs[vtrs > 0], axis=0)
                 else:
                     rs[j] = 0.
@@ -569,7 +572,7 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         # [5] Step 3b
         u = filter_params(io, rsh, rs, ee, isc)
 
-        # Refine Io to match Voc        
+        # Refine Io to match Voc
         LOGGER.debug('Refine Io to match Voc')
         # [5] Step 3c
         tmpiph = iph
@@ -694,10 +697,9 @@ def pvsyst_parameter_estimation(ivcurves, specs, const=const_default,
         # Here we use a nonlinear least squares technique. Lsqnonlin minimizes
         # the sum of squares of the objective function (here, tf).
         x0 = np.array([grsh0, grshref])
-        beta = optimize.least_squares(fun_rsh, x0, args=(rshexp, ee[u],
-                                                         const['E0'], rsh[u]),
-                                      bounds=np.array([[1., 1.], [1.e7, 1.e6]]),
-                                      verbose=2)
+        beta = optimize.least_squares(
+            fun_rsh, x0, args=(rshexp, ee[u], const['E0'], rsh[u]),
+            bounds=np.array([[1., 1.], [1.e7, 1.e6]]), verbose=2)
 
         # Extract PVsyst parameter values
         rsh0 = beta.x[0]

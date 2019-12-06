@@ -52,17 +52,6 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
 
     # Argument for Lambert W function involved in V = V(I) [2] Eq. 12; [3]
     # Eq. 3
-    # TODO: delete this, b/c replaced with np.where() below
-    # if any(nnsvth == 0.):
-    #     argw = []
-    #     for i in nnsvth:
-    #         if i == 0.:
-    #             argw.append(float("Inf"))
-    #         else:
-    #             argw.append(rsh * io / i * np.exp(rsh * (il + io - imp) / i))
-    #     argw = np.array(argw)
-    # else:
-    #     argw = rsh * io / nnsvth * np.exp(rsh * (il + io - imp) / nnsvth)
     argw = np.where(
         nnsvth == 0,
         np.inf,
@@ -84,8 +73,9 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
 
     # NaN where argw overflows. Switch to log space to evaluate
     if any(ff):
-        logargw = np.log(rsh[u]) + np.log(io[u]) - np.log(nnsvth[u]) + \
-                  rsh[u] * (il[u] + io[u] - imp[u]) / nnsvth[u]
+        logargw = (
+            np.log(rsh[u]) + np.log(io[u]) - np.log(nnsvth[u])
+            + rsh[u] * (il[u] + io[u] - imp[u]) / nnsvth[u])
         # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
         # The initial guess is w=logargW. Where direct evaluation (above)
         # results in NaN from overflow, 3 iterations of Newton's method gives
@@ -99,20 +89,6 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
 
     # Argument for Lambert W function involved in I = I(V) [2] Eq. 11; [3]
     # E1. 2
-    # TODO: delete this, b/c replaced with np.where() below
-    # if any(nnsvth == 0.):
-    #     argw = []
-    #     for i in nnsvth:
-    #         if i == 0.:
-    #             argw.append(float("Inf"))
-    #         else:
-    #             argw.append(rsh / (rsh + rs) * rs * io / i *
-    #                         np.exp(rsh / (rsh + rs) * (rs * (il + io) + vmp) /
-    #                                i))
-    #     argw = np.array(argw)
-    # else:
-    #     argw = rsh / (rsh + rs) * rs * io / nnsvth * \
-    #            np.exp(rsh / (rsh + rs) * (rs * (il + io) + vmp) / nnsvth)
     argw = np.where(
         nnsvth == 0,
         np.inf,
@@ -135,10 +111,10 @@ def calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
 
     # NaN where argw overflows. Switch to log space to evaluate
     if any(ff):
-        logargw = np.log(rsh[u]) / (rsh[u] + rs[u]) + np.log(rs[u]) + \
-                  np.log(io[u]) - np.log(nnsvth[u]) + \
-                  (rsh[u] / (rsh[u] + rs[u])) * \
-                  (rs[u] * (il[u] + io[u]) + vmp[u]) / nnsvth[u]
+        logargw = (
+            np.log(rsh[u]) / (rsh[u] + rs[u]) + np.log(rs[u]) + np.log(io[u])
+            - np.log(nnsvth[u]) + (rsh[u] / (rsh[u] + rs[u]))
+            * (rs[u] * (il[u] + io[u]) + vmp[u]) / nnsvth[u])
         # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
         # The initial guess is w=logargW. Where direct evaluation (above)
         # results in NaN from overflow, 3 iterations of Newton's method gives

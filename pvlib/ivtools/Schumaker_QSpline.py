@@ -187,13 +187,13 @@ def schumaker_qspline(x, y):
     # define polynomial coefficients for intervals with added knots
     ff = ~u
     sbar[:(n-1)][ff] = (
-            2 * uu[:(n-1), 5][ff] - uu[:(n-1), 4][ff]
-        ) + (uu[:(n-1), 4][ff] - uu[:(n-1), 3][ff]) * (
-            xi[:(n-1)][ff] - uu[:(n-1), 0][ff]
-        ) / (uu[:(n-1), 1][ff] - uu[:(n-1), 0][ff])
+        (2 * uu[:(n-1), 5][ff] - uu[:(n-1), 4][ff])
+        + (uu[:(n-1), 4][ff] - uu[:(n-1), 3][ff])
+        * (xi[:(n-1)][ff] - uu[:(n-1), 0][ff])
+        / (uu[:(n-1), 1][ff] - uu[:(n-1), 0][ff]))
     eta[:(n-1)][ff] = (
-            sbar[:(n-1)][ff] - uu[:(n-1), 3][ff]
-        ) / (xi[:(n-1)][ff] - uu[:(n-1), 0][ff])
+        (sbar[:(n-1)][ff] - uu[:(n-1), 3][ff])
+        / (xi[:(n-1)][ff] - uu[:(n-1), 0][ff]))
 
     sbar[(n - 1):(n + q + r + ss - 1)] = \
         (2 * uu[(n - 1):(n + q + r + ss - 1), 5] -

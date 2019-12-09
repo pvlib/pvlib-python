@@ -4,4 +4,4 @@ and diode models.
 
 """
 
-from ivtools import fit_sde, fit_sdm, utility  # noqa: F401
+from pvlib.ivtools import fit_sde, fit_sdm, utility  # noqa: F401

@@ -7,7 +7,7 @@ Function names should follow the pattern "fit_sde_" + fitting method.
 
 import numpy as np
 
-from utility import schumaker_qspline
+from pvlib.ivtools.utility import schumaker_qspline
 
 
 def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,

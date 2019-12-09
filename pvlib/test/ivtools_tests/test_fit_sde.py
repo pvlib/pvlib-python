@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from pvlib import pvsystem
-from pvlib.ivtools import fit_sde, utility
+from pvlib.ivtools import fit_sde
 from pvlib.test.conftest import requires_scipy
 
 

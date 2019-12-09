@@ -13,8 +13,8 @@ import logging
 
 from pvlib.pvsystem import singlediode, v_from_i
 
-from utility import constants, rectify_iv_curve, numdiff
-from fit_sde import fit_sde_cocontent
+from pvlib.ivtools.utility import constants, rectify_iv_curve, numdiff
+from pvlib.ivtools.fit_sde import fit_sde_cocontent
 
 
 def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,

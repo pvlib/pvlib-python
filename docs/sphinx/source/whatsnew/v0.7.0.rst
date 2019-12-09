@@ -8,7 +8,7 @@ recommend all users of v0.6.3 upgrade to this release after checking API
 compatibility notes.
 
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
-**Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
+**Minimum numpy version is now 1.12.0. Minimum pandas version is now 0.18.1.**
 
 API Breaking Changes
 ~~~~~~~~~~~~~~~~~~~~
@@ -30,7 +30,7 @@ API Changes with Deprecations
       - `temperature.sapm_cell` returns only the cell temperature, whereas the
          old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
       - Created `temperature.sapm_module` to return module temperature using the SAPM temperature model.
-      - Changed the order of arguments for`pvsystem.sapm_celltemp`,
+      - Changed the order of arguments for `pvsystem.sapm_celltemp`,
         `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` to be consistent
         among cell temperature model functions.
       - Removed `model` as a kwarg from `temperature.sapm_cell` and
@@ -187,6 +187,10 @@ Removal of prior version deprecations
 * Removed `ModelChain.singlediode` method.
 * Removed `ModelChain.prepare_inputs` clearsky assumption when no irradiance
   data was provided.
+  
+Requirements
+~~~~~~~~~~~~
+* pvlib now requires numpy >= 1.12.0, released in 2017. (:issue:`830`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -202,3 +206,4 @@ Contributors
 * Joseph Ranalli (:ghuser:`jranalli`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
 * Todd Karin (:ghuser:`toddkarin`)
+* Mark Mikofski (:ghuser:`mikofski`)

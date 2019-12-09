@@ -8,7 +8,7 @@ recommend all users of v0.6.3 upgrade to this release after checking API
 compatibility notes.
 
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
-**Minimum numpy version is now 1.12.0. Minimum pandas version is now 0.18.1.**
+**Minimum numpy version is now 1.12.0. Minimum pandas version is now 0.18.1.** (:issue:`830`, :issue:`748`)
 
 API Breaking Changes
 ~~~~~~~~~~~~~~~~~~~~
@@ -190,7 +190,8 @@ Removal of prior version deprecations
   
 Requirements
 ~~~~~~~~~~~~
-* pvlib now requires numpy >= 1.12.0, released in 2017. (:issue:`830`)
+* numpy minimum increased to v1.12.0, released in 2017. (:issue:`830`)
+* pandas minimum increased to v1.18.1, released in 2016. (:issue:`748`)
 
 Contributors
 ~~~~~~~~~~~~

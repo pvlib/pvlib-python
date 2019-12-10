@@ -40,36 +40,35 @@ def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Returns
     -------
-    tuple of the following elements:
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference
+        conditions [A]
 
-        * I_L_ref : float
-            The light-generated current (or photocurrent) at reference
-            conditions [A]
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference
+        conditions [A]
 
-        * I_o_ref : float
-            The dark or diode reverse saturation current at reference
-            conditions [A]
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
 
-        * R_sh_ref : float
-            The shunt resistance at reference conditions, in ohms.
+    R_s : float
+        The series resistance at reference conditions, in ohms.
 
-        * R_s : float
-            The series resistance at reference conditions, in ohms.
+    a_ref : float
+        The product of the usual diode ideality factor ``n`` (unitless),
+        number of cells in series ``Ns``, and cell thermal voltage at
+        reference conditions [V]
 
-        * a_ref : float
-            The product of the usual diode ideality factor ``n`` (unitless),
-            number of cells in series ``Ns``, and cell thermal voltage at
-            reference conditions [V]
-
-        * Adjust : float
-            The adjustment to the temperature coefficient for short circuit
-            current, in percent.
+    Adjust : float
+        The adjustment to the temperature coefficient for short circuit
+        current, in percent.
 
     Raises
     ------
-        ImportError if NREL-PySAM is not installed.
-
-        RuntimeError if parameter extraction is not successful.
+    ImportError
+        If NREL-PySAM is not installed.
+    RuntimeError
+        If parameter extraction is not successful.
 
     Notes
     -----
@@ -147,23 +146,22 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     Returns
     -------
-    tuple of the following elements:
-
-        * photocurrent : float
-            photocurrent [A]
-        * saturation_current : float
-            dark (saturation) current [A]
-        * resistance_shunt : float
-            shunt (parallel) resistance, in ohms
-        * resistance_series : float
-            series resistance, in ohms
-        * nNsVth : float
-            product of thermal voltage ``Vth`` [V], diode ideality factor
-            ``n``, and number of series cells ``Ns``
+    photocurrent : float
+        photocurrent [A]
+    saturation_current : float
+        dark (saturation) current [A]
+    resistance_shunt : float
+        shunt (parallel) resistance, in ohms
+    resistance_series : float
+        series resistance, in ohms
+    nNsVth : float
+        product of thermal voltage ``Vth`` [V], diode ideality factor
+        ``n``, and number of series cells ``Ns``
 
     Raises
     ------
-    RuntimeError if parameter extraction is not successful.
+    RuntimeError
+        If parameter extraction is not successful.
 
     Notes
     -----
@@ -314,36 +312,34 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Returns
     -------
-    Tuple of the following elements:
-
-        * Dictionary with the following elements:
-            I_L_ref: float
-                Light-generated current at reference conditions [A]
-            I_o_ref: float
-                Diode saturation current at reference conditions [A]
-            R_s: float
-                Series resistance [ohms]
-            R_sh_ref: float
-                Shunt resistance at reference conditions [ohms].
-            a_ref: float
-                Modified ideality factor at reference conditions.
-                The product of the usual diode ideality factor (n, unitless),
-                number of cells in series (Ns), and cell thermal voltage at
-                specified effective irradiance and cell temperature.
-            alpha_sc: float
-                The short-circuit current (i_sc) temperature coefficient of the
-                module [A/K].
-            EgRef: float
-                Energy of bandgap of semi-conductor used [eV]
-            dEgdT: float
-                Variation of bandgap according to temperature [eV/K]
-            irrad_ref: float
-                Reference irradiance condition [W/m2]
-            temp_ref: float
-                Reference temperature condition [C]
-        * scipy.optimize.OptimizeResult
-            Optimization result of scipy.optimize.root().
-            See scipy.optimize.OptimizeResult for more details.
+    Dictionary with the following elements:
+        * `I_L_ref` : float
+          Light-generated current at reference conditions [A]
+        * `I_o_ref` : float
+          Diode saturation current at reference conditions [A]
+        * `R_s` : float
+          Series resistance [ohms]
+        * `R_sh_ref` : float
+          Shunt resistance at reference conditions [ohms].
+        * `a_ref` : float
+          Modified ideality factor at reference conditions.
+          The product of the usual diode ideality factor (n, unitless),
+          number of cells in series (Ns), and cell thermal voltage at
+          specified effective irradiance and cell temperature.
+        * `alpha_sc` : float
+          The short-circuit current (i_sc) temperature coefficient of the
+          module [A/K].
+        * `EgRef` : float
+          Energy of bandgap of semi-conductor used [eV]
+        * `dEgdT` : float
+          Variation of bandgap according to temperature [eV/K]
+        * `irrad_ref` : float
+          Reference irradiance condition [W/m2]
+        * `temp_ref` : float
+          Reference temperature condition [C]
+    scipy.optimize.OptimizeResult
+        Optimization result of scipy.optimize.root().
+        See scipy.optimize.OptimizeResult for more details.
 
     References
     ----------

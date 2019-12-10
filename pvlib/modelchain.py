@@ -757,6 +757,7 @@ class ModelChain(object):
         -------
         self
 
+
         Assigns attributes: weather
 
         Examples
@@ -833,7 +834,7 @@ class ModelChain(object):
         Notes
         -----
         Assigns attributes: ``solar_position``, ``airmass``,
-        ``total_irrad``, `aoi`
+        ``total_irrad``, ``aoi``
 
         See also
         --------
@@ -923,6 +924,7 @@ class ModelChain(object):
         Returns
         -------
         self
+
 
         Assigns attributes: solar_position, airmass, irradiance,
         total_irrad, effective_irradiance, weather, cell_temperature, aoi,

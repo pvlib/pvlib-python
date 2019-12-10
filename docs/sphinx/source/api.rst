@@ -295,7 +295,6 @@ PVWatts model
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
-   pvsystem.pvwatts_losses
 
 Functions for fitting PV models
 -------------------------------

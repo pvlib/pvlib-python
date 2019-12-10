@@ -65,22 +65,22 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     References
     ----------
     [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
-        the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157,
-        2002.
+    the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157,
+    2002.
 
     [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
-        Irradiances: Description and Validation", Solar Energy, vol 73, pp.
-        307-317, 2002.
+    Irradiances: Description and Validation", Solar Energy, vol 73, pp.
+    307-317, 2002.
 
     [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-        Sky Models: Implementation and Analysis", Sandia National
-        Laboratories, SAND2012-2389, 2012.
+    Sky Models: Implementation and Analysis", Sandia National
+    Laboratories, SAND2012-2389, 2012.
 
     [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
-        July 17, 2012).
+    July 17, 2012).
 
     [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
-        ISES Solar World Congress, June 2003. Goteborg, Sweden.
+    ISES Solar World Congress, June 2003. Goteborg, Sweden.
     '''
 
     # ghi is calculated using either the equations in [1] by setting
@@ -378,14 +378,14 @@ def haurwitz(apparent_zenith):
     ----------
 
     [1] B. Haurwitz, "Insolation in Relation to Cloudiness and Cloud
-     Density," Journal of Meteorology, vol. 2, pp. 154-166, 1945.
+    Density," Journal of Meteorology, vol. 2, pp. 154-166, 1945.
 
     [2] B. Haurwitz, "Insolation in Relation to Cloud Type," Journal of
-     Meteorology, vol. 3, pp. 123-124, 1946.
+    Meteorology, vol. 3, pp. 123-124, 1946.
 
     [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-     Sky Models: Implementation and Analysis", Sandia National
-     Laboratories, SAND2012-2389, 2012.
+    Sky Models: Implementation and Analysis", Sandia National
+    Laboratories, SAND2012-2389, 2012.
     '''
 
     cos_zenith = tools.cosd(apparent_zenith.values)

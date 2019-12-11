@@ -757,8 +757,9 @@ class ModelChain(object):
         -------
         self
 
-
-        Assigns attributes: weather
+        Notes
+        -----
+        Assigns attributes: ``weather``
 
         Examples
         --------
@@ -925,10 +926,12 @@ class ModelChain(object):
         -------
         self
 
-
-        Assigns attributes: solar_position, airmass, irradiance,
-        total_irrad, effective_irradiance, weather, cell_temperature, aoi,
-        aoi_modifier, spectral_modifier, dc, ac, losses.
+        Notes
+        -----
+        Assigns attributes: ``solar_position``, ``airmass``, ``irradiance``,
+        ``total_irrad``, ``effective_irradiance``, ``weather``,
+        ``cell_temperature``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
+        ``dc``, ``ac``, ``losses``.
         """
         if times is not None:
             warnings.warn('times keyword argument is deprecated and will be '

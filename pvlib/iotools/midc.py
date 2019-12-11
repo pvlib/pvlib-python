@@ -180,7 +180,7 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     The `variable_map` argument should map fields from MIDC data to pvlib
     names.
 
-    e.g. If a MIDC file contains the variable 'Global Horizontal [W/m^2]',
+    E.g. if a MIDC file contains the variable 'Global Horizontal [W/m^2]',
     passing the dictionary below will rename the column to 'ghi' in
     the returned Dataframe.
 

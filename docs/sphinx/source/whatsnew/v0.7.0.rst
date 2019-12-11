@@ -173,6 +173,11 @@ Documentation
   used. (:issue:`785`)
 * Note warning about _TMY3.epw files retrieved from energyplus.net in docstring
   of `epw.read_epw`
+* Improved sphinx rendering of API reference entries for `clearsky.ineichen`,
+  `clearsky.haurwitz`, `tracking.singleaxis`, `iotools.read_midc`,
+  `Location.from_tmy`, `ModelChain.run_model`, `ModelChain.complete_irradiance`,
+  and `ModelChain.prepare_inputs`
+* Removed duplicate `pvwatts_losses` entry in `api.rst`
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -202,3 +207,4 @@ Contributors
 * Joseph Ranalli (:ghuser:`jranalli`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
 * Todd Karin (:ghuser:`toddkarin`)
+* Kevin Anderson (:ghuser:`kevinsa5`)

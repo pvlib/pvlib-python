@@ -271,10 +271,11 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     return temp_air + temp_difference
 
 
-def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=5.0):
+def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     '''
     Calculate cell/module temperature using an empirical heat loss factor
-    model as proposed by Faiman [2] and adopted in the IEC 61853 standards [1].
+    model as proposed by Faiman [1] and adopted in the IEC 61853
+    standards [2] and [3].
 
     Usage of this model in the IEC 61853 standard does not distinguish
     between cell and module temperature.
@@ -293,12 +294,12 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=5.0):
         speed at module height used to determine NOCT. [m/s]
 
     u_c : numeric, default 25.0
-        Combined heat loss factor coefficient. The default value is
-        just a round number that is somewhat realistic. [W/(m^2 C)].
+        Combined heat loss factor coefficient. The default value is one
+        determined by Faiman for 7 silicon modules. [W/(m^2 C)].
 
-    u_v : numeric, default 5.0
-        Combined heat loss factor influenced by wind. The default value is
-        just a round number that is somewhat realistic. [(W/m^2 C)(m/s)].
+    u_v : numeric, default 6.84
+        Combined heat loss factor influenced by wind. The default value is one
+        determined by Faiman for 7 silicon modules. [(W/m^2 C)(m/s)].
 
     Returns
     -------
@@ -306,14 +307,21 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=5.0):
 
     Notes
     -----
-    If multiple arguments are vectors they must be the same length.
+    All arguments may be scalars or vectors. If multiple arguments
+    are vectors they must be the same length.
 
     References
     ----------
-    [1] IEC 61853...
-
-    [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+    [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
     photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+
+    [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
+    rating - Part 2: Spectral responsivity, incidence angle and module
+    operating temperature measurements". IEC, Geneva, 2018.
+
+    [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+    rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019
 

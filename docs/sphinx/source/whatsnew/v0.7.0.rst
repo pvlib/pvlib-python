@@ -140,6 +140,8 @@ Enhancements
   computing reductions in variability due to a spatially distributed plant.
 * Created one new incidence angle modifier (IAM) function for diffuse irradiance:
   :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
+* Add :py:meth:`~pvlib.location.Location.from_epw`, a method to create a Location
+  object from epw metadata, typically coming from `pvlib.iotools.epw.read_epw`.
 
 Bug fixes
 ~~~~~~~~~

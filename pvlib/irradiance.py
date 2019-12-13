@@ -65,22 +65,22 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
 
     References
     ----------
-    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
-    Clear Sky Models: Implementation and Analysis", Sandia National
-    Laboratories, SAND2012-2389, 2012.
+    .. [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
+       Laboratories, SAND2012-2389, 2012.
 
-    [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
-    SR1 and SR2
+    .. [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
+       SR1 and SR2
 
-    [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
-    in Meteorology and Climatology.
+    .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
+       in Meteorology and Climatology.
 
-    [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
-    Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+    .. [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
+       Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
 
-    [5] ASCE, 2005. The ASCE Standardized Reference Evapotranspiration
-    Equation, Environmental and Water Resources Institute of the American
-    Civil Engineers, Ed. R. G. Allen et al.
+    .. [5] ASCE, 2005. The ASCE Standardized Reference Evapotranspiration
+       Equation, Environmental and Water Resources Institute of the American
+       Civil Engineers, Ed. R. G. Allen et al.
     """
 
     to_doy, to_datetimeindex, to_output = \
@@ -535,18 +535,18 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-    solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267.
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+       solar irradiance on inclined surfaces for building energy simulation"
+       2007, Solar Energy vol. 81. pp. 254-267.
 
     The calculation is the last term of equations 3, 4, 7, 8, 10, 11, and 12.
 
-    [2] albedos from:
-    http://files.pvsyst.com/help/albedo.htm
-    and
-    http://en.wikipedia.org/wiki/Albedo
-    and
-    https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
+    .. [2] albedos from:
+       http://files.pvsyst.com/help/albedo.htm
+       and
+       http://en.wikipedia.org/wiki/Albedo
+       and
+       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
     '''
 
     if surface_type is not None:
@@ -594,12 +594,12 @@ def isotropic(surface_tilt, dhi):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar
-    heat collector. Trans. ASME 64, 91.
+    .. [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar
+       heat collector. Trans. ASME 64, 91.
     '''
 
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
@@ -665,12 +665,12 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-    solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+       solar irradiance on inclined surfaces for building energy simulation"
+       2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
-    tilted surfaces. Solar Energy 23 (2), 111-114.
+    .. [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
+       tilted surfaces. Solar Energy 23 (2), 111-114.
     '''
 
     # zenith angle with respect to panel normal.
@@ -756,14 +756,14 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     References
     -----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar
-    radiation incident on an inclined surface. In: Hay, J.E., Won, T.K.
-    (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
-    Ministry of Supply and Services, Canada.
+    .. [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar
+       radiation incident on an inclined surface. In: Hay, J.E., Won, T.K.
+       (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
+       Ministry of Supply and Services, Canada.
     '''
 
     # if necessary, calculate ratio of titled and horizontal beam irradiance
@@ -854,15 +854,15 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse
-    fraction correlations. Solar Energy 45(1), 1-7.
+    .. [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse
+       fraction correlations. Solar Energy 45(1), 1-7.
 
-    [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of
-    hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
+    .. [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of
+       hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
     '''
 
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
@@ -1029,20 +1029,20 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
-    1987. A new simplified version of the Perez diffuse irradiance model
-    for tilted surfaces. Solar Energy 39(3), 221-232.
+    .. [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
+       1987. A new simplified version of the Perez diffuse irradiance model
+       for tilted surfaces. Solar Energy 39(3), 221-232.
 
-    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
-    1990. Modeling daylight availability and irradiance components from
-    direct and global irradiance. Solar Energy 44 (5), 271-289.
+    .. [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+       1990. Modeling daylight availability and irradiance components from
+       direct and global irradiance. Solar Energy 44 (5), 271-289.
 
-    [4] Perez, R. et. al 1988. "The Development and Verification of the
-    Perez Diffuse Radiation Model". SAND88-7030
+    .. [4] Perez, R. et. al 1988. "The Development and Verification of the
+       Perez Diffuse Radiation Model". SAND88-7030
     '''
 
     kappa = 1.041  # for solar_zenith in radians
@@ -1486,13 +1486,13 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     References
     ----------
-    [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
-    (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
-    ASHRAE Transactions-Research Series, pp. 354-369
+    .. [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
+       (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
+       ASHRAE Transactions-Research Series, pp. 354-369
 
-    [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
-    Global Horizontal to Direct Normal Insolation", Technical Report No.
-    SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
+    .. [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+       Global Horizontal to Direct Normal Insolation", Technical Report No.
+       SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
 
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
@@ -1734,9 +1734,9 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
     References
     ----------
-    [1] Perez, R., Ineichen, P., Moore, K., Kmiecik, M., Chain, C., George, R.,
-    & Vignola, F. (2002). A new operational model for satellite-derived
-    irradiances: description and validation. Solar Energy, 73(5), 307-317.
+    .. [1] Perez, R., Ineichen, P., Moore, K., Kmiecik, M., Chain, C., George,
+       R., & Vignola, F. (2002). A new operational model for satellite-derived
+       irradiances: description and validation. Solar Energy, 73(5), 307-317.
     """
 
     dni_dirint = dirint(ghi, zenith, times, pressure=pressure,
@@ -2214,12 +2214,12 @@ def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
     References
     ----------
-    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
-    Environmental Biophysics. 2nd Ed. New York: Springer.
+    .. [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
+       Environmental Biophysics. 2nd Ed. New York: Springer.
 
-    [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
-    characteristic distribution of direct, diffuse, and total solar
-    radiation".  Solar Energy 4:1-19
+    .. [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
+       characteristic distribution of direct, diffuse, and total solar
+       radiation".  Solar Energy 4:1-19
     '''
 
     tau = transmittance
@@ -2274,20 +2274,20 @@ def _get_perez_coefficients(perezmodel):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
-    1987. A new simplified version of the Perez diffuse irradiance model
-    for tilted surfaces. Solar Energy 39(3), 221-232.
+    .. [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
+       1987. A new simplified version of the Perez diffuse irradiance model
+       for tilted surfaces. Solar Energy 39(3), 221-232.
 
-    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
-    1990. Modeling daylight availability and irradiance components from
-    direct and global irradiance. Solar Energy 44 (5), 271-289.
+    .. [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+       1990. Modeling daylight availability and irradiance components from
+       direct and global irradiance. Solar Energy 44 (5), 271-289.
 
-    [4] Perez, R. et. al 1988. "The Development and Verification of the
-    Perez Diffuse Radiation Model". SAND88-7030
+    .. [4] Perez, R. et. al 1988. "The Development and Verification of the
+       Perez Diffuse Radiation Model". SAND88-7030
 
     '''
     coeffdict = {

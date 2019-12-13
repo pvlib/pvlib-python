@@ -1306,7 +1306,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the PVsyst v6
-    model described in [1,2,3]_. The five values returned by calcparams_pvsyst
+    model described in [1]_, [2]_, [3]_. The five values returned by calcparams_pvsyst
     can be used by singlediode to calculate an IV curve.
 
     Parameters

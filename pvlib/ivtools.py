@@ -81,9 +81,9 @@ def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     References
     ----------
-    [1] A. Dobos, "An Improved Coefficient Calculator for the California
-    Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
-    Solar Energy Engineering, vol 134, 2012.
+    .. [1] A. Dobos, "An Improved Coefficient Calculator for the California
+       Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
+       Solar Energy Engineering, vol 134, 2012.
     """
 
     try:
@@ -170,7 +170,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     temperature.
 
     :py:func:`fit_single_diode_sandia` obtains values for the five parameters
-    for the single diode equation [1]:
+    for the single diode equation [1]_:
 
     .. math::
 
@@ -179,7 +179,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     See :py:func:`pvsystem.singlediode` for definition of the parameters.
 
-    The extraction method [2] proceeds in six steps.
+    The extraction method [2]_ proceeds in six steps.
 
     1. In the single diode equation, replace :math:`R_{sh} = 1/G_{p}` and
        re-arrange
@@ -231,11 +231,11 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     References
     ----------
-    [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
-    0 86758 909 4
-    [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
-    In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
-    Photovoltaic Specialist Conference, Chicago, IL, 2019
+    .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
+       0 86758 909 4
+    .. [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
+       In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
+       Photovoltaic Specialist Conference, Chicago, IL, 2019
     """
 
     # If not provided, extract v_oc, i_sc, v_mp and i_mp from the IV curve data
@@ -265,7 +265,7 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                    temp_ref=25, irrad_ref=1000, root_kwargs={}):
     """
     Calculates the parameters for the De Soto single diode model using the
-    procedure described in [1]. This procedure has the advantage of
+    procedure described in [1]_. This procedure has the advantage of
     using common specifications given by manufacturers in the
     datasheets of PV modules.
 
@@ -343,12 +343,12 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     References
     ----------
-    [1] W. De Soto et al., "Improvement and validation of a model for
-    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-    2006.
+    .. [1] W. De Soto et al., "Improvement and validation of a model for
+       photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+       2006.
 
-    [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
-    Processes", Wiley, 2013
+    .. [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
+       Processes", Wiley, 2013
     """
 
     try:
@@ -508,12 +508,12 @@ def _system_of_equations_desoto(params, specs):
 
     References
     ----------
-    [1] W. De Soto et al., "Improvement and validation of a model for
-    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-    2006.
+    .. [1] W. De Soto et al., "Improvement and validation of a model for
+       photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+       2006.
 
-    [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
-    Processes", Wiley, 2013
+    .. [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
+       Processes", Wiley, 2013
     """
 
     # six input known variables

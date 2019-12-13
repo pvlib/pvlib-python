@@ -320,3 +320,6 @@ intersphinx_mapping = {
 nbsphinx_allow_errors = True
 
 ipython_warning_is_error = False
+
+# suppress "WARNING: Footnote [1] is not referenced." messages
+suppress_warnings = ['ref.footnote']

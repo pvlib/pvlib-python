@@ -142,6 +142,8 @@ Enhancements
 * Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
 * Add :py:func:`~pvlib.scaling.wvm`, a port of the wavelet variability model for
   computing reductions in variability due to a spatially distributed plant.
+* Add :py:meth:`~pvlib.location.Location.from_epw`, a method to create a Location
+  object from epw metadata, typically coming from `pvlib.iotools.epw.read_epw`.
 
 Bug fixes
 ~~~~~~~~~

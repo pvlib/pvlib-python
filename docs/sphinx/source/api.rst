@@ -377,6 +377,7 @@ in some files.
    :toctree: generated/
 
    location.Location.from_tmy
+   location.Location.from_epw
 
 
 TMY

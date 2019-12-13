@@ -218,7 +218,7 @@ def test_from_tmy_3():
     assert loc.name is not None
     assert loc.altitude != 0
     assert loc.tz != 'UTC'
-    assert_frame_equal(loc.tmy_data, data)
+    assert_frame_equal(loc.weather, data)
 
 
 def test_from_tmy_2():
@@ -229,7 +229,18 @@ def test_from_tmy_2():
     assert loc.name is not None
     assert loc.altitude != 0
     assert loc.tz != 'UTC'
-    assert_frame_equal(loc.tmy_data, data)
+    assert_frame_equal(loc.weather, data)
+
+
+def test_from_epw():
+    from test_epw import epw_testfile
+    from pvlib.iotools import read_epw
+    data, meta = read_epw(epw_testfile)
+    loc = Location.from_epw(meta, data)
+    assert loc.name is not None
+    assert loc.altitude != 0
+    assert loc.tz != 'UTC'
+    assert_frame_equal(loc.weather, data)
 
 
 def test_get_solarposition(expected_solpos, golden_mst):

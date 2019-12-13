@@ -273,7 +273,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     '''
-    Calculate cell/module temperature using an empirical heat loss factor
+    Calculate cell or module temperature using an empirical heat loss factor
     model as proposed by Faiman [1] and adopted in the IEC 61853
     standards [2] and [3].
 
@@ -293,11 +293,11 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
         factor was determined.  The default value 1.0 m/s is the wind
         speed at module height used to determine NOCT. [m/s]
 
-    u_c : numeric, default 25.0
+    u0 : numeric, default 25.0
         Combined heat loss factor coefficient. The default value is one
         determined by Faiman for 7 silicon modules. [W/(m^2 C)].
 
-    u_v : numeric, default 6.84
+    u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
         determined by Faiman for 7 silicon modules. [(W/m^2 C)(m/s)].
 

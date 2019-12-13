@@ -250,7 +250,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
                backtrack=True, gcr=2.0/7.0):
     """
     Determine the rotation angle of a single axis tracker using the
-    equations in [1] when given a particular sun zenith and azimuth
+    equations in [1]_ when given a particular sun zenith and azimuth
     angle. backtracking may be specified, and if so, a ground coverage
     ratio is required.
 
@@ -318,8 +318,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     References
     ----------
-    [1] Lorenzo, E et al., 2011, "Tracking and back-tracking", Prog. in
-    Photovoltaics: Research and Applications, v. 19, pp. 747-753.
+    .. [1] Lorenzo, E et al., 2011, "Tracking and back-tracking", Prog. in
+       Photovoltaics: Research and Applications, v. 19, pp. 747-753.
     """
 
     # MATLAB to Python conversion by

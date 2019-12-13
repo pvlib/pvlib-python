@@ -90,6 +90,45 @@ def test_pvsyst_cell_series():
     assert_series_equal(expected, result)
 
 
+def test_faiman_default():
+    result = temperature.faiman(900, 20, 5)
+    assert_allclose(result, 35.203, 0.001)
+
+
+def test_faiman_kwargs():
+    result = temperature.faiman(900, 20, wind_speed=5.0, u0=22.0, u1=6.)
+    assert_allclose(result, 37.308, 0.001)
+
+
+def test_faiman_list():
+    temps = [0, 10, 5]
+    irrads = [0, 500, 0]
+    winds = [10, 5, 0]
+    result = temperature.faiman(irrads, temps, wind_speed=winds)
+    expected = np.array([0.0, 18.446, 5.0])
+    assert_allclose(expected, result, 3)
+
+
+def test_faiman_ndarray():
+    temps = np.array([0, 10, 5])
+    irrads = np.array([0, 500, 0])
+    winds = np.array([10, 5, 0])
+    result = temperature.faiman(irrads, temps, wind_speed=winds)
+    expected = np.array([0.0, 18.446, 5.0])
+    assert_allclose(expected, result, 3)
+
+
+def test_faiman_series():
+    times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12H")
+    temps = pd.Series([0, 10, 5], index=times)
+    irrads = pd.Series([0, 500, 0], index=times)
+    winds = pd.Series([10, 5, 0], index=times)
+
+    result = temperature.faiman(irrads, temps, wind_speed=winds)
+    expected = pd.Series([0.0, 18.446, 5.0], index=times)
+    assert_series_equal(expected, result)
+
+
 def test__temperature_model_params():
     params = temperature._temperature_model_params('sapm',
                                                    'open_rack_glass_glass')

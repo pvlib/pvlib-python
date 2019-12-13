@@ -119,8 +119,12 @@ Other API Changes
 
 Enhancements
 ~~~~~~~~~~~~
+* Created one new temperature model function:
+  :py:func:`pvlib.temperature.faiman`. (:issue:`750`)
 * Created two new incidence angle modifier (IAM) functions:
   :py:func:`pvlib.iam.martin_ruiz` and :py:func:`pvlib.iam.interp`. (:issue:`751`)
+* Created one new incidence angle modifier (IAM) function for diffuse irradiance:
+  :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
 * Add the `martin_ruiz` IAM function as an option for `ModelChain.aoi_model`.
 * Updated the file for module parameters for the CEC model, from the SAM file
   dated 2017-6-5 to the SAM file dated 2019-03-05. (:issue:`761`)
@@ -138,8 +142,6 @@ Enhancements
 * Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
 * Add :py:func:`~pvlib.scaling.wvm`, a port of the wavelet variability model for
   computing reductions in variability due to a spatially distributed plant.
-* Created one new incidence angle modifier (IAM) function for diffuse irradiance:
-  :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
 * Add :py:meth:`~pvlib.location.Location.from_epw`, a method to create a Location
   object from epw metadata, typically coming from `pvlib.iotools.epw.read_epw`.
 

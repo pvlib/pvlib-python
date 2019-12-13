@@ -46,8 +46,8 @@ def pres2alt(pressure):
 
     References
     -----------
-    [1] "A Quick Derivation relating altitude to air pressure" from
-    Portland State Aerospace Society, Version 1.03, 12/22/2004.
+    .. [1] "A Quick Derivation relating altitude to air pressure" from
+       Portland State Aerospace Society, Version 1.03, 12/22/2004.
     '''
 
     alt = 44331.5 - 4946.62 * pressure ** (0.190263)
@@ -86,8 +86,8 @@ def alt2pres(altitude):
 
     References
     -----------
-    [1] "A Quick Derivation relating altitude to air pressure" from
-    Portland State Aerospace Society, Version 1.03, 12/22/2004.
+    .. [1] "A Quick Derivation relating altitude to air pressure" from
+       Portland State Aerospace Society, Version 1.03, 12/22/2004.
     '''
 
     press = 100 * ((44331.514 - altitude) / 11880.516) ** (1 / 0.1902632)
@@ -124,9 +124,9 @@ def get_absolute_airmass(airmass_relative, pressure=101325.):
 
     References
     ----------
-    [1] C. Gueymard, "Critical analysis and performance assessment of
-    clear sky solar irradiance models using theoretical and measured
-    data," Solar Energy, vol. 51, pp. 121-138, 1993.
+    .. [1] C. Gueymard, "Critical analysis and performance assessment of
+       clear sky solar irradiance models using theoretical and measured
+       data," Solar Energy, vol. 51, pp. 121-138, 1993.
     '''
 
     airmass_absolute = airmass_relative * pressure / 101325.
@@ -178,29 +178,29 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
     References
     ----------
-    [1] Fritz Kasten. "A New Table and Approximation Formula for the
-    Relative Optical Air Mass". Technical Report 136, Hanover, N.H.:
-    U.S. Army Material Command, CRREL.
+    .. [1] Fritz Kasten. "A New Table and Approximation Formula for the
+       Relative Optical Air Mass". Technical Report 136, Hanover, N.H.:
+       U.S. Army Material Command, CRREL.
 
-    [2] A. T. Young and W. M. Irvine, "Multicolor Photoelectric
-    Photometry of the Brighter Planets," The Astronomical Journal, vol.
-    72, pp. 945-950, 1967.
+    .. [2] A. T. Young and W. M. Irvine, "Multicolor Photoelectric
+       Photometry of the Brighter Planets," The Astronomical Journal, vol.
+       72, pp. 945-950, 1967.
 
-    [3] Fritz Kasten and Andrew Young. "Revised optical air mass tables
-    and approximation formula". Applied Optics 28:4735-4738
+    .. [3] Fritz Kasten and Andrew Young. "Revised optical air mass tables
+       and approximation formula". Applied Optics 28:4735-4738
 
-    [4] C. Gueymard, "Critical analysis and performance assessment of
-    clear sky solar irradiance models using theoretical and measured
-    data," Solar Energy, vol. 51, pp. 121-138, 1993.
+    .. [4] C. Gueymard, "Critical analysis and performance assessment of
+       clear sky solar irradiance models using theoretical and measured
+       data," Solar Energy, vol. 51, pp. 121-138, 1993.
 
-    [5] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33,
-    pp. 1108-1110, Feb 1994.
+    .. [5] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33,
+       pp. 1108-1110, Feb 1994.
 
-    [6] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
+    .. [6] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
 
-    [7] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
-    Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
-    Sandia Report, (2012).
+    .. [7] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
+       Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
+       Sandia Report, (2012).
     '''
 
     # set zenith values greater than 90 to nans
@@ -518,13 +518,13 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
 
     References
     ----------
-    [1] Bird and Hulstrom, "Direct Insolation Models" (1980)
-    `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
+    .. [1] Bird and Hulstrom, "Direct Insolation Models" (1980)
+       `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
 
-    [2] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement of
-    Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
-    pp. 182-192 (1981)
-    :doi:`10.1115/1.3266239`
+    .. [2] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement
+       of Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
+       pp. 182-192 (1981)
+       :doi:`10.1115/1.3266239`
     """
     # approximate broadband AOD using (Bird-Hulstrom 1980)
     return 0.27583 * aod380 + 0.35 * aod500
@@ -565,32 +565,32 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
 
     References
     ----------
-    [1] F. Linke, "Transmissions-Koeffizient und Trubungsfaktor", Beitrage
-    zur Physik der Atmosphare, Vol 10, pp. 91-103 (1922)
+    .. [1] F. Linke, "Transmissions-Koeffizient und Trubungsfaktor", Beitrage
+       zur Physik der Atmosphare, Vol 10, pp. 91-103 (1922)
 
-    [2] F. Kasten, "A simple parameterization of the pyrheliometric formula for
-    determining the Linke turbidity factor", Meteorologische Rundschau 33,
-    pp. 124-127 (1980)
+    .. [2] F. Kasten, "A simple parameterization of the pyrheliometric formula
+       for determining the Linke turbidity factor", Meteorologische Rundschau
+       33, pp. 124-127 (1980)
 
-    [3] Kasten, "The Linke turbidity factor based on improved values of the
-    integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
-    pp. 239-244 (1996)
-    :doi:`10.1016/0038-092X(95)00114-7`
+    .. [3] Kasten, "The Linke turbidity factor based on improved values of the
+       integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
+       pp. 239-244 (1996)
+       :doi:`10.1016/0038-092X(95)00114-7`
 
-    [4] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
-    and monochromatic aerosol optical depths at a single key wavelength",
-    Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
-    :doi:`10.1364/AO.37.007008`
+    .. [4] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
+       and monochromatic aerosol optical depths at a single key wavelength",
+       Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
+       :doi:`10.1364/AO.37.007008`
 
-    [5] P. Ineichen, "Conversion function between the Linke turbidity and the
-    atmospheric water vapor and aerosol content", Solar Energy 82,
-    pp. 1095-1097 (2008)
-    :doi:`10.1016/j.solener.2008.04.010`
+    .. [5] P. Ineichen, "Conversion function between the Linke turbidity and the
+       atmospheric water vapor and aerosol content", Solar Energy 82,
+       pp. 1095-1097 (2008)
+       :doi:`10.1016/j.solener.2008.04.010`
 
-    [6] P. Ineichen and R. Perez, "A new airmass independent formulation for
-    the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3, pp. 151-157
-    (2002)
-    :doi:`10.1016/S0038-092X(02)00045-2`
+    .. [6] P. Ineichen and R. Perez, "A new airmass independent formulation for
+       the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3,
+       pp. 151-157 (2002)
+       :doi:`10.1016/S0038-092X(02)00045-2`
     """
     # "From numerically integrated spectral simulations done with Modtran
     # (Berk, 1989), Molineaux (1998) obtained for the broadband optical depth
@@ -644,14 +644,15 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
 
     References
     ----------
-    [1] Anders Angstrom, "On the Atmospheric Transmission of Sun Radiation and
-    On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (1929) JSTOR
-    :doi:`10.2307/519399`
+    .. [1] Anders Angstrom, "On the Atmospheric Transmission of Sun Radiation
+       and On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (1929)
+       JSTOR
+       :doi:`10.2307/519399`
 
-    [2] Anders Angstrom, "Techniques of Determining the Turbidity of the
-    Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis
-    :doi:`10.3402/tellusa.v13i2.9493` and Co-Action Publishing
-    :doi:`10.1111/j.2153-3490.1961.tb00078.x`
+    .. [2] Anders Angstrom, "Techniques of Determining the Turbidity of the
+       Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis
+       :doi:`10.3402/tellusa.v13i2.9493` and Co-Action Publishing
+       :doi:`10.1111/j.2153-3490.1961.tb00078.x`
     """
     return aod0 * ((lambda1 / lambda0) ** (-alpha))
 

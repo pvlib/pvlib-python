@@ -1895,9 +1895,9 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
     Notes
     -----
-    The SAPM model for effective irradiance [1]_ translates broadband direct and
-    diffuse irradiance on the plane of array to the irradiance absorbed by a
-    module's cells.
+    The SAPM model for effective irradiance [1]_ translates broadband direct
+    and diffuse irradiance on the plane of array to the irradiance absorbed by
+    a module's cells.
 
     The model is
     .. math::

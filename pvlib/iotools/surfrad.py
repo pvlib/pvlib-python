@@ -116,7 +116,8 @@ def read_surfrad(filename, map_variables=True):
 
     References
     ----------
-    .. [1] NOAA Earth System Research Laboratory Surface Radiation Budget Network
+    .. [1] NOAA Earth System Research Laboratory Surface Radiation Budget
+       Network
        `SURFRAD Homepage <https://www.esrl.noaa.gov/gmd/grad/surfrad/>`_
     .. [2] NOAA SURFRAD Data Archive
        `SURFRAD Archive <ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/>`_

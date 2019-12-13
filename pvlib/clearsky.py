@@ -72,8 +72,8 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
        Irradiances: Description and Validation", Solar Energy, vol 73, pp.
        307-317, 2002.
 
-    .. [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-       Sky Models: Implementation and Analysis", Sandia National
+    .. [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
     .. [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
@@ -383,8 +383,8 @@ def haurwitz(apparent_zenith):
     .. [2] B. Haurwitz, "Insolation in Relation to Cloud Type," Journal of
        Meteorology, vol. 3, pp. 123-124, 1946.
 
-    .. [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-       Sky Models: Implementation and Analysis", Sandia National
+    .. [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
     '''
 
@@ -853,18 +853,22 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     References
     ----------
-    .. [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for Direct
-       and Diffuse Insolation on Horizontal Surfaces" SERI Technical Report
-       SERI/TR-642-761, Feb 1981. Solar Energy Research Institute, Golden, CO.
+    .. [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for
+       Direct and Diffuse Insolation on Horizontal Surfaces" SERI Technical
+       Report SERI/TR-642-761, Feb 1981. Solar Energy Research Institute,
+       Golden, CO.
 
     .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
        Energy Applications", pp. 46-51 CRC Press (2013)
 
-    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/clearsky/>`_
+    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
+       clearsky/>`_
 
-    .. [4] `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf>`_
+    .. [4] `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/
+       tr-642-761.pdf>`_
 
-    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
+    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
+       error_reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians

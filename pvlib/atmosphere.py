@@ -522,8 +522,8 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
        `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
 
     .. [2] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement
-       of Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
-       pp. 182-192 (1981)
+       of Direct Irradiance Models", Journal of Solar Energy Engineering
+       103(3), pp. 182-192 (1981)
        :doi:`10.1115/1.3266239`
     """
     # approximate broadband AOD using (Bird-Hulstrom 1980)
@@ -577,13 +577,13 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
        pp. 239-244 (1996)
        :doi:`10.1016/0038-092X(95)00114-7`
 
-    .. [4] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
-       and monochromatic aerosol optical depths at a single key wavelength",
-       Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
+    .. [4] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of
+       pyrheliometric and monochromatic aerosol optical depths at a single key
+       wavelength", Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
        :doi:`10.1364/AO.37.007008`
 
-    .. [5] P. Ineichen, "Conversion function between the Linke turbidity and the
-       atmospheric water vapor and aerosol content", Solar Energy 82,
+    .. [5] P. Ineichen, "Conversion function between the Linke turbidity and
+       the atmospheric water vapor and aerosol content", Solar Energy 82,
        pp. 1095-1097 (2008)
        :doi:`10.1016/j.solener.2008.04.010`
 

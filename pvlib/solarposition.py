@@ -77,7 +77,8 @@ def get_solarposition(time, latitude, longitude,
        applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
 
     .. [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
-       solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+       solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
+       2007.
 
     .. [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
     """
@@ -319,7 +320,8 @@ def spa_python(time, latitude, longitude,
        radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
 
     .. [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
-       solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+       solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
+       2007.
 
     .. [3] USNO delta T:
        http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term

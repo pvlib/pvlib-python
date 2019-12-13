@@ -156,8 +156,8 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     ambient air temperature :math:`T_{a}` (C). Model outputs are surface
     temperature at the back of the module :math:`T_{m}` and cell temperature
     :math:`T_{C}`. Model parameters depend both on the module construction and
-    its mounting. Parameter sets are provided in [1]_ for representative modules
-    and mounting, and are coded for convenience in
+    its mounting. Parameter sets are provided in [1]_ for representative
+    modules and mounting, and are coded for convenience in
     ``temperature.TEMPERATURE_MODEL_PARAMETERS``.
 
     +---------------+----------------+-------+---------+---------------------+

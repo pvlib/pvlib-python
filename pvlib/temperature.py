@@ -251,7 +251,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     References
     ----------
-    .. [1]"PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
+    .. [1] "PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
        http://files.pvsyst.com/help/index.html. [Accessed: 10- Dec- 2018].
 
     .. [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of

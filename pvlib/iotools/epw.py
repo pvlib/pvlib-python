@@ -76,7 +76,7 @@ def read_epw(filename, coerce_year=None):
     day                                 Day of the month, from original EPW file.
     hour                                Hour of the day from original EPW file. Note that EPW's convention of 1-24h is not taken over in the index dataframe used in PVLIB.
     minute                              Minute, from original EPW file. Not used.
-    data_source_unct                    Data source and uncertainty flags. See [1], chapter 2.13
+    data_source_unct                    Data source and uncertainty flags. See [1]_, chapter 2.13
     temp_air                            Dry bulb temperature at the time indicated, deg C
     temp_dew                            Dew-point temperature at the time indicated, deg C
     relative_humidity                   Relatitudeive humidity at the time indicated, percent
@@ -111,8 +111,8 @@ def read_epw(filename, coerce_year=None):
     References
     ----------
 
-    [1] EnergyPlus documentation, Auxiliary Programs
-    https://energyplus.net/documentation.
+    .. [1] EnergyPlus documentation, Auxiliary Programs
+       https://energyplus.net/documentation.
     '''
 
     if filename.startswith('http'):

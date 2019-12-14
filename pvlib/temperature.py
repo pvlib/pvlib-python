@@ -269,3 +269,69 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     heat_input = poa_global * alpha_absorption * (1 - eta_m)
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference
+
+
+def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
+    '''
+    Calculate cell or module temperature using an empirical heat loss factor
+    model as proposed by Faiman [1] and adopted in the IEC 61853
+    standards [2] and [3].
+
+    Usage of this model in the IEC 61853 standard does not distinguish
+    between cell and module temperature.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
+
+    u0 : numeric, default 25.0
+        Combined heat loss factor coefficient. The default value is one
+        determined by Faiman for 7 silicon modules. [W/(m^2 C)].
+
+    u1 : numeric, default 6.84
+        Combined heat loss factor influenced by wind. The default value is one
+        determined by Faiman for 7 silicon modules. [(W/m^2 C)(m/s)].
+
+    Returns
+    -------
+    numeric, values in degrees Celsius
+
+    Notes
+    -----
+    All arguments may be scalars or vectors. If multiple arguments
+    are vectors they must be the same length.
+
+    References
+    ----------
+    [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+    photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+
+    [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
+    rating - Part 2: Spectral responsivity, incidence angle and module
+    operating temperature measurements". IEC, Geneva, 2018.
+
+    [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+    rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019
+
+    # The following lines may seem odd since u0 & u1 are probably scalar,
+    # but it serves an indirect and easy way of allowing lists and
+    # tuples for the other function arguments.
+    u0 = np.asanyarray(u0)
+    u1 = np.asanyarray(u1)
+
+    total_loss_factor = u0 + u1 * wind_speed
+    heat_input = poa_global
+    temp_difference = heat_input / total_loss_factor
+    return temp_air + temp_difference

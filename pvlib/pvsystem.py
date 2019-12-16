@@ -1306,8 +1306,8 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the PVsyst v6
-    model described in [1]_, [2]_, [3]_. The five values returned by calcparams_pvsyst
-    can be used by singlediode to calculate an IV curve.
+    model described in [1]_, [2]_, [3]_. The five values returned by
+    calcparams_pvsyst can be used by singlediode to calculate an IV curve.
 
     Parameters
     ----------
@@ -2543,8 +2543,8 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
 
     References
     ----------
-    [1] Beyond the Curves: Modeling the Electrical Efficiency
-        of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
+    .. [1] Beyond the Curves: Modeling the Electrical Efficiency
+       of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
 
     See also
     --------

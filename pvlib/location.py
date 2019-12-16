@@ -99,8 +99,7 @@ class Location(object):
 
         Returns
         -------
-        Location object (or the child class of Location that you
-        called this method from).
+        Location
         """
         # not complete, but hopefully you get the idea.
         # might need code to handle the difference between tmy2 and tmy3

@@ -19,6 +19,8 @@ API Breaking Changes
   of W/m2 rather than suns.
 * Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
   an exception instead of displaying a dialog.
+* The `modelchain.ModelChain.diode_params` attribute is now formatted in
+  a pandas.DataFrame with `DatetimeIndex`, rather than in a tuple.
 
 API Changes with Deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -8,6 +8,7 @@ the time to read the source code for the module.
 
 from functools import partial
 import warnings
+import pandas as pd
 
 from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
                    tools)
@@ -453,9 +454,11 @@ class ModelChain(object):
             calcparams_model_function(self.effective_irradiance,
                                       self.cell_temperature))
 
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
+        self.diode_params = pd.DataFrame({'I_L': photocurrent,
+                                          'I_o': saturation_current,
+                                          'R_s': resistance_series,
+                                          'R_sh': resistance_shunt,
+                                          'nNsVth': nNsVth})
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
@@ -924,9 +927,11 @@ class ModelChain(object):
         -------
         self
 
-        Assigns attributes: solar_position, airmass, irradiance,
-        total_irrad, effective_irradiance, weather, cell_temperature, aoi,
-        aoi_modifier, spectral_modifier, dc, ac, losses.
+        Assigns attributes: ``solar_position``, ``airmass``, ``irradiance``,
+        ``total_irrad``, ``effective_irradiance``, ``weather``,
+        ``cell_temperature``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
+        ``dc``, ``ac``, ``losses``,
+        ``diode_params`` (if dc_model is a single diode model)
         """
         if times is not None:
             warnings.warn('times keyword argument is deprecated and will be '

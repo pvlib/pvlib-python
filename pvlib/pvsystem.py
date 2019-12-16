@@ -966,7 +966,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the De Soto et al.
-    model described in [1]. The five values returned by calcparams_desoto
+    model described in [1]_. The five values returned by calcparams_desoto
     can be used by singlediode to calculate an IV curve.
 
     Parameters
@@ -1009,7 +1009,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     dEgdT : float
         The temperature dependence of the energy bandgap at reference
         conditions in units of 1/K. May be either a scalar value
-        (e.g. -0.0002677 as in [1]) or a DataFrame (this may be useful if
+        (e.g. -0.0002677 as in [1]_) or a DataFrame (this may be useful if
         dEgdT is a modeled as a function of temperature). For parameters from
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
         types in the parameter estimation algorithm used by NREL.
@@ -1043,18 +1043,18 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     References
     ----------
-    [1] W. De Soto et al., "Improvement and validation of a model for
-    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-    2006.
+    .. [1] W. De Soto et al., "Improvement and validation of a model for
+       photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+       2006.
 
-    [2] System Advisor Model web page. https://sam.nrel.gov.
+    .. [2] System Advisor Model web page. https://sam.nrel.gov.
 
-    [3] A. Dobos, "An Improved Coefficient Calculator for the California
-    Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
-    Solar Energy Engineering, vol 134, 2012.
+    .. [3] A. Dobos, "An Improved Coefficient Calculator for the California
+       Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
+       Solar Energy Engineering, vol 134, 2012.
 
-    [4] O. Madelung, "Semiconductors: Data Handbook, 3rd ed." ISBN
-    3-540-40488-0
+    .. [4] O. Madelung, "Semiconductors: Data Handbook, 3rd ed." ISBN
+       3-540-40488-0
 
     See Also
     --------
@@ -1186,8 +1186,8 @@ def calcparams_cec(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the CEC
-    model described in [1]. The CEC model differs from the De soto et al.
-    model [3] by the parameter Adjust. The five values returned by
+    model described in [1]_. The CEC model differs from the De soto et al.
+    model [3]_ by the parameter Adjust. The five values returned by
     calcparams_cec can be used by singlediode to calculate an IV curve.
 
     Parameters
@@ -1268,15 +1268,15 @@ def calcparams_cec(effective_irradiance, temp_cell,
 
     References
     ----------
-    [1] A. Dobos, "An Improved Coefficient Calculator for the California
-    Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
-    Solar Energy Engineering, vol 134, 2012.
+    .. [1] A. Dobos, "An Improved Coefficient Calculator for the California
+       Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
+       Solar Energy Engineering, vol 134, 2012.
 
-    [2] System Advisor Model web page. https://sam.nrel.gov.
+    .. [2] System Advisor Model web page. https://sam.nrel.gov.
 
-    [3] W. De Soto et al., "Improvement and validation of a model for
-    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-    2006.
+    .. [3] W. De Soto et al., "Improvement and validation of a model for
+       photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+       2006.
 
     See Also
     --------
@@ -1306,8 +1306,8 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the PVsyst v6
-    model described in [1,2,3]. The five values returned by calcparams_pvsyst
-    can be used by singlediode to calculate an IV curve.
+    model described in [1]_, [2]_, [3]_. The five values returned by
+    calcparams_pvsyst can be used by singlediode to calculate an IV curve.
 
     Parameters
     ----------
@@ -1384,16 +1384,16 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
 
     References
     ----------
-    [1] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
-     Temperature Dependence of Photovoltaic Modules in PVsyst,
-     IEEE Journal of Photovoltaics v5(1), January 2015.
+    .. [1] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
+       Temperature Dependence of Photovoltaic Modules in PVsyst,
+       IEEE Journal of Photovoltaics v5(1), January 2015.
 
-    [2] A. Mermoud, PV modules modelling, Presentation at the 2nd PV
-     Performance Modeling Workshop, Santa Clara, CA, May 2013
+    .. [2] A. Mermoud, PV modules modelling, Presentation at the 2nd PV
+       Performance Modeling Workshop, Santa Clara, CA, May 2013
 
-    [3] A. Mermoud, T. Lejeune, Performance Assessment of a Simulation Model
-     for PV modules of any available technology, 25th European Photovoltaic
-     Solar Energy Conference, Valencia, Spain, Sept. 2010
+    .. [3] A. Mermoud, T. Lejeune, Performance Assessment of a Simulation Model
+       for PV modules of any available technology, 25th European Photovoltaic
+       Solar Energy Conference, Valencia, Spain, Sept. 2010
 
     See Also
     --------
@@ -1661,9 +1661,9 @@ def sapm(effective_irradiance, temp_cell, module):
 
     References
     ----------
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
-    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
-    NM.
+    .. [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
+       Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
+       NM.
 
     See Also
     --------
@@ -1895,9 +1895,9 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
     Notes
     -----
-    The SAPM model for effective irradiance [1] translates broadband direct and
-    diffuse irradiance on the plane of array to the irradiance absorbed by a
-    module's cells.
+    The SAPM model for effective irradiance [1]_ translates broadband direct
+    and diffuse irradiance on the plane of array to the irradiance absorbed by
+    a module's cells.
 
     The model is
     .. math::
@@ -1913,8 +1913,8 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
     References
     ----------
-    [1] D. King et al, "Sandia Photovoltaic Array Performance Model",
-    SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
+    .. [1] D. King et al, "Sandia Photovoltaic Array Performance Model",
+       SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
 
     See also
     --------
@@ -1937,7 +1937,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     """
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
-    Singlediode solves the single diode equation [1]
+    Singlediode solves the single diode equation [1]_
 
     .. math::
 
@@ -1946,7 +1946,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     for ``I`` and ``V`` when given ``IL, I0, Rs, Rsh,`` and ``nNsVth
     (nNsVth = n*Ns*Vth)`` which are described later. Returns a DataFrame
     which contains the 5 points on the I-V curve specified in
-    SAND2004-3535 [3]. If all IL, I0, Rs, Rsh, and nNsVth are scalar, a
+    SAND2004-3535 [3]_. If all IL, I0, Rs, Rsh, and nNsVth are scalar, a
     single curve will be returned, if any are Series (of the same
     length), multiple IV curves will be calculated.
 
@@ -2023,7 +2023,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     -----
     If the method is ``'lambertw'`` then the solution employed to solve the
     implicit diode equation utilizes the Lambert W function to obtain an
-    explicit function of :math:`V=f(I)` and :math:`I=f(V)` as shown in [2].
+    explicit function of :math:`V=f(I)` and :math:`I=f(V)` as shown in [2]_.
 
     If the method is ``'newton'`` then the root-finding Newton-Raphson method
     is used. It should be safe for well behaved IV-curves, but the ``'brentq'``
@@ -2034,7 +2034,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     open-circuit.
 
     If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
-    are indicated, then :func:`pvlib.singlediode.bishop88` [4] is used to
+    are indicated, then :func:`pvlib.singlediode.bishop88` [4]_ is used to
     calculate the points on the IV curve points at diode voltages from zero to
     open-circuit voltage with a log spacing that gets closer as voltage
     increases. If the method is ``'lambertw'`` then the calculated points on
@@ -2042,19 +2042,19 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     References
     ----------
-    [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
-    0 86758 909 4
+    .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
+       0 86758 909 4
 
-    [2] A. Jain, A. Kapoor, "Exact analytical solutions of the
-    parameters of real solar cells using Lambert W-function", Solar
-    Energy Materials and Solar Cells, 81 (2004) 269-277.
+    .. [2] A. Jain, A. Kapoor, "Exact analytical solutions of the
+       parameters of real solar cells using Lambert W-function", Solar
+       Energy Materials and Solar Cells, 81 (2004) 269-277.
 
-    [3] D. King et al, "Sandia Photovoltaic Array Performance Model",
-    SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
+    .. [3] D. King et al, "Sandia Photovoltaic Array Performance Model",
+       SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
 
-    [4] "Computer simulation of the effects of electrical mismatches in
-    photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
-    https://doi.org/10.1016/0379-6787(88)90059-2
+    .. [4] "Computer simulation of the effects of electrical mismatches in
+       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+       https://doi.org/10.1016/0379-6787(88)90059-2
 
     See also
     --------
@@ -2190,14 +2190,14 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     Device voltage at the given device current for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
-     Jain and Kapoor 2004 [1].
-    The solution is per Eq 3 of [1] except when resistance_shunt=numpy.inf,
-     in which case the explict solution for voltage is used.
+    Jain and Kapoor 2004 [1]_.
+    The solution is per Eq 3 of [1]_ except when resistance_shunt=numpy.inf,
+    in which case the explict solution for voltage is used.
     Ideal device parameters are specified by resistance_shunt=np.inf and
-     resistance_series=0.
+    resistance_series=0.
     Inputs to this function can include scalars and pandas.Series, but it is
-     the caller's responsibility to ensure that the arguments are all float64
-     and within the proper ranges.
+    the caller's responsibility to ensure that the arguments are all float64
+    and within the proper ranges.
 
     Parameters
     ----------
@@ -2244,9 +2244,9 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
     References
     ----------
-    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
-    parameters of real solar cells using Lambert W-function", Solar
-    Energy Materials and Solar Cells, 81 (2004) 269-277.
+    .. [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
+       parameters of real solar cells using Lambert W-function", Solar
+       Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_v_from_i(
@@ -2278,7 +2278,7 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     Device current at the given device voltage for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
-     Jain and Kapoor 2004 [1].
+     Jain and Kapoor 2004 [1]_.
     The solution is per Eq 2 of [1] except when resistance_series=0,
      in which case the explict solution for current is used.
     Ideal device parameters are specified by resistance_shunt=np.inf and
@@ -2332,9 +2332,9 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
     References
     ----------
-    [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
-    parameters of real solar cells using Lambert W-function", Solar
-    Energy Materials and Solar Cells, 81 (2004) 269-277.
+    .. [1] A. Jain, A. Kapoor, "Exact analytical solutions of the
+       parameters of real solar cells using Lambert W-function", Solar
+       Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_i_from_v(
@@ -2386,9 +2386,9 @@ def snlinverter(v_dc, p_dc, inverter):
     inverter : dict-like
         A dict-like object defining the inverter to be used, giving the
         inverter performance parameters according to the Sandia
-        Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1].
+        Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1]_.
         A set of inverter performance parameters are provided with
-        pvlib, or may be generated from a System Advisor Model (SAM) [2]
+        pvlib, or may be generated from a System Advisor Model (SAM) [2]_
         library using retrievesam. See Notes for required keys.
 
     Returns
@@ -2436,11 +2436,11 @@ def snlinverter(v_dc, p_dc, inverter):
 
     References
     ----------
-    [1] SAND2007-5036, "Performance Model for Grid-Connected
-    Photovoltaic Inverters by D. King, S. Gonzalez, G. Galbraith, W.
-    Boyson
+    .. [1] SAND2007-5036, "Performance Model for Grid-Connected
+       Photovoltaic Inverters by D. King, S. Gonzalez, G. Galbraith, W.
+       Boyson
 
-    [2] System Advisor Model web page. https://sam.nrel.gov.
+    .. [2] System Advisor Model web page. https://sam.nrel.gov.
 
     See also
     --------
@@ -2543,8 +2543,8 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
 
     References
     ----------
-    [1] Beyond the Curves: Modeling the Electrical Efficiency
-        of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
+    .. [1] Beyond the Curves: Modeling the Electrical Efficiency
+       of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
 
     See also
     --------

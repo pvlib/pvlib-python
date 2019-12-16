@@ -61,7 +61,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
 
         V_{oc, est}=n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)
 
-    [1] http://www.pveducation.org/pvcdrom/open-circuit-voltage
+    .. [1] http://www.pveducation.org/pvcdrom/open-circuit-voltage
     """
 
     return nNsVth * np.log(np.asarray(photocurrent) / saturation_current + 1.0)

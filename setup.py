@@ -46,7 +46,7 @@ TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
 EXTRAS_REQUIRE = {
     'optional': ['ephem', 'cython', 'netcdf4', 'nrel-pysam', 'numba',
                  'pvfactors', 'scipy', 'siphon', 'tables'],
-    'doc': ['ipython', 'matplotlib', 'sphinx', 'sphinx_rtd_theme'],
+    'doc': ['ipython', 'matplotlib', 'sphinx == 1.8.5', 'sphinx_rtd_theme'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))

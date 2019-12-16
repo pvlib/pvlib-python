@@ -233,6 +233,7 @@ PV temperature models
    temperature.sapm_cell
    temperature.sapm_module
    temperature.pvsyst_cell
+   temperature.faiman
 
 Single diode models
 -------------------
@@ -376,6 +377,7 @@ in some files.
    :toctree: generated/
 
    location.Location.from_tmy
+   location.Location.from_epw
 
 
 Forecasting

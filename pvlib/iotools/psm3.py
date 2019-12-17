@@ -113,10 +113,10 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     References
     ----------
 
-    * `NREL Developer Network - Physical Solar Model (PSM) v3
-      <https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/>`_
-    * `NREL National Solar Radiation Database (NSRDB)
-      <https://nsrdb.nrel.gov/>`_
+    .. [1] `NREL Developer Network - Physical Solar Model (PSM) v3
+       <https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/>`_
+    .. [2] `NREL National Solar Radiation Database (NSRDB)
+       <https://nsrdb.nrel.gov/>`_
 
     """
     # The well know text (WKT) representation of geometry notation is strict.

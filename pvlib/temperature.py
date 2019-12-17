@@ -33,7 +33,7 @@ def _temperature_model_params(model, parameter_set):
 def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
               irrad_ref=1000):
     r'''
-    Calculate cell temperature per the Sandia PV Array Performance Model [1].
+    Calculate cell temperature per the Sandia PV Array Performance Model [1]_.
 
     Parameters
     ----------
@@ -66,7 +66,7 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     Notes
     -----
     The model for cell temperature :math:`T_{C}` is given by a pair of
-    equations (Eq. 11 and 12 in [1]).
+    equations (Eq. 11 and 12 in [1]_).
 
     .. math::
        :label: sapm1
@@ -84,7 +84,7 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     Inputs to the model are plane-of-array irradiance :math:`E` (W/m2) and
     ambient air temperature :math:`T_{a}` (C). Model parameters depend both on
     the module construction and its mounting. Parameter sets are provided in
-    [1] for representative modules and mounting, and are coded for convenience
+    [1]_ for representative modules and mounting, and are coded for convenience
     in ``pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS``.
 
     +---------------+----------------+-------+---------+---------------------+
@@ -101,9 +101,9 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
 
     References
     ----------
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
-    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
-    NM.
+    .. [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
+       Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
+       NM.
 
     Examples
     --------
@@ -120,7 +120,7 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
 def sapm_module(poa_global, temp_air, wind_speed, a, b):
     r'''
     Calculate module back surface temperature per the Sandia PV Array
-    Performance Model [1].
+    Performance Model [1]_.
 
     Parameters
     ----------
@@ -145,7 +145,7 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
 
     Notes
     -----
-    The model for module temperature :math:`T_{m}` is given by Eq. 11 in [1].
+    The model for module temperature :math:`T_{m}` is given by Eq. 11 in [1]_.
 
     .. math::
        :label: sapm1mod
@@ -156,8 +156,8 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     ambient air temperature :math:`T_{a}` (C). Model outputs are surface
     temperature at the back of the module :math:`T_{m}` and cell temperature
     :math:`T_{C}`. Model parameters depend both on the module construction and
-    its mounting. Parameter sets are provided in [1] for representative modules
-    and mounting, and are coded for convenience in
+    its mounting. Parameter sets are provided in [1]_ for representative
+    modules and mounting, and are coded for convenience in
     ``temperature.TEMPERATURE_MODEL_PARAMETERS``.
 
     +---------------+----------------+-------+---------+---------------------+
@@ -174,9 +174,9 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
 
     References
     ----------
-    [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
-    Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
-    NM.
+    .. [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
+       Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
+       NM.
 
     '''
     return poa_global * np.exp(a + b * wind_speed) + temp_air
@@ -235,7 +235,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     air temperature :math:`T_{a}` (C) and wind speed :math:`WS` (m/s). Model
     output is cell temperature :math:`T_{C}`. Model parameters depend both on
     the module construction and its mounting. Parameters are provided in
-    [1] for open (freestanding) and close (insulated) mounting configurations,
+    [1]_ for open (freestanding) and close (insulated) mounting configurations,
     , and are coded for convenience in
     ``temperature.TEMPERATURE_MODEL_PARAMETERS``. The heat loss factors
     provided represent the combined effect of convection, radiation and
@@ -251,11 +251,11 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     References
     ----------
-    [1]"PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
-    http://files.pvsyst.com/help/index.html. [Accessed: 10- Dec- 2018].
+    .. [1] "PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
+       http://files.pvsyst.com/help/index.html. [Accessed: 10- Dec- 2018].
 
-    [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
-    photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+    .. [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+       photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
 
     Examples
     --------
@@ -267,5 +267,71 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     total_loss_factor = u_c + u_v * wind_speed
     heat_input = poa_global * alpha_absorption * (1 - eta_m)
+    temp_difference = heat_input / total_loss_factor
+    return temp_air + temp_difference
+
+
+def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
+    '''
+    Calculate cell or module temperature using an empirical heat loss factor
+    model as proposed by Faiman [1] and adopted in the IEC 61853
+    standards [2] and [3].
+
+    Usage of this model in the IEC 61853 standard does not distinguish
+    between cell and module temperature.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
+
+    u0 : numeric, default 25.0
+        Combined heat loss factor coefficient. The default value is one
+        determined by Faiman for 7 silicon modules. [W/(m^2 C)].
+
+    u1 : numeric, default 6.84
+        Combined heat loss factor influenced by wind. The default value is one
+        determined by Faiman for 7 silicon modules. [(W/m^2 C)(m/s)].
+
+    Returns
+    -------
+    numeric, values in degrees Celsius
+
+    Notes
+    -----
+    All arguments may be scalars or vectors. If multiple arguments
+    are vectors they must be the same length.
+
+    References
+    ----------
+    [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+    photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+
+    [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
+    rating - Part 2: Spectral responsivity, incidence angle and module
+    operating temperature measurements". IEC, Geneva, 2018.
+
+    [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+    rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019
+
+    # The following lines may seem odd since u0 & u1 are probably scalar,
+    # but it serves an indirect and easy way of allowing lists and
+    # tuples for the other function arguments.
+    u0 = np.asanyarray(u0)
+    u1 = np.asanyarray(u1)
+
+    total_loss_factor = u0 + u1 * wind_speed
+    heat_input = poa_global
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference

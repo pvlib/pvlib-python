@@ -233,6 +233,7 @@ PV temperature models
    temperature.sapm_cell
    temperature.sapm_module
    temperature.pvsyst_cell
+   temperature.faiman
 
 Single diode models
 -------------------
@@ -274,6 +275,7 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter
+   pvsystem.adrinverter
    temperature.sapm_cell
 
 Pvsyst model
@@ -294,7 +296,6 @@ PVWatts model
 
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
-   pvsystem.pvwatts_losses
    pvsystem.pvwatts_losses
 
 Functions for fitting PV models
@@ -376,24 +377,7 @@ in some files.
    :toctree: generated/
 
    location.Location.from_tmy
-
-
-TMY
-===
-
-.. warning::
-
-    The :py:mod:`pvlib.tmy` module is deprecated; it will be removed
-    in pvlib 0.7. Please see the :ref:`pvlib.iotools <iotools>` package.
-
-Methods and functions for reading data from TMY files.
-
-.. autosummary::
-   :toctree: generated/
-
-   location.Location.from_tmy
-   tmy.readtmy2
-   tmy.readtmy3
+   location.Location.from_epw
 
 
 Forecasting

@@ -17,7 +17,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     Note that values contained in the metadata dictionary are unchanged
     from the TMY3 file (i.e. units are retained). In the case of any
     discrepencies between this documentation and the TMY3 User's Manual
-    [1], the TMY3 User's Manual takes precedence.
+    [1]_, the TMY3 User's Manual takes precedence.
 
     The TMY3 files were updated in Jan. 2015. This function requires the
     use of the updated files.
@@ -72,82 +72,82 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     TMYData.ETR                         Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
     TMYData.ETRN                        Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
     TMYData.GHI                         Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    TMYData.GHISource                   See [1], Table 1-4
-    TMYData.GHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]
+    TMYData.GHISource                   See [1]_, Table 1-4
+    TMYData.GHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]_
     TMYData.DNI                         Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
-    TMYData.DNISource                   See [1], Table 1-4
-    TMYData.DNIUncertainty              Uncertainty based on random and bias error estimates                        see [2]
+    TMYData.DNISource                   See [1]_, Table 1-4
+    TMYData.DNIUncertainty              Uncertainty based on random and bias error estimates                        see [2]_
     TMYData.DHI                         Amount of diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    TMYData.DHISource                   See [1], Table 1-4
-    TMYData.DHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]
+    TMYData.DHISource                   See [1]_, Table 1-4
+    TMYData.DHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]_
     TMYData.GHillum                     Avg. total horizontal illuminance recv'd during the 60 minutes prior to timestamp, lx
-    TMYData.GHillumSource               See [1], Table 1-4
-    TMYData.GHillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]
+    TMYData.GHillumSource               See [1]_, Table 1-4
+    TMYData.GHillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]_
     TMYData.DNillum                     Avg. direct normal illuminance recv'd during the 60 minutes prior to timestamp, lx
-    TMYData.DNillumSource               See [1], Table 1-4
-    TMYData.DNillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]
+    TMYData.DNillumSource               See [1]_, Table 1-4
+    TMYData.DNillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]_
     TMYData.DHillum                     Avg. horizontal diffuse illuminance recv'd during the 60 minutes prior to timestamp, lx
-    TMYData.DHillumSource               See [1], Table 1-4
-    TMYData.DHillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]
+    TMYData.DHillumSource               See [1]_, Table 1-4
+    TMYData.DHillumUncertainty          Uncertainty based on random and bias error estimates                        see [2]_
     TMYData.Zenithlum                   Avg. luminance at the sky's zenith during the 60 minutes prior to timestamp, cd/m^2
-    TMYData.ZenithlumSource             See [1], Table 1-4
-    TMYData.ZenithlumUncertainty        Uncertainty based on random and bias error estimates                        see [1] section 2.10
+    TMYData.ZenithlumSource             See [1]_, Table 1-4
+    TMYData.ZenithlumUncertainty        Uncertainty based on random and bias error estimates                        see [1]_ section 2.10
     TMYData.TotCld                      Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
-    TMYData.TotCldSource                See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.TotCldUnertainty            See [1], Table 1-6
+    TMYData.TotCldSource                See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.TotCldUncertainty           See [1]_, Table 1-6
     TMYData.OpqCld                      Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
-    TMYData.OpqCldSource                See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.OpqCldUncertainty           See [1], Table 1-6
+    TMYData.OpqCldSource                See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.OpqCldUncertainty           See [1]_, Table 1-6
     TMYData.DryBulb                     Dry bulb temperature at the time indicated, deg C
-    TMYData.DryBulbSource               See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.DryBulbUncertainty          See [1], Table 1-6
+    TMYData.DryBulbSource               See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.DryBulbUncertainty          See [1]_, Table 1-6
     TMYData.DewPoint                    Dew-point temperature at the time indicated, deg C
-    TMYData.DewPointSource              See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.DewPointUncertainty         See [1], Table 1-6
+    TMYData.DewPointSource              See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.DewPointUncertainty         See [1]_, Table 1-6
     TMYData.RHum                        Relatitudeive humidity at the time indicated, percent
-    TMYData.RHumSource                  See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.RHumUncertainty             See [1], Table 1-6
+    TMYData.RHumSource                  See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.RHumUncertainty             See [1]_, Table 1-6
     TMYData.Pressure                    Station pressure at the time indicated, 1 mbar
-    TMYData.PressureSource              See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.PressureUncertainty         See [1], Table 1-6
+    TMYData.PressureSource              See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.PressureUncertainty         See [1]_, Table 1-6
     TMYData.Wdir                        Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm)
-    TMYData.WdirSource                  See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.WdirUncertainty             See [1], Table 1-6
+    TMYData.WdirSource                  See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.WdirUncertainty             See [1]_, Table 1-6
     TMYData.Wspd                        Wind speed at the time indicated, meter/second
-    TMYData.WspdSource                  See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.WspdUncertainty             See [1], Table 1-6
+    TMYData.WspdSource                  See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.WspdUncertainty             See [1]_, Table 1-6
     TMYData.Hvis                        Distance to discernable remote objects at time indicated (7777=unlimited), meter
-    TMYData.HvisSource                  See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.HvisUncertainty             See [1], Table 1-6
+    TMYData.HvisSource                  See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.HvisUncertainty             See [1]_, Table 1-6
     TMYData.CeilHgt                     Height of cloud base above local terrain (7777=unlimited), meter
-    TMYData.CeilHgtSource               See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.CeilHgtUncertainty          See [1], Table 1-6
+    TMYData.CeilHgtSource               See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.CeilHgtUncertainty          See [1]_, Table 1-6
     TMYData.Pwat                        Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm
-    TMYData.PwatSource                  See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.PwatUncertainty             See [1], Table 1-6
+    TMYData.PwatSource                  See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.PwatUncertainty             See [1]_, Table 1-6
     TMYData.AOD                         The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless
-    TMYData.AODSource                   See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.AODUncertainty              See [1], Table 1-6
+    TMYData.AODSource                   See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.AODUncertainty              See [1]_, Table 1-6
     TMYData.Alb                         The ratio of reflected solar irradiance to global horizontal irradiance, unitless
-    TMYData.AlbSource                   See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.AlbUncertainty              See [1], Table 1-6
+    TMYData.AlbSource                   See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.AlbUncertainty              See [1]_, Table 1-6
     TMYData.Lprecipdepth                The amount of liquid precipitation observed at indicated time for the period indicated in the liquid precipitation quantity field, millimeter
     TMYData.Lprecipquantity             The period of accumulatitudeion for the liquid precipitation depth field, hour
-    TMYData.LprecipSource               See [1], Table 1-5, 8760x1 cell array of strings
-    TMYData.LprecipUncertainty          See [1], Table 1-6
-    TMYData.PresWth                     Present weather code, see [2].
-    TMYData.PresWthSource               Present weather code source, see [2].
-    TMYData.PresWthUncertainty          Present weather code uncertainty, see [2].
+    TMYData.LprecipSource               See [1]_, Table 1-5, 8760x1 cell array of strings
+    TMYData.LprecipUncertainty          See [1]_, Table 1-6
+    TMYData.PresWth                     Present weather code, see [2]_.
+    TMYData.PresWthSource               Present weather code source, see [2]_.
+    TMYData.PresWthUncertainty          Present weather code uncertainty, see [2]_.
     =============================       ======================================================================================================================================================
 
     References
     ----------
 
-    [1] Wilcox, S and Marion, W. "Users Manual for TMY3 Data Sets".
-    NREL/TP-581-43156, Revised May 2008.
+    .. [1] Wilcox, S and Marion, W. "Users Manual for TMY3 Data Sets".
+       NREL/TP-581-43156, Revised May 2008.
 
-    [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005
-    Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
+    .. [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005
+       Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
     '''
 
     if filename is None:
@@ -246,7 +246,7 @@ def _recolumn(tmy3_dataframe):
         'DNillum', 'DNillumSource', 'DNillumUncertainty', 'DHillum',
         'DHillumSource', 'DHillumUncertainty', 'Zenithlum',
         'ZenithlumSource', 'ZenithlumUncertainty', 'TotCld', 'TotCldSource',
-        'TotCldUnertainty', 'OpqCld', 'OpqCldSource', 'OpqCldUncertainty',
+        'TotCldUncertainty', 'OpqCld', 'OpqCldSource', 'OpqCldUncertainty',
         'DryBulb', 'DryBulbSource', 'DryBulbUncertainty', 'DewPoint',
         'DewPointSource', 'DewPointUncertainty', 'RHum', 'RHumSource',
         'RHumUncertainty', 'Pressure', 'PressureSource',
@@ -274,7 +274,7 @@ def read_tmy2(filename):
     form conforming to modern conventions (e.g. N latitude is postive, E
     longitude is positive, the "24th" hour of any day is technically the
     "0th" hour of the next day). In the case of any discrepencies
-    between this documentation and the TMY2 User's Manual [1], the TMY2
+    between this documentation and the TMY2 User's Manual [1]_, the TMY2
     User's Manual takes precedence.
 
     Parameters
@@ -290,7 +290,7 @@ def read_tmy2(filename):
     data : DataFrame
         A dataframe with the columns described in the table below. For a
         more detailed descriptions of each component, please consult the
-        TMY2 User's Manual ([1]), especially tables 3-1 through 3-6, and
+        TMY2 User's Manual ([1]_), especially tables 3-1 through 3-6, and
         Appendix B.
 
     metadata : dict
@@ -324,76 +324,76 @@ def read_tmy2(filename):
     ETR                             Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
     ETRN                            Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
     GHI                             Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    GHISource                       See [1], Table 3-3
-    GHIUncertainty                  See [1], Table 3-4
+    GHISource                       See [1]_, Table 3-3
+    GHIUncertainty                  See [1]_, Table 3-4
     DNI                             Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
-    DNISource                       See [1], Table 3-3
-    DNIUncertainty                  See [1], Table 3-4
+    DNISource                       See [1]_, Table 3-3
+    DNIUncertainty                  See [1]_, Table 3-4
     DHI                             Amount of diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    DHISource                       See [1], Table 3-3
-    DHIUncertainty                  See [1], Table 3-4
+    DHISource                       See [1]_, Table 3-3
+    DHIUncertainty                  See [1]_, Table 3-4
     GHillum                         Avg. total horizontal illuminance recv'd during the 60 minutes prior to timestamp, units of 100 lux (e.g. value of 50 = 5000 lux)
-    GHillumSource                   See [1], Table 3-3
-    GHillumUncertainty              See [1], Table 3-4
+    GHillumSource                   See [1]_, Table 3-3
+    GHillumUncertainty              See [1]_, Table 3-4
     DNillum                         Avg. direct normal illuminance recv'd during the 60 minutes prior to timestamp, units of 100 lux
-    DNillumSource                   See [1], Table 3-3
-    DNillumUncertainty              See [1], Table 3-4
+    DNillumSource                   See [1]_, Table 3-3
+    DNillumUncertainty              See [1]_, Table 3-4
     DHillum                         Avg. horizontal diffuse illuminance recv'd during the 60 minutes prior to timestamp, units of 100 lux
-    DHillumSource                   See [1], Table 3-3
-    DHillumUncertainty              See [1], Table 3-4
+    DHillumSource                   See [1]_, Table 3-3
+    DHillumUncertainty              See [1]_, Table 3-4
     Zenithlum                       Avg. luminance at the sky's zenith during the 60 minutes prior to timestamp, units of 10 Cd/m^2 (e.g. value of 700 = 7,000 Cd/m^2)
-    ZenithlumSource                 See [1], Table 3-3
-    ZenithlumUncertainty            See [1], Table 3-4
+    ZenithlumSource                 See [1]_, Table 3-3
+    ZenithlumUncertainty            See [1]_, Table 3-4
     TotCld                          Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
-    TotCldSource                    See [1], Table 3-5, 8760x1 cell array of strings
-    TotCldUnertainty                See [1], Table 3-6
+    TotCldSource                    See [1]_, Table 3-5, 8760x1 cell array of strings
+    TotCldUncertainty                See [1]_, Table 3-6
     OpqCld                          Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
-    OpqCldSource                    See [1], Table 3-5, 8760x1 cell array of strings
-    OpqCldUncertainty               See [1], Table 3-6
+    OpqCldSource                    See [1]_, Table 3-5, 8760x1 cell array of strings
+    OpqCldUncertainty               See [1]_, Table 3-6
     DryBulb                         Dry bulb temperature at the time indicated, in tenths of degree C (e.g. 352 = 35.2 C).
-    DryBulbSource                   See [1], Table 3-5, 8760x1 cell array of strings
-    DryBulbUncertainty              See [1], Table 3-6
+    DryBulbSource                   See [1]_, Table 3-5, 8760x1 cell array of strings
+    DryBulbUncertainty              See [1]_, Table 3-6
     DewPoint                        Dew-point temperature at the time indicated, in tenths of degree C (e.g. 76 = 7.6 C).
-    DewPointSource                  See [1], Table 3-5, 8760x1 cell array of strings
-    DewPointUncertainty             See [1], Table 3-6
+    DewPointSource                  See [1]_, Table 3-5, 8760x1 cell array of strings
+    DewPointUncertainty             See [1]_, Table 3-6
     RHum                            Relative humidity at the time indicated, percent
-    RHumSource                      See [1], Table 3-5, 8760x1 cell array of strings
-    RHumUncertainty                 See [1], Table 3-6
+    RHumSource                      See [1]_, Table 3-5, 8760x1 cell array of strings
+    RHumUncertainty                 See [1]_, Table 3-6
     Pressure                        Station pressure at the time indicated, 1 mbar
-    PressureSource                  See [1], Table 3-5, 8760x1 cell array of strings
-    PressureUncertainty             See [1], Table 3-6
+    PressureSource                  See [1]_, Table 3-5, 8760x1 cell array of strings
+    PressureUncertainty             See [1]_, Table 3-6
     Wdir                            Wind direction at time indicated, degrees from east of north (360 = 0 = north; 90 = East; 0 = undefined,calm)
-    WdirSource                      See [1], Table 3-5, 8760x1 cell array of strings
-    WdirUncertainty                 See [1], Table 3-6
+    WdirSource                      See [1]_, Table 3-5, 8760x1 cell array of strings
+    WdirUncertainty                 See [1]_, Table 3-6
     Wspd                            Wind speed at the time indicated, in tenths of meters/second (e.g. 212 = 21.2 m/s)
-    WspdSource                      See [1], Table 3-5, 8760x1 cell array of strings
-    WspdUncertainty                 See [1], Table 3-6
+    WspdSource                      See [1]_, Table 3-5, 8760x1 cell array of strings
+    WspdUncertainty                 See [1]_, Table 3-6
     Hvis                            Distance to discernable remote objects at time indicated (7777=unlimited, 9999=missing data), in tenths of kilometers (e.g. 341 = 34.1 km).
-    HvisSource                      See [1], Table 3-5, 8760x1 cell array of strings
-    HvisUncertainty                 See [1], Table 3-6
+    HvisSource                      See [1]_, Table 3-5, 8760x1 cell array of strings
+    HvisUncertainty                 See [1]_, Table 3-6
     CeilHgt                         Height of cloud base above local terrain (7777=unlimited, 88888=cirroform, 99999=missing data), in meters
-    CeilHgtSource                   See [1], Table 3-5, 8760x1 cell array of strings
-    CeilHgtUncertainty              See [1], Table 3-6
+    CeilHgtSource                   See [1]_, Table 3-5, 8760x1 cell array of strings
+    CeilHgtUncertainty              See [1]_, Table 3-6
     Pwat                            Total precipitable water contained in a column of unit cross section from Earth to top of atmosphere, in millimeters
-    PwatSource                      See [1], Table 3-5, 8760x1 cell array of strings
-    PwatUncertainty                 See [1], Table 3-6
+    PwatSource                      See [1]_, Table 3-5, 8760x1 cell array of strings
+    PwatUncertainty                 See [1]_, Table 3-6
     AOD                             The broadband aerosol optical depth (broadband turbidity) in thousandths on the day indicated (e.g. 114 = 0.114)
-    AODSource                       See [1], Table 3-5, 8760x1 cell array of strings
-    AODUncertainty                  See [1], Table 3-6
+    AODSource                       See [1]_, Table 3-5, 8760x1 cell array of strings
+    AODUncertainty                  See [1]_, Table 3-6
     SnowDepth                       Snow depth in centimeters on the day indicated, (999 = missing data).
-    SnowDepthSource                 See [1], Table 3-5, 8760x1 cell array of strings
-    SnowDepthUncertainty            See [1], Table 3-6
+    SnowDepthSource                 See [1]_, Table 3-5, 8760x1 cell array of strings
+    SnowDepthUncertainty            See [1]_, Table 3-6
     LastSnowfall                    Number of days since last snowfall (maximum value of 88, where 88 = 88 or greater days; 99 = missing data)
-    LastSnowfallSource              See [1], Table 3-5, 8760x1 cell array of strings
-    LastSnowfallUncertainty         See [1], Table 3-6
-    PresentWeather                  See [1], Appendix B, an 8760x1 cell array of strings. Each string contains 10 numeric values. The string can be parsed to determine each of 10 observed weather metrics.
+    LastSnowfallSource              See [1]_, Table 3-5, 8760x1 cell array of strings
+    LastSnowfallUncertainty         See [1]_, Table 3-6
+    PresentWeather                  See [1]_, Appendix B, an 8760x1 cell array of strings. Each string contains 10 numeric values. The string can be parsed to determine each of 10 observed weather metrics.
     ============================   ==========================================================================================================================================================================
 
     References
     ----------
 
-    [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
-    for TMY2s". NREL 1995.
+    .. [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
+       for TMY2s". NREL 1995.
     '''
 
     if filename is None:
@@ -406,7 +406,7 @@ def read_tmy2(filename):
 
     # paste in the column info as one long line
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'  # noqa: E501
-    columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUnertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'  # noqa: E501
+    columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUncertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'  # noqa: E501
     hdr_columns = 'WBAN,City,State,TZ,latitude,longitude,altitude'
 
     tmy2, tmy2_meta = _read_tmy2(string, columns, hdr_columns, filename)

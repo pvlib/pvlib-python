@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from pvlib import pvsystem
-from pvlib.ivtools import fit_sde, fit_sdm, utility
+from pvlib.ivtools import fit_sde, fit_sdm
 from pvlib.test.conftest import requires_scipy, requires_pysam
 
 

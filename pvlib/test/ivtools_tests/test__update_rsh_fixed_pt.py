@@ -71,7 +71,7 @@ def test_answer8():
     outrsh8 = _update_rsh_fixed_pt(np.array([-1., 3, .5]),
                                    np.array([1., -.5, 2.]),
                                    np.array([.2, .3, -.4]),
-                                    np.array([-.1, 1, 3]),
+                                   np.array([-.1, 1, 3]),
                                    np.array([4., -.2, .1]),
                                    np.array([.2, .2, -1]),
                                    np.array([0., -1, 0.]))

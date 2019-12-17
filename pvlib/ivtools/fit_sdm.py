@@ -389,7 +389,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         pvsyst['Rs'] - numpy array of values of series resistance Rs estimated
                        for each IV curve
         pvsyst.u - filter indicating IV curves with parameter values deemed
-                   reasonable by the private function filter_params
+                   reasonable by the private function ``_filter_params``
 
     Description
     -----------
@@ -780,7 +780,7 @@ def _rsh_pvsyst(x, rshexp, g, go):
 
 
 def _filter_params(io, rsh, rs, ee, isc):
-    # Function filter_params identifies bad parameter sets. A bad set contains
+    # Function _filter_params identifies bad parameter sets. A bad set contains
     # Nan, non-positive or imaginary values for parameters; Rs > Rsh; or data
     # where effective irradiance Ee differs by more than 5% from a linear fit
     # to Isc vs. Ee
@@ -875,23 +875,23 @@ def _check_converge(prevparams, result, vmp, imp, i):
 
     if prevparams['state'] != 0.0:
         convergeparam['imperrstdchange'] = np.abs(
-             convergeparam['imperrstd'] / prevparams['imperrstd'] - 1.)
+            convergeparam['imperrstd'] / prevparams['imperrstd'] - 1.)
         convergeparam['vmperrstdchange'] = np.abs(
-             convergeparam['vmperrstd'] / prevparams['vmperrstd'] - 1.)
+            convergeparam['vmperrstd'] / prevparams['vmperrstd'] - 1.)
         convergeparam['pmperrstdchange'] = np.abs(
-             convergeparam['pmperrstd'] / prevparams['pmperrstd'] - 1.)
+            convergeparam['pmperrstd'] / prevparams['pmperrstd'] - 1.)
         convergeparam['imperrmeanchange'] = np.abs(
-             convergeparam['imperrmean'] / prevparams['imperrmean'] - 1.)
+            convergeparam['imperrmean'] / prevparams['imperrmean'] - 1.)
         convergeparam['vmperrmeanchange'] = np.abs(
-             convergeparam['vmperrmean'] / prevparams['vmperrmean'] - 1.)
+            convergeparam['vmperrmean'] / prevparams['vmperrmean'] - 1.)
         convergeparam['pmperrmeanchange'] = np.abs(
-             convergeparam['pmperrmean'] / prevparams['pmperrmean'] - 1.)
+            convergeparam['pmperrmean'] / prevparams['pmperrmean'] - 1.)
         convergeparam['imperrabsmaxchange'] = np.abs(
-             convergeparam['imperrabsmax'] / prevparams['imperrabsmax'] - 1.)
+            convergeparam['imperrabsmax'] / prevparams['imperrabsmax'] - 1.)
         convergeparam['vmperrabsmaxchange'] = np.abs(
-             convergeparam['vmperrabsmax'] / prevparams['vmperrabsmax'] - 1.)
+            convergeparam['vmperrabsmax'] / prevparams['vmperrabsmax'] - 1.)
         convergeparam['pmperrabsmaxchange'] = np.abs(
-             convergeparam['pmperrabsmax'] / prevparams['pmperrabsmax'] - 1.)
+            convergeparam['pmperrabsmax'] / prevparams['pmperrabsmax'] - 1.)
         convergeparam['state'] = 1.0
     else:
         convergeparam['imperrstdchange'] = float("Inf")

@@ -1,8 +1,9 @@
 import numpy as np
-
+from pvlib.test.conftest import requires_scipy
 from pvlib.ivtools.fit_sdm import _update_rsh_fixed_pt
 
 
+@requires_scipy
 def test_answer():
     outrsh = _update_rsh_fixed_pt(np.array([2.]), np.array([2.]),
                                   np.array([2.]), np.array([2.]),
@@ -11,6 +12,7 @@ def test_answer():
     assert np.isnan(outrsh)
 
 
+@requires_scipy
 def test_answer1():
     outrsh1 = _update_rsh_fixed_pt(np.array([0.]), np.array([2.]),
                                    np.array([2.]), np.array([2.]),
@@ -19,6 +21,7 @@ def test_answer1():
     assert np.isnan(outrsh1)
 
 
+@requires_scipy
 def test_answer2():
     outrsh2 = _update_rsh_fixed_pt(np.array([2.]), np.array([0.]),
                                    np.array([2.]), np.array([2.]),
@@ -27,6 +30,7 @@ def test_answer2():
     assert np.isnan(outrsh2)
 
 
+@requires_scipy
 def test_answer3():
     outrsh3 = _update_rsh_fixed_pt(np.array([2.]), np.array([2.]),
                                    np.array([0.]), np.array([2.]),
@@ -35,6 +39,7 @@ def test_answer3():
     assert np.isnan(outrsh3)
 
 
+@requires_scipy
 def test_answer4():
     outrsh4 = _update_rsh_fixed_pt(np.array([2.]), np.array([2.]),
                                    np.array([2.]), np.array([0.]),
@@ -43,6 +48,7 @@ def test_answer4():
     assert np.isnan(outrsh4)
 
 
+@requires_scipy
 def test_answer5():
     outrsh5 = _update_rsh_fixed_pt(np.array([2.]), np.array([2.]),
                                    np.array([2.]), np.array([2.]),
@@ -51,6 +57,7 @@ def test_answer5():
     assert np.isnan(outrsh5)
 
 
+@requires_scipy
 def test_answer6():
     outrsh6 = _update_rsh_fixed_pt(np.array([2.]), np.array([2.]),
                                    np.array([2.]), np.array([2.]),
@@ -59,6 +66,7 @@ def test_answer6():
     assert np.isnan(outrsh6)
 
 
+@requires_scipy
 def test_answer7():
     outrsh7 = _update_rsh_fixed_pt(np.array([2.]), np.array([2.]),
                                    np.array([2.]), np.array([2.]),
@@ -67,6 +75,7 @@ def test_answer7():
     np.testing.assert_allclose(outrsh7, np.array([502]), atol=.0001)
 
 
+@requires_scipy
 def test_answer8():
     outrsh8 = _update_rsh_fixed_pt(np.array([-1., 3, .5]),
                                    np.array([1., -.5, 2.]),

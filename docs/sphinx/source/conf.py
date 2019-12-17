@@ -320,3 +320,7 @@ intersphinx_mapping = {
 nbsphinx_allow_errors = True
 
 ipython_warning_is_error = False
+
+# suppress "WARNING: Footnote [1] is not referenced." messages
+# https://github.com/pvlib/pvlib-python/issues/837
+suppress_warnings = ['ref.footnote']

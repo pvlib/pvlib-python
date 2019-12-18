@@ -1,7 +1,7 @@
 ﻿.. _whatsnew_0700:
 
 v0.7.0 (December 18, 2019)
-------------------------
+--------------------------
 
 This is a major release that drops support for Python 2 and Python 3.4. We
 recommend all users of v0.6.3 upgrade to this release after checking API

@@ -158,11 +158,11 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     # Find beta3 and beta4 from the exponential portion of the IV curve
     beta3, beta4 = _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim,
-                                     i_sc)
+                                       i_sc)
 
     # calculate single diode parameters from regression coefficients
     return _sandia_calc_sde_params(beta0, beta1, beta3, beta4, v_mp, i_mp,
-                                     v_oc)
+                                   v_oc)
 
 
 def _find_mp(voltage, current):
@@ -301,7 +301,7 @@ def fit_sde_cocontent(voltage, current, nsvth):
     effects of colinearity between voltage and current.
     Although values for each of the five parameters are returned,
     testing has shown that values for ``Rs``, ``Io`` and ``n`` may be negative
-    or imaginary even for IV curve data without obvious flaws. 
+    or imaginary even for IV curve data without obvious flaws.
 
     References
     ----------

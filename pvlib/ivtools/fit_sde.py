@@ -154,14 +154,14 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
         v_mp, i_mp = _find_mp(voltage, current)
 
     # Find beta0 and beta1 from linear portion of the IV curve
-    beta0, beta1 = _find_beta0_beta1(voltage, current, vlim, v_oc)
+    beta0, beta1 = _sandia_beta0_beta1(voltage, current, vlim, v_oc)
 
     # Find beta3 and beta4 from the exponential portion of the IV curve
-    beta3, beta4 = _find_beta3_beta4(voltage, current, beta0, beta1, ilim,
+    beta3, beta4 = _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim,
                                      i_sc)
 
     # calculate single diode parameters from regression coefficients
-    return _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp,
+    return _sandia_calc_sde_params(beta0, beta1, beta3, beta4, v_mp, i_mp,
                                      v_oc)
 
 
@@ -190,7 +190,8 @@ def _find_mp(voltage, current):
     return voltage[idx], current[idx]
 
 
-def _find_beta0_beta1(v, i, vlim, v_oc):
+def _sandia_beta0_beta1(v, i, vlim, v_oc):
+    # Used by fit_sde_sandia.
     # Get intercept and slope of linear portion of IV curve.
     # Start with V =< vlim * v_oc, extend by adding points until slope is
     # negative (downward).
@@ -212,7 +213,8 @@ def _find_beta0_beta1(v, i, vlim, v_oc):
         return beta0, beta1
 
 
-def _find_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
+def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
+    # Used by fit_sde_sandia.
     # Subtract the IV curve from the linear fit.
     y = beta0 - beta1 * voltage - current
     x = np.array([np.ones_like(voltage), voltage, current]).T
@@ -229,7 +231,8 @@ def _find_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
         return beta3, beta4
 
 
-def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
+def _sandia_calc_sde_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
+    # Used by fit_sde_sandia.
     nNsVth = 1.0 / beta3
     Rs = beta4 / beta3
     Gp = beta1 / (1.0 - Rs * beta1)
@@ -246,27 +249,26 @@ def _calculate_sde_parameters(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
         I0 = I0_vmp
     else:  # I0_voc > 0
         I0 = I0_voc
-    return (IL, I0, Rsh, Rs, nNsVth)
+    return IL, I0, Rsh, Rs, nNsVth
 
 
 def _calc_I0(IL, I, V, Gp, Rs, nNsVth):
     return (IL - I - Gp * V - Gp * Rs * I) / np.exp((V + Rs * I) / nNsVth)
 
 
-def fit_sde_cocontent(i, v, nsvth):
+def fit_sde_cocontent(voltage, current, nsvth):
     """
     Regression technique to fit the single diode equation to data for a single
     IV curve.
 
     Parameters
     ----------
-    i : numeric
-        current for the IV curve, the first value is taken as ``Isc``, the last
-        value must be 0
-    v : numeric
-        voltage for the IV curve corresponding to the current values in the
-        input vector ``i``, the first value must be 0, the last value is taken
-        as ``Voc``
+    voltage : numeric
+        voltage for the IV curve in increasing order, the first value must be
+        0, the last value is taken as ``Voc``
+    current : numeric
+        current for the IV curve corresponding to ``voltage``, the first value
+        is taken as ``Isc``, the last value must be 0
     nsvth : numeric
         the thermal voltage for the module, equal to ``Ns`` (number of cells in
         series) times ``Vth`` (thermal voltage per cell)
@@ -284,46 +286,92 @@ def fit_sde_cocontent(i, v, nsvth):
     n : numeric
         diode (ideality) factor (unitless) for the IV curve
 
-    This function uses a regression technique based on [2] to fit the single
-    diode equation to data for a single IV curve. Although values for each of
-    the five parameters are returned, testing has shown only ``Rsh`` to be
-    stable. The other parameters, ``Rs``, ``Io`` and ``n`` may be negative or
-    imaginary even for IV curve data without obvious flaws. Method coded here
-    uses a principal component transformation of ``(V, I)`` prior to regression
-    to attempt to overcome effects of strong colinearity between ``v`` and
-    ``i`` over much of the I-V curve.
+    Raises
+    ------
+    ValueError if ``voltage`` and ``current`` are different lengths.
+    ValueError if ``len(voltage)`` < 6
+
+    Notes
+    -----
+    Ported from PVLib Matlab [1]_. This function uses a regression technique
+    described in [2]_ to fit the single diode equation to data for a single IV
+    curve. The method extends ideas in [3]_ where the co-content is regressed
+    onto predictors involving voltage and current. Here, a principal component
+    transformation of ``(voltage, current)`` prior to regression to reduce the
+    effects of colinearity between voltage and current.
+    Although values for each of the five parameters are returned,
+    testing has shown that values for ``Rs``, ``Io`` and ``n`` may be negative
+    or imaginary even for IV curve data without obvious flaws. 
 
     References
     ----------
-    [1] PVLib MATLAB
-    [2] A. Ortiz-Conde, F. Garci'a Sa'nchez, J. Murci, "New method to extract
-        the model parameters of solar cells from the explicit analytic
-        solutions of their illuminated I-V characteristics", Solar Energy
-        Materials and Solar Cells 90, pp 352 - 361, 2006.
-    [3] C. Hansen, Parameter Estimation for Single Diode Models of
-        Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [1] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
+    .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [3] A. Ortiz-Conde, F. Garci'a Sa'nchez, J. Murci, "New method to
+       extract the model parameters of solar cells from the explicit analytic
+       solutions of their illuminated I-V characteristics", Solar Energy
+       Materials and Solar Cells 90, pp 352 - 361, 2006.
     """
 
-    if len(i) != len(v):
-        raise ValueError("Current and Voltage vectors should have the same "
+    if len(current) != len(voltage):
+        raise ValueError("voltage and current should have the same "
                          "length")
-    isc = i[0]  # short circuit current
-    voc = v[-1]  # open circuite voltage
+    if len(voltage) < 6:
+        raise ValueError("at least 6 voltage points are required; ~50 are "
+                         "recommended")
+    isc = current[0]  # short circuit current
+    voc = voltage[-1]  # open circuit voltage
 
     # Fit quadratic spline to IV curve in order to compute the co-content
     # (i.e., integral of Isc - I over V) more accurately
 
-    [a, xk, xi, kflag] = schumaker_qspline(v, i)
+    [t, c, yhat, kflag] = schumaker_qspline(voltage, current)
 
-    # calculate co-content integral by numerical integration of quadratic
-    # spline for (Isc - I) over V
-    xn = len(xk)
-    xk2 = xk[1:xn]
-    xk1 = xk[0:(xn - 1)]
-    delx = xk2 - xk1
+    # Calculate co-content integral
+    cci = _cocontent(t, c, isc, kflag)
+
+    # Regress co-content onto voltage and current predictors
+    beta = _cocontent_regress(voltage, current, voc, isc, cci)
+
+    # Extract five parameter values from regression coefficients.
+    # Equation 11, [3]
+    betagp = beta[3] * 2.
+
+    # Equation 12, [3]
+    betars = (np.sqrt(1. + 16. * beta[3] * beta[4]) - 1.) / (4. * beta[3])
+
+    # Equation 13, [3]
+    betan = (beta[0] * (np.sqrt(1. + 16. * beta[3] * beta[4]) - 1.) + 4. *
+             beta[1] * beta[3]) / (4. * beta[3] * nsvth)
+
+    # Single diode equation at Voc, approximating Iph + Io by Isc
+    betaio = (isc - voc * betagp) / (np.exp(voc / (betan * nsvth)))
+
+    # Single diode equation at Isc, using Rsh, Rs, n and Io that were
+    # determined above
+    betaiph = isc - betaio + betaio * np.exp(isc / (betan * nsvth)) + \
+        isc * betars * betagp
+
+    iph = betaiph
+    rs = betars
+    rsh = 1 / betagp
+    n = betan
+    io = betaio
+    return iph, io, rsh, rs, n
+
+
+def _cocontent(v, c, isc, kflag):
+    # Used by fit_sde_cocontent
+    # calculate co-content integral by numerical integration of
+    # i = (Isc - I) over v
+    # Here, i = Isc - I is assumed to be represented by the quadratic spline
+    # with coefficients in input c, at the discrete sequence of knots in v
+    xn = len(v)
+    delx = v[1:] - v[:-1]
     tmp = np.array([1. / 3., .5, 1.])
     ss = np.tile(tmp, [xn - 1, 1])
-    cc = a * ss
+    cc = c * ss  # cast coefficients to a convenient shape
     tmpint = np.sum(cc * np.array([delx ** 3, delx ** 2, delx]).T, 1)
     tmpint = np.append(0., tmpint)
 
@@ -331,21 +379,24 @@ def fit_sde_cocontent(i, v, nsvth):
 
     # Use trapezoid rule for the first 5 intervals due to spline being
     # unreliable near the left endpoint
-    scc[0:5] = isc * xk[0:5] - np.cumsum(tmpint[0:5])  # by spline
-    scc[5:(xn - 5)] = isc * (xk[5:(xn - 5)] - xk[4]) - \
+    scc[0:5] = isc * v[0:5] - np.cumsum(tmpint[0:5])  # by spline
+    scc[5:(xn - 5)] = isc * (v[5:(xn - 5)] - v[4]) - \
         np.cumsum(tmpint[5:(xn - 5)]) + scc[4]
 
     # Use trapezoid rule for the last 5 intervals due to spline being
     # unreliable near the right endpoint
-    scc[(xn - 5):xn] = isc * (xk[(xn - 5):xn] - xk[xn - 6]) - \
+    scc[(xn - 5):xn] = isc * (v[(xn - 5):xn] - v[xn - 6]) - \
         np.cumsum(tmpint[(xn - 5):xn]) + scc[xn - 6]
-    # by spline
 
-    # For estimating diode equation parameters only use original dataa points,
+    # For estimating diode equation parameters only use original data points,
     # not at any knots added by the quadratic spline fit
-    # co-content integral, i.e., Int_0^Voc (Isc - I) dV
     cci = scc[~kflag.astype(bool)]
+    return cci
 
+
+def _cocontent_regress(v, i, voc, isc, cci):
+    # Used by fit_sde_content
+    # For the method coded here see Appendix C of [2] SAND2015-2065
     # predictor variables for regression of CC
     x = np.vstack((v, isc - i, v * (isc - i), v * v, (i - isc) ** 2)).T
 
@@ -383,6 +434,7 @@ def fit_sde_cocontent(i, v, nsvth):
     gamma = np.linalg.lstsq(sx, scc)[0]
     # coefficients from regression in rotated coordinates
 
+    # Principle components transformation steps
     # Matrix which relates principal components transformation R to the mapping
     # between [V' I' V'I' V'^2 I'^2] and sx, where prime ' indicates shifted
     # and scaled data. Used to translate from regression coefficients in
@@ -409,29 +461,4 @@ def fit_sde_cocontent(i, v, nsvth):
     # translate from coefficients in rotated space (gamma) to coefficients in
     # original coordinates (beta)
     beta = np.linalg.lstsq(np.dot(mb, ma), gamma[0:5])[0]
-
-    # Extract five parameter values from coefficients in original coordinates.
-    # Equation 11, [2]
-    betagp = beta[3] * 2.
-
-    # Equation 12, [2]
-    betars = (np.sqrt(1. + 16. * beta[3] * beta[4]) - 1.) / (4. * beta[3])
-
-    # Equation 13, [2]
-    betan = (beta[0] * (np.sqrt(1. + 16. * beta[3] * beta[4]) - 1.) + 4. *
-             beta[1] * beta[3]) / (4. * beta[3] * nsvth)
-
-    # Single diode equation at Voc, approximating Iph + Io by Isc
-    betaio = (isc - voc * betagp) / (np.exp(voc / (betan * nsvth)))
-
-    # Single diode equation at Isc, using Rsh, Rs, n and Io that were
-    # determined above
-    betaiph = isc - betaio + betaio * np.exp(isc / (betan * nsvth)) + \
-        isc * betars * betagp
-
-    iph = betaiph
-    rs = betars
-    rsh = 1 / betagp
-    n = betan
-    io = betaio
-    return io, iph, rs, rsh, n
+    return beta

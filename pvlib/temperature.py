@@ -307,9 +307,9 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     Notes
     -----
-    Faiman [1] uses the parameter names U'_0 and U'_1 in equation 5 of [1]_, which
-    is the equation referred to as the Faiman model. In IEC-61853 and in
-    this function the prime is dropped from the parameter names.
+    Faiman uses the parameter names U'_0 and U'_1 in equation 5 of [1]_, which
+    is the equation referred to as the Faiman model. In IEC-61853 and also in
+    this function the primes (') are omitted from the parameter names.
 
     All arguments may be scalars or vectors. If multiple arguments
     are vectors they must be the same length.

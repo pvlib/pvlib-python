@@ -454,7 +454,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
         pio[j], piph[j], prs[j], prsh[j], pn[j] = \
-            fit_sde_cocontent(current, voltage, vth[j] * specs['ns'])
+            fit_sde_cocontent(voltage, current, vth[j] * specs['ns'])
 
     # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
     # temperature dependence by means of the equation for Io

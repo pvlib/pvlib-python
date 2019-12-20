@@ -5,6 +5,7 @@ equations to IV curve data.
 """
 
 import numpy as np
+import pandas as pd
 from collections import OrderedDict
 
 
@@ -130,77 +131,70 @@ def numdiff(x, f):
     return df, df2
 
 
-def rectify_iv_curve(ti, tv, voc, isc):
+def rectify_iv_curve(voltage, current, voc, isc, decimals=None):
     """
     ``rectify_IV_curve`` ensures that Isc and Voc are included in a IV curve
     and removes duplicate voltage and current points.
 
     Parameters
     ----------
-    ti : numeric
-        test currents [A]
-    tv : numeric
-        test voltages [V]
+    voltage : numeric [V]
+    current : numeric [A]
     voc : numeric
-        open circuit voltages [V]
+        open circuit voltage [V]
     isc : numeric
         short circuit current [A]
+    decimals : int or None, default None
+        number of decimal places to which voltage is rounded to remove
+        duplicate values. If None, duplicates are not removed.
 
     Returns
     -------
-    current (I [A]), voltage (V [V])
+    voltage : numeric [V]
+    current : numeric [A]
+
+    Raises
+    ------
+    ValueError if voltage and current are different length
 
     Description
     -----------
-    ``rectify_IV_curve`` ensures that the IV curve data
-
+    ``rectify_IV_curve`` ensures that the IV curve lies in the first quadrant
+    of the (voltage, current) plane. The returned IV curve:
+    * contains no NaNs
     * increases in voltage
-    * contain no negative current or voltage values
-    * have the first data point as (0, Isc)
-    * have the last data point as (Voc, 0)
-    * contain no duplicate voltage values. Where voltage values are
+    * contains no negative current or voltage values
+    * has the first data point as (0, Isc)
+    * has the last data point as (Voc, 0)
+    * contains no duplicate voltage values. Where voltage values are
       repeated, a single data point is substituted with current equal to
-      the average of current at each repeated voltage.
+      the average of current at duplicated voltages.
     """
-    # Filter out negative voltage and current values
-    data_filter = []
-    for i, v in zip(ti, tv):
-        if i < 0:
-            continue
-        if v > voc:
-            continue
-        if v < 0:
-            continue
-        if np.isnan(i) or np.isnan(v):
-            continue
-        data_filter.append((i, v))
 
-    current = np.array([isc])
-    voltage = np.array([0.])
+    if len(voltage) != len(current):
+        raise ValueError('voltage and current must have the same length')
 
-    for i, v in data_filter:
-        current = np.append(current, i)
-        voltage = np.append(voltage, v)
+    # add isc and voc
+    v_tmp = np.concatenate((voltage, np.array([0., voc])))
+    i_tmp = np.concatenate((current, np.array([isc, 0.])))
 
-    # Add in Voc and Isc
-    current = np.append(current, 0.)
-    voltage = np.append(voltage, voc)
+    df = pd.DataFrame(data=np.vstack((v_tmp, i_tmp)).T, columns=['v', 'i'])
+    # restrict to first quadrant
+    df.dropna(inplace=True)
+    df = df[(df['v']>=0) & (df['i']>=0) & (df['v']<=voc)]
+    # sort pairs on voltage, then current
+    df = df.sort_values(by=['v', 'i'], ascending=[True, False])
 
-    # Remove duplicate Voltage and Current points
-    u, index, inverse = np.unique(voltage, return_index=True,
-                                  return_inverse=True)
-    if len(u) != len(voltage):
-        v = []
-        for i in u:
-            fil = []
-            for n, j in enumerate(voltage):
-                if i == j:
-                    fil.append(n)
-            t = current[fil]
-            v.append(np.average(t))
-        voltage = u
-        current = np.array(v)
-    return current, voltage
+    # eliminate duplicate voltage points
+    if decimals is not None:
+        _, inv = np.unique(np.round(df['v'], decimals=decimals),
+                           return_inverse=True)
+        df.index = inv
+        # average current at each common voltage
+        df = df.groupby(by=inv).mean()
+
+    tmp = np.array(df).T
+    return tmp[0,], tmp[1,]
 
 
 def schumaker_qspline(x, y):

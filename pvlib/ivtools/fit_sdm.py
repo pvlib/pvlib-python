@@ -449,11 +449,10 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
     pn = np.ones(n)
 
     for j in range(n):
-        voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j],
-                                            voc[j], isc[j])
+        voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
-        piph[j], pio[j], prsh[j], prs[j], pn[j] = \
+        piph[j], pio[j], prs[j], prsh[j], pn[j] = \
             fit_sde_cocontent(voltage, current, vth[j] * specs['ns'])
 
     # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
@@ -498,8 +497,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         rsh = prsh
 
         for j in range(n):
-            volt, curr = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j],
-                                          voc[j], isc[j])
+            volt, curr = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
 
             if rsh[j] > 0:
                 # Initial estimate of Io, evaluate the single diode model at

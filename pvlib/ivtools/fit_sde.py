@@ -279,10 +279,10 @@ def fit_sde_cocontent(voltage, current, nsvth):
         photocurrent [A]
     io : numeric
         dark current [A]
-    rsh : numeric
-        series resistance [ohm]
     rs : numeric
         shunt resistance [ohm]
+    rsh : numeric
+        series resistance [ohm]
     n : numeric
         diode (ideality) factor [unitless]
 
@@ -358,7 +358,7 @@ def fit_sde_cocontent(voltage, current, nsvth):
     rsh = 1 / betagp
     n = betan
     io = betaio
-    return iph, io, rsh, rs, n
+    return iph, io, rs, rsh, n
 
 
 def _cocontent(v, c, isc, kflag):

@@ -181,7 +181,7 @@ def rectify_iv_curve(voltage, current, voc, isc, decimals=None):
     df = pd.DataFrame(data=np.vstack((v_tmp, i_tmp)).T, columns=['v', 'i'])
     # restrict to first quadrant
     df.dropna(inplace=True)
-    df = df[(df['v']>=0) & (df['i']>=0) & (df['v']<=voc)]
+    df = df[(df['v'] >= 0) & (df['i'] >= 0) & (df['v'] <= voc)]
     # sort pairs on voltage, then current
     df = df.sort_values(by=['v', 'i'], ascending=[True, False])
 
@@ -194,7 +194,7 @@ def rectify_iv_curve(voltage, current, voc, isc, decimals=None):
         df = df.groupby(by=inv).mean()
 
     tmp = np.array(df).T
-    return tmp[0,], tmp[1,]
+    return tmp[0, ], tmp[1, ]
 
 
 def schumaker_qspline(x, y):

@@ -275,16 +275,16 @@ def fit_sde_cocontent(voltage, current, nsvth):
 
     Returns
     -------
-    io : numeric
-        the dark current value (A) for the IV curve
     iph : numeric
-        the light current value (A) for the IV curve
+        photocurrent [A]
+    io : numeric
+        dark current [A]
+    rsh : numeric
+        series resistance [ohm]
     rs : numeric
-        series resistance (ohm) for the IV curve
-    rsh : numieric
-        shunt resistance (ohm) for the IV curve
+        shunt resistance [ohm]
     n : numeric
-        diode (ideality) factor (unitless) for the IV curve
+        diode (ideality) factor [unitless]
 
     Raises
     ------
@@ -372,11 +372,12 @@ def _cocontent(v, c, isc, kflag):
     tmp = np.array([1. / 3., .5, 1.])
     ss = np.tile(tmp, [xn - 1, 1])
     cc = c * ss  # cast coefficients to a convenient shape
+    # compute integral on each interval
     tmpint = np.sum(cc * np.array([delx ** 3, delx ** 2, delx]).T, 1)
     tmpint = np.append(0., tmpint)
 
+    # compute co-content = Int_0^V (Isc - I) dV
     scc = np.zeros(xn)
-
     # Use trapezoid rule for the first 5 intervals due to spline being
     # unreliable near the left endpoint
     scc[0:5] = isc * v[0:5] - np.cumsum(tmpint[0:5])  # by spline
@@ -431,7 +432,7 @@ def _cocontent_regress(v, i, voc, isc, cci):
     sx = np.vstack((s[:, 0], s[:, 1], s[:, 0] * s[:, 1], s[:, 0] * s[:, 0],
                     s[:, 1] * s[:, 1], col1)).T
 
-    gamma = np.linalg.lstsq(sx, scc)[0]
+    gamma = np.linalg.lstsq(sx, scc, rcond=None)[0]
     # coefficients from regression in rotated coordinates
 
     # Principle components transformation steps
@@ -460,5 +461,5 @@ def _cocontent_regress(v, i, voc, isc, cci):
 
     # translate from coefficients in rotated space (gamma) to coefficients in
     # original coordinates (beta)
-    beta = np.linalg.lstsq(np.dot(mb, ma), gamma[0:5])[0]
+    beta = np.linalg.lstsq(np.dot(mb, ma), gamma[0:5], rcond=None)[0]
     return beta

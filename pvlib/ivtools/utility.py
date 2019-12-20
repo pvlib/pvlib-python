@@ -131,22 +131,18 @@ def numdiff(x, f):
     return df, df2
 
 
-def rectify_iv_curve(voltage, current, voc, isc, decimals=None):
+def rectify_iv_curve(voltage, current, decimals=None):
     """
-    ``rectify_IV_curve`` ensures that Isc and Voc are included in a IV curve
-    and removes duplicate voltage and current points.
+    ``rectify_IV_curve`` sorts the IV curve data, removes NaN and negative
+    values, and combines points with duplicate voltage.
 
     Parameters
     ----------
     voltage : numeric [V]
     current : numeric [A]
-    voc : numeric
-        open circuit voltage [V]
-    isc : numeric
-        short circuit current [A]
     decimals : int or None, default None
         number of decimal places to which voltage is rounded to remove
-        duplicate values. If None, duplicates are not removed.
+        duplicated points. If None, no rounding is done.
 
     Returns
     -------
@@ -164,34 +160,29 @@ def rectify_iv_curve(voltage, current, voc, isc, decimals=None):
     * contains no NaNs
     * increases in voltage
     * contains no negative current or voltage values
-    * has the first data point as (0, Isc)
-    * has the last data point as (Voc, 0)
-    * contains no duplicate voltage values. Where voltage values are
-      repeated, a single data point is substituted with current equal to
+    * contains no points with duplicate voltage values. Where voltage values
+      are repeated, a single data point is substituted with current equal to
       the average of current at duplicated voltages.
     """
 
     if len(voltage) != len(current):
         raise ValueError('voltage and current must have the same length')
 
-    # add isc and voc
-    v_tmp = np.concatenate((voltage, np.array([0., voc])))
-    i_tmp = np.concatenate((current, np.array([isc, 0.])))
-
-    df = pd.DataFrame(data=np.vstack((v_tmp, i_tmp)).T, columns=['v', 'i'])
+    df = pd.DataFrame(data=np.vstack((voltage, current)).T, columns=['v', 'i'])
     # restrict to first quadrant
     df.dropna(inplace=True)
-    df = df[(df['v'] >= 0) & (df['i'] >= 0) & (df['v'] <= voc)]
+    df = df[(df['v'] >= 0) & (df['i'] >= 0)]
     # sort pairs on voltage, then current
     df = df.sort_values(by=['v', 'i'], ascending=[True, False])
 
     # eliminate duplicate voltage points
     if decimals is not None:
-        _, inv = np.unique(np.round(df['v'], decimals=decimals),
-                           return_inverse=True)
-        df.index = inv
-        # average current at each common voltage
-        df = df.groupby(by=inv).mean()
+        df['v'] = np.round(df['v'], decimals=decimals)
+
+    _, inv = np.unique(df['v'], return_inverse=True)
+    df.index = inv
+    # average current at each common voltage
+    df = df.groupby(by=inv).mean()
 
     tmp = np.array(df).T
     return tmp[0, ], tmp[1, ]

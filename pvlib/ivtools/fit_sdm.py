@@ -211,12 +211,12 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     try:
         from scipy.optimize import root
-        from scipy import constants
+        import scipy.constants
     except ImportError:
         raise ImportError("The fit_sdm_desoto function requires scipy.")
 
     # Constants
-    k = constants.value('Boltzmann constant in eV/K')
+    k = scipy.constants.value('Boltzmann constant in eV/K')
     Tref = temp_ref + 273.15  # [K]
 
     # initial guesses of variables for computing convergence:
@@ -449,11 +449,11 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
     pn = np.ones(n)
 
     for j in range(n):
-        current, voltage = rectify_iv_curve(ivcurves['i'][j], ivcurves['v'][j],
+        voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j],
                                             voc[j], isc[j])
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
-        pio[j], piph[j], prs[j], prsh[j], pn[j] = \
+        piph[j], pio[j], prsh[j], prs[j], pn[j] = \
             fit_sde_cocontent(voltage, current, vth[j] * specs['ns'])
 
     # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
@@ -471,7 +471,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
     x = np.vstack((np.ones(len(x1[~uu])), x1[~uu], -x1[~uu] *
                    (tck[~uu] - (const['T0'] + 273.15)), x2[~uu],
                    -x2[~uu] * (tck[~uu] - (const['T0'] + 273.15)))).T
-    alpha = np.linalg.lstsq(x, y[~uu])[0]
+    alpha = np.linalg.lstsq(x, y[~uu], rcond=None)[0]
 
     gamma_ref = 1. / alpha[3]
     mugamma = alpha[4] / alpha[3] ** 2
@@ -498,7 +498,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         rsh = prsh
 
         for j in range(n):
-            curr, volt = rectify_iv_curve(ivcurves['i'][j], ivcurves['v'][j],
+            volt, curr = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j],
                                           voc[j], isc[j])
 
             if rsh[j] > 0:
@@ -795,7 +795,7 @@ def _filter_params(io, rsh, rs, ee, isc):
     goodr = np.logical_and(goodr, ~badio)
 
     matrix = np.vstack((ee / 1000., np.zeros(len(ee)))).T
-    eff = np.linalg.lstsq(matrix, isc)[0][0]
+    eff = np.linalg.lstsq(matrix, isc, rcond=None)[0][0]
     pisc = eff * ee / 1000
     pisc_error = np.abs(pisc - isc) / isc
     # check for departure from linear relation between Isc and Ee

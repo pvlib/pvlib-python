@@ -524,7 +524,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
                 # Initial estimate of Iph, evaluate the single diode model at
                 # Isc [5] Step 3a; [6] Step 3d
 
-                iph[j] = isc[j] - io[j] + io[j] * np.exp(isc[j] / nnsvth[j]) \
+                iph[j] = isc[j] + io[j] * np.expm1(isc[j] / nnsvth[j]) \
                     + isc[j] * rs[j] / rsh[j]
             else:
                 io[j] = float("Nan")
@@ -547,7 +547,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         # Calculate Iph to be consistent with Isc and current values of other
         LOGGER.debug('Calculate Iph to be consistent with Isc, ...')
         # parameters [6], Step 3c
-        iph = isc - io + io * np.exp(rs * isc / nnsvth) + isc * rs / rsh
+        iph = isc + io * np.expm1(rs * isc / nnsvth) + isc * rs / rsh
 
         # Refine Rsh, Rs, Io and Iph in that order.
         counter = 1.  # counter variable for parameter updating while loop,
@@ -583,7 +583,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
 
             # Calculate Iph to be consistent with Isc and other parameters
             LOGGER.debug('step %d: calculate Iph', counter)
-            iph = isc - io + io * np.exp(rs * isc / nnsvth) + isc * rs / rsh
+            iph = isc + io * np.expm1(rs * isc / nnsvth) + isc * rs / rsh
 
             # update filter for good parameters
             u = _filter_params(io, rsh, rs, ee, isc)

@@ -18,9 +18,7 @@ def ivcurve():
                         49., 51., np.nan])
     current = np.array([7., 6., 6., 5., 4., 3., 2.7, 2.5, np.nan, 0.5, -1., 0.,
                         np.nan])
-    voc = 50.
-    isc = 8.
-    return voltage, current, voc, isc
+    return voltage, current
 
 
 def test_numdiff():
@@ -32,17 +30,17 @@ def test_numdiff():
 
 
 def test_rectify_iv_curve(ivcurve):
-    voltage, current, voc, isc = ivcurve
+    voltage, current = ivcurve
 
     vexp_no_dec = np.array([0., 1.,  5., 10., 25., 25.00001, 28., 30., 47.,
                             50.])
     iexp_no_dec = np.array([8., 6., 6., 5., 4., 3., 2.5, 2.7, 0.5, 0.])
-    v, i = rectify_iv_curve(voltage, current, voc, isc)
+    v, i = rectify_iv_curve(voltage, current)
     np.testing.assert_allclose(v, vexp_no_dec, atol=.0001)
     np.testing.assert_allclose(i, iexp_no_dec, atol=.0001)
 
     vexp = np.array([0., 1., 5., 10., 25., 28., 30., 47., 50.])
     iexp = np.array([8., 6., 6., 5., 3.5, 2.5, 2.7, 0.5, 0.])
-    v, i = rectify_iv_curve(voltage, current, voc, isc, decimals=5)
+    v, i = rectify_iv_curve(voltage, current, decimals=5)
     np.testing.assert_allclose(v, vexp, atol=.0001)
     np.testing.assert_allclose(i, iexp, atol=.0001)

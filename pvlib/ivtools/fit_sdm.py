@@ -442,48 +442,27 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
     # temperature coefficient mugamma. Rsh is estimated using the co-content
     # integral method.
 
-    pio = np.ones(n)
-    piph = np.ones(n)
-    prsh = np.ones(n)
-    prs = np.ones(n)
-    pn = np.ones(n)
-
+    rsh = np.ones(n)
     for j in range(n):
         voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
-        piph[j], pio[j], prs[j], prsh[j], pn[j] = \
+        _, _, _, rsh[j], _ = \
             fit_sde_cocontent(voltage, current, vth[j] * specs['ns'])
 
-    # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
-    # temperature dependence by means of the equation for Io
+    gamma_ref, mugamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,
+                                                  const, specs)
 
-    y = np.log(isc - voc / prsh) - 3. * np.log(tck / (const['T0'] + 273.15))
-    x1 = const['q'] / const['k'] * (1. / (const['T0'] + 273.15) - 1. / tck)
-    x2 = voc / (vth * specs['ns'])
-    t0 = np.isnan(y)
-    t1 = np.isnan(x1)
-    t2 = np.isnan(x2)
-    uu = np.logical_or(t0, t1)
-    uu = np.logical_or(uu, t2)
+    badgamma = np.isnan(gamma_ref) or np.isnan(mugamma) \
+        or not np.isreal(gamma_ref) or not np.isreal(mugamma)
 
-    x = np.vstack((np.ones(len(x1[~uu])), x1[~uu], -x1[~uu] *
-                   (tck[~uu] - (const['T0'] + 273.15)), x2[~uu],
-                   -x2[~uu] * (tck[~uu] - (const['T0'] + 273.15)))).T
-    alpha = np.linalg.lstsq(x, y[~uu], rcond=None)[0]
+    if badgamma:
+        raise RuntimeError(
+            "Failed to estimate the diode (ideality) factor parameter.")
 
-    gamma_ref = 1. / alpha[3]
-    mugamma = alpha[4] / alpha[3] ** 2
-
-    if np.isnan(gamma_ref) or np.isnan(mugamma) or not np.isreal(gamma_ref) \
-            or not np.isreal(mugamma):
-        badgamma = True
     else:
-        badgamma = False
+        pvsyst = OrderedDict()
 
-    pvsyst = OrderedDict()
-
-    if ~badgamma:
         gamma = gamma_ref + mugamma * (tc - const['T0'])
 
         nnsvth = gamma * (vth * specs['ns'])
@@ -494,12 +473,11 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         io = np.ones(n)
         iph = np.ones(n)
         rs = np.ones(n)
-        rsh = prsh
 
         for j in range(n):
-            volt, curr = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
 
             if rsh[j] > 0:
+                volt, curr = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
                 # Initial estimate of Io, evaluate the single diode model at
                 # voc and approximate Iph + Io = Isc [5] Step 3a; [6] Step 3b
                 io[j] = (isc[j] - voc[j] / rsh[j]) * np.exp(-voc[j] /
@@ -527,9 +505,9 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
                 iph[j] = isc[j] + io[j] * np.expm1(isc[j] / nnsvth[j]) \
                     + isc[j] * rs[j] / rsh[j]
             else:
-                io[j] = float("Nan")
-                rs[j] = float("Nan")
-                iph[j] = float("Nan")
+                io[j] = np.nan
+                rs[j] = np.nan
+                iph[j] = np.nan
 
         # Filter IV curves for good initial values
         LOGGER.debug('filtering params ... may take awhile')
@@ -566,8 +544,8 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
 
             # Calculate Rs to be consistent with Rsh and maximum power point
             LOGGER.debug('step %d: calculate Rs', counter)
-            [a, phi] = _calc_theta_phi_exact(imp[u], iph[u], vmp[u], io[u],
-                                             nnsvth[u], rs[u], rsh[u])
+            _, phi = _calc_theta_phi_exact(imp[u], iph[u], vmp[u], io[u],
+                                           nnsvth[u], rs[u], rsh[u])
             rs[u] = (iph[u] + io[u] - imp[u]) * rsh[u] / imp[u] - \
                 nnsvth[u] * phi / imp[u] - vmp[u] / imp[u]
 
@@ -636,12 +614,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         nans = np.isnan(y - specs['aisc'] * x)
         iph0 = np.mean(y[~nans] - specs['aisc'] * x[~nans])
 
-        # Additional filter for Rsh and Rs; Restrict effective irradiance to be
-        # greater than 400 W/m^2
-        vfil = ee > 400
-
         # Estimate Rsh0, Rsh_ref and Rshexp
-
         # Initial Guesses. Rsh0 is value at Ee=0.
         nans = np.isnan(rsh)
         if any(ee < 400):
@@ -650,8 +623,8 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
             grsh0 = np.max(rsh)
 
         # Rsh_ref is value at Ee = 1000
-        if any(vfil):
-            grshref = np.mean(rsh[np.logical_and(~nans, vfil)])
+        if any(ee > 400):
+            grshref = np.mean(rsh[np.logical_and(~nans, ee > 400)])
         else:
             grshref = np.min(rsh)
 
@@ -672,7 +645,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         rshref = beta.x[1]
 
         # Estimate Rs0
-        t15 = np.logical_and(u, vfil)
+        t15 = np.logical_and(u, ee > 400)
         rs0 = np.mean(rs[t15])
 
         # Save parameter estimates in output structure
@@ -682,20 +655,40 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         pvsyst['Rs_ref'] = rs0
         pvsyst['gamma_ref'] = gamma_ref
         pvsyst['mugamma'] = mugamma
-        pvsyst['Iph'] = iph
-        pvsyst['Io'] = io
         pvsyst['Rsh0'] = rsh0
         pvsyst['Rsh_ref'] = rshref
         pvsyst['Rshexp'] = rshexp
-        pvsyst['Rs'] = rs
+        pvsyst['Iph'] = iph
+        pvsyst['Io'] = io
         pvsyst['Rsh'] = rsh
+        pvsyst['Rs'] = rs
         pvsyst['Ns'] = specs['ns']
         pvsyst['u'] = u
 
-    else:
-        raise RuntimeError(
-            "Failed to estimate the diode (ideality) factor parameter.")
     return pvsyst
+
+
+def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
+    # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
+    # temperature dependence by means of the equation for Io
+
+    y = np.log(isc - voc / rsh) - 3. * np.log(tck / (const['T0'] + 273.15))
+    x1 = const['q'] / const['k'] * (1. / (const['T0'] + 273.15) - 1. / tck)
+    x2 = voc / (vth * specs['ns'])
+    t0 = np.isnan(y)
+    t1 = np.isnan(x1)
+    t2 = np.isnan(x2)
+    uu = np.logical_or(t0, t1)
+    uu = np.logical_or(uu, t2)
+
+    x = np.vstack((np.ones(len(x1[~uu])), x1[~uu], -x1[~uu] *
+                   (tck[~uu] - (const['T0'] + 273.15)), x2[~uu],
+                   -x2[~uu] * (tck[~uu] - (const['T0'] + 273.15)))).T
+    alpha = np.linalg.lstsq(x, y[~uu], rcond=None)[0]
+
+    gamma_ref = 1. / alpha[3]
+    mugamma = alpha[4] / alpha[3] ** 2
+    return gamma_ref, mugamma
 
 
 def _update_io_known_n(rsh, rs, nnsvth, io, il, voc):
@@ -772,8 +765,8 @@ def _rsh_pvsyst(x, rshexp, g, go):
 
     rshb = np.maximum(
         (rshref - rsho * np.exp(-rshexp)) / (1. - np.exp(-rshexp)), 0.)
-    prsh = rshb + (rsho - rshb) * np.exp(-rshexp * g / go)
-    return prsh
+    rsh = rshb + (rsho - rshb) * np.exp(-rshexp * g / go)
+    return rsh
 
 
 def _filter_params(io, rsh, rs, ee, isc):

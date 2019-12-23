@@ -21,7 +21,7 @@ PVLIB_PYTHON = 'pvlib python'
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
              full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON, timeout=30):
     """
-    Get PSM3 data
+    Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API [1]_, [2]_.
 
     Parameters
     ----------
@@ -49,7 +49,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     Returns
     -------
     headers : dict
-        metadata from NREL PSM3 about the record, see notes for fields
+        metadata from NREL PSM3 about the record, see
+        :func:`pvlib.iotools.read_psm3` for fields
     data : pandas.DataFrame
         timeseries data from NREL PSM3
 
@@ -77,38 +78,12 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
          '2014', '2015', '2016', '2017', 'tmy', 'tmy-2016', 'tmy-2017',
          'tdy-2017', 'tgy-2017']
 
-    The return is a tuple with two items. The first item is a header with
-    metadata from NREL PSM3 about the record containing the following fields:
-
-    * Source
-    * Location ID
-    * City
-    * State
-    * Country
-    * Latitude
-    * Longitude
-    * Time Zone
-    * Elevation
-    * Local Time Zone
-    * Dew Point Units
-    * DHI Units
-    * DNI Units
-    * GHI Units
-    * Temperature Units
-    * Pressure Units
-    * Wind Direction Units
-    * Wind Speed
-    * Surface Albedo Units
-    * Version
-
-    The second item is a dataframe with the timeseries data downloaded.
-
     .. warning:: PSM3 is limited to data found in the NSRDB, please consult the
         references below for locations with available data
 
     See Also
     --------
-    pvlib.iotools.read_tmy2, pvlib.iotools.read_tmy3
+    pvlib.iotools.read_psm3
 
     References
     ----------
@@ -154,30 +129,127 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    # The first 2 lines of the response are headers with metadat
-    header_fields = fbuf.readline().split(',')
-    header_fields[-1] = header_fields[-1].strip()  # strip trailing newline
-    header_values = fbuf.readline().split(',')
-    header_values[-1] = header_values[-1].strip()  # strip trailing newline
-    header = dict(zip(header_fields, header_values))
-    # the response is all strings, so set some header types to numbers
-    header['Local Time Zone'] = int(header['Local Time Zone'])
-    header['Time Zone'] = int(header['Time Zone'])
-    header['Latitude'] = float(header['Latitude'])
-    header['Longitude'] = float(header['Longitude'])
-    header['Elevation'] = int(header['Elevation'])
-    # get the column names so we can set the dtypes
-    columns = fbuf.readline().split(',')
-    columns[-1] = columns[-1].strip()  # strip trailing newline
-    dtypes = dict.fromkeys(columns, float)  # all floats except datevec
-    dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
-    data = pd.read_csv(
-        fbuf, header=None, names=columns, dtype=dtypes,
-        delimiter=',', lineterminator='\n')  # skip carriage returns \r
-    # the response 1st 5 columns are a date vector, convert to datetime
-    dtidx = pd.to_datetime(
-        data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
-    # in USA all timezones are intergers
-    tz = 'Etc/GMT%+d' % -header['Time Zone']
-    data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
+    return read_psm3(fbuf)
+
+
+def read_psm3(filename):
+    """
+    Read an NSRDB [1]_ PSM3 weather file (formatted as SAM CSV [2]_).
+
+    Parameters
+    ----------
+    filename: string or file-like object
+        Filename or file-like object of data to read.
+
+    Returns
+    -------
+    headers : dict
+        metadata from NREL PSM3 about the record, see notes for fields
+    data : pandas.DataFrame
+        timeseries data from NREL PSM3
+
+    Notes
+    -----
+    The return is a tuple with two items. The first item is a header with
+    metadata from NREL PSM3 about the record containing the following fields:
+
+    * Source
+    * Location ID
+    * City
+    * State
+    * Country
+    * Latitude
+    * Longitude
+    * Time Zone
+    * Elevation
+    * Local Time Zone
+    * Clearsky DHI Units
+    * Clearsky DNI Units
+    * Clearsky GHI Units
+    * Dew Point Units
+    * DHI Units
+    * DNI Units
+    * GHI Units
+    * Solar Zenith Angle Units
+    * Temperature Units
+    * Pressure Units
+    * Relative Humidity Units
+    * Precipitable Water Units
+    * Wind Direction Units
+    * Wind Speed
+    * Cloud Type -15
+    * Cloud Type 0
+    * Cloud Type 1
+    * Cloud Type 2
+    * Cloud Type 3
+    * Cloud Type 4
+    * Cloud Type 5
+    * Cloud Type 6
+    * Cloud Type 7
+    * Cloud Type 8
+    * Cloud Type 9
+    * Cloud Type 10
+    * Cloud Type 11
+    * Cloud Type 12
+    * Fill Flag 0
+    * Fill Flag 1
+    * Fill Flag 2
+    * Fill Flag 3
+    * Fill Flag 4
+    * Fill Flag 5
+    * Surface Albedo Units
+    * Version
+
+    The second item is a dataframe with the PSM3 timeseries data.
+
+    See Also
+    --------
+    pvlib.iotools.get_psm3
+
+    References
+    ----------
+    .. [1] `NREL National Solar Radiation Database (NSRDB)
+       <https://nsrdb.nrel.gov/>`_
+    .. [2] `Standard Time Series Data File Format
+       <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
+    """
+    if hasattr(filename, 'readline'):
+        # if passed a file-like object, not our job to close it
+        close = False
+        fbuf = filename
+    else:
+        close = True
+        fbuf = open(filename, 'r')
+
+    try:
+        # The first 2 lines of the response are headers with metadata
+        header_fields = fbuf.readline().split(',')
+        header_fields[-1] = header_fields[-1].strip()  # strip trailing newline
+        header_values = fbuf.readline().split(',')
+        header_values[-1] = header_values[-1].strip()  # strip trailing newline
+        header = dict(zip(header_fields, header_values))
+        # the response is all strings, so set some header types to numbers
+        header['Local Time Zone'] = int(header['Local Time Zone'])
+        header['Time Zone'] = int(header['Time Zone'])
+        header['Latitude'] = float(header['Latitude'])
+        header['Longitude'] = float(header['Longitude'])
+        header['Elevation'] = int(header['Elevation'])
+        # get the column names so we can set the dtypes
+        columns = fbuf.readline().split(',')
+        columns[-1] = columns[-1].strip()  # strip trailing newline
+        dtypes = dict.fromkeys(columns, float)  # all floats except datevec
+        dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
+        data = pd.read_csv(
+            fbuf, header=None, names=columns, dtype=dtypes,
+            delimiter=',', lineterminator='\n')  # skip carriage returns \r
+        # the response 1st 5 columns are a date vector, convert to datetime
+        dtidx = pd.to_datetime(
+            data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
+        # in USA all timezones are integers
+        tz = 'Etc/GMT%+d' % -header['Time Zone']
+        data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
+    finally:
+        if close:
+            fbuf.close()
+
     return header, data

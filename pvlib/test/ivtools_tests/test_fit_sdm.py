@@ -219,7 +219,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
     # exclude one curve with different convergence
     umask = mask.copy()
     umask[2540] = False
-    assert all(expected['u'] == pvsyst['u'][:npts])
+    assert all(expected['u'][umask] == pvsyst['u'][:npts][umask])
     assert np.allclose(
         expected['Iph'][expected['u']], pvsyst['Iph'][:npts][expected['u']],
         equal_nan=True, rtol=0.0009)

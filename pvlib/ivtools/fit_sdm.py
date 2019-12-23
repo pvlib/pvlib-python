@@ -477,7 +477,8 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         for j in range(n):
 
             if rsh[j] > 0:
-                volt, curr = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
+                volt, curr = rectify_iv_curve(ivcurves['v'][j],
+                                              ivcurves['i'][j])
                 # Initial estimate of Io, evaluate the single diode model at
                 # voc and approximate Iph + Io = Isc [5] Step 3a; [6] Step 3b
                 io[j] = (isc[j] - voc[j] / rsh[j]) * np.exp(-voc[j] /
@@ -517,9 +518,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         # Refine Io to match Voc
         LOGGER.debug('Refine Io to match Voc')
         # [5] Step 3c
-        tmpiph = iph
-        tmpio = _update_io_known_n(rsh[u], rs[u], nnsvth[u], io[u], tmpiph[u],
-                                   voc[u])
+        tmpio = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
         io[u] = tmpio
 
         # Calculate Iph to be consistent with Isc and current values of other
@@ -555,8 +554,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
             # Update value for io to match voc
             LOGGER.debug('step %d: calculate dark/saturation current (Io)',
                          counter)
-            tmpio = _update_io_known_n(rsh[u], rs[u], nnsvth[u], io[u], iph[u],
-                                       voc[u])
+            tmpio = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
             io[u] = tmpio
 
             # Calculate Iph to be consistent with Isc and other parameters
@@ -691,15 +689,15 @@ def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
     return gamma_ref, mugamma
 
 
-def _update_io_known_n(rsh, rs, nnsvth, io, il, voc):
+def _update_io(rsh, rs, nnsvth, io, il, voc):
     """
-    _update_io_known_n adjusts io to match voc using other parameter values.
+    _update_io adjusts io to match voc using other parameter values.
 
     Helper function for fit_pvsyst_sandia
 
     Description
     -----------
-    _update_io_known_n adjusts io to match voc using other parameter values,
+    _update_io adjusts io to match voc using other parameter values,
     i.e., Rsh (shunt resistance), Rs (Series Resistance), n (diode factor), and
     IL (Light Current). Io is updated iteratively 10 times or until successive
     values are less than 0.000001 % different. The updating is similar to

@@ -41,6 +41,6 @@ def test_rectify_iv_curve(ivcurve):
 
     vexp = np.array([0., 1., 5., 10., 25., 28., 30., 47., 51.])
     iexp = np.array([7., 6., 6., 5., 3.5, 2.5, 2.7, 0.5, 0.])
-    v, i = rectify_iv_curve(voltage, current, decimals=5)
+    v, i = rectify_iv_curve(voltage, current, decimals=4)
     np.testing.assert_allclose(v, vexp, atol=.0001)
     np.testing.assert_allclose(i, iexp, atol=.0001)

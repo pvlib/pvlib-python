@@ -13,7 +13,8 @@ from pvlib.ivtools.utility import schumaker_qspline
 def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
                    vlim=0.2, ilim=0.1):
     r"""
-    Fits the single diode equation (SDE) to an IV curve.
+    Fits the single diode equation (SDE) [1]_ to an IV curve. Uses the method
+    described in [2]_.
 
     Parameters
     ----------
@@ -136,11 +137,11 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     References
     ----------
-    [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
-    0 86758 909 4
-    [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
-    In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
-    Photovoltaic Specialist Conference, Chicago, IL, 2019
+    .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
+       0 86758 909 4
+    .  [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
+       In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
+       Photovoltaic Specialist Conference, Chicago, IL, 2019
     """
 
     # If not provided, extract v_oc, i_sc, v_mp and i_mp from the IV curve data
@@ -191,7 +192,7 @@ def _find_mp(voltage, current):
 
 
 def _sandia_beta0_beta1(v, i, vlim, v_oc):
-    # Used by fit_sde_sandia.
+    # Helper for fit_sde_sandia.
     # Get intercept and slope of linear portion of IV curve.
     # Start with V =< vlim * v_oc, extend by adding points until slope is
     # negative (downward).
@@ -214,7 +215,7 @@ def _sandia_beta0_beta1(v, i, vlim, v_oc):
 
 
 def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
-    # Used by fit_sde_sandia.
+    # Helper for fit_sde_sandia.
     # Subtract the IV curve from the linear fit.
     y = beta0 - beta1 * voltage - current
     x = np.array([np.ones_like(voltage), voltage, current]).T
@@ -232,7 +233,7 @@ def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
 
 
 def _sandia_calc_sde_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
-    # Used by fit_sde_sandia.
+    # Helper for fit_sde_sandia.
     nNsVth = 1.0 / beta3
     Rs = beta4 / beta3
     Gp = beta1 / (1.0 - Rs * beta1)

@@ -544,8 +544,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
 
             # Calculate Rs to be consistent with Rsh and maximum power point
             LOGGER.debug('step %d: calculate Rs', counter)
-            _, phi = _calc_theta_phi_exact(imp[u], iph[u], vmp[u], io[u],
-                                           nnsvth[u], rs[u], rsh[u])
+            phi = _calc_phi_exact(imp[u], iph[u], io[u], rsh[u], nnsvth[u])
             rs[u] = (iph[u] + io[u] - imp[u]) * rsh[u] / imp[u] - \
                 nnsvth[u] * phi / imp[u] - vmp[u] / imp[u]
 
@@ -939,53 +938,45 @@ def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
     .. [3] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
     niter = 500
-    x1 = rsh
 
     for i in range(niter):
-        y, z = _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, x1)
-        next_x1 = (1 + z) / z * ((il + io) * x1 / imp - nnsvth * z / imp - 2 *
+        z = _calc_phi_exact(imp, il, io, rsh, nnsvth)
+        next_rsh = (1 + z) / z * ((il + io) * rsh / imp - nnsvth * z / imp - 2 *
                                  vmp / imp)
-        x1 = next_x1
+        rsh = next_rsh
 
-    outrsh = x1
-    return outrsh
+    return next_rsh
 
-
-def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
+def _calc_phi_exact(imp, il, io, rsh, nnsvth):
     """
-    _calc_theta_phi_exact computes Lambert W values appearing in the analytic
-    solutions to the single diode equation for the max power point.
+    Computes Lambert W value appearing in the analytic
+    solution V=V(I) of the single diode equation at the max power point.
 
     Helper function for fit_pvsyst_sandia
-
-    Description
-    -----------
-    _calc_theta_phi_exact calculates values for the Lambert W function which
-    are used in the analytic solutions for the single diode equation at the
-    maximum power point. For V=V(I),
-    phi = W(Io*Rsh/n*Vth * exp((IL + Io - Imp)*Rsh/n*Vth)). For I=I(V),
-    theta = W(Rs*Io/n*Vth *
-    Rsh/ (Rsh+Rs) * exp(Rsh/ (Rsh+Rs)*((Rs(IL+Io) + V)/n*Vth))
 
     Parameters
     ----------
     imp: a numpy array of length N of values for Imp (A)
     il: a numpy array of length N of values for the light current IL (A)
-    vmp: a numpy array of length N of values for Vmp (V)
     io: a numpy array of length N of values for Io (A)
+    rsh: a numpy array of length N of values for the shunt resistance (ohm)
     nnsvth: a numpy array of length N of values for the diode factor x
             thermal voltage for the module, equal to Ns
             (number of cells in series) x Vth
             (thermal voltage per cell).
-    rs: a numpy array of length N of values for the series resistance (ohm)
-    rsh: a numpy array of length N of values for the shunt resistance (ohm)
 
     Returns
     -------
-    theta: a numpy array of values for the Lambert W function for solving
-           I = I(V)
-    phi: a numpy array of values for the Lambert W function for solving
-         V = V(I)
+    w: a numpy array of values for the Lambert W function for solving
+       V = V(I)
+
+    Description
+    -----------
+    Calculates values for the Lambert W function which
+    are used in the analytic solution V=V(I) for the single diode equation at
+    the maximum power point.
+    For V=V(I), phi = W(Io*Rsh/n*Vth * exp((IL + Io - Imp)*Rsh/n*Vth)).
+    If the argument x of W(x) is negative, returns NaN.
 
     References
     ----------
@@ -1000,81 +991,120 @@ def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
     try:
         from scipy.special import lambertw
     except ImportError:
-        raise ImportError('calc_theta_phi_exact requires scipy')
+        raise ImportError('Requires lambertw from scipy')
+
+    def _logw_fn_for_v(rsh, io, inv_nnsvth, il, imp, numiter=8):
+        # evaluates W in log space for V=V(I)
+        with np.errstate(invalid='ignore'):
+            logargw = np.log(rsh) + np.log(io) + np.log(inv_nnsvth) \
+                + rsh * (il + io - imp) * inv_nnsvth
+        return _converge_w(logargw, numiter)
 
     # Argument for Lambert W function involved in V = V(I) [2] Eq. 12; [3]
     # Eq. 3
-    argw = np.where(
-        nnsvth == 0,
-        np.inf,
-        rsh * io / nnsvth * np.exp(rsh * (il + io - imp) / nnsvth))
-    u = argw > 0
-    w = np.zeros(len(u))
-    w[~u] = float("Nan")
-    if any(argw[u] == float("Inf")):
-        tmp = []
-        for i in argw[u]:
-            if i == float("Inf"):
-                tmp.append(float("Nan"))
-            else:
-                tmp.append(lambertw(i).real)
-        tmp = np.array(tmp, dtype=float)
-    else:
-        tmp = lambertw(argw[u]).real
-    ff = np.isnan(tmp)
+    # avoid numpy divide by zero warning
+    with np.errstate(divide='ignore'):
+        inv_nnsvth = 1. / nnsvth
+    # avoid 0. * np.inf warning
+    with np.errstate(invalid='ignore'):
+        argw = np.where(
+            np.isinf(inv_nnsvth),
+            np.nan,
+            rsh * io * inv_nnsvth * np.exp(rsh * (il + io - imp) * inv_nnsvth))
+        w = np.where(argw > 0, lambertw(argw).real, 0.0)  # 0. is a placeholder
+    # avoid divide by zero, log(negative) warning
+    with np.errstate(divide='ignore', invalid='ignore'):
+        # switch to log if argw blew up
+        w = np.where(np.isposinf(argw),
+                     _logw_fn_for_v(rsh, io, inv_nnsvth, il, imp), w)
+    w = np.where(w == 0.0, np.nan, w)
+    return w
 
-    # NaN where argw overflows. Switch to log space to evaluate
-    if any(ff):
+
+def _converge_w(logargw, numiter):
+    # Newton-Raphson method to solve w+log(w)=logargW.
+    # 3 iterations gives approximately 8 digits of precision.
+    x = logargw.copy()
+    for i in range(numiter):
+        x *= (1. - np.log(x) + logargw) / (1. + x)
+    return x
+
+
+def _calc_theta_exact(vmp, il, io, rsh, rs, nnsvth):
+    """
+    Computes Lambert W value appearing in the analytic
+    solution I=I(V) of the single diode equation at the max power point.
+
+    Helper function for fit_pvsyst_sandia
+
+    Parameters
+    ----------
+    vmp: a numpy array of length N of values for Vmp (V)
+    il: a numpy array of length N of values for the light current IL (A)
+    io: a numpy array of length N of values for Io (A)
+    rsh: a numpy array of length N of values for the shunt resistance (ohm)
+    rs: a numpy array of length N of values for the series resistance (ohm)
+    nnsvth: a numpy array of length N of values for the diode factor x
+            thermal voltage for the module, equal to Ns
+            (number of cells in series) x Vth
+            (thermal voltage per cell).
+
+    Returns
+    -------
+    w: a numpy array of values for the Lambert W function for solving
+       I = I(V)
+
+    Description
+    -----------
+    Calculates values for the Lambert W function which
+    are used in the analytic solution I=I(V) for the single diode equation at
+    the maximum power point.
+    For I=I(V), theta = W(Rs*Io/n*Vth * Rsh/ (Rsh+Rs) *
+        exp(Rsh / (Rsh+Rs)*((Rs(IL+Io) + V)/n*Vth))
+    If the argument x of W(x) is negative, returns NaN.
+
+    References
+    ----------
+    .. [1] C. Hansen, Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [2] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
+    .. [3] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of
+       real solar cells using Lambert W-function", Solar Energy Materials and
+       Solar Cells, 81 (2004) 269-277.
+    """
+
+    try:
+        from scipy.special import lambertw
+    except ImportError:
+        raise ImportError('Requires lambertw from scipy')
+
+    def _logw_fn_for_i(rsh, io, inv_nnsvth, inv_rsh_rs, il, vmp, rs,
+                       numiter=3):
+        # evaluates W in log space for I=I(V)
         logargw = (
-            np.log(rsh[u]) + np.log(io[u]) - np.log(nnsvth[u])
-            + rsh[u] * (il[u] + io[u] - imp[u]) / nnsvth[u])
-        # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
-        # The initial guess is w=logargW. Where direct evaluation (above)
-        # results in NaN from overflow, 3 iterations of Newton's method gives
-        # approximately 8 digits of precision.
-        x = logargw
-        for i in range(3):
-            x *= ((1. - np.log(x) + logargw) / (1. + x))
-        tmp[ff] = x[ff]
-    w[u] = tmp
-    phi = np.transpose(w)
+            np.log(rsh) + np.log(inv_rsh_rs) + np.log(rs) + np.log(io)
+            + np.log(inv_nnsvth) + rsh * inv_rsh_rs * (rs * (il + io) + vmp)
+            * inv_nnsvth)
+        return _converge_w(logargw, numiter)
 
+    with np.errstate(divide='ignore'):
+        inv_nnsvth = 1. / nnsvth
+        inv_rsh_rs = 1. / (rsh + rs)
     # Argument for Lambert W function involved in I = I(V) [2] Eq. 11; [3]
     # E1. 2
-    argw = np.where(
-        nnsvth == 0,
-        np.inf,
-        rsh / (rsh + rs) * rs * io / nnsvth * np.exp(
-            rsh / (rsh + rs) * (rs * (il + io) + vmp) / nnsvth))
-    u = argw > 0
-    w = np.zeros(len(u))
-    w[~u] = np.nan
-    if any(argw[u] == np.Inf):
-        tmp = []
-        for i in argw[u]:
-            if i ==  np.Inf:
-                tmp.append(np.nan)
-            else:
-                tmp.append(lambertw(i).real)
-        tmp = np.array(tmp, dtype=float)
-    else:
-        tmp = lambertw(argw[u]).real
-    ff = np.isnan(tmp)
-
-    # NaN where argw overflows. Switch to log space to evaluate
-    if any(ff):
-        logargw = (
-            np.log(rsh[u]) / (rsh[u] + rs[u]) + np.log(rs[u]) + np.log(io[u])
-            - np.log(nnsvth[u]) + (rsh[u] / (rsh[u] + rs[u]))
-            * (rs[u] * (il[u] + io[u]) + vmp[u]) / nnsvth[u])
-        # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
-        # The initial guess is w=logargW. Where direct evaluation (above)
-        # results in NaN from overflow, 3 iterations of Newton's method gives
-        # approximately 8 digits of precision.
-        x = logargw
-        for i in range(3):
-            x *= ((1. - np.log(x) + logargw) / (1. + x))
-        tmp[ff] = x[ff]
-    w[u] = tmp
-    theta = np.transpose(w)
-    return theta, phi
+    # avoid 0. * np.inf warning
+    with np.errstate(invalid='ignore'):
+        argw = np.where(
+            nnsvth == 0,
+            np.nan,
+            rsh * inv_rsh_rs * rs * io * inv_nnsvth * np.exp(
+                rsh * inv_rsh_rs * (rs * (il + io) + vmp) * inv_nnsvth))
+        w = np.where(argw > 0, lambertw(argw).real, 0.0)
+    # avoid divide by zero, log(negative) warning
+    with np.errstate(divide='ignore', invalid='ignore'):
+        # switch to log if argw blew up
+        w = np.where(np.isposinf(argw),
+                     _logw_fn_for_i(rsh, io, inv_nnsvth, inv_rsh_rs, il, vmp,
+                                    rs), w)
+    w = np.where(w == 0.0, np.nan, w)
+    return w

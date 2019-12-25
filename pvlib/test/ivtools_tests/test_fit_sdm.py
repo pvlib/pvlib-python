@@ -19,11 +19,6 @@ TESTDATA = os.path.join(DATADIR, 'ivtools_numdiff.dat')
 
 
 @pytest.fixture
-def get_test_iv_params():
-    return {'IL': 8.0, 'I0': 5e-10, 'Rsh': 1000, 'Rs': 0.2, 'nNsVth': 1.61864}
-
-
-@pytest.fixture
 def get_cec_params_cansol_cs5p_220p():
     return {'input': {'V_mp_ref': 46.6, 'I_mp_ref': 4.73, 'V_oc_ref': 58.3,
                       'I_sc_ref': 5.05, 'alpha_sc': 0.0025,
@@ -93,7 +88,7 @@ def test_fit_sdm_desoto_failure():
 
 @requires_scipy
 @requires_statsmodels
-def test_fit_pvsyst_sandia(disp=False, npts=3000):
+def test_fit_pvsyst_sandia(npts=3000):
     spec_list = ['ns', 'aisc', 'bvoc', 'descr']
     iv_specs = dict.fromkeys(spec_list)
     keylist = ['isc', 'imp', 'vmp', 'voc', 'poa', 'tc', 'ee']
@@ -188,8 +183,6 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
     iv_res = pvsystem.singlediode(*param_res)
 
     ivcurves['pmp'] = ivcurves['vmp'] * ivcurves['imp']  # power
-    if disp:
-        return expected, pvsyst, ivcurves, iv_specs, param_res, iv_res
 
     # assertions
     assert np.allclose(

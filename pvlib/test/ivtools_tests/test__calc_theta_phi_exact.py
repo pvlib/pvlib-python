@@ -2,12 +2,7 @@ import numpy as np
 from pvlib.test.conftest import requires_scipy
 from pvlib.ivtools.fit_sdm import _calc_phi_exact, _calc_theta_exact
 
-# =============================================================================
-# old: (imp, il, vmp, io, nnsvth, rs, rsh)
-# new: (imp, il, io, rsh, nnsvth)
-# new: (vmp, il, io, rsh, rs, nnsvth)
-#
-# =============================================================================
+
 @requires_scipy
 def test__calc_phi_exact():
     imp = np.array([5., 2., 5.])
@@ -30,6 +25,7 @@ def test__calc_phi_exact():
     nnsvth = np.array([2., 2., 2., 2., np.nan])
     phi = _calc_phi_exact(imp=imp, il=il, io=io, rsh=rsh, nnsvth=nnsvth)
     assert all(np.isnan(phi))
+
 
 @requires_scipy
 def test__calc_theta_exact():

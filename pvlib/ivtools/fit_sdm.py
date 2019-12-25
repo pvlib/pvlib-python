@@ -401,16 +401,16 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
     .. [1] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
        Temperature Dependence of Photovoltaic Modules in PVsyst, IEEE Journal
        of Photovoltaics v5(1), January 2015.
-    .. [2] A. Mermoud, PV Modules modeling, Presentation at the 2nd PV Performance
-       Modeling Workshop, Santa Clara, CA, May 2013
-    .. [3] A. Mermoud, T. Lejeuene, Performance Assessment of a Simulation Model
-       for PV modules of any available technology, 25th European Photovoltaic
-       Solar Energy Conference, Valencia, Spain, Sept. 2010
-    .. [4] C. Hansen, Estimating Parameters for the PVsyst Version 6 Photovoltaic
-       Module Performance Model, Sandia National Laboratories Report
-       SAND2015-8598
-    .. [5] C. Hansen, Parameter Estimation for Single Diode Models of Photovoltaic
-       Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [2] A. Mermoud, PV Modules modeling, Presentation at the 2nd PV
+       Performance Modeling Workshop, Santa Clara, CA, May 2013
+    .. [3] A. Mermoud, T. Lejeuene, Performance Assessment of a Simulation
+       Model for PV modules of any available technology, 25th European
+       Photovoltaic Solar Energy Conference, Valencia, Spain, Sept. 2010
+    .. [4] C. Hansen, Estimating Parameters for the PVsyst Version 6
+       Photovoltaic Module Performance Model, Sandia National Laboratories
+       Report SAND2015-8598
+    .. [5] C. Hansen, Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
     .. [6] C. Hansen, Estimation of Parameters for Single Diode Models using
        Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
     .. [7] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
@@ -941,11 +941,12 @@ def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
 
     for i in range(niter):
         z = _calc_phi_exact(imp, il, io, rsh, nnsvth)
-        next_rsh = (1 + z) / z * ((il + io) * rsh / imp - nnsvth * z / imp - 2 *
-                                 vmp / imp)
+        next_rsh = (1 + z) / z * ((il + io) * rsh / imp - nnsvth * z / imp
+            - 2 * vmp / imp)
         rsh = next_rsh
 
     return next_rsh
+
 
 def _calc_phi_exact(imp, il, io, rsh, nnsvth):
     """

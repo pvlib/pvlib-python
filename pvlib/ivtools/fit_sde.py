@@ -10,8 +10,8 @@ import numpy as np
 from pvlib.ivtools.utility import schumaker_qspline
 
 
-def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
-                   vlim=0.2, ilim=0.1):
+def fit_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
+               vlim=0.2, ilim=0.1):
     r"""
     Fits the single diode equation (SDE) [1]_ to an IV curve. Uses the method
     described in [2]_.
@@ -75,7 +75,7 @@ def fit_sde_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     assumed to be from a single IV curve at constant irradiance and cell
     temperature.
 
-    :py:func:`fit_single_diode_sandia` obtains values for the five parameters
+    :py:func:`fit_sandia` obtains values for the five parameters
     for the single diode equation [1]:
 
     .. math::
@@ -192,7 +192,7 @@ def _find_mp(voltage, current):
 
 
 def _sandia_beta0_beta1(v, i, vlim, v_oc):
-    # Helper for fit_sde_sandia.
+    # Helper for fit_sandia.
     # Get intercept and slope of linear portion of IV curve.
     # Start with V =< vlim * v_oc, extend by adding points until slope is
     # negative (downward).
@@ -215,7 +215,7 @@ def _sandia_beta0_beta1(v, i, vlim, v_oc):
 
 
 def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
-    # Helper for fit_sde_sandia.
+    # Helper for fit_sandia.
     # Subtract the IV curve from the linear fit.
     y = beta0 - beta1 * voltage - current
     x = np.array([np.ones_like(voltage), voltage, current]).T
@@ -233,7 +233,7 @@ def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
 
 
 def _sandia_calc_sde_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
-    # Helper for fit_sde_sandia.
+    # Helper for fit_sandia.
     nNsVth = 1.0 / beta3
     Rs = beta4 / beta3
     Gp = beta1 / (1.0 - Rs * beta1)
@@ -257,7 +257,7 @@ def _calc_I0(IL, I, V, Gp, Rs, nNsVth):
     return (IL - I - Gp * V - Gp * Rs * I) / np.exp((V + Rs * I) / nNsVth)
 
 
-def fit_sde_cocontent(voltage, current, nsvth):
+def fit_cocontent(voltage, current, nsvth):
     """
     Regression technique to fit the single diode equation to data for a single
     IV curve.
@@ -363,7 +363,7 @@ def fit_sde_cocontent(voltage, current, nsvth):
 
 
 def _cocontent(v, c, isc, kflag):
-    # Used by fit_sde_cocontent
+    # Used by fit_cocontent
     # calculate co-content integral by numerical integration of
     # i = (Isc - I) over v
     # Here, i = Isc - I is assumed to be represented by the quadratic spline
@@ -397,7 +397,7 @@ def _cocontent(v, c, isc, kflag):
 
 
 def _cocontent_regress(v, i, voc, isc, cci):
-    # Used by fit_sde_content
+    # Used by fit_content
     # For the method coded here see Appendix C of [2] SAND2015-2065
     # predictor variables for regression of CC
     x = np.vstack((v, isc - i, v * (isc - i), v * v, (i - isc) ** 2)).T

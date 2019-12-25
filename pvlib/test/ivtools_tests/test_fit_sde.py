@@ -11,7 +11,7 @@ def get_test_iv_params():
 
 
 @requires_scipy
-def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
+def test_fit_sandia(get_test_iv_params, get_bad_iv_curves):
     test_params = get_test_iv_params
     testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],
                                      saturation_current=test_params['I0'],
@@ -21,23 +21,23 @@ def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
                                      ivcurve_pnts=300)
     expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rsh', 'Rs',
                      'nNsVth'])
-    result = fit_sde.fit_sde_sandia(voltage=testcurve['v'],
-                                    current=testcurve['i'])
+    result = fit_sde.fit_sandia(voltage=testcurve['v'],
+                                current=testcurve['i'])
     assert np.allclose(result, expected, rtol=5e-5)
-    result = fit_sde.fit_sde_sandia(voltage=testcurve['v'],
-                                    current=testcurve['i'],
-                                    v_oc=testcurve['v_oc'],
-                                    i_sc=testcurve['i_sc'])
+    result = fit_sde.fit_sandia(voltage=testcurve['v'],
+                                current=testcurve['i'],
+                                v_oc=testcurve['v_oc'],
+                                i_sc=testcurve['i_sc'])
     assert np.allclose(result, expected, rtol=5e-5)
-    result = fit_sde.fit_sde_sandia(voltage=testcurve['v'],
-                                    current=testcurve['i'],
-                                    v_oc=testcurve['v_oc'],
-                                    i_sc=testcurve['i_sc'],
-                                    v_mp_i_mp=(testcurve['v_mp'],
-                                    testcurve['i_mp']))
+    result = fit_sde.fit_sandia(voltage=testcurve['v'],
+                                current=testcurve['i'],
+                                v_oc=testcurve['v_oc'],
+                                i_sc=testcurve['i_sc'],
+                                v_mp_i_mp=(testcurve['v_mp'],
+                                testcurve['i_mp']))
     assert np.allclose(result, expected, rtol=5e-5)
-    result = fit_sde.fit_sde_sandia(voltage=testcurve['v'],
-                                    current=testcurve['i'], vlim=0.1)
+    result = fit_sde.fit_sandia(voltage=testcurve['v'],
+                                current=testcurve['i'], vlim=0.1)
     assert np.allclose(result, expected, rtol=5e-5)
 
 
@@ -45,11 +45,11 @@ def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
 def test_fit_sde_sandia_bad_iv(get_bad_iv_curves):
     # bad IV curves for coverage of if/then in _calculate_sde_parameters
     v1, i1, v2, i2 = get_bad_iv_curves
-    result = fit_sde.fit_sde_sandia(voltage=v1, current=i1)
+    result = fit_sde.fit_sandia(voltage=v1, current=i1)
     assert np.allclose(result, (-2.4322856072799985, 8.854688976836396,
                                 -63.56227601452038, 111.18558915546389,
                                 -137.9965046659527))
-    result = fit_sde.fit_sde_sandia(voltage=v2, current=i2)
+    result = fit_sde.fit_sandia(voltage=v2, current=i2)
     assert np.allclose(result, (2.62405311949227, 1.8657963912925288,
                                 110.35202827739991, -65.652554411442,
                                 174.49362093001415))

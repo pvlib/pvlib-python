@@ -303,10 +303,14 @@ Functions for fitting PV models
 .. autosummary::
    :toctree: generated/
 
-    ivtools.fit_sde_sandia
-    ivtools.fit_sdm_cec_sam
-    ivtools.fit_sdm_desoto
-    ivtools.pvsyst_parameter_estimation
+    ivtools.fit_sde.fit_sandia
+    ivtools.fit_sde.fit_cocontent
+    ivtools.fit_sdm.fit_cec_sam
+    ivtools.fit_sdm.fit_desoto
+    ivtools.fit_sdm.fit_pvsyst_sandia
+    ivtools.utility.numdiff
+    ivtools.utility.rectify_iv_curve
+    ivtools.utility.schumaker_qspline
 
 Other
 -----

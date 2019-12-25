@@ -1,7 +1,7 @@
 """
 The ``fit_sdm`` module contains functions to fit single diode models.
 
-Function names should follow the pattern "fit_sdm_" + name of model + "_" +
+Function names should follow the pattern "fit_" + name of model + "_" +
  fitting method.
 
 """
@@ -14,11 +14,11 @@ import logging
 from pvlib.pvsystem import singlediode, v_from_i
 
 from pvlib.ivtools.utility import constants, rectify_iv_curve, numdiff
-from pvlib.ivtools.fit_sde import fit_sde_cocontent
+from pvlib.ivtools.fit_sde import fit_cocontent
 
 
-def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                    gamma_pmp, cells_in_series, temp_ref=25):
+def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
+                gamma_pmp, cells_in_series, temp_ref=25):
     """
     Estimates parameters for the CEC single diode model (SDM) using the SAM
     SDK. Uses the method described in [1]_.
@@ -116,9 +116,9 @@ def fit_sdm_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         raise RuntimeError('Parameter estimation failed')
 
 
-def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
-                   cells_in_series, EgRef=1.121, dEgdT=-0.0002677,
-                   temp_ref=25, irrad_ref=1000, root_kwargs={}):
+def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
+               cells_in_series, EgRef=1.121, dEgdT=-0.0002677,
+               temp_ref=25, irrad_ref=1000, root_kwargs={}):
     """
     Calculates the parameters for the De Soto single diode model [1]_ using the
     procedure described in [2]_. This procedure has the advantage of
@@ -213,7 +213,7 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         from scipy.optimize import root
         import scipy.constants
     except ImportError:
-        raise ImportError("The fit_sdm_desoto function requires scipy.")
+        raise ImportError("The fit_desoto function requires scipy.")
 
     # Constants
     k = scipy.constants.value('Boltzmann constant in eV/K')
@@ -260,7 +260,7 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 def _system_of_equations_desoto(params, specs):
     """Evaluates the systems of equations used to solve for the single
     diode equation parameters. Function designed to be used by
-    scipy.optimize.root() in fit_sdm_desoto().
+    scipy.optimize.root() in fit_desoto().
 
     Parameters
     ----------
@@ -449,7 +449,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
         _, _, _, rsh[j], _ = \
-            fit_sde_cocontent(voltage, current, vth[j] * specs['ns'])
+            fit_cocontent(voltage, current, vth[j] * specs['ns'])
 
     gamma_ref, mugamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,
                                                   const, specs)
@@ -942,7 +942,7 @@ def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
     for i in range(niter):
         z = _calc_phi_exact(imp, il, io, rsh, nnsvth)
         next_rsh = (1 + z) / z * ((il + io) * rsh / imp - nnsvth * z / imp
-            - 2 * vmp / imp)
+                    - 2 * vmp / imp)
         rsh = next_rsh
 
     return next_rsh

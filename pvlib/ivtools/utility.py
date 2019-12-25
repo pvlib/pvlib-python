@@ -22,7 +22,7 @@ constants['q'] = 1.60218e-19
 
 def numdiff(x, f):
     """
-    NUMDIFF computes first and second order derivative using possibly unequally
+    Compute first and second order derivative using possibly unequally
     spaced data.
 
     Parameters
@@ -45,16 +45,17 @@ def numdiff(x, f):
     Description
     -----------
     numdiff computes first and second order derivatives using a 5th order
-    formula that accounts for possibly unequally spaced data. Because a 5th
-    order centered difference formula is used, numdiff returns NaNs for the
-    first 2 and last 2 points in the input vector for x.
+    formula that accounts for possibly unequally spaced data [1]_. Because a
+    5th order centered difference formula is used, numdiff returns NaNs for the
+    first 2 and last 2 points in the input vector for x. Ported from PVLib
+    Matlab [2]_.
 
     References
     ----------
-    [1] PVLib MATLAB
-    [2] M. K. Bowen, R. Smith, "Derivative formulae and errors for
-        non-uniformly spaced points", Proceedings of the Royal Society A, vol.
-        461 pp 1975 - 1997, July 2005. DOI: 10.1098/rpsa.2004.1430
+    .. [1] M. K. Bowen, R. Smith, "Derivative formulae and errors for
+       non-uniformly spaced points", Proceedings of the Royal Society A, vol.
+       461 pp 1975 - 1997, July 2005. DOI: 10.1098/rpsa.2004.1430
+    .. [2] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
 
     n = len(f)
@@ -133,8 +134,8 @@ def numdiff(x, f):
 
 def rectify_iv_curve(voltage, current, decimals=None):
     """
-    ``rectify_IV_curve`` sorts the IV curve data, removes NaN and negative
-    values, and combines points with duplicate voltage.
+    Sort the IV curve data, remove NaNs and negative
+    values, and combine points with duplicate voltage.
 
     Parameters
     ----------
@@ -157,9 +158,9 @@ def rectify_iv_curve(voltage, current, decimals=None):
     -----------
     ``rectify_IV_curve`` ensures that the IV curve lies in the first quadrant
     of the (voltage, current) plane. The returned IV curve:
-    * contains no NaNs
     * increases in voltage
     * contains no negative current or voltage values
+    * contains no NaNs
     * contains no points with duplicate voltage values. Where voltage values
       are repeated, a single data point is substituted with current equal to
       the average of current at duplicated voltages.
@@ -190,7 +191,7 @@ def rectify_iv_curve(voltage, current, decimals=None):
 
 def schumaker_qspline(x, y):
     """
-    schumaker_qspline fits a quadratic spline which preserves monotonicity and
+    Fit a quadratic spline which preserves monotonicity and
     convexity in the data.
 
     Parameters
@@ -227,11 +228,12 @@ def schumaker_qspline(x, y):
 
     References
     ----------
-    [1] PVLib MATLAB
-    [2] L. L. Schumaker, "On Shape Preserving Quadratic Spline Interpolation",
-        SIAM Journal on Numerical Analysis 20(4), August 1983, pp 854 - 864
-    [3] M. H. Lam, "Monotone and Convex Quadratic Spline Interpolation",
-        Virginia Journal of Science 41(1), Spring 1990
+    .. [1] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
+    .. [2] L. L. Schumaker, "On Shape Preserving Quadratic Spline
+       Interpolation", SIAM Journal on Numerical Analysis 20(4), August 1983,
+       pp 854 - 864
+    .. [3] M. H. Lam, "Monotone and Convex Quadratic Spline Interpolation",
+       Virginia Journal of Science 41(1), Spring 1990
     """
     # Make sure vectors are 1D arrays
     x = x.flatten()

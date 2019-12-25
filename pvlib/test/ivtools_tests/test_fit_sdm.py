@@ -29,10 +29,10 @@ def get_cec_params_cansol_cs5p_220p():
 
 
 @requires_pysam
-def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
+def test_fit_sdm_sam(get_cec_params_cansol_cs5p_220p):
     input_data = get_cec_params_cansol_cs5p_220p['input']
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-        fit_sdm.fit_sdm_cec_sam(
+        fit_sdm.fit_cec_sam(
             celltype='polySi', v_mp=input_data['V_mp_ref'],
             i_mp=input_data['I_mp_ref'], v_oc=input_data['V_oc_ref'],
             i_sc=input_data['I_sc_ref'], alpha_sc=input_data['alpha_sc'],
@@ -51,18 +51,18 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
     # test for fitting failure
     with pytest.raises(RuntimeError):
         I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-            fit_sdm.fit_sdm_cec_sam(
+            fit_sdm.fit_cec_sam(
                 celltype='polySi', v_mp=0.45, i_mp=5.25, v_oc=0.55, i_sc=5.5,
                 alpha_sc=0.00275, beta_voc=0.00275, gamma_pmp=0.0055,
                 cells_in_series=1, temp_ref=25)
 
 
 @requires_scipy
-def test_fit_sdm_desoto():
-    result, _ = fit_sdm.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3,
-                                       i_sc=9.43, alpha_sc=0.005658,
-                                       beta_voc=-0.13788,
-                                       cells_in_series=60)
+def test_fit_desoto():
+    result, _ = fit_sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3,
+                                   i_sc=9.43, alpha_sc=0.005658,
+                                   beta_voc=-0.13788,
+                                   cells_in_series=60)
     result_expected = {'I_L_ref': 9.45232,
                        'I_o_ref': 3.22460e-10,
                        'a_ref': 1.59128,
@@ -80,9 +80,9 @@ def test_fit_sdm_desoto():
 @requires_scipy
 def test_fit_sdm_desoto_failure():
     with pytest.raises(RuntimeError) as exc:
-        fit_sdm.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
-                               alpha_sc=0.005658, beta_voc=-0.13788,
-                               cells_in_series=10)
+        fit_sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
+                           alpha_sc=0.005658, beta_voc=-0.13788,
+                           cells_in_series=10)
     assert ('Parameter estimation failed') in str(exc.value)
 
 

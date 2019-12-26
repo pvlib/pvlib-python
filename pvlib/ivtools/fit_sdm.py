@@ -537,8 +537,8 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
 
         while t14.any() and counter <= maxiter:
             # update rsh to match max power point using a fixed point method.
-            tmprsh = _update_rsh_fixed_pt(rsh[u], rs[u], io[u], iph[u],
-                                          nnsvth[u], imp[u], vmp[u])
+            tmprsh = _update_rsh_fixed_pt(iph[u], io[u], rsh[u], rs[u],
+                                          nnsvth[u],  vmp[u], imp[u])
 
             rsh[u] = tmprsh
 
@@ -898,9 +898,9 @@ def _check_converge(prevparams, result, vmp, imp, i):
     return convergeparam
 
 
-def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
+def _update_rsh_fixed_pt(il, io, rsh, rs, nnsvth, vmp, imp):
     """
-    _update_rsh_fixed_pt adjusts Rsh to match Vmp using other paramter values
+    Adjust Rsh to match Vmp using other paramter values
 
     Helper function for fit_pvsyst_sandia
 
@@ -911,23 +911,24 @@ def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
     (light current). Rsh is updated iteratively using a fixed point expression
     obtained from combining Vmp = Vmp(Imp) (using the analytic solution to the
     single diode equation) and dP / dI = 0 at Imp. 500 iterations are performed
-    because convergence can be very slow.
+    because convergence can be very slow. [1]_, [2]_. Ported from PVLib Matlab
+    [3]_.
 
     Parameters
     ----------
+    il: a numpy array of length N of values for light current IL (A)
+    io: a numpy array of length N of values for Io (A)
     rsh: a numpy array of length N of initial values for shunt resistance (ohm)
     rs: a numpy array of length N of values for series resistance (ohm)
-    io: a numpy array of length N of values for Io (A)
-    il: a numpy array of length N of values for light current IL (A)
     nnsvth: a numpy array length N of values for the diode factor x thermal
             voltage for the module, equal to Ns (number of cells in series) x
             Vth (thermal voltage per cell).
-    imp: a numpy array of length N of values for Imp (A)
     vmp: a numpy array of length N of values for Vmp (V)
+    imp: a numpy array of length N of values for Imp (A)
 
     Returns
     -------
-    outrsh: a numpy array of length N of updated values for Rsh
+    next_rsh: a numpy array of length N of updated values for Rsh
 
     References
     ----------
@@ -937,14 +938,18 @@ def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
        Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
     .. [3] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
-    niter = 500
-
-    for i in range(niter):
+    maxiter = 500
+    z = .0
+    i = 1
+    rsh_diff = 999.
+    while ((i < maxiter) and ~np.isnan(z) and ~np.isinf(z) and
+           (rsh_diff < 1e-4)):
         z = _calc_phi_exact(imp, il, io, rsh, nnsvth)
         next_rsh = (1 + z) / z * ((il + io) * rsh / imp - nnsvth * z / imp
                     - 2 * vmp / imp)
+        rsh_diff = abs(next_rsh - rsh)
         rsh = next_rsh
-
+        i += 1
     return next_rsh
 
 

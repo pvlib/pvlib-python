@@ -9,8 +9,9 @@ import requests
 import pandas as pd
 from json import JSONDecodeError
 
-PSM_URL = "http://developer.nrel.gov/api/solar/nsrdb_psm3_download.csv"
-TMY_URL = "http://developer.nrel.gov/api/nsrdb_api/solar/nsrdb_psm3_tmy_download.csv"  # noqa
+NSRDB_API_BASE = "https://developer.nrel.gov"
+PSM_URL = NSRDB_API_BASE + "/api/solar/nsrdb_psm3_download.csv"
+TMY_URL = NSRDB_API_BASE + "/api/nsrdb_api/solar/nsrdb_psm3_tmy_download.csv"
 
 # 'relative_humidity', 'total_precipitable_water' are not available
 ATTRIBUTES = [

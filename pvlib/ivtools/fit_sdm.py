@@ -939,11 +939,11 @@ def _update_rsh_fixed_pt(il, io, rsh, rs, nnsvth, vmp, imp):
     .. [3] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
     maxiter = 500
-    z = .0
+    z = 0.
     i = 1
     rsh_diff = 999.
     while ((i < maxiter) and ~np.isnan(z) and ~np.isinf(z) and
-           (rsh_diff < 1e-4)):
+           (rsh_diff > 1e-4)):
         z = _calc_phi_exact(imp, il, io, rsh, nnsvth)
         next_rsh = (1 + z) / z * ((il + io) * rsh / imp - nnsvth * z / imp
                     - 2 * vmp / imp)

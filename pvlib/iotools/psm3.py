@@ -9,7 +9,8 @@ import requests
 import pandas as pd
 from json import JSONDecodeError
 
-URL = "http://developer.nrel.gov/api/solar/nsrdb_psm3_download.csv"
+PSM_URL = "http://developer.nrel.gov/api/solar/nsrdb_psm3_download.csv"
+TMY_URL = "http://developer.nrel.gov/api/nsrdb_api/solar/nsrdb_psm3_tmy_download.csv"  # noqa
 
 # 'relative_humidity', 'total_precipitable_water' are not available
 ATTRIBUTES = [
@@ -19,9 +20,11 @@ PVLIB_PYTHON = 'pvlib python'
 
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
-             full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON, timeout=30):
+             leap_day=False, full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
+             timeout=30):
     """
-    Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API [1]_, [2]_.
+    Retrieve NSRDB [1]_ PSM3 timeseries weather data from the PSM3 API [2]_
+    [3]_.
 
     Parameters
     ----------
@@ -38,7 +41,11 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         PSM3 API parameter specifing year or TMY variant to download, see notes
         below for options
     interval : int, default 60
-        interval size in minutes, can only be either 30 or 60
+        interval size in minutes, can only be either 30 or 60.  Only used for
+        single-year requests (i.e., it is ignored for tmy/tgy/tdy requests).
+    leap_day : boolean, default False
+        include leap day in the results.  Only used for single-year requests
+        (i.e., it is ignored for tmy/tgy/tdy requests).
     full_name : str, default 'pvlib python'
         optional
     affiliation : str, default 'pvlib python'
@@ -75,8 +82,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
         ['1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005',
          '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013',
-         '2014', '2015', '2016', '2017', 'tmy', 'tmy-2016', 'tmy-2017',
-         'tdy-2017', 'tgy-2017']
+         '2014', '2015', '2016', '2017', '2018', 'tmy', 'tmy-2016', 'tmy-2017',
+         'tdy-2017', 'tgy-2017', 'tmy-2018', 'tdy-2018', 'tgy-2018']
 
     .. warning:: PSM3 is limited to data found in the NSRDB, please consult the
         references below for locations with available data
@@ -88,11 +95,12 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     References
     ----------
 
-    .. [1] `NREL Developer Network - Physical Solar Model (PSM) v3
-       <https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/>`_
-    .. [2] `NREL National Solar Radiation Database (NSRDB)
+    .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
-
+    .. [2] `NREL Developer Network - Physical Solar Model (PSM) v3
+       <https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/>`_
+    .. [3] `NREL Developer Network - Physical Solar Model (PSM) v3 TMY
+       <https://developer.nrel.gov/docs/solar/nsrdb/psm3_tmy_data_download/>`_
     """
     # The well know text (WKT) representation of geometry notation is strict.
     # A POINT object is a string with longitude first, then the latitude, with
@@ -112,11 +120,15 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         'wkt': 'POINT(%s %s)' % (longitude, latitude),
         'names': names,
         'attributes':  ','.join(ATTRIBUTES),
-        'leap_day': 'false',
+        'leap_day': str(leap_day).lower(),
         'utc': 'false',
         'interval': interval
     }
     # request CSV download from NREL PSM3
+    if any(prefix in names for prefix in ('tmy', 'tgy', 'tdy')):
+        URL = TMY_URL
+    else:
+        URL = PSM_URL
     response = requests.get(URL, params=params, timeout=timeout)
     if not response.ok:
         # if the API key is rejected, then the response status will be 403
@@ -237,10 +249,15 @@ def read_psm3(filename):
         # get the column names so we can set the dtypes
         columns = fbuf.readline().split(',')
         columns[-1] = columns[-1].strip()  # strip trailing newline
+        # Since the header has so many columns, excel saves blank cols in the
+        # data below the header lines.
+        columns = [col for col in columns if col != '']
         dtypes = dict.fromkeys(columns, float)  # all floats except datevec
         dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
+        dtypes['Cloud Type'] = int
+        dtypes['Fill Flag'] = int
         data = pd.read_csv(
-            fbuf, header=None, names=columns, dtype=dtypes,
+            fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
             delimiter=',', lineterminator='\n')  # skip carriage returns \r
         # the response 1st 5 columns are a date vector, convert to datetime
         dtidx = pd.to_datetime(

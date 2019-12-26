@@ -1,0 +1,33 @@
+.. _whatsnew_0710:
+
+v0.7.1 (MONTH DAY, YEAR)
+------------------------
+
+
+API Changes
+~~~~~~~~~~~
+
+Enhancements
+~~~~~~~~~~~~
+* Added :py:func:`~pvlib.iotools.read_psm3` to read local NSRDB PSM3 files.
+  (:issue:`841`)
+* Added `leap_day` parameter to `iotools.get_psm3` instead of hardcoding it as
+  False.
+
+
+Bug fixes
+~~~~~~~~~
+* Changed the PSM3 API endpoint for TMY requests in `iotools.get_psm3`.
+
+Testing
+~~~~~~~
+* Added single-year PSM3 API test for `iotools.get_psm3`.
+* Added tests for `iotools.read_psm3`.
+
+Documentation
+~~~~~~~~~~~~~
+* Updated list of allowed years for `iotools.get_psm3`.
+
+Contributors
+~~~~~~~~~~~~
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

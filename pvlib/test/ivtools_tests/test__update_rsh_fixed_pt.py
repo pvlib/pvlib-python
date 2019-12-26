@@ -23,7 +23,7 @@ def test__update_rsh_fixed_pt():
                                   rsh=np.array([2.]), rs=np.array([2.]),
                                   nnsvth=np.array([2.]), vmp=np.array([0.]),
                                   imp=np.array([2.]))
-    np.testing.assert_allclose(outrsh7, np.array([502]), atol=.0001)
+    np.testing.assert_allclose(outrsh, np.array([502]), atol=.0001)
 
 
 @requires_scipy

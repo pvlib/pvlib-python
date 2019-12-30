@@ -942,8 +942,13 @@ def _update_rsh_fixed_pt(il, io, rsh, rs, nnsvth, vmp, imp):
     z = 0.
     i = 1
     rsh_diff = 999.
-    while ((i < maxiter) and ~np.isnan(z) and ~np.isinf(z) and
-           (rsh_diff > 1e-4)):
+
+    def _done(i, z, maxiter, rsh_diff):
+        with np.errstate(invalid='ignore'):
+            return (i > maxiter) or np.all(np.isnan(z) | np.isinf(z) |
+                    (rsh_diff < 1e-4))
+
+    while not _done(i, z, maxiter, rsh_diff):
         z = _calc_phi_exact(imp, il, io, rsh, nnsvth)
         next_rsh = (1 + z) / z * ((il + io) * rsh / imp - nnsvth * z / imp
                     - 2 * vmp / imp)

@@ -21,7 +21,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                 gamma_pmp, cells_in_series, temp_ref=25):
     """
     Estimates parameters for the CEC single diode model (SDM) using the SAM
-    SDK. Uses the method described in [1]_.
+    SDK. Uses the method described in [Dobo12]_.
 
     Parameters
     ----------
@@ -49,30 +49,28 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Returns
     -------
-    tuple of the following elements:
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference conditions
+        [A]
 
-        * I_L_ref : float
-            The light-generated current (or photocurrent) at reference
-            conditions [A]
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference conditions
+        [A]
 
-        * I_o_ref : float
-            The dark or diode reverse saturation current at reference
-            conditions [A]
+    R_sh_ref : float
+        The shunt resistance at reference conditions [ohm]
 
-        * R_sh_ref : float
-            The shunt resistance at reference conditions, in ohms.
+    R_s : float
+        The series resistance at reference conditions [ohm]
 
-        * R_s : float
-            The series resistance at reference conditions, in ohms.
+    a_ref : float
+        The product of the usual diode ideality factor ``n`` (unitless),
+        number of cells in series ``Ns``, and cell thermal voltage at
+        reference conditions [V]
 
-        * a_ref : float
-            The product of the usual diode ideality factor ``n`` (unitless),
-            number of cells in series ``Ns``, and cell thermal voltage at
-            reference conditions [V]
-
-        * Adjust : float
-            The adjustment to the temperature coefficient for short circuit
-            current, in percent.
+    Adjust : float
+        The adjustment to the temperature coefficient for short circuit
+        current [%]
 
     Raises
     ------
@@ -91,7 +89,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     References
     ----------
-    .. [1] A. Dobos, "An Improved Coefficient Calculator for the California
+    .. [Dobo12] A. Dobos, "An Improved Coefficient Calculator for the California
        Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
        Solar Energy Engineering, vol 134, 2012.
     """
@@ -120,9 +118,9 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                cells_in_series, EgRef=1.121, dEgdT=-0.0002677,
                temp_ref=25, irrad_ref=1000, root_kwargs={}):
     """
-    Calculates the parameters for the De Soto single diode model [1]_ using the
-    procedure described in [2]_. This procedure has the advantage of
-    using common specifications given by manufacturers in the
+    Calculates the parameters for the De Soto single diode model [DeSo06]_
+    using the procedure described in [Duff13]_. This procedure has the
+    advantage of using common specifications given by manufacturers in the
     datasheets of PV modules.
 
     The solution is found using ``scipy.optimize.root``,
@@ -168,44 +166,42 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Returns
     -------
-    Tuple of the following elements:
-
-        * Dictionary with the following elements:
-            I_L_ref: float
-                Light-generated current at reference conditions [A]
-            I_o_ref: float
-                Diode saturation current at reference conditions [A]
-            R_s: float
-                Series resistance [ohms]
-            R_sh_ref: float
-                Shunt resistance at reference conditions [ohms].
-            a_ref: float
-                Modified ideality factor at reference conditions.
-                The product of the usual diode ideality factor (n, unitless),
-                number of cells in series (Ns), and cell thermal voltage at
-                specified effective irradiance and cell temperature.
-            alpha_sc: float
-                The short-circuit current (i_sc) temperature coefficient of the
-                module [A/K].
-            EgRef: float
-                Energy of bandgap of semi-conductor used [eV]
-            dEgdT: float
-                Variation of bandgap according to temperature [eV/K]
-            irrad_ref: float
-                Reference irradiance condition [W/m2]
-            temp_ref: float
-                Reference temperature condition [C]
-        * scipy.optimize.OptimizeResult
-            Optimization result of scipy.optimize.root().
-            See scipy.optimize.OptimizeResult for more details.
+    Dictionary with the following elements:
+        * I_L_ref: float
+             Light-generated current at reference conditions [A]
+        * I_o_ref: float
+             Diode saturation current at reference conditions [A]
+        * R_s: float
+             Series resistance [ohms]
+        * R_sh_ref: float
+             Shunt resistance at reference conditions [ohms].
+        * a_ref: float
+             Modified ideality factor at reference conditions.
+             The product of the usual diode ideality factor (n, unitless),
+             number of cells in series (Ns), and cell thermal voltage at
+             specified effective irradiance and cell temperature.
+        * alpha_sc: float
+             The short-circuit current (i_sc) temperature coefficient of the
+             module [A/K].
+        * EgRef: float
+             Energy of bandgap of semi-conductor used [eV]
+        * dEgdT: float
+             Variation of bandgap according to temperature [eV/K]
+        * irrad_ref: float
+             Reference irradiance condition [W/m2]
+        * temp_ref: float
+             Reference temperature condition [C]
+    scipy.optimize.OptimizeResult
+        Optimization result of scipy.optimize.root().
+        See scipy.optimize.OptimizeResult for more details.
 
     References
     ----------
-    .. [1] W. De Soto et al., "Improvement and validation of a model for
+    .. [DeSo06] W. De Soto et al., "Improvement and validation of a model for
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
        2006.
 
-    .. [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
+    .. [Duff13] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
        Processes", Wiley, 2013
     """
 
@@ -330,68 +326,65 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
 
     Parameters
     ----------
-    ivcurves : a dict
-        containing IV curve data in the following fields where j
-        denotes the jth data set
-        ivcurves['i'][j] - a numpy array of current (A) (same length as v)
-        ivcurves['v'][j] - a numpy array of voltage (V) (same length as i)
-        ivcurves['ee'][j] - effective irradiance (W / m^2), i.e., POA broadband
-                            irradiance adjusted by solar spectrum modifier
-        ivcurves['tc'][j] - cell temperature (C)
-        ivcurves['isc'][j] - short circuit current of IV curve (A)
-        ivcurves['voc'][j] - open circuit voltage of IV curve (V)
-        ivcurves['imp'][j] - current at max power point of IV curve (A)
-        ivcurves['vmp'][j] - voltage at max power point of IV curve (V)
+    ivcurves : dict
+        Contains IV curve data as arrays indexed by the IV curves
+        * `i` - array of current (same length as `v`) [A]
+        * `v` - array of voltage (same length as `i`) [V]
+        * `ee` - float, effective irradiance, i.e., POA broadband
+          irradiance adjusted by solar spectrum modifier [W/m^2]
+        * `tc` - cell temperature [C]
+        * `isc` - short circuit current [A]
+        * `voc` - open circuit voltage [V]
+        * `imp` - current at max power point [A]
+        * `vmp` - voltage at max power point [V]
 
-    specs : a dict
-        containing module-level values
-        specs['ns'] - number of cells in series
-        specs['aisc'] - temperature coefficeint of isc (A/C)
+    specs : dict
+        `ns` - number of cells in series
+        `aisc` - module temperature coefficient for isc [A/C]
 
-    const : an optional OrderedDict
-        containing physical and other constants
-        const['E0'] - effective irradiance at STC, normally 1000 W/m2
-        constp['T0'] - cell temperature at STC, normally 25 C
-        const['k'] - 1.38066E-23 J/K (Boltzmann's constant)
-        const['q'] - 1.60218E-19 Coulomb (elementary charge)
+    const : OrderedDict, optional
+        `E0` - reference effective irradiance, default 1000 W/m2
+        `T0` - reference cell temperature, default 25C
+        `k` - 1.38066E-23 J/K (Boltzmann's constant)
+        `q` - 1.60218E-19 Coulomb (elementary charge)
 
-    maxiter : an optional numpy array
-        input that sets the maximum number of
-        iterations for the parameter updating part of the algorithm.
-        Default value is 5.
+    maxiter : int, default 5
+        maximum number of iterations for the parameter updating part of the
+        algorithm.
 
-    eps1: the desired tolerance for the IV curve fitting. The iterative
-          parameter updating stops when absolute values of the percent change
-          in mean, max and standard deviation of Imp, Vmp and Pmp between
-          iterations are all less than eps1, or when the number of iterations
-          exceeds maxiter. Default value is 1e-3 (.0001%).
+    eps1 : float, default 1e-3
+        the desired tolerance for the IV curve fitting. Fitting stops when
+        absolute values of the percent change in mean, max and standard
+        deviation of Imp, Vmp and Pmp between iterations are all less than
+        `eps1`, or when the number of iterations exceeds maxiter.
 
     Returns
     -------
-    pvsyst: a OrderedDict containing the model parameters
-        pvsyst['IL_ref'] - light current (A) at STC
-        pvsyst['Io_ref'] - dark current (A) at STC
-        pvsyst['eG'] - effective band gap (eV) at STC
-        pvsyst['Rsh_ref'] - shunt resistance (ohms) at STC
-        pvsyst['Rsh0'] - shunt resistance (ohms) at zero irradiance
-        pvsyst['Rshexp'] - exponential factor defining decrease in rsh with
-                           increasing effective irradiance
-        pvsyst['Rs_ref'] - series resistance (ohms) at STC
-        pvsyst['gamma_ref'] - diode (ideality) factor at STC
-        pvsyst['mugamma'] - temperature coefficient for diode (ideality) factor
-        pvsyst['Iph'] - numpy array of values of light current Iph estimated
-                        for each IV curve
-        pvsyst['Io'] - numpy array of values of dark current Io estimated for
-                       each IV curve
-        pvsyst['Rsh'] - numpy array of values of shunt resistance Rsh estimated
-                        for each IV curve
-        pvsyst['Rs'] - numpy array of values of series resistance Rs estimated
-                       for each IV curve
-        pvsyst.u - filter indicating IV curves with parameter values deemed
-                   reasonable by the private function ``_filter_params``
+    pvsyst : OrderedDict
+        * `IL_ref` - light current at reference condition [A]
+        * `Io_ref` - dark current at reference condition [A]
+        * `eG` - effective band gap at reference condition [eV]
+        * `Rsh_ref` - shunt resistance at reference condition [ohm]
+        * `Rsh0` - shunt resistance at zero irradiance [ohm]
+        * `Rshexp` - exponential factor defining decrease in Rsh with
+            increasing effective irradiance
+        * `Rs_ref` - series resistance at reference condition [ohm]
+        * `gamma_ref` - diode (ideality) factor at reference condition
+            [unitless]
+        * `mugamma` - temperature coefficient for diode (ideality) factor [1/C]
+        * `Iph` - array of values of light current Iph estimated for each IV
+            curve [A]
+        * `Io` - array of values of dark current Io estimated for each IV
+            curve [A]
+        * `Rsh` - array of values of shunt resistance Rsh estimated for each
+            IV curve [ohm]
+        * `Rs` - array of values of series resistance Rs estimated for each IV
+            curve [ohm]
+        * `u` - array of boolean indicating IV curves with parameter values
+           deemed reasonable by the private function ``_filter_params``
 
-    Description
-    -----------
+    Notes
+    -----
     ``pvsyst_paramter_estimation`` estimates parameters for the PVsyst module
     performance model [1]_, [2]_, [3]_. Estimation methods are documented in
     [4]_, [5]_, [6]_. Ported from PVLib Matlab [7]_.

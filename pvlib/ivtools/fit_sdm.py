@@ -52,22 +52,17 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     I_L_ref : float
         The light-generated current (or photocurrent) at reference conditions
         [A]
-
     I_o_ref : float
         The dark or diode reverse saturation current at reference conditions
         [A]
-
     R_sh_ref : float
         The shunt resistance at reference conditions [ohm]
-
     R_s : float
         The series resistance at reference conditions [ohm]
-
     a_ref : float
         The product of the usual diode ideality factor ``n`` (unitless),
         number of cells in series ``Ns``, and cell thermal voltage at
         reference conditions [V]
-
     Adjust : float
         The adjustment to the temperature coefficient for short circuit
         current [%]
@@ -89,9 +84,9 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     References
     ----------
-    .. [Dobo12] A. Dobos, "An Improved Coefficient Calculator for the California
-       Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
-       Solar Energy Engineering, vol 134, 2012.
+    .. [Dobo12] A. Dobos, "An Improved Coefficient Calculator for the
+       California Energy Commission 6 Parameter Photovoltaic Module Model",
+       Journal of Solar Energy Engineering, vol 134, 2012.
     """
 
     try:
@@ -127,8 +122,8 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     with the corresponding default solver method 'hybr'.
     No restriction is put on the fit variables, i.e. series
     or shunt resistance could go negative. Nevertheless, if it happens,
-    check carefully the inputs and their units; alpha_sc and beta_voc are
-    often given in %/K in manufacturers datasheets and should be given
+    check carefully the inputs and their units; `alpha_sc` and `beta_voc` are
+    often given in %/K in manufacturer datasheets and should be given
     in A/K and V/K here.
 
     The parameters returned by this function can be used by
@@ -167,33 +162,35 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Returns
     -------
     Dictionary with the following elements:
-        * I_L_ref: float
+
+        * I_L_ref - float
              Light-generated current at reference conditions [A]
-        * I_o_ref: float
+        * I_o_ref - float
              Diode saturation current at reference conditions [A]
         * R_s: float
              Series resistance [ohms]
-        * R_sh_ref: float
+        * R_sh_ref - float
              Shunt resistance at reference conditions [ohms].
-        * a_ref: float
+        * a_ref - float
              Modified ideality factor at reference conditions.
              The product of the usual diode ideality factor (n, unitless),
              number of cells in series (Ns), and cell thermal voltage at
              specified effective irradiance and cell temperature.
-        * alpha_sc: float
+        * alpha_sc - float
              The short-circuit current (i_sc) temperature coefficient of the
              module [A/K].
-        * EgRef: float
+        * EgRef - float
              Energy of bandgap of semi-conductor used [eV]
-        * dEgdT: float
+        * dEgdT - float
              Variation of bandgap according to temperature [eV/K]
-        * irrad_ref: float
+        * irrad_ref - float
              Reference irradiance condition [W/m2]
-        * temp_ref: float
+        * temp_ref - float
              Reference temperature condition [C]
+
     scipy.optimize.OptimizeResult
-        Optimization result of scipy.optimize.root().
-        See scipy.optimize.OptimizeResult for more details.
+        Optimization result of ``scipy.optimize.root``.
+        See ``scipy.optimize.OptimizeResul``t for more details.
 
     References
     ----------

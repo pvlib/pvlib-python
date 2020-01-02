@@ -213,12 +213,13 @@ def _sandia_beta0_beta1(v, i, vlim, v_oc):
 
 def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
     # Helper for fit_sandia.
+    rcond = _set_rcond()
     # Subtract the IV curve from the linear fit.
     y = beta0 - beta1 * voltage - current
     x = np.array([np.ones_like(voltage), voltage, current]).T
     # Select points where y > ilim * i_sc to regress log(y) onto x
     idx = (y > ilim * i_sc)
-    result = np.linalg.lstsq(x[idx], np.log(y[idx]), rcond=None)
+    result = np.linalg.lstsq(x[idx], np.log(y[idx]), rcond=rcond)
     coef = result[0]
     beta3 = coef[1].item()
     beta4 = coef[2].item()
@@ -395,6 +396,7 @@ def _cocontent(v, c, isc, kflag):
 
 def _cocontent_regress(v, i, voc, isc, cci):
     # Used by fit_content
+    rcond = _set_rcond()
     # For the method coded here see Appendix C of [2] SAND2015-2065
     # predictor variables for regression of CC
     x = np.vstack((v, isc - i, v * (isc - i), v * v, (i - isc) ** 2)).T
@@ -430,7 +432,7 @@ def _cocontent_regress(v, i, voc, isc, cci):
     sx = np.vstack((s[:, 0], s[:, 1], s[:, 0] * s[:, 1], s[:, 0] * s[:, 0],
                     s[:, 1] * s[:, 1], col1)).T
 
-    gamma = np.linalg.lstsq(sx, scc, rcond=None)[0]
+    gamma = np.linalg.lstsq(sx, scc, rcond=rcond)[0]
     # coefficients from regression in rotated coordinates
 
     # Principle components transformation steps
@@ -459,5 +461,13 @@ def _cocontent_regress(v, i, voc, isc, cci):
 
     # translate from coefficients in rotated space (gamma) to coefficients in
     # original coordinates (beta)
-    beta = np.linalg.lstsq(np.dot(mb, ma), gamma[0:5], rcond=None)[0]
+    beta = np.linalg.lstsq(np.dot(mb, ma), gamma[0:5], rcond=rcond)[0]
     return beta
+
+
+def _set_rcond():
+    # handles change in rcond in numpy.linalg.lstsq
+    if np.__version__ < '1.14':
+        return -1
+    else:
+        return None

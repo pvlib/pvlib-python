@@ -467,7 +467,9 @@ def _cocontent_regress(v, i, voc, isc, cci):
 
 def _set_rcond():
     # handles change in rcond in numpy.linalg.lstsq
-    if np.__version__ < '1.14':
+    # TODO: remove when minimum numpy is 1.14 or later
+    v = np.__version__.split(".")
+    if (int(v[0]), int(v[1])) < (1, 14):
         return -1
     else:
         return None

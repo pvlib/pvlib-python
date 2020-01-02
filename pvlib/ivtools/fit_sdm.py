@@ -20,8 +20,8 @@ from pvlib.ivtools.fit_sde import fit_cocontent
 def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                 gamma_pmp, cells_in_series, temp_ref=25):
     """
-    Estimates parameters for the CEC single diode model (SDM) using the SAM
-    SDK. Uses the method described in [Dobo12]_.
+    Estimates parameters for the CEC single diode model. Uses the method
+    described in [Dobo12]_ and implemented in the SAM SDK.
 
     Parameters
     ----------
@@ -120,7 +120,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                cells_in_series, EgRef=1.121, dEgdT=-0.0002677,
                temp_ref=25, irrad_ref=1000, root_kwargs={}):
     """
-    Calculates the parameters for the De Soto single diode model [DeSo06]_
+    Estimate parameters for the De Soto single diode model [DeSo06]_
     using the procedure described in [Duff13]_. This procedure has the
     advantage of using common specifications given by manufacturers in the
     datasheets of PV modules.
@@ -318,7 +318,7 @@ def _system_of_equations_desoto(params, specs):
 def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
                       eps1=1.e-3):
     """
-    Estimate parameters for the PVsyst module performance model.
+    Estimate parameters for the PVsyst single diode model.
 
     Parameters
     ----------

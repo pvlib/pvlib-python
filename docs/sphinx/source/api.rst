@@ -278,14 +278,14 @@ Functions relevant for the SAPM model.
    pvsystem.adrinverter
    temperature.sapm_cell
 
-Pvsyst model
+PVSyst model
 -------------
 
-Functions relevant for the Pvsyst model.
+Functions relevant for the PVSyst model.
 
 .. autosummary::
    :toctree: generated/
-
+   pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
 
 PVWatts model
@@ -298,16 +298,31 @@ PVWatts model
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
 
-Functions for fitting PV models
--------------------------------
+Estimating PV model parameters
+------------------------------
+
+Functions for fitting single diode models
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.fit_sdm.fit_cec_sam
+    ivtools.fit_sdm.fit_desoto
+    ivtools.fit_sdm.fit_pvsyst_sandia
+
+Functions for fitting the single diode equation
+
 .. autosummary::
    :toctree: generated/
 
     ivtools.fit_sde.fit_sandia
     ivtools.fit_sde.fit_cocontent
-    ivtools.fit_sdm.fit_cec_sam
-    ivtools.fit_sdm.fit_desoto
-    ivtools.fit_sdm.fit_pvsyst_sandia
+
+Utilities for working with IV curve data
+
+.. autosummary::
+   :toctree: generated/
+
     ivtools.utility.numdiff
     ivtools.utility.rectify_iv_curve
     ivtools.utility.schumaker_qspline

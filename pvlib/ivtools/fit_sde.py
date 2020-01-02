@@ -13,8 +13,7 @@ from pvlib.ivtools.utility import schumaker_qspline
 def fit_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
                vlim=0.2, ilim=0.1):
     r"""
-    Fits the single diode equation (SDE) [1]_ to an IV curve. Uses the method
-    described in [2]_ .
+    Fits the single diode equation to an IV curve.
 
     Parameters
     ----------
@@ -69,12 +68,8 @@ def fit_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     Notes
     -----
-    Inputs ``voltage``, ``current``, ``v_oc``, ``i_sc`` and ``v_mp_i_mp`` are
-    assumed to be from a single IV curve at constant irradiance and cell
-    temperature.
-
     :py:func:`fit_sandia` obtains values for the five parameters
-    for the single diode equation [1]:
+    for the single diode equation [1]_:
 
     .. math::
 
@@ -83,7 +78,11 @@ def fit_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     See :py:func:`pvsystem.singlediode` for definition of the parameters.
 
-    The extraction method [2] proceeds in six steps.
+    Inputs `voltage`, `current`, `v_oc`, `i_sc` and `v_mp_i_mp` are
+    assumed to be from a single IV curve at constant irradiance and cell
+    temperature.
+
+    The extraction method [2]_ proceeds in six steps.
 
     1. In the single diode equation, replace :math:`R_{sh} = 1/G_{p}` and
        re-arrange

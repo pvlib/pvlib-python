@@ -187,6 +187,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
             * temp_ref : reference temperature condition [C]
 
         OptimizeResult
+
             Optimization result of ``scipy.optimize.root``.
             See ``scipy.optimize.OptimizeResult`` for more details.
 

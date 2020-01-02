@@ -14,15 +14,15 @@ def fit_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
                vlim=0.2, ilim=0.1):
     r"""
     Fits the single diode equation (SDE) [1]_ to an IV curve. Uses the method
-    described in [2]_.
+    described in [2]_ .
 
     Parameters
     ----------
-    voltage : ndarray
+    voltage : array
         1D array of `float` type containing voltage at each point on the IV
         curve, increasing from 0 to ``v_oc`` inclusive [V]
 
-    current : ndarray
+    current : array
         1D array of `float` type containing current at each point on the IV
         curve, from ``i_sc`` to 0 inclusive [A]
 
@@ -37,7 +37,7 @@ def fit_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     v_mp_i_mp : tuple of float, default None
         Voltage, current at maximum power point in units of [V], [A].
         If not provided, the maximum power point is found at the maximum of
-        ``voltage`` \times ``current``.
+        ``voltage`` x ``current``.
 
     vlim : float, default 0.2
         Defines portion of IV curve where the exponential term in the single
@@ -51,19 +51,17 @@ def fit_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     Returns
     -------
-    tuple of the following elements:
-
-        * photocurrent : float
-            photocurrent [A]
-        * saturation_current : float
-            dark (saturation) current [A]
-        * resistance_shunt : float
-            shunt (parallel) resistance, in ohms
-        * resistance_series : float
-            series resistance, in ohms
-        * nNsVth : float
-            product of thermal voltage ``Vth`` [V], diode ideality factor
-            ``n``, and number of series cells ``Ns``
+    photocurrent : float
+        photocurrent [A]
+    saturation_current : float
+        dark (saturation) current [A]
+    resistance_shunt : float
+        shunt (parallel) resistance, in ohms
+    resistance_series : float
+        series resistance, in ohms
+    nNsVth : float
+        product of thermal voltage ``Vth`` [V], diode ideality factor
+        ``n``, and number of series cells ``Ns``
 
     Raises
     ------
@@ -139,7 +137,7 @@ def fit_sandia(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     ----------
     .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
        0 86758 909 4
-    .  [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
+    .. [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
        In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
        Photovoltaic Specialist Conference, Chicago, IL, 2019
     """

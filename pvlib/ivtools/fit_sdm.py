@@ -172,42 +172,23 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
         Dictionary with the following elements:
 
-            * I_L_ref - float
-                 Light-generated current at reference conditions [A]
-
-            * I_o_ref - float
-                 Diode saturation current at reference conditions [A]
-
-            * R_s: float
-                 Series resistance [ohms]
-
-            * R_sh_ref - float
-                 Shunt resistance at reference conditions [ohms].
-
-            * a_ref - float
-                 Modified ideality factor at reference conditions.
+            * I_L_ref : light-generated current at reference conditions [A]
+            * I_o_ref : diode saturation current at reference conditions [A]
+            * R_s : series resistance [ohms]
+            * R_sh_ref : shunt resistance at reference conditions [ohms].
+            * a_ref : modified ideality factor at reference conditions.
                  The product of the usual diode ideality factor (n, unitless),
                  number of cells in series (Ns), and cell thermal voltage at
                  specified effective irradiance and cell temperature.
+            * alpha_sc : temperature coefficient of short-circuit current [A/K]
+            * EgRef : bandgap energy of semi-conductor used [eV]
+            * dEgdT : variation of bandgap according to temperature [eV/K]
+            * irrad_ref : reference irradiance condition [W/m^2]
+            * temp_ref : reference temperature condition [C]
 
-            * alpha_sc - float
-                 The short-circuit current (i_sc) temperature coefficient of
-                 the module [A/K]
-
-            * EgRef - float
-                 Energy of bandgap of semi-conductor used [eV]
-
-            * dEgdT - float
-                 Variation of bandgap according to temperature [eV/K]
-
-            * irrad_ref - float
-                 Reference irradiance condition [W/m2]
-            * temp_ref - float
-                 Reference temperature condition [C]
-
-    OptimizeResult
-        Optimization result of ``scipy.optimize.root``.
-        See ``scipy.optimize.OptimizeResult`` for more details.
+        OptimizeResult
+            Optimization result of ``scipy.optimize.root``.
+            See ``scipy.optimize.OptimizeResult`` for more details.
 
     References
     ----------
@@ -395,21 +376,21 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5,
         * `Rsh_ref` - shunt resistance at reference condition [ohm]
         * `Rsh0` - shunt resistance at zero irradiance [ohm]
         * `Rshexp` - exponential factor defining decrease in Rsh with
-            increasing effective irradiance
+          increasing effective irradiance
         * `Rs_ref` - series resistance at reference condition [ohm]
         * `gamma_ref` - diode (ideality) factor at reference condition
-            [unitless]
+          [unitless]
         * `mugamma` - temperature coefficient for diode (ideality) factor [1/C]
         * `Iph` - array of values of light current Iph estimated for each IV
-            curve [A]
+          curve [A]
         * `Io` - array of values of dark current Io estimated for each IV
-            curve [A]
+          curve [A]
         * `Rsh` - array of values of shunt resistance Rsh estimated for each
-            IV curve [ohm]
+          IV curve [ohm]
         * `Rs` - array of values of series resistance Rs estimated for each IV
-            curve [ohm]
+          curve [ohm]
         * `u` - array of boolean indicating IV curves with parameter values
-           deemed reasonable by the private function ``_filter_params``
+          deemed reasonable by the private function ``_filter_params``
 
     Notes
     -----

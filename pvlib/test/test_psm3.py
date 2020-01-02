@@ -28,12 +28,8 @@ PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 DEMO_KEY = 'DEMO_KEY'
 
 
-@needs_pandas_0_22
-def test_get_psm3_tmy():
-    """test get_psm3 with a TMY"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                 names='tmy-2017')
-    expected = pd.read_csv(TMY_TEST_DATA)
+def assert_psm3_equal(header, data, expected):
+    """check consistency of PSM3 data"""
     # check datevec columns
     assert np.allclose(data.Year, expected.Year)
     assert np.allclose(data.Month, expected.Month)
@@ -55,6 +51,15 @@ def test_get_psm3_tmy():
         assert hf in header
     # check timezone
     assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
+
+
+@needs_pandas_0_22
+def test_get_psm3_tmy():
+    """test get_psm3 with a TMY"""
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                                 names='tmy-2017')
+    expected = pd.read_csv(TMY_TEST_DATA)
+    assert_psm3_equal(header, data, expected)
     # check errors
     with pytest.raises(HTTPError):
         # HTTP 403 forbidden because api_key is rejected
@@ -73,27 +78,7 @@ def test_get_psm3_singleyear():
     header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
                                  names='2017', interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
-    # check datevec columns
-    assert np.allclose(data.Year, expected.Year)
-    assert np.allclose(data.Month, expected.Month)
-    assert np.allclose(data.Day, expected.Day)
-    assert np.allclose(data.Hour, expected.Hour)
-    assert np.allclose(data.Minute, expected.Minute)
-    # check data columns
-    assert np.allclose(data.GHI, expected.GHI)
-    assert np.allclose(data.DNI, expected.DNI)
-    assert np.allclose(data.DHI, expected.DHI)
-    assert np.allclose(data.Temperature, expected.Temperature)
-    assert np.allclose(data.Pressure, expected.Pressure)
-    assert np.allclose(data['Dew Point'], expected['Dew Point'])
-    assert np.allclose(data['Surface Albedo'], expected['Surface Albedo'])
-    assert np.allclose(data['Wind Speed'], expected['Wind Speed'])
-    assert np.allclose(data['Wind Direction'], expected['Wind Direction'])
-    # check header
-    for hf in HEADER_FIELDS:
-        assert hf in header
-    # check timezone
-    assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
+    assert_psm3_equal(header, data, expected)
     # check leap day
     _, data_2012 = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
                                  names='2012', interval=60, leap_day=True)
@@ -126,24 +111,12 @@ def test_parse_psm3(io_input):
     """test parse_psm3"""
     header, data = psm3.parse_psm3(io_input)
     expected = pd.read_csv(YEAR_TEST_DATA)
-    # check datevec columns
-    assert np.allclose(data.Year, expected.Year)
-    assert np.allclose(data.Month, expected.Month)
-    assert np.allclose(data.Day, expected.Day)
-    assert np.allclose(data.Hour, expected.Hour)
-    assert np.allclose(data.Minute, expected.Minute)
-    # check data columns
-    assert np.allclose(data.GHI, expected.GHI)
-    assert np.allclose(data.DNI, expected.DNI)
-    assert np.allclose(data.DHI, expected.DHI)
-    assert np.allclose(data.Temperature, expected.Temperature)
-    assert np.allclose(data.Pressure, expected.Pressure)
-    assert np.allclose(data['Dew Point'], expected['Dew Point'])
-    assert np.allclose(data['Surface Albedo'], expected['Surface Albedo'])
-    assert np.allclose(data['Wind Speed'], expected['Wind Speed'])
-    assert np.allclose(data['Wind Direction'], expected['Wind Direction'])
-    # check header
-    for hf in HEADER_FIELDS:
-        assert hf in header
-    # check timezone
-    assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
+    assert_psm3_equal(header, data, expected)
+
+
+@needs_pandas_0_22
+def test_read_psm3():
+    """test read_psm3"""
+    header, data = psm3.read_psm3(MANUAL_TEST_DATA)
+    expected = pd.read_csv(YEAR_TEST_DATA)
+    assert_psm3_equal(header, data, expected)

@@ -58,7 +58,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     -------
     headers : dict
         metadata from NREL PSM3 about the record, see
-        :func:`pvlib.iotools.read_psm3` for fields
+        :func:`pvlib.iotools.parse_psm3` for fields
     data : pandas.DataFrame
         timeseries data from NREL PSM3
 
@@ -91,7 +91,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     See Also
     --------
-    pvlib.iotools.parse_psm3
+    pvlib.iotools.read_psm3, pvlib.iotools.parse_psm3
 
     References
     ----------
@@ -223,7 +223,7 @@ def parse_psm3(fbuf):
 
     See Also
     --------
-    pvlib.iotools.get_psm3
+    pvlib.iotools.parse_psm3, pvlib.iotools.get_psm3
 
     References
     ----------
@@ -265,3 +265,36 @@ def parse_psm3(fbuf):
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
     return header, data
+
+
+def read_psm3(filename):
+    """
+    Read an NSRDB [1]_ PSM3 weather file (formatted as SAM CSV [2]_).
+
+    Parameters
+    ----------
+    filename: str
+        Filename of a file containing data to read.
+
+    Returns
+    -------
+    headers : dict
+        metadata from NREL PSM3 about the record, see
+        :func:`pvlib.iotools.parse_psm3` for fields
+    data : pandas.DataFrame
+        timeseries data from NREL PSM3
+
+    See Also
+    --------
+    pvlib.iotools.parse_psm3, pvlib.iotools.get_psm3
+
+    References
+    ----------
+    .. [1] `NREL National Solar Radiation Database (NSRDB)
+       <https://nsrdb.nrel.gov/>`_
+    .. [2] `Standard Time Series Data File Format
+       <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
+    """
+    with open(filename, 'r') as fbuf:
+        content = parse_psm3(fbuf)
+    return content

@@ -369,6 +369,7 @@ relevant to solar energy modeling.
    iotools.read_crn
    iotools.read_solrad
    iotools.get_psm3
+   iotools.read_psm3
    iotools.parse_psm3
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata

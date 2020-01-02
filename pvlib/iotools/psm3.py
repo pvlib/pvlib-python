@@ -91,7 +91,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     See Also
     --------
-    pvlib.iotools.read_psm3
+    pvlib.iotools.parse_psm3
 
     References
     ----------
@@ -142,17 +142,17 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return read_psm3(fbuf)
+    return parse_psm3(fbuf)
 
 
-def read_psm3(filename):
+def parse_psm3(fbuf):
     """
-    Read an NSRDB [1]_ PSM3 weather file (formatted as SAM CSV [2]_).
+    Parse an NSRDB [1]_ PSM3 weather file (formatted as SAM CSV [2]_).
 
     Parameters
     ----------
-    filename: string or file-like object
-        Filename or file-like object of data to read.
+    fbuf: file-like object
+        File-like object containing data to read.
 
     Returns
     -------
@@ -215,6 +215,12 @@ def read_psm3(filename):
 
     The second item is a dataframe with the PSM3 timeseries data.
 
+    Examples
+    --------
+    >>> # Read a local PSM3 file:
+    >>> with open(filename, 'r') as f:  # doctest: +SKIP
+    ...     metadata, df = iotools.parse_psm3(f)  # doctest: +SKIP
+
     See Also
     --------
     pvlib.iotools.get_psm3
@@ -226,48 +232,36 @@ def read_psm3(filename):
     .. [2] `Standard Time Series Data File Format
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
     """
-    if hasattr(filename, 'readline'):
-        # if passed a file-like object, not our job to close it
-        close = False
-        fbuf = filename
-    else:
-        close = True
-        fbuf = open(filename, 'r')
-
-    try:
-        # The first 2 lines of the response are headers with metadata
-        header_fields = fbuf.readline().split(',')
-        header_fields[-1] = header_fields[-1].strip()  # strip trailing newline
-        header_values = fbuf.readline().split(',')
-        header_values[-1] = header_values[-1].strip()  # strip trailing newline
-        header = dict(zip(header_fields, header_values))
-        # the response is all strings, so set some header types to numbers
-        header['Local Time Zone'] = int(header['Local Time Zone'])
-        header['Time Zone'] = int(header['Time Zone'])
-        header['Latitude'] = float(header['Latitude'])
-        header['Longitude'] = float(header['Longitude'])
-        header['Elevation'] = int(header['Elevation'])
-        # get the column names so we can set the dtypes
-        columns = fbuf.readline().split(',')
-        columns[-1] = columns[-1].strip()  # strip trailing newline
-        # Since the header has so many columns, excel saves blank cols in the
-        # data below the header lines.
-        columns = [col for col in columns if col != '']
-        dtypes = dict.fromkeys(columns, float)  # all floats except datevec
-        dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
-        dtypes['Cloud Type'] = int
-        dtypes['Fill Flag'] = int
-        data = pd.read_csv(
-            fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
-            delimiter=',', lineterminator='\n')  # skip carriage returns \r
-        # the response 1st 5 columns are a date vector, convert to datetime
-        dtidx = pd.to_datetime(
-            data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
-        # in USA all timezones are integers
-        tz = 'Etc/GMT%+d' % -header['Time Zone']
-        data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
-    finally:
-        if close:
-            fbuf.close()
+    # The first 2 lines of the response are headers with metadata
+    header_fields = fbuf.readline().split(',')
+    header_fields[-1] = header_fields[-1].strip()  # strip trailing newline
+    header_values = fbuf.readline().split(',')
+    header_values[-1] = header_values[-1].strip()  # strip trailing newline
+    header = dict(zip(header_fields, header_values))
+    # the response is all strings, so set some header types to numbers
+    header['Local Time Zone'] = int(header['Local Time Zone'])
+    header['Time Zone'] = int(header['Time Zone'])
+    header['Latitude'] = float(header['Latitude'])
+    header['Longitude'] = float(header['Longitude'])
+    header['Elevation'] = int(header['Elevation'])
+    # get the column names so we can set the dtypes
+    columns = fbuf.readline().split(',')
+    columns[-1] = columns[-1].strip()  # strip trailing newline
+    # Since the header has so many columns, excel saves blank cols in the
+    # data below the header lines.
+    columns = [col for col in columns if col != '']
+    dtypes = dict.fromkeys(columns, float)  # all floats except datevec
+    dtypes.update(Year=int, Month=int, Day=int, Hour=int, Minute=int)
+    dtypes['Cloud Type'] = int
+    dtypes['Fill Flag'] = int
+    data = pd.read_csv(
+        fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
+        delimiter=',', lineterminator='\n')  # skip carriage returns \r
+    # the response 1st 5 columns are a date vector, convert to datetime
+    dtidx = pd.to_datetime(
+        data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
+    # in USA all timezones are integers
+    tz = 'Etc/GMT%+d' % -header['Time Zone']
+    data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
     return header, data

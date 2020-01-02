@@ -9,8 +9,8 @@ API Changes
 
 Enhancements
 ~~~~~~~~~~~~
-* Added :py:func:`~pvlib.iotools.read_psm3` to read local NSRDB PSM3 files.
-  (:issue:`841`)
+* Added :py:func:`~pvlib.iotools.parse_psm3` to parse local NSRDB PSM3
+  file-like objects. (:issue:`841`)
 * Added `leap_day` parameter to `iotools.get_psm3` instead of hardcoding it as
   False.
 
@@ -22,7 +22,7 @@ Bug fixes
 Testing
 ~~~~~~~
 * Added single-year PSM3 API test for `iotools.get_psm3`.
-* Added tests for `iotools.read_psm3`.
+* Added tests for `iotools.parse_psm3`.
 
 Documentation
 ~~~~~~~~~~~~~

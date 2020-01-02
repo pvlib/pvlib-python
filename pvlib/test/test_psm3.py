@@ -112,23 +112,19 @@ def test_get_psm3_singleyear():
                       interval=15)
 
 
-@pytest.fixture(scope='module',
-                params=[True, False])
+@pytest.fixture
 def io_input(request):
-    """Switch between filename and file-like object for read_psm3"""
-    if request.param:
-        with open(MANUAL_TEST_DATA, 'r') as f:
-            data = f.read()
-        obj = StringIO(data)
-    else:
-        obj = MANUAL_TEST_DATA
+    """file-like object for parse_psm3"""
+    with open(MANUAL_TEST_DATA, 'r') as f:
+        data = f.read()
+    obj = StringIO(data)
     return obj
 
 
 @needs_pandas_0_22
-def test_read_psm3(io_input):
-    """test read_psm3"""
-    header, data = psm3.read_psm3(io_input)
+def test_parse_psm3(io_input):
+    """test parse_psm3"""
+    header, data = psm3.parse_psm3(io_input)
     expected = pd.read_csv(YEAR_TEST_DATA)
     # check datevec columns
     assert np.allclose(data.Year, expected.Year)

@@ -223,7 +223,7 @@ def parse_psm3(fbuf):
 
     See Also
     --------
-    pvlib.iotools.parse_psm3, pvlib.iotools.get_psm3
+    pvlib.iotools.read_psm3, pvlib.iotools.get_psm3
 
     References
     ----------

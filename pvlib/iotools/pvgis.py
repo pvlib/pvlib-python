@@ -8,10 +8,13 @@ For more information, see the following links:
 
 More detailed information about the API for TMY and hourly radiation are here:
 * `TMY <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
-* `hourly radiation <https://ec.europa.eu/jrc/en/PVGIS/tools/hourly-radiation>`_
+* `hourly radiation
+  <https://ec.europa.eu/jrc/en/PVGIS/tools/hourly-radiation>`_
+* `daily radiation <https://ec.europa.eu/jrc/en/PVGIS/tools/daily-radiation>`_
+* `monthly radiation
+  <https://ec.europa.eu/jrc/en/PVGIS/tools/monthly-radiation>`_
 """
 import io
-import os
 import tempfile
 import requests
 import pandas as pd
@@ -43,7 +46,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         first year to calculate TMY
     endyear : integer [default None]
         last year to calculate TMY, must be at least 10 years from first year
-    
+
     Returns
     -------
     data : pandas.DataFrame
@@ -56,11 +59,17 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         meta data, ``None`` for basic, for EPW contains the temporary filename
     """
     # use requests to format the query string by passing params dictionary
-    params = {'lat':lat, 'lon': lon, 'outputformat': outputformat}
+    params = {'lat': lat, 'lon': lon, 'outputformat': outputformat}
     # pvgis only likes 0 for False, and 1 for True, not strings, also the
     # default for usehorizon is already 1 (ie: True), so only set if False
     if not usehorizon:
         params['usehorizon'] = 0
+    if userhorizon is not None:
+        params['userhorizon'] = ','.join(str(x) for x in userhorizon)
+    if startyear is not None:
+        params['startyear'] = startyear
+    if endyear is not None:
+        params['endyear'] = endyear
     res = requests.get(URL + 'tmy', params=params)
     # PVGIS returns really well formatted error messages in JSON for HTTP/1.1
     # 400 BAD REQUEST so try to return that if possible, otherwise raise the
@@ -68,7 +77,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
     if not res.ok:
         try:
             err_msg = res.json()
-        except:
+        except Exception:
             res.raise_for_status()
         else:
             raise requests.HTTPError(err_msg)
@@ -95,6 +104,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
     else:
         raise ValueError('unknown output format %s' % outputformat)
     return data
+
 
 def _parse_pvgis_tmy_json(src):
     inputs = src['inputs']

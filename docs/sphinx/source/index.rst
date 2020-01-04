@@ -87,6 +87,7 @@ Contents
    pvsystem
    modelchain
    timetimezones
+   solarposition
    clearsky
    forecasts
    api

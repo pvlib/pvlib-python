@@ -12,6 +12,7 @@ TESTS = Path(__file__).parent
 PROJECT = TESTS.parent
 DATA = PROJECT / 'data'
 EXPECTED = pd.read_csv(DATA / 'pvgis_tmy_test.dat', index_col='time(UTC)')
+USERHORIZON = pd.read_json(DATA / 'tmy_45.000_8.000_userhorizon.json')
 MONTHS_SELECTED = [
     2009, 2012, 2014, 2010, 2011, 2013, 2011, 2011, 2013, 2013, 2013, 2011]
 INPUTS = {
@@ -23,6 +24,17 @@ INPUTS = {
         'year_max': 2016,
         'use_horizon': True,
         'horizon_db': 'DEM-calculated'}}
+EPW_META = {
+    'loc': 'LOCATION',
+    'city': 'unknown',
+    'state-prov': '-',
+    'country': 'unknown',
+    'data_type': 'ECMWF/ERA',
+    'WMO_code': 'unknown',
+    'latitude': 45.0,
+    'longitude': 8.0,
+    'TZ': 1.0,
+    'altitude': 250.0}
 
 
 def test_get_pvgis_tmy():
@@ -45,6 +57,19 @@ def test_get_pvgis_tmy():
     assert inputs_met_data['use_horizon'] == expected_met_data['use_horizon']
     assert inputs_met_data['horizon_db'] == expected_met_data['horizon_db']
     assert meta == META
+
+
+def test_get_pvgis_tmy_kwargs():
+    _, _, inputs, _ = get_pvgis_tmy(45, 8, usehorizon=False)
+    assert inputs['meteo_data']['use_horizon'] == False
+    data, _, _, _ = get_pvgis_tmy(
+        45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5])
+    assert np.allclose(
+        data['G(h)'], USERHORIZON['G(h)'].values, equal_nan=True)
+    assert np.allclose(
+        data['Gb(n)'], USERHORIZON['Gb(n)'].values, equal_nan=True)
+    assert np.allclose(
+        data['Gd(h)'], USERHORIZON['Gd(h)'].values, equal_nan=True)
 
 
 def test_get_pvgis_tmy_basic():
@@ -75,12 +100,13 @@ def test_get_pvgis_tmy_csv():
 
 
 def test_get_pvgis_tmy_epw():
-    data, _, inputs, meta = get_pvgis_tmy(
+    data, _, _, meta = get_pvgis_tmy(
         45, 8, outputformat='epw')
-    assert np.allclose(data.ghi, EXPECTED['G(h)'])
-    assert np.allclose(data.dni, EXPECTED['Gb(n)'])
-    assert np.allclose(data.dhi, EXPECTED['Gd(h)'])
-    assert np.allclose(data.temp_air, EXPECTED['T2m'])
+    assert np.allclose(data.ghi, EXPECTED['G(h)'], equal_nan=True)
+    assert np.allclose(data.dni, EXPECTED['Gb(n)'], equal_nan=True)
+    assert np.allclose(data.dhi, EXPECTED['Gd(h)'], equal_nan=True)
+    assert np.allclose(data.temp_air, EXPECTED['T2m'], equal_nan=True)
+    assert meta == EPW_META
 
 
 def test_get_pvgis_tmy_outputformat_error():

@@ -15,10 +15,9 @@ More detailed information about the API for TMY and hourly radiation are here:
   <https://ec.europa.eu/jrc/en/PVGIS/tools/monthly-radiation>`_
 """
 import io
-import tempfile
 import requests
 import pandas as pd
-from pvlib.iotools import read_epw
+from pvlib.iotools import parse_epw
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
@@ -61,9 +60,9 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
     months_selected : list
         TMY year for each month, ``None`` for basic and EPW
     inputs : dict
-        the inputs, ``None`` for basic
+        the inputs, ``None`` for basic and EPW
     meta : list or dict
-        meta data, ``None`` for basic, for EPW contains the temporary filename
+        meta data, ``None`` for basic
 
     Raises
     ------
@@ -112,10 +111,12 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         finally:
             src.close()
     elif outputformat == 'epw':
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            f.write(res.content)
-        data, inputs = read_epw(f.name)
-        data = (data, None, inputs, f.name)
+        src = io.StringIO(res.content.decode('utf-8'))
+        try:
+            data, meta = parse_epw(src)
+            data = (data, None, None, meta)
+        finally:
+            src.close()
     else:
         # this line is never reached because if outputformat is not valid then
         # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier

@@ -343,6 +343,8 @@ Functions
    :toctree: generated/
 
    tracking.singleaxis
+   tracking.calc_tracker_axis_tilt
+   tracking.calc_system_tracker_side_slope
 
 
 .. _iotools:

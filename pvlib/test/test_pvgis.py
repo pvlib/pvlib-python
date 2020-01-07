@@ -82,14 +82,15 @@ META = {
                     'units': 'W/m2'},
                 'Gb(n)': {
                     'description': 'Beam/direct irradiance on a plane always'
-                                ' normal to sun rays',
+                                   ' normal to sun rays',
                     'units': 'W/m2'},
                 'Gd(h)': {
-                    'description': 'Diffuse irradiance on the horizontal plane',
+                    'description': 'Diffuse irradiance on the horizontal'
+                                   ' plane',
                     'units': 'W/m2'},
                 'IR(h)': {
                     'description': 'Surface infrared (thermal) irradiance on a'
-                                ' horizontal plane',
+                                   ' horizontal plane',
                     'units': 'W/m2'},
                 'WS10m': {
                     'description': '10-m total wind speed', 'units': 'm/s'},

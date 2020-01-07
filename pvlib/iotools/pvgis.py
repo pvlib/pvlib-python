@@ -24,7 +24,8 @@ URL = 'https://re.jrc.ec.europa.eu/api/'
 
 
 def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
-                  userhorizon=None, startyear=None, endyear=None):
+                  userhorizon=None, startyear=None, endyear=None, url=URL,
+                  timeout=30):
     """
     Get TMY data from PVGIS. For more information see documentation for PVGIS
     `TMY tools <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
@@ -40,12 +41,18 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
     usehorizon : bool [default True]
         include effects of horizon
     userhorizon : list of float [default None]
-        elevation of horizon in degrees at eight cardinal directions clockwise
-        fron north, _EG_: north, north-east, east, south-east, etc.
+        elevation of horizon in degrees, at equally spaced azimuth clockwise
+        from north, _EG_: given 8 horizon elevations, the corresponding azimuth
+        are north, north-east, east, south-east, south, south-west, west, and
+        north-west
     startyear : integer [default None]
         first year to calculate TMY
     endyear : integer [default None]
         last year to calculate TMY, must be at least 10 years from first year
+    url : str [default :const:`~pvlib.iotools.pvgis.URL`]
+        base url of PVGIS API, append ``tmy`` to get TMY endpoint
+    timeout : int, default 30
+        time in seconds to wait for server response before timeout
 
     Returns
     -------
@@ -57,6 +64,14 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         the inputs, ``None`` for basic
     meta : list or dict
         meta data, ``None`` for basic, for EPW contains the temporary filename
+
+    Raises
+    ------
+    requests.HTTPError
+        if the request response status is ``HTTP/1.1 400 BAD REQUEST``, then
+        the error message in the response will be raised as an exception,
+        otherwise raise whatever ``HTTP/1.1`` error occurred
+
     """
     # use requests to format the query string by passing params dictionary
     params = {'lat': lat, 'lon': lon, 'outputformat': outputformat}
@@ -70,7 +85,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         params['startyear'] = startyear
     if endyear is not None:
         params['endyear'] = endyear
-    res = requests.get(URL + 'tmy', params=params)
+    res = requests.get(URL + 'tmy', params=params, timeout=timeout)
     # PVGIS returns really well formatted error messages in JSON for HTTP/1.1
     # 400 BAD REQUEST so try to return that if possible, otherwise raise the
     # HTTP/1.1 error caught by requests

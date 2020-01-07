@@ -25,7 +25,9 @@ INPUTS = {
 def test_get_pvgis_tmy():
     data, months_selected, inputs, meta = get_pvgis_tmy(45, 8)
     expected = pd.read_csv(DATA / 'pvgis_tmy_test.dat', index_col='time(UTC)')
-    assert np.allclose(data, expected)
+    # check each column of output separately
+    for outvar in META['outputs']['tmy_hourly']['variables'].keys():
+        assert np.allclose(data[outvar], expected[outvar], equal_nan=True)
     assert np.allclose(
         [_['month'] for _ in months_selected], np.arange(1, 13, 1))
     assert np.allclose([_['year'] for _ in months_selected], MONTHS_SELECTED)

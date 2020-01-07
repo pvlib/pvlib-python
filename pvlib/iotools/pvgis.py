@@ -84,7 +84,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         params['startyear'] = startyear
     if endyear is not None:
         params['endyear'] = endyear
-    res = requests.get(URL + 'tmy', params=params, timeout=timeout)
+    res = requests.get(url + 'tmy', params=params, timeout=timeout)
     # PVGIS returns really well formatted error messages in JSON for HTTP/1.1
     # 400 BAD REQUEST so try to return that if possible, otherwise raise the
     # HTTP/1.1 error caught by requests

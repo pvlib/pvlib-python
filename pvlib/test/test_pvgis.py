@@ -70,6 +70,10 @@ def test_get_pvgis_tmy_kwargs():
         data['Gb(n)'], USERHORIZON['Gb(n)'].values, equal_nan=True)
     assert np.allclose(
         data['Gd(h)'], USERHORIZON['Gd(h)'].values, equal_nan=True)
+    _, _, inputs, _ = get_pvgis_tmy(45, 8, startyear=2005)
+    assert inputs['meteo_data']['year_min'] == 2005
+    _, _, inputs, _ = get_pvgis_tmy(45, 8, endyear=2016)
+    assert inputs['meteo_data']['year_max'] == 2016
 
 
 def test_get_pvgis_tmy_basic():
@@ -109,10 +113,12 @@ def test_get_pvgis_tmy_epw():
     assert meta == EPW_META
 
 
-def test_get_pvgis_tmy_outputformat_error():
+def test_get_pvgis_tmy_error():
     err_msg = 'outputformat: Incorrect value.'
     with pytest.raises(requests.HTTPError, match=err_msg):
         get_pvgis_tmy(45, 8, outputformat='bad')
+    with pytest.raises(requests.HTTPError, match='404 Client Error'):
+        get_pvgis_tmy(45, 8, url='https://re.jrc.ec.europa.eu/')
 
 
 META = {

@@ -74,6 +74,15 @@ def test_get_pvgis_tmy_csv():
         assert meta_value in META_VALUES
 
 
+def test_get_pvgis_tmy_epw():
+    data, _, inputs, meta = get_pvgis_tmy(
+        45, 8, outputformat='epw')
+    assert np.allclose(data.ghi, EXPECTED['G(h)'])
+    assert np.allclose(data.dni, EXPECTED['Gb(n)'])
+    assert np.allclose(data.dhi, EXPECTED['Gd(h)'])
+    assert np.allclose(data.temp_air, EXPECTED['T2m'])
+
+
 def test_get_pvgis_tmy_outputformat_error():
     err_msg = 'outputformat: Incorrect value.'
     with pytest.raises(requests.HTTPError, match=err_msg):

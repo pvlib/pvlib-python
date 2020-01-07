@@ -21,6 +21,7 @@ INPUTS = {
         'use_horizon': True,
         'horizon_db': 'DEM-calculated'}}
 
+
 def test_get_pvgis_tmy():
     data, months_selected, inputs, meta = get_pvgis_tmy(45, 8)
     expected = pd.read_csv(DATA / 'pvgis_tmy_test.dat', index_col='time(UTC)')
@@ -71,27 +72,29 @@ META = {
         'tmy_hourly': {
             'type': 'time series',
             'timestamp': 'hourly',
-        'variables': {
-            'T2m': {
-                'description': '2-m air temperature',
-                'units': 'degree Celsius'},
-            'RH': {'description': 'relative humidity', 'units': '%'},
-            'G(h)': {
-                'description': 'Global irradiance on the horizontal plane',
-                'units': 'W/m2'},
-            'Gb(n)': {
-                'description': 'Beam/direct irradiance on a plane always'
-                               ' normal to sun rays',
-                'units': 'W/m2'},
-            'Gd(h)': {
-                'description': 'Diffuse irradiance on the horizontal plane',
-                'units': 'W/m2'},
-            'IR(h)': {
-                'description': 'Surface infrared (thermal) irradiance on a'
-                               ' horizontal plane',
-                'units': 'W/m2'},
-            'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},
-            'WD10m': {
-                'description': '10-m wind direction (0 = N, 90 = E)',
-                'units': 'degree'},
-            'SP': {'description': 'Surface (air) pressure', 'units': 'Pa'}}}}}
+            'variables': {
+                'T2m': {
+                    'description': '2-m air temperature',
+                    'units': 'degree Celsius'},
+                'RH': {'description': 'relative humidity', 'units': '%'},
+                'G(h)': {
+                    'description': 'Global irradiance on the horizontal plane',
+                    'units': 'W/m2'},
+                'Gb(n)': {
+                    'description': 'Beam/direct irradiance on a plane always'
+                                ' normal to sun rays',
+                    'units': 'W/m2'},
+                'Gd(h)': {
+                    'description': 'Diffuse irradiance on the horizontal plane',
+                    'units': 'W/m2'},
+                'IR(h)': {
+                    'description': 'Surface infrared (thermal) irradiance on a'
+                                ' horizontal plane',
+                    'units': 'W/m2'},
+                'WS10m': {
+                    'description': '10-m total wind speed', 'units': 'm/s'},
+                'WD10m': {
+                    'description': '10-m wind direction (0 = N, 90 = E)',
+                    'units': 'degree'},
+                'SP': {
+                    'description': 'Surface (air) pressure', 'units': 'Pa'}}}}}

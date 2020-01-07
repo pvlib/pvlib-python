@@ -487,7 +487,8 @@ def test_calc_axis_tilt():
     system_plane = (77.34, 10.1149)
     axis_azimuth = 0.0
     max_angle = 75.0
-    gcr = 0.328
+    # Note: GCR is relative to horizontal distance between rows
+    gcr = 0.33292759  # GCR = length / horizontal_pitch = 1.64 / 5 / cos(-9.86)
     # convert to radians
     sys_az, sys_ze = np.radians(system_plane)
     tr_az = np.radians(axis_azimuth)

@@ -435,7 +435,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # Account for backtracking; modified from [1] to account for rotation
     # angle convention being used here.
     if backtrack:
-        axes_distance = 1/gcr
+        # distance between rows in terms of rack lengths relative to side slope
+        axes_distance = 1/gcr/cosd(side_slope)
         # clip needed for low angles. GH 656
         temp = np.clip(axes_distance*cosd(wid + side_slope), -1, 1)
 

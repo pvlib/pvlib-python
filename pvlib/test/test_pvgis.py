@@ -4,11 +4,14 @@ test the pvgis IO tools
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import pytest
+import requests
 from pvlib.iotools import get_pvgis_tmy
 
 TESTS = Path(__file__).parent
 PROJECT = TESTS.parent
 DATA = PROJECT / 'data'
+EXPECTED = pd.read_csv(DATA / 'pvgis_tmy_test.dat', index_col='time(UTC)')
 MONTHS_SELECTED = [
     2009, 2012, 2014, 2010, 2011, 2013, 2011, 2011, 2013, 2013, 2013, 2011]
 INPUTS = {
@@ -24,10 +27,9 @@ INPUTS = {
 
 def test_get_pvgis_tmy():
     data, months_selected, inputs, meta = get_pvgis_tmy(45, 8)
-    expected = pd.read_csv(DATA / 'pvgis_tmy_test.dat', index_col='time(UTC)')
     # check each column of output separately
     for outvar in META['outputs']['tmy_hourly']['variables'].keys():
-        assert np.allclose(data[outvar], expected[outvar], equal_nan=True)
+        assert np.allclose(data[outvar], EXPECTED[outvar], equal_nan=True)
     assert np.allclose(
         [_['month'] for _ in months_selected], np.arange(1, 13, 1))
     assert np.allclose([_['year'] for _ in months_selected], MONTHS_SELECTED)
@@ -43,6 +45,39 @@ def test_get_pvgis_tmy():
     assert inputs_met_data['use_horizon'] == expected_met_data['use_horizon']
     assert inputs_met_data['horizon_db'] == expected_met_data['horizon_db']
     assert meta == META
+
+
+def test_get_pvgis_tmy_basic():
+    data, _, _, _ = get_pvgis_tmy(45, 8, outputformat='basic')
+    # check each column of output separately
+    for outvar in META['outputs']['tmy_hourly']['variables'].keys():
+        assert np.allclose(data[outvar], EXPECTED[outvar], equal_nan=True)
+
+
+def test_get_pvgis_tmy_csv():
+    data, months_selected, inputs, meta = get_pvgis_tmy(
+        45, 8, outputformat='csv')
+    # check each column of output separately
+    for outvar in META['outputs']['tmy_hourly']['variables'].keys():
+        assert np.allclose(data[outvar], EXPECTED[outvar], equal_nan=True)
+    assert np.allclose(
+        [_['month'] for _ in months_selected], np.arange(1, 13, 1))
+    assert np.allclose([_['year'] for _ in months_selected], MONTHS_SELECTED)
+    assert inputs['latitude'] == INPUTS['location']['latitude']
+    assert inputs['longitude'] == INPUTS['location']['longitude']
+    assert inputs['elevation'] == INPUTS['location']['elevation']
+    for meta_value in meta:
+        if not meta_value:
+            continue
+        if meta_value == 'PVGIS (c) European Communities, 2001-2020':
+            continue
+        assert meta_value in META_VALUES
+
+
+def test_get_pvgis_tmy_outputformat_error():
+    err_msg = 'outputformat: Incorrect value.'
+    with pytest.raises(requests.HTTPError, match=err_msg):
+        get_pvgis_tmy(45, 8, outputformat='bad')
 
 
 META = {
@@ -101,3 +136,6 @@ META = {
                     'units': 'degree'},
                 'SP': {
                     'description': 'Surface (air) pressure', 'units': 'Pa'}}}}}
+META_VALUES = [
+    '%s: %s (%s)' % (k, v['description'], v['units'])
+    for k, v in META['outputs']['tmy_hourly']['variables'].items()]

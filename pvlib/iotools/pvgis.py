@@ -95,7 +95,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         except Exception:
             res.raise_for_status()
         else:
-            raise requests.HTTPError(err_msg)
+            raise requests.HTTPError(err_msg['message'])
     if outputformat == 'json':
         src = res.json()
         return _parse_pvgis_tmy_json(src)
@@ -112,12 +112,14 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         finally:
             src.close()
     elif outputformat == 'epw':
-        with tempfile.TemporaryFile(delete=False) as f:
+        with tempfile.NamedTemporaryFile(delete=False) as f:
             f.write(res.content)
         data, inputs = read_epw(f.name)
         data = (data, None, inputs, f.name)
     else:
-        raise ValueError('unknown output format %s' % outputformat)
+        # this line is never reached because if outputformat is not valid then
+        # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
+        pass
     return data
 
 
@@ -146,7 +148,8 @@ def _parse_pvgis_tmy_csv(src):
     src.readline()  # get "month,year\r\n"
     months_selected = []
     for month in range(12):
-        months_selected.append((month+1, int(src.readline().split(b',')[1])))
+        months_selected.append(
+            {'month': month+1, 'year': int(src.readline().split(b',')[1])})
     # then there's the TMY (typical meteorological year) data
     # first there's a header row:
     #    time(UTC),T2m,RH,G(h),Gb(n),Gd(h),IR(h),WS10m,WD10m,SP

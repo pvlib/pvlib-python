@@ -29,7 +29,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
     Get TMY data from PVGIS. For more information see documentation for PVGIS
     `TMY tools <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
 
-    Parmaeters
+    Parameters
     ----------
     lat : float
         Latitude in degrees north

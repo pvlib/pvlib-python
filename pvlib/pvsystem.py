@@ -291,7 +291,7 @@ class PVSystem(object):
             Irradiance model.
 
         kwargs
-            Extra parameters passed to :func:`irradiance.total_irrad`.
+            Extra parameters passed to :func:`irradiance.get_total_irradiance`.
 
         Returns
         -------

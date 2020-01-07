@@ -14,6 +14,14 @@ Enhancements
   objects. (:issue:`841`)
 * Added `leap_day` parameter to `iotools.get_psm3` instead of hardcoding it as
   False.
+* Added :py:func:`~pvlib.tracking.calc_tracker_axis_tilt` and
+  :py:func:`~pvlib.tracking.calc_system_tracker_side_slope` to calculate the
+  tracker axes tilt and the side-slope angle, which is perpendicular to the
+  tracker axes for trackers on sloped terrain that is not parallel to the axes,
+  such as a north-south tracker on an south-east slope.
+* Added `side_slope` argument to :py:func:`~pvlib.tracking.singleaxis` which
+  defaults to zero, for use with
+  :py:func:`~pvlib.tracking.calc_system_tracker_side_slope`
 
 
 Bug fixes

@@ -61,7 +61,7 @@ def test_get_pvgis_tmy():
 
 def test_get_pvgis_tmy_kwargs():
     _, _, inputs, _ = get_pvgis_tmy(45, 8, usehorizon=False)
-    assert inputs['meteo_data']['use_horizon'] == False
+    assert inputs['meteo_data']['use_horizon'] is False
     data, _, _, _ = get_pvgis_tmy(
         45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5])
     assert np.allclose(

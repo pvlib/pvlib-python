@@ -80,7 +80,8 @@ Contents
    :maxdepth: 1
 
    package_overview
-   introexamples
+   introtutorial
+   auto_examples/index
    whatsnew
    installation
    contributing
@@ -93,7 +94,6 @@ Contents
    comparison_pvlib_matlab
    variables_style_rules
    singlediode
-   auto_examples/index
 
 
 Indices and tables

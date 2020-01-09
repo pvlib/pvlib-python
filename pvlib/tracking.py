@@ -186,7 +186,7 @@ class SingleAxisTracker(PVSystem):
             Irradiance model.
 
         **kwargs
-            Passed to :func:`irradiance.total_irrad`.
+            Passed to :func:`irradiance.get_total_irradiance`.
 
         Returns
         -------

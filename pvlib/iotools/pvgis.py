@@ -71,10 +71,9 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
-    .. [1] 'PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
+    .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
     .. [2] `PVGIS TMY tool <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
-    .. [3] `PVGIS horizon profile tool
-       <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
+    .. [3] `PVGIS horizon profile tool <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     """
     # use requests to format the query string by passing params dictionary
     params = {'lat': lat, 'lon': lon, 'outputformat': outputformat}

@@ -60,7 +60,7 @@ def epw_meta():
 
 @pytest.fixture
 def meta_expected():
-    with open(DATA / 'pvgis_tmy_meta.json') as f:
+    with (DATA / 'pvgis_tmy_meta.json').open() as f:
         return json.load(f)
 
 

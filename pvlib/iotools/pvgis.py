@@ -26,8 +26,8 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   timeout=30):
     """
-    Get TMY data from PVGIS. For more information see documentation for PVGIS
-    `TMY tools <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
+    Get TMY data from PVGIS [1]_. For more information see the PVGIS TMY tool
+    documentation [2]_.
 
     Parameters
     ----------
@@ -35,20 +35,20 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         Latitude in degrees north
     lon : float
         Longitude in dgrees east
-    outputformat : string [default 'json']
-        Must be in ``['csv', 'basic', 'epw', 'json']``. See link for more info.
-    usehorizon : bool [default True]
+    outputformat : str, default 'json'
+        Must be in ``['csv', 'basic', 'epw', 'json']``. See [2]_ for more info.
+    usehorizon : bool, default True
         include effects of horizon
-    userhorizon : list of float [default None]
-        elevation of horizon in degrees, at equally spaced azimuth clockwise
-        from north, _EG_: given 8 horizon elevations, the corresponding azimuth
-        are north, north-east, east, south-east, south, south-west, west, and
-        north-west
-    startyear : integer [default None]
+    userhorizon : list of float, default None
+        optional user specified elevation of horizon in degrees, at equally
+        spaced azimuth clockwise from north, only valid if `usehorizon` is
+        true, if `usehorizon` is true but `userhorizon` is `None` then PVGIS
+        will calculate the horizon [3]_
+    startyear : int, default None
         first year to calculate TMY
-    endyear : integer [default None]
+    endyear : int, default None
         last year to calculate TMY, must be at least 10 years from first year
-    url : str [default :const:`~pvlib.iotools.pvgis.URL`]
+    url : str, default :const:`pvlib.iotools.pvgis.URL`
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     timeout : int, default 30
         time in seconds to wait for server response before timeout
@@ -71,6 +71,10 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
+    .. [1] 'PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
+    .. [2] `PVGIS TMY tool <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
+    .. [3] `PVGIS horizon profile tool
+       <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     """
     # use requests to format the query string by passing params dictionary
     params = {'lat': lat, 'lon': lon, 'outputformat': outputformat}
@@ -99,24 +103,15 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         src = res.json()
         return _parse_pvgis_tmy_json(src)
     elif outputformat == 'csv':
-        src = io.BytesIO(res.content)
-        try:
+        with io.BytesIO(res.content) as src:
             data = _parse_pvgis_tmy_csv(src)
-        finally:
-            src.close()
     elif outputformat == 'basic':
-        src = io.BytesIO(res.content)
-        try:
+        with io.BytesIO(res.content) as src:
             data = _parse_pvgis_tmy_basic(src)
-        finally:
-            src.close()
     elif outputformat == 'epw':
-        src = io.StringIO(res.content.decode('utf-8'))
-        try:
+        with io.StringIO(res.content.decode('utf-8')) as src:
             data, meta = parse_epw(src)
             data = (data, None, None, meta)
-        finally:
-            src.close()
     else:
         # this line is never reached because if outputformat is not valid then
         # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier

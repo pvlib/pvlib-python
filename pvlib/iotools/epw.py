@@ -35,16 +35,17 @@ def read_epw(filename, coerce_year=None):
 
     Returns
     -------
-    Tuple of the form (data, metadata).
-
     data : DataFrame
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please
-        consult the EnergyPlus Auxiliary Programs documentation
-        available at: https://energyplus.net/documentation.
+        consult the EnergyPlus Auxiliary Programs documentation [1]_
 
     metadata : dict
         The site metadata available in the file.
+
+    See Also
+    --------
+    pvlib.iotools.parse_epw
 
     Notes
     -----
@@ -111,8 +112,8 @@ def read_epw(filename, coerce_year=None):
     References
     ----------
 
-    .. [1] EnergyPlus documentation, Auxiliary Programs
-       https://energyplus.net/documentation.
+    .. [1] `EnergyPlus documentation, Auxiliary Programs
+       <https://energyplus.net/documentation>`_
     '''
 
     if filename.startswith('http'):
@@ -153,8 +154,6 @@ def parse_epw(csvdata, coerce_year=None):
 
     Returns
     -------
-    Tuple of the form (data, metadata).
-
     data : DataFrame
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please

@@ -103,6 +103,8 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
             res.raise_for_status()
         else:
             raise requests.HTTPError(err_msg['message'])
+    # initialize data to None in case API fails to respond to bad outputformat
+    data = None, None, None, None
     if outputformat == 'json':
         src = res.json()
         return _parse_pvgis_tmy_json(src)

@@ -87,13 +87,13 @@ Contents
    pvsystem
    modelchain
    timetimezones
-   solarposition
    clearsky
    forecasts
    api
    comparison_pvlib_matlab
    variables_style_rules
    singlediode
+   auto_examples/index
 
 
 Indices and tables

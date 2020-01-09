@@ -36,7 +36,8 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
     lon : float
         Longitude in dgrees east
     outputformat : str, default 'json'
-        Must be in ``['csv', 'basic', 'epw', 'json']``. See [2]_ for more info.
+        Must be in ``['csv', 'basic', 'epw', 'json']``. See PVGIS TMY tool
+        documentation [2]_ for more info.
     usehorizon : bool, default True
         include effects of horizon
     userhorizon : list of float, default None
@@ -73,7 +74,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
 
     References
     ----------
-    
+
     .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
     .. [2] `PVGIS TMY tool <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
     .. [3] `PVGIS horizon profile tool

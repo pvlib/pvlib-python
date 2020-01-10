@@ -15,6 +15,7 @@ Enhancements
 * Added `leap_day` parameter to `iotools.get_psm3` instead of hardcoding it as
   False.
 * Added :py:func:`~pvlib.iotools.get_pvgis_tmy` to get PVGIS TMY datasets.
+  (:pull:`845`)
 * Added :py:func:`~pvlib.iotools.parse_epw` to parse a file-like buffer
   containing weather data in the EPW format.
 
@@ -40,5 +41,4 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * :ghuser:`dzimmanck`
 * Will Holmgren (:ghuser:`wholmgren`)
-* Mark Mikofski (:ghuser:`mikofski`)
 * Cliff Hansen (:ghuser:`cwhanse`)

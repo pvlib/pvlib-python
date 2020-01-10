@@ -18,6 +18,9 @@ import os
 # Mock modules so RTD works
 from unittest.mock import MagicMock
 
+# for warning suppression
+import warnings
+
 
 class Mock(MagicMock):
     @classmethod
@@ -335,7 +338,6 @@ sphinx_gallery_conf = {
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html
-import warnings
 warnings.filterwarnings("ignore", category=UserWarning,
                         message='Matplotlib is currently using agg, which is a'
                                 ' non-GUI backend, so cannot show the figure.')

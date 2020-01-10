@@ -1,8 +1,7 @@
-import argparse
 import time
 import datetime
 import numpy as np
-import warnings 
+import warnings
 from scipy import integrate, special
 
 
@@ -18,21 +17,20 @@ def accumarray(Indx, value):
     return A
 
 
-def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10, 
-                    ModelType=2, RainAccPeriod=1, LUC=8, 
+def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10,
+                    ModelType=2, RainAccPeriod=1, LUC=8,
                     WindSpeed=2, Temperature=12
                     ):
 
-
     """
-    PVL_SOILING_HSU Calculates soiling rate over time given particulate and 
+    PVL_SOILING_HSU Calculates soiling rate over time given particulate and
     rain data
 
     Parameters
     ----------
 
     Time : Time_Structure
-        Time values for the soiling function do not need to be 
+        Time values for the soiling function do not need to be
         regularly spaced, although large gaps in timing are
         discouraged. (datetime)
 
@@ -96,7 +94,7 @@ def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10,
         second. If WindSpeed is omitted, the value of 2 m/s is used as
         default. (m/s)
 
-    Temperature : numeric, optional    
+    Temperature : numeric, optional
         Temperature is an optional input to the function, but is required for
         the Variable Deposition Model. Temperature is a scalar or vector
         value with the same number of Elements as Time and must be in degrees
@@ -135,39 +133,36 @@ def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10,
 
     """
     assert isinstance(Time, datetime.datetime), \
-    "Time variable is not datetime instance"
+        "Time variable is not datetime instance"
     assert np.char.isnumeric(str(Rain)) and (Rain >= 0), \
-    "Error with the Rain value"
+        "Error with the Rain value"
     assert np.char.isnumeric(str(RainThresh)) and np.isscalar(RainThresh) and \
-    (RainThresh >= 0), "Error with the RainThresh value"
+        (RainThresh >= 0), "Error with the RainThresh value"
     assert np.char.isnumeric(str(Tilt)), "Error with the Tilt value"
     assert np.char.isnumeric(str(PM2_5)) and (PM2_5 >= 0), \
-    "Error with the PM2_5 value"
+        "Error with the PM2_5 value"
     assert np.char.isnumeric(str(PM10)) and (PM10 >= 0), \
-    "Error with the PM10 value"
+        "Error with the PM10 value"
     # optional variables
     assert np.isscalar(ModelType), "Error with the ModelType value"
     assert np.char.isnumeric(str(RainAccPeriod)) and \
-    np.isscalar(RainAccPeriod) and (RainAccPeriod >= 1), \
-    "Error with the RainAccPeriod value"
+        np.isscalar(RainAccPeriod) and (RainAccPeriod >= 1), \
+        "Error with the RainAccPeriod value"
     assert np.isscalar(LUC), "Error with the LUC value"
     assert np.char.isnumeric(str(WindSpeed)) and (WindSpeed >= 0), \
-    "Error with the WindSpeed value"
+        "Error with the WindSpeed value"
     assert np.char.isnumeric(str(Temperature)) and (Temperature >= 0), \
-    "Error with the Temperature value"
+        "Error with the Temperature value"
 
-    # Time is datetime structure  
+    # Time is datetime structure
     TimeAsDatenum = time.mktime(Time.timetuple())
 
     RainAccAsDatenum = np.floor(TimeAsDatenum * 24 / RainAccPeriod)
 
     # Doubt
 
-    [RainAccTimes, UnqRainAccFrstVal, UnqRainAccIndx] = np.unique(
-                                                        RainAccAsDatenum,
-                                                        return_index=True,
-                                                        return_inverse=True
-                                                        )
+    [RainAccTimes, UnqRainAccFrstVal, UnqRainAccIndx] = \
+        np.unique(RainAccAsDatenum, return_index=True, return_inverse=True)
 
     RainAtAccTimes = accumarray(UnqRainAccIndx, Rain)
     # Doubt
@@ -177,30 +172,22 @@ def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10,
     AccumRain[-1] = RainAtAccTimes[-1]
 
     vd_switch = {
-
-            1 : depo_veloc(Temperature, WindSpeed, LUC),
+            1: depo_velocity(Temperature, WindSpeed, LUC),
             # case 1  Variable Deposition Velocity
-        
-            2 : np.array([0.0009,0.004]),
+            2: np.array([0.0009, 0.004]),
             # case 2 % Fixed Settling Velocity in m/s
-        
-            3 : np.array([0.0015,0.0917])
+            3: np.array([0.0015, 0.0917])
             # case 3 % Fixed Deposition Velcoity in m/s
-
     }
 
     try:
         vd = vd_switch[ModelType]
     except Exception as e:
-        warnings.warn("Unknown ModelType, assuming MoodelType to 2.")
+        warnings.warn("Unknown ModelType, assuming ModelType to 2."+str(e))
         ModelType = 2
         vd = vd_switch[ModelType]
 
-
-
     PMConcentration = np.zeros(len(np.ravel(TimeAsDatenum)), 2)
-
-
     PMConcentration[:, 0] = PM2_5  # fill PM2.5 data in column 1
     PMConcentration[:, 1] = PM10 - PM2_5  # fill in PM2.5-PM10 in column 2
 
@@ -211,7 +198,7 @@ def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10,
     F = PMConcentration * vd  # g * m^-2 * s^-1, by particulate size
     HorizontalTotalMassRate = F[:, 0] + F[:, 2]  # g * m^-2 * s^-1, total
 
-    TiltedMassRate = HorizontalTotalMassRate * np.cosd(mp.pi * Tilt / 180)
+    TiltedMassRate = HorizontalTotalMassRate * np.cosd(np.pi * Tilt / 180)
 
     TiltedMassNoRain = integrate.cumtrapz(TimeAsDatenum*86400, TiltedMassRate)
 
@@ -219,10 +206,9 @@ def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10,
 
     for cntr1 in range(0, len(RainAtAccTimes)):
         if (RainAtAccTimes[cntr1] >= RainThresh):
-            TiltedMass[UnqRainAccFrstVal[cntr1 + 1] : end] = \
-            TiltedMass[UnqRainAccFrstVal[cntr1 + 1] : end] - \
-            TiltedMass[UnqRainAccFrstVal[cntr1 + 1] - 1 ]
-
+            TiltedMass[UnqRainAccFrstVal[cntr1 + 1]:] = \
+                TiltedMass[UnqRainAccFrstVal[cntr1 + 1]:] - \
+                TiltedMass[UnqRainAccFrstVal[cntr1 + 1] - 1]
 
     SoilingRate = 34.37 * special.erf(0.17*TiltedMass**0.8473)
 
@@ -232,7 +218,7 @@ def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10,
 
 def depo_velocity(T, WindSpeed, LUC):
 
-    # convert temperature into Kelvin 
+    # convert temperature into Kelvin
     T = T + 273.15
 
     # save wind data
@@ -242,8 +228,8 @@ def depo_velocity(T, WindSpeed, LUC):
         u = WindSpeed
 
     g = 9.81         # gravity in m/s^2
-    Na = 6.022 * 10**23  # avagadros number
-    R = 8.314        #  Universal gas consant in m3Pa/Kmol
+    # Na = 6.022 * 10**23  # avagadros number
+    R = 8.314        # Universal gas consant in m3Pa/Kmol
     k = 1.38 * 10**-23  # Boltzmann's constant in m^2kg/sK
     P = 101300       # pressure in Pa
     rhoair = 1.2041  # density of air in kg/m3
@@ -251,20 +237,19 @@ def depo_velocity(T, WindSpeed, LUC):
     rhop = 1500      # Assume density of particle in kg/m^3
 
     switcher = {
-        1 : 0.56,
-        4 : 0.56,
-        6 : 0.54,
-        8 : 0.54,
-        10 : 0.54,
+        1: 0.56,
+        4: 0.56,
+        6: 0.54,
+        8: 0.54,
+        10: 0.54,
     }
 
     try:
         gamma = switcher[LUC]
     except Exception as e:
-        warnings.warn("Unknown Land Use Category (LUC), assuming LUC 8.")
+        warnings.warn("Unknown Land Use Category, assuming LUC 8. "+str(e))
         LUC = 8
         gamma = switcher[LUC]
-
 
     # Diameter of particle in um
     Dpum = np.array([2.5, 10])
@@ -275,7 +260,7 @@ def depo_velocity(T, WindSpeed, LUC):
     nu = mu/rhoair
     lambda1 = 2*mu/(P*(8.*0.0288/(np.pi*R*T))**(0.5))   # mean free path
     ll = np.array([lambda1, lambda1])
-    Cc = 1+2*ll/Dpm*(1.257+0.4*np.exp(-1.1*Dpm/(ll*2)))  
+    Cc = 1+2*ll/Dpm*(1.257+0.4*np.exp(-1.1*Dpm/(ll*2)))
     # slip correction coefficient
 
     # Calculate vs
@@ -293,7 +278,7 @@ def depo_velocity(T, WindSpeed, LUC):
     # gamma=0.56      # for urban
     # alpha=1.5     # for urban
     EB = Sc**(-1 * gamma)
-    St = vs*(ustar ** 2)/ (g*nu)
+    St = vs*(ustar**2)/(g*nu)
 
     EIM = 10.0**(-3.0/St)   # For smooth surfaces
     # EIM =((St)./(0.82+St)).^2
@@ -310,8 +295,8 @@ def depo_velocity(T, WindSpeed, LUC):
     # For wind speeds >3 and <=5, use a = -.002, b = 0.018
     # For wind speeds > 5, use a = 0, b = 0
     avals = a[1]*np.ones_like(u, dtype=float)
-    avals[u>3] = a[2]
-    avals[u>5] = a[3]
+    avals[u > 3] = a[2]
+    avals[u > 5] = a[3]
 
     bvals = b[1]*np.ones_like(u, dtype=float)
     bvals[u > 3] = b[2]
@@ -325,17 +310,16 @@ def depo_velocity(T, WindSpeed, LUC):
     eta0 = ((1-15*zeta0)**(0.25))
 
     ra = np.zeros_like(zeta, dtype=float)  # Preallocate memory
-    ra[zeta == 0] = (1/ (0.4* ustar[zeta == 0]))* np.log(10.0/z0)
-    ra[zeta > 0] = (1/(0.4*ustar[zeta > 0]))*(np.log(10.0/z0) + 4.7*(zeta[zeta > 0]-\
-    	            zeta0[zeta > 0]))
-    ra[zeta < 0] = (1 / (0.4 * ustar[zeta < 0]))* (np.log(10.0/ z0) +\
-                   np.log((eta0[zeta < 0]**2 + 1) * (eta0[zeta < 0]+1)**2 /\
-                   ((eta[zeta < 0]**2 + 1) * (eta[zeta < 0]+1)**2)) + 2 * \
-                   (np.arctan(eta[zeta < 0])-np.arctan(eta0[zeta < 0])))
+    ra[zeta == 0] = (1 / (0.4 * ustar[zeta == 0])) * np.log(10.0 / z0)
+    ra[zeta > 0] = (1 / (0.4 * ustar[zeta > 0]))*(np.log(10.0/z0) +
+        4.7*(zeta[zeta > 0] - zeta0[zeta > 0]))
+    ra[zeta < 0] = (1 / (0.4 * ustar[zeta < 0])) * (np.log(10.0 / z0) +
+        np.log((eta0[zeta < 0]**2 + 1) * (eta0[zeta < 0]+1)**2 /
+        ((eta[zeta < 0]**2 + 1) * (eta[zeta < 0]+1)**2)) +
+        2*(np.arctan(eta[zeta < 0])-np.arctan(eta0[zeta < 0])))
 
     # Calculate vd and mass flux
 
     vd = 1/(ra+rb)+vs
 
     return vd
-

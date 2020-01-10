@@ -24,7 +24,6 @@ import warnings
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
-from pvlib._deprecation import deprecated
 
 
 NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
@@ -40,9 +39,15 @@ def get_solarposition(time, latitude, longitude,
     Parameters
     ----------
     time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
 
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
+
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
 
     altitude : None or float, default None
         If None, computed from pressure. Assumed to be 0 m
@@ -69,7 +74,9 @@ def get_solarposition(time, latitude, longitude,
     temperature : float, default 12
         Degrees C.
 
-    Other keywords are passed to the underlying solar position function.
+    kwargs
+        Other keywords are passed to the solar position function
+        specified by the ``method`` argument.
 
     References
     ----------
@@ -137,13 +144,17 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-        Localized or UTC.
+        Must be localized or UTC will be assumed.
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     pressure : float, default 101325
         Pressure in Pascals
     altitude : float, default 0
-        Elevation above sea level.
+        Distance above sea level.
     temperature : float, default 12
         Temperature in C
     delta_t : float, default 67.0
@@ -276,10 +287,15 @@ def spa_python(time, latitude, longitude,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-        Localized or UTC.
+        Must be localized or UTC will be assumed.
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     altitude : float, default 0
+        Distance above sea level.
     pressure : int or float, optional, default 101325
         avg. yearly air pressure in Pascals.
     temperature : int or float, optional, default 12
@@ -574,11 +590,13 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-        Localized or UTC.
+        Must be localized or UTC will be assumed.
     latitude : float
-        positive is north of 0
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
-        positive is east of 0
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     altitude : float, default 0
         distance above sea level in meters.
     pressure : int or float, optional, default 101325
@@ -666,8 +684,13 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     Parameters
     ----------
     time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     pressure : float or Series, default 101325
         Ambient pressure (Pascals)
     temperature : float or Series, default 12
@@ -845,7 +868,11 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
     lower_bound : datetime.datetime
     upper_bound : datetime.datetime
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     attribute : str
         The attribute of a pyephem.Sun object that
         you want to solve for. Likely options are 'alt'
@@ -909,7 +936,8 @@ def pyephem_earthsun_distance(time):
 
     Parameters
     ----------
-    time : pd.DatetimeIndex
+    time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
 
     Returns
     -------
@@ -934,7 +962,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     Parameters
     ----------
-    time : pd.DatetimeIndex
+    time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
 
     how : str, optional, default 'numpy'
         Options are 'numpy' or 'numba'. If numba >= 0.17.0

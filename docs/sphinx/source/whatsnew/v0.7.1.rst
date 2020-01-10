@@ -27,6 +27,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Created an Example Gallery. (:pull:`846`)
 * Updated list of allowed years for `iotools.get_psm3`.
 
 Contributors

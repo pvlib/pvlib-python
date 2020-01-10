@@ -1681,10 +1681,10 @@ def sapm(effective_irradiance, temp_cell, module):
     with np.errstate(invalid='ignore'):  # turn off warning for NaN
         if np.all(
             effective_irradiance[np.where(effective_irradiance > 0.0)] < 2.0):
-            import warnings
-            warnings.warn('effective_irradiance inputs appear to be in suns.'
-                          ' Units changed in v0.7 from suns to W/m2',
-                          RuntimeWarning)
+                import warnings
+                warnings.warn('effective_irradiance inputs appear to be in',
+                              ' suns. Units changed in v0.7 from suns to W/m2',
+                              RuntimeWarning)
 
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K

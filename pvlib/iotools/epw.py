@@ -35,16 +35,17 @@ def read_epw(filename, coerce_year=None):
 
     Returns
     -------
-    Tuple of the form (data, metadata).
-
     data : DataFrame
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please
-        consult the EnergyPlus Auxiliary Programs documentation
-        available at: https://energyplus.net/documentation.
+        consult the EnergyPlus Auxiliary Programs documentation [1]_
 
     metadata : dict
         The site metadata available in the file.
+
+    See Also
+    --------
+    pvlib.iotools.parse_epw
 
     Notes
     -----
@@ -111,8 +112,8 @@ def read_epw(filename, coerce_year=None):
     References
     ----------
 
-    .. [1] EnergyPlus documentation, Auxiliary Programs
-       https://energyplus.net/documentation.
+    .. [1] `EnergyPlus documentation, Auxiliary Programs
+       <https://energyplus.net/documentation>`_
     '''
 
     if filename.startswith('http'):
@@ -127,7 +128,45 @@ def read_epw(filename, coerce_year=None):
     else:
         # Assume it's accessible via the file system
         csvdata = open(filename, 'r')
+    try:
+        data, meta = parse_epw(csvdata, coerce_year)
+    finally:
+        csvdata.close()
+    return data, meta
 
+
+def parse_epw(csvdata, coerce_year=None):
+    """
+    Given a file-like buffer with data in Energy Plus Weather (EPW) format,
+    parse the data into a dataframe.
+
+    Parameters
+    ----------
+    csvdata : file-like buffer
+        a file-like buffer containing data in the EPW format
+
+    coerce_year : None or int, default None
+        If supplied, the year of the data will be set to this value. This can
+        be a useful feature because EPW data is composed of data from
+        different years.
+        Warning: EPW files always have 365*24 = 8760 data rows;
+        be careful with the use of leap years.
+
+    Returns
+    -------
+    data : DataFrame
+        A pandas dataframe with the columns described in the table
+        below. For more detailed descriptions of each component, please
+        consult the EnergyPlus Auxiliary Programs documentation
+        available at: https://energyplus.net/documentation.
+
+    metadata : dict
+        The site metadata available in the file.
+
+    See Also
+    --------
+    pvlib.iotools.read_epw
+    """
     # Read line with metadata
     firstline = csvdata.readline()
 

@@ -1,6 +1,6 @@
 from pvlib.iotools.tmy import read_tmy2  # noqa: F401
 from pvlib.iotools.tmy import read_tmy3  # noqa: F401
-from pvlib.iotools.epw import read_epw  # noqa: F401
+from pvlib.iotools.epw import read_epw, parse_epw  # noqa: F401
 from pvlib.iotools.srml import read_srml  # noqa: F401
 from pvlib.iotools.srml import read_srml_month_from_solardat  # noqa: F401
 from pvlib.iotools.surfrad import read_surfrad  # noqa: F401
@@ -13,3 +13,4 @@ from pvlib.iotools.solrad import read_solrad  # noqa: F401
 from pvlib.iotools.psm3 import get_psm3  # noqa: F401
 from pvlib.iotools.psm3 import read_psm3  # noqa: F401
 from pvlib.iotools.psm3 import parse_psm3  # noqa: F401
+from pvlib.iotools.pvgis import get_pvgis_tmy  # noqa: F401

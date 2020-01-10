@@ -359,6 +359,7 @@ relevant to solar energy modeling.
    iotools.read_tmy2
    iotools.read_tmy3
    iotools.read_epw
+   iotools.parse_epw
    iotools.read_srml
    iotools.read_srml_month_from_solardat
    iotools.read_surfrad
@@ -371,6 +372,7 @@ relevant to solar energy modeling.
    iotools.get_psm3
    iotools.read_psm3
    iotools.parse_psm3
+   iotools.get_pvgis_tmy
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

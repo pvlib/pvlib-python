@@ -20,5 +20,5 @@ def test_read_epw_remote():
 
 def test_read_epw_coerce_year():
     coerce_year = 1987
-    data, meta = epw.read_epw(epw_testfile, coerce_year=coerce_year)
+    data, _ = epw.read_epw(epw_testfile, coerce_year=coerce_year)
     assert (data.index.year == 1987).all()

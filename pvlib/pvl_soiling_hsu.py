@@ -172,12 +172,12 @@ def pvl_soiling_hsu(Time, Rain, RainThresh, Tilt, PM2_5, PM10,
     AccumRain[-1] = RainAtAccTimes[-1]
 
     vd_switch = {
-            1: depo_velocity(Temperature, WindSpeed, LUC),
-            # case 1  Variable Deposition Velocity
-            2: np.array([0.0009, 0.004]),
-            # case 2 % Fixed Settling Velocity in m/s
-            3: np.array([0.0015, 0.0917])
-            # case 3 % Fixed Deposition Velcoity in m/s
+        1: depo_velocity(Temperature, WindSpeed, LUC),
+        # case 1  Variable Deposition Velocity
+        2: np.array([0.0009, 0.004]),
+        # case 2 % Fixed Settling Velocity in m/s
+        3: np.array([0.0015, 0.0917])
+        # case 3 % Fixed Deposition Velcoity in m/s
     }
 
     try:
@@ -311,12 +311,12 @@ def depo_velocity(T, WindSpeed, LUC):
 
     ra = np.zeros_like(zeta, dtype=float)  # Preallocate memory
     ra[zeta == 0] = (1 / (0.4 * ustar[zeta == 0])) * np.log(10.0 / z0)
-    ra[zeta > 0] = (1 / (0.4 * ustar[zeta > 0]))*(np.log(10.0/z0) +
-        4.7*(zeta[zeta > 0] - zeta0[zeta > 0]))
-    ra[zeta < 0] = (1 / (0.4 * ustar[zeta < 0])) * (np.log(10.0 / z0) +
-        np.log((eta0[zeta < 0]**2 + 1) * (eta0[zeta < 0]+1)**2 /
-        ((eta[zeta < 0]**2 + 1) * (eta[zeta < 0]+1)**2)) +
-        2*(np.arctan(eta[zeta < 0])-np.arctan(eta0[zeta < 0])))
+    ra[zeta > 0] = (1 / (0.4 * ustar[zeta > 0]))*(np.log(10.0/z0)
+        + 4.7*(zeta[zeta > 0] - zeta0[zeta > 0]))
+    ra[zeta < 0] = (1 / (0.4 * ustar[zeta < 0])) * (np.log(10.0 / z0)
+        + np.log((eta0[zeta < 0]**2 + 1) * (eta0[zeta < 0]+1)**2
+        / ((eta[zeta < 0]**2 + 1) * (eta[zeta < 0]+1)**2))
+        + 2*(np.arctan(eta[zeta < 0])-np.arctan(eta0[zeta < 0])))
 
     # Calculate vd and mass flux
 

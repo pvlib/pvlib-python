@@ -9,11 +9,14 @@ import numpy as np
 import pandas as pd
 import pytest
 from requests import HTTPError
+from io import StringIO
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 PROJDIR = os.path.dirname(BASEDIR)
 DATADIR = os.path.join(PROJDIR, 'data')
-TEST_DATA = os.path.join(DATADIR, 'test_psm3.csv')
+TMY_TEST_DATA = os.path.join(DATADIR, 'test_psm3_tmy-2017.csv')
+YEAR_TEST_DATA = os.path.join(DATADIR, 'test_psm3_2017.csv')
+MANUAL_TEST_DATA = os.path.join(DATADIR, 'test_read_psm3.csv')
 LATITUDE, LONGITUDE = 40.5137, -108.5449
 HEADER_FIELDS = [
     'Source', 'Location ID', 'City', 'State', 'Country', 'Latitude',
@@ -25,19 +28,14 @@ PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 DEMO_KEY = 'DEMO_KEY'
 
 
-@pytest.mark.xfail(strict=True)
-@needs_pandas_0_22
-def test_get_psm3():
-    """test get_psm3"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL)
-    expected = pd.read_csv(TEST_DATA)
+def assert_psm3_equal(header, data, expected):
+    """check consistency of PSM3 data"""
     # check datevec columns
     assert np.allclose(data.Year, expected.Year)
     assert np.allclose(data.Month, expected.Month)
     assert np.allclose(data.Day, expected.Day)
     assert np.allclose(data.Hour, expected.Hour)
-    # XXX: unclear if NSRDB changes to timesteps are permanent or temporary
-    # assert np.allclose(data.Minute, expected.Minute)
+    assert np.allclose(data.Minute, expected.Minute)
     # check data columns
     assert np.allclose(data.GHI, expected.GHI)
     assert np.allclose(data.DNI, expected.DNI)
@@ -53,6 +51,15 @@ def test_get_psm3():
         assert hf in header
     # check timezone
     assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
+
+
+@needs_pandas_0_22
+def test_get_psm3_tmy():
+    """test get_psm3 with a TMY"""
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                                 names='tmy-2017')
+    expected = pd.read_csv(TMY_TEST_DATA)
+    assert_psm3_equal(header, data, expected)
     # check errors
     with pytest.raises(HTTPError):
         # HTTP 403 forbidden because api_key is rejected
@@ -63,6 +70,53 @@ def test_get_psm3():
     with pytest.raises(HTTPError):
         # names is not one of the available options
         psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
+
+
+@needs_pandas_0_22
+def test_get_psm3_singleyear():
+    """test get_psm3 with a single year"""
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                                 names='2017', interval=30)
+    expected = pd.read_csv(YEAR_TEST_DATA)
+    assert_psm3_equal(header, data, expected)
+    # check leap day
+    _, data_2012 = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                                 names='2012', interval=60, leap_day=True)
+    assert len(data_2012) == (8760+24)
+    # check errors
+    with pytest.raises(HTTPError):
+        # HTTP 403 forbidden because api_key is rejected
+        psm3.get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL,
+                      names='2017')
+    with pytest.raises(HTTPError):
+        # coordinates were not found in the NSRDB
+        psm3.get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL, names='2017')
     with pytest.raises(HTTPError):
         # intervals can only be 30 or 60 minutes
-        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, interval=15)
+        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='2017',
+                      interval=15)
+
+
+@pytest.fixture
+def io_input(request):
+    """file-like object for parse_psm3"""
+    with open(MANUAL_TEST_DATA, 'r') as f:
+        data = f.read()
+    obj = StringIO(data)
+    return obj
+
+
+@needs_pandas_0_22
+def test_parse_psm3(io_input):
+    """test parse_psm3"""
+    header, data = psm3.parse_psm3(io_input)
+    expected = pd.read_csv(YEAR_TEST_DATA)
+    assert_psm3_equal(header, data, expected)
+
+
+@needs_pandas_0_22
+def test_read_psm3():
+    """test read_psm3"""
+    header, data = psm3.read_psm3(MANUAL_TEST_DATA)
+    expected = pd.read_csv(YEAR_TEST_DATA)
+    assert_psm3_equal(header, data, expected)

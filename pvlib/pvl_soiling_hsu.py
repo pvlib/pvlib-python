@@ -311,12 +311,24 @@ def depo_velocity(T, WindSpeed, LUC):
 
     ra = np.zeros_like(zeta, dtype=float)  # Preallocate memory
     ra[zeta == 0] = (1 / (0.4 * ustar[zeta == 0])) * np.log(10.0 / z0)
-    ra[zeta > 0] = (1 / (0.4 * ustar[zeta > 0])) * (np.log(10.0 / z0)
-                   + 4.7 * (zeta[zeta > 0] - zeta0[zeta > 0]))
-    ra[zeta < 0] = (1 / (0.4 * ustar[zeta < 0])) * (np.log(10.0 / z0)
-                   + np.log((eta0[zeta < 0]**2 + 1) * (eta0[zeta < 0]+1)**2
-                   / ((eta[zeta < 0]**2 + 1) * (eta[zeta < 0]+1)**2))
-                   + 2*(np.arctan(eta[zeta < 0])-np.arctan(eta0[zeta < 0])))
+
+    sub_a = 1 / (0.4 * ustar[zeta > 0])
+    sub_b = np.log(10.0 / z0)
+    sub_c = zeta[zeta > 0] - zeta0[zeta > 0]
+
+    ra[zeta > 0] = sub_a * (sub_b + 4.7 * sub_c)
+
+    sub_a = (1 / (0.4 * ustar[zeta < 0]))
+    sub_b = np.log(10.0 / z0)
+    sub_ba = eta0[zeta < 0]**2 + 1
+    sub_bb = (eta0[zeta < 0]+1)**2
+    sub_bc = eta[zeta < 0]**2 + 1
+    sub_bd = (eta[zeta < 0]+1)**2
+    sub_d = np.arctan(eta[zeta < 0])
+    sub_e = np.arctan(eta0[zeta < 0])
+
+    sub_c = np.log(sub_ba * sub_bb / (sub_bc * sub_bd))
+    ra[zeta < 0] = sub_a * (sub_b + sub_c + 2*(sub_d-sub_e))
 
     # Calculate vd and mass flux
 

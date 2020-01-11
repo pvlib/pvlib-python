@@ -1680,10 +1680,11 @@ def sapm(effective_irradiance, temp_cell, module):
     # effective irradiance units, made in v0.7
     with np.errstate(invalid='ignore'):  # turn off warning for NaN
         ee = np.asarray(effective_irradiance)
-        if np.all(np.logical_and(ee > 0.0, ee < 2.0)):
+        ee_gt0 = ee[ee > 0.0]
+        if ee_gt0.size > 0 and np.all(ee_gt0 < 2.0):
             import warnings
             msg = 'effective_irradiance inputs appear to be in suns. Units ' \
-                  'changed in v0.7 from suns to W/m2'
+               'changed in v0.7 from suns to W/m2'
             warnings.warn(msg, RuntimeWarning)
 
     q = 1.60218e-19  # Elementary charge in units of coulombs

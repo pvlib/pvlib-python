@@ -1684,7 +1684,7 @@ def sapm(effective_irradiance, temp_cell, module):
         if ee_gt0.size > 0 and np.all(ee_gt0 < 2.0):
             import warnings
             msg = 'effective_irradiance inputs appear to be in suns. Units ' \
-               'changed in v0.7 from suns to W/m2'
+                  'changed in v0.7 from suns to W/m2'
             warnings.warn(msg, RuntimeWarning)
 
     q = 1.60218e-19  # Elementary charge in units of coulombs

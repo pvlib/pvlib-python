@@ -80,7 +80,8 @@ Contents
    :maxdepth: 1
 
    package_overview
-   introexamples
+   introtutorial
+   auto_examples/index
    whatsnew
    installation
    contributing

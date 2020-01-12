@@ -60,6 +60,7 @@ extensions = [
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx_gallery.gen_gallery',
+    'bokeh.sphinxext.bokeh_plot',
 ]
 
 napoleon_use_rtype = False  # group rtype on same line together with return
@@ -332,9 +333,7 @@ suppress_warnings = ['ref.footnote']
 # settings for sphinx-gallery
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
-    'gallery_dirs': ['auto_examples'],  # location of generated output
-    # sphinx-gallery only shows plots from plot_*.py files by default:
-    # 'filename_pattern': '*.py',
+    'gallery_dirs': ['gallery'],  # location of generated output
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html

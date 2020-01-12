@@ -81,7 +81,7 @@ Contents
 
    package_overview
    introtutorial
-   auto_examples/index
+   gallery/index
    whatsnew
    installation
    contributing

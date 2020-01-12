@@ -20,6 +20,7 @@ Examples of modeling tilt angles for single-axis tracker arrays.
 # towards the sun as much as possible in order to maximize the cross section
 # presented towards incoming beam irradiance.
 
+# sphinx_gallery_thumbnail_number = 2
 from pvlib import solarposition, tracking
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -75,3 +76,9 @@ for gcr in [0.2, 0.4, 0.6]:
 
 plt.legend()
 plt.show()
+
+#%%
+# Interactive Demo
+# ----------------
+#
+#  .. bokeh-plot:: ../../examples/interactive_examples/interactive_tracking.py

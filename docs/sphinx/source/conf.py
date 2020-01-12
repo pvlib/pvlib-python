@@ -222,6 +222,7 @@ htmlhelp_basename = 'PVLIB_Pythondoc'
 # A workaround for the responsive tables always having annoying scrollbars.
 def setup(app):
     app.add_stylesheet("no_scrollbars.css")
+    app.add_stylesheet("no_reference_superscript.css")
 
 
 # -- Options for LaTeX output ---------------------------------------------

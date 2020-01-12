@@ -81,4 +81,7 @@ plt.show()
 # Interactive Demo
 # ----------------
 #
+# Drag the slider below to see how backtracking in morning and evening keeps
+# each row's shadows tangent to the next row without any overlap.
+#
 #  .. bokeh-plot:: ../../examples/interactive_examples/interactive_tracking.py

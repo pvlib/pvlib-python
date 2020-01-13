@@ -598,7 +598,7 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
     altitude : float, default 0
-        distance above sea level in meters.
+        Height above sea level in meters. [m]
     pressure : int or float, optional, default 101325
         air pressure in Pascals.
     temperature : int or float, optional, default 12

@@ -154,7 +154,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     pressure : float, default 101325
         Pressure in Pascals
     altitude : float, default 0
-        Distance above sea level.
+        Height above sea level. [m]
     temperature : float, default 12
         Temperature in C
     delta_t : float, default 67.0

@@ -8,10 +8,9 @@ import pandas as pd
 import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy
+from conftest import data_dir
 
-TESTS = Path(__file__).parent
-PROJECT = TESTS.parent
-DATA = PROJECT / 'data'
+DATA = Path(data_dir)
 
 
 @pytest.fixture

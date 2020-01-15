@@ -1,4 +1,3 @@
-import inspect
 import os
 
 import pandas as pd
@@ -7,6 +6,7 @@ import pytest
 import pytz
 
 from pvlib.iotools import midc
+from conftest import data_dir
 
 
 @pytest.fixture
@@ -20,12 +20,10 @@ def test_mapping():
     }
 
 
-test_dir = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
-midc_testfile = os.path.join(test_dir, '../data/midc_20181014.txt')
-midc_raw_testfile = os.path.join(test_dir, '../data/midc_raw_20181018.txt')
+midc_testfile = os.path.join(data_dir, 'midc_20181014.txt')
+midc_raw_testfile = os.path.join(data_dir, 'midc_raw_20181018.txt')
 midc_raw_short_header_testfile = os.path.join(
-    test_dir, '../data/midc_raw_short_header_20191115.txt')
+    data_dir, 'midc_raw_short_header_20191115.txt')
 midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
                          '?site=UAT&begin=20181018&end=20181019')
 

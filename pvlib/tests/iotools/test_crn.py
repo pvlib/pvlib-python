@@ -1,4 +1,3 @@
-import inspect
 import os
 
 import pandas as pd
@@ -7,12 +6,10 @@ import numpy as np
 from numpy import dtype, nan
 
 from pvlib.iotools import crn
+from conftest import data_dir
 
-
-test_dir = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
-testfile = os.path.join(test_dir,
-                        '../data/CRNS0101-05-2019-AZ_Tucson_11_W.txt')
+testfile = os.path.join(data_dir,
+                        'CRNS0101-05-2019-AZ_Tucson_11_W.txt')
 
 
 def test_read_crn():

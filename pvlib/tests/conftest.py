@@ -1,4 +1,3 @@
-import inspect
 import os
 import platform
 
@@ -36,8 +35,7 @@ def fail_on_pvlib_version(version):
 
 
 # commonly used directories in the tests
-test_dir = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
+test_dir = os.path.dirname(__file__)
 data_dir = os.path.join(test_dir, os.pardir, 'data')
 
 

@@ -1,14 +1,12 @@
-import inspect
 import os
 
 from pandas.util.testing import network
 
 from pvlib.iotools import tmy
+from conftest import data_dir
 
-test_dir = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
-tmy3_testfile = os.path.join(test_dir, '../data/703165TY.csv')
-tmy2_testfile = os.path.join(test_dir, '../data/12839.tm2')
+tmy3_testfile = os.path.join(data_dir, '703165TY.csv')
+tmy2_testfile = os.path.join(data_dir, '12839.tm2')
 
 
 def test_read_tmy3():

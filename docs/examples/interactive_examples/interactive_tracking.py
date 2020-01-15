@@ -1,7 +1,6 @@
-from bokeh.io import curdoc
 from bokeh.layouts import column, row
 from bokeh.models import (
-    ColumnDataSource, Slider, CheckboxGroup, CustomJS, Span, Div, Button
+    ColumnDataSource, Slider, CustomJS, Span
 )
 from bokeh.plotting import figure, show
 

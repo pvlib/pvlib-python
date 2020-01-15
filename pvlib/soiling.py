@@ -11,12 +11,12 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
                    initial_soiling=0):
     """
-    Kimber soiling model [1]_ assumes soiling builds-up at aa daily rate unless
+    Kimber soiling model [1]_ assumes soiling builds-up at a daily rate unless
     the daily rainfall is greater than a threshold. The model also assumes that
     if daily rainfall has exceeded the threshold within a grace period, then
     the ground is too damp to cause soiling build-up. The model also assumes
     there is a maximum soiling build-up. Scheduled manual washes and rain
-    events are assumed to rest soiling to zero.
+    events are assumed to reset soiling to zero.
 
     Parameters
     ----------

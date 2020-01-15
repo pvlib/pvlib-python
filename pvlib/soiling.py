@@ -9,7 +9,7 @@ import pandas as pd
 
 def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
-                   initial_soiling = 0):
+                   initial_soiling=0):
     """
     Kimber soiling model [1]_ assumes soiling builds-up at aa daily rate unless
     the daily rainfall is greater than a threshold. The model also assumes that
@@ -91,7 +91,7 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
         start_day = today - grace_period
 
         # rainfall event during grace period?
-        rain_in_grace_period = any( rain_events [ start_day : today ] )
+        rain_in_grace_period = any(rain_events[start_day:today])
 
         # if rain exceeded threshold during grace period,
         # assume ground is still damp, so no or v. low soiling

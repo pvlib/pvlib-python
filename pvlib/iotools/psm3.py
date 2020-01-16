@@ -295,6 +295,6 @@ def read_psm3(filename):
     .. [2] `Standard Time Series Data File Format
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
     """
-    with open(filename, 'r') as fbuf:
+    with open(str(filename), 'r') as fbuf:
         content = parse_psm3(fbuf)
     return content

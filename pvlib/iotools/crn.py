@@ -46,7 +46,7 @@ def read_crn(filename):
 
     Parameters
     ----------
-    filename: str
+    filename: str, path object, or file-like
         filepath or url to read for the fixed-width file.
 
     Returns

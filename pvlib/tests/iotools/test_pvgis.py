@@ -2,26 +2,22 @@
 test the pvgis IO tools
 """
 import json
-from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy
-
-TESTS = Path(__file__).parent
-PROJECT = TESTS.parent
-DATA = PROJECT / 'data'
+from conftest import DATA_DIR
 
 
 @pytest.fixture
 def expected():
-    return pd.read_csv(DATA / 'pvgis_tmy_test.dat', index_col='time(UTC)')
+    return pd.read_csv(DATA_DIR / 'pvgis_tmy_test.dat', index_col='time(UTC)')
 
 
 @pytest.fixture
 def userhorizon_expected():
-    return pd.read_json(DATA / 'tmy_45.000_8.000_userhorizon.json')
+    return pd.read_json(DATA_DIR / 'tmy_45.000_8.000_userhorizon.json')
 
 
 @pytest.fixture
@@ -60,7 +56,7 @@ def epw_meta():
 
 @pytest.fixture
 def meta_expected():
-    with (DATA / 'pvgis_tmy_meta.json').open() as f:
+    with (DATA_DIR / 'pvgis_tmy_meta.json').open() as f:
         return json.load(f)
 
 

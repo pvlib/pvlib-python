@@ -1,8 +1,10 @@
 import pandas as pd
 from pandas.util.testing import assert_series_equal
 from pvlib.losses import soiling_hsu
+from pvlib.test.conftest import requires_scipy
 
 
+@requires_scipy
 def test_soiling_hsu():
     """Test Soiling HSU function"""
     dt = pd.date_range(start=pd.datetime(2019, 1, 1, 0, 0, 0),

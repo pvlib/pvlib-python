@@ -169,7 +169,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
     else:
         # assume it's accessible via the file system
-        csvdata = open(filename, 'r')
+        csvdata = open(str(filename), 'r')
 
     # read in file metadata, advance buffer to second line
     firstline = csvdata.readline()
@@ -409,7 +409,7 @@ def read_tmy2(filename):
     columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUncertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'  # noqa: E501
     hdr_columns = 'WBAN,City,State,TZ,latitude,longitude,altitude'
 
-    tmy2, tmy2_meta = _read_tmy2(string, columns, hdr_columns, filename)
+    tmy2, tmy2_meta = _read_tmy2(string, columns, hdr_columns, str(filename))
 
     return tmy2, tmy2_meta
 

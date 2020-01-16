@@ -155,7 +155,7 @@ jobs:
   - script: |
       pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
       pip install -e .
-      pytest pvlib/test --junitxml=junit/test-results.xml --cov=pvlib --cov-report=xml --cov-report=html
+      pytest pvlib --junitxml=junit/test-results.xml --cov=pvlib --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 
   - task: PublishTestResults@2

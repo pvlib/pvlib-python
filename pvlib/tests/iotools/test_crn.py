@@ -1,21 +1,18 @@
-import inspect
-import os
-
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 import numpy as np
 from numpy import dtype, nan
-
+import pytest
 from pvlib.iotools import crn
+from conftest import DATA_DIR
 
 
-test_dir = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
-testfile = os.path.join(test_dir,
-                        '../data/CRNS0101-05-2019-AZ_Tucson_11_W.txt')
+@pytest.fixture
+def testfile():
+    return DATA_DIR / 'CRNS0101-05-2019-AZ_Tucson_11_W.txt'
 
 
-def test_read_crn():
+def test_read_crn(testfile):
     columns = [
         'WBANNO', 'UTC_DATE', 'UTC_TIME', 'LST_DATE', 'LST_TIME', 'CRX_VN',
         'longitude', 'latitude', 'temp_air', 'PRECIPITATION', 'ghi',

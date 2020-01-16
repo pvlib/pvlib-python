@@ -81,7 +81,7 @@ def read_solrad(filename):
        Program. Bull. Amer. Meteor. Soc., 77, 2857-2864.
        :doi:`10.1175/1520-0477(1996)077<2857:TNISIS>2.0.CO;2`
     """
-    if 'msn' in filename:
+    if 'msn' in str(filename):
         names = MADISON_HEADERS
         widths = MADISON_WIDTHS
         dtypes = MADISON_DTYPES

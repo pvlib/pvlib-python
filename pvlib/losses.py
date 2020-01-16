@@ -8,30 +8,30 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import cosd
 
+
 def erf(x):
     """
-    Calculates the ERF function 
+    Calculates the ERF function
 
     Parameters
     ----------
     x : numeric
-        Input value/array 
+        Input value/array
 
     Returns
     -------
     erf : numeric
-        The values of the error function at the given points x.    
+        The values of the error function at the given points x.
 
     """
 
-
     # constants
-    a1 =  0.254829592
+    a1 = 0.254829592
     a2 = -0.284496736
-    a3 =  1.421413741
+    a3 = 1.421413741
     a4 = -1.453152027
-    a5 =  1.061405429
-    p  =  0.3275911
+    a5 = 1.061405429
+    p = 0.3275911
 
     # Save the sign of x
     sign = 1
@@ -44,6 +44,7 @@ def erf(x):
     y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*np.exp(-x*x)
 
     return sign*y
+
 
 def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
                 depo_veloc={'2_5': 0.004, '10': 0.0009},
@@ -114,6 +115,6 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     mass_removed[cleaning_times] = mass_no_cleaning[cleaning_times]
     accum_mass = mass_no_cleaning - mass_removed.ffill()
 
-    soiling_ratio = 1 - 0.3437 * math.erf(0.17 * accum_mass**0.8473)
+    soiling_ratio = 1 - 0.3437 * erf(0.17 * accum_mass**0.8473)
 
     return soiling_ratio

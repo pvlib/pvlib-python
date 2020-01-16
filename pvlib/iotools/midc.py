@@ -250,7 +250,7 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
             'begin': start.strftime('%Y%m%d'),
             'end': end.strftime('%Y%m%d')}
     url = 'https://midcdmz.nrel.gov/apps/data_api.pl'
-    # NOTE: just use requests.get(url, parmams=args) to build querystring
+    # NOTE: just use requests.get(url, params=args) to build querystring
     # number of header columns and data columns do not always match,
     # so first parse the header to determine the number of data columns
     # to parse

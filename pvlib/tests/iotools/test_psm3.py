@@ -96,7 +96,7 @@ def test_get_psm3_singleyear():
 @pytest.fixture
 def io_input(request):
     """file-like object for parse_psm3"""
-    with open(MANUAL_TEST_DATA, 'r') as f:
+    with MANUAL_TEST_DATA.open() as f:
         data = f.read()
     obj = StringIO(data)
     return obj

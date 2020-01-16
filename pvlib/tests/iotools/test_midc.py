@@ -77,7 +77,7 @@ def test_read_midc_raw_data_from_nrel():
 
 def test_read_midc_header_length_mismatch(mocker):
     mock_data = mocker.MagicMock()
-    with open(MIDC_RAW_SHORT_HEADER_TESTFILE, 'r') as f:
+    with MIDC_RAW_SHORT_HEADER_TESTFILE.open() as f:
         mock_data.text = f.read()
     mocker.patch('pvlib.iotools.midc.requests.get',
                  return_value=mock_data)

@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas.util.testing import assert_series_equal
 from pvlib.losses import soiling_hsu
-from pvlib.test.conftest import requires_scipy
+from conftest import requires_scipy
 import pytest
 
 

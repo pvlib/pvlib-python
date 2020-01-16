@@ -6,7 +6,7 @@ import os
 import datetime
 import numpy as np
 import pytest
-from conftest import requires_netCDF4, data_dir
+from conftest import requires_netCDF4, DATA_DIR
 from pvlib.iotools import ecmwf_macc
 
 TESTDATA = 'aod550_tcwv_20121101_test.nc'
@@ -21,7 +21,7 @@ LAT_BND = (90, -90)
 
 @pytest.fixture
 def expected_test_data():
-    return os.path.join(data_dir, TESTDATA)
+    return DATA_DIR / TESTDATA
 
 
 @requires_netCDF4

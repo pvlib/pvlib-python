@@ -1,12 +1,10 @@
-import os
-
 import pandas as pd
 from pandas.util.testing import network
 import pytest
 import pytz
 
 from pvlib.iotools import midc
-from conftest import data_dir
+from conftest import DATA_DIR
 
 
 @pytest.fixture
@@ -20,16 +18,18 @@ def test_mapping():
     }
 
 
-midc_testfile = os.path.join(data_dir, 'midc_20181014.txt')
-midc_raw_testfile = os.path.join(data_dir, 'midc_raw_20181018.txt')
-midc_raw_short_header_testfile = os.path.join(
-    data_dir, 'midc_raw_short_header_20191115.txt')
-midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
-                         '?site=UAT&begin=20181018&end=20181019')
+MIDC_TESTFILE = DATA_DIR / 'midc_20181014.txt'
+MIDC_RAW_TESTFILE = DATA_DIR / 'midc_raw_20181018.txt'
+MIDC_RAW_SHORT_HEADER_TESTFILE = (
+    DATA_DIR / 'midc_raw_short_header_20191115.txt')
+
+# TODO: not used, remove?
+# midc_network_testfile = ('https://midcdmz.nrel.gov/apps/data_api.pl'
+#                          '?site=UAT&begin=20181018&end=20181019')
 
 
 def test_midc_format_index():
-    data = pd.read_csv(midc_testfile)
+    data = pd.read_csv(MIDC_TESTFILE)
     data = midc.format_index(data)
     start = pd.Timestamp("20181014 00:00")
     start = start.tz_localize("MST")
@@ -41,14 +41,14 @@ def test_midc_format_index():
 
 
 def test_midc_format_index_tz_conversion():
-    data = pd.read_csv(midc_testfile)
+    data = pd.read_csv(MIDC_TESTFILE)
     data = data.rename(columns={'MST': 'PST'})
     data = midc.format_index(data)
     assert data.index[0].tz == pytz.timezone('Etc/GMT+8')
 
 
 def test_midc_format_index_raw():
-    data = pd.read_csv(midc_raw_testfile)
+    data = pd.read_csv(MIDC_RAW_TESTFILE)
     data = midc.format_index_raw(data)
     start = pd.Timestamp('20181018 00:00')
     start = start.tz_localize('MST')
@@ -59,7 +59,7 @@ def test_midc_format_index_raw():
 
 
 def test_read_midc_var_mapping_as_arg(test_mapping):
-    data = midc.read_midc(midc_testfile, variable_map=test_mapping)
+    data = midc.read_midc(MIDC_TESTFILE, variable_map=test_mapping)
     assert 'ghi' in data.columns
     assert 'temp_air' in data.columns
 
@@ -77,7 +77,7 @@ def test_read_midc_raw_data_from_nrel():
 
 def test_read_midc_header_length_mismatch(mocker):
     mock_data = mocker.MagicMock()
-    with open(midc_raw_short_header_testfile, 'r') as f:
+    with open(MIDC_RAW_SHORT_HEADER_TESTFILE, 'r') as f:
         mock_data.text = f.read()
     mocker.patch('pvlib.iotools.midc.requests.get',
                  return_value=mock_data)

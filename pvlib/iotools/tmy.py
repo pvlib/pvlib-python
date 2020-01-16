@@ -160,7 +160,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
 
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    if filename.startswith('http'):
+    if str(filename).startswith('http'):
         request = Request(filename, headers={'User-Agent': (
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) '
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 '

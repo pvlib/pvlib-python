@@ -249,12 +249,12 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
     args = {'site': site,
             'begin': start.strftime('%Y%m%d'),
             'end': end.strftime('%Y%m%d')}
-    endpoint = 'https://midcdmz.nrel.gov/apps/data_api.pl?'
-    url = endpoint + '&'.join(['{}={}'.format(k, v) for k, v in args.items()])
+    url = 'https://midcdmz.nrel.gov/apps/data_api.pl'
+    # NOTE: just use requests.get(url, parmams=args) to build querystring
     # number of header columns and data columns do not always match,
     # so first parse the header to determine the number of data columns
     # to parse
-    csv_request = requests.get(url, timeout=timeout)
+    csv_request = requests.get(url, timeout=timeout, params=args)
     csv_request.raise_for_status()
     raw_csv = io.StringIO(csv_request.text)
     first_row = pd.read_csv(raw_csv, nrows=0)

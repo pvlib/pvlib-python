@@ -1,14 +1,12 @@
-import os
-
 from numpy import isnan
 import pandas as pd
 from pandas.util.testing import network
 import pytest
 
 from pvlib.iotools import srml
-from conftest import data_dir
+from conftest import DATA_DIR
 
-srml_testfile = os.path.join(data_dir, '../data/SRML-day-EUPO1801.txt')
+srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 
 
 def test_read_srml():

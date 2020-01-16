@@ -217,7 +217,7 @@ def read_epw(filename, coerce_year=None):
        <https://energyplus.net/documentation>`_
     '''
 
-    if filename.startswith('http'):
+    if str(filename).startswith('http'):
         # Attempts to download online EPW file
         # See comments above for possible online sources
         request = Request(filename, headers={'User-Agent': (

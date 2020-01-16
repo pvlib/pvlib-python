@@ -26,8 +26,8 @@ Testing
 ~~~~~~~
 * Added single-year PSM3 API test for `iotools.get_psm3`.
 * Added tests for `iotools.parse_psm3` and `iotools.read_psm3`.
-* Change `pvlib/test` folder to `pvlib/tests` and reorganize tests into subfolders, _eg_
-  created `tests/iotools` (:pull:`859`)
+* Change `pvlib/test` folder to `pvlib/tests` and reorganize tests into
+  subfolders, _eg_ created `pvlib/tests/iotools` (:pull:`859`)
 
 Documentation
 ~~~~~~~~~~~~~

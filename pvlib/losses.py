@@ -6,6 +6,7 @@ snow cover, etc.
 
 import numpy as np
 import pandas as pd
+import math
 from pvlib.tools import cosd
 
 
@@ -78,6 +79,6 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     mass_removed[cleaning_times] = mass_no_cleaning[cleaning_times]
     accum_mass = mass_no_cleaning - mass_removed.ffill()
 
-    soiling_ratio = 1 - 0.3437 * np.erf(0.17 * accum_mass**0.8473)
+    soiling_ratio = 1 - 0.3437 * math.erf(0.17 * accum_mass**0.8473)
 
     return soiling_ratio

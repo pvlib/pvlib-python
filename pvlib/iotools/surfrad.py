@@ -127,7 +127,7 @@ def read_surfrad(filename, map_variables=True):
         response = urlopen(req)
         file_buffer = io.StringIO(response.read().decode(errors='ignore'))
     else:
-        file_buffer = open(filename, 'r')
+        file_buffer = open(str(filename), 'r')
 
     # Read and parse the first two lines to build the metadata dict.
     station = file_buffer.readline()

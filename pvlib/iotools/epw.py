@@ -228,7 +228,7 @@ def read_epw(filename, coerce_year=None):
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
     else:
         # Assume it's accessible via the file system
-        csvdata = open(filename, 'r')
+        csvdata = open(str(filename), 'r')
     try:
         data, meta = parse_epw(csvdata, coerce_year)
     finally:

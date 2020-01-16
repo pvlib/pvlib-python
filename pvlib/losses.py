@@ -6,7 +6,6 @@ snow cover, etc.
 
 import numpy as np
 import pandas as pd
-from scipy.special import erf
 from pvlib.tools import cosd
 
 
@@ -60,6 +59,10 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
        Change. J. Seinfeld and S. Pandis. Wiley and Sons 2001.
 
     """
+    try:
+        from scipy.special import erf
+    except ImportError:
+        raise ImportError("The soiling_hsu function requires scipy.")
 
     # accumulate rainfall into periods for comparison with threshold
     accum_rain = rainfall.rolling(rain_accum_period, closed='right').sum()

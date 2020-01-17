@@ -42,4 +42,4 @@ Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Mark Mikofski (:ghuser:`mikofski`)
-*  (:ghuser:`nappaillav`)
+* Valliappan CA (:ghuser:`nappaillav`)

@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def read_epw(filename, coerce_year=None):
-    '''
+    r'''
     Read an EPW file in to a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged

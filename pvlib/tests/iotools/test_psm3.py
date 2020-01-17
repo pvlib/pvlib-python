@@ -2,21 +2,17 @@
 test iotools for PSM3
 """
 
-import os
 from pvlib.iotools import psm3
-from conftest import needs_pandas_0_22
+from conftest import needs_pandas_0_22, DATA_DIR
 import numpy as np
 import pandas as pd
 import pytest
 from requests import HTTPError
 from io import StringIO
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
-PROJDIR = os.path.dirname(BASEDIR)
-DATADIR = os.path.join(PROJDIR, 'data')
-TMY_TEST_DATA = os.path.join(DATADIR, 'test_psm3_tmy-2017.csv')
-YEAR_TEST_DATA = os.path.join(DATADIR, 'test_psm3_2017.csv')
-MANUAL_TEST_DATA = os.path.join(DATADIR, 'test_read_psm3.csv')
+TMY_TEST_DATA = DATA_DIR / 'test_psm3_tmy-2017.csv'
+YEAR_TEST_DATA = DATA_DIR / 'test_psm3_2017.csv'
+MANUAL_TEST_DATA = DATA_DIR / 'test_read_psm3.csv'
 LATITUDE, LONGITUDE = 40.5137, -108.5449
 HEADER_FIELDS = [
     'Source', 'Location ID', 'City', 'State', 'Country', 'Latitude',
@@ -100,7 +96,7 @@ def test_get_psm3_singleyear():
 @pytest.fixture
 def io_input(request):
     """file-like object for parse_psm3"""
-    with open(MANUAL_TEST_DATA, 'r') as f:
+    with MANUAL_TEST_DATA.open() as f:
         data = f.read()
     obj = StringIO(data)
     return obj

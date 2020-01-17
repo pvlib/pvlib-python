@@ -26,21 +26,12 @@ def expected_output():
 
 
 @pytest.fixture
-def expected_output_2():
+def expected_output_2(expected_output):
     # Sample output (calculated manually)
     dt = pd.date_range(start=pd.datetime(2019, 1, 1, 0, 0, 0),
                        end=pd.datetime(2019, 1, 1, 23, 59, 0), freq='1h')
 
-    expected_no_cleaning = pd.Series(
-        data=[0.884980357535360, 0.806308930084762, 0.749974647038078,
-              0.711804155175089, 0.687489866078621, 0.672927554408964,
-              0.664714899337491, 0.660345851212099, 0.658149551658860,
-              0.657104593968981, 0.656633344364056, 0.656431630729954,
-              0.656349579062171, 0.656317825078228, 0.656306121502393,
-              0.656302009396500, 0.656300630853678, 0.656300189543417,
-              0.656300054532516, 0.656300015031680, 0.656300003971846,
-              0.656300001006533, 0.656300000244750, 0.656300000057132],
-        index=dt)
+    expected_no_cleaning = expected_output
 
     expected = pd.Series(index=dt)
     expected[dt[:4]] = expected_no_cleaning[dt[:4]]

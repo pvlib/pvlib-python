@@ -1,5 +1,4 @@
-import inspect
-import os
+from pathlib import Path
 import platform
 
 import numpy as np
@@ -36,9 +35,8 @@ def fail_on_pvlib_version(version):
 
 
 # commonly used directories in the tests
-test_dir = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
-data_dir = os.path.join(test_dir, os.pardir, 'data')
+TEST_DIR = Path(__file__).parent
+DATA_DIR = TEST_DIR.parent / 'data'
 
 
 platform_is_windows = platform.system() == 'Windows'

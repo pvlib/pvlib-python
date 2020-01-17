@@ -298,6 +298,7 @@ PVWatts model
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
 
+
 Estimating PV model parameters
 ------------------------------
 
@@ -326,6 +327,14 @@ Utilities for working with IV curve data
     ivtools.utility.numdiff
     ivtools.utility.rectify_iv_curve
     ivtools.utility.schumaker_qspline
+
+Losses
+------
+.. autosummary::
+   :toctree: generated/
+
+   losses.soiling_hsu
+
 
 Other
 -----

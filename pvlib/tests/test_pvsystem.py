@@ -1,5 +1,3 @@
-import inspect
-import os
 from collections import OrderedDict
 
 import numpy as np
@@ -17,13 +15,13 @@ from pvlib.location import Location
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import needs_numpy_1_10, requires_scipy, fail_on_pvlib_version
+from conftest import (
+    needs_numpy_1_10, requires_scipy, fail_on_pvlib_version, DATA_DIR)
 
 
 def test_systemdef_tmy3():
     from pvlib.iotools import tmy
-    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvsystem)))
-    tmy3_testfile = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
+    tmy3_testfile = DATA_DIR / '703165TY.csv'
     tmy3_data, tmy3_metadata = tmy.read_tmy3(tmy3_testfile)
     expected = {'tz': -9.0,
                 'albedo': 0.1,
@@ -40,8 +38,7 @@ def test_systemdef_tmy3():
 
 def test_systemdef_tmy2():
     from pvlib.iotools import tmy
-    pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvsystem)))
-    tmy2_testfile = os.path.join(pvlib_abspath, 'data', '12839.tm2')
+    tmy2_testfile = DATA_DIR / '12839.tm2'
     tmy2_data, tmy2_metadata = tmy.read_tmy2(tmy2_testfile)
 
     expected = {'tz': -5,

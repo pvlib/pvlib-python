@@ -1,14 +1,10 @@
-import inspect
-import os
-
 import pandas as pd
 from pandas.util.testing import network
 
 from pvlib.iotools import surfrad
+from conftest import DATA_DIR
 
-test_dir = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
-testfile = os.path.join(test_dir, '../data/surfrad-slv16001.dat')
+testfile = DATA_DIR / 'surfrad-slv16001.dat'
 network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
                     'Alamosa_CO/2016/slv16001.dat')
 

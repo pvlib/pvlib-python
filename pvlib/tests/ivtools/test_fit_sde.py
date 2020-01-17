@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from pvlib import pvsystem
 from pvlib.ivtools import sde
-from pvlib.tests.conftest import requires_scipy
+from pvlib.test.conftest import requires_scipy
 
 
 @pytest.fixture

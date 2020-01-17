@@ -14,7 +14,9 @@ Enhancements
   objects. (:issue:`841`)
 * Added `leap_day` parameter to `iotools.get_psm3` instead of hardcoding it as
   False.
-
+* Added a new module `pvlib.losses` for various loss models.
+* Added the Humboldt State University soiling model
+  :py:func:`~pvlib.losses.soiling_hsu`. (:issue:`739`)
 
 Bug fixes
 ~~~~~~~~~
@@ -32,3 +34,4 @@ Documentation
 Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+*  (:ghuser:`nappaillav`)

@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 import numpy as np
@@ -8,11 +6,11 @@ from numpy import nan
 import pytest
 
 from pvlib.iotools import solrad
-from conftest import data_dir
+from conftest import DATA_DIR
 
 
-testfile = os.path.join(data_dir, 'abq19056.dat')
-testfile_mad = os.path.join(data_dir, 'msn19056.dat')
+testfile = DATA_DIR / 'abq19056.dat'
+testfile_mad = DATA_DIR / 'msn19056.dat'
 
 
 columns = [

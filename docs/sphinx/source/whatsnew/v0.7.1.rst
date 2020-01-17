@@ -14,6 +14,9 @@ Enhancements
   (:pull:`845`)
 * Added :py:func:`~pvlib.iotools.parse_epw` to parse a file-like buffer
   containing weather data in the EPW format.
+* Added a new module `pvlib.losses` for various loss models.
+* Added the Humboldt State University soiling model
+  :py:func:`~pvlib.losses.soiling_hsu`. (:issue:`739`)
 
 Bug fixes
 ~~~~~~~~~
@@ -25,6 +28,9 @@ Testing
 ~~~~~~~
 * Added single-year PSM3 API test for `iotools.get_psm3`.
 * Added tests for `iotools.parse_psm3` and `iotools.read_psm3`.
+* Change `pvlib/test` folder to `pvlib/tests` and reorganize tests into
+  subfolders, *e.g.*: created `pvlib/tests/iotools` (:pull:`859`)
+* replace `os.path` with `pathlib` and stringify path objects for Python<=3.5
 
 Documentation
 ~~~~~~~~~~~~~
@@ -38,3 +44,4 @@ Contributors
 * :ghuser:`dzimmanck`
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Valliappan CA (:ghuser:`nappaillav`)

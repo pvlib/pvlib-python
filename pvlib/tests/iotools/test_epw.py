@@ -1,11 +1,9 @@
-import os
-
 from pandas.util.testing import network
 
 from pvlib.iotools import epw
-from conftest import data_dir
+from conftest import DATA_DIR
 
-epw_testfile = os.path.join(data_dir, 'NLD_Amsterdam062400_IWEC.epw')
+epw_testfile = DATA_DIR / 'NLD_Amsterdam062400_IWEC.epw'
 
 
 def test_read_epw():

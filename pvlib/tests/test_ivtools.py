@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from pvlib import pvsystem
 from pvlib import ivtools
-from pvlib.test.conftest import requires_scipy, requires_pysam
+from conftest import requires_scipy, requires_pysam
 
 
 @pytest.fixture

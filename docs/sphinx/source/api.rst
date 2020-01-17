@@ -298,7 +298,7 @@ PVWatts model
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
 
-Functions for fitting PV models
+Functions for fitting diode models
 -------------------------------
 .. autosummary::
    :toctree: generated/
@@ -306,6 +306,14 @@ Functions for fitting PV models
     ivtools.fit_sde_sandia
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
+
+Losses
+------
+.. autosummary::
+   :toctree: generated/
+
+   losses.soiling_hsu
+
 
 Other
 -----

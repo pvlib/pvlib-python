@@ -299,7 +299,8 @@ PVWatts model
    pvsystem.pvwatts_losses
 
 Functions for fitting diode models
--------------------------------
+----------------------------------
+
 .. autosummary::
    :toctree: generated/
 
@@ -309,6 +310,7 @@ Functions for fitting diode models
 
 Losses
 ------
+
 .. autosummary::
    :toctree: generated/
 

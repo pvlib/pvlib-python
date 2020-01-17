@@ -1,6 +1,6 @@
 .. _whatsnew_0710:
 
-v0.7.1 (January 10, 2020)
+v0.7.1 (January 17, 2020)
 -------------------------
 
 Enhancements
@@ -45,3 +45,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Valliappan CA (:ghuser:`nappaillav`)
+* Anton Driesse (:ghuser:`adriesse`)

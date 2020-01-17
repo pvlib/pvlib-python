@@ -14,7 +14,7 @@ import logging
 from pvlib.pvsystem import singlediode, v_from_i
 
 from pvlib.ivtools.utility import constants, rectify_iv_curve, numdiff
-from pvlib.ivtools.fit_sde import fit_sde_cocontent
+from pvlib.ivtools.sde import fit_sandia_cocontent
 
 
 def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
@@ -447,7 +447,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
         _, _, _, rsh[j], _ = \
-            fit_sde_cocontent(voltage, current, vth[j] * specs['ns'])
+            fit_sandia_cocontent(voltage, current, vth[j] * specs['ns'])
 
     gamma_ref, mugamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,
                                                   const, specs)

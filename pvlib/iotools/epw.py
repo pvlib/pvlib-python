@@ -179,7 +179,7 @@ def read_epw(filename, coerce_year=None):
     | precipitable_water            | Total precipitable water contained in a |
     |                               | column of unit cross section from earth |
     |                               | to top of atmosphere, cm. Note that some|
-    |                               | old *_TMY3.epw files may have incorrect |
+    |                               | old \*_TMY3.epw files may have incorrect|
     |                               | unit if it was retrieved from           |
     |                               | www.energyplus.net.                     |
     +-------------------------------+-----------------------------------------+

@@ -291,7 +291,7 @@ class PVSystem(object):
             Irradiance model.
 
         kwargs
-            Extra parameters passed to :func:`irradiance.total_irrad`.
+            Extra parameters passed to :func:`irradiance.get_total_irradiance`.
 
         Returns
         -------
@@ -1678,11 +1678,14 @@ def sapm(effective_irradiance, temp_cell, module):
     irrad_ref = 1000
     # TODO: remove this warning in v0.8 after deprecation period for change in
     # effective irradiance units, made in v0.7
-    if np.all(effective_irradiance) < 2.0:
-        import warnings
-        warnings.warn('effective_irradiance inputs appear to be in suns.'
-                      ' Units changed in v0.7 from suns to W/m2',
-                      RuntimeWarning)
+    with np.errstate(invalid='ignore'):  # turn off warning for NaN
+        ee = np.asarray(effective_irradiance)
+        ee_gt0 = ee[ee > 0.0]
+        if ee_gt0.size > 0 and np.all(ee_gt0 < 2.0):
+            import warnings
+            msg = 'effective_irradiance inputs appear to be in suns. Units ' \
+                  'changed in v0.7 from suns to W/m2'
+            warnings.warn(msg, RuntimeWarning)
 
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K

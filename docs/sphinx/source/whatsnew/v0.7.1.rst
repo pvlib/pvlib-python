@@ -1,0 +1,38 @@
+.. _whatsnew_0710:
+
+v0.7.1 (MONTH DAY, YEAR)
+------------------------
+
+
+API Changes
+~~~~~~~~~~~
+
+Enhancements
+~~~~~~~~~~~~
+* Added :py:func:`~pvlib.iotools.read_psm3` to read local NSRDB PSM3 files and
+  :py:func:`~pvlib.iotools.parse_psm3` to parse local NSRDB PSM3 file-like
+  objects. (:issue:`841`)
+* Added `leap_day` parameter to `iotools.get_psm3` instead of hardcoding it as
+  False.
+* Added :py:func:`~pvlib.iotools.get_pvgis_tmy` to get PVGIS TMY datasets.
+* Added :py:func:`~pvlib.iotools.parse_epw` to parse a file-like buffer
+  containing weather data in the EPW format.
+
+Bug fixes
+~~~~~~~~~
+* Changed the PSM3 API endpoint for TMY requests in `iotools.get_psm3`.
+
+Testing
+~~~~~~~
+* Added single-year PSM3 API test for `iotools.get_psm3`.
+* Added tests for `iotools.parse_psm3` and `iotools.read_psm3`.
+
+Documentation
+~~~~~~~~~~~~~
+* Created an Example Gallery. (:pull:`846`)
+* Updated list of allowed years for `iotools.get_psm3`.
+
+Contributors
+~~~~~~~~~~~~
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Mark Mikofski (:ghuser:`mikofski`)

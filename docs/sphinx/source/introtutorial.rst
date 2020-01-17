@@ -1,6 +1,6 @@
-.. _introexamples:
+.. _introtutorial:
 
-Intro Examples
+Intro Tutorial
 ==============
 
 This page contains introductory examples of pvlib python usage.

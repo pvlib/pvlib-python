@@ -298,7 +298,6 @@ PVWatts model
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
 
-
 Estimating PV model parameters
 ------------------------------
 
@@ -317,7 +316,6 @@ Functions for fitting the single diode equation
    :toctree: generated/
 
     ivtools.fit_sde.fit_sandia
-    ivtools.fit_sde.fit_cocontent
 
 Utilities for working with IV curve data
 
@@ -330,6 +328,7 @@ Utilities for working with IV curve data
 
 Losses
 ------
+
 .. autosummary::
    :toctree: generated/
 

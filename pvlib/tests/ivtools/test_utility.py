@@ -50,11 +50,11 @@ def test_rectify_iv_curve(ivcurve):
     (np.array([0., 1., 2., 3., 4., 1., 2., 3., 4., 5.]),
      np.array([1., 2., 3., 4., 5.]),
      np.array([-.5, -.1, 0., .2, .3])
-    ),
+     ),
     (np.array([2., 1., 0., 1., 2., 3., 2., 1., 2., 3.]),
      np.array([-2., -1., 0., 1., 2.]),
      np.array([-5., -1., .2, .5, 2.])
-    ),
+     ),
     ((np.array([[0., -1., 2.], [-0.5, -1., 1.], [-0.75, -0.5, 3.],
                 [0.75, -1.5, 0.375], [0.125, -1.25, 2.5625], [1.5, 0., 0.],
                 [-0.5, -1., 2.], [-0.25, 1.5, 0.375], [0.75, -1.5, 1.375],
@@ -77,7 +77,7 @@ def test_rectify_iv_curve(ivcurve):
       np.array([-.5, -.1, -.05, 0., .1, .2, .3]),
       np.array([-5., -1., -.297, .2, .3485, .5, 2.]),
       np.array([0., 0., 1., 0., 1., 0., 0.]))
-    )])
+     )])
 def test_schmumaker_qspline(x, y, expected):
     [t, c, yhat, kflag] = schumaker_qspline(x, y)
     np.testing.assert_allclose(c, expected[0], atol=0.0001)

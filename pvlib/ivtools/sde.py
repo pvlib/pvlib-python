@@ -255,10 +255,12 @@ def _calc_I0(IL, I, V, Gp, Rs, nNsVth):
     return (IL - I - Gp * V - Gp * Rs * I) / np.exp((V + Rs * I) / nNsVth)
 
 
-def fit_sandia_cocontent(voltage, current, nsvth):
+def _fit_sandia_cocontent(voltage, current, nsvth):
     """
     Regression technique to fit the single diode equation to data for a single
     IV curve.
+
+    In general, not reliable for estimating parameters other than Rsh.
 
     Parameters
     ----------
@@ -278,10 +280,10 @@ def fit_sandia_cocontent(voltage, current, nsvth):
         photocurrent [A]
     io : numeric
         dark current [A]
-    rs : numeric
-        shunt resistance [ohm]
     rsh : numeric
         series resistance [ohm]
+    rs : numeric
+        shunt resistance [ohm]
     n : numeric
         diode (ideality) factor [unitless]
 
@@ -353,15 +355,16 @@ def fit_sandia_cocontent(voltage, current, nsvth):
         isc * betars * betagp
 
     iph = betaiph
-    rs = betars
-    rsh = 1 / betagp
-    n = betan
     io = betaio
-    return iph, io, rs, rsh, n
+    rsh = 1 / betagp
+    rs = betars
+    n = betan
+
+    return iph, io, rsh, rs, n
 
 
 def _cocontent(v, c, isc, kflag):
-    # Used by fit_sde_cocontent
+    # Used by fit_sandia_cocontent
     # calculate co-content integral by numerical integration of
     # i = (Isc - I) over v
     # Here, i = Isc - I is assumed to be represented by the quadratic spline
@@ -395,7 +398,7 @@ def _cocontent(v, c, isc, kflag):
 
 
 def _cocontent_regress(v, i, voc, isc, cci):
-    # Used by fit_sde_content
+    # Used by fit_sandia_content
     # For the method coded here see Appendix C of [2] SAND2015-2065
     # predictor variables for regression of CC
     x = np.vstack((v, isc - i, v * (isc - i), v * v, (i - isc) ** 2)).T

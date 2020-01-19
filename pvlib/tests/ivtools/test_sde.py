@@ -59,10 +59,42 @@ def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
     assert np.allclose(result, (-2.4322856072799985, 8.854688976836396,
                                 -63.56227601452038, 111.18558915546389,
                                 -137.9965046659527))
-    result = sde.fit_sandia_sandia_simple_params(voltage=v2, current=i2)
+    result = sde.fit_sandia_simple_params(voltage=v2, current=i2)
     assert np.allclose(result, (2.62405311949227, 1.8657963912925288,
                                 110.35202827739991, -65.652554411442,
                                 174.49362093001415))
+
+
+@pytest.mark.parametrize('i', 'v', 'nsvth', 'expected',  [
+    (np.array(
+        [4., 3.95, 3.92, 3.9, 3.89, 3.88, 3.82, 3.8, 3.75, 3.7, 3.68, 3.66,
+         3.65, 3.5, 3.2, 2.7, 2.2, 1.3, .6, 0.]),
+     np.array([3., 2.9, 2.8, 2.7, 2.6, 2.5, 2.4, 1.7, 0.8, 0.]),
+     np.array(
+        [5., 4.9, 4.8, 4.7, 4.6, 4.5, 4.4, 4.3, 4.2, 4.1, 4., 3.8, 3.5, 1.7,
+         0.])
+    ),
+    (np.array(
+        [0., .2, .4, .6, .8, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.2, 2.4, 2.6, 2.7,
+         2.76, 2.78, 2.81, 2.85, 2.88]),
+     np.array([0., 0.2, 0.4, 0.6, 0.8, 1., 1.2, 1.4, 1.45, 1.5]),
+     np.array(
+        [0., .1, .2, .3, .4, .5, .6, .7, .8, .9, 1., 1.1, 1.18, 1.2, 1.22])
+    ),
+    (2., 10., 15.),
+    ((-96695.792, 96699.876, 7.4791, .0288, -.1413),
+     (2.3392, 11.6865, -.232, -.2596, -.7119),
+     (-22.0795, 27.1196, -4.2076, -.0056, -.0498)
+    )])
+def test__fit_sandia_cocontent(i, v, nsvth, expected):
+    # test confirms agreement with Matlab code. The returned parameters
+    # are nonsense
+    iph, io, rs, rsh, n = sde._fit_sandia_cocontent(v, i, nsvth)
+    np.testing.assert_allclose(iph, np.array(expected[0]), atol=.0001)
+    np.testing.assert_allclose(io, np.array([expected[1]]), atol=.0001)
+    np.testing.assert_allclose(rsh, np.array([expected[2]]), atol=.0001)
+    np.testing.assert_allclose(rs, np.array([expected[3]]), atol=.0001)
+    np.testing.assert_allclose(n, np.array([expected[4]]), atol=.0001)
 
 
 @pytest.fixture

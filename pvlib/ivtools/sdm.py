@@ -82,6 +82,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Notes
     -----
+    The estimation method [1]_ minimizes a system of six equations.
     Inputs ``v_mp``, ``v_oc``, ``i_mp`` and ``i_sc`` are assumed to be from a
     single IV curve at constant irradiance and cell temperature. Irradiance is
     not explicitly used by the fitting procedure. The irradiance level at which
@@ -91,9 +92,9 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     References
     ----------
-    [1] A. Dobos, "An Improved Coefficient Calculator for the California
-    Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
-    Solar Energy Engineering, vol 134, 2012.
+    .. [1] A. Dobos, "An Improved Coefficient Calculator for the California
+       Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
+       Solar Energy Engineering, vol 134, 2012.
     """
 
     try:
@@ -121,7 +122,9 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
                root_kwargs={}):
     """
     Calculates the parameters for the De Soto single diode model using the
-    procedure described in [1]. This procedure has the advantage of
+    procedure described in [1]_.
+
+    This procedure has the advantage of
     using common specifications given by manufacturers in the
     datasheets of PV modules.
 
@@ -168,45 +171,41 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
 
     Returns
     -------
-    Tuple of the following elements:
+    dict with the following elements:
+        I_L_ref: float
+            Light-generated current at reference conditions [A]
+        I_o_ref: float
+            Diode saturation current at reference conditions [A]
+        R_s: float
+            Series resistance [ohms]
+        R_sh_ref: float
+            Shunt resistance at reference conditions [ohms].
+        a_ref: float
+            Modified ideality factor at reference conditions.
+            The product of the usual diode ideality factor (n, unitless),
+            number of cells in series (Ns), and cell thermal voltage at
+            specified effective irradiance and cell temperature.
+        alpha_sc: float
+            The short-circuit current (i_sc) temperature coefficient of the
+            module [A/K].
+        EgRef: float
+            Energy of bandgap of semi-conductor used [eV]
+        dEgdT: float
+            Variation of bandgap according to temperature [eV/K]
+        irrad_ref: float
+            Reference irradiance condition [W/m2]
+        temp_ref: float
+            Reference temperature condition [C]
 
-        * Dictionary with the following elements:
-            I_L_ref: float
-                Light-generated current at reference conditions [A]
-            I_o_ref: float
-                Diode saturation current at reference conditions [A]
-            R_s: float
-                Series resistance [ohms]
-            R_sh_ref: float
-                Shunt resistance at reference conditions [ohms].
-            a_ref: float
-                Modified ideality factor at reference conditions.
-                The product of the usual diode ideality factor (n, unitless),
-                number of cells in series (Ns), and cell thermal voltage at
-                specified effective irradiance and cell temperature.
-            alpha_sc: float
-                The short-circuit current (i_sc) temperature coefficient of the
-                module [A/K].
-            EgRef: float
-                Energy of bandgap of semi-conductor used [eV]
-            dEgdT: float
-                Variation of bandgap according to temperature [eV/K]
-            irrad_ref: float
-                Reference irradiance condition [W/m2]
-            temp_ref: float
-                Reference temperature condition [C]
-        * scipy.optimize.OptimizeResult
-            Optimization result of scipy.optimize.root().
-            See scipy.optimize.OptimizeResult for more details.
+     scipy.optimize.OptimizeResult
+        Optimization result of scipy.optimize.root().
+        See scipy.optimize.OptimizeResult for more details.
 
     References
     ----------
-    [1] W. De Soto et al., "Improvement and validation of a model for
-    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-    2006.
-
-    [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
-    Processes", Wiley, 2013
+    .. [1] W. De Soto et al., "Improvement and validation of a model for
+       photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+       2006.
     """
 
     try:
@@ -260,7 +259,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
 def _system_of_equations_desoto(params, specs):
     """Evaluates the systems of equations used to solve for the single
     diode equation parameters. Function designed to be used by
-    scipy.optimize.root() in fit_desoto().
+    scipy.optimize.root in fit_desoto.
 
     Parameters
     ----------
@@ -274,16 +273,6 @@ def _system_of_equations_desoto(params, specs):
     Returns
     -------
     system of equations to solve with scipy.optimize.root().
-
-
-    References
-    ----------
-    [1] W. De Soto et al., "Improvement and validation of a model for
-    photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-    2006.
-
-    [2] John A Dufﬁe, William A Beckman, "Solar Engineering of Thermal
-    Processes", Wiley, 2013
     """
 
     # six input known variables
@@ -325,7 +314,7 @@ def _system_of_equations_desoto(params, specs):
 
 def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     """
-    Estimate parameters for the PVsyst module performance model
+    Estimate parameters for the PVsyst module performance model.
 
     Parameters
     ----------
@@ -389,29 +378,29 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         pvsyst.u - filter indicating IV curves with parameter values deemed
                    reasonable by the private function ``_filter_params``
 
-    Description
-    -----------
-    fit_pvsyst_sandia estimates parameters for the PVsyst module
-    performance model [2,3,4]. Estimation methods are documented in [5,6,7].
+    Notes
+    -----
+    The PVsyst module is described in [1]_, [2]_, and [3]_. The fitting method
+    is documented in [4]_, [5]_, and [6]_. Ported from PVLib Matlab [7]_.
 
     References
     ----------
-    [1] PVLib MATLAB
-    [2] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
-        Temperature Dependence of Photovoltaic Modules in PVsyst, IEEE Journal
-        of Photovoltaics v5(1), January 2015.
-    [3] A. Mermoud, PV Modules modeling, Presentation at the 2nd PV Performance
-        Modeling Workshop, Santa Clara, CA, May 2013
-    [4] A. Mermoud, T. Lejeuene, Performance Assessment of a Simulation Model
-        for PV modules of any available technology, 25th European Photovoltaic
-        Solar Energy Conference, Valencia, Spain, Sept. 2010
-    [5] C. Hansen, Estimating Parameters for the PVsyst Version 6 Photovoltaic
-        Module Performance Model, Sandia National Laboratories Report
-        SAND2015-8598
-    [6] C. Hansen, Parameter Estimation for Single Diode Models of Photovoltaic
-        Modules, Sandia National Laboratories Report SAND2015-2065
-    [7] C. Hansen, Estimation of Parameters for Single Diode Models using
+    .. [1] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
+       Temperature Dependence of Photovoltaic Modules in PVsyst, IEEE Journal
+       of Photovoltaics v5(1), January 2015.
+    .. [2] A. Mermoud, PV Modules modeling, Presentation at the 2nd PV
+       Performance Modeling Workshop, Santa Clara, CA, May 2013
+    .. [3] A. Mermoud, T. Lejeuene, Performance Assessment of a Simulation
+       Model for PV modules of any available technology, 25th European
+       Photovoltaic Solar Energy Conference, Valencia, Spain, Sept. 2010
+    .. [4] C. Hansen, Estimating Parameters for the PVsyst Version 6
+       Photovoltaic Module Performance Model, Sandia National Laboratories
+       Report SAND2015-8598
+    .. [5] C. Hansen, Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [6] C. Hansen, Estimation of Parameters for Single Diode Models using
         Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
+    .. [7] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
 
     logging.basicConfig()
@@ -719,11 +708,11 @@ def _update_io(rsh, rs, nnsvth, io, il, voc):
 
     References
     ----------
-    [1] PVLib MATLAB
-    [2] C. Hansen, Parameter Estimation for Single Diode Models of Photovoltaic
-        Modules, Sandia National Laboratories Report SAND2015-XXXX
-    [3] C. Hansen, Estimation of Parameteres for Single Diode Models using
-        Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
+    .. [1] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
+    .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [3] C. Hansen, Estimation of Parameteres for Single Diode Models using
+       Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
     """
 
     eps = 1e-6
@@ -927,9 +916,9 @@ def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
 
     References
     ----------
-    [1] PVL MATLAB
-    [2] C. Hansen, Parameter Estimation for Single Diode Models of Photovoltaic
-        Modules, Sandia National Laboratories Report SAND2015-XXXX
+    .. [1] PVL MATLAB 2065 https://github.com/sandialabs/MATLAB_PV_LIB
+    .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
     """
     niter = 500
     x1 = rsh
@@ -951,15 +940,6 @@ def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
 
     Helper function for fit_pvsyst_sandia
 
-    Description
-    -----------
-    _calc_theta_phi_exact calculates values for the Lambert W function which
-    are used in the analytic solutions for the single diode equation at the
-    maximum power point. For V=V(I),
-    phi = W(Io*Rsh/n*Vth * exp((IL + Io - Imp)*Rsh/n*Vth)). For I=I(V),
-    theta = W(Rs*Io/n*Vth *
-    Rsh/ (Rsh+Rs) * exp(Rsh/ (Rsh+Rs)*((Rs(IL+Io) + V)/n*Vth))
-
     Parameters
     ----------
     imp: a numpy array of length N of values for Imp (A)
@@ -980,14 +960,23 @@ def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
     phi: a numpy array of values for the Lambert W function for solving
          V = V(I)
 
+    Notes
+    -----
+    _calc_theta_phi_exact calculates values for the Lambert W function which
+    are used in the analytic solutions for the single diode equation at the
+    maximum power point. For V=V(I),
+    phi = W(Io*Rsh/n*Vth * exp((IL + Io - Imp)*Rsh/n*Vth)). For I=I(V),
+    theta = W(Rs*Io/n*Vth *
+    Rsh/ (Rsh+Rs) * exp(Rsh/ (Rsh+Rs)*((Rs(IL+Io) + V)/n*Vth))
+
     References
     ----------
-    [1] PVLib MATLAB
-    [2] C. Hansen, Parameter Estimation for Single Diode Models of Photovoltaic
-        Modules, Sandia National Laboratories Report SAND2015-XXXX
-    [3] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of
-        real solar cells using Lambert W-function", Solar Energy Materials and
-        Solar Cells, 81 (2004) 269-277.
+    .. [1] PVL MATLAB 2065 https://github.com/sandialabs/MATLAB_PV_LIB
+    .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [3] A. Jain, A. Kapoor, "Exact analytical solutions of the parameters of
+       real solar cells using Lambert W-function", Solar Energy Materials and
+       Solar Cells, 81 (2004) 269-277.
     """
 
     try:

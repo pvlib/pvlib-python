@@ -19,34 +19,34 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     ----------
     voltage : ndarray
         1D array of `float` type containing voltage at each point on the IV
-        curve, increasing from 0 to ``v_oc`` inclusive [V]
+        curve, increasing from 0 to ``v_oc`` inclusive. [V]
 
     current : ndarray
         1D array of `float` type containing current at each point on the IV
-        curve, from ``i_sc`` to 0 inclusive [A]
+        curve, from ``i_sc`` to 0 inclusive. [A]
 
     v_oc : float, default None
-        Open circuit voltage [V]. If not provided, ``v_oc`` is taken as the
-        last point in the ``voltage`` array.
+        Open circuit voltage. If not provided, ``v_oc`` is taken as the
+        last point in the ``voltage`` array. [V]
 
     i_sc : float, default None
-        Short circuit current [A]. If not provided, ``i_sc`` is taken as the
-        first point in the ``current`` array.
+        Short circuit current. If not provided, ``i_sc`` is taken as the
+        first point in the ``current`` array. [A]
 
     v_mp_i_mp : tuple of float, default None
-        Voltage, current at maximum power point in units of [V], [A].
-        If not provided, the maximum power point is found at the maximum of
-        ``voltage`` \times ``current``.
+        Voltage, current at maximum power point. If not provided, the maximum
+        power point is found at the maximum of ``voltage`` \times ``current``.
+        [V], [A]
 
     vlim : float, default 0.2
         Defines portion of IV curve where the exponential term in the single
         diode equation can be neglected, i.e.
-        ``voltage`` <= ``vlim`` x ``v_oc`` [V]
+        ``voltage`` <= ``vlim`` x ``v_oc``. [V]
 
     ilim : float, default 0.1
         Defines portion of the IV curve where the exponential term in the
         single diode equation is signficant, approximately defined by
-        ``current`` < (1 - ``ilim``) x ``i_sc`` [A]
+        ``current`` < (1 - ``ilim``) x ``i_sc``. [A]
 
     Returns
     -------
@@ -57,12 +57,12 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
         * saturation_current : float
             dark (saturation) current [A]
         * resistance_shunt : float
-            shunt (parallel) resistance, in ohms
+            shunt (parallel) resistance [ohm]
         * resistance_series : float
-            series resistance, in ohms
+            series resistance [ohm]
         * nNsVth : float
             product of thermal voltage ``Vth`` [V], diode ideality factor
-            ``n``, and number of series cells ``Ns``
+            ``n``, and number of series cells ``Ns``. [V]
 
     Raises
     ------
@@ -75,7 +75,7 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     temperature.
 
     :py:func:`fit_sandia_simple` obtains values for the five parameters for
-    the single diode equation [1]:
+    the single diode equation [1]_:
 
     .. math::
 
@@ -136,11 +136,11 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     References
     ----------
-    [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
-    0 86758 909 4
-    [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
-    In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
-    Photovoltaic Specialist Conference, Chicago, IL, 2019
+    .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
+       0 86758 909 4
+    .. [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
+       In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
+       Photovoltaic Specialist Conference, Chicago, IL, 2019
     """
 
     # If not provided, extract v_oc, i_sc, v_mp and i_mp from the IV curve data
@@ -172,16 +172,16 @@ def _find_mp(voltage, current):
     ----------
     voltage : ndarray
         1D array containing voltage at each point on the IV curve, increasing
-        from 0 to v_oc inclusive, of `float` type [V]
+        from 0 to v_oc inclusive, of `float` type. [V]
 
     current : ndarray
         1D array containing current at each point on the IV curve, decreasing
-        from i_sc to 0 inclusive, of `float` type [A]
+        from i_sc to 0 inclusive, of `float` type. [A]
 
     Returns
     -------
     v_mp, i_mp : tuple
-        voltage ``v_mp`` and current ``i_mp`` at the maximum power point [V],
+        voltage ``v_mp`` and current ``i_mp`` at the maximum power point. [V],
         [A]
     """
     p = voltage * current
@@ -266,13 +266,13 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
     ----------
     voltage : numeric
         voltage for the IV curve in increasing order, the first value must be
-        0, the last value is taken as ``Voc``
+        0, the last value is taken as ``Voc``. [V]
     current : numeric
         current for the IV curve corresponding to ``voltage``, the first value
-        is taken as ``Isc``, the last value must be 0
+        is taken as ``Isc``, the last value must be 0. [A]
     nsvth : numeric
         the thermal voltage for the module, equal to ``Ns`` (number of cells in
-        series) times ``Vth`` (thermal voltage per cell)
+        series) times ``Vth`` (thermal voltage per cell). [V]
 
     Returns
     -------

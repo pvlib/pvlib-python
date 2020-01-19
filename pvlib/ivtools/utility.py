@@ -223,17 +223,17 @@ def schumaker_qspline(x, y):
 
     Notes
     -----
-    Ported from PVLib Matlab [1]_. Algorithm is taken from [2]_, which relies
-    on prior work described in [3]_.
+    Algorithm is taken from [1]_, which relies on prior work described in [2]_.
+    Ported from PVLib Matlab [3]_.
 
     References
     ----------
-    .. [1] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
-    .. [2] L. L. Schumaker, "On Shape Preserving Quadratic Spline
+    .. [1] L. L. Schumaker, "On Shape Preserving Quadratic Spline
        Interpolation", SIAM Journal on Numerical Analysis 20(4), August 1983,
        pp 854 - 864
-    .. [3] M. H. Lam, "Monotone and Convex Quadratic Spline Interpolation",
+    .. [2] M. H. Lam, "Monotone and Convex Quadratic Spline Interpolation",
        Virginia Journal of Science 41(1), Spring 1990
+    .. [3] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
     # Make sure vectors are 1D arrays
     x = x.flatten()

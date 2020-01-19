@@ -65,7 +65,7 @@ def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
                                 174.49362093001415))
 
 
-@pytest.mark.parametrize('i', 'v', 'nsvth', 'expected',  [
+@pytest.mark.parametrize('i,v,nsvth,expected',  [
     (np.array(
         [4., 3.95, 3.92, 3.9, 3.89, 3.88, 3.82, 3.8, 3.75, 3.7, 3.68, 3.66,
          3.65, 3.5, 3.2, 2.7, 2.2, 1.3, .6, 0.]),

@@ -46,7 +46,7 @@ def test_rectify_iv_curve(ivcurve):
     np.testing.assert_allclose(i, iexp, atol=.0001)
 
 
-@pytest.mark.parametrize('x', 'y', 'expected', [
+@pytest.mark.parametrize('x,y,expected', [
     (np.array([0., 1., 2., 3., 4., 1., 2., 3., 4., 5.]),
      np.array([1., 2., 3., 4., 5.]),
      np.array([-.5, -.1, 0., .2, .3])

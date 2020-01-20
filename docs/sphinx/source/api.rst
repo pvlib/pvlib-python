@@ -306,16 +306,16 @@ Functions for fitting single diode models
 .. autosummary::
    :toctree: generated/
 
-    ivtools.fit_sdm.fit_cec_sam
-    ivtools.fit_sdm.fit_desoto
-    ivtools.fit_sdm.fit_pvsyst_sandia
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
+    ivtools.sdm.fit_pvsyst_sandia
 
 Functions for fitting the single diode equation
 
 .. autosummary::
    :toctree: generated/
 
-    ivtools.fit_sde.fit_sandia
+    ivtools.sde.fit_sandia_simple
 
 Utilities for working with IV curve data
 

@@ -49,30 +49,23 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Returns
     -------
-    tuple of the following elements:
-
-        * I_L_ref : float
-            The light-generated current (or photocurrent) at reference
-            conditions [A]
-
-        * I_o_ref : float
-            The dark or diode reverse saturation current at reference
-            conditions [A]
-
-        * R_sh_ref : float
-            The shunt resistance at reference conditions, in ohms.
-
-        * R_s : float
-            The series resistance at reference conditions, in ohms.
-
-        * a_ref : float
-            The product of the usual diode ideality factor ``n`` (unitless),
-            number of cells in series ``Ns``, and cell thermal voltage at
-            reference conditions [V]
-
-        * Adjust : float
-            The adjustment to the temperature coefficient for short circuit
-            current, in percent.
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference
+        conditions [A]
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference
+        conditions [A]
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
+    R_s : float
+        The series resistance at reference conditions, in ohms.
+    a_ref : float
+        The product of the usual diode ideality factor ``n`` (unitless),
+        number of cells in series ``Ns``, and cell thermal voltage at
+        reference conditions [V]
+    Adjust : float
+        The adjustment to the temperature coefficient for short circuit
+        current, in percent.
 
     Raises
     ------
@@ -197,7 +190,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         temp_ref: float
             Reference temperature condition [C]
 
-     scipy.optimize.OptimizeResult
+    scipy.optimize.OptimizeResult
         Optimization result of scipy.optimize.root().
         See scipy.optimize.OptimizeResult for more details.
 
@@ -320,63 +313,74 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     ----------
     ivcurves : a dict
         containing IV curve data in the following fields where j
-        denotes the jth data set
-        ivcurves['i'][j] - a numpy array of current (A) (same length as v)
-        ivcurves['v'][j] - a numpy array of voltage (V) (same length as i)
-        ivcurves['ee'][j] - effective irradiance (W / m^2), i.e., POA broadband
-                            irradiance adjusted by solar spectrum modifier
-        ivcurves['tc'][j] - cell temperature (C)
-        ivcurves['isc'][j] - short circuit current of IV curve (A)
-        ivcurves['voc'][j] - open circuit voltage of IV curve (V)
-        ivcurves['imp'][j] - current at max power point of IV curve (A)
-        ivcurves['vmp'][j] - voltage at max power point of IV curve (V)
+        denotes the jth data set:
+        * ivcurves['i'][j] - a numpy array of current (same length as v) [I]
+        * ivcurves['v'][j] - a numpy array of voltage (same length as i) [V]
+        * ivcurves['ee'][j] - effective irradiance, i.e., POA broadband
+           irradiance adjusted by solar spectrum modifier [W / m^2]
+        * ivcurves['tc'][j] - cell temperature [C]
+        * ivcurves['isc'][j] - short circuit current of IV curve [A]
+        * ivcurves['voc'][j] - open circuit voltage of IV curve [V]
+        * ivcurves['imp'][j] - current at max power point of IV curve [A]
+        * ivcurves['vmp'][j] - voltage at max power point of IV curve [V]
 
     specs : a dict
         containing module-level values
         specs['ns'] - number of cells in series
-        specs['aisc'] - temperature coefficeint of isc (A/C)
+        specs['aisc'] - temperature coefficient of isc [A/C]
 
     const : an optional OrderedDict
         containing physical and other constants
-        const['E0'] - effective irradiance at STC, normally 1000 W/m2
-        constp['T0'] - cell temperature at STC, normally 25 C
+        const['E0'] - effective irradiance at STC, normally 1000 [W/m^2]
+        constp['T0'] - cell temperature at STC, normally 25 [C]
         const['k'] - 1.38066E-23 J/K (Boltzmann's constant)
         const['q'] - 1.60218E-19 Coulomb (elementary charge)
 
-    maxiter : an optional numpy array
-        input that sets the maximum number of
-        iterations for the parameter updating part of the algorithm.
-        Default value is 5.
+    maxiter : int, default 5
+        input that sets the maximum number of iterations for the parameter
+        updating part of the algorithm.
 
-    eps1: the desired tolerance for the IV curve fitting. The iterative
-          parameter updating stops when absolute values of the percent change
-          in mean, max and standard deviation of Imp, Vmp and Pmp between
-          iterations are all less than eps1, or when the number of iterations
-          exceeds maxiter. Default value is 1e-3 (.0001%).
+    eps1: float, default 1e-3.
+        Tolerance for the IV curve fitting. The parameter updating stops when
+        absolute values of the percent change in mean, max and standard
+        deviation of Imp, Vmp and Pmp between iterations are all less than
+        eps1, or when the number of iterations exceeds maxiter.
 
     Returns
     -------
-    pvsyst: a OrderedDict containing the model parameters
-        pvsyst['IL_ref'] - light current (A) at STC
-        pvsyst['Io_ref'] - dark current (A) at STC
-        pvsyst['eG'] - effective band gap (eV) at STC
-        pvsyst['Rsh_ref'] - shunt resistance (ohms) at STC
-        pvsyst['Rsh0'] - shunt resistance (ohms) at zero irradiance
-        pvsyst['Rshexp'] - exponential factor defining decrease in rsh with
-                           increasing effective irradiance
-        pvsyst['Rs_ref'] - series resistance (ohms) at STC
-        pvsyst['gamma_ref'] - diode (ideality) factor at STC
-        pvsyst['mugamma'] - temperature coefficient for diode (ideality) factor
-        pvsyst['Iph'] - numpy array of values of light current Iph estimated
-                        for each IV curve
-        pvsyst['Io'] - numpy array of values of dark current Io estimated for
-                       each IV curve
-        pvsyst['Rsh'] - numpy array of values of shunt resistance Rsh estimated
-                        for each IV curve
-        pvsyst['Rs'] - numpy array of values of series resistance Rs estimated
-                       for each IV curve
-        pvsyst.u - filter indicating IV curves with parameter values deemed
-                   reasonable by the private function ``_filter_params``
+    pvsyst: a OrderedDict containing the model parameters:
+        I_L_ref : float
+            light current at STC [A]
+        I_o_ref : float
+            dark current at STC [A]
+        EgRef : float
+            effective band gap at STC [eV]
+        R_sh_ref : float
+            shunt resistance at STC [ohm]
+        R_sh_0 : float
+            shunt resistance at zero irradiance [ohm]
+        R_sh_exp : float
+            exponential factor defining decrease in rsh with increasing
+            effective irradiance
+        R_s : float
+            series resistance at STC [ohm]
+        gamma_ref : float
+            diode (ideality) factor at STC [unitless]
+        mugamma : float
+            temperature coefficient for diode (ideality) factor [1/K]
+        cells_in_series : int
+            number of cells in series
+        iph : array
+            light current for each IV curve [A]
+        io : array
+            dark current for each IV curve [A]
+        rsh : array
+            shunt resistance for each IV curve [ohm]
+        rs : array
+            series resistance for each IV curve [ohm]
+        u : array
+            boolean for each IV curve indicating that the parameter values
+            are deemed reasonable by the private function ``_filter_params``
 
     Notes
     -----
@@ -633,22 +637,22 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         # Estimate Rs0
         t15 = np.logical_and(u, ee > 400)
         rs0 = np.mean(rs[t15])
-
         # Save parameter estimates in output structure
-        pvsyst['IL_ref'] = iph0
-        pvsyst['Io_ref'] = io0
-        pvsyst['eG'] = eg
-        pvsyst['Rs_ref'] = rs0
+        pvsyst['I_L_ref'] = iph0
+        pvsyst['I_o_ref'] = io0
+        pvsyst['EgRef'] = eg
+        pvsyst['Rs'] = rs0
         pvsyst['gamma_ref'] = gamma_ref
-        pvsyst['mugamma'] = mugamma
-        pvsyst['Rsh0'] = rsh0
-        pvsyst['Rsh_ref'] = rshref
-        pvsyst['Rshexp'] = rshexp
-        pvsyst['Iph'] = iph
-        pvsyst['Io'] = io
-        pvsyst['Rsh'] = rsh
-        pvsyst['Rs'] = rs
-        pvsyst['Ns'] = specs['ns']
+        pvsyst['mu_gamma'] = mugamma
+        pvsyst['R_sh_0'] = rsh0
+        pvsyst['R_sh_ref'] = rshref
+        pvsyst['R_sh_exp'] = rshexp
+        pvsyst['cells_in_series'] = specs['cells_in_series']
+        # save values for each IV curve
+        pvsyst['iph'] = iph
+        pvsyst['io'] = io
+        pvsyst['rsh'] = rsh
+        pvsyst['rs'] = rs
         pvsyst['u'] = u
 
     return pvsyst

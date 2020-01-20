@@ -50,19 +50,17 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     Returns
     -------
-    tuple of the following elements:
-
-        * photocurrent : float
-            photocurrent [A]
-        * saturation_current : float
-            dark (saturation) current [A]
-        * resistance_shunt : float
-            shunt (parallel) resistance [ohm]
-        * resistance_series : float
-            series resistance [ohm]
-        * nNsVth : float
-            product of thermal voltage ``Vth`` [V], diode ideality factor
-            ``n``, and number of series cells ``Ns``. [V]
+    photocurrent : float
+        photocurrent [A]
+    saturation_current : float
+        dark (saturation) current [A]
+    resistance_shunt : float
+        shunt (parallel) resistance [ohm]
+    resistance_series : float
+        series resistance [ohm]
+    nNsVth : float
+        product of thermal voltage ``Vth`` [V], diode ideality factor
+        ``n``, and number of series cells ``Ns``. [V]
 
     Raises
     ------

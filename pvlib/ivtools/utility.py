@@ -158,12 +158,12 @@ def rectify_iv_curve(voltage, current, decimals=None):
     -----
     ``rectify_IV_curve`` ensures that the IV curve lies in the first quadrant
     of the (voltage, current) plane. The returned IV curve:
-    * increases in voltage
-    * contains no negative current or voltage values
-    * contains no NaNs
-    * contains no points with duplicate voltage values. Where voltage values
-      are repeated, a single data point is substituted with current equal to
-      the average of current at duplicated voltages.
+        * increases in voltage
+        * contains no negative current or voltage values
+        * contains no NaNs
+        * contains no points with duplicate voltage values. Where voltage
+          values are repeated, a single data point is substituted with current
+          equal to the average of current at duplicated voltages.
     """
 
     if len(voltage) != len(current):
@@ -205,8 +205,8 @@ def schumaker_qspline(x, y):
     -------
     t : array
         an ordered vector of knots, i.e., X values where the spline
-        changes coefficients. All values in ``x`` are used as knots.
-        The algorithm may insert additional knots between data points in ``x``
+        changes coefficients. All values in x are used as knots.
+        The algorithm may insert additional knots between data points in x
         where changes in convexity are indicated by the (numerical)
         derivative. Consequently len(t) >= len(x).
     c : array
@@ -215,7 +215,7 @@ def schumaker_qspline(x, y):
         (x - t_k)^2 + c[i, 1] * (x - t_k) + c[i, 2]
     yhat : array
         y values corresponding to the knots in t. Contains the original
-        data points, y, and also y-values estimated from the spline at the
+        data points, y, and also y values estimated from the spline at the
         inserted knots.
     kflag : array
         a vector of len(t) of logicals, which are set to true for

@@ -93,7 +93,7 @@ def test_fit_desoto_failure():
 @requires_scipy
 @requires_statsmodels
 def test_fit_pvsyst_sandia(disp=False, npts=3000):
-    spec_list = ['ns', 'aisc', 'bvoc', 'descr']
+    spec_list = ['cells_in_series', 'aisc', 'bvoc', 'descr']
     iv_specs = dict.fromkeys(spec_list)
     keylist = ['isc', 'imp', 'vmp', 'voc', 'poa', 'tc', 'ee']
     ivcurves = dict.fromkeys(keylist)
@@ -103,7 +103,8 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 
         iv_specs.update(
-            ns=int(Ns), aisc=float(aIsc), bvoc=float(bVoc), descr=descr)
+            cells_in_series=int(Ns), aisc=float(aIsc), bvoc=float(bVoc),
+            descr=descr)
 
         strN, strM = f.readline().split(',')
         N = int(strN)
@@ -183,7 +184,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
         mu_gamma=expected['mugamma'], I_L_ref=expected['I_L_ref'],
         I_o_ref=expected['I_o_ref'], R_sh_ref=expected['R_sh_ref'],
         R_sh_0=expected['R_sh_0'], R_s=expected['Rs'],
-        cells_in_series=iv_specs['ns'], EgRef=expected['EgRef'])
+        cells_in_series=iv_specs['cells_in_series'], EgRef=expected['EgRef'])
     iv_res = pvsystem.singlediode(*param_res)
 
     ivcurves['pmp'] = ivcurves['vmp'] * ivcurves['imp']  # power

@@ -170,9 +170,9 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         I_o_ref: float
             Diode saturation current at reference conditions [A]
         R_s: float
-            Series resistance [ohms]
+            Series resistance [ohm]
         R_sh_ref: float
-            Shunt resistance at reference conditions [ohms].
+            Shunt resistance at reference conditions [ohm].
         a_ref: float
             Modified ideality factor at reference conditions.
             The product of the usual diode ideality factor (n, unitless),
@@ -311,30 +311,41 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
 
     Parameters
     ----------
-    ivcurves : a dict
-        containing IV curve data in the following fields where j
-        denotes the jth data set:
-        * ivcurves['i'][j] - a numpy array of current (same length as v) [I]
-        * ivcurves['v'][j] - a numpy array of voltage (same length as i) [V]
-        * ivcurves['ee'][j] - effective irradiance, i.e., POA broadband
-           irradiance adjusted by solar spectrum modifier [W / m^2]
-        * ivcurves['tc'][j] - cell temperature [C]
-        * ivcurves['isc'][j] - short circuit current of IV curve [A]
-        * ivcurves['voc'][j] - open circuit voltage of IV curve [V]
-        * ivcurves['imp'][j] - current at max power point of IV curve [A]
-        * ivcurves['vmp'][j] - voltage at max power point of IV curve [V]
+    ivcurves : dict
+        i[j] : array
+            current for jth IV curve (same length as v[j]) [A]
+        v[j] : array
+            voltage for the jth IV curve (same length as i) [V]
+        ee[j] - float
+            effective irradiance, i.e., POA broadband irradiance adjusted by
+            solar spectrum modifier [W / m^2]
+        tc[j] - float
+            cell temperature [C]
+        isc[j] - float
+            short circuit current of IV curve [A]
+        voc[j] - float
+            open circuit voltage of IV curve [V]
+        imp[j] - float
+            current at max power point of IV curve [A]
+        vmp[j] - float
+            voltage at max power point of IV curve [V]
 
-    specs : a dict
-        containing module-level values
-        specs['ns'] - number of cells in series
-        specs['aisc'] - temperature coefficient of isc [A/C]
+    specs : dict
+        cells_in_series - int
+            number of cells in series
+        aisc - float
+            temperature coefficient of isc [A/C]
 
-    const : an optional OrderedDict
-        containing physical and other constants
-        const['E0'] - effective irradiance at STC, normally 1000 [W/m^2]
-        constp['T0'] - cell temperature at STC, normally 25 [C]
-        const['k'] - 1.38066E-23 J/K (Boltzmann's constant)
-        const['q'] - 1.60218E-19 Coulomb (elementary charge)
+    const : OrderedDict, default {'E0': 1000, 'T0': 25, 'k': 1.38066e-23,
+                                  'q': 1.60218e-19}
+        E0 - float
+            effective irradiance at STC, normally 1000 [W/m^2]
+        T0 - float
+            cell temperature at STC, normally 25 [C]
+        k - float
+            1.38066E-23 J/K (Boltzmann's constant)
+        q - float
+            1.60218E-19 Coulomb (elementary charge)
 
     maxiter : int, default 5
         input that sets the maximum number of iterations for the parameter
@@ -348,7 +359,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
 
     Returns
     -------
-    pvsyst: a OrderedDict containing the model parameters:
+    OrderedDict
         I_L_ref : float
             light current at STC [A]
         I_o_ref : float
@@ -360,8 +371,8 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         R_sh_0 : float
             shunt resistance at zero irradiance [ohm]
         R_sh_exp : float
-            exponential factor defining decrease in rsh with increasing
-            effective irradiance
+            exponential factor defining decrease in shunt resistance with
+            increasing effective irradiance
         R_s : float
             series resistance at STC [ohm]
         gamma_ref : float
@@ -440,7 +451,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
         _, _, rsh[j], _, _ = _fit_sandia_cocontent(
-            voltage, current, vth[j] * specs['ns'])
+            voltage, current, vth[j] * specs['cells_in_series'])
 
     gamma_ref, mugamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,
                                                   const, specs)
@@ -457,7 +468,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
 
         gamma = gamma_ref + mugamma * (tc - const['T0'])
 
-        nnsvth = gamma * (vth * specs['ns'])
+        nnsvth = gamma * (vth * specs['cells_in_series'])
 
         # For each IV curve, sequentially determine initial values for Io, Rs,
         # and Iph [5] Step 3a; [6] Step 3
@@ -664,7 +675,7 @@ def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
 
     y = np.log(isc - voc / rsh) - 3. * np.log(tck / (const['T0'] + 273.15))
     x1 = const['q'] / const['k'] * (1. / (const['T0'] + 273.15) - 1. / tck)
-    x2 = voc / (vth * specs['ns'])
+    x2 = voc / (vth * specs['cells_in_series'])
     t0 = np.isnan(y)
     t1 = np.isnan(x1)
     t2 = np.isnan(x2)

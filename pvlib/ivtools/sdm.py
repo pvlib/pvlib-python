@@ -315,7 +315,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         i[j] : array
             current for jth IV curve (same length as v[j]) [A]
         v[j] : array
-            voltage for the jth IV curve (same length as i) [V]
+            voltage for the jth IV curve (same length as i[j]) [V]
         ee[j] - float
             effective irradiance, i.e., POA broadband irradiance adjusted by
             solar spectrum modifier [W / m^2]
@@ -336,12 +336,11 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         aisc - float
             temperature coefficient of isc [A/C]
 
-    const : OrderedDict, default {'E0': 1000, 'T0': 25, 'k': 1.38066e-23,
-                                  'q': 1.60218e-19}
+    const : OrderedDict
         E0 - float
-            effective irradiance at STC, normally 1000 [W/m^2]
+            effective irradiance at STC, default 1000 [W/m^2]
         T0 - float
-            cell temperature at STC, normally 25 [C]
+            cell temperature at STC, default 25 [C]
         k - float
             1.38066E-23 J/K (Boltzmann's constant)
         q - float
@@ -351,7 +350,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         input that sets the maximum number of iterations for the parameter
         updating part of the algorithm.
 
-    eps1: float, default 1e-3.
+    eps1: float, default 1e-3
         Tolerance for the IV curve fitting. The parameter updating stops when
         absolute values of the percent change in mean, max and standard
         deviation of Imp, Vmp and Pmp between iterations are all less than
@@ -377,7 +376,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             series resistance at STC [ohm]
         gamma_ref : float
             diode (ideality) factor at STC [unitless]
-        mugamma : float
+        mu_gamma : float
             temperature coefficient for diode (ideality) factor [1/K]
         cells_in_series : int
             number of cells in series
@@ -442,7 +441,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     n = len(ivcurves['voc'])
 
     # Initial estimate of Rsh used to obtain the diode factor gamma0 and diode
-    # temperature coefficient mugamma. Rsh is estimated using the co-content
+    # temperature coefficient mu_gamma. Rsh is estimated using the co-content
     # integral method.
 
     rsh = np.ones(n)
@@ -453,11 +452,11 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         _, _, rsh[j], _, _ = _fit_sandia_cocontent(
             voltage, current, vth[j] * specs['cells_in_series'])
 
-    gamma_ref, mugamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,
-                                                  const, specs)
+    gamma_ref, mu_gamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,
+                                                   const, specs)
 
-    badgamma = np.isnan(gamma_ref) or np.isnan(mugamma) \
-        or not np.isreal(gamma_ref) or not np.isreal(mugamma)
+    badgamma = np.isnan(gamma_ref) or np.isnan(mu_gamma) \
+        or not np.isreal(gamma_ref) or not np.isreal(mu_gamma)
 
     if badgamma:
         raise RuntimeError(
@@ -466,7 +465,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     else:
         pvsyst = OrderedDict()
 
-        gamma = gamma_ref + mugamma * (tc - const['T0'])
+        gamma = gamma_ref + mu_gamma * (tc - const['T0'])
 
         nnsvth = gamma * (vth * specs['cells_in_series'])
 
@@ -654,7 +653,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         pvsyst['EgRef'] = eg
         pvsyst['Rs'] = rs0
         pvsyst['gamma_ref'] = gamma_ref
-        pvsyst['mu_gamma'] = mugamma
+        pvsyst['mu_gamma'] = mu_gamma
         pvsyst['R_sh_0'] = rsh0
         pvsyst['R_sh_ref'] = rshref
         pvsyst['R_sh_exp'] = rshexp
@@ -688,8 +687,8 @@ def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
     alpha = np.linalg.lstsq(x, y[~uu], rcond=None)[0]
 
     gamma_ref = 1. / alpha[3]
-    mugamma = alpha[4] / alpha[3] ** 2
-    return gamma_ref, mugamma
+    mu_gamma = alpha[4] / alpha[3] ** 2
+    return gamma_ref, mu_gamma
 
 
 def _update_io(rsh, rs, nnsvth, io, il, voc):

@@ -147,7 +147,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
     pvsyst_specs = dict.fromkeys(spec_list)
     paramlist = [
         'I_L_ref', 'I_o_ref', 'EgRef', 'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s',
-        'gamma_ref', 'mugamma']
+        'gamma_ref', 'mu_gamma']
     varlist = ['iph', 'io', 'rsh', 'rs', 'u']
     pvsyst = OrderedDict(key=(paramlist + varlist))
 
@@ -159,7 +159,8 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
             ns=int(Ns), aisc=float(aIsc), bvoc=float(bVoc), descr=descr)
 
         tmp = [float(x) for x in f.readline().split(',')]
-        # IL_ref, Io_ref, eG, Rsh_ref, Rsh0, Rshexp, Rs_ref, gamma_ref, mugamma
+        # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,
+        # mu_gamma
         pvsyst.update(zip(paramlist, tmp))
 
         strN = f.readline()
@@ -181,7 +182,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
     param_res = pvsystem.calcparams_pvsyst(
         effective_irradiance=ivcurves['ee'], temp_cell=ivcurves['tc'],
         alpha_sc=iv_specs['aisc'], gamma_ref=expected['gamma_ref'],
-        mu_gamma=expected['mugamma'], I_L_ref=expected['I_L_ref'],
+        mu_gamma=expected['mu_gamma'], I_L_ref=expected['I_L_ref'],
         I_o_ref=expected['I_o_ref'], R_sh_ref=expected['R_sh_ref'],
         R_sh_0=expected['R_sh_0'], R_s=expected['Rs'],
         cells_in_series=iv_specs['cells_in_series'], EgRef=expected['EgRef'])
@@ -202,9 +203,10 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
         ivcurves['isc'], iv_res['i_sc'], equal_nan=True, rtol=0.003)
     assert np.allclose(
         ivcurves['voc'], iv_res['v_oc'], equal_nan=True, rtol=0.019)
-    # ns, aisc, bvoc, descr
+    # cells_in_series, aisc, bvoc, descr
     assert all((iv_specs[spec] == pvsyst_specs[spec]) for spec in spec_list)
-    # IL_ref, Io_ref, eG, Rsh_ref, Rsh0, Rshexp, Rs_ref, gamma_ref, mugamma
+    # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,
+    # mu_gamma
     assert np.isclose(expected['I_L_ref'], pvsyst['I_L_ref'], rtol=6.5e-5)
     assert np.isclose(expected['I_o_ref'], pvsyst['I_o_ref'], rtol=0.15)
     assert np.isclose(expected['R_s'], pvsyst['Rs_ref'], rtol=0.0035)
@@ -212,7 +214,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
     assert np.isclose(expected['R_sh_0'], pvsyst['R_sh_0'], rtol=0.013)
     assert np.isclose(expected['EgRef'], pvsyst['EgRef'], rtol=0.037)
     assert np.isclose(expected['gamma_ref'], pvsyst['gamma_ref'], rtol=0.0045)
-    assert np.isclose(expected['mugamma'], pvsyst['mugamma'], rtol=0.064)
+    assert np.isclose(expected['mu_gamma'], pvsyst['mu_gamma'], rtol=0.064)
 
     # Iph, Io, Rsh, Rs, u
     mask = np.ones(expected['u'].shape, dtype=bool)

@@ -435,7 +435,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
-        _, _, _, rsh[j], _ = _fit_sandia_cocontent(
+        _, _, rsh[j], _, _ = _fit_sandia_cocontent(
             voltage, current, vth[j] * specs['ns'])
 
     gamma_ref, mugamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,

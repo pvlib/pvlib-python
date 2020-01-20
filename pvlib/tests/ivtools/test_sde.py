@@ -59,7 +59,7 @@ def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
     assert np.allclose(result, (-2.4322856072799985, 8.854688976836396,
                                 -63.56227601452038, 111.18558915546389,
                                 -137.9965046659527))
-    result = sde.fit_sandia_simple_params(voltage=v2, current=i2)
+    result = sde.fit_sandia_simple(voltage=v2, current=i2)
     assert np.allclose(result, (2.62405311949227, 1.8657963912925288,
                                 110.35202827739991, -65.652554411442,
                                 174.49362093001415))
@@ -88,7 +88,7 @@ def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
 def test__fit_sandia_cocontent(i, v, nsvth, expected):
     # test confirms agreement with Matlab code. The returned parameters
     # are nonsense
-    iph, io, rs, rsh, n = sde._fit_sandia_cocontent(v, i, nsvth)
+    iph, io, rsh, rs, n = sde._fit_sandia_cocontent(v, i, nsvth)
     np.testing.assert_allclose(iph, np.array(expected[0]), atol=.0001)
     np.testing.assert_allclose(io, np.array([expected[1]]), atol=.0001)
     np.testing.assert_allclose(rsh, np.array([expected[2]]), atol=.0001)

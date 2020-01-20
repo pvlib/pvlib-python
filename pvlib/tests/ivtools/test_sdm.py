@@ -156,7 +156,8 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 
         pvsyst_specs.update(
-            ns=int(Ns), aisc=float(aIsc), bvoc=float(bVoc), descr=descr)
+            cells_in_series=int(Ns), aisc=float(aIsc), bvoc=float(bVoc),
+            descr=descr)
 
         tmp = [float(x) for x in f.readline().split(',')]
         # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,

@@ -185,7 +185,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
         alpha_sc=iv_specs['aisc'], gamma_ref=expected['gamma_ref'],
         mu_gamma=expected['mu_gamma'], I_L_ref=expected['I_L_ref'],
         I_o_ref=expected['I_o_ref'], R_sh_ref=expected['R_sh_ref'],
-        R_sh_0=expected['R_sh_0'], R_s=expected['Rs'],
+        R_sh_0=expected['R_sh_0'], R_s=expected['R_s'],
         cells_in_series=iv_specs['cells_in_series'], EgRef=expected['EgRef'])
     iv_res = pvsystem.singlediode(*param_res)
 
@@ -210,7 +210,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
     # mu_gamma
     assert np.isclose(expected['I_L_ref'], pvsyst['I_L_ref'], rtol=6.5e-5)
     assert np.isclose(expected['I_o_ref'], pvsyst['I_o_ref'], rtol=0.15)
-    assert np.isclose(expected['R_s'], pvsyst['Rs_ref'], rtol=0.0035)
+    assert np.isclose(expected['R_s'], pvsyst['R_s'], rtol=0.0035)
     assert np.isclose(expected['R_sh_ref'], pvsyst['R_sh_ref'], rtol=0.091)
     assert np.isclose(expected['R_sh_0'], pvsyst['R_sh_0'], rtol=0.013)
     assert np.isclose(expected['EgRef'], pvsyst['EgRef'], rtol=0.037)

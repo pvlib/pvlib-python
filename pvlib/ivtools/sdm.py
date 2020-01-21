@@ -651,7 +651,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         pvsyst['I_L_ref'] = iph0
         pvsyst['I_o_ref'] = io0
         pvsyst['EgRef'] = eg
-        pvsyst['Rs'] = rs0
+        pvsyst['R_s'] = rs0
         pvsyst['gamma_ref'] = gamma_ref
         pvsyst['mu_gamma'] = mu_gamma
         pvsyst['R_sh_0'] = rsh0

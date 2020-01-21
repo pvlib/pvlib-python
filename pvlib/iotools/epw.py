@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def read_epw(filename, coerce_year=None):
-    '''
+    r'''
     Read an EPW file in to a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
@@ -179,7 +179,7 @@ def read_epw(filename, coerce_year=None):
     | precipitable_water            | Total precipitable water contained in a |
     |                               | column of unit cross section from earth |
     |                               | to top of atmosphere, cm. Note that some|
-    |                               | old *_TMY3.epw files may have incorrect |
+    |                               | old \*_TMY3.epw files may have incorrect|
     |                               | unit if it was retrieved from           |
     |                               | www.energyplus.net.                     |
     +-------------------------------+-----------------------------------------+
@@ -217,7 +217,7 @@ def read_epw(filename, coerce_year=None):
        <https://energyplus.net/documentation>`_
     '''
 
-    if filename.startswith('http'):
+    if str(filename).startswith('http'):
         # Attempts to download online EPW file
         # See comments above for possible online sources
         request = Request(filename, headers={'User-Agent': (
@@ -228,7 +228,7 @@ def read_epw(filename, coerce_year=None):
         csvdata = io.StringIO(response.read().decode(errors='ignore'))
     else:
         # Assume it's accessible via the file system
-        csvdata = open(filename, 'r')
+        csvdata = open(str(filename), 'r')
     try:
         data, meta = parse_epw(csvdata, coerce_year)
     finally:

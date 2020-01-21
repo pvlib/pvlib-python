@@ -1,5 +1,3 @@
-import inspect
-import os
 from collections import OrderedDict
 
 import numpy as np
@@ -17,7 +15,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from conftest import requires_scipy, requires_tables
+from conftest import requires_scipy, requires_tables, DATA_DIR
 
 
 def test_ineichen_series():
@@ -528,13 +526,12 @@ def test_degrees_to_index_1():
 
 @pytest.fixture
 def detect_clearsky_data():
-    test_dir = os.path.dirname(os.path.abspath(
-        inspect.getfile(inspect.currentframe())))
-    file = os.path.join(test_dir, '..', 'data', 'detect_clearsky_data.csv')
-    expected = pd.read_csv(file, index_col=0, parse_dates=True, comment='#')
+    data_file = DATA_DIR / 'detect_clearsky_data.csv'
+    expected = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
     expected = expected.tz_localize('UTC').tz_convert('Etc/GMT+7')
     metadata = {}
-    with open(file) as f:
+    with data_file.open() as f:
         for line in f:
             if line.startswith('#'):
                 key, value = line.strip('# \n').split(':')
@@ -658,9 +655,7 @@ def test_bird():
         etr, b_a, alb
     )
     Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
-    clearsky_path = os.path.dirname(os.path.abspath(__file__))
-    pvlib_path = os.path.dirname(clearsky_path)
-    data_path = os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012.csv')
+    data_path = DATA_DIR / 'BIRD_08_16_2012.csv'
     testdata = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
     testdata.index = times[1:48]
     assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:48]))
@@ -694,9 +689,7 @@ def test_bird():
         zenith, airmass, aod_380nm, aod_500nm, h2o_cm, dni_extra=etr
     )
     Eb2, Ebh2, Gh2, Dh2 = (irrads2[_] for _ in field_names)
-    clearsky_path = os.path.dirname(os.path.abspath(__file__))
-    pvlib_path = os.path.dirname(clearsky_path)
-    data_path = os.path.join(pvlib_path, 'data', 'BIRD_08_16_2012_patm.csv')
+    data_path = DATA_DIR / 'BIRD_08_16_2012_patm.csv'
     testdata2 = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
     testdata2.index = times[1:48]
     direct_beam2 = pd.Series(np.where(dawn, Eb2, 0.), index=times).fillna(0.)

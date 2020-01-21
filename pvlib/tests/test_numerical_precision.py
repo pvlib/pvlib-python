@@ -17,19 +17,17 @@ high-precision values generated with SymPy.
 """
 
 import logging
-import os
 import numpy as np
 import pandas as pd
 from pvlib import pvsystem
 from pvlib.singlediode import bishop88, estimate_voc
+from conftest import DATA_DIR
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 TEST_DATA = 'bishop88_numerical_precision.csv'
-TEST_PATH = os.path.dirname(os.path.abspath(__file__))
-PVLIB_PATH = os.path.dirname(TEST_PATH)
-DATA_PATH = os.path.join(PVLIB_PATH, 'data', TEST_DATA)
+DATA_PATH = DATA_DIR / TEST_DATA
 POA = 888
 TCELL = 55
 # module parameters from CEC module SunPower SPR-E20-327

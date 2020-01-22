@@ -622,7 +622,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
                                                 maxiter, eps1)
 
         # get single diode models from converged values for each IV curve
-        desoto = _extract_sdm_params(ee, tc, iph, io, rsh, rs, n0, u, 
+        desoto = _extract_sdm_params(ee, tc, iph, io, rsh, rs, n0, u,
                                      specs, const, model='desoto')
         # Add parameters estimated in this function
         desoto['a_ref'] = n0 * specs['cells_in_series'] * const['k'] / \
@@ -667,7 +667,7 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, const, specs):
     return res.params[1]
 
 
-def _initial_iv_params(ivcurves, voc, isc, ee, rsh, nnsvth):
+def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
     # sets initial values for iph, io, rs and quality filter u.
     # Helper function for fit_<model>_sandia.
     n = len(ivcurves)
@@ -839,7 +839,7 @@ def _extract_sdm_params(ee, tc, iph, io, rsh, rs, n, u, specs, const,
 
     elif model == 'desoto':
         dEgdT = 0.0002677
-        x_for_io = 1. / const['k'] * (1. / tok - 1. / tck[u] + dEgdT * \
+        x_for_io = 1. / const['k'] * (1. / tok - 1. / tck[u] + dEgdT *
             (tc[u] - const['T0']) / tck[u])
 
         # Estimate R_sh_ref

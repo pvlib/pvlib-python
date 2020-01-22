@@ -9,4 +9,4 @@ Documentation
 
 Contributors
 ~~~~~~~~~~~~
-* mikofski (:ghuser:`mikofski`)
+* Mark Mikofski (:ghuser:`mikofski`)

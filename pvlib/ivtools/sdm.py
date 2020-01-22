@@ -319,19 +319,19 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             solar spectrum modifier [W / m^2]
         tc[j] - float
             cell temperature [C]
-        isc[j] - float
+        i_sc[j] - float
             short circuit current of IV curve [A]
-        voc[j] - float
+        v_oc[j] - float
             open circuit voltage of IV curve [V]
-        imp[j] - float
+        i_mp[j] - float
             current at max power point of IV curve [A]
-        vmp[j] - float
+        v_mp[j] - float
             voltage at max power point of IV curve [V]
 
     specs : dict
         cells_in_series - int
             number of cells in series
-        aisc - float
+        alpha_sc - float
             temperature coefficient of isc [A/C]
 
     const : OrderedDict
@@ -419,15 +419,15 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     ee = ivcurves['ee']
     tc = ivcurves['tc']
     tck = tc + 273.15
-    isc = ivcurves['isc']
-    voc = ivcurves['voc']
-    imp = ivcurves['imp']
-    vmp = ivcurves['vmp']
+    isc = ivcurves['i_sc']
+    voc = ivcurves['v_oc']
+    imp = ivcurves['i_mp']
+    vmp = ivcurves['v_mp']
 
     # Cell Thermal Voltage
     vth = const['k'] / const['q'] * tck
 
-    n = len(ivcurves['voc'])
+    n = len(ivcurves['v_oc'])
 
     # Initial estimate of Rsh used to obtain the diode factor gamma0 and diode
     # temperature coefficient mu_gamma. Rsh is estimated using the co-content
@@ -442,7 +442,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             voltage, current, vth[j] * specs['cells_in_series'])
 
     gamma_ref, mu_gamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,
-                                                   const, specs)
+                                                   specs, const)
 
     badgamma = np.isnan(gamma_ref) or np.isnan(mu_gamma) \
         or not np.isreal(gamma_ref) or not np.isreal(mu_gamma)
@@ -494,20 +494,22 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             solar spectrum modifier [W / m^2]
         tc[j] - float
             cell temperature [C]
-        isc[j] - float
+        i_sc[j] - float
             short circuit current of IV curve [A]
-        voc[j] - float
+        v_oc[j] - float
             open circuit voltage of IV curve [V]
-        imp[j] - float
+        i_mp[j] - float
             current at max power point of IV curve [A]
-        vmp[j] - float
+        v_mp[j] - float
             voltage at max power point of IV curve [V]
 
     specs : dict
-        cells_in_series - int
+        cells_in_series : int
             number of cells in series
-        aisc - float
-            temperature coefficient of isc [A/C]
+        alpha_sc : float
+            temperature coefficient of Isc [A/C]
+        beta_voc : float
+            temperature coefficient of Voc [V/C]
 
     const : OrderedDict
         E0 - float
@@ -576,15 +578,15 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     ee = ivcurves['ee']
     tc = ivcurves['tc']
     tck = tc + 273.15
-    isc = ivcurves['isc']
-    voc = ivcurves['voc']
-    imp = ivcurves['imp']
-    vmp = ivcurves['vmp']
+    isc = ivcurves['i_sc']
+    voc = ivcurves['v_oc']
+    imp = ivcurves['i_mp']
+    vmp = ivcurves['v_mp']
 
     # Cell Thermal Voltage
     vth = const['k'] / const['q'] * tck
 
-    n = len(ivcurves['voc'])
+    n = len(ivcurves['v_oc'])
 
     # Initial estimate of Rsh used to obtain the diode factor gamma0 and diode
     # temperature coefficient mu_gamma. Rsh is estimated using the co-content
@@ -598,7 +600,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         _, _, rsh[j], _, _ = _fit_sandia_cocontent(
             voltage, current, vth[j] * specs['cells_in_series'])
 
-    n0 = _fit_desoto_sandia_diode(ee, voc, vth, tc, const, specs)
+    n0 = _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const)
 
     bad_n = np.isnan(n0) or not np.isreal(n0)
 
@@ -632,7 +634,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     return desoto
 
 
-def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
+def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, specs, const):
     # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
     # temperature dependence by means of the equation for Io
 
@@ -651,7 +653,7 @@ def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
     return gamma_ref, mu_gamma
 
 
-def _fit_desoto_sandia_diode(ee, voc, vth, tc, const, specs):
+def _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const):
     # estimates the diode factor for the De Soto model.
     # Helper function for fit_desoto_sandia
     try:
@@ -661,7 +663,7 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, const, specs):
                           ' statsmodels')
 
     x = specs['cells_in_series'] * vth * np.log(ee / const['E0'])
-    y = voc - specs['bvoc'] * (tc - const['T0'])
+    y = voc - specs['beta_voc'] * (tc - const['T0'])
     new_x = sm.add_constant(x)
     res = sm.RLM(y, new_x).fit()
     return res.params[1]
@@ -864,8 +866,8 @@ def _extract_sdm_params(ee, tc, iph, io, rsh, rs, n, u, specs, const,
     x = tc[u] - const['T0']
     y = iph[u] * (const['E0'] / ee[u])
     # average over non-NaN values of Y and X
-    nans = np.isnan(y - specs['aisc'] * x)
-    I_L_ref = np.mean(y[~nans] - specs['aisc'] * x[~nans])
+    nans = np.isnan(y - specs['alpha_sc'] * x)
+    I_L_ref = np.mean(y[~nans] - specs['alpha_sc'] * x[~nans])
 
     # Estimate R_s
     nans = np.isnan(rs)

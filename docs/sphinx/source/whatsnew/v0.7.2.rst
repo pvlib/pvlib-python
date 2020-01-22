@@ -1,0 +1,7 @@
+Documentation
+=============
+* Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
+
+Contributors
+============
+* mikofski (ghuser:`mikofski`)

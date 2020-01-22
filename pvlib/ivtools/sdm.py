@@ -9,8 +9,6 @@ Function names should follow the pattern "fit_sdm_" + name of model + "_" +
 import numpy as np
 from collections import OrderedDict
 
-import logging
-
 from pvlib.pvsystem import singlediode, v_from_i
 
 from pvlib.ivtools.utility import constants, rectify_iv_curve, numdiff
@@ -417,16 +415,6 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     .. [7] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
 
-    logging.basicConfig()
-    LOGGER = logging.getLogger(__name__)
-    LOGGER.setLevel(logging.DEBUG)
-
-    try:
-        from scipy import optimize
-        import statsmodels.api as sm
-    except ImportError:
-        raise ImportError('fit_pvsyst_sandia requires scipy and statsmodels')
-
     ee = ivcurves['ee']
     tc = ivcurves['tc']
     tck = tc + 273.15
@@ -460,210 +448,31 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
 
     if badgamma:
         raise RuntimeError(
-            "Failed to estimate the diode (ideality) factor parameter.")
+            "Failed to estimate the diode (ideality) factor parameter;"
+            " aborting parameter estimation.")
 
     else:
-        pvsyst = OrderedDict()
 
         gamma = gamma_ref + mu_gamma * (tc - const['T0'])
-
         nnsvth = gamma * (vth * specs['cells_in_series'])
 
         # For each IV curve, sequentially determine initial values for Io, Rs,
         # and Iph [5] Step 3a; [6] Step 3
+        iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh,
+                                            nnsvth)
 
-        io = np.ones(n)
-        iph = np.ones(n)
-        rs = np.ones(n)
+        # Update values for each IV curve to converge at vmp, imp, voc and isc
+        iph, io, rsh, rs, u = _update_iv_params(voc, isc, vmp, imp, ee, iph,
+                                                io, rsh, rs, nnsvth, u,
+                                                maxiter, eps1)
 
-        for j in range(n):
-
-            if rsh[j] > 0:
-                volt, curr = rectify_iv_curve(ivcurves['v'][j],
-                                              ivcurves['i'][j])
-                # Initial estimate of Io, evaluate the single diode model at
-                # voc and approximate Iph + Io = Isc [5] Step 3a; [6] Step 3b
-                io[j] = (isc[j] - voc[j] / rsh[j]) * np.exp(-voc[j] /
-                                                            nnsvth[j])
-
-                # initial estimate of rs from dI/dV near Voc
-                # [5] Step 3a; [6] Step 3c
-                [didv, d2id2v] = numdiff(volt, curr)
-                t3 = volt > .5 * voc[j]
-                t4 = volt < .9 * voc[j]
-                u = np.logical_and(t3, t4)
-                tmp = -rsh[j] * didv - 1.
-                v = np.logical_and(u, tmp > 0)
-                if np.sum(v) > 0:
-                    vtrs = (nnsvth[j] / isc[j] * (
-                        np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j]))
-                        - volt[v] / nnsvth[j]))
-                    rs[j] = np.mean(vtrs[vtrs > 0], axis=0)
-                else:
-                    rs[j] = 0.
-
-                # Initial estimate of Iph, evaluate the single diode model at
-                # Isc [5] Step 3a; [6] Step 3d
-
-                iph[j] = isc[j] + io[j] * np.expm1(isc[j] / nnsvth[j]) \
-                    + isc[j] * rs[j] / rsh[j]
-            else:
-                io[j] = np.nan
-                rs[j] = np.nan
-                iph[j] = np.nan
-
-        # Filter IV curves for good initial values
-        LOGGER.debug('filtering params ... may take awhile')
-        # [5] Step 3b
-        u = _filter_params(io, rsh, rs, ee, isc)
-
-        # Refine Io to match Voc
-        LOGGER.debug('Refine Io to match Voc')
-        # [5] Step 3c
-        tmpio = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
-        io[u] = tmpio
-
-        # Calculate Iph to be consistent with Isc and current values of other
-        LOGGER.debug('Calculate Iph to be consistent with Isc, ...')
-        # parameters [6], Step 3c
-        iph = isc + io * np.expm1(rs * isc / nnsvth) + isc * rs / rsh
-
-        # Refine Rsh, Rs, Io and Iph in that order.
-        counter = 1.  # counter variable for parameter updating while loop,
-        # counts iterations
-        prevconvergeparams = OrderedDict()
-        prevconvergeparams['state'] = 0.0
-
-        t14 = np.array([True])
-
-        while t14.any() and counter <= maxiter:
-            # update rsh to match max power point using a fixed point method.
-            tmprsh = _update_rsh_fixed_pt(rsh[u], rs[u], io[u], iph[u],
-                                          nnsvth[u], imp[u], vmp[u])
-
-            rsh[u] = tmprsh
-
-            # Calculate Rs to be consistent with Rsh and maximum power point
-            LOGGER.debug('step %d: calculate Rs', counter)
-            _, phi = _calc_theta_phi_exact(imp[u], iph[u], vmp[u], io[u],
-                                           nnsvth[u], rs[u], rsh[u])
-            rs[u] = (iph[u] + io[u] - imp[u]) * rsh[u] / imp[u] - \
-                nnsvth[u] * phi / imp[u] - vmp[u] / imp[u]
-
-            # Update filter for good parameters
-            u = _filter_params(io, rsh, rs, ee, isc)
-
-            # Update value for io to match voc
-            LOGGER.debug('step %d: calculate dark/saturation current (Io)',
-                         counter)
-            tmpio = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
-            io[u] = tmpio
-
-            # Calculate Iph to be consistent with Isc and other parameters
-            LOGGER.debug('step %d: calculate Iph', counter)
-            iph = isc + io * np.expm1(rs * isc / nnsvth) + isc * rs / rsh
-
-            # update filter for good parameters
-            u = _filter_params(io, rsh, rs, ee, isc)
-
-            # compute the IV curve from the current parameter values
-            LOGGER.debug('step %d: compute IV curve', counter)
-            result = singlediode(iph[u], io[u], rs[u], rsh[u], nnsvth[u])
-
-            # check convergence criteria
-            LOGGER.debug('step %d: checking convergence', counter)
-            # [5] Step 3d
-            convergeparams = _check_converge(
-                prevconvergeparams, result, vmp[u], imp[u], counter)
-
-            prevconvergeparams = convergeparams
-            counter += 1.
-            t5 = prevconvergeparams['vmperrmeanchange'] >= eps1
-            t6 = prevconvergeparams['imperrmeanchange'] >= eps1
-            t7 = prevconvergeparams['pmperrmeanchange'] >= eps1
-            t8 = prevconvergeparams['vmperrstdchange'] >= eps1
-            t9 = prevconvergeparams['imperrstdchange'] >= eps1
-            t10 = prevconvergeparams['pmperrstdchange'] >= eps1
-            t11 = prevconvergeparams['vmperrabsmaxchange'] >= eps1
-            t12 = prevconvergeparams['imperrabsmaxchange'] >= eps1
-            t13 = prevconvergeparams['pmperrabsmaxchange'] >= eps1
-            t14 = np.logical_or(t5, t6)
-            t14 = np.logical_or(t14, t7)
-            t14 = np.logical_or(t14, t8)
-            t14 = np.logical_or(t14, t9)
-            t14 = np.logical_or(t14, t10)
-            t14 = np.logical_or(t14, t11)
-            t14 = np.logical_or(t14, t12)
-            t14 = np.logical_or(t14, t13)
-
-        # Extract coefficients for auxillary equations
-        # Estimate Io0 and eG
-        tok = const['T0'] + 273.15  # convert to to K
-        x = const['q'] / const['k'] * (1. / tok - 1. / tck[u]) / gamma[u]
-        y = np.log(io[u]) - 3. * np.log(tck[u] / tok)
-        new_x = sm.add_constant(x)
-        res = sm.RLM(y, new_x).fit()
-        beta = res.params
-        io0 = np.exp(beta[0])
-        eg = beta[1]
-
-        # Estimate Iph0
-        x = tc[u] - const['T0']
-        y = iph[u] * (const['E0'] / ee[u])
-        # average over non-NaN values of Y and X
-        nans = np.isnan(y - specs['aisc'] * x)
-        iph0 = np.mean(y[~nans] - specs['aisc'] * x[~nans])
-
-        # Estimate Rsh0, Rsh_ref and Rshexp
-        # Initial Guesses. Rsh0 is value at Ee=0.
-        nans = np.isnan(rsh)
-        if any(ee < 400):
-            grsh0 = np.mean(rsh[np.logical_and(~nans, ee < 400)])
-        else:
-            grsh0 = np.max(rsh)
-
-        # Rsh_ref is value at Ee = 1000
-        if any(ee > 400):
-            grshref = np.mean(rsh[np.logical_and(~nans, ee > 400)])
-        else:
-            grshref = np.min(rsh)
-
-        # PVsyst default for Rshexp is 5.5
-        rshexp = 5.5
-
-        # Find parameters for Rsh equation
-        def fun_rsh(x, rshexp, ee, e0, rsh):
-            tf = np.log10(_rsh_pvsyst(x, rshexp, ee, e0)) - np.log10(rsh)
-            return tf
-        x0 = np.array([grsh0, grshref])
-        beta = optimize.least_squares(
-            fun_rsh, x0, args=(rshexp, ee[u], const['E0'], rsh[u]),
-            bounds=np.array([[1., 1.], [1.e7, 1.e6]]), verbose=2)
-
-        # Extract PVsyst parameter values
-        rsh0 = beta.x[0]
-        rshref = beta.x[1]
-
-        # Estimate Rs0
-        t15 = np.logical_and(u, ee > 400)
-        rs0 = np.mean(rs[t15])
-        # Save parameter estimates in output structure
-        pvsyst['I_L_ref'] = iph0
-        pvsyst['I_o_ref'] = io0
-        pvsyst['EgRef'] = eg
-        pvsyst['Rs'] = rs0
+        # get single diode models from converged values for each IV curve
+        pvsyst = _extract_sdm_params(iph, io, rsh, rs, gamma, u, ee, tck,
+                                     specs, const, model='pvsyst')
+        # Add parameters estimated in this function
         pvsyst['gamma_ref'] = gamma_ref
         pvsyst['mu_gamma'] = mu_gamma
-        pvsyst['R_sh_0'] = rsh0
-        pvsyst['R_sh_ref'] = rshref
-        pvsyst['R_sh_exp'] = rshexp
         pvsyst['cells_in_series'] = specs['cells_in_series']
-        # save values for each IV curve
-        pvsyst['iph'] = iph
-        pvsyst['io'] = io
-        pvsyst['rsh'] = rsh
-        pvsyst['rs'] = rs
-        pvsyst['u'] = u
 
     return pvsyst
 
@@ -689,6 +498,202 @@ def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
     gamma_ref = 1. / alpha[3]
     mu_gamma = alpha[4] / alpha[3] ** 2
     return gamma_ref, mu_gamma
+
+
+def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
+    # sets initial values for iph, io, rs and quality filter u.
+    # Helper function for fit_<model>_sandia.
+    n = len(ivcurves)
+    io = np.ones(n)
+    iph = np.ones(n)
+    rs = np.ones(n)
+
+    for j in range(n):
+
+        if rsh[j] > 0:
+            volt, curr = rectify_iv_curve(ivcurves['v'][j],
+                                          ivcurves['i'][j])
+            # Initial estimate of Io, evaluate the single diode model at
+            # voc and approximate Iph + Io = Isc [5] Step 3a; [6] Step 3b
+            io[j] = (isc[j] - voc[j] / rsh[j]) * np.exp(-voc[j] /
+                                                        nnsvth[j])
+
+            # initial estimate of rs from dI/dV near Voc
+            # [5] Step 3a; [6] Step 3c
+            [didv, d2id2v] = numdiff(volt, curr)
+            t3 = volt > .5 * voc[j]
+            t4 = volt < .9 * voc[j]
+            u = np.logical_and(t3, t4)
+            tmp = -rsh[j] * didv - 1.
+            v = np.logical_and(u, tmp > 0)
+            if np.sum(v) > 0:
+                vtrs = (nnsvth[j] / isc[j] * (
+                    np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j]))
+                    - volt[v] / nnsvth[j]))
+                rs[j] = np.mean(vtrs[vtrs > 0], axis=0)
+            else:
+                rs[j] = 0.
+
+            # Initial estimate of Iph, evaluate the single diode model at
+            # Isc [5] Step 3a; [6] Step 3d
+            iph[j] = isc[j] + io[j] * np.expm1(isc[j] / nnsvth[j]) \
+                + isc[j] * rs[j] / rsh[j]
+
+        else:
+            io[j] = np.nan
+            rs[j] = np.nan
+            iph[j] = np.nan
+
+        # Filter IV curves for good initial values
+        # [5] Step 3b
+        u = _filter_params(io, rsh, rs, ee, isc)
+
+        # [5] Step 3c
+        # Refine Io to match Voc
+        io[u] = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
+
+        # parameters [6], Step 3c
+        # Calculate Iph to be consistent with Isc and current values of other
+        iph = isc + io * np.expm1(rs * isc / nnsvth) + isc * rs / rsh
+
+    return iph, io, rs, u
+
+
+def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rsh, rs, nnsvth, u,
+                      maxiter, eps1):
+    # Refine Rsh, Rs, Io and Iph in that order.
+    # Helper function for fit_<model>_sandia.
+    counter = 1.  # counter variable for parameter updating while loop,
+    # counts iterations
+    prevconvergeparams = OrderedDict()
+    prevconvergeparams['state'] = 0.0
+
+    not_converged = np.array([True])
+
+    while not_converged.any() and counter <= maxiter:
+        # update rsh to match max power point using a fixed point method.
+        rsh[u] = _update_rsh_fixed_pt(rsh[u], rs[u], io[u], iph[u],
+                                      nnsvth[u], imp[u], vmp[u])
+
+        # Calculate Rs to be consistent with Rsh and maximum power point
+        _, phi = _calc_theta_phi_exact(imp[u], iph[u], vmp[u], io[u],
+                                       nnsvth[u], rs[u], rsh[u])
+        rs[u] = (iph[u] + io[u] - imp[u]) * rsh[u] / imp[u] - \
+            nnsvth[u] * phi / imp[u] - vmp[u] / imp[u]
+
+        # Update filter for good parameters
+        u = _filter_params(io, rsh, rs, ee, isc)
+
+        # Update value for io to match voc
+        io[u] = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
+
+        # Calculate Iph to be consistent with Isc and other parameters
+        iph = isc + io * np.expm1(rs * isc / nnsvth) + isc * rs / rsh
+
+        # update filter for good parameters
+        u = _filter_params(io, rsh, rs, ee, isc)
+
+        # compute the IV curve from the current parameter values
+        result = singlediode(iph[u], io[u], rs[u], rsh[u], nnsvth[u])
+
+        # check convergence criteria
+        # [5] Step 3d
+        convergeparams = _check_converge(
+            prevconvergeparams, result, vmp[u], imp[u], counter)
+
+        prevconvergeparams = convergeparams
+        counter += 1.
+        t5 = prevconvergeparams['vmperrmeanchange'] >= eps1
+        t6 = prevconvergeparams['imperrmeanchange'] >= eps1
+        t7 = prevconvergeparams['pmperrmeanchange'] >= eps1
+        t8 = prevconvergeparams['vmperrstdchange'] >= eps1
+        t9 = prevconvergeparams['imperrstdchange'] >= eps1
+        t10 = prevconvergeparams['pmperrstdchange'] >= eps1
+        t11 = prevconvergeparams['vmperrabsmaxchange'] >= eps1
+        t12 = prevconvergeparams['imperrabsmaxchange'] >= eps1
+        t13 = prevconvergeparams['pmperrabsmaxchange'] >= eps1
+        not_converged = np.logical_or(t5, t6, t7, t8, t9, t10, t11, t12, t13)
+
+    return iph, io, rsh, rs, u
+
+
+def _extract_sdm_params(iph, io, rsh, rs, gamma, u, ee, tc, specs, const,
+                        model):
+    # Get single diode model parameters from five parameters iph, io, rsh, rs
+    # and gamma vs. effective irradiance and temperature
+    try:
+        from scipy import optimize
+        import statsmodels.api as sm
+    except ImportError:
+        raise ImportError('Parameter extraction using Sandia method requires',
+                          ' scipy and statsmodels')
+
+    tck = tc + 273.15
+
+    params = OrderedDict()
+
+    if model=='pvsyst':
+
+        # Estimate I_o_ref and EgRef
+        tok = const['T0'] + 273.15  # convert to to K
+        x = const['q'] / const['k'] * (1. / tok - 1. / tck[u]) / gamma[u]
+        y = np.log(io[u]) - 3. * np.log(tck[u] / tok)
+        new_x = sm.add_constant(x)
+        res = sm.RLM(y, new_x).fit()
+        beta = res.params
+        I_o_ref = np.exp(beta[0])
+        EgRef = beta[1]
+
+        # Estimate I_L_ref
+        x = tc[u] - const['T0']
+        y = iph[u] * (const['E0'] / ee[u])
+        # average over non-NaN values of Y and X
+        nans = np.isnan(y - specs['aisc'] * x)
+        I_L_ref = np.mean(y[~nans] - specs['aisc'] * x[~nans])
+
+        # Estimate R_sh_0, R_sh_ref and R_sh_exp
+        # Initial Guesses. Rsh0 is value at Ee=0.
+        nans = np.isnan(rsh)
+        if any(ee < 400):
+            grsh0 = np.mean(rsh[np.logical_and(~nans, ee < 400)])
+        else:
+            grsh0 = np.max(rsh)
+        # Rsh_ref is value at Ee = 1000
+        if any(ee > 400):
+            grshref = np.mean(rsh[np.logical_and(~nans, ee > 400)])
+        else:
+            grshref = np.min(rsh)
+        # PVsyst default for Rshexp is 5.5
+        R_sh_exp = 5.5
+        # Find parameters for Rsh equation
+        def fun_rsh(x, rshexp, ee, e0, rsh):
+            tf = np.log10(_rsh_pvsyst(x, R_sh_exp, ee, e0)) - np.log10(rsh)
+            return tf
+        x0 = np.array([grsh0, grshref])
+        beta = optimize.least_squares(
+            fun_rsh, x0, args=(R_sh_exp, ee[u], const['E0'], rsh[u]),
+            bounds=np.array([[1., 1.], [1.e7, 1.e6]]), verbose=2)
+        # Extract PVsyst parameter values
+        R_sh_0 = beta.x[0]
+        R_sh_ref = beta.x[1]
+
+        # Estimate R_s
+        R_s = np.mean(rs[np.logical_and(u, ee > 400)])
+
+        params['I_L_ref'] = I_L_ref
+        params['I_o_ref'] = I_o_ref
+        params['EgRef'] = EgRef
+        params['R_sh_0'] = R_sh_0
+        params['R_sh_ref'] = R_sh_ref
+        params['R_sh_exp'] = R_sh_exp
+        params['R_s'] = R_s
+        # save values for each IV curve
+        params['iph'] = iph
+        params['io'] = io
+        params['rsh'] = rsh
+        params['rs'] = rs
+        params['u'] = u
+        return params
 
 
 def _update_io(rsh, rs, nnsvth, io, il, voc):

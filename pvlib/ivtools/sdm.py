@@ -841,8 +841,8 @@ def _extract_sdm_params(ee, tc, iph, io, rsh, rs, n, u, specs, const,
 
     elif model == 'desoto':
         dEgdT = 0.0002677
-        x_for_io = 1. / const['k'] * (1. / tok - 1. / tck[u] + dEgdT *
-                   (tc[u] - const['T0']) / tck[u])
+        x_for_io = 1. / const['k'] * (1. / tok - 1. / tck[u]
+            + dEgdT * (tc[u] - const['T0']) / tck[u])
 
         # Estimate R_sh_ref
         nans = np.isnan(rsh)

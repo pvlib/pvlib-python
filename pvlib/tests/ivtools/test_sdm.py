@@ -105,7 +105,7 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     temp_cell = np.array([15., 25., 35., 45.])
     ee = np.tile(effective_irradiance, len(temp_cell))
     tc = np.repeat(temp_cell, len(effective_irradiance))
-    iph, io, rsh, rs, nnsvth = pvsystem.calcparams_desoto(
+    iph, io, rs, rsh, nnsvth = pvsystem.calcparams_desoto(
         ee, tc, alpha_sc=specs['alpha_sc'], **params)
     sim_ivcurves = pvsystem.singlediode(iph, io, rsh, rs, nnsvth, 300)
     sim_ivcurves['ee'] = ee

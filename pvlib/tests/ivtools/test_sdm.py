@@ -26,7 +26,7 @@ def get_test_iv_params():
 @pytest.fixture
 def cec_params_cansol_cs5p_220p():
     return {'ivcurve': {'V_mp_ref': 46.6, 'I_mp_ref': 4.73, 'V_oc_ref': 58.3,
-                      'I_sc_ref': 5.05},
+                        'I_sc_ref': 5.05},
             'specs': {'alpha_sc': 0.0025, 'beta_voc': -0.19659,
                       'gamma_pmp': -0.43, 'cells_in_series': 96},
             'params': {'a_ref': 2.3674, 'I_L_ref': 5.056, 'I_o_ref': 1.01e-10,
@@ -35,7 +35,7 @@ def cec_params_cansol_cs5p_220p():
 
 @requires_pysam
 def test_fit_cec_sam(cec_params_cansol_cs5p_220p):
-    input_data = cec_params_cansol_cs5p_220p['ivcurves']
+    input_data = cec_params_cansol_cs5p_220p['ivcurve']
     specs = cec_params_cansol_cs5p_220p['specs']
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
         sdm.fit_cec_sam(
@@ -97,19 +97,20 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     # this test computes a set of IV curves for the input fixture, fits
     # the De Soto model to the calculated IV curves, and compares the fitted
     # parameters to the starting values
-    params = cec_params_cansol_cs5p_220p['params'].pop('Adjust')
-    specs = cec_params_cansol_cs5p_220p['specs'].pop('gamma_pmp')
+    params = cec_params_cansol_cs5p_220p['params']
+    params.pop('Adjust')
+    specs = cec_params_cansol_cs5p_220p['specs']
     effective_irradiance = np.array([400., 500., 600., 700., 800., 900.,
                                      1000.])
     temp_cell = np.array([15., 25., 35., 45.])
     ee = np.tile(effective_irradiance, len(temp_cell))
     tc = np.repeat(temp_cell, len(effective_irradiance))
-    iph, io, rsh, rs, nnsvth = pvsystem.calcparams_desoto(ee, tc, **params)
+    iph, io, rsh, rs, nnsvth = pvsystem.calcparams_desoto(
+        ee, tc, alpha_sc=specs['alpha_sc'], **params)
     sim_ivcurves = pvsystem.singlediode(iph, io, rsh, rs, nnsvth, 300)
     sim_ivcurves['ee'] = ee
     sim_ivcurves['tc'] = tc
-    # convert ivcurves from Dataframe to dict of numpy arrays
-    
+
     I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref = sdm.fit_desoto_sandia(
         sim_ivcurves, specs)
     modeled = pd.Series(index=params.index, data=np.nan)

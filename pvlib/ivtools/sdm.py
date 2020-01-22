@@ -615,7 +615,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
 
         # For each IV curve, sequentially determine initial values for Io, Rs,
         # and Iph [5] Step 3a; [6] Step 3
-        iph, io, rs, u = _initial_iv_params(ivcurves, voc, isc, ee, rsh,
+        iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh,
                                             nnsvth)
 
         # Update values for each IV curve to converge at vmp, imp, voc and isc
@@ -842,7 +842,7 @@ def _extract_sdm_params(ee, tc, iph, io, rsh, rs, n, u, specs, const,
     elif model == 'desoto':
         dEgdT = 0.0002677
         x_for_io = 1. / const['k'] * (1. / tok - 1. / tck[u] + dEgdT *
-            (tc[u] - const['T0']) / tck[u])
+                   (tc[u] - const['T0']) / tck[u])
 
         # Estimate R_sh_ref
         nans = np.isnan(rsh)

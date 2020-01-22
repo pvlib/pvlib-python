@@ -392,8 +392,9 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
 
     Notes
     -----
-    The PVsyst module is described in [1]_, [2]_, and [3]_. The fitting method
-    is documented in [4]_, [5]_, and [6]_. Ported from PVLib Matlab [7]_.
+    The PVsyst module performance model is described in [1]_, [2]_, and [3]_.
+    The fitting method is documented in [4]_, [5]_, and [6]_.
+    Ported from PVLib Matlab [7]_.
 
     References
     ----------
@@ -477,6 +478,160 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     return pvsyst
 
 
+def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
+    """
+    Estimate parameters for the De Soto module performance model.
+
+    Parameters
+    ----------
+    ivcurves : dict
+        i[j] : array
+            current for jth IV curve (same length as v[j]) [A]
+        v[j] : array
+            voltage for the jth IV curve (same length as i[j]) [V]
+        ee[j] - float
+            effective irradiance, i.e., POA broadband irradiance adjusted by
+            solar spectrum modifier [W / m^2]
+        tc[j] - float
+            cell temperature [C]
+        isc[j] - float
+            short circuit current of IV curve [A]
+        voc[j] - float
+            open circuit voltage of IV curve [V]
+        imp[j] - float
+            current at max power point of IV curve [A]
+        vmp[j] - float
+            voltage at max power point of IV curve [V]
+
+    specs : dict
+        cells_in_series - int
+            number of cells in series
+        aisc - float
+            temperature coefficient of isc [A/C]
+
+    const : OrderedDict
+        E0 - float
+            effective irradiance at STC, default 1000 [W/m^2]
+        T0 - float
+            cell temperature at STC, default 25 [C]
+        k - float
+            1.38066E-23 J/K (Boltzmann's constant)
+        q - float
+            1.60218E-19 Coulomb (elementary charge)
+
+    maxiter : int, default 5
+        input that sets the maximum number of iterations for the parameter
+        updating part of the algorithm.
+
+    eps1: float, default 1e-3
+        Tolerance for the IV curve fitting. The parameter updating stops when
+        absolute values of the percent change in mean, max and standard
+        deviation of Imp, Vmp and Pmp between iterations are all less than
+        eps1, or when the number of iterations exceeds maxiter.
+
+    Returns
+    -------
+    OrderedDict
+        I_L_ref : float
+            light current at STC [A]
+        I_o_ref : float
+            dark current at STC [A]
+        EgRef : float
+            effective band gap at STC [eV]
+        R_sh_ref : float
+            shunt resistance at STC [ohm]
+        R_s : float
+            series resistance at STC [ohm]
+        cells_in_series : int
+            number of cells in series
+        iph : array
+            light current for each IV curve [A]
+        io : array
+            dark current for each IV curve [A]
+        rsh : array
+            shunt resistance for each IV curve [ohm]
+        rs : array
+            series resistance for each IV curve [ohm]
+        u : array
+            boolean for each IV curve indicating that the parameter values
+            are deemed reasonable by the private function ``_filter_params``
+
+    Notes
+    -----
+    The De Soto module performance model is described in [1]_. The fitting
+    method is documented in [2]_, [3]_. Ported from PVLib Matlab [4]_.
+
+    References
+    ----------
+    .. [1] W. De Soto et al., "Improvement and validation of a model for
+       photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+       2006.
+    .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [3] C. Hansen, Estimation of Parameters for Single Diode Models using
+        Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
+    .. [4] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
+    """
+
+    ee = ivcurves['ee']
+    tc = ivcurves['tc']
+    tck = tc + 273.15
+    isc = ivcurves['isc']
+    voc = ivcurves['voc']
+    imp = ivcurves['imp']
+    vmp = ivcurves['vmp']
+
+    # Cell Thermal Voltage
+    vth = const['k'] / const['q'] * tck
+
+    n = len(ivcurves['voc'])
+
+    # Initial estimate of Rsh used to obtain the diode factor gamma0 and diode
+    # temperature coefficient mu_gamma. Rsh is estimated using the co-content
+    # integral method.
+
+    rsh = np.ones(n)
+    for j in range(n):
+        voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
+        # initial estimate of Rsh, from integral over voltage regression
+        # [5] Step 3a; [6] Step 3a
+        _, _, rsh[j], _, _ = _fit_sandia_cocontent(
+            voltage, current, vth[j] * specs['cells_in_series'])
+
+    n0 = _fit_desoto_sandia_diode(ee, voc, vth, tc, const, specs)
+
+    bad_n = np.isnan(n0) or not np.isreal(n0)
+
+    if bad_n:
+        raise RuntimeError(
+            "Failed to estimate the diode (ideality) factor parameter;"
+            " aborting parameter estimation.")
+
+    else:
+
+        nnsvth = n0 * specs['cells_in_series'] * vth
+
+        # For each IV curve, sequentially determine initial values for Io, Rs,
+        # and Iph [5] Step 3a; [6] Step 3
+        iph, io, rs, u = _initial_iv_params(ivcurves, voc, isc, ee, rsh,
+                                            nnsvth)
+
+        # Update values for each IV curve to converge at vmp, imp, voc and isc
+        iph, io, rsh, rs, u = _update_iv_params(voc, isc, vmp, imp, ee, iph,
+                                                io, rsh, rs, nnsvth, u,
+                                                maxiter, eps1)
+
+        # get single diode models from converged values for each IV curve
+        desoto = _extract_sdm_params(ee, tc, iph, io, rsh, rs, n0, u, 
+                                     specs, const, model='desoto')
+        # Add parameters estimated in this function
+        desoto['a_ref'] = n0 * specs['cells_in_series'] * const['k'] / \
+            const['q'] * (const['T0'] + 273.15)
+        desoto['cells_in_series'] = specs['cells_in_series']
+
+    return desoto
+
+
 def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
     # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
     # temperature dependence by means of the equation for Io
@@ -484,11 +639,7 @@ def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
     y = np.log(isc - voc / rsh) - 3. * np.log(tck / (const['T0'] + 273.15))
     x1 = const['q'] / const['k'] * (1. / (const['T0'] + 273.15) - 1. / tck)
     x2 = voc / (vth * specs['cells_in_series'])
-    t0 = np.isnan(y)
-    t1 = np.isnan(x1)
-    t2 = np.isnan(x2)
-    uu = np.logical_or(t0, t1)
-    uu = np.logical_or(uu, t2)
+    uu = np.logical_or(np.isnan(y), np.isnan(x1), np.isnan(x2))
 
     x = np.vstack((np.ones(len(x1[~uu])), x1[~uu], -x1[~uu] *
                    (tck[~uu] - (const['T0'] + 273.15)), x2[~uu],
@@ -500,7 +651,23 @@ def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, const, specs):
     return gamma_ref, mu_gamma
 
 
-def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
+def _fit_desoto_sandia_diode(ee, voc, vth, tc, const, specs):
+    # estimates the diode factor for the De Soto model.
+    # Helper function for fit_desoto_sandia
+    try:
+        import statsmodels.api as sm
+    except ImportError:
+        raise ImportError('Parameter extraction using Sandia method requires',
+                          ' statsmodels')
+
+    x = specs['cells_in_series'] * vth * np.log(ee / const['E0'])
+    y = voc - specs['bvoc'] * (tc - const['T0'])
+    new_x = sm.add_constant(x)
+    res = sm.RLM(y, new_x).fit()
+    return res.params[1]
+
+
+def _initial_iv_params(ivcurves, voc, isc, ee, rsh, nnsvth):
     # sets initial values for iph, io, rs and quality filter u.
     # Helper function for fit_<model>_sandia.
     n = len(ivcurves)
@@ -617,10 +784,10 @@ def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rsh, rs, nnsvth, u,
     return iph, io, rsh, rs, u
 
 
-def _extract_sdm_params(iph, io, rsh, rs, gamma, u, ee, tc, specs, const,
+def _extract_sdm_params(ee, tc, iph, io, rsh, rs, n, u, specs, const,
                         model):
     # Get single diode model parameters from five parameters iph, io, rsh, rs
-    # and gamma vs. effective irradiance and temperature
+    # and n vs. effective irradiance and temperature
     try:
         from scipy import optimize
         import statsmodels.api as sm
@@ -629,30 +796,16 @@ def _extract_sdm_params(iph, io, rsh, rs, gamma, u, ee, tc, specs, const,
                           ' scipy and statsmodels')
 
     tck = tc + 273.15
+    tok = const['T0'] + 273.15  # convert to to K
 
     params = OrderedDict()
 
-    if model=='pvsyst':
-
+    if model == 'pvsyst':
         # Estimate I_o_ref and EgRef
-        tok = const['T0'] + 273.15  # convert to to K
-        x = const['q'] / const['k'] * (1. / tok - 1. / tck[u]) / gamma[u]
-        y = np.log(io[u]) - 3. * np.log(tck[u] / tok)
-        new_x = sm.add_constant(x)
-        res = sm.RLM(y, new_x).fit()
-        beta = res.params
-        I_o_ref = np.exp(beta[0])
-        EgRef = beta[1]
-
-        # Estimate I_L_ref
-        x = tc[u] - const['T0']
-        y = iph[u] * (const['E0'] / ee[u])
-        # average over non-NaN values of Y and X
-        nans = np.isnan(y - specs['aisc'] * x)
-        I_L_ref = np.mean(y[~nans] - specs['aisc'] * x[~nans])
+        x_for_io = const['q'] / const['k'] * (1. / tok - 1. / tck[u]) / n[u]
 
         # Estimate R_sh_0, R_sh_ref and R_sh_exp
-        # Initial Guesses. Rsh0 is value at Ee=0.
+        # Initial guesses. R_sh_0 is value at ee=0.
         nans = np.isnan(rsh)
         if any(ee < 400):
             grsh0 = np.mean(rsh[np.logical_and(~nans, ee < 400)])
@@ -665,10 +818,13 @@ def _extract_sdm_params(iph, io, rsh, rs, gamma, u, ee, tc, specs, const,
             grshref = np.min(rsh)
         # PVsyst default for Rshexp is 5.5
         R_sh_exp = 5.5
+
         # Find parameters for Rsh equation
+
         def fun_rsh(x, rshexp, ee, e0, rsh):
             tf = np.log10(_rsh_pvsyst(x, R_sh_exp, ee, e0)) - np.log10(rsh)
             return tf
+
         x0 = np.array([grsh0, grshref])
         beta = optimize.least_squares(
             fun_rsh, x0, args=(R_sh_exp, ee[u], const['E0'], rsh[u]),
@@ -677,23 +833,57 @@ def _extract_sdm_params(iph, io, rsh, rs, gamma, u, ee, tc, specs, const,
         R_sh_0 = beta.x[0]
         R_sh_ref = beta.x[1]
 
-        # Estimate R_s
-        R_s = np.mean(rs[np.logical_and(u, ee > 400)])
-
-        params['I_L_ref'] = I_L_ref
-        params['I_o_ref'] = I_o_ref
-        params['EgRef'] = EgRef
+        # parameters unique to PVsyst
         params['R_sh_0'] = R_sh_0
-        params['R_sh_ref'] = R_sh_ref
         params['R_sh_exp'] = R_sh_exp
-        params['R_s'] = R_s
-        # save values for each IV curve
-        params['iph'] = iph
-        params['io'] = io
-        params['rsh'] = rsh
-        params['rs'] = rs
-        params['u'] = u
-        return params
+
+    elif model == 'desoto':
+        dEgdT = 0.0002677
+        x_for_io = 1. / const['k'] * (1. / tok - 1. / tck[u] + dEgdT * \
+            (tc[u] - const['T0']) / tck[u])
+
+        # Estimate R_sh_ref
+        nans = np.isnan(rsh)
+        x = rsh[np.logical_and(u, ee > 400, ~nans)]
+        y = const['E0'] / ee[np.logical_and(u, ee > 400, ~nans)]
+        new_x = sm.add_constant(x)
+        beta = sm.RLM(y, new_x).fit()
+        R_sh_ref = beta[0]
+
+        params['dEgdT'] = dEgdT
+
+    # Estimate I_o_ref and EgRef
+    y = np.log(io[u]) - 3. * np.log(tck[u] / tok)
+    new_x = sm.add_constant(x_for_io)
+    res = sm.RLM(y, new_x).fit()
+    beta = res.params
+    I_o_ref = np.exp(beta[0])
+    EgRef = beta[1]
+
+    # Estimate I_L_ref
+    x = tc[u] - const['T0']
+    y = iph[u] * (const['E0'] / ee[u])
+    # average over non-NaN values of Y and X
+    nans = np.isnan(y - specs['aisc'] * x)
+    I_L_ref = np.mean(y[~nans] - specs['aisc'] * x[~nans])
+
+    # Estimate R_s
+    nans = np.isnan(rs)
+    R_s = np.mean(rs[np.logical_and(u, ee > 400, ~nans)])
+
+    params['I_L_ref'] = I_L_ref
+    params['I_o_ref'] = I_o_ref
+    params['EgRef'] = EgRef
+    params['R_sh_ref'] = R_sh_ref
+    params['R_s'] = R_s
+    # save values for each IV curve
+    params['iph'] = iph
+    params['io'] = io
+    params['rsh'] = rsh
+    params['rs'] = rs
+    params['u'] = u
+
+    return params
 
 
 def _update_io(rsh, rs, nnsvth, io, il, voc):

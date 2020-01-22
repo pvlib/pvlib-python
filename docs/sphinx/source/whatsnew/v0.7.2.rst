@@ -1,0 +1,12 @@
+.. _whatsnew_0720:
+
+v0.7.2 (Month day, year)
+-------------------------
+
+Documentation
+~~~~~~~~~~~~~
+* Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
+
+Contributors
+~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)

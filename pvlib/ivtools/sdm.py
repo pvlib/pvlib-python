@@ -841,8 +841,8 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
 
     elif model == 'desoto':
         dEgdT = 0.0002677
-        x_for_io = 1. / const['k'] * (1. / tok - 1. / tck[u]
-            + dEgdT * (tc[u] - const['T0']) / tck[u])
+        x_for_io = 1. / const['k'] * (
+            1. / tok - 1. / tck[u] + dEgdT * (tc[u] - const['T0']) / tck[u])
 
         # Estimate R_sh_ref
         nans = np.isnan(rsh)
@@ -1141,7 +1141,6 @@ def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     return x1
 
-
 def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
     """
     _calc_theta_phi_exact computes Lambert W values appearing in the analytic
@@ -1193,29 +1192,27 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
     except ImportError:
         raise ImportError('calc_theta_phi_exact requires scipy')
 
+    # handle singleton inputs
+    vmp = np.asarray(vmp)
+    imp = np.asarray(imp)
+    iph = np.asarray(iph)
+    io = np.asarray(io)
+    rs = np.asarray(rs)
+    rsh = np.asarray(rsh)
+    nnsvth = np.asarray(nnsvth)
+
     # Argument for Lambert W function involved in V = V(I) [2] Eq. 12; [3]
     # Eq. 3
-    argw = np.where(
-        nnsvth == 0,
-        np.inf,
-        rsh * io / nnsvth * np.exp(rsh * (iph + io - imp) / nnsvth))
-    u = argw > 0
-    w = np.zeros(len(u))
-    w[~u] = float("Nan")
-    if any(argw[u] == float("Inf")):
-        tmp = []
-        for i in argw[u]:
-            if i == float("Inf"):
-                tmp.append(float("Nan"))
-            else:
-                tmp.append(lambertw(i).real)
-        tmp = np.array(tmp, dtype=float)
-    else:
-        tmp = lambertw(argw[u]).real
-    ff = np.isnan(tmp)
+    with np.errstate(over="ignore"):
+        argw = np.where(
+            nnsvth == 0,
+            np.nan,
+            rsh * io / nnsvth * np.exp(rsh * (iph + io - imp) / nnsvth))
+    phi = np.where(argw > 0, lambertw(argw).real, np.nan)
 
     # NaN where argw overflows. Switch to log space to evaluate
-    if any(ff):
+    u = np.isinf(argw)
+    if np.any(u):
         logargw = (
             np.log(rsh[u]) + np.log(io[u]) - np.log(nnsvth[u])
             + rsh[u] * (iph[u] + io[u] - imp[u]) / nnsvth[u])
@@ -1226,34 +1223,22 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
         x = logargw
         for i in range(3):
             x *= ((1. - np.log(x) + logargw) / (1. + x))
-        tmp[ff] = x[ff]
-    w[u] = tmp
-    phi = np.transpose(w)
+        phi[u] = x
+    phi = np.transpose(phi)
 
     # Argument for Lambert W function involved in I = I(V) [2] Eq. 11; [3]
     # E1. 2
-    argw = np.where(
-        nnsvth == 0,
-        np.inf,
-        rsh / (rsh + rs) * rs * io / nnsvth * np.exp(
-            rsh / (rsh + rs) * (rs * (iph + io) + vmp) / nnsvth))
-    u = argw > 0
-    w = np.zeros(len(u))
-    w[~u] = float("Nan")
-    if any(argw[u] == float("Inf")):
-        tmp = []
-        for i in argw[u]:
-            if i == float("Inf"):
-                tmp.append(float("Nan"))
-            else:
-                tmp.append(lambertw(i).real)
-        tmp = np.array(tmp, dtype=float)
-    else:
-        tmp = lambertw(argw[u]).real
-    ff = np.isnan(tmp)
+    with np.errstate(over="ignore"):
+        argw = np.where(
+            nnsvth == 0,
+            np.nan,
+            rsh / (rsh + rs) * rs * io / nnsvth * np.exp(
+                rsh / (rsh + rs) * (rs * (iph + io) + vmp) / nnsvth))
+    theta = np.where(argw > 0, lambertw(argw).real, np.nan)
 
     # NaN where argw overflows. Switch to log space to evaluate
-    if any(ff):
+    u = np.isinf(argw)
+    if np.any(u):
         logargw = (
             np.log(rsh[u]) / (rsh[u] + rs[u]) + np.log(rs[u]) + np.log(io[u])
             - np.log(nnsvth[u]) + (rsh[u] / (rsh[u] + rs[u]))
@@ -1265,7 +1250,7 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
         x = logargw
         for i in range(3):
             x *= ((1. - np.log(x) + logargw) / (1. + x))
-        tmp[ff] = x[ff]
-    w[u] = tmp
-    theta = np.transpose(w)
+        theta[u] = x
+    theta = np.transpose(theta)
+
     return theta, phi

@@ -19,6 +19,7 @@ def test__update_rsh_fixed_pt_nans(vmp, imp, iph, io, rs, rsh, nnsvth,
     outrsh = _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth)
     assert np.isnan(outrsh)
 
+
 @requires_scipy
 def test__update_rsh_fixed_pt_vmp0():
     outrsh = _update_rsh_fixed_pt(vmp=0., imp=2., iph=2., io=2., rs=2.,

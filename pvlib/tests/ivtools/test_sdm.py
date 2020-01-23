@@ -305,3 +305,25 @@ def test__update_rsh_fixed_pt_vector():
                                       vmp=np.array([0., -1, 0., 0.]))
     assert np.isnan(outrsh[0:3])
     np.testing.assert_allclose(outrsh[3], np.array([502.]), atol=.0001)
+
+
+@requires_scipy
+@pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth, expected', [
+    (2., 2., 2., 2., 2., 2., 0.5911),
+    (2., 2., 2., 2., 0., 2., 1.0161e-4),
+    (2., 2., 2., 0., 2., 2., 0.5911),
+    (2., 2., 0., 2., 2., 2., 0.),
+    (2., 0., 2., 2., 2., 2., 1.0161e-4),
+    (0., 2., 2., 2., 2., 2., 17.9436)])
+def test__update_io(voc, iph, io, rs, rsh, nnsvth, expected):
+    outio = sdm._update_io(voc, iph, io, rs, rsh, nnsvth)
+    np.testing.assert_allclose(outio, expected, atol=.0001)
+
+
+@requires_scipy
+@pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth', [
+    (2., 2., 2., 2., 2., 0.),
+    (-1., -1., -1., -1., -1., -1.)])
+def test__update_io_nan(voc, iph, io, rs, rsh, nnsvth):
+    outio = sdm._update_io(voc, iph, io, rs, rsh, nnsvth)
+    assert np.isnan(outio)

@@ -1,59 +1,28 @@
 import numpy as np
+import pytest
 from pvlib.ivtools.sdm import _update_io
 from pvlib.tests.conftest import requires_scipy
 
+# old (rsh, rs, nnsvth, io, il, voc)
+# new (voc, iph, io, rs, rsh, nnsvth)
 
 @requires_scipy
-def test_answer9():
-    outio = _update_io(np.array([2.]), np.array([2.]), np.array([2.]),
-                       np.array([2.]), np.array([2.]), np.array([2.]))
-    np.testing.assert_allclose(outio, np.array([0.5911]), atol=.0001)
-
-
-@requires_scipy
-def test_answer10():
-    outio1 = _update_io(np.array([0.]), np.array([2.]), np.array([2.]),
-                        np.array([2.]), np.array([2.]), np.array([2.]))
-    np.testing.assert_allclose(outio1, np.array([1.0161e-4]), atol=.0001)
-
-
-@requires_scipy
-def test_answer11():
-    outio2 = _update_io(np.array([2.]), np.array([0.]), np.array([2.]),
-                        np.array([2.]), np.array([2.]), np.array([2.]))
-    np.testing.assert_allclose(outio2, np.array([0.5911]), atol=.0001)
+@pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth, expected', [
+    (2., 2., 2., 2., 2., 2., 0.5911),
+    (2., 2., 2., 2., 0., 2., 1.0161e-4),
+    (2., 2., 2., 0., 2., 2., 0.5911),
+    (2., 2., 0., 2., 2., 2., 0.),
+    (2., 0., 2., 2., 2., 2., 1.0161e-4),
+    (0., 2., 2., 2., 2., 2., 17.9436)])
+def test__update_io(voc, iph, io, rs, rsh, nnsvth, expected):
+    outio = _update_io(voc, iph, io, rs, rsh, nnsvth)
+    np.testing.assert_allclose(outio, expected, atol=.0001)
 
 
 @requires_scipy
-def test_answer12():
-    outio3 = _update_io(np.array([2.]), np.array([2.]), np.array([0.]),
-                        np.array([2.]), np.array([2.]), np.array([2.]))
-    assert np.isnan(outio3)
-
-
-@requires_scipy
-def test_answer13():
-    outio4 = _update_io(np.array([2.]), np.array([2.]), np.array([2.]),
-                        np.array([0.]), np.array([2.]), np.array([2.]))
-    np.testing.assert_allclose(outio4, np.array([0]), atol=.0001)
-
-
-@requires_scipy
-def test_answer14():
-    outio5 = _update_io(np.array([2.]), np.array([2.]), np.array([2.]),
-                        np.array([2.]), np.array([0.]), np.array([2.]))
-    np.testing.assert_allclose(outio5, np.array([1.0161e-4]), atol=.0001)
-
-
-@requires_scipy
-def test_answer15():
-    outio6 = _update_io(np.array([2.]), np.array([2.]), np.array([2.]),
-                        np.array([2.]), np.array([2.]), np.array([0.]))
-    np.testing.assert_allclose(outio6, np.array([17.9436]), atol=.0001)
-
-
-@requires_scipy
-def test_answer16():
-    outio7 = _update_io(np.array([-1.]), np.array([-1.]), np.array([-1.]),
-                        np.array([-1.]), np.array([-1.]), np.array([-1.]))
-    assert np.isnan(outio7)
+@pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth', [
+    (2., 2., 2., 2., 2., 0.),
+    (-1., -1., -1., -1., -1., -1.)])
+def test__update_io_nan(voc, iph, io, rs, rsh, nnsvth):
+    outio = _update_io(voc, iph, io, rs, rsh, nnsvth)
+    assert np.isnan(outio)

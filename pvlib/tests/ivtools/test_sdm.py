@@ -37,7 +37,7 @@ def cec_params_cansol_cs5p_220p():
 def test_fit_cec_sam(cec_params_cansol_cs5p_220p):
     input_data = cec_params_cansol_cs5p_220p['ivcurve']
     specs = cec_params_cansol_cs5p_220p['specs']
-    I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
+    I_L_ref, I_o_ref, R_s, R_sh_ref, a_ref, Adjust = \
         sdm.fit_cec_sam(
             celltype='polySi', v_mp=input_data['V_mp_ref'],
             i_mp=input_data['I_mp_ref'], v_oc=input_data['V_oc_ref'],
@@ -50,13 +50,13 @@ def test_fit_cec_sam(cec_params_cansol_cs5p_220p):
     modeled['a_ref'] = a_ref
     modeled['I_L_ref'] = I_L_ref
     modeled['I_o_ref'] = I_o_ref
-    modeled['R_sh_ref'] = R_sh_ref
     modeled['R_s'] = R_s
+    modeled['R_sh_ref'] = R_sh_ref
     modeled['Adjust'] = Adjust
     assert np.allclose(modeled.values, expected.values, rtol=5e-2)
     # test for fitting failure
     with pytest.raises(RuntimeError):
-        I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
+        I_L_ref, I_o_ref, R_s, R_sh_ref, a_ref, Adjust = \
             sdm.fit_cec_sam(
                 celltype='polySi', v_mp=0.45, i_mp=5.25, v_oc=0.55, i_sc=5.5,
                 alpha_sc=0.00275, beta_voc=0.00275, gamma_pmp=0.0055,
@@ -70,9 +70,9 @@ def test_fit_desoto():
                                cells_in_series=60)
     result_expected = {'I_L_ref': 9.45232,
                        'I_o_ref': 3.22460e-10,
-                       'a_ref': 1.59128,
-                       'R_sh_ref': 125.798,
                        'R_s': 0.297814,
+                       'R_sh_ref': 125.798,
+                       'a_ref': 1.59128,
                        'alpha_sc': 0.005658,
                        'EgRef': 1.121,
                        'dEgdT': -0.0002677,
@@ -107,18 +107,18 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     tc = np.repeat(temp_cell, len(effective_irradiance))
     iph, io, rs, rsh, nnsvth = pvsystem.calcparams_desoto(
         ee, tc, alpha_sc=specs['alpha_sc'], **params)
-    sim_ivcurves = pvsystem.singlediode(iph, io, rsh, rs, nnsvth, 300)
+    sim_ivcurves = pvsystem.singlediode(iph, io, rs, rsh, nnsvth, 300)
     sim_ivcurves['ee'] = ee
     sim_ivcurves['tc'] = tc
 
-    I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref = sdm.fit_desoto_sandia(
+    I_L_ref, I_o_ref, R_s, R_sh_ref, a_ref = sdm.fit_desoto_sandia(
         sim_ivcurves, specs)
     modeled = pd.Series(index=params.index, data=np.nan)
     modeled['a_ref'] = a_ref
     modeled['I_L_ref'] = I_L_ref
     modeled['I_o_ref'] = I_o_ref
-    modeled['R_sh_ref'] = R_sh_ref
     modeled['R_s'] = R_s
+    modeled['R_sh_ref'] = R_sh_ref
     assert np.allclose(modeled.values, params.values, rtol=5e-2)
 
 
@@ -178,9 +178,9 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
 
     pvsyst_specs = dict.fromkeys(spec_list)
     paramlist = [
-        'I_L_ref', 'I_o_ref', 'EgRef', 'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s',
+        'I_L_ref', 'I_o_ref', 'EgRef', 'R_s', 'R_sh_ref', 'R_sh_0', 'R_sh_exp',
         'gamma_ref', 'mu_gamma']
-    varlist = ['iph', 'io', 'rsh', 'rs', 'u']
+    varlist = ['iph', 'io', 'rs', 'rsh', 'u']
     pvsyst = OrderedDict(key=(paramlist + varlist))
 
     with open(os.path.join(BASEDIR, 'PVsyst_demo_model.txt'), 'r') as f:
@@ -192,7 +192,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
             beta_voc=float(bVoc), descr=descr)
 
         tmp = [float(x) for x in f.readline().split(',')]
-        # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,
+        # I_L_ref, I_o_ref, EgRef, R_s, R_sh_ref, R_sh_0, R_sh_exp, gamma_ref,
         # mu_gamma
         pvsyst.update(zip(paramlist, tmp))
 
@@ -209,7 +209,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
             tmp = [float(x) for x in f.readline().split(',')]
             Iph[k], Io[k], Rsh[k], Rs[k], u[k] = tmp
 
-    pvsyst.update(zip(varlist, [Iph, Io, Rsh, Rs, u]))
+    pvsyst.update(zip(varlist, [Iph, Io, Rs, Rsh, u]))
 
     expected = sdm.fit_pvsyst_sandia(ivcurves, iv_specs)
     param_res = pvsystem.calcparams_pvsyst(

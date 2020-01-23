@@ -53,10 +53,10 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     I_o_ref : float
         The dark or diode reverse saturation current at reference
         conditions [A]
-    R_sh_ref : float
-        The shunt resistance at reference conditions, in ohms.
     R_s : float
         The series resistance at reference conditions, in ohms.
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
     a_ref : float
         The product of the usual diode ideality factor ``n`` (unitless),
         number of cells in series ``Ns``, and cell thermal voltage at
@@ -74,12 +74,12 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     Notes
     -----
     The estimation method [1]_ minimizes a system of six equations.
-    Inputs ``v_mp``, ``v_oc``, ``i_mp`` and ``i_sc`` are assumed to be from a
+    Inputs ``v_mp``, ``i_mp``, ``v_oc`` and ``i_sc`` are assumed to be from a
     single IV curve at constant irradiance and cell temperature. Irradiance is
     not explicitly used by the fitting procedure. The irradiance level at which
     the input IV curve is determined and the specified cell temperature
     ``temp_ref`` are the reference conditions for the output parameters
-    ``I_L_ref``, ``I_o_ref``, ``R_sh_ref``, ``R_s``, ``a_ref`` and ``Adjust``.
+    ``I_L_ref``, ``I_o_ref``, ``R_s``, ``R_sh_ref``, ``a_ref`` and ``Adjust``.
 
     References
     ----------
@@ -102,7 +102,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     result = PySSC.ssc_sim_from_dict(datadict)
     if result['cmod_success'] == 1:
-        return tuple([result[k] for k in ['Il', 'Io', 'Rsh', 'Rs', 'a',
+        return tuple([result[k] for k in ['Il', 'Io', 'Rs', 'Rsh', 'a',
                       'Adj']])
     else:
         raise RuntimeError('Parameter estimation failed')
@@ -236,9 +236,9 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     # results
     return ({'I_L_ref': sdm_params[0],
              'I_o_ref': sdm_params[1],
-             'a_ref': sdm_params[2],
+             'R_s': sdm_params[2],
              'R_sh_ref': sdm_params[3],
-             'R_s': sdm_params[4],
+             'a_ref': sdm_params[4],
              'alpha_sc': alpha_sc,
              'EgRef': EgRef,
              'dEgdT': dEgdT,
@@ -256,7 +256,7 @@ def _system_of_equations_desoto(params, specs):
     ----------
     params: ndarray
         Array with parameters of the De Soto single diode model. Must be
-        given in the following order: IL, Io, a, Rsh, Rs
+        given in the following order: IL, Io, a, Rs, Rsh
     specs: tuple
         Specifications of pv module given by manufacturer. Must be given
         in the following order: Isc, Voc, Imp, Vmp, beta_oc, alpha_sc
@@ -270,7 +270,7 @@ def _system_of_equations_desoto(params, specs):
     Isc, Voc, Imp, Vmp, beta_oc, alpha_sc, EgRef, dEgdT, Tref, k = specs
 
     # five parameters vector to find
-    IL, Io, a, Rsh, Rs = params
+    IL, Io, Rs, Rsh, a = params
 
     # five equation vector
     y = [0, 0, 0, 0, 0]
@@ -363,6 +363,8 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             dark current at STC [A]
         EgRef : float
             effective band gap at STC [eV]
+        R_s : float
+            series resistance at STC [ohm]
         R_sh_ref : float
             shunt resistance at STC [ohm]
         R_sh_0 : float
@@ -370,8 +372,6 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         R_sh_exp : float
             exponential factor defining decrease in shunt resistance with
             increasing effective irradiance
-        R_s : float
-            series resistance at STC [ohm]
         gamma_ref : float
             diode (ideality) factor at STC [unitless]
         mu_gamma : float
@@ -382,10 +382,10 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             light current for each IV curve [A]
         io : array
             dark current for each IV curve [A]
-        rsh : array
-            shunt resistance for each IV curve [ohm]
         rs : array
             series resistance for each IV curve [ohm]
+        rsh : array
+            shunt resistance for each IV curve [ohm]
         u : array
             boolean for each IV curve indicating that the parameter values
             are deemed reasonable by the private function ``_filter_params``
@@ -438,10 +438,10 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
-        _, _, rsh[j], _, _ = _fit_sandia_cocontent(
+        _, _, _, rsh[j], _ = _fit_sandia_cocontent(
             voltage, current, vth[j] * specs['cells_in_series'])
 
-    gamma_ref, mu_gamma = _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck,
+    gamma_ref, mu_gamma = _fit_pvsyst_sandia_gamma(voc, isc, rsh, vth, tck,
                                                    specs, const)
 
     badgamma = np.isnan(gamma_ref) or np.isnan(mu_gamma) \
@@ -463,12 +463,12 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
                                             nnsvth)
 
         # Update values for each IV curve to converge at vmp, imp, voc and isc
-        iph, io, rsh, rs, u = _update_iv_params(voc, isc, vmp, imp, ee, iph,
-                                                io, rsh, rs, nnsvth, u,
+        iph, io, rs, rsh, u = _update_iv_params(voc, isc, vmp, imp, ee,
+                                                iph, io, rs, rsh, nnsvth, u,
                                                 maxiter, eps1)
 
         # get single diode models from converged values for each IV curve
-        pvsyst = _extract_sdm_params(iph, io, rsh, rs, gamma, u, ee, tck,
+        pvsyst = _extract_sdm_params(ee, tc, iph, io, rs, rsh, gamma, u,
                                      specs, const, model='pvsyst')
         # Add parameters estimated in this function
         pvsyst['gamma_ref'] = gamma_ref
@@ -540,20 +540,20 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             dark current at STC [A]
         EgRef : float
             effective band gap at STC [eV]
-        R_sh_ref : float
-            shunt resistance at STC [ohm]
         R_s : float
             series resistance at STC [ohm]
+        R_sh_ref : float
+            shunt resistance at STC [ohm]
         cells_in_series : int
             number of cells in series
         iph : array
             light current for each IV curve [A]
         io : array
             dark current for each IV curve [A]
-        rsh : array
-            shunt resistance for each IV curve [ohm]
         rs : array
             series resistance for each IV curve [ohm]
+        rsh : array
+            shunt resistance for each IV curve [ohm]
         u : array
             boolean for each IV curve indicating that the parameter values
             are deemed reasonable by the private function ``_filter_params``
@@ -597,7 +597,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         voltage, current = rectify_iv_curve(ivcurves['v'][j], ivcurves['i'][j])
         # initial estimate of Rsh, from integral over voltage regression
         # [5] Step 3a; [6] Step 3a
-        _, _, rsh[j], _, _ = _fit_sandia_cocontent(
+        _, _, _, rsh[j], _ = _fit_sandia_cocontent(
             voltage, current, vth[j] * specs['cells_in_series'])
 
     n0 = _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const)
@@ -619,12 +619,12 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
                                             nnsvth)
 
         # Update values for each IV curve to converge at vmp, imp, voc and isc
-        iph, io, rsh, rs, u = _update_iv_params(voc, isc, vmp, imp, ee, iph,
-                                                io, rsh, rs, nnsvth, u,
+        iph, io, rsh, rs, u = _update_iv_params(voc, isc, vmp, imp, ee,
+                                                iph, io, rs, rsh, nnsvth, u,
                                                 maxiter, eps1)
 
         # get single diode models from converged values for each IV curve
-        desoto = _extract_sdm_params(ee, tc, iph, io, rsh, rs, n0, u,
+        desoto = _extract_sdm_params(ee, tc, iph, io, rs, rsh, n0, u,
                                      specs, const, model='desoto')
         # Add parameters estimated in this function
         desoto['a_ref'] = n0 * specs['cells_in_series'] * const['k'] / \
@@ -634,7 +634,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     return desoto
 
 
-def _fit_pvsyst_sandia_gamma(isc, voc, rsh, vth, tck, specs, const):
+def _fit_pvsyst_sandia_gamma(voc, isc, rsh, vth, tck, specs, const):
     # Estimate the diode factor gamma from Isc-Voc data. Method incorporates
     # temperature dependence by means of the equation for Io
 
@@ -715,7 +715,7 @@ def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
 
         # Filter IV curves for good initial values
         # [5] Step 3b
-        u = _filter_params(io, rsh, rs, ee, isc)
+        u = _filter_params(ee, isc, io, rs, rsh)
 
         # [5] Step 3c
         # Refine Io to match Voc
@@ -728,7 +728,7 @@ def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
     return iph, io, rs, u
 
 
-def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rsh, rs, nnsvth, u,
+def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u,
                       maxiter, eps1):
     # Refine Rsh, Rs, Io and Iph in that order.
     # Helper function for fit_<model>_sandia.
@@ -741,17 +741,17 @@ def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rsh, rs, nnsvth, u,
 
     while not_converged.any() and counter <= maxiter:
         # update rsh to match max power point using a fixed point method.
-        rsh[u] = _update_rsh_fixed_pt(rsh[u], rs[u], io[u], iph[u],
-                                      nnsvth[u], imp[u], vmp[u])
+        rsh[u] = _update_rsh_fixed_pt(vmp[u], imp[u], iph[u], io[u], rs[u],
+                                      rsh[u], nnsvth[u])
 
         # Calculate Rs to be consistent with Rsh and maximum power point
-        _, phi = _calc_theta_phi_exact(imp[u], iph[u], vmp[u], io[u],
-                                       nnsvth[u], rs[u], rsh[u])
+        _, phi = _calc_theta_phi_exact(vmp[u], imp[u], iph[u], io[u],
+                                       rs[u], rsh[u], nnsvth[u])
         rs[u] = (iph[u] + io[u] - imp[u]) * rsh[u] / imp[u] - \
             nnsvth[u] * phi / imp[u] - vmp[u] / imp[u]
 
         # Update filter for good parameters
-        u = _filter_params(io, rsh, rs, ee, isc)
+        u = _filter_params(ee, isc, io, rs, rsh)
 
         # Update value for io to match voc
         io[u] = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
@@ -760,7 +760,7 @@ def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rsh, rs, nnsvth, u,
         iph = isc + io * np.expm1(rs * isc / nnsvth) + isc * rs / rsh
 
         # update filter for good parameters
-        u = _filter_params(io, rsh, rs, ee, isc)
+        u = _filter_params(ee, isc, io, rs, rsh)
 
         # compute the IV curve from the current parameter values
         result = singlediode(iph[u], io[u], rs[u], rsh[u], nnsvth[u])
@@ -783,12 +783,12 @@ def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rsh, rs, nnsvth, u,
         t13 = prevconvergeparams['pmperrabsmaxchange'] >= eps1
         not_converged = np.logical_or(t5, t6, t7, t8, t9, t10, t11, t12, t13)
 
-    return iph, io, rsh, rs, u
+    return iph, io, rs, rsh, u
 
 
-def _extract_sdm_params(ee, tc, iph, io, rsh, rs, n, u, specs, const,
+def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
                         model):
-    # Get single diode model parameters from five parameters iph, io, rsh, rs
+    # Get single diode model parameters from five parameters iph, io, rs, rsh
     # and n vs. effective irradiance and temperature
     try:
         from scipy import optimize
@@ -888,7 +888,7 @@ def _extract_sdm_params(ee, tc, iph, io, rsh, rs, n, u, specs, const,
     return params
 
 
-def _update_io(rsh, rs, nnsvth, io, il, voc):
+def _update_io(voc, iph, io, rs, rsh, nnsvth):
     """
     _update_io adjusts io to match voc using other parameter values.
 
@@ -904,18 +904,18 @@ def _update_io(rsh, rs, nnsvth, io, il, voc):
 
     Parameters
     ----------
-    rsh: a numpy array of length N of values for the shunt resistance (ohm)
+    voc: a numpy array of length N of values for Voc (V)
+    iph: a numpy array of length N of values for lighbt current IL (A)
+    io: a numpy array of length N of initial values for Io (A)
     rs: a numpy array of length N of values for the series resistance (ohm)
+    rsh: a numpy array of length N of values for the shunt resistance (ohm)
     nnsvth: a numpy array of length N of values for the diode factor x thermal
             voltage for the module, equal to Ns (number of cells in series) x
             Vth (thermal voltage per cell).
-    io: a numpy array of length N of initial values for Io (A)
-    il: a numpy array of length N of values for lighbt current IL (A)
-    voc: a numpy array of length N of values for Voc (V)
 
     Returns
     -------
-    outio - a numpy array of lenght N of updated values for Io
+    new_io - a numpy array of length N of updated values for io
 
     References
     ----------
@@ -935,21 +935,20 @@ def _update_io(rsh, rs, nnsvth, io, il, voc):
 
     while maxerr > eps and k < niter:
         # Predict Voc
-        pvoc = v_from_i(rsh, rs, nnsvth, 0., tio, il)
+        pvoc = v_from_i(rsh, rs, nnsvth, 0., tio, iph)
 
         # Difference in Voc
         dvoc = pvoc - voc
 
         # Update Io
-        next_io = tio * (1. + (2. * dvoc) / (2. * nnsvth - dvoc))
+        new_io = tio * (1. + (2. * dvoc) / (2. * nnsvth - dvoc))
 
         # Calculate Maximum Percent Difference
-        maxerr = np.max(np.abs(next_io - tio) / tio) * 100.
-        tio = next_io
+        maxerr = np.max(np.abs(new_io - tio) / tio) * 100.
+        tio = new_io
         k += 1.
 
-    outio = tio
-    return outio
+    return new_io
 
 
 def _rsh_pvsyst(x, rshexp, g, go):
@@ -966,7 +965,7 @@ def _rsh_pvsyst(x, rshexp, g, go):
     return rsh
 
 
-def _filter_params(io, rsh, rs, ee, isc):
+def _filter_params(ee, isc, io, rs, rsh):
     # Function _filter_params identifies bad parameter sets. A bad set contains
     # Nan, non-positive or imaginary values for parameters; Rs > Rsh; or data
     # where effective irradiance Ee differs by more than 5% from a linear fit
@@ -1094,7 +1093,7 @@ def _check_converge(prevparams, result, vmp, imp, i):
     return convergeparam
 
 
-def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
+def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
     """
     _update_rsh_fixed_pt adjusts Rsh to match Vmp using other parameter values
 
@@ -1111,23 +1110,23 @@ def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
 
     Parameters
     ----------
-    rsh: a numpy array of length N of initial values for shunt resistance (ohm)
-    rs: a numpy array of length N of values for series resistance (ohm)
+    vmp: a numpy array of length N of values for Vmp (V)
+    imp: a numpy array of length N of values for Imp (A)
+    iph: a numpy array of length N of values for light current IL (A)
     io: a numpy array of length N of values for Io (A)
-    il: a numpy array of length N of values for light current IL (A)
+    rs: a numpy array of length N of values for series resistance (ohm)
+    rsh: a numpy array of length N of initial values for shunt resistance (ohm)
     nnsvth: a numpy array length N of values for the diode factor x thermal
             voltage for the module, equal to Ns (number of cells in series) x
             Vth (thermal voltage per cell).
-    imp: a numpy array of length N of values for Imp (A)
-    vmp: a numpy array of length N of values for Vmp (V)
 
     Returns
     -------
-    outrsh: a numpy array of length N of updated values for Rsh
+    numpy array of length N of updated values for Rsh
 
     References
     ----------
-    .. [1] PVL MATLAB 2065 https://github.com/sandialabs/MATLAB_PV_LIB
+    .. [1] PVLib for MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
        Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
     """
@@ -1135,16 +1134,15 @@ def _update_rsh_fixed_pt(rsh, rs, io, il, nnsvth, imp, vmp):
     x1 = rsh
 
     for i in range(niter):
-        y, z = _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, x1)
-        next_x1 = (1 + z) / z * ((il + io) * x1 / imp - nnsvth * z / imp - 2 *
+        _, z = _calc_theta_phi_exact(vmp, imp, iph, io, rs, x1, nnsvth)
+        next_x1 = (1 + z) / z * ((iph + io) * x1 / imp - nnsvth * z / imp - 2 *
                                  vmp / imp)
         x1 = next_x1
 
-    outrsh = x1
-    return outrsh
+    return x1
 
 
-def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
+def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
     """
     _calc_theta_phi_exact computes Lambert W values appearing in the analytic
     solutions to the single diode equation for the max power point.
@@ -1153,16 +1151,16 @@ def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
 
     Parameters
     ----------
-    imp: a numpy array of length N of values for Imp (A)
-    il: a numpy array of length N of values for the light current IL (A)
     vmp: a numpy array of length N of values for Vmp (V)
+    imp: a numpy array of length N of values for Imp (A)
+    iph: a numpy array of length N of values for the light current IL (A)
     io: a numpy array of length N of values for Io (A)
+    rs: a numpy array of length N of values for the series resistance (ohm)
+    rsh: a numpy array of length N of values for the shunt resistance (ohm)
     nnsvth: a numpy array of length N of values for the diode factor x
             thermal voltage for the module, equal to Ns
             (number of cells in series) x Vth
             (thermal voltage per cell).
-    rs: a numpy array of length N of values for the series resistance (ohm)
-    rsh: a numpy array of length N of values for the shunt resistance (ohm)
 
     Returns
     -------
@@ -1200,7 +1198,7 @@ def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
     argw = np.where(
         nnsvth == 0,
         np.inf,
-        rsh * io / nnsvth * np.exp(rsh * (il + io - imp) / nnsvth))
+        rsh * io / nnsvth * np.exp(rsh * (iph + io - imp) / nnsvth))
     u = argw > 0
     w = np.zeros(len(u))
     w[~u] = float("Nan")
@@ -1220,7 +1218,7 @@ def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
     if any(ff):
         logargw = (
             np.log(rsh[u]) + np.log(io[u]) - np.log(nnsvth[u])
-            + rsh[u] * (il[u] + io[u] - imp[u]) / nnsvth[u])
+            + rsh[u] * (iph[u] + io[u] - imp[u]) / nnsvth[u])
         # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
         # The initial guess is w=logargW. Where direct evaluation (above)
         # results in NaN from overflow, 3 iterations of Newton's method gives
@@ -1238,7 +1236,7 @@ def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
         nnsvth == 0,
         np.inf,
         rsh / (rsh + rs) * rs * io / nnsvth * np.exp(
-            rsh / (rsh + rs) * (rs * (il + io) + vmp) / nnsvth))
+            rsh / (rsh + rs) * (rs * (iph + io) + vmp) / nnsvth))
     u = argw > 0
     w = np.zeros(len(u))
     w[~u] = float("Nan")
@@ -1259,7 +1257,7 @@ def _calc_theta_phi_exact(imp, il, vmp, io, nnsvth, rs, rsh):
         logargw = (
             np.log(rsh[u]) / (rsh[u] + rs[u]) + np.log(rs[u]) + np.log(io[u])
             - np.log(nnsvth[u]) + (rsh[u] / (rsh[u] + rs[u]))
-            * (rs[u] * (il[u] + io[u]) + vmp[u]) / nnsvth[u])
+            * (rs[u] * (iph[u] + io[u]) + vmp[u]) / nnsvth[u])
         # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
         # The initial guess is w=logargW. Where direct evaluation (above)
         # results in NaN from overflow, 3 iterations of Newton's method gives

@@ -275,7 +275,6 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
 @requires_scipy
 @pytest.mark.parametrize('vmp, imp, iph, io, rs, rsh, nnsvth, expected', [
     (2., 2., 2., 2., 2., 2., 2., np.nan),
-    (2., 0., 2., 2., 2., 2., 2., np.nan),
     (2., 2., 0., 2., 2., 2., 2., np.nan),
     (2., 2., 2., 0., 2., 2., 2., np.nan),
     (2., 2., 2., 2., 0., 2., 2., np.nan),
@@ -284,7 +283,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
 def test__update_rsh_fixed_pt_nans(vmp, imp, iph, io, rs, rsh, nnsvth,
                                    expected):
     outrsh = sdm._update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth)
-    assert np.isnan(outrsh)
+    assert np.all(np.isnan(outrsh))
 
 
 @requires_scipy
@@ -310,7 +309,6 @@ def test__update_rsh_fixed_pt_vector():
 @requires_scipy
 @pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth, expected', [
     (2., 2., 2., 2., 2., 2., 0.5911),
-    (2., 2., 2., 2., 0., 2., 1.0161e-4),
     (2., 2., 2., 0., 2., 2., 0.5911),
     (2., 2., 0., 2., 2., 2., 0.),
     (2., 0., 2., 2., 2., 2., 1.0161e-4),

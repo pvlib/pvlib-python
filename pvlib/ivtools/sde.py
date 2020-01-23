@@ -54,10 +54,10 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
         photocurrent [A]
     saturation_current : float
         dark (saturation) current [A]
-    resistance_shunt : float
-        shunt (parallel) resistance [ohm]
     resistance_series : float
         series resistance [ohm]
+    resistance_shunt : float
+        shunt (parallel) resistance [ohm]
     nNsVth : float
         product of thermal voltage ``Vth`` [V], diode ideality factor
         ``n``, and number of series cells ``Ns``. [V]
@@ -246,7 +246,7 @@ def _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
         I0 = I0_vmp
     else:  # I0_voc > 0
         I0 = I0_voc
-    return IL, I0, Rsh, Rs, nNsVth
+    return IL, I0, Rs, Rsh, nNsVth
 
 
 def _calc_I0(IL, I, V, Gp, Rs, nNsVth):
@@ -278,10 +278,10 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
         photocurrent [A]
     io : numeric
         dark current [A]
-    rsh : numeric
-        series resistance [ohm]
     rs : numeric
         shunt resistance [ohm]
+    rsh : numeric
+        series resistance [ohm]
     n : numeric
         diode (ideality) factor [unitless]
 
@@ -358,7 +358,7 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
     rs = betars
     n = betan
 
-    return iph, io, rsh, rs, n
+    return iph, io, rs, rsh, n
 
 
 def _cocontent(v, c, isc, kflag):

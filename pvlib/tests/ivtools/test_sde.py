@@ -7,7 +7,7 @@ from pvlib.tests.conftest import requires_scipy
 
 @pytest.fixture
 def get_test_iv_params():
-    return {'IL': 8.0, 'I0': 5e-10, 'Rsh': 1000, 'Rs': 0.2, 'nNsVth': 1.61864}
+    return {'IL': 8.0, 'I0': 5e-10, 'Rs': 0.2, 'Rsh': 1000, 'nNsVth': 1.61864}
 
 
 @pytest.fixture
@@ -16,8 +16,8 @@ def get_cec_params_cansol_cs5p_220p():
                       'I_sc_ref': 5.05, 'alpha_sc': 0.0025,
                       'beta_voc': -0.19659, 'gamma_pmp': -0.43,
                       'cells_in_series': 96},
-            'output': {'a_ref': 2.3674, 'I_L_ref': 5.056, 'I_o_ref': 1.01e-10,
-                       'R_sh_ref': 837.51, 'R_s': 1.004, 'Adjust': 2.3}}
+            'output': {'I_L_ref': 5.056, 'I_o_ref': 1.01e-10, 'R_s': 1.004,
+                       'R_sh_ref': 837.51, 'a_ref': 2.3674, 'Adjust': 2.3}}
 
 
 @requires_scipy
@@ -29,7 +29,7 @@ def test_fit_sandia_simple(get_test_iv_params, get_bad_iv_curves):
                                      resistance_series=test_params['Rs'],
                                      nNsVth=test_params['nNsVth'],
                                      ivcurve_pnts=300)
-    expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rsh', 'Rs',
+    expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rs', 'Rsh',
                      'nNsVth'])
     result = sde.fit_sandia_simple(voltage=testcurve['v'],
                                    current=testcurve['i'])
@@ -57,11 +57,11 @@ def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
     v1, i1, v2, i2 = get_bad_iv_curves
     result = sde.fit_sandia_simple(voltage=v1, current=i1)
     assert np.allclose(result, (-2.4322856072799985, 8.854688976836396,
-                                -63.56227601452038, 111.18558915546389,
+                                111.18558915546389, -63.56227601452038,
                                 -137.9965046659527))
     result = sde.fit_sandia_simple(voltage=v2, current=i2)
     assert np.allclose(result, (2.62405311949227, 1.8657963912925288,
-                                110.35202827739991, -65.652554411442,
+                                -65.652554411442, 110.35202827739991,
                                 174.49362093001415))
 
 
@@ -91,8 +91,8 @@ def test__fit_sandia_cocontent(i, v, nsvth, expected):
     iph, io, rsh, rs, n = sde._fit_sandia_cocontent(v, i, nsvth)
     np.testing.assert_allclose(iph, np.array(expected[0]), atol=.0001)
     np.testing.assert_allclose(io, np.array([expected[1]]), atol=.0001)
-    np.testing.assert_allclose(rsh, np.array([expected[2]]), atol=.0001)
-    np.testing.assert_allclose(rs, np.array([expected[3]]), atol=.0001)
+    np.testing.assert_allclose(rs, np.array([expected[2]]), atol=.0001)
+    np.testing.assert_allclose(rsh, np.array([expected[3]]), atol=.0001)
     np.testing.assert_allclose(n, np.array([expected[4]]), atol=.0001)
 
 

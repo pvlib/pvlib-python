@@ -1,98 +1,52 @@
 import numpy as np
+import pytest
 from pvlib.tests.conftest import requires_scipy
 from pvlib.ivtools.sdm import _calc_theta_phi_exact
 
+# old (imp, il, vmp, io, nnsvth, rs, rsh)
+# new (vmp, imp, iph, io, rs, rsh, nnsvth)
 
 @requires_scipy
-def test_answer():
-    [theta, phi] = _calc_theta_phi_exact(np.array([2.]), np.array([2.]),
-                                         np.array([2.]), np.array([2.]),
-                                         np.array([2.]), np.array([2.]),
-                                         np.array([2.]))
-    np.testing.assert_allclose(theta, np.array([1.8726]), atol=.0001)
-    np.testing.assert_allclose(phi, np.array([2]), atol=.0001)
-
-
-@requires_scipy
-def test_answer1():
-    [theta1, phi1] = _calc_theta_phi_exact(np.array([0.]), np.array([2.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([2.]))
-    np.testing.assert_allclose(theta1, np.array([1.8726]), atol=.0001)
-    np.testing.assert_allclose(phi1, np.array([3.4537]), atol=.0001)
+@pytest.mark.parametrize('vmp, imp, iph, io, rs, rsh, nnsvth, expected', [
+    (2., 2., 2., 2., 2., 2., 2., (1.8726, 2.)),
+    (2., 0., 2., 2., 2., 2., 2., (1.8726, 3.4537)),
+    (2., 2., 0., 2., 2., 2., 2., (1.2650, 0.8526)),
+    (0., 2., 2., 2., 2., 2., 2., (1.5571, 2.))])
+def test__calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth, expected):
+    theta, phi = _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth)
+    np.testing.assert_allclose(theta, expected[0], atol=.0001)
+    np.testing.assert_allclose(phi, expected[1], atol=.0001)
 
 
 @requires_scipy
-def test_answer2():
-    [theta2, phi2] = _calc_theta_phi_exact(np.array([2.]), np.array([0.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([2.]))
-    np.testing.assert_allclose(theta2, np.array([1.2650]), atol=.0001)
-    np.testing.assert_allclose(phi2, np.array([0.8526]), atol=.0001)
+@pytest.mark.parametrize('vmp, imp, iph, io, rs, rsh, nnsvth', [
+    (2., 2., 2., 0., 2., 2., 2.),
+    (2., 2., 2., 2., 2., 2., 0.),
+    (2., 0., 2., 2., 2., 0., 2.)])
+def test__calc_theta_phi_exact_both_nan(vmp, imp, iph, io, rs, rsh, nnsvth):
+    theta, phi = _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth)
+    assert np.isnan(theta)
+    assert np.isnan(phi)
 
 
 @requires_scipy
-def test_answer3():
-    [theta3, phi3] = _calc_theta_phi_exact(np.array([2.]), np.array([2.]),
-                                           np.array([0.]), np.array([2.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([2.]))
-    np.testing.assert_allclose(theta3, np.array([1.5571]), atol=.0001)
-    np.testing.assert_allclose(phi3, np.array([2]), atol=.0001)
+def test__calc_theta_phi_exact_one_nan():
+    theta, phi = _calc_theta_phi_exact(imp=2., iph=2., vmp=2., io=2.,
+                                       nnsvth=2., rs=0., rsh=2.)
+    assert np.isnan(theta)
+    np.testing.assert_allclose(phi, 2., atol=.0001)
 
 
 @requires_scipy
-def test_answer4():
-    [theta4, phi4] = _calc_theta_phi_exact(np.array([2.]), np.array([2.]),
-                                           np.array([2.]), np.array([0.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([2.]))
-    assert np.isnan(theta4)
-    assert np.isnan(phi4)
-
-
-@requires_scipy
-def test_answer5():
-    [theta5, phi5] = _calc_theta_phi_exact(np.array([2.]), np.array([2.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([0.]), np.array([2.]),
-                                           np.array([2.]))
-    assert np.isnan(theta5)
-    assert np.isnan(phi5)
-
-
-@requires_scipy
-def test_answer6():
-    [theta6, phi6] = _calc_theta_phi_exact(np.array([2.]), np.array([2.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([2.]), np.array([0.]),
-                                           np.array([2.]))
-    assert np.isnan(theta6)
-    np.testing.assert_allclose(phi6, np.array([2]), atol=.0001)
-
-
-@requires_scipy
-def test_answer7():
-    [theta7, phi7] = _calc_theta_phi_exact(np.array([2.]), np.array([2.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([2.]), np.array([2.]),
-                                           np.array([0.]))
-    assert np.isnan(theta7)
-    assert np.isnan(phi7)
-
-
-@requires_scipy
-def test_answer8():
-    [theta8, phi8] = _calc_theta_phi_exact(np.array([1., -1.]),
-                                           np.array([-1., 1.]),
-                                           np.array([1., -1.]),
-                                           np.array([-1., 1.]),
-                                           np.array([1., -1.]),
-                                           np.array([-1., 1.]),
-                                           np.array([1., -1.]))
-    assert np.isnan(theta8[0])
-    assert np.isnan(theta8[1])
-    assert np.isnan(phi8[0])
-    np.testing.assert_allclose(phi8[1], np.array([2.2079]), atol=.0001)
+def test__calc_theta_phi_exact_vector():
+    theta, phi = _calc_theta_phi_exact(imp=np.array([1., -1.]),
+                                       iph=np.array([-1., 1.]),
+                                       vmp=np.array([1., -1.]),
+                                       io=np.array([-1., 1.]),
+                                       nnsvth=np.array([1., -1.]),
+                                       rs=np.array([-1., 1.]),
+                                       rsh=np.array([1., -1.]))
+    assert np.isnan(theta[0])
+    assert np.isnan(theta[1])
+    assert np.isnan(phi[0])
+    np.testing.assert_allclose(phi[1], 2.2079, atol=.0001)

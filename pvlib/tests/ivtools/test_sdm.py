@@ -121,6 +121,7 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     expected = pd.Series(params)
     assert np.allclose(modeled.values, expected.values, rtol=5e-2)
 
+
 @requires_scipy
 @requires_statsmodels
 def test_fit_pvsyst_sandia(disp=False, npts=3000):

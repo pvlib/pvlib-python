@@ -217,7 +217,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     Io_0 = i_sc * np.exp(-v_oc/a_0)
     Rs_0 = (a_0*np.log1p((IL_0-i_mp)/Io_0) - v_mp)/i_mp
     # params_i : initial values vector
-    params_i = np.array([IL_0, Io_0, a_0, Rsh_0, Rs_0])
+    params_i = np.array([IL_0, Io_0, Rs_0, Rsh_0, a_0])
 
     # specs of module
     specs = (i_sc, v_oc, i_mp, v_mp, beta_voc, alpha_sc, EgRef, dEgdT,
@@ -586,7 +586,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     # Cell Thermal Voltage
     vth = const['k'] / const['q'] * tck
 
-    n = len(ivcurves['v_oc'])
+    n = len(voc)
 
     # Initial estimate of Rsh used to obtain the diode factor gamma0 and diode
     # temperature coefficient mu_gamma. Rsh is estimated using the co-content
@@ -672,7 +672,7 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const):
 def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
     # sets initial values for iph, io, rs and quality filter u.
     # Helper function for fit_<model>_sandia.
-    n = len(ivcurves)
+    n = len(ivcurves['v_oc'])
     io = np.ones(n)
     iph = np.ones(n)
     rs = np.ones(n)

@@ -619,7 +619,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
                                             nnsvth)
 
         # Update values for each IV curve to converge at vmp, imp, voc and isc
-        iph, io, rsh, rs, u = _update_iv_params(voc, isc, vmp, imp, ee,
+        iph, io, rs, rsh, u = _update_iv_params(voc, isc, vmp, imp, ee,
                                                 iph, io, rs, rsh, nnsvth, u,
                                                 maxiter, eps1)
 
@@ -692,10 +692,11 @@ def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
             [didv, d2id2v] = numdiff(volt, curr)
             t3 = volt > .5 * voc[j]
             t4 = volt < .9 * voc[j]
-            u = np.logical_and(t3, t4)
             tmp = -rsh[j] * didv - 1.
-            v = np.logical_and(u, tmp > 0)
-            if np.sum(v) > 0:
+            with np.errstate(invalid="ignore"):  # expect nan in didv
+                v = np.logical_and.reduce(np.array([t3, t4, ~np.isnan(tmp),
+                                                    np.greater(tmp, 0)]))
+            if np.any(v):
                 vtrs = (nnsvth[j] / isc[j] * (
                     np.log(tmp[v] * nnsvth[j] / (rsh[j] * io[j]))
                     - volt[v] / nnsvth[j]))
@@ -719,7 +720,7 @@ def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
 
         # [5] Step 3c
         # Refine Io to match Voc
-        io[u] = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
+        io[u] = _update_io(voc[u], iph[u], io[u], rs[u], rsh[u], nnsvth[u])
 
         # parameters [6], Step 3c
         # Calculate Iph to be consistent with Isc and current values of other
@@ -754,7 +755,7 @@ def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u,
         u = _filter_params(ee, isc, io, rs, rsh)
 
         # Update value for io to match voc
-        io[u] = _update_io(rsh[u], rs[u], nnsvth[u], io[u], iph[u], voc[u])
+        io[u] = _update_io(voc[u], iph[u], io[u], rs[u], rsh[u], nnsvth[u])
 
         # Calculate Iph to be consistent with Isc and other parameters
         iph = isc + io * np.expm1(rs * isc / nnsvth) + isc * rs / rsh
@@ -781,7 +782,8 @@ def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u,
         t11 = prevconvergeparams['vmperrabsmaxchange'] >= eps1
         t12 = prevconvergeparams['imperrabsmaxchange'] >= eps1
         t13 = prevconvergeparams['pmperrabsmaxchange'] >= eps1
-        not_converged = np.logical_or(t5, t6, t7, t8, t9, t10, t11, t12, t13)
+        not_converged = np.logical_or.reduce(np.array([t5, t6, t7, t8, t9,
+                                                       t10, t11, t12, t13]))
 
     return iph, io, rs, rsh, u
 
@@ -841,16 +843,16 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
 
     elif model == 'desoto':
         dEgdT = 0.0002677
-        x_for_io = 1. / const['k'] * (
+        x_for_io = const['q'] / const['k'] * (
             1. / tok - 1. / tck[u] + dEgdT * (tc[u] - const['T0']) / tck[u])
 
         # Estimate R_sh_ref
         nans = np.isnan(rsh)
-        x = rsh[np.logical_and(u, ee > 400, ~nans)]
-        y = const['E0'] / ee[np.logical_and(u, ee > 400, ~nans)]
+        x = const['E0'] / ee[np.logical_and(u, ee > 400, ~nans)]
+        y = rsh[np.logical_and(u, ee > 400, ~nans)]
         new_x = sm.add_constant(x)
         beta = sm.RLM(y, new_x).fit()
-        R_sh_ref = beta[0]
+        R_sh_ref = beta.params[1]
 
         params['dEgdT'] = dEgdT
 
@@ -1140,6 +1142,7 @@ def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
         x1 = next_x1
 
     return x1
+
 
 def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
     """

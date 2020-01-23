@@ -111,16 +111,15 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     sim_ivcurves['ee'] = ee
     sim_ivcurves['tc'] = tc
 
-    I_L_ref, I_o_ref, R_s, R_sh_ref, a_ref = sdm.fit_desoto_sandia(
-        sim_ivcurves, specs)
-    modeled = pd.Series(index=params.index, data=np.nan)
-    modeled['a_ref'] = a_ref
-    modeled['I_L_ref'] = I_L_ref
-    modeled['I_o_ref'] = I_o_ref
-    modeled['R_s'] = R_s
-    modeled['R_sh_ref'] = R_sh_ref
-    assert np.allclose(modeled.values, params.values, rtol=5e-2)
-
+    result = sdm.fit_desoto_sandia(sim_ivcurves, specs)
+    modeled = pd.Series(index=params.keys(), data=np.nan)
+    modeled['a_ref'] = result['a_ref']
+    modeled['I_L_ref'] = result['I_L_ref']
+    modeled['I_o_ref'] = result['I_o_ref']
+    modeled['R_s'] = result['R_s']
+    modeled['R_sh_ref'] = result['R_sh_ref']
+    expected = pd.Series(params)
+    assert np.allclose(modeled.values, expected.values, rtol=5e-2)
 
 @requires_scipy
 @requires_statsmodels
@@ -302,7 +301,7 @@ def test__update_rsh_fixed_pt_vector():
                                       nnsvth=np.array([4., -.2, .1, 2.]),
                                       imp=np.array([.2, .2, -1., 2.]),
                                       vmp=np.array([0., -1, 0., 0.]))
-    assert np.isnan(outrsh[0:3])
+    assert np.all(np.isnan(outrsh[0:3]))
     np.testing.assert_allclose(outrsh[3], np.array([502.]), atol=.0001)
 
 

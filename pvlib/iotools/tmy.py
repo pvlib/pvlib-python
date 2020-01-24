@@ -217,8 +217,12 @@ def _parsedate(ymd, hour, year=None):
     offset_datetime = '{} {}:00'.format(ymd, offset_hour)
     offset_date = dateutil.parser.parse(offset_datetime)
     true_date = offset_date + dateutil.relativedelta.relativedelta(hours=1)
+    # if the TMY February contains a leap year, then use March 1st instead
+    if (true_date.month == 2 and true_date.day == 29):
+        true_date += dateutil.relativedelta.relativedelta(nlyearday=60)
     if year is not None:
         true_date = true_date.replace(year=year)
+        # FIXME: make the last hour January 1st of the next year maybe?
     return true_date
 
 

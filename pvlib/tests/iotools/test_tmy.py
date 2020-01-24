@@ -1,5 +1,5 @@
 from pandas.util.testing import network
-
+import numpy as np
 from pvlib.iotools import tmy
 from conftest import DATA_DIR
 
@@ -77,3 +77,5 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     data, _ = read_tmy3(TMY3_FEB_LEAPYEAR, coerce_year=1990)
     # if get's here w/o an error, then gh865 is fixed, but let's check anyway
     assert all(data.index.year == 1990)
+    # let's do a quick sanity check, are the indices monotonically increasing?
+    assert all(np.diff(data.index[:-1].astype(int))==3600000000000)

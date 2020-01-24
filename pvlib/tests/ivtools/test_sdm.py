@@ -177,8 +177,9 @@ def test_fit_pvsyst_sandia(npts=3000):
     ivcurves['i'] = i[:npts]
 
     pvsyst_specs = dict.fromkeys(spec_list)
+    # order required to match file being read
     paramlist = [
-        'I_L_ref', 'I_o_ref', 'EgRef', 'R_s', 'R_sh_ref', 'R_sh_0', 'R_sh_exp',
+        'I_L_ref', 'I_o_ref', 'EgRef', 'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s',
         'gamma_ref', 'mu_gamma']
     varlist = ['iph', 'io', 'rs', 'rsh', 'u']
     pvsyst = OrderedDict(key=(paramlist + varlist))

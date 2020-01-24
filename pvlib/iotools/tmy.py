@@ -48,6 +48,9 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     metadata : dict
         The site metadata available in the file.
 
+    .. warning:: when coercing the year, the last index in the dataframe will
+        actually be the first hour of the year
+
     Notes
     -----
 

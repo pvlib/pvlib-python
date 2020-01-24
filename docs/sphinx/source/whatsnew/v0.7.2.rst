@@ -3,6 +3,11 @@
 v0.7.2 (Month day, year)
 -------------------------
 
+Bug fixes
+~~~~~~~~~
+* Fix :py:func:`~pvlib.iotools.read_tmy3` parsing when February contains
+  a leap year (:pull:`866`)
+
 Documentation
 ~~~~~~~~~~~~~
 * Add NumFOCUS affiliation to Sphinx documentation :pull:`862`

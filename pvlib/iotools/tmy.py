@@ -6,7 +6,6 @@ import datetime
 import io
 import re
 from urllib.request import urlopen, Request
-import dateutil
 import pandas as pd
 
 
@@ -192,11 +191,12 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     # header is actually the second line in file, but tell pandas to look for
     # header information on the 1st line (0 indexing) because we've already
     # advanced past the true first line with the readline call above.
-    data = pd.read_csv(
-        csvdata, header=0,
-        parse_dates={'datetime': ['Date (MM/DD/YYYY)', 'Time (HH:MM)']},
-        date_parser=lambda *x: _parsedate(*x, year=coerce_year),
-        index_col='datetime')
+    data = pd.read_csv(csvdata, header=0, index_col='Date (MM/DD/YYYY)')
+    data.index = pd.to_datetime(data.index, format='%m/%d/%Y')
+    shifted_hour = data['Time (HH:MM)'].str[:2].astype(int) - 1
+    data.index += pd.to_timedelta(shifted_hour, unit='hour')
+    if coerce_year is not None:
+        data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
 
     if recolumn:
         data = _recolumn(data)  # rename to standard column names
@@ -211,22 +211,6 @@ def _interactive_load():
     from tkinter.filedialog import askopenfilename
     tkinter.Tk().withdraw()  # Start interactive file input
     return askopenfilename()
-
-
-def _parsedate(ymd, hour, year=None):
-    # stupidly complicated due to TMY3's usage of hour 24
-    # and dateutil's inability to handle that.
-    offset_hour = int(hour[:2]) - 1
-    offset_datetime = '{} {}:00'.format(ymd, offset_hour)
-    offset_date = dateutil.parser.parse(offset_datetime)
-    true_date = offset_date + dateutil.relativedelta.relativedelta(hours=1)
-    # if the TMY February contains a leap year, then use March 1st instead
-    if (true_date.month == 2 and true_date.day == 29):
-        true_date += dateutil.relativedelta.relativedelta(nlyearday=60)
-    if year is not None:
-        true_date = true_date.replace(year=year)
-        # FIXME: make the last hour January 1st of the next year maybe?
-    return true_date
 
 
 def _recolumn(tmy3_dataframe):

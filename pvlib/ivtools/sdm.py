@@ -892,15 +892,13 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
 
 def _update_io(voc, iph, io, rs, rsh, nnsvth):
     """
-    _update_io adjusts io to match voc using other parameter values.
+    Adjusts Io to match Voc using other parameter values.
 
-    Helper function for fit_pvsyst_sandia
+    Helper function for fit_pvsyst_sandia, fit_desoto_sandia
 
     Description
     -----------
-    _update_io adjusts io to match voc using other parameter values,
-    i.e., Rsh (shunt resistance), Rs (Series Resistance), n (diode factor), and
-    IL (Light Current). Io is updated iteratively 10 times or until successive
+    Io is updated iteratively 10 times or until successive
     values are less than 0.000001 % different. The updating is similar to
     Newton's method.
 
@@ -998,7 +996,7 @@ def _check_converge(prevparams, result, vmp, imp, i):
     """
     Function _check_converge computes convergence metrics for all IV curves.
 
-    Helper function for fit_pvsyst_sandia
+    Helper function for fit_pvsyst_sandia, fit_desoto_sandia
 
     Parameters
     ----------
@@ -1097,15 +1095,13 @@ def _check_converge(prevparams, result, vmp, imp, i):
 
 def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
     """
-    _update_rsh_fixed_pt adjusts Rsh to match Vmp using other parameter values
+    Adjust Rsh to match Vmp using other parameter values
 
-    Helper function for fit_pvsyst_sandia
+    Helper function for fit_pvsyst_sandia, fit_desoto_sandia
 
     Description
     -----------
-    _update_rsh_fixed_pt adjusts rsh to match vmp using other parameter values,
-    i.e., Rs (series resistance), n (diode factor), Io (dark current), and IL
-    (light current). Rsh is updated iteratively using a fixed point expression
+    Rsh is updated iteratively using a fixed point expression
     obtained from combining Vmp = Vmp(Imp) (using the analytic solution to the
     single diode equation) and dP / dI = 0 at Imp. 500 iterations are performed
     because convergence can be very slow.

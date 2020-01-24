@@ -124,7 +124,7 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
 
 @requires_scipy
 @requires_statsmodels
-def test_fit_pvsyst_sandia(disp=False, npts=3000):
+def test_fit_pvsyst_sandia(npts=3000):
     spec_list = ['cells_in_series', 'alpha_sc', 'beta_voc', 'descr']
     iv_specs = dict.fromkeys(spec_list)
     keylist = ['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc', 'ee']
@@ -135,8 +135,8 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 
         iv_specs.update(
-            cells_in_series=int(Ns), aisc=float(aIsc), bvoc=float(bVoc),
-            descr=descr)
+            cells_in_series=int(Ns), alpha_sc=float(aIsc),
+            beta_voc=float(bVoc), descr=descr)
 
         strN, strM = f.readline().split(',')
         N = int(strN)
@@ -214,7 +214,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
     expected = sdm.fit_pvsyst_sandia(ivcurves, iv_specs)
     param_res = pvsystem.calcparams_pvsyst(
         effective_irradiance=ivcurves['ee'], temp_cell=ivcurves['tc'],
-        alpha_sc=iv_specs['aisc'], gamma_ref=expected['gamma_ref'],
+        alpha_sc=iv_specs['alpha_sc'], gamma_ref=expected['gamma_ref'],
         mu_gamma=expected['mu_gamma'], I_L_ref=expected['I_L_ref'],
         I_o_ref=expected['I_o_ref'], R_sh_ref=expected['R_sh_ref'],
         R_sh_0=expected['R_sh_0'], R_s=expected['R_s'],
@@ -222,8 +222,6 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
     iv_res = pvsystem.singlediode(*param_res)
 
     ivcurves['p_mp'] = ivcurves['v_mp'] * ivcurves['i_mp']  # power
-    if disp:
-        return expected, pvsyst, ivcurves, iv_specs, param_res, iv_res
 
     # assertions
     assert np.allclose(
@@ -236,7 +234,7 @@ def test_fit_pvsyst_sandia(disp=False, npts=3000):
         ivcurves['i_sc'], iv_res['i_sc'], equal_nan=True, rtol=0.003)
     assert np.allclose(
         ivcurves['v_oc'], iv_res['v_oc'], equal_nan=True, rtol=0.019)
-    # cells_in_series, aisc, bvoc, descr
+    # cells_in_series, alpha_sc, beta_voc, descr
     assert all((iv_specs[spec] == pvsyst_specs[spec]) for spec in spec_list)
     # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,
     # mu_gamma

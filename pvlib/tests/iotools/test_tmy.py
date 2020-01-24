@@ -3,8 +3,12 @@ from pandas.util.testing import network
 from pvlib.iotools import tmy
 from conftest import DATA_DIR
 
+# test the API works
+from pvlib.iotools import read_tmy3
+
 TMY3_TESTFILE = DATA_DIR / '703165TY.csv'
 TMY2_TESTFILE = DATA_DIR / '12839.tm2'
+TMY3_FEB_LEAPYEAR = DATA_DIR / '723170TYA.CSV'
 
 
 def test_read_tmy3():
@@ -41,3 +45,13 @@ def test_read_tmy3_no_coerce_year():
 
 def test_read_tmy2():
     tmy.read_tmy2(TMY2_TESTFILE)
+
+
+def test_gh865_read_tmy3_feb_leapyear_hr24():
+    """correctly parse the 24th hour if the tmy3 file has a leap year in feb"""
+    data, meta = read_tmy3(TMY3_FEB_LEAPYEAR)
+    # February for Greensboro is 1996, a leap year, so check to make sure there
+    # aren't any rows in the output that contain Feb 29th
+    assert data['1996-02-29 00:00'].size == 0
+    # now check if it parses correctly when we try to coerce the year
+    data, meta = read_tmy3(TMY3_FEB_LEAPYEAR, coerce_year=1990)

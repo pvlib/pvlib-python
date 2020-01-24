@@ -194,7 +194,11 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     data = pd.read_csv(csvdata, header=0, index_col='Date (MM/DD/YYYY)')
     data.index = pd.to_datetime(data.index, format='%m/%d/%Y')
     shifted_hour = data['Time (HH:MM)'].str[:2].astype(int) - 1
-    data.index += pd.to_timedelta(shifted_hour, unit='hour')
+    # shifted_hour is a pd.Series, so use pd.to_timedelta to get a pd.Series of
+    # timedeltas
+    # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
+    # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
+    data.index += pd.to_timedelta(shifted_hour, unit='h')
     if coerce_year is not None:
         data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
 

@@ -48,9 +48,6 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     metadata : dict
         The site metadata available in the file.
 
-    .. warning:: when coercing the year, the last index in the dataframe will
-        actually be the first hour of the year
-
     Notes
     -----
 
@@ -142,6 +139,9 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     TMYData.PresWthSource               Present weather code source, see [2]_.
     TMYData.PresWthUncertainty          Present weather code uncertainty, see [2]_.
     =============================       ======================================================================================================================================================
+
+    .. warning:: when coercing the year, the last index in the dataframe will
+        actually be the first hour of the year
 
     References
     ----------

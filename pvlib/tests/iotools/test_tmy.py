@@ -63,16 +63,6 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     # February for Greensboro is 1996, a leap year, so check to make sure there
     # aren't any rows in the output that contain Feb 29th
     assert data['1996-02-29 00:00'].size == 0
-    # just to be safe, make sure this _IS_ the Greensboro file
-    greensboro = {
-        'USAF': 723170,
-        'Name': '"GREENSBORO PIEDMONT TRIAD INT"',
-        'State': 'NC',
-        'TZ': -5.0,
-        'latitude': 36.1,
-        'longitude': -79.95,
-        'altitude': 273.0}
-    assert meta == greensboro
     # now check if it parses correctly when we try to coerce the year
     data, _ = read_tmy3(TMY3_FEB_LEAPYEAR, coerce_year=1990)
     # if get's here w/o an error, then gh865 is fixed, but let's check anyway

@@ -1,5 +1,6 @@
 from pandas.util.testing import network
 import numpy as np
+import pandas as pd
 from pvlib.iotools import tmy
 from conftest import DATA_DIR
 
@@ -62,7 +63,8 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     assert meta == greensboro
     # February for Greensboro is 1996, a leap year, so check to make sure there
     # aren't any rows in the output that contain Feb 29th
-    assert data['1996-02-29 00:00'].size == 0
+    assert data.index[1414] == pd.Timestamp('1996-02-28 23:00:00-0500')
+    assert data.index[1415] == pd.Timestamp('1996-03-01 00:00:00-0500')
     # now check if it parses correctly when we try to coerce the year
     data, _ = read_tmy3(TMY3_FEB_LEAPYEAR, coerce_year=1990)
     # if get's here w/o an error, then gh865 is fixed, but let's check anyway

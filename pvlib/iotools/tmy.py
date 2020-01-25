@@ -212,13 +212,13 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     # use indices to check for a leap day and advance it to March 1st
     leapday = (data_index.month == 2) & (data_index.day == 29)
     data_ymd[leapday] += datetime.timedelta(days=1)
-    # is this necessary? convert the series to DatetimeIndex
-    data.index = pd.DatetimeIndex(data_ymd)
+    # convert the series to DatetimeIndex, again, but do not set index yet
+    data_index = pd.DatetimeIndex(data_ymd)
     # shifted_hour is a pd.Series, so use pd.to_timedelta to get a pd.Series of
     # timedeltas
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
-    data.index += pd.to_timedelta(shifted_hour, unit='h')
+    data.index = data_index + pd.to_timedelta(shifted_hour, unit='h')
     if coerce_year is not None:
         data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
 

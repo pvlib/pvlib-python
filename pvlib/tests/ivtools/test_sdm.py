@@ -29,8 +29,9 @@ def cec_params_cansol_cs5p_220p():
                         'I_sc_ref': 5.05},
             'specs': {'alpha_sc': 0.0025, 'beta_voc': -0.19659,
                       'gamma_pmp': -0.43, 'cells_in_series': 96},
-            'params': {'a_ref': 2.3674, 'I_L_ref': 5.056, 'I_o_ref': 1.01e-10,
-                       'R_sh_ref': 837.51, 'R_s': 1.004, 'Adjust': 2.3}}
+            'params': {'I_L_ref': 5.056, 'I_o_ref': 1.01e-10,
+                       'R_sh_ref': 837.51, 'R_s': 1.004, 'a_ref': 2.3674,
+                       'Adjust': 2.3}}
 
 
 @requires_pysam
@@ -119,7 +120,8 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     modeled['R_s'] = result['R_s']
     modeled['R_sh_ref'] = result['R_sh_ref']
     expected = pd.Series(params)
-    assert np.allclose(modeled.values, expected.values, rtol=5e-2)
+    assert np.allclose(modeled[params.keys()].values,
+                       expected[params.keys()].values, rtol=5e-2)
 
 
 @requires_scipy

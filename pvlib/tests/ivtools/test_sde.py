@@ -10,16 +10,6 @@ def get_test_iv_params():
     return {'IL': 8.0, 'I0': 5e-10, 'Rs': 0.2, 'Rsh': 1000, 'nNsVth': 1.61864}
 
 
-@pytest.fixture
-def get_cec_params_cansol_cs5p_220p():
-    return {'input': {'V_mp_ref': 46.6, 'I_mp_ref': 4.73, 'V_oc_ref': 58.3,
-                      'I_sc_ref': 5.05, 'alpha_sc': 0.0025,
-                      'beta_voc': -0.19659, 'gamma_pmp': -0.43,
-                      'cells_in_series': 96},
-            'output': {'I_L_ref': 5.056, 'I_o_ref': 1.01e-10, 'R_s': 1.004,
-                       'R_sh_ref': 837.51, 'a_ref': 2.3674, 'Adjust': 2.3}}
-
-
 @requires_scipy
 def test_fit_sandia_simple(get_test_iv_params, get_bad_iv_curves):
     test_params = get_test_iv_params

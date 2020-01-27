@@ -23,7 +23,7 @@ jobs:
   - script: |
       echo "below is a test of the nrel api key"
       echo $(NREL_API_KEY)
-      
+      python -c "import os; print(os.environ['NREL_API_KEY'])"
     displayName: 'print env variable'
 
 

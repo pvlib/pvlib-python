@@ -21,10 +21,12 @@ jobs:
       versionSpec: '$(python.version)'
 
   - script: |
-      echo "below is a test of the nrel api key"
-      echo $(NREL_API_KEY)
       export nrelapikey=$(NREL_API_KEY)
       python -c "import os; print(os.environ['nrelapikey'])"
+      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
+      pip install -e .
+      pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+    displayName: 'Test with pytest'
     displayName: 'print env variable'
 
 

@@ -2,7 +2,8 @@
 
 trigger:
 - master
-
+variables:
+  NREL_API_KEY: $(NREL_API_KEY) # secret variable mapping from Pipeline to test env
 
 jobs:
 
@@ -41,8 +42,6 @@ jobs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
       reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
-  env:
-    NREL_API_KEY: $(NREL_API_KEY) # secret variable mapping from Pipeline to test env
 
 
 # - job: 'Test_conda_linux'

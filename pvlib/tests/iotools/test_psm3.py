@@ -23,7 +23,7 @@ HEADER_FIELDS = [
     'Wind Speed', 'Surface Albedo Units', 'Version']
 PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 # try:
-DEMO_KEY = os.environ["NREL_API_KEY"]
+DEMO_KEY = os.environ["nrelapikey"]
 # except KeyError:
 #     print("WARNING: NREL API KEY environment variable not set!")
 #     print("Using DEMO_KEY instead. This may cause unexpected failures.")

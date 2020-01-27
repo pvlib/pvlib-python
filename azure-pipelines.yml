@@ -25,7 +25,7 @@ jobs:
       python -c "import os; print(os.environ['nrelapikey'])"
       pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
       pip install -e .
-      pytest pvlib/tests/iotools/test_psm3.py::test_read_psm3  --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+      pytest pvlib/tests/iotools/test_psm3.py  --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 
 

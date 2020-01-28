@@ -26,5 +26,5 @@ dependencies:
     - siphon  # conda-forge
     - statsmodels
     - pip:
-        - nrel-pysam==1.2.1
+        - nrel-pysam
         - pvfactors==1.0.1

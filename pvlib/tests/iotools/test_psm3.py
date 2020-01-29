@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 from requests import HTTPError
 from io import StringIO
+import time
 
 TMY_TEST_DATA = DATA_DIR / 'test_psm3_tmy-2017.csv'
 YEAR_TEST_DATA = DATA_DIR / 'test_psm3_2017.csv'
@@ -54,6 +55,40 @@ def assert_psm3_equal(header, data, expected):
     # check timezone
     assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
 
+
+def delay_get_psm3(*args, **kwargs):
+    """Add a delay after a get_psm3() call"""
+    i = 0
+    while True:
+        try:
+            # execute get_psm3
+            header, data = psm3.get_psm3(*args, **kwargs)
+        except HTTPError as e:
+            # throw HTTPError as long as it's not due to OVER_RATE_LIMIT
+            if "OVER_RATE_LIMIT" not in str(e):
+                raise
+                break
+            if "OVER_RATE_LIMIT" not in str(e):
+                raise
+                break
+            print("over rate limit hit")
+            time.sleep(i)
+            i+=1
+        # break from loop if no error found
+        break
+
+    return header, data
+
+@needs_pandas_0_22
+def test_blah():
+    with pytest.raises(HTTPError) as bad_key_msg:
+        delay_get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
+    with pytest.raises(HTTPError) as bad_key_msg:
+        delay_get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL)
+    with pytest.raises(HTTPError) as bad_key_msg:
+        delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
+    header, data = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                                 names='tmy-2017')
 
 @needs_pandas_0_22
 def test_get_psm3_tmy():

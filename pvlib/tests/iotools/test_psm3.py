@@ -67,8 +67,8 @@ def delay_get_psm3(*args, **kwargs):
     every OVER_RATE_LIMIT HTTPError in a row. Return (header, data) from
     get_psm3() as normal.
     """
-    sleep_time = 0
-    while True:
+    max_retries = 5
+    for sleep_time in range(max_retries):
         try:
             # execute get_psm3
             header, data = psm3.get_psm3(*args, **kwargs)
@@ -76,7 +76,6 @@ def delay_get_psm3(*args, **kwargs):
             if "OVER_RATE_LIMIT" in str(e):
                 # retry command after sleeping for a time
                 time.sleep(sleep_time)
-                sleep_time += 1
                 continue
             # raise HTTPError if not due to OVER_RATE_LIMIT
             raise

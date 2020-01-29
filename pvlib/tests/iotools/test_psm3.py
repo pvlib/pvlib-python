@@ -11,11 +11,7 @@ import pytest
 from requests import HTTPError
 from io import StringIO
 import time
-import logging
-
-logging.basicConfig()
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.WARNING)
+import warnings
 
 TMY_TEST_DATA = DATA_DIR / 'test_psm3_tmy-2017.csv'
 YEAR_TEST_DATA = DATA_DIR / 'test_psm3_2017.csv'
@@ -31,8 +27,10 @@ PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 try:
     DEMO_KEY = os.environ["NREL_API_KEY"]
 except KeyError:
-    LOGGER.warning("WARNING: NREL API KEY environment variable not set!")
-    LOGGER.warning("Using DEMO_KEY instead. Unexpected failures may occur.")
+    warnings.warn(
+        "WARNING: NREL API KEY environment variable not set!"
+        "Using DEMO_KEY instead. Unexpected failures may occur."
+    )
     DEMO_KEY = 'DEMO_KEY'
 
 

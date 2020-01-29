@@ -32,7 +32,7 @@ try:
     DEMO_KEY = os.environ["NREL_API_KEY"]
 except KeyError:
     LOGGER.warning("WARNING: NREL API KEY environment variable not set!")
-    LOGGER.warning("Using DEMO_KEY instead. This may cause unexpected failures.")
+    LOGGER.warning("Using DEMO_KEY instead. Unexpected failures may occur.")
     DEMO_KEY = 'DEMO_KEY'
 
 
@@ -89,7 +89,7 @@ def delay_get_psm3(*args, **kwargs):
 def test_get_psm3_tmy():
     """test get_psm3 with a TMY"""
     header, data = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                 names='tmy-2017')
+                                  names='tmy-2017')
     expected = pd.read_csv(TMY_TEST_DATA)
     assert_psm3_equal(header, data, expected)
     # check errors
@@ -108,25 +108,25 @@ def test_get_psm3_tmy():
 def test_get_psm3_singleyear():
     """test get_psm3 with a single year"""
     header, data = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                 names='2017', interval=30)
+                                  names='2017', interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(header, data, expected)
     # check leap day
     _, data_2012 = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                 names='2012', interval=60, leap_day=True)
+                                  names='2012', interval=60, leap_day=True)
     assert len(data_2012) == (8760+24)
     # check errors
     with pytest.raises(HTTPError):
         # HTTP 403 forbidden because api_key is rejected
         delay_get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL,
-                      names='2017')
+                       names='2017')
     with pytest.raises(HTTPError):
         # coordinates were not found in the NSRDB
         delay_get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL, names='2017')
     with pytest.raises(HTTPError):
         # intervals can only be 30 or 60 minutes
         delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                names='2017', interval=15)
+                       names='2017', interval=15)
 
 
 @pytest.fixture

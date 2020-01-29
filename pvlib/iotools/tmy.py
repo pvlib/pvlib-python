@@ -6,7 +6,6 @@ import datetime
 import io
 import re
 from urllib.request import urlopen, Request
-import dateutil
 import pandas as pd
 
 
@@ -140,6 +139,16 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     TMYData.PresWthUncertainty          Present weather code uncertainty, see [2]_.
     =============================       ======================================================================================================================================================
 
+    .. warning:: TMY3 irradiance data corresponds to the previous hour, so the
+        first hour is 1AM, corresponding to the net irradiance from midnite to
+        1AM, and the last hour is midnite of the *next* year, unless the year
+        has been coerced. EG: if TMY3 was 1988-12-31 24:00:00 this becomes
+        1989-01-01 00:00:00
+
+    .. warning:: When coercing the year, the last index in the dataframe will
+        be the first hour of the same year, EG: if TMY3 was 1988-12-31 24:00:00
+        and year is coerced to 1990 this becomes 1990-01-01
+
     References
     ----------
 
@@ -189,11 +198,27 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     # header is actually the second line in file, but tell pandas to look for
     # header information on the 1st line (0 indexing) because we've already
     # advanced past the true first line with the readline call above.
-    data = pd.read_csv(
-        csvdata, header=0,
-        parse_dates={'datetime': ['Date (MM/DD/YYYY)', 'Time (HH:MM)']},
-        date_parser=lambda *x: _parsedate(*x, year=coerce_year),
-        index_col='datetime')
+    data = pd.read_csv(csvdata, header=0)
+    # get the date column as a pd.Series of numpy datetime64
+    data_ymd = pd.to_datetime(data['Date (MM/DD/YYYY)'], format='%m/%d/%Y')
+    # shift the time column so that midnite is 00:00 instead of 24:00
+    shifted_hour = data['Time (HH:MM)'].str[:2].astype(int) % 24
+    # shift the dates at midnite so they correspond to the next day
+    data_ymd[shifted_hour == 0] += datetime.timedelta(days=1)
+    # NOTE: as of pandas>=0.24 the pd.Series.array has a month attribute, but
+    # in pandas-0.18.1, only DatetimeIndex has month, but indices are immutable
+    # so we need to continue to work with the panda series of dates `data_ymd`
+    data_index = pd.DatetimeIndex(data_ymd)
+    # use indices to check for a leap day and advance it to March 1st
+    leapday = (data_index.month == 2) & (data_index.day == 29)
+    data_ymd[leapday] += datetime.timedelta(days=1)
+    # shifted_hour is a pd.Series, so use pd.to_timedelta to get a pd.Series of
+    # timedeltas
+    # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
+    # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
+    data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
+    if coerce_year is not None:
+        data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
 
     if recolumn:
         data = _recolumn(data)  # rename to standard column names
@@ -208,18 +233,6 @@ def _interactive_load():
     from tkinter.filedialog import askopenfilename
     tkinter.Tk().withdraw()  # Start interactive file input
     return askopenfilename()
-
-
-def _parsedate(ymd, hour, year=None):
-    # stupidly complicated due to TMY3's usage of hour 24
-    # and dateutil's inability to handle that.
-    offset_hour = int(hour[:2]) - 1
-    offset_datetime = '{} {}:00'.format(ymd, offset_hour)
-    offset_date = dateutil.parser.parse(offset_datetime)
-    true_date = offset_date + dateutil.relativedelta.relativedelta(hours=1)
-    if year is not None:
-        true_date = true_date.replace(year=year)
-    return true_date
 
 
 def _recolumn(tmy3_dataframe):

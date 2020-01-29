@@ -120,8 +120,8 @@ def test_get_psm3_singleyear():
         delay_get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL, names='2017')
     with pytest.raises(HTTPError):
         # intervals can only be 30 or 60 minutes
-        delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='2017',
-                      interval=15)
+        delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                names='2017', interval=15)
 
 
 @pytest.fixture

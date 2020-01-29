@@ -57,80 +57,70 @@ def assert_psm3_equal(header, data, expected):
 
 
 def delay_get_psm3(*args, **kwargs):
-    """Add a delay after a get_psm3() call"""
-    i = 0
+    """Repeat get_psm3() call if OVER_RATE_LIMIT error occurs otherwise
+    allow HTTPError to raise. Sleep times increase by one second for
+    every OVER_RATE_LIMIT HTTPError in a row. Return (header, data) from
+    get_psm3() as normal.
+    """
+    sleep_time = 0
     while True:
         try:
             # execute get_psm3
             header, data = psm3.get_psm3(*args, **kwargs)
         except HTTPError as e:
-            # throw HTTPError as long as it's not due to OVER_RATE_LIMIT
-            if "OVER_RATE_LIMIT" not in str(e):
-                raise
-                break
-            if "OVER_RATE_LIMIT" not in str(e):
-                raise
-                break
-            print("over rate limit hit")
-            time.sleep(i)
-            i+=1
-        # break from loop if no error found
-        break
-
+            if "OVER_RATE_LIMIT" in str(e):
+                # retry command after sleeping for a time
+                time.sleep(sleep_time)
+                sleep_time += 1
+                continue
+            # raise HTTPError if not due to OVER_RATE_LIMIT
+            raise
+        else:
+            break
     return header, data
 
-@needs_pandas_0_22
-def test_blah():
-    with pytest.raises(HTTPError) as bad_key_msg:
-        delay_get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
-    with pytest.raises(HTTPError) as bad_key_msg:
-        delay_get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL)
-    with pytest.raises(HTTPError) as bad_key_msg:
-        delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
-    header, data = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                 names='tmy-2017')
 
 @needs_pandas_0_22
 def test_get_psm3_tmy():
     """test get_psm3 with a TMY"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+    header, data = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
                                  names='tmy-2017')
     expected = pd.read_csv(TMY_TEST_DATA)
     assert_psm3_equal(header, data, expected)
     # check errors
     with pytest.raises(HTTPError):
         # HTTP 403 forbidden because api_key is rejected
-        psm3.get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
+        delay_get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
     with pytest.raises(HTTPError):
         # coordinates were not found in the NSRDB
-        psm3.get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL)
+        delay_get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL)
     with pytest.raises(HTTPError):
         # names is not one of the available options
-        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
+        delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
 
 
 @needs_pandas_0_22
 def test_get_psm3_singleyear():
     """test get_psm3 with a single year"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+    header, data = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
                                  names='2017', interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(header, data, expected)
     # check leap day
-    _, data_2012 = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+    _, data_2012 = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
                                  names='2012', interval=60, leap_day=True)
     assert len(data_2012) == (8760+24)
     # check errors
     with pytest.raises(HTTPError):
         # HTTP 403 forbidden because api_key is rejected
-        psm3.get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL,
+        delay_get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL,
                       names='2017')
     with pytest.raises(HTTPError):
         # coordinates were not found in the NSRDB
-        psm3.get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL, names='2017')
+        delay_get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL, names='2017')
     with pytest.raises(HTTPError):
         # intervals can only be 30 or 60 minutes
-        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='2017',
+        delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='2017',
                       interval=15)
 
 

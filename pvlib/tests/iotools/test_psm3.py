@@ -10,7 +10,6 @@ import pandas as pd
 import pytest
 from requests import HTTPError
 from io import StringIO
-import time
 import warnings
 
 TMY_TEST_DATA = DATA_DIR / 'test_psm3_tmy-2017.csv'
@@ -65,71 +64,61 @@ def assert_psm3_equal(header, data, expected):
     assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
 
 
-def delay_get_psm3(*args, **kwargs):
-    """Repeat get_psm3() call if OVER_RATE_LIMIT error occurs otherwise
-    allow HTTPError to raise. Sleep times increase by one second for
-    every OVER_RATE_LIMIT HTTPError in a row. Return (header, data) from
-    get_psm3() as normal.
-    """
-    max_retries = 5
-    for sleep_time in range(max_retries):
-        try:
-            # execute get_psm3
-            header, data = psm3.get_psm3(*args, **kwargs)
-        except HTTPError as e:
-            if "OVER_RATE_LIMIT" in str(e):
-                # retry command after sleeping for a time
-                time.sleep(sleep_time)
-                continue
-            # raise HTTPError if not due to OVER_RATE_LIMIT
-            raise
-        else:
-            break
-    return header, data
-
-
 @needs_pandas_0_22
-def test_get_psm3_tmy():
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
+def test_get_psm3_tmy(DEMO_KEY):
     """test get_psm3 with a TMY"""
-    header, data = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                  names='tmy-2017')
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                                 names='tmy-2017')
     expected = pd.read_csv(TMY_TEST_DATA)
     assert_psm3_equal(header, data, expected)
-    # check errors
-    with pytest.raises(HTTPError):
-        # HTTP 403 forbidden because api_key is rejected
-        delay_get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
-    with pytest.raises(HTTPError):
-        # coordinates were not found in the NSRDB
-        delay_get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL)
-    with pytest.raises(HTTPError):
-        # names is not one of the available options
-        delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
 
 
 @needs_pandas_0_22
-def test_get_psm3_singleyear():
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
+def test_get_psm3_singleyear(DEMO_KEY):
     """test get_psm3 with a single year"""
-    header, data = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                  names='2017', interval=30)
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                                 names='2017', interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(header, data, expected)
-    # check leap day
-    _, data_2012 = delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                  names='2012', interval=60, leap_day=True)
-    assert len(data_2012) == (8760+24)
-    # check errors
-    with pytest.raises(HTTPError):
+
+
+@needs_pandas_0_22
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
+def test_get_psm3_tmy_bad_api(DEMO_KEY):
+    with pytest.raises(HTTPError) as e:
         # HTTP 403 forbidden because api_key is rejected
-        delay_get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL,
-                       names='2017')
-    with pytest.raises(HTTPError):
+        psm3.get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
+    assert "OVER_RATE_LIMIT" not in str(e.value)
+
+
+@needs_pandas_0_22
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
+def test_get_psm3_tmy_bad_coordinates(DEMO_KEY):
+    with pytest.raises(HTTPError) as e:
         # coordinates were not found in the NSRDB
-        delay_get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL, names='2017')
-    with pytest.raises(HTTPError):
+        psm3.get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL)
+    assert "OVER_RATE_LIMIT" not in str(e.value)
+
+
+@needs_pandas_0_22
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
+def test_get_psm3_tmy_bad_names(DEMO_KEY):
+    with pytest.raises(HTTPError) as e:
+        # names is not one of the available options
+        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
+    assert "OVER_RATE_LIMIT" not in str(e.value)
+
+
+@needs_pandas_0_22
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
+def test_get_psm3_tmy_bad_interval(DEMO_KEY):
+    with pytest.raises(HTTPError) as e:
         # intervals can only be 30 or 60 minutes
-        delay_get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                       names='2017', interval=15)
+        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
+                      names='2017', interval=15)
+    assert "OVER_RATE_LIMIT" not in str(e.value)
 
 
 @pytest.fixture

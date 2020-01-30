@@ -28,6 +28,7 @@ jobs:
       pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
       pip install -e .
       export NREL_API_KEY=$(nrelApiKey)
+      echo $NREL_API_KEY
       pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 
@@ -76,6 +77,7 @@ jobs:
   - script: |
       source activate test_env
       export NREL_API_KEY=$(nrelApiKey)
+      echo $NREL_API_KEY
       pytest pvlib --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
     displayName: 'pytest'
   # - script: |
@@ -129,6 +131,7 @@ jobs:
   - script: |
       call activate test_env
       set NREL_API_KEY=%nrelApiKey%
+      echo %NREL_API_KEY%
       pytest pvlib --junitxml=junit/test-results.xml
     displayName: 'pytest'
   - task: PublishTestResults@2
@@ -159,6 +162,7 @@ jobs:
       pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
       pip install -e .
       export NREL_API_KEY=$(nrelApiKey)
+      echo $NREL_API_KEY
       pytest pvlib --junitxml=junit/test-results.xml --cov=pvlib --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 

@@ -128,7 +128,7 @@ jobs:
     displayName: 'List installed dependencies'
   - script: |
       call activate test_env
-      export NREL_API_KEY=$(nrelApiKey)
+      set NREL_API_KEY=%nrelApiKey%
       pytest pvlib --junitxml=junit/test-results.xml
     displayName: 'pytest'
   - task: PublishTestResults@2

@@ -24,14 +24,20 @@ HEADER_FIELDS = [
     'Temperature Units', 'Pressure Units', 'Wind Direction Units',
     'Wind Speed', 'Surface Albedo Units', 'Version']
 PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
-try:
-    DEMO_KEY = os.environ["NREL_API_KEY"]
-except KeyError:
-    warnings.warn(
-        "WARNING: NREL API KEY environment variable not set!"
-        "Using DEMO_KEY instead. Unexpected failures may occur."
-    )
-    DEMO_KEY = 'DEMO_KEY'
+
+
+@pytest.fixture(scope="module")
+def DEMO_KEY():
+    """"""
+    try:
+        demo_key = os.environ["NREL_API_KEY"]
+    except KeyError:
+        warnings.warn(
+            "WARNING: NREL API KEY environment variable not set! "
+            "Using DEMO_KEY instead. Unexpected failures may occur."
+        )
+        demo_key = 'DEMO_KEY'
+    return demo_key
 
 
 def assert_psm3_equal(header, data, expected):

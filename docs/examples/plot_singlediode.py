@@ -8,7 +8,7 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 #%%
 # Calculating a module IV curve for certain operating conditions is a two-step
 # process.  Multiple methods exist for both parts of the process.  Here we use
-# the De Soto model [DeSoto]_ to calculate the electrical parameters for an IV
+# the De Soto model [1]_ to calculate the electrical parameters for an IV
 # curve at a certain irradiance and temperature using the module's
 # base characteristics at reference conditions.  Those parameters are then used
 # to calculate the module's IV curve by solving the single-diode equation using
@@ -23,8 +23,7 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 # References
 # ----------
 #  .. [1] W. De Soto et al., "Improvement and validation of a model for
-#     photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-#       2006.
+#     photovoltaic array performance", Solar Energy, vol 80, pp. 78-88, 2006.
 
 # Calculating IV Curves
 # -----------------------

@@ -84,40 +84,27 @@ def test_get_psm3_singleyear(DEMO_KEY):
     assert_psm3_equal(header, data, expected)
 
 
+@pytest.mark.parametrize('latitude, longitude, api_key, names, interval',
+                         [(LATITUDE, LONGITUDE, 'BAD', 'tmy-2017', 60),
+                          (51, -5, DEMO_KEY, 'tmy-2017', 60),
+                             (LATITUDE, LONGITUDE, DEMO_KEY, 'bad', 60),
+                             (LATITUDE, LONGITUDE, DEMO_KEY, '2017', 15),
+                          ])
 @needs_pandas_0_22
 @pytest.mark.flaky(reruns=5, reruns_delay=2)
-def test_get_psm3_tmy_bad_api(DEMO_KEY):
+def test_get_psm3_tmy_errors(
+    DEMO_KEY, latitude, longitude, api_key, names, interval
+):
+    """Test get_psm3() for multiple error scenarios:
+        * Bad api key -> HTTP 403 forbidden because api_key is rejected
+        * Bad latitude/longitude -> Coordinates were not found in the NSRDB
+        * Bad name -> names is not one of the available options
+        * Bad interval, single year -> intervals can only be 30 or 60 minutes
+    """
     with pytest.raises(HTTPError) as e:
-        # HTTP 403 forbidden because api_key is rejected
-        psm3.get_psm3(LATITUDE, LONGITUDE, api_key='BAD', email=PVLIB_EMAIL)
-    assert "OVER_RATE_LIMIT" not in str(e.value)
-
-
-@needs_pandas_0_22
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
-def test_get_psm3_tmy_bad_coordinates(DEMO_KEY):
-    with pytest.raises(HTTPError) as e:
-        # coordinates were not found in the NSRDB
-        psm3.get_psm3(51, -5, DEMO_KEY, PVLIB_EMAIL)
-    assert "OVER_RATE_LIMIT" not in str(e.value)
-
-
-@needs_pandas_0_22
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
-def test_get_psm3_tmy_bad_names(DEMO_KEY):
-    with pytest.raises(HTTPError) as e:
-        # names is not one of the available options
-        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL, names='bad')
-    assert "OVER_RATE_LIMIT" not in str(e.value)
-
-
-@needs_pandas_0_22
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
-def test_get_psm3_tmy_bad_interval(DEMO_KEY):
-    with pytest.raises(HTTPError) as e:
-        # intervals can only be 30 or 60 minutes
-        psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                      names='2017', interval=15)
+        psm3.get_psm3(latitude, longitude, api_key, PVLIB_EMAIL,
+                      names=names, interval=interval)
+    # ensure the HTTPError caught isn't due to overuse of the API key
     assert "OVER_RATE_LIMIT" not in str(e.value)
 
 

@@ -8,8 +8,8 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 #%%
 # Calculating a module IV curve for certain operating conditions is a two-step
 # process.  Multiple methods exist for both parts of the process.  Here we use
-# the De Soto model [DeSoto]_ to calculate the electrical parameters for an IV curve at a certain irradiance```
-# of a PV module at a certain irradiance and temperature using the module's
+# the De Soto model [DeSoto]_ to calculate the electrical parameters for an IV
+# curve at a certain irradiance and temperature using the module's
 # base characteristics at reference conditions.  Those parameters are then used
 # to calculate the module's IV curve by solving the single-diode equation using
 # the Lambert W method.
@@ -19,11 +19,12 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 # conditions.  For more details on the single-diode equation and the five
 # parameters, see the `PVPMC single diode page
 # <https://pvpmc.sandia.gov/modeling-steps/2-dc-module-iv/diode-equivalent-circuit-models/>`_.
-    References
-    ----------
-#    .. [1] W. De Soto et al., "Improvement and validation of a model for
-       photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-       2006.
+#
+# References
+# ----------
+#  .. [1] W. De Soto et al., "Improvement and validation of a model for
+#     photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
+#       2006.
 
 # Calculating IV Curves
 # -----------------------
@@ -61,18 +62,16 @@ parameters = {
     'Technology': 'Mono-c-Si',
 }
 
-base_case = {'Geff': 400, 'Tcell': 80}
+cases = [
+    (1000, 55),
+    (800, 55),
+    (600, 55),
+    (400, 25),
+    (400, 40),
+    (400, 55)
+]
 
-cases = [base_case]
-for i in range(1, 3):
-    case = {'Geff': base_case['Geff'], 'Tcell': base_case['Tcell'] - i * 25}
-    cases.append(case)
-
-for i in range(1, 4):
-    case = {'Geff': base_case['Geff'] + i * 200, 'Tcell': base_case['Tcell']}
-    cases.append(case)
-
-conditions = pd.DataFrame(cases)
+conditions = pd.DataFrame(cases, columns=['Geff', 'Tcell'])
 
 # adjust the reference parameters according to the operating
 # conditions using the De Soto model:
@@ -102,7 +101,7 @@ curve_info = pvsystem.singlediode(
 
 # plot the calculated curves:
 plt.figure()
-for i, case in enumerate(cases):
+for i, case in conditions.iterrows():
     label = (
         "$G_{eff}$ " + f"{case['Geff']} $W/m^2$\n"
         "$T_{cell}$ " + f"{case['Tcell']} $C$"

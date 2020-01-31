@@ -73,6 +73,16 @@ Additional pvlib python publications include:
   in 43rd Photovoltaic Specialists Conference, 2016.
 
 
+NumFOCUS
+========
+
+pvlib python is a `NumFOCUS Affiliated Project <https://numfocus.org/sponsored-projects/affiliated-projects>`_
+
+.. image:: https://i0.wp.com/numfocus.org/wp-content/uploads/2019/06/AffiliatedProject.png
+  :target: https://numfocus.org/sponsored-projects/affiliated-projects
+  :alt: NumFocus Affliated Projects
+
+
 Contents
 ========
 

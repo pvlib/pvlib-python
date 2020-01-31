@@ -1,0 +1,23 @@
+.. _whatsnew_0720:
+
+v0.7.2 (Month day, year)
+-------------------------
+
+Enhancements
+~~~~~~~~~~~~
+* TMY3 dataframe returned by :py:func:`~pvlib.iotools.read_tmy3` now contains
+  the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
+  indices were parsed from (:pull:`866`)
+
+Bug fixes
+~~~~~~~~~
+* Fix :py:func:`~pvlib.iotools.read_tmy3` parsing when February contains
+  a leap year (:pull:`866`)
+
+Documentation
+~~~~~~~~~~~~~
+* Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
+
+Contributors
+~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)

@@ -171,7 +171,8 @@ class Location(object):
 
         Parameters
         ----------
-        times : DatetimeIndex
+        times : pandas.DatetimeIndex
+            Must be localized or UTC will be assumed.
         pressure : None, float, or array-like, default None
             If None, pressure will be calculated using
             :py:func:`atmosphere.alt2pres` and ``self.altitude``.

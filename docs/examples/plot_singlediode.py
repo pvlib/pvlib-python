@@ -24,7 +24,7 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 # ----------
 #  .. [1] W. De Soto et al., "Improvement and validation of a model for
 #     photovoltaic array performance", Solar Energy, vol 80, pp. 78-88, 2006.
-
+#
 # Calculating IV Curves
 # -----------------------
 # This example uses :py:meth:`pvlib.pvsystem.calcparams_desoto` to calculate

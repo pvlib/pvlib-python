@@ -22,3 +22,4 @@ Documentation
 Contributors
 ~~~~~~~~~~~~
 * Mark Mikofski (:ghuser:`mikofski`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

@@ -30,7 +30,7 @@ jobs:
       export PRINT_ME=$(not_secret)
       echo "print me: $PRINT_ME"
       echo "direct print $(not_secret)"
-      export NREL_API_KEY=$(api_key)
+      export NREL_API_KEY=$(nrelApiKey)
       echo "This is the key: $NREL_API_KEY"
       pytest pvlib/tests/iotools/test_psm3.py --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'

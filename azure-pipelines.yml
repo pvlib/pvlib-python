@@ -12,10 +12,10 @@ jobs:
     vmImage: 'ubuntu-16.04'
   strategy:
     matrix:
-      # Python35:
-      #   python.version: '3.5'
-      # Python36:
-      #   python.version: '3.6'
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
       Python37:
         python.version: '3.7'
 
@@ -28,9 +28,6 @@ jobs:
   - script: |
       pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
       pip install -e .
-      export PRINT_ME=$(not_secret)
-      echo "print me: $PRINT_ME"
-      echo "direct print $(not_secret)"
       export NREL_API_KEY=$(nrelApiKey)
       echo "This is the key: $NREL_API_KEY"
       pytest pvlib/tests/iotools/test_psm3.py --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html

@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-from pytz import timezone
+from datetime import datetime, timedelta, timezone
 import warnings
 
 import pandas as pd
@@ -114,7 +113,7 @@ def test_vert_level():
 @requires_siphon
 def test_datetime():
     amodel = NAM()
-    start = datetime.now()
+    start = datetime.now(tz=timezone.utc)
     end = start + timedelta(days=1)
     amodel.get_processed_data(_latitude, _longitude, start, end)
 
@@ -138,7 +137,6 @@ def test_full():
     GFS(set_type='full')
 
 
-@requires_siphon
 def test_temp_convert():
     amodel = GFS()
     data = pd.DataFrame({'temp_air': [273.15]})
@@ -157,12 +155,17 @@ def test_temp_convert():
 #                                  variables=new_variables)
 
 
-@requires_siphon
 def test_set_location():
     amodel = GFS()
     latitude, longitude = 32.2, -110.9
-    time = datetime.now(timezone('UTC'))
+    time = 'UTC'
     amodel.set_location(time, latitude, longitude)
+
+
+def test_set_query_time_range_tzfail():
+    amodel = GFS()
+    with pytest.raises(TypeError):
+        amodel.set_query_time_range(datetime.now(), datetime.now())
 
 
 def test_cloud_cover_to_transmittance_linear():

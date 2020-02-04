@@ -26,7 +26,7 @@ jobs:
       versionSpec: '$(python.version)'
 
   - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
+      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures
       pip install -e .
       export NREL_API_KEY=$(nrelApiKey)
       echo "This is the key: $NREL_API_KEY"
@@ -160,7 +160,7 @@ jobs:
       versionSpec: '$(python.version)'
 
   - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
+      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures
       pip install -e .
       export NREL_API_KEY=$(nrelApiKey)
       echo $NREL_API_KEY

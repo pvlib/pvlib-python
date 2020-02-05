@@ -26,4 +26,4 @@ dependencies:
     - pip:
         - nrel-pysam
         - pvfactors==1.0.1
-        - pytest-rerunfailures
+        - pytest-rerunfailures # conda version is >3.6

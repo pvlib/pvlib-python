@@ -26,7 +26,7 @@ PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 
 
 @pytest.fixture(scope="module")
-def DEMO_KEY():
+def nrel_api_key():
     """"""
     try:
         demo_key = os.environ["NREL_API_KEY"]
@@ -66,34 +66,34 @@ def assert_psm3_equal(header, data, expected):
 
 @needs_pandas_0_22
 @pytest.mark.flaky(reruns=5, reruns_delay=2)
-def test_get_psm3_tmy(DEMO_KEY):
+def test_get_psm3_tmy(nrel_api_key):
     """test get_psm3 with a TMY"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                 names='tmy-2017')
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
+                                 PVLIB_EMAIL, names='tmy-2017')
     expected = pd.read_csv(TMY_TEST_DATA)
     assert_psm3_equal(header, data, expected)
 
 
 @needs_pandas_0_22
 @pytest.mark.flaky(reruns=5, reruns_delay=2)
-def test_get_psm3_singleyear(DEMO_KEY):
+def test_get_psm3_singleyear(nrel_api_key):
     """test get_psm3 with a single year"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, DEMO_KEY, PVLIB_EMAIL,
-                                 names='2017', interval=30)
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
+                                 PVLIB_EMAIL, names='2017', interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(header, data, expected)
 
 
 @pytest.mark.parametrize('latitude, longitude, api_key, names, interval',
                          [(LATITUDE, LONGITUDE, 'BAD', 'tmy-2017', 60),
-                          (51, -5, DEMO_KEY, 'tmy-2017', 60),
-                             (LATITUDE, LONGITUDE, DEMO_KEY, 'bad', 60),
-                             (LATITUDE, LONGITUDE, DEMO_KEY, '2017', 15),
+                          (51, -5, nrel_api_key, 'tmy-2017', 60),
+                          (LATITUDE, LONGITUDE, nrel_api_key, 'bad', 60),
+                          (LATITUDE, LONGITUDE, nrel_api_key, '2017', 15),
                           ])
 @needs_pandas_0_22
 @pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_get_psm3_tmy_errors(
-    DEMO_KEY, latitude, longitude, api_key, names, interval
+    latitude, longitude, api_key, names, interval
 ):
     """Test get_psm3() for multiple error scenarios:
         * Bad api key -> HTTP 403 forbidden because api_key is rejected

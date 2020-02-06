@@ -104,16 +104,16 @@ def test_get_psm3_tmy_errors(
     """Test get_psm3() for multiple erroneous input scenarios.
 
     These scenarios include:
-    * Bad API key -> HTTP 403 forbidden because api_key is rejected.
+    * Bad API key -> HTTP 403 forbidden because api_key is rejected
     * Bad latitude/longitude -> Coordinates were not found in the NSRDB.
     * Bad name -> Name is not one of the available options.
     * Bad interval, single year -> Intervals can only be 30 or 60 minutes.
     """
-    with pytest.raises(HTTPError) as e:
+    with pytest.raises(HTTPError) as excinfo:
         psm3.get_psm3(latitude, longitude, api_key, PVLIB_EMAIL,
                       names=names, interval=interval)
     # ensure the HTTPError caught isn't due to overuse of the API key
-    assert "OVER_RATE_LIMIT" not in str(e.value)
+    assert "OVER_RATE_LIMIT" not in str(excinfo.value)
 
 
 @pytest.fixture

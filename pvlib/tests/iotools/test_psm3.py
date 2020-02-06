@@ -27,7 +27,13 @@ PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 
 @pytest.fixture(scope="module")
 def nrel_api_key():
-    """"""
+    """Supplies pvlib-python's NREL Developer Network API key.
+
+    Azure Pipelines CI utilizes a secret variable set to NREL_API_KEY
+    to mitigate failures associated with using the default key of
+    "DEMO_KEY". A user is capable of using their own key this way if
+    desired however the default key should suffice for testing purposes.
+    """
     try:
         demo_key = os.environ["NREL_API_KEY"]
     except KeyError:
@@ -95,11 +101,13 @@ def test_get_psm3_singleyear(nrel_api_key):
 def test_get_psm3_tmy_errors(
     latitude, longitude, api_key, names, interval
 ):
-    """Test get_psm3() for multiple error scenarios:
-        * Bad api key -> HTTP 403 forbidden because api_key is rejected
-        * Bad latitude/longitude -> Coordinates were not found in the NSRDB
-        * Bad name -> names is not one of the available options
-        * Bad interval, single year -> intervals can only be 30 or 60 minutes
+    """Test get_psm3() for multiple erroneous input scenarios.
+
+    These scenarios include:
+    * Bad API key -> HTTP 403 forbidden because api_key is rejected.
+    * Bad latitude/longitude -> Coordinates were not found in the NSRDB.
+    * Bad name -> Name is not one of the available options.
+    * Bad interval, single year -> Intervals can only be 30 or 60 minutes.
     """
     with pytest.raises(HTTPError) as e:
         psm3.get_psm3(latitude, longitude, api_key, PVLIB_EMAIL,

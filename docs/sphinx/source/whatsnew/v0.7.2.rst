@@ -20,7 +20,12 @@ Documentation
 ~~~~~~~~~~~~~
 * Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
 
+Requirements
+~~~~~~~~~~~~
+* nrel-pysam (optional) minimum set to v1.0.0 (:issue:`874`)
+
 Contributors
 ~~~~~~~~~~~~
 * Mark Mikofski (:ghuser:`mikofski`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Cameron T. Stark (:ghuser:`camerontstark`)

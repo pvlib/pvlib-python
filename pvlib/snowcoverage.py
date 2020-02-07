@@ -1,19 +1,17 @@
 """
-The ``snowcoverage`` module contains functions that model snow coverage on
-solar modules. The model was first proposed in Marion et al. 2013 and was
-later validated and implemented into NREL's SAM.
+The ``snow`` module contains functions that model the effect of snow on
+solar modules.
 """
 
 import numpy as np
 import pandas as pd
+from pvlib.tools import sind
 
 
-def snow_slide_amount(surface_tilt, sliding_coefficient=1.97,
-                      time_step_hours=1):
+def _snow_slide_amount(surface_tilt, sliding_coefficient=1.97,
+                       time_step=1):
     '''
-    Calculates the amount of snow that slides off of the surface of a module
-    following the model first described in [1] and later implemented with minor
-    improvements in SAM [2] in tenths of panel height.
+    Calculates the amount of snow that slides off in each time step.
 
     Parameters
     ----------
@@ -24,90 +22,66 @@ def snow_slide_amount(surface_tilt, sliding_coefficient=1.97,
 
 
     sliding_coefficient : numeric
-        Another empirically determined coefficient used in [1]. It determines
-        how much snow slides off of the panel if a sliding event occurs.
+        An empirically determined coefficient used in [1] to determine
+        how much snow slides off if a sliding event occurs.
 
-    time_step_hours: float
-        Period of the data in hours. (hours between data points)
+    time_step: float
+        Period of the data. [hour]
 
     Returns
     ----------
     slide_amount : numeric
-        The amount of snow that slides off of the panel
-        in tenths of the panel area at each time step.
-
-    References
-    ----------
-    [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
-    “Measured and modeled photovoltaic system energy losses from snow for
-    Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
-    [2] Ryberg, D; Freeman, J. "Integration, Validation, and Application
-    of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
+        The fraction of panel slant height from which snow slides off
+        at each time step, in tenths of the panel's slant height.
     '''
 
-    tilt = np.radians(surface_tilt)
-    slide_amount = sliding_coefficient / 10 * np.sin(tilt) * time_step_hours
-    return slide_amount
+    return sliding_coefficient / 10 * sind(surface_tilt) * time_step
 
 
-def snow_slide_event(poa_irradiance, temperature,
-                     m=-80):
+def _snow_slide_event(poa_irradiance, temperature,
+                      m=-80):
     '''
-    Calculates when snow sliding events will occur following the model first
-    described in [1] and later implemented in SAM [2].
+    Calculates when snow sliding events will occur.
 
     Parameters
     ----------
     poa_irradiance : numeric
-        Total in-plane irradiance (W/m^2)
+        Total in-plane irradiance [W/m^2]
 
     temperature : numeric
-        Ambient air temperature at the surface (C)
+        Ambient air temperature at the surface [C]
 
     m : numeric
-        A coefficient used in the model described in [1]. It is an
-        empirically determined value given in W/m^2.
+        A coefficient used in the model described in [1]. [W/m^2 C]
 
     Returns
     ----------
     slide_event : boolean array
         True if the condiditions are suitable for a snow slide event.
         False elsewhere.
-
-    References
-    ----------
-    [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
-    “Measured and modeled photovoltaic system energy losses from snow for
-    Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
-    [2] Ryberg, D; Freeman, J. "Integration, Validation, and Application
-    of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
     '''
 
-    slide_event = temperature > poa_irradiance / m
-    return slide_event
+    return temperature > poa_irradiance / m
 
 
-def fully_covered_panel(snow_data, time_step_hours=1,
+def fully_covered_panel(snow_data, time_step=1,
                         snow_data_type="snowfall"):
     '''
-    Calculates the timesteps where the panel is presumed to be fully covered
-    by snow. Follows the same model first described in [1] and later
-    implemented in SAM [2].
+    Calculates the timesteps when the panel is presumed to be fully covered
+    by snow.
 
     Parameters
     ----------
     snow_data : numeric
-        Time series data on either snowfall or ground snow depth. The type of
-        data should be specified in snow_data_type. The original model was
-        designed for ground snowdepth only. (cm/hr or cm)
+        Time series data on either snowfall (cm/hr) or ground snow depth (cm).
+        The type of data should be specified in snow_data_type.
 
-    time_step_hours: float
-        Period of the data in hours. (hours between data points)
+    time_step: float
+        Period of the data. [hour]
 
     snow_data_type : string
         Defines what type of data is being passed as snow_data. Acceptable
-        values are "snowfall" and "snow_depth". "snowfall" will be in units of
-        cm/hr. "snow_depth" is in units of cm.
+        values are "snowfall" and "snow_depth".
 
     Returns
     ----------
@@ -115,11 +89,17 @@ def fully_covered_panel(snow_data, time_step_hours=1,
         True where the snowfall exceeds the defined threshold to fully cover
         the panel. False elsewhere.
 
+    Notes
+    -----
+    Implements the model described in [1] with minor improvements in [2].
+
     References
     ----------
-    [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
-    “Measured and modeled photovoltaic system energy losses from snow for
-    Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
+    .. [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
+       “Measured and modeled photovoltaic system energy losses from snow for
+       Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
+    .. [2] Ryberg, D; Freeman, J. "Integration, Validation, and Application
+       of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
     '''
     if snow_data_type == "snow_depth":
         prev_data = snow_data.shift(1)
@@ -131,19 +111,17 @@ def fully_covered_panel(snow_data, time_step_hours=1,
         raise ValueError('snow_data_type was not specified or was not set to a'
                          'valid option (snowfall, snow_depth).')
 
-    time_adjusted = snowfall / time_step_hours
+    time_adjusted = snowfall / time_step
     fully_covered_mask = time_adjusted >= 1
     return fully_covered_mask
 
 
 def snow_coverage_model(snow_data, snow_data_type,
                         poa_irradiance, temperature, surface_tilt,
-                        time_step_hours=1, m=-80, sliding_coefficient=1.97):
+                        time_step=1, m=-80, sliding_coefficient=1.97):
     '''
     Calculates the fraction of the slant height of a row of modules covered by
-    snow at every time step following the same model first described in [1]
-    and later implemented in SAM [2]. Currently only validated for fixed tilt
-    systems.
+    snow at every time step.
 
     Parameters
     ----------
@@ -168,32 +146,45 @@ def snow_coverage_model(snow_data, snow_data_type,
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
-    time_step_hours: float
-        Period of the data in hours. (hours between data points)
+    time_step: float
+        Period of the data. [hour]
 
     sliding coefficient : numeric
-        Another empirically determined coefficient used in [1]. It determines
-        how much snow slides off of the panel if a sliding event occurs.
+        Empirically determined coefficient used in [1] to determine how much
+        snow slides off if a sliding event occurs.
 
     m : numeric
-        A coefficient used in the model described in [1]. It is an
-        empirically determined value given in W/(m^2 C).
+        A coefficient used in the model described in [1]. [W/(m^2 C)]
 
     Returns
     -------
     snow_coverage : numeric
-        The fraction of a module covered by snow at each time step.
+        The fraction of a the slant height of a row of modules that is covered
+        by snow at each time step.
+
+    Notes
+    -----
+    Implements the model described in [1] with minor improvements in [2].
+    Currently only validated for fixed tilt systems.
+
+    References
+    ----------
+    .. [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
+       “Measured and modeled photovoltaic system energy losses from snow for
+       Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
+    .. [2] Ryberg, D; Freeman, J. "Integration, Validation, and Application
+       of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
     '''
 
     full_coverage_events = fully_covered_panel(snow_data,
-                                               time_step_hours=time_step_hours,
+                                               time_step=time_step,
                                                snow_data_type=snow_data_type)
     snow_coverage = pd.Series(np.full(len(snow_data), np.nan))
     snow_coverage = snow_coverage.reindex(snow_data.index)
     snow_coverage[full_coverage_events] = 1
-    slide_events = snow_slide_event(poa_irradiance, temperature)
-    slide_amount = snow_slide_amount(surface_tilt, sliding_coefficient,
-                                     time_step_hours)
+    slide_events = _snow_slide_event(poa_irradiance, temperature)
+    slide_amount = _snow_slide_amount(surface_tilt, sliding_coefficient,
+                                      time_step)
     slidable_snow = ~np.isnan(snow_coverage)
     while(np.any(slidable_snow)):
         new_slides = np.logical_and(slide_events, slidable_snow)
@@ -231,5 +222,4 @@ def DC_loss_factor(snow_coverage, num_strings):
     loss : numeric
         DC loss due to snow coverage at each time step.
     '''
-    loss = np.ceil(snow_coverage * num_strings) / num_strings
-    return loss
+    return np.ceil(snow_coverage * num_strings) / num_strings

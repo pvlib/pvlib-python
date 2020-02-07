@@ -8,7 +8,6 @@ Calculate the solar position using a variety of methods/packages.
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 # Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
 
-from __future__ import division
 import os
 import datetime as dt
 try:
@@ -25,7 +24,6 @@ import warnings
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
-from pvlib._deprecation import deprecated
 
 
 NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
@@ -41,9 +39,15 @@ def get_solarposition(time, latitude, longitude,
     Parameters
     ----------
     time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
 
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
+
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
 
     altitude : None or float, default None
         If None, computed from pressure. Assumed to be 0 m
@@ -70,17 +74,20 @@ def get_solarposition(time, latitude, longitude,
     temperature : float, default 12
         Degrees C.
 
-    Other keywords are passed to the underlying solar position function.
+    kwargs
+        Other keywords are passed to the solar position function
+        specified by the ``method`` argument.
 
     References
     ----------
-    [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation
-    applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
+    .. [1] I. Reda and A. Andreas, Solar position algorithm for solar radiation
+       applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
 
-    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
-    solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+    .. [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
+       solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
+       2007.
 
-    [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    .. [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
     """
 
     if altitude is None and pressure is None:
@@ -137,13 +144,17 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-        Localized or UTC.
+        Must be localized or UTC will be assumed.
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     pressure : float, default 101325
         Pressure in Pascals
     altitude : float, default 0
-        Elevation above sea level.
+        Height above sea level. [m]
     temperature : float, default 12
         Temperature in C
     delta_t : float, default 67.0
@@ -164,16 +175,17 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 
     References
     ----------
-    NREL SPA reference: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
-    NREL SPA C files: https://midcdmz.nrel.gov/spa/
+    .. [1] NREL SPA reference:
+       http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+       NREL SPA C files: https://midcdmz.nrel.gov/spa/
 
     Note: The ``timezone`` field in the SPA C files is replaced with
     ``time_zone`` to avoid a nameclash with the function ``__timezone`` that is
     redefined by Python>=3.5. This issue is
     `Python bug 24643 <https://bugs.python.org/issue24643>`_.
 
-    USNO delta T:
-    http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+    .. [2] USNO delta T:
+       http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
 
     See also
     --------
@@ -275,10 +287,15 @@ def spa_python(time, latitude, longitude,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-        Localized or UTC.
+        Must be localized or UTC will be assumed.
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     altitude : float, default 0
+        Distance above sea level.
     pressure : int or float, optional, default 101325
         avg. yearly air pressure in Pascals.
     temperature : int or float, optional, default 12
@@ -315,14 +332,15 @@ def spa_python(time, latitude, longitude,
 
     References
     ----------
-    [1] I. Reda and A. Andreas, Solar position algorithm for solar
-    radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
+    .. [1] I. Reda and A. Andreas, Solar position algorithm for solar
+       radiation applications. Solar Energy, vol. 76, no. 5, pp. 577-589, 2004.
 
-    [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
-    solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838, 2007.
+    .. [2] I. Reda and A. Andreas, Corrigendum to Solar position algorithm for
+       solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
+       2007.
 
-    [3] USNO delta T:
-    http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+    .. [3] USNO delta T:
+       http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
 
     See also
     --------
@@ -405,9 +423,9 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 
     References
     ----------
-    [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
-    radiation applications. Technical report: NREL/TP-560- 34302. Golden,
-    USA, http://www.nrel.gov.
+    .. [1] Reda, I., Andreas, A., 2003. Solar position algorithm for solar
+       radiation applications. Technical report: NREL/TP-560- 34302. Golden,
+       USA, http://www.nrel.gov.
     """
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
@@ -442,12 +460,6 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     return pd.DataFrame(index=times, data={'sunrise': sunrise,
                                            'sunset': sunset,
                                            'transit': transit})
-
-
-get_sun_rise_set_transit = deprecated('0.6.1',
-                                      alternative='sun_rise_set_transit_spa',
-                                      name='get_sun_rise_set_transit',
-                                      removal='0.7')(sun_rise_set_transit_spa)
 
 
 def _ephem_convert_to_seconds_and_microseconds(date):
@@ -578,13 +590,15 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     Parameters
     ----------
     time : pandas.DatetimeIndex
-        Localized or UTC.
+        Must be localized or UTC will be assumed.
     latitude : float
-        positive is north of 0
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
-        positive is east of 0
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     altitude : float, default 0
-        distance above sea level in meters.
+        Height above sea level in meters. [m]
     pressure : int or float, optional, default 101325
         air pressure in Pascals.
     temperature : int or float, optional, default 12
@@ -670,8 +684,13 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     Parameters
     ----------
     time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     pressure : float or Series, default 101325
         Ambient pressure (Pascals)
     temperature : float or Series, default 12
@@ -697,8 +716,8 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     References
     -----------
 
-    Grover Hughes' class and related class materials on Engineering
-    Astronomy at Sandia National Laboratories, 1985.
+    .. [1] Grover Hughes' class and related class materials on Engineering
+       Astronomy at Sandia National Laboratories, 1985.
 
     See also
     --------
@@ -849,7 +868,11 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
     lower_bound : datetime.datetime
     upper_bound : datetime.datetime
     latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
     longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
     attribute : str
         The attribute of a pyephem.Sun object that
         you want to solve for. Likely options are 'alt'
@@ -913,7 +936,8 @@ def pyephem_earthsun_distance(time):
 
     Parameters
     ----------
-    time : pd.DatetimeIndex
+    time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
 
     Returns
     -------
@@ -938,7 +962,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     Parameters
     ----------
-    time : pd.DatetimeIndex
+    time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
 
     how : str, optional, default 'numpy'
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
@@ -1051,10 +1076,10 @@ def equation_of_time_spencer71(dayofyear):
     .. [3] Frank Vignola et al., "Solar And Infrared Radiation Measurements",
        p. 13, CRC Press (2012)
 
-    .. [5] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+    .. [4] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
        Energy Applications", p. 5 CRC Press (2013)
 
-    .. [4] Roland Hulstrom, "Solar Resources" p. 66, MIT Press (1989)
+    .. [5] Roland Hulstrom, "Solar Resources" p. 66, MIT Press (1989)
 
     See Also
     --------
@@ -1090,8 +1115,8 @@ def equation_of_time_pvcdrom(dayofyear):
 
     References
     ----------
-    [1] Soteris A. Kalogirou, "Solar Energy Engineering Processes and
-    Systems, 2nd Edition" Elselvier/Academic Press (2009).
+    .. [1] Soteris A. Kalogirou, "Solar Energy Engineering Processes and
+       Systems, 2nd Edition" Elselvier/Academic Press (2009).
 
     See Also
     --------
@@ -1124,14 +1149,14 @@ def declination_spencer71(dayofyear):
 
     References
     ----------
-    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
+    .. [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+       Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
 
-    [2] J. W. Spencer, "Fourier series representation of the position of the
-    sun" in Search 2 (5), p. 172 (1971)
+    .. [2] J. W. Spencer, "Fourier series representation of the position of the
+       sun" in Search 2 (5), p. 172 (1971)
 
-    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
-    Energy Applications", p. 4 CRC Press (2013)
+    .. [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+       Energy Applications", p. 4 CRC Press (2013)
 
     See Also
     --------
@@ -1173,14 +1198,14 @@ def declination_cooper69(dayofyear):
 
     References
     ----------
-    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
+    .. [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+       Processes, 3rd Edition" pp. 13-14, J. Wiley and Sons, New York (2006)
 
-    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
-    p. 129, J. Wiley (1998)
+    .. [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+       p. 129, J. Wiley (1998)
 
-    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
-    Energy Applications", p. 4 CRC Press (2013)
+    .. [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+       Energy Applications", p. 4 CRC Press (2013)
 
     See Also
     --------
@@ -1214,17 +1239,17 @@ def solar_azimuth_analytical(latitude, hourangle, declination, zenith):
 
     References
     ----------
-    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
+    .. [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+       Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
 
-    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
-    p. 132, J. Wiley (1998)
+    .. [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+       p. 132, J. Wiley (1998)
 
-    [3] `Wikipedia: Solar Azimuth Angle
-    <https://en.wikipedia.org/wiki/Solar_azimuth_angle>`_
+    .. [3] `Wikipedia: Solar Azimuth Angle
+       <https://en.wikipedia.org/wiki/Solar_azimuth_angle>`_
 
-    [4] `PVCDROM: Azimuth Angle <http://www.pveducation.org/pvcdrom/2-
-    properties-sunlight/azimuth-angle>`_
+    .. [4] `PVCDROM: Azimuth Angle <http://www.pveducation.org/pvcdrom/2-
+       properties-sunlight/azimuth-angle>`_
 
     See Also
     --------
@@ -1285,20 +1310,21 @@ def solar_zenith_analytical(latitude, hourangle, declination):
 
     References
     ----------
-    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
+    .. [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+       Processes, 3rd Edition" pp. 14, J. Wiley and Sons, New York (2006)
 
-    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and
-    Physics" p. 132, J. Wiley (1998)
+    .. [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and
+       Physics" p. 132, J. Wiley (1998)
 
-    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for
-    Renewable Energy Applications", p. 5 CRC Press (2013)
+    .. [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for
+       Renewable Energy Applications", p. 5 CRC Press (2013)
 
-    `Wikipedia: Solar Zenith Angle
-    <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
+    .. [4] `Wikipedia: Solar Zenith Angle
+       <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
 
-    `PVCDROM: Sun's Position
-    <http://www.pveducation.org/pvcdrom/2-properties-sunlight/suns-position>`_
+    .. [5] `PVCDROM: Sun's Position
+       <http://www.pveducation.org/pvcdrom/2-properties-sunlight/
+       suns-position>`_
 
     See Also
     --------
@@ -1333,14 +1359,14 @@ def hour_angle(times, longitude, equation_of_time):
 
     References
     ----------
-    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition" pp. 13, J. Wiley and Sons, New York (2006)
+    .. [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+       Processes, 3rd Edition" pp. 13, J. Wiley and Sons, New York (2006)
 
-    [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
-    p. 132, J. Wiley (1998)
+    .. [2] J. H. Seinfeld and S. N. Pandis, "Atmospheric Chemistry and Physics"
+       p. 132, J. Wiley (1998)
 
-    [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
-    Energy Applications", p. 5 CRC Press (2013)
+    .. [3] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+       Energy Applications", p. 5 CRC Press (2013)
 
     See Also
     --------
@@ -1423,11 +1449,11 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
 
     References
     ----------
-    [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
-    Processes, 3rd Edition," J. Wiley and Sons, New York (2006)
+    .. [1] J. A. Duffie and W. A. Beckman,  "Solar Engineering of Thermal
+       Processes, 3rd Edition," J. Wiley and Sons, New York (2006)
 
-    [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements,"
-    CRC Press (2012)
+    .. [2] Frank Vignola et al., "Solar And Infrared Radiation Measurements,"
+       CRC Press (2012)
 
     """
     latitude_rad = np.radians(latitude)  # radians

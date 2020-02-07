@@ -440,19 +440,18 @@ for details.
 .. ipython:: python
 
     from pvlib.pvsystem import PVSystem, retrieve_sam
+    from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
     from pvlib.tracking import SingleAxisTracker
     from pvlib.modelchain import ModelChain
 
     sandia_modules = retrieve_sam('sandiamod')
     cec_inverters = retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    inverter = cec_inverters['SMA_America__SC630CP_US_315V__CEC_2012_']
+    inverter = cec_inverters['SMA_America__SC630CP_US__with_ABB_EcoDry_Ultra_transformer_']
+    temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
     # model a big tracker for more fun
-    system = SingleAxisTracker(module_parameters=module,
-                               inverter_parameters=inverter,
-                               modules_per_string=15,
-                               strings_per_inverter=300)
+    system = SingleAxisTracker(module_parameters=module, inverter_parameters=inverter, temperature_model_parameters=temperature_model_parameters, modules_per_string=15, strings_per_inverter=300)
 
     # fx is a common abbreviation for forecast
     fx_model = GFS()
@@ -462,7 +461,7 @@ for details.
     mc = ModelChain(system, fx_model.location)
 
     # extract relevant data for model chain
-    mc.run_model(fx_data.index, weather=fx_data);
+    mc.run_model(fx_data);
 
 Now we plot a couple of modeling intermediates and the forecast power.
 Here's the forecast plane of array irradiance...
@@ -480,9 +479,9 @@ Here's the forecast plane of array irradiance...
 
 .. ipython:: python
 
-    mc.temps.plot();
+    mc.cell_temperature.plot();
     @savefig pv_temps.png width=6in
-    plt.ylabel('Temperature (C)');
+    plt.ylabel('Cell Temperature (C)');
     @suppress
     plt.close();
 

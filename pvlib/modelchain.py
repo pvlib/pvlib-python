@@ -10,15 +10,17 @@ from functools import partial
 import warnings
 import pandas as pd
 
-from pvlib import (solarposition, pvsystem, clearsky, atmosphere, tools)
+from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
+                   tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
-from pvlib.pvsystem import DC_MODEL_PARAMS
+from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def basic_chain(times, latitude, longitude,
-                module_parameters, inverter_parameters,
+                module_parameters, temperature_model_parameters,
+                inverter_parameters,
                 irradiance=None, weather=None,
                 surface_tilt=None, surface_azimuth=None,
                 orientation_strategy=None,
@@ -46,10 +48,16 @@ def basic_chain(times, latitude, longitude,
         Use decimal degrees notation.
 
     module_parameters : None, dict or Series
-        Module parameters as defined by the SAPM.
+        Module parameters as defined by the SAPM. See pvsystem.sapm for
+        details.
+
+    temperature_model_parameters : None, dict or Series.
+        Temperature model parameters as defined by the SAPM.
+        See temperature.sapm_cell for details.
 
     inverter_parameters : None, dict or Series
-        Inverter parameters as defined by the CEC.
+        Inverter parameters as defined by the CEC. See pvsystem.snlinverter for
+        details.
 
     irradiance : None or DataFrame, default None
         If None, calculates clear sky data.
@@ -163,15 +171,16 @@ def basic_chain(times, latitude, longitude,
     if weather is None:
         weather = {'wind_speed': 0, 'temp_air': 20}
 
-    temps = pvsystem.sapm_celltemp(total_irrad['poa_global'],
-                                   weather['wind_speed'],
-                                   weather['temp_air'])
+    cell_temperature = temperature.sapm_cell(
+        total_irrad['poa_global'], weather['temp_air'], weather['wind_speed'],
+        temperature_model_parameters['a'], temperature_model_parameters['b'],
+        temperature_model_parameters['deltaT'])
 
     effective_irradiance = pvsystem.sapm_effective_irradiance(
         total_irrad['poa_direct'], total_irrad['poa_diffuse'], airmass, aoi,
         module_parameters)
 
-    dc = pvsystem.sapm(effective_irradiance, temps['temp_cell'],
+    dc = pvsystem.sapm(effective_irradiance, cell_temperature,
                        module_parameters)
 
     ac = pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter_parameters)
@@ -263,8 +272,8 @@ class ModelChain(object):
     aoi_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.module_parameters. Valid strings are 'physical',
-        'ashrae', 'sapm', 'no_loss'. The ModelChain instance will be
-        passed as the first argument to a user-defined function.
+        'ashrae', 'sapm', 'martin_ruiz', 'no_loss'. The ModelChain instance
+        will be passed as the first argument to a user-defined function.
 
     spectral_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
@@ -272,9 +281,9 @@ class ModelChain(object):
         'first_solar', 'no_loss'. The ModelChain instance will be passed
         as the first argument to a user-defined function.
 
-    temp_model: str or function, default 'sapm'
-        Valid strings are 'sapm'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+    temperature_model: None, str or function, default None
+        Valid strings are 'sapm' and 'pvsyst'. The ModelChain instance will be
+        passed as the first argument to a user-defined function.
 
     losses_model: str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
@@ -295,11 +304,12 @@ class ModelChain(object):
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model=None, temp_model='sapm',
+                 spectral_model=None, temperature_model=None,
                  losses_model='no_loss', name=None, **kwargs):
 
         self.name = name
         self.system = system
+
         self.location = location
         self.clearsky_model = clearsky_model
         self.transposition_model = transposition_model
@@ -311,7 +321,26 @@ class ModelChain(object):
         self.ac_model = ac_model
         self.aoi_model = aoi_model
         self.spectral_model = spectral_model
-        self.temp_model = temp_model
+
+        # TODO: deprecated kwarg temp_model. Remove use of temp_model in v0.8
+        temp_model = kwargs.pop('temp_model', None)
+        if temp_model is not None:
+            if temperature_model is None:
+                warnings.warn('The temp_model keyword argument is deprecated.'
+                              ' Use temperature_model instead',
+                              pvlibDeprecationWarning)
+                temperature_model = temp_model
+            elif temp_model == temperature_model:
+                warnings.warn('Provide only one of temperature_model or '
+                              'temp_model (deprecated).',
+                              pvlibDeprecationWarning)
+            else:
+                raise ValueError(
+                    'Conflicting temperature_model {} and temp_model {}. '
+                    'temp_model is deprecated. Specify only temperature_model.'
+                    .format(temperature_model, temp_model))
+        self.temperature_model = temperature_model
+
         self.losses_model = losses_model
         self.orientation_strategy = orientation_strategy
 
@@ -324,7 +353,7 @@ class ModelChain(object):
             'name', 'orientation_strategy', 'clearsky_model',
             'transposition_model', 'solar_position_method',
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
-            'spectral_model', 'temp_model', 'losses_model'
+            'spectral_model', 'temperature_model', 'losses_model'
             ]
 
         def getmcattr(self, attr):
@@ -367,9 +396,9 @@ class ModelChain(object):
         # Set model and validate parameters
         if isinstance(model, str):
             model = model.lower()
-            if model in DC_MODEL_PARAMS.keys():
+            if model in _DC_MODEL_PARAMS.keys():
                 # validate module parameters
-                missing_params = DC_MODEL_PARAMS[model] - \
+                missing_params = _DC_MODEL_PARAMS[model] - \
                                  set(self.system.module_parameters.keys())
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
@@ -385,13 +414,6 @@ class ModelChain(object):
                     self._dc_model = self.pvsyst
                 elif model == 'pvwatts':
                     self._dc_model = self.pvwatts_dc
-                elif model == 'singlediode':
-                    warnings.warn('DC model keyword singlediode used for '
-                                  'ModelChain object. singlediode is '
-                                  'ambiguous, use desoto instead. singlediode '
-                                  'keyword will be removed in v0.7.0 and '
-                                  'later', pvlibDeprecationWarning)
-                    self._dc_model = self.desoto
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
@@ -419,22 +441,24 @@ class ModelChain(object):
                              'set the model with the dc_model kwarg.')
 
     def sapm(self):
-        self.dc = self.system.sapm(self.effective_irradiance/1000.,
-                                   self.temps['temp_cell'])
+        self.dc = self.system.sapm(self.effective_irradiance,
+                                   self.cell_temperature)
 
         self.dc = self.system.scale_voltage_current_power(self.dc)
 
         return self
 
-    def desoto(self):
+    def _singlediode(self, calcparams_model_function):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
-            self.system.calcparams_desoto(self.effective_irradiance,
-                                          self.temps['temp_cell']))
+            calcparams_model_function(self.effective_irradiance,
+                                      self.cell_temperature))
 
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
+        self.diode_params = pd.DataFrame({'I_L': photocurrent,
+                                          'I_o': saturation_current,
+                                          'R_s': resistance_series,
+                                          'R_sh': resistance_shunt,
+                                          'nNsVth': nNsVth})
 
         self.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
@@ -443,64 +467,19 @@ class ModelChain(object):
         self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
 
         return self
+
+    def desoto(self):
+        return self._singlediode(self.system.calcparams_desoto)
 
     def cec(self):
-        (photocurrent, saturation_current, resistance_series,
-         resistance_shunt, nNsVth) = (
-            self.system.calcparams_cec(self.effective_irradiance,
-                                       self.temps['temp_cell']))
-
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
-
-        self.dc = self.system.singlediode(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-
-        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
-
-        return self
+        return self._singlediode(self.system.calcparams_cec)
 
     def pvsyst(self):
-        (photocurrent, saturation_current, resistance_series,
-         resistance_shunt, nNsVth) = (
-            self.system.calcparams_pvsyst(self.effective_irradiance,
-                                          self.temps['temp_cell']))
-
-        self.diode_params = (photocurrent, saturation_current,
-                             resistance_series,
-                             resistance_shunt, nNsVth)
-
-        self.dc = self.system.singlediode(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-
-        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
-
-        return self
-
-    def singlediode(self):
-        """Deprecated"""
-        (photocurrent, saturation_current, resistance_series,
-         resistance_shunt, nNsVth) = (
-            self.system.calcparams_desoto(self.effective_irradiance,
-                                          self.temps['temp_cell']))
-
-        self.desoto = (photocurrent, saturation_current, resistance_series,
-                       resistance_shunt, nNsVth)
-
-        self.dc = self.system.singlediode(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-
-        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
-
-        return self
+        return self._singlediode(self.system.calcparams_pvsyst)
 
     def pvwatts_dc(self):
         self.dc = self.system.pvwatts_dc(self.effective_irradiance,
-                                         self.temps['temp_cell'])
+                                         self.cell_temperature)
         return self
 
     @property
@@ -566,6 +545,8 @@ class ModelChain(object):
                 self._aoi_model = self.physical_aoi_loss
             elif model == 'sapm':
                 self._aoi_model = self.sapm_aoi_loss
+            elif model == 'martin_ruiz':
+                self._aoi_model = self.martin_ruiz_aoi_loss
             elif model == 'no_loss':
                 self._aoi_model = self.no_aoi_loss
             else:
@@ -581,24 +562,31 @@ class ModelChain(object):
             return self.sapm_aoi_loss
         elif set(['b']) <= params:
             return self.ashrae_aoi_loss
+        elif set(['a_r']) <= params:
+            return self.martin_ruiz_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
                              'system.module_parameters. Check that the '
                              'system.module_parameters contain parameters for '
-                             'the physical, aoi, or ashrae model; explicitly '
-                             'set model with aoi_model kwarg; or set '
-                             'aoi_model="no_loss".')
+                             'the physical, aoi, ashrae or martin_ruiz model; '
+                             'explicitly set the model with the aoi_model '
+                             'kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
-        self.aoi_modifier = self.system.ashraeiam(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='ashrae')
         return self
 
     def physical_aoi_loss(self):
-        self.aoi_modifier = self.system.physicaliam(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='physical')
         return self
 
     def sapm_aoi_loss(self):
-        self.aoi_modifier = self.system.sapm_aoi_loss(self.aoi)
+        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='sapm')
+        return self
+
+    def martin_ruiz_aoi_loss(self):
+        self.aoi_modifier = self.system.get_iam(self.aoi,
+                                                iam_model='martin_ruiz')
         return self
 
     def no_aoi_loss(self):
@@ -659,29 +647,53 @@ class ModelChain(object):
         return self
 
     @property
-    def temp_model(self):
-        return self._temp_model
+    def temperature_model(self):
+        return self._temperature_model
 
-    @temp_model.setter
-    def temp_model(self, model):
+    @temperature_model.setter
+    def temperature_model(self, model):
         if model is None:
-            self._temp_model = self.infer_temp_model()
+            self._temperature_model = self.infer_temperature_model()
         elif isinstance(model, str):
             model = model.lower()
             if model == 'sapm':
-                self._temp_model = self.sapm_temp
+                self._temperature_model = self.sapm_temp
+            elif model == 'pvsyst':
+                self._temperature_model = self.pvsyst_temp
             else:
-                raise ValueError(model + ' is not a valid temp model')
+                raise ValueError(model + ' is not a valid temperature model')
+            # check system.temperature_model_parameters for consistency
+            name_from_params = self.infer_temperature_model().__name__
+            if self._temperature_model.__name__ != name_from_params:
+                raise ValueError(
+                    'Temperature model {} is inconsistent with '
+                    'PVsystem.temperature_model_parameters {}'.format(
+                        self._temperature_model.__name__,
+                        self.system.temperature_model_parameters))
         else:
-            self._temp_model = partial(model, self)
+            self._temperature_model = partial(model, self)
 
-    def infer_temp_model(self):
-        raise NotImplementedError
+    def infer_temperature_model(self):
+        params = set(self.system.temperature_model_parameters.keys())
+        if set(['a', 'b', 'deltaT']) <= params:
+            return self.sapm_temp
+        elif set(['u_c', 'u_v']) <= params:
+            return self.pvsyst_temp
+        else:
+            raise ValueError('could not infer temperature model from '
+                             'system.temperature_module_parameters {}.'
+                             .format(self.system.temperature_model_parameters))
 
     def sapm_temp(self):
-        self.temps = self.system.sapm_celltemp(self.total_irrad['poa_global'],
-                                               self.weather['wind_speed'],
-                                               self.weather['temp_air'])
+        self.cell_temperature = self.system.sapm_celltemp(
+            self.total_irrad['poa_global'], self.weather['temp_air'],
+            self.weather['wind_speed'])
+        return self
+
+    def pvsyst_temp(self):
+        self.cell_temperature = self.system.pvsyst_celltemp(
+            self.total_irrad['poa_global'], self.weather['temp_air'],
+            self.weather['wind_speed'])
         return self
 
     @property
@@ -722,7 +734,7 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def complete_irradiance(self, times=None, weather=None):
+    def complete_irradiance(self, weather, times=None):
         """
         Determine the missing irradiation columns. Only two of the
         following data columns (dni, ghi, dhi) are needed to calculate
@@ -734,19 +746,23 @@ class ModelChain(object):
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
-            Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
-        weather : None or pandas.DataFrame, default None
-            Table with at least two columns containing one of the
-            following data sets: dni, dhi, ghi. Can be None if attribute
-            `weather` is already set.
+        weather : DataFrame
+            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
+            ``'wind_speed'``, ``'temp_air'``. All irradiance components
+            are required. Air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame if not provided.
+        times : None, deprecated
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Returns
         -------
         self
 
-        Assigns attributes: times, weather
+        Notes
+        -----
+        Assigns attributes: ``weather``
 
         Examples
         --------
@@ -758,19 +774,23 @@ class ModelChain(object):
 
         >>> # my_weather containing 'dhi' and 'ghi'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
-        >>> mc.complete_irradiance(my_datetime, my_weather)  # doctest: +SKIP
-        >>> mc.run_model()  # doctest: +SKIP
+        >>> mc.complete_irradiance(my_weather)  # doctest: +SKIP
+        >>> mc.run_model(mc.weather)  # doctest: +SKIP
 
         >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
-        >>> mc.run_model(my_datetime, my_weather)  # doctest: +SKIP
+        >>> mc.run_model(my_weather)  # doctest: +SKIP
         """
-        if weather is not None:
-            self.weather = weather
+        self.weather = weather
+
         if times is not None:
-            self.times = times
+            warnings.warn('times keyword argument is deprecated and will be '
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
+
         self.solar_position = self.location.get_solarposition(
-            self.times, method=self.solar_position_method)
+            self.weather.index, method=self.solar_position_method)
+
         icolumns = set(self.weather.columns)
         wrn_txt = ("This function is not safe at the moment.\n" +
                    "Results can be too high or negative.\n" +
@@ -779,7 +799,7 @@ class ModelChain(object):
 
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
-                times, solar_position=self.solar_position)
+                self.weather.index, solar_position=self.solar_position)
             self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
                 self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
                 self.solar_position.zenith,
@@ -798,61 +818,53 @@ class ModelChain(object):
 
         return self
 
-    def prepare_inputs(self, times=None, weather=None):
+    def prepare_inputs(self, weather, times=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
-            Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
-        weather : None or DataFrame, default None
-            If ``None``, the weather attribute is used. Column names
-            must be ``'dni'``, ``'ghi'``, ``'dhi'``, ``'wind_speed'``,
-            ``'temp_air'``. All irradiance components are required.
-            Assumes air temperature is 20 C and wind speed is 0 m/s if
-            not provided.
+        weather : DataFrame
+            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
+            ``'wind_speed'``, ``'temp_air'``. All irradiance components
+            are required. Air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame if not provided.
+        times : None, deprecated
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Notes
         -----
-        Assigns attributes: ``times``, ``solar_position``, ``airmass``,
-        ``total_irrad``, `aoi`
+        Assigns attributes: ``solar_position``, ``airmass``,
+        ``total_irrad``, ``aoi``
 
         See also
         --------
         ModelChain.complete_irradiance
         """
-        if weather is not None:
-            self.weather = weather
-        if self.weather is None:
-            self.weather = pd.DataFrame(index=times)
 
-        if times is not None:
-            self.times = times
-
-        self.solar_position = self.location.get_solarposition(
-            self.times, method=self.solar_position_method)
-
-        self.airmass = self.location.get_airmass(
-            solar_position=self.solar_position, model=self.airmass_model)
-
-        if not any([x in ['ghi', 'dni', 'dhi'] for x in self.weather.columns]):
-            warnings.warn('Clear sky assumption for no input irradiance is '
-                          'deprecated and will be removed in v0.7.0. Use '
-                          'location.get_clearsky instead',
-                          pvlibDeprecationWarning)
-            self.weather[['ghi', 'dni', 'dhi']] = self.location.get_clearsky(
-                self.solar_position.index, self.clearsky_model,
-                solar_position=self.solar_position,
-                airmass_absolute=self.airmass['airmass_absolute'])
-
-        if not {'ghi', 'dni', 'dhi'} <= set(self.weather.columns):
+        if not {'ghi', 'dni', 'dhi'} <= set(weather.columns):
             raise ValueError(
                 "Uncompleted irradiance data set. Please check your input "
                 "data.\nData set needs to have 'dni', 'dhi' and 'ghi'.\n"
-                "Detected data: {0}".format(list(self.weather.columns)))
+                "Detected data: {0}".format(list(weather.columns)))
+
+        self.weather = weather
+
+        if times is not None:
+            warnings.warn('times keyword argument is deprecated and will be '
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
+
+        self.times = self.weather.index
+
+        self.solar_position = self.location.get_solarposition(
+            self.weather.index, method=self.solar_position_method)
+
+        self.airmass = self.location.get_airmass(
+            solar_position=self.solar_position, model=self.airmass_model)
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
@@ -897,36 +909,42 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, times=None, weather=None):
+    def run_model(self, weather, times=None):
         """
         Run the model.
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
-            Times at which to evaluate the model. Can be None if
-            attribute `times` is already set.
-        weather : None or DataFrame, default None
-            If ``None``, the weather attribute is used. Column names
-            must be ``'dni'``, ``'ghi'``, ``'dhi'``, ``'wind_speed'``,
-            ``'temp_air'``. All irradiance components are required.
-            Assumes air temperature is 20 C and wind speed is 0 m/s if
-            not provided.
+        weather : DataFrame
+            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
+            ``'wind_speed'``, ``'temp_air'``. All irradiance components
+            are required. Air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame if not provided.
+        times : None, deprecated
+            Deprecated argument included for API compatibility, but not
+            used internally. The index of the weather DataFrame is used
+            for times.
 
         Returns
         -------
         self
 
-        Assigns attributes: times, solar_position, airmass, irradiance,
-        total_irrad, effective_irradiance, weather, temps, aoi,
-        aoi_modifier, spectral_modifier, dc, ac, losses.
+        Assigns attributes: ``solar_position``, ``airmass``, ``irradiance``,
+        ``total_irrad``, ``effective_irradiance``, ``weather``,
+        ``cell_temperature``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
+        ``dc``, ``ac``, ``losses``,
+        ``diode_params`` (if dc_model is a single diode model)
         """
+        if times is not None:
+            warnings.warn('times keyword argument is deprecated and will be '
+                          'removed in 0.8. The index of the weather DataFrame '
+                          'is used for times.', pvlibDeprecationWarning)
 
-        self.prepare_inputs(times, weather)
+        self.prepare_inputs(weather)
         self.aoi_model()
         self.spectral_model()
         self.effective_irradiance_model()
-        self.temp_model()
+        self.temperature_model()
         self.dc_model()
         self.losses_model()
         self.ac_model()

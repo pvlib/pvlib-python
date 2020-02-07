@@ -13,5 +13,5 @@ dependencies:
     - pytz
     - requests
     - pip:
-        - numpy==1.10.4
+        - numpy==1.12.0
         - pandas==0.18.1

@@ -130,9 +130,9 @@ the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
     # retrieve_sam returns a dict. the dict keys are module names,
     # and the values are model parameters for that module
     modules = pvsystem.retrieve_sam('cecmod')
-    module_parameters = modules['Example_Module']
+    module_parameters = modules['Canadian_Solar_Inc__CS5P_220M']
     inverters = pvsystem.retrieve_sam('cecinverter')
-    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
     system = pvsystem.PVSystem(module_parameters=module_parameters, inverter_parameters=inverter_parameters)
 
 

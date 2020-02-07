@@ -22,6 +22,6 @@ coverage:
       tests:
         target: 95%
         paths:
-          - "pvlib/test/.*"
+          - "pvlib/tests/.*"
 
 comment: off

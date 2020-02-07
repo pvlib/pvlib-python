@@ -45,13 +45,15 @@ objects, module data, and inverter data.
     from pvlib.pvsystem import PVSystem
     from pvlib.location import Location
     from pvlib.modelchain import ModelChain
+    from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
+    temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
     # load some module and inverter specifications
     sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
     cec_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
 
     sandia_module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_']
+    cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
 
 Now we create a Location object, a PVSystem object, and a ModelChain
 object.
@@ -61,7 +63,8 @@ object.
     location = Location(latitude=32.2, longitude=-110.9)
     system = PVSystem(surface_tilt=20, surface_azimuth=200,
                       module_parameters=sandia_module,
-                      inverter_parameters=cec_inverter)
+                      inverter_parameters=cec_inverter,
+                      temperature_model_parameters=temperature_model_parameters)
     mc = ModelChain(system, location)
 
 Printing a ModelChain object will display its models.
@@ -78,7 +81,7 @@ Next, we run a model with some simple weather data.
                            columns=['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed'],
                            index=[pd.Timestamp('20170401 1200', tz='US/Arizona')])
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
 
 ModelChain stores the modeling results on a series of attributes. A few
 examples are shown below.
@@ -86,6 +89,10 @@ examples are shown below.
 .. ipython:: python
 
     mc.aoi
+
+.. ipython:: python
+
+    mc.cell_temperature
 
 .. ipython:: python
 
@@ -141,13 +148,16 @@ model, AC model, AOI loss model, and spectral loss model.
 
 .. ipython:: python
 
-    sapm_system = PVSystem(module_parameters=sandia_module, inverter_parameters=cec_inverter)
-    mc = ModelChain(system, location)
+    sapm_system = PVSystem(
+        module_parameters=sandia_module,
+        inverter_parameters=cec_inverter,
+        temperature_model_parameters=temperature_model_parameters)
+    mc = ModelChain(sapm_system, location)
     print(mc)
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
     mc.ac
 
 Alternatively, we could have specified single diode or PVWatts related
@@ -160,14 +170,17 @@ information to determine which of those models to choose.
 
 .. ipython:: python
 
-    pvwatts_system = PVSystem(module_parameters={'pdc0': 240, 'gamma_pdc': -0.004})
+    pvwatts_system = PVSystem(
+        module_parameters={'pdc0': 240, 'gamma_pdc': -0.004},
+        inverter_parameters={'pdc0': 240},
+        temperature_model_parameters=temperature_model_parameters)
     mc = ModelChain(pvwatts_system, location,
                     aoi_model='physical', spectral_model='no_loss')
     print(mc)
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
     mc.ac
 
 User-supplied keyword arguments override ModelChain’s inspection
@@ -176,13 +189,16 @@ functions for a PVSystem that contains SAPM-specific parameters.
 
 .. ipython:: python
 
-    sapm_system = PVSystem(module_parameters=sandia_module, inverter_parameters=cec_inverter)
-    mc = ModelChain(system, location, aoi_model='physical', spectral_model='no_loss')
+    sapm_system = PVSystem(
+        module_parameters=sandia_module,
+        inverter_parameters=cec_inverter,
+        temperature_model_parameters=temperature_model_parameters)
+    mc = ModelChain(sapm_system, location, aoi_model='physical', spectral_model='no_loss')
     print(mc)
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
     mc.ac
 
 Of course, these choices can also lead to failure when executing
@@ -264,21 +280,24 @@ the ModelChain.pvwatts_dc method is shown below. Its only argument is
 
 The ModelChain.pvwatts_dc method calls the pvwatts_dc method of the
 PVSystem object that we supplied using data that is stored in its own
-``effective_irradiance`` and ``temps`` attributes. Then it assigns the
+``effective_irradiance`` and ``cell_temperature`` attributes. Then it assigns the
 result to the ``dc`` attribute of the ModelChain object. The code below
 shows a simple example of this.
 
 .. ipython:: python
 
     # make the objects
-    pvwatts_system = PVSystem(module_parameters={'pdc0': 240, 'gamma_pdc': -0.004})
+    pvwatts_system = PVSystem(
+        module_parameters={'pdc0': 240, 'gamma_pdc': -0.004},
+        inverter_parameters={'pdc0': 240},
+        temperature_model_parameters=temperature_model_parameters)
     mc = ModelChain(pvwatts_system, location,
                     aoi_model='no_loss', spectral_model='no_loss')
 
     # manually assign data to the attributes that ModelChain.pvwatts_dc will need.
     # for standard workflows, run_model would assign these attributes.
     mc.effective_irradiance = pd.Series(1000, index=[pd.Timestamp('20170401 1200-0700')])
-    mc.temps = pd.DataFrame({'temp_cell': 50, 'temp_module': 50}, index=[pd.Timestamp('20170401 1200-0700')])
+    mc.cell_temperature = pd.Series(50, index=[pd.Timestamp('20170401 1200-0700')])
 
     # run ModelChain.pvwatts_dc and look at the result
     mc.pvwatts_dc();
@@ -304,13 +323,16 @@ PVSystem.scale_voltage_current_power method.
 .. ipython:: python
 
     # make the objects
-    sapm_system = PVSystem(module_parameters=sandia_module, inverter_parameters=cec_inverter)
+    sapm_system = PVSystem(
+        module_parameters=sandia_module,
+        inverter_parameters=cec_inverter,
+        temperature_model_parameters=temperature_model_parameters)
     mc = ModelChain(sapm_system, location)
 
     # manually assign data to the attributes that ModelChain.sapm will need.
     # for standard workflows, run_model would assign these attributes.
     mc.effective_irradiance = pd.Series(1000, index=[pd.Timestamp('20170401 1200-0700')])
-    mc.temps = pd.DataFrame({'temp_cell': 50, 'temp_module': 50}, index=[pd.Timestamp('20170401 1200-0700')])
+    mc.cell_temperature = pd.Series(50, index=[pd.Timestamp('20170401 1200-0700')])
 
     # run ModelChain.sapm and look at the result
     mc.sapm();
@@ -333,7 +355,10 @@ section.
 
 .. ipython:: python
 
-    pvwatts_system = PVSystem(module_parameters={'pdc0': 240, 'gamma_pdc': -0.004})
+    pvwatts_system = PVSystem(
+        module_parameters={'pdc0': 240, 'gamma_pdc': -0.004},
+        inverter_parameters={'pdc0': 240},
+        temperature_model_parameters=temperature_model_parameters)
     mc = ModelChain(pvwatts_system, location,
                     aoi_model='no_loss', spectral_model='no_loss')
     mc.dc_model.__func__
@@ -403,10 +428,17 @@ function if you wanted to.
         return mc
 
 
-    def pvusa_ac_mc_wrapper(mc):
+    def pvusa_ac_mc(mc):
         # keep it simple
         mc.ac = mc.dc
         return mc
+
+
+    def no_loss_temperature(mc):
+        # keep it simple
+        mc.cell_temperature = mc.weather['temp_air']
+        return mc
+
 
 .. ipython:: python
 
@@ -414,7 +446,8 @@ function if you wanted to.
     pvusa_system = PVSystem(module_parameters=module_parameters)
 
     mc = ModelChain(pvusa_system, location,
-                    dc_model=pvusa_mc_wrapper, ac_model=pvusa_ac_mc_wrapper,
+                    dc_model=pvusa_mc_wrapper, ac_model=pvusa_ac_mc,
+                    temperature_model=no_loss_temperature,
                     aoi_model='no_loss', spectral_model='no_loss')
 
 A ModelChain object uses Python’s functools.partial function to assign
@@ -428,5 +461,5 @@ The end result is that ModelChain.run_model works as expected!
 
 .. ipython:: python
 
-    mc.run_model(times=weather.index, weather=weather);
+    mc.run_model(weather);
     mc.dc

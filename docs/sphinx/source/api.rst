@@ -211,15 +211,29 @@ wrap the functions listed below. See its documentation for details.
    pvsystem.PVSystem
    pvsystem.LocalizedPVSystem
 
-AOI modifiers
--------------
+Incident angle modifiers
+------------------------
 
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.physicaliam
-   pvsystem.ashraeiam
-   pvsystem.sapm_aoi_loss
+   iam.physical
+   iam.ashrae
+   iam.martin_ruiz
+   iam.martin_ruiz_diffuse
+   iam.sapm
+   iam.interp
+
+PV temperature models
+---------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   temperature.sapm_cell
+   temperature.sapm_module
+   temperature.pvsyst_cell
+   temperature.faiman
 
 Single diode models
 -------------------
@@ -258,10 +272,21 @@ Functions relevant for the SAPM model.
 
    pvsystem.sapm
    pvsystem.sapm_effective_irradiance
-   pvsystem.sapm_celltemp
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
    pvsystem.snlinverter
+   pvsystem.adrinverter
+   temperature.sapm_cell
+
+Pvsyst model
+-------------
+
+Functions relevant for the Pvsyst model.
+
+.. autosummary::
+   :toctree: generated/
+
+   temperature.pvsyst_cell
 
 PVWatts model
 -------------
@@ -272,15 +297,25 @@ PVWatts model
    pvsystem.pvwatts_dc
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
-   pvsystem.pvwatts_losses
 
-PVsyst model
-------------
+Functions for fitting diode models
+----------------------------------
 
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.pvsyst_celltemp
+    ivtools.fit_sde_sandia
+    ivtools.fit_sdm_cec_sam
+    ivtools.fit_sdm_desoto
+
+Losses
+------
+
+.. autosummary::
+   :toctree: generated/
+
+   losses.soiling_hsu
+
 
 Other
 -----
@@ -334,6 +369,7 @@ relevant to solar energy modeling.
    iotools.read_tmy2
    iotools.read_tmy3
    iotools.read_epw
+   iotools.parse_epw
    iotools.read_srml
    iotools.read_srml_month_from_solardat
    iotools.read_surfrad
@@ -344,6 +380,9 @@ relevant to solar energy modeling.
    iotools.read_crn
    iotools.read_solrad
    iotools.get_psm3
+   iotools.read_psm3
+   iotools.parse_psm3
+   iotools.get_pvgis_tmy
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.
@@ -352,24 +391,7 @@ in some files.
    :toctree: generated/
 
    location.Location.from_tmy
-
-
-TMY
-===
-
-.. warning::
-
-    The :py:mod:`pvlib.tmy` module is deprecated; it will be removed
-    in pvlib 0.7. Please see the :ref:`pvlib.iotools <iotools>` package.
-
-Methods and functions for reading data from TMY files.
-
-.. autosummary::
-   :toctree: generated/
-
-   location.Location.from_tmy
-   tmy.readtmy2
-   tmy.readtmy3
+   location.Location.from_epw
 
 
 Forecasting
@@ -472,7 +494,7 @@ ModelChain properties that are aliases for your specific modeling functions.
    modelchain.ModelChain.ac_model
    modelchain.ModelChain.aoi_model
    modelchain.ModelChain.spectral_model
-   modelchain.ModelChain.temp_model
+   modelchain.ModelChain.temperature_model
    modelchain.ModelChain.losses_model
    modelchain.ModelChain.effective_irradiance_model
 
@@ -500,6 +522,7 @@ ModelChain model definitions.
    modelchain.ModelChain.sapm_spectral_loss
    modelchain.ModelChain.no_spectral_loss
    modelchain.ModelChain.sapm_temp
+   modelchain.ModelChain.pvsyst_temp
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 
@@ -516,7 +539,7 @@ on the information in the associated :py:class:`~pvsystem.PVSystem` object.
    modelchain.ModelChain.infer_ac_model
    modelchain.ModelChain.infer_aoi_model
    modelchain.ModelChain.infer_spectral_model
-   modelchain.ModelChain.infer_temp_model
+   modelchain.ModelChain.infer_temperature_model
    modelchain.ModelChain.infer_losses_model
 
 Functions
@@ -535,9 +558,19 @@ Bifacial
 ========
 
 Methods for calculating back surface irradiance
------------------------------------------------
 
 .. autosummary::
    :toctree: generated/
 
    bifacial.pvfactors_timeseries
+
+
+Scaling
+=======
+
+Methods for manipulating irradiance for temporal or spatial considerations
+
+.. autosummary::
+   :toctree: generated/
+
+   scaling.wvm

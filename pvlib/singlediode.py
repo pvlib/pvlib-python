@@ -61,7 +61,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
 
         V_{oc, est}=n Ns V_{th} \\log \\left( \\frac{I_L}{I_0} + 1 \\right)
 
-    [1] http://www.pveducation.org/pvcdrom/open-circuit-voltage
+    .. [1] http://www.pveducation.org/pvcdrom/open-circuit-voltage
     """
 
     return nNsVth * np.log(np.asarray(photocurrent) / saturation_current + 1.0)
@@ -94,14 +94,17 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of thermal voltage ``Vth`` [V], diode ideality factor ``n``,
         and number of series cells ``Ns``
-    d2mutau : numeric
-        PVSyst thin-film recombination parameter that is the ratio of thickness
-        of the intrinsic layer squared :math:`d^2` and the diffusion length of
-        charge carriers :math:`\\mu \\tau`, in volts [V], defaults to 0[V]
-    NsVbi : numeric
-        PVSyst thin-film recombination parameter that is the product of the PV
-        module number of series cells ``Ns`` and the builtin voltage ``Vbi`` of
-        the intrinsic layer, in volts [V], defaults to ``np.inf``
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that accounts for recombination current in the
+        intrinsic layer. The value is the ratio of intrinsic layer thickness
+        squared :math:`d^2` to the diffusion length of charge carriers
+        :math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that is the product of the PV module number of series
+        cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
+        [V].
     gradients : bool
         False returns only I, V, and P. True also returns gradients
 
@@ -116,8 +119,8 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     Notes
     -----
     The PVSyst thin-film recombination losses parameters ``d2mutau`` and
-    ``NsVbi`` are only applied to cadmium-telluride (CdTe) and amorphous-
-    silicon (a:Si) PV modules, [2]_, [3]_. The builtin voltage :math:`V_{bi}`
+    ``NsVbi`` should only be applied to cadmium-telluride (CdTe) and amorphous-
+    silicon (a-Si) PV modules, [2]_, [3]_. The builtin voltage :math:`V_{bi}`
     should account for all junctions. For example: tandem and triple junction
     cells would have builtin voltages of 1.8[V] and 2.7[V] respectively, based
     on the default of 0.9[V] for a single junction. The parameter ``NsVbi``
@@ -173,7 +176,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
 def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
-                      method='newton'):
+                      d2mutau=0, NsVbi=np.Inf, method='newton'):
     """
     Find current given any voltage.
 
@@ -192,6 +195,17 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that accounts for recombination current in the
+        intrinsic layer. The value is the ratio of intrinsic layer thickness
+        squared :math:`d^2` to the diffusion length of charge carriers
+        :math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that is the product of the PV module number of series
+        cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
+        [V].
     method : str
         one of two optional search methods: either ``'brentq'``, a reliable and
         bounded method or ``'newton'`` which is the default.
@@ -203,7 +217,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
+            resistance_shunt, nNsVth, d2mutau, NsVbi)
 
     def fv(x, v, *a):
         # calculate voltage residual given diode voltage "x"
@@ -216,8 +230,9 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input
-        def vd_from_brent(voc, v, iph, isat, rs, rsh, gamma):
-            return brentq(fv, 0.0, voc, args=(v, iph, isat, rs, rsh, gamma))
+        def vd_from_brent(voc, v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi):
+            return brentq(fv, 0.0, voc,
+                          args=(v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi))
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
@@ -235,7 +250,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
 
 def bishop88_v_from_i(current, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
-                      method='newton'):
+                      d2mutau=0, NsVbi=np.Inf, method='newton'):
     """
     Find voltage given any current.
 
@@ -254,6 +269,17 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that accounts for recombination current in the
+        intrinsic layer. The value is the ratio of intrinsic layer thickness
+        squared :math:`d^2` to the diffusion length of charge carriers
+        :math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that is the product of the PV module number of series
+        cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
+        [V].
     method : str
         one of two optional search methods: either ``'brentq'``, a reliable and
         bounded method or ``'newton'`` which is the default.
@@ -265,7 +291,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
+            resistance_shunt, nNsVth, d2mutau, NsVbi)
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
@@ -277,8 +303,9 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input
-        def vd_from_brent(voc, i, iph, isat, rs, rsh, gamma):
-            return brentq(fi, 0.0, voc, args=(i, iph, isat, rs, rsh, gamma))
+        def vd_from_brent(voc, i, iph, isat, rs, rsh, gamma, d2mutau, NsVbi):
+            return brentq(fi, 0.0, voc,
+                          args=(i, iph, isat, rs, rsh, gamma, d2mutau, NsVbi))
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, current, *args)
@@ -295,7 +322,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
 
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
-                 resistance_shunt, nNsVth, method='newton'):
+                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                 method='newton'):
     """
     Find max power point.
 
@@ -312,6 +340,17 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
+    d2mutau : numeric, default 0
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that accounts for recombination current in the
+        intrinsic layer. The value is the ratio of intrinsic layer thickness
+        squared :math:`d^2` to the diffusion length of charge carriers
+        :math:`\\mu \\tau`. [V]
+    NsVbi : numeric, default np.inf
+        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+        (a-Si) modules that is the product of the PV module number of series
+        cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
+        [V].
     method : str
         one of two optional search methods: either ``'brentq'``, a reliable and
         bounded method or ``'newton'`` which is the default.
@@ -324,7 +363,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
+            resistance_shunt, nNsVth, d2mutau, NsVbi)
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
@@ -334,8 +373,9 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     if method.lower() == 'brentq':
         # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
-            lambda voc, iph, isat, rs, rsh, gamma:
-                brentq(fmpp, 0.0, voc, args=(iph, isat, rs, rsh, gamma))
+            lambda voc, iph, isat, rs, rsh, gamma, d2mutau, NsVbi:
+                brentq(fmpp, 0.0, voc,
+                       args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi))
         )
         vd = vec_fun(voc_est, *args)
     elif method.lower() == 'newton':

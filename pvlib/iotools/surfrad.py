@@ -2,13 +2,7 @@
 Import functions for NOAA SURFRAD Data.
 """
 import io
-
-try:
-    # python 2 compatibility
-    from urllib2 import urlopen, Request
-except ImportError:
-    from urllib.request import urlopen, Request
-
+from urllib.request import urlopen, Request
 import pandas as pd
 import numpy as np
 
@@ -44,7 +38,7 @@ VARIABLE_MAP = {
 
 
 def read_surfrad(filename, map_variables=True):
-    """Read in a daily NOAA SURFRAD[1] file.
+    """Read in a daily NOAA SURFRAD[1]_ file.
 
     Parameters
     ----------
@@ -118,21 +112,22 @@ def read_surfrad(filename, map_variables=True):
     =======================  ======  ==========================================
 
     See README files located in the station directories in the SURFRAD
-    data archives[2] for details on SURFRAD daily data files.
+    data archives[2]_ for details on SURFRAD daily data files.
 
     References
     ----------
-    [1] NOAA Earth System Research Laboratory Surface Radiation Budget Network
-        `SURFRAD Homepage <https://www.esrl.noaa.gov/gmd/grad/surfrad/>`_
-    [2] NOAA SURFRAD Data Archive
-        `SURFRAD Archive <ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/>`_
+    .. [1] NOAA Earth System Research Laboratory Surface Radiation Budget
+       Network
+       `SURFRAD Homepage <https://www.esrl.noaa.gov/gmd/grad/surfrad/>`_
+    .. [2] NOAA SURFRAD Data Archive
+       `SURFRAD Archive <ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/>`_
     """
-    if filename.startswith('ftp'):
+    if str(filename).startswith('ftp'):
         req = Request(filename)
         response = urlopen(req)
         file_buffer = io.StringIO(response.read().decode(errors='ignore'))
     else:
-        file_buffer = open(filename, 'r')
+        file_buffer = open(str(filename), 'r')
 
     # Read and parse the first two lines to build the metadata dict.
     station = file_buffer.readline()

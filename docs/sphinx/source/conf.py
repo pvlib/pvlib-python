@@ -18,6 +18,9 @@ import os
 # Mock modules so RTD works
 from unittest.mock import MagicMock
 
+# for warning suppression
+import warnings
+
 
 class Mock(MagicMock):
     @classmethod
@@ -55,7 +58,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
     'IPython.sphinxext.ipython_directive',
-    'IPython.sphinxext.ipython_console_highlighting'
+    'IPython.sphinxext.ipython_console_highlighting',
+    'sphinx_gallery.gen_gallery',
 ]
 
 napoleon_use_rtype = False  # group rtype on same line together with return
@@ -219,9 +223,13 @@ html_show_copyright = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'PVLIB_Pythondoc'
 
-# A workaround for the responsive tables always having annoying scrollbars.
+
+# custom CSS workarounds
 def setup(app):
+    # A workaround for the responsive tables always having annoying scrollbars.
     app.add_stylesheet("no_scrollbars.css")
+    # Override footnote callout CSS to be normal text instead of superscript
+    app.add_stylesheet("no_reference_superscript.css")
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -266,12 +274,13 @@ latex_documents = [
 #latex_domain_indices = True
 
 # extlinks alias
-extlinks = {'issue': ('https://github.com/pvlib/pvlib-python/issues/%s',
-                      'GH'),
-            'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s',
-                     'wiki '),
-            'doi': ('http://dx.doi.org/%s', 'DOI: '),
-            'ghuser': ('https://github.com/%s', '@')}
+extlinks = {
+    'issue': ('https://github.com/pvlib/pvlib-python/issues/%s', 'GH'),
+    'pull': ('https://github.com/pvlib/pvlib-python/pull/%s', 'GH'),
+    'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s', 'wiki '),
+    'doi': ('http://dx.doi.org/%s', 'DOI: '),
+    'ghuser': ('https://github.com/%s', '@')
+}
 
 # -- Options for manual page output ---------------------------------------
 
@@ -319,3 +328,20 @@ intersphinx_mapping = {
 nbsphinx_allow_errors = True
 
 ipython_warning_is_error = False
+
+# suppress "WARNING: Footnote [1] is not referenced." messages
+# https://github.com/pvlib/pvlib-python/issues/837
+suppress_warnings = ['ref.footnote']
+
+# settings for sphinx-gallery
+sphinx_gallery_conf = {
+    'examples_dirs': ['../../examples'],  # location of gallery scripts
+    'gallery_dirs': ['auto_examples'],  # location of generated output
+    # sphinx-gallery only shows plots from plot_*.py files by default:
+    # 'filename_pattern': '*.py',
+}
+# supress warnings in gallery output
+# https://sphinx-gallery.github.io/stable/configuration.html
+warnings.filterwarnings("ignore", category=UserWarning,
+                        message='Matplotlib is currently using agg, which is a'
+                                ' non-GUI backend, so cannot show the figure.')

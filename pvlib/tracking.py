@@ -1,9 +1,8 @@
-from __future__ import division
-
 import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind
+from pvlib.pvsystem import _combine_localized_attributes
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
@@ -187,7 +186,7 @@ class SingleAxisTracker(PVSystem):
             Irradiance model.
 
         **kwargs
-            Passed to :func:`irradiance.total_irrad`.
+            Passed to :func:`irradiance.get_total_irradiance`.
 
         Returns
         -------
@@ -229,22 +228,11 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
 
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
-        # get and combine attributes from the pvsystem and/or location
-        # with the rest of the kwargs
-
-        if pvsystem is not None:
-            pv_dict = pvsystem.__dict__
-        else:
-            pv_dict = {}
-
-        if location is not None:
-            loc_dict = location.__dict__
-        else:
-            loc_dict = {}
-
-        new_kwargs = dict(list(pv_dict.items()) +
-                          list(loc_dict.items()) +
-                          list(kwargs.items()))
+        new_kwargs = _combine_localized_attributes(
+            pvsystem=pvsystem,
+            location=location,
+            **kwargs,
+        )
 
         SingleAxisTracker.__init__(self, **new_kwargs)
         Location.__init__(self, **new_kwargs)
@@ -262,7 +250,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
                backtrack=True, gcr=2.0/7.0):
     """
     Determine the rotation angle of a single axis tracker using the
-    equations in [1] when given a particular sun zenith and azimuth
+    equations in [1]_ when given a particular sun zenith and azimuth
     angle. backtracking may be specified, and if so, a ground coverage
     ratio is required.
 
@@ -317,22 +305,21 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     Returns
     -------
     dict or DataFrame with the following columns:
-
-    * tracker_theta: The rotation angle of the tracker.
-        tracker_theta = 0 is horizontal, and positive rotation angles are
-        clockwise.
-    * aoi: The angle-of-incidence of direct irradiance onto the
-        rotated panel surface.
-    * surface_tilt: The angle between the panel surface and the earth
-        surface, accounting for panel rotation.
-    * surface_azimuth: The azimuth of the rotated panel, determined by
-        projecting the vector normal to the panel's surface to the earth's
-        surface.
+        * `tracker_theta`: The rotation angle of the tracker.
+          tracker_theta = 0 is horizontal, and positive rotation angles are
+          clockwise.
+        * `aoi`: The angle-of-incidence of direct irradiance onto the
+          rotated panel surface.
+        * `surface_tilt`: The angle between the panel surface and the earth
+          surface, accounting for panel rotation.
+        * `surface_azimuth`: The azimuth of the rotated panel, determined by
+          projecting the vector normal to the panel's surface to the earth's
+          surface.
 
     References
     ----------
-    [1] Lorenzo, E et al., 2011, "Tracking and back-tracking", Prog. in
-    Photovoltaics: Research and Applications, v. 19, pp. 747-753.
+    .. [1] Lorenzo, E et al., 2011, "Tracking and back-tracking", Prog. in
+       Photovoltaics: Research and Applications, v. 19, pp. 747-753.
     """
 
     # MATLAB to Python conversion by

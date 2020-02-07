@@ -4,8 +4,6 @@ horizontal irradiance, direct normal irradiance, diffuse horizontal
 irradiance, and total irradiance under various conditions.
 """
 
-from __future__ import division
-
 import datetime
 from collections import OrderedDict
 from functools import partial
@@ -14,7 +12,6 @@ import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
-from pvlib._deprecation import deprecated
 
 # see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
@@ -68,22 +65,22 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
 
     References
     ----------
-    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
-    Clear Sky Models: Implementation and Analysis", Sandia National
-    Laboratories, SAND2012-2389, 2012.
+    .. [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
+       Laboratories, SAND2012-2389, 2012.
 
-    [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
-    SR1 and SR2
+    .. [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
+       SR1 and SR2
 
-    [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
-    in Meteorology and Climatology.
+    .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
+       in Meteorology and Climatology.
 
-    [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
-    Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+    .. [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
+       Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
 
-    [5] ASCE, 2005. The ASCE Standardized Reference Evapotranspiration
-    Equation, Environmental and Water Resources Institute of the American
-    Civil Engineers, Ed. R. G. Allen et al.
+    .. [5] ASCE, 2005. The ASCE Standardized Reference Evapotranspiration
+       Equation, Environmental and Water Resources Institute of the American
+       Civil Engineers, Ed. R. G. Allen et al.
     """
 
     to_doy, to_datetimeindex, to_output = \
@@ -114,11 +111,6 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     Ea = to_output(Ea)
 
     return Ea
-
-
-extraradiation = deprecated('0.6', alternative='get_extra_radiation',
-                            name='extraradiation', removal='0.7')(
-                            get_extra_radiation)
 
 
 def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
@@ -374,11 +366,6 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     return irrads
 
 
-total_irrad = deprecated('0.6', alternative='get_total_irradiance',
-                         name='total_irrad', removal='0.7')(
-                         get_total_irradiance)
-
-
 def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth,
                     dni, ghi, dhi, dni_extra=None, airmass=None,
@@ -510,65 +497,6 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
-# globalinplane returns less data than poa_components, so better
-# to copy it
-@deprecated('0.6', alternative='poa_components', removal='0.7')
-def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
-    r'''
-    Determine the three components on in-plane irradiance
-
-    Combines in-plane irradaince compoents from the chosen diffuse
-    translation, ground reflection and beam irradiance algorithms into
-    the total in-plane irradiance.
-
-    Parameters
-    ----------
-    aoi : numeric
-        Angle of incidence of solar rays with respect to the module
-        surface, from :func:`aoi`.
-
-    dni : numeric
-        Direct normal irradiance (W/m^2), as measured from a TMY file or
-        calculated with a clearsky model.
-
-    poa_sky_diffuse : numeric
-        Diffuse irradiance (W/m^2) in the plane of the modules, as
-        calculated by a diffuse irradiance translation function
-
-    poa_ground_diffuse : numeric
-        Ground reflected irradiance (W/m^2) in the plane of the modules,
-        as calculated by an albedo model (eg. :func:`grounddiffuse`)
-
-    Returns
-    -------
-    irrads : OrderedDict or DataFrame
-        Contains the following keys:
-
-        * ``poa_global`` : Total in-plane irradiance (W/m^2)
-        * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
-        * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
-
-    Notes
-    ------
-    Negative beam irradiation due to aoi :math:`> 90^{\circ}` or AOI
-    :math:`< 0^{\circ}` is set to zero.
-    '''
-
-    poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
-    poa_global = poa_direct + poa_sky_diffuse + poa_ground_diffuse
-    poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
-
-    irrads = OrderedDict()
-    irrads['poa_global'] = poa_global
-    irrads['poa_direct'] = poa_direct
-    irrads['poa_diffuse'] = poa_diffuse
-
-    if isinstance(poa_direct, pd.Series):
-        irrads = pd.DataFrame(irrads)
-
-    return irrads
-
-
 def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
@@ -607,18 +535,18 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-    solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267.
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+       solar irradiance on inclined surfaces for building energy simulation"
+       2007, Solar Energy vol. 81. pp. 254-267.
 
     The calculation is the last term of equations 3, 4, 7, 8, 10, 11, and 12.
 
-    [2] albedos from:
-    http://files.pvsyst.com/help/albedo.htm
-    and
-    http://en.wikipedia.org/wiki/Albedo
-    and
-    https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
+    .. [2] albedos from:
+       http://files.pvsyst.com/help/albedo.htm
+       and
+       http://en.wikipedia.org/wiki/Albedo
+       and
+       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
     '''
 
     if surface_type is not None:
@@ -632,11 +560,6 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         pass
 
     return diffuse_irrad
-
-
-grounddiffuse = deprecated('0.6', alternative='get_ground_diffuse',
-                           name='grounddiffuse', removal='0.7')(
-                           get_ground_diffuse)
 
 
 def isotropic(surface_tilt, dhi):
@@ -671,12 +594,12 @@ def isotropic(surface_tilt, dhi):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar
-    heat collector. Trans. ASME 64, 91.
+    .. [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar
+       heat collector. Trans. ASME 64, 91.
     '''
 
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
@@ -742,12 +665,12 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-    solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+       solar irradiance on inclined surfaces for building energy simulation"
+       2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
-    tilted surfaces. Solar Energy 23 (2), 111-114.
+    .. [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
+       tilted surfaces. Solar Energy 23 (2), 111-114.
     '''
 
     # zenith angle with respect to panel normal.
@@ -833,14 +756,14 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     References
     -----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar
-    radiation incident on an inclined surface. In: Hay, J.E., Won, T.K.
-    (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
-    Ministry of Supply and Services, Canada.
+    .. [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar
+       radiation incident on an inclined surface. In: Hay, J.E., Won, T.K.
+       (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
+       Ministry of Supply and Services, Canada.
     '''
 
     # if necessary, calculate ratio of titled and horizontal beam irradiance
@@ -931,15 +854,15 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse
-    fraction correlations. Solar Energy 45(1), 1-7.
+    .. [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse
+       fraction correlations. Solar Energy 45(1), 1-7.
 
-    [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of
-    hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
+    .. [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of
+       hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
     '''
 
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
@@ -1106,20 +1029,20 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
-    1987. A new simplified version of the Perez diffuse irradiance model
-    for tilted surfaces. Solar Energy 39(3), 221-232.
+    .. [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
+       1987. A new simplified version of the Perez diffuse irradiance model
+       for tilted surfaces. Solar Energy 39(3), 221-232.
 
-    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
-    1990. Modeling daylight availability and irradiance components from
-    direct and global irradiance. Solar Energy 44 (5), 271-289.
+    .. [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+       1990. Modeling daylight availability and irradiance components from
+       direct and global irradiance. Solar Energy 44 (5), 271-289.
 
-    [4] Perez, R. et. al 1988. "The Development and Verification of the
-    Perez Diffuse Radiation Model". SAND88-7030
+    .. [4] Perez, R. et. al 1988. "The Development and Verification of the
+       Perez Diffuse Radiation Model". SAND88-7030
     '''
 
     kappa = 1.041  # for solar_zenith in radians
@@ -1253,7 +1176,7 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
     Calculate the clearness index.
 
     The clearness index is the ratio of global to extraterrestrial
-    irradiance on a horizontal plane.
+    irradiance on a horizontal plane [1]_.
 
     Parameters
     ----------
@@ -1303,7 +1226,7 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
 def clearness_index_zenith_independent(clearness_index, airmass,
                                        max_clearness_index=2.0):
     """
-    Calculate the zenith angle independent clearness index.
+    Calculate the zenith angle independent clearness index [1]_.
 
     Parameters
     ----------
@@ -1563,13 +1486,13 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     References
     ----------
-    [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
-    (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
-    ASHRAE Transactions-Research Series, pp. 354-369
+    .. [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
+       (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
+       ASHRAE Transactions-Research Series, pp. 354-369
 
-    [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
-    Global Horizontal to Direct Normal Insolation", Technical Report No.
-    SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
+    .. [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+       Global Horizontal to Direct Normal Insolation", Technical Report No.
+       SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
 
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
@@ -1744,11 +1667,13 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
              max_zenith=87):
     """
-    Determine DNI from GHI using the DIRINDEX model, which is a modification of
-    the DIRINT model with information from a clear sky model.
+    Determine DNI from GHI using the DIRINDEX model.
 
-    DIRINDEX [1] improves upon the DIRINT model by taking into account
-    turbidity when used with the Ineichen clear sky model results.
+    The DIRINDEX model [1] modifies the DIRINT model implemented in
+    :py:func:``pvlib.irradiance.dirint`` by taking into account information
+    from a clear sky model. It is recommended that ``ghi_clearsky`` be
+    calculated using the Ineichen clear sky model
+    :py:func:``pvlib.clearsky.ineichen`` with ``perez_enhancement=True``.
 
     The pvlib implementation limits the clearness index to 1.
 
@@ -1809,9 +1734,9 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
     References
     ----------
-    [1] Perez, R., Ineichen, P., Moore, K., Kmiecik, M., Chain, C., George, R.,
-    & Vignola, F. (2002). A new operational model for satellite-derived
-    irradiances: description and validation. Solar Energy, 73(5), 307-317.
+    .. [1] Perez, R., Ineichen, P., Moore, K., Kmiecik, M., Chain, C., George,
+       R., & Vignola, F. (2002). A new operational model for satellite-derived
+       irradiances: description and validation. Solar Energy, 73(5), 307-317.
     """
 
     dni_dirint = dirint(ghi, zenith, times, pressure=pressure,
@@ -1839,7 +1764,8 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
                model='perez', model_perez='allsitescomposite1990',
                calculate_gt_90=True, max_iterations=30):
     """
-    Determine GHI, DNI, DHI from POA global using the GTI DIRINT model.
+    Determine GHI, DNI, DHI from POA global using the GTI DIRINT model
+    [1]_.
 
     .. warning::
 
@@ -2288,12 +2214,12 @@ def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
     References
     ----------
-    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
-    Environmental Biophysics. 2nd Ed. New York: Springer.
+    .. [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
+       Environmental Biophysics. 2nd Ed. New York: Springer.
 
-    [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
-    characteristic distribution of direct, diffuse, and total solar
-    radiation".  Solar Energy 4:1-19
+    .. [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
+       characteristic distribution of direct, diffuse, and total solar
+       radiation".  Solar Energy 4:1-19
     '''
 
     tau = transmittance
@@ -2348,20 +2274,20 @@ def _get_perez_coefficients(perezmodel):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
-    1987. A new simplified version of the Perez diffuse irradiance model
-    for tilted surfaces. Solar Energy 39(3), 221-232.
+    .. [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
+       1987. A new simplified version of the Perez diffuse irradiance model
+       for tilted surfaces. Solar Energy 39(3), 221-232.
 
-    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
-    1990. Modeling daylight availability and irradiance components from
-    direct and global irradiance. Solar Energy 44 (5), 271-289.
+    .. [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+       1990. Modeling daylight availability and irradiance components from
+       direct and global irradiance. Solar Energy 44 (5), 271-289.
 
-    [4] Perez, R. et. al 1988. "The Development and Verification of the
-    Perez Diffuse Radiation Model". SAND88-7030
+    .. [4] Perez, R. et. al 1988. "The Development and Verification of the
+       Perez Diffuse Radiation Model". SAND88-7030
 
     '''
     coeffdict = {

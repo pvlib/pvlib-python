@@ -5,12 +5,10 @@ tests for :mod:`pvlib.iotools.ecmwf_macc`
 import os
 import datetime
 import numpy as np
-from conftest import requires_netCDF4
+import pytest
+from conftest import requires_netCDF4, DATA_DIR
 from pvlib.iotools import ecmwf_macc
 
-DIRNAME = os.path.dirname(__file__)
-PROJNAME = os.path.dirname(DIRNAME)
-DATADIR = os.path.join(PROJNAME, 'data')
 TESTDATA = 'aod550_tcwv_20121101_test.nc'
 
 # for creating test data
@@ -21,19 +19,24 @@ LON_BND = (0, 360.0)
 LAT_BND = (90, -90)
 
 
+@pytest.fixture
+def expected_test_data():
+    return DATA_DIR / TESTDATA
+
+
 @requires_netCDF4
-def test_get_nearest_indices():
+def test_get_nearest_indices(expected_test_data):
     """Test getting indices given latitude, longitude from ECMWF_MACC data."""
-    data = ecmwf_macc.ECMWF_MACC(os.path.join(DATADIR, TESTDATA))
+    data = ecmwf_macc.ECMWF_MACC(expected_test_data)
     ilat, ilon = data.get_nearest_indices(38, -122)
     assert ilat == 17
     assert ilon == 79
 
 
 @requires_netCDF4
-def test_interp_data():
+def test_interp_data(expected_test_data):
     """Test interpolating UTC time from ECMWF_MACC data."""
-    data = ecmwf_macc.ECMWF_MACC(os.path.join(DATADIR, TESTDATA))
+    data = ecmwf_macc.ECMWF_MACC(expected_test_data)
     test9am = data.interp_data(
         38, -122, datetime.datetime(2012, 11, 1, 9, 0, 0), 'aod550')
     assert np.isclose(test9am, data.data.variables['aod550'][2, 17, 79])
@@ -47,10 +50,10 @@ def test_interp_data():
 
 
 @requires_netCDF4
-def test_read_ecmwf_macc():
+def test_read_ecmwf_macc(expected_test_data):
     """Test reading ECMWF_MACC data from netCDF4 file."""
     data = ecmwf_macc.read_ecmwf_macc(
-        os.path.join(DATADIR, TESTDATA), 38, -122)
+        expected_test_data, 38, -122)
     expected_times = [
         1351738800, 1351749600, 1351760400, 1351771200, 1351782000, 1351792800,
         1351803600, 1351814400]
@@ -67,7 +70,7 @@ def test_read_ecmwf_macc():
     datetimes = (datetime.datetime(2012, 11, 1, 9, 0, 0),
                  datetime.datetime(2012, 11, 1, 12, 0, 0))
     data_9am_12pm = ecmwf_macc.read_ecmwf_macc(
-        os.path.join(DATADIR, TESTDATA), 38, -122, datetimes)
+        expected_test_data, 38, -122, datetimes)
     assert np.allclose(data_9am_12pm.aod550.values, expected_aod[2:4])
     assert np.allclose(data_9am_12pm.tcwv.values, expected_tcwv[2:4])
 

@@ -298,14 +298,24 @@ PVWatts model
    pvsystem.pvwatts_ac
    pvsystem.pvwatts_losses
 
-Functions for fitting PV models
--------------------------------
+Functions for fitting diode models
+----------------------------------
+
 .. autosummary::
    :toctree: generated/
 
     ivtools.fit_sde_sandia
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
+
+Losses
+------
+
+.. autosummary::
+   :toctree: generated/
+
+   losses.soiling_hsu
+
 
 Other
 -----
@@ -361,6 +371,7 @@ relevant to solar energy modeling.
    iotools.read_tmy2
    iotools.read_tmy3
    iotools.read_epw
+   iotools.parse_epw
    iotools.read_srml
    iotools.read_srml_month_from_solardat
    iotools.read_surfrad
@@ -373,6 +384,7 @@ relevant to solar energy modeling.
    iotools.get_psm3
    iotools.read_psm3
    iotools.parse_psm3
+   iotools.get_pvgis_tmy
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

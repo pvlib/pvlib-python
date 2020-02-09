@@ -1,11 +1,7 @@
 .. _whatsnew_0710:
 
-v0.7.1 (MONTH DAY, YEAR)
-------------------------
-
-
-API Changes
-~~~~~~~~~~~
+v0.7.1 (January 17, 2020)
+-------------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -23,20 +19,39 @@ Enhancements
   defaults to zero, for use with
   :py:func:`~pvlib.tracking.calc_system_tracker_side_slope`
 
+* Added :py:func:`~pvlib.iotools.get_pvgis_tmy` to get PVGIS TMY datasets.
+  (:pull:`845`)
+* Added :py:func:`~pvlib.iotools.parse_epw` to parse a file-like buffer
+  containing weather data in the EPW format.
+* Added a new module `pvlib.losses` for various loss models.
+* Added the Humboldt State University soiling model
+  :py:func:`~pvlib.losses.soiling_hsu`. (:issue:`739`)
 
 Bug fixes
 ~~~~~~~~~
+* Fix error in logic for emitting deprecation warning in
+  :py:func:`~pvlib.pvsystem.sapm` (:pull:`844`)
 * Changed the PSM3 API endpoint for TMY requests in `iotools.get_psm3`.
 
 Testing
 ~~~~~~~
 * Added single-year PSM3 API test for `iotools.get_psm3`.
 * Added tests for `iotools.parse_psm3` and `iotools.read_psm3`.
+* Change `pvlib/test` folder to `pvlib/tests` and reorganize tests into
+  subfolders, *e.g.*: created `pvlib/tests/iotools` (:pull:`859`)
+* replace `os.path` with `pathlib` and stringify path objects for Python<=3.5
 
 Documentation
 ~~~~~~~~~~~~~
+* Created an Example Gallery. (:pull:`846`)
 * Updated list of allowed years for `iotools.get_psm3`.
 
 Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* :ghuser:`dzimmanck`
+* Will Holmgren (:ghuser:`wholmgren`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Valliappan CA (:ghuser:`nappaillav`)
+* Anton Driesse (:ghuser:`adriesse`)

@@ -687,49 +687,55 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
 def calc_system_tracker_side_slope(
         axis_azimuth, axis_tilt, system_azimuth, system_zenith):
     """
-    Calculate the slope perpendicular to the tracker axis relative to the
-    system plane containing the axes as well as the rotation of the tracker
-    axes relative to the system plane. Note in order for the backtracking
-    algorithm to work correctly on a sloped system plane, the side slope must
-    be applied to the tracker rotation.
+    Calculate the component of the slope perpendicular to the tracker axis
+    relative to the horizontal plane as well as the rotation of the tracker
+    axes relative to the "system" plane containing all of the tracker axes.
+    Note in order for the backtracking algorithm to work correctly on a sloped
+    system plane, the side slope must be applied to the tracker rotation.
 
     Parameters
     ----------
     system_azimuth : float
-        direction of normal to slope on horizontal [radians]
+        direction of normal to slope on horizontal [degrees]
     system_zenith : float
-        tilt of normal to slope relative to vertical [radians]
+        tilt of normal to slope relative to vertical [degrees]
     axis_azimuth : float
-        direction of tracker axes on horizontal [radians]
+        direction of tracker axes on horizontal [degrees]
     axis_tilt : float
-        tilt of tracker [radians]
+        tilt of tracker [degrees]
 
     Returns
     -------
-    tracker side slope and rotation relative to system plane [radians]
+    tracker side slope and rotation relative to system plane [degrees]
     """
+    # convert to radians
+    system_azimuth_rad = np.radians(system_azimuth)
+    system_zenith_rad = np.radians(system_zenith)
+    axis_azimuth_rad = np.radians(axis_azimuth)
+    axis_tilt_rad = np.radians(axis_tilt)
+    sin_axis_tilt = np.sin(axis_tilt_rad)  # sin(-x) = -sin(x)
     # find the relative rotation of the trackers in the system plane
     # 1. tracker axis vector
-    cos_tr_ze = np.cos(-axis_tilt)
-    sin_tr_az = np.sin(axis_azimuth)
-    cos_tr_az = np.cos(axis_azimuth)
+    cos_tr_ze = np.cos(-axis_tilt_rad)
+    sin_tr_az = np.sin(axis_azimuth_rad)
+    cos_tr_az = np.cos(axis_azimuth_rad)
     tr_ax = np.array([
         [cos_tr_ze*sin_tr_az],
         [cos_tr_ze*cos_tr_az],
-        [np.sin(-axis_tilt)]])
+        [-sin_axis_tilt]])
     # 2. rotate tracker axis vector from global to system reference frame
-    sys_z_rot = _get_rotation_matrix(system_azimuth, axis=2)
+    sys_z_rot = _get_rotation_matrix(system_azimuth_rad, axis=2)
     # first around the z-axis
     tr_ax_sys_z_rot = np.dot(sys_z_rot, tr_ax)
     # then around x-axis so that xy-plane is the plane with slope and trackers
-    sys_x_rot = _get_rotation_matrix(system_zenith)
+    sys_x_rot = _get_rotation_matrix(system_zenith_rad)
     tr_ax_sys = np.dot(sys_x_rot, tr_ax_sys_z_rot)
     # now that tracker axis is in coordinate system of slope, the relative
     # rotation is the angle from the y axis
     tr_rel_rot = np.arctan2(tr_ax_sys[0, 0], tr_ax_sys[1, 0])
     # find side slope
     # 1. tracker normal vector
-    sin_tr_ze = np.sin(axis_tilt)
+    sin_tr_ze = sin_axis_tilt
     tr_norm = np.array([
         [sin_tr_ze*sin_tr_az],
         [sin_tr_ze*cos_tr_az],
@@ -744,4 +750,4 @@ def calc_system_tracker_side_slope(
     sys_tr_z_rot = _get_rotation_matrix(tr_rel_rot, axis=2)
     tr_norm_sys_tr = np.dot(sys_tr_z_rot, tr_norm_sys)
     side_slope = np.arctan2(tr_norm_sys_tr[0, 0], tr_norm_sys_tr[2, 0])
-    return side_slope, tr_rel_rot
+    return np.degrees(side_slope), np.degrees(tr_rel_rot)

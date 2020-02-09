@@ -485,18 +485,14 @@ def test_calc_axis_tilt():
     max_angle = 75.0
     # Note: GCR is relative to horizontal distance between rows
     gcr = 0.33292759  # GCR = length / horizontal_pitch = 1.64 / 5 / cos(-9.86)
-    # convert to radians
-    sys_az, sys_ze = np.radians(system_plane)
-    tr_az = np.radians(axis_azimuth)
     # calculate tracker axis zenith
     axis_tilt = tracking.calc_tracker_axis_tilt(
-        *system_plane, axis_azimuth=tr_az)
-    tr_ze = np.radians(axis_tilt)
+        *system_plane, axis_azimuth=axis_azimuth)
     assert np.isclose(axis_tilt, expected_axis_tilt)
     # calculate side slope and relative rotation
-    ss, rel_rot = tracking.calc_system_tracker_side_slope(
-        tr_az, tr_ze, sys_az, sys_ze)
-    side_slope = np.degrees(ss)
+    side_slope, rel_rot = tracking.calc_system_tracker_side_slope(
+        axis_azimuth, axis_tilt, *system_plane)
+    assert np.isclose(rel_rot, -77.14671562495475)  # relative rotation
     assert np.isclose(side_slope, expected_side_slope)
     sat = tracking.singleaxis(
         solpos.apparent_zenith, solpos.azimuth, axis_tilt, axis_azimuth,

@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 from numpy import nan
 import pandas as pd
@@ -11,10 +9,8 @@ from numpy.testing import assert_allclose
 import pvlib
 from pvlib.location import Location
 from pvlib import tracking
+from conftest import DATA_DIR
 
-DIRNAME = os.path.dirname(__file__)
-PROJDIR = os.path.dirname(DIRNAME)
-DATADIR = os.path.join(PROJDIR, 'data')
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
 
@@ -475,7 +471,7 @@ def test_calc_axis_tilt():
     # expected values
     expected_axis_tilt = 2.239  # [degrees]
     expected_side_slope = -9.86649274360294  # [degrees]
-    expected = os.path.join(DATADIR, 'singleaxis_tracker_wslope.dat')
+    expected = DATA_DIR / 'singleaxis_tracker_wslope.dat'
     expected = pd.read_csv(expected, index_col='timestamp', parse_dates=True)
     # solar positions
     starttime = '2017-01-01T00:30:00-0300'

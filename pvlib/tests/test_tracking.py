@@ -489,8 +489,9 @@ def test_calc_axis_tilt():
     sys_az, sys_ze = np.radians(system_plane)
     tr_az = np.radians(axis_azimuth)
     # calculate tracker axis zenith
-    tr_ze = tracking.calc_tracker_axis_tilt(sys_az, sys_ze, tr_az)
-    axis_tilt = np.degrees(tr_ze)
+    axis_tilt = tracking.calc_tracker_axis_tilt(
+        *system_plane, axis_azimuth=tr_az)
+    tr_ze = np.radians(axis_tilt)
     assert np.isclose(axis_tilt, expected_axis_tilt)
     # calculate side slope and relative rotation
     ss, rel_rot = tracking.calc_system_tracker_side_slope(

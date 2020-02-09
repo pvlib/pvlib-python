@@ -625,16 +625,16 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
     Parameters
     ----------
     system_azimuth : float
-        direction of normal to slope on horizontal [radians]
+        direction of normal to slope on horizontal [degrees]
     system_zenith : float
-        tilt of normal to slope relative to vertical [radians]
+        tilt of normal to slope relative to vertical [degrees]
     axis_azimuth : float
-        direction of tracker axes on horizontal [radians]
+        direction of tracker axes on horizontal [degrees]
 
     Returns
     -------
     axis_tilt : float
-        tilt of tracker [radians]
+        tilt of tracker [degrees]
 
     Solving for the tracker tilt on a slope is derived in the following steps:
 
@@ -676,9 +676,12 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
 
         tan(tr_ze) = -tan(sys_ze)*cos(sys_az-tr_az)
     """
-    sys_az_rel_to_tr_az = system_azimuth - axis_azimuth
-    tan_tr_ze = -np.cos(sys_az_rel_to_tr_az) * np.tan(system_zenith)
-    return -np.arctan(tan_tr_ze)
+    system_azimuth_rad = np.radians(system_azimuth)
+    axis_azimuth_rad = np.radians(axis_azimuth)
+    system_zenith_rad = np.radians(system_zenith)
+    sys_az_rel_to_tr_az = system_azimuth_rad - axis_azimuth_rad
+    tan_tr_ze = -np.cos(sys_az_rel_to_tr_az) * np.tan(system_zenith_rad)
+    return -np.degrees(np.arctan(tan_tr_ze))
 
 
 def calc_system_tracker_side_slope(

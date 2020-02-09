@@ -617,7 +617,7 @@ def _get_rotation_matrix(angle, axis=0):
     return rot
 
 
-def calc_tracker_axis_tilt(system_azimuth, system_zenith, tracker_azimuth):
+def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
     """
     Calculate tracker axis tilt in the global reference frame when on a sloped
     plane.
@@ -628,12 +628,12 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, tracker_azimuth):
         direction of normal to slope on horizontal [radians]
     system_zenith : float
         tilt of normal to slope relative to vertical [radians]
-    tracker_azimuth : float
+    axis_azimuth : float
         direction of tracker axes on horizontal [radians]
 
     Returns
     -------
-    tracker_zenith : float
+    axis_tilt : float
         tilt of tracker [radians]
 
     Solving for the tracker tilt on a slope is derived in the following steps:
@@ -676,13 +676,13 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, tracker_azimuth):
 
         tan(tr_ze) = -tan(sys_ze)*cos(sys_az-tr_az)
     """
-    sys_az_rel_to_tr_az = system_azimuth - tracker_azimuth
+    sys_az_rel_to_tr_az = system_azimuth - axis_azimuth
     tan_tr_ze = -np.cos(sys_az_rel_to_tr_az) * np.tan(system_zenith)
     return -np.arctan(tan_tr_ze)
 
 
 def calc_system_tracker_side_slope(
-        tracker_azimuth, tracker_zenith, system_azimuth, system_zenith):
+        axis_azimuth, axis_tilt, system_azimuth, system_zenith):
     """
     Calculate the slope perpendicular to the tracker axis relative to the
     system plane containing the axes as well as the rotation of the tracker
@@ -696,9 +696,9 @@ def calc_system_tracker_side_slope(
         direction of normal to slope on horizontal [radians]
     system_zenith : float
         tilt of normal to slope relative to vertical [radians]
-    tracker_azimuth : float
+    axis_azimuth : float
         direction of tracker axes on horizontal [radians]
-    tracker_zenith : float
+    axis_tilt : float
         tilt of tracker [radians]
 
     Returns
@@ -707,13 +707,13 @@ def calc_system_tracker_side_slope(
     """
     # find the relative rotation of the trackers in the system plane
     # 1. tracker axis vector
-    cos_tr_ze = np.cos(-tracker_zenith)
-    sin_tr_az = np.sin(tracker_azimuth)
-    cos_tr_az = np.cos(tracker_azimuth)
+    cos_tr_ze = np.cos(-axis_tilt)
+    sin_tr_az = np.sin(axis_azimuth)
+    cos_tr_az = np.cos(axis_azimuth)
     tr_ax = np.array([
         [cos_tr_ze*sin_tr_az],
         [cos_tr_ze*cos_tr_az],
-        [np.sin(-tracker_zenith)]])
+        [np.sin(-axis_tilt)]])
     # 2. rotate tracker axis vector from global to system reference frame
     sys_z_rot = _get_rotation_matrix(system_azimuth, axis=2)
     # first around the z-axis
@@ -726,7 +726,7 @@ def calc_system_tracker_side_slope(
     tr_rel_rot = np.arctan2(tr_ax_sys[0, 0], tr_ax_sys[1, 0])
     # find side slope
     # 1. tracker normal vector
-    sin_tr_ze = np.sin(tracker_zenith)
+    sin_tr_ze = np.sin(axis_tilt)
     tr_norm = np.array([
         [sin_tr_ze*sin_tr_az],
         [sin_tr_ze*cos_tr_az],

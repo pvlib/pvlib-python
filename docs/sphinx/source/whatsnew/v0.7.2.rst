@@ -13,6 +13,8 @@ Bug fixes
 ~~~~~~~~~
 * Fix :py:func:`~pvlib.iotools.read_tmy3` parsing when February contains
   a leap year (:pull:`866`)
+* Implement NREL Developer Network API key for consistent success with API
+  calls in :py:mod:`pvlib.tests.iotools.test_psm3` (:pull:`873`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -26,3 +28,4 @@ Contributors
 ~~~~~~~~~~~~
 * Mark Mikofski (:ghuser:`mikofski`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Cameron T. Stark (:ghuser:`camerontstark`)

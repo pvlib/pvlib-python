@@ -90,6 +90,15 @@ def test_get_psm3_singleyear(nrel_api_key):
     assert_psm3_equal(header, data, expected)
 
 
+@needs_pandas_0_22
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
+def test_get_psm3_check_leap_day(nrel_api_key):
+    _, data_2012 = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
+                                 PVLIB_EMAIL, names="2012", interval=60,
+                                 leap_day=True)
+    assert len(data_2012) == (8760 + 24)
+
+
 @pytest.mark.parametrize('latitude, longitude, api_key, names, interval',
                          [(LATITUDE, LONGITUDE, 'BAD', 'tmy-2017', 60),
                           (51, -5, nrel_api_key, 'tmy-2017', 60),

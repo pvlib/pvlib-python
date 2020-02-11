@@ -12,8 +12,7 @@ import pytest
 from pvlib.location import Location
 from pvlib import solarposition, spa
 
-from conftest import (requires_ephem, needs_pandas_0_17,
-                      requires_spa_c, requires_numba)
+from conftest import requires_ephem, requires_spa_c, requires_numba
 
 
 # setup times and locations to be tested.
@@ -164,7 +163,6 @@ def test_spa_python_numpy_physical_dst(expected_solpos, golden):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-@needs_pandas_0_17
 def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden):
     # solution from NREL SAP web calculator
     south = Location(-35.0, 0.0, tz='UTC')

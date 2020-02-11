@@ -191,6 +191,33 @@ def pvsyst_module_params():
 
 
 @pytest.fixture(scope='function')
+def adr_inverter_parameters():
+    """
+    Define some ADR inverter parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)' \
+                '[CEC 2011]',
+        'Vac': 240.,
+        'Pacmax': 2110.,
+        'Pnom': 2200.,
+        'Vnom': 396.,
+        'Vmin': 155.,
+        'Vmax': 413.,
+        'Vdcmax': 500.,
+        'MPPTHi':450.,
+        'MPPTLow': 150.,
+        'Pnt': 0.25,
+        'ADRCoefficients': [0.01385, 0.0152, 0.00794, 0.00286, -0.01872,
+                            -0.01305, 0.0, 0.0, 0.0]
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
 def cec_inverter_parameters():
     """
     Define some CEC inverter parameters for testing.

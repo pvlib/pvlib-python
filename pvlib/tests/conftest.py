@@ -208,7 +208,7 @@ def adr_inverter_parameters():
         'Vmin': 155.,
         'Vmax': 413.,
         'Vdcmax': 500.,
-        'MPPTHi':450.,
+        'MPPTHi': 450.,
         'MPPTLow': 150.,
         'Pnt': 0.25,
         'ADRCoefficients': [0.01385, 0.0152, 0.00794, 0.00286, -0.01872,

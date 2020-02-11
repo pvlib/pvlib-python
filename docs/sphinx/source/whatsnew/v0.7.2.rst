@@ -5,7 +5,7 @@ v0.7.2 (Month day, year)
 
 API Changes
 ~~~~~~~~~~~
-* :py:class:`pvlib.forecast.Forecast` now requires ``start`` and ``end``
+* :py:class:`pvlib.forecast.ForecastModel` now requires ``start`` and ``end``
   arguments to be tz-localized. (:issue:`877`, :pull:`879`)
 
 Enhancements

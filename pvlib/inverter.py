@@ -118,7 +118,7 @@ def sandia(v_dc, p_dc, inverter):
     return ac_power
 
 
-def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
+def adr(v_dc, p_dc, inverter, vtol=0.10):
     r'''
     Converts DC power and voltage to AC power using Anton Driesse's
     Grid-Connected PV Inverter efficiency model
@@ -259,8 +259,7 @@ def adrinverter(v_dc, p_dc, inverter, vtol=0.10):
     return ac_power
 
 
-
-def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
+def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
     Implements NREL's PVWatts inverter model [1]_.
 
@@ -315,8 +314,7 @@ def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     # eta < 0 if zeta < 0.006. pac is forced to be >= 0 below. GH 541
     eta = eta_inv_nom / eta_inv_ref * (
         - 0.0162*zeta
-        - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
-        + 0.9858)
+        - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0) + 0.9858)
 
     pac = eta * pdc
     pac = np.minimum(pac0, pac)

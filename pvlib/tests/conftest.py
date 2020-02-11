@@ -199,7 +199,7 @@ def adr_inverter_parameters():
     parameters if required without affecting other tests.
     """
     parameters = {
-        'Name': 'Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)' \
+        'Name': 'Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)'
                 '[CEC 2011]',
         'Vac': 240.,
         'Pacmax': 2110.,

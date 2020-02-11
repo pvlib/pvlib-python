@@ -739,21 +739,32 @@ class PVSystem(object):
 
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
-        """Uses :func:`snlinverter` to calculate AC power based on
+        """Uses :pyfunc:`pvlib.inverter.sandia` to calculate AC power based on
         ``self.inverter_parameters`` and the input parameters.
 
         Parameters
         ----------
-        See pvsystem.snlinverter for details
+        See pvlib.inverter.sandia for details
 
         Returns
         -------
-        See pvsystem.snlinverter for details
+        See pvlib.inverter.sandia for details
         """
-        return snlinverter(v_dc, p_dc, self.inverter_parameters)
+        return inverter.sandia(v_dc, p_dc, self.inverter_parameters)
 
     def adrinverter(self, v_dc, p_dc):
-        return adrinverter(v_dc, p_dc, self.inverter_parameters)
+        """Uses :pyfunc:`pvlib.inverter.adr` to calculate AC power based on
+        ``self.inverter_parameters`` and the input parameters.
+
+        Parameters
+        ----------
+        See pvlib.inverter.adr for details
+
+        Returns
+        -------
+        See pvlib.inverter.adr for details
+        """
+        return inverter.adr(v_dc, p_dc, self.inverter_parameters)
 
     def scale_voltage_current_power(self, data):
         """
@@ -816,7 +827,8 @@ class PVSystem(object):
         kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
                                self.inverter_parameters)
 
-        return pvwatts_ac(pdc, self.inverter_parameters['pdc0'], **kwargs)
+        return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
+                                **kwargs)
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):

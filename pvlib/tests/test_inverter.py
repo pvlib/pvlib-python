@@ -48,8 +48,8 @@ def test_adr_invalid_and_night(sam_data):
 
 
 def test_sandia(cec_inverter_parameters):
-    vdcs = pd.Series(np.linspace(0,50,3))
-    idcs = pd.Series(np.linspace(0,11,3))
+    vdcs = pd.Series(np.linspace(0, 50, 3))
+    idcs = pd.Series(np.linspace(0, 11, 3))
     pdcs = idcs * vdcs
 
     pacs = inverter.sandia(vdcs, pdcs, cec_inverter_parameters)
@@ -87,48 +87,47 @@ def test_sandia_Pnt_micro():
         'Mppt_low': 27.0,
         'Mppt_high': 39.0,
     }
-    vdcs = pd.Series(np.linspace(0,50,3))
-    idcs = pd.Series(np.linspace(0,11,3))
+    vdcs = pd.Series(np.linspace(0, 50, 3))
+    idcs = pd.Series(np.linspace(0, 11, 3))
     pdcs = idcs * vdcs
 
     pacs = inverter.sandia(vdcs, pdcs, inverter_parameters)
     assert_series_equal(pacs, pd.Series([-0.043, 132.545914746, 240.0]))
 
 
-def test_pvwatts_ac_scalars():
+def test_pvwatts_scalars():
     expected = 85.58556604752516
-    out = inverter.pvwatts_ac(90, 100, 0.95)
+    out = inverter.pvwatts(90, 100, 0.95)
     assert_allclose(out, expected)
     # GH 675
     expected = 0.
-    out = inverter.pvwatts_ac(0., 100)
+    out = inverter.pvwatts(0., 100)
     assert_allclose(out, expected)
 
 
-def test_pvwatts_ac_possible_negative():
-    # pvwatts_ac could return a negative value for (pdc / pdc0) < 0.006
+def test_pvwatts_possible_negative():
+    # pvwatts could return a negative value for (pdc / pdc0) < 0.006
     # unless it is clipped. see GH 541 for more
     expected = 0
-    out = inverter.pvwatts_ac(0.001, 1)
+    out = inverter.pvwatts(0.001, 1)
     assert_allclose(out, expected)
 
 
 @needs_numpy_1_10
-def test_pvwatts_ac_arrays():
+def test_pvwatts_arrays():
     pdc = np.array([[np.nan], [0], [50], [100]])
     pdc0 = 100
     expected = np.array([[np.nan],
                          [0.],
                          [47.60843624],
                          [95.]])
-    out = inverter.pvwatts_ac(pdc, pdc0, 0.95)
+    out = inverter.pvwatts(pdc, pdc0, 0.95)
     assert_allclose(out, expected, equal_nan=True)
 
 
-def test_pvwatts_ac_series():
+def test_pvwatts_series():
     pdc = pd.Series([np.nan, 0, 50, 100])
     pdc0 = 100
     expected = pd.Series(np.array([np.nan, 0., 47.608436, 95.]))
-    out = inverter.pvwatts_ac(pdc, pdc0, 0.95)
+    out = inverter.pvwatts(pdc, pdc0, 0.95)
     assert_series_equal(expected, out)
-

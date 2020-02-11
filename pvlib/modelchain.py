@@ -56,7 +56,7 @@ def basic_chain(times, latitude, longitude,
         See temperature.sapm_cell for details.
 
     inverter_parameters : None, dict or Series
-        Inverter parameters as defined by the CEC. See pvsystem.snlinverter for
+        Inverter parameters as defined by the CEC. See inverter.sandia for
         details.
 
     irradiance : None or DataFrame, default None
@@ -183,7 +183,7 @@ def basic_chain(times, latitude, longitude,
     dc = pvsystem.sapm(effective_irradiance, cell_temperature,
                        module_parameters)
 
-    ac = pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter_parameters)
+    ac = inverter.sandia(dc['v_mp'], dc['p_mp'], inverter_parameters)
 
     return dc, ac
 
@@ -265,7 +265,7 @@ class ModelChain(object):
     ac_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
         system.inverter_parameters and system.module_parameters. Valid
-        strings are 'snlinverter', 'adrinverter', 'pvwatts'. The
+        strings are 'sandia', 'adr', 'pvwatts'. The
         ModelChain instance will be passed as the first argument to a
         user-defined function.
 
@@ -492,11 +492,12 @@ class ModelChain(object):
             self._ac_model = self.infer_ac_model()
         elif isinstance(model, str):
             model = model.lower()
-            if model == 'snlinverter':
+            # TODO in v0.9: remove 'snlinverter', 'adrinverter', 'pvwatts'
+            if model in ['sandia', 'snlinverter']:
                 self._ac_model = self.snlinverter
-            elif model == 'adrinverter':
+            elif model in ['adr', 'adrinverter']:
                 self._ac_model = self.adrinverter
-            elif model == 'pvwatts':
+            elif model in ['pvwatts']:
                 self._ac_model = self.pvwatts_inverter
             else:
                 raise ValueError(model + ' is not a valid AC power model')

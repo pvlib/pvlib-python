@@ -10,8 +10,8 @@ from functools import partial
 import warnings
 import pandas as pd
 
-from pvlib import (atmosphere, clearsky, pvsystem, solarposition, temperature,
-                   tools)
+from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
+                   temperature, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS

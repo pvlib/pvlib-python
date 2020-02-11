@@ -8,7 +8,7 @@ import pytest
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
-from pvlib import pvsystem
+from pvlib import inverter, pvsystem
 from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib.location import Location
@@ -1334,22 +1334,22 @@ def test_PVSystem_pvwatts_losses(mocker):
 
 
 def test_PVSystem_pvwatts_ac(mocker):
-    mocker.spy(pvsystem, 'pvwatts_ac')
+    mocker.spy(inverter, 'pvwatts')
     system = make_pvwatts_system_defaults()
     pdc = 50
     out = system.pvwatts_ac(pdc)
-    pvsystem.pvwatts_ac.assert_called_once_with(pdc,
-                                                **system.inverter_parameters)
+    inverter.pvwatts.assert_called_once_with(pdc,
+                                             **system.inverter_parameters)
     assert out < pdc
 
 
 def test_PVSystem_pvwatts_ac_kwargs(mocker):
-    mocker.spy(pvsystem, 'pvwatts_ac')
+    mocker.spy(inverter, 'pvwatts')
     system = make_pvwatts_system_kwargs()
     pdc = 50
     out = system.pvwatts_ac(pdc)
-    pvsystem.pvwatts_ac.assert_called_once_with(pdc,
-                                                **system.inverter_parameters)
+    inverter.pvwatts.assert_called_once_with(pdc,
+                                             **system.inverter_parameters)
     assert out < pdc
 
 

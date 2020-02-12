@@ -37,12 +37,12 @@ AUTHOR = 'pvlib python Developers'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
-INSTALL_REQUIRES = ['numpy >= 1.12.0',
-                    'pandas >= 0.18.1',
+INSTALL_REQUIRES = ['numpy == 1.12.0',
+                    'pandas == 0.18.1',
                     'pytz',
                     'requests']
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
-                 'pytest-timeout', 'pytest-rerunfailures']
+                 'pytest-timeout', 'pytest-rerunfailures', 'pytest-remotedata']
 EXTRAS_REQUIRE = {
     'optional': ['ephem', 'cython', 'netcdf4', 'nrel-pysam', 'numba',
                  'pvfactors', 'scipy', 'siphon', 'tables'],

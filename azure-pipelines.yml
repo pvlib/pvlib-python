@@ -26,10 +26,10 @@ jobs:
       versionSpec: '$(python.version)'
 
   - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures
+      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
       pip install -e .
       export NREL_API_KEY=$(nrelApiKey)
-      pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+      pytest pvlib --remote-data --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 
   - task: PublishTestResults@2
@@ -76,7 +76,6 @@ jobs:
     displayName: 'List installed dependencies'
   - script: |
       source activate test_env
-      export NREL_API_KEY=$(nrelApiKey)
       pytest pvlib --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
     displayName: 'pytest'
   # - script: |
@@ -129,7 +128,6 @@ jobs:
     displayName: 'List installed dependencies'
   - script: |
       call activate test_env
-      set NREL_API_KEY=$(nrelApiKey)
       pytest pvlib --junitxml=junit/test-results.xml
     displayName: 'pytest'
   - task: PublishTestResults@2
@@ -159,7 +157,6 @@ jobs:
   - script: |
       pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures
       pip install -e .
-      export NREL_API_KEY=$(nrelApiKey)
       pytest pvlib --junitxml=junit/test-results.xml --cov=pvlib --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 

@@ -17,6 +17,7 @@ dependencies:
     - pytest-cov
     - pytest-mock
     - pytest-rerunfailures
+    - pytest-remotedata
     - pytest-timeout
     - python=3.6
     - pytz

@@ -18,6 +18,7 @@ dependencies:
     - pytest-mock
     - pytest-timeout
     - pytest-rerunfailures
+    - pytest-remotedata
     - python=3.7
     - pytz
     - requests

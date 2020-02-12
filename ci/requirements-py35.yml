@@ -16,6 +16,7 @@ dependencies:
     - pytest
     - pytest-cov
     - pytest-mock
+    - pytest-remotedata
     - pytest-timeout
     - python=3.5
     - pytz

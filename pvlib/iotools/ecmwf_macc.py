@@ -86,7 +86,7 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
     key. Please read the documentation in `Access ECMWF Public Datasets
     <https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets>`_.
     Follow the instructions in step 4 and save the ECMWF registration key
-    as `$HOME\.ecmwfapirc` or set `ECMWF_API_KEY` as the path to the key.
+    as `$HOME/.ecmwfapirc` or set `ECMWF_API_KEY` as the path to the key.
 
     This function returns a daemon thread that runs in the background. Exiting
     Python will kill this thread, however this thread will not block the main

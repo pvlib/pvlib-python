@@ -1,0 +1,31 @@
+.. _whatsnew_0720:
+
+v0.7.2 (Month day, year)
+-------------------------
+
+Enhancements
+~~~~~~~~~~~~
+* TMY3 dataframe returned by :py:func:`~pvlib.iotools.read_tmy3` now contains
+  the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
+  indices were parsed from (:pull:`866`)
+
+Bug fixes
+~~~~~~~~~
+* Fix :py:func:`~pvlib.iotools.read_tmy3` parsing when February contains
+  a leap year (:pull:`866`)
+* Implement NREL Developer Network API key for consistent success with API
+  calls in :py:mod:`pvlib.tests.iotools.test_psm3` (:pull:`873`)
+
+Documentation
+~~~~~~~~~~~~~
+* Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
+
+Requirements
+~~~~~~~~~~~~
+* nrel-pysam (optional) minimum set to v1.0.0 (:issue:`874`)
+
+Contributors
+~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Cameron T. Stark (:ghuser:`camerontstark`)

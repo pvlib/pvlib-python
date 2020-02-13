@@ -88,7 +88,7 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     return soiling_ratio
 
 
-def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
+def soiling_kimber(rainfall, cleaning_threshold=6, soiling_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
                    initial_soiling=0):
     """
@@ -102,35 +102,35 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
     Parameters
     ----------
     rainfall: pandas.Series
-        Accumulated rainfall at the end of each time period [mm]
+        Accumulated rainfall at the end of each time period. [mm]
     cleaning_threshold: float, default 6
-        the amount of rain in millimeters [mm] required to clean the panels
+        Amount of daily rainfall required to clean the panels. [mm]
     soiling_loss_rate: float, default 0.0015
-        fraction of energy lost to one day of soiling [unitless]
+        Fraction of energy lost due to one day of soiling. [unitless]
     grace_period : int, default 14
-        The number of days after a rainfall event when it's assumed the ground
-        is damp, and so it's assumed there is no soiling.
+        Number of days after a rainfall event when it's assumed the ground is
+        damp, and so it's assumed there is no soiling. [days]
     max_soiling : float, default 0.3
-        maximum soiling, soiling will build-up until this value, enter as
-        fraction, not percent, default is 30%
+        Maximum fraction of energy lost due to soiling. Soiling will build up
+        until this value. [unitless]
     manual_wash_dates : sequence or None, default None
-        A list or tuple of Python ``datetime.date`` when the panels were
-        manually cleaned. Note there is no grace period after a manual
-        cleaning, so soiling begins to build-up immediately after a manual
-        cleaning
+        List or tuple of dates as Python ``datetime.date`` when the panels were
+        washed manually. Note there is no grace period after a manual wash, so
+        soiling begins to build up immediately.
     initial_soiling : float, default 0
-        the initial fraction of soiling on the panels at time zero in the input
+        Initial fraction of energy lost due to soiling at time zero in the
+        `rainfall` series input. [unitless]
 
     Returns
     -------
     pandas.Series
-        soiling build-up fraction
+        fraction of energy lost due to soiling, has same intervals as input
 
     Notes
     -----
-    The soiling loss rate depends on both the geographical region and the soiling
-    environment type. Rates measured by Kimber [1]_ are summarized in the
-    following table:
+    The soiling loss rate depends on both the geographical region and the
+    soiling environment type. Rates measured by Kimber [1]_ are summarized in
+    the following table:
 
     ===================  =======  =========  ======================
     Region/Environment   Rural    Suburban   Urban/Highway/Airport
@@ -141,8 +141,8 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
     Desert               0.0030   0.0030     0.0030
     ===================  =======  =========  ======================
 
-    Rainfall thresholds and grace periods may also vary by region. Please consult [1]_
-    more information.
+    Rainfall thresholds and grace periods may also vary by region. Please
+    consult [1]_ more information.
 
     References
     ----------
@@ -159,22 +159,22 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
         manual_wash_dates = []
 
     # resample rainfall as days by summing intermediate times
-    rainfall = rainfall_timeseries.resample("D").sum()
+    daily_rainfall = rainfall.resample("D").sum()
 
     # set indices to the end of the day
-    rainfall.index = rainfall.index + datetime.timedelta(hours=23)
+    daily_rainfall.index = daily_rainfall.index + datetime.timedelta(hours=23)
 
     # soiling
-    soiling = pd.Series(float('NaN'), index=rainfall_timeseries.index)
+    soiling = pd.Series(float('NaN'), index=rainfall.index)
 
     # set 1st timestep to initial soiling
     soiling.iloc[0] = initial_soiling
 
     # rainfall events that clean the panels
-    rain_events = rainfall > threshold
+    rain_events = daily_rainfall > cleaning_threshold
 
     # loop over days
-    for today in rainfall.index:
+    for today in daily_rainfall.index:
 
         # if rain exceed threshold today, set soiling to zero
         if rain_events[today]:

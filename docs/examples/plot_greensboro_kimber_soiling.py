@@ -28,7 +28,7 @@ Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
 # The examples shown here demonstrate how the threshold affect soiling. Because
 # soiling depends on rainfall, loading weather data is always the first step.
 
-import pandas as pd
+from datetime import datetime
 from matplotlib import pyplot as plt
 from pvlib.iotools import read_tmy3
 from pvlib.losses import soiling_kimber
@@ -39,14 +39,17 @@ greensboro = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
 # NOTE: can't use Sand Point, AK b/c Lprecipdepth is -9900, ie: missing
 greensboro_rain = greensboro[0].Lprecipdepth
 # calculate soiling with no wash dates
-soiling_no_wash = soiling_kimber(greensboro_rain, threshold=25)
+THRESHOLD = 25.0
+soiling_no_wash = soiling_kimber(greensboro_rain, threshold=THRESHOLD)
 soiling_no_wash.name = 'soiling'
 # daily rain totals
 daily_rain = greensboro_rain.resample('D').sum()
 plt.plot(
     daily_rain.index.to_pydatetime(), daily_rain.values/25.4,
     soiling_no_wash.index.to_pydatetime(), soiling_no_wash.values*100.0)
-plt.hlines(25/25.4, xmin='1990-01-01', xmax='1990-12-31', linestyles='--')
+plt.hlines(
+    THRESHOLD/25.4, xmin=datetime(1990, 1, 1), xmax=datetime(1990, 12, 31),
+    linestyles='--')
 plt.grid()
 plt.title('Kimber Soiling Model, dottled line shows threshold (6mm)')
 plt.xlabel('timestamp')

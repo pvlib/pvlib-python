@@ -92,9 +92,9 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
                    initial_soiling=0):
     """
-    Calculate soiling ratio with rainfall data and a daily soiling rate using 
+    Calculate soiling ratio with rainfall data and a daily soiling rate using
     the Kimber soiling model [1]_.
-    
+
     Kimber soiling model assumes soiling builds up at a daily rate unless
     the daily rainfall is greater than a threshold. The model also assumes that
     if daily rainfall has exceeded the threshold within a grace period, then

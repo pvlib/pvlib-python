@@ -7,9 +7,9 @@ Examples of soiling using the Kimber model [1]_.
 References
 ----------
 .. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
-in California and the Southwest Region of the United States," Addriane
-Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
-Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
+   in California and the Southwest Region of the United States," Addriane
+   Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
+   Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
 """
 
 # %%

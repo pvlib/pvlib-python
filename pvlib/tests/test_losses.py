@@ -1,7 +1,13 @@
+# -*- coding: utf-8 -*-
+"""Test losses"""
+
+import datetime
+import numpy as np
 import pandas as pd
 from pandas.util.testing import assert_series_equal
-from pvlib.losses import soiling_hsu
-from conftest import requires_scipy
+from pvlib.losses import soiling_hsu, soiling_kimber
+from pvlib.iotools import read_tmy3
+from conftest import requires_scipy, DATA_DIR
 import pytest
 
 
@@ -90,3 +96,29 @@ def test_soiling_hsu(rainfall_input, expected_output_2):
                          rain_accum_period=pd.Timedelta('3h'))
 
     assert_series_equal(result, expected)
+
+
+@pytest.fixture
+def expected_kimber_soiling_greensboro():
+    expected = pd.read_csv(
+        DATA_DIR / 'greensboro_kimber_soil_nowash.dat',
+        parse_dates=True, index_col='timestamp')
+    return expected
+
+
+def test_kimber_soiling(expected_kimber_soiling_greensboro):
+    """Test Kimber Soiling model"""
+    # get TMY3 data with rain
+    greensboro = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
+    # NOTE: can't use Sand Point, AK b/c Lprecipdepth is -9900, ie: missing
+    greensboro_rain = greensboro[0].Lprecipdepth
+    # Greensboro typical expected annual rainfall is 8345mm
+    assert greensboro_rain.sum() == 8345
+    # calculate soiling with no wash dates
+    soiling_no_wash = soiling_kimber(greensboro_rain)
+    soiling_no_wash.name = 'soiling'
+    # test no washes
+    assert np.allclose(
+        soiling_no_wash.values,
+        expected_kimber_soiling_greensboro['soiling'].values)
+    return soiling_no_wash, greensboro_rain

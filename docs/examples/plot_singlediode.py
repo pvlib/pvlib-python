@@ -5,7 +5,7 @@ Calculating a module's IV curves
 Examples of modeling IV curves using a single-diode circuit equivalent model.
 """
 
-#%%
+# %%
 # Calculating a module IV curve for certain operating conditions is a two-step
 # process.  Multiple methods exist for both parts of the process.  Here we use
 # the De Soto model [1]_ to calculate the electrical parameters for an IV

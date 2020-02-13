@@ -92,7 +92,7 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
                    initial_soiling=0):
     """
-    Kimber soiling model [1]_ assumes soiling builds-up at a daily rate unless
+    Kimber soiling model [1]_ assumes soiling builds up at a daily rate unless
     the daily rainfall is greater than a threshold. The model also assumes that
     if daily rainfall has exceeded the threshold within a grace period, then
     the ground is too damp to cause soiling build-up. The model also assumes
@@ -101,16 +101,15 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
 
     Parameters
     ----------
-    rainfall_timeseries : pandas.Series
-        a timeseries of rainfall in millimeters
-    threshold : float, default 6
+    rainfall: pandas.Series
+        Accumulated rainfall at the end of each time period [mm]
+    cleaning_threshold: float, default 6
         the amount of rain in millimeters [mm] required to clean the panels
-    soiling_rate: float, default 0.0015
-        daily soiling rate, enter as fraction, not percent, default is 0.15%
+    soiling_loss_rate: float, default 0.0015
+        fraction of energy lost to one day of soiling [unitless]
     grace_period : int, default 14
         The number of days after a rainfall event when it's assumed the ground
-        is damp, and so it's assumed there is no soiling. Change to smaller
-        value for dry climate, default is 14-days
+        is damp, and so it's assumed there is no soiling.
     max_soiling : float, default 0.3
         maximum soiling, soiling will build-up until this value, enter as
         fraction, not percent, default is 30%
@@ -124,12 +123,12 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
 
     Returns
     -------
-    soiling : pandas.Series
+    pandas.Series
         soiling build-up fraction
 
     Notes
     -----
-    The soiling rate depends on both the geographical region and the soiling
+    The soiling loss rate depends on both the geographical region and the soiling
     environment type. Rates measured by Kimber [1]_ are summarized in the
     following table:
 
@@ -142,7 +141,7 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
     Desert               0.0030   0.0030     0.0030
     ===================  =======  =========  ======================
 
-    Rainfall thresholds may also vary slightly by region. Please consult [1]_
+    Rainfall thresholds and grace periods may also vary by region. Please consult [1]_
     more information.
 
     References

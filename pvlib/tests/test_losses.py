@@ -121,4 +121,6 @@ def test_kimber_soiling(expected_kimber_soiling_greensboro):
     assert np.allclose(
         soiling_no_wash.values,
         expected_kimber_soiling_greensboro['soiling'].values)
-    return soiling_no_wash, greensboro_rain
+    manwash = [datetime.date(1990,11,1), ]
+    soiling_manwash = soiling_kimber(
+        greensboro_rain, manual_wash_dates=manwash)

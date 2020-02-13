@@ -12,7 +12,7 @@ Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
 Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
 """
 
-#%%
+# %%
 # This example shows basic usage of pvlib's Kimber Soiling model with
 # :py:meth:`pvlib.losses.soiling_kimber`.
 #
@@ -44,9 +44,9 @@ soiling_no_wash.name = 'soiling'
 # daily rain totals
 daily_rain = greensboro_rain.resample('D').sum()
 plt.plot(
-    daily_rain.index, daily_rain.values/25.4,
-    soiling_no_wash.index, soiling_no_wash.values*100.0)
-plt.hlines(25/25.4, xmin='1990-01-01', xmax='1990-12-31')#, linestyles=':')
+    pd.to_datetime(daily_rain.index), daily_rain.values/25.4,
+    pd.to_datetime(soiling_no_wash.index), soiling_no_wash.values*100.0)
+plt.hlines(25/25.4, xmin='1990-01-01', xmax='1990-12-31', linestyles='--')
 plt.grid()
 plt.title('Kimber Soiling Model, dottled line shows threshold (6mm)')
 plt.xlabel('timestamp')

@@ -100,10 +100,13 @@ def test_soiling_hsu(rainfall_input, expected_output_2):
 
 @pytest.fixture
 def expected_kimber_soiling_greensboro():
-    expected = pd.read_csv(
+    expected_nowash = pd.read_csv(
         DATA_DIR / 'greensboro_kimber_soil_nowash.dat',
         parse_dates=True, index_col='timestamp')
-    return expected
+    expected_manwash = pd.read_csv(
+        DATA_DIR / 'greensboro_kimber_soil_manwash.dat',
+        parse_dates=True, index_col='timestamp')
+    return expected_nowash, expected_manwash
 
 
 def test_kimber_soiling(expected_kimber_soiling_greensboro):
@@ -120,7 +123,11 @@ def test_kimber_soiling(expected_kimber_soiling_greensboro):
     # test no washes
     assert np.allclose(
         soiling_no_wash.values,
-        expected_kimber_soiling_greensboro['soiling'].values)
-    manwash = [datetime.date(1990,11,1), ]
+        expected_kimber_soiling_greensboro[0]['soiling'].values)
+    manwash = [datetime.date(1990, 2, 15), ]
     soiling_manwash = soiling_kimber(
         greensboro_rain, manual_wash_dates=manwash)
+    # test manual wash
+    assert np.allclose(
+        soiling_manwash.values,
+        expected_kimber_soiling_greensboro[1]['soiling'].values)

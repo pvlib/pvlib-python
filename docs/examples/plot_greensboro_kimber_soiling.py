@@ -44,8 +44,8 @@ soiling_no_wash.name = 'soiling'
 # daily rain totals
 daily_rain = greensboro_rain.resample('D').sum()
 plt.plot(
-    pd.to_datetime(daily_rain.index), daily_rain.values/25.4,
-    pd.to_datetime(soiling_no_wash.index), soiling_no_wash.values*100.0)
+    daily_rain.index.to_pydatetime(), daily_rain.values/25.4,
+    soiling_no_wash.index.to_pydatetime(), soiling_no_wash.values*100.0)
 plt.hlines(25/25.4, xmin='1990-01-01', xmax='1990-12-31', linestyles='--')
 plt.grid()
 plt.title('Kimber Soiling Model, dottled line shows threshold (6mm)')

@@ -148,7 +148,7 @@ def test_kimber_soiling_manwash(greensboro_rain,
 
 
 @pytest.fixture
-def expected_kimber_soiling_norain():    
+def expected_kimber_soiling_norain():
     # expected soiling reaches maximum
     # NOTE: TMY3 data starts at 1AM, not midnite!
     soiling_loss_rate = 0.0015

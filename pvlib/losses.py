@@ -88,7 +88,7 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     return soiling_ratio
 
 
-def soiling_kimber(rainfall, cleaning_threshold=6, soiling_rate=0.0015,
+def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
                    initial_soiling=0):
     """
@@ -176,19 +176,15 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_rate=0.0015,
     # loop over days
     for today in daily_rainfall.index:
 
-        # if rain exceed threshold today, set soiling to zero
-        if rain_events[today]:
-            soiling[today] = initial_soiling = 0
-            continue
-
         # start day of grace period
         start_day = today - grace_period
 
         # rainfall event during grace period?
         rain_in_grace_period = any(rain_events[start_day:today])
 
-        # if rain exceeded threshold during grace period,
-        # assume ground is still damp, so no or very low soiling
+        # if rain exceed threshold today, panels were cleaned, so set soiling
+        # to zero, and if rain exceeded threshold anytime during grace period,
+        # assume ground is still damp, so no soiling either
         if rain_in_grace_period:
             soiling[today] = initial_soiling = 0
             continue
@@ -201,7 +197,7 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_rate=0.0015,
         # so, it didn't rain enough to clean, it hasn't rained enough recently,
         # and we didn't manually clean panels, so soil them by adding daily
         # soiling rate to soiling from previous day
-        total_soil = initial_soiling + soiling_rate
+        total_soil = initial_soiling + soiling_loss_rate
 
         # check if soiling has reached the maximum
         soiling[today] = (

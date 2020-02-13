@@ -130,8 +130,8 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
     Notes
     -----
     The soiling rate depends on both the geographical region and the soiling
-    environment type. Rates measured by Kimber [1]_ are summarized in the following
-    table:
+    environment type. Rates measured by Kimber [1]_ are summarized in the
+    following table:
 
     ===================  =======  =========  ======================
     Region/Environment   Rural    Suburban   Urban/Highway/Airport
@@ -140,7 +140,7 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
     Northern CA          0.0011   0.0010     0.0016
     Southern CA          0        0.0016     0.0019
     Desert               0.0030   0.0030     0.0030
-    ===================  =======  ========   ======================
+    ===================  =======  =========  ======================
 
     Rainfall thresholds may also vary slightly by region. Please consult [1]_
     more information.

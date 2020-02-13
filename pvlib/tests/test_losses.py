@@ -124,10 +124,25 @@ def test_kimber_soiling(expected_kimber_soiling_greensboro):
     assert np.allclose(
         soiling_no_wash.values,
         expected_kimber_soiling_greensboro[0]['soiling'].values)
+    # a manual wash date
     manwash = [datetime.date(1990, 2, 15), ]
+    # calculate soiling with manual wash
     soiling_manwash = soiling_kimber(
         greensboro_rain, manual_wash_dates=manwash)
     # test manual wash
     assert np.allclose(
         soiling_manwash.values,
         expected_kimber_soiling_greensboro[1]['soiling'].values)
+    # a year with no rain
+    norain = pd.Series(0, index=greensboro_rain.index)
+    # calculate soiling with no rain
+    soiling_norain = soiling_kimber(norain)
+    # expected soiling reaches maximum
+    # NOTE: TMY3 data starts at 1AM, not midnite!
+    norain = np.ones(8760) * 0.0015/24
+    norain[0] += 0.0015/24
+    norain = np.cumsum(norain)
+    norain[:22] = np.arange(0, 0.0015, 0.0015/22)
+    norain = np.where(norain > 0.3, 0.3, norain)
+    # test no rain, soiling reaches maximum
+    assert np.allclose(soiling_norain.values, norain)

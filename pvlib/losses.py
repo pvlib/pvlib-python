@@ -159,13 +159,9 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
     # loop over days
     for today in rainfall.index:
 
-        # did rain exceed threshold?
-        rain_exceed_thresh = rainfall[today] > threshold
-
-        # if yes, then set soiling to zero
-        if rain_exceed_thresh:
-            soiling[today] = 0
-            initial_soiling = 0
+        # if rain exceed threshold today, set soiling to zero
+        if rain_events[today]:
+            soiling[today] = initial_soiling = 0
             continue
 
         # start day of grace period
@@ -175,16 +171,14 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
         rain_in_grace_period = any(rain_events[start_day:today])
 
         # if rain exceeded threshold during grace period,
-        # assume ground is still damp, so no or v. low soiling
+        # assume ground is still damp, so no or very low soiling
         if rain_in_grace_period:
-            soiling[today] = 0
-            initial_soiling = 0
+            soiling[today] = initial_soiling = 0
             continue
 
         # is this a manual wash date?
         if today.date() in manual_wash_dates:
-            soiling[today] = 0
-            initial_soiling = 0
+            soiling[today] = initial_soiling = 0
             continue
 
         # so, it didn't rain enough to clean, it hasn't rained enough recently,

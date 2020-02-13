@@ -7,7 +7,7 @@ Examples of soiling using the Kimber model [1]_.
 References
 ----------
 .. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
-   in California and the Southwest Region of the United States," Addriane
+   in California and the Southwest Region of the United States," Adrianne
    Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
    Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
 """
@@ -16,17 +16,18 @@ References
 # This example shows basic usage of pvlib's Kimber Soiling model with
 # :py:meth:`pvlib.losses.soiling_kimber`.
 #
-# The Kimber Soiling model assumes that soiling builds up at a constant rain
+# The Kimber Soiling model assumes that soiling builds up at a constant rate
 # until cleaned either manually or by rain. The rain must reach a threshold to
 # clean the panels. When rains exceeds the threshold, it's assumed the earth is
 # damp for a grace period before it begins to soil again. There is a maximum
-# soiling build up rate that cannot be exceeded even if there's no rain or
+# soiling build up that cannot be exceeded even if there's no rain or
 # manual cleaning.
 #
 # Threshold
 # ---------
-# The examples shown here demonstrate how the threshold affect soiling. Because
-# soiling depends on rainfall, loading weather data is always the first step.
+# The example shown here demonstrates how the threshold affects soiling.
+# Because soiling depends on rainfall, loading weather data is always the first
+# step.
 
 from datetime import datetime
 from matplotlib import pyplot as plt
@@ -51,7 +52,8 @@ plt.hlines(
     THRESHOLD/25.4, xmin=datetime(1990, 1, 1), xmax=datetime(1990, 12, 31),
     linestyles='--')
 plt.grid()
-plt.title('Kimber Soiling Model, dottled line shows threshold (6mm)')
+plt.title(
+    f'Kimber Soiling Model, dashed line shows threshold ({THRESHOLD}[mm])')
 plt.xlabel('timestamp')
 plt.ylabel('soiling build-up fraction [%] and daily rainfall [inches]')
 plt.legend(['daily rainfall [in]', 'soiling [%]'])

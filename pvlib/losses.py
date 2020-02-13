@@ -124,15 +124,33 @@ def soiling_kimber(rainfall_timeseries, threshold=6, soiling_rate=0.0015,
 
     Returns
     -------
-    soiling : timeseries
+    soiling : pandas.Series
         soiling build-up fraction
+
+    Notes
+    -----
+    The soiling rate depends on both the geographical region and the soiling
+    environment type. Rates measured by Kimber [1]_ are summarized in the following
+    table:
+
+    ===================  =======  =========  ======================
+    Region/Environment   Rural    Suburban   Urban/Highway/Airport
+    ===================  =======  =========  ======================
+    Central Valley       0.0011   0.0019     0.0020
+    Northern CA          0.0011   0.0010     0.0016
+    Southern CA          0        0.0016     0.0019
+    Desert               0.0030   0.0030     0.0030
+    ===================  =======  ========   ======================
+
+    Rainfall thresholds may also vary slightly by region. Please consult [1]_
+    more information.
 
     References
     ----------
     .. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
-    in California and the Southwest Region of the United States," Addriane
-    Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
-    Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
+       in California and the Southwest Region of the United States," Adrianne
+       Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
+       Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
     """
     # convert grace_period to timedelata
     grace_period = datetime.timedelta(days=grace_period)

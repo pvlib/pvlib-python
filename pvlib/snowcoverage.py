@@ -10,10 +10,10 @@ from pvlib.tools import sind
 
 def _time_delta_in_hours(times):
     delta = times.to_series().diff()
-    return delta.dt.seconds.div(3600)
+    return delta.dt.total_seconds.div(3600)
 
 
-def fully_covered(snowfall, threshold=1.):
+def snow_nrel_fully_covered(snowfall, threshold=1.):
     '''
     Calculates the timesteps when the row's slant height is fully covered
     by snow.
@@ -39,29 +39,32 @@ def fully_covered(snowfall, threshold=1.):
     References
     ----------
     .. [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
-       “Measured and modeled photovoltaic system energy losses from snow for
-       Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
+       "Measured and modeled photovoltaic system energy losses from snow for
+       Colorado and Wisconsin locations." Solar Energy 97; pp.112-121.
     .. [2] Ryberg, D; Freeman, J. "Integration, Validation, and Application
        of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
     '''
-    delta = snowfall.index.to_series().diff()  # [0] will be NaT
-    timestep = delta.dt.seconds.div(3600)  # convert to hours
+    timestep = _time_delta_in_hours(snowfall.index)
     time_adjusted = snowfall / timestep
     time_adjusted.iloc[0] = 0  # replace NaN from NaT / timestep
     return time_adjusted >= threshold
 
 
-def snow_coverage_nrel(snowfall, poa_irradiance, temperature, surface_tilt,
-                       threshold_snowfall=1., m=-80,
-                       sliding_coefficient=0.197):
+def snow_nrel(snowfall, poa_irradiance, temperature, surface_tilt,
+              threshold_snowfall=1., m=-80, sliding_coefficient=0.197):
     '''
     Calculates the fraction of the slant height of a row of modules covered by
     snow at every time step.
 
+    Initial snow coverage is assumed to be zero. Implements the model described
+    in [1]_ with minor improvements in [2]_, with the change that the output
+    is in fraction of the row's slant height rather than in tenths of the row
+    slant height. Validated for fixed tilt systems.
+
     Parameters
     ----------
     snowfall : Series
-        Accumulated snowfall at the end of each time period. [cm]
+        Accumulated snowfall within each time period. [cm]
     poa_irradiance : Series
         Total in-plane irradiance [W/m^2]
     temperature : Series
@@ -71,36 +74,33 @@ def snow_coverage_nrel(snowfall, poa_irradiance, temperature, surface_tilt,
         surface facing horizon = 90. Must be between 0 and 180. [degrees]
     threshold_snowfall : float, default 1.0
         Minimum hourly snowfall to cover a row's slant height. [cm/hr]
-    m : numeric
-        A coefficient used in the model described in [1]_. [W/(m^2 C)]
-    sliding coefficient : numeric
-        Empirically determined coefficient used in [1]_ to determine how much
+    m : float, default -80.
+        Coefficient used in [1]_ to determine if snow can slide given
+        irradiance and air temperature. [W/(m^2 C)]
+    sliding coefficient : float, default 0.197
+        Empirical coefficient used in [1]_ to determine how much
         snow slides off in each time period. [unitless]
 
     Returns
     -------
-    snow_coverage : numeric
-        The fraction of a the slant height of a row of modules that is covered
+    snow_coverage : Series
+        The fraction of the slant height of a row of modules that is covered
         by snow at each time step.
-
-    Notes
-    -----
-    Initial snow coverage is assumed to be zero. Implements the model described
-    in [1]_ with minor improvements in [2]_. Validated for fixed tilt systems.
 
     References
     ----------
     .. [1] Marion, B.; Schaefer, R.; Caine, H.; Sanchez, G. (2013).
-       “Measured and modeled photovoltaic system energy losses from snow for
-       Colorado and Wisconsin locations.” Solar Energy 97; pp.112-121.
+       "Measured and modeled photovoltaic system energy losses from snow for
+       Colorado and Wisconsin locations." Solar Energy 97; pp.112-121.
     .. [2] Ryberg, D; Freeman, J. (2017). "Integration, Validation, and
        Application of a PV Snow Coverage Model in SAM" NREL Technical Report
-       NREL/TP-6A20-68705 
+       NREL/TP-6A20-68705
     '''
 
     # set up output Series
     snow_coverage = pd.Series(index=poa_irradiance.index, data=np.nan)
-    snow_events = snowfall[fully_covered(snowfall, threshold_snowfall)]
+    snow_events = snowfall[snow_nrel_fully_covered(snowfall,
+                                                   threshold_snowfall)]
 
     can_slide = temperature > poa_irradiance / m
     slide_amt = sliding_coefficient * sind(surface_tilt) * \
@@ -109,8 +109,7 @@ def snow_coverage_nrel(snowfall, poa_irradiance, temperature, surface_tilt,
     uncovered = pd.Series(0.0, index=poa_irradiance.index)
     uncovered[can_slide] = slide_amt[can_slide]
 
-    windows = [(ev, ne) for (ev, ne) in
-        zip(snow_events.index[:-1], snow_events.index[1:])]
+    windows = list(zip(snow_events.index[:-1], snow_events.index[1:]))
     # add last time window
     windows.append((snow_events.index[-1], snowfall.index[-1]))
 
@@ -125,7 +124,7 @@ def snow_coverage_nrel(snowfall, poa_irradiance, temperature, surface_tilt,
     return snow_coverage
 
 
-def snow_loss_factor(snow_coverage, num_strings):
+def snow_nrel_dc_loss(snow_coverage, num_strings):
     '''
     Calculates the DC loss due to snow coverage. Assumes that if a string is
     partially covered by snow, it produces 0W.

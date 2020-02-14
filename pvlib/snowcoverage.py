@@ -10,7 +10,7 @@ from pvlib.tools import sind
 
 def _time_delta_in_hours(times):
     delta = times.to_series().diff()
-    return delta.dt.total_seconds.div(3600)
+    return delta.dt.total_seconds().div(3600)
 
 
 def snow_nrel_fully_covered(snowfall, threshold=1.):

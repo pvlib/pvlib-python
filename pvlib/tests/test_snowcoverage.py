@@ -43,9 +43,9 @@ def test_snow_nrel_subhourly():
     dt = pd.date_range(start="2019-1-1 11:00:00", end="2019-1-1 14:00:00",
                        freq='15T')
     poa_irradiance = pd.Series([400, 200, 100, 1234, 134, 982, 100, 100, 100,
-                                100, 1000, 1000, 0],
+                                100, 100, 100, 0],
                                index=dt)
-    temp_air = pd.Series([10, 2, 10, 1234, 34, 982, 10, 10, 10, 10, 10, 10,
+    temp_air = pd.Series([10, 2, 10, 1234, 34, 982, 10, 10, 10, 10, -10, -10,
                              10], index=dt)
     snowfall_data = pd.Series([1, .5, .6, .4, .23, -5, .1, .1, 0., 1., 0., 0.,
                                0.], index=dt)

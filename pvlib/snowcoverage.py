@@ -51,7 +51,7 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
 
 
 def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
-              threshold_snowfall=1., m=80., sliding_coefficient=0.197):
+              threshold_snowfall=1., m=-80., sliding_coefficient=0.197):
     '''
     Calculates the fraction of the slant height of a row of modules covered by
     snow at every time step.

@@ -26,6 +26,7 @@ Bug fixes
 Documentation
 ~~~~~~~~~~~~~
 * Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
+* Add example of IV curve generation :pull:`872` 
 
 Requirements
 ~~~~~~~~~~~~

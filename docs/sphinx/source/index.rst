@@ -2,7 +2,7 @@
   :width: 600
 
 pvlib python
-==========================================================================================================
+============
 
 pvlib python is a community supported tool that provides a set of
 functions and classes for simulating the performance of photovoltaic

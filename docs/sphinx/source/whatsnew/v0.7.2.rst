@@ -22,6 +22,8 @@ Bug fixes
   calls in :py:mod:`pvlib.tests.iotools.test_psm3` (:pull:`873`)
 * Fix issue with :py:class:`pvlib.location.Location` creation when
   passing ``tz=datetime.timezone.utc`` (:pull:`879`)
+* Fix documentation homepage title to "pvlib python" based on first heading on
+  the page. (:pull:`890`) (:issue:`888`)
 
 Documentation
 ~~~~~~~~~~~~~

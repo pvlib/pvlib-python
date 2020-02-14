@@ -50,8 +50,8 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
     return time_adjusted >= threshold
 
 
-def snow_nrel(snowfall, poa_irradiance, temperature, surface_tilt,
-              threshold_snowfall=1., m=-80, sliding_coefficient=0.197):
+def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
+              threshold_snowfall=1., m=80., sliding_coefficient=0.197):
     '''
     Calculates the fraction of the slant height of a row of modules covered by
     snow at every time step.
@@ -67,14 +67,14 @@ def snow_nrel(snowfall, poa_irradiance, temperature, surface_tilt,
         Accumulated snowfall within each time period. [cm]
     poa_irradiance : Series
         Total in-plane irradiance [W/m^2]
-    temperature : Series
+    temp_air : Series
         Ambient air temperature at the surface [C]
     surface_tilt : numeric
         Tilt of module's from horizontal, e.g. surface facing up = 0,
         surface facing horizon = 90. Must be between 0 and 180. [degrees]
     threshold_snowfall : float, default 1.0
         Minimum hourly snowfall to cover a row's slant height. [cm/hr]
-    m : float, default -80.
+    m : float, default 80.
         Coefficient used in [1]_ to determine if snow can slide given
         irradiance and air temperature. [W/(m^2 C)]
     sliding coefficient : float, default 0.197
@@ -102,7 +102,7 @@ def snow_nrel(snowfall, poa_irradiance, temperature, surface_tilt,
     snow_events = snowfall[snow_nrel_fully_covered(snowfall,
                                                    threshold_snowfall)]
 
-    can_slide = temperature > poa_irradiance / m
+    can_slide = temp_air > poa_irradiance / m
     slide_amt = sliding_coefficient * sind(surface_tilt) * \
         _time_delta_in_hours(poa_irradiance.index)
 

@@ -50,11 +50,10 @@ def test_snow_nrel_subhourly():
     snowfall_data = pd.Series([1, .5, .6, .4, .23, -5, .1, .1, 0., 1., 0., 0.,
                                0.], index=dt)
     snow_coverage = snowcoverage.snow_nrel(
-        snowfall_data, poa_irradiance, temp_air, surface_tilt,
-        threshold_snowfall=0.5)
+        snowfall_data, poa_irradiance, temp_air, surface_tilt)
     slide_amt = sliding_coefficient * sind(surface_tilt) * 0.25
-    covered = np.append(np.array([0., 1., 1.]),
-                        1.0 - slide_amt * np.array([1, 2, 3, 4, 5, 6]))
+    covered = np.append(np.array([0., 1., 1., 1.]),
+                        1.0 - slide_amt * np.array([1, 2, 3, 4, 5]))
     covered = np.append(covered, np.array([1., 1., 1., 1. - slide_amt]))
     expected = pd.Series(covered, index=dt)
     assert_series_equal(snow_coverage, expected)

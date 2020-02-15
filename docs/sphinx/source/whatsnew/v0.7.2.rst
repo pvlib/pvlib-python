@@ -13,6 +13,7 @@ Enhancements
 * TMY3 dataframe returned by :py:func:`~pvlib.iotools.read_tmy3` now contains
   the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
   indices were parsed from (:pull:`866`)
+* Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber` (:pull:`860`)
 
 Bug fixes
 ~~~~~~~~~

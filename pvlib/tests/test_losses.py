@@ -7,7 +7,8 @@ import pandas as pd
 from pandas.util.testing import assert_series_equal
 from pvlib.losses import soiling_hsu, soiling_kimber
 from pvlib.iotools import read_tmy3
-from conftest import requires_scipy, DATA_DIR
+from conftest import (
+    requires_scipy, needs_pandas_0_22, DATA_DIR)
 import pytest
 
 
@@ -113,6 +114,7 @@ def expected_kimber_soiling_nowash():
         parse_dates=True, index_col='timestamp')
 
 
+@needs_pandas_0_22
 def test_kimber_soiling_nowash(greensboro_rain,
                                expected_kimber_soiling_nowash):
     """Test Kimber soiling model with no manual washes"""
@@ -133,6 +135,7 @@ def expected_kimber_soiling_manwash():
         parse_dates=True, index_col='timestamp')
 
 
+@needs_pandas_0_22
 def test_kimber_soiling_manwash(greensboro_rain,
                                 expected_kimber_soiling_manwash):
     """Test Kimber soiling model with a manual wash"""
@@ -158,6 +161,7 @@ def expected_kimber_soiling_norain():
     return np.where(norain > max_loss_rate, max_loss_rate, norain)
 
 
+@needs_pandas_0_22
 def test_kimber_soiling_norain(greensboro_rain,
                                expected_kimber_soiling_norain):
     """Test Kimber soiling model with no rain"""
@@ -180,6 +184,7 @@ def expected_kimber_soiling_initial_soil():
     return np.where(norain > max_loss_rate, max_loss_rate, norain)
 
 
+@needs_pandas_0_22
 def test_kimber_soiling_initial_soil(greensboro_rain,
                                      expected_kimber_soiling_initial_soil):
     """Test Kimber soiling model with initial soiling"""

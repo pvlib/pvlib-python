@@ -119,7 +119,7 @@ def test_kimber_soiling_nowash(greensboro_rain,
     # Greensboro typical expected annual rainfall is 8345mm
     assert greensboro_rain.sum() == 8345
     # calculate soiling with no wash dates
-    soiling_nowash = soiling_kimber(greensboro_rain)
+    soiling_nowash = soiling_kimber(greensboro_rain, istmy=True)
     # test no washes
     assert np.allclose(
         soiling_nowash.values,
@@ -140,7 +140,7 @@ def test_kimber_soiling_manwash(greensboro_rain,
     manwash = [datetime.date(1990, 2, 15), ]
     # calculate soiling with manual wash
     soiling_manwash = soiling_kimber(
-        greensboro_rain, manual_wash_dates=manwash)
+        greensboro_rain, manual_wash_dates=manwash, istmy=True)
     # test manual wash
     assert np.allclose(
         soiling_manwash.values,
@@ -150,13 +150,11 @@ def test_kimber_soiling_manwash(greensboro_rain,
 @pytest.fixture
 def expected_kimber_soiling_norain():
     # expected soiling reaches maximum
-    # NOTE: TMY3 data starts at 1AM, not midnite!
     soiling_loss_rate = 0.0015
     max_loss_rate = 0.3
     norain = np.ones(8760) * soiling_loss_rate/24
-    norain[0] += soiling_loss_rate/24
+    norain[0] = 0.0
     norain = np.cumsum(norain)
-    norain[:22] = np.arange(0, soiling_loss_rate, soiling_loss_rate/22)
     return np.where(norain > max_loss_rate, max_loss_rate, norain)
 
 
@@ -166,6 +164,29 @@ def test_kimber_soiling_norain(greensboro_rain,
     # a year with no rain
     norain = pd.Series(0, index=greensboro_rain.index)
     # calculate soiling with no rain
-    soiling_norain = soiling_kimber(norain)
+    soiling_norain = soiling_kimber(norain, istmy=True)
     # test no rain, soiling reaches maximum
     assert np.allclose(soiling_norain.values, expected_kimber_soiling_norain)
+
+
+@pytest.fixture
+def expected_kimber_soiling_initial_soil():
+    # expected soiling reaches maximum
+    soiling_loss_rate = 0.0015
+    max_loss_rate = 0.3
+    norain = np.ones(8760) * soiling_loss_rate/24
+    norain[0] = 0.1
+    norain = np.cumsum(norain)
+    return np.where(norain > max_loss_rate, max_loss_rate, norain)
+
+
+def test_kimber_soiling_initial_soil(greensboro_rain,
+                                     expected_kimber_soiling_initial_soil):
+    """Test Kimber soiling model with initial soiling"""
+    # a year with no rain
+    norain = pd.Series(0, index=greensboro_rain.index)
+    # calculate soiling with no rain
+    soiling_norain = soiling_kimber(norain, initial_soiling=0.1, istmy=True)
+    # test no rain, soiling reaches maximum
+    assert np.allclose(
+        soiling_norain.values, expected_kimber_soiling_initial_soil)

@@ -90,7 +90,7 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
 
 def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
-                   initial_soiling=0):
+                   initial_soiling=0, rain_accum_period=24, istmy=False):
     """
     Calculate soiling ratio with rainfall data and a daily soiling rate using
     the Kimber soiling model [1]_.
@@ -123,6 +123,11 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     initial_soiling : float, default 0
         Initial fraction of energy lost due to soiling at time zero in the
         `rainfall` series input. [unitless]
+    rain_accum_period : int, default 24
+        Period for accumulating rainfall to check against `cleaning_threshold`.
+        The Kimber model defines this period as one day. [hours]
+    istmy : bool, default False
+        Fix last timestep in TMY so that it is monotonically increasing.
 
     Returns
     -------
@@ -154,58 +159,57 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
        Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
        Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
     """
-    # convert grace_period to timedelata
+    # convert rain_accum_period to timedelta
+    rain_accum_period = datetime.timedelta(hours=rain_accum_period)
+
+    # convert grace_period to timedelta
     grace_period = datetime.timedelta(days=grace_period)
 
-    # manual wash dates
-    if manual_wash_dates is None:
-        manual_wash_dates = []
+    # get rainfall timezone, timestep as timedelta64, and timestep in int days
+    rain_tz = rainfall.index.tz
+    rain_index = rainfall.index.values
+    timestep_interval = (rain_index[1] - rain_index[0])
+    day_fraction = timestep_interval / np.timedelta64(24, 'h')
 
-    # resample rainfall as days by summing intermediate times
-    daily_rainfall = rainfall.resample("D").sum()
+    # if TMY fix to be monotonically increasing by rolling index by 1 interval
+    # and then adding 1 interval, while the values stay the same
+    if istmy:
+        rain_index = np.roll(rain_index, 1) + timestep_interval
+        # NOTE: numpy datetim64[ns] has no timezone
+        # convert to datetimeindex at UTC and convert to original timezone
+        rain_index = pd.DatetimeIndex(rain_index, tz='UTC').tz_convert(rain_tz)
+        # fixed rainfall timeseries with monotonically increasing index
+        rainfall = pd.Series(
+            rainfall.values, index=rain_index, name=rainfall.name)
 
-    # set indices to the end of the day
-    daily_rainfall.index = daily_rainfall.index + datetime.timedelta(hours=23)
+    # accumulate rainfall
+    accumulated_rainfall = rainfall.rolling(
+        rain_accum_period, closed='right').sum()
 
-    # soiling
-    soiling = pd.Series(float('NaN'), index=rainfall.index)
-
-    # set 1st timestep to initial soiling
-    soiling.iloc[0] = initial_soiling
+    # soiling rate 
+    soiling = np.ones_like(rainfall.values) * soiling_loss_rate * day_fraction
+    soiling[0] = initial_soiling
+    soiling = np.cumsum(soiling)
 
     # rainfall events that clean the panels
-    rain_events = daily_rainfall > cleaning_threshold
+    rain_events = accumulated_rainfall > cleaning_threshold
 
-    # loop over days
-    for today in daily_rainfall.index:
+    # grace periods windows during which ground is assumed damp, so no soiling
+    grace_windows = rain_events.rolling(grace_period, closed='right').sum() > 0
 
-        # start day of grace period
-        start_day = today - grace_period
+    # clean panels by subtracting soiling for indices in grace period windows
+    cleaning = pd.Series(float('NaN'), index=rainfall.index)
+    cleaning.iloc[0] = 0.0
+    cleaning[grace_windows] = soiling[grace_windows]
 
-        # rainfall event during grace period?
-        rain_in_grace_period = any(rain_events[start_day:today])
+    # manual wash dates
+    if manual_wash_dates is not None:
+        manual_wash_dates = pd.DatetimeIndex(manual_wash_dates, tz=rain_tz)
+        soiling = pd.Series(soiling, index=rain_index, name='soiling')
+        cleaning[manual_wash_dates] = soiling[manual_wash_dates]
 
-        # if rain exceed threshold today, panels were cleaned, so set soiling
-        # to zero, and if rain exceeded threshold anytime during grace period,
-        # assume ground is still damp, so no soiling either
-        if rain_in_grace_period:
-            soiling[today] = initial_soiling = 0
-            continue
+    # remove soiling by foward filling cleaning where NaN
+    soiling -= cleaning.ffill()
 
-        # is this a manual wash date?
-        if today.date() in manual_wash_dates:
-            soiling[today] = initial_soiling = 0
-            continue
-
-        # so, it didn't rain enough to clean, it hasn't rained enough recently,
-        # and we didn't manually clean panels, so soil them by adding daily
-        # soiling rate to soiling from previous day
-        total_soil = initial_soiling + soiling_loss_rate
-
-        # check if soiling has reached the maximum
-        soiling[today] = (
-            max_soiling if (total_soil >= max_soiling) else total_soil)
-
-        initial_soiling = soiling[today]  # reset initial soiling
-
-    return soiling.interpolate()
+    # check if soiling has reached the maximum
+    return soiling.where(soiling < max_soiling, max_soiling)

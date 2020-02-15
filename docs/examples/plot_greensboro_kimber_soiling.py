@@ -41,10 +41,11 @@ greensboro = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
 greensboro_rain = greensboro[0].Lprecipdepth
 # calculate soiling with no wash dates
 THRESHOLD = 25.0
-soiling_no_wash = soiling_kimber(greensboro_rain, threshold=THRESHOLD)
+soiling_no_wash = soiling_kimber(
+    greensboro_rain, cleaning_threshold=THRESHOLD, istmy=True)
 soiling_no_wash.name = 'soiling'
 # daily rain totals
-daily_rain = greensboro_rain.resample('D').sum()
+daily_rain = greensboro_rain.iloc[:-1].resample('D').sum()
 plt.plot(
     daily_rain.index.to_pydatetime(), daily_rain.values/25.4,
     soiling_no_wash.index.to_pydatetime(), soiling_no_wash.values*100.0)

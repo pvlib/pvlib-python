@@ -186,7 +186,7 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     accumulated_rainfall = rainfall.rolling(
         rain_accum_period, closed='right').sum()
 
-    # soiling rate 
+    # soiling rate
     soiling = np.ones_like(rainfall.values) * soiling_loss_rate * day_fraction
     soiling[0] = initial_soiling
     soiling = np.cumsum(soiling)

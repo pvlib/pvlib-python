@@ -860,7 +860,7 @@ class ModelChain(object):
                           'is used for times.', pvlibDeprecationWarning)
 
         self.times = self.weather.index
-        
+
         kwargs = _build_kwargs(['pressure', 'temp_air'], weather)
         kwargs['temperature'] = kwargs.pop('temp_air')
 

@@ -861,7 +861,8 @@ class ModelChain(object):
         self.times = self.weather.index
 
         self.solar_position = self.location.get_solarposition(
-            self.weather.index, method=self.solar_position_method)
+            self.weather.index, method=self.solar_position_method, 
+          pressure=self.weather.pressure,temperature=self.weather.temp_air)
 
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)

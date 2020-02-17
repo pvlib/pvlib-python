@@ -16,6 +16,7 @@ from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib.tools import _build_kwargs
 
 
 def basic_chain(times, latitude, longitude,
@@ -859,10 +860,13 @@ class ModelChain(object):
                           'is used for times.', pvlibDeprecationWarning)
 
         self.times = self.weather.index
+        
+        kwargs = _build_kwargs(['pressure', 'temp_air'], weather)
+        kwargs['temperature'] = kwargs.pop('temp_air')
 
         self.solar_position = self.location.get_solarposition(
             self.weather.index, method=self.solar_position_method,
-            pressure=self.weather.pressure, temperature=self.weather.temp_air)
+            **kwargs)
 
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)

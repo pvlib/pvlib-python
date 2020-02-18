@@ -67,6 +67,7 @@ def csv_meta(meta_expected):
         in meta_expected['outputs']['tmy_hourly']['variables'].items()]
 
 
+@pytest.mark.remote_data
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
                        meta_expected):
     data, months_selected, inputs, meta = get_pvgis_tmy(45, 8)
@@ -92,6 +93,7 @@ def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
     assert meta == meta_expected
 
 
+@pytest.mark.remote_data
 def test_get_pvgis_tmy_kwargs(userhorizon_expected):
     _, _, inputs, _ = get_pvgis_tmy(45, 8, usehorizon=False)
     assert inputs['meteo_data']['use_horizon'] is False
@@ -109,6 +111,7 @@ def test_get_pvgis_tmy_kwargs(userhorizon_expected):
     assert inputs['meteo_data']['year_max'] == 2016
 
 
+@pytest.mark.remote_data
 def test_get_pvgis_tmy_basic(expected, meta_expected):
     data, _, _, _ = get_pvgis_tmy(45, 8, outputformat='basic')
     # check each column of output separately
@@ -116,6 +119,7 @@ def test_get_pvgis_tmy_basic(expected, meta_expected):
         assert np.allclose(data[outvar], expected[outvar])
 
 
+@pytest.mark.remote_data
 def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta):
     data, months_selected, inputs, meta = get_pvgis_tmy(
@@ -138,6 +142,7 @@ def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
         assert meta_value in csv_meta
 
 
+@pytest.mark.remote_data
 def test_get_pvgis_tmy_epw(expected, epw_meta):
     data, _, _, meta = get_pvgis_tmy(
         45, 8, outputformat='epw')
@@ -148,6 +153,7 @@ def test_get_pvgis_tmy_epw(expected, epw_meta):
     assert meta == epw_meta
 
 
+@pytest.mark.remote_data
 def test_get_pvgis_tmy_error():
     err_msg = 'outputformat: Incorrect value.'
     with pytest.raises(requests.HTTPError, match=err_msg):

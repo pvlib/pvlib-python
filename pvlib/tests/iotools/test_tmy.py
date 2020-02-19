@@ -1,6 +1,7 @@
 from pandas.util.testing import network
 import numpy as np
 import pandas as pd
+import pytest
 from pvlib.iotools import tmy
 from conftest import DATA_DIR
 
@@ -17,6 +18,7 @@ def test_read_tmy3():
 
 
 @network
+@pytest.mark.remote_data
 def test_read_tmy3_remote():
     url = 'http://rredc.nrel.gov/solar/old_data/nsrdb/1991-2005/data/tmy3/703165TYA.CSV'
     tmy.read_tmy3(url)

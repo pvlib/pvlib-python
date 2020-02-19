@@ -1,5 +1,6 @@
 import pandas as pd
 from pandas.util.testing import network
+import pytest
 
 from pvlib.iotools import surfrad
 from conftest import DATA_DIR
@@ -10,6 +11,7 @@ network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
 
 
 @network
+@pytest.mark.remote_data
 def test_read_surfrad_network():
     # If this test begins failing, SURFRAD's data structure or data
     # archive may have changed.

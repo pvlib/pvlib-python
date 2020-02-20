@@ -25,7 +25,7 @@ Bug fixes
   passing ``tz=datetime.timezone.utc`` (:pull:`879`)
 * Fix documentation homepage title to "pvlib python" based on first heading on
   the page. (:pull:`890`) (:issue:`888`)
-* Implement pytest-remotedata to increase test suite speed. Requires
+* Implement `pytest-remotedata <https://github.com/astropy/pytest-remotedata>`_ to increase test suite speed. Requires
   ``--remote-data`` pytest flag to execute data retrieval tests over a network.
 
 Documentation

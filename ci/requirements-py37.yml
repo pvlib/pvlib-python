@@ -6,7 +6,6 @@ dependencies:
     - coveralls
     - cython
     - ephem
-    - netcdf4
     - nose
     - numba
     - numpy
@@ -28,3 +27,4 @@ dependencies:
     - pip:
         - nrel-pysam>=2.0
         - pvfactors==1.0.1
+        - netcdf4

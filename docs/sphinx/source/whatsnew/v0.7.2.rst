@@ -26,7 +26,7 @@ Bug fixes
 * Fix documentation homepage title to "pvlib python" based on first heading on
   the page. (:pull:`890`) (:issue:`888`)
 * Implement pytest-remotedata to increase test suite speed. Requires
-  ``--remote-data`` pytest flag to execute data retreival tests over a network.
+  ``--remote-data`` pytest flag to execute data retrieval tests over a network.
 
 Documentation
 ~~~~~~~~~~~~~

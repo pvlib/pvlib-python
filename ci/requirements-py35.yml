@@ -15,7 +15,6 @@ dependencies:
     - pytest
     - pytest-cov
     - pytest-mock
-    - pytest-remotedata
     - pytest-timeout
     - python=3.5
     - pytz
@@ -28,3 +27,4 @@ dependencies:
         - pvfactors==1.0.1
         - pytest-rerunfailures # conda version is >3.6
         - netcdf4
+        - pytest-remotedata # needs > 0.3.1

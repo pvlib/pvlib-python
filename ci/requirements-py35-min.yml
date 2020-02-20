@@ -17,3 +17,4 @@ dependencies:
         - numpy==1.12.0
         - pandas==0.18.1
         - pytest-rerunfailures # conda version is >3.6
+        - pytest-remotedata # needs > 0.3.1

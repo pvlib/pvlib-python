@@ -30,7 +30,7 @@ API Changes with Deprecations
       - Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp`
         to `temperature.sapm_cell` and `temperature.pvsyst_cell`.
       - `temperature.sapm_cell` returns only the cell temperature, whereas the
-         old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
+        old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
       - Created `temperature.sapm_module` to return module temperature using the SAPM temperature model.
       - Changed the order of arguments for `pvsystem.sapm_celltemp`,
         `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` to be consistent
@@ -71,7 +71,7 @@ API Changes with Deprecations
       - `ModelChain.temperature_model_parameters` now defaults to `None`. The temperature
         model can be inferred from `PVSystem.temperature_model_parameters`.
       - `ModelChain.temps` attribute renamed to `ModelChain.cell_temperature`,
-         and its datatype is now `numeric` rather than `DataFrame`.
+        and its datatype is now `numeric` rather than `DataFrame`.
       - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain`
         defaults to old behavior, using the SAPM temperature model with parameter
         set `open_rack_glass_glass`. This behavior is deprecated, and will be

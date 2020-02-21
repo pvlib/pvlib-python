@@ -406,7 +406,8 @@ class ForecastModel(object):
         -------
         pandas.DatetimeIndex
         '''
-        times = num2date(time[:].squeeze(), time.units)
+        times = num2date(time[:].squeeze(), time.units,
+                         only_use_cftime_datetimes=False)
         self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
 
     def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=35,

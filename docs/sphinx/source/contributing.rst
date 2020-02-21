@@ -262,7 +262,7 @@ Testing
 Developers **must** include comprehensive tests for any additions or
 modifications to pvlib. New unit test code should be placed in the
 corresponding test module in the
-`pvlib/test <https://github.com/pvlib/pvlib-python/tree/master/pvlib/test>`_
+`pvlib/tests <https://github.com/pvlib/pvlib-python/tree/master/pvlib/tests>`_
 directory.
 
 A pull request will automatically run the tests for you on a variety of

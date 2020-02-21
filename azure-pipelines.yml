@@ -115,7 +115,7 @@ jobs:
         python.version: '36'
       Python37-windows:
         python.version: '37'
-      Python37-windows:
+      Python38-windows:
         python.version: '38'
 
   steps:

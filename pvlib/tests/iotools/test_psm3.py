@@ -70,6 +70,7 @@ def assert_psm3_equal(header, data, expected):
     assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
 
 
+@pytest.mark.remote_data
 @pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_get_psm3_tmy(nrel_api_key):
     """test get_psm3 with a TMY"""
@@ -79,6 +80,7 @@ def test_get_psm3_tmy(nrel_api_key):
     assert_psm3_equal(header, data, expected)
 
 
+@pytest.mark.remote_data
 @pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_get_psm3_singleyear(nrel_api_key):
     """test get_psm3 with a single year"""
@@ -88,6 +90,7 @@ def test_get_psm3_singleyear(nrel_api_key):
     assert_psm3_equal(header, data, expected)
 
 
+@pytest.mark.remote_data
 @pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_get_psm3_check_leap_day(nrel_api_key):
     _, data_2012 = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
@@ -102,6 +105,7 @@ def test_get_psm3_check_leap_day(nrel_api_key):
                           (LATITUDE, LONGITUDE, nrel_api_key, 'bad', 60),
                           (LATITUDE, LONGITUDE, nrel_api_key, '2017', 15),
                           ])
+@pytest.mark.remote_data
 @pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_get_psm3_tmy_errors(
     latitude, longitude, api_key, names, interval

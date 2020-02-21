@@ -2,7 +2,6 @@
 The 'forecast' module contains class definitions for
 retreiving forecasted data from UNIDATA Thredd servers.
 '''
-import datetime
 from netCDF4 import num2date
 import numpy as np
 import pandas as pd

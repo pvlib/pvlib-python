@@ -611,6 +611,32 @@ class PVSystem(object):
         return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
                                        **kwargs)
 
+    def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
+        """
+        Use :py:func:`temperature.faiman` to calculate cell temperature.
+
+        Parameters
+        ----------
+        poa_global : numeric
+            Total incident irradiance [W/m^2].
+
+        temp_air : numeric
+            Ambient dry bulb temperature [C].
+
+        wind_speed : numeric, default 1.0
+            Wind speed in m/s measured at the same height for which the wind
+            loss factor was determined.  The default value 1.0 m/s is the wind
+            speed at module height used to determine NOCT. [m/s]
+
+        Returns
+        -------
+        numeric, values in degrees C.
+        """
+        kwargs = _build_kwargs(['u0', 'u1'],
+                               self.temperature_model_parameters)
+        return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
+                                       **kwargs)
+
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
         """

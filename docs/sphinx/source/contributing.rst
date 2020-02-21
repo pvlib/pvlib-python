@@ -298,6 +298,14 @@ location of a test failure. As described in :ref:`code-style`, pvlib
 code does not use ``print`` or ``logging`` calls, and this also applies
 to the test suite (with rare exceptions).
 
+To include all network-dependent tests, include the ``--remote-data`` flag to
+your ``pytest`` call:
+
+``pytest pvlib --remote-data``
+
+And consider adding ``@pytest.mark.remote_data`` to any network dependent test
+you submit for a PR.
+
 pvlib-python contains 3 "layers" of code: functions, PVSystem/Location,
 and ModelChain. Contributors will need to add tests that correspond to
 the layers that they modify.

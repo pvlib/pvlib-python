@@ -634,8 +634,8 @@ class PVSystem(object):
         """
         kwargs = _build_kwargs(['u0', 'u1'],
                                self.temperature_model_parameters)
-        return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
-                                       **kwargs)
+        return temperature.faiman(poa_global, temp_air, wind_speed,
+                                  **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 

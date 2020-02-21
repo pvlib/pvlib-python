@@ -21,6 +21,13 @@ API Breaking Changes
   an exception instead of displaying a dialog.
 * The `modelchain.ModelChain.diode_params` attribute is now formatted in
   a pandas.DataFrame with `DatetimeIndex`, rather than in a tuple.
+* ``PVSystem.pvwatts_ac`` now uses inverter DC input limit
+  ``PVSystem.inverter_parameters['pdc0']`` instead of module nameplate
+  capacity ``PVSystem.module_parameters['pdc0']``. (:issue:`734`)
+* ``ModelChain.infer_ac_model`` now uses the presence of the key ``'pdc0'``
+  ``PVSystem.inverter_parameters`` to determine if the `pvwatts_ac`
+  inverter model should be used. The inference method previously looked
+  for the key in ``PVSystem.module_parameters``. (:issue:`734`)
 
 API Changes with Deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,6 +165,11 @@ Bug fixes
   (:issue:`754`)
 * Fix reading raw MIDC CSV files from NREL where the number of header
   columns does not match the number of data columns.
+* Fix installation issue due to missing ``requests`` dependency.
+  (:issue:`725`)
+* ``PVSystem.pvwatts_ac`` now uses inverter DC input limit
+  ``PVSystem.inverter_parameters['pdc0']`` instead of module nameplate
+  capacity ``PVSystem.module_parameters['pdc0']``. (:issue:`734`)
 
 Testing
 ~~~~~~~

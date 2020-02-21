@@ -315,6 +315,7 @@ Losses
    :toctree: generated/
 
    losses.soiling_hsu
+   losses.soiling_kimber
 
 
 Other

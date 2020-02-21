@@ -42,7 +42,7 @@ INSTALL_REQUIRES = ['numpy >= 1.12.0',
                     'pytz',
                     'requests']
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
-                 'pytest-timeout']
+                 'pytest-timeout', 'pytest-rerunfailures']
 EXTRAS_REQUIRE = {
     'optional': ['ephem', 'cython', 'netcdf4', 'nrel-pysam', 'numba',
                  'pvfactors', 'scipy', 'siphon', 'tables'],

@@ -14,6 +14,7 @@ def test_read_srml():
 
 
 @network
+@pytest.mark.remote_data
 def test_read_srml_remote():
     srml.read_srml('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt')
 
@@ -40,6 +41,7 @@ def test_read_srml_nans_exist():
     ('http://solardat.uoregon.edu/download/Archive/EUPO1612.txt',
      2016, 12),
 ])
+@pytest.mark.remote_data
 def test_read_srml_dt_index(url, year, month):
     data = srml.read_srml(url)
     start = pd.Timestamp('{:04d}{:02d}01 00:00'.format(year, month))
@@ -63,6 +65,7 @@ def test_map_columns(column, expected):
 
 
 @network
+@pytest.mark.remote_data
 def test_read_srml_month_from_solardat():
     url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
     file_data = srml.read_srml(url)
@@ -71,6 +74,7 @@ def test_read_srml_month_from_solardat():
 
 
 @network
+@pytest.mark.remote_data
 def test_15_minute_dt_index():
     data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
     start = pd.Timestamp('20190401 00:00')
@@ -83,6 +87,7 @@ def test_15_minute_dt_index():
 
 
 @network
+@pytest.mark.remote_data
 def test_hourly_dt_index():
     data = srml.read_srml_month_from_solardat('CD', 1986, 4, 'PH')
     start = pd.Timestamp('19860401 00:00')

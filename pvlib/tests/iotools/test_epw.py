@@ -1,4 +1,5 @@
 from pandas.util.testing import network
+import pytest
 
 from pvlib.iotools import epw
 from conftest import DATA_DIR
@@ -11,6 +12,7 @@ def test_read_epw():
 
 
 @network
+@pytest.mark.remote_data
 def test_read_epw_remote():
     url = 'https://energyplus.net/weather-download/europe_wmo_region_6/NLD//NLD_Amsterdam.062400_IWEC/NLD_Amsterdam.062400_IWEC.epw'
     epw.read_epw(url)

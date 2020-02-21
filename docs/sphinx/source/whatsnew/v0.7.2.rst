@@ -40,7 +40,6 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Mark Mikofski (:ghuser:`mikofski`)
-* Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Cameron T. Stark (:ghuser:`camerontstark`)
 * Will Holmgren (:ghuser:`wholmgren`)

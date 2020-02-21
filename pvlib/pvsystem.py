@@ -600,13 +600,6 @@ class PVSystem(object):
             loss factor was determined.  The default value is 1.0, which is
             the wind speed at module height used to determine NOCT.
 
-        eta_m : numeric, default 0.1
-            Module external efficiency as a fraction, i.e.,
-            DC power / poa_global.
-
-        alpha_absorption : numeric, default 0.9
-            Absorption coefficient
-
         Returns
         -------
         numeric, values in degrees C.

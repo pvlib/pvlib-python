@@ -434,6 +434,19 @@ def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
     assert (out < 90) and (out > 70)
 
 
+def test_PVSystem_faiman_celltemp(mocker):
+    u0, u1 = 25.0, 6.84  # default values
+    temp_model_params = {'u0': u0, 'u1': u1}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'faiman')
+    temps = 25
+    irrads = 1000
+    winds = 1
+    out = system.faiman_celltemp(irrads, temps, winds)
+    temperature.faiman.assert_called_once_with(irrads, temps, winds, u0, u1)
+    assert_allclose(out, 56.4, atol=1)
+
+
 def test__infer_temperature_model_params():
     system = pvsystem.PVSystem(module_parameters={},
                                racking_model='open_rack',

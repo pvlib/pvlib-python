@@ -28,8 +28,7 @@ jobs:
   - script: |
       pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
       pip install -e .
-      export NREL_API_KEY=$(nrelApiKey)
-      pytest pvlib --remote-data --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+      pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 
   - task: PublishTestResults@2
@@ -76,7 +75,8 @@ jobs:
     displayName: 'List installed dependencies'
   - script: |
       source activate test_env
-      pytest pvlib --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
+      export NREL_API_KEY=$(nrelApiKey)
+      pytest pvlib --remote-data --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
     displayName: 'pytest'
   # - script: |
   #     source activate test_env

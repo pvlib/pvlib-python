@@ -3,21 +3,43 @@
 v0.7.2 (Month day, year)
 -------------------------
 
+API Changes
+~~~~~~~~~~~
+* :py:class:`pvlib.forecast.ForecastModel` now requires ``start`` and ``end``
+  arguments to be tz-localized. (:issue:`877`, :pull:`879`)
+
 Enhancements
 ~~~~~~~~~~~~
 * TMY3 dataframe returned by :py:func:`~pvlib.iotools.read_tmy3` now contains
   the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
   indices were parsed from (:pull:`866`)
+* Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber` (:pull:`860`)
 
 Bug fixes
 ~~~~~~~~~
 * Fix :py:func:`~pvlib.iotools.read_tmy3` parsing when February contains
   a leap year (:pull:`866`)
+* Implement NREL Developer Network API key for consistent success with API
+  calls in :py:mod:`pvlib.tests.iotools.test_psm3` (:pull:`873`)
+* Fix issue with :py:class:`pvlib.location.Location` creation when
+  passing ``tz=datetime.timezone.utc`` (:pull:`879`)
+* Fix documentation homepage title to "pvlib python" based on first heading on
+  the page. (:pull:`890`) (:issue:`888`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
+* Add example of IV curve generation :pull:`872` 
+
+Requirements
+~~~~~~~~~~~~
+* nrel-pysam (optional) minimum set to v1.0.0 (:issue:`874`)
 
 Contributors
 ~~~~~~~~~~~~
 * Mark Mikofski (:ghuser:`mikofski`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Cameron T. Stark (:ghuser:`camerontstark`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Karthikeyan Singaravelan (:ghuser:`tirkarthi`)

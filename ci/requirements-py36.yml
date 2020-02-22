@@ -16,6 +16,7 @@ dependencies:
     - pytest
     - pytest-cov
     - pytest-mock
+    - pytest-rerunfailures
     - pytest-timeout
     - python=3.6
     - pytz
@@ -24,5 +25,5 @@ dependencies:
     - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - pip:
-        - nrel-pysam
+        - nrel-pysam>=2.0
         - pvfactors==1.0.1

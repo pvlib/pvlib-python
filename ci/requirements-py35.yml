@@ -24,5 +24,6 @@ dependencies:
     - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - pip:
-        - nrel-pysam
+        - nrel-pysam>=2.0
         - pvfactors==1.0.1
+        - pytest-rerunfailures # conda version is >3.6

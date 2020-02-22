@@ -1,7 +1,14 @@
+# -*- coding: utf-8 -*-
+"""Test losses"""
+
+import datetime
+import numpy as np
 import pandas as pd
 from pandas.util.testing import assert_series_equal
-from pvlib.losses import soiling_hsu
-from conftest import requires_scipy
+from pvlib.losses import soiling_hsu, soiling_kimber
+from pvlib.iotools import read_tmy3
+from conftest import (
+    requires_scipy, needs_pandas_0_22, DATA_DIR)
 import pytest
 
 
@@ -90,3 +97,101 @@ def test_soiling_hsu(rainfall_input, expected_output_2):
                          rain_accum_period=pd.Timedelta('3h'))
 
     assert_series_equal(result, expected)
+
+
+@pytest.fixture
+def greensboro_rain():
+    # get TMY3 data with rain
+    greensboro = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
+    # NOTE: can't use Sand Point, AK b/c Lprecipdepth is -9900, ie: missing
+    return greensboro[0].Lprecipdepth
+
+
+@pytest.fixture
+def expected_kimber_soiling_nowash():
+    return pd.read_csv(
+        DATA_DIR / 'greensboro_kimber_soil_nowash.dat',
+        parse_dates=True, index_col='timestamp')
+
+
+@needs_pandas_0_22
+def test_kimber_soiling_nowash(greensboro_rain,
+                               expected_kimber_soiling_nowash):
+    """Test Kimber soiling model with no manual washes"""
+    # Greensboro typical expected annual rainfall is 8345mm
+    assert greensboro_rain.sum() == 8345
+    # calculate soiling with no wash dates
+    soiling_nowash = soiling_kimber(greensboro_rain, istmy=True)
+    # test no washes
+    assert np.allclose(
+        soiling_nowash.values,
+        expected_kimber_soiling_nowash['soiling'].values)
+
+
+@pytest.fixture
+def expected_kimber_soiling_manwash():
+    return pd.read_csv(
+        DATA_DIR / 'greensboro_kimber_soil_manwash.dat',
+        parse_dates=True, index_col='timestamp')
+
+
+@needs_pandas_0_22
+def test_kimber_soiling_manwash(greensboro_rain,
+                                expected_kimber_soiling_manwash):
+    """Test Kimber soiling model with a manual wash"""
+    # a manual wash date
+    manwash = [datetime.date(1990, 2, 15), ]
+    # calculate soiling with manual wash
+    soiling_manwash = soiling_kimber(
+        greensboro_rain, manual_wash_dates=manwash, istmy=True)
+    # test manual wash
+    assert np.allclose(
+        soiling_manwash.values,
+        expected_kimber_soiling_manwash['soiling'].values)
+
+
+@pytest.fixture
+def expected_kimber_soiling_norain():
+    # expected soiling reaches maximum
+    soiling_loss_rate = 0.0015
+    max_loss_rate = 0.3
+    norain = np.ones(8760) * soiling_loss_rate/24
+    norain[0] = 0.0
+    norain = np.cumsum(norain)
+    return np.where(norain > max_loss_rate, max_loss_rate, norain)
+
+
+@needs_pandas_0_22
+def test_kimber_soiling_norain(greensboro_rain,
+                               expected_kimber_soiling_norain):
+    """Test Kimber soiling model with no rain"""
+    # a year with no rain
+    norain = pd.Series(0, index=greensboro_rain.index)
+    # calculate soiling with no rain
+    soiling_norain = soiling_kimber(norain, istmy=True)
+    # test no rain, soiling reaches maximum
+    assert np.allclose(soiling_norain.values, expected_kimber_soiling_norain)
+
+
+@pytest.fixture
+def expected_kimber_soiling_initial_soil():
+    # expected soiling reaches maximum
+    soiling_loss_rate = 0.0015
+    max_loss_rate = 0.3
+    norain = np.ones(8760) * soiling_loss_rate/24
+    norain[0] = 0.1
+    norain = np.cumsum(norain)
+    return np.where(norain > max_loss_rate, max_loss_rate, norain)
+
+
+@needs_pandas_0_22
+def test_kimber_soiling_initial_soil(greensboro_rain,
+                                     expected_kimber_soiling_initial_soil):
+    """Test Kimber soiling model with initial soiling"""
+    # a year with no rain
+    norain = pd.Series(0, index=greensboro_rain.index)
+    # calculate soiling with no rain
+    soiling_norain = soiling_kimber(norain, initial_soiling=0.1, istmy=True)
+    # test no rain, soiling reaches maximum
+    assert np.allclose(
+        soiling_norain.values, expected_kimber_soiling_initial_soil)

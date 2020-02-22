@@ -70,14 +70,6 @@ except ImportError:
 requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
 
 
-def pandas_0_17():
-    return parse_version(pd.__version__) >= parse_version('0.17.0')
-
-
-needs_pandas_0_17 = pytest.mark.skipif(
-    not pandas_0_17(), reason='requires pandas 0.17 or greater')
-
-
 def numpy_1_10():
     return parse_version(np.__version__) >= parse_version('1.10.0')
 

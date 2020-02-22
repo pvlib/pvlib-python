@@ -27,12 +27,13 @@ Bug fixes
   the page. (:pull:`890`) (:issue:`888`)
 * Implement `pytest-remotedata <https://github.com/astropy/pytest-remotedata>`_
   to increase test suite speed. Requires ``--remote-data`` pytest flag to
-  execute data retrieval tests over a network.
+  execute data retrieval tests over a network.(:issue:`882`)(:pull:`896`)
 * Fix missing
   `0.7.0 what's new <https://pvlib-python.readthedocs.io/en/stable/whatsnew.html#v0-7-0-december-18-2019>`_
   entries about changes to ``PVSystem.pvwatts_ac``. Delete unreleased
   0.6.4 what's new file. (:issue:`898`)
 * Compatibility with cftime 1.1. (:issue:`895`)
+* Add Python3.8 to Azure Pipelines CI (:issue:`903`)(:pull:`904`)
 
 
 Documentation

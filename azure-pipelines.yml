@@ -18,6 +18,8 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+      Python38:
+        python.version: '3.8'
 
 
   steps:
@@ -58,6 +60,8 @@ jobs:
         coverage: true
       Python37:
         python.version: '37'
+      Python38:
+        python.version: '38'
 
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
@@ -111,6 +115,8 @@ jobs:
         python.version: '36'
       Python37-windows:
         python.version: '37'
+      Python38-windows:
+        python.version: '38'
 
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
@@ -148,6 +154,8 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+      Python38:
+        python.version: '3.8'
 
   steps:
   - task: UsePythonVersion@0

@@ -230,10 +230,10 @@ def test_run_model_gueymard_perez(system, location):
     assert_series_equal(ac, expected)
 
 
-def test_run_model_with_weather(system, location, weather, mocker):
+def test_run_model_with_weather_sapm_temp(system, location, weather, mocker):
+    # test with sapm cell temperature model
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
-    # test with sapm cell temperature model
     system.racking_model = 'open_rack'
     system.module_type = 'glass_glass'
     mc = ModelChain(system, location)
@@ -246,7 +246,12 @@ def test_run_model_with_weather(system, location, weather, mocker):
     assert_series_equal(m_sapm.call_args[0][1], weather['temp_air'])  # temp
     assert_series_equal(m_sapm.call_args[0][2], weather['wind_speed'])  # wind
     assert not mc.ac.empty
+
+
+def test_run_model_with_weather_pvsyst_temp(system, location, weather, mocker):
     # test with pvsyst cell temperature model
+    weather['wind_speed'] = 5
+    weather['temp_air'] = 10
     system.racking_model = 'freestanding'
     system.temperature_model_parameters = \
         temperature._temperature_model_params('pvsyst', 'freestanding')
@@ -257,6 +262,21 @@ def test_run_model_with_weather(system, location, weather, mocker):
     assert m_pvsyst.call_count == 1
     assert_series_equal(m_pvsyst.call_args[0][1], weather['temp_air'])
     assert_series_equal(m_pvsyst.call_args[0][2], weather['wind_speed'])
+    assert not mc.ac.empty
+
+
+def test_run_model_with_weather_faiman_temp(system, location, weather, mocker):
+    # test with faiman cell temperature model
+    weather['wind_speed'] = 5
+    weather['temp_air'] = 10
+    system.temperature_model_parameters = {'u0': 25.0, 'u1': 6.84}
+    mc = ModelChain(system, location)
+    mc.temperature_model = 'faiman'
+    m_faiman = mocker.spy(system, 'faiman_celltemp')
+    mc.run_model(weather)
+    assert m_faiman.call_count == 1
+    assert_series_equal(m_faiman.call_args[0][1], weather['temp_air'])
+    assert_series_equal(m_faiman.call_args[0][2], weather['wind_speed'])
     assert not mc.ac.empty
 
 

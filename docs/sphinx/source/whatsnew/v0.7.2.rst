@@ -40,6 +40,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
 * Add example of IV curve generation :pull:`872`
+* Add section about gallery examples to Contributing guide
 
 Requirements
 ~~~~~~~~~~~~

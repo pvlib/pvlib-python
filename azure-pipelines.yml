@@ -18,6 +18,8 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+      Python38:
+        python.version: '3.8'
 
 
   steps:
@@ -26,9 +28,8 @@ jobs:
       versionSpec: '$(python.version)'
 
   - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures
+      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
       pip install -e .
-      export NREL_API_KEY=$(nrelApiKey)
       pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 
@@ -59,6 +60,8 @@ jobs:
         coverage: true
       Python37:
         python.version: '37'
+      Python38:
+        python.version: '38'
 
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
@@ -77,7 +80,7 @@ jobs:
   - script: |
       source activate test_env
       export NREL_API_KEY=$(nrelApiKey)
-      pytest pvlib --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
+      pytest pvlib --remote-data --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
     displayName: 'pytest'
   # - script: |
   #     source activate test_env
@@ -112,6 +115,8 @@ jobs:
         python.version: '36'
       Python37-windows:
         python.version: '37'
+      Python38-windows:
+        python.version: '38'
 
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
@@ -129,7 +134,6 @@ jobs:
     displayName: 'List installed dependencies'
   - script: |
       call activate test_env
-      set NREL_API_KEY=$(nrelApiKey)
       pytest pvlib --junitxml=junit/test-results.xml
     displayName: 'pytest'
   - task: PublishTestResults@2
@@ -150,6 +154,8 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+      Python38:
+        python.version: '3.8'
 
   steps:
   - task: UsePythonVersion@0
@@ -157,9 +163,8 @@ jobs:
       versionSpec: '$(python.version)'
 
   - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures
+      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
       pip install -e .
-      export NREL_API_KEY=$(nrelApiKey)
       pytest pvlib --junitxml=junit/test-results.xml --cov=pvlib --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 

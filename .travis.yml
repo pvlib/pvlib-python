@@ -61,7 +61,7 @@ install:
     - pip install -e .
 
 script:
-    - pytest pvlib --cov=pvlib --cov-report term-missing
+    - pytest pvlib --remote-data --cov=pvlib --cov-report term-missing
 
 after_script:
   - if [[ $TASK == "coverage" ]]; then

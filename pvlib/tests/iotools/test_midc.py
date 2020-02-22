@@ -65,6 +65,7 @@ def test_read_midc_var_mapping_as_arg(test_mapping):
 
 
 @network
+@pytest.mark.remote_data
 def test_read_midc_raw_data_from_nrel():
     start_ts = pd.Timestamp('20181018')
     end_ts = pd.Timestamp('20181019')

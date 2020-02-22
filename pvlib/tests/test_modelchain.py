@@ -114,6 +114,31 @@ def pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
 
 
 @pytest.fixture(scope="function")
+def pvwatts_dc_pvwatts_ac_faiman_temp_system():
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = {'u0': 25.0, 'u1': 6.84}
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
+                      inverter_parameters=inverter_parameters)
+    return system
+
+
+@pytest.fixture(scope="function")
+def pvwatts_dc_pvwatts_ac_pvsyst_temp_system():
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = {'u_c': 29.0, 'u_v': 0.0, 'eta_m': 0.1,
+                         'alpha_absorption': 0.9}
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
+                      inverter_parameters=inverter_parameters)
+    return system
+
+
+@pytest.fixture(scope="function")
 def system_no_aoi(cec_module_cs5p_220m, sapm_temperature_cs5p_220m,
                   cec_inverter_parameters):
     module_parameters = cec_module_cs5p_220m.copy()
@@ -361,15 +386,20 @@ def test_infer_spectral_model(location, system, cec_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('temp_model', [
-    'sapm', pytest.param('pvsyst', marks=requires_scipy)])
-def test_infer_temp_model(location, system, pvsyst_dc_snl_ac_system,
+    'sapm_temp', 'faiman_temp',
+    pytest.param('pvsyst_temp', marks=requires_scipy)])
+def test_infer_temp_model(location, system,
+                          pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
+                          pvwatts_dc_pvwatts_ac_faiman_temp_system,
                           temp_model):
-    dc_systems = {'sapm': system,
-                  'pvsyst': pvsyst_dc_snl_ac_system}
+    dc_systems = {'sapm_temp': system,
+                  'pvsyst_temp': pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
+                  'faiman_temp': pvwatts_dc_pvwatts_ac_faiman_temp_system}
     system = dc_systems[temp_model]
     mc = ModelChain(system, location,
                     orientation_strategy='None', aoi_model='physical',
                     spectral_model='no_loss')
+    assert temp_model == mc.temperature_model.__name__
     assert isinstance(mc, ModelChain)
 
 

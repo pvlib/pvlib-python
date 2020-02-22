@@ -254,6 +254,39 @@ To build the docs locally, install the ``doc`` dependencies specified in the
 `setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
 file. See :ref:`installation` instructions for more information.
 
+Example Gallery
+---------------
+
+The example gallery uses `sphinx-gallery <https://sphinx-gallery.github.io/>`_
+and is generated from script files in the
+`docs/examples <https://github.com/pvlib/pvlib-python/tree/master/docs/examples>`_
+directory.  sphinx-gallery will execute example files that start with
+``plot_`` and capture the output.
+
+Here is a starter template for new examples:
+
+.. code-block:: python
+
+    """
+    Page Title
+    ==========
+
+    A sentence describing the example.
+    """
+
+    # %%
+    # Explanatory text about the example, what it does,
+    # why it does it, etc.
+
+    import pvlib
+    import matplotlib.pyplot as plt
+
+    plt.scatter([1, 2, 3], [4, 5, 6])
+    plt.show()
+
+For more details, see the sphinx-gallery
+`docs <https://sphinx-gallery.github.io/stable/syntax.html#embedding-rst>`_.
+
 .. _testing:
 
 Testing

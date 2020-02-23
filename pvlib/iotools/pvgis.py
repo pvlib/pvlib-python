@@ -214,8 +214,8 @@ def read_pvgis_tmy(filename, outputformat='csv'):
     if outputformat == 'json':
         try:
             src = json.load(filename)
-        except AttributeError:  # str has no .read() attribute
-            with open(str(filename), 'rb') as fbuf:
+        except AttributeError:  # str/path has no .read() attribute
+            with open(str(filename), 'r') as fbuf:
                 src = json.load(fbuf)
         return pvgis_parser(src)
     try:

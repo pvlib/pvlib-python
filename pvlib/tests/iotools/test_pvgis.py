@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import requests
-from pvlib.iotools import get_pvgis_tmy
-from pvlib.iotools.pvgis import read_pvgis_tmy
+from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from conftest import DATA_DIR
 
 

@@ -190,7 +190,7 @@ def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
     pvgis_data = read_pvgis_tmy(fn, outputformat='json')
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data)
-    with fn.open('rb') as fbuf:
+    with fn.open('r') as fbuf:
         pvgis_data = read_pvgis_tmy(fbuf, outputformat='json')
         _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                                 meta_expected, pvgis_data)

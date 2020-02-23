@@ -187,16 +187,31 @@ def read_pvgis_tmy(filename, outputformat='csv'):
         Name, path, or buffer of file downloaded from PVGIS.
     outputformat : str, default 'csv'
         Output format of PVGIS file. Must be in
-        ``['csv', 'basic', 'epw', 'json']``. 
+        ``['csv', 'basic', 'epw', 'json']``.
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        the weather data
+    months_selected : list
+        TMY year for each month, ``None`` for basic and EPW
+    inputs : dict
+        the inputs, ``None`` for basic and EPW
+    meta : list or dict
+        meta data, ``None`` for basic
+
+    See also
+    --------
+    get_pvgis_tmy
     """
-    if outputformat is 'epw':
+    if outputformat == 'epw':
         try:
             data, meta = read_epw(filename)
         except OSError:  # str(io.buffer) file not found
             data, meta = parse_epw(filename)
         return data, None, None, meta
-    pvgis_parser = globals()[f'_parse_pvgis_tmy_{outputformat}']
-    if outputformat is 'json':
+    pvgis_parser = globals()['_parse_pvgis_tmy_{:s}'.format(outputformat)]
+    if outputformat == 'json':
         try:
             src = json.load(filename)
         except AttributeError:  # str has no .read() attribute

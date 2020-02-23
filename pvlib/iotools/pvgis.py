@@ -15,9 +15,10 @@ More detailed information about the API for TMY and hourly radiation are here:
   <https://ec.europa.eu/jrc/en/PVGIS/tools/monthly-radiation>`_
 """
 import io
+import json
 import requests
 import pandas as pd
-from pvlib.iotools import parse_epw
+from pvlib.iotools import read_epw, parse_epw
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
@@ -174,3 +175,37 @@ def _parse_pvgis_tmy_basic(src):
         data['time(UTC)'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time(UTC)', axis=1)
     return data, None, None, None
+
+
+def read_pvgis_tmy(filename, outputformat='csv'):
+    """
+    Read a file downloaded from PVGIS.
+
+    Parameters
+    ----------
+    filename : str, pathlib.Path, or file-like buffer
+        Name, path, or buffer of file downloaded from PVGIS.
+    outputformat : str, default 'csv'
+        Output format of PVGIS file. Must be in
+        ``['csv', 'basic', 'epw', 'json']``. 
+    """
+    if outputformat is 'epw':
+        try:
+            data, meta = read_epw(filename)
+        except OSError:  # str(io.buffer) file not found
+            data, meta = parse_epw(filename)
+        return data, None, None, meta
+    pvgis_parser = globals()[f'_parse_pvgis_tmy_{outputformat}']
+    if outputformat is 'json':
+        try:
+            src = json.load(filename)
+        except AttributeError:  # str has no .read() attribute
+            with open(str(filename), 'rb') as fbuf:
+                src = json.load(fbuf)
+        return pvgis_parser(src)
+    try:
+        pvgis_data = pvgis_parser(filename)
+    except AttributeError:  # str/path has no .read() attribute
+        with open(str(filename), 'rb') as fbuf:
+            pvgis_data = pvgis_parser(fbuf)
+    return pvgis_data

@@ -15,8 +15,8 @@ import pytest
 @pytest.fixture
 def expected_output():
     # Sample output (calculated manually)
-    dt = pd.date_range(start=pd.datetime(2019, 1, 1, 0, 0, 0),
-                       end=pd.datetime(2019, 1, 1, 23, 59, 0), freq='1h')
+    dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
+                       end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
 
     expected_no_cleaning = pd.Series(
         data=[0.884980357535360, 0.806308930084762, 0.749974647038078,
@@ -35,12 +35,12 @@ def expected_output():
 @pytest.fixture
 def expected_output_2(expected_output):
     # Sample output (calculated manually)
-    dt = pd.date_range(start=pd.datetime(2019, 1, 1, 0, 0, 0),
-                       end=pd.datetime(2019, 1, 1, 23, 59, 0), freq='1h')
+    dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
+                       end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
 
     expected_no_cleaning = expected_output
 
-    expected = pd.Series(index=dt)
+    expected = pd.Series(index=dt, dtype='float64')
     expected[dt[:4]] = expected_no_cleaning[dt[:4]]
     expected[dt[4:7]] = 1.
     expected[dt[7]] = expected_no_cleaning[dt[0]]
@@ -55,8 +55,8 @@ def expected_output_2(expected_output):
 @pytest.fixture
 def rainfall_input():
 
-    dt = pd.date_range(start=pd.datetime(2019, 1, 1, 0, 0, 0),
-                       end=pd.datetime(2019, 1, 1, 23, 59, 0), freq='1h')
+    dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
+                       end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
     rainfall = pd.Series(
         data=[0., 0., 0., 0., 1., 0., 0., 0., 0.5, 0.5, 0., 0., 0., 0., 0.,
               0., 0.3, 0.3, 0.3, 0.3, 0., 0., 0., 0.], index=dt)

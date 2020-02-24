@@ -73,6 +73,10 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
+    See also
+    --------
+    read_pvgis_tmy
+
     References
     ----------
 
@@ -200,27 +204,56 @@ def read_pvgis_tmy(filename, outputformat='csv'):
     meta : list or dict
         meta data, ``None`` for basic
 
+    Raises
+    ------
+    ValueError
+        if `outputformat` isn't in ``['csv', 'basic', 'epw', 'json']``
+
     See also
     --------
     get_pvgis_tmy
     """
+    # parse the pvgis file based on the output format, either 'epw', 'json',
+    # 'csv', or 'basic'
+
+    # EPW: use the EPW parser from the pvlib.iotools epw.py module
     if outputformat == 'epw':
         try:
             data, meta = parse_epw(filename)
         except AttributeError:  # str/path has no .read() attribute
             data, meta = read_epw(filename)
         return data, None, None, meta
-    pvgis_parser = globals()['_parse_pvgis_tmy_{:s}'.format(outputformat)]
+
+    # NOTE: json, csv, and basic output formats have parsers defined as private
+    # functions in this module
+
+    # JSON: use Python built-in json module to convert file contents to a
+    # Python dictionary, and pass the dictionary to the _parse_pvgis_tmy_json()
+    # function from this module
     if outputformat == 'json':
         try:
             src = json.load(filename)
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'r') as fbuf:
                 src = json.load(fbuf)
-        return pvgis_parser(src)
-    try:
-        pvgis_data = pvgis_parser(filename)
-    except AttributeError:  # str/path has no .read() attribute
-        with open(str(filename), 'rb') as fbuf:
-            pvgis_data = pvgis_parser(fbuf)
-    return pvgis_data
+        return _parse_pvgis_tmy_json(src)
+
+    # CSV or basic: use the correct parser from this module
+    # eg: _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
+    if outputformat in ['csv', 'basic']:
+        # get the correct parser function for this output format from globals()
+        pvgis_parser = globals()['_parse_pvgis_tmy_{:s}'.format(outputformat)]
+        # NOTE: pvgis_parse() is a pvgis parser function from this module,
+        # either _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
+        try:
+            pvgis_data = pvgis_parser(filename)
+        except AttributeError:  # str/path has no .read() attribute
+            with open(str(filename), 'rb') as fbuf:
+                pvgis_data = pvgis_parser(fbuf)
+        return pvgis_data
+
+    # raise exception if output format isn't in ['csv', 'basic', 'epw', 'json']
+    err_msg = (
+        "output format '{:s}' was unknown, must be either 'epw', 'json', 'csv'"
+        ", or 'basic'").format(outputformat)
+    raise ValueError(err_msg)

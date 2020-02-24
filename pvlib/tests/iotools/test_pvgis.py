@@ -224,3 +224,10 @@ def test_read_pvgis_tmy_basic(expected, meta_expected):
     with fn.open('rb') as fbuf:
         pvgis_data = read_pvgis_tmy(fbuf, outputformat='basic')
         _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
+
+
+def test_read_pvgis_tmy_exception():
+    bad_outputformat = 'bad'
+    err_msg = "output format '{:s}' was unknown".format(bad_outputformat)
+    with pytest.raises(ValueError, match=err_msg):
+        read_pvgis_tmy('filename', outputformat=bad_outputformat)

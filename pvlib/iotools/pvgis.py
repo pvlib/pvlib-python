@@ -206,9 +206,9 @@ def read_pvgis_tmy(filename, outputformat='csv'):
     """
     if outputformat == 'epw':
         try:
-            data, meta = read_epw(filename)
-        except OSError:  # str(io.buffer) file not found
             data, meta = parse_epw(filename)
+        except AttributeError:  # str/path has no .read() attribute
+            data, meta = read_epw(filename)
         return data, None, None, meta
     pvgis_parser = globals()['_parse_pvgis_tmy_{:s}'.format(outputformat)]
     if outputformat == 'json':

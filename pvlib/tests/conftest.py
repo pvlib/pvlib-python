@@ -1,5 +1,6 @@
 from pathlib import Path
 import platform
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -153,8 +154,11 @@ requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 @pytest.fixture(scope="session")
 def sam_data():
     data = {}
-    data['sandiamod'] = pvlib.pvsystem.retrieve_sam('sandiamod')
-    data['adrinverter'] = pvlib.pvsystem.retrieve_sam('adrinverter')
+    with warnings.catch_warnings():
+        # ignore messages about duplicate entries in the databases.
+        warnings.simplefilter("ignore", UserWarning)
+        data['sandiamod'] = pvlib.pvsystem.retrieve_sam('sandiamod')
+        data['adrinverter'] = pvlib.pvsystem.retrieve_sam('adrinverter')
     return data
 
 

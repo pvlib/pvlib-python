@@ -78,7 +78,8 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     tms_cumsum = np.cumsum(tilted_mass_rate * np.ones(rainfall.shape))
 
     mass_no_cleaning = pd.Series(index=rainfall.index, data=tms_cumsum)
-    mass_removed = pd.Series(index=rainfall.index)
+    # specify dtype so pandas doesn't assume object
+    mass_removed = pd.Series(index=rainfall.index, dtype='float64')
     mass_removed[0] = 0.
     mass_removed[cleaning_times] = mass_no_cleaning[cleaning_times]
     accum_mass = mass_no_cleaning - mass_removed.ffill()

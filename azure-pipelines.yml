@@ -18,8 +18,8 @@ jobs:
   - script: |
       source activate test_env
       # Replicate the exact environment created by the readthedocs CI
-      conda install --yes --quiet -c pkgs/main mock pillow sphinx sphinx_rtd_theme
-      pip install -e .
+      # conda install --yes --quiet -c pkgs/main mock pillow sphinx sphinx_rtd_theme
+      pip install -e .[all]
     displayName: Replicate readthedocs CI environment
   - script: |
       source activate test_env

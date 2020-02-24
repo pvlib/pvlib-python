@@ -39,6 +39,8 @@ Bug fixes
   :py:func:`~pvlib.iam.martin_ruiz_diffuse`,
   :py:func:`~pvlib.losses.soiling_hsu`,
   and various test functions.
+* Fix :py:func:`~pvlib.losses.soiling_hsu` TMY3 data not monotonic exception
+  (:pull:`910`)
 
 Documentation
 ~~~~~~~~~~~~~

@@ -24,5 +24,5 @@ jobs:
   - script: |
       source activate test_env
       cd docs/sphinx/
-      sphinx-build -W --keep-going -j auto -b html -d _build/doctrees source build
+      sphinx-build -j auto -b html -d _build/doctrees source build
     displayName: Build HTML docs

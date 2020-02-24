@@ -275,8 +275,9 @@ Here is a starter template for new examples:
     """
 
     # %%
-    # Explanatory text about the example, what it does,
-    # why it does it, etc.
+    # Explanatory text about the example, what it does, why it does it, etc.
+    # Text in the comment block before the first line of code `import pvlib`
+    # will be printed to the example's webpage.
 
     import pvlib
     import matplotlib.pyplot as plt

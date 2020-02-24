@@ -7,6 +7,7 @@ import io
 import re
 from urllib.request import urlopen, Request
 import pandas as pd
+import numpy as np
 
 
 def read_tmy3(filename=None, coerce_year=None, recolumn=True):
@@ -526,3 +527,44 @@ def _read_tmy2(string, columns, hdr_columns, fname):
         columns=columns.split(',')).tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
+
+
+def fix_tmy3_coerce_year_monotonicity(tmy3):
+    """
+    Fix TMY3 coerced to a single year to be monotonically increasing by
+    changing the last record to be in January 1st of the next year.
+
+    Paramaters
+    ----------
+    tmy3 : pandas.DataFrame
+        TMY3 data frame from :func:`pvlib.iotools.read_tmy3` with year coearced
+
+    Returns
+    -------
+    pandas.DataFrame
+        Copy of the TMY3 data frame with monotonically increasing index
+    """
+    # NOTE: pandas index is immutable, therefore it's not possible to change a
+    # single item in the index, so the entire index must be replaced
+
+    # get tmy3 timezone, index values as np.datetime64[ns], and index frequency
+    # as np.timedelta64[ns]
+    # NOTE: numpy converts index values to UTC
+    index_tz = tmy3.index.tz
+    index_values = tmy3.index.values
+    timestep_interval = index_values[1] - index_values[0]
+
+    # fix index to be monotonically increasing by rolling indices 1 interval,
+    # then adding 1 interval to all indices
+    index_values = np.roll(index_values, 1) + timestep_interval
+
+    # create new datetime index and convert it to the original timezone
+    new_index = pd.DatetimeIndex(index_values, tz='UTC').tz_convert(index_tz)
+
+    # copy the original TMY3 so it doesn't change, then replace the index of
+    # the copy with the new fixed monotonically increasing index
+    new_tmy3 = tmy3.copy()
+    new_tmy3.index = new_index
+
+    # fixed TMY3 with monotonically increasing index
+    return new_tmy3

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pandas.util.testing import assert_series_equal
 from pvlib.losses import soiling_hsu, soiling_kimber
-from pvlib.iotools import read_tmy3
+from pvlib.iotools import read_tmy3, fix_tmy3_coerce_year_monotonicity
 from conftest import (
     requires_scipy, needs_pandas_0_22, DATA_DIR)
 import pytest
@@ -65,6 +65,7 @@ def rainfall_input():
 
 
 @requires_scipy
+@needs_pandas_0_22
 def test_soiling_hsu_no_cleaning(rainfall_input, expected_output):
     """Test Soiling HSU function"""
 
@@ -82,6 +83,7 @@ def test_soiling_hsu_no_cleaning(rainfall_input, expected_output):
 
 
 @requires_scipy
+@needs_pandas_0_22
 def test_soiling_hsu(rainfall_input, expected_output_2):
     """Test Soiling HSU function"""
 
@@ -103,9 +105,9 @@ def test_soiling_hsu(rainfall_input, expected_output_2):
 @pytest.fixture
 def greensboro_rain():
     # get TMY3 data with rain
-    greensboro = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
-    # NOTE: can't use Sand Point, AK b/c Lprecipdepth is -9900, ie: missing
-    return greensboro[0].Lprecipdepth
+    greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
+    greensboro = fix_tmy3_coerce_year_monotonicity(greensboro)
+    return greensboro.Lprecipdepth
 
 
 @pytest.fixture
@@ -122,7 +124,7 @@ def test_kimber_soiling_nowash(greensboro_rain,
     # Greensboro typical expected annual rainfall is 8345mm
     assert greensboro_rain.sum() == 8345
     # calculate soiling with no wash dates
-    soiling_nowash = soiling_kimber(greensboro_rain, is_tmy=True)
+    soiling_nowash = soiling_kimber(greensboro_rain)
     # test no washes
     assert np.allclose(
         soiling_nowash.values,
@@ -144,7 +146,7 @@ def test_kimber_soiling_manwash(greensboro_rain,
     manwash = [datetime.date(1990, 2, 15), ]
     # calculate soiling with manual wash
     soiling_manwash = soiling_kimber(
-        greensboro_rain, manual_wash_dates=manwash, is_tmy=True)
+        greensboro_rain, manual_wash_dates=manwash)
     # test manual wash
     assert np.allclose(
         soiling_manwash.values,
@@ -169,7 +171,7 @@ def test_kimber_soiling_norain(greensboro_rain,
     # a year with no rain
     norain = pd.Series(0, index=greensboro_rain.index)
     # calculate soiling with no rain
-    soiling_norain = soiling_kimber(norain, is_tmy=True)
+    soiling_norain = soiling_kimber(norain)
     # test no rain, soiling reaches maximum
     assert np.allclose(soiling_norain.values, expected_kimber_soiling_norain)
 
@@ -192,41 +194,7 @@ def test_kimber_soiling_initial_soil(greensboro_rain,
     # a year with no rain
     norain = pd.Series(0, index=greensboro_rain.index)
     # calculate soiling with no rain
-    soiling_norain = soiling_kimber(norain, initial_soiling=0.1, is_tmy=True)
+    soiling_norain = soiling_kimber(norain, initial_soiling=0.1)
     # test no rain, soiling reaches maximum
     assert np.allclose(
         soiling_norain.values, expected_kimber_soiling_initial_soil)
-
-
-@pytest.fixture
-def expected_greensboro_hsu_soil():
-    return np.array([
-        0.99927224, 0.99869067, 0.99815393, 0.99764437, 0.99715412,
-        0.99667873, 0.99621536, 0.99576203, 0.99531731, 0.99488010,
-        0.99444954, 0.99402494, 0.99360572, 0.99319142, 1.00000000,
-        1.00000000, 0.99927224, 0.99869067, 0.99815393, 0.99764437,
-        0.99715412, 1.00000000, 0.99927224, 0.99869067])
-
-
-@requires_scipy
-def test_gh889_soiing_hsu_tmy_not_monotonic(expected_greensboro_hsu_soil):
-    """doesn't raise value error"""
-    greensboro = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
-    greensboro_rain = greensboro[0].Lprecipdepth
-    soiling_ratio = soiling_hsu(
-        greensboro_rain, cleaning_threshold=10.0, tilt=0.0, pm2_5=1.0,
-        pm10=2.0, is_tmy=True)
-    # check first day of soiling ratio, actually (1 - transmission loss)
-    # greensboro rains hours 3pm, 4pm, and 10pm, so expect soiling ratio of one
-    assert np.allclose(expected_greensboro_hsu_soil, soiling_ratio.values[:24])
-    # greensboro timezone is UTC-5 or Eastern time
-    gmt_5 = pytz.timezone('Etc/GMT+5')
-    # check last day, should be 1991 now
-    lastday = datetime.datetime(1991, 1, 1, 0, 0, 0)
-    assert gmt_5.localize(lastday) == soiling_ratio.index[-1]
-    # check last hour is still 1990
-    lasthour = datetime.datetime(1990, 12, 31, 23, 0, 0)
-    assert gmt_5.localize(lasthour) == soiling_ratio.index[-2]
-    # check first hour is still 1990
-    firsthour = datetime.datetime(1990, 1, 1, 1, 0, 0)
-    assert gmt_5.localize(firsthour) == soiling_ratio.index[0]

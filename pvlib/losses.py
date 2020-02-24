@@ -9,13 +9,9 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import cosd
 
-_RAIN_ACC_PERIOD = pd.Timedelta('1h')
-_DEPO_VELOCITY = {'2_5': 0.004, '10': 0.0009}
-
 
 def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
-                depo_veloc=None, rain_accum_period=_RAIN_ACC_PERIOD,
-                is_tmy=False):
+                depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
     """
     Calculates soiling ratio given particulate and rain data using the model
     from Humboldt State University (HSU).
@@ -53,9 +49,6 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
         It is recommended that `rain_accum_period` be between 1 hour and
         24 hours.
 
-    is_tmy : bool, default False
-        Fix last timestep in TMY so that it is monotonically increasing.
-
     Returns
     -------
     soiling_ratio : Series
@@ -77,19 +70,7 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
 
     # never use mutable input arguments
     if depo_veloc is None:
-        depo_veloc = _DEPO_VELOCITY
-
-    # if TMY fix to be monotonically increasing by rolling index by 1 interval
-    # and then adding 1 interval, while the values stay the same
-    if is_tmy:
-        # get rainfall timezone, timestep as timedelta64
-        rain_tz = rainfall.index.tz
-        rain_index = rainfall.index.values
-        timestep_interval = (rain_index[1] - rain_index[0])
-        rain_vals = rainfall.values
-        rain_name = rainfall.name
-        rainfall = _fix_tmy_monotonicity(
-            rain_index, rain_vals, timestep_interval, rain_tz, rain_name)
+        depo_veloc = {'2_5': 0.004, '10': 0.0009}
 
     # accumulate rainfall into periods for comparison with threshold
     accum_rain = rainfall.rolling(rain_accum_period, closed='right').sum()
@@ -115,23 +96,11 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     return soiling_ratio
 
 
-def _fix_tmy_monotonicity(rain_index, rain_vals, timestep_interval, rain_tz,
-                          rain_name):
-    # fix TMY to be monotonically increasing by rolling index by 1 interval
-    # and then adding 1 interval, while the values stay the same
-    rain_index = np.roll(rain_index, 1) + timestep_interval
-    # NOTE: numpy datetim64[ns] has no timezone
-    # convert to datetimeindex at UTC and convert to original timezone
-    rain_index = pd.DatetimeIndex(rain_index, tz='UTC').tz_convert(rain_tz)
-    # fixed rainfall timeseries with monotonically increasing index
-    return pd.Series(rain_vals, index=rain_index, name=rain_name)
-
-
 def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
-                   initial_soiling=0, rain_accum_period=24, is_tmy=False):
+                   initial_soiling=0, rain_accum_period=24):
     """
-    Calculates fraction of energy lossed due to soiling given rainfall data and
+    Calculates fraction of energy lost due to soiling given rainfall data and
     daily loss rate using the Kimber model.
 
     Kimber soiling model [1]_ assumes soiling builds up at a daily rate unless
@@ -165,8 +134,6 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     rain_accum_period : int, default 24
         Period for accumulating rainfall to check against `cleaning_threshold`.
         The Kimber model defines this period as one day. [hours]
-    is_tmy : bool, default False
-        Fix last timestep in TMY so that it is monotonically increasing.
 
     Returns
     -------
@@ -204,19 +171,11 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     # convert grace_period to timedelta
     grace_period = datetime.timedelta(days=grace_period)
 
-    # get rainfall timezone, timestep as timedelta64, and timestep as day-frac
-    rain_tz = rainfall.index.tz
+    # get indices as numpy datetime64, calculate timestep as numpy timedelta64,
+    # and convert timestep to fraction of days
     rain_index_vals = rainfall.index.values
     timestep_interval = (rain_index_vals[1] - rain_index_vals[0])
     day_fraction = timestep_interval / np.timedelta64(24, 'h')
-
-    # if TMY fix to be monotonically increasing by rolling index by 1 interval
-    # and then adding 1 interval, while the values stay the same
-    if is_tmy:
-        rain_vals = rainfall.values
-        rain_name = rainfall.name
-        rainfall = _fix_tmy_monotonicity(
-            rain_index_vals, rain_vals, timestep_interval, rain_tz, rain_name)
 
     # accumulate rainfall
     accumulated_rainfall = rainfall.rolling(
@@ -241,6 +200,8 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
 
     # manual wash dates
     if manual_wash_dates is not None:
+        rain_tz = rainfall.index.tz
+        # convert manual wash dates to datetime index in the timezone of rain
         manual_wash_dates = pd.DatetimeIndex(manual_wash_dates, tz=rain_tz)
         cleaning[manual_wash_dates] = soiling[manual_wash_dates]
 

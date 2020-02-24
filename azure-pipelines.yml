@@ -13,7 +13,7 @@ jobs:
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
     displayName: Add conda to PATH
-  - script: conda env create --quiet --file ci/doc.yml
+  - script: conda env create -n test_env --quiet --file ci/doc.yml
     displayName: Create Anaconda environment
   - script: |
       source activate test_env

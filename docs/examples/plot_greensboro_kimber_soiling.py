@@ -42,7 +42,7 @@ greensboro_rain = greensboro[0].Lprecipdepth
 # calculate soiling with no wash dates
 THRESHOLD = 25.0
 soiling_no_wash = soiling_kimber(
-    greensboro_rain, cleaning_threshold=THRESHOLD, istmy=True)
+    greensboro_rain, cleaning_threshold=THRESHOLD, is_tmy=True)
 soiling_no_wash.name = 'soiling'
 # daily rain totals
 daily_rain = greensboro_rain.iloc[:-1].resample('D').sum()

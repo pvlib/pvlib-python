@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pandas.util.testing import assert_series_equal
 from pvlib.losses import soiling_hsu, soiling_kimber
-from pvlib.iotools import read_tmy3, fix_tmy3_coerce_year_monotonicity
+from pvlib.iotools import read_tmy3, tmy3_monotonic_index
 from conftest import (
     requires_scipy, needs_pandas_0_22, DATA_DIR)
 import pytest
@@ -128,7 +128,7 @@ def test_soiling_hsu_defaults(rainfall_input, expected_output_1):
 def greensboro_rain():
     # get TMY3 data with rain
     greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
-    greensboro = fix_tmy3_coerce_year_monotonicity(greensboro)
+    greensboro = tmy3_monotonic_index(greensboro)
     return greensboro.Lprecipdepth
 
 

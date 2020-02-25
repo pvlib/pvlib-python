@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import pytz
 from pvlib.iotools import tmy
-from pvlib.iotools import read_tmy3, fix_tmy3_coerce_year_monotonicity
+from pvlib.iotools import read_tmy3, tmy3_monotonic_index
 from conftest import DATA_DIR
 
 # test the API works
@@ -102,7 +102,7 @@ def test_fix_tmy_coerce_year_monotonicity():
     assert lastday1990 == greensboro.index[-1]
 
     # fix the index to be monotonically increasing
-    greensboro = fix_tmy3_coerce_year_monotonicity(greensboro)
+    greensboro = tmy3_monotonic_index(greensboro)
 
     # check first and last hours are still 1990
     assert firsthour == greensboro.index[0]

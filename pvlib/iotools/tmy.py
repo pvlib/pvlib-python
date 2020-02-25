@@ -10,7 +10,8 @@ import pandas as pd
 import numpy as np
 
 
-def read_tmy3(filename=None, coerce_year=None, recolumn=True):
+def read_tmy3(filename=None, coerce_year=None, recolumn=True,
+              monotonic_index=False):
     '''
     Read a TMY3 file in to a pandas dataframe.
 
@@ -32,8 +33,14 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
         If supplied, the year of the data will be set to this value.
 
     recolumn : bool, default True
-        If True, apply standard names to TMY3 columns. Typically this
+        If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
+
+    monotonic_index : bool, default False
+        If ``True`` and `coerce_year` is not ``None`` then the date-time index
+        will be adjusted to be monotonically increasing by changing the last
+        date-time index to be midnight on January 1st of the next year. If
+        `coerce_year` is ``None``, does nothing.
 
     Returns
     -------
@@ -220,6 +227,15 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
     if coerce_year is not None:
         data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
+        if monotonic_index:
+            data = tmy3_monotonic_index(data)
+        else:
+            import warnings
+            msg = (
+                'date-time index will be changed in v0.8 from to be'
+                ' monotonically increasing, set monotonic_index=True to'
+                ' silence this warning')
+            warnings.warn(msg, RuntimeWarning)
 
     if recolumn:
         data = _recolumn(data)  # rename to standard column names
@@ -529,20 +545,40 @@ def _read_tmy2(string, columns, hdr_columns, fname):
     return data, meta
 
 
-def fix_tmy3_coerce_year_monotonicity(tmy3):
+def tmy3_monotonic_index(tmy3):
     """
-    Fix TMY3 coerced to a single year to be monotonically increasing by
-    changing the last record to be in January 1st of the next year.
+    Fix the date-time index of TMY3 coerced to a single year to be
+    monotonically increasing by changing the last date-time index to be
+    midnight on January 1st of the next year.
 
     Parameters
     ----------
     tmy3 : pandas.DataFrame
-        TMY3 data frame from :func:`pvlib.iotools.read_tmy3` with year coearced
+        TMY3 data frame from :func:`pvlib.iotools.read_tmy3` with coerced year
 
     Returns
     -------
     pandas.DataFrame
         Copy of the TMY3 data frame with monotonically increasing index
+
+    Notes
+    -----
+    Use this function after calling :func:`~pvlib.iotools.read_tmy3` with
+    ``coerce_year`` set as desired.
+
+    .. warning:: This function will only work on TMY3 with date-time index
+        coerced to a single year. There is no validation to check if input TMY3
+        data frame has been coerced to a single year or if the date-time index
+        has already been fixed to be monotonically increasing.
+
+    In :func:`~pvlib.iotools.read_tmy3`, set ``monotonic_index=True`` to read
+    TMY3, coerce the year, and fix the date-time index to be monotonically
+    increasing without calling this function afterward.
+
+    See Also
+    --------
+    pvlib.iotools.read_tmy3
+
     """
     # NOTE: pandas index is immutable, therefore it's not possible to change a
     # single item in the index, so the entire index must be replaced
@@ -552,11 +588,10 @@ def fix_tmy3_coerce_year_monotonicity(tmy3):
     # NOTE: numpy converts index values to UTC
     index_tz = tmy3.index.tz
     index_values = tmy3.index.values
-    timestep_interval = index_values[1] - index_values[0]
 
     # fix index to be monotonically increasing by rolling indices 1 interval,
     # then adding 1 interval to all indices
-    index_values = np.roll(index_values, 1) + timestep_interval
+    index_values = np.roll(index_values, 1) + np.timedelta64(1, 'h')
 
     # create new datetime index and convert it to the original timezone
     new_index = pd.DatetimeIndex(index_values, tz='UTC').tz_convert(index_tz)

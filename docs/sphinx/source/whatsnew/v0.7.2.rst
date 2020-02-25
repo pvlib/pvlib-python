@@ -14,6 +14,8 @@ Enhancements
   the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
   indices were parsed from (:pull:`866`)
 * Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber` (:pull:`860`)
+* Add :py:func:`~pvlib.iotools.fix_tmy3_coerce_year_monotonicity` to fix TMY3
+  data coerced to a single year to be monotonically increasing (:pull:`910`)
 
 Bug fixes
 ~~~~~~~~~

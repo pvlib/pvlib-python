@@ -202,12 +202,11 @@ jobs:
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
     displayName: Add conda to PATH
-  - script: conda env create -n test_env --quiet --file ci/doc.yml
+  - script: conda env create -n test_env --quiet --file ci/requirements-py38.yml
     displayName: Create Anaconda environment
   - script: |
       source activate test_env
       # Replicate the exact environment created by the readthedocs CI
-      # conda install --yes --quiet -c pkgs/main mock pillow sphinx sphinx_rtd_theme
       pip install -e .[all]
     displayName: Replicate readthedocs CI environment
   - script: |

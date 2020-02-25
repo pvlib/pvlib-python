@@ -26,7 +26,8 @@ VARIABLE_MAP = {
 
 def read_srml(filename):
     """
-    Read University of Oregon SRML[1]_ 1min .tsv file into pandas dataframe.
+    Read University of Oregon SRML 1min .tsv file into pandas dataframe.  The
+    SRML is described in [1]_.
 
     Parameters
     ----------
@@ -166,8 +167,8 @@ def format_index(df):
 
 
 def read_srml_month_from_solardat(station, year, month, filetype='PO'):
-    """Request a month of SRML[1] data from solardat and read it into
-    a Dataframe.
+    """Request a month of SRML data from solardat and read it into
+    a Dataframe.  The SRML is described in [1]_.
 
     Parameters
     ----------

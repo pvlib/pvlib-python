@@ -26,7 +26,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   timeout=30):
     """
-    Get TMY data from PVGIS [1]_. For more information see the PVGIS TMY tool
+    Get TMY data from PVGIS. For more information see the PVGIS [1]_ TMY tool
     documentation [2]_.
 
     Parameters

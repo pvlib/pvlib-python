@@ -18,7 +18,8 @@ def pvfactors_timeseries(
     """
     Calculate front and back surface plane-of-array irradiance on
     a fixed tilt or single-axis tracker PV array configuration, and using
-    the open-source "pvfactors" package [1]_.
+    the open-source "pvfactors" package.  pvfactors implements the model
+    described in [1]_.
     Please refer to pvfactors online documentation for more details:
     https://sunpower.github.io/pvfactors/
 

@@ -1186,7 +1186,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the CEC
-    model described in [1]_. The CEC model differs from the De soto et al.
+    model. The CEC model [1]_ differs from the De soto et al.
     model [3]_ by the parameter Adjust. The five values returned by
     calcparams_cec can be used by singlediode to calculate an IV curve.
 
@@ -1306,8 +1306,9 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the PVsyst v6
-    model described in [1]_, [2]_, [3]_. The five values returned by
-    calcparams_pvsyst can be used by singlediode to calculate an IV curve.
+    model.  The PVsyst v6 model is described in [1]_, [2]_, [3]_.
+    The five values returned by calcparams_pvsyst can be used by singlediode
+    to calculate an IV curve.
 
     Parameters
     ----------
@@ -2643,7 +2644,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
 def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     r"""
-    Implements NREL's PVWatts DC power model [1]_:
+    Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
 
     .. math::
 
@@ -2694,7 +2695,8 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
                    connections=0.5, lid=1.5, nameplate_rating=1, age=0,
                    availability=3):
     r"""
-    Implements NREL's PVWatts system loss model [1]_:
+    Implements NREL's PVWatts system loss model.
+    The PVWatts loss model [1]_ is:
 
     .. math::
 
@@ -2745,7 +2747,8 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
 def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Implements NREL's PVWatts inverter model [1]_.
+    Implements NREL's PVWatts inverter model.
+    The PVWatts inverter model [1]_ is:
 
     .. math::
 

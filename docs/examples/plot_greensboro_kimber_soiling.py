@@ -2,19 +2,19 @@
 Kimber Soiling Model
 ====================
 
-Examples of soiling using the Kimber model [1]_.
-
-References
-----------
-.. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
-   in California and the Southwest Region of the United States," Adrianne
-   Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
-   Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
+Examples of soiling using the Kimber model.
 """
 
 # %%
-# This example shows basic usage of pvlib's Kimber Soiling model with
+# This example shows basic usage of pvlib's Kimber Soiling model [1]_ with
 # :py:meth:`pvlib.losses.soiling_kimber`.
+#
+# References
+# ----------
+# .. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
+#    in California and the Southwest Region of the United States," Adrianne
+#    Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
+#    Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
 #
 # The Kimber Soiling model assumes that soiling builds up at a constant rate
 # until cleaned either manually or by rain. The rain must reach a threshold to

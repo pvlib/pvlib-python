@@ -534,7 +534,7 @@ def fix_tmy3_coerce_year_monotonicity(tmy3):
     Fix TMY3 coerced to a single year to be monotonically increasing by
     changing the last record to be in January 1st of the next year.
 
-    Paramaters
+    Parameters
     ----------
     tmy3 : pandas.DataFrame
         TMY3 data frame from :func:`pvlib.iotools.read_tmy3` with year coearced

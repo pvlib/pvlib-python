@@ -600,13 +600,6 @@ class PVSystem(object):
             loss factor was determined.  The default value is 1.0, which is
             the wind speed at module height used to determine NOCT.
 
-        eta_m : numeric, default 0.1
-            Module external efficiency as a fraction, i.e.,
-            DC power / poa_global.
-
-        alpha_absorption : numeric, default 0.9
-            Absorption coefficient
-
         Returns
         -------
         numeric, values in degrees C.
@@ -617,6 +610,32 @@ class PVSystem(object):
                                     self.temperature_model_parameters))
         return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
                                        **kwargs)
+
+    def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
+        """
+        Use :py:func:`temperature.faiman` to calculate cell temperature.
+
+        Parameters
+        ----------
+        poa_global : numeric
+            Total incident irradiance [W/m^2].
+
+        temp_air : numeric
+            Ambient dry bulb temperature [C].
+
+        wind_speed : numeric, default 1.0
+            Wind speed in m/s measured at the same height for which the wind
+            loss factor was determined.  The default value 1.0 m/s is the wind
+            speed at module height used to determine NOCT. [m/s]
+
+        Returns
+        -------
+        numeric, values in degrees C.
+        """
+        kwargs = _build_kwargs(['u0', 'u1'],
+                               self.temperature_model_parameters)
+        return temperature.faiman(poa_global, temp_air, wind_speed,
+                                  **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 

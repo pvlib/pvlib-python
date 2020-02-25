@@ -274,8 +274,8 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     '''
     Calculate cell or module temperature using an empirical heat loss factor
-    model as proposed by Faiman [1] and adopted in the IEC 61853
-    standards [2] and [3].
+    model as proposed by Faiman [1]_ and adopted in the IEC 61853
+    standards [2]_ and [3]_.
 
     Usage of this model in the IEC 61853 standard does not distinguish
     between cell and module temperature.
@@ -312,15 +312,15 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     References
     ----------
-    [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
-    photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+    .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+       photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
 
-    [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
-    rating - Part 2: Spectral responsivity, incidence angle and module
-    operating temperature measurements". IEC, Geneva, 2018.
+    .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
+       rating - Part 2: Spectral responsivity, incidence angle and module
+       operating temperature measurements". IEC, Geneva, 2018.
 
-    [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
-    rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+    .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+       rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
 
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019

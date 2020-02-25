@@ -205,7 +205,6 @@ jobs:
       pip install -e .[all]
     displayName: Replicate readthedocs CI environment
   - script: |
-      source activate test_env
       cd docs/sphinx/
       sphinx-build -j auto -b html -d _build/doctrees source build
     displayName: Build HTML docs

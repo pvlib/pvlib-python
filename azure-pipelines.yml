@@ -200,12 +200,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-  - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
-    displayName: Add conda to PATH
-  - script: conda env create -n test_env --quiet --file ci/requirements-py38.yml
-    displayName: Create Anaconda environment
   - script: |
-      source activate test_env
       # Replicate the exact environment created by the readthedocs CI
       pip install -e .[all]
     displayName: Replicate readthedocs CI environment

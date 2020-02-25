@@ -10,7 +10,6 @@ from pvlib.iotools import read_tmy3, fix_tmy3_coerce_year_monotonicity
 from conftest import (
     requires_scipy, needs_pandas_0_22, DATA_DIR)
 import pytest
-import pytz
 
 
 @pytest.fixture
@@ -31,6 +30,16 @@ def expected_output():
         index=dt)
 
     return expected_no_cleaning
+
+
+@pytest.fixture
+def expected_output_1():
+    return np.array([
+        0.99927224, 0.99869067, 0.99815393, 0.99764437, 1.0,
+        0.99927224, 0.99869067, 0.99815393, 1.0, 1.0,
+        0.99927224, 0.99869067, 0.99815393, 0.99764437, 0.99715412,
+        0.99667873, 0.99621536, 0.99576203, 0.99531731, 0.9948801,
+        0.99444954, 0.99402494, 0.99360572, 0.99319142])
 
 
 @pytest.fixture
@@ -85,7 +94,7 @@ def test_soiling_hsu_no_cleaning(rainfall_input, expected_output):
 @requires_scipy
 @needs_pandas_0_22
 def test_soiling_hsu(rainfall_input, expected_output_2):
-    """Test Soiling HSU function"""
+    """Test Soiling HSU function with cleanings"""
 
     rainfall = rainfall_input
     pm2_5 = 1.0
@@ -100,6 +109,19 @@ def test_soiling_hsu(rainfall_input, expected_output_2):
                          rain_accum_period=pd.Timedelta('3h'))
 
     assert_series_equal(result, expected)
+
+
+@requires_scipy
+@needs_pandas_0_22
+def test_soiling_hsu_defaults(rainfall_input, expected_output_1):
+    """
+    Test Soiling HSU function with default deposition velocity and default rain
+    accumulation period.
+    """
+    result = soiling_hsu(
+        rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0, pm2_5=1.0,
+        pm10=2.0)
+    assert np.allclose(result.values, expected_output_1)
 
 
 @pytest.fixture

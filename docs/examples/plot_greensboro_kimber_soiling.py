@@ -34,10 +34,10 @@ import pathlib
 from matplotlib import pyplot as plt
 from pvlib.iotools import read_tmy3, fix_tmy3_coerce_year_monotonicity
 from pvlib.losses import soiling_kimber
+import pvlib
 
 # get full path to the data directory
-EXAMPLES_DIR = pathlib.Path(__file__).parent
-DATA_DIR = EXAMPLES_DIR.parent.parent / 'pvlib' / 'data'
+DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
 
 # get TMY3 data with rain
 greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)

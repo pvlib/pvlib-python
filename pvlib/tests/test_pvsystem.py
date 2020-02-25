@@ -1085,7 +1085,7 @@ def test_singlediode_series_ivcurve(cec_module_params):
         assert_allclose(v, expected[k], atol=1e-2)
 
 
-def test_scale_voltage_current_power(sam_data):
+def test_scale_voltage_current_power():
     data = pd.DataFrame(
         np.array([[2, 1.5, 10, 8, 12, 0.5, 1.5]]),
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],

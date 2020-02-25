@@ -712,6 +712,12 @@ def detect_clearsky(measured, clearsky, times, window_length,
     H = hankel(np.arange(intervals_per_window),                   # noqa: N806
                np.arange(intervals_per_window - 1, len(times)))
 
+    # convert pandas input to numpy array, but save knowledge of input state
+    # so we can return a series if that's what was originally provided
+    ispandas = isinstance(measured, pd.Series)
+    measured = np.asarray(measured)
+    clearsky = np.asarray(clearsky)
+
     # calculate measurement statistics
     meas_mean = np.mean(measured[H], axis=0)
     meas_max = np.max(measured[H], axis=0)
@@ -771,7 +777,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
-    if isinstance(measured, pd.Series):
+    if ispandas:
         clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:

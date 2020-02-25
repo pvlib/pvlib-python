@@ -1,0 +1,24 @@
+{# Modify the "Edit on Github" links to handle auto-generated pages #}
+
+{% extends "!breadcrumbs.html" %}
+{% block breadcrumbs_aside %}
+    <li class="wy-breadcrumbs-aside">
+        {# Is it a gallery page? #}
+        {% if gallery_dir in pagename %}
+            {% if pagename.split("/")[-1] == "index" %}
+                {% set target_url = "https://github.com/pvlib/pvlib-python/blob/master/docs/examples/README.rst" %}
+            {% else %}
+                {% set example_script = pagename.split("/")[-1] + ".py" %}
+                {% set target_url = "https://github.com/pvlib/pvlib-python/blob/master/docs/examples/" + example_script %}
+            {% endif %}
+        {# Is it an API autogen page? #}
+        {% elif "generated" in pagename %}
+            {# use our make_url function defined in conf.py #}
+            {% set target_url = make_url(pagename.split("/")[-1]) %}
+        {# Just a normal source page #}
+        {% else %}
+            {% set target_url = "https://github.com/pvlib/pvlib-python/blob/master/docs/sphinx/source/" + pagename + ".rst" %}
+        {% endif %}
+        <a href="{{ target_url }}" class="fa fa-github">View on Github</a>
+    </li>
+{% endblock %}

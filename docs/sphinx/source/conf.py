@@ -21,6 +21,9 @@ from unittest.mock import MagicMock
 # for warning suppression
 import warnings
 
+# for generating GH links with linenumbers
+import inspect
+
 
 class Mock(MagicMock):
     @classmethod
@@ -231,7 +234,6 @@ def setup(app):
     # Override footnote callout CSS to be normal text instead of superscript
     app.add_stylesheet("no_reference_superscript.css")
 
-
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
@@ -345,3 +347,72 @@ sphinx_gallery_conf = {
 warnings.filterwarnings("ignore", category=UserWarning,
                         message='Matplotlib is currently using agg, which is a'
                                 ' non-GUI backend, so cannot show the figure.')
+
+# %% helper functions for intelligent "View on Github" linking
+# based on
+# https://gist.github.com/flying-sheep/b65875c0ce965fbdd1d9e5d0b9851ef1
+
+
+def get_obj_module(qualname):
+    """
+    Get a module/class/attribute and its original module by qualname.
+    Useful for looking up the original location when a function is imported
+    into an __init__.py
+
+    Examples
+    --------
+    >>> func, mod = get_obj_module("pvlib.iotools.read_midc")
+    >>> mod.__name__
+    'pvlib.iotools.midc'
+    """
+    modname = qualname
+    classname = None
+    attrname = None
+    while modname not in sys.modules:
+        attrname = classname
+        modname, classname = modname.rsplit('.', 1)
+
+    # retrieve object and find original module name
+    if classname:
+        cls = getattr(sys.modules[modname], classname)
+        modname = cls.__module__
+        obj = getattr(cls, attrname) if attrname else cls
+    else:
+        obj = None
+
+    return obj, sys.modules[modname]
+
+
+def get_linenos(obj):
+    """Get an object’s line numbers"""
+    try:
+        lines, start = inspect.getsourcelines(obj)
+    except TypeError:  # obj is an attribute or None
+        return None, None
+    else:
+        return start, start + len(lines) - 1
+
+
+def make_url(qualname):
+    """
+    Get the full GitHub URL for some object’s qualname
+
+    Example
+    -------
+    >>> make_url("pvlib.tracking.singleaxis")
+    'https://github.com/pvlib/pvlib-python/blob/master/pvlib/tracking.py#L248-L572'
+    """
+    url_base = 'https://github.com/pvlib/pvlib-python/blob/master/'
+    obj, module = get_obj_module(qualname)
+    path = module.__name__.replace(".", "/") + ".py"
+    start, end = get_linenos(obj)
+    fragment = '#L{}-L{}'.format(start, end) if start and end else ''
+    return url_base + path + fragment
+
+
+# variables to pass into the HTML templating engine; these are accessible from
+# _templates/breadcrumbs.html
+html_context = {
+    'gallery_dir': sphinx_gallery_conf['gallery_dirs'][0],
+    'make_url': make_url,
+}

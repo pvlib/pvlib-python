@@ -43,6 +43,11 @@ Bug fixes
   :py:func:`~pvlib.losses.soiling_hsu`,
   and various test functions.
 
+Testing
+~~~~~~~
+* Rename `system` fixture to `sapm_dc_snl_ac_system` in model chain
+  tests. (:issue:`908`, :pull:`915`).
+
 Documentation
 ~~~~~~~~~~~~~
 * Add NumFOCUS affiliation to Sphinx documentation (:pull:`862`)
@@ -61,3 +66,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
+* Siyan (Veronica) Guo (:ghuser:`veronicaguo`)

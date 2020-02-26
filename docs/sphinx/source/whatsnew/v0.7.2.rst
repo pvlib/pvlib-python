@@ -37,6 +37,7 @@ Bug fixes
   0.6.4 what's new file. (:issue:`898`)
 * Compatibility with cftime 1.1. (:issue:`895`)
 * Add Python3.8 to Azure Pipelines CI (:issue:`903`)(:pull:`904`)
+* Add documentation build test to Azure Pipelines CI (:pull:`909`)
 * Minor implemention changes to avoid runtime and deprecation warnings in
   :py:func:`~pvlib.clearsky.detect_clearsky`,
   :py:func:`~pvlib.iam.martin_ruiz_diffuse`,

@@ -174,8 +174,10 @@ def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     (None, (32.2, 180)), ('None', (32.2, 180)), ('flat', (0, 180)),
     ('south_at_latitude_tilt', (32.2, 180))
 ])
-def test_orientation_strategy(strategy, expected, sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location, orientation_strategy=strategy)
+def test_orientation_strategy(strategy, expected, sapm_dc_snl_ac_system,
+                              location):
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    orientation_strategy=strategy)
 
     # the || accounts for the coercion of 'None' to None
     assert (mc.orientation_strategy == strategy or
@@ -231,7 +233,8 @@ def test_complete_irradiance_times(sapm_dc_snl_ac_system, location):
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location, transposition_model='perez')
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    transposition_model='perez')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
@@ -243,7 +246,8 @@ def test_run_model_perez(sapm_dc_snl_ac_system, location):
 
 
 def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location, airmass_model='gueymard1993',
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    airmass_model='gueymard1993',
                     transposition_model='perez')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
@@ -255,7 +259,8 @@ def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
     assert_series_equal(ac, expected)
 
 
-def test_run_model_with_weather_sapm_temp(sapm_dc_snl_ac_system, location, weather, mocker):
+def test_run_model_with_weather_sapm_temp(sapm_dc_snl_ac_system, location,
+                                          weather, mocker):
     # test with sapm cell temperature model
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
@@ -273,7 +278,8 @@ def test_run_model_with_weather_sapm_temp(sapm_dc_snl_ac_system, location, weath
     assert not mc.ac.empty
 
 
-def test_run_model_with_weather_pvsyst_temp(sapm_dc_snl_ac_system, location, weather, mocker):
+def test_run_model_with_weather_pvsyst_temp(sapm_dc_snl_ac_system, location,
+                                            weather, mocker):
     # test with pvsyst cell temperature model
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
@@ -290,11 +296,14 @@ def test_run_model_with_weather_pvsyst_temp(sapm_dc_snl_ac_system, location, wea
     assert not mc.ac.empty
 
 
-def test_run_model_with_weather_faiman_temp(sapm_dc_snl_ac_system, location, weather, mocker):
+def test_run_model_with_weather_faiman_temp(sapm_dc_snl_ac_system, location,
+                                            weather, mocker):
     # test with faiman cell temperature model
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
-    sapm_dc_snl_ac_system.temperature_model_parameters = {'u0': 25.0, 'u1': 6.84}
+    sapm_dc_snl_ac_system.temperature_model_parameters = {
+        'u0': 25.0, 'u1': 6.84
+    }
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'faiman'
     m_faiman = mocker.spy(sapm_dc_snl_ac_system, 'faiman_celltemp')
@@ -308,7 +317,9 @@ def test_run_model_with_weather_faiman_temp(sapm_dc_snl_ac_system, location, wea
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
     system = SingleAxisTracker(
         module_parameters=sapm_dc_snl_ac_system.module_parameters,
-        temperature_model_parameters=sapm_dc_snl_ac_system.temperature_model_parameters,
+        temperature_model_parameters=(
+            sapm_dc_snl_ac_system.temperature_model_parameters
+        ),
         inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
     mocker.spy(system, 'singleaxis')
     mc = ModelChain(system, location)
@@ -332,9 +343,9 @@ def poadc(mc):
     pytest.param('pvsyst', marks=requires_scipy),
     pytest.param('singlediode', marks=requires_scipy),
     'pvwatts_dc'])
-def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system, pvsyst_dc_snl_ac_system,
-                        pvwatts_dc_pvwatts_ac_system, location, dc_model,
-                        weather, mocker):
+def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
+                        pvsyst_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
+                        location, dc_model, weather, mocker):
     dc_systems = {'sapm': sapm_dc_snl_ac_system,
                   'cec': cec_dc_snl_ac_system,
                   'desoto': cec_dc_snl_ac_system,
@@ -374,7 +385,8 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system, pvsyst_dc_s
     'sapm',
     pytest.param('cec', marks=requires_scipy),
     pytest.param('cec_native', marks=requires_scipy)])
-def test_infer_spectral_model(location, sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
+def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
+                              cec_dc_snl_ac_system,
                               cec_dc_native_snl_ac_system, dc_model):
     dc_systems = {'sapm': sapm_dc_snl_ac_system,
                   'cec': cec_dc_snl_ac_system,
@@ -407,16 +419,17 @@ def test_infer_temp_model(location, sapm_dc_snl_ac_system,
 def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
     sapm_dc_snl_ac_system.temperature_model_parameters.pop('a')
     with pytest.raises(ValueError):
-        ModelChain(sapm_dc_snl_ac_system, location, orientation_strategy='None',
-                   aoi_model='physical', spectral_model='no_loss')
+        ModelChain(sapm_dc_snl_ac_system, location,
+                   orientation_strategy='None', aoi_model='physical',
+                   spectral_model='no_loss')
 
 
 @requires_scipy
 def test_temperature_model_inconsistent(location, sapm_dc_snl_ac_system):
     with pytest.raises(ValueError):
-        ModelChain(sapm_dc_snl_ac_system, location, orientation_strategy='None',
-                   aoi_model='physical', spectral_model='no_loss',
-                   temperature_model='pvsyst')
+        ModelChain(sapm_dc_snl_ac_system, location,
+                   orientation_strategy='None', aoi_model='physical',
+                   spectral_model='no_loss', temperature_model='pvsyst')
 
 
 def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -437,9 +450,11 @@ def acdc(mc):
 @pytest.mark.parametrize('ac_model', [
     'snlinverter', pytest.param('adrinverter', marks=requires_scipy),
     'pvwatts'])
-def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system, pvwatts_dc_pvwatts_ac_system,
-                   location, ac_model, weather, mocker):
-    ac_systems = {'snlinverter': sapm_dc_snl_ac_system, 'adrinverter': cec_dc_adr_ac_system,
+def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
+                   pvwatts_dc_pvwatts_ac_system, location, ac_model,
+                   weather, mocker):
+    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
+                  'adrinverter': cec_dc_adr_ac_system,
                   'pvwatts': pvwatts_dc_pvwatts_ac_system}
     system = ac_systems[ac_model]
 
@@ -473,7 +488,8 @@ def constant_aoi_loss(mc):
 @pytest.mark.parametrize('aoi_model', [
     'sapm', 'ashrae', 'physical', 'martin_ruiz'
 ])
-def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model, weather, mocker):
+def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
+                    weather, mocker):
     mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
                     aoi_model=aoi_model, spectral_model='no_loss')
     m = mocker.spy(sapm_dc_snl_ac_system, 'get_iam')
@@ -534,7 +550,8 @@ def constant_spectral_loss(mc):
 @pytest.mark.parametrize('spectral_model', [
         'sapm', 'first_solar', 'no_loss', constant_spectral_loss
 ])
-def test_spectral_models(sapm_dc_snl_ac_system, location, spectral_model, weather):
+def test_spectral_models(sapm_dc_snl_ac_system, location, spectral_model,
+                         weather):
     # add pw to weather dataframe
     weather['precipitable_water'] = [0.3, 0.5]
     mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
@@ -766,10 +783,11 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
 @pytest.mark.parametrize('strategy, strategy_str', [
     ('south_at_latitude_tilt', 'south_at_latitude_tilt'),
     (None, 'None')])  # GitHub issue 352
-def test_ModelChain___repr__(sapm_dc_snl_ac_system, location, strategy, strategy_str):
+def test_ModelChain___repr__(sapm_dc_snl_ac_system, location, strategy,
+                             strategy_str):
 
-    mc = ModelChain(sapm_dc_snl_ac_system, location, orientation_strategy=strategy,
-                    name='my mc')
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    orientation_strategy=strategy, name='my mc')
 
     expected = '\n'.join([
         'ModelChain: ',

@@ -181,6 +181,22 @@ jobs:
       reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
 
 
+- job: DocTest
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.8'
+  - script: |
+      pip install -e .[all]
+    displayName: Install pvlib[all] for doc build
+  - script: |
+      cd docs/sphinx/
+      sphinx-build -j auto -b html -d _build/doctrees source build
+    displayName: Build HTML docs
+
+
 - job: 'Publish'
   dependsOn: 'Test_conda_linux'
   pool:

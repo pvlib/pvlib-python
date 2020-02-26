@@ -16,6 +16,9 @@ Enhancements
 * Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber` (:pull:`860`)
 * Add :py:func:`~pvlib.iotools.tmy3_monotonic_index` to fix TMY3
   data coerced to a single year to be monotonically increasing (:pull:`910`)
+* Add ``monotonic_index`` kwarg to :py:func:`~pvlib.iotools.read_tmy3` to fix
+  TMY3 data coerced to a single year to be monotonically increasing, default is
+  ``False`` and warns that it will be changed to ``True`` in v0.8 (:pull:`910`)
 
 Bug fixes
 ~~~~~~~~~

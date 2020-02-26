@@ -204,7 +204,6 @@ jobs:
     inputs:
       versionSpec: '3.8'
   - script: |
-      # Replicate the exact environment created by the readthedocs CI
       pip install -e .[all]
     displayName: Replicate readthedocs CI environment
   - script: |

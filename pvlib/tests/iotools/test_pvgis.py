@@ -187,47 +187,68 @@ def test_get_pvgis_tmy_error():
 def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                              meta_expected):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
-    pvgis_data = read_pvgis_tmy(fn, outputformat='json')
+    # infer outputformat from file extensions
+    pvgis_data = read_pvgis_tmy(fn)
+    _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
+                            meta_expected, pvgis_data)
+    # explicit pvgis outputformat
+    pvgis_data = read_pvgis_tmy(fn, pvgis_format='json')
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data)
     with fn.open('r') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, outputformat='json')
+        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='json')
         _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                                 meta_expected, pvgis_data)
 
 
 def test_read_pvgis_tmy_epw(expected, epw_meta):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.epw'
-    pvgis_data = read_pvgis_tmy(fn, outputformat='epw')
+    # infer outputformat from file extensions
+    pvgis_data = read_pvgis_tmy(fn)
+    _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
+    # explicit pvgis outputformat
+    pvgis_data = read_pvgis_tmy(fn, pvgis_format='epw')
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
     with fn.open('r') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, outputformat='epw')
+        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='epw')
         _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
 
 
 def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                             meta_expected, csv_meta):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.csv'
-    pvgis_data = read_pvgis_tmy(fn, outputformat='csv')
+    # infer outputformat from file extensions
+    pvgis_data = read_pvgis_tmy(fn)
+    _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
+                           meta_expected, csv_meta, pvgis_data)
+    # explicit pvgis outputformat
+    pvgis_data = read_pvgis_tmy(fn, pvgis_format='csv')
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta, pvgis_data)
     with fn.open('rb') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, outputformat='csv')
+        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='csv')
         _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                                meta_expected, csv_meta, pvgis_data)
 
 
 def test_read_pvgis_tmy_basic(expected, meta_expected):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.txt'
-    pvgis_data = read_pvgis_tmy(fn, outputformat='basic')
+    # XXX: can't infer outputformat from file extensions for basic
+    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
+        read_pvgis_tmy(fn)
+    # explicit pvgis outputformat
+    pvgis_data = read_pvgis_tmy(fn, pvgis_format='basic')
     _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
     with fn.open('rb') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, outputformat='basic')
+        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='basic')
         _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
+        # XXX: can't infer outputformat from file buffer
+        with pytest.raises(ValueError, match="pvgis format"):
+            read_pvgis_tmy(fbuf)
 
 
 def test_read_pvgis_tmy_exception():
     bad_outputformat = 'bad'
-    err_msg = "output format '{:s}' was unknown".format(bad_outputformat)
+    err_msg = "pvgis format '{:s}' was unknown".format(bad_outputformat)
     with pytest.raises(ValueError, match=err_msg):
-        read_pvgis_tmy('filename', outputformat=bad_outputformat)
+        read_pvgis_tmy('filename', pvgis_format=bad_outputformat)

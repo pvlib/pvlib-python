@@ -181,7 +181,7 @@ def _parse_pvgis_tmy_basic(src):
     return data, None, None, None
 
 
-def read_pvgis_tmy(filename, outputformat='csv'):
+def read_pvgis_tmy(filename, pvgis_format=None):
     """
     Read a file downloaded from PVGIS.
 
@@ -189,9 +189,13 @@ def read_pvgis_tmy(filename, outputformat='csv'):
     ----------
     filename : str, pathlib.Path, or file-like buffer
         Name, path, or buffer of file downloaded from PVGIS.
-    outputformat : str, default 'csv'
-        Output format of PVGIS file. Must be in
-        ``['csv', 'basic', 'epw', 'json']``.
+    pvgis_format : str, default None
+        Format of PVGIS file. Equivalent to the ``outputformat`` parameter in
+        the PVGIS TMY API. If ``None`` then the file extension will be used to
+        determine the PVGIS format to parse. For PVGIS files from the API with
+        ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
+        `filename` is a buffer then `pvgis_format` must be in
+        ``['csv', 'basic', 'epw', or 'json']``.
 
     Returns
     -------
@@ -207,12 +211,20 @@ def read_pvgis_tmy(filename, outputformat='csv'):
     Raises
     ------
     ValueError
-        if `outputformat` isn't in ``['csv', 'basic', 'epw', 'json']``
+        if `pvgis_format` isn't in ``['csv', 'basic', 'epw', 'json']``
 
     See also
     --------
     get_pvgis_tmy
     """
+    # get the PVGIS outputformat
+    if pvgis_format is None:
+        # get the file extension from the last 4 characters after the dot
+        # make sure it's lower case to compare with epw, csv, or json
+        outputformat = str(filename)[-4:].lower().split('.')[-1]
+    else:
+        outputformat = pvgis_format
+
     # parse the pvgis file based on the output format, either 'epw', 'json',
     # 'csv', or 'basic'
 
@@ -252,8 +264,8 @@ def read_pvgis_tmy(filename, outputformat='csv'):
                 pvgis_data = pvgis_parser(fbuf)
         return pvgis_data
 
-    # raise exception if output format isn't in ['csv', 'basic', 'epw', 'json']
+    # raise exception if pvgis format isn't in ['csv', 'basic', 'epw', 'json']
     err_msg = (
-        "output format '{:s}' was unknown, must be either 'epw', 'json', 'csv'"
+        "pvgis format '{:s}' was unknown, must be either 'epw', 'json', 'csv'"
         ", or 'basic'").format(outputformat)
     raise ValueError(err_msg)

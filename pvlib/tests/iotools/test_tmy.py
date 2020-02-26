@@ -82,7 +82,7 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     assert data.index[-1].hour == 0
 
 
-def test_fix_tmy_coerce_year_monotonicity():
+def test_tmy3_monotonic_index():
     # greensboro timezone is UTC-5 or Eastern time
     gmt_5 = pytz.timezone('Etc/GMT+5')
 

@@ -13,6 +13,9 @@ Enhancements
 * TMY3 dataframe returned by :py:func:`~pvlib.iotools.read_tmy3` now contains
   the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
   indices were parsed from (:pull:`866`)
+* Add :py:func:`~pvlib.pvsystem.PVSystem.faiman` and added 
+  ``temperature_model='faiman'`` option to :py:class:`~pvlib.modelchain.ModelChain`
+  (:pull:`897`) (:issue:`836`).
 * Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber` (:pull:`860`)
 
 Bug fixes
@@ -41,6 +44,10 @@ Bug fixes
   :py:func:`~pvlib.losses.soiling_hsu`,
   and various test functions.
 
+Testing
+~~~~~~~
+* Rename `system` fixture to `sapm_dc_snl_ac_system` in model chain
+  tests. (:issue:`908`, :pull:`915`).
 
 Documentation
 ~~~~~~~~~~~~~
@@ -60,3 +67,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
+* Siyan (Veronica) Guo (:ghuser:`veronicaguo`)

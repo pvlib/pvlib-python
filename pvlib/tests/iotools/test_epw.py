@@ -13,6 +13,7 @@ def test_read_epw():
 
 @network
 @pytest.mark.remote_data
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_read_epw_remote():
     url = 'https://energyplus.net/weather-download/europe_wmo_region_6/NLD//NLD_Amsterdam.062400_IWEC/NLD_Amsterdam.062400_IWEC.epw'
     epw.read_epw(url)

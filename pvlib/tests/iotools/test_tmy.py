@@ -19,6 +19,7 @@ def test_read_tmy3():
 
 @network
 @pytest.mark.remote_data
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_read_tmy3_remote():
     url = 'http://rredc.nrel.gov/solar/old_data/nsrdb/1991-2005/data/tmy3/703165TYA.CSV'
     tmy.read_tmy3(url)

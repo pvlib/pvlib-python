@@ -12,6 +12,7 @@ network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
 
 @network
 @pytest.mark.remote_data
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_read_surfrad_network():
     # If this test begins failing, SURFRAD's data structure or data
     # archive may have changed.

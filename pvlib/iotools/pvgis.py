@@ -190,11 +190,11 @@ def read_pvgis_tmy(filename, pvgis_format=None):
     filename : str, pathlib.Path, or file-like buffer
         Name, path, or buffer of file downloaded from PVGIS.
     pvgis_format : str, default None
-        Format of PVGIS file. Equivalent to the ``outputformat`` parameter in
-        the PVGIS TMY API. If ``None`` then the file extension will be used to
+        Format of PVGIS file or buffer. Equivalent to the ``outputformat`` parameter in
+        the PVGIS TMY API. If `filename` is a file and ``pvgis_format`` is ``None`` then the file extension will be used to
         determine the PVGIS format to parse. For PVGIS files from the API with
         ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
-        `filename` is a buffer then `pvgis_format` must be in
+        ``pvgis_format`` is required when `filename` is a buffer. In this case, `pvgis_format` must be in
         ``['csv', 'basic', 'epw', or 'json']``.
 
     Returns
@@ -211,7 +211,7 @@ def read_pvgis_tmy(filename, pvgis_format=None):
     Raises
     ------
     ValueError
-        if `pvgis_format` isn't in ``['csv', 'basic', 'epw', 'json']``
+        if `pvgis_format` , either determined the file extension or provided as input, isn't in ``['csv', 'basic', 'epw', 'json']``
 
     See also
     --------

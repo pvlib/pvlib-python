@@ -190,12 +190,13 @@ def read_pvgis_tmy(filename, pvgis_format=None):
     filename : str, pathlib.Path, or file-like buffer
         Name, path, or buffer of file downloaded from PVGIS.
     pvgis_format : str, default None
-        Format of PVGIS file or buffer. Equivalent to the ``outputformat`` parameter in
-        the PVGIS TMY API. If `filename` is a file and ``pvgis_format`` is ``None`` then the file extension will be used to
+        Format of PVGIS file or buffer. Equivalent to the ``outputformat``
+        parameter in the PVGIS TMY API. If `filename` is a file and
+        `pvgis_format` is ``None`` then the file extension will be used to
         determine the PVGIS format to parse. For PVGIS files from the API with
         ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
-        ``pvgis_format`` is required when `filename` is a buffer. In this case, `pvgis_format` must be in
-        ``['csv', 'basic', 'epw', or 'json']``.
+        `filename` is a buffer, then `pvgis_format` is required and must be in
+        ``['csv', 'epw', 'json', 'basic']``.
 
     Returns
     -------
@@ -211,7 +212,10 @@ def read_pvgis_tmy(filename, pvgis_format=None):
     Raises
     ------
     ValueError
-        if `pvgis_format` , either determined the file extension or provided as input, isn't in ``['csv', 'basic', 'epw', 'json']``
+        if `pvgis_format` is ``None`` and `filename` is either a buffer or the
+        file extension is neither ``.csv``, ``.json``, nor ``.epw``, or if
+        `pvgis_format` provided as input isn't in
+        ``['csv', 'epw', 'json', 'basic']``
 
     See also
     --------
@@ -219,9 +223,9 @@ def read_pvgis_tmy(filename, pvgis_format=None):
     """
     # get the PVGIS outputformat
     if pvgis_format is None:
-        # get the file extension from the last 4 characters after the dot
-        # make sure it's lower case to compare with epw, csv, or json
-        outputformat = str(filename)[-4:].lower().split('.')[-1]
+        # get the file extension from everything after the last dot on the
+        # right and make sure it's lower case to compare with epw, csv, or json
+        outputformat = str(filename).lower().rsplit('.', 1)[-1]
     else:
         outputformat = pvgis_format
 

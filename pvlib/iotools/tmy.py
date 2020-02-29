@@ -7,7 +7,6 @@ import io
 import re
 from urllib.request import urlopen, Request
 import pandas as pd
-import numpy as np
 
 
 def read_tmy3(filename=None, coerce_year=None, recolumn=True):

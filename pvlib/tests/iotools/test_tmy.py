@@ -1,9 +1,7 @@
-import datetime
 from pandas.util.testing import network
 import numpy as np
 import pandas as pd
 import pytest
-import pytz
 from pvlib.iotools import tmy
 from pvlib.iotools import read_tmy3
 from conftest import DATA_DIR

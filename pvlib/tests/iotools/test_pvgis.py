@@ -242,9 +242,8 @@ def test_read_pvgis_tmy_basic(expected, meta_expected):
     with fn.open('rb') as fbuf:
         pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='basic')
         _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
-        # XXX: can't infer outputformat from file buffer
-        err_msg = "expected str, bytes or os.PathLike object"
-        with pytest.raises(TypeError, match=err_msg):
+        # file buffer raises TypeError if passed to pathlib.Path()
+        with pytest.raises(TypeError):
             read_pvgis_tmy(fbuf)
 
 

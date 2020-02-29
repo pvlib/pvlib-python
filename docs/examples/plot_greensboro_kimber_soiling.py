@@ -32,7 +32,7 @@ Examples of soiling using the Kimber model.
 from datetime import datetime
 import pathlib
 from matplotlib import pyplot as plt
-from pvlib.iotools import read_tmy3, tmy3_monotonic_index
+from pvlib.iotools import read_tmy3
 from pvlib.losses import soiling_kimber
 import pvlib
 
@@ -41,8 +41,6 @@ DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
 
 # get TMY3 data with rain
 greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
-# fix TMY3 index to be monotonically increasing
-greensboro = tmy3_monotonic_index(greensboro)
 # get the rain data
 greensboro_rain = greensboro.Lprecipdepth
 # calculate soiling with no wash dates and cleaning threshold of 25-mm of rain

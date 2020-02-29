@@ -369,7 +369,6 @@ relevant to solar energy modeling.
 
    iotools.read_tmy2
    iotools.read_tmy3
-   iotools.tmy3_monotonic_index
    iotools.read_epw
    iotools.parse_epw
    iotools.read_srml

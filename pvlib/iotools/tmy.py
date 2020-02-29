@@ -10,8 +10,7 @@ import pandas as pd
 import numpy as np
 
 
-def read_tmy3(filename=None, coerce_year=None, recolumn=True,
-              monotonic_index=False):
+def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     '''
     Read a TMY3 file in to a pandas dataframe.
 
@@ -30,17 +29,13 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True,
         a relative file path, absolute file path, or url.
 
     coerce_year : None or int, default None
-        If supplied, the year of the data will be set to this value.
+        If supplied, the year of the data will be set to this value, except for
+        the last index which will be set to the *next* year so that the indices
+        increase monotonically.
 
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
-
-    monotonic_index : bool, default False
-        If ``True`` and `coerce_year` is not ``None`` then the date-time index
-        will be adjusted to be monotonically increasing by changing the last
-        date-time index to be midnight on January 1st of the next year. If
-        `coerce_year` is ``None``, does nothing.
 
     Returns
     -------
@@ -57,7 +52,6 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True,
 
     Notes
     -----
-
     The returned structures have the following fields.
 
     ===============   ======  ===================
@@ -147,15 +141,16 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True,
     TMYData.PresWthUncertainty          Present weather code uncertainty, see [2]_.
     =============================       ======================================================================================================================================================
 
-    .. warning:: TMY3 irradiance data corresponds to the previous hour, so the
-        first hour is 1AM, corresponding to the net irradiance from midnite to
-        1AM, and the last hour is midnite of the *next* year, unless the year
-        has been coerced. EG: if TMY3 was 1988-12-31 24:00:00 this becomes
-        1989-01-01 00:00:00
+    .. warning:: TMY3 irradiance data corresponds to the *previous* hour, so
+        the first index is 1AM, corresponding to the irradiance from midnight
+        to 1AM, and the last index is midnight of the *next* year. For example,
+        if the last index in the TMY3 file was 1988-12-31 24:00:00 this becomes
+        1989-01-01 00:00:00 after calling :func:`~pvlib.iotools.read_tmy3`.
 
     .. warning:: When coercing the year, the last index in the dataframe will
-        be the first hour of the same year, EG: if TMY3 was 1988-12-31 24:00:00
-        and year is coerced to 1990 this becomes 1990-01-01
+        become midnight of the *next* year. For example, if the last index in
+        the TMY3 was 1988-12-31 24:00:00, and year is coerced to 1990 then this
+        becomes 1991-01-01 00:00:00.
 
     References
     ----------
@@ -222,20 +217,12 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True,
     data_ymd[leapday] += datetime.timedelta(days=1)
     # shifted_hour is a pd.Series, so use pd.to_timedelta to get a pd.Series of
     # timedeltas
+    if coerce_year is not None:
+        data_ymd = data_ymd.map(lambda dt: dt.replace(year=coerce_year))
+        data_ymd.iloc[-1] = data_ymd.iloc[-1].replace(year=coerce_year+1)
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
-    if coerce_year is not None:
-        data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
-        if monotonic_index:
-            data = tmy3_monotonic_index(data)
-        else:
-            import warnings
-            msg = (
-                'date-time index will be changed in v0.8 from to be'
-                ' monotonically increasing, set monotonic_index=True to'
-                ' silence this warning')
-            warnings.warn(msg, RuntimeWarning)
 
     if recolumn:
         data = _recolumn(data)  # rename to standard column names
@@ -543,63 +530,3 @@ def _read_tmy2(string, columns, hdr_columns, fname):
         columns=columns.split(',')).tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
-
-
-def tmy3_monotonic_index(tmy3):
-    """
-    Fix the date-time index of TMY3 coerced to a single year to be
-    monotonically increasing by changing the last date-time index to be
-    midnight on January 1st of the next year.
-
-    Parameters
-    ----------
-    tmy3 : pandas.DataFrame
-        TMY3 data frame from :func:`pvlib.iotools.read_tmy3` with coerced year
-
-    Returns
-    -------
-    pandas.DataFrame
-        Copy of the TMY3 data frame with monotonically increasing index
-
-    Notes
-    -----
-    Use this function after calling :func:`~pvlib.iotools.read_tmy3` with
-    ``coerce_year`` set as desired.
-
-    .. warning:: This function will only work on TMY3 with date-time index
-        coerced to a single year. There is no validation to check if input TMY3
-        data frame has been coerced to a single year or if the date-time index
-        has already been fixed to be monotonically increasing.
-
-    In :func:`~pvlib.iotools.read_tmy3`, set ``monotonic_index=True`` to read
-    TMY3, coerce the year, and fix the date-time index to be monotonically
-    increasing without calling this function afterward.
-
-    See Also
-    --------
-    pvlib.iotools.read_tmy3
-
-    """
-    # NOTE: pandas index is immutable, therefore it's not possible to change a
-    # single item in the index, so the entire index must be replaced
-
-    # get tmy3 timezone, index values as np.datetime64[ns], and index frequency
-    # as np.timedelta64[ns]
-    # NOTE: numpy converts index values to UTC
-    index_tz = tmy3.index.tz
-    index_values = tmy3.index.values
-
-    # fix index to be monotonically increasing by rolling indices 1 interval,
-    # then adding 1 interval to all indices
-    index_values = np.roll(index_values, 1) + np.timedelta64(1, 'h')
-
-    # create new datetime index and convert it to the original timezone
-    new_index = pd.DatetimeIndex(index_values, tz='UTC').tz_convert(index_tz)
-
-    # copy the original TMY3 so it doesn't change, then replace the index of
-    # the copy with the new fixed monotonically increasing index
-    new_tmy3 = tmy3.copy()
-    new_tmy3.index = new_index
-
-    # fixed TMY3 with monotonically increasing index
-    return new_tmy3

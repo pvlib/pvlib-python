@@ -7,6 +7,9 @@ API Changes
 ~~~~~~~~~~~
 * :py:class:`pvlib.forecast.ForecastModel` now requires ``start`` and ``end``
   arguments to be tz-localized. (:issue:`877`, :pull:`879`)
+* :py:func:`pvlib.iotools.read_tmy3` when coerced to a single year now returns
+  indices that are monotonically increasing, for example the last index will be
+  midnight of the *next* year. (:pull:`910`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -14,11 +17,6 @@ Enhancements
   the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
   indices were parsed from (:pull:`866`)
 * Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber` (:pull:`860`)
-* Add :py:func:`~pvlib.iotools.tmy3_monotonic_index` to fix TMY3
-  data coerced to a single year to be monotonically increasing (:pull:`910`)
-* Add ``monotonic_index`` kwarg to :py:func:`~pvlib.iotools.read_tmy3` to fix
-  TMY3 data coerced to a single year to be monotonically increasing, default is
-  ``False`` and warns that it will be changed to ``True`` in v0.8 (:pull:`910`)
 
 Bug fixes
 ~~~~~~~~~
@@ -44,8 +42,8 @@ Bug fixes
   :py:func:`~pvlib.iam.martin_ruiz_diffuse`,
   :py:func:`~pvlib.losses.soiling_hsu`,
   and various test functions.
-* Fix :py:func:`~pvlib.losses.soiling_hsu` TMY3 data not monotonic exception
-  (:pull:`910`)
+* Fix :py:func:`~pvlib.iotools.read_tmy3` so that when coerced to a single year
+  the TMY3 data will be monotonically increasing (:pull:`910`)
 
 Documentation
 ~~~~~~~~~~~~~

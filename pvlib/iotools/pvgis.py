@@ -16,6 +16,7 @@ More detailed information about the API for TMY and hourly radiation are here:
 """
 import io
 import json
+from pathlib import Path
 import requests
 import pandas as pd
 from pvlib.iotools import read_epw, parse_epw
@@ -212,10 +213,11 @@ def read_pvgis_tmy(filename, pvgis_format=None):
     Raises
     ------
     ValueError
-        if `pvgis_format` is ``None`` and `filename` is either a buffer or the
-        file extension is neither ``.csv``, ``.json``, nor ``.epw``, or if
-        `pvgis_format` provided as input isn't in
-        ``['csv', 'epw', 'json', 'basic']``
+        if `pvgis_format` is ``None`` and the file extension is neither
+        ``.csv``, ``.json``, nor ``.epw``, or if `pvgis_format` is provided as
+        input but isn't in ``['csv', 'epw', 'json', 'basic']``
+    TypeError
+        if `pvgis_format` is ``None`` and `filename` is a buffer
 
     See also
     --------
@@ -223,9 +225,10 @@ def read_pvgis_tmy(filename, pvgis_format=None):
     """
     # get the PVGIS outputformat
     if pvgis_format is None:
-        # get the file extension from everything after the last dot on the
-        # right and make sure it's lower case to compare with epw, csv, or json
-        outputformat = str(filename).lower().rsplit('.', 1)[-1]
+        # get the file extension from suffix, but remove the dot and make sure
+        # it's lower case to compare with epw, csv, or json
+        # NOTE: raises TypeError if filename is a buffer
+        outputformat = Path(filename).suffix[1:].lower()
     else:
         outputformat = pvgis_format
 

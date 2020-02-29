@@ -16,6 +16,9 @@ Enhancements
 * TMY3 dataframe returned by :py:func:`~pvlib.iotools.read_tmy3` now contains
   the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
   indices were parsed from. (:pull:`866`)
+* Add :py:func:`~pvlib.pvsystem.PVSystem.faiman` and added 
+  ``temperature_model='faiman'`` option to :py:class:`~pvlib.modelchain.ModelChain`
+  (:pull:`897`) (:issue:`836`).
 * Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber`. (:pull:`860`)
 
 Bug fixes
@@ -37,6 +40,7 @@ Bug fixes
   0.6.4 what's new file. (:issue:`898`)
 * Compatibility with cftime 1.1. (:issue:`895`)
 * Add Python3.8 to Azure Pipelines CI. (:issue:`903`)(:pull:`904`)
+* Add documentation build test to Azure Pipelines CI. (:pull:`909`)
 * Minor implemention changes to avoid runtime and deprecation warnings in
   :py:func:`~pvlib.clearsky.detect_clearsky`,
   :py:func:`~pvlib.iam.martin_ruiz_diffuse`,
@@ -45,10 +49,16 @@ Bug fixes
 * Fix :py:func:`~pvlib.iotools.read_tmy3` so that when coerced to a single year
   the TMY3 index will be monotonically increasing. (:pull:`910`)
 
+Testing
+~~~~~~~
+* Rename `system` fixture to `sapm_dc_snl_ac_system` in model chain
+  tests. (:issue:`908`, :pull:`915`).
+
 Documentation
 ~~~~~~~~~~~~~
-* Add NumFOCUS affiliation to Sphinx documentation :pull:`862`
-* Add example of IV curve generation :pull:`872`
+* Add NumFOCUS affiliation to Sphinx documentation (:pull:`862`)
+* Add example of IV curve generation (:pull:`872`)
+* Add section about gallery examples to Contributing guide (:pull:`905`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -62,3 +72,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
+* Siyan (Veronica) Guo (:ghuser:`veronicaguo`)

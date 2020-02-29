@@ -46,7 +46,8 @@ def test_read_tmy3_no_coerce_year():
     coerce_year = None
     data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year)
     assert 1997 and 1999 in data.index.year
-
+    assert data.index[-2] == pd.Timestamp('1998-12-31 23:00:00-09:00')
+    assert data.index[-1] == pd.Timestamp('1999-01-01 00:00:00-09:00')
 
 def test_read_tmy2():
     tmy.read_tmy2(TMY2_TESTFILE)

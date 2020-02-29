@@ -8,8 +8,8 @@ API Changes
 * :py:class:`pvlib.forecast.ForecastModel` now requires ``start`` and ``end``
   arguments to be tz-localized. (:issue:`877`, :pull:`879`)
 * :py:func:`pvlib.iotools.read_tmy3` when coerced to a single year now returns
-  indices that are monotonically increasing, for example the last index will be
-  midnight of the *next* year. (:pull:`910`)
+  indices that are monotonically increasing. Therefore, the last index will be
+  January 1, 00:00 of the *next* year. (:pull:`910`)
 
 Enhancements
 ~~~~~~~~~~~~

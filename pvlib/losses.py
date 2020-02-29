@@ -11,11 +11,14 @@ from pvlib.tools import cosd
 
 
 def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
-                depo_veloc={'2_5': 0.004, '10': 0.0009},
-                rain_accum_period=pd.Timedelta('1h')):
+                depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
     """
     Calculates soiling ratio given particulate and rain data using the model
-    from Humboldt State University [1]_.
+    from Humboldt State University (HSU).
+
+    The HSU soiling model [1]_ returns the soiling ratio, a value between zero
+    and one which is equivalent to (1 - transmission loss). Therefore a soiling
+    ratio of 1.0 is equivalent to zero transmission loss.
 
     Parameters
     ----------
@@ -65,6 +68,10 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     except ImportError:
         raise ImportError("The soiling_hsu function requires scipy.")
 
+    # never use mutable input arguments
+    if depo_veloc is None:
+        depo_veloc = {'2_5': 0.004, '10': 0.0009}
+
     # accumulate rainfall into periods for comparison with threshold
     accum_rain = rainfall.rolling(rain_accum_period, closed='right').sum()
     # cleaning is True for intervals with rainfall greater than threshold
@@ -91,12 +98,12 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
 
 def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
                    grace_period=14, max_soiling=0.3, manual_wash_dates=None,
-                   initial_soiling=0, rain_accum_period=24, istmy=False):
+                   initial_soiling=0, rain_accum_period=24):
     """
-    Calculate soiling ratio with rainfall data and a daily soiling rate using
-    the Kimber soiling model [1]_.
+    Calculates fraction of energy lost due to soiling given rainfall data and
+    daily loss rate using the Kimber model.
 
-    Kimber soiling model assumes soiling builds up at a daily rate unless
+    Kimber soiling model [1]_ assumes soiling builds up at a daily rate unless
     the daily rainfall is greater than a threshold. The model also assumes that
     if daily rainfall has exceeded the threshold within a grace period, then
     the ground is too damp to cause soiling build-up. The model also assumes
@@ -127,8 +134,6 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     rain_accum_period : int, default 24
         Period for accumulating rainfall to check against `cleaning_threshold`.
         The Kimber model defines this period as one day. [hours]
-    istmy : bool, default False
-        Fix last timestep in TMY so that it is monotonically increasing.
 
     Returns
     -------
@@ -166,22 +171,11 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     # convert grace_period to timedelta
     grace_period = datetime.timedelta(days=grace_period)
 
-    # get rainfall timezone, timestep as timedelta64, and timestep in int days
-    rain_tz = rainfall.index.tz
-    rain_index = rainfall.index.values
-    timestep_interval = (rain_index[1] - rain_index[0])
+    # get indices as numpy datetime64, calculate timestep as numpy timedelta64,
+    # and convert timestep to fraction of days
+    rain_index_vals = rainfall.index.values
+    timestep_interval = (rain_index_vals[1] - rain_index_vals[0])
     day_fraction = timestep_interval / np.timedelta64(24, 'h')
-
-    # if TMY fix to be monotonically increasing by rolling index by 1 interval
-    # and then adding 1 interval, while the values stay the same
-    if istmy:
-        rain_index = np.roll(rain_index, 1) + timestep_interval
-        # NOTE: numpy datetim64[ns] has no timezone
-        # convert to datetimeindex at UTC and convert to original timezone
-        rain_index = pd.DatetimeIndex(rain_index, tz='UTC').tz_convert(rain_tz)
-        # fixed rainfall timeseries with monotonically increasing index
-        rainfall = pd.Series(
-            rainfall.values, index=rain_index, name=rainfall.name)
 
     # accumulate rainfall
     accumulated_rainfall = rainfall.rolling(
@@ -191,6 +185,7 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     soiling = np.ones_like(rainfall.values) * soiling_loss_rate * day_fraction
     soiling[0] = initial_soiling
     soiling = np.cumsum(soiling)
+    soiling = pd.Series(soiling, index=rainfall.index, name='soiling')
 
     # rainfall events that clean the panels
     rain_events = accumulated_rainfall > cleaning_threshold
@@ -205,8 +200,9 @@ def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
 
     # manual wash dates
     if manual_wash_dates is not None:
+        rain_tz = rainfall.index.tz
+        # convert manual wash dates to datetime index in the timezone of rain
         manual_wash_dates = pd.DatetimeIndex(manual_wash_dates, tz=rain_tz)
-        soiling = pd.Series(soiling, index=rain_index, name='soiling')
         cleaning[manual_wash_dates] = soiling[manual_wash_dates]
 
     # remove soiling by foward filling cleaning where NaN

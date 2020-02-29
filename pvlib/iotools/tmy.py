@@ -28,9 +28,9 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
         a relative file path, absolute file path, or url.
 
     coerce_year : None or int, default None
-        If supplied, the year of the data will be set to this value, except for
-        the last index which will be set to the *next* year so that the indices
-        increase monotonically.
+        If supplied, the year of the index will be set to `coerce_year`, except
+        for the last index value which will be set to the *next* year so that
+        the index increases monotonically.
 
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this

@@ -28,10 +28,12 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
         a relative file path, absolute file path, or url.
 
     coerce_year : None or int, default None
-        If supplied, the year of the data will be set to this value.
+        If supplied, the year of the index will be set to `coerce_year`, except
+        for the last index value which will be set to the *next* year so that
+        the index increases monotonically.
 
     recolumn : bool, default True
-        If True, apply standard names to TMY3 columns. Typically this
+        If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
 
     Returns
@@ -49,7 +51,6 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
 
     Notes
     -----
-
     The returned structures have the following fields.
 
     ===============   ======  ===================
@@ -139,15 +140,16 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     TMYData.PresWthUncertainty          Present weather code uncertainty, see [2]_.
     =============================       ======================================================================================================================================================
 
-    .. warning:: TMY3 irradiance data corresponds to the previous hour, so the
-        first hour is 1AM, corresponding to the net irradiance from midnite to
-        1AM, and the last hour is midnite of the *next* year, unless the year
-        has been coerced. EG: if TMY3 was 1988-12-31 24:00:00 this becomes
-        1989-01-01 00:00:00
+    .. warning:: TMY3 irradiance data corresponds to the *previous* hour, so
+        the first index is 1AM, corresponding to the irradiance from midnight
+        to 1AM, and the last index is midnight of the *next* year. For example,
+        if the last index in the TMY3 file was 1988-12-31 24:00:00 this becomes
+        1989-01-01 00:00:00 after calling :func:`~pvlib.iotools.read_tmy3`.
 
     .. warning:: When coercing the year, the last index in the dataframe will
-        be the first hour of the same year, EG: if TMY3 was 1988-12-31 24:00:00
-        and year is coerced to 1990 this becomes 1990-01-01
+        become midnight of the *next* year. For example, if the last index in
+        the TMY3 was 1988-12-31 24:00:00, and year is coerced to 1990 then this
+        becomes 1991-01-01 00:00:00.
 
     References
     ----------
@@ -214,11 +216,12 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     data_ymd[leapday] += datetime.timedelta(days=1)
     # shifted_hour is a pd.Series, so use pd.to_timedelta to get a pd.Series of
     # timedeltas
+    if coerce_year is not None:
+        data_ymd = data_ymd.map(lambda dt: dt.replace(year=coerce_year))
+        data_ymd.iloc[-1] = data_ymd.iloc[-1].replace(year=coerce_year+1)
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
-    if coerce_year is not None:
-        data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
 
     if recolumn:
         data = _recolumn(data)  # rename to standard column names

@@ -15,8 +15,8 @@ import pytest
 @pytest.fixture
 def expected_output():
     # Sample output (calculated manually)
-    dt = pd.date_range(start=pd.datetime(2019, 1, 1, 0, 0, 0),
-                       end=pd.datetime(2019, 1, 1, 23, 59, 0), freq='1h')
+    dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
+                       end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
 
     expected_no_cleaning = pd.Series(
         data=[0.884980357535360, 0.806308930084762, 0.749974647038078,
@@ -33,14 +33,24 @@ def expected_output():
 
 
 @pytest.fixture
+def expected_output_1():
+    return np.array([
+        0.99927224, 0.99869067, 0.99815393, 0.99764437, 1.0,
+        0.99927224, 0.99869067, 0.99815393, 1.0, 1.0,
+        0.99927224, 0.99869067, 0.99815393, 0.99764437, 0.99715412,
+        0.99667873, 0.99621536, 0.99576203, 0.99531731, 0.9948801,
+        0.99444954, 0.99402494, 0.99360572, 0.99319142])
+
+
+@pytest.fixture
 def expected_output_2(expected_output):
     # Sample output (calculated manually)
-    dt = pd.date_range(start=pd.datetime(2019, 1, 1, 0, 0, 0),
-                       end=pd.datetime(2019, 1, 1, 23, 59, 0), freq='1h')
+    dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
+                       end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
 
     expected_no_cleaning = expected_output
 
-    expected = pd.Series(index=dt)
+    expected = pd.Series(index=dt, dtype='float64')
     expected[dt[:4]] = expected_no_cleaning[dt[:4]]
     expected[dt[4:7]] = 1.
     expected[dt[7]] = expected_no_cleaning[dt[0]]
@@ -55,8 +65,8 @@ def expected_output_2(expected_output):
 @pytest.fixture
 def rainfall_input():
 
-    dt = pd.date_range(start=pd.datetime(2019, 1, 1, 0, 0, 0),
-                       end=pd.datetime(2019, 1, 1, 23, 59, 0), freq='1h')
+    dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
+                       end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
     rainfall = pd.Series(
         data=[0., 0., 0., 0., 1., 0., 0., 0., 0.5, 0.5, 0., 0., 0., 0., 0.,
               0., 0.3, 0.3, 0.3, 0.3, 0., 0., 0., 0.], index=dt)
@@ -64,6 +74,7 @@ def rainfall_input():
 
 
 @requires_scipy
+@needs_pandas_0_22
 def test_soiling_hsu_no_cleaning(rainfall_input, expected_output):
     """Test Soiling HSU function"""
 
@@ -81,8 +92,9 @@ def test_soiling_hsu_no_cleaning(rainfall_input, expected_output):
 
 
 @requires_scipy
+@needs_pandas_0_22
 def test_soiling_hsu(rainfall_input, expected_output_2):
-    """Test Soiling HSU function"""
+    """Test Soiling HSU function with cleanings"""
 
     rainfall = rainfall_input
     pm2_5 = 1.0
@@ -99,12 +111,24 @@ def test_soiling_hsu(rainfall_input, expected_output_2):
     assert_series_equal(result, expected)
 
 
+@requires_scipy
+@needs_pandas_0_22
+def test_soiling_hsu_defaults(rainfall_input, expected_output_1):
+    """
+    Test Soiling HSU function with default deposition velocity and default rain
+    accumulation period.
+    """
+    result = soiling_hsu(
+        rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0, pm2_5=1.0,
+        pm10=2.0)
+    assert np.allclose(result.values, expected_output_1)
+
+
 @pytest.fixture
 def greensboro_rain():
     # get TMY3 data with rain
-    greensboro = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
-    # NOTE: can't use Sand Point, AK b/c Lprecipdepth is -9900, ie: missing
-    return greensboro[0].Lprecipdepth
+    greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
+    return greensboro.Lprecipdepth
 
 
 @pytest.fixture
@@ -121,7 +145,7 @@ def test_kimber_soiling_nowash(greensboro_rain,
     # Greensboro typical expected annual rainfall is 8345mm
     assert greensboro_rain.sum() == 8345
     # calculate soiling with no wash dates
-    soiling_nowash = soiling_kimber(greensboro_rain, istmy=True)
+    soiling_nowash = soiling_kimber(greensboro_rain)
     # test no washes
     assert np.allclose(
         soiling_nowash.values,
@@ -143,7 +167,7 @@ def test_kimber_soiling_manwash(greensboro_rain,
     manwash = [datetime.date(1990, 2, 15), ]
     # calculate soiling with manual wash
     soiling_manwash = soiling_kimber(
-        greensboro_rain, manual_wash_dates=manwash, istmy=True)
+        greensboro_rain, manual_wash_dates=manwash)
     # test manual wash
     assert np.allclose(
         soiling_manwash.values,
@@ -168,7 +192,7 @@ def test_kimber_soiling_norain(greensboro_rain,
     # a year with no rain
     norain = pd.Series(0, index=greensboro_rain.index)
     # calculate soiling with no rain
-    soiling_norain = soiling_kimber(norain, istmy=True)
+    soiling_norain = soiling_kimber(norain)
     # test no rain, soiling reaches maximum
     assert np.allclose(soiling_norain.values, expected_kimber_soiling_norain)
 
@@ -191,7 +215,7 @@ def test_kimber_soiling_initial_soil(greensboro_rain,
     # a year with no rain
     norain = pd.Series(0, index=greensboro_rain.index)
     # calculate soiling with no rain
-    soiling_norain = soiling_kimber(norain, initial_soiling=0.1, istmy=True)
+    soiling_norain = soiling_kimber(norain, initial_soiling=0.1)
     # test no rain, soiling reaches maximum
     assert np.allclose(
         soiling_norain.values, expected_kimber_soiling_initial_soil)

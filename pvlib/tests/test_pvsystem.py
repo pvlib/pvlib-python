@@ -415,23 +415,17 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     assert (out < 90) and (out > 70)
 
 
-def test_PVSystem_pvsyst_celltemp_kwargs(mocker):
-    temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][
-        'insulated']
-    alpha_absorption = 0.85
-    eta_m = 0.17
-    module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
-    system = pvsystem.PVSystem(module_parameters=module_parameters,
-                               temperature_model_parameters=temp_model_params)
-    mocker.spy(temperature, 'pvsyst_cell')
-    irrad = 800
-    temp = 45
-    wind = 0.5
-    out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
-    temperature.pvsyst_cell.assert_called_once_with(
-        irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
-        eta_m, alpha_absorption)
-    assert (out < 90) and (out > 70)
+def test_PVSystem_faiman_celltemp(mocker):
+    u0, u1 = 25.0, 6.84  # default values
+    temp_model_params = {'u0': u0, 'u1': u1}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'faiman')
+    temps = 25
+    irrads = 1000
+    winds = 1
+    out = system.faiman_celltemp(irrads, temps, winds)
+    temperature.faiman.assert_called_once_with(irrads, temps, winds, u0, u1)
+    assert_allclose(out, 56.4, atol=1)
 
 
 def test__infer_temperature_model_params():
@@ -1085,7 +1079,7 @@ def test_singlediode_series_ivcurve(cec_module_params):
         assert_allclose(v, expected[k], atol=1e-2)
 
 
-def test_scale_voltage_current_power(sam_data):
+def test_scale_voltage_current_power():
     data = pd.DataFrame(
         np.array([[2, 1.5, 10, 8, 12, 0.5, 1.5]]),
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],

@@ -525,6 +525,7 @@ ModelChain model definitions.
    modelchain.ModelChain.no_spectral_loss
    modelchain.ModelChain.sapm_temp
    modelchain.ModelChain.pvsyst_temp
+   modelchain.ModelChain.faiman_temp
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 

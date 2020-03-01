@@ -384,7 +384,7 @@ def get_obj_module(qualname):
 
 
 def get_linenos(obj):
-    """Get an object’s line numbers"""
+    """Get an object’s line numbers in its source code file"""
     try:
         lines, start = inspect.getsourcelines(obj)
     except TypeError:  # obj is an attribute or None
@@ -393,26 +393,49 @@ def get_linenos(obj):
         return start, start + len(lines) - 1
 
 
-def make_url(qualname):
+def make_github_url(pagename):
     """
-    Get the full GitHub URL for some object’s qualname
+    Generate the appropriate GH link for a given docs page.  This function
+    is intended for use in sphinx template files.
 
-    Example
-    -------
-    >>> make_url("pvlib.tracking.singleaxis")
-    'https://github.com/pvlib/pvlib-python/blob/master/pvlib/tracking.py#L248-L572'
+    The target URL is built differently based on the type of page.  Sphinx
+    provides templates with a built-in `pagename` variable that is the path
+    at the end of the URL, without the extension.  For instance,
+    https://pvlib-python.rtfd.org/en/stable/auto_examples/plot_singlediode.html
+    will have pagename = "auto_examples/plot_singlediode".
     """
-    url_base = 'https://github.com/pvlib/pvlib-python/blob/master/'
-    obj, module = get_obj_module(qualname)
-    path = module.__name__.replace(".", "/") + ".py"
-    start, end = get_linenos(obj)
-    fragment = '#L{}-L{}'.format(start, end) if start and end else ''
-    return url_base + path + fragment
+
+    URL_BASE = "https://github.com/pvlib/pvlib-python/blob/master/"
+
+    # is it a gallery page?
+    if any(d in pagename for d in sphinx_gallery_conf['gallery_dirs']):
+        if pagename.split("/")[-1] == "index":
+            example_file = "README.rst"
+        else:
+            example_file = pagename.split("/")[-1] + ".py"
+        target_url = URL_BASE + "docs/examples/" + example_file
+
+    # is it an API autogen page?
+    elif "generated" in pagename:
+        # pagename looks like "generated/pvlib.location.Location"
+        qualname = pagename.split("/")[-1]
+        obj, module = get_obj_module(qualname)
+        path = module.__name__.replace(".", "/") + ".py"
+        target_url = URL_BASE + path
+        # add line numbers if possible:
+        start, end = get_linenos(obj)
+        if start and end:
+            target_url += '#L{}-L{}'.format(start, end)
+
+    # Just a normal source RST page
+    else:
+        target_url = URL_BASE = "docs/sphinx/source/" + pagename + ".rst"
+
+    return target_url
 
 
 # variables to pass into the HTML templating engine; these are accessible from
 # _templates/breadcrumbs.html
 html_context = {
-    'gallery_dir': sphinx_gallery_conf['gallery_dirs'][0],
-    'make_url': make_url,
+    'make_github_url': make_github_url,
 }

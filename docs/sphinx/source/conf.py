@@ -429,7 +429,7 @@ def make_github_url(pagename):
 
     # Just a normal source RST page
     else:
-        target_url = URL_BASE = "docs/sphinx/source/" + pagename + ".rst"
+        target_url = URL_BASE + "docs/sphinx/source/" + pagename + ".rst"
 
     return target_url
 

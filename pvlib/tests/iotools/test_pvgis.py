@@ -7,8 +7,7 @@ import pandas as pd
 import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
-from conftest import DATA_DIR
-
+from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 @pytest.fixture
 def expected():

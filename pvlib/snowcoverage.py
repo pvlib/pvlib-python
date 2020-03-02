@@ -24,7 +24,8 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
         Accumulated snowfall in each time period [cm]
 
     threshold : float, default 1.0
-        Minimum hourly snowfall to cover a row's slant height. [cm/hr]
+        Hourly snowfall above which snow coverage is set to the row's slant
+        height. [cm/hr]
 
     Returns
     ----------
@@ -47,11 +48,12 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
     timestep = _time_delta_in_hours(snowfall.index)
     time_adjusted = snowfall / timestep
     time_adjusted.iloc[0] = 0  # replace NaN from NaT / timestep
-    return time_adjusted >= threshold
+    return time_adjusted > threshold
 
 
 def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
-              threshold_snowfall=1., m=-80., sliding_coefficient=0.197):
+              initial_coverage=None, threshold_snowfall=1., m=-80.,
+              sliding_coefficient=0.197):
     '''
     Calculates the fraction of the slant height of a row of modules covered by
     snow at every time step.
@@ -72,8 +74,13 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     surface_tilt : numeric
         Tilt of module's from horizontal, e.g. surface facing up = 0,
         surface facing horizon = 90. Must be between 0 and 180. [degrees]
+    initial_coverage : float, default None
+        Fraction of row's slant height that is covered with snow at the
+        beginning of the simulation. If None (default) then the initial
+        coverage is set to the snowfall in the first time period. [unitless]
     threshold_snowfall : float, default 1.0
-        Minimum hourly snowfall to cover a row's slant height. [cm/hr]
+        Hourly snowfall above which snow coverage is set to the row's slant
+        height. [cm/hr]
     m : float, default 80.
         Coefficient used in [1]_ to determine if snow can slide given
         irradiance and air temperature. [W/(m^2 C)]
@@ -99,6 +106,11 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
 
     # set up output Series
     snow_coverage = pd.Series(index=poa_irradiance.index, data=np.nan)
+    if initial_coverage is None:
+        snow_coverage.iloc[0] = snowfall.iloc[0]
+    else:
+        snow_coverage.iloc[0] = initial_coverage
+
     snow_events = snowfall[snow_nrel_fully_covered(snowfall,
                                                    threshold_snowfall)]
 

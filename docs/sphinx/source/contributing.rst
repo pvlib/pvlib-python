@@ -463,6 +463,6 @@ contributing.html>`_ for inspiration.
 
 Code of Conduct
 ~~~~~~~~~~~~~~~
-All contributors are expected to adhere to the `Contrubor Code of Conduct
+All contributors are expected to adhere to the `Contributor Code of Conduct
 <https://github.com/pvlib/pvlib-python/blob/master/CODE_OF_CONDUCT.md#contributor-covenant-code-of-conduct>`_.
 If anyone feels the code has been violated, they can contact the project team.

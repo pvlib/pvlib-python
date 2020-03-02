@@ -3,7 +3,7 @@ from pandas.util.testing import network
 import pytest
 
 from pvlib.iotools import surfrad
-from conftest import DATA_DIR
+from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 testfile = DATA_DIR / 'surfrad-slv16001.dat'
 network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
@@ -12,6 +12,7 @@ network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
 
 @network
 @pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_surfrad_network():
     # If this test begins failing, SURFRAD's data structure or data
     # archive may have changed.

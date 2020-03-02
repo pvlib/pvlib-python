@@ -40,6 +40,11 @@ TEST_DIR = Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
 
 
+# pytest-rerunfailures variables
+RERUNS = 5
+RERUNS_DELAY = 2
+
+
 platform_is_windows = platform.system() == 'Windows'
 skip_windows = pytest.mark.skipif(platform_is_windows,
                                   reason='does not run on windows')

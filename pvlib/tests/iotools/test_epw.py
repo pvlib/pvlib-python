@@ -2,7 +2,7 @@ from pandas.util.testing import network
 import pytest
 
 from pvlib.iotools import epw
-from conftest import DATA_DIR
+from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 epw_testfile = DATA_DIR / 'NLD_Amsterdam062400_IWEC.epw'
 
@@ -13,7 +13,7 @@ def test_read_epw():
 
 @network
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_epw_remote():
     url = 'https://energyplus.net/weather-download/europe_wmo_region_6/NLD//NLD_Amsterdam.062400_IWEC/NLD_Amsterdam.062400_IWEC.epw'
     epw.read_epw(url)

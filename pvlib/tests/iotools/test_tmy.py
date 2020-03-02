@@ -3,8 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from pvlib.iotools import tmy
-from pvlib.iotools import read_tmy3
-from conftest import DATA_DIR
+from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 # test the API works
 from pvlib.iotools import read_tmy3
@@ -20,7 +19,7 @@ def test_read_tmy3():
 
 @network
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_tmy3_remote():
     url = 'http://rredc.nrel.gov/solar/old_data/nsrdb/1991-2005/data/tmy3/703165TYA.CSV'
     tmy.read_tmy3(url)

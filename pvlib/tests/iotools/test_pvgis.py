@@ -68,7 +68,7 @@ def csv_meta(meta_expected):
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
                        meta_expected):
     pvgis_data = get_pvgis_tmy(45, 8)
@@ -102,7 +102,7 @@ def _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_kwargs(userhorizon_expected):
     _, _, inputs, _ = get_pvgis_tmy(45, 8, usehorizon=False)
     assert inputs['meteo_data']['use_horizon'] is False
@@ -121,7 +121,7 @@ def test_get_pvgis_tmy_kwargs(userhorizon_expected):
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_basic(expected, meta_expected):
     pvgis_data = get_pvgis_tmy(45, 8, outputformat='basic')
     _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
@@ -135,7 +135,7 @@ def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta):
     pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv')
@@ -165,7 +165,7 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_epw(expected, epw_meta):
     pvgis_data = get_pvgis_tmy(45, 8, outputformat='epw')
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
@@ -181,7 +181,7 @@ def _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data):
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_error():
     err_msg = 'outputformat: Incorrect value.'
     with pytest.raises(requests.HTTPError, match=err_msg):

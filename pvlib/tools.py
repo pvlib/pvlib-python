@@ -86,6 +86,68 @@ def asind(number):
     return res
 
 
+def acosd(number):
+    """
+    Inverse Cosine returning an angle in degrees
+
+    Parameters
+    ----------
+    number : float
+        Input number
+
+    Returns
+    -------
+    result : float
+        arccos result
+    """
+
+    res = np.degrees(np.arccos(number))
+    return res
+
+
+def atand(number):
+    """
+    Inverse Tan returning an angle in degrees
+
+    Parameters
+    ----------
+    number : float
+        Input number
+
+    Returns
+    -------
+    result : float
+        arctan result
+    """
+
+    res = np.degrees(np.arctan(number))
+    return res
+
+
+def acotd(number):
+    """
+    Inverse Cot returning an angle in degrees
+
+    Parameters
+    ----------
+    number : float
+        Input number
+
+    Returns
+    -------
+    result : float
+        arccot result
+    """
+        
+    if(number != 0):
+        res = np.degrees(np.arctan(1.0/number))
+    else:
+        warnings.warn("Divide by Zero")
+        res = np.degrees(np.arctan(np.Inf))
+
+    return res
+
+    
 def localize_to_utc(time, location):
     """
     Converts or localizes a time series to UTC.

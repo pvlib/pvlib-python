@@ -7,7 +7,101 @@ import warnings
 
 def pvl_Purdue_albedo_model(SurfTilt, SurfAz, EtoH, Albedo,
                              DHI, DNI, HExtra, SunZen, SunAz, AM, model = '1990'):
-
+    
+    """
+    calculates the collection of ground-reflected
+    albedo light on the rear surface of a PV module while fully accounting
+    for self-shading.
+    
+    This code is part of the Purdue Bifacial irradiance model [1] and it can 
+    simulate the albedo light intensity on both the front and rear sides of a 
+    bifacial solar module. This model takes two types of self-shading losses 
+    into account: 1) direct blocking of direct beam and circumsolar light by 
+    the module onto the ground and 2) sky masking of isotropic diffuse light 
+    by the module. This model employs a view-factor based approach and the
+    detailed methodology is discussed in [1].
+    
+    Parameters
+    ----------
+    SurfTilt - numeric, array
+        a scalar or vector of surface tilt angles in decimal degrees.
+        If SurfTilt is a vector it must be of the same size as all other
+        vector inputs. SurfTilt must be >=0 and <=180. The tilt angle is
+        defined as degrees from horizontal (e.g. surface facing up = 0,
+        surface facing horizon = 90).
+    SurfAz - numeric, array
+        a scalar or vector of surface azimuth angles in decimal degrees.
+        If SurfAz is a vector it must be of the same size as all other vector
+        inputs. SurfAz must be >=0 and <=360. The Azimuth convention is
+        defined as degrees east of north.
+        (e.g. North = 0, East = 90, West = 270)
+    EtoH - numeric, array 
+        a scalar or vector of the ratio of module elevation(E) to module 
+        height(H) Module height is the module dimension not parallel to 
+        the ground. If EtoH is a vector it must be of the same size as 
+        all other vector inputs. EtoH must be >=0.
+    Albedo - numeric, array
+        a scalar or vector of groud albedo coefficient.
+        If Albedo is a vector it must be of the same size as all other vector
+        inputs. Albedo must be >=0 and <=1.
+    DHI - numeric, array
+        a scalar or vector of diffuse horizontal irradiance in W/m^2.
+        If DHI is a vector it must be of the same size as all other vector 
+        inputs. DHI must be >=0.
+    DNI - numeric, array
+        a scalar or vector of direct normal irradiance in W/m^2. If DNI 
+        is a vector it must be of the same size as all other vector inputs
+        DNI must be >=0.
+    HExtra - numeric, array
+        a scalar or vector of extraterrestrial normal irradiance in
+        W/m^2. If |HExtra| is a vector it must be of the same size as
+        all other vector inputs. |HExtra| must be >=0.
+    SunZen - numeric, array
+        a scalar or vector of apparent (refraction-corrected) zenith
+        angles in decimal degrees. If |SunZen| is a vector it must be of the
+        same size as all other vector inputs. |SunZen| must be >=0 and <=180.
+    SunAz - numeric, array
+        a scalar or vector of sun azimuth angles in decimal degrees.
+        If SunAz is a vector it must be of the same size as all other vector
+        inputs. SunAz must be >=0 and <=360. The Azimuth convention is defined
+        as degrees east of north (e.g. North = 0, East = 90, West = 270).
+    AM - numeric, array
+        a scalar or vector of relative (not pressure-corrected) airmass
+        values. If AM is a vector it must be of the same size as all other
+        vector inputs. AM must be >=0.
+    model - string
+        a character string which selects the desired set of Perez
+        coefficients. If model is not provided as an input, the default,
+        '1990' will be used.
+        All possible model selections are: 
+        '1990', 'allsitescomposite1990' (same as '1990'),
+        'allsitescomposite1988', 'sandiacomposite1988',
+        'usacomposite1988', 'france1988', 'phoenix1988',
+        'elmonte1988', 'osage1988', 'albuquerque1988',
+        'capecanaveral1988', or 'albany1988' 
+    
+    Returns
+    -------
+    I_Alb - numeric, array
+        the total ground-reflected albedo irradiance incident to the
+        specified surface. I_Alb is a column vector vector with a number
+        of elements equal to the input vector(s).
+    
+    References
+    ----------
+    .. [1] Sun, X., Khan, M. R., Alam, M. A., 2018. Optimization and 
+       performance of bifacial solar modules: A global perspective.
+       Applied Energy 212, pp. 1601-1610.
+    .. [2] Khan, M. R., Hanna, A., Sun, X., Alam, M. A., 2017. Vertical
+       bifacial solar farms:Physics, design, and global optimization.
+       Applied Energy, 206, 240-248.
+    .. [3] Duffie, J. A., Beckman, W. A. 2013. Solar Engineering of Thermal
+       Processes (4th Editio). Wiley.
+    
+    See Also
+    --------
+    pvl_Purdue_Bifacial_irradiance
+    """
 
     VectorSizes = [len(np.ravel(SurfTilt)), 
                 len(np.ravel(SurfAz)), len(np.ravel(DHI)), len(np.ravel(DNI)),
@@ -53,11 +147,12 @@ def pvl_Purdue_albedo_model(SurfTilt, SurfAz, EtoH, Albedo,
     return I_Alb
 
 def integrand(x, a, b):
-    '''
+    
+    """
     a = EtoW(i)
     b = SurfTilt(i)
 
-    '''
+    """
     # theta1 in Fig. 3 of Ref. [1]
     theta1 = (x<0)*(180.0-(acotd(-x/a))) + (x>=0)*(acotd(-x/a))
     
@@ -71,9 +166,11 @@ def integrand(x, a, b):
 
 
 def VF_Integral_Diffuse(SurfTilt, EtoW):
-    '''
+    
+    """
     This function is used to calculate the integral of view factors in eqn. 11 of Ref. [1]
-    '''
+    """
+
     VF_Integral = np.zeros_like(SurfTilt, dtype = float);
 
     for i in range(len(SurfTilt)):
@@ -93,11 +190,12 @@ def VF_Integral_Diffuse(SurfTilt, EtoW):
 
 def VF_Shadow(Panel_Azimuth, Panel_Tilt, AzimuthAngle_Sun, ZenithAngle_Sun,
               EtoW):
-    '''
+    
+    """
     This function is used to calculate the view factor from the shaded ground
     to the module and the shadow length in eqn. 9 of Ref. [1]
     Please refer to Refs. [2,3] for the analytical equations used here
-    '''
+    """
 
     Panel_Tilt = (180.0 -np.array(Panel_Tilt, dtype = float)) # limit to two parallel cases
 
@@ -141,10 +239,10 @@ def VF_Shadow(Panel_Azimuth, Panel_Tilt, AzimuthAngle_Sun, ZenithAngle_Sun,
 
 def ViewFactor_Gap(b, a, P, H, alpha):    
     
-    '''
+    """
     calculate the view factor from a to b (infinite lines with alpha angle
     with distance to their cross point (b:P, a:H))
-    '''
+    """
 
     # first part
     VF1 = ViewFactor_Cross(b+P,H,alpha) # H to b+P
@@ -176,9 +274,10 @@ def ViewFactor_Gap(b, a, P, H, alpha):
         return VF
 
 def ViewFactor_Cross(b , a, alpha):
-    '''
+    
+    """
     calculate the view factor from a to b (infinite lines with alpha angle)
-    '''
+    """
 
     VF = 1/2 * (1 + b/a - sqrt(1 - (2*b)/(a*cosd(alpha))+(b/a)**2));
 

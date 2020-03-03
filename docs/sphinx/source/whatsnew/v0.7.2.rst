@@ -58,6 +58,8 @@ Testing
 * Implement the `pytest.mark.flaky` decorator from `pytest-rurunfailures`
   `<https://github.com/pytest-dev/pytest-rerunfailures>`_ on all network
   dependent iotools tests to repeat them on failure. (:pull:`919`)
+* Separate azure-pipelines.yml platform-specific tests to their own templates
+  located in ``./ci/azure/``.  (:pull:`926`)
 
 Documentation
 ~~~~~~~~~~~~~

@@ -405,7 +405,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
                      pressure=101325., dni_extra=1364.):
     """
     Calculate the clear sky GHI, DNI, and DHI according to the
-    simplified Solis model [1]_.
+    simplified Solis model.
 
     Reference [1]_ describes the accuracy of the model as being 15, 20,
     and 18 W/m^2 for the beam, global, and diffuse components. Reference
@@ -604,7 +604,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                     return_components=False):
     """
     Detects clear sky times according to the algorithm developed by Reno
-    and Hansen for GHI measurements [1]. The algorithm was designed and
+    and Hansen for GHI measurements. The algorithm [1]_ was designed and
     validated for analyzing GHI time series only. Users may attempt to
     apply it to other types of time series data using different filter
     settings, but should be skeptical of the results.

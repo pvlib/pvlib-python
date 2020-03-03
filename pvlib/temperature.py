@@ -33,7 +33,9 @@ def _temperature_model_params(model, parameter_set):
 def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
               irrad_ref=1000):
     r'''
-    Calculate cell temperature per the Sandia PV Array Performance Model [1]_.
+    Calculate cell temperature per the Sandia PV Array Performance Model.
+
+    See [1]_ for details on the Sandia Array Performance Model.
 
     Parameters
     ----------
@@ -120,7 +122,9 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
 def sapm_module(poa_global, temp_air, wind_speed, a, b):
     r'''
     Calculate module back surface temperature per the Sandia PV Array
-    Performance Model [1]_.
+    Performance Model.
+
+    See [1]_ for details on the Sandia Array Performance Model.
 
     Parameters
     ----------
@@ -273,9 +277,9 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     '''
-    Calculate cell or module temperature using an empirical heat loss factor
-    model as proposed by Faiman [1]_ and adopted in the IEC 61853
-    standards [2]_ and [3]_.
+    Calculate cell or module temperature using the Faiman model.  The Faiman
+    model uses an empirical heat loss factor model [1]_ and is adopted in the
+    IEC 61853 standards [2]_ and [3]_.
 
     Usage of this model in the IEC 61853 standard does not distinguish
     between cell and module temperature.

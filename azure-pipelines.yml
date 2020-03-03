@@ -6,44 +6,11 @@ trigger:
 
 jobs:
 
-- job: 'Test_bare_linux'
-
-  pool:
-    vmImage: 'ubuntu-16.04'
-  strategy:
-    matrix:
-      Python35:
-        python.version: '3.5'
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
-
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-
-  - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
-      pip install -e .
-      pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
-    displayName: 'Test with pytest'
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFiles: '**/test-*.xml'
-      testRunTitle: 'Publish test results for Python $(python.version)'
-
-  - task: PublishCodeCoverageResults@1
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-      reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+# Bare Mac and Linux use the same template
+- template: ci/azure/posix.yml
+  parameters:
+    name: Test_bare_Linux
+    vmImage: ubuntu-16.04
 
 
 - job: 'Test_conda_linux'
@@ -60,8 +27,6 @@ jobs:
         coverage: true
       Python37:
         python.version: '37'
-      Python38:
-        python.version: '38'
 
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
@@ -115,8 +80,6 @@ jobs:
         python.version: '36'
       Python37-windows:
         python.version: '37'
-      Python38-windows:
-        python.version: '38'
 
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
@@ -142,59 +105,11 @@ jobs:
       testRunTitle: 'Windows $(python.version)'
 
 
-- job: 'Test_bare_macOS_Mojave'
-
-  pool:
-    vmImage: 'macOS-10.14'
-  strategy:
-    matrix:
-      Python35:
-        python.version: '3.5'
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-
-  - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
-      pip install -e .
-      pytest pvlib --junitxml=junit/test-results.xml --cov=pvlib --cov-report=xml --cov-report=html
-    displayName: 'Test with pytest'
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFiles: '**/test-*.xml'
-      testRunTitle: 'Publish test results for Python $(python.version)'
-
-  - task: PublishCodeCoverageResults@1
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-      reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
-
-
-- job: DocTest
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.8'
-  - script: |
-      pip install -e .[all]
-    displayName: Install pvlib[all] for doc build
-  - script: |
-      cd docs/sphinx/
-      sphinx-build -j auto -b html -d _build/doctrees source build
-    displayName: Build HTML docs
+# Bare Mac and Linux use the same template
+- template: ci/azure/posix.yml
+  parameters:
+    name: Test_bare_macOS
+    vmImage: macOS-10.14
 
 
 - job: 'Publish'

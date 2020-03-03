@@ -154,7 +154,7 @@ def format_index_raw(data):
 
 def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     """Read in National Renewable Energy Laboratory Measurement and
-    Instrumentation Data Center [1]_ weather data.
+    Instrumentation Data Center weather data.  The MIDC is described in [1]_.
 
     Parameters
     ----------

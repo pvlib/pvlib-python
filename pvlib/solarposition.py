@@ -277,7 +277,9 @@ def spa_python(time, latitude, longitude,
                atmos_refract=None, how='numpy', numthreads=4, **kwargs):
     """
     Calculate the solar position using a python implementation of the
-    NREL SPA algorithm described in [1].
+    NREL SPA algorithm.
+
+    The details of the NREL SPA algorithm are described in [1]_.
 
     If numba is installed, the functions can be compiled to
     machine code and the function can be multithreaded.
@@ -385,7 +387,9 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
                              delta_t=67.0, numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
-    NREL SPA algorithm described in [1].
+    NREL SPA algorithm.
+
+    The details of the NREL SPA algorithm are described in [1]_.
 
     If numba is installed, the functions can be compiled to
     machine code and the function can be multithreaded.
@@ -958,7 +962,9 @@ def pyephem_earthsun_distance(time):
 def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     """
     Calculates the distance from the earth to the sun using the
-    NREL SPA algorithm described in [1]_.
+    NREL SPA algorithm.
+
+    The details of the NREL SPA algorithm are described in [1]_.
 
     Parameters
     ----------
@@ -1131,8 +1137,10 @@ def equation_of_time_pvcdrom(dayofyear):
 
 def declination_spencer71(dayofyear):
     """
-    Solar declination from Duffie & Beckman [1] and attributed to
+    Solar declination from Duffie & Beckman and attributed to
     Spencer (1971) and Iqbal (1983).
+
+    See [1]_ for details.
 
     .. warning::
         Return units are radians, not degrees.
@@ -1173,7 +1181,9 @@ def declination_spencer71(dayofyear):
 
 def declination_cooper69(dayofyear):
     """
-    Solar declination from Duffie & Beckman [1] and attributed to Cooper (1969)
+    Solar declination from Duffie & Beckman and attributed to Cooper (1969).
+
+    See [1]_ for details.
 
     .. warning::
         Return units are radians, not degrees.

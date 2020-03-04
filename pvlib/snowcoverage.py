@@ -50,7 +50,7 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
     # deal with first hour
     freq = pd.infer_freq(snowfall.index)
     if freq is not None:
-        if len(freq)==1:  # only a unit abbreviation
+        if len(freq) == 1:  # only a unit abbreviation
             freq = "1" + freq
         timedelta = pd.Timedelta(freq).total_seconds() / 3600
         hourly_snow_rate.iloc[0] = snowfall[0] / timedelta
@@ -114,7 +114,7 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
 
     # set up output Series
     snow_coverage = pd.Series(index=poa_irradiance.index, data=np.nan)
-    if initial_coverage is  None:
+    if initial_coverage is None:
         initial_coverage = 0.
 
     # determine amount that snow can slide in each timestep

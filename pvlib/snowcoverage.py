@@ -51,7 +51,7 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
     freq = pd.infer_freq(snowfall.index)
     if freq is not None:
         if len(freq) == 1:  # only a unit abbreviation
-            freq = "1" + freq
+            freq = "1" + freq.replace('T', 'm')  # for pandas <= 0.23.4
         timedelta = pd.Timedelta(freq).total_seconds() / 3600
         hourly_snow_rate.iloc[0] = snowfall[0] / timedelta
     else:  # can't infer frequency from index

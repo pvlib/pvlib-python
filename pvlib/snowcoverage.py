@@ -153,8 +153,19 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
 
 def snow_nrel_dc_loss(snow_coverage, num_strings):
     '''
-    Calculates the DC loss due to snow coverage. Assumes that if a string is
-    partially covered by snow, it produces 0W.
+    Calculates the fraction of DC capacity lost due to snow coverage.
+
+    DC capacity loss assumes that if a string is partially covered by snow,
+    the string's capacity is lost. Module orientation is accounted for by
+    specifying the number of cell strings in parallel along the slant height.
+    For example, a typical 60-cell module has 3 parallel strings, each
+    comprising 20 cells in series, with the cells arranged in 6 columns of 10
+    cells each. For a row consisting of single modules, if the module is
+    mounted in portrait orientation, i.e., the row slant height is along a
+    column of 10 cells, there is 1 string in parallel along the row slant
+    height, so `num_strings=1`. In contrast, if the module is mounted in
+    landscape orientation with the row slant height comprising 6 cells, there
+    are 3 parallel strings along the row slant height, so `num_strings=3`.
 
     Parameters
     ----------

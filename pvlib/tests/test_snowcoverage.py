@@ -13,8 +13,8 @@ def test_snow_nrel_fully_covered():
     snowfall_data = pd.Series([1, 5, .6, 4, .23, -5, 19], index=dt)
     expected = pd.Series([False, True, False, True, False, False, True],
                          index=dt)
-    actual_snowfall = snowcoverage.snow_nrel_fully_covered(snowfall_data)
-    assert_series_equal(expected, snow_coverage)
+    fully_covered = snowcoverage.snow_nrel_fully_covered(snowfall_data)
+    assert_series_equal(expected, fully_covered)
 
 
 def test_snow_nrel_hourly():

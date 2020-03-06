@@ -146,7 +146,7 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
         snow_coverage[filt] = new_snow[ev] - slide_amt[filt].cumsum()
 
     # clean up periods where row is completely uncovered
-    snow_coverage.clip(lower=0)
+    snow_coverage.clip(lower=0, inplace=True)
     snow_coverage = snow_coverage.fillna(value=0.)
     return snow_coverage
 

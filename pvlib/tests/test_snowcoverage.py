@@ -14,7 +14,7 @@ def test_snow_nrel_fully_covered():
     expected = pd.Series([False, True, False, True, False, False, True],
                          index=dt)
     actual_snowfall = snowcoverage.snow_nrel_fully_covered(snowfall_data)
-    assert_series_equal(actual_snowfall, expected)
+    assert_series_equal(expected, snow_coverage)
 
 
 def test_snow_nrel_hourly():
@@ -33,7 +33,7 @@ def test_snow_nrel_hourly():
     slide_amt = slide_amount_coefficient * sind(surface_tilt)
     covered = 1.0 - slide_amt * np.array([0, 1, 2, 3, 4, 5, 6, 7])
     expected = pd.Series(covered, index=dt)
-    assert_series_equal(snow_coverage, expected)
+    assert_series_equal(expected, snow_coverage)
 
 
 def test_snow_nrel_subhourly():
@@ -55,8 +55,8 @@ def test_snow_nrel_subhourly():
                         1.0 - slide_amt * np.array([1, 2, 3, 4, 5]))
     covered = np.append(covered, np.array([1., 1., 1., 1. - slide_amt]))
     expected = pd.Series(covered, index=dt)
-    assert_series_equal(snow_coverage, expected)
-
+    assert_series_equal(expected, snow_coverage)
+    
 
 def test_snow_nrel_initial():
     surface_tilt = 45
@@ -74,7 +74,7 @@ def test_snow_nrel_initial():
     covered = 0.5 - slide_amt * np.array([0, 1, 2, 3, 4, 5, 6, 7])
     covered = np.where(covered < 0, 0., covered)
     expected = pd.Series(covered, index=dt)
-    assert_series_equal(snow_coverage, expected)
+    assert_series_equal(expected, snow_coverage)
 
 
 def test_snow_nrel_dc_loss():

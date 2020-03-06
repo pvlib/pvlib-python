@@ -47,9 +47,10 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
     '''
     timestep = _time_delta_in_hours(snowfall.index)
     hourly_snow_rate = snowfall / timestep
-    # deal with first hour
+    # if we can infer a time frequency, use first snowfall value
+    # otherwise the first snowfall value is ignored
     freq = pd.infer_freq(snowfall.index)
-    freq = freq.lower().replace('t', 'm')  # for pandas <= 0.23.4
+    freq = freq.upper().replace('T', 'M')  # for pandas <= 0.23.4
     if freq is not None:
         if len(freq) == 1:  # only a unit abbreviation
             freq = "1" + freq

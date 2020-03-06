@@ -19,7 +19,7 @@ def test_snow_nrel_fully_covered():
 
 def test_snow_nrel_hourly():
     surface_tilt = 45
-    sliding_coefficient = 0.197
+    slide_amount_coefficient = 0.197
     dt = pd.date_range(start="2019-1-1 10:00:00", end="2019-1-1 17:00:00",
                        freq='1h')
     poa_irradiance = pd.Series([400, 200, 100, 1234, 134, 982, 100, 100],
@@ -30,7 +30,7 @@ def test_snow_nrel_hourly():
         snowfall_data, poa_irradiance, temp_air, surface_tilt,
         threshold_snowfall=0.6)
 
-    slide_amt = sliding_coefficient * sind(surface_tilt)
+    slide_amt = slide_amount_coefficient * sind(surface_tilt)
     covered = 1.0 - slide_amt * np.array([0, 1, 2, 3, 4, 5, 6, 7])
     expected = pd.Series(covered, index=dt)
     assert_series_equal(snow_coverage, expected)
@@ -38,7 +38,7 @@ def test_snow_nrel_hourly():
 
 def test_snow_nrel_subhourly():
     surface_tilt = 45
-    sliding_coefficient = 0.197
+    slide_amount_coefficient = 0.197
     dt = pd.date_range(start="2019-1-1 11:00:00", end="2019-1-1 14:00:00",
                        freq='15T')
     poa_irradiance = pd.Series([400, 200, 100, 1234, 134, 982, 100, 100, 100,
@@ -50,7 +50,7 @@ def test_snow_nrel_subhourly():
                                0.], index=dt)
     snow_coverage = snowcoverage.snow_nrel(
         snowfall_data, poa_irradiance, temp_air, surface_tilt)
-    slide_amt = sliding_coefficient * sind(surface_tilt) * 0.25
+    slide_amt = slide_amount_coefficient * sind(surface_tilt) * 0.25
     covered = np.append(np.array([1., 1., 1., 1.]),
                         1.0 - slide_amt * np.array([1, 2, 3, 4, 5]))
     covered = np.append(covered, np.array([1., 1., 1., 1. - slide_amt]))
@@ -60,7 +60,7 @@ def test_snow_nrel_subhourly():
 
 def test_snow_nrel_initial():
     surface_tilt = 45
-    sliding_coefficient = 0.197
+    slide_amount_coefficient = 0.197
     dt = pd.date_range(start="2019-1-1 10:00:00", end="2019-1-1 17:00:00",
                        freq='1h')
     poa_irradiance = pd.Series([400, 200, 100, 1234, 134, 982, 100, 100],
@@ -70,7 +70,7 @@ def test_snow_nrel_initial():
     snow_coverage = snowcoverage.snow_nrel(
         snowfall_data, poa_irradiance, temp_air, surface_tilt,
         initial_coverage=0.5, threshold_snowfall=1.)
-    slide_amt = sliding_coefficient * sind(surface_tilt)
+    slide_amt = slide_amount_coefficient * sind(surface_tilt)
     covered = 0.5 - slide_amt * np.array([0, 1, 2, 3, 4, 5, 6, 7])
     covered = np.where(covered < 0, 0., covered)
     expected = pd.Series(covered, index=dt)

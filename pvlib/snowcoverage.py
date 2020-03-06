@@ -13,7 +13,7 @@ def _time_delta_in_hours(times):
     return delta.dt.total_seconds().div(3600)
 
 
-def snow_nrel_fully_covered(snowfall, threshold=1.):
+def snow_nrel_fully_covered(snowfall, threshold_snowfall=1.):
     '''
     Calculates the timesteps when the row's slant height is fully covered
     by snow.
@@ -23,7 +23,7 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
     snowfall : Series
         Accumulated snowfall in each time period [cm]
 
-    threshold : float, default 1.0
+    threshold_snowfall : float, default 1.0
         Hourly snowfall above which snow coverage is set to the row's slant
         height. [cm/hr]
 
@@ -58,12 +58,12 @@ def snow_nrel_fully_covered(snowfall, threshold=1.):
         hourly_snow_rate.iloc[0] = snowfall[0] / timedelta
     else:  # can't infer frequency from index
         hourly_snow_rate[0] = 0  # replaces NaN
-    return hourly_snow_rate > threshold
+    return hourly_snow_rate > threshold_snowfall
 
 
 def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
-              initial_coverage=None, threshold_snowfall=1., m=-80.,
-              sliding_coefficient=0.197):
+              initial_coverage=0, threshold_snowfall=1.,
+              can_slide_coefficient=-80., slide_amount_coefficient=0.197):
     '''
     Calculates the fraction of the slant height of a row of modules covered by
     snow at every time step.
@@ -80,29 +80,34 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     poa_irradiance : Series
         Total in-plane irradiance [W/m^2]
     temp_air : Series
-        Ambient air temperature at the surface [C]
+        Ambient air temperature [C]
     surface_tilt : numeric
         Tilt of module's from horizontal, e.g. surface facing up = 0,
         surface facing horizon = 90. Must be between 0 and 180. [degrees]
-    initial_coverage : float, default None
+    initial_coverage : float, default 0
         Fraction of row's slant height that is covered with snow at the
         beginning of the simulation. If None (default) then the initial
         coverage is set to the snowfall in the first time period. [unitless]
     threshold_snowfall : float, default 1.0
         Hourly snowfall above which snow coverage is set to the row's slant
         height. [cm/hr]
-    m : float, default 80.
-        Coefficient used in [1]_ to determine if snow can slide given
-        irradiance and air temperature. [W/(m^2 C)]
-    sliding coefficient : float, default 0.197
-        Empirical coefficient used in [1]_ to determine how much
-        snow slides off in each time period. [unitless]
+    can_slide_coefficient : float, default -80.
+        Coefficient to determine if snow can slide given irradiance and air
+        temperature. [W/(m^2 C)]
+    slide_amount_coefficient : float, default 0.197
+        Coefficient to determine fraction of snow that slides off in each
+        time period. [unitless]
 
     Returns
     -------
     snow_coverage : Series
         The fraction of the slant height of a row of modules that is covered
         by snow at each time step.
+
+    Notes
+    -----
+    In [1]_, `can_slide_coefficient` is termed `m`, and the value of
+    `slide_amount_coefficient` is given in tenths of a module's slant height.
 
     References
     ----------
@@ -115,37 +120,33 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     '''
 
     # set up output Series
-    snow_coverage = pd.Series(index=poa_irradiance.index, data=np.nan)
-    if initial_coverage is None:
-        initial_coverage = 0.
+    snow_coverage = pd.Series(np.nan, index=poa_irradiance.index)
 
     # determine amount that snow can slide in each timestep
-    can_slide = temp_air > poa_irradiance / m
-    slide_amt = sliding_coefficient * sind(surface_tilt) * \
+    can_slide = temp_air > poa_irradiance / can_slide_coefficient
+    slide_amt = slide_amount_coefficient * sind(surface_tilt) * \
         _time_delta_in_hours(poa_irradiance.index)
+    slide_amt[~can_slide] = 0.
 
-    uncovered = pd.Series(0.0, index=poa_irradiance.index)
-    uncovered[can_slide] = slide_amt[can_slide]
-
-    # build list of intervals between snow fall events
-    snow_events = snowfall[snow_nrel_fully_covered(snowfall,
-                                                   threshold_snowfall)].index
-    # define new snow coverage at each event
-    new_snow = pd.Series(index=snow_events, data=1.)
+    # find times with new snowfall
+    new_snowfall = snow_nrel_fully_covered(snowfall, threshold_snowfall)
+    # define amount of new snow coverage at each event
+    new_snow = pd.Series(1., index=snowfall[new_snowfall].index)
     # include start and end times if they are not already snow events
-    if snowfall.index[0] not in snow_events:
+    if snowfall.index[0] not in new_snow.index:
         new_snow[snowfall.index[0]] = initial_coverage
-    if snowfall.index[-1] not in snow_events:
+    if snowfall.index[-1] not in new_snow.index:
         new_snow[snowfall.index[-1]] = 0.
 
+    # define intervals starting with new snowfall events
     windows = list(zip(new_snow.index[:-1], new_snow.index[1:]))
     for (ev, ne) in windows:
         filt = (snow_coverage.index > ev) & (snow_coverage.index <= ne)
         snow_coverage[ev] = new_snow[ev]
-        snow_coverage[filt] = new_snow[ev] - uncovered[filt].cumsum()
+        snow_coverage[filt] = new_snow[ev] - slide_amt[filt].cumsum()
 
     # clean up periods where row is completely uncovered
-    snow_coverage[snow_coverage < 0] = 0
+    snow_coverage.clip(lower=0)
     snow_coverage = snow_coverage.fillna(value=0.)
     return snow_coverage
 

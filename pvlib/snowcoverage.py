@@ -119,6 +119,9 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
        NREL/TP-6A20-68705
     '''
 
+    # find times with new snowfall
+    new_snowfall = snow_nrel_fully_covered(snowfall, threshold_snowfall)
+
     # set up output Series
     snow_coverage = pd.Series(np.nan, index=poa_irradiance.index)
 
@@ -127,28 +130,24 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     slide_amt = slide_amount_coefficient * sind(surface_tilt) * \
         _time_delta_in_hours(poa_irradiance.index)
     slide_amt[~can_slide] = 0.
+    # don't slide during snow events
+    slide_amt[new_snowfall] = 0.
+    # don't slide in the interval preceding the snowfall data
+    slide_amt.iloc[0] = 0
 
-    # find times with new snowfall
-    new_snowfall = snow_nrel_fully_covered(snowfall, threshold_snowfall)
-    # define amount of new snow coverage at each event
-    new_snow = pd.Series(1., index=snowfall[new_snowfall].index)
-    # include start and end times if they are not already snow events
-    if snowfall.index[0] not in new_snow.index:
-        new_snow[snowfall.index[0]] = initial_coverage
-    if snowfall.index[-1] not in new_snow.index:
-        new_snow[snowfall.index[-1]] = 0.
+    # build time series of cumulative slide amounts
+    sliding_period_ID = new_snowfall.cumsum()
+    cumulative_sliding = slide_amt.groupby(sliding_period_ID).cumsum()
 
-    # define intervals starting with new snowfall events
-    windows = list(zip(new_snow.index[:-1], new_snow.index[1:]))
-    for (ev, ne) in windows:
-        filt = (snow_coverage.index > ev) & (snow_coverage.index <= ne)
-        snow_coverage[ev] = new_snow[ev]
-        snow_coverage[filt] = new_snow[ev] - slide_amt[filt].cumsum()
+    # set up time series of snow coverage without any sliding applied
+    snow_coverage[new_snowfall] = 1.0
+    if np.isnan(snow_coverage.iloc[0]):
+        snow_coverage.iloc[0] = initial_coverage
+    snow_coverage.ffill(inplace=True)
+    snow_coverage -= cumulative_sliding
 
     # clean up periods where row is completely uncovered
-    snow_coverage.clip(lower=0, inplace=True)
-    snow_coverage = snow_coverage.fillna(value=0.)
-    return snow_coverage
+    return snow_coverage.clip_lower(0)
 
 
 def snow_nrel_dc_loss(snow_coverage, num_strings):

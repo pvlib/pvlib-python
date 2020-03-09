@@ -56,7 +56,7 @@ def test_snow_nrel_subhourly():
     covered = np.append(covered, np.array([1., 1., 1., 1. - slide_amt]))
     expected = pd.Series(covered, index=dt)
     assert_series_equal(expected, snow_coverage)
-    
+
 
 def test_snow_nrel_initial():
     surface_tilt = 45

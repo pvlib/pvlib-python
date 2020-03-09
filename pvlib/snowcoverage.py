@@ -147,7 +147,7 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     snow_coverage -= cumulative_sliding
 
     # clean up periods where row is completely uncovered
-    return snow_coverage.clip_lower(0)
+    return snow_coverage.clip(lower=0)
 
 
 def snow_nrel_dc_loss(snow_coverage, num_strings):

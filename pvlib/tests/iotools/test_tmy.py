@@ -1,8 +1,9 @@
 from pandas.util.testing import network
 import numpy as np
 import pandas as pd
+import pytest
 from pvlib.iotools import tmy
-from conftest import DATA_DIR
+from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 # test the API works
 from pvlib.iotools import read_tmy3
@@ -17,6 +18,8 @@ def test_read_tmy3():
 
 
 @network
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_tmy3_remote():
     url = 'http://rredc.nrel.gov/solar/old_data/nsrdb/1991-2005/data/tmy3/703165TYA.CSV'
     tmy.read_tmy3(url)
@@ -28,21 +31,23 @@ def test_read_tmy3_recolumn():
 
 
 def test_read_tmy3_norecolumn():
-    data, meta = tmy.read_tmy3(TMY3_TESTFILE, recolumn=False)
+    data, _ = tmy.read_tmy3(TMY3_TESTFILE, recolumn=False)
     assert 'GHI source' in data.columns
 
 
 def test_read_tmy3_coerce_year():
     coerce_year = 1987
-    data, meta = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year)
-    assert (data.index.year == 1987).all()
+    data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year)
+    assert (data.index[:-1].year == 1987).all()
+    assert data.index[-1].year == 1988
 
 
 def test_read_tmy3_no_coerce_year():
     coerce_year = None
-    data, meta = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year)
+    data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year)
     assert 1997 and 1999 in data.index.year
-
+    assert data.index[-2] == pd.Timestamp('1998-12-31 23:00:00-09:00')
+    assert data.index[-1] == pd.Timestamp('1999-01-01 00:00:00-09:00')
 
 def test_read_tmy2():
     tmy.read_tmy2(TMY2_TESTFILE)
@@ -68,9 +73,10 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     # now check if it parses correctly when we try to coerce the year
     data, _ = read_tmy3(TMY3_FEB_LEAPYEAR, coerce_year=1990)
     # if get's here w/o an error, then gh865 is fixed, but let's check anyway
-    assert all(data.index.year == 1990)
+    assert all(data.index[:-1].year == 1990)
+    assert data.index[-1].year == 1991
     # let's do a quick sanity check, are the indices monotonically increasing?
-    assert all(np.diff(data.index[:-1].astype(int)) == 3600000000000)
+    assert all(np.diff(data.index.astype(int)) == 3600000000000)
     # according to the TMY3 manual, each record corresponds to the previous
     # hour so check that the 1st hour is 1AM and the last hour is midnite
     assert data.index[0].hour == 1

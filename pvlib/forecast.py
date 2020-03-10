@@ -2,7 +2,6 @@
 The 'forecast' module contains class definitions for
 retreiving forecasted data from UNIDATA Thredd servers.
 '''
-import datetime
 from netCDF4 import num2date
 import numpy as np
 import pandas as pd
@@ -165,6 +164,25 @@ class ForecastModel(object):
         self.ncss = NCSS(self.access_url)
         self.query = self.ncss.query()
 
+    def set_query_time_range(self, start, end):
+        """
+        Parameters
+        ----------
+        start : datetime.datetime, pandas.Timestamp
+            Must be tz-localized.
+        end : datetime.datetime, pandas.Timestamp
+            Must be tz-localized.
+
+        Notes
+        -----
+        Assigns ``self.start``, ``self.end``. Modifies ``self.query``
+        """
+        self.start = pd.Timestamp(start)
+        self.end = pd.Timestamp(end)
+        if self.start.tz is None or self.end.tz is None:
+            raise TypeError('start and end must be tz-localized')
+        self.query.time_range(self.start, self.end)
+
     def set_query_latlon(self):
         '''
         Sets the NCSS query location latitude and longitude.
@@ -180,24 +198,24 @@ class ForecastModel(object):
             self.lbox = False
             self.query.lonlat_point(self.longitude, self.latitude)
 
-    def set_location(self, time, latitude, longitude):
+    def set_location(self, tz, latitude, longitude):
         '''
         Sets the location for the query.
 
         Parameters
         ----------
-        time: datetime or DatetimeIndex
-            Time range of the query.
-        '''
-        if isinstance(time, datetime.datetime):
-            tzinfo = time.tzinfo
-        else:
-            tzinfo = time.tz
+        tz: tzinfo
+            Timezone of the query
+        latitude: float
+            Latitude of the query
+        longitude: float
+            Longitude of the query
 
-        if tzinfo is None:
-            self.location = Location(latitude, longitude)
-        else:
-            self.location = Location(latitude, longitude, tz=tzinfo)
+        Notes
+        -----
+        Assigns ``self.location``.
+        '''
+        self.location = Location(latitude, longitude, tz=tz)
 
     def get_data(self, latitude, longitude, start, end,
                  vert_level=None, query_variables=None,
@@ -243,14 +261,12 @@ class ForecastModel(object):
         else:
             self.query_variables = query_variables
 
+        self.set_query_time_range(start, end)
+
         self.latitude = latitude
         self.longitude = longitude
         self.set_query_latlon()  # modifies self.query
-        self.set_location(start, latitude, longitude)
-
-        self.start = start
-        self.end = end
-        self.query.time_range(self.start, self.end)
+        self.set_location(self.start.tz, latitude, longitude)
 
         if self.vert_level is not None:
             self.query.vertical_level(self.vert_level)
@@ -389,7 +405,8 @@ class ForecastModel(object):
         -------
         pandas.DatetimeIndex
         '''
-        times = num2date(time[:].squeeze(), time.units)
+        times = num2date(time[:].squeeze(), time.units,
+                         only_use_cftime_datetimes=False)
         self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
 
     def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=35,

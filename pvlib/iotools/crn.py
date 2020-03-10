@@ -42,7 +42,8 @@ DTYPES = [
 
 def read_crn(filename):
     """
-    Read NOAA USCRN [1]_ [2]_ fixed-width file into pandas dataframe.
+    Read a NOAA USCRN fixed-width file into pandas dataframe.  The CRN is
+    described in [1]_ and [2]_.
 
     Parameters
     ----------

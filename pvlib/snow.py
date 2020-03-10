@@ -13,7 +13,7 @@ def _time_delta_in_hours(times):
     return delta.dt.total_seconds().div(3600)
 
 
-def snow_nrel_fully_covered(snowfall, threshold_snowfall=1.):
+def fully_covered_nrel(snowfall, threshold_snowfall=1.):
     '''
     Calculates the timesteps when the row's slant height is fully covered
     by snow.
@@ -61,9 +61,9 @@ def snow_nrel_fully_covered(snowfall, threshold_snowfall=1.):
     return hourly_snow_rate > threshold_snowfall
 
 
-def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
-              initial_coverage=0, threshold_snowfall=1.,
-              can_slide_coefficient=-80., slide_amount_coefficient=0.197):
+def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
+                  initial_coverage=0, threshold_snowfall=1.,
+                  can_slide_coefficient=-80., slide_amount_coefficient=0.197):
     '''
     Calculates the fraction of the slant height of a row of modules covered by
     snow at every time step.
@@ -120,7 +120,7 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     '''
 
     # find times with new snowfall
-    new_snowfall = snow_nrel_fully_covered(snowfall, threshold_snowfall)
+    new_snowfall = fully_covered_nrel(snowfall, threshold_snowfall)
 
     # set up output Series
     snow_coverage = pd.Series(np.nan, index=poa_irradiance.index)
@@ -150,7 +150,7 @@ def snow_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     return snow_coverage.clip(lower=0)
 
 
-def snow_nrel_dc_loss(snow_coverage, num_strings):
+def dc_loss_nrel(snow_coverage, num_strings):
     '''
     Calculates the fraction of DC capacity lost due to snow coverage.
 

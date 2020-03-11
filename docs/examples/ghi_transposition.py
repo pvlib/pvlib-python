@@ -40,16 +40,17 @@ def get_irradiance(site_location, date, tilt, surface_azimuth):
     solar_position = site_location.get_solarposition(times=times)
     # Use the get_total_irradiance function to transpose the GHI to POA
     POA_irradiance = get_total_irradiance(
-            surface_tilt=tilt,
-            surface_azimuth=surface_azimuth,
-            dni=clearsky_ghi['dni'],
-            ghi=clearsky_ghi['ghi'],
-            dhi=clearsky_ghi['dhi'],
-            solar_zenith=solar_position['zenith'],
-            solar_azimuth=solar_position['azimuth']
-            )
+        surface_tilt=tilt,
+        surface_azimuth=surface_azimuth,
+        dni=clearsky_ghi['dni'],
+        ghi=clearsky_ghi['ghi'],
+        dhi=clearsky_ghi['dhi'],
+        solar_zenith=solar_position['zenith'],
+        solar_azimuth=solar_position['azimuth']
+        )
     return pd.DataFrame({'GHI': clearsky_ghi['ghi'],
                          'POA': POA_irradiance['poa_global']})
+
 
 # Get irradiance data for summer and winter solstice, assuming 25 degree tilt
 # and a south facing array

@@ -2,7 +2,7 @@
 GHI to POA Transposition
 =========================
 
-Example of transposing clearsky GHI to POA
+Example of generating clearsky GHI and POA irradiance.
 """
 
 # %%

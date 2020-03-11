@@ -46,8 +46,8 @@ def get_irradiance(site_location, date, tilt, surface_azimuth):
         ghi=clearsky_ghi['ghi'],
         dhi=clearsky_ghi['dhi'],
         solar_zenith=solar_position['zenith'],
-        solar_azimuth=solar_position['azimuth']
-        )
+        solar_azimuth=solar_position['azimuth'])
+    # Return DataFrame with only GHI and POA
     return pd.DataFrame({'GHI': clearsky_ghi['ghi'],
                          'POA': POA_irradiance['poa_global']})
 

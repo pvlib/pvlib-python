@@ -68,7 +68,7 @@ plt.show()
 
 # %%
 # Note that in Summer, there is not much gain when comparing POA irradiance to
-# GHI. In the winter, however, POA irradiance is signifiacntly higher than
+# GHI. In the winter, however, POA irradiance is significantly higher than
 # GHI. This is because, in winter, the sun is much lower in the sky, so a
 # tilted array will be at a more optimal angle compared to a flat array.
 # In summer, the sun gets much higher in the sky, and there is very little

@@ -72,7 +72,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
              NsVbi=np.Inf, gradients=False):
     """
     Explicit calculation of points on the IV curve described by the single
-    diode equation [1]_.
+    diode equation.  Values are calculated as described in [1]_.
 
     .. warning::
        * Do not use ``d2mutau`` with CEC coefficients.

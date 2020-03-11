@@ -2,19 +2,19 @@
 Kimber Soiling Model
 ====================
 
-Examples of soiling using the Kimber model [1]_.
-
-References
-----------
-.. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
-   in California and the Southwest Region of the United States," Adrianne
-   Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
-   Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
+Examples of soiling using the Kimber model.
 """
 
 # %%
-# This example shows basic usage of pvlib's Kimber Soiling model with
+# This example shows basic usage of pvlib's Kimber Soiling model [1]_ with
 # :py:meth:`pvlib.losses.soiling_kimber`.
+#
+# References
+# ----------
+# .. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
+#    in California and the Southwest Region of the United States," Adrianne
+#    Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
+#    Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
 #
 # The Kimber Soiling model assumes that soiling builds up at a constant rate
 # until cleaned either manually or by rain. The rain must reach a threshold to
@@ -30,19 +30,22 @@ References
 # step.
 
 from datetime import datetime
+import pathlib
 from matplotlib import pyplot as plt
 from pvlib.iotools import read_tmy3
 from pvlib.losses import soiling_kimber
-from pvlib.tests.conftest import DATA_DIR
+import pvlib
+
+# get full path to the data directory
+DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
 
 # get TMY3 data with rain
-greensboro = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
-# NOTE: can't use Sand Point, AK b/c Lprecipdepth is -9900, ie: missing
-greensboro_rain = greensboro[0].Lprecipdepth
-# calculate soiling with no wash dates
+greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
+# get the rain data
+greensboro_rain = greensboro.Lprecipdepth
+# calculate soiling with no wash dates and cleaning threshold of 25-mm of rain
 THRESHOLD = 25.0
-soiling_no_wash = soiling_kimber(
-    greensboro_rain, cleaning_threshold=THRESHOLD, istmy=True)
+soiling_no_wash = soiling_kimber(greensboro_rain, cleaning_threshold=THRESHOLD)
 soiling_no_wash.name = 'soiling'
 # daily rain totals
 daily_rain = greensboro_rain.iloc[:-1].resample('D').sum()

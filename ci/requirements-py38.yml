@@ -19,7 +19,7 @@ dependencies:
     - pytest-timeout
     - pytest-rerunfailures
     - pytest-remotedata
-    - python=3.7
+    - python=3.8
     - pytz
     - requests
     - scipy

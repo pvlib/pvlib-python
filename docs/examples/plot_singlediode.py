@@ -1,6 +1,6 @@
 """
 Calculating a module's IV curves
-=====================
+================================
 
 Examples of modeling IV curves using a single-diode circuit equivalent model.
 """

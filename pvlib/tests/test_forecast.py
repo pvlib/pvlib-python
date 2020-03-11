@@ -7,6 +7,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from conftest import requires_siphon, has_siphon, skip_windows
+from conftest import RERUNS, RERUNS_DELAY
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 
@@ -59,6 +60,8 @@ def model(request):
 
 
 @requires_siphon
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_process_data(model):
     for how in ['liujordan', 'clearsky_scaling']:
         if model.raw_data.empty:
@@ -75,6 +78,8 @@ def test_process_data(model):
 
 
 @requires_siphon
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_bad_kwarg_get_data():
     # For more information on why you would want to pass an unknown keyword
     # argument, see Github issue #745.
@@ -85,6 +90,8 @@ def test_bad_kwarg_get_data():
 
 
 @requires_siphon
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_bad_kwarg_get_processed_data():
     # For more information on why you would want to pass an unknown keyword
     # argument, see Github issue #745.
@@ -95,6 +102,8 @@ def test_bad_kwarg_get_processed_data():
 
 
 @requires_siphon
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_how_kwarg_get_processed_data():
     amodel = NAM()
     data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
@@ -103,6 +112,8 @@ def test_how_kwarg_get_processed_data():
 
 
 @requires_siphon
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_vert_level():
     amodel = NAM()
     vert_level = 5000
@@ -111,6 +122,8 @@ def test_vert_level():
 
 
 @requires_siphon
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_datetime():
     amodel = NAM()
     start = datetime.now(tz=timezone.utc)
@@ -119,6 +132,8 @@ def test_datetime():
 
 
 @requires_siphon
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_queryvariables():
     amodel = GFS()
     new_variables = ['u-component_of_wind_height_above_ground']

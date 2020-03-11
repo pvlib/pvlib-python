@@ -6,8 +6,8 @@ Example of generating clearsky GHI and POA irradiance.
 """
 
 # %%
-# This example shows how to use the get_clearsky method to generate clearsky
-# GHI data as well as how to use the get_total_iradiance function to transpose
+# This example shows how to use the :py:meth:`pvlib.location.Location.get_clearsky` method to generate clearsky
+# GHI data as well as how to use the :py:meth:`pvlib.irradiance.get_total_irradiance` function to transpose
 # GHI data to Plane of Array (POA) irradiance.
 
 from pvlib import location
@@ -27,7 +27,7 @@ site = location.Location(lat, lon, tz=tz)
 def get_irradiance(site_location, date, tilt, surface_azimuth):
     # Creates one day's worth of 10 min intervals
     times = pd.date_range(date, freq='10min', periods=6*24, tz=tz)
-    # Generate cleaersky data using the Ineichen model, which is the default
+    # Generate clearsky data using the Ineichen model, which is the default
     # The get_clearsky method returns a dataframe with values for GHI, DNI,
     # and DHI
     clearsky_ghi = site_location.get_clearsky(times)
@@ -61,14 +61,13 @@ winter_irradiance['POA'].plot(ax=ax2, label='POA')
 ax1.set_xlabel('Time of day (Summer)')
 ax2.set_xlabel('Time of day (Winter)')
 ax1.set_ylabel('Irradiance (W/m2)')
-ax2.set_ylabel('Irradiance (W/m2)')
 ax1.legend()
 ax2.legend()
 plt.show()
 
 # %%
 # Note that in Summer, there is not much gain when comparing POA irradiance to
-# GHI. In the winter, however, POA irradiance is signifiacntly higher than
+# GHI. In the winter, however, POA irradiance is significantly higher than
 # GHI. This is because, in winter, the sun is much lower in the sky, so a
 # tilted array will be at a more optimal angle compared to a flat array.
 # In summer, the sun gets much higher in the sky, and there is very little

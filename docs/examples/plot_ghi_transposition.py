@@ -6,7 +6,7 @@ Example of generating clearsky GHI and POA irradiance.
 """
 
 # %%
-# This example shows how to use the get_clearsky method to generate clearsky
+# This example shows how to use the :py:meth:`pvlib.location.Location.get_clearsky` method to generate clearsky
 # GHI data as well as how to use the :py:meth:`pvlib.irradiance.get_total_irradiance` function to transpose
 # GHI data to Plane of Array (POA) irradiance.
 

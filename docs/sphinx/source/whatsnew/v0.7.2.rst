@@ -67,7 +67,7 @@ Documentation
 * Add example of IV curve generation. (:pull:`872`)
 * Add section about gallery examples to Contributing guide. (:pull:`905`)
 * Add section with link to Code of Conduct in Contributing guide. (:pull:`922`)
-* Add example of GHI to POA transposition 
+* Add example of GHI to POA transposition (:pull:`933`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -82,4 +82,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
 * Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
-* Eric Fitch (:ghuser:`eric.f900`)
+* Eric Fitch (:ghuser:`ericf900`)

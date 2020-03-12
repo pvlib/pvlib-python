@@ -27,27 +27,28 @@ site = location.Location(lat, lon, tz=tz)
 
 # Calculate clear-sky GHI and transpose to plane of array
 # Define a function so that we can re-use the sequence of operations with
-# Different locations
+# different locations
 def get_irradiance(site_location, date, tilt, surface_azimuth):
     # Creates one day's worth of 10 min intervals
-    times = pd.date_range(date, freq='10min', periods=6*24, tz=tz)
+    times = pd.date_range(date, freq='10min', periods=6*24,
+                          tz=site_location.tz)
     # Generate clearsky data using the Ineichen model, which is the default
     # The get_clearsky method returns a dataframe with values for GHI, DNI,
     # and DHI
-    clearsky_ghi = site_location.get_clearsky(times)
+    clearsky = site_location.get_clearsky(times)
     # Get solar azimuth and zenith to pass to the transposition function
     solar_position = site_location.get_solarposition(times=times)
     # Use the get_total_irradiance function to transpose the GHI to POA
     POA_irradiance = irradiance.get_total_irradiance(
         surface_tilt=tilt,
         surface_azimuth=surface_azimuth,
-        dni=clearsky_ghi['dni'],
-        ghi=clearsky_ghi['ghi'],
-        dhi=clearsky_ghi['dhi'],
+        dni=clearsky['dni'],
+        ghi=clearsky['ghi'],
+        dhi=clearsky['dhi'],
         solar_zenith=solar_position['apparent_zenith'],
         solar_azimuth=solar_position['azimuth'])
     # Return DataFrame with only GHI and POA
-    return pd.DataFrame({'GHI': clearsky_ghi['ghi'],
+    return pd.DataFrame({'GHI': clearsky['ghi'],
                          'POA': POA_irradiance['poa_global']})
 
 
@@ -68,7 +69,7 @@ winter_irradiance['GHI'].plot(ax=ax2, label='GHI')
 winter_irradiance['POA'].plot(ax=ax2, label='POA')
 ax1.set_xlabel('Time of day (Summer)')
 ax2.set_xlabel('Time of day (Winter)')
-ax1.set_ylabel('Irradiance (W/m2)')
+ax1.set_ylabel('Irradiance ($W/m^2$)')
 ax1.legend()
 ax2.legend()
 plt.show()

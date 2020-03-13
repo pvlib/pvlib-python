@@ -1,6 +1,6 @@
 """
-The ``snow`` module contains functions that model the effect of snow on
-solar modules.
+The ``snow`` module contains functions that model module snow cover and the
+associated effects on PV module output"
 """
 
 import numpy as np
@@ -44,6 +44,7 @@ def fully_covered_nrel(snowfall, threshold_snowfall=1.):
        Colorado and Wisconsin locations." Solar Energy 97; pp.112-121.
     .. [2] Ryberg, D; Freeman, J. "Integration, Validation, and Application
        of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
+       NREL/TP-6A20-68705
     '''
     timestep = _time_delta_in_hours(snowfall.index)
     hourly_snow_rate = snowfall / timestep
@@ -83,11 +84,10 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
         Ambient air temperature [C]
     surface_tilt : numeric
         Tilt of module's from horizontal, e.g. surface facing up = 0,
-        surface facing horizon = 90. Must be between 0 and 180. [degrees]
+        surface facing horizon = 90. [degrees]
     initial_coverage : float, default 0
         Fraction of row's slant height that is covered with snow at the
-        beginning of the simulation. If None (default) then the initial
-        coverage is set to the snowfall in the first time period. [unitless]
+        beginning of the simulation. [unitless]
     threshold_snowfall : float, default 1.0
         Hourly snowfall above which snow coverage is set to the row's slant
         height. [cm/hr]
@@ -95,8 +95,8 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
         Coefficient to determine if snow can slide given irradiance and air
         temperature. [W/(m^2 C)]
     slide_amount_coefficient : float, default 0.197
-        Coefficient to determine fraction of snow that slides off in each
-        time period. [unitless]
+        Coefficient to determine fraction of snow that slides off in one hour.
+        [unitless]
 
     Returns
     -------

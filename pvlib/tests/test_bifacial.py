@@ -1,15 +1,11 @@
 import pandas as pd
-import numpy as np
 from datetime import datetime
-from pvlib.bifacial import pvfactors_timeseries, PVFactorsReportBuilder
+from pvlib.bifacial import pvfactors_timeseries
 from conftest import requires_pvfactors
-import pytest
 
 
 @requires_pvfactors
-@pytest.mark.parametrize('run_parallel_calculations',
-                         [False, True])
-def test_pvfactors_timeseries(run_parallel_calculations):
+def test_pvfactors_timeseries():
     """ Test that pvfactors is functional, using the TLDR section inputs of the
     package github repo README.md file:
     https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start"""
@@ -39,29 +35,25 @@ def test_pvfactors_timeseries(run_parallel_calculations):
     expected_ipoa_front = pd.Series([1034.95474708997, 795.4423259036623],
                                     index=timestamps,
                                     name=('total_inc_front'))
-    expected_ipoa_back = pd.Series([91.88707460262768, 78.05831585685215],
+    expected_ipoa_back = pd.Series([92.12563846416197, 78.05831585685098],
                                    index=timestamps,
                                    name=('total_inc_back'))
 
     # Run calculation
-    ipoa_front, ipoa_back = pvfactors_timeseries(
+    ipoa_inc_front, ipoa_inc_back, _, _ = pvfactors_timeseries(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
         axis_azimuth,
         timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
         n_pvrows=n_pvrows, index_observed_pvrow=index_observed_pvrow,
         rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
-        horizon_band_angle=horizon_band_angle,
-        run_parallel_calculations=run_parallel_calculations,
-        n_workers_for_parallel_calcs=-1)
+        horizon_band_angle=horizon_band_angle)
 
-    pd.testing.assert_series_equal(ipoa_front, expected_ipoa_front)
-    pd.testing.assert_series_equal(ipoa_back, expected_ipoa_back)
+    pd.testing.assert_series_equal(ipoa_inc_front, expected_ipoa_front)
+    pd.testing.assert_series_equal(ipoa_inc_back, expected_ipoa_back)
 
 
 @requires_pvfactors
-@pytest.mark.parametrize('run_parallel_calculations',
-                         [False, True])
-def test_pvfactors_timeseries_pandas_inputs(run_parallel_calculations):
+def test_pvfactors_timeseries_pandas_inputs():
     """ Test that pvfactors is functional, using the TLDR section inputs of the
     package github repo README.md file, but converted to pandas Series:
     https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start"""
@@ -91,60 +83,18 @@ def test_pvfactors_timeseries_pandas_inputs(run_parallel_calculations):
     expected_ipoa_front = pd.Series([1034.95474708997, 795.4423259036623],
                                     index=timestamps,
                                     name=('total_inc_front'))
-    expected_ipoa_back = pd.Series([91.88707460262768, 78.05831585685215],
+    expected_ipoa_back = pd.Series([92.12563846416197, 78.05831585685098],
                                    index=timestamps,
                                    name=('total_inc_back'))
 
     # Run calculation
-    ipoa_front, ipoa_back = pvfactors_timeseries(
+    ipoa_inc_front, ipoa_inc_back, _, _ = pvfactors_timeseries(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
         axis_azimuth,
         timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
         n_pvrows=n_pvrows, index_observed_pvrow=index_observed_pvrow,
         rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
-        horizon_band_angle=horizon_band_angle,
-        run_parallel_calculations=run_parallel_calculations,
-        n_workers_for_parallel_calcs=-1)
+        horizon_band_angle=horizon_band_angle)
 
-    pd.testing.assert_series_equal(ipoa_front, expected_ipoa_front)
-    pd.testing.assert_series_equal(ipoa_back, expected_ipoa_back)
-
-
-def test_build_1():
-    """Test that build correctly instantiates a dictionary, when passed a Nones
-    for the report and pvarray arguments.
-    """
-    report = None
-    pvarray = None
-    expected = {'total_inc_back': [np.nan], 'total_inc_front': [np.nan]}
-    assert expected == PVFactorsReportBuilder.build(report, pvarray)
-
-
-def test_merge_1():
-    """Test that merge correctly returns the first element of the reports
-    argument when there is only dictionary in reports.
-    """
-    test_dict = {'total_inc_back': [1, 2, 3], 'total_inc_front': [4, 5, 6]}
-    reports = [test_dict]
-    assert test_dict == PVFactorsReportBuilder.merge(reports)
-
-
-def test_merge_2():
-    """Test that merge correctly combines two dictionary reports.
-    """
-    test_dict_1 = {'total_inc_back': [1, 2], 'total_inc_front': [4, 5]}
-    test_dict_2 = {'total_inc_back': [3], 'total_inc_front': [6]}
-    expected = {'total_inc_back': [1, 2, 3], 'total_inc_front': [4, 5, 6]}
-    reports = [test_dict_1, test_dict_2]
-    assert expected == PVFactorsReportBuilder.merge(reports)
-
-
-def test_merge_3():
-    """Test that merge correctly combines three dictionary reports.
-    """
-    test_dict_1 = {'total_inc_back': [1], 'total_inc_front': [4]}
-    test_dict_2 = {'total_inc_back': [2], 'total_inc_front': [5]}
-    test_dict_3 = {'total_inc_back': [3], 'total_inc_front': [6]}
-    expected = {'total_inc_back': [1, 2, 3], 'total_inc_front': [4, 5, 6]}
-    reports = [test_dict_1, test_dict_2, test_dict_3]
-    assert expected == PVFactorsReportBuilder.merge(reports)
+    pd.testing.assert_series_equal(ipoa_inc_front, expected_ipoa_front)
+    pd.testing.assert_series_equal(ipoa_inc_back, expected_ipoa_back)

@@ -9,12 +9,10 @@ import numpy as np
 
 def pvfactors_timeseries(
         solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
-        axis_azimuth,
-        timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo,
-        n_pvrows=3, index_observed_pvrow=1,
+        axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width,
+        albedo, n_pvrows=3, index_observed_pvrow=1,
         rho_front_pvrow=0.03, rho_back_pvrow=0.05,
-        horizon_band_angle=15.,
-        run_parallel_calculations=True, n_workers_for_parallel_calcs=2):
+        horizon_band_angle=15.):
     """
     Calculate front and back surface plane-of-array irradiance on
     a fixed tilt or single-axis tracker PV array configuration, and using
@@ -62,28 +60,21 @@ def pvfactors_timeseries(
         Back surface reflectivity of PV rows
     horizon_band_angle: float, default 15
         Elevation angle of the sky dome's diffuse horizon band (deg)
-    run_parallel_calculations: bool, default True
-        pvfactors is capable of using multiprocessing. Use this flag to decide
-        to run calculations in parallel (recommended) or not.
-    n_workers_for_parallel_calcs: int, default 2
-        Number of workers to use in the case of parallel calculations. The
-        '-1' value will lead to using a value equal to the number
-        of CPU's on the machine running the model.
 
     Returns
     -------
-    front_poa_irradiance: numeric
+    front_incident_poa_irradiance: numeric
         Calculated incident irradiance on the front surface of the PV modules
         (W/m2)
-    back_poa_irradiance: numeric
+    back_incident_poa_irradiance: numeric
         Calculated incident irradiance on the back surface of the PV modules
         (W/m2)
-    df_registries: pandas DataFrame
-        DataFrame containing detailed outputs of the simulation; for
-        instance the shapely geometries, the irradiance components incident on
-        all surfaces of the PV array (for all timestamps), etc.
-        In the pvfactors documentation, this is refered to as the "surface
-        registry".
+    front_absorbed_poa_irradiance: numeric
+        Calculated absorbed irradiance on the front surface of the PV modules
+        (W/m2), after AOI losses
+    back_absorbed_poa_irradiance: numeric
+        Calculated absorbed irradiance on the back surface of the PV modules
+        (W/m2), after AOI losses
 
     References
     ----------
@@ -99,22 +90,27 @@ def pvfactors_timeseries(
         solar_azimuth = np.array(solar_azimuth)
     if isinstance(solar_zenith, pd.Series):
         solar_zenith = solar_zenith.values
+    elif isinstance(solar_zenith, list):
+        solar_zenith = np.array(solar_zenith)
     if isinstance(surface_azimuth, pd.Series):
         surface_azimuth = surface_azimuth.values
     elif isinstance(surface_azimuth, list):
         surface_azimuth = np.array(surface_azimuth)
     if isinstance(surface_tilt, pd.Series):
         surface_tilt = surface_tilt.values
+    elif isinstance(surface_tilt, list):
+        surface_tilt = np.array(surface_tilt)
     if isinstance(dni, pd.Series):
         dni = dni.values
+    elif isinstance(dni, list):
+        dni = np.array(dni)
     if isinstance(dhi, pd.Series):
         dhi = dhi.values
-    if isinstance(solar_azimuth, list):
-        solar_azimuth = np.array(solar_azimuth)
+    elif isinstance(dhi, list):
+        dhi = np.array(dhi)
 
     # Import pvfactors functions for timeseries calculations.
-    from pvfactors.run import (run_timeseries_engine,
-                               run_parallel_engine)
+    from pvfactors.run import run_timeseries_engine
 
     # Build up pv array configuration parameters
     pvarray_parameters = {
@@ -122,67 +118,35 @@ def pvfactors_timeseries(
         'axis_azimuth': axis_azimuth,
         'pvrow_height': pvrow_height,
         'pvrow_width': pvrow_width,
-        'gcr': gcr,
-        'rho_front_pvrow': rho_front_pvrow,
-        'rho_back_pvrow': rho_back_pvrow,
+        'gcr': gcr
+    }
+
+    irradiance_model_params = {
+        'rho_front': rho_front_pvrow,
+        'rho_back': rho_back_pvrow,
         'horizon_band_angle': horizon_band_angle
     }
 
-    # Run pvfactors calculations: either in parallel or serially
-    if run_parallel_calculations:
-        report = run_parallel_engine(
-            PVFactorsReportBuilder, pvarray_parameters,
-            timestamps, dni, dhi,
-            solar_zenith, solar_azimuth,
-            surface_tilt, surface_azimuth,
-            albedo, n_processes=n_workers_for_parallel_calcs)
-    else:
-        report = run_timeseries_engine(
-            PVFactorsReportBuilder.build, pvarray_parameters,
-            timestamps, dni, dhi,
-            solar_zenith, solar_azimuth,
-            surface_tilt, surface_azimuth,
-            albedo)
+    # Create report function
+    def fn_build_report(pvarray):
+        return {'total_inc_back': pvarray.ts_pvrows[index_observed_pvrow]
+                .back.get_param_weighted('qinc'),
+                'total_inc_front': pvarray.ts_pvrows[index_observed_pvrow]
+                .front.get_param_weighted('qinc'),
+                'total_abs_back': pvarray.ts_pvrows[index_observed_pvrow]
+                .back.get_param_weighted('qabs'),
+                'total_abs_front': pvarray.ts_pvrows[index_observed_pvrow]
+                .front.get_param_weighted('qabs')}
+
+    # Run pvfactors calculations
+    report = run_timeseries_engine(
+        fn_build_report, pvarray_parameters,
+        timestamps, dni, dhi, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, albedo,
+        irradiance_model_params=irradiance_model_params)
 
     # Turn report into dataframe
     df_report = pd.DataFrame(report, index=timestamps)
 
-    return df_report.total_inc_front, df_report.total_inc_back
-
-
-class PVFactorsReportBuilder(object):
-    """In pvfactors, a class is required to build reports when running
-    calculations with multiprocessing because of python constraints"""
-
-    @staticmethod
-    def build(report, pvarray):
-        """Reports will have total incident irradiance on front and
-        back surface of center pvrow (index=1)"""
-        # Initialize the report as a dictionary
-        if report is None:
-            report = {'total_inc_back': [], 'total_inc_front': []}
-        # Add elements to the report
-        if pvarray is not None:
-            pvrow = pvarray.pvrows[1]  # use center pvrow
-            report['total_inc_back'].append(
-                pvrow.back.get_param_weighted('qinc'))
-            report['total_inc_front'].append(
-                pvrow.front.get_param_weighted('qinc'))
-        else:
-            # No calculation is performed when the sun is down
-            report['total_inc_back'].append(np.nan)
-            report['total_inc_front'].append(np.nan)
-
-        return report
-
-    @staticmethod
-    def merge(reports):
-        """Works for dictionary reports. Merges the reports list of
-        dictionaries in a single dictionary. The list of the first
-        dictionary are extended by those of all subsequent lists."""
-        report = reports[0]
-        keys_report = list(report.keys())
-        for other_report in reports[1:]:  # loop won't run if len(reports) < 2
-            for key in keys_report:
-                report[key] += other_report[key]
-        return report
+    return (df_report.total_inc_front, df_report.total_inc_back,
+            df_report.total_abs_front, df_report.total_abs_back)

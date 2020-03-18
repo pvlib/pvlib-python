@@ -308,8 +308,14 @@ Functions for fitting diode models
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
 
-Losses
-------
+Effects on PV System Output
+===========================
+
+.. autosummary::
+   :toctree: generated/
+   snow.coverage_nrel
+   snow.fully_covered_nrel
+   dc_loss_nrel
 
 .. autosummary::
    :toctree: generated/

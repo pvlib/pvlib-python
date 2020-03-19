@@ -10,6 +10,12 @@ API Changes
 * :py:func:`pvlib.iotools.read_tmy3` when coerced to a single year now returns
   indices that are monotonically increasing. Therefore, the last index will be
   January 1, 00:00 of the *next* year. (:pull:`910`)
+* Renamed :py:mod:`pvlib.losses` to :py:mod:`pvlib.soiling`. Additional loss
+  models will go into code modules named for the loss or effect type.
+  (:issue:`935`, :issue:`891`)
+* Renamed :py:func:`pvlib.losses.soiling_hsu` to :py:func:`pvlib.soiling.hsu`
+  and :py:func:`pvlib.losses.soiling_kimber` to :py:func:`pvlib.soiling.kimber`
+  (:issue:`935`)
 
 Enhancements
 ~~~~~~~~~~~~

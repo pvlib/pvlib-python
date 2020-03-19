@@ -308,14 +308,15 @@ Functions for fitting diode models
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
 
-Losses
-------
+
+Effects on PV System Output
+===========================
 
 .. autosummary::
    :toctree: generated/
 
-   losses.soiling_hsu
-   losses.soiling_kimber
+   soiling.hsu
+   soiling.kimber
 
 
 Other

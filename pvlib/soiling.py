@@ -65,7 +65,7 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     try:
         from scipy.special import erf
     except ImportError:
-        raise ImportError("The soiling_hsu function requires scipy.")
+        raise ImportError("The pvlib.soiling.hsu function requires scipy.")
 
     # never use mutable input arguments
     if depo_veloc is None:

@@ -232,6 +232,7 @@ PV temperature models
 
    temperature.sapm_cell
    temperature.sapm_module
+   temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
 

@@ -20,8 +20,10 @@ Enhancements
   ``temperature_model='faiman'`` option to :py:class:`~pvlib.modelchain.ModelChain`
   (:pull:`897`) (:issue:`836`).
 * Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber`. (:pull:`860`)
-* Add :func:`~pvlib.iotools.read_pvgis_tmy` for files downloaded using the
+* Add :py:func:`~pvlib.iotools.read_pvgis_tmy` for files downloaded using the
   PVGIS tool. (:issue:`880`)
+* Add :py:func:`~pvlib.temperature.sapm_cell_from_module` to convert back-of-
+  module temperature to cell temperature (:issue:`927`)
 
 Bug fixes
 ~~~~~~~~~

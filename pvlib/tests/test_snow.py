@@ -58,6 +58,18 @@ def test_coverage_nrel_subhourly():
     assert_series_equal(expected, snow_coverage)
 
 
+def test_fully_covered_nrel_irregular():
+    # test when frequency is not specified and can't be inferred
+    dt = pd.DatetimeIndex(["2019-1-1 11:00:00", "2019-1-1 14:30:00",
+                           "2019-1-1 15:07:00", "2019-1-1 14:00:00"])
+    snowfall_data = pd.Series([1, .5, .6, .4], index=dt)
+    snow_coverage = snow.fully_covered_nrel(snowfall_data,
+                                            threshold_snowfall=0.5)
+    covered = np.array([False, False, True, False])
+    expected = pd.Series(covered, index=dt)
+    assert_series_equal(expected, snow_coverage)
+
+
 def test_coverage_nrel_initial():
     surface_tilt = 45
     slide_amount_coefficient = 0.197

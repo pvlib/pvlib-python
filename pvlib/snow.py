@@ -52,7 +52,7 @@ def fully_covered_nrel(snowfall, threshold_snowfall=1.):
     # otherwise the first snowfall value is ignored
     freq = pd.infer_freq(snowfall.index)
     if freq is not None:
-        timedelta = pd.tseries.frequencies.to_offset(freq)
+        timedelta = pd.tseries.frequencies.to_offset(freq) / pd.Timedelta('1h')
         hourly_snow_rate.iloc[0] = snowfall[0] / timedelta
     else:  # can't infer frequency from index
         hourly_snow_rate[0] = 0  # replaces NaN
@@ -152,8 +152,10 @@ def dc_loss_nrel(snow_coverage, num_strings):
     Calculates the fraction of DC capacity lost due to snow coverage.
 
     DC capacity loss assumes that if a string is partially covered by snow,
-    the string's capacity is lost. Module orientation is accounted for by
-    specifying the number of cell strings in parallel along the slant height.
+    the string's capacity is lost; see [1]_, Eq. 11.8.
+
+    Module orientation is accounted for by specifying the number of cell
+    strings in parallel along the slant height.
     For example, a typical 60-cell module has 3 parallel strings, each
     comprising 20 cells in series, with the cells arranged in 6 columns of 10
     cells each. For a row consisting of single modules, if the module is
@@ -175,5 +177,11 @@ def dc_loss_nrel(snow_coverage, num_strings):
     -------
     loss : numeric
         fraction of DC capacity loss due to snow coverage at each time step.
+
+    References
+    ----------
+    .. [1] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
+       Reference Update", NREL Technical Report NREL/TP-6A20-67399.
+       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     '''
     return np.ceil(snow_coverage * num_strings) / num_strings

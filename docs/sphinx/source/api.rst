@@ -327,7 +327,7 @@ Effects on PV System Output
 
    snow.coverage_nrel
    snow.fully_covered_nrel
-   dc_loss_nrel
+   snow.dc_loss_nrel
 
 .. autosummary::
    :toctree: generated/

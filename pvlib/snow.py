@@ -1,6 +1,6 @@
 """
 The ``snow`` module contains functions that model module snow cover and the
-associated effects on PV module output"
+associated effects on PV module output
 """
 
 import numpy as np

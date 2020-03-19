@@ -86,4 +86,4 @@ Contributors
 * Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
 * Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
 * Eric Fitch (:ghuser:`ericf900`)
-* Joseph Palakapilly (:ghuser:`jkpalakapillykwh`)
+* Joseph Palakapilly (:ghuser:`JPalakapilly`)

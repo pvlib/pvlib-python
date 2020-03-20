@@ -107,6 +107,11 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
        Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
        NM.
 
+    See also
+    --------
+    sapm_cell_from_module
+    sapm_module
+
     Examples
     --------
     >>> from pvlib.temperature import sapm_cell, TEMPERATURE_MODEL_PARAMETERS
@@ -183,6 +188,10 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
        Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
        NM.
 
+    See also
+    --------
+    sapm_cell
+    sapm_cell_from_module
     '''
     return poa_global * np.exp(a + b * wind_speed) + temp_air
 
@@ -249,6 +258,10 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
        Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
        NM.
 
+    See also
+    --------
+    sapm_cell
+    sapm_module
     '''
     return module_temperature + (poa_global / irrad_ref) * deltaT
 

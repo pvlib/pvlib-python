@@ -21,7 +21,7 @@
     // Customizable commands for building, installing, and
     // uninstalling the project. See asv.conf.json documentation.
     //
-    // "install_command": ["in-dir={env_dir} python -mpip install {wheel_file}"],
+    "install_command": ["in-dir={env_dir} python -mpip install {wheel_file}[optional]"],
     // "uninstall_command": ["return-code=any python -mpip uninstall -y {project}"],
     // "build_command": [
     //     "python setup.py build",

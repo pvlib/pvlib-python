@@ -1,5 +1,5 @@
 """
-ASV benchmarks for location.py
+ASV benchmarks for solarposition.py
 """
 
 import pandas as pd

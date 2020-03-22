@@ -1,0 +1,87 @@
+.. _whatsnew_0620:
+
+v0.6.2 (May 15, 2019)
+---------------------
+
+This is a minor release. We recommend all users of v0.6.1 upgrade to this
+release.
+
+**Python 2.7 support will end on June 1, 2019**. Releases made after this
+date will require Python 3. This release is likely to be the last that
+supports Python 2.7. (:issue:`501`)
+
+**Minimum pandas requirement bumped 0.15.0=>0.16.0**
+
+
+API Changes
+~~~~~~~~~~~
+* :py:func:`~pvlib.irradiance.erbs` *doy* argument changed to
+  *datetime_or_doy* to be consistent with allowed types and similar
+  functions (:py:func:`~pvlib.irradiance.disc`,
+  :py:func:`~pvlib.irradiance.get_extra_radiation`). (:issue:`681`)
+* :py:func:`~pvlib.irradiance.erbs` DataFrame vs. OrderedDict return
+  behavior now determined by type of *datetime_or_doy* instead of
+  *ghi* or *zenith*. (:issue:`681`)
+* Added *min_cos_zenith* and *max_zenith* keyword arguments to
+  :py:func:`~pvlib.irradiance.erbs`. (:issue:`681`)
+* Deprecated :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs`
+  assumption of clear sky if no irradiance fields were provided.
+  (:issue:`705`, :issue:`707`)
+* Remove automatic column name mapping from :py:func:`~pvlib.iotools.read_midc`
+  and :py:func:`~pvlib.iotools.read_midc_raw_data_from_nrel` and added
+  optional keyword argument `variable_map` to map columns. (:issue:`721`)
+* Update :py:func:`~pvlib.bifacial.pvfactors_timeseries` and tests to use
+  ``pvfactors`` v1.0.1 (:issue:`699`)
+
+Enhancements
+~~~~~~~~~~~~
+* Add US CRN data reader to :ref:`iotools`. (:issue:`666`)
+* Add SOLRAD data reader to :ref:`iotools`. (:issue:`667`)
+* Add EPW data reader to :ref:`iotools`. (:issue:`591`)
+* Add PSM3 reader to :ref:`iotools`. (:issue:`592`)
+* Improve ModelChain inference method error text. (:issue:`621`)
+
+Bug fixes
+~~~~~~~~~
+* Compatibility with pandas 0.24 deprecations. (:issue:`659`)
+* :py:func:`~pvlib.pvsystem.pvwatts_ac` raised ``ZeroDivisionError``
+  when called with scalar ``pdc=0``
+  and a ``RuntimeWarning`` for ``array(0)`` input. Now correctly returns
+  0s of the appropriate type. (:issue:`675`)
+* Fixed :py:func:`~pvlib.irradiance.erbs` behavior when zenith is
+  near 90 degrees. (:issue:`681`)
+* :py:func:`~pvlib.irradiance.dni` now referenced in API under
+  Decomposing and Combining irradiance header. (:issue:`686`)
+* Fixed NaN output from :py:func:`~pvlib.tracking.singleaxis` when sun
+  near horizon. (:issue:`656`)
+* Fixed numpy warnings in :py:func:`~pvlib.tracking.singleaxis` when
+  comparing NaN values to limits. (:issue:`622`)
+* Change ModelChain to apply ``pvwatts_losses`` to ``mc.dc`` instead of
+  ``mc.ac``. (:issue:`696`)
+* Fixed a bug in the day angle equation for the ASCE
+  extraterrestrial irradiance model. (:issue:`211`)
+* Silenced divide by 0 irradiance warnings in
+  :py:func:`~pvlib.irradiance.klucher` and
+  :py:func:`~pvlib.pvsystem.calcparams_desoto`. (:issue:`698`)
+* Fix :py:class:`~pvlib.forecast.NDFD` model by updating variables.
+* Fix :py:func:`~pvlib.iotools.srml.format_index` to parse non
+  one-minute data correctly. (:issue:`709`)
+
+
+Testing
+~~~~~~~
+* Remove most expected warnings emitted by test suite. (:issue:`698`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Roel Loonen (:ghuser:`roelloonen`)
+* Todd Hendricks (:ghuser:`tahentx`)
+* Kevin Anderson (:ghuser:`kevinsa5`)
+* :ghuser:`bentomlinson`
+* :ghuser:`yxh289`
+* Jonathan Gaffiot (:ghuser:`jgaffiot`)
+* Leland Boeman (:ghuser:`lboeman`)
+* Marc Anoma (:ghuser:`anomam`)

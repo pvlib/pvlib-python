@@ -3,8 +3,6 @@ The ``clearsky`` module contains several methods
 to calculate clear sky GHI, DNI, and DHI.
 """
 
-from __future__ import division
-
 import os
 from collections import OrderedDict
 import calendar
@@ -12,7 +10,7 @@ import calendar
 import numpy as np
 import pandas as pd
 
-from pvlib import tools, atmosphere, solarposition, irradiance
+from pvlib import atmosphere, tools
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -66,23 +64,23 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     References
     ----------
-    [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
-        the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157,
-        2002.
+    .. [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
+       the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157,
+       2002.
 
-    [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
-        Irradiances: Description and Validation", Solar Energy, vol 73, pp.
-        307-317, 2002.
+    .. [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
+       Irradiances: Description and Validation", Solar Energy, vol 73, pp.
+       307-317, 2002.
 
-    [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-        Sky Models: Implementation and Analysis", Sandia National
-        Laboratories, SAND2012-2389, 2012.
+    .. [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
+       Laboratories, SAND2012-2389, 2012.
 
-    [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
-        July 17, 2012).
+    .. [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
+       July 17, 2012).
 
-    [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
-        ISES Solar World Congress, June 2003. Goteborg, Sweden.
+    .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
+       ISES Solar World Congress, June 2003. Goteborg, Sweden.
     '''
 
     # ghi is calculated using either the equations in [1] by setting
@@ -116,8 +114,10 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     # reinsert tl nans
     ghi = cg1 * dni_extra * cos_zenith * tl / tl * np.fmax(ghi, 0)
 
-    # BncI = "normal beam clear sky radiation"
+    # From [1] (Following [2] leads to 0.664 + 0.16268 / fh1)
+    # See https://github.com/pvlib/pvlib-python/pull/808
     b = 0.664 + 0.163/fh1
+    # BncI = "normal beam clear sky radiation"
     bnci = b * np.exp(-0.09 * airmass_absolute * (tl - 1))
     bnci = dni_extra * np.fmax(bnci, 0)
 
@@ -151,9 +151,9 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     ----------
     time : pandas.DatetimeIndex
 
-    latitude : float
+    latitude : float or int
 
-    longitude : float
+    longitude : float or int
 
     filepath : None or string, default None
         The path to the ``.h5`` file.
@@ -195,21 +195,12 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
-    latitude_index = (
-        np.around(_linearly_scale(latitude, 90, -90, 0, 2160))
-        .astype(np.int64))
-    longitude_index = (
-        np.around(_linearly_scale(longitude, -180, 180, 0, 4320))
-        .astype(np.int64))
+    latitude_index = _degrees_to_index(latitude, coordinate='latitude')
+    longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
-    lt_h5_file = tables.open_file(filepath)
-    try:
-        lts = lt_h5_file.root.LinkeTurbidity[latitude_index, longitude_index, :]
-    except IndexError:
-        raise IndexError('Latitude should be between 90 and -90, '
-                         'longitude between -180 and 180.')
-    finally:
-        lt_h5_file.close()
+    with tables.open_file(filepath) as lt_h5_file:
+        lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
+                                             longitude_index, :]
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
@@ -300,33 +291,70 @@ def _calendar_month_middles(year):
     return middles
 
 
-def _linearly_scale(inputmatrix, inputmin, inputmax, outputmin, outputmax):
-    """linearly scale input to output, used by Linke turbidity lookup"""
+def _degrees_to_index(degrees, coordinate):
+    """Transform input degrees to an output index integer. The Linke
+    turbidity lookup tables have three dimensions, latitude, longitude, and
+    month. Specify a degree value and either 'latitude' or 'longitude' to get
+    the appropriate index number for the first two of these index numbers.
+
+    Parameters
+    ----------
+    degrees : float or int
+        Degrees of either latitude or longitude.
+    coordinate : string
+        Specify whether degrees arg is latitude or longitude. Must be set to
+        either 'latitude' or 'longitude' or an error will be raised.
+
+    Returns
+    -------
+    index : np.int16
+        The latitude or longitude index number to use when looking up values
+        in the Linke turbidity lookup table.
+    """
+    # Assign inputmin, inputmax, and outputmax based on degree type.
+    if coordinate == 'latitude':
+        inputmin = 90
+        inputmax = -90
+        outputmax = 2160
+    elif coordinate == 'longitude':
+        inputmin = -180
+        inputmax = 180
+        outputmax = 4320
+    else:
+        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
+
     inputrange = inputmax - inputmin
-    outputrange = outputmax - outputmin
-    delta = outputrange/inputrange  # number of indices per input unit
-    inputmin = inputmin + 1.0 / delta / 2.0  # shift to center of index
-    outputmax = outputmax - 1  # shift index to zero indexing
-    outputmatrix = (inputmatrix - inputmin) * delta + outputmin
+    scale = outputmax/inputrange  # number of indices per degree
+    center = inputmin + 1 / scale / 2  # shift to center of index
+    outputmax -= 1  # shift index to zero indexing
+    index = (degrees - center) * scale
     err = IndexError('Input, %g, is out of range (%g, %g).' %
-                     (inputmatrix, inputmax - inputrange, inputmax))
-    # round down if input is within half an index or else raise index error
-    if outputmatrix > outputmax:
-        if np.around(outputmatrix - outputmax, 1) <= 0.5:
-            outputmatrix = outputmax
+                     (degrees, inputmin, inputmax))
+
+    # If the index is still out of bounds after rounding, raise an error.
+    # 0.500001 is used in comparisons instead of 0.5 to allow for a small
+    # margin of error which can occur when dealing with floating point numbers.
+    if index > outputmax:
+        if index - outputmax <= 0.500001:
+            index = outputmax
         else:
             raise err
-    elif outputmatrix < outputmin:
-        if np.around(outputmin - outputmatrix, 1) <= 0.5:
-            outputmatrix = outputmin
+    elif index < 0:
+        if -index <= 0.500001:
+            index = 0
         else:
             raise err
-    return outputmatrix
+    # If the index wasn't set to outputmax or 0, round it and cast it as an
+    # integer so it can be used in integer-based indexing.
+    else:
+        index = int(np.around(index))
+
+    return index
 
 
 def haurwitz(apparent_zenith):
     '''
-    Determine clear sky GHI from Haurwitz model.
+    Determine clear sky GHI using the Haurwitz model.
 
     Implements the Haurwitz clear sky model for global horizontal
     irradiance (GHI) as presented in [1, 2]. A report on clear
@@ -342,30 +370,29 @@ def haurwitz(apparent_zenith):
 
     Returns
     -------
-    pd.DataFrame
-    The modeled global horizonal irradiance in W/m^2 provided
-    by the Haurwitz clear-sky model.
-
-    Initial implementation of this algorithm by Matthew Reno.
+    ghi : DataFrame
+        The modeled global horizonal irradiance in W/m^2 provided
+        by the Haurwitz clear-sky model.
 
     References
     ----------
 
-    [1] B. Haurwitz, "Insolation in Relation to Cloudiness and Cloud
-     Density," Journal of Meteorology, vol. 2, pp. 154-166, 1945.
+    .. [1] B. Haurwitz, "Insolation in Relation to Cloudiness and Cloud
+       Density," Journal of Meteorology, vol. 2, pp. 154-166, 1945.
 
-    [2] B. Haurwitz, "Insolation in Relation to Cloud Type," Journal of
-     Meteorology, vol. 3, pp. 123-124, 1946.
+    .. [2] B. Haurwitz, "Insolation in Relation to Cloud Type," Journal of
+       Meteorology, vol. 3, pp. 123-124, 1946.
 
-    [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-     Sky Models: Implementation and Analysis", Sandia National
-     Laboratories, SAND2012-2389, 2012.
+    .. [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
+       Laboratories, SAND2012-2389, 2012.
     '''
 
     cos_zenith = tools.cosd(apparent_zenith.values)
     clearsky_ghi = np.zeros_like(apparent_zenith.values)
-    clearsky_ghi[cos_zenith>0] = 1098.0 * cos_zenith[cos_zenith>0] * \
-                                    np.exp(-0.059/cos_zenith[cos_zenith>0])
+    cos_zen_gte_0 = cos_zenith > 0
+    clearsky_ghi[cos_zen_gte_0] = (1098.0 * cos_zenith[cos_zen_gte_0] *
+                                   np.exp(-0.059/cos_zenith[cos_zen_gte_0]))
 
     df_out = pd.DataFrame(index=apparent_zenith.index,
                           data=clearsky_ghi,
@@ -378,7 +405,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
                      pressure=101325., dni_extra=1364.):
     """
     Calculate the clear sky GHI, DNI, and DHI according to the
-    simplified Solis model [1]_.
+    simplified Solis model.
 
     Reference [1]_ describes the accuracy of the model as being 15, 20,
     and 18 W/m^2 for the beam, global, and diffuse components. Reference
@@ -577,7 +604,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                     return_components=False):
     """
     Detects clear sky times according to the algorithm developed by Reno
-    and Hansen for GHI measurements [1]. The algorithm was designed and
+    and Hansen for GHI measurements. The algorithm [1]_ was designed and
     validated for analyzing GHI time series only. Users may attempt to
     apply it to other types of time series data using different filter
     settings, but should be skeptical of the results.
@@ -646,9 +673,9 @@ def detect_clearsky(measured, clearsky, times, window_length,
 
     References
     ----------
-    [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
-    sky irradiance in time series of GHI measurements" Renewable Energy,
-    v90, p. 520-531, 2016.
+    .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+       sky irradiance in time series of GHI measurements" Renewable Energy,
+       v90, p. 520-531, 2016.
 
     Notes
     -----
@@ -668,46 +695,53 @@ def detect_clearsky(measured, clearsky, times, window_length,
     """
 
     # calculate deltas in units of minutes (matches input window_length units)
-    deltas = np.diff(times) / np.timedelta64(1, '60s')
+    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
 
     # determine the unique deltas and if we can proceed
     unique_deltas = np.unique(deltas)
     if len(unique_deltas) == 1:
         sample_interval = unique_deltas[0]
     else:
-        raise NotImplementedError('algorithm does not yet support unequal ' \
+        raise NotImplementedError('algorithm does not yet support unequal '
                                   'times. consider resampling your data.')
 
-    samples_per_window = int(window_length / sample_interval)
+    intervals_per_window = int(window_length / sample_interval)
 
     # generate matrix of integers for creating windows with indexing
     from scipy.linalg import hankel
-    H = hankel(np.arange(samples_per_window),
-               np.arange(samples_per_window-1, len(times)))
+    H = hankel(np.arange(intervals_per_window),                   # noqa: N806
+               np.arange(intervals_per_window - 1, len(times)))
+
+    # convert pandas input to numpy array, but save knowledge of input state
+    # so we can return a series if that's what was originally provided
+    ispandas = isinstance(measured, pd.Series)
+    measured = np.asarray(measured)
+    clearsky = np.asarray(clearsky)
 
     # calculate measurement statistics
     meas_mean = np.mean(measured[H], axis=0)
     meas_max = np.max(measured[H], axis=0)
-    meas_slope = np.diff(measured[H], n=1, axis=0)
+    meas_diff = np.diff(measured[H], n=1, axis=0)
+    meas_slope = np.diff(measured[H], n=1, axis=0) / sample_interval
     # matlab std function normalizes by N-1, so set ddof=1 here
     meas_slope_nstd = np.std(meas_slope, axis=0, ddof=1) / meas_mean
-    meas_slope_max = np.max(np.abs(meas_slope), axis=0)
     meas_line_length = np.sum(np.sqrt(
-        meas_slope*meas_slope + sample_interval*sample_interval), axis=0)
+        meas_diff * meas_diff +
+        sample_interval * sample_interval), axis=0)
 
     # calculate clear sky statistics
     clear_mean = np.mean(clearsky[H], axis=0)
     clear_max = np.max(clearsky[H], axis=0)
-    clear_slope = np.diff(clearsky[H], n=1, axis=0)
-    clear_slope_max = np.max(np.abs(clear_slope), axis=0)
+    clear_diff = np.diff(clearsky[H], n=1, axis=0)
+    clear_slope = np.diff(clearsky[H], n=1, axis=0) / sample_interval
 
     from scipy.optimize import minimize_scalar
 
     alpha = 1
     for iteration in range(max_iterations):
         clear_line_length = np.sum(np.sqrt(
-            alpha*alpha*clear_slope*clear_slope +
-            sample_interval*sample_interval), axis=0)
+            alpha * alpha * clear_diff * clear_diff +
+            sample_interval * sample_interval), axis=0)
 
         line_diff = meas_line_length - clear_line_length
 
@@ -716,7 +750,8 @@ def detect_clearsky(measured, clearsky, times, window_length,
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        c5 = (meas_slope_max - alpha*clear_slope_max) < slope_dev
+        c5 = np.max(np.abs(meas_slope -
+                           alpha * clear_slope), axis=0) < slope_dev
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
@@ -729,29 +764,39 @@ def detect_clearsky(measured, clearsky, times, window_length,
         previous_alpha = alpha
         clear_meas = measured[clear_samples]
         clear_clear = clearsky[clear_samples]
+
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+
         alpha = minimize_scalar(rmse).x
         if round(alpha*10000) == round(previous_alpha*10000):
             break
     else:
         import warnings
-        warnings.warn('failed to converge after %s iterations' \
+        warnings.warn('failed to converge after %s iterations'
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
-    if isinstance(measured, pd.Series):
+    if ispandas:
         clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:
         components = OrderedDict()
-        components['mean_diff'] = c1
-        components['max_diff'] = c2
-        components['line_length'] = c3
-        components['slope_nstd'] = c4
-        components['slope_max'] = c5
-        components['mean_nan'] = c6
+        components['mean_diff_flag'] = c1
+        components['max_diff_flag'] = c2
+        components['line_length_flag'] = c3
+        components['slope_nstd_flag'] = c4
+        components['slope_max_flag'] = c5
+        components['mean_nan_flag'] = c6
         components['windows'] = clear_windows
+
+        components['mean_diff'] = np.abs(meas_mean - alpha * clear_mean)
+        components['max_diff'] = np.abs(meas_max - alpha * clear_max)
+        components['line_length'] = meas_line_length - clear_line_length
+        components['slope_nstd'] = meas_slope_nstd
+        components['slope_max'] = (np.max(
+            meas_slope - alpha * clear_slope, axis=0))
+
         return clear_samples, components, alpha
     else:
         return clear_samples
@@ -765,17 +810,18 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     Based on NREL Excel implementation by Daryl R. Myers [1, 2].
 
-    Bird and Hulstrom define the zenith as the "angle between a line to the sun
-    and the local zenith". There is no distinction in the paper between solar
-    zenith and apparent (or refracted) zenith, but the relative airmass is
-    defined using the Kasten 1966 expression, which requires apparent zenith.
-    Although the formulation for calculated zenith is never explicitly defined
-    in the report, since the purpose was to compare existing clear sky models
-    with "rigorous radiative transfer models" (RTM) it is possible that apparent
-    zenith was obtained as output from the RTM. However, the implentation
-    presented in PVLIB is tested against the NREL Excel implementation by Daryl
-    Myers which uses an analytical expression for solar zenith instead of
-    apparent zenith.
+    Bird and Hulstrom define the zenith as the "angle between a line to
+    the sun and the local zenith". There is no distinction in the paper
+    between solar zenith and apparent (or refracted) zenith, but the
+    relative airmass is defined using the Kasten 1966 expression, which
+    requires apparent zenith. Although the formulation for calculated
+    zenith is never explicitly defined in the report, since the purpose
+    was to compare existing clear sky models with "rigorous radiative
+    transfer models" (RTM) it is possible that apparent zenith was
+    obtained as output from the RTM. However, the implentation presented
+    in PVLIB is tested against the NREL Excel implementation by Daryl
+    Myers which uses an analytical expression for solar zenith instead
+    of apparent zenith.
 
     Parameters
     ----------
@@ -813,24 +859,28 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
 
     References
     ----------
-    [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for Direct
-    and Diffuse Insolation on Horizontal Surfaces" SERI Technical Report
-    SERI/TR-642-761, Feb 1981. Solar Energy Research Institute, Golden, CO.
+    .. [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for
+       Direct and Diffuse Insolation on Horizontal Surfaces" SERI Technical
+       Report SERI/TR-642-761, Feb 1981. Solar Energy Research Institute,
+       Golden, CO.
 
-    [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
-    Energy Applications", pp. 46-51 CRC Press (2013)
+    .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+       Energy Applications", pp. 46-51 CRC Press (2013)
 
-    `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/clearsky/>`_
+    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
+       clearsky/>`_
 
-    `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf>`_
+    .. [4] `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/
+       tr-642-761.pdf>`_
 
-    `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
+    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
+       error_reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians
     airmass = airmass_relative
     # Bird clear sky model
-    am_press = atmosphere.absoluteairmass(airmass, pressure)
+    am_press = atmosphere.get_absolute_airmass(airmass, pressure)
     t_rayleigh = (
         np.exp(-0.0903 * am_press ** 0.84 * (
             1.0 + am_press - am_press ** 1.01

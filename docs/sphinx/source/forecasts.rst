@@ -195,6 +195,8 @@ cover forecasts.
               .format(latitude, longitude));
     @savefig gfs_cloud_cover.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 However, many of forecast models do not include radiation components in
 their output fields, or if they do then the radiation fields suffer from
@@ -245,6 +247,8 @@ irradiance conversion using the clear sky scaling algorithm.
               .format(latitude, longitude));
     @savefig gfs_irrad_cs.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 The essential parts of the Liu-Jordan cloud cover to irradiance algorithm
@@ -271,6 +275,8 @@ irradiance conversion.
               .format(latitude, longitude));
     @savefig gfs_irrad_lj.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 Most weather model output has a fairly coarse time resolution, at least
@@ -290,6 +296,8 @@ recalculate the irradiance.
               .format(latitude, longitude));
     @savefig gfs_irrad_high_res.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 Users may then recombine resampled_irrads and resampled_data using
 slicing :py:func:`pandas.concat` or :py:meth:`pandas.DataFrame.join`.
@@ -345,6 +353,8 @@ The HRRR model covers the continental United States.
               .format(latitude, longitude));
     @savefig hrrr_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 RAP
@@ -369,6 +379,8 @@ The RAP model covers most of North America.
               .format(latitude, longitude));
     @savefig rap_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 NAM
@@ -389,6 +401,8 @@ resolution NAM data with a time horizon of up to 4 days.
               .format(latitude, longitude));
     @savefig nam_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 NDFD
@@ -400,6 +414,7 @@ Use the NDFD, among others, for forecasts at all time horizons.
 The NDFD is available for the United States.
 
 .. ipython:: python
+   :okexcept:
 
     model = NDFD()
     data = model.get_processed_data(latitude, longitude, start, end)
@@ -411,6 +426,8 @@ The NDFD is available for the United States.
               .format(latitude, longitude));
     @savefig ndfd_irrad.png width=6in
     plt.legend();
+    @suppress
+    plt.close();
 
 
 PV Power Forecast
@@ -423,19 +440,18 @@ for details.
 .. ipython:: python
 
     from pvlib.pvsystem import PVSystem, retrieve_sam
+    from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
     from pvlib.tracking import SingleAxisTracker
     from pvlib.modelchain import ModelChain
 
     sandia_modules = retrieve_sam('sandiamod')
     cec_inverters = retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    inverter = cec_inverters['SMA_America__SC630CP_US_315V__CEC_2012_']
+    inverter = cec_inverters['SMA_America__SC630CP_US__with_ABB_EcoDry_Ultra_transformer_']
+    temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
     # model a big tracker for more fun
-    system = SingleAxisTracker(module_parameters=module,
-                               inverter_parameters=inverter,
-                               modules_per_string=15,
-                               strings_per_inverter=300)
+    system = SingleAxisTracker(module_parameters=module, inverter_parameters=inverter, temperature_model_parameters=temperature_model_parameters, modules_per_string=15, strings_per_inverter=300)
 
     # fx is a common abbreviation for forecast
     fx_model = GFS()
@@ -445,7 +461,7 @@ for details.
     mc = ModelChain(system, fx_model.location)
 
     # extract relevant data for model chain
-    mc.run_model(fx_data.index, weather=fx_data);
+    mc.run_model(fx_data);
 
 Now we plot a couple of modeling intermediates and the forecast power.
 Here's the forecast plane of array irradiance...
@@ -456,14 +472,18 @@ Here's the forecast plane of array irradiance...
     @savefig poa_irrad.png width=6in
     plt.ylabel('Plane of array irradiance ($W/m^2$)');
     plt.legend(loc='best');
+    @suppress
+    plt.close();
 
 ...the cell and module temperature...
 
 .. ipython:: python
 
-    mc.temps.plot();
+    mc.cell_temperature.plot();
     @savefig pv_temps.png width=6in
-    plt.ylabel('Temperature (C)');
+    plt.ylabel('Cell Temperature (C)');
+    @suppress
+    plt.close();
 
 ...and finally AC power...
 
@@ -473,4 +493,6 @@ Here's the forecast plane of array irradiance...
     plt.ylim(0, None);
     @savefig ac_power.png width=6in
     plt.ylabel('AC Power (W)');
+    @suppress
+    plt.close();
 

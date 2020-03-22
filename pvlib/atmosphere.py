@@ -3,11 +3,11 @@ The ``atmosphere`` module contains methods to calculate relative and
 absolute airmass and to determine pressure from altitude or vice versa.
 """
 
-from __future__ import division
+from warnings import warn
 
 import numpy as np
 import pandas as pd
-from warnings import warn
+
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')
@@ -46,8 +46,8 @@ def pres2alt(pressure):
 
     References
     -----------
-    [1] "A Quick Derivation relating altitude to air pressure" from
-    Portland State Aerospace Society, Version 1.03, 12/22/2004.
+    .. [1] "A Quick Derivation relating altitude to air pressure" from
+       Portland State Aerospace Society, Version 1.03, 12/22/2004.
     '''
 
     alt = 44331.5 - 4946.62 * pressure ** (0.190263)
@@ -86,8 +86,8 @@ def alt2pres(altitude):
 
     References
     -----------
-    [1] "A Quick Derivation relating altitude to air pressure" from
-    Portland State Aerospace Society, Version 1.03, 12/22/2004.
+    .. [1] "A Quick Derivation relating altitude to air pressure" from
+       Portland State Aerospace Society, Version 1.03, 12/22/2004.
     '''
 
     press = 100 * ((44331.514 - altitude) / 11880.516) ** (1 / 0.1902632)
@@ -95,7 +95,7 @@ def alt2pres(altitude):
     return press
 
 
-def absoluteairmass(airmass_relative, pressure=101325.):
+def get_absolute_airmass(airmass_relative, pressure=101325.):
     '''
     Determine absolute (pressure corrected) airmass from relative
     airmass and pressure
@@ -124,9 +124,9 @@ def absoluteairmass(airmass_relative, pressure=101325.):
 
     References
     ----------
-    [1] C. Gueymard, "Critical analysis and performance assessment of
-    clear sky solar irradiance models using theoretical and measured
-    data," Solar Energy, vol. 51, pp. 121-138, 1993.
+    .. [1] C. Gueymard, "Critical analysis and performance assessment of
+       clear sky solar irradiance models using theoretical and measured
+       data," Solar Energy, vol. 51, pp. 121-138, 1993.
     '''
 
     airmass_absolute = airmass_relative * pressure / 101325.
@@ -134,7 +134,7 @@ def absoluteairmass(airmass_relative, pressure=101325.):
     return airmass_absolute
 
 
-def relativeairmass(zenith, model='kastenyoung1989'):
+def get_relative_airmass(zenith, model='kastenyoung1989'):
     '''
     Gives the relative (not pressure-corrected) airmass.
 
@@ -178,33 +178,32 @@ def relativeairmass(zenith, model='kastenyoung1989'):
 
     References
     ----------
-    [1] Fritz Kasten. "A New Table and Approximation Formula for the
-    Relative Optical Air Mass". Technical Report 136, Hanover, N.H.:
-    U.S. Army Material Command, CRREL.
+    .. [1] Fritz Kasten. "A New Table and Approximation Formula for the
+       Relative Optical Air Mass". Technical Report 136, Hanover, N.H.:
+       U.S. Army Material Command, CRREL.
 
-    [2] A. T. Young and W. M. Irvine, "Multicolor Photoelectric
-    Photometry of the Brighter Planets," The Astronomical Journal, vol.
-    72, pp. 945-950, 1967.
+    .. [2] A. T. Young and W. M. Irvine, "Multicolor Photoelectric
+       Photometry of the Brighter Planets," The Astronomical Journal, vol.
+       72, pp. 945-950, 1967.
 
-    [3] Fritz Kasten and Andrew Young. "Revised optical air mass tables
-    and approximation formula". Applied Optics 28:4735-4738
+    .. [3] Fritz Kasten and Andrew Young. "Revised optical air mass tables
+       and approximation formula". Applied Optics 28:4735-4738
 
-    [4] C. Gueymard, "Critical analysis and performance assessment of
-    clear sky solar irradiance models using theoretical and measured
-    data," Solar Energy, vol. 51, pp. 121-138, 1993.
+    .. [4] C. Gueymard, "Critical analysis and performance assessment of
+       clear sky solar irradiance models using theoretical and measured
+       data," Solar Energy, vol. 51, pp. 121-138, 1993.
 
-    [5] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33,
-    pp. 1108-1110, Feb 1994.
+    .. [5] A. T. Young, "AIR-MASS AND REFRACTION," Applied Optics, vol. 33,
+       pp. 1108-1110, Feb 1994.
 
-    [6] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
+    .. [6] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
 
-    [7] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
-    Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
-    Sandia Report, (2012).
+    .. [7] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
+       Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
+       Sandia Report, (2012).
     '''
 
-    # need to filter first because python 2.7 does not support raising a
-    # negative number to a negative power.
+    # set zenith values greater than 90 to nans
     z = np.where(zenith > 90, np.nan, zenith)
     zenith_rad = np.radians(z)
 
@@ -221,8 +220,8 @@ def relativeairmass(zenith, model='kastenyoung1989'):
         am = (1.0 / (np.sin(np.radians(90 - z +
               244.0 / (165 + 47.0 * (90 - z) ** 1.1)))))
     elif 'youngirvine1967' == model:
-        am = ((1.0 / np.cos(zenith_rad)) *
-              (1 - 0.0012*((1.0 / np.cos(zenith_rad)) ** 2) - 1))
+        sec_zen = 1.0 / np.cos(zenith_rad)
+        am = sec_zen * (1 - 0.0012 * (sec_zen * sec_zen - 1))
     elif 'young1994' == model:
         am = ((1.002432*((np.cos(zenith_rad)) ** 2) +
               0.148386*(np.cos(zenith_rad)) + 0.0096467) /
@@ -304,8 +303,8 @@ def gueymard94_pw(temp_air, relative_humidity):
        1294-1300.
     """
 
-    T = temp_air + 273.15  # Convert to Kelvin
-    RH = relative_humidity
+    T = temp_air + 273.15  # Convert to Kelvin                  # noqa: N806
+    RH = relative_humidity                                      # noqa: N806
 
     theta = T / 273.15
 
@@ -321,8 +320,9 @@ def gueymard94_pw(temp_air, relative_humidity):
     return pw
 
 
-def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
-                                    coefficients=None):
+def first_solar_spectral_correction(pw, airmass_absolute,
+                                    module_type=None, coefficients=None,
+                                    min_pw=0.1, max_pw=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure corrected) airmass.
@@ -364,6 +364,14 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
 
     airmass_absolute : array-like
         absolute (pressure corrected) airmass.
+
+    min_pw : float, default 0.1
+        minimum atmospheric precipitable water (cm). A lower pw value will be
+        automatically set to this minimum value to avoid model divergence.
+
+    max_pw : float, default 8
+        maximum atmospheric precipitable water (cm). If a higher value is
+        encountered it will be set to np.nan to avoid model divergence.
 
     module_type : None or string, default None
         a string specifying a cell type. Can be lower or upper case
@@ -423,16 +431,18 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     # *** Pwat ***
     # Replace Pwat Values below 0.1 cm with 0.1 cm to prevent model from
     # diverging"
-
-    if np.min(pw) < 0.1:
-        pw = np.maximum(pw, 0.1)
-        warn('Exceptionally low Pwat values replaced with 0.1 cm to prevent' +
-             ' model divergence')
+    pw = np.atleast_1d(pw)
+    pw = pw.astype('float64')
+    if np.min(pw) < min_pw:
+        pw = np.maximum(pw, min_pw)
+        warn('Exceptionally low pw values replaced with {0} cm to prevent '
+             'model divergence'.format(min_pw))
 
     # Warn user about Pwat data that is exceptionally high
-    if np.max(pw) > 8:
-        warn('Exceptionally high Pwat values. Check input data:' +
-             ' model may diverge in this range')
+    if np.max(pw) > max_pw:
+        pw[pw > max_pw] = np.nan
+        warn('Exceptionally high pw values replaced by np.nan: '
+             'check input data.')
 
     # *** AMa ***
     # Replace Extremely High AM with AM 10 to prevent model divergence
@@ -460,7 +470,7 @@ def first_solar_spectral_correction(pw, airmass_absolute, module_type=None,
     _coefficients['cigs'] = (
         0.85252, -0.022314, -0.0047216, 0.13666, 0.013342, -0.0008945)
     _coefficients['asi'] = (
-        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382,-0.0033818)
+        1.12094, -0.047620, -0.0083627, -0.10443, 0.098382, -0.0033818)
 
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]
@@ -508,13 +518,13 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
 
     References
     ----------
-    [1] Bird and Hulstrom, "Direct Insolation Models" (1980)
-    `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
+    .. [1] Bird and Hulstrom, "Direct Insolation Models" (1980)
+       `SERI/TR-335-344 <http://www.nrel.gov/docs/legosti/old/344.pdf>`_
 
-    [2] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement of
-    Direct Irradiance Models", Journal of Solar Energy Engineering 103(3),
-    pp. 182-192 (1981)
-    :doi:`10.1115/1.3266239`
+    .. [2] R. E. Bird and R. L. Hulstrom, "Review, Evaluation, and Improvement
+       of Direct Irradiance Models", Journal of Solar Energy Engineering
+       103(3), pp. 182-192 (1981)
+       :doi:`10.1115/1.3266239`
     """
     # approximate broadband AOD using (Bird-Hulstrom 1980)
     return 0.27583 * aod380 + 0.35 * aod500
@@ -555,32 +565,32 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
 
     References
     ----------
-    [1] F. Linke, "Transmissions-Koeffizient und Trubungsfaktor", Beitrage
-    zur Physik der Atmosphare, Vol 10, pp. 91-103 (1922)
+    .. [1] F. Linke, "Transmissions-Koeffizient und Trubungsfaktor", Beitrage
+       zur Physik der Atmosphare, Vol 10, pp. 91-103 (1922)
 
-    [2] F. Kasten, "A simple parameterization of the pyrheliometric formula for
-    determining the Linke turbidity factor", Meteorologische Rundschau 33,
-    pp. 124-127 (1980)
+    .. [2] F. Kasten, "A simple parameterization of the pyrheliometric formula
+       for determining the Linke turbidity factor", Meteorologische Rundschau
+       33, pp. 124-127 (1980)
 
-    [3] Kasten, "The Linke turbidity factor based on improved values of the
-    integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
-    pp. 239-244 (1996)
-    :doi:`10.1016/0038-092X(95)00114-7`
+    .. [3] Kasten, "The Linke turbidity factor based on improved values of the
+       integral Rayleigh optical thickness", Solar Energy, Vol. 56, No. 3,
+       pp. 239-244 (1996)
+       :doi:`10.1016/0038-092X(95)00114-7`
 
-    [4] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of pyrheliometric
-    and monochromatic aerosol optical depths at a single key wavelength",
-    Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
-    :doi:`10.1364/AO.37.007008`
+    .. [4] B. Molineaux, P. Ineichen, N. O'Neill, "Equivalence of
+       pyrheliometric and monochromatic aerosol optical depths at a single key
+       wavelength", Applied Optics Vol. 37, issue 10, 7008-7018 (1998)
+       :doi:`10.1364/AO.37.007008`
 
-    [5] P. Ineichen, "Conversion function between the Linke turbidity and the
-    atmospheric water vapor and aerosol content", Solar Energy 82,
-    pp. 1095-1097 (2008)
-    :doi:`10.1016/j.solener.2008.04.010`
+    .. [5] P. Ineichen, "Conversion function between the Linke turbidity and
+       the atmospheric water vapor and aerosol content", Solar Energy 82,
+       pp. 1095-1097 (2008)
+       :doi:`10.1016/j.solener.2008.04.010`
 
-    [6] P. Ineichen and R. Perez, "A new airmass independent formulation for
-    the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3, pp. 151-157
-    (2002)
-    :doi:`10.1016/S0038-092X(02)00045-2`
+    .. [6] P. Ineichen and R. Perez, "A new airmass independent formulation for
+       the Linke Turbidity coefficient", Solar Energy, Vol. 73, no. 3,
+       pp. 151-157 (2002)
+       :doi:`10.1016/S0038-092X(02)00045-2`
     """
     # "From numerically integrated spectral simulations done with Modtran
     # (Berk, 1989), Molineaux (1998) obtained for the broadband optical depth
@@ -608,7 +618,7 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     return lt
 
 
-def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
+def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     r"""
     Get AOD at specified wavelength using Angstrom turbidity model.
 
@@ -618,7 +628,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
         aerosol optical depth (AOD) measured at known wavelength
     lambda0 : numeric
         wavelength in nanometers corresponding to ``aod0``
-    alpha : numeric
+    alpha : numeric, default 1.14
         Angstrom :math:`\alpha` exponent corresponding to ``aod0``
     lambda1 : numeric, default 700
         desired wavelength in nanometers
@@ -634,14 +644,15 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha, lambda1=700.0):
 
     References
     ----------
-    [1] Anders Angstrom, "On the Atmospheric Transmission of Sun Radiation and
-    On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (1929) JSTOR
-    :doi:`10.2307/519399`
+    .. [1] Anders Angstrom, "On the Atmospheric Transmission of Sun Radiation
+       and On Dust in the Air", Geografiska Annaler Vol. 11, pp. 156-166 (1929)
+       JSTOR
+       :doi:`10.2307/519399`
 
-    [2] Anders Angstrom, "Techniques of Determining the Turbidity of the
-    Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis
-    :doi:`10.3402/tellusa.v13i2.9493` and Co-Action Publishing
-    :doi:`10.1111/j.2153-3490.1961.tb00078.x`
+    .. [2] Anders Angstrom, "Techniques of Determining the Turbidity of the
+       Atmosphere", Tellus 13:2, pp. 214-223 (1961) Taylor & Francis
+       :doi:`10.3402/tellusa.v13i2.9493` and Co-Action Publishing
+       :doi:`10.1111/j.2153-3490.1961.tb00078.x`
     """
     return aod0 * ((lambda1 / lambda0) ** (-alpha))
 

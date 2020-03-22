@@ -4,8 +4,6 @@ horizontal irradiance, direct normal irradiance, diffuse horizontal
 irradiance, and total irradiance under various conditions.
 """
 
-from __future__ import division
-
 import datetime
 from collections import OrderedDict
 from functools import partial
@@ -13,9 +11,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 
-from pvlib import tools
-from pvlib import solarposition
-from pvlib import atmosphere
+from pvlib import atmosphere, solarposition, tools
 
 # see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
@@ -34,8 +30,8 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'sea': 0.06}
 
 
-def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
-                   epoch_year=2014, **kwargs):
+def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
+                        method='spencer', epoch_year=2014, **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
 
@@ -69,55 +65,32 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
 
     References
     ----------
-    [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
-    Clear Sky Models: Implementation and Analysis", Sandia National
-    Laboratories, SAND2012-2389, 2012.
+    .. [1] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
+       Laboratories, SAND2012-2389, 2012.
 
-    [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
-    SR1 and SR2
+    .. [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
+       SR1 and SR2
 
-    [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
-    in Meteorology and Climatology.
+    .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
+       in Meteorology and Climatology.
 
-    [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
-    Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+    .. [4] Duffie, J. A. and Beckman, W. A. 1991. Solar Engineering of
+       Thermal Processes, 2nd edn. J. Wiley and Sons, New York.
+
+    .. [5] ASCE, 2005. The ASCE Standardized Reference Evapotranspiration
+       Equation, Environmental and Water Resources Institute of the American
+       Civil Engineers, Ed. R. G. Allen et al.
     """
 
-    # This block will set the functions that can be used to convert the
-    # inputs to either day of year or pandas DatetimeIndex, and the
-    # functions that will yield the appropriate output type. It's
-    # complicated because there are many day-of-year-like input types,
-    # and the different algorithms need different types. Maybe you have
-    # a better way to do it.
-    if isinstance(datetime_or_doy, pd.DatetimeIndex):
-        to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
-        to_datetimeindex = lambda x: datetime_or_doy
-        to_output = partial(pd.Series, index=datetime_or_doy)
-    elif isinstance(datetime_or_doy, pd.Timestamp):
-        to_doy = tools._pandas_to_doy
-        to_datetimeindex = \
-            tools._datetimelike_scalar_to_datetimeindex
-        to_output = tools._scalar_out
-    elif isinstance(datetime_or_doy,
-                    (datetime.date, datetime.datetime, np.datetime64)):
-        to_doy = tools._datetimelike_scalar_to_doy
-        to_datetimeindex = \
-            tools._datetimelike_scalar_to_datetimeindex
-        to_output = tools._scalar_out
-    elif np.isscalar(datetime_or_doy):  # ints and floats of various types
-        to_doy = lambda x: datetime_or_doy
-        to_datetimeindex = partial(tools._doy_to_datetimeindex,
-                                   epoch_year=epoch_year)
-        to_output = tools._scalar_out
-    else:  # assume that we have an array-like object of doy
-        to_doy = lambda x: datetime_or_doy
-        to_datetimeindex = partial(tools._doy_to_datetimeindex,
-                                   epoch_year=epoch_year)
-        to_output = tools._array_out
+    to_doy, to_datetimeindex, to_output = \
+        _handle_extra_radiation_types(datetime_or_doy, epoch_year)
 
+    # consider putting asce and spencer methods in their own functions
     method = method.lower()
     if method == 'asce':
-        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
+        B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy),
+                                                      offset=0)
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
     elif method == 'spencer':
         B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
@@ -140,10 +113,49 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     return Ea
 
 
+def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
+    # This block will set the functions that can be used to convert the
+    # inputs to either day of year or pandas DatetimeIndex, and the
+    # functions that will yield the appropriate output type. It's
+    # complicated because there are many day-of-year-like input types,
+    # and the different algorithms need different types. Maybe you have
+    # a better way to do it.
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
+        def to_datetimeindex(x): return x                       # noqa: E306
+        to_output = partial(pd.Series, index=datetime_or_doy)
+    elif isinstance(datetime_or_doy, pd.Timestamp):
+        to_doy = tools._pandas_to_doy
+        to_datetimeindex = \
+            tools._datetimelike_scalar_to_datetimeindex
+        to_output = tools._scalar_out
+    elif isinstance(datetime_or_doy,
+                    (datetime.date, datetime.datetime, np.datetime64)):
+        to_doy = tools._datetimelike_scalar_to_doy
+        to_datetimeindex = \
+            tools._datetimelike_scalar_to_datetimeindex
+        to_output = tools._scalar_out
+    elif np.isscalar(datetime_or_doy):  # ints and floats of various types
+        def to_doy(x): return x                                 # noqa: E306
+        to_datetimeindex = partial(tools._doy_to_datetimeindex,
+                                   epoch_year=epoch_year)
+        to_output = tools._scalar_out
+    else:  # assume that we have an array-like object of doy
+        def to_doy(x): return x                                 # noqa: E306
+        to_datetimeindex = partial(tools._doy_to_datetimeindex,
+                                   epoch_year=epoch_year)
+        to_output = tools._array_out
+
+    return to_doy, to_datetimeindex, to_output
+
+
 def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
-    Calculates the dot product of the solar vector and the surface
-    normal.
+    Calculates the dot product of the sun position unit vector and the surface
+    normal unit vector; in other words, the cosine of the angle of incidence.
+
+    Usage note: When the sun is behind the surface the value returned is
+    negative.  For many uses negative values must be set to zero.
 
     Input all angles in degrees.
 
@@ -244,7 +256,7 @@ def poa_horizontal_ratio(surface_tilt, surface_azimuth,
 
     cos_solar_zenith = tools.cosd(solar_zenith)
 
-    # ratio of titled and horizontal beam irradiance
+    # ratio of tilted and horizontal beam irradiance
     ratio = cos_poa_zen / cos_solar_zenith
 
     try:
@@ -285,12 +297,12 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     return beam
 
 
-def total_irrad(surface_tilt, surface_azimuth,
-                apparent_zenith, azimuth,
-                dni, ghi, dhi, dni_extra=None, airmass=None,
-                albedo=.25, surface_type=None,
-                model='isotropic',
-                model_perez='allsitescomposite1990', **kwargs):
+def get_total_irradiance(surface_tilt, surface_azimuth,
+                         solar_zenith, solar_azimuth,
+                         dni, ghi, dhi, dni_extra=None, airmass=None,
+                         albedo=.25, surface_type=None,
+                         model='isotropic',
+                         model_perez='allsitescomposite1990', **kwargs):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -334,7 +346,7 @@ def total_irrad(surface_tilt, surface_azimuth,
     model : String, default 'isotropic'
         Irradiance model.
     model_perez : String, default 'allsitescomposite1990'
-        See perez.
+        Used only if model='perez'. See :py:func:`perez`.
 
     Returns
     -------
@@ -342,17 +354,69 @@ def total_irrad(surface_tilt, surface_azimuth,
         Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse',
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
     """
+    poa_sky_diffuse = get_sky_diffuse(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
+        model_perez=model_perez)
 
-    solar_zenith = apparent_zenith
-    solar_azimuth = azimuth
+    poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
+                                            surface_type)
+    aoi_ = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    irrads = poa_components(aoi_, dni, poa_sky_diffuse, poa_ground_diffuse)
+    return irrads
 
-    beam = beam_component(surface_tilt, surface_azimuth,
-                          solar_zenith, solar_azimuth, dni)
+
+def get_sky_diffuse(surface_tilt, surface_azimuth,
+                    solar_zenith, solar_azimuth,
+                    dni, ghi, dhi, dni_extra=None, airmass=None,
+                    model='isotropic',
+                    model_perez='allsitescomposite1990'):
+    r"""
+    Determine in-plane sky diffuse irradiance component
+    using the specified sky diffuse irradiance model.
+
+    Sky diffuse models include:
+        * isotropic (default)
+        * klucher
+        * haydavies
+        * reindl
+        * king
+        * perez
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Panel tilt from horizontal.
+    surface_azimuth : numeric
+        Panel azimuth from north.
+    solar_zenith : numeric
+        Solar zenith angle.
+    solar_azimuth : numeric
+        Solar azimuth angle.
+    dni : numeric
+        Direct Normal Irradiance
+    ghi : numeric
+        Global horizontal irradiance
+    dhi : numeric
+        Diffuse horizontal irradiance
+    dni_extra : None or numeric, default None
+        Extraterrestrial direct normal irradiance
+    airmass : None or numeric, default None
+        Airmass
+    model : String, default 'isotropic'
+        Irradiance model.
+    model_perez : String, default 'allsitescomposite1990'
+        See perez.
+
+    Returns
+    -------
+    poa_sky_diffuse : numeric
+    """
 
     model = model.lower()
     if model == 'isotropic':
         sky = isotropic(surface_tilt, dhi)
-    elif model in ['klucher', 'klutcher']:
+    elif model == 'klucher':
         sky = klucher(surface_tilt, surface_azimuth, dhi, ghi,
                       solar_zenith, solar_azimuth)
     elif model == 'haydavies':
@@ -370,31 +434,15 @@ def total_irrad(surface_tilt, surface_azimuth,
     else:
         raise ValueError('invalid model selection {}'.format(model))
 
-    ground = grounddiffuse(surface_tilt, ghi, albedo, surface_type)
-
-    diffuse = sky + ground
-    total = beam + diffuse
-
-    all_irrad = OrderedDict()
-    all_irrad['poa_global'] = total
-    all_irrad['poa_direct'] = beam
-    all_irrad['poa_diffuse'] = diffuse
-    all_irrad['poa_sky_diffuse'] = sky
-    all_irrad['poa_ground_diffuse'] = ground
-
-    if isinstance(total, pd.Series):
-        all_irrad = pd.DataFrame(all_irrad)
-
-    return all_irrad
+    return sky
 
 
-def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
+def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     r'''
-    Determine the three components on in-plane irradiance
+    Determine in-plane irradiance components.
 
-    Combines in-plane irradaince compoents from the chosen diffuse
-    translation, ground reflection and beam irradiance algorithms into
-    the total in-plane irradiance.
+    Combines DNI with sky diffuse and ground-reflected irradiance to calculate
+    total, direct and diffuse irradiance components in the plane of array.
 
     Parameters
     ----------
@@ -422,6 +470,9 @@ def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         * ``poa_global`` : Total in-plane irradiance (W/m^2)
         * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
         * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
+        * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky (W/m^2)
+        * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground
+          (W/m^2)
 
     Notes
     ------
@@ -430,13 +481,15 @@ def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     '''
 
     poa_direct = np.maximum(dni * np.cos(np.radians(aoi)), 0)
-    poa_global = poa_direct + poa_sky_diffuse + poa_ground_diffuse
     poa_diffuse = poa_sky_diffuse + poa_ground_diffuse
+    poa_global = poa_direct + poa_diffuse
 
     irrads = OrderedDict()
     irrads['poa_global'] = poa_global
     irrads['poa_direct'] = poa_direct
     irrads['poa_diffuse'] = poa_diffuse
+    irrads['poa_sky_diffuse'] = poa_sky_diffuse
+    irrads['poa_ground_diffuse'] = poa_ground_diffuse
 
     if isinstance(poa_direct, pd.Series):
         irrads = pd.DataFrame(irrads)
@@ -444,7 +497,7 @@ def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     return irrads
 
 
-def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
+def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
     irradiance, albedo, and surface tilt
@@ -470,9 +523,9 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         overridden if surface_type is supplied.
 
     surface_type: None or string, default None
-        If not None, overrides albedo. String can be one of ``'urban',
+        If not None, overrides albedo. String can be one of 'urban',
         'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
-         'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'``.
+        'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'.
 
     Returns
     -------
@@ -482,18 +535,18 @@ def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-    solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267.
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+       solar irradiance on inclined surfaces for building energy simulation"
+       2007, Solar Energy vol. 81. pp. 254-267.
 
     The calculation is the last term of equations 3, 4, 7, 8, 10, 11, and 12.
 
-    [2] albedos from:
-    http://files.pvsyst.com/help/albedo.htm
-    and
-    http://en.wikipedia.org/wiki/Albedo
-    and
-    https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
+    .. [2] albedos from:
+       http://files.pvsyst.com/help/albedo.htm
+       and
+       http://en.wikipedia.org/wiki/Albedo
+       and
+       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
     '''
 
     if surface_type is not None:
@@ -541,12 +594,12 @@ def isotropic(surface_tilt, dhi):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar
-    heat collector. Trans. ASME 64, 91.
+    .. [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar
+       heat collector. Trans. ASME 64, 91.
     '''
 
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
@@ -569,7 +622,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     .. math::
 
-       F' = 1 - (I_{d0} / GHI)
+       F' = 1 - (I_{d0} / GHI)^2
 
     Klucher's 1979 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a
@@ -612,19 +665,23 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-    solar irradiance on inclined surfaces for building energy simulation"
-    2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
+       solar irradiance on inclined surfaces for building energy simulation"
+       2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
-    tilted surfaces. Solar Energy 23 (2), 111-114.
+    .. [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
+       tilted surfaces. Solar Energy 23 (2), 111-114.
     '''
 
     # zenith angle with respect to panel normal.
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                             solar_zenith, solar_azimuth)
+    cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
-    F = 1 - ((dhi / ghi) ** 2)
+    # silence warning from 0 / 0
+    with np.errstate(invalid='ignore'):
+        F = 1 - ((dhi / ghi) ** 2)
+
     try:
         # fails with single point input
         F.fillna(0, inplace=True)
@@ -699,22 +756,23 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     References
     -----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar
-    radiation incident on an inclined surface. In: Hay, J.E., Won, T.K.
-    (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
-    Ministry of Supply and Services, Canada.
+    .. [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar
+       radiation incident on an inclined surface. In: Hay, J.E., Won, T.K.
+       (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
+       Ministry of Supply and Services, Canada.
     '''
 
     # if necessary, calculate ratio of titled and horizontal beam irradiance
     if projection_ratio is None:
         cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                                 solar_zenith, solar_azimuth)
+        cos_tt = np.maximum(cos_tt, 0)  # GH 526
         cos_solar_zenith = tools.cosd(solar_zenith)
-        Rb = cos_tt / cos_solar_zenith
+        Rb = cos_tt / np.maximum(cos_solar_zenith, 0.01745)  # GH 432
     else:
         Rb = projection_ratio
 
@@ -796,24 +854,26 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse
-    fraction correlations. Solar Energy 45(1), 1-7.
+    .. [2] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990a. Diffuse
+       fraction correlations. Solar Energy 45(1), 1-7.
 
-    [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of
-    hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
+    .. [3] Reindl, D.T., Beckmann, W.A., Duffie, J.A., 1990b. Evaluation of
+       hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
     '''
 
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,
                             solar_zenith, solar_azimuth)
+    cos_tt = np.maximum(cos_tt, 0)  # GH 526
 
+    # do not apply cos(zen) limit here (needed for HB below)
     cos_solar_zenith = tools.cosd(solar_zenith)
 
     # ratio of titled and horizontal beam irradiance
-    Rb = cos_tt / cos_solar_zenith
+    Rb = cos_tt / np.maximum(cos_solar_zenith, 0.01745)  # GH 432
 
     # Anisotropy Index
     AI = dni / dni_extra
@@ -950,26 +1010,39 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Returns
     --------
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by `return_components` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation on a tilted
-        surface. Array input is currently converted to Series output.
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse: Total sky diffuse
+            * isotropic
+            * circumsolar
+            * horizon
+
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
-    1987. A new simplified version of the Perez diffuse irradiance model
-    for tilted surfaces. Solar Energy 39(3), 221-232.
+    .. [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
+       1987. A new simplified version of the Perez diffuse irradiance model
+       for tilted surfaces. Solar Energy 39(3), 221-232.
 
-    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
-    1990. Modeling daylight availability and irradiance components from
-    direct and global irradiance. Solar Energy 44 (5), 271-289.
+    .. [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+       1990. Modeling daylight availability and irradiance components from
+       direct and global irradiance. Solar Energy 44 (5), 271-289.
 
-    [4] Perez, R. et. al 1988. "The Development and Verification of the
-    Perez Diffuse Radiation Model". SAND88-7030
+    .. [4] Perez, R. et. al 1988. "The Development and Verification of the
+       Perez Diffuse Radiation Model". SAND88-7030
     '''
 
     kappa = 1.041  # for solar_zenith in radians
@@ -991,6 +1064,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     # sense for small zenith angles, but...) these values will
     # eventually be used as indicies for coeffecient look ups
     ebin = np.digitize(eps, (0., 1.065, 1.23, 1.5, 1.95, 2.8, 4.5, 6.2))
+    ebin = np.array(ebin)  # GH 642
     ebin[np.isnan(eps)] = 0
 
     # correct for 0 indexing in coeffecient lookup
@@ -1034,6 +1108,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     if return_components:
         diffuse_components = OrderedDict()
+        diffuse_components['sky_diffuse'] = sky_diffuse
 
         # Calculate the different components
         diffuse_components['isotropic'] = dhi * term1
@@ -1048,14 +1123,157 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         else:
             diffuse_components = {k: np.where(mask, 0, v) for k, v in
                                   diffuse_components.items()}
-
-        return sky_diffuse, diffuse_components
-
+        return diffuse_components
     else:
         return sky_diffuse
 
 
-def disc(ghi, zenith, datetime_or_doy, pressure=101325):
+def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
+    """
+    Calculate the clearsky index.
+
+    The clearsky index is the ratio of global to clearsky global irradiance.
+    Negative and non-finite clearsky index values will be truncated to zero.
+
+    Parameters
+    ----------
+    ghi : numeric
+        Global horizontal irradiance in W/m^2.
+
+    clearsky_ghi : numeric
+        Modeled clearsky GHI
+
+    max_clearsky_index : numeric, default 2.0
+        Maximum value of the clearsky index. The default, 2.0, allows
+        for over-irradiance events typically seen in sub-hourly data.
+
+    Returns
+    -------
+    clearsky_index : numeric
+        Clearsky index
+    """
+    clearsky_index = ghi / clearsky_ghi
+    # set +inf, -inf, and nans to zero
+    clearsky_index = np.where(~np.isfinite(clearsky_index), 0,
+                              clearsky_index)
+    # but preserve nans in the input arrays
+    input_is_nan = ~np.isfinite(ghi) | ~np.isfinite(clearsky_ghi)
+    clearsky_index = np.where(input_is_nan, np.nan, clearsky_index)
+
+    clearsky_index = np.maximum(clearsky_index, 0)
+    clearsky_index = np.minimum(clearsky_index, max_clearsky_index)
+
+    # preserve input type
+    if isinstance(ghi, pd.Series):
+        clearsky_index = pd.Series(clearsky_index, index=ghi.index)
+
+    return clearsky_index
+
+
+def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
+                    max_clearness_index=2.0):
+    """
+    Calculate the clearness index.
+
+    The clearness index is the ratio of global to extraterrestrial
+    irradiance on a horizontal plane [1]_.
+
+    Parameters
+    ----------
+    ghi : numeric
+        Global horizontal irradiance in W/m^2.
+
+    solar_zenith : numeric
+        True (not refraction-corrected) solar zenith angle in decimal
+        degrees.
+
+    extra_radiation : numeric
+        Irradiance incident at the top of the atmosphere
+
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+
+    max_clearness_index : numeric, default 2.0
+        Maximum value of the clearness index. The default, 2.0, allows
+        for over-irradiance events typically seen in sub-hourly data.
+        NREL's SRRL Fortran code used 0.82 for hourly data.
+
+    Returns
+    -------
+    kt : numeric
+        Clearness index
+
+    References
+    ----------
+    .. [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+           Global Horizontal to Direct Normal Insolation", Technical
+           Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
+           Institute, 1987.
+    """
+    cos_zenith = tools.cosd(solar_zenith)
+    I0h = extra_radiation * np.maximum(cos_zenith, min_cos_zenith)
+    # consider adding
+    # with np.errstate(invalid='ignore', divide='ignore'):
+    # to kt calculation, but perhaps it's good to allow these
+    # warnings to the users that override min_cos_zenith
+    kt = ghi / I0h
+    kt = np.maximum(kt, 0)
+    kt = np.minimum(kt, max_clearness_index)
+    return kt
+
+
+def clearness_index_zenith_independent(clearness_index, airmass,
+                                       max_clearness_index=2.0):
+    """
+    Calculate the zenith angle independent clearness index.
+
+    See [1]_ for details.
+
+    Parameters
+    ----------
+    clearness_index : numeric
+        Ratio of global to extraterrestrial irradiance on a horizontal
+        plane
+
+    airmass : numeric
+        Airmass
+
+    max_clearness_index : numeric, default 2.0
+        Maximum value of the clearness index. The default, 2.0, allows
+        for over-irradiance events typically seen in sub-hourly data.
+        NREL's SRRL Fortran code used 0.82 for hourly data.
+
+    Returns
+    -------
+    kt_prime : numeric
+        Zenith independent clearness index
+
+    References
+    ----------
+    .. [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
+           (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
+           ASHRAE Transactions-Research Series, pp. 354-369
+    """
+    # Perez eqn 1
+    kt_prime = clearness_index / _kt_kt_prime_factor(airmass)
+    kt_prime = np.maximum(kt_prime, 0)
+    kt_prime = np.minimum(kt_prime, max_clearness_index)
+    return kt_prime
+
+
+def _kt_kt_prime_factor(airmass):
+    """
+    Calculate the conversion factor between kt and kt prime.
+    Function is useful because DIRINT and GTI-DIRINT both use this.
+    """
+    # consider adding
+    # airmass = np.maximum(airmass, 12)  # GH 450
+    return 1.031 * np.exp(-1.4 / (0.9 + 9.4 / airmass)) + 0.1
+
+
+def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
+         min_cos_zenith=0.065, max_zenith=87, max_airmass=12):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1063,6 +1281,15 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
     The DISC algorithm converts global horizontal irradiance to direct
     normal irradiance through empirical relationships between the global
     and direct clearness indices.
+
+    The pvlib implementation limits the clearness index to 1.
+
+    The original report describing the DISC model [1]_ uses the
+    relative airmass rather than the absolute (pressure-corrected)
+    airmass. However, the NREL implementation of the DISC model [2]_
+    uses absolute airmass. PVLib Matlab also uses the absolute airmass.
+    pvlib python defaults to absolute airmass, but the relative airmass
+    can be used by supplying `pressure=None`.
 
     Parameters
     ----------
@@ -1077,8 +1304,22 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
-    pressure : numeric, default 101325
-        Site pressure in Pascal.
+    pressure : None or numeric, default 101325
+        Site pressure in Pascal. If None, relative airmass is used
+        instead of absolute (pressure-corrected) airmass.
+
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
+
+    max_airmass : numeric, default 12
+        Maximum value of the airmass to allow in Kn calculation.
+        Default value (12) comes from range over which Kn was fit
+        to airmass in the original paper.
 
     Returns
     -------
@@ -1094,31 +1335,71 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
 
     References
     ----------
-    [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
-    Global Horizontal to Direct Normal Insolation", Technical
-    Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
-    Institute, 1987.
+    .. [1] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+       Global Horizontal to Direct Normal Insolation", Technical
+       Report No. SERI/TR-215-3087, Golden, CO: Solar Energy Research
+       Institute, 1987.
 
-    [2] J.W. "Fourier series representation of the position of the sun".
-    Found at:
-    http://www.mail-archive.com/sundial@uni-koeln.de/msg01050.html on
-    January 12, 2012
+    .. [2] Maxwell, E. "DISC Model", Excel Worksheet.
+       https://www.nrel.gov/grid/solar-resource/disc.html
 
     See Also
     --------
-    atmosphere.alt2pres
     dirint
     """
 
     # this is the I0 calculation from the reference
-    I0 = extraradiation(datetime_or_doy, 1370, 'spencer')
-    I0h = I0 * np.cos(np.radians(zenith))
+    # SSC uses solar constant = 1367.0 (checked 2018 08 15)
+    I0 = get_extra_radiation(datetime_or_doy, 1370., 'spencer')
 
-    am = atmosphere.relativeairmass(zenith, model='kasten1966')
-    am = atmosphere.absoluteairmass(am, pressure)
+    kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith,
+                         max_clearness_index=1)
 
-    kt = ghi / I0h
-    kt = np.maximum(kt, 0)
+    am = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
+    if pressure is not None:
+        am = atmosphere.get_absolute_airmass(am, pressure)
+
+    Kn, am = _disc_kn(kt, am, max_airmass=max_airmass)
+    dni = Kn * I0
+
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+
+    output = OrderedDict()
+    output['dni'] = dni
+    output['kt'] = kt
+    output['airmass'] = am
+
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        output = pd.DataFrame(output, index=datetime_or_doy)
+
+    return output
+
+
+def _disc_kn(clearness_index, airmass, max_airmass=12):
+    """
+    Calculate Kn for `disc`
+
+    Parameters
+    ----------
+    clearness_index : numeric
+    airmass : numeric
+    max_airmass : float
+        airmass > max_airmass is set to max_airmass before being used
+        in calculating Kn.
+
+    Returns
+    -------
+    Kn : numeric
+    am : numeric
+        airmass used in the calculation of Kn. am <= max_airmass.
+    """
+    # short names for equations
+    kt = clearness_index
+    am = airmass
+
+    am = np.minimum(am, max_airmass)  # GH 450
+
     # powers of kt will be used repeatedly, so compute only once
     kt2 = kt * kt  # about the same as kt ** 2
     kt3 = kt2 * kt  # 5-10x faster than kt ** 3
@@ -1138,24 +1419,11 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
 
     Knc = 0.866 - 0.122*am + 0.0121*am**2 - 0.000653*am**3 + 1.4e-05*am**4
     Kn = Knc - delta_kn
-
-    dni = Kn * I0
-
-    dni = np.where((zenith > 87) | (ghi < 0) | (dni < 0), 0, dni)
-
-    output = OrderedDict()
-    output['dni'] = dni
-    output['kt'] = kt
-    output['airmass'] = am
-
-    if isinstance(datetime_or_doy, pd.DatetimeIndex):
-        output = pd.DataFrame(output, index=datetime_or_doy)
-
-    return output
+    return Kn, am
 
 
-def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
-           temp_dew=None):
+def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
+           temp_dew=None, min_cos_zenith=0.065, max_zenith=87):
     """
     Determine DNI from GHI using the DIRINT modification of the DISC
     model.
@@ -1167,15 +1435,16 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     information. The effectiveness of the DIRINT model improves with
     each piece of information provided.
 
+    The pvlib implementation limits the clearness index to 1.
+
     Parameters
     ----------
     ghi : array-like
         Global horizontal irradiance in W/m^2.
 
-    zenith : array-like
-        True (not refraction-corrected) zenith angles in decimal
-        degrees. If Z is a vector it must be of the same size as all
-        other vector inputs. Z must be >=0 and <=180.
+    solar_zenith : array-like
+        True (not refraction-corrected) solar_zenith angles in decimal
+        degrees.
 
     times : DatetimeIndex
 
@@ -1184,21 +1453,27 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
         average pressure may be calculated from site altitude.
 
     use_delta_kt_prime : bool, default True
-        Indicates if the user would like to utilize the time-series
-        nature of the GHI measurements. A value of ``False`` will not
-        use the time-series improvements, any other numeric value will
-        use time-series improvements. It is recommended that time-series
-        data only be used if the time between measured data points is
-        less than 1.5 hours. If none of the input arguments are vectors,
-        then time-series improvements are not used (because it's not a
-        time-series). If True, input data must be Series.
+        If True, indicates that the stability index delta_kt_prime is
+        included in the model. The stability index adjusts the estimated
+        DNI in response to dynamics in the time series of GHI. It is
+        recommended that delta_kt_prime is not used if the time between
+        GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
+        input data must be Series.
 
     temp_dew : None, float, or array-like, default None
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
-        DewPtTemp=NaN does not have dew point improvements applied. If
-        DewPtTemp is not provided, then dew point improvements are not
+        temp_dew=NaN does not have dew point improvements applied. If
+        temp_dew is not provided, then dew point improvements are not
         applied.
+
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
 
     Returns
     -------
@@ -1213,40 +1488,140 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
 
     References
     ----------
-    [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
-    (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
-    ASHRAE Transactions-Research Series, pp. 354-369
+    .. [1] Perez, R., P. Ineichen, E. Maxwell, R. Seals and A. Zelenka,
+       (1992). "Dynamic Global-to-Direct Irradiance Conversion Models".
+       ASHRAE Transactions-Research Series, pp. 354-369
 
-    [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
-    Global Horizontal to Direct Normal Insolation", Technical Report No.
-    SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
+    .. [2] Maxwell, E. L., "A Quasi-Physical Model for Converting Hourly
+       Global Horizontal to Direct Normal Insolation", Technical Report No.
+       SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
 
-    disc_out = disc(ghi, zenith, times, pressure=pressure)
-    dni = disc_out['dni']
+    disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
+                    min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
+    airmass = disc_out['airmass']
     kt = disc_out['kt']
-    am = disc_out['airmass']
 
-    kt_prime = kt / (1.031 * np.exp(-1.4 / (0.9 + 9.4 / am)) + 0.1)
-    kt_prime = np.minimum(kt_prime, 0.82)  # From SRRL code
+    kt_prime = clearness_index_zenith_independent(
+        kt, airmass, max_clearness_index=1)
+    delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
+                                            times)
+    w = _temp_dew_dirint(temp_dew, times)
 
-    # wholmgren:
-    # the use_delta_kt_prime statement is a port of the MATLAB code.
-    # I am confused by the abs() in the delta_kt_prime calculation.
-    # It is not the absolute value of the central difference.
-    # current implementation requires that kt_prime is a Series
+    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
+                                   delta_kt_prime)
+
+    # Perez eqn 5
+    dni = disc_out['dni'] * dirint_coeffs
+
+    return dni
+
+
+def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime,
+                             temp_dew):
+    """
+    Calculate DIRINT DNI from supplied DISC DNI and Kt'.
+
+    Supports :py:func:`gti_dirint`
+    """
+    times = dni.index
+    delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
+                                            times)
+    w = _temp_dew_dirint(temp_dew, times)
+    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
+                                   delta_kt_prime)
+    dni_dirint = dni * dirint_coeffs
+    return dni_dirint
+
+
+def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
+    """
+    Calculate delta_kt_prime (Perez eqn 2 and eqn 3), or return a default value
+    for use with :py:func:`_dirint_bins`.
+    """
     if use_delta_kt_prime:
-        delta_kt_prime = 0.5*((kt_prime - kt_prime.shift(1)).abs().add(
-                              (kt_prime - kt_prime.shift(-1)).abs(),
-                              fill_value=0))
+        # Perez eqn 2
+        kt_next = kt_prime.shift(-1)
+        kt_previous = kt_prime.shift(1)
+        # replace nan with values that implement Perez Eq 3 for first and last
+        # positions. Use kt_previous and kt_next to handle series of length 1
+        kt_next.iloc[-1] = kt_previous.iloc[-1]
+        kt_previous.iloc[0] = kt_next.iloc[0]
+        delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
+                                (kt_prime - kt_previous).abs(),
+                                fill_value=0))
     else:
+        # do not change unless also modifying _dirint_bins
         delta_kt_prime = pd.Series(-1, index=times)
+    return delta_kt_prime
 
+
+def _temp_dew_dirint(temp_dew, times):
+    """
+    Calculate precipitable water from surface dew point temp (Perez eqn 4),
+    or return a default value for use with :py:func:`_dirint_bins`.
+    """
     if temp_dew is not None:
+        # Perez eqn 4
         w = pd.Series(np.exp(0.07 * temp_dew - 0.075), index=times)
     else:
+        # do not change unless also modifying _dirint_bins
         w = pd.Series(-1, index=times)
+    return w
 
+
+def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
+    """
+    Determine the DISC to DIRINT multiplier `dirint_coeffs`.
+
+    dni = disc_out['dni'] * dirint_coeffs
+
+    Parameters
+    ----------
+    times : pd.DatetimeIndex
+    kt_prime : Zenith-independent clearness index
+    solar_zenith : Solar zenith angle
+    w : precipitable water estimated from surface dew-point temperature
+    delta_kt_prime : stability index
+
+    Returns
+    -------
+    dirint_coeffs : array-like
+    """
+    kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = \
+        _dirint_bins(times, kt_prime, solar_zenith, w, delta_kt_prime)
+
+    # get the coefficients
+    coeffs = _get_dirint_coeffs()
+
+    # subtract 1 to account for difference between MATLAB-style bin
+    # assignment and Python-style array lookup.
+    dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
+                           delta_kt_prime_bin-1, w_bin-1]
+
+    # convert unassigned bins to nan
+    dirint_coeffs = np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
+                             (w_bin == 0) | (delta_kt_prime_bin == 0),
+                             np.nan, dirint_coeffs)
+    return dirint_coeffs
+
+
+def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
+    """
+    Determine the bins for the DIRINT coefficients.
+
+    Parameters
+    ----------
+    times : pd.DatetimeIndex
+    kt_prime : Zenith-independent clearness index
+    zenith : Solar zenith angle
+    w : precipitable water estimated from surface dew-point temperature
+    delta_kt_prime : stability index
+
+    Returns
+    -------
+    tuple of kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
+    """
     # @wholmgren: the following bin assignments use MATLAB's 1-indexing.
     # Later, we'll subtract 1 to conform to Python's 0-indexing.
 
@@ -1287,32 +1662,22 @@ def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
     delta_kt_prime_bin[(delta_kt_prime >= 0.3) & (delta_kt_prime <= 1)] = 6
     delta_kt_prime_bin[delta_kt_prime == -1] = 7
 
-    # get the coefficients
-    coeffs = _get_dirint_coeffs()
-
-    # subtract 1 to account for difference between MATLAB-style bin
-    # assignment and Python-style array lookup.
-    dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
-                           delta_kt_prime_bin-1, w_bin-1]
-
-    # convert unassigned bins to nan
-    dirint_coeffs = np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
-                             (w_bin == 0) | (delta_kt_prime_bin == 0),
-                             np.nan, dirint_coeffs)
-
-    dni *= dirint_coeffs
-
-    return dni
+    return kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
 
 
 def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
-             use_delta_kt_prime=True, temp_dew=None):
+             use_delta_kt_prime=True, temp_dew=None, min_cos_zenith=0.065,
+             max_zenith=87):
     """
-    Determine DNI from GHI using the DIRINDEX model, which is a modification of
-    the DIRINT model with information from a clear sky model.
+    Determine DNI from GHI using the DIRINDEX model.
 
-    DIRINDEX [1] improves upon the DIRINT model by taking into account
-    turbidity when used with the Ineichen clear sky model results.
+    The DIRINDEX model [1] modifies the DIRINT model implemented in
+    :py:func:``pvlib.irradiance.dirint`` by taking into account information
+    from a clear sky model. It is recommended that ``ghi_clearsky`` be
+    calculated using the Ineichen clear sky model
+    :py:func:``pvlib.clearsky.ineichen`` with ``perez_enhancement=True``.
+
+    The pvlib implementation limits the clearness index to 1.
 
     Parameters
     ----------
@@ -1337,21 +1702,27 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
         average pressure may be calculated from site altitude.
 
     use_delta_kt_prime : bool, default True
-        Indicates if the user would like to utilize the time-series
-        nature of the GHI measurements. A value of ``False`` will not
-        use the time-series improvements, any other numeric value will
-        use time-series improvements. It is recommended that time-series
-        data only be used if the time between measured data points is
-        less than 1.5 hours. If none of the input arguments are vectors,
-        then time-series improvements are not used (because it's not a
-        time-series). If True, input data must be Series.
+        If True, indicates that the stability index delta_kt_prime is
+        included in the model. The stability index adjusts the estimated
+        DNI in response to dynamics in the time series of GHI. It is
+        recommended that delta_kt_prime is not used if the time between
+        GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
+        input data must be Series.
 
     temp_dew : None, float, or array-like, default None
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
-        DewPtTemp=NaN does not have dew point improvements applied. If
-        DewPtTemp is not provided, then dew point improvements are not
+        temp_dew=NaN does not have dew point improvements applied. If
+        temp_dew is not provided, then dew point improvements are not
         applied.
+
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
 
     Returns
     -------
@@ -1365,19 +1736,22 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
 
     References
     ----------
-    [1] Perez, R., Ineichen, P., Moore, K., Kmiecik, M., Chain, C., George, R.,
-    & Vignola, F. (2002). A new operational model for satellite-derived
-    irradiances: description and validation. Solar Energy, 73(5), 307-317.
+    .. [1] Perez, R., Ineichen, P., Moore, K., Kmiecik, M., Chain, C., George,
+       R., & Vignola, F. (2002). A new operational model for satellite-derived
+       irradiances: description and validation. Solar Energy, 73(5), 307-317.
     """
 
     dni_dirint = dirint(ghi, zenith, times, pressure=pressure,
                         use_delta_kt_prime=use_delta_kt_prime,
-                        temp_dew=temp_dew)
+                        temp_dew=temp_dew, min_cos_zenith=min_cos_zenith,
+                        max_zenith=max_zenith)
 
     dni_dirint_clearsky = dirint(ghi_clearsky, zenith, times,
                                  pressure=pressure,
                                  use_delta_kt_prime=use_delta_kt_prime,
-                                 temp_dew=temp_dew)
+                                 temp_dew=temp_dew,
+                                 min_cos_zenith=min_cos_zenith,
+                                 max_zenith=max_zenith)
 
     dni_dirindex = dni_clearsky * dni_dirint / dni_dirint_clearsky
 
@@ -1386,7 +1760,335 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     return dni_dirindex
 
 
-def erbs(ghi, zenith, doy):
+def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
+               surface_tilt, surface_azimuth, pressure=101325.,
+               use_delta_kt_prime=True, temp_dew=None, albedo=.25,
+               model='perez', model_perez='allsitescomposite1990',
+               calculate_gt_90=True, max_iterations=30):
+    """
+    Determine GHI, DNI, DHI from POA global using the GTI DIRINT model.
+
+    The GTI DIRINT model is described in [1]_.
+
+    .. warning::
+
+        Model performance is poor for AOI greater than approximately
+        80 degrees `and` plane of array irradiance greater than
+        approximately 200 W/m^2.
+
+    Parameters
+    ----------
+    poa_global : array-like
+        Plane of array global irradiance in W/m^2.
+
+    aoi : array-like
+        Angle of incidence of solar rays with respect to the module
+        surface normal.
+
+    solar_zenith : array-like
+        True (not refraction-corrected) solar zenith angles in decimal
+        degrees.
+
+    solar_azimuth : array-like
+        Solar azimuth angles in decimal degrees.
+
+    times : DatetimeIndex
+        Time indices for the input array-like data.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. Tilt must be >=0 and
+        <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The Azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    pressure : numeric, default 101325.0
+        The site pressure in Pascal. Pressure may be measured or an
+        average pressure may be calculated from site altitude.
+
+    use_delta_kt_prime : bool, default True
+        If True, indicates that the stability index delta_kt_prime is
+        included in the model. The stability index adjusts the estimated
+        DNI in response to dynamics in the time series of GHI. It is
+        recommended that delta_kt_prime is not used if the time between
+        GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
+        input data must be Series.
+
+    temp_dew : None, float, or array-like, default None
+        Surface dew point temperatures, in degrees C. Values of temp_dew
+        may be numeric or NaN. Any single time period point with a
+        temp_dew=NaN does not have dew point improvements applied. If
+        temp_dew is not provided, then dew point improvements are not
+        applied.
+
+    albedo : numeric, default 0.25
+        Surface albedo
+
+    model : String, default 'isotropic'
+        Irradiance model.
+
+    model_perez : String, default 'allsitescomposite1990'
+        Used only if model='perez'. See :py:func:`perez`.
+
+    calculate_gt_90 : bool, default True
+        Controls if the algorithm evaluates inputs with AOI >= 90 degrees.
+        If False, returns nan for AOI >= 90 degrees. Significant speed ups
+        can be achieved by setting this parameter to False.
+
+    max_iterations : int, default 30
+        Maximum number of iterations for the aoi < 90 deg algorithm.
+
+    Returns
+    -------
+    data : OrderedDict or DataFrame
+        Contains the following keys/columns:
+
+            * ``ghi``: the modeled global horizontal irradiance in W/m^2.
+            * ``dni``: the modeled direct normal irradiance in W/m^2.
+            * ``dhi``: the modeled diffuse horizontal irradiance in
+              W/m^2.
+
+    References
+    ----------
+    .. [1] B. Marion, A model for deriving the direct normal and
+           diffuse horizontal irradiance from the global tilted
+           irradiance, Solar Energy 122, 1037-1046.
+           :doi:`10.1016/j.solener.2015.10.024`
+    """
+
+    aoi_lt_90 = aoi < 90
+
+    # for AOI less than 90 degrees
+    ghi, dni, dhi, kt_prime = _gti_dirint_lt_90(
+        poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth, times,
+        surface_tilt, surface_azimuth, pressure=pressure,
+        use_delta_kt_prime=use_delta_kt_prime, temp_dew=temp_dew,
+        albedo=albedo, model=model, model_perez=model_perez,
+        max_iterations=max_iterations)
+
+    # for AOI greater than or equal to 90 degrees
+    if calculate_gt_90:
+        ghi_gte_90, dni_gte_90, dhi_gte_90 = _gti_dirint_gte_90(
+            poa_global, aoi, solar_zenith, solar_azimuth,
+            surface_tilt, times, kt_prime,
+            pressure=pressure, temp_dew=temp_dew, albedo=albedo)
+    else:
+        ghi_gte_90, dni_gte_90, dhi_gte_90 = np.nan, np.nan, np.nan
+
+    # put the AOI < 90 and AOI >= 90 conditions together
+    output = OrderedDict()
+    output['ghi'] = ghi.where(aoi_lt_90, ghi_gte_90)
+    output['dni'] = dni.where(aoi_lt_90, dni_gte_90)
+    output['dhi'] = dhi.where(aoi_lt_90, dhi_gte_90)
+
+    output = pd.DataFrame(output, index=times)
+
+    return output
+
+
+def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
+                      times, surface_tilt, surface_azimuth, pressure=101325.,
+                      use_delta_kt_prime=True, temp_dew=None, albedo=.25,
+                      model='perez', model_perez='allsitescomposite1990',
+                      max_iterations=30):
+    """
+    GTI-DIRINT model for AOI < 90 degrees. See Marion 2015 Section 2.1.
+
+    See gti_dirint signature for parameter details.
+    """
+    I0 = get_extra_radiation(times, 1370, 'spencer')
+    cos_zenith = tools.cosd(solar_zenith)
+    # I0h as in Marion 2015 eqns 1, 3
+    I0h = I0 * np.maximum(0.065, cos_zenith)
+
+    airmass = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
+    airmass = atmosphere.get_absolute_airmass(airmass, pressure)
+
+    # these coeffs and diff variables and the loop below
+    # implement figure 1 of Marion 2015
+
+    # make coeffs that is at least 30 elements long so that all
+    # coeffs can be assigned as specified in Marion 2015.
+    # slice below will limit iterations if necessary
+    coeffs = np.empty(max(30, max_iterations))
+    coeffs[0:3] = 1
+    coeffs[3:10] = 0.5
+    coeffs[10:20] = 0.25
+    coeffs[20:] = 0.125
+    coeffs = coeffs[:max_iterations]  # covers case where max_iterations < 30
+
+    # initialize diff
+    diff = pd.Series(9999, index=times)
+    best_diff = diff
+
+    # initialize poa_global_i
+    poa_global_i = poa_global
+
+    for iteration, coeff in enumerate(coeffs):
+
+        # test if difference between modeled GTI and
+        # measured GTI (poa_global) is less than 1 W/m^2
+        # only test for aoi less than 90 deg
+        best_diff_lte_1 = best_diff <= 1
+        best_diff_lte_1_lt_90 = best_diff_lte_1[aoi_lt_90]
+        if best_diff_lte_1_lt_90.all():
+            # all aoi < 90 points have a difference <= 1, so break loop
+            break
+
+        # calculate kt and DNI from GTI
+        kt = clearness_index(poa_global_i, aoi, I0)  # kt from Marion eqn 2
+        disc_dni = np.maximum(_disc_kn(kt, airmass)[0] * I0, 0)
+        kt_prime = clearness_index_zenith_independent(kt, airmass)
+        # dirint DNI in Marion eqn 3
+        dni = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
+                                       use_delta_kt_prime, temp_dew)
+
+        # calculate DHI using Marion eqn 3 (identify 1st term on RHS as GHI)
+        # I0h has a minimum zenith projection, but multiplier of DNI does not
+        ghi = kt * I0h                  # Kt * I0 * max(0.065, cos(zen))
+        dhi = ghi - dni * cos_zenith    # no cos(zen) restriction here
+
+        # following SSC code
+        dni = np.maximum(dni, 0)
+        ghi = np.maximum(ghi, 0)
+        dhi = np.maximum(dhi, 0)
+
+        # use DNI and DHI to model GTI
+        # GTI-DIRINT uses perez transposition model, but we allow for
+        # any model here
+        all_irrad = get_total_irradiance(
+            surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+            dni, ghi, dhi, dni_extra=I0, airmass=airmass,
+            albedo=albedo, model=model, model_perez=model_perez)
+
+        gti_model = all_irrad['poa_global']
+
+        # calculate new diff
+        diff = gti_model - poa_global
+
+        # determine if the new diff is smaller in magnitude
+        # than the old diff
+        diff_abs = diff.abs()
+        smallest_diff = diff_abs < best_diff
+
+        # save the best differences
+        best_diff = diff_abs.where(smallest_diff, best_diff)
+
+        # on first iteration, the best values are the only values
+        if iteration == 0:
+            best_ghi = ghi
+            best_dni = dni
+            best_dhi = dhi
+            best_kt_prime = kt_prime
+        else:
+            # save new DNI, DHI, DHI if they provide the best consistency
+            # otherwise use the older values.
+            best_ghi = ghi.where(smallest_diff, best_ghi)
+            best_dni = dni.where(smallest_diff, best_dni)
+            best_dhi = dhi.where(smallest_diff, best_dhi)
+            best_kt_prime = kt_prime.where(smallest_diff, best_kt_prime)
+
+        # calculate adjusted inputs for next iteration. Marion eqn 4
+        poa_global_i = np.maximum(1.0, poa_global_i - coeff * diff)
+    else:
+        # we are here because we ran out of coeffs to loop over and
+        # therefore we have exceeded max_iterations
+        import warnings
+        failed_points = best_diff[aoi_lt_90][~best_diff_lte_1_lt_90]
+        warnings.warn(
+            ('%s points failed to converge after %s iterations. best_diff:\n%s'
+             % (len(failed_points), max_iterations, failed_points)),
+            RuntimeWarning)
+
+    # return the best data, whether or not the solution converged
+    return best_ghi, best_dni, best_dhi, best_kt_prime
+
+
+def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
+                       surface_tilt, times, kt_prime,
+                       pressure=101325., temp_dew=None, albedo=.25):
+    """
+    GTI-DIRINT model for AOI >= 90 degrees. See Marion 2015 Section 2.2.
+
+    See gti_dirint signature for parameter details.
+    """
+    kt_prime_gte_90 = _gti_dirint_gte_90_kt_prime(aoi, solar_zenith,
+                                                  solar_azimuth, times,
+                                                  kt_prime)
+
+    I0 = get_extra_radiation(times, 1370, 'spencer')
+    airmass = atmosphere.get_relative_airmass(solar_zenith, model='kasten1966')
+    airmass = atmosphere.get_absolute_airmass(airmass, pressure)
+    kt = kt_prime_gte_90 * _kt_kt_prime_factor(airmass)
+    disc_dni = np.maximum(_disc_kn(kt, airmass)[0] * I0, 0)
+
+    dni_gte_90 = _dirint_from_dni_ktprime(disc_dni, kt_prime, solar_zenith,
+                                          False, temp_dew)
+
+    dni_gte_90_proj = dni_gte_90 * tools.cosd(solar_zenith)
+    cos_surface_tilt = tools.cosd(surface_tilt)
+
+    # isotropic sky plus ground diffuse
+    dhi_gte_90 = (
+        (2 * poa_global - dni_gte_90_proj * albedo * (1 - cos_surface_tilt)) /
+        (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt)))
+
+    ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
+
+    return ghi_gte_90, dni_gte_90, dhi_gte_90
+
+
+def _gti_dirint_gte_90_kt_prime(aoi, solar_zenith, solar_azimuth, times,
+                                kt_prime):
+    """
+    Determine kt' values to be used in GTI-DIRINT AOI >= 90 deg case.
+    See Marion 2015 Section 2.2.
+
+    For AOI >= 90 deg: average of the kt_prime values for 65 < AOI < 80
+    in each day's morning and afternoon. Morning and afternoon are treated
+    separately.
+
+    For AOI < 90 deg: NaN.
+
+    See gti_dirint signature for parameter details.
+
+    Returns
+    -------
+    kt_prime_gte_90 : Series
+        Index is `times`.
+    """
+    # kt_prime values from DIRINT calculation for AOI < 90 case
+    # set the kt_prime from sunrise to AOI=90 to be equal to
+    # the kt_prime for 65 < AOI < 80 during the morning.
+    # similar for the afternoon. repeat for every day.
+    aoi_gte_90 = aoi >= 90
+    aoi_65_80 = (aoi > 65) & (aoi < 80)
+    zenith_lt_90 = solar_zenith < 90
+    morning = solar_azimuth < 180
+    afternoon = solar_azimuth > 180
+    aoi_65_80_morning = aoi_65_80 & morning
+    aoi_65_80_afternoon = aoi_65_80 & afternoon
+    zenith_lt_90_aoi_gte_90_morning = zenith_lt_90 & aoi_gte_90 & morning
+    zenith_lt_90_aoi_gte_90_afternoon = zenith_lt_90 & aoi_gte_90 & afternoon
+
+    kt_prime_gte_90 = []
+    for date, data in kt_prime.groupby(times.date):
+        kt_prime_am_avg = data[aoi_65_80_morning].mean()
+        kt_prime_pm_avg = data[aoi_65_80_afternoon].mean()
+
+        kt_prime_by_date = pd.Series(np.nan, index=data.index)
+        kt_prime_by_date[zenith_lt_90_aoi_gte_90_morning] = kt_prime_am_avg
+        kt_prime_by_date[zenith_lt_90_aoi_gte_90_afternoon] = kt_prime_pm_avg
+        kt_prime_gte_90.append(kt_prime_by_date)
+    kt_prime_gte_90 = pd.concat(kt_prime_gte_90)
+
+    return kt_prime_gte_90
+
+
+def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     r"""
     Estimate DNI and DHI from GHI using the Erbs model.
 
@@ -1413,8 +2115,15 @@ def erbs(ghi, zenith, doy):
         Global horizontal irradiance in W/m^2.
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
-    doy: scalar, array or DatetimeIndex
-        The day of the year.
+    datetime_or_doy : int, float, array, pd.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
 
     Returns
     -------
@@ -1439,14 +2148,10 @@ def erbs(ghi, zenith, doy):
     disc
     """
 
-    dni_extra = extraradiation(doy)
+    dni_extra = get_extra_radiation(datetime_or_doy)
 
-    # This Z needs to be the true Zenith angle, not apparent,
-    # to get extraterrestrial horizontal radiation)
-    i0_h = dni_extra * tools.cosd(zenith)
-
-    kt = ghi / i0_h
-    kt = np.maximum(kt, 0)
+    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+                         max_clearness_index=1)
 
     # For Kt <= 0.22, set the diffuse fraction
     df = 1 - 0.09*kt
@@ -1463,14 +2168,18 @@ def erbs(ghi, zenith, doy):
     dhi = df * ghi
 
     dni = (ghi - dhi) / tools.cosd(zenith)
+    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+    # ensure that closure relationship remains valid
+    dhi = np.where(bad_values, ghi, dhi)
 
     data = OrderedDict()
     data['dni'] = dni
     data['dhi'] = dhi
     data['kt'] = kt
 
-    if isinstance(dni, pd.Series):
-        data = pd.DataFrame(data)
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        data = pd.DataFrame(data, index=datetime_or_doy)
 
     return data
 
@@ -1508,12 +2217,12 @@ def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
     References
     ----------
-    [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
-    Environmental Biophysics. 2nd Ed. New York: Springer.
+    .. [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
+       Environmental Biophysics. 2nd Ed. New York: Springer.
 
-    [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
-    characteristic distribution of direct, diffuse, and total solar
-    radiation".  Solar Energy 4:1-19
+    .. [2] Liu, B. Y., R. C. Jordan, (1960). "The interrelationship and
+       characteristic distribution of direct, diffuse, and total solar
+       radiation".  Solar Energy 4:1-19
     '''
 
     tau = transmittance
@@ -1568,20 +2277,20 @@ def _get_perez_coefficients(perezmodel):
 
     References
     ----------
-    [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-    compute solar irradiance on inclined surfaces for building energy
-    simulation" 2007, Solar Energy vol. 81. pp. 254-267
+    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
 
-    [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
-    1987. A new simplified version of the Perez diffuse irradiance model
-    for tilted surfaces. Solar Energy 39(3), 221-232.
+    .. [2] Perez, R., Seals, R., Ineichen, P., Stewart, R., Menicucci, D.,
+       1987. A new simplified version of the Perez diffuse irradiance model
+       for tilted surfaces. Solar Energy 39(3), 221-232.
 
-    [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
-    1990. Modeling daylight availability and irradiance components from
-    direct and global irradiance. Solar Energy 44 (5), 271-289.
+    .. [3] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+       1990. Modeling daylight availability and irradiance components from
+       direct and global irradiance. Solar Energy 44 (5), 271-289.
 
-    [4] Perez, R. et. al 1988. "The Development and Verification of the
-    Perez Diffuse Radiation Model". SAND88-7030
+    .. [4] Perez, R. et. al 1988. "The Development and Verification of the
+       Perez Diffuse Radiation Model". SAND88-7030
 
     '''
     coeffdict = {

@@ -31,6 +31,7 @@ venv/
 
 # spa_c_files builds
 pvlib/spa_c_files/build*
+pvlib/spa_c_files/spa_py.c
 
 # spa_c_files source
 pvlib/spa_c_files/spa.c
@@ -38,7 +39,9 @@ pvlib/spa_c_files/spa.h
 pvlib/spa_c_files/spa_tester.c
 
 # generated documentation
-# pvlib/sphinx/Docs/build/
+docs/sphinx/source/generated
+docs/sphinx/source/savefig
+docs/sphinx/source/auto_examples
 
 # Installer logs
 pip-log.txt
@@ -62,6 +65,7 @@ coverage.xml
 .idea/
 *.sublime-project
 *.sublime-workspace
+.vscode
 
 # Rope
 .ropeproject
@@ -74,12 +78,17 @@ coverage.xml
 *.h5
 
 
-#Datafiles
+# Datafiles
 *.csv
+# Ignore some csv 
+!pvlib/data/*.csv 
 
 # vi
 *.swp
 
-#Ignore some notebooks
+# Ignore some notebooks
 *.ipynb
 !docs/tutorials/*.ipynb
+
+# Ignore Mac DS_store files
+*.DS_Store

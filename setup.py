@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import os
-import re
-import shutil
-import sys
 
 try:
-    from setuptools import setup, Command
+    from setuptools import setup
     from setuptools.extension import Extension
 except ImportError:
     raise RuntimeError('setuptools is required')
@@ -36,16 +33,24 @@ Source code: https://github.com/pvlib/pvlib-python
 
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'
-AUTHOR = 'PVLIB Python Developers'
+AUTHOR = 'pvlib python Developers'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
-INSTALL_REQUIRES = ['numpy >= 1.10.1',
-                    'pandas >= 0.14.0',
+INSTALL_REQUIRES = ['numpy >= 1.12.0',
+                    'pandas >= 0.18.1',
                     'pytz',
-                    'six',
-                    ]
-TESTS_REQUIRE = ['pytest', 'nose']
+                    'requests']
+TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
+                 'pytest-timeout', 'pytest-rerunfailures', 'pytest-remotedata']
+EXTRAS_REQUIRE = {
+    'optional': ['ephem', 'cython', 'netcdf4', 'nrel-pysam', 'numba',
+                 'pvfactors', 'scipy', 'siphon', 'tables'],
+    'doc': ['ipython', 'matplotlib', 'sphinx == 1.8.5', 'sphinx_rtd_theme',
+            'sphinx-gallery', 'docutils == 0.15.2'],
+    'test': TESTS_REQUIRE
+}
+EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -53,11 +58,7 @@ CLASSIFIERS = [
     'Operating System :: OS Independent',
     'Intended Audience :: Science/Research',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.3',
-    'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
@@ -67,7 +68,8 @@ CLASSIFIERS = [
 setuptools_kwargs = {
     'zip_safe': False,
     'scripts': [],
-    'include_package_data': True
+    'include_package_data': True,
+    'python_requires': '~=3.5'
 }
 
 # set up pvlib packages to be installed and extensions to be compiled
@@ -97,6 +99,7 @@ setup(name=DISTNAME,
       cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
       install_requires=INSTALL_REQUIRES,
+      extras_require=EXTRAS_REQUIRE,
       tests_require=TESTS_REQUIRE,
       ext_modules=extensions,
       description=DESCRIPTION,

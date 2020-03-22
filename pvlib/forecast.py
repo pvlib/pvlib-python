@@ -2,7 +2,6 @@
 The 'forecast' module contains class definitions for
 retreiving forecasted data from UNIDATA Thredd servers.
 '''
-import datetime
 from netCDF4 import num2date
 import numpy as np
 import pandas as pd
@@ -10,15 +9,15 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.irradiance import liujordan, extraradiation, disc
+from pvlib.irradiance import liujordan, get_extra_radiation, disc
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
 import warnings
 
 warnings.warn(
-    'The forecast module algorithms and features are highly experimental. ' +
-    'The API may change, the functionality may be consolidated into an io ' +
+    'The forecast module algorithms and features are highly experimental. '
+    'The API may change, the functionality may be consolidated into an io '
     'module, or the module may be separated into its own package.')
 
 
@@ -97,10 +96,9 @@ class ForecastModel(object):
     """
 
     access_url_key = 'NetcdfSubset'
-    catalog_url = 'http://thredds.ucar.edu/thredds/catalog.xml'
+    catalog_url = 'https://thredds.ucar.edu/thredds/catalog.xml'
     base_tds_url = catalog_url.split('/thredds/')[0]
     data_format = 'netcdf'
-    vert_level = 100000
 
     units = {
         'temp_air': 'C',
@@ -114,11 +112,12 @@ class ForecastModel(object):
         'mid_clouds': '%',
         'high_clouds': '%'}
 
-    def __init__(self, model_type, model_name, set_type):
+    def __init__(self, model_type, model_name, set_type, vert_level=None):
         self.model_type = model_type
         self.model_name = model_name
         self.set_type = set_type
         self.connected = False
+        self.vert_level = vert_level
 
     def connect_to_catalog(self):
         self.catalog = TDSCatalog(self.catalog_url)
@@ -165,6 +164,25 @@ class ForecastModel(object):
         self.ncss = NCSS(self.access_url)
         self.query = self.ncss.query()
 
+    def set_query_time_range(self, start, end):
+        """
+        Parameters
+        ----------
+        start : datetime.datetime, pandas.Timestamp
+            Must be tz-localized.
+        end : datetime.datetime, pandas.Timestamp
+            Must be tz-localized.
+
+        Notes
+        -----
+        Assigns ``self.start``, ``self.end``. Modifies ``self.query``
+        """
+        self.start = pd.Timestamp(start)
+        self.end = pd.Timestamp(end)
+        if self.start.tz is None or self.end.tz is None:
+            raise TypeError('start and end must be tz-localized')
+        self.query.time_range(self.start, self.end)
+
     def set_query_latlon(self):
         '''
         Sets the NCSS query location latitude and longitude.
@@ -180,28 +198,28 @@ class ForecastModel(object):
             self.lbox = False
             self.query.lonlat_point(self.longitude, self.latitude)
 
-    def set_location(self, time, latitude, longitude):
+    def set_location(self, tz, latitude, longitude):
         '''
         Sets the location for the query.
 
         Parameters
         ----------
-        time: datetime or DatetimeIndex
-            Time range of the query.
-        '''
-        if isinstance(time, datetime.datetime):
-            tzinfo = time.tzinfo
-        else:
-            tzinfo = time.tz
+        tz: tzinfo
+            Timezone of the query
+        latitude: float
+            Latitude of the query
+        longitude: float
+            Longitude of the query
 
-        if tzinfo is None:
-            self.location = Location(latitude, longitude)
-        else:
-            self.location = Location(latitude, longitude, tz=tzinfo)
+        Notes
+        -----
+        Assigns ``self.location``.
+        '''
+        self.location = Location(latitude, longitude, tz=tz)
 
     def get_data(self, latitude, longitude, start, end,
                  vert_level=None, query_variables=None,
-                 close_netcdf_data=True):
+                 close_netcdf_data=True, **kwargs):
         """
         Submits a query to the UNIDATA servers using Siphon NCSS and
         converts the netcdf data to a pandas DataFrame.
@@ -223,6 +241,8 @@ class ForecastModel(object):
         close_netcdf_data: bool, default True
             Controls if the temporary netcdf data file should be closed.
             Set to False to access the raw data.
+        **kwargs:
+            Additional keyword arguments are silently ignored.
 
         Returns
         -------
@@ -241,16 +261,16 @@ class ForecastModel(object):
         else:
             self.query_variables = query_variables
 
+        self.set_query_time_range(start, end)
+
         self.latitude = latitude
         self.longitude = longitude
         self.set_query_latlon()  # modifies self.query
-        self.set_location(start, latitude, longitude)
+        self.set_location(self.start.tz, latitude, longitude)
 
-        self.start = start
-        self.end = end
-        self.query.time_range(self.start, self.end)
+        if self.vert_level is not None:
+            self.query.vertical_level(self.vert_level)
 
-        self.query.vertical_level(self.vert_level)
         self.query.variables(*self.query_variables)
         self.query.accept(self.data_format)
 
@@ -258,7 +278,8 @@ class ForecastModel(object):
 
         # might be better to go to xarray here so that we can handle
         # higher dimensional data for more advanced applications
-        self.data = self._netcdf2pandas(self.netcdf_data, self.query_variables)
+        self.data = self._netcdf2pandas(self.netcdf_data, self.query_variables,
+                                        self.start, self.end)
 
         if close_netcdf_data:
             self.netcdf_data.close()
@@ -321,7 +342,7 @@ class ForecastModel(object):
             variables = self.variables
         return data.rename(columns={y: x for x, y in variables.items()})
 
-    def _netcdf2pandas(self, netcdf_data, query_variables):
+    def _netcdf2pandas(self, netcdf_data, query_variables, start, end):
         """
         Transforms data from netcdf to pandas DataFrame.
 
@@ -331,6 +352,10 @@ class ForecastModel(object):
             Data returned from UNIDATA NCSS query.
         query_variables: list
             The variables requested.
+        start: Timestamp
+            The start time
+        end: Timestamp
+            The end time
 
         Returns
         -------
@@ -345,10 +370,27 @@ class ForecastModel(object):
             time_var = 'time1'
             self.set_time(netcdf_data.variables[time_var])
 
-        data_dict = {key: data[:].squeeze() for key, data in
-                     netcdf_data.variables.items() if key in query_variables}
+        data_dict = {}
+        for key, data in netcdf_data.variables.items():
+            # if accounts for possibility of extra variable returned
+            if key not in query_variables:
+                continue
+            squeezed = data[:].squeeze()
+            if squeezed.ndim == 1:
+                data_dict[key] = squeezed
+            elif squeezed.ndim == 2:
+                for num, data_level in enumerate(squeezed.T):
+                    data_dict[key + '_' + str(num)] = data_level
+            else:
+                raise ValueError('cannot parse ndim > 2')
 
-        return pd.DataFrame(data_dict, index=self.time)
+        data = pd.DataFrame(data_dict, index=self.time)
+        # sometimes data is returned as hours since T0
+        # where T0 is before start. Then the hours between
+        # T0 and start are added *after* end. So sort and slice
+        # to remove the garbage
+        data = data.sort_index().loc[start:end]
+        return data
 
     def set_time(self, time):
         '''
@@ -363,7 +405,8 @@ class ForecastModel(object):
         -------
         pandas.DatetimeIndex
         '''
-        times = num2date(time[:].squeeze(), time.units)
+        times = num2date(time[:].squeeze(), time.units,
+                         only_use_cftime_datetimes=False)
         self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
 
     def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=35,
@@ -415,7 +458,7 @@ class ForecastModel(object):
            cloud_cover e.g.
            :py:meth:`~ForecastModel.cloud_cover_to_ghi_linear`
         3. Estimate cloudy sky DNI using the DISC model.
-        4. Calculate DHI from DNI and DHI.
+        4. Calculate DHI from DNI and GHI.
 
         Parameters
         ----------
@@ -499,7 +542,7 @@ class ForecastModel(object):
         # pressure, temp, etc., but the cloud cover forecast is not
         # accurate enough to justify using these minor corrections
         solar_position = self.location.get_solarposition(cloud_cover.index)
-        dni_extra = extraradiation(cloud_cover.index)
+        dni_extra = get_extra_radiation(cloud_cover.index)
         airmass = self.location.get_airmass(cloud_cover.index)
 
         transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,
@@ -574,9 +617,9 @@ class ForecastModel(object):
             Temperature in K
         """
 
-        P = data['pressure'] / 100.0
-        Tiso = data['temperature_iso']
-        Td = data['temperature_dew_iso'] - 273.15
+        P = data['pressure'] / 100.0                            # noqa: N806
+        Tiso = data['temperature_iso']                          # noqa: N806
+        Td = data['temperature_dew_iso'] - 273.15               # noqa: N806
 
         # saturation water vapor pressure
         e = 6.11 * 10**((7.5 * Td) / (Td + 273.3))
@@ -584,9 +627,9 @@ class ForecastModel(object):
         # saturation water vapor mixing ratio
         w = 0.622 * (e / (P - e))
 
-        T = Tiso - ((2.501 * 10.**6) / 1005.7) * w
+        temperature = Tiso - ((2.501 * 10.**6) / 1005.7) * w
 
-        return T
+        return temperature
 
     def uv_to_speed(self, data):
         """
@@ -665,18 +708,26 @@ class GFS(ForecastModel):
 
         model = 'GFS {} Degree Forecast'.format(resolution)
 
+        # isobaric variables will require a vert_level to prevent
+        # excessive data downloads
         self.variables = {
             'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
             'wind_speed_u': 'u-component_of_wind_isobaric',
             'wind_speed_v': 'v-component_of_wind_isobaric',
-            'total_clouds': 'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
-            'low_clouds': 'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
-            'mid_clouds': 'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
-            'high_clouds': 'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
-            'boundary_clouds': 'Total_cloud_cover_boundary_layer_cloud_Mixed_intervals_Average',
+            'total_clouds':
+                'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
+            'low_clouds':
+                'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+            'mid_clouds':
+                'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
+            'high_clouds':
+                'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+            'boundary_clouds': ('Total_cloud_cover_boundary_layer_cloud_'
+                                'Mixed_intervals_Average'),
             'convect_clouds': 'Total_cloud_cover_convective_cloud',
-            'ghi_raw': 'Downward_Short-Wave_Radiation_Flux_surface_Mixed_intervals_Average', }
+            'ghi_raw': ('Downward_Short-Wave_Radiation_Flux_'
+                        'surface_Mixed_intervals_Average')}
 
         self.output_variables = [
             'temp_air',
@@ -689,7 +740,8 @@ class GFS(ForecastModel):
             'mid_clouds',
             'high_clouds']
 
-        super(GFS, self).__init__(model_type, model, set_type)
+        super(GFS, self).__init__(model_type, model, set_type,
+                                  vert_level=100000)
 
     def process_data(self, data, cloud_cover='total_clouds', **kwargs):
         """
@@ -716,7 +768,7 @@ class GFS(ForecastModel):
         return data[self.output_variables]
 
 
-class HRRR_ESRL(ForecastModel):
+class HRRR_ESRL(ForecastModel):                                 # noqa: N801
     """
     Subclass of the ForecastModel class representing
     NOAA/GSD/ESRL's HRRR forecast model.
@@ -747,8 +799,8 @@ class HRRR_ESRL(ForecastModel):
     """
 
     def __init__(self, set_type='best'):
-        import warnings
-        warnings.warn('HRRR_ESRL is an experimental model and is not always available.')
+        warnings.warn('HRRR_ESRL is an experimental model and is not '
+                      'always available.')
 
         model_type = 'Forecast Model Data'
         model = 'GSD HRRR CONUS 3km surface'
@@ -756,6 +808,9 @@ class HRRR_ESRL(ForecastModel):
         self.variables = {
             'temp_air': 'Temperature_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
+            # 'temp_air': 'Temperature_height_above_ground',  # GH 702
+            # 'wind_speed_u': 'u-component_of_wind_height_above_ground',
+            # 'wind_speed_v': 'v-component_of_wind_height_above_ground',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere',
             'low_clouds': 'Low_cloud_cover_UnknownLevelType-214',
             'mid_clouds': 'Medium_cloud_cover_UnknownLevelType-224',
@@ -764,7 +819,7 @@ class HRRR_ESRL(ForecastModel):
 
         self.output_variables = [
             'temp_air',
-            'wind_speed'
+            'wind_speed',
             'ghi_raw',
             'ghi',
             'dni',
@@ -797,6 +852,7 @@ class HRRR_ESRL(ForecastModel):
         data = super(HRRR_ESRL, self).process_data(data, **kwargs)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
         data['wind_speed'] = self.gust_to_speed(data)
+        # data['wind_speed'] = self.uv_to_speed(data)  # GH 702
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
         return data[self.output_variables]
@@ -917,15 +973,15 @@ class HRRR(ForecastModel):
         model = 'NCEP HRRR CONUS 2.5km'
 
         self.variables = {
-            'temperature_dew_iso': 'Dewpoint_temperature_isobaric',
-            'temperature_iso': 'Temperature_isobaric',
+            'temp_air': 'Temperature_height_above_ground',
             'pressure': 'Pressure_surface',
             'wind_speed_gust': 'Wind_speed_gust_surface',
+            'wind_speed_u': 'u-component_of_wind_height_above_ground',
+            'wind_speed_v': 'v-component_of_wind_height_above_ground',
             'total_clouds': 'Total_cloud_cover_entire_atmosphere',
             'low_clouds': 'Low_cloud_cover_low_cloud',
             'mid_clouds': 'Medium_cloud_cover_middle_cloud',
-            'high_clouds': 'High_cloud_cover_high_cloud',
-            'condensation_height': 'Geopotential_height_adiabatic_condensation_lifted'}
+            'high_clouds': 'High_cloud_cover_high_cloud'}
 
         self.output_variables = [
             'temp_air',
@@ -957,13 +1013,17 @@ class HRRR(ForecastModel):
         data: DataFrame
             Processed forecast data.
         """
-
         data = super(HRRR, self).process_data(data, **kwargs)
-        data['temp_air'] = self.isobaric_to_ambient_temperature(data)
+        wind_mapping = {
+            'wind_speed_u': 'u-component_of_wind_height_above_ground_0',
+            'wind_speed_v': 'v-component_of_wind_height_above_ground_0',
+        }
+        data = self.rename(data, variables=wind_mapping)
         data['temp_air'] = self.kelvin_to_celsius(data['temp_air'])
-        data['wind_speed'] = self.gust_to_speed(data)
+        data['wind_speed'] = self.uv_to_speed(data)
         irrads = self.cloud_cover_to_irradiance(data[cloud_cover], **kwargs)
         data = data.join(irrads, how='outer')
+        data = data.iloc[:-1, :]  # issue with last point
         return data[self.output_variables]
 
 
@@ -999,9 +1059,8 @@ class NDFD(ForecastModel):
         model_type = 'Forecast Products and Analyses'
         model = 'National Weather Service CONUS Forecast Grids (CONDUIT)'
         self.variables = {
-            'temp_air': 'Temperature_surface',
-            'wind_speed': 'Wind_speed_surface',
-            'wind_speed_gust': 'Wind_speed_gust_surface',
+            'temp_air': 'Temperature_height_above_ground',
+            'wind_speed': 'Wind_speed_height_above_ground',
             'total_clouds': 'Total_cloud_cover_surface', }
         self.output_variables = [
             'temp_air',

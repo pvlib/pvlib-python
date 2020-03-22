@@ -42,7 +42,7 @@ class Location(object):
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    alitude : float, default 0.
+    altitude : float, default 0.
         Altitude from sea level in meters.
 
     name : None or string, default None.
@@ -66,6 +66,9 @@ class Location(object):
         if isinstance(tz, str):
             self.tz = tz
             self.pytz = pytz.timezone(tz)
+        elif isinstance(tz, datetime.timezone):
+            self.tz = 'UTC'
+            self.pytz = pytz.UTC
         elif isinstance(tz, datetime.tzinfo):
             self.tz = tz.zone
             self.pytz = tz
@@ -99,8 +102,7 @@ class Location(object):
 
         Returns
         -------
-        Location object (or the child class of Location that you
-        called this method from).
+        Location
         """
         # not complete, but hopefully you get the idea.
         # might need code to handle the difference between tmy2 and tmy3
@@ -125,6 +127,42 @@ class Location(object):
         # not sure if this should be assigned regardless of input.
         if tmy_data is not None:
             new_object.tmy_data = tmy_data
+            new_object.weather = tmy_data
+
+        return new_object
+
+    @classmethod
+    def from_epw(cls, metadata, data=None, **kwargs):
+        """
+        Create a Location object based on a metadata
+        dictionary from epw data readers.
+
+        Parameters
+        ----------
+        metadata : dict
+            Returned from epw.read_epw
+        data : None or DataFrame, default None
+            Optionally attach the epw data to this object.
+
+        Returns
+        -------
+        Location object (or the child class of Location that you
+        called this method from).
+        """
+
+        latitude = metadata['latitude']
+        longitude = metadata['longitude']
+
+        name = metadata['city']
+
+        tz = metadata['TZ']
+        altitude = metadata['altitude']
+
+        new_object = cls(latitude, longitude, tz=tz, altitude=altitude,
+                         name=name, **kwargs)
+
+        if data is not None:
+            new_object.weather = data
 
         return new_object
 
@@ -136,13 +174,15 @@ class Location(object):
 
         Parameters
         ----------
-        times : DatetimeIndex
+        times : pandas.DatetimeIndex
+            Must be localized or UTC will be assumed.
         pressure : None, float, or array-like, default None
             If None, pressure will be calculated using
             :py:func:`atmosphere.alt2pres` and ``self.altitude``.
         temperature : None, float, or array-like, default 12
 
-        kwargs passed to :py:func:`solarposition.get_solarposition`
+        kwargs
+            passed to :py:func:`solarposition.get_solarposition`
 
         Returns
         -------
@@ -178,8 +218,9 @@ class Location(object):
         dni_extra: None or numeric, default None
             If None, will be calculated from times.
 
-        kwargs passed to the relevant functions. Climatological values
-        are assumed in many cases. See source code for details!
+        kwargs
+            Extra parameters passed to the relevant functions. Climatological
+            values are assumed in many cases. See source code for details!
 
         Returns
         -------
@@ -187,7 +228,7 @@ class Location(object):
             Column names are: ``ghi, dni, dhi``.
         """
         if dni_extra is None:
-            dni_extra = irradiance.extraradiation(times)
+            dni_extra = irradiance.get_extra_radiation(times)
 
         try:
             pressure = kwargs.pop('pressure')
@@ -265,14 +306,53 @@ class Location(object):
         else:
             raise ValueError('{} is not a valid airmass model'.format(model))
 
-        airmass_relative = atmosphere.relativeairmass(zenith, model)
+        airmass_relative = atmosphere.get_relative_airmass(zenith, model)
 
         pressure = atmosphere.alt2pres(self.altitude)
-        airmass_absolute = atmosphere.absoluteairmass(airmass_relative,
-                                                      pressure)
+        airmass_absolute = atmosphere.get_absolute_airmass(airmass_relative,
+                                                           pressure)
 
-        airmass = pd.DataFrame()
+        airmass = pd.DataFrame(index=solar_position.index)
         airmass['airmass_relative'] = airmass_relative
         airmass['airmass_absolute'] = airmass_absolute
 
         return airmass
+
+    def get_sun_rise_set_transit(self, times, method='pyephem', **kwargs):
+        """
+        Calculate sunrise, sunset and transit times.
+
+        Parameters
+        ----------
+        times : DatetimeIndex
+            Must be localized to the Location
+        method : str, default 'pyephem'
+            'pyephem', 'spa', or 'geometric'
+
+        kwargs are passed to the relevant functions. See
+        solarposition.sun_rise_set_transit_<method> for details.
+
+        Returns
+        -------
+        result : DataFrame
+            Column names are: ``sunrise, sunset, transit``.
+        """
+
+        if method == 'pyephem':
+            result = solarposition.sun_rise_set_transit_ephem(
+                times, self.latitude, self.longitude, **kwargs)
+        elif method == 'spa':
+            result = solarposition.sun_rise_set_transit_spa(
+                times, self.latitude, self.longitude, **kwargs)
+        elif method == 'geometric':
+            sr, ss, tr = solarposition.sun_rise_set_transit_geometric(
+                times, self.latitude, self.longitude, **kwargs)
+            result = pd.DataFrame(index=times,
+                                  data={'sunrise': sr,
+                                        'sunset': ss,
+                                        'transit': tr})
+        else:
+            raise ValueError('{} is not a valid method. Must be '
+                             'one of pyephem, spa, geometric'
+                             .format(method))
+        return result

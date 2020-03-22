@@ -100,9 +100,6 @@ def localize_to_utc(time, location):
     -------
     pandas object localized to UTC.
     """
-    import datetime as dt
-    import pytz
-
     if isinstance(time, dt.datetime):
         if time.tzinfo is None:
             time = pytz.timezone(location.tz).localize(time)
@@ -209,22 +206,22 @@ def _datetimelike_scalar_to_datetimeindex(time):
     return pd.DatetimeIndex([pd.Timestamp(time)])
 
 
-def _scalar_out(input):
-    if np.isscalar(input):
-        output = input
+def _scalar_out(arg):
+    if np.isscalar(arg):
+        output = arg
     else:  #
         # works if it's a 1 length array and
         # will throw a ValueError otherwise
-        output = np.asscalar(input)
+        output = np.asarray(arg).item()
 
     return output
 
 
-def _array_out(input):
-    if isinstance(input, pd.Series):
-        output = input.values
+def _array_out(arg):
+    if isinstance(arg, pd.Series):
+        output = arg.values
     else:
-        output = input
+        output = arg
 
     return output
 
@@ -338,7 +335,8 @@ def _array_newton(func, x0, fprime, args, tol, maxiter, fprime2,
                 rms = np.sqrt(
                     sum((p1[zero_der_nz_dp] - p[zero_der_nz_dp]) ** 2)
                 )
-                warnings.warn('RMS of {:g} reached'.format(rms), RuntimeWarning)
+                warnings.warn('RMS of {:g} reached'.format(rms),
+                              RuntimeWarning)
         # newton or halley warnings
         else:
             all_or_some = 'all' if zero_der.all() else 'some'
@@ -399,7 +397,6 @@ def _golden_sect_DataFrame(params, VL, VH, func):
     df['VH'] = VH
     df['VL'] = VL
 
-    err = df['VH'] - df['VL']
     errflag = True
     iterations = 0
 

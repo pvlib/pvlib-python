@@ -60,6 +60,8 @@ Testing
   dependent iotools tests to repeat them on failure. (:pull:`919`)
 * Separate azure-pipelines.yml platform-specific tests to their own templates
   located in ``./ci/azure/``.  (:pull:`926`)
+* Add airspeed velocity performance testing configuration and a few tests.
+  (:issue:`419`)
 
 Documentation
 ~~~~~~~~~~~~~

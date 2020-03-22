@@ -40,3 +40,17 @@ Finally, start a http server to view the test results:
 ```
 asv preview
 ```
+
+Other useful commands
+---------------------
+
+The argument passed to `asv run` has the same syntax as `git log` and is
+therefore pretty powerful.  For instance, you can run a specific tag with
+`asv run v0.6.0^!`. 
+
+If a benchmark function is failing and you don't know why, the `-e` option
+will display error messages:
+
+```
+asv run -e
+```

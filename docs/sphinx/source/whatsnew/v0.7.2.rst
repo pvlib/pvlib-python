@@ -46,7 +46,7 @@ Bug fixes
 * Fix :py:func:`~pvlib.iotools.read_tmy3` so that when coerced to a single year
   the TMY3 index will be monotonically increasing. (:pull:`910`)
 * Fix :py:func:`pvlib.spa.julian_day_dt` so that microseconds are scaled
-  correctly (:issue:`940') (:pull:`939`)
+  correctly (:issue:`940') (:pull:`942`)
 
 Testing
 ~~~~~~~
@@ -63,7 +63,7 @@ Testing
 * Separate azure-pipelines.yml platform-specific tests to their own templates
   located in ``./ci/azure/``.  (:pull:`926`)
 * Updated test_julian_day_dt in spa_test to check for correct microsecond 
-  scaling (:issue:`940') (:pull:`939`)
+  scaling (:issue:`940') (:pull:`942`)
 
 Documentation
 ~~~~~~~~~~~~~

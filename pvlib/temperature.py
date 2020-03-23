@@ -235,10 +235,10 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
     The module back surface temperature :math:`T_{m}` is implemented in
     :py:func:`~pvlib.temperature.sapm_module`.
 
-    Model parameters depend both on
-    the module construction and its mounting. Parameter sets are provided in
-    [1]_ for representative modules and mounting, and are coded for convenience
-    in ``pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS``.
+    Model parameters depend both on the module construction and its mounting.
+    Parameter sets are provided in [1]_ for representative modules and
+    mounting, and are coded for convenience in
+    ``pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS``.
 
     +---------------+----------------+-------+---------+---------------------+
     | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|

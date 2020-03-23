@@ -98,7 +98,7 @@ mix_month_actual = mix_year_actual
 class SpaBase(object):
     """Test functions common to numpy and numba spa"""
     def test_julian_day_dt(self):
-        # add 1us manually to the test timestamp
+        # add 1us manually to the test timestamp (GH #940)
         dt = times.tz_convert('UTC')[0] + pd.Timedelta(1, unit='us')
         year = dt.year
         month = dt.month

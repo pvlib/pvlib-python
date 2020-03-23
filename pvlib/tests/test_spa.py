@@ -98,7 +98,8 @@ mix_month_actual = mix_year_actual
 class SpaBase(object):
     """Test functions common to numpy and numba spa"""
     def test_julian_day_dt(self):
-        dt = times.tz_convert('UTC')[0]
+        # add 1us manually to the test timestamp
+        dt = times.tz_convert('UTC')[0] + pd.Timedelta(1, unit='us')
         year = dt.year
         month = dt.month
         day = dt.day
@@ -106,7 +107,7 @@ class SpaBase(object):
         minute = dt.minute
         second = dt.second
         microsecond = dt.microsecond
-        assert_almost_equal(JD,
+        assert_almost_equal(JD + 1e-6 / (3600*24),  # modify expected JD by 1us
                             self.spa.julian_day_dt(
                                 year, month, day, hour,
                                 minute, second, microsecond), 6)

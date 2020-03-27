@@ -778,8 +778,8 @@ class ModelChain(object):
         Examples
         --------
         This example does not work until the parameters `my_system`,
-        `my_location`, `my_datetime` and `my_weather` are not defined
-        properly but shows the basic idea how this method can be used.
+        `my_location`, and `my_weather` are defined but shows the basic idea
+        how this method can be used.
 
         >>> from pvlib.modelchain import ModelChain
 
@@ -829,18 +829,59 @@ class ModelChain(object):
 
         return self
 
+    def _prep_inputs_solar_pos(self):
+        """
+        Assign solar position
+        """
+        self.solar_position = self.location.get_solarposition(
+            self.weather.index, method=self.solar_position_method)
+        return self
+
+    def _prep_inputs_airmass(self):
+        """
+        Assign airmass
+        """
+        self.airmass = self.location.get_airmass(
+            solar_position=self.solar_position, model=self.airmass_model)
+        return self
+
+    def _prep_inputs_tracking(self):
+        """
+        Calculate tracker position and AOI
+        """
+        self.tracking = self.system.singleaxis(
+            self.solar_position['apparent_zenith'],
+            self.solar_position['azimuth'])
+        self.tracking['surface_tilt'] = (
+            self.tracking['surface_tilt']
+                .fillna(self.system.axis_tilt))
+        self.tracking['surface_azimuth'] = (
+            self.tracking['surface_azimuth']
+                .fillna(self.system.axis_azimuth))
+        self.aoi = self.tracking['aoi']
+        return self
+
+    def _prep_inputs_fixed(self):
+        """
+        Calculate AOI for fixed tilt system
+        """
+        self.aoi = self.system.get_aoi(
+        self.solar_position['apparent_zenith'],
+        self.solar_position['azimuth'])
+        return self
+
     def prepare_inputs(self, weather, times=None):
         """
         Prepare the solar position, irradiance, and weather inputs to
-        the model.
+        the model, starting with GHI, DNI and DHI.
 
         Parameters
         ----------
         weather : DataFrame
-            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
-            ``'wind_speed'``, ``'temp_air'``. All irradiance components
-            are required. Air temperature of 20 C and wind speed
-            of 0 m/s will be added to the DataFrame if not provided.
+            Irradiance column names must include ``'dni'``, ``'ghi'``, and
+            ``'dhi'``. Optional column names include ``'temp_air'`` and
+            ``'wind_speed'``; if not provided, air temperature of 20 C and wind
+            speed of 0 m/s are added to the DataFrame.
         times : None, deprecated
             Deprecated argument included for API compatibility, but not
             used internally. The index of the weather DataFrame is used
@@ -871,27 +912,15 @@ class ModelChain(object):
 
         self.times = self.weather.index
 
-        self.solar_position = self.location.get_solarposition(
-            self.weather.index, method=self.solar_position_method)
-
-        self.airmass = self.location.get_airmass(
-            solar_position=self.solar_position, model=self.airmass_model)
+        self._prep_inputs_solar_pos()
+        self._prep_inputs_airmass()
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
         # have different method signatures. Use partial to handle
         # the differences.
         if isinstance(self.system, SingleAxisTracker):
-            self.tracking = self.system.singleaxis(
-                self.solar_position['apparent_zenith'],
-                self.solar_position['azimuth'])
-            self.tracking['surface_tilt'] = (
-                self.tracking['surface_tilt']
-                    .fillna(self.system.axis_tilt))
-            self.tracking['surface_azimuth'] = (
-                self.tracking['surface_azimuth']
-                    .fillna(self.system.axis_azimuth))
-            self.aoi = self.tracking['aoi']
+            self._prep_inputs_tracking()
             get_irradiance = partial(
                 self.system.get_irradiance,
                 self.tracking['surface_tilt'],
@@ -899,9 +928,7 @@ class ModelChain(object):
                 self.solar_position['apparent_zenith'],
                 self.solar_position['azimuth'])
         else:
-            self.aoi = self.system.get_aoi(
-                self.solar_position['apparent_zenith'],
-                self.solar_position['azimuth'])
+            self._prep_inputs_fixed()
             get_irradiance = partial(
                 self.system.get_irradiance,
                 self.solar_position['apparent_zenith'],
@@ -920,17 +947,67 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, weather, times=None):
+    def prepare_inputs_from_poa(self, weather):
         """
-        Run the model.
+        Prepare the solar position, irradiance, and weather inputs to
+        the model, starting with plane-of-array irradiance.
 
         Parameters
         ----------
         weather : DataFrame
-            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
-            ``'wind_speed'``, ``'temp_air'``. All irradiance components
-            are required. Air temperature of 20 C and wind speed
-            of 0 m/s will be added to the DataFrame if not provided.
+            Irradiance column names must include ``'poa_global'``,
+            ``'poa_direct'`` and ``'poa_diffuse'``. Optional column names
+            include ``'temp_air'`` and ``'wind_speed'``; if not provided,
+            air temperature of 20 C and wind speed of 0 m/s are added to the
+            DataFrame.
+
+        Notes
+        -----
+        Assigns attributes: ``solar_position``, ``airmass``, ``aoi``
+
+        See also
+        --------
+        pvlib.modelchain.ModelChain.prepare_inputs
+        """
+
+        if not {'poa_global', 'poa_direct', 'poa_diffuse'} <= set(weather.columns):
+            raise ValueError(
+                "Incomplete irradiance data. Weather data must include "
+                "'poa_global', 'poa_direct' and 'poa_diffuse'.\n"
+                "Detected data: {0}".format(list(weather.columns)))
+
+        self.weather = weather
+
+        self._prep_inputs_solar_pos()
+        self._prep_inputs_airmass()
+
+        # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
+        # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
+        # have different method signatures. Use partial to handle
+        # the differences.
+        if isinstance(self.system, SingleAxisTracker):
+            self._prep_inputs_tracking()
+        else:
+            self._prep_inputs_fixed()
+
+        if self.weather.get('wind_speed') is None:
+            self.weather['wind_speed'] = 0
+        if self.weather.get('temp_air') is None:
+            self.weather['temp_air'] = 20
+        return self
+
+    def run_model(self, weather, times=None):
+        """
+        Run the model chain starting with broadband global, diffuse and/or
+        direct irradiance.
+
+        Parameters
+        ----------
+        weather : DataFrame
+            Irradiance column names must include ``'dni'``, ``'ghi'``, and
+            ``'dhi'``. Optional column names include ``'temp_air'`` and
+            ``'wind_speed'``; if not provided, air temperature of 20 C and wind
+            speed of 0 m/s are added to the DataFrame.
         times : None, deprecated
             Deprecated argument included for API compatibility, but not
             used internally. The index of the weather DataFrame is used
@@ -955,6 +1032,93 @@ class ModelChain(object):
         self.aoi_model()
         self.spectral_model()
         self.effective_irradiance_model()
+
+        self.run_model_from_effective_irradiance()
+
+        return self
+
+    def run_model_from_poa(self, weather):
+        """
+        Run the model starting with broadband irradiance in the plane of array.
+
+        `weather` must have columns `poa_global`, `poa_direct` and
+        `poa_diffuse`.`poa_global` is broadband irradiance (W/m2) in the plane
+        of array without accounting for soiling or reflections.
+
+        This method calculates:
+            * effective irradiance
+            * cell temperature
+            * DC output
+            * AC output
+
+        Parameters
+        ----------
+        weather : DataFrame
+            Column names must include ``'poa_global'``, ``'poa_direct'``
+            ``'poa_diffuse'``. Optional column names include ``'temp_air'`` and
+            ``'wind_speed'``; if not provided, air temperature of 20 C and wind
+            speed of 0 m/s are added to the DataFrame.
+
+        Returns
+        -------
+        self
+
+        Assigns attributes: ``weather``, ``effective_irradiance``,
+        ``cell_temperature``, ``dc``, ``ac``, ``losses``, ``diode_params``
+        (if dc_model is a single diode model)
+        """
+
+        self.prepare_inputs_from_poa(weather)
+
+        self.aoi_model()
+        self.spectral_model()
+        self.effective_irradiance_model()
+
+        self.run_model_from_effective_irradiance()
+
+        return self
+
+def run_model_from_effective_irradiance(self):
+        """
+        Run the model starting with effective irradiance in the plane of array.
+
+        `weather` must have columns `poa_global` and `effective_irradiance`.
+        `poa_global` is broadband irradiance (W/m2) in the plane of array
+        without accounting for soiling or reflections. `effective irradiance`
+        (W/m2) has taken into account soiling, reflections and spectrum
+        adjustments.
+
+        This method calculates:
+            * cell temperature
+            * DC output
+            * AC output
+
+        Parameters
+        ----------
+        weather : DataFrame
+            Column names must include ``'effective_irradiance'``, ``'wind_speed'``,
+            and ``'temp_air'``. Air temperature of 20 C and wind speed of
+            0 m/s will be added to the DataFrame if not provided.
+
+        Returns
+        -------
+        self
+
+        Assigns attributes: ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode model)
+        """
+
+        # assign poa_global column for the temperature model
+        if 'poa_global' not in self.weather.columns:
+            try:
+                self.weather['poa_global'] = self.weather['effective_irradiance']
+            except KeyError:
+                # both missing
+                raise ValueError(
+                    "Incomplete irradiance data. Weather must include "
+                    "'effective_irradiance'.\n"
+                    "Detected data: {0}".format(list(self.weather.columns)))
+
         self.temperature_model()
         self.dc_model()
         self.losses_model()

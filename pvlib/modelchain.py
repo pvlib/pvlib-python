@@ -865,9 +865,8 @@ class ModelChain(object):
         """
         Calculate AOI for fixed tilt system
         """
-        self.aoi = self.system.get_aoi(
-        self.solar_position['apparent_zenith'],
-        self.solar_position['azimuth'])
+        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
+                                       self.solar_position['azimuth'])
         return self
 
     def prepare_inputs(self, weather, times=None):
@@ -970,7 +969,8 @@ class ModelChain(object):
         pvlib.modelchain.ModelChain.prepare_inputs
         """
 
-        if not {'poa_global', 'poa_direct', 'poa_diffuse'} <= set(weather.columns):
+        if not {'poa_global', 'poa_direct', 'poa_diffuse'} \
+            <= set(weather.columns):
             raise ValueError(
                 "Incomplete irradiance data. Weather data must include "
                 "'poa_global', 'poa_direct' and 'poa_diffuse'.\n"
@@ -1078,7 +1078,7 @@ class ModelChain(object):
 
         return self
 
-def run_model_from_effective_irradiance(self):
+    def run_model_from_effective_irradiance(self):
         """
         Run the model starting with effective irradiance in the plane of array.
 
@@ -1096,9 +1096,9 @@ def run_model_from_effective_irradiance(self):
         Parameters
         ----------
         weather : DataFrame
-            Column names must include ``'effective_irradiance'``, ``'wind_speed'``,
-            and ``'temp_air'``. Air temperature of 20 C and wind speed of
-            0 m/s will be added to the DataFrame if not provided.
+            Column names must include ``'effective_irradiance'``,
+            ``'wind_speed'``, and ``'temp_air'``. Air temperature of 20 C and
+            wind speed of 0 m/s will be added to the DataFrame if not provided.
 
         Returns
         -------
@@ -1111,7 +1111,8 @@ def run_model_from_effective_irradiance(self):
         # assign poa_global column for the temperature model
         if 'poa_global' not in self.weather.columns:
             try:
-                self.weather['poa_global'] = self.weather['effective_irradiance']
+                self.weather['poa_global'] = \
+                    self.weather['effective_irradiance']
             except KeyError:
                 # both missing
                 raise ValueError(

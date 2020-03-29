@@ -946,19 +946,16 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def prepare_inputs_from_poa(self, weather):
+    def prepare_inputs_from_poa(self, total_irrad):
         """
-        Prepare the solar position, irradiance, and weather inputs to
+        Prepare the solar position, irradiance, and irradiance inputs to
         the model, starting with plane-of-array irradiance.
 
         Parameters
         ----------
-        weather : DataFrame
+        total_irrad : DataFrame
             Irradiance column names must include ``'poa_global'``,
-            ``'poa_direct'`` and ``'poa_diffuse'``. Optional column names
-            include ``'temp_air'`` and ``'wind_speed'``; if not provided,
-            air temperature of 20 C and wind speed of 0 m/s are added to the
-            DataFrame.
+            ``'poa_direct'`` and ``'poa_diffuse'``.
 
         Notes
         -----
@@ -969,14 +966,14 @@ class ModelChain(object):
         pvlib.modelchain.ModelChain.prepare_inputs
         """
 
-        if not {'poa_global', 'poa_direct', 'poa_diffuse'} \
-            <= set(weather.columns):
+        req_keys = {'poa_global', 'poa_direct', 'poa_diffuse'}
+        if not req_keys <= set(total_irrad.columns):
             raise ValueError(
                 "Incomplete irradiance data. Weather data must include "
                 "'poa_global', 'poa_direct' and 'poa_diffuse'.\n"
-                "Detected data: {0}".format(list(weather.columns)))
+                "Detected data: {0}".format(list(total_irrad.columns)))
 
-        self.weather = weather
+        self.total_irrad = total_irrad
 
         self._prep_inputs_solar_pos()
         self._prep_inputs_airmass()
@@ -1037,13 +1034,17 @@ class ModelChain(object):
 
         return self
 
-    def run_model_from_poa(self, weather):
+    def run_model_from_poa(self, total_irrad):
         """
         Run the model starting with broadband irradiance in the plane of array.
 
-        `weather` must have columns `poa_global`, `poa_direct` and
-        `poa_diffuse`.`poa_global` is broadband irradiance (W/m2) in the plane
-        of array without accounting for soiling or reflections.
+        Inputs must include direct, diffuse and total irradiance (W/m2) in the
+        plane of array. Reflections and spectral adjustments are made to
+        calculate effective irradiance (W/m2).
+
+        Attribute `ModelChain.weather` can include columns ``'temp_air'`` and
+        ``'wind_speed'``; if not provided, air temperature of 20 C and wind
+        speed of 0 m/s are added to `weather`.
 
         This method calculates:
             * effective irradiance
@@ -1053,11 +1054,9 @@ class ModelChain(object):
 
         Parameters
         ----------
-        weather : DataFrame
+        total_irrad : DataFrame
             Column names must include ``'poa_global'``, ``'poa_direct'``
-            ``'poa_diffuse'``. Optional column names include ``'temp_air'`` and
-            ``'wind_speed'``; if not provided, air temperature of 20 C and wind
-            speed of 0 m/s are added to the DataFrame.
+            ``'poa_diffuse'``.
 
         Returns
         -------
@@ -1068,7 +1067,7 @@ class ModelChain(object):
         (if dc_model is a single diode model)
         """
 
-        self.prepare_inputs_from_poa(weather)
+        self.prepare_inputs_from_poa(total_irrad)
 
         self.aoi_model()
         self.spectral_model()
@@ -1082,11 +1081,16 @@ class ModelChain(object):
         """
         Run the model starting with effective irradiance in the plane of array.
 
-        `weather` must have columns `poa_global` and `effective_irradiance`.
-        `poa_global` is broadband irradiance (W/m2) in the plane of array
-        without accounting for soiling or reflections. `effective irradiance`
-        (W/m2) has taken into account soiling, reflections and spectrum
+        Attribute `ModelChain.effective_irradiance` is required.
+
+        Plane-of-array irradiance is broadband irradiance (W/m2) in the plane
+        of array without accounting for soiling or reflections. Effective
+        irradiance (W/m2) takes into account soiling, reflections and spectrum
         adjustments.
+
+        Attribute `ModelChain.weather` (DataFrame) can include columns
+        ``'wind_speed'`` and ``'temp_air'``; if not, air temperature of 20 C
+        and wind speed of 0 m/s will be added to `weather`.
 
         This method calculates:
             * cell temperature
@@ -1095,10 +1099,6 @@ class ModelChain(object):
 
         Parameters
         ----------
-        weather : DataFrame
-            Column names must include ``'effective_irradiance'``,
-            ``'wind_speed'``, and ``'temp_air'``. Air temperature of 20 C and
-            wind speed of 0 m/s will be added to the DataFrame if not provided.
 
         Returns
         -------
@@ -1109,10 +1109,10 @@ class ModelChain(object):
         """
 
         # assign poa_global column for the temperature model
-        if 'poa_global' not in self.weather.columns:
+        if 'poa_global' not in self.total_irrad.columns:
             try:
-                self.weather['poa_global'] = \
-                    self.weather['effective_irradiance']
+                self.total_irrad['poa_global'] = \
+                    self.effective_irradiance
             except KeyError:
                 # both missing
                 raise ValueError(

@@ -63,16 +63,16 @@ def pvfactors_timeseries(
 
     Returns
     -------
-    front_incident_poa_irradiance: numeric
+    poa_front: numeric
         Calculated incident irradiance on the front surface of the PV modules
         (W/m2)
-    back_incident_poa_irradiance: numeric
+    poa_back: numeric
         Calculated incident irradiance on the back surface of the PV modules
         (W/m2)
-    front_absorbed_poa_irradiance: numeric
+    poa_front_absorbed: numeric
         Calculated absorbed irradiance on the front surface of the PV modules
         (W/m2), after AOI losses
-    back_absorbed_poa_irradiance: numeric
+    poa_back_absorbed: numeric
         Calculated absorbed irradiance on the back surface of the PV modules
         (W/m2), after AOI losses
 

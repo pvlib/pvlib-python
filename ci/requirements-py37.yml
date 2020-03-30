@@ -3,6 +3,7 @@ channels:
     - defaults
     - conda-forge
 dependencies:
+    - cftime<=1.1.0
     - coveralls
     - cython
     - ephem

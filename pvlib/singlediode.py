@@ -179,8 +179,8 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         i_breakdown = breakdown_factor * diode_voltage * g_sh * brk_pwr
     else:
         i_breakdown = 0.
-    i = (photocurrent - saturation_current * np.expm1(v_star)
-         - diode_voltage * g_sh - i_recomb - i_breakdown)
+    i = (photocurrent - saturation_current * np.expm1(v_star) -
+         diode_voltage * g_sh - i_recomb - i_breakdown)
     v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)
     if gradients:
@@ -194,8 +194,9 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
             brk_fctr = breakdown_factor * g_sh
             grad_i_brk = brk_fctr * (brk_pwr + diode_voltage *
                                      -breakdown_exp * brk_pwr_1)
-            grad2i_brk = brk_fctr * -breakdown_exp * (2 * brk_pwr_1 + \
-                diode_voltage * (-breakdown_exp - 1) * brk_pwr_2)
+            grad2i_brk = brk_fctr * -breakdown_exp * (
+                2 * brk_pwr_1 + diode_voltage * (-breakdown_exp - 1) *
+                brk_pwr_2)
         else:
             grad_i_brk = 0.
             grad2i_brk = 0.
@@ -451,11 +452,10 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     if method.lower() == 'brentq':
         # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
-            lambda voc, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                vbr_a, vbr, vbr_exp:
-                brentq(fmpp, 0.0, voc,
-                       args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                             vbr_a, vbr, vbr_exp))
+            lambda voc, iph, isat, rs, rsh, gamma, d2mutau, NsVbi, vbr_a, vbr,
+            vbr_exp: brentq(fmpp, 0.0, voc,
+                            args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
+                            vbr_a, vbr, vbr_exp))
         )
         vd = vec_fun(voc_est, *args)
     elif method.lower() == 'newton':

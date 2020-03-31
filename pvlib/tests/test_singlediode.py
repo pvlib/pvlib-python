@@ -189,21 +189,23 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
 
 @requires_scipy
 @pytest.mark.parametrize(
-    'poa, temp_cell, expected, tol', [
-        # reference conditions
+    'brk_params, poa, temp_cell, expected, tol', [
+        # reference conditions without breakdown model
         (
+            (0., -5.5, 3.28),
             get_pvsyst_fs_495()['irrad_ref'],
             get_pvsyst_fs_495()['temp_ref'],
             {
-                'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *
+                'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *  # noqa: W504
                         get_pvsyst_fs_495()['V_mp_ref']),
                 'isc': get_pvsyst_fs_495()['I_sc_ref'],
                 'voc': get_pvsyst_fs_495()['V_oc_ref']
             },
             (5e-4, 0.04)
         ),
-        # other conditions
+        # other conditions with breakdown model on
         (
+            (1.e-4, -5.5, 3.28),
             POA,
             TCELL,
             {
@@ -216,7 +218,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     ]
 )
 @pytest.mark.parametrize('method', ['newton', 'brentq'])
-def test_pvsyst_breakdown(method, poa, temp_cell, expected, tol):
+def test_pvsyst_breakdown(method, brk_params, poa, temp_cell, expected, tol):
     """test PVSst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     # first evaluate PVSyst model with thin-film recombination loss current
@@ -233,6 +235,9 @@ def test_pvsyst_breakdown(method, poa, temp_cell, expected, tol):
         EgRef=pvsyst_fs_495['EgRef']
     )
     il_pvsyst, io_pvsyst, rs_pvsyst, rsh_pvsyst, nnsvt_pvsyst = x
+
+    breakdown_factor, breakdown_voltage, breakdown_exp = brk_params
+
     voc_est_pvsyst = estimate_voc(photocurrent=il_pvsyst,
                                   saturation_current=io_pvsyst,
                                   nNsVth=nnsvt_pvsyst)
@@ -242,7 +247,7 @@ def test_pvsyst_breakdown(method, poa, temp_cell, expected, tol):
         saturation_current=io_pvsyst, resistance_series=rs_pvsyst,
         resistance_shunt=rsh_pvsyst, nNsVth=nnsvt_pvsyst,
         breakdown_factor=1.-4, breakdown_voltage=-5.5,
-        breakdown_exp=3.28,
+        breakdown_exp=3.28
     )
     # test max power
     assert np.isclose(max(pvsyst[2]), expected['pmp'], *tol)
@@ -256,8 +261,6 @@ def test_pvsyst_breakdown(method, poa, temp_cell, expected, tol):
     assert np.isclose(voc_pvsyst, expected['voc'], *tol)
 
     # repeat tests as above with specialized bishop88 functions
-    y = dict(breakdown_factor=1.-4, breakdown_voltage=-5.5,
-             breakdown_exp=3.28)
 
     mpp_88 = bishop88_mpp(*x, **y, method=method)
     assert np.isclose(mpp_88[2], expected['pmp'], *tol)

@@ -25,6 +25,10 @@ Enhancements
 * Add new module :py:mod:`pvlib.snow` to contain models related to snow coverage and effects on a PV system. (:pull:`764`)
 * Add snow coverage model :py:func:`pvlib.snow.coverage_nrel` and function to identify when modules are fully covered by snow :py:func:`pvlib.snow.fully_covered_nrel`. (:issue:`577`)
 * Add function :py:func:`pvlib.snow.dc_loss_nrel` for effect of snow coverage on DC output. (:pull:`764`)
+* Add capability to calculate current at reverse bias using an avalanche
+  breakdown model, affects :py:func:`pvlib.singlediode.bishop88`,
+  :py:func:`pvlib.singlediode.bishop88_i_from_v`, :py:func:`pvlib.singlediode.bishop88_v_from_i`,
+  :py:func:`pvlib.singlediode.bishop88_mpp`. (:pull:`948`)
 
 Bug fixes
 ~~~~~~~~~

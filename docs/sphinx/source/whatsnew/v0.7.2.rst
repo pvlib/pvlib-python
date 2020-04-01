@@ -50,8 +50,6 @@ Bug fixes
   the TMY3 index will be monotonically increasing. (:pull:`910`)
 * Fix :py:func:`pvlib.spa.julian_day_dt` so that microseconds are scaled
   correctly (:issue:`940`) (:pull:`942`)
-* Limit cftime<=1.1.0 to alleviate errors from netcdf4 time handling in
-  forecast.py (:pull:`947`)
 
 Testing
 ~~~~~~~
@@ -79,6 +77,8 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * nrel-pysam (optional) minimum set to v1.0.0 (:issue:`874`)
+* cftime (optional) minimum set to >=1.1.1 enables `only_use_python_datetimes`
+  kwarg in `netCDF4.num2date` in forecast.py (:pull:`947`)
 
 Contributors
 ~~~~~~~~~~~~

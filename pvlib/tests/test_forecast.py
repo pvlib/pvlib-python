@@ -6,7 +6,13 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
-from conftest import requires_siphon, has_siphon, skip_windows
+from conftest import (
+    requires_siphon,
+    has_siphon,
+    skip_windows,
+    requires_recent_cftime
+)
+
 from conftest import RERUNS, RERUNS_DELAY
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
@@ -78,6 +84,7 @@ def test_process_data(model):
 
 
 @requires_siphon
+@requires_recent_cftime
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_bad_kwarg_get_data():
@@ -90,6 +97,7 @@ def test_bad_kwarg_get_data():
 
 
 @requires_siphon
+@requires_recent_cftime
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_bad_kwarg_get_processed_data():
@@ -102,6 +110,7 @@ def test_bad_kwarg_get_processed_data():
 
 
 @requires_siphon
+@requires_recent_cftime
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_how_kwarg_get_processed_data():
@@ -112,6 +121,7 @@ def test_how_kwarg_get_processed_data():
 
 
 @requires_siphon
+@requires_recent_cftime
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_vert_level():
@@ -122,6 +132,7 @@ def test_vert_level():
 
 
 @requires_siphon
+@requires_recent_cftime
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_datetime():
@@ -132,6 +143,7 @@ def test_datetime():
 
 
 @requires_siphon
+@requires_recent_cftime
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_queryvariables():

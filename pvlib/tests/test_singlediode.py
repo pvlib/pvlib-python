@@ -267,18 +267,21 @@ def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
     assert np.isclose(voc_pvsyst, expected['voc'], *tol)
 
     # repeat tests as above with specialized bishop88 functions
+    y = {'d2mutau': recomb_params[0], 'NsVbi': recomb_params[1],
+         'breakdown_factor': brk_params[0], 'breakdown_voltage': brk_params[1],
+         'breakdown_exp': brk_params[2]}
 
-    mpp_88 = bishop88_mpp(*x, **brk_params, method=method)
+    mpp_88 = bishop88_mpp(*x, **y, method=method)
     assert np.isclose(mpp_88[2], expected['pmp'], *tol)
 
-    isc_88 = bishop88_i_from_v(0, *x, **brk_params, method=method)
+    isc_88 = bishop88_i_from_v(0, *x, **y, method=method)
     assert np.isclose(isc_88, expected['isc'], *tol)
 
-    voc_88 = bishop88_v_from_i(0, *x, **brk_params, method=method)
+    voc_88 = bishop88_v_from_i(0, *x, **y, method=method)
     assert np.isclose(voc_88, expected['voc'], *tol)
 
-    ioc_88 = bishop88_i_from_v(voc_88, *x, **brk_params, method=method)
+    ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method)
     assert np.isclose(ioc_88, 0.0, *tol)
 
-    vsc_88 = bishop88_v_from_i(isc_88, *x, **brk_params, method=method)
+    vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method)
     assert np.isclose(vsc_88, 0.0, *tol)

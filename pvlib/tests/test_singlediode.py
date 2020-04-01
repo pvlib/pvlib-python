@@ -262,17 +262,17 @@ def test_pvsyst_breakdown(method, brk_params, poa, temp_cell, expected, tol):
 
     # repeat tests as above with specialized bishop88 functions
 
-    mpp_88 = bishop88_mpp(*x, **y, method=method)
+    mpp_88 = bishop88_mpp(*x, **brk_params, method=method)
     assert np.isclose(mpp_88[2], expected['pmp'], *tol)
 
-    isc_88 = bishop88_i_from_v(0, *x, **y, method=method)
+    isc_88 = bishop88_i_from_v(0, *x, **brk_params, method=method)
     assert np.isclose(isc_88, expected['isc'], *tol)
 
-    voc_88 = bishop88_v_from_i(0, *x, **y, method=method)
+    voc_88 = bishop88_v_from_i(0, *x, **brk_params, method=method)
     assert np.isclose(voc_88, expected['voc'], *tol)
 
-    ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method)
+    ioc_88 = bishop88_i_from_v(voc_88, *x, **brk_params, method=method)
     assert np.isclose(ioc_88, 0.0, *tol)
 
-    vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method)
+    vsc_88 = bishop88_v_from_i(isc_88, *x, **brk_params, method=method)
     assert np.isclose(vsc_88, 0.0, *tol)

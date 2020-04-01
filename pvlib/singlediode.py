@@ -122,7 +122,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         intrinsic layer. [V].
     breakdown_factor : numeric, default 0
         fraction of ohmic current involved in avalanche breakdown :math:`a`.
-        Default of 0 excludes the reverse bias terms from the model. [unitless]
+        Default of 0 excludes the reverse bias term from the model. [unitless]
     breakdown_voltage : numeric, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]
@@ -217,7 +217,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
 def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=1.e-4,
+                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
                       method='newton'):
     """
@@ -249,9 +249,9 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         (a-Si) modules that is the product of the PV module number of series
         cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
         [V].
-    breakdown_factor : numeric, default 1.0e-4
-        fraction of ohmic current involved in avalanche breakdown :math:`a`
-        [unitless]
+    breakdown_factor : numeric, default 0
+        fraction of ohmic current involved in avalanche breakdown :math:`a`.
+        Default of 0 excludes the reverse bias term from the model. [unitless]
     breakdown_voltage : numeric, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]
@@ -305,7 +305,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
 
 def bishop88_v_from_i(current, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=1.e-4,
+                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
                       method='newton'):
     """
@@ -337,9 +337,9 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         (a-Si) modules that is the product of the PV module number of series
         cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
         [V].
-    breakdown_factor : numeric, default 1.0e-4
-        fraction of ohmic current involved in avalanche breakdown :math:`a`
-        [unitless]
+    breakdown_factor : numeric, default 0
+        fraction of ohmic current involved in avalanche breakdown :math:`a`.
+        Default of 0 excludes the reverse bias term from the model. [unitless]
     breakdown_voltage : numeric, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]
@@ -392,7 +392,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
                  resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
-                 breakdown_factor=1.e-4, breakdown_voltage=-5.5,
+                 breakdown_factor=0., breakdown_voltage=-5.5,
                  breakdown_exp=3.28, method='newton'):
     """
     Find max power point.
@@ -421,9 +421,9 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         (a-Si) modules that is the product of the PV module number of series
         cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
         [V].
-    breakdown_factor : numeric, default 1.0e-4
-        fraction of ohmic current involved in avalanche breakdown :math:`a`
-        [unitless]
+    breakdown_factor : numeric, default 0
+        fraction of ohmic current involved in avalanche breakdown :math:`a`.
+        Default of 0 excludes the reverse bias term from the model. [unitless]
     breakdown_voltage : numeric, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]

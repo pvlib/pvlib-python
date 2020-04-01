@@ -3,7 +3,6 @@ channels:
     - defaults
     - conda-forge
 dependencies:
-    - cftime>=1.1.1
     - coveralls
     - cython
     - ephem
@@ -25,6 +24,7 @@ dependencies:
     - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - pip:
+        - cftime>=1.1.1
         - nrel-pysam>=2.0
         - pvfactors==1.0.1
         - pytest-rerunfailures # conda version is >3.6

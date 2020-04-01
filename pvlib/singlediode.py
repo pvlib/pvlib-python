@@ -455,7 +455,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
             lambda voc, iph, isat, rs, rsh, gamma, d2mutau, NsVbi, vbr_a, vbr,
             vbr_exp: brentq(fmpp, 0.0, voc,
                             args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                            vbr_a, vbr, vbr_exp))
+                                  vbr_a, vbr, vbr_exp))
         )
         vd = vec_fun(voc_est, *args)
     elif method.lower() == 'newton':

@@ -1,6 +1,7 @@
 from pathlib import Path
 import platform
 import warnings
+import sys
 
 import numpy as np
 import pandas as pd
@@ -156,7 +157,9 @@ except ImportError:
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 
 
-requires_three_six = pytest.mark.skipif(sys.version_info < (3, 6), reason="requires python3.6 or higher")
+requires_three_six = pytest.mark.skipif(
+    sys.version_info < (3, 6), reason="requires python3.6 or higher"
+)
 
 
 @pytest.fixture(scope="session")

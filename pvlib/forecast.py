@@ -405,24 +405,8 @@ class ForecastModel(object):
         -------
         pandas.DatetimeIndex
         '''
-        # check if cftime version >1.1.0
-        import cftime
-        from packaging.version import parse as parse_version
-        has_old_cftime = (
-            parse_version(cftime.__version__) <= parse_version("1.1.0")
-        )
-        if has_old_cftime:
-            raise Exception(
-                "The cftime version ({}) is below the required <= 1.1.0. "
-                "This version does not have the required kwarg "
-                "`only_use_python_datetimes` in the function num2date. "
-                "Please install a more recent version of "
-                "cftime.".format(cftime.__version__)
-            )
-
         times = num2date(time[:].squeeze(), time.units,
-                         only_use_cftime_datetimes=False,
-                         only_use_python_datetimes=True)
+                         only_use_cftime_datetimes=False)
         self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
 
     def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=35,

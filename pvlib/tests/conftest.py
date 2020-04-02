@@ -156,14 +156,7 @@ except ImportError:
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 
 
-try:
-    import cftime  # noqa: F401
-    from packaging.version import parse as parse_version
-    has_recent_cftime = parse_version(cftime.__version__) > parse_version("1.1.0")
-except ImportError:
-    has_recent_cftime = False
-
-requires_recent_cftime = pytest.mark.skipif(not has_recent_cftime, reason="requires cftime > 1.1.0")
+requires_three_six = pytest.mark.skipif(sys.version_info < (3, 6), reason="requires python3.6 or higher")
 
 
 @pytest.fixture(scope="session")

@@ -77,8 +77,9 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * nrel-pysam (optional) minimum set to v1.0.0 (:issue:`874`)
-* cftime (optional) minimum set to >=1.1.1 enables `only_use_python_datetimes`
-  kwarg in `netCDF4.num2date` in forecast.py (:pull:`947`)
+* cftime (optional) maximum set to <=1.1.0 . Future use of
+  `only_use_python_datetimes` kwarg in `netCDF4.num2date` in forecast.py
+  requires >=1.1.1 (:pull:`947`)
 
 Contributors
 ~~~~~~~~~~~~

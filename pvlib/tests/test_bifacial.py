@@ -103,7 +103,7 @@ def test_pvfactors_timeseries_pandas_inputs():
 
 
 def test_pvfactors_input_deprecation(mocker):
-    """Test the correctly raising a deprecation warning for parallel mode
+    """Test that correctly raising a deprecation warning for parallel mode
     kwargs inputs"""
     mocker.patch('pvfactors.run.run_timeseries_engine')
     mocker.patch('pandas.DataFrame')

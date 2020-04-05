@@ -6,7 +6,7 @@ plane-of-array irradiance under various conditions.
 import pandas as pd
 import numpy as np
 import warnings
-from pvlib._deprecation import deprecated, pvlibDeprecationWarning
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def pvfactors_timeseries(

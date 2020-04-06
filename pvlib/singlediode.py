@@ -179,11 +179,8 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         i_breakdown = breakdown_factor * diode_voltage * g_sh * brk_pwr
     else:
         i_breakdown = 0.
-    i = (
-        photocurrent
-        - saturation_current * np.expm1(v_star) - diode_voltage * g_sh
-        - i_recomb - i_breakdown
-    )
+    i = (photocurrent - saturation_current * np.expm1(v_star)  # noqa: W503
+         - diode_voltage * g_sh - i_recomb - i_breakdown)   # noqa: W503
     v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)
     if gradients:
@@ -197,12 +194,9 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
             brk_fctr = breakdown_factor * g_sh
             grad_i_brk = brk_fctr * (brk_pwr + diode_voltage *
                                      -breakdown_exp * brk_pwr_1)
-            grad2i_brk = (
-                brk_fctr
-                * -breakdown_exp
-                * (2 * brk_pwr_1 + diode_voltage * (-breakdown_exp - 1)
-                * brk_pwr_2)
-            )
+            grad2i_brk = (brk_fctr * -breakdown_exp        # noqa: W503
+                          * (2 * brk_pwr_1 + diode_voltage   # noqa: W503
+                             * (-breakdown_exp - 1) * brk_pwr_2))  # noqa: W503
         else:
             grad_i_brk = 0.
             grad2i_brk = 0.

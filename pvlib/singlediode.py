@@ -264,8 +264,8 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-        must be either ``'newton'`` or ``'brentq'``. If ``'breakdown_factor'``
-        is not 0, must be ``'newton'``.
+       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
+       if ``breakdown_factor`` is not 0.
 
     Returns
     -------
@@ -352,8 +352,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-        must be either ``'newton'`` or ``'brentq'``. If ``'breakdown_factor'``
-        is not 0, must be ``'newton'``.
+       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
+       if ``breakdown_factor`` is not 0.
 
     Returns
     -------
@@ -436,8 +436,8 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     breakdown_exp : numeric, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
-        must be either ``'newton'`` or ``'brentq'``. If ``'breakdown_factor'``
-        is not 0, must be ``'newton'``.
+       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
+       if ``breakdown_factor`` is not 0.
 
     Returns
     -------

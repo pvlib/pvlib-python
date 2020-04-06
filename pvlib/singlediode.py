@@ -179,7 +179,12 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         i_breakdown = breakdown_factor * diode_voltage * g_sh * brk_pwr
     else:
         i_breakdown = 0.
-    i = (photocurrent - saturation_current * np.expm1(v_star) -
+    i = (
+        photocurrent
+        - saturation_current * np.expm1(v_star)
+        - diode_voltage * g_sh
+        - i_recomb
+    )
          diode_voltage * g_sh - i_recomb - i_breakdown)
     v = diode_voltage - i * resistance_series
     retval = (i, v, i*v)

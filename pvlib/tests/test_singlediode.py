@@ -223,7 +223,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
 @pytest.mark.parametrize('method', ['newton', 'brentq'])
 def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
                           expected, tol):
-    """test PVSst recombination loss"""
+    """test PVSyst recombination loss"""
     pvsyst_fs_495 = get_pvsyst_fs_495()
     # first evaluate PVSyst model with thin-film recombination loss current
     # at reference conditions

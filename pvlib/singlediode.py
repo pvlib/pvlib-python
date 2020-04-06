@@ -195,7 +195,12 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
             grad_i_brk = brk_fctr * (brk_pwr + diode_voltage *
                                      -breakdown_exp * brk_pwr_1)
             grad2i_brk = brk_fctr * -breakdown_exp * (
-                2 * brk_pwr_1 + diode_voltage * (-breakdown_exp - 1) *
+            grad2i_brk = (
+                brk_fctr
+                * -breakdown_exp
+                * (2 * brk_pwr_1 + diode_voltage * (-breakdown_exp - 1) * brk_pwr_2)
+            )
+
                 brk_pwr_2)
         else:
             grad_i_brk = 0.

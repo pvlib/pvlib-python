@@ -24,6 +24,9 @@ Enhancements
   PVGIS tool. (:issue:`880`)
 * Add :py:func:`~pvlib.temperature.sapm_cell_from_module` to convert back-of-
   module temperature to cell temperature (:issue:`927`)
+* Add new module :py:mod:`pvlib.snow` to contain models related to snow coverage and effects on a PV system. (:pull:`764`)
+* Add snow coverage model :py:func:`pvlib.snow.coverage_nrel` and function to identify when modules are fully covered by snow :py:func:`pvlib.snow.fully_covered_nrel`. (:issue:`577`)
+* Add function :py:func:`pvlib.snow.dc_loss_nrel` for effect of snow coverage on DC output. (:pull:`764`)
 
 Bug fixes
 ~~~~~~~~~
@@ -47,6 +50,8 @@ Bug fixes
   and various test functions.
 * Fix :py:func:`~pvlib.iotools.read_tmy3` so that when coerced to a single year
   the TMY3 index will be monotonically increasing. (:pull:`910`)
+* Fix :py:func:`pvlib.spa.julian_day_dt` so that microseconds are scaled
+  correctly (:issue:`940`) (:pull:`942`)
 
 Testing
 ~~~~~~~
@@ -85,3 +90,4 @@ Contributors
 * Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
 * Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
 * Eric Fitch (:ghuser:`ericf900`)
+* Joseph Palakapilly (:ghuser:`JPalakapilly`)

@@ -16,13 +16,13 @@ Enhancements
 * TMY3 dataframe returned by :py:func:`~pvlib.iotools.read_tmy3` now contains
   the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
   indices were parsed from. (:pull:`866`)
-* Add :py:func:`~pvlib.pvsystem.PVSystem.faiman` and added
+* Add :py:func:`pvlib.pvsystem.PVSystem.faiman` and added
   ``temperature_model='faiman'`` option to :py:class:`~pvlib.modelchain.ModelChain`
   (:pull:`897`) (:issue:`836`).
 * Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber`. (:pull:`860`)
-* Add :py:func:`~pvlib.iotools.read_pvgis_tmy` for files downloaded using the
+* Add :py:func:`pvlib.iotools.read_pvgis_tmy` for files downloaded using the
   PVGIS tool. (:issue:`880`)
-* Add :py:func:`~pvlib.temperature.sapm_cell_from_module` to convert back of
+* Add :py:func:`pvlib.temperature.sapm_cell_from_module` to convert back of
   module temperature to cell temperature (:issue:`927`)
 * Add new module :py:mod:`pvlib.snow` to contain models related to snow coverage and effects on a PV system. (:pull:`764`)
 * Add snow coverage model :py:func:`pvlib.snow.coverage_nrel` and function to identify when modules are fully covered by snow :py:func:`pvlib.snow.fully_covered_nrel`. (:issue:`577`)

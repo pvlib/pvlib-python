@@ -73,9 +73,9 @@ def ashrae(aoi, b=0.05):
 
     See Also
     --------
-    iam.physical
-    iam.martin_ruiz
-    iam.interp
+    pvlib.iam.physical
+    pvlib.iam.martin_ruiz
+    pvlib.iam.interp
     """
 
     iam = 1 - b * ((1 / np.cos(np.radians(aoi)) - 1))
@@ -143,10 +143,10 @@ def physical(aoi, n=1.526, K=4., L=0.002):
 
     See Also
     --------
-    iam.martin_ruiz
-    iam.ashrae
-    iam.interp
-    iam.sapm
+    pvlib.iam.martin_ruiz
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.sapm
     """
     zeroang = 1e-06
 
@@ -248,11 +248,11 @@ def martin_ruiz(aoi, a_r=0.16):
 
     See Also
     --------
-    iam.martin_ruiz_diffuse
-    iam.physical
-    iam.ashrae
-    iam.interp
-    iam.sapm
+    pvlib.iam.martin_ruiz_diffuse
+    pvlib.iam.physical
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
@@ -334,11 +334,11 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     See Also
     --------
-    iam.martin_ruiz
-    iam.physical
-    iam.ashrae
-    iam.interp
-    iam.sapm
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
 
@@ -424,10 +424,10 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
     See Also
     --------
-    iam.physical
-    iam.ashrae
-    iam.martin_ruiz
-    iam.sapm
+    pvlib.iam.physical
+    pvlib.iam.ashrae
+    pvlib.iam.martin_ruiz
+    pvlib.iam.sapm
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
@@ -507,10 +507,10 @@ def sapm(aoi, module, upper=None):
 
     See Also
     --------
-    iam.physical
-    iam.ashrae
-    iam.martin_ruiz
-    iam.interp
+    pvlib.iam.physical
+    pvlib.iam.ashrae
+    pvlib.iam.martin_ruiz
+    pvlib.iam.interp
     """
 
     aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],

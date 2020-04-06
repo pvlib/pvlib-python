@@ -33,7 +33,7 @@ def _temperature_model_params(model, parameter_set):
 def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
               irrad_ref=1000):
     r'''
-    Calculate cell temperature per the Sandia  Array Performance Model.
+    Calculate cell temperature per the Sandia Array Performance Model.
 
     See [1]_ for details on the Sandia Array Performance Model.
 

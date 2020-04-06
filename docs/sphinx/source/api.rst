@@ -330,8 +330,8 @@ Effects on PV System Output
 .. autosummary::
    :toctree: generated/
 
-   losses.soiling_hsu
-   losses.soiling_kimber
+   soiling.hsu
+   soiling.kimber
 
 
 

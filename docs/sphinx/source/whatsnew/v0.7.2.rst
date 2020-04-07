@@ -10,6 +10,11 @@ API Changes
 * :py:func:`pvlib.iotools.read_tmy3` when coerced to a single year now returns
   indices that are monotonically increasing. Therefore, the last index will be
   January 1, 00:00 of the *next* year. (:pull:`910`)
+* Renamed ``pvlib.losses`` to :py:mod:`pvlib.soiling`. Additional loss
+  models will go into code modules named for the loss or effect type.
+  (:issue:`935`, :issue:`891`)
+* Renamed ``pvlib.losses.soiling_hsu`` to :py:func:`pvlib.soiling.hsu`
+  (:issue:`935`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -21,6 +26,9 @@ Enhancements
   (:pull:`897`) (:issue:`836`).
 * Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber`. (:pull:`860`)
 * Add :py:func:`pvlib.iotools.read_pvgis_tmy` for files downloaded using the
+* Add Kimber soiling model :py:func:`pvlib.soiling.kimber`. (:pull:`860`,
+   :issue`935`)
+* Add :func:`~pvlib.iotools.read_pvgis_tmy` for files downloaded using the
   PVGIS tool. (:issue:`880`)
 * Add :py:func:`pvlib.temperature.sapm_cell_from_module` to convert back of
   module temperature to cell temperature (:issue:`927`)

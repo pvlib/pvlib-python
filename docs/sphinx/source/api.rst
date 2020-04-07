@@ -310,10 +310,8 @@ Functions for fitting diode models
 
 Other
 -----
-
 .. autosummary::
    :toctree: generated/
-
    pvsystem.retrieve_sam
    pvsystem.systemdef
    pvsystem.scale_voltage_current_power
@@ -332,8 +330,8 @@ Effects on PV System Output
 .. autosummary::
    :toctree: generated/
 
-   losses.soiling_hsu
-   losses.soiling_kimber
+   soiling.hsu
+   soiling.kimber
 
 
 

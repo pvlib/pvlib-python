@@ -34,8 +34,9 @@ jobs:
     displayName: 'List installed dependencies'
   - script: |
       source activate test_env
-      export NREL_API_KEY=$(nrelApiKey)
       pytest pvlib --remote-data --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
+    env:
+      NREL_API_KEY: $(nrelApiKey)
     displayName: 'pytest'
   - task: PublishTestResults@2
     inputs:
@@ -48,6 +49,8 @@ jobs:
       reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
     condition: eq(variables['coverage'], true)
   - script: |
-      bash <(curl https://codecov.io/bash) -t bbc2bdbe-5e67-4fef-9cb7-f52fe0b703a8 -f coverage.xml -F adder -F subtractor -F conda
+      bash <(curl https://codecov.io/bash) -t $CODECOV_TOKEN -f coverage.xml -F adder -F subtractor -F conda
+    env:
+      CODECOV_TOKEN: $(codecov_token)
     displayName: 'codecov'
     condition: eq(variables['coverage'], true)

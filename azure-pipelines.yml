@@ -1,8 +1,12 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- master
-
+  branches:
+    include:
+      - master
+  tags:
+     include:
+      - v*
 
 jobs:
 
@@ -34,12 +38,5 @@ jobs:
   dependsOn: 'Test_conda_linux'
   pool:
     vmImage: 'ubuntu-latest'
-
   steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.x'
-      architecture: 'x64'
-
-  - script: python setup.py sdist
-    displayName: 'Build sdist'
+  - template: ci/azure/publish.yml

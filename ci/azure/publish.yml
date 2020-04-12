@@ -1,0 +1,21 @@
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      architecture: 'x64'
+
+  - script: pip install wheel twine
+    displayName: 'Install distribution dependencies'
+
+  - script: python setup.py sdist bdist_wheel
+    displayName: 'Build sdist and wheel'
+
+  - script: |
+     python -m twine upload dist/*
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))
+    env:
+      TWINE_USERNAME: '__token__'
+      TWINE_PASSWORD: $(TEST_PYPI_API_KEY)
+      TWINE_REPOSITORY_URL: 'https://test.pypi.org/legacy/'
+    displayName: 'Upload to PyPI'

@@ -91,6 +91,9 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * nrel-pysam (optional) minimum set to v1.0.0 (:issue:`874`)
+* cftime (optional) minimum set to >=1.1.1. Use of
+  `only_use_python_datetimes` kwarg in `netCDF4.num2date` in forecast.py
+  requires >=1.1.1 which is >=Python3.6. (:pull:`947`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -103,3 +106,4 @@ Contributors
 * Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
 * Eric Fitch (:ghuser:`ericf900`)
 * Joseph Palakapilly (:ghuser:`JPalakapilly`)
+* Auguste Colle(:ghuser:`augustecolle`)

@@ -39,6 +39,7 @@ Enhancements
   breakdown model, affects :py:func:`pvlib.singlediode.bishop88`,
   :py:func:`pvlib.singlediode.bishop88_i_from_v`, :py:func:`pvlib.singlediode.bishop88_v_from_i`,
   :py:func:`pvlib.singlediode.bishop88_mpp`. (:pull:`948`)
+* Add weather data arguments in get_solarpostion method of modelchain.ModelChain.prepare_inputs :py:func:`modelchain.ModelChain.prepare_inputs` (:pull:`936`)
 
 Bug fixes
 ~~~~~~~~~
@@ -107,3 +108,4 @@ Contributors
 * Eric Fitch (:ghuser:`ericf900`)
 * Joseph Palakapilly (:ghuser:`JPalakapilly`)
 * Auguste Colle(:ghuser:`augustecolle`)
+* Ahan M R (:ghuser:`Ahanmr`)

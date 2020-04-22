@@ -1,6 +1,6 @@
 .. _whatsnew_0720:
 
-v0.7.2 (Month day, year)
+v0.7.2 (April 22, 2020)
 -------------------------
 
 API Changes

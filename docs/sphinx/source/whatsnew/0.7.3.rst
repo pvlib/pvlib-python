@@ -1,0 +1,25 @@
+.. _whatsnew_0730:
+
+v0.7.3 (Month day, year)
+-------------------------
+
+API Changes
+~~~~~~~~~~~
+
+Enhancements
+~~~~~~~~~~~~
+
+Bug fixes
+~~~~~~~~~
+
+Testing
+~~~~~~~
+
+Documentation
+~~~~~~~~~~~~~
+
+Requirements
+~~~~~~~~~~~~
+
+Contributors
+~~~~~~~~~~~~

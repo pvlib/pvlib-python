@@ -93,13 +93,19 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
     modeled['R_s'] = R_s
     modeled['Adjust'] = Adjust
     assert np.allclose(modeled.values, expected.values, rtol=5e-2)
-    # test for fitting failure
+
+
+@requires_pysam
+def test_fit_sdm_cec_sam_estimation_failure():
+    """
+    Failing to estimate the parameters for the CEC SDM model should raise an
+    exception.
+    """
     with pytest.raises(RuntimeError):
-        I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-            ivtools.fit_sdm_cec_sam(
-                celltype='polySi', v_mp=0.45, i_mp=5.25, v_oc=0.55, i_sc=5.5,
-                alpha_sc=0.00275, beta_voc=0.00275, gamma_pmp=0.0055,
-                cells_in_series=1, temp_ref=25)
+        ivtools.fit_sdm_cec_sam(
+            celltype='polySi', v_mp=0.45, i_mp=5.25, v_oc=0.55, i_sc=5.5,
+            alpha_sc=0.00275, beta_voc=0.00275, gamma_pmp=0.0055,
+            cells_in_series=1, temp_ref=25)
 
 
 @requires_scipy

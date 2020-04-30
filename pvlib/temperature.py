@@ -293,7 +293,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
-        in :eq:`pvsyst` [(W/m^2 C)(m/s)].
+        in :eq:`pvsyst` [W/(m^2 C)/(m/s)].
 
     eta_m : numeric, default 0.1
         Module external efficiency as a fraction, i.e., DC power / poa_global.
@@ -383,7 +383,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules. [(W/m^2 C)(m/s)].
+        determined by Faiman for 7 silicon modules. [W/(m^2 C)/(m/s)].
 
     Returns
     -------

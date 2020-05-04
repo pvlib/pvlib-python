@@ -232,6 +232,7 @@ PV temperature models
 
    temperature.sapm_cell
    temperature.sapm_module
+   temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
 
@@ -326,24 +327,31 @@ Utilities for working with IV curve data
     ivtools.utility.rectify_iv_curve
     ivtools.utility.schumaker_qspline
 
-Losses
-------
-
-.. autosummary::
-   :toctree: generated/
-
-   losses.soiling_hsu
-
-
 Other
 -----
-
 .. autosummary::
    :toctree: generated/
-
    pvsystem.retrieve_sam
    pvsystem.systemdef
    pvsystem.scale_voltage_current_power
+
+
+Effects on PV System Output
+===========================
+
+.. autosummary::
+   :toctree: generated/
+
+   snow.coverage_nrel
+   snow.fully_covered_nrel
+   snow.dc_loss_nrel
+
+.. autosummary::
+   :toctree: generated/
+
+   soiling.hsu
+   soiling.kimber
+
 
 
 Tracking
@@ -401,6 +409,7 @@ relevant to solar energy modeling.
    iotools.read_psm3
    iotools.parse_psm3
    iotools.get_pvgis_tmy
+   iotools.read_pvgis_tmy
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.
@@ -541,6 +550,7 @@ ModelChain model definitions.
    modelchain.ModelChain.no_spectral_loss
    modelchain.ModelChain.sapm_temp
    modelchain.ModelChain.pvsyst_temp
+   modelchain.ModelChain.faiman_temp
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 

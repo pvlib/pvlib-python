@@ -38,7 +38,8 @@ VARIABLE_MAP = {
 
 
 def read_surfrad(filename, map_variables=True):
-    """Read in a daily NOAA SURFRAD[1]_ file.
+    """Read in a daily NOAA SURFRAD file.  The SURFRAD network is
+    described in [1]_.
 
     Parameters
     ----------

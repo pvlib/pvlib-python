@@ -600,13 +600,6 @@ class PVSystem(object):
             loss factor was determined.  The default value is 1.0, which is
             the wind speed at module height used to determine NOCT.
 
-        eta_m : numeric, default 0.1
-            Module external efficiency as a fraction, i.e.,
-            DC power / poa_global.
-
-        alpha_absorption : numeric, default 0.9
-            Absorption coefficient
-
         Returns
         -------
         numeric, values in degrees C.
@@ -617,6 +610,32 @@ class PVSystem(object):
                                     self.temperature_model_parameters))
         return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
                                        **kwargs)
+
+    def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
+        """
+        Use :py:func:`temperature.faiman` to calculate cell temperature.
+
+        Parameters
+        ----------
+        poa_global : numeric
+            Total incident irradiance [W/m^2].
+
+        temp_air : numeric
+            Ambient dry bulb temperature [C].
+
+        wind_speed : numeric, default 1.0
+            Wind speed in m/s measured at the same height for which the wind
+            loss factor was determined.  The default value 1.0 m/s is the wind
+            speed at module height used to determine NOCT. [m/s]
+
+        Returns
+        -------
+        numeric, values in degrees C.
+        """
+        kwargs = _build_kwargs(['u0', 'u1'],
+                               self.temperature_model_parameters)
+        return temperature.faiman(poa_global, temp_air, wind_speed,
+                                  **kwargs)
 
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
@@ -936,8 +955,8 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
 
     See also
     --------
-    pvlib.tmy.readtmy3
-    pvlib.tmy.readtmy2
+    pvlib.iotools.read_tmy3
+    pvlib.iotools.read_tmy2
     '''
 
     try:
@@ -1186,7 +1205,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the CEC
-    model described in [1]_. The CEC model differs from the De soto et al.
+    model. The CEC model [1]_ differs from the De soto et al.
     model [3]_ by the parameter Adjust. The five values returned by
     calcparams_cec can be used by singlediode to calculate an IV curve.
 
@@ -1306,8 +1325,9 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the PVsyst v6
-    model described in [1]_, [2]_, [3]_. The five values returned by
-    calcparams_pvsyst can be used by singlediode to calculate an IV curve.
+    model.  The PVsyst v6 model is described in [1]_, [2]_, [3]_.
+    The five values returned by calcparams_pvsyst can be used by singlediode
+    to calculate an IV curve.
 
     Parameters
     ----------
@@ -1546,7 +1566,7 @@ def _normalize_sam_product_names(names):
 
     import warnings
 
-    BAD_CHARS  = ' -.()[]:+/",'
+    BAD_CHARS = ' -.()[]:+/",'
     GOOD_CHARS = '____________'
 
     mapping = str.maketrans(BAD_CHARS, GOOD_CHARS)
@@ -1559,7 +1579,8 @@ def _normalize_sam_product_names(names):
 
     n_duplicates = norm_names.duplicated().sum()
     if n_duplicates > 0:
-        warnings.warn('Normalized names contain %d duplicate(s).' % n_duplicates)
+        warnings.warn(
+            'Normalized names contain %d duplicate(s).' % n_duplicates)
 
     return norm_names.values
 
@@ -1668,8 +1689,8 @@ def sapm(effective_irradiance, temp_cell, module):
     See Also
     --------
     retrieve_sam
-    temperature.sapm_cell
-    temperature.sapm_module
+    pvlib.temperature.sapm_cell
+    pvlib.temperature.sapm_module
     '''
 
     # TODO: someday, change temp_ref and irrad_ref to reference_temperature and
@@ -2642,7 +2663,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
 def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     r"""
-    Implements NREL's PVWatts DC power model [1]_:
+    Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
 
     .. math::
 
@@ -2693,7 +2714,8 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
                    connections=0.5, lid=1.5, nameplate_rating=1, age=0,
                    availability=3):
     r"""
-    Implements NREL's PVWatts system loss model [1]_:
+    Implements NREL's PVWatts system loss model.
+    The PVWatts loss model [1]_ is:
 
     .. math::
 
@@ -2744,7 +2766,8 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
 def pvwatts_ac(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Implements NREL's PVWatts inverter model [1]_.
+    Implements NREL's PVWatts inverter model.
+    The PVWatts inverter model [1]_ is:
 
     .. math::
 

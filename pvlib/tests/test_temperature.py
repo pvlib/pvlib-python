@@ -26,6 +26,12 @@ def test_sapm_module(sapm_default):
     assert_allclose(default, 40.809, 3)
 
 
+def test_sapm_cell_from_module(sapm_default):
+    default = temperature.sapm_cell_from_module(50, 900,
+                                                sapm_default['deltaT'])
+    assert_allclose(default, 50 + 900 / 1000 * sapm_default['deltaT'])
+
+
 def test_sapm_ndarray(sapm_default):
     temps = np.array([0, 10, 5])
     irrads = np.array([0, 500, 0])

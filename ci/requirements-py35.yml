@@ -26,5 +26,7 @@ dependencies:
     - siphon  # conda-forge
     - statsmodels
     - pip:
-        - nrel-pysam
+        - nrel-pysam>=2.0
         - pvfactors==1.0.1
+        - pytest-rerunfailures # conda version is >3.6
+        - pytest-remotedata # needs > 0.3.1

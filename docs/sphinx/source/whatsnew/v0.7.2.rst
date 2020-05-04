@@ -1,0 +1,111 @@
+.. _whatsnew_0720:
+
+v0.7.2 (April 22, 2020)
+-------------------------
+
+API Changes
+~~~~~~~~~~~
+* :py:class:`pvlib.forecast.ForecastModel` now requires ``start`` and ``end``
+  arguments to be tz-localized. (:issue:`877`, :pull:`879`)
+* :py:func:`pvlib.iotools.read_tmy3` when coerced to a single year now returns
+  indices that are monotonically increasing. Therefore, the last index will be
+  January 1, 00:00 of the *next* year. (:pull:`910`)
+* Renamed ``pvlib.losses`` to :py:mod:`pvlib.soiling`. Additional loss
+  models will go into code modules named for the loss or effect type.
+  (:issue:`935`, :issue:`891`)
+* Renamed ``pvlib.losses.soiling_hsu`` to :py:func:`pvlib.soiling.hsu`
+  (:issue:`935`)
+
+Enhancements
+~~~~~~~~~~~~
+* TMY3 dataframe returned by :py:func:`~pvlib.iotools.read_tmy3` now contains
+  the original ``Date (MM/DD/YYYY)`` and ``Time (HH:MM)`` columns that the
+  indices were parsed from. (:pull:`866`)
+* Add :py:func:`pvlib.pvsystem.PVSystem.faiman` and added
+  ``temperature_model='faiman'`` option to :py:class:`~pvlib.modelchain.ModelChain`
+  (:pull:`897`) (:issue:`836`).
+* Add Kimber soiling model :py:func:`pvlib.losses.soiling_kimber`. (:pull:`860`)
+* Add :py:func:`pvlib.iotools.read_pvgis_tmy` for files downloaded using the
+* Add Kimber soiling model :py:func:`pvlib.soiling.kimber`. (:pull:`860`,
+   :issue`935`)
+* Add :func:`~pvlib.iotools.read_pvgis_tmy` for files downloaded using the
+  PVGIS tool. (:issue:`880`)
+* Add :py:func:`pvlib.temperature.sapm_cell_from_module` to convert back of
+  module temperature to cell temperature (:issue:`927`)
+* Add new module :py:mod:`pvlib.snow` to contain models related to snow coverage and effects on a PV system. (:pull:`764`)
+* Add snow coverage model :py:func:`pvlib.snow.coverage_nrel` and function to identify when modules are fully covered by snow :py:func:`pvlib.snow.fully_covered_nrel`. (:issue:`577`)
+* Add function :py:func:`pvlib.snow.dc_loss_nrel` for effect of snow coverage on DC output. (:pull:`764`)
+* Add capability to calculate current at reverse bias using an avalanche
+  breakdown model, affects :py:func:`pvlib.singlediode.bishop88`,
+  :py:func:`pvlib.singlediode.bishop88_i_from_v`, :py:func:`pvlib.singlediode.bishop88_v_from_i`,
+  :py:func:`pvlib.singlediode.bishop88_mpp`. (:pull:`948`)
+* Add weather data arguments in get_solarpostion method of modelchain.ModelChain.prepare_inputs :py:func:`modelchain.ModelChain.prepare_inputs` (:pull:`936`)
+
+Bug fixes
+~~~~~~~~~
+* Fix :py:func:`~pvlib.iotools.read_tmy3` parsing when February contains
+  a leap year. (:pull:`866`)
+* Implement NREL Developer Network API key for consistent success with API
+  calls in :py:mod:`pvlib.tests.iotools.test_psm3`. (:pull:`873`)
+* Fix issue with :py:class:`pvlib.location.Location` creation when
+  passing ``tz=datetime.timezone.utc``. (:pull:`879`)
+* Fix documentation homepage title to "pvlib python" based on first heading on
+  the page. (:pull:`890`) (:issue:`888`)
+* Fix missing
+  `0.7.0 what's new <https://pvlib-python.readthedocs.io/en/stable/whatsnew.html#v0-7-0-december-18-2019>`_
+  entries about changes to ``PVSystem.pvwatts_ac``. Delete unreleased
+  0.6.4 what's new file. (:issue:`898`)
+* Compatibility with cftime 1.1. (:issue:`895`)
+* Minor implemention changes to avoid runtime and deprecation warnings in
+  :py:func:`~pvlib.clearsky.detect_clearsky`,
+  :py:func:`~pvlib.iam.martin_ruiz_diffuse`,
+  :py:func:`~pvlib.losses.soiling_hsu`,
+  and various test functions.
+* Fix :py:func:`~pvlib.iotools.read_tmy3` so that when coerced to a single year
+  the TMY3 index will be monotonically increasing. (:pull:`910`)
+* Fix :py:func:`pvlib.spa.julian_day_dt` so that microseconds are scaled
+  correctly (:issue:`940`) (:pull:`942`)
+
+Testing
+~~~~~~~
+* Rename `system` fixture to `sapm_dc_snl_ac_system` in model chain
+  tests. (:issue:`908`, :pull:`915`).
+* Implement `pytest-remotedata <https://github.com/astropy/pytest-remotedata>`_
+  to increase test suite speed. Requires ``--remote-data`` pytest flag to
+  execute data retrieval tests over a network. (:issue:`882`)(:pull:`896`)
+* Add Python3.8 to Azure Pipelines CI. (:issue:`903`)(:pull:`904`)
+* Add documentation build test to Azure Pipelines CI. (:pull:`909`)
+* Implement the `pytest.mark.flaky` decorator from `pytest-rurunfailures`
+  `<https://github.com/pytest-dev/pytest-rerunfailures>`_ on all network
+  dependent iotools tests to repeat them on failure. (:pull:`919`)
+* Separate azure-pipelines.yml platform-specific tests to their own templates
+  located in ``./ci/azure/``.  (:pull:`926`)
+
+Documentation
+~~~~~~~~~~~~~
+* Add NumFOCUS affiliation to Sphinx documentation. (:pull:`862`)
+* Add example of IV curve generation. (:pull:`872`)
+* Add section about gallery examples to Contributing guide. (:pull:`905`)
+* Add section with link to Code of Conduct in Contributing guide. (:pull:`922`)
+* Add example of GHI to POA transposition (:pull:`933`)
+
+Requirements
+~~~~~~~~~~~~
+* nrel-pysam (optional) minimum set to v1.0.0 (:issue:`874`)
+* cftime (optional) minimum set to >=1.1.1. Use of
+  `only_use_python_datetimes` kwarg in `netCDF4.num2date` in forecast.py
+  requires >=1.1.1 which is >=Python3.6. (:pull:`947`)
+
+Contributors
+~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Cameron T. Stark (:ghuser:`camerontstark`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
+* Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
+* Eric Fitch (:ghuser:`ericf900`)
+* Joseph Palakapilly (:ghuser:`JPalakapilly`)
+* Auguste Colle(:ghuser:`augustecolle`)
+* Ahan M R (:ghuser:`Ahanmr`)

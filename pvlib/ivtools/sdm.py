@@ -1,7 +1,7 @@
 """
-The ``fit_sdm`` module contains functions to fit single diode models.
+The ``sdm`` module contains functions to fit single diode models.
 
-Function names should follow the pattern "fit_sdm_" + name of model + "_" +
+Function names should follow the pattern "fit_" + name of model + "_" +
  fitting method.
 
 """

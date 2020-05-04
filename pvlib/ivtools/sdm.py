@@ -94,7 +94,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
         raise ImportError("Requires NREL's PySAM package at "
                           "https://pypi.org/project/NREL-PySAM/.")
 
-    datadict = {'tech_model': '6parsolve', 'financial_model': 'none',
+    datadict = {'tech_model': '6parsolve', 'financial_model': None,
                 'celltype': celltype, 'Vmp': v_mp,
                 'Imp': i_mp, 'Voc': v_oc, 'Isc': i_sc, 'alpha_isc': alpha_sc,
                 'beta_voc': beta_voc, 'gamma_pmp': gamma_pmp,

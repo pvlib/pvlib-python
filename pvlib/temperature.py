@@ -293,7 +293,8 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
-        in :eq:`pvsyst` :math:`\left[\frac{W/{\left(m^2 C\right)}}{m/s}\right]`.
+        in :eq:`pvsyst`
+        :math:`\left[\frac{W/{\left(m^2 C\right)}}{m/s}\right]`.
 
     eta_m : numeric, default 0.1
         Module external efficiency as a fraction, i.e., DC power / poa_global.
@@ -356,7 +357,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
 
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
-    '''
+    r'''
     Calculate cell or module temperature using the Faiman model.  The Faiman
     model uses an empirical heat loss factor model [1]_ and is adopted in the
     IEC 61853 standards [2]_ and [3]_.

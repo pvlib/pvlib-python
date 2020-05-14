@@ -20,13 +20,14 @@ from pathlib import Path
 import requests
 import pandas as pd
 from pvlib.iotools import read_epw, parse_epw
+from timezonefinder import TimezoneFinder
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
 
 def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
-                  timeout=30):
+                  timeout=30, localtime=False):
     """
     Get TMY data from PVGIS. For more information see the PVGIS [1]_ TMY tool
     documentation [2]_.
@@ -55,6 +56,9 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     timeout : int, default 30
         time in seconds to wait for server response before timeout
+    localtime: bool, default False
+        if True, convert index to local time given by longitude and latitude,
+        else tz=UTC
 
     Returns
     -------
@@ -111,18 +115,34 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
             raise requests.HTTPError(err_msg['message'])
     # initialize data to None in case API fails to respond to bad outputformat
     data = None, None, None, None
+    # get time zone name if localtime
+    tz = None
+    if localtime:
+        tf = TimezoneFinder()
+        try:
+            tz = tf.timezone_at(lng=lon, lat=lat)
+            if tz is None:
+                tz = tf.closest_timezone_at(lng=lon, lat=lat)
+        except ValueError:
+            # this line is never reached because if the lat, lon are
+            # the response is HTTP/1.1 400 BAD REQUEST which is handle
+            # by PVGIS in the requests
+            pass
     if outputformat == 'json':
         src = res.json()
-        return _parse_pvgis_tmy_json(src)
+        return _parse_pvgis_tmy_json(src, tz)
     elif outputformat == 'csv':
         with io.BytesIO(res.content) as src:
-            data = _parse_pvgis_tmy_csv(src)
+            data = _parse_pvgis_tmy_csv(src, tz)
     elif outputformat == 'basic':
         with io.BytesIO(res.content) as src:
-            data = _parse_pvgis_tmy_basic(src)
+            data = _parse_pvgis_tmy_basic(src, tz)
     elif outputformat == 'epw':
         with io.StringIO(res.content.decode('utf-8')) as src:
             data, meta = parse_epw(src)
+            if tz is not None:
+                data.index = data.index.tz_convert(tz)
+                data.index.name = f'time({tz})'
             data = (data, None, None, meta)
     else:
         # this line is never reached because if outputformat is not valid then
@@ -131,7 +151,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
     return data
 
 
-def _parse_pvgis_tmy_json(src):
+def _parse_pvgis_tmy_json(src, tz):
     inputs = src['inputs']
     meta = src['meta']
     months_selected = src['outputs']['months_selected']
@@ -139,10 +159,13 @@ def _parse_pvgis_tmy_json(src):
     data.index = pd.to_datetime(
         data['time(UTC)'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time(UTC)', axis=1)
+    if tz is not None:
+        data.index = data.index.tz_convert(tz)
+        data.index.name = f'time({tz})'
     return data, months_selected, inputs, meta
 
 
-def _parse_pvgis_tmy_csv(src):
+def _parse_pvgis_tmy_csv(src, tz):
     # the first 3 rows are latitude, longitude, elevation
     inputs = {}
     # 'Latitude (decimal degrees): 45.000\r\n'
@@ -169,16 +192,22 @@ def _parse_pvgis_tmy_csv(src):
     data = data.drop('time(UTC)', axis=1)
     data = pd.DataFrame(data, dtype=float)
     data.index = dtidx
+    if tz is not None:
+        data.index = data.index.tz_convert(tz)
+        data.index.name = f'time({tz})'
     # finally there's some meta data
     meta = [line.decode('utf-8').strip() for line in src.readlines()]
     return data, months_selected, inputs, meta
 
 
-def _parse_pvgis_tmy_basic(src):
+def _parse_pvgis_tmy_basic(src, tz):
     data = pd.read_csv(src)
     data.index = pd.to_datetime(
         data['time(UTC)'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time(UTC)', axis=1)
+    if tz is not None:
+        data.index = data.index.tz_convert(tz)
+        data.index.name = f'time({tz})'
     return data, None, None, None
 
 

@@ -18,3 +18,4 @@ dependencies:
     - netCDF4=1.3.1
     - hdf4=4.2.12
     - sphinx_rtd_theme
+    - timezonefinder

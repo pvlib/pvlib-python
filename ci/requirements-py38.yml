@@ -12,7 +12,7 @@ dependencies:
     - numpy
     - pandas
     - pip
-    - pytables  # tables when using pip+PyPI
+    - pytables # tables when using pip+PyPI
     - pytest
     - pytest-cov
     - pytest-mock
@@ -23,8 +23,9 @@ dependencies:
     - pytz
     - requests
     - scipy
-    - shapely  # pvfactors dependency
-    - siphon  # conda-forge
+    - shapely # pvfactors dependency
+    - siphon # conda-forge
+    - timezonefinder
     - pip:
-        - nrel-pysam>=2.0
-        - pvfactors==1.0.1
+          - nrel-pysam>=2.0
+          - pvfactors==1.0.1

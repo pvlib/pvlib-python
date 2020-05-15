@@ -955,8 +955,8 @@ def systemdef(meta, surface_tilt, surface_azimuth, albedo, modules_per_string,
 
     See also
     --------
-    pvlib.tmy.readtmy3
-    pvlib.tmy.readtmy2
+    pvlib.iotools.read_tmy3
+    pvlib.iotools.read_tmy2
     '''
 
     try:
@@ -1689,8 +1689,8 @@ def sapm(effective_irradiance, temp_cell, module):
     See Also
     --------
     retrieve_sam
-    temperature.sapm_cell
-    temperature.sapm_module
+    pvlib.temperature.sapm_cell
+    pvlib.temperature.sapm_module
     '''
 
     # TODO: someday, change temp_ref and irrad_ref to reference_temperature and

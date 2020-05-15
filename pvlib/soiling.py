@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module contains functions for losses of various types: soiling, mismatch,
-snow cover, etc.
+This module contains functions for soiling models
 """
 
 import datetime
@@ -10,8 +9,8 @@ import pandas as pd
 from pvlib.tools import cosd
 
 
-def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
-                depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
+def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
+        depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
     """
     Calculates soiling ratio given particulate and rain data using the model
     from Humboldt State University (HSU).
@@ -66,7 +65,7 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     try:
         from scipy.special import erf
     except ImportError:
-        raise ImportError("The soiling_hsu function requires scipy.")
+        raise ImportError("The pvlib.soiling.hsu function requires scipy.")
 
     # never use mutable input arguments
     if depo_veloc is None:
@@ -96,9 +95,9 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     return soiling_ratio
 
 
-def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
-                   grace_period=14, max_soiling=0.3, manual_wash_dates=None,
-                   initial_soiling=0, rain_accum_period=24):
+def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
+           grace_period=14, max_soiling=0.3, manual_wash_dates=None,
+           initial_soiling=0, rain_accum_period=24):
     """
     Calculates fraction of energy lost due to soiling given rainfall data and
     daily loss rate using the Kimber model.

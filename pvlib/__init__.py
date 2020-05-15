@@ -14,4 +14,5 @@ from pvlib import spa  # noqa: F401
 from pvlib import modelchain  # noqa: F401
 from pvlib import singlediode  # noqa: F401
 from pvlib import bifacial  # noqa: F401
-from pvlib import losses  # noqa: F401
+from pvlib import soiling  # noqa: F401
+from pvlib import snow  # noqa: F401

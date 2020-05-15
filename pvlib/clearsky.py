@@ -855,7 +855,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     See also
     --------
     pvlib.atmosphere.bird_hulstrom80_aod_bb
-    pvlib.atmosphere.relativeairmass
+    pvlib.atmosphere.get_relative_airmass
 
     References
     ----------

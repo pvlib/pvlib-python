@@ -16,7 +16,7 @@ from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
-
+from pvlib.tools import _build_kwargs
 
 def basic_chain(times, latitude, longitude,
                 module_parameters, temperature_model_parameters,
@@ -829,12 +829,13 @@ class ModelChain(object):
 
         return self
 
-    def _prep_inputs_solar_pos(self):
+    def _prep_inputs_solar_pos(self, press_temp=None):
         """
         Assign solar position
         """
         self.solar_position = self.location.get_solarposition(
-            self.weather.index, method=self.solar_position_method)
+            self.weather.index, method=self.solar_position_method,
+            **press_temp)
         return self
 
     def _prep_inputs_airmass(self):
@@ -910,8 +911,13 @@ class ModelChain(object):
                           'is used for times.', pvlibDeprecationWarning)
 
         self.times = self.weather.index
+        try:
+            press_temp = _build_kwargs(['pressure', 'temp_air'], weather)
+            press_temp['temperature'] = press_temp.pop('temp_air')
+        except KeyError:
+            press_temp = None
 
-        self._prep_inputs_solar_pos()
+        self._prep_inputs_solar_pos(press_temp)
         self._prep_inputs_airmass()
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance

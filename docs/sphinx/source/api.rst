@@ -232,6 +232,7 @@ PV temperature models
 
    temperature.sapm_cell
    temperature.sapm_module
+   temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
 
@@ -308,16 +309,6 @@ Functions for fitting diode models
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
 
-Losses
-------
-
-.. autosummary::
-   :toctree: generated/
-
-   losses.soiling_hsu
-   losses.soiling_kimber
-
-
 Other
 -----
 
@@ -327,6 +318,24 @@ Other
    pvsystem.retrieve_sam
    pvsystem.systemdef
    pvsystem.scale_voltage_current_power
+
+
+Effects on PV System Output
+===========================
+
+.. autosummary::
+   :toctree: generated/
+
+   snow.coverage_nrel
+   snow.fully_covered_nrel
+   snow.dc_loss_nrel
+
+.. autosummary::
+   :toctree: generated/
+
+   soiling.hsu
+   soiling.kimber
+
 
 
 Tracking

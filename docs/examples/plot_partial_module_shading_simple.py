@@ -1,6 +1,6 @@
 """
-Calculating the effect of partial module shading
-================================================
+Calculating power loss from partial module shading
+==================================================
 
 Example of modeling cell-to-cell mismatch loss from partial module shading.
 """
@@ -16,8 +16,9 @@ Example of modeling cell-to-cell mismatch loss from partial module shading.
 # under various shading and irradiance conditions.
 #
 # The primary functions used here are:
+#
 # - :py:meth:`pvlib.pvsystem.calcparams_desoto` to estimate the SDE parameters
-#   at the operating conditions
+#   at the specified operating conditions.
 # - :py:meth:`pvlib.singlediode.bishop88` to calculate the full cell IV curve,
 #   including the reverse bias region.
 #
@@ -31,7 +32,9 @@ Example of modeling cell-to-cell mismatch loss from partial module shading.
 #     on the module's electrical topology.  This example makes some simplifying
 #     assumptions that are not generally applicable.  For instance, it assumes
 #     that all of the module's cell strings perform identically, making it
-#     possible to ignore the effect of bypass diodes.
+#     possible to ignore the effect of bypass diodes.  It also assumes that
+#     shading only applies to beam irradiance, *i.e.* all cells receive the
+#     same amount of diffuse irradiance.
 
 from pvlib import pvsystem, singlediode
 import pandas as pd
@@ -194,3 +197,21 @@ plt.xticks(range(0, 5*len(xlabels), 5), xlabels)
 plt.yticks(range(0, len(ylabels)), ylabels)
 plt.title('Module P_mp across shading conditions')
 plt.colorbar()
+plt.show()
+
+# %%
+#
+# This heatmap shows the module maximum power under different partial shade
+# conditions, where "diffuse fraction" refers to the ratio
+# :math:`poa_{diffuse} / poa_{global}` and "shaded fraction" refers to the
+# fraction of the module that receives only diffuse irradiance.
+#
+# The heatmap makes a few things evident:
+#
+# - When diffuse fraction is equal to 1, there is no beam irradiance to lose,
+#   so shading has no effect on production.
+# - When shaded fraction is equal to 0, no irradiance is blocked, so module
+#   output does not change with the diffuse fraction.
+# - Under sunny conditions (diffuse fraction < 0.5), module output is
+#   significantly reduced after just the first cell is shaded
+#   (1/12 = ~8% shaded fraction).

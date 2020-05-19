@@ -108,7 +108,7 @@ def interpolate(df, i):
     return f_interp(i)
 
 
-def combine(dfs):
+def combine_series(dfs):
     """
     Combine IV curves in series by aligning currents and summing voltages.
     The current range is based on the first curve's forward bias region.
@@ -158,7 +158,7 @@ def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
         ([df_partial] if include_partial_cell else []) +
         [df_shaded] * nrow_full_shade
     )
-    df = combine(half_substring_curves)
+    df = combine_series(half_substring_curves)
     # all substrings perform equally, so can just scale voltage directly
     df['v'] *= strings*2
     return df

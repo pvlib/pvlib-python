@@ -111,16 +111,18 @@ def plot_curves(dfs, labels):
     """plot the forward- and reverse-bias portions of an IV curve"""
     fig, axes = plt.subplots(1, 2)
     for df, label in zip(dfs, labels):
-        forward = df.loc[df['v'] > 0, :]
-        reverse = df.loc[df['v'] < 0, :]
-        reverse.plot('v', 'i', label=label, ax=axes[0])
-        forward.plot('v', 'i', label=label, ax=axes[1])
+        df.plot('v', 'i', label=label, ax=axes[0])
+        df.plot('v', 'i', label=label, ax=axes[1])
+        axes[0].set_xlim(right=0)
+        axes[1].set_xlim(left=0)
+
     return axes
 
 
 cell_curve_full_sun = simulate_full_curve(cell_parameters, Geff=1000, Tcell=40)
 cell_curve_shaded = simulate_full_curve(cell_parameters, Geff=200, Tcell=40)
 plot_curves([cell_curve_full_sun, cell_curve_shaded], ['Full Sun', 'Shaded'])
+plt.gcf().suptitle('Cell-level reverse- and forward-biased IV curves')
 
 
 # %%
@@ -145,11 +147,11 @@ def interpolate(df, i):
 def combine_series(dfs):
     """
     Combine IV curves in series by aligning currents and summing voltages.
-    The current range is based on the first curve's forward bias region.
+    The current range is based on the first curve's current range.
     """
     df1 = dfs[0]
     imin = df1['i'].min()
-    imax = df1.loc[df1['v'] > 0, 'i'].max()
+    imax = df1['i'].max()
     i = np.linspace(imin, imax, 1000)
     v = 0
     for df2 in dfs:
@@ -198,6 +200,29 @@ def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
     return df
 
 
+kwargs = {
+    'cell_parameters': cell_parameters,
+    'poa_direct': 800,
+    'poa_diffuse': 200,
+    'Tcell': 40
+}
+module_curve_full_sun = simulate_module(shaded_fraction=0, **kwargs)
+module_curve_shaded = simulate_module(shaded_fraction=0.1, **kwargs)
+plot_curves([module_curve_full_sun, module_curve_shaded],
+            ['Full Sun', 'Shaded'])
+plt.gcf().suptitle('Module-level reverse- and forward-biased IV curves')
+
+# %%
+# Calculating shading loss across shading scenarios
+# -------------------------------------------------
+#
+# Clearly the module-level IV-curve is strongly affected by partial shading.
+# This heatmap shows the module maximum power under a range of partial shade
+# conditions, where "diffuse fraction" refers to the ratio
+# :math:`poa_{diffuse} / poa_{global}` and "shaded fraction" refers to the
+# fraction of the module that receives only diffuse irradiance.
+
+
 def find_pmp(df):
     """simple function to find Pmp on an IV curve"""
     return df.product(axis=1).max()
@@ -233,14 +258,10 @@ plt.yticks(range(0, len(ylabels)), ylabels)
 plt.title('Module P_mp across shading conditions')
 plt.colorbar()
 plt.show()
+# use this figure as the thumbnail:
+# sphinx_gallery_thumbnail_number = 3
 
 # %%
-#
-# This heatmap shows the module maximum power under different partial shade
-# conditions, where "diffuse fraction" refers to the ratio
-# :math:`poa_{diffuse} / poa_{global}` and "shaded fraction" refers to the
-# fraction of the module that receives only diffuse irradiance.
-#
 # The heatmap makes a few things evident:
 #
 # - When diffuse fraction is equal to 1, there is no beam irradiance to lose,

@@ -58,6 +58,12 @@ cell_parameters = {
     'breakdown_voltage': -15,
 }
 
+# %%
+# Simulating a cell's IV curve
+# ----------------------------
+#
+# First, calculate IV curves for individual cells:
+
 
 def simulate_full_curve(parameters, Geff, Tcell, method='brentq',
                         ivcurve_pnts=1000):
@@ -99,6 +105,34 @@ def simulate_full_curve(parameters, Geff, Tcell, method='brentq',
         'i': ivcurve_i,
         'v': ivcurve_v,
     })
+
+
+def plot_curves(dfs, labels):
+    """plot the forward- and reverse-bias portions of an IV curve"""
+    fig, axes = plt.subplots(1, 2)
+    for df, label in zip(dfs, labels):
+        forward = df.loc[df['v'] > 0, :]
+        reverse = df.loc[df['v'] < 0, :]
+        reverse.plot('v', 'i', label=label, ax=axes[0])
+        forward.plot('v', 'i', label=label, ax=axes[1])
+    return axes
+
+
+cell_curve_full_sun = simulate_full_curve(cell_parameters, Geff=1000, Tcell=40)
+cell_curve_shaded = simulate_full_curve(cell_parameters, Geff=200, Tcell=40)
+plot_curves([cell_curve_full_sun, cell_curve_shaded], ['Full Sun', 'Shaded'])
+
+
+# %%
+# Combining cell IV curves to create a module IV curve
+# ----------------------------------------------------
+#
+# To combine the individual cell IV curves and form a module's IV curve,
+# the cells in each substring must be added in series and the substrings
+# added in parallel.  To add in series, the voltages for a given current are
+# added.  However, because each cell's curve is discretized and the currents
+# might not line up, we align each curve to a common set of current values
+# with interpolation.
 
 
 def interpolate(df, i):
@@ -188,6 +222,7 @@ for diffuse_fraction in np.linspace(0, 1, 11):
 results = pd.DataFrame(data)
 results['pmp'] /= results['pmp'].max()  # normalize power to 0-1
 results_pivot = results.pivot('fd', 'fs', 'pmp')
+plt.figure()
 plt.imshow(results_pivot, origin='lower', aspect='auto')
 plt.xlabel('shaded fraction')
 plt.ylabel('diffuse fraction')

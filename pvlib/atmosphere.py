@@ -22,12 +22,12 @@ def pres2alt(pressure):
     Parameters
     ----------
     pressure : numeric
-        Atmospheric pressure (Pascals)
+        Atmospheric pressure. [Pa]
 
     Returns
     -------
     altitude : numeric
-        Altitude in meters above sea level
+        Altitude above sea level. [m]
 
     Notes
     ------
@@ -62,12 +62,12 @@ def alt2pres(altitude):
     Parameters
     ----------
     altitude : numeric
-        Altitude in meters above sea level
+        Altitude above sea level. [m]
 
     Returns
     -------
     pressure : numeric
-        Atmospheric pressure (Pascals)
+        Atmospheric pressure. [Pa]
 
     Notes
     ------
@@ -97,25 +97,21 @@ def alt2pres(altitude):
 
 def get_absolute_airmass(airmass_relative, pressure=101325.):
     '''
-    Determine absolute (pressure corrected) airmass from relative
-    airmass and pressure
+    Determine absolute (pressure-adjusted) airmass from relative
+    airmass and pressure.
 
-    Gives the airmass for locations not at sea-level (i.e. not at
-    standard pressure). The input argument "AMrelative" is the relative
-    airmass. The input argument "pressure" is the pressure (in Pascals)
-    at the location of interest and must be greater than 0. The
-    calculation for absolute airmass is
+    The calculation for absolute airmass (AMa) is
 
     .. math::
-        absolute airmass = (relative airmass)*pressure/101325
+        airmass_absolute = airmass_relative \times \frac{pressure}{101325}
 
     Parameters
     ----------
     airmass_relative : numeric
-        The airmass at sea-level.
+        The airmass at sea-level. [unitless]
 
     pressure : numeric, default 101325
-        The site pressure in Pascal.
+        Atmospheric pressure. [Pa]
 
     Returns
     -------
@@ -146,17 +142,13 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     Parameters
     ----------
     zenith : numeric
-        Zenith angle of the sun in degrees. Note that some models use
-        the apparent (refraction corrected) zenith angle, and some
-        models use the true (not refraction-corrected) zenith angle. See
-        model descriptions to determine which type of zenith angle is
-        required. Apparent zenith angles must be calculated at sea level.
+        Zenith angle of the sun. [degrees]
 
     model : string, default 'kastenyoung1989'
         Available models include the following:
 
         * 'simple' - secant(apparent zenith angle) -
-          Note that this gives -inf at zenith=90
+          Note that this gives -Inf at zenith=90
         * 'kasten1966' - See reference [1] -
           requires apparent sun zenith
         * 'youngirvine1967' - See reference [2] -
@@ -173,8 +165,15 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     Returns
     -------
     airmass_relative : numeric
-        Relative airmass at sea level. Will return NaN values for any
-        zenith angle greater than 90 degrees.
+        Relative airmass at sea level. Returns NaN values for any
+        zenith angle greater than 90 degrees. [unitless]
+
+    Notes
+    -----
+    Some models use the apparent (refraction corrected) zenith angle, and some
+    models use the true (not refraction-corrected) zenith angle. See
+    model descriptions to determine which type of zenith angle is
+    required. Apparent zenith angles must be calculated at sea level.
 
     References
     ----------
@@ -264,28 +263,31 @@ def gueymard94_pw(temp_air, relative_humidity):
 
     .. math::
 
-           H_v = 0.4976 + 1.5265*T/273.15 + \exp(13.6897*T/273.15 - 14.9188*(T/273.15)^3)
+           H_v = 0.4976 + 1.5265 \frac{T}{273.15} +
+               \exp \left(13.6897 \frac{T}{273.15} -
+               14.9188 {\frac{T}{273.15}}^3 \right)
 
     :math:`\rho_v` is the surface water vapor density (g/m^3). In the
     expression :math:`\rho_v`, :math:`e_s` is the saturation water vapor
-    pressure (millibar). The
-    expression for :math:`e_s` is Eq. 1 in [3]_
+    pressure (millibar). The expression for :math:`e_s` is Eq. 1 in [3]_
 
     .. math::
 
-          e_s = \exp(22.330 - 49.140*(100/T) - 10.922*(100/T)^2 - 0.39015*T/100)
+          e_s = \exp \left(22.330 - 49.140 \frac{100}{T} -
+              10.922 \left(\frac{100}{T}\right)^2 -
+              0.39015 \frac{T}{100} \right)
 
     Parameters
     ----------
     temp_air : numeric
-        ambient air temperature at the surface (C)
+        ambient air temperature at the surface. [C]
     relative_humidity : numeric
-        relative humidity at the surface (%)
+        relative humidity at the surface. [%]
 
     Returns
     -------
     pw : numeric
-        precipitable water (cm)
+        precipitable water. [cm]
 
     References
     ----------
@@ -335,8 +337,8 @@ def first_solar_spectral_correction(pw, airmass_absolute,
 
     .. math::
 
-        M = c_1 + c_2*AMa  + c_3*Pwat  + c_4*AMa^.5
-            + c_5*Pwat^.5 + c_6*AMa/Pwat^.5
+        M = c_1 + c_2 \times AMa  + c_3 \times Pwat  + c_4 \times AMa^{0.5}
+            + c_5 \times Pwat^{0.5} + c_6 \times \frac{AMa} {Pwat^{0.5}}
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the
@@ -360,46 +362,44 @@ def first_solar_spectral_correction(pw, airmass_absolute,
     Parameters
     ----------
     pw : array-like
-        atmospheric precipitable water (cm).
+        atmospheric precipitable water. [cm]
 
     airmass_absolute : array-like
-        absolute (pressure corrected) airmass.
+        absolute (pressure corrected) airmass. [unitless]
 
     min_pw : float, default 0.1
-        minimum atmospheric precipitable water (cm). A lower pw value will be
-        automatically set to this minimum value to avoid model divergence.
+        minimum atmospheric precipitable water. Any pw value lower than min_pw
+        is set to min_pw to avoid model divergence. [cm]
 
     max_pw : float, default 8
-        maximum atmospheric precipitable water (cm). If a higher value is
-        encountered it will be set to np.nan to avoid model divergence.
+        maximum atmospheric precipitable water. Any pw value higher than max_pw
+        is set to NaN to avoid model divergence. [cm]
 
     module_type : None or string, default None
-        a string specifying a cell type. Can be lower or upper case
-        letters. Admits values of 'cdte', 'monosi', 'xsi', 'multisi',
-        'polysi'. If provided, this input selects coefficients for the
-        following default modules:
+        a string specifying a cell type. Values of 'cdte', 'monosi', 'xsi',
+        'multisi', and 'polysi' (can be lower or upper case). If provided,
+        module_type selects default coefficients for the following modules:
 
-            * 'cdte' - First Solar Series 4-2 CdTe modules.
-            * 'monosi', 'xsi' - First Solar TetraSun modules.
-            * 'multisi', 'polysi' - multi-crystalline silicon modules.
-            * 'cigs' - anonymous copper indium gallium selenide PV module
-            * 'asi' - anonymous amorphous silicon PV module
+            * 'cdte' - First Solar Series 4-2 CdTe module.
+            * 'monosi', 'xsi' - First Solar TetraSun module.
+            * 'multisi', 'polysi' - anonymous multi-crystalline silicon module.
+            * 'cigs' - anonymous copper indium gallium selenide module.
+            * 'asi' - anonymous amorphous silicon module.
 
         The module used to calculate the spectral correction
-        coefficients corresponds to the Mult-crystalline silicon
-        Manufacturer 2 Model C from [3]_. Spectral Response (SR) of CIGS
+        coefficients corresponds to the Multi-crystalline silicon
+        Manufacturer 2 Model C from [3]_. The spectral response (SR) of CIGS
         and a-Si modules used to derive coefficients can be found in [4]_
 
     coefficients : None or array-like, default None
-        allows for entry of user defined spectral correction
+        Allows for entry of user-defined spectral correction
         coefficients. Coefficients must be of length 6. Derivation of
         coefficients requires use of SMARTS and PV module quantum
         efficiency curve. Useful for modeling PV module types which are
         not included as defaults, or to fine tune the spectral
-        correction to a particular mono-Si, multi-Si, or CdTe PV module.
-        Note that the parameters for modules with very similar QE should
-        be similar, in most cases limiting the need for module specific
-        coefficients.
+        correction to a particular PV module. Note that the parameters for
+        modules with very similar quantum efficiency should be similar,
+        in most cases limiting the need for module specific coefficients.
 
     Returns
     -------
@@ -421,9 +421,9 @@ def first_solar_spectral_correction(pw, airmass_absolute,
        Models for PV Module Performance. National Renewable Energy
        Laboratory, 2014. http://www.nrel.gov/docs/fy14osti/61610.pdf
     .. [4] Schweiger, M. and Hermann, W, Influence of Spectral Effects
-        on Energy Yield of Different PV Modules: Comparison of Pwat and
-        MMF Approach, TUV Rheinland Energy GmbH report 21237296.003,
-        January 2017
+       on Energy Yield of Different PV Modules: Comparison of Pwat and
+       MMF Approach, TUV Rheinland Energy GmbH report 21237296.003,
+       January 2017
     """
 
     # --- Screen Input Data ---
@@ -503,14 +503,14 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
     Parameters
     ----------
     aod380 : numeric
-        AOD measured at 380 nm
+        AOD measured at 380 nm. [unitless]
     aod500 : numeric
-        AOD measured at 500 nm
+        AOD measured at 500 nm. [unitless]
 
     Returns
     -------
     aod_bb : numeric
-        broadband AOD
+        Broadband AOD.  [unitless]
 
     See also
     --------
@@ -532,7 +532,7 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
 
 def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     """
-    Calculate Linke turbidity factor using Kasten pyrheliometric formula.
+    Calculate Linke turbidity  using Kasten pyrheliometric formula.
 
     Note that broadband aerosol optical depth (AOD) can be approximated by AOD
     measured at 700 nm according to Molineaux [4] . Bird and Hulstrom offer an
@@ -541,22 +541,22 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     Based on original implementation by Armel Oumbe.
 
     .. warning::
-        These calculations are only valid for air mass less than 5 atm and
+        These calculations are only valid for airmass less than 5 and
         precipitable water less than 5 cm.
 
     Parameters
     ----------
     airmass_absolute : numeric
-        airmass, pressure corrected in atmospheres
+        Pressure-adjusted airmass. [unitless]
     precipitable_water : numeric
-        precipitable water or total column water vapor in centimeters
+        Precipitable water. [cm]
     aod_bb : numeric
-        broadband AOD
+        broadband AOD. [unitless]
 
     Returns
     -------
     lt : numeric
-        Linke turbidity
+        Linke turbidity. [unitless]
 
     See also
     --------
@@ -625,18 +625,18 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     Parameters
     ----------
     aod0 : numeric
-        aerosol optical depth (AOD) measured at known wavelength
+        Aerosol optical depth (AOD) measured at known wavelength. [unitless]
     lambda0 : numeric
-        wavelength in nanometers corresponding to ``aod0``
+        Wavelength corresponding to ``aod0``. [nm]
     alpha : numeric, default 1.14
-        Angstrom :math:`\alpha` exponent corresponding to ``aod0``
+        Angstrom :math:`\alpha` exponent corresponding to ``aod0``. [unitless]
     lambda1 : numeric, default 700
-        desired wavelength in nanometers
+        Desired wavelength. [nm]
 
     Returns
     -------
     aod1 : numeric
-        AOD at desired wavelength, ``lambda1``
+        AOD at desired wavelength, ``lambda1``. [unitless]
 
     See also
     --------
@@ -664,18 +664,19 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     Parameters
     ----------
     aod1 : numeric
-        first aerosol optical depth
+        First aerosol optical depth. [unitless]
     lambda1 : numeric
-        wavelength in nanometers corresponding to ``aod1``
+        Wavelength corresponding to ``aod1``. [nm]
     aod2 : numeric
-        second aerosol optical depth
+        Second aerosol optical depth. [unitless]
     lambda2 : numeric
-        wavelength in nanometers corresponding to ``aod2``
+        Wavelength corresponding to ``aod2``. [nm]
 
     Returns
     -------
     alpha : numeric
-        Angstrom :math:`\alpha` exponent for AOD in ``(lambda1, lambda2)``
+        Angstrom :math:`\alpha` exponent for AOD in ``(lambda1, lambda2)``.
+        [unitless]
 
     See also
     --------

@@ -46,7 +46,7 @@ kb = 1.380649e-23  # J/K
 qe = 1.602176634e-19  # C
 Vth = kb * (273.15+25) / qe
 
-parameters = {
+cell_parameters = {
     'I_L_ref': 8.24,
     'I_o_ref': 2.36e-9,
     'a_ref': 1.3*Vth,
@@ -124,7 +124,7 @@ def combine(dfs):
     return pd.DataFrame({'i': i, 'v': v})
 
 
-def simulate_module(parameters, poa_direct, poa_diffuse, Tcell,
+def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
                     shaded_fraction, cells_per_string=24, strings=3):
     """
     Simulate the IV curve for a partially shaded module.
@@ -140,17 +140,17 @@ def simulate_module(parameters, poa_direct, poa_diffuse, Tcell,
     partial_shade_fraction = 1 - (shaded_fraction * nrow - nrow_full_shade)
 
     df_lit = simulate_full_curve(
-            parameters,
-            poa_diffuse + poa_direct,
-            Tcell)
+        cell_parameters,
+        poa_diffuse + poa_direct,
+        Tcell)
     df_partial = simulate_full_curve(
-            parameters,
-            poa_diffuse + partial_shade_fraction * poa_direct,
-            Tcell)
+        cell_parameters,
+        poa_diffuse + partial_shade_fraction * poa_direct,
+        Tcell)
     df_shaded = simulate_full_curve(
-            parameters,
-            poa_diffuse,
-            Tcell)
+        cell_parameters,
+        poa_diffuse,
+        Tcell)
     # build a list of IV curves for a single column of cells (half a substring)
     include_partial_cell = (shaded_fraction < 1)
     half_substring_curves = (
@@ -174,7 +174,7 @@ data = []
 for diffuse_fraction in np.linspace(0, 1, 11):
     for shaded_fraction in np.linspace(0, 1, 51):
 
-        df = simulate_module(parameters,
+        df = simulate_module(cell_parameters,
                              poa_direct=(1-diffuse_fraction)*1000,
                              poa_diffuse=diffuse_fraction*1000,
                              Tcell=40,

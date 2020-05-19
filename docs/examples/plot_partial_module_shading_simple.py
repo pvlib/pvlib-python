@@ -190,9 +190,9 @@ def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
     # build a list of IV curves for a single column of cells (half a substring)
     include_partial_cell = (shaded_fraction < 1)
     half_substring_curves = (
-        [df_lit] * (nrow - nrow_full_shade - 1) +
-        ([df_partial] if include_partial_cell else []) +
-        [df_shaded] * nrow_full_shade
+        [df_lit] * (nrow - nrow_full_shade - 1)
+        + ([df_partial] if include_partial_cell else [])
+        + [df_shaded] * nrow_full_shade
     )
     df = combine_series(half_substring_curves)
     # all substrings perform equally, so can just scale voltage directly

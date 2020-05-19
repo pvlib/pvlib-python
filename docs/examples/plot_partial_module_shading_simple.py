@@ -191,8 +191,8 @@ def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
     include_partial_cell = (shaded_fraction < 1)
     half_substring_curves = (
         [df_lit] * (nrow - nrow_full_shade - 1)
-        + ([df_partial] if include_partial_cell else [])
-        + [df_shaded] * nrow_full_shade
+        + ([df_partial] if include_partial_cell else [])  # noqa: W503
+        + [df_shaded] * nrow_full_shade  # noqa: W503
     )
     df = combine_series(half_substring_curves)
     # all substrings perform equally, so can just scale voltage directly

@@ -103,12 +103,15 @@ def get_absolute_airmass(airmass_relative, pressure=101325.):
     The calculation for absolute airmass (:math:`AM_a`) is
 
     .. math::
-        AM_a = AM_r \frac{pressure}{101325}
+        AM_a = AM_r \frac{P}{101325}
+
+    where :math:`AM_r` is relative air mass at sea level an d:math:`P` is
+    atmospheric pressure.
 
     Parameters
     ----------
     airmass_relative : numeric
-        The airmass at sea-level. [unitless]
+        The airmass at sea level. [unitless]
 
     pressure : numeric, default 101325
         Atmospheric pressure. [Pa]
@@ -134,7 +137,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     '''
     Calculate relative (not pressure-adjusted) airmass at sea level.
 
-    The ``model`` variable allows selection of different airmass models.
+    Parameter ``model`` allows selection of different airmass models.
 
     Parameters
     ----------
@@ -167,10 +170,9 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
     Notes
     -----
-    Some models use the apparent (refraction-adjusted) zenith angle while
-    other models use the true (not refraction-adjusted) zenith angle. See
-    model descriptions to determine which type of zenith angle is
-    required. Apparent zenith angles should be calculated at sea level.
+    Some models use apparent (refraction-adjusted) zenith angle while
+    other models use true (not refraction-adjusted) zenith angle. Apparent
+    zenith angles should be calculated at sea level.
 
     References
     ----------
@@ -247,7 +249,7 @@ def gueymard94_pw(temp_air, relative_humidity):
 
     .. math::
 
-           w = 0.1 H_v \rho_v
+           Pw = 0.1 H_v \rho_v
 
     using Eq. 2 in [2]_
 
@@ -255,8 +257,9 @@ def gueymard94_pw(temp_air, relative_humidity):
 
            \rho_v = 216.7 R_H e_s /T
 
-    :math:`H_v` is the apparant water vapor scale height (km). The
-    expression for :math:`H_v` is Eq. 4 in [2]_:
+    :math:`Pw` is the precipitable water (cm), :math:`H_v` is the apparent
+    water vapor scale height (km) and :math:`\rho_v` is the surface water
+    vapor density (g/m^3). . The expression for :math:`H_v` is Eq. 4 in [2]_:
 
     .. math::
 
@@ -264,9 +267,8 @@ def gueymard94_pw(temp_air, relative_humidity):
                + \exp \left(13.6897 \frac{T}{273.15}
                - 14.9188 \left( \frac{T}{273.15} \right)^3 \right)
 
-    :math:`\rho_v` is the surface water vapor density (g/m^3). In the
-    expression :math:`\rho_v`, :math:`e_s` is the saturation water vapor
-    pressure (millibar). The expression for :math:`e_s` is Eq. 1 in [3]_
+    In the expression for :math:`\rho_v`, :math:`e_s` is the saturation water
+    vapor pressure (millibar). The expression for :math:`e_s` is Eq. 1 in [3]_
 
     .. math::
 
@@ -277,9 +279,9 @@ def gueymard94_pw(temp_air, relative_humidity):
     Parameters
     ----------
     temp_air : numeric
-        ambient air temperature at the surface. [C]
+        ambient air temperature :math:`T` at the surface. [C]
     relative_humidity : numeric
-        relative humidity at the surface. [%]
+        relative humidity :math:`R_H` at the surface. [%]
 
     Returns
     -------
@@ -326,16 +328,16 @@ def first_solar_spectral_correction(pw, airmass_absolute,
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) airmass.
 
-    Estimates a spectral mismatch modifier M representing the effect on
+    Estimates a spectral mismatch modifier :math:`M` representing the effect on
     module short circuit current of variation in the spectral
-    irradiance. M is estimated from absolute (pressure currected) air
+    irradiance. :math:`M`  is estimated from absolute (pressure currected) air
     mass, :math:`AM_a`, and precipitable water, :math:`Pw`, using the following
     function:
 
     .. math::
 
-        M = c_1 + c_2 AM_a  + c_3 Pw  + c_4 AMa^{0.5}
-            + c_5 Pw^{0.5} + c_6 \frac{AMa} {Pw^{0.5}}
+        M = c_1 + c_2 AM_a  + c_3 Pw  + c_4 AM_a^{0.5}
+            + c_5 Pw^{0.5} + c_6 \frac{AM_a} {Pw^{0.5}}
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the
@@ -343,7 +345,7 @@ def first_solar_spectral_correction(pw, airmass_absolute,
     SMARTS, spectrums are simulated with all combinations of AMa and
     Pw where:
 
-       * :math:`0.5 cm <= Pw <= 5 cm`
+       * :math:`0.5 \roman{cm} <= Pw <= 5 \roman{cm}`
        * :math:`1.0 <= AM_a <= 5.0`
        * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
        * spectrum simulated on a plane normal to the sun
@@ -354,7 +356,7 @@ def first_solar_spectral_correction(pw, airmass_absolute,
     applied to fit Eq. 1 to determine the coefficients for each module.
 
     Based on the PVLIB Matlab function ``pvl_FSspeccorr`` by Mitchell
-    Lee and Alex Panchula, at First Solar, 2016 [2]_.
+    Lee and Alex Panchula of First Solar, 2016 [2]_.
 
     Parameters
     ----------
@@ -622,7 +624,8 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     Parameters
     ----------
     aod0 : numeric
-        Aerosol optical depth (AOD) measured at known wavelength. [unitless]
+        Aerosol optical depth (AOD) measured at wavelength ``lambda0``.
+        [unitless]
     lambda0 : numeric
         Wavelength corresponding to ``aod0``. [nm]
     alpha : numeric, default 1.14
@@ -633,7 +636,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     Returns
     -------
     aod1 : numeric
-        AOD at desired wavelength, ``lambda1``. [unitless]
+        AOD at desired wavelength ``lambda1``. [unitless]
 
     See also
     --------
@@ -661,19 +664,19 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     Parameters
     ----------
     aod1 : numeric
-        First aerosol optical depth. [unitless]
+        Aerosol optical depth at wavelength ``lambda1``. [unitless]
     lambda1 : numeric
         Wavelength corresponding to ``aod1``. [nm]
     aod2 : numeric
-        Second aerosol optical depth. [unitless]
+        Aerosol optical depth  at wavelength ``lambda2``. [unitless]
     lambda2 : numeric
         Wavelength corresponding to ``aod2``. [nm]
 
     Returns
     -------
     alpha : numeric
-        Angstrom :math:`\alpha` exponent for AOD in ``(lambda1, lambda2)``.
-        [unitless]
+        Angstrom :math:`\alpha` exponent for wavelength in
+        ``(lambda1, lambda2)``. [unitless]
 
     See also
     --------

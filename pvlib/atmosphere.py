@@ -40,7 +40,7 @@ def pres2alt(pressure):
     Temperature at zero altitude   288.15 K
     Gravitational acceleration     9.80665 m/s^2
     Lapse rate                     -6.5E-3 K/m
-    Gas constant for air           287.053 J/(kgK)
+    Gas constant for air           287.053 J/(kg K)
     Relative Humidity              0%
     ============================   ================
 
@@ -80,7 +80,7 @@ def alt2pres(altitude):
     Temperature at zero altitude   288.15 K
     Gravitational acceleration     9.80665 m/s^2
     Lapse rate                     -6.5E-3 K/m
-    Gas constant for air           287.053 J/(kgK)
+    Gas constant for air           287.053 J/(kg K)
     Relative Humidity              0%
     ============================   ================
 
@@ -96,14 +96,14 @@ def alt2pres(altitude):
 
 
 def get_absolute_airmass(airmass_relative, pressure=101325.):
-    '''
+    r'''
     Determine absolute (pressure-adjusted) airmass from relative
     airmass and pressure.
 
-    The calculation for absolute airmass (AMa) is
+    The calculation for absolute airmass (:math:`AM_a`) is
 
     .. math::
-        airmass_absolute = airmass_relative \times \frac{pressure}{101325}
+        AM_a = AM_r \frac{pressure}{101325}
 
     Parameters
     ----------
@@ -116,7 +116,7 @@ def get_absolute_airmass(airmass_relative, pressure=101325.):
     Returns
     -------
     airmass_absolute : numeric
-        Absolute (pressure corrected) airmass
+        Absolute (pressure-adjusted) airmass
 
     References
     ----------
@@ -132,12 +132,9 @@ def get_absolute_airmass(airmass_relative, pressure=101325.):
 
 def get_relative_airmass(zenith, model='kastenyoung1989'):
     '''
-    Gives the relative (not pressure-corrected) airmass.
+    Calculate relative (not pressure-adjusted) airmass at sea level.
 
-    Gives the airmass at sea-level when given a sun zenith angle (in
-    degrees). The ``model`` variable allows selection of different
-    airmass models (described below). If ``model`` is not included or is
-    not valid, the default model is 'kastenyoung1989'.
+    The ``model`` variable allows selection of different airmass models.
 
     Parameters
     ----------
@@ -153,7 +150,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
           requires apparent sun zenith
         * 'youngirvine1967' - See reference [2] -
           requires true sun zenith
-        * 'kastenyoung1989' - See reference [3] -
+        * 'kastenyoung1989' (default) - See reference [3] -
           requires apparent sun zenith
         * 'gueymard1993' - See reference [4] -
           requires apparent sun zenith
@@ -170,10 +167,10 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
     Notes
     -----
-    Some models use the apparent (refraction corrected) zenith angle, and some
-    models use the true (not refraction-corrected) zenith angle. See
+    Some models use the apparent (refraction-adjusted) zenith angle while
+    other models use the true (not refraction-adjusted) zenith angle. See
     model descriptions to determine which type of zenith angle is
-    required. Apparent zenith angles must be calculated at sea level.
+    required. Apparent zenith angles should be calculated at sea level.
 
     References
     ----------
@@ -263,9 +260,9 @@ def gueymard94_pw(temp_air, relative_humidity):
 
     .. math::
 
-           H_v = 0.4976 + 1.5265 \frac{T}{273.15} +
-               \exp \left(13.6897 \frac{T}{273.15} -
-               14.9188 {\frac{T}{273.15}}^3 \right)
+           H_v = 0.4976 + 1.5265 \frac{T}{273.15}
+               + \exp \left(13.6897 \frac{T}{273.15}
+               - 14.9188 \left( \frac{T}{273.15} \right)^3 \right)
 
     :math:`\rho_v` is the surface water vapor density (g/m^3). In the
     expression :math:`\rho_v`, :math:`e_s` is the saturation water vapor
@@ -327,27 +324,27 @@ def first_solar_spectral_correction(pw, airmass_absolute,
                                     min_pw=0.1, max_pw=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
-    (pressure corrected) airmass.
+    (pressure-adjusted) airmass.
 
     Estimates a spectral mismatch modifier M representing the effect on
     module short circuit current of variation in the spectral
     irradiance. M is estimated from absolute (pressure currected) air
-    mass, AMa, and precipitable water, Pwat, using the following
+    mass, :math:`AM_a`, and precipitable water, :math:`Pw`, using the following
     function:
 
     .. math::
 
-        M = c_1 + c_2 \times AMa  + c_3 \times Pwat  + c_4 \times AMa^{0.5}
-            + c_5 \times Pwat^{0.5} + c_6 \times \frac{AMa} {Pwat^{0.5}}
+        M = c_1 + c_2 AM_a  + c_3 Pw  + c_4 AMa^{0.5}
+            + c_5 Pw^{0.5} + c_6 \frac{AMa} {Pw^{0.5}}
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the
     Atmospheric Radiative Transfer of Sunshine (SMARTS) [1]_. Using
     SMARTS, spectrums are simulated with all combinations of AMa and
-    Pwat where:
+    Pw where:
 
-       * 0.5 cm <= Pwat <= 5 cm
-       * 1.0 <= AMa <= 5.0
+       * :math:`0.5 cm <= Pw <= 5 cm`
+       * :math:`1.0 <= AM_a <= 5.0`
        * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
        * spectrum simulated on a plane normal to the sun
        * All other parameters fixed at G173 standard
@@ -365,7 +362,7 @@ def first_solar_spectral_correction(pw, airmass_absolute,
         atmospheric precipitable water. [cm]
 
     airmass_absolute : array-like
-        absolute (pressure corrected) airmass. [unitless]
+        absolute (pressure-adjusted) airmass. [unitless]
 
     min_pw : float, default 0.1
         minimum atmospheric precipitable water. Any pw value lower than min_pw
@@ -428,8 +425,8 @@ def first_solar_spectral_correction(pw, airmass_absolute,
 
     # --- Screen Input Data ---
 
-    # *** Pwat ***
-    # Replace Pwat Values below 0.1 cm with 0.1 cm to prevent model from
+    # *** Pw ***
+    # Replace Pw Values below 0.1 cm with 0.1 cm to prevent model from
     # diverging"
     pw = np.atleast_1d(pw)
     pw = pw.astype('float64')
@@ -438,7 +435,7 @@ def first_solar_spectral_correction(pw, airmass_absolute,
         warn('Exceptionally low pw values replaced with {0} cm to prevent '
              'model divergence'.format(min_pw))
 
-    # Warn user about Pwat data that is exceptionally high
+    # Warn user about Pw data that is exceptionally high
     if np.max(pw) > max_pw:
         pw[pw > max_pw] = np.nan
         warn('Exceptionally high pw values replaced by np.nan: '
@@ -514,7 +511,7 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
 
     See also
     --------
-    kasten96_lt
+    pvlib.atmosphere.kasten96_lt
 
     References
     ----------
@@ -560,8 +557,8 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
 
     See also
     --------
-    bird_hulstrom80_aod_bb
-    angstrom_aod_at_lambda
+    pvlib.atmosphere.bird_hulstrom80_aod_bb
+    pvlib.atmosphere.angstrom_aod_at_lambda
 
     References
     ----------
@@ -640,7 +637,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
 
     See also
     --------
-    angstrom_alpha
+    pvlib.atmosphere.angstrom_alpha
 
     References
     ----------
@@ -680,6 +677,6 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
 
     See also
     --------
-    angstrom_aod_at_lambda
+    pvlib.atmosphere.angstrom_aod_at_lambda
     """
     return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)

@@ -288,12 +288,18 @@ class Location(object):
         solar_position : None or DataFrame, default None
             DataFrame with with columns 'apparent_zenith', 'zenith'.
         model : str, default 'kastenyoung1989'
-            Relative airmass model
+            Relative airmass model. See
+            :py:func:`pvlib.atmosphere.get_relative_airmass`
+            for a list of available models.
 
         Returns
         -------
         airmass : DataFrame
             Columns are 'airmass_relative', 'airmass_absolute'
+
+        See also
+        --------
+        pvlib.atmosphere.get_relative_airmass
         """
 
         if solar_position is None:

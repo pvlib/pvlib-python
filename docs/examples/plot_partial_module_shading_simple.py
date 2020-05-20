@@ -17,8 +17,8 @@ Example of modeling cell-to-cell mismatch loss from partial module shading.
 #
 # The primary functions used here are:
 #
-# - :py:meth:`pvlib.pvsystem.calcparams_desoto` to estimate the SDE parameters
-#   at the specified operating conditions.
+# - :py:meth:`pvlib.pvsystem.calcparams_desoto` to estimate the single
+#   diode equation parameters at some specified operating conditions.
 # - :py:meth:`pvlib.singlediode.bishop88` to calculate the full cell IV curve,
 #   including the reverse bias region.
 #
@@ -31,10 +31,9 @@ Example of modeling cell-to-cell mismatch loss from partial module shading.
 #     Modeling partial module shading is complicated and depends significantly
 #     on the module's electrical topology.  This example makes some simplifying
 #     assumptions that are not generally applicable.  For instance, it assumes
-#     that all of the module's cell strings perform identically, making it
-#     possible to ignore the effect of bypass diodes.  It also assumes that
-#     shading only applies to beam irradiance, *i.e.* all cells receive the
-#     same amount of diffuse irradiance.
+#     that shading only applies to beam irradiance (*i.e.* all cells receive
+#     the same amount of diffuse irradiance) and cell temperature is uniform
+#     and not affected by cell-level irradiance variation.
 
 from pvlib import pvsystem, singlediode
 import pandas as pd
@@ -42,8 +41,12 @@ import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 
+from scipy.constants import e as qe, k as kB
+
 kb = 1.380649e-23  # J/K
 qe = 1.602176634e-19  # C
+# kb is J/K, qe is C=J/V
+# kb * T / qe -> V
 Vth = kb * (273.15+25) / qe
 
 cell_parameters = {
@@ -59,11 +62,24 @@ cell_parameters = {
 }
 
 # %%
-# Simulating a cell's IV curve
-# ----------------------------
+# Simulating a cell IV curve
+# --------------------------
 #
-# First, calculate IV curves for individual cells:
-
+# First, calculate IV curves for individual cells.  The process is as follows:
+#
+# 1) Given a set of cell parameters at reference conditions and the operating
+#    conditions of interest (irradiance and temperature), use a single-diode
+#    model to calculate the single diode equation parameters for the cell at
+#    the operating conditions.  Here we use the De Soto model via
+#    :py:func:`pvlib.pvsystem.calcparams_desoto`.
+# 2) The single diode equation cannot be solved analytically, so pvlib has
+#    implemented a couple methods of solving it for us.  However, currently
+#    only the Bishop '88 method (:py:func:`pvlib.singlediode.bishop88`) has
+#    the ability to model the reverse bias characteristic in addition to the
+#    forward characteristic.  Depending on the nature of the shadow, it is
+#    sometimes necessary to model the reverse bias portion of the IV curve,
+#    so we use the Bishop '88 method here.  This gives us a set of (V, I)
+#    points on the cell's IV curve.
 
 def simulate_full_curve(parameters, Geff, Tcell, method='brentq',
                         ivcurve_pnts=1000):
@@ -98,6 +114,8 @@ def simulate_full_curve(parameters, Geff, Tcell, method='brentq',
     v_oc = singlediode.bishop88_v_from_i(
         0.0, *sde_args, method=method, **kwargs
     )
+    # ideally would use some intelligent log-spacing to concentrate points
+    # around the forward- and reverse-bias knees, but this is good enough:
     vd = np.linspace(0.99*kwargs['breakdown_voltage'], v_oc, ivcurve_pnts)
 
     ivcurve_i, ivcurve_v, _ = singlediode.bishop88(vd, *sde_args, **kwargs)
@@ -107,31 +125,55 @@ def simulate_full_curve(parameters, Geff, Tcell, method='brentq',
     })
 
 
-def plot_curves(dfs, labels):
+# %%
+# Now that we can calculate cell-level IV curves, let's compare a
+# fully-illuminated cell's curve to a shaded cell's curve.  Note that shading
+# typically does not reduce a cell's illumination to zero -- tree shading and
+# row-to-row shading block the beam portion of irradiance but leave the diffuse
+# portion largely intact.  In this example plot, we choose :math:`200 W/m^2`
+# as the amount of irradiance received by a shaded cell.
+
+def plot_curves(dfs, labels, title):
     """plot the forward- and reverse-bias portions of an IV curve"""
-    fig, axes = plt.subplots(1, 2)
+    fig, axes = plt.subplots(1, 2, sharey=True, figsize=(5, 3))
     for df, label in zip(dfs, labels):
         df.plot('v', 'i', label=label, ax=axes[0])
         df.plot('v', 'i', label=label, ax=axes[1])
         axes[0].set_xlim(right=0)
-        axes[1].set_xlim(left=0)
-
+        axes[0].set_ylim([0, 25])
+        axes[1].set_xlim([0, df['v'].max()*1.5])
+    axes[0].set_ylabel('current [A]')
+    axes[0].set_xlabel('voltage [V]')
+    axes[1].set_xlabel('voltage [V]')
+    fig.suptitle(title)
+    fig.tight_layout()
     return axes
 
 
 cell_curve_full_sun = simulate_full_curve(cell_parameters, Geff=1000, Tcell=40)
 cell_curve_shaded = simulate_full_curve(cell_parameters, Geff=200, Tcell=40)
-plot_curves([cell_curve_full_sun, cell_curve_shaded], ['Full Sun', 'Shaded'])
-plt.gcf().suptitle('Cell-level reverse- and forward-biased IV curves')
-
+ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
+                 labels=['Full Sun', 'Shaded'],
+                 title='Cell-level reverse- and forward-biased IV curves')
 
 # %%
+# This figure shows how a cell's current decreases roughly in proportion to
+# the irradiance reduction from shading, but voltage changes much less.
+# At the cell level, the effect of shading is essentially to shift the I-V
+# curve down to lower currents rather than change the curve's shape.
+#
+# Note that the forward and reverse curves are plotted separately to
+# accommodate the different voltage scales involved -- a normal crystalline
+# silicon cell reaches only ~0.6V in forward bias, but can get to -10 to -20V
+# in reverse bias.
+#
 # Combining cell IV curves to create a module IV curve
 # ----------------------------------------------------
 #
 # To combine the individual cell IV curves and form a module's IV curve,
-# the cells in each substring must be added in series and the substrings
-# added in parallel.  To add in series, the voltages for a given current are
+# the cells in each substring must be added in series.  The substrings are
+# in series as well, but with parallel bypass diodes to protect from reverse
+# bias voltages.  To add in series, the voltages for a given current are
 # added.  However, because each cell's curve is discretized and the currents
 # might not line up, we align each curve to a common set of current values
 # with interpolation.
@@ -160,17 +202,33 @@ def combine_series(dfs):
     return pd.DataFrame({'i': i, 'v': v})
 
 
+# %%
+# Rather than simulate all 72 cells in the module, we'll assume that there
+# are only three types of cells (fully illuminated, fully shaded, and
+# partially shaded), and within each type all cells behave identically.  This
+# means that simulating one cell from each type (for three cell simulations
+# total) is sufficient to model the module as a whole.
+#
+# This function also models the effect of bypass diodes in parallel with each
+# substring.  Bypass diodes are normally inactive but conduct when substring
+# voltage becomes sufficiently negative, presumably due to the substring
+# entering reverse bias from mismatch between substrings.  In that case the
+# substring's voltage is clamped to the diode's trigger voltage (assumed to
+# be 0.5V here).
+
 def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
                     shaded_fraction, cells_per_string=24, strings=3):
     """
     Simulate the IV curve for a partially shaded module.
     The shade is assumed to be coming up from the bottom of the module when in
     portrait orientation, so it affects all substrings equally.
+    For simplicity, cell temperature is assumed to be uniform across the
+    module, regardless of variation in cell-level illumination.
     Substrings are assumed to be "down and back", so the number of cells per
     string is divided between two columns of cells.
     """
     # find the number of cells per column that are in full shadow
-    nrow = cells_per_string//2
+    nrow = cells_per_string // 2
     nrow_full_shade = int(shaded_fraction * nrow)
     # find the fraction of shade in the border row
     partial_shade_fraction = 1 - (shaded_fraction * nrow - nrow_full_shade)
@@ -194,11 +252,25 @@ def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
         + ([df_partial] if include_partial_cell else [])  # noqa: W503
         + [df_shaded] * nrow_full_shade  # noqa: W503
     )
-    df = combine_series(half_substring_curves)
-    # all substrings perform equally, so can just scale voltage directly
-    df['v'] *= strings*2
-    return df
+    substring_curve = combine_series(half_substring_curves)
+    substring_curve['v'] *= 2  # turn half strings into whole strings
+    # bypass diode:
+    substring_curve['v'] = substring_curve['v'].clip(lower=-0.5)
+    # no need to interpolate since we're just scaling voltage directly:
+    substring_curve['v'] *= strings
+    return substring_curve
 
+# %%
+# Now let's see how shade affects the IV curves at the module level.  For this
+# example, the bottom 10% of the module is shaded.  Assuming 12 cells per
+# column, that means one row of cells is fully shaded and another row is
+# partially shaded.  Even though only 10% of the module is shaded, the
+# maximum power is decreased by roughly 80%!
+#
+# Note the effect of the bypass diodes.  Without bypass diodes, operating the
+# shaded module at the same current as the fully illuminated module would
+# create a reverse-bias voltage of several hundred volts!  However, the diodes
+# prevent the reverse voltage from exceeding 1.5V (three diodes at 0.5V each).
 
 kwargs = {
     'cell_parameters': cell_parameters,
@@ -208,9 +280,9 @@ kwargs = {
 }
 module_curve_full_sun = simulate_module(shaded_fraction=0, **kwargs)
 module_curve_shaded = simulate_module(shaded_fraction=0.1, **kwargs)
-plot_curves([module_curve_full_sun, module_curve_shaded],
-            ['Full Sun', 'Shaded'])
-plt.gcf().suptitle('Module-level reverse- and forward-biased IV curves')
+ax = plot_curves([module_curve_full_sun, module_curve_shaded],
+                 labels=['Full Sun', 'Shaded'],
+                 title='Module-level reverse- and forward-biased IV curves')
 
 # %%
 # Calculating shading loss across shading scenarios

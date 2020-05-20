@@ -345,7 +345,7 @@ def first_solar_spectral_correction(pw, airmass_absolute,
     SMARTS, spectrums are simulated with all combinations of AMa and
     Pw where:
 
-       * :math:`0.5 \roman{cm} <= Pw <= 5 \roman{cm}`
+       * :math:`0.5 \textrm{cm} <= Pw <= 5 \textrm{cm}`
        * :math:`1.0 <= AM_a <= 5.0`
        * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
        * spectrum simulated on a plane normal to the sun

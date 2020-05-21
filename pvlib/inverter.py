@@ -10,75 +10,62 @@ import pandas as pd
 
 def sandia(v_dc, p_dc, inverter):
     r'''
-    Converts DC power and voltage to AC power using Sandia's
+    Convert DC power and voltage to AC power using Sandia's
     Grid-Connected PV Inverter model.
 
     Parameters
     ----------
     v_dc : numeric
-        DC voltages, in volts, which are provided as input to the
-        inverter. Vdc should be >= 0.
+        DC voltage input to the inverter. [V]
 
     p_dc : numeric
-        A scalar or DataFrame of DC powers, in watts, which are provided
-        as input to the inverter. Pdc should be >= 0.
+        DC power input to the inverter. [W]
 
     inverter : dict-like
-        A dict-like object defining the inverter to be used, giving the
-        inverter performance parameters according to the Sandia
-        Grid-Connected Photovoltaic Inverter Model (SAND 2007-5036) [1]_.
-        A set of inverter performance parameters are provided with
-        pvlib, or may be generated from a System Advisor Model (SAM) [2]_
-        library using retrievesam. See Notes for required keys.
+        Defines parameters for the inverter model in [1]_.  See Notes for
+        required parameters. A copy of the parameter database from the System
+        Advisor Model (SAM) [2]_ is provided with pvlib and may be read using
+        :py:func:`pvlib.pvsystem.retrieve_sam.
 
     Returns
     -------
     ac_power : numeric
-        Modeled AC power output given the input DC voltage, Vdc, and
-        input DC power, Pdc. When ac_power would be greater than Pac0,
-        it is set to Pac0 to represent inverter "clipping". When
-        ac_power would be less than Ps0 (startup power required), then
-        ac_power is set to -1*abs(Pnt) to represent nightly power
-        losses. ac_power is not adjusted for maximum power point
-        tracking (MPPT) voltage windows or maximum current limits of the
-        inverter.
+        AC power output. [W]
 
     Notes
     -----
 
     Determines the AC power output of an inverter given the DC voltage and DC
-    power. Output AC power is clipped at the inverter's maximum power output
-    and output power can be negative during low-input power conditions. The
-    Sandia inverter model does NOT account for maximum power point
-    tracking voltage windows nor maximum current or voltage limits on
-    the inverter.
+    power. Output AC power is bounded above by the parameter ``Paco``, to
+    represent inverter "clipping".  When `ac_power` would be less than
+    parameter ``Pso`` (startup power required), then `ac_power` is set to
+    ``-Pnt``, representing self-consumption. `ac_power` is not adjusted for
+    maximum power point tracking (MPPT) voltage windows or maximum current
+    limits of the inverter.
 
-    Required inverter keys are:
+    Required inverter parameters are:
 
     ======   ============================================================
     Column   Description
     ======   ============================================================
-    Pac0     AC-power output from inverter based on input power
-             and voltage (W)
-    Pdc0     DC-power input to inverter, typically assumed to be equal
-             to the PV array maximum power (W)
-    Vdc0     DC-voltage level at which the AC-power rating is achieved
-             at the reference operating condition (V)
-    Ps0      DC-power required to start the inversion process, or
+    Paco     AC power rating of the inverter. [W]
+    Pdco     DC power input to inverter, typically assumed to be equal
+             to the PV array maximum power. [W]
+    Vdco     DC voltage at which the AC power rating is achieved
+             at the reference operating condition. [V]
+    Pso      DC power required to start the inversion process, or
              self-consumption by inverter, strongly influences inverter
-             efficiency at low power levels (W)
+             efficiency at low power levels. [W]
     C0       Parameter defining the curvature (parabolic) of the
-             relationship between ac-power and dc-power at the reference
-             operating condition, default value of zero gives a
-             linear relationship (1/W)
-    C1       Empirical coefficient allowing Pdco to vary linearly
-             with dc-voltage input, default value is zero (1/V)
-    C2       Empirical coefficient allowing Pso to vary linearly with
-             dc-voltage input, default value is zero (1/V)
+             relationship between AC power and DC power at the reference
+             operating condition. [1/W]
+    C1       Empirical coefficient allowing ``Pdco`` to vary linearly
+             with DC voltage input. [1/V]
+    C2       Empirical coefficient allowing ``Pso`` to vary linearly with
+             DC voltage input. [1/V]
     C3       Empirical coefficient allowing Co to vary linearly with
-             dc-voltage input, default value is zero (1/V)
-    Pnt      AC-power consumed by inverter at night (night tare) to
-             maintain circuitry required to sense PV array voltage (W)
+             DC voltage input. [1/V]
+    Pnt      AC power consumed by the inverter at night (night tare). [W]
     ======   ============================================================
 
     References
@@ -91,7 +78,7 @@ def sandia(v_dc, p_dc, inverter):
 
     See also
     --------
-    pvlib.pvsystem.sapm
+    pvlib.pvsystem.retrieve_sam
     '''
 
     Paco = inverter['Paco']
@@ -274,28 +261,28 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     where :math:`\zeta=P_{dc}/P_{dc0}` and :math:`P_{dc0}=P_{ac0}/\eta_{nom}`.
 
-    Note that  pdc0 is also used as a symbol in
-    :py:func:`pvlib.pvsystem.pvwatts_dc`. pdc0 in this function refers to the
-    DC power input limit of the inverter. pdc0 in
-    :py:func:`pvlib.pvsystem.pvwatts_dc` refers to the DC power of the module's
+    Note that ``pdc0`` is also used as a symbol in
+    :py:func:`pvlib.pvsystem.pvwatts_dc`. ``pdc0`` in this function refers to
+    the DC power input limit of the inverter. ``pdc0`` in
+    :py:func:`pvlib.pvsystem.pvwatts_dc` refers to the DC power of the modules
     at reference conditions.
 
     Parameters
     ----------
     pdc: numeric
-        DC power.
+        DC power. Same unit as ``pdc0``.
     pdc0: numeric
-        DC input limit of the inverter.
+        DC input limit of the inverter.  Same unit as ``pdc``.
     eta_inv_nom: numeric, default 0.96
-        Nominal inverter efficiency.
+        Nominal inverter efficiency. [unitless]
     eta_inv_ref: numeric, default 0.9637
         Reference inverter efficiency. PVWatts defines it to be 0.9637
-        and is included here for flexibility.
+        and is included here for flexibility. [unitless]
 
     Returns
     -------
     pac: numeric
-        AC power.
+        AC power.  Same unit as ``pdc0``.
 
     References
     ----------
@@ -313,8 +300,8 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     # eta < 0 if zeta < 0.006. pac is forced to be >= 0 below. GH 541
     eta = eta_inv_nom / eta_inv_ref * (
-        -0.0162*zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0) +
-        0.9858)
+        -0.0162*zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
+        + 0.9858)
 
     pac = eta * pdc
     pac = np.minimum(pac0, pac)

@@ -4,7 +4,7 @@ test iotools for PSM3
 
 import os
 from pvlib.iotools import psm3
-from conftest import needs_pandas_0_22, DATA_DIR
+from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 import numpy as np
 import pandas as pd
 import pytest
@@ -70,8 +70,8 @@ def assert_psm3_equal(header, data, expected):
     assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
 
 
-@needs_pandas_0_22
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_tmy(nrel_api_key):
     """test get_psm3 with a TMY"""
     header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
@@ -80,8 +80,8 @@ def test_get_psm3_tmy(nrel_api_key):
     assert_psm3_equal(header, data, expected)
 
 
-@needs_pandas_0_22
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_singleyear(nrel_api_key):
     """test get_psm3 with a single year"""
     header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
@@ -90,8 +90,8 @@ def test_get_psm3_singleyear(nrel_api_key):
     assert_psm3_equal(header, data, expected)
 
 
-@needs_pandas_0_22
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_check_leap_day(nrel_api_key):
     _, data_2012 = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
                                  PVLIB_EMAIL, names="2012", interval=60,
@@ -105,8 +105,8 @@ def test_get_psm3_check_leap_day(nrel_api_key):
                           (LATITUDE, LONGITUDE, nrel_api_key, 'bad', 60),
                           (LATITUDE, LONGITUDE, nrel_api_key, '2017', 15),
                           ])
-@needs_pandas_0_22
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_tmy_errors(
     latitude, longitude, api_key, names, interval
 ):
@@ -134,7 +134,6 @@ def io_input(request):
     return obj
 
 
-@needs_pandas_0_22
 def test_parse_psm3(io_input):
     """test parse_psm3"""
     header, data = psm3.parse_psm3(io_input)
@@ -142,7 +141,6 @@ def test_parse_psm3(io_input):
     assert_psm3_equal(header, data, expected)
 
 
-@needs_pandas_0_22
 def test_read_psm3():
     """test read_psm3"""
     header, data = psm3.read_psm3(MANUAL_TEST_DATA)

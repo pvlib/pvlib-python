@@ -54,7 +54,7 @@ class Location(object):
 
     See also
     --------
-    pvsystem.PVSystem
+    pvlib.pvsystem.PVSystem
     """
 
     def __init__(self, latitude, longitude, tz='UTC', altitude=0,
@@ -66,6 +66,9 @@ class Location(object):
         if isinstance(tz, str):
             self.tz = tz
             self.pytz = pytz.timezone(tz)
+        elif isinstance(tz, datetime.timezone):
+            self.tz = 'UTC'
+            self.pytz = pytz.UTC
         elif isinstance(tz, datetime.tzinfo):
             self.tz = tz.zone
             self.pytz = tz

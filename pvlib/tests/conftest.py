@@ -1,5 +1,6 @@
 from pathlib import Path
 import platform
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -39,6 +40,11 @@ TEST_DIR = Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
 
 
+# pytest-rerunfailures variables
+RERUNS = 5
+RERUNS_DELAY = 2
+
+
 platform_is_windows = platform.system() == 'Windows'
 skip_windows = pytest.mark.skipif(platform_is_windows,
                                   reason='does not run on windows')
@@ -68,14 +74,6 @@ except ImportError:
     has_ephem = False
 
 requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
-
-
-def pandas_0_17():
-    return parse_version(pd.__version__) >= parse_version('0.17.0')
-
-
-needs_pandas_0_17 = pytest.mark.skipif(
-    not pandas_0_17(), reason='requires pandas 0.17 or greater')
 
 
 def numpy_1_10():
@@ -158,11 +156,28 @@ except ImportError:
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 
 
+try:
+    import cftime  # noqa: F401
+
+    has_recent_cftime = parse_version(cftime.__version__) > parse_version(
+        "1.1.0"
+    )
+except ImportError:
+    has_recent_cftime = False
+
+requires_recent_cftime = pytest.mark.skipif(
+    not has_recent_cftime, reason="requires cftime > 1.1.0"
+)
+
+
 @pytest.fixture(scope="session")
 def sam_data():
     data = {}
-    data['sandiamod'] = pvlib.pvsystem.retrieve_sam('sandiamod')
-    data['adrinverter'] = pvlib.pvsystem.retrieve_sam('adrinverter')
+    with warnings.catch_warnings():
+        # ignore messages about duplicate entries in the databases.
+        warnings.simplefilter("ignore", UserWarning)
+        data['sandiamod'] = pvlib.pvsystem.retrieve_sam('sandiamod')
+        data['adrinverter'] = pvlib.pvsystem.retrieve_sam('adrinverter')
     return data
 
 

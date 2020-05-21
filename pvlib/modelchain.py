@@ -16,7 +16,7 @@ from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
-
+from pvlib.tools import _build_kwargs
 
 def basic_chain(times, latitude, longitude,
                 module_parameters, temperature_model_parameters,
@@ -282,8 +282,9 @@ class ModelChain(object):
         as the first argument to a user-defined function.
 
     temperature_model: None, str or function, default None
-        Valid strings are 'sapm' and 'pvsyst'. The ModelChain instance will be
-        passed as the first argument to a user-defined function.
+        Valid strings are 'sapm', 'pvsyst', and 'faiman'. The ModelChain
+        instance will be passed as the first argument to a user-defined
+        function.
 
     losses_model: str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
@@ -661,6 +662,8 @@ class ModelChain(object):
                 self._temperature_model = self.sapm_temp
             elif model == 'pvsyst':
                 self._temperature_model = self.pvsyst_temp
+            elif model == 'faiman':
+                self._temperature_model = self.faiman_temp
             else:
                 raise ValueError(model + ' is not a valid temperature model')
             # check system.temperature_model_parameters for consistency
@@ -680,6 +683,8 @@ class ModelChain(object):
             return self.sapm_temp
         elif set(['u_c', 'u_v']) <= params:
             return self.pvsyst_temp
+        elif set(['u0', 'u1']) <= params:
+            return self.faiman_temp
         else:
             raise ValueError('could not infer temperature model from '
                              'system.temperature_module_parameters {}.'
@@ -693,6 +698,12 @@ class ModelChain(object):
 
     def pvsyst_temp(self):
         self.cell_temperature = self.system.pvsyst_celltemp(
+            self.total_irrad['poa_global'], self.weather['temp_air'],
+            self.weather['wind_speed'])
+        return self
+
+    def faiman_temp(self):
+        self.cell_temperature = self.system.faiman_celltemp(
             self.total_irrad['poa_global'], self.weather['temp_air'],
             self.weather['wind_speed'])
         return self
@@ -860,9 +871,15 @@ class ModelChain(object):
                           'is used for times.', pvlibDeprecationWarning)
 
         self.times = self.weather.index
+        try:
+            kwargs = _build_kwargs(['pressure', 'temp_air'], weather)
+            kwargs['temperature'] = kwargs.pop('temp_air')
+        except KeyError:
+            pass
 
         self.solar_position = self.location.get_solarposition(
-            self.weather.index, method=self.solar_position_method)
+            self.weather.index, method=self.solar_position_method,
+            **kwargs)
 
         self.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)

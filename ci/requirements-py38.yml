@@ -1,0 +1,30 @@
+name: test_env
+channels:
+    - defaults
+    - conda-forge
+dependencies:
+    - coveralls
+    - cython
+    - ephem
+    - netcdf4
+    - nose
+    - numba
+    - numpy
+    - pandas
+    - pip
+    - pytables  # tables when using pip+PyPI
+    - pytest
+    - pytest-cov
+    - pytest-mock
+    - pytest-timeout
+    - pytest-rerunfailures
+    - pytest-remotedata
+    - python=3.8
+    - pytz
+    - requests
+    - scipy
+    - shapely  # pvfactors dependency
+    - siphon  # conda-forge
+    - pip:
+        - nrel-pysam>=2.0
+        - pvfactors==1.0.1

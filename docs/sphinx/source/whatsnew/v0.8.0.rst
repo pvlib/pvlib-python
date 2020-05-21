@@ -1,6 +1,6 @@
 .. _whatsnew_0730:
 
-v0.7.3 (Month day, year)
+v0.8.0 (Month day, year)
 -------------------------
 
 API Changes
@@ -17,9 +17,11 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Improved formatting and content of docstrings in `pvlib.atmosphere`
 
 Requirements
 ~~~~~~~~~~~~
 
 Contributors
 ~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)

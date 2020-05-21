@@ -23,9 +23,9 @@ def sandia(v_dc, p_dc, inverter):
 
     inverter : dict-like
         Defines parameters for the inverter model in [1]_.  See Notes for
-        required parameters. A copy of the parameter database from the System
-        Advisor Model (SAM) [2]_ is provided with pvlib and may be read using
-        :py:func:`pvlib.pvsystem.retrieve_sam.
+        required model parameters. A copy of the parameter database from the
+        System Advisor Model (SAM) [2]_ is provided with pvlib and may be read
+        using :py:func:`pvlib.pvsystem.retrieve_sam.
 
     Returns
     -------
@@ -43,7 +43,7 @@ def sandia(v_dc, p_dc, inverter):
     maximum power point tracking (MPPT) voltage windows or maximum current
     limits of the inverter.
 
-    Required inverter parameters are:
+    Required model parameters are:
 
     ======   ============================================================
     Column   Description
@@ -70,9 +70,9 @@ def sandia(v_dc, p_dc, inverter):
 
     References
     ----------
-    .. [1] SAND2007-5036, "Performance Model for Grid-Connected
-       Photovoltaic Inverters by D. King, S. Gonzalez, G. Galbraith, W.
-       Boyson
+    .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
+       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
+       National Laboratories.
 
     .. [2] System Advisor Model web page. https://sam.nrel.gov.
 
@@ -113,72 +113,65 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     Parameters
     ----------
     v_dc : numeric
-        A scalar or pandas series of DC voltages, in volts, which are provided
-        as input to the inverter. If Vdc and Pdc are vectors, they must be
-        of the same size. v_dc must be >= 0. [V]
+        DC voltage input to the inverter, should be >= 0. [V]
 
     p_dc : numeric
-        A scalar or pandas series of DC powers, in watts, which are provided
-        as input to the inverter. If Vdc and Pdc are vectors, they must be
-        of the same size. p_dc must be >= 0. [W]
+        DC power input to the inverter, should be >= 0. [W]
 
     inverter : dict-like
-        A dict-like object defining the inverter to be used, giving the
-        inverter performance parameters according to the model
-        developed by Anton Driesse [1]_.
-        A set of inverter performance parameters may be loaded from the
-        supplied data table using retrievesam.
-        See Notes for required keys.
+        Defines parameters for the inverter model in [1]_.  See Notes for
+        required model parameters. A parameter database is provided with pvlib and
+        may be read using :py:func:`pvlib.pvsystem.retrieve_sam.
 
     vtol : numeric, default 0.1
-        A unit-less fraction that determines how far the efficiency model is
-        allowed to extrapolate beyond the inverter's normal input voltage
-        operating range. 0.0 <= vtol <= 1.0
+        Fraction of DC voltage that determines how far the efficiency model is
+        extrapolated beyond the inverter's normal input voltage operating
+        range. 0.0 <= vtol <= 1.0. [unitless]
 
     Returns
     -------
     ac_power : numeric
-        A numpy array or pandas series of modeled AC power output given the
-        input DC voltage, v_dc, and input DC power, p_dc. When ac_power would
-        be greater than pac_max, it is set to p_max to represent inverter
-        "clipping". When ac_power would be less than -p_nt (energy consumed
-        rather  than produced) then ac_power is set to -p_nt to represent
-        nightly power losses. ac_power is not adjusted for maximum power point
-        tracking (MPPT) voltage windows or maximum current limits of the
-        inverter. [W]
+        AC power output. [W]
 
     Notes
     -----
 
-    Required inverter keys are:
+    Determines the AC power output of an inverter given the DC voltage and DC
+    power. Output AC power is bounded above by the parameter ``Pacmax``, to
+    represent inverter "clipping". AC power is bounded below by ``-Pnt``
+    (negative when power is consumed rather than produced) which represents
+    self-consumption. `ac_power` is not adjusted for maximum power point
+    tracking (MPPT) voltage windows or maximum current limits of the inverter.
+
+    Required model parameters are:
 
     =======   ============================================================
     Column    Description
     =======   ============================================================
-    Pnom      The nominal power value used to normalize all power values,
-              typically the DC power needed to produce maximum AC power
-              output. [W]
+    Pnom      Nominal DC power, typically the DC power needed to produce
+              maximum AC power output. [W]
 
-    Vnom      The nominal DC voltage value used to normalize DC voltage
-              values, typically the level at which the highest efficiency
-              is achieved. [V]
+    Vnom      Nominal DC input voltage. Typically the level at which the
+              highest efficiency is achieved. [V]
 
-    Vmax      . [V]
+    Vmax      Maximum DC input voltage. [V]
 
-    Vmin      . [V]
+    Vmin      Minimum DC input voltage. [V]
 
     Vdcmax    . [V]
 
-    MPPTHi    . [unit]
+    MPPTHi    Maximum DC voltage for MPPT range. [V]
 
-    MPPTLow    . [unit]
+    MPPTLow   Minimum DC voltage for MPPT range. [V]
 
-    Pacmax    The maximum AC output power value, used to clip the output
-              if needed, (W).
+    Pacmax    Maximum AC output power, used to clip the output power
+              if needed. [W]
 
     ADRCoefficients  A list of 9 coefficients that capture the influence
               of input voltage and power on inverter losses, and thereby
-              efficiency.
+              efficiency. Corresponds to terms from [1]_ (in order): :math:
+              `b_{0,0}, b_{1,0}, b_{2,0}, b_{0,1}, b_{1,1}, b_{2,1}, b_{0,2},
+               b_{1,2},  b_{1,2}`.
 
     Pnt       AC power consumed by inverter at night (night tare) to
               maintain circuitry required to sense PV array voltage. [W]
@@ -187,12 +180,14 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
     References
     ----------
-    .. [1] Beyond the Curves: Modeling the Electrical Efficiency
-       of Photovoltaic Inverters, PVSC 2008, Anton Driesse et. al.
+    .. [1] Driesse, A. "Beyond the Curves: Modeling the Electrical Efficiency
+       of Photovoltaic Inverters", 33rd IEEE Photovoltaic Specialist
+       Conference (PVSC), June 2008
 
     See also
     --------
     pvlib.inverter.sandia
+    pvlib.pvsystem.retrieve_sam
     '''
 
     p_nom = inverter['Pnom']

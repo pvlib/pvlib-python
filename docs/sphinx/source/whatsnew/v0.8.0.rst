@@ -1,0 +1,27 @@
+.. _whatsnew_0730:
+
+v0.8.0 (Month day, year)
+-------------------------
+
+API Changes
+~~~~~~~~~~~
+
+Enhancements
+~~~~~~~~~~~~
+
+Bug fixes
+~~~~~~~~~
+
+Testing
+~~~~~~~
+
+Documentation
+~~~~~~~~~~~~~
+* Improved formatting and content of docstrings in `pvlib.atmosphere`
+
+Requirements
+~~~~~~~~~~~~
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)

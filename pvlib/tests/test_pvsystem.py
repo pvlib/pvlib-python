@@ -1436,13 +1436,17 @@ def test__sapm_celltemp_translator():
 
 
 @fail_on_pvlib_version('0.9')
-def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
+def test_deprecated_09():
+    # get parameters from fixtures
+    from conftest import (cec_inverter_parameters, adr_inverter_parameters)
+    cec_params = cec_inverter_parameters()
+    adr_params = adr_inverter_parameters()
     # deprecated function pvsystem.snlinverter
     with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.snlinverter(250, 40, cec_inverter_parameters)
+        pvsystem.snlinverter(250, 40, cec_params)
     # deprecated function pvsystem.adrinverter
     with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.adrinverter(1232, 154, adr_inverter_parameters)
+        pvsystem.adrinverter(1232, 154, adr_params)
     # deprecated function pvsystem.spvwatts_ac
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvwatts_ac(90, 100, 0.95)

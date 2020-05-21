@@ -296,7 +296,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     # eta < 0 if zeta < 0.006. pac is forced to be >= 0 below. GH 541
     eta = eta_inv_nom / eta_inv_ref * (
         -0.0162 * zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
-        + 0.9858)  #noQA W503
+        + 0.9858)  # noQA: W503
 
     pac = eta * pdc
     pac = np.minimum(pac0, pac)

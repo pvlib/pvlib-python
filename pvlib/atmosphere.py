@@ -105,7 +105,7 @@ def get_absolute_airmass(airmass_relative, pressure=101325.):
     .. math::
         AM_a = AM_r \frac{P}{101325}
 
-    where :math:`AM_r` is relative air mass at sea level an d:math:`P` is
+    where :math:`AM_r` is relative air mass at sea level and :math:`P` is
     atmospheric pressure.
 
     Parameters

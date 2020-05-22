@@ -80,6 +80,7 @@ cell_parameters = {
 #    so we use the Bishop '88 method here.  This gives us a set of (V, I)
 #    points on the cell's IV curve.
 
+
 def simulate_full_curve(parameters, Geff, Tcell, ivcurve_pnts=1000):
     """
     Use De Soto and Bishop to simulate a full IV curve with both
@@ -175,6 +176,7 @@ ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
 # might not line up, we align each curve to a common set of current values
 # with interpolation.
 
+
 def interpolate(df, i):
     """convenience wrapper around scipy.interpolate.interp1d"""
     f_interp = interp1d(np.flipud(df['i']), np.flipud(df['v']), kind='linear',
@@ -267,6 +269,7 @@ def simulate_module(cell_parameters, poa_direct, poa_diffuse, Tcell,
 # shaded module at the same current as the fully illuminated module would
 # create a reverse-bias voltage of several hundred volts!  However, the diodes
 # prevent the reverse voltage from exceeding 1.5V (three diodes at 0.5V each).
+
 
 kwargs = {
     'cell_parameters': cell_parameters,

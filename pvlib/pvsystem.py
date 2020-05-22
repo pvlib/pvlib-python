@@ -1958,56 +1958,56 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 def singlediode(photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth, ivcurve_pnts=None,
                 method='lambertw'):
-    """
+    r"""
     Solve the single-diode model to obtain a photovoltaic IV curve.
 
     Singlediode solves the single diode equation [1]_
 
     .. math::
 
-        I = IL - I0*[exp((V+I*Rs)/(nNsVth))-1] - (V + I*Rs)/Rsh
+        I = I_L -
+            I_0 \left[
+                \exp \left(\frac{V+I R_s}{n N_s V_{th}} \right)-1
+            \right] -
+            (V + I R_s)/R_{sh}
 
-    for ``I`` and ``V`` when given ``IL, I0, Rs, Rsh,`` and ``nNsVth
-    (nNsVth = n*Ns*Vth)`` which are described later. Returns a DataFrame
+    for :math:`I` and :math:`V` when given :math:`I_L, I_0, R_s, R_{sh},` and
+    :math:`n N_s V_{th}` which are described later. Returns a DataFrame
     which contains the 5 points on the I-V curve specified in
-    SAND2004-3535 [3]_. If all IL, I0, Rs, Rsh, and nNsVth are scalar, a
-    single curve will be returned, if any are Series (of the same
-    length), multiple IV curves will be calculated.
+    SAND2004-3535 [3]_. If all :math:`I_L, I_0, R_s, R_{sh},` and
+    :math:`n N_s V_{th}` are scalar, a single curve will be returned, if any
+    are Series (of the same length), multiple IV curves will be calculated.
 
-    The input parameters can be calculated using calcparams_desoto from
-    meteorological data.
+    The input parameters can be calculated using
+    :py:func:`~pvlib.pvsystem.calcparams_desoto` from meteorological data.
 
     Parameters
     ----------
     photocurrent : numeric
-        Light-generated current (photocurrent) in amperes under desired
-        IV curve conditions. Often abbreviated ``I_L``.
-        0 <= photocurrent
+        Light-generated current :math:`I_L` (photocurrent) under desired
+        IV curve conditions. ``0 <= photocurrent``. [A]
 
     saturation_current : numeric
-        Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
-        0 < saturation_current
+        Diode saturation :math:`I_0` current under desired IV curve
+        conditions. ``0 < saturation_current``. [A]
 
     resistance_series : numeric
-        Series resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rs``.
-        0 <= resistance_series < numpy.inf
+        Series resistance :math:`R_s` under desired IV curve conditions.
+        ``0 <= resistance_series < numpy.inf``.  [ohms]
 
     resistance_shunt : numeric
-        Shunt resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rsh``.
-        0 < resistance_shunt <= numpy.inf
+        Shunt resistance :math:`R_{sh}` under desired IV curve conditions.
+        ``0 < resistance_shunt <= numpy.inf``.  [ohms]
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
-        (n), 2) the number of cells in series (Ns), and 3) the cell
-        thermal voltage under the desired IV curve conditions (Vth). The
-        thermal voltage of the cell (in volts) may be calculated as
-        ``k*temp_cell/q``, where k is Boltzmann's constant (J/K),
-        temp_cell is the temperature of the p-n junction in Kelvin, and
-        q is the charge of an electron (coulombs).
-        0 < nNsVth
+        :math:`n`, 2) the number of cells in series :math:`N_s`, and 3)
+        the cell thermal voltage under the desired IV curve conditions
+        :math:`V_{th}`. The thermal voltage of the cell (in volts) may be
+        calculated as :math:`k_B T_c / q`, where :math:`k_B` is
+        Boltzmann's constant (J/K), :math:`T_c` is the temperature of the p-n
+        junction in Kelvin, and :math:`q` is the charge of an electron
+        (coulombs). ``0 < nNsVth``.  [V]
 
     ivcurve_pnts : None or int, default None
         Number of points in the desired IV curve. If None or 0, no

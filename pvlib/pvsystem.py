@@ -1969,7 +1969,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             I_0 \left[
                 \exp \left(\frac{V+I R_s}{n N_s V_{th}} \right)-1
             \right] -
-            (V + I R_s)/R_{sh}
+            \frac{V + I R_s}{R_{sh}}
 
     for :math:`I` and :math:`V` when given :math:`I_L, I_0, R_s, R_{sh},` and
     :math:`n N_s V_{th}` which are described later. Returns a DataFrame

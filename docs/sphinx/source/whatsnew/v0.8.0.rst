@@ -1,4 +1,4 @@
-.. _whatsnew_0730:
+.. _whatsnew_0800:
 
 v0.8.0 (Month day, year)
 -------------------------
@@ -17,7 +17,12 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-* Improved formatting and content of docstrings in `pvlib.atmosphere`
+* Improved formatting and content of docstrings in :py:mod:`pvlib.atmosphere`.
+  (:pull:`969`)
+* Fix LaTeX rendering in :py:func:`pvlib.singlediode.bishop88`. (:pull:`967`)
+* Clarify units for heat loss factors in
+  :py:func:`pvlib.temperature.pvsyst_cell` and
+  :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -25,3 +30,5 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Mark Mikofski (:ghuser:`mikofski`)

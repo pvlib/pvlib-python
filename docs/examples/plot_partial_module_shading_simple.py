@@ -43,11 +43,10 @@ import matplotlib.pyplot as plt
 
 from scipy.constants import e as qe, k as kB
 
-kb = 1.380649e-23  # J/K
-qe = 1.602176634e-19  # C
-# kb is J/K, qe is C=J/V
-# kb * T / qe -> V
-Vth = kb * (273.15+25) / qe
+# For simplicity, use cell temperature of 25C for all calculations.
+# kB is J/K, qe is C=J/V
+# kB * T / qe -> V
+Vth = kB * (273.15+25) / qe
 
 cell_parameters = {
     'I_L_ref': 8.24,
@@ -81,13 +80,11 @@ cell_parameters = {
 #    so we use the Bishop '88 method here.  This gives us a set of (V, I)
 #    points on the cell's IV curve.
 
-def simulate_full_curve(parameters, Geff, Tcell, method='brentq',
-                        ivcurve_pnts=1000):
+def simulate_full_curve(parameters, Geff, Tcell, ivcurve_pnts=1000):
     """
     Use De Soto and Bishop to simulate a full IV curve with both
     forward and reverse bias regions.
     """
-
     # adjust the reference parameters according to the operating
     # conditions using the De Soto model:
     sde_args = pvsystem.calcparams_desoto(
@@ -112,7 +109,7 @@ def simulate_full_curve(parameters, Geff, Tcell, method='brentq',
         'breakdown_voltage': parameters['breakdown_voltage'],
     }
     v_oc = singlediode.bishop88_v_from_i(
-        0.0, *sde_args, method=method, **kwargs
+        0.0, *sde_args, **kwargs
     )
     # ideally would use some intelligent log-spacing to concentrate points
     # around the forward- and reverse-bias knees, but this is good enough:
@@ -150,8 +147,8 @@ def plot_curves(dfs, labels, title):
     return axes
 
 
-cell_curve_full_sun = simulate_full_curve(cell_parameters, Geff=1000, Tcell=40)
-cell_curve_shaded = simulate_full_curve(cell_parameters, Geff=200, Tcell=40)
+cell_curve_full_sun = simulate_full_curve(cell_parameters, Geff=1000, Tcell=25)
+cell_curve_shaded = simulate_full_curve(cell_parameters, Geff=200, Tcell=25)
 ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
                  labels=['Full Sun', 'Shaded'],
                  title='Cell-level reverse- and forward-biased IV curves')
@@ -177,7 +174,6 @@ ax = plot_curves([cell_curve_full_sun, cell_curve_shaded],
 # added.  However, because each cell's curve is discretized and the currents
 # might not line up, we align each curve to a common set of current values
 # with interpolation.
-
 
 def interpolate(df, i):
     """convenience wrapper around scipy.interpolate.interp1d"""
@@ -276,7 +272,7 @@ kwargs = {
     'cell_parameters': cell_parameters,
     'poa_direct': 800,
     'poa_diffuse': 200,
-    'Tcell': 40
+    'Tcell': 25
 }
 module_curve_full_sun = simulate_module(shaded_fraction=0, **kwargs)
 module_curve_shaded = simulate_module(shaded_fraction=0.1, **kwargs)
@@ -308,7 +304,7 @@ for diffuse_fraction in np.linspace(0, 1, 11):
         df = simulate_module(cell_parameters,
                              poa_direct=(1-diffuse_fraction)*1000,
                              poa_diffuse=diffuse_fraction*1000,
-                             Tcell=40,
+                             Tcell=25,
                              shaded_fraction=shaded_fraction)
         data.append({
             'fd': diffuse_fraction,

@@ -19,11 +19,11 @@ pvlib_base_version = \
 # test function may not take args, kwargs, or fixtures.
 def fail_on_pvlib_version(version, *args):
     # second level of decorator takes the function under consideration
-    def wrapper(func, *args):
+    def wrapper(func, args=args):
         # third level defers computation until the test is called
         # this allows the specific test to fail at test runtime,
         # rather than at decoration time (when the module is imported)
-        def inner(*args):
+        def inner():
             # fail if the version is too high
             if pvlib_base_version >= parse_version(version):
                 pytest.fail('the tested function is scheduled to be '

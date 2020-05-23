@@ -1978,13 +1978,15 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     :math:`n N_s V_{th}` are scalar, a single curve is returned, if any
     are Series (of the same length), multiple IV curves are calculated.
 
-    The input parameters can be calculated from meteorological data using a function for a single diode model, e.g., 
+    The input parameters can be calculated from meteorological data using a
+    function for a single diode model, e.g.,
     :py:func:`~pvlib.pvsystem.calcparams_desoto`.
 
     Parameters
     ----------
     photocurrent : numeric
-        Light-generated current :math:`I_L` (photocurrent) ``0 <= photocurrent``. [A]
+        Light-generated current :math:`I_L` (photocurrent)
+        ``0 <= photocurrent``. [A]
 
     saturation_current : numeric
         Diode saturation :math:`I_0` current under desired IV curve
@@ -2009,8 +2011,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         (coulombs). ``0 < nNsVth``.  [V]
 
     ivcurve_pnts : None or int, default None
-        Number of points in the desired IV curve. If None or 0, no points on the
-        IV curves will be produced.
+        Number of points in the desired IV curve. If None or 0, no points on
+        the IV curves will be produced.
 
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The

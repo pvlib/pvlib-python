@@ -1959,9 +1959,9 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth, ivcurve_pnts=None,
                 method='lambertw'):
     r"""
-    Solve the single-diode model to obtain a photovoltaic IV curve.
+    Solve the single-diode equation to obtain a photovoltaic IV curve.
 
-    Singlediode solves the single diode equation [1]_
+    Solves the single diode equation [1]_
 
     .. math::
 
@@ -1974,18 +1974,17 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     for :math:`I` and :math:`V` when given :math:`I_L, I_0, R_s, R_{sh},` and
     :math:`n N_s V_{th}` which are described later. Returns a DataFrame
     which contains the 5 points on the I-V curve specified in
-    SAND2004-3535 [3]_. If all :math:`I_L, I_0, R_s, R_{sh},` and
-    :math:`n N_s V_{th}` are scalar, a single curve will be returned, if any
-    are Series (of the same length), multiple IV curves will be calculated.
+   [3]_. If all :math:`I_L, I_0, R_s, R_{sh},` and
+    :math:`n N_s V_{th}` are scalar, a single curve is returned, if any
+    are Series (of the same length), multiple IV curves are calculated.
 
-    The input parameters can be calculated using
-    :py:func:`~pvlib.pvsystem.calcparams_desoto` from meteorological data.
+    The input parameters can be calculated from meteorological data using a function for a single diode model, e.g., 
+    :py:func:`~pvlib.pvsystem.calcparams_desoto`.
 
     Parameters
     ----------
     photocurrent : numeric
-        Light-generated current :math:`I_L` (photocurrent) under desired
-        IV curve conditions. ``0 <= photocurrent``. [A]
+        Light-generated current :math:`I_L` (photocurrent) ``0 <= photocurrent``. [A]
 
     saturation_current : numeric
         Diode saturation :math:`I_0` current under desired IV curve
@@ -1993,16 +1992,16 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     resistance_series : numeric
         Series resistance :math:`R_s` under desired IV curve conditions.
-        ``0 <= resistance_series < numpy.inf``.  [ohms]
+        ``0 <= resistance_series < numpy.inf``.  [ohm]
 
     resistance_shunt : numeric
         Shunt resistance :math:`R_{sh}` under desired IV curve conditions.
-        ``0 < resistance_shunt <= numpy.inf``.  [ohms]
+        ``0 < resistance_shunt <= numpy.inf``.  [ohm]
 
     nNsVth : numeric
-        The product of three components. 1) The usual diode ideal factor
+        The product of three components: 1) the usual diode ideality factor
         :math:`n`, 2) the number of cells in series :math:`N_s`, and 3)
-        the cell thermal voltage under the desired IV curve conditions
+        the cell thermal voltage
         :math:`V_{th}`. The thermal voltage of the cell (in volts) may be
         calculated as :math:`k_B T_c / q`, where :math:`k_B` is
         Boltzmann's constant (J/K), :math:`T_c` is the temperature of the p-n
@@ -2010,7 +2009,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         (coulombs). ``0 < nNsVth``.  [V]
 
     ivcurve_pnts : None or int, default None
-        Number of points in the desired IV curve. If None or 0, no
+        Number of points in the desired IV curve. If None or 0, no points on the
         IV curves will be produced.
 
     method : str, default 'lambertw'

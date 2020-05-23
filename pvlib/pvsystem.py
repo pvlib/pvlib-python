@@ -1974,7 +1974,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     for :math:`I` and :math:`V` when given :math:`I_L, I_0, R_s, R_{sh},` and
     :math:`n N_s V_{th}` which are described later. Returns a DataFrame
     which contains the 5 points on the I-V curve specified in
-   [3]_. If all :math:`I_L, I_0, R_s, R_{sh},` and
+    [3]_. If all :math:`I_L, I_0, R_s, R_{sh},` and
     :math:`n N_s V_{th}` are scalar, a single curve is returned, if any
     are Series (of the same length), multiple IV curves are calculated.
 
@@ -2081,8 +2081,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     See also
     --------
-    sapm
     calcparams_desoto
+    calcparams_cec
+    calcparams_pvsyst
+    sapm
     pvlib.singlediode.bishop88
     """
     # Calculate points on the IV curve using the LambertW solution to the

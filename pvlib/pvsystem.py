@@ -2044,6 +2044,14 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     The output will be a DataFrame if photocurrent is a Series and
     ivcurve_pnts is None.
 
+    See also
+    --------
+    calcparams_desoto
+    calcparams_cec
+    calcparams_pvsyst
+    sapm
+    pvlib.singlediode.bishop88
+
     Notes
     -----
     If the method is ``'lambertw'`` then the solution employed to solve the
@@ -2080,14 +2088,6 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     .. [4] "Computer simulation of the effects of electrical mismatches in
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        https://doi.org/10.1016/0379-6787(88)90059-2
-
-    See also
-    --------
-    calcparams_desoto
-    calcparams_cec
-    calcparams_pvsyst
-    sapm
-    pvlib.singlediode.bishop88
     """
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation

@@ -14,6 +14,8 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` now accepts
+  arguments that are passed to the decorated function. (:pull:`973`)
 
 Documentation
 ~~~~~~~~~~~~~

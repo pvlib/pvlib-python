@@ -19,7 +19,7 @@ pvlib_base_version = \
 # test function may not take args, kwargs, or fixtures.
 def fail_on_pvlib_version(version, *args):
     # second level of decorator takes the function under consideration
-    def wrapper(func, args=args):
+    def wrapper(func):
         # third level defers computation until the test is called
         # this allows the specific test to fail at test runtime,
         # rather than at decoration time (when the module is imported)

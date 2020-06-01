@@ -37,7 +37,7 @@ deprec_func = deprecated('0.8', alternative='alt_func',
                          name='deprec_func', removal='0.9')(alt_func)
 
 
-@fail_on_pvlib_version('0.9', some_data)
+@fail_on_pvlib_version('0.9')
 def test_deprecated_09(some_data):
     with pytest.warns(pvlibDeprecationWarning):
         deprec_func(some_data)

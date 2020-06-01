@@ -23,21 +23,23 @@ def test_fail_on_pvlib_version_fail_in_test():
 
 
 # set up to test passing arguments to conftest.fail_on_pvlib_version
-@pytest.fixture(scope='function')
+@pytest.fixture()
 def some_data():
     return "some data"
 
 
 def alt_func(*args):
-    print(args[0])
-    return
+    return args
 
 
 deprec_func = deprecated('0.8', alternative='alt_func',
                          name='deprec_func', removal='0.9')(alt_func)
 
 
-@fail_on_pvlib_version('0.9', some_data)
-def test_deprecated_09(some_data):
-    with pytest.warns(pvlibDeprecationWarning):
-        deprec_func(some_data)
+@fail_on_pvlib_version('0.9', some_data, test_string="test")
+def test_deprecated_09(some_data, test_string=None):
+    with pytest.warns(pvlibDeprecationWarning):  # test for deprecation warning
+        # use assert to test that alternate function was called
+        assert some_data == deprec_func(some_data)[0]
+        # check that the kwarg was accepted
+        assert test_string == "test"

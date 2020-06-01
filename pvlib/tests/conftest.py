@@ -16,8 +16,8 @@ pvlib_base_version = \
 # decorator takes one argument: the base version for which it should fail
 # for example @fail_on_pvlib_version('0.7') will cause a test to fail
 # on pvlib versions 0.7a, 0.7b, 0.7rc1, etc.
-# args will be passed to the function being decorated.
-def fail_on_pvlib_version(version, *args):
+# args and kwargs will be passed to the function being decorated.
+def fail_on_pvlib_version(version, *args, **kwargs):
     # second level of decorator takes the function under consideration
     def wrapper(func):
         # third level defers computation until the test is called
@@ -30,7 +30,7 @@ def fail_on_pvlib_version(version, *args):
                             'removed in %s' % version)
             # otherwise return the function to be executed
             else:
-                return func(*args)
+                return func(*args, **kwargs)
         return inner
     return wrapper
 

@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from pkg_resources import parse_version
 import pytest
+from functools import wraps
 
 import pvlib
 
@@ -23,7 +24,8 @@ def fail_on_pvlib_version(version, *args, **kwargs):
         # third level defers computation until the test is called
         # this allows the specific test to fail at test runtime,
         # rather than at decoration time (when the module is imported)
-        def inner():
+        @wraps(func)
+        def inner(*args, **kwargs):
             # fail if the version is too high
             if pvlib_base_version >= parse_version(version):
                 pytest.fail('the tested function is scheduled to be '
@@ -33,7 +35,6 @@ def fail_on_pvlib_version(version, *args, **kwargs):
                 return func(*args, **kwargs)
         return inner
     return wrapper
-
 
 # commonly used directories in the tests
 TEST_DIR = Path(__file__).parent

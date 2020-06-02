@@ -36,10 +36,9 @@ deprec_func = deprecated('0.8', alternative='alt_func',
                          name='deprec_func', removal='0.9')(alt_func)
 
 
-@fail_on_pvlib_version('0.9', some_data, test_string="test")
-def test_deprecated_09(some_data, test_string=None):
+@fail_on_pvlib_version('0.9')
+def test_deprecated_09(some_data):
+    # test that data is returned by the fixture
+    assert some_data == "some data"
     with pytest.warns(pvlibDeprecationWarning):  # test for deprecation warning
-        # use assert to test that alternate function was called
-        assert some_data == deprec_func(some_data)[0]
-        # check that the kwarg was accepted
-        assert test_string == "test"
+        deprec_func(some_data)[0]

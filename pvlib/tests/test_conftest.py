@@ -41,4 +41,4 @@ def test_deprecated_09(some_data):
     # test that data is returned by the fixture
     assert some_data == "some data"
     with pytest.warns(pvlibDeprecationWarning):  # test for deprecation warning
-        deprec_func(some_data)[0]
+        deprec_func(some_data)

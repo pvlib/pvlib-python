@@ -32,11 +32,11 @@ def alt_func(*args):
     return args
 
 
-deprec_func = deprecated('0.8', alternative='alt_func',
-                         name='deprec_func', removal='0.9')(alt_func)
+deprec_func = deprecated('350.8', alternative='alt_func',
+                         name='deprec_func', removal='350.9')(alt_func)
 
 
-@fail_on_pvlib_version('0.9')
+@fail_on_pvlib_version('350.9')
 def test_deprecated_09(some_data):
     # test that data is returned by the fixture
     assert some_data == "some data"

@@ -22,7 +22,8 @@ def test_fail_on_pvlib_version_fail_in_test():
     raise Exception
 
 
-# set up to test passing arguments to conftest.fail_on_pvlib_version
+# set up to test using fixtures with function decorated with
+# conftest.fail_on_pvlib_version
 @pytest.fixture()
 def some_data():
     return "some data"
@@ -37,8 +38,8 @@ deprec_func = deprecated('350.8', alternative='alt_func',
 
 
 @fail_on_pvlib_version('350.9')
-def test_deprecated_09(some_data):
-    # test that data is returned by the fixture
+def test_use_fixture_with_decorator(some_data):
+    # test that the correct data is returned by the some_data fixture
     assert some_data == "some data"
     with pytest.warns(pvlibDeprecationWarning):  # test for deprecation warning
         deprec_func(some_data)

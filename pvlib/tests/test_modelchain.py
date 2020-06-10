@@ -447,13 +447,17 @@ def acdc(mc):
     mc.ac = mc.dc
 
 
+# TODO in v0.9: remove 'snlinverter', 'adrinverter', 'pvwatts'
 @pytest.mark.parametrize('ac_model', [
-    'snlinverter', pytest.param('adrinverter', marks=requires_scipy),
+    'sandia', 'snlinverter', pytest.param('adrinverter', marks=requires_scipy),
+    pytest.param('adr', marks=requires_scipy),
     'pvwatts'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    pvwatts_dc_pvwatts_ac_system, location, ac_model,
                    weather, mocker):
     ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
+                  'sandia': sapm_dc_snl_ac_system,
+                  'adr': cec_dc_adr_ac_system,
                   'adrinverter': cec_dc_adr_ac_system,
                   'pvwatts': pvwatts_dc_pvwatts_ac_system}
     system = ac_systems[ac_model]

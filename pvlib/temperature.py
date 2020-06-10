@@ -289,11 +289,13 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
         Combined heat loss factor coefficient. The default value is
         representative of freestanding modules with the rear surfaces exposed
         to open air (e.g., rack mounted). Parameter :math:`U_{c}` in
-        :eq:`pvsyst` [W/(m^2 C)].
+        :eq:`pvsyst`.
+        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
-        in :eq:`pvsyst` [(W/m^2 C)(m/s)].
+        in :eq:`pvsyst`.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     eta_m : numeric, default 0.1
         Module external efficiency as a fraction, i.e., DC power / poa_global.
@@ -356,7 +358,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
 
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
-    '''
+    r'''
     Calculate cell or module temperature using the Faiman model.  The Faiman
     model uses an empirical heat loss factor model [1]_ and is adopted in the
     IEC 61853 standards [2]_ and [3]_.
@@ -379,11 +381,13 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     u0 : numeric, default 25.0
         Combined heat loss factor coefficient. The default value is one
-        determined by Faiman for 7 silicon modules. [W/(m^2 C)].
+        determined by Faiman for 7 silicon modules.
+        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules. [(W/m^2 C)(m/s)].
+        determined by Faiman for 7 silicon modules.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     Returns
     -------

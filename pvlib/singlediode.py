@@ -80,10 +80,10 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
     .. math::
 
-        I = I_{L} - I_{0} (\exp \frac{V_{d}}{nNsVth} - 1)
+        I = I_{L} - I_{0} \left (\exp \frac{V_{d}}{nN_{s}V_{th}} - 1 \right )
         - \frac{V_{d}}{R_{sh}}
-        - \frac{I_{L} \frac{d^{2}}{\mu \tau}{N_{s} V_{bi} - V_{d}}
-        - a \frac{V_{d}{R_{sh}} (1 - \frac{V_{d}}{V_{br}})^-m
+        - \frac{I_{L} \frac{d^{2}}{\mu \tau}}{N_{s} V_{bi} - V_{d}}
+        - a \frac{V_{d}}{R_{sh}} \left (1 - \frac{V_{d}}{V_{br}} \right )^{-m}
 
     The input `diode_voltage` must be :math:`V + I R_{s}`.
 
@@ -97,7 +97,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     Parameters
     ----------
     diode_voltage : numeric
-        diode voltages [V]
+        diode voltage :math:`V_d` [V]
     photocurrent : numeric
         photo-generated current :math:`I_{L}` [A]
     saturation_current : numeric
@@ -108,7 +108,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         shunt resistance :math:`R_{sh}` [ohms]
     nNsVth : numeric
         product of thermal voltage :math:`V_{th}` [V], diode ideality factor
-        ``n``, and number of series cells :math:`N_{s}`
+        :math:`n`, and number of series cells :math:`N_{s}` [V]
     d2mutau : numeric, default 0
         PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
         (a-Si) modules that accounts for recombination current in the
@@ -135,9 +135,9 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     -------
     tuple
         currents [A], voltages [V], power [W], and optionally
-        :math:`\\frac{dI}{dV_d}`, :math:`\\frac{dV}{dV_d}`,
-        :math:`\\frac{dI}{dV}`, :math:`\\frac{dP}{dV}`, and
-        :math:`\\frac{d^2 P}{dV dV_d}`
+        :math:`\frac{dI}{dV_d}`, :math:`\frac{dV}{dV_d}`,
+        :math:`\frac{dI}{dV}`, :math:`\frac{dP}{dV}`, and
+        :math:`\frac{d^2 P}{dV dV_d}`
 
     Notes
     -----

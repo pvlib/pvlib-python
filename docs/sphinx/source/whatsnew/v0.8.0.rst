@@ -3,8 +3,14 @@
 v0.8.0 (Month day, year)
 -------------------------
 
-API Changes
-~~~~~~~~~~~
+API Changes with Deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Moved functions related to inverters from `pvsystem.py` to `inverter.py`.
+  Functions are renamed to follow a more consistent pattern, as follows:
+   - :py:func:`pvlib.pvsystem.snlinverter` is now :py:func:`pvlib.inverters.sandia`
+   - :py:func:`pvlib.pvsystem.pvwatts_ac` is now :py:func:`pvlib.inverters.pvwatts`
+   - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverters.adr`
+  (:pull:`886`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -16,6 +22,8 @@ Testing
 ~~~~~~~
 * Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` can now be
   applied to functions that require args or kwargs. (:pull:`973`)
+* Test added for :py:method:`ModelChain.ac_model` to confirm ValueError when
+  ac_model is an invalid string. (:pull:`886`)
 
 Documentation
 ~~~~~~~~~~~~~

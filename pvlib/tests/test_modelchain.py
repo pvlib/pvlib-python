@@ -457,16 +457,19 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    weather, mocker):
     ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
                   'sandia': sapm_dc_snl_ac_system,
-                  'adr': cec_dc_adr_ac_system,
                   'adrinverter': cec_dc_adr_ac_system,
+                  'adr': cec_dc_adr_ac_system,
                   'pvwatts': pvwatts_dc_pvwatts_ac_system}
+    ac_method_name = {'snlinverter': 'snlinverter',
+                      'sandia': 'snlinverter',
+                      'adrinverter': 'adrinverter',
+                      'adr': 'adrinverter',
+                      'pvwatts': 'pvwatts_ac'}
     system = ac_systems[ac_model]
 
     mc = ModelChain(system, location, ac_model=ac_model,
                     aoi_model='no_loss', spectral_model='no_loss')
-    if ac_model == 'pvwatts':
-        ac_model += '_ac'
-    m = mocker.spy(system, ac_model)
+    m = mocker.spy(system, ac_method_name)
     mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, pd.Series)

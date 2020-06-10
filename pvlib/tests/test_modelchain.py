@@ -469,7 +469,7 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
 
     mc = ModelChain(system, location, ac_model=ac_model,
                     aoi_model='no_loss', spectral_model='no_loss')
-    m = mocker.spy(system, ac_method_name)
+    m = mocker.spy(system, ac_method_name[ac_model])
     mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, pd.Series)

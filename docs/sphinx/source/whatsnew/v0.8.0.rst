@@ -14,6 +14,8 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` can now be
+  applied to functions that require args or kwargs. (:pull:`973`)
 
 Documentation
 ~~~~~~~~~~~~~

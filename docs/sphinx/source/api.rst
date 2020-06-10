@@ -263,10 +263,20 @@ Low-level functions for solving the single diode equation.
    singlediode.bishop88_v_from_i
    singlediode.bishop88_mpp
 
-SAPM model
-----------
+Inverter models (DC to AC conversion)
+-------------------------------------
 
-Functions relevant for the SAPM model.
+.. autosummary::
+   :toctree: generated/
+
+   inverter.sandia
+   inverter.adr
+   inverter.pvwatts
+
+PV System Models
+----------------
+
+Functions relevant for the Sandia array performance model (SAPM).
 
 .. autosummary::
    :toctree: generated/
@@ -275,12 +285,8 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_effective_irradiance
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
-   pvsystem.snlinverter
-   pvsystem.adrinverter
+   inverter.sandia
    temperature.sapm_cell
-
-Pvsyst model
--------------
 
 Functions relevant for the Pvsyst model.
 
@@ -288,15 +294,17 @@ Functions relevant for the Pvsyst model.
    :toctree: generated/
 
    temperature.pvsyst_cell
+   pvsystem.calcparams_pvsyst
+   pvsystem.singlediode
 
-PVWatts model
+Functions relevant for the PVWatts model
 -------------
 
 .. autosummary::
    :toctree: generated/
 
    pvsystem.pvwatts_dc
-   pvsystem.pvwatts_ac
+   inverter.pvwatts
    pvsystem.pvwatts_losses
 
 Functions for fitting diode models

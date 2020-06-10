@@ -481,6 +481,14 @@ def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
     assert not mc.ac.empty
 
 
+def test_ac_model_not_a_model(pvwatts_dc_pvwatts_ac_system, location, weather):
+    exc_text = 'not a valid AC power model'
+    with pytest.raises(ValueError, match=exc_text):
+        ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                   ac_model='not_a_model', aoi_model='no_loss',
+                   spectral_model='no_loss')
+
+
 def constant_aoi_loss(mc):
     mc.aoi_modifier = 0.9
 

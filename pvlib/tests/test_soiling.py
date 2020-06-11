@@ -44,12 +44,12 @@ def expected_output_1():
 def expected_output_2():
     dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
                        end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
-    expected_output_2 = pd.Series(  
-            data = [0.97229869, 0.95035106, 0.93037619, 0.91176175, 1.,
-            1.        , 1.        , 0.97229869, 1.        , 1.        ,
-            1.        , 1.        , 0.97229869, 0.95035106, 0.93037619,
-            0.91176175, 0.89425431, 1.        , 1.        , 1.        ,
-            1.        , 0.97229869, 0.95035106, 0.93037619],
+    expected_output_2 = pd.Series(
+        data=[0.97229869, 0.95035106, 0.93037619, 0.91176175, 1.,
+              1.        , 1.        , 0.97229869, 1.        , 1.        ,
+              1.        , 1.        , 0.97229869, 0.95035106, 0.93037619,
+              0.91176175, 0.89425431, 1.        , 1.        , 1.        ,
+              1.        , 0.97229869, 0.95035106, 0.93037619],
         index=dt)
 
     return expected_output_2
@@ -110,8 +110,8 @@ def test_hsu_defaults(rainfall_input, expected_output_1):
     accumulation period.
     """
     result = hsu(
-        rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0, pm2_5=1.0e-2,
-        pm10=2.0e-2)
+        rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0, i
+        pm2_5=1.0e-2,pm10=2.0e-2)
     assert np.allclose(result.values, expected_output_1)
 
 

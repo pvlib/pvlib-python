@@ -110,7 +110,7 @@ def test_hsu_defaults(rainfall_input, expected_output_1):
     accumulation period.
     """
     result = hsu(
-        rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0, i
+        rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0,
         pm2_5=1.0e-2,pm10=2.0e-2)
     assert np.allclose(result.values, expected_output_1)
 

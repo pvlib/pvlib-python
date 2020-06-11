@@ -11,6 +11,7 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`XXX`)
 
 Testing
 ~~~~~~~
@@ -34,3 +35,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Mark Mikofski (:ghuser:`mikofski`)
+* Joshua S. Stein (:ghuser:`jsstein`)

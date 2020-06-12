@@ -12,6 +12,7 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`XXX`)
+* Added ability for :py:func:`pvlib.soiling.hsu` to accept arbitrary time intervals. (:pull:`XXX`)
 
 Testing
 ~~~~~~~

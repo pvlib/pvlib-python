@@ -26,6 +26,7 @@ Documentation
 * Clarify units for heat loss factors in
   :py:func:`pvlib.temperature.pvsyst_cell` and
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
+* Add instructions to build the documentation. (:pull:`982`)
 
 Requirements
 ~~~~~~~~~~~~

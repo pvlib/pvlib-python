@@ -23,6 +23,8 @@ Documentation
 * Clarify units for heat loss factors in
   :py:func:`pvlib.temperature.pvsyst_cell` and
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
+* Add make.bat so that docs can be built on Windows without ``make`` installed.
+  (:issue:`978`, :pull:`981`)
 
 Requirements
 ~~~~~~~~~~~~

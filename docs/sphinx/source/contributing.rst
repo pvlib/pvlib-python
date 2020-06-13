@@ -247,12 +247,37 @@ Parameters that specify a specific type require that specific input type.
 
 Read the Docs will automatically build the documentation for each pull
 request. Please confirm the documentation renders correctly by following
-the ``continuous-documentation/read-the-docs`` link within the checks
+the ``docs/readthedocs.org:pvlib-python`` link within the checks
 status box at the bottom of the pull request.
 
-To build the docs locally, install the ``doc`` dependencies specified in the
+Building the documentation
+--------------------------
+
+Building the documentation locally is useful for testing out changes to the
+documentation's source code without having to repeatedly update a PR and have
+Read the Docs build it for you.  Building the docs locally requires installing
+pvlib python as an editable library (see :ref:`installation` for instructions).
+First, install the ``doc`` dependencies specified in the
 `setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
-file. See :ref:`installation` instructions for more information.
+file. An easy way to do this is with::
+
+    pip install pvlib[doc]
+
+Once the ``doc`` dependencies are installed, navigate to ``/docs/sphinx`` and
+execute::
+
+    make html
+
+Be sure to skim through the output of this command because Sphinx might emit
+helpful warnings about problems with the documentation source code.
+If the build succeeds, it will make a new directory ``docs/sphinx/build``
+with the documentation's homepage located at ``build/html/index.html``.
+This file can be opened with a web browser to view the local version
+like any other website. Other output formats are available; run ``make help``
+for more information.
+
+Note that Windows users need not have the ``make`` utility installed as pvlib
+includes a ``make.bat`` batch file that emulates its interface.
 
 Example Gallery
 ---------------

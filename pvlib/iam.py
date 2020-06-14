@@ -527,3 +527,120 @@ def sapm(aoi, module, upper=None):
         iam = pd.Series(iam, aoi.index)
 
     return iam
+
+
+def marion_integrate(function, surface_tilt, region, N=180):
+    """
+    Integrate an incidence angle modifier (IAM) function over solid angle
+    to determine a diffuse irradiance correction factor using Marion's method.
+
+    Parameters
+    ----------
+    function : callable func(aoi)
+        The IAM function to evaluate across solid angle.  The function must
+        be vectorized and take only one parameter, the angle of incidence in
+        degrees.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    region : {'sky', 'horizon', 'ground'}
+        The region to integrate over.  Must be one of:
+
+            * 'sky': radiation from the sky dome
+            * 'horizon': radiation from the region of the sky near the horizon
+            * 'ground': radiation reflected from the ground
+
+        See [1]_ for a detailed description of each class.
+
+    N : int, default 180
+        The number of increments in the zenith integration.
+        If ``region=='horizon'``, a larger number should be used
+        (1800 was used in [1]_).
+
+    Returns
+    -------
+    Fd : numeric
+        AOI diffuse correction factor for the specified region.
+
+    References
+    ----------
+    .. [1] B. Marion "Numerical method for angle-of-incidence correction
+       factors for diffuse radiation incident photovoltaic modules",
+       Solar Energy, Volume 147, Pages 344-348. 2017.
+       DOI: 10.1016/j.solener.2017.03.027
+
+    Examples
+    --------
+    >>> marion_integrate(pvlib.iam.ashrae, 20, 'sky')
+    0.9596085829811408
+
+    >>> from functools import partial
+    >>> f = partial(pvlib.iam.physical, n=1.3)
+    >>> marion_integrate(f, [20, 30], 'sky')
+    array([0.96225034, 0.9653219 ])
+    """
+    beta = np.radians(surface_tilt)
+    if isinstance(beta, pd.Series):
+        # convert Series to np array for broadcasting later
+        beta = beta.values
+    ai = np.pi/N  # angular increment
+
+    phi_range = np.linspace(0, np.pi, N, endpoint=False)
+    psi_range = np.linspace(0, 2*np.pi, 2*N, endpoint=False)
+
+    # the pseudocode in [1] do these checks at the end, but it's
+    # faster to do this criteria check up front instead of later.
+    if region == 'sky':
+        mask = phi_range + ai <= np.pi/2
+    elif region == 'horizon':
+        lo = 89.5 * np.pi/180
+        hi = np.pi/2
+        mask = (lo <= phi_range) & (phi_range + ai <= hi)
+    elif region == 'ground':
+        mask = (phi_range >= np.pi/2)
+    else:
+        raise ValueError('Invalid region: {}'.format(region))
+    phi_range = phi_range[mask]
+
+    # fast Cartesian product of phi and psi
+    angles = np.array(np.meshgrid(phi_range, psi_range)).T.reshape(-1, 2)
+    # index with single-element lists to maintain 2nd dimension so that
+    # these angle arrays broadcast across the beta array
+    phi_1 = angles[:, [0]]
+    psi_1 = angles[:, [1]]
+    phi_2 = phi_1 + ai
+    # psi_2 = psi_1 + ai  # not needed
+    phi_avg = phi_1 + 0.5*ai
+    psi_avg = psi_1 + 0.5*ai
+    term_1 = np.cos(beta) * np.cos(phi_avg)
+    # we are free to choose any gamma between zero and 2pi, so choose zero
+    # and omit it from the cos(psi_avg) term
+    term_2 = np.sin(beta) * np.sin(phi_avg) * np.cos(psi_avg)
+    aoi = np.arccos(term_1 + term_2)
+    # simplify Eq 8, (psi_2 - psi_1) is always ai
+    dAs = ai * (np.cos(phi_1) - np.cos(phi_2))
+    cosaoi_dAs = np.cos(aoi) * dAs
+    # apply the final AOI check, zeroing out non-passing points
+    mask = aoi < np.pi/2
+    cosaoi_dAs = np.where(mask, cosaoi_dAs, 0)
+    numerator = np.sum(function(np.degrees(aoi)) * cosaoi_dAs, axis=0)
+    denominator = np.sum(cosaoi_dAs, axis=0)
+
+    with np.errstate(invalid='ignore'):
+        # in some cases, no points pass the criteria
+        # (e.g. region='ground', surface_tilt=0), so we override the division
+        # by zero to set Fd=0.  Also, preserve nans in beta.
+        Fd = np.where((denominator != 0) | ~np.isfinite(beta),
+                      numerator / denominator,
+                      0)
+
+    # preserve input type
+    if np.isscalar(surface_tilt):
+        Fd = Fd.item()
+    elif isinstance(surface_tilt, pd.Series):
+        Fd = pd.Series(Fd, surface_tilt.index)
+
+    return Fd

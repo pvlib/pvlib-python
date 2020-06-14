@@ -493,7 +493,7 @@ class ModelChain(object):
             self._ac_model = self.infer_ac_model()
         elif isinstance(model, str):
             model = model.lower()
-            # TODO in v0.9: remove 'snlinverter', 'adrinverter', 'pvwatts'
+            # TODO in v0.9: remove 'snlinverter', 'adrinverter'
             if model in ['sandia', 'snlinverter']:
                 self._ac_model = self.snlinverter
             elif model in ['adr', 'adrinverter']:

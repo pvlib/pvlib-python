@@ -447,7 +447,8 @@ def acdc(mc):
     mc.ac = mc.dc
 
 
-# TODO in v0.9: remove 'snlinverter', 'adrinverter', 'pvwatts'
+# TODO in v0.9: remove 'snlinverter', 'adrinverter' since these values for
+# ModelChain.ac_model are superseded by 'sandia' and 'adr'
 @pytest.mark.parametrize('ac_model', [
     'sandia', 'snlinverter', pytest.param('adrinverter', marks=requires_scipy),
     pytest.param('adr', marks=requires_scipy),

@@ -25,7 +25,7 @@ def sandia(v_dc, p_dc, inverter):
         Defines parameters for the inverter model in [1]_.  See Notes for
         required model parameters. A copy of the parameter database from the
         System Advisor Model (SAM) [2]_ is provided with pvlib and may be read
-        using :py:func:`pvlib.pvsystem.retrieve_sam.
+        using :py:func:`pvlib.pvsystem.retrieve_sam`.
 
     Returns
     -------

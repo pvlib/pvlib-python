@@ -727,15 +727,15 @@ class PVSystem(object):
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
                     ivcurve_pnts=None):
-        """Wrapper around the :py:func:`singlediode` function.
+        """Wrapper around the :py:func:`pvlib.pvsystem.singlediode` function.
 
         Parameters
         ----------
-        See pvsystem.singlediode for details
+        See :py:func:`pvsystem.singlediode` for details
 
         Returns
         -------
-        See pvsystem.singlediode for details
+        See :py:func:`pvsystem.singlediode` for details
         """
         return singlediode(photocurrent, saturation_current,
                            resistance_series, resistance_shunt, nNsVth,
@@ -743,52 +743,51 @@ class PVSystem(object):
 
     def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
                  saturation_current, photocurrent):
-        """Wrapper around the :py:func:`i_from_v` function.
+        """Wrapper around the :py:func:`pvlib.pvsystem.i_from_v` function.
 
         Parameters
         ----------
-        See pvsystem.i_from_v for details
+        See :py:func:`pvsystem.i_from_v` for details
 
         Returns
         -------
-        See pvsystem.i_from_v for details
+        See :py:func:`pvsystem.i_from_v` for details
         """
         return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                         saturation_current, photocurrent)
 
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
-        """Uses :pyfunc:`pvlib.inverter.sandia` to calculate AC power based on
-        ``self.inverter_parameters`` and the input parameters.
+        """Uses :py:func:`pvlib.inverter.sandia` to calculate AC power based on
+        ``self.inverter_parameters`` and the input voltage and power.
 
         Parameters
         ----------
-        See pvlib.inverter.sandia for details
+        See :py:func:`pvlib.inverter.sandia` for details
 
         Returns
         -------
-        See pvlib.inverter.sandia for details
+        See :py:func:`pvlib.inverter.sandia` for details
         """
         return inverter.sandia(v_dc, p_dc, self.inverter_parameters)
 
     def adrinverter(self, v_dc, p_dc):
-        """Uses :pyfunc:`pvlib.inverter.adr` to calculate AC power based on
-        ``self.inverter_parameters`` and the input parameters.
+        """Uses :py:func:`pvlib.inverter.adr` to calculate AC power based on
+        ``self.inverter_parameters`` and the input voltage and power.
 
         Parameters
         ----------
-        See pvlib.inverter.adr for details
+        See :py:func:`pvlib.inverter.adr` for details
 
         Returns
         -------
-        See pvlib.inverter.adr for details
+        See :py:func:`pvlib.inverter.adr` for details
         """
         return inverter.adr(v_dc, p_dc, self.inverter_parameters)
 
     def scale_voltage_current_power(self, data):
         """
-        Scales the voltage, current, and power of the DataFrames
-        returned by :py:func:`singlediode` and :py:func:`sapm`
+        Scales the voltage, current, and power of the `data` DataFrame
         by `self.modules_per_string` and `self.strings_per_inverter`.
 
         Parameters
@@ -810,10 +809,10 @@ class PVSystem(object):
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
         Calcuates DC power according to the PVWatts model using
-        :py:func:`pvwatts_dc`, `self.module_parameters['pdc0']`, and
-        `self.module_parameters['gamma_pdc']`.
+        :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
+        and `self.module_parameters['gamma_pdc']`.
 
-        See :py:func:`pvwatts_dc` for details.
+        See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
         """
         kwargs = _build_kwargs(['temp_ref'], self.module_parameters)
 
@@ -825,9 +824,10 @@ class PVSystem(object):
     def pvwatts_losses(self):
         """
         Calculates DC power losses according the PVwatts model using
-        :py:func:`pvwatts_losses` and ``self.losses_parameters``.`
+        :py:func:`pvlib.pvsystem.pvwatts_losses` and
+        ``self.losses_parameters``.
 
-        See :py:func:`pvwatts_losses` for details.
+        See :py:func:`pvlib.pvsystem.pvwatts_losses` for details.
         """
         kwargs = _build_kwargs(['soiling', 'shading', 'snow', 'mismatch',
                                 'wiring', 'connections', 'lid',
@@ -838,10 +838,10 @@ class PVSystem(object):
     def pvwatts_ac(self, pdc):
         """
         Calculates AC power according to the PVWatts model using
-        :py:func:`pvwatts_ac`, `self.module_parameters['pdc0']`, and
-        `eta_inv_nom=self.inverter_parameters['eta_inv_nom']`.
+        :py:func:`pvlib.inverter.pvwatts`, `self.module_parameters['pdc0']`,
+        and `eta_inv_nom=self.inverter_parameters['eta_inv_nom']`.
 
-        See :py:func:`pvwatts_ac` for details.
+        See :py:func:`pvlib.inverter.pvwatts` for details.
         """
         kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
                                self.inverter_parameters)

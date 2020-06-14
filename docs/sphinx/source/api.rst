@@ -223,6 +223,7 @@ Incident angle modifiers
    iam.martin_ruiz_diffuse
    iam.sapm
    iam.interp
+   iam.marion_integrate
 
 PV temperature models
 ---------------------

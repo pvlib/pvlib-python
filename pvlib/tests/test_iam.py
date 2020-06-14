@@ -218,3 +218,61 @@ def test_sapm_limits():
 
     module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
     assert _iam.sapm(1, module_parameters) == 0
+
+
+@pytest.mark.parametrize('region,N,expected', [
+    ('sky', 180, 0.9596085829811408),
+    ('horizon', 1800, 0.8329070417832541),
+    ('ground', 180, 0.719823559106309)
+])
+def test_marion_integrate_scalar(region, N, expected):
+    actual = _iam.marion_integrate(_iam.ashrae, 20, region, N)
+    assert_allclose(actual, expected)
+
+    with np.errstate(invalid='ignore'):
+        actual = _iam.marion_integrate(_iam.ashrae, np.nan, region, N)
+    expected = np.nan
+    assert_allclose(actual, expected)
+
+
+@pytest.mark.parametrize('region,N,expected', [
+    ('sky', 180, [0.9523611991069362, 0.9596085829811408, 0.9619811198105501]),
+    ('horizon', 1800, [0.0, 0.8329070417832541, 0.8987287652347437]),
+    ('ground', 180, [0.0, 0.719823559106309, 0.8186360238536674])
+])
+def test_marion_integrate_list(region, N, expected):
+    actual = _iam.marion_integrate(_iam.ashrae, [0, 20, 30], region, N)
+    assert_allclose(actual, expected)
+
+    with np.errstate(invalid='ignore'):
+        actual = _iam.marion_integrate(_iam.ashrae, [0, 20, np.nan], region, N)
+    assert_allclose(actual, [expected[0], expected[1], np.nan])
+
+
+@pytest.mark.parametrize('region,N,expected', [
+    ('sky', 180, [0.9523611991069362, 0.9596085829811408, 0.9619811198105501]),
+    ('horizon', 1800, [0.0, 0.8329070417832541, 0.8987287652347437]),
+    ('ground', 180, [0.0, 0.719823559106309, 0.8186360238536674])
+])
+def test_marion_integrate_series(region, N, expected):
+    idx = pd.date_range('2019-01-01', periods=3, freq='h')
+    tilt = pd.Series([0, 20, 30], index=idx)
+    expected = pd.Series(expected, index=idx)
+    actual = _iam.marion_integrate(_iam.ashrae, tilt, region, N)
+    assert_series_equal(actual, expected)
+
+    tilt.iloc[1] = np.nan
+    expected.iloc[1] = np.nan
+    with np.errstate(invalid='ignore'):
+        actual = _iam.marion_integrate(_iam.ashrae, tilt, region, N)
+    assert_allclose(actual, expected)
+
+
+def test_marion_integrate_ground_flat():
+    iam = _iam.marion_integrate(_iam.ashrae, 0, 'horizon', 1800)
+    assert_allclose(iam, 0)
+
+
+def test_marion_integrate_invalid():
+    with pytest.raises(ValueError):
+        _iam.marion_integrate(_iam.ashrae, 0, 'bad', 180)

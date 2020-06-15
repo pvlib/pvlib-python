@@ -29,7 +29,7 @@ def sandia(v_dc, p_dc, inverter):
 
     Returns
     -------
-    ac_power : numeric
+    power_ac : numeric
         AC power output. [W]
 
     Notes
@@ -37,9 +37,9 @@ def sandia(v_dc, p_dc, inverter):
 
     Determines the AC power output of an inverter given the DC voltage and DC
     power. Output AC power is bounded above by the parameter ``Paco``, to
-    represent inverter "clipping".  When `ac_power` would be less than
-    parameter ``Pso`` (startup power required), then `ac_power` is set to
-    ``-Pnt``, representing self-consumption. `ac_power` is not adjusted for
+    represent inverter "clipping".  When `power_ac` would be less than
+    parameter ``Pso`` (startup power required), then `power_ac` is set to
+    ``-Pnt``, representing self-consumption. `power_ac` is not adjusted for
     maximum power point tracking (MPPT) voltage windows or maximum current
     limits of the inverter.
 
@@ -63,7 +63,7 @@ def sandia(v_dc, p_dc, inverter):
              with DC voltage input. [1/V]
     C2       Empirical coefficient allowing ``Pso`` to vary linearly with
              DC voltage input. [1/V]
-    C3       Empirical coefficient allowing Co to vary linearly with
+    C3       Empirical coefficient allowing ``C0`` to vary linearly with
              DC voltage input. [1/V]
     Pnt      AC power consumed by the inverter at night (night tare). [W]
     ======   ============================================================
@@ -91,18 +91,18 @@ def sandia(v_dc, p_dc, inverter):
     C3 = inverter['C3']
     Pnt = inverter['Pnt']
 
-    A = Pdco * (1 + C1*(v_dc - Vdco))
-    B = Pso * (1 + C2*(v_dc - Vdco))
-    C = C0 * (1 + C3*(v_dc - Vdco))
+    A = Pdco * (1 + C1 * (v_dc - Vdco))
+    B = Pso * (1 + C2 * (v_dc - Vdco))
+    C = C0 * (1 + C3 * (v_dc - Vdco))
 
-    ac_power = (Paco/(A-B) - C*(A-B)) * (p_dc-B) + C*((p_dc-B)**2)
-    ac_power = np.minimum(Paco, ac_power)
-    ac_power = np.where(p_dc < Pso, -1.0 * abs(Pnt), ac_power)
+    power_ac = (Paco / (A - B) - C * (A - B)) * (p_dc - B) + C * (p_dc - B)**2
+    power_ac = np.minimum(Paco, power_ac)
+    power_ac = np.where(p_dc < Pso, -1.0 * abs(Pnt), power_ac)
 
     if isinstance(p_dc, pd.Series):
-        ac_power = pd.Series(ac_power, index=p_dc.index)
+        power_ac = pd.Series(power_ac, index=p_dc.index)
 
-    return ac_power
+    return power_ac
 
 
 def adr(v_dc, p_dc, inverter, vtol=0.10):
@@ -121,7 +121,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     inverter : dict-like
         Defines parameters for the inverter model in [1]_.  See Notes for
         required model parameters. A parameter database is provided with pvlib
-        and may be read using :py:func:`pvlib.pvsystem.retrieve_sam.
+        and may be read using :py:func:`pvlib.pvsystem.retrieve_sam`.
 
     vtol : numeric, default 0.1
         Fraction of DC voltage that determines how far the efficiency model is
@@ -130,7 +130,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
     Returns
     -------
-    ac_power : numeric
+    power_ac : numeric
         AC power output. [W]
 
     Notes
@@ -140,7 +140,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     power. Output AC power is bounded above by the parameter ``Pacmax``, to
     represent inverter "clipping". AC power is bounded below by ``-Pnt``
     (negative when power is consumed rather than produced) which represents
-    self-consumption. `ac_power` is not adjusted for maximum power point
+    self-consumption. `power_ac` is not adjusted for maximum power point
     tracking (MPPT) voltage windows or maximum current limits of the inverter.
 
     Required model parameters are:
@@ -171,7 +171,8 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
               of input voltage and power on inverter losses, and thereby
               efficiency. Corresponds to terms from [1]_ (in order): :math:
               `b_{0,0}, b_{1,0}, b_{2,0}, b_{0,1}, b_{1,1}, b_{2,1}, b_{0,2},
-               b_{1,2},  b_{1,2}`.
+               b_{1,2},  b_{1,2}`. See [1]_ for the use of each coefficient
+               and the associated unit.
 
     Pnt       AC power consumed by inverter at night (night tare) to
               maintain circuitry required to sense PV array voltage. [W]
@@ -219,26 +220,26 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
                          pdc * (1. / vdc - 1),  # invalid 0./0. --> nan
                          pdc**2 * (1. / vdc - 1)])  # divide by 0
     p_loss = np.dot(np.array(ce_list), poly)
-    ac_power = p_nom * (pdc-p_loss)
+    power_ac = p_nom * (pdc - p_loss)
     p_nt = -1 * np.absolute(p_nt)
 
     # set output to nan where input is outside of limits
     # errstate silences case where input is nan
     with np.errstate(invalid='ignore'):
         invalid = (v_lim_upper < v_dc) | (v_dc < v_lim_lower)
-    ac_power = np.where(invalid, np.nan, ac_power)
+    power_ac = np.where(invalid, np.nan, power_ac)
 
     # set night values
-    ac_power = np.where(vdc == 0, p_nt, ac_power)
-    ac_power = np.maximum(ac_power, p_nt)
+    power_ac = np.where(vdc == 0, p_nt, power_ac)
+    power_ac = np.maximum(power_ac, p_nt)
 
     # set max ac output
-    ac_power = np.minimum(ac_power, pac_max)
+    power_ac = np.minimum(power_ac, pac_max)
 
     if isinstance(p_dc, pd.Series):
-        ac_power = pd.Series(ac_power, index=pdc.index)
+        power_ac = pd.Series(power_ac, index=pdc.index)
 
-    return ac_power
+    return power_ac
 
 
 def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
@@ -276,7 +277,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     Returns
     -------
-    pac: numeric
+    power_ac: numeric
         AC power.  Same unit as ``pdc0``.
 
     References
@@ -293,13 +294,13 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     eta = np.zeros_like(pdc, dtype=float)
     pdc_neq_0 = ~np.equal(pdc, 0)
 
-    # eta < 0 if zeta < 0.006. pac is forced to be >= 0 below. GH 541
+    # eta < 0 if zeta < 0.006. power_ac is forced to be >= 0 below. GH 541
     eta = eta_inv_nom / eta_inv_ref * (
         -0.0162 * zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
         + 0.9858)  # noQA: W503
 
-    pac = eta * pdc
-    pac = np.minimum(pac0, pac)
-    pac = np.maximum(0, pac)     # GH 541
+    power_ac = eta * pdc
+    power_ac = np.minimum(pac0, power_ac)
+    power_ac = np.maximum(0, power_ac)     # GH 541
 
-    return pac
+    return power_ac

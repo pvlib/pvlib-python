@@ -9,7 +9,7 @@ loss for diffuse irradiance.
 # %%
 # The fraction of light reflected from the front of a module depends on the
 # angle of incidence (AOI) of the light compared to the panel surface.  The
-# steeper the tilt, the larger the reflected fraction is.  The fraction of
+# greater the AOI, the larger the reflected fraction is.  The fraction of
 # transmitted light to incident light is called the incident angle modifier
 # (IAM).  Several models exist to calculate the IAM for a given incidence
 # angle (e.g. :py:func:`pvlib.iam.ashrae`, :py:func:`pvlib.iam.martin_ruiz`,
@@ -31,7 +31,7 @@ loss for diffuse irradiance.
 #     of Thermal Processes.  DOI: 10.1002/9781118671603
 
 
-from pvlib.iam import marion_integrate, physical
+from pvlib.iam import marion_diffuse, physical
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -40,94 +40,79 @@ import matplotlib.pyplot as plt
 # IAM Model
 # ---------
 #
-# The IAM model used to generate the figures in [1]_ focuses on the air-glass
-# interface.  It uses Snell's, Fresnel's, and Beer's laws to determine the
-# amount of light transmitted through the interface as a function of AOI.
+# The IAM model used to generate the figures in [1]_ uses Snell's, Fresnel's,
+# and Beer's laws to determine the fraction of light transmitted through the
+# air-glass interface as a function of AOI.
 # The function :py:func:`pvlib.iam.physical` implements this model, except it
 # also includes an exponential term to model attenuation in the glazing layer.
 # To be faithful to Marion's implementation, we will disable this extinction
 # term by setting the attenuation coefficient ``K`` parameter to zero.
 # For more details on this IAM model, see [2]_.
 #
-# Marion generated correction factor profiles for two cases:  a standard
-# uncoated glass with n=1.526 and a glass with anti-reflective (AR) coating
-# with n=1.3.  For convenience, we define a helper function for each case.
-# Comparing them across AOI recreates Figure 3 in [1]_:
-
-
-def calc_uncoated(aoi):
-    return physical(aoi, n=1.526, K=0)
-
-
-def calc_ar_coated(aoi):
-    return physical(aoi, n=1.3, K=0)
-
+# Marion generated diffuse irradiance modifiers for two cases:  a standard
+# uncoated glass with index of refraction n=1.526 and a glass with
+# anti-reflective (AR) coating with n=1.3.
+# Comparing the IAM model across AOI recreates Figure 3 in [1]_:
 
 aoi = np.arange(0, 91)
-cf_uncoated = calc_uncoated(aoi)
-cf_ar_coated = calc_ar_coated(aoi)
+iam_no_coating = physical(aoi, n=1.526, K=0)
+iam_ar_coating = physical(aoi, n=1.3, K=0)
 
-plt.plot(aoi, cf_ar_coated, c='b', label='$F_b$, AR coated, n=1.3')
-plt.plot(aoi, cf_uncoated, c='r', label='$F_b$, uncoated, n=1.526')
+plt.plot(aoi, iam_ar_coating, c='b', label='$F_b$, AR coated, n=1.3')
+plt.plot(aoi, iam_no_coating, c='r', label='$F_b$, uncoated, n=1.526')
 plt.xlabel(r'Angle-of-Incidence, AOI $(\degree)$')
-plt.ylabel('Correction Factor')
+plt.ylabel('Diffuse Incidence Angle Modifier')
 plt.legend()
 plt.ylim([0, 1.2])
 plt.grid()
 
 # %%
-# Diffuse sky irradiance (:math:`F_{sky}`)
-# -----------------------------------------
+# Diffuse sky, ground, and horizon irradiance
+# -------------------------------------------
 #
-# Now that we have an AOI model, we use :py:func:`pvlib.iam.marion_integrate`
-# to integrate it across solid angle and determine diffuse irradiance
-# correction factors.  Marion defines three types of diffuse irradiance:
-# sky, horizon, and ground-reflected.  The IAM correction factor is evaluated
+# Now that we have an AOI model, we use :py:func:`pvlib.iam.marion_diffuse`
+# to integrate it across solid angle and determine diffuse irradiance IAM.
+# Marion defines three types of diffuse irradiance:
+# sky, horizon, and ground-reflected.  The diffuse IAM value is evaluated
 # independently for each type.
-# First we recreate Figure 4 in [1]_, showing the dependence of the sky diffuse
-# correction factor on module tilt.
 
 tilts = np.arange(0, 91, 2.5)
 
-iam_uncoated = marion_integrate(calc_uncoated, tilts, 'sky', N=180)
-iam_ar_coated = marion_integrate(calc_ar_coated, tilts, 'sky', N=180)
+# marion_diffuse calculates all three IAM values (sky, horizon, ground)
+iam_no_coating = marion_diffuse('physical', tilts, n=1.526, K=0)
+iam_ar_coating = marion_diffuse('physical', tilts, n=1.3, K=0)
 
-plt.plot(tilts, iam_ar_coated, c='b', marker='^',
+# %%
+# First we recreate Figure 4 in [1]_, showing the dependence of the sky diffuse
+# incidence angle modifier on module tilt.
+
+plt.plot(tilts, iam_ar_coating['sky'], c='b', marker='^',
          label='$F_{sky}$, AR coated, n=1.3')
-plt.plot(tilts, iam_uncoated, c='r', marker='x',
+plt.plot(tilts, iam_no_coating['sky'], c='r', marker='x',
          label='$F_{sky}$, uncoated, n=1.526')
 plt.ylim([0.9, 1.0])
 plt.xlabel(r'PV Module Tilt, $\beta (\degree)$')
-plt.ylabel('Correction Factor')
+plt.ylabel('Diffuse Incidence Angle Modifier')
 plt.grid()
 plt.legend()
 plt.show()
 
-
 # %%
-# Diffuse horizon and ground irradiance (:math:`F_{hor}, F_{grd}`)
-# -----------------------------------------------------------------
-#
-# Now we recreate Figure 5 in [1]_, showing the dependence of the correction
-# factors for horizon and ground diffuse irradiance on module tilt.  Note that
-# we use 1800 points instead of 180 for the horizon case to match [1]_.
+# Now we recreate Figure 5 in [1]_, showing the dependence of the diffuse iam
+# values for horizon and ground diffuse irradiance on module tilt.  Note that
+# :py:func:`pvlib.iam.marion_diffuse` defaults to using 1800 points for the
+# horizon case (instead of 180 like the others) to match [1]_.
 
-iam_uncoated_grd = marion_integrate(calc_uncoated, tilts, 'ground', N=180)
-iam_ar_coated_grd = marion_integrate(calc_ar_coated, tilts, 'ground', N=180)
-
-iam_uncoated_hor = marion_integrate(calc_uncoated, tilts, 'horizon', N=1800)
-iam_ar_coated_hor = marion_integrate(calc_ar_coated, tilts, 'horizon', N=1800)
-
-plt.plot(tilts, iam_ar_coated_hor, c='b', marker='^',
+plt.plot(tilts, iam_ar_coating['horizon'], c='b', marker='^',
          label='$F_{hor}$, AR coated, n=1.3')
-plt.plot(tilts, iam_uncoated_hor, c='r', marker='x',
+plt.plot(tilts, iam_no_coating['horizon'], c='r', marker='x',
          label='$F_{hor}$, uncoated, n=1.526')
-plt.plot(tilts, iam_ar_coated_grd, c='b', marker='s',
+plt.plot(tilts, iam_ar_coating['ground'], c='b', marker='s',
          label='$F_{grd}$, AR coated, n=1.3')
-plt.plot(tilts, iam_uncoated_grd, c='r', marker='+',
+plt.plot(tilts, iam_no_coating['ground'], c='r', marker='+',
          label='$F_{grd}$, uncoated, n=1.526')
 plt.xlabel(r'PV Module Tilt, $\beta (\degree)$')
-plt.ylabel('Correction Factor')
+plt.ylabel('Diffuse Incidence Angle Modifier')
 plt.grid()
 plt.legend()
 plt.show()

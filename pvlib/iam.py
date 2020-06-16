@@ -10,6 +10,7 @@ irradiance to the module's surface.
 
 import numpy as np
 import pandas as pd
+import functools
 from pvlib.tools import cosd, sind, tand, asind
 
 # a dict of required parameter names for each IAM model
@@ -529,10 +530,94 @@ def sapm(aoi, module, upper=None):
     return iam
 
 
-def marion_integrate(function, surface_tilt, region, N=180):
+def marion_diffuse(model, surface_tilt, regions=None, **kwargs):
+    """
+    Determine diffuse irradiance incidence angle modifiers using Marion's
+    method of integrating over solid angle.
+
+    Parameters
+    ----------
+    model : str
+        The IAM function to evaluate across solid angle.  Must be one of
+        `'ashrae', 'physical', 'martin_ruiz', 'sapm'`.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    regions : list, default ['sky', 'horizon', 'ground']
+        The regions to integrate over.  Options are:
+
+            * 'sky': radiation from the sky dome
+            * 'horizon': radiation from the region of the sky near the horizon
+            * 'ground': radiation reflected from the ground
+
+        See [1]_ for a detailed description of each class.  If not specified,
+        IAM values for all three regions are calculated.
+
+    **kwargs
+        Extra parameters passed to the IAM function.
+
+    Returns
+    -------
+    iam : dict
+        IAM values for each type of diffuse irradiance.
+
+    See Also
+    --------
+    pvlib.iam.marion_integrate
+
+    References
+    ----------
+    .. [1] B. Marion "Numerical method for angle-of-incidence correction
+       factors for diffuse radiation incident photovoltaic modules",
+       Solar Energy, Volume 147, Pages 344-348. 2017.
+       DOI: 10.1016/j.solener.2017.03.027
+
+    Examples
+    --------
+    >>> marion_diffuse('physical', surface_tilt=20)
+    {'sky': 0.9539178294437575,
+     'horizon': 0.7652650139134007,
+     'ground': 0.6387140117795903}
+
+    >>> marion_diffuse('ashrae', [20, 30], b=0.04)
+    {'sky': array([0.96748999, 0.96938408]),
+     'horizon': array([0.86478428, 0.91825792]),
+     'ground': array([0.77004435, 0.8522436 ])}
+    """
+
+    if regions is None:
+        regions = ['sky', 'horizon', 'ground']
+
+    models = {
+        'physical': physical,
+        'ashrae': ashrae,
+        'sapm': sapm,
+        'martin_ruiz': martin_ruiz,
+    }
+
+    try:
+        iam_model = models[model]
+        iam_function = functools.partial(iam_model, **kwargs)
+    except KeyError:
+        raise ValueError('model must be one of: ' + str(list(models.keys())))
+
+    iam = {}
+    for region in regions:
+        iam[region] = marion_integrate(iam_function, surface_tilt, region)
+
+    return iam
+
+
+def marion_integrate(function, surface_tilt, region, N=None):
     """
     Integrate an incidence angle modifier (IAM) function over solid angle
     to determine a diffuse irradiance correction factor using Marion's method.
+
+    Lower-level function to actually perform the IAM integration for the
+    specified solid angle region.
 
     Parameters
     ----------
@@ -555,15 +640,21 @@ def marion_integrate(function, surface_tilt, region, N=180):
 
         See [1]_ for a detailed description of each class.
 
-    N : int, default 180
+    N : int, optional
         The number of increments in the zenith integration.
-        If ``region=='horizon'``, a larger number should be used
-        (1800 was used in [1]_).
+        If not specified, N will follow the values used in [1]_:
+
+            * 'sky' or 'ground': N=180
+            * 'horizon': N=1800
 
     Returns
     -------
     Fd : numeric
         AOI diffuse correction factor for the specified region.
+
+    See Also
+    --------
+    pvlib.iam.marion_diffuse
 
     References
     ----------
@@ -582,6 +673,15 @@ def marion_integrate(function, surface_tilt, region, N=180):
     >>> marion_integrate(f, [20, 30], 'sky')
     array([0.96225034, 0.9653219 ])
     """
+
+    if N is None:
+        if region in ['sky', 'ground']:
+            N = 180
+        elif region == 'horizon':
+            N = 1800
+        else:
+            raise ValueError('Invalid region: {}'.format(region))
+
     beta = np.radians(surface_tilt)
     if isinstance(beta, pd.Series):
         # convert Series to np array for broadcasting later

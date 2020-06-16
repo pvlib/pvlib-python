@@ -67,8 +67,8 @@ plt.ylim([0, 1.2])
 plt.grid()
 
 # %%
-# Diffuse sky, ground, and horizon irradiance
-# -------------------------------------------
+# Diffuse sky, ground, and horizon IAM
+# ------------------------------------
 #
 # Now that we have an AOI model, we use :py:func:`pvlib.iam.marion_diffuse`
 # to integrate it across solid angle and determine diffuse irradiance IAM.

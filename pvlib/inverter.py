@@ -150,30 +150,21 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     =======   ============================================================
     Pnom      Nominal DC power, typically the DC power needed to produce
               maximum AC power output. [W]
-
     Vnom      Nominal DC input voltage. Typically the level at which the
               highest efficiency is achieved. [V]
-
     Vmax      Maximum DC input voltage. [V]
-
     Vmin      Minimum DC input voltage. [V]
-
     Vdcmax    . [V]
-
     MPPTHi    Maximum DC voltage for MPPT range. [V]
-
     MPPTLow   Minimum DC voltage for MPPT range. [V]
-
     Pacmax    Maximum AC output power, used to clip the output power
               if needed. [W]
-
     ADRCoefficients  A list of 9 coefficients that capture the influence
               of input voltage and power on inverter losses, and thereby
               efficiency. Corresponds to terms from [1]_ (in order): :math:
               `b_{0,0}, b_{1,0}, b_{2,0}, b_{0,1}, b_{1,1}, b_{2,1}, b_{0,2},
                b_{1,2},  b_{1,2}`. See [1]_ for the use of each coefficient
                and the associated unit.
-
     Pnt       AC power consumed by inverter at night (night tare) to
               maintain circuitry required to sense PV array voltage. [W]
 

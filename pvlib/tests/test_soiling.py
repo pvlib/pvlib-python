@@ -19,11 +19,11 @@ def expected_output():
                        end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
 
     expected_no_cleaning = pd.Series(
-        data=[0.97230454, 0.95036146, 0.93039061, 0.91177978, 0.89427556,
-              0.8777455 , 0.86211038, 0.84731759, 0.83332881, 0.82011354,
-              0.80764549, 0.79590056, 0.78485556, 0.77448749, 0.76477312,
-              0.75568883, 0.74721046, 0.73931338, 0.73197253, 0.72516253,
-              0.7188578 , 0.71303268, 0.7076616 , 0.70271919],
+        data=[0.96998483, 0.94623958, 0.92468139, 0.90465654, 0.88589707,
+              0.86826366, 0.85167258, 0.83606715, 0.82140458, 0.80764919,
+              0.79476875, 0.78273241, 0.77150951, 0.76106905, 0.75137932,
+              0.74240789, 0.73412165, 0.72648695, 0.71946981, 0.7130361 ,
+              0.70715176, 0.70178307, 0.69689677, 0.69246034], 
         index=dt)
     return expected_no_cleaning
 
@@ -32,11 +32,11 @@ def expected_output_1():
     dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
         end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
     expected_output_1 = pd.Series(
-        data=[0.9872406 , 0.97706269, 0.96769693, 0.95884032, 1.,
-              0.9872406 , 0.97706269, 0.96769693, 1.        , 1.        ,
-              0.9872406 , 0.97706269, 0.96769693, 0.95884032, 0.95036001,
-              0.94218263, 0.93426236, 0.92656836, 0.91907873, 0.91177728,
-              0.9046517 , 0.89769238, 0.89089165, 0.88424329],
+        data=[0.98484972, 0.97277367, 0.96167471, 0.95119603, 1.        ,
+              0.98484972, 0.97277367, 0.96167471, 1.        , 1.        ,
+              0.98484972, 0.97277367, 0.96167471, 0.95119603, 0.94118234,
+              0.93154854, 0.922242  , 0.91322759, 0.90448058, 0.89598283,
+              0.88772062, 0.87968325, 0.8718622 , 0.86425049], 
         index=dt)
     return expected_output_1
 
@@ -45,14 +45,28 @@ def expected_output_2():
     dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
                        end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
     expected_output_2 = pd.Series(
-        data=[0.97229869, 0.95035106, 0.93037619, 0.91176175, 1.,
-              1.        , 1.        , 0.97229869, 1.        , 1.        ,
-              1.        , 1.        , 0.97229869, 0.95035106, 0.93037619,
-              0.91176175, 0.89425431, 1.        , 1.        , 1.        ,
-              1.        , 0.97229869, 0.95035106, 0.93037619],
+        data = [0.95036261, 0.91178179, 0.87774818, 0.84732079, 1.        ,
+                1.        , 1.        , 0.95036261, 1.        , 1.        ,
+                1.        , 1.        , 0.95036261, 0.91178179, 0.87774818,
+                0.84732079, 0.8201171 , 1.        , 1.        , 1.        ,
+                1.        , 0.95036261, 0.91178179, 0.87774818],
         index=dt)
-
     return expected_output_2
+
+@pytest.fixture
+def expected_output_3():
+    dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
+                       end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
+    timedelta = [0,0,0,0,0,30,0,30,0,30,0,-30,-30,-30,0,0,0,0,0,0,0,0,0,0]
+    dt_new = dt + pd.to_timedelta(timedelta,'m')
+    expected_output_3 = pd.Series(
+        data = [0.96576705, 0.9387675 , 0.91437615, 0.89186852, 1.        ,
+                1.        , 0.95185738, 0.9387675 , 1.        , 1.        ,
+                1.        , 1.        , 0.96576705, 0.92630786, 0.90291005,
+                0.88122293, 0.86104089, 1.        , 1.        , 1.        ,
+                0.96576705, 0.9387675 , 0.91437615, 0.89186852],
+        index=dt_new)
+    return expected_output_3
 
 @pytest.fixture
 def rainfall_input():
@@ -114,6 +128,24 @@ def test_hsu_defaults(rainfall_input, expected_output_1):
         pm2_5=1.0e-2,pm10=2.0e-2)
     assert np.allclose(result.values, expected_output_1)
 
+@requires_scipy
+@needs_pandas_0_22
+def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
+    """
+    Test Soiling HSU function with variable time intervals.
+    """
+    depo_veloc = {'2_5': 1.0e-4, '10': 1.0e-4}
+    rain = pd.DataFrame(data=rainfall_input)
+    #define time deltas in minutes
+    timedelta = [0,0,0,0,0,30,0,30,0,30,0,-30,-30,-30,0,0,0,0,0,0,0,0,0,0]
+    rain['mins_added'] = pd.to_timedelta(timedelta,'m')
+    rain['new_time'] = rain.index + rain['mins_added']
+    rain_var_times = rain.set_index('new_time').iloc[:,0]
+    result = hsu(
+        rainfall=rain_var_times, cleaning_threshold=0.5, tilt=50.0,
+        pm2_5=1,pm10=2,depo_veloc=depo_veloc,
+        rain_accum_period=pd.Timedelta('2h'))
+    assert np.allclose(result.values, expected_output_3)
 
 @pytest.fixture
 def greensboro_rain():

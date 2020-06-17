@@ -145,7 +145,7 @@ def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
         rainfall=rain_var_times, cleaning_threshold=0.5, tilt=50.0,
         pm2_5=1,pm10=2,depo_veloc=depo_veloc,
         rain_accum_period=pd.Timedelta('2h'))
-    assert np.allclose(result.values, expected_output_3)
+    assert np.allclose(result, expected_output_3)
 
 @pytest.fixture
 def greensboro_rain():

@@ -731,7 +731,7 @@ class ModelChain(object):
 
     def pvwatts_losses(self):
         self.losses = (100 - self.system.pvwatts_losses()) / 100.
-        self.dc *= self.losses
+        self.dc[['v_mp', 'p_mp']] *= self.losses
         return self
 
     def no_extra_losses(self):

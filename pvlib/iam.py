@@ -549,9 +549,10 @@ def marion_diffuse(model, surface_tilt, regions=None, **kwargs):
     regions : list, default ['sky', 'horizon', 'ground']
         The regions to integrate over.  Options are:
 
-            * 'sky': radiation from the sky dome
+            * 'sky': radiation from the sky dome (zenith <= 90)
             * 'horizon': radiation from the region of the sky near the horizon
-            * 'ground': radiation reflected from the ground
+              (89.5 <= zenith <= 90)
+            * 'ground': radiation reflected from the ground (zenith >= 90)
 
         See [1]_ for a detailed description of each class.  If not specified,
         IAM values for all three regions are calculated.
@@ -634,9 +635,10 @@ def marion_integrate(function, surface_tilt, region, N=None):
     region : {'sky', 'horizon', 'ground'}
         The region to integrate over.  Must be one of:
 
-            * 'sky': radiation from the sky dome
+            * 'sky': radiation from the sky dome (zenith <= 90)
             * 'horizon': radiation from the region of the sky near the horizon
-            * 'ground': radiation reflected from the ground
+              (89.5 <= zenith <= 90)
+            * 'ground': radiation reflected from the ground (zenith >= 90)
 
         See [1]_ for a detailed description of each class.
 

@@ -12,7 +12,7 @@ from pvlib.tools import cosd
 def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
         depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
     """
-    Calculates soiling ratio given particulate and rain data using the 
+    Calculates soiling ratio given particulate and rain data using the
     Fixed Velocity model from Humboldt State University (HSU).
 
     The HSU soiling model [1]_ returns the soiling ratio, a value between zero
@@ -75,13 +75,14 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     accum_rain = rainfall.rolling(rain_accum_period, closed='right').sum()
     # cleaning is True for intervals with rainfall greater than threshold
     cleaning_times = accum_rain.index[accum_rain >= cleaning_threshold]
-    
+
     # determine the time intervals in seconds (dt_sec)
     dt = rainfall.index.values       # datetimes in nanoseconds
-    dt2 = np.roll(dt.copy(),1)       # shift array values by one place
-    dt3 = np.delete((dt-dt2)/1e9,0)  # subtract shifted values from original and convert to seconds
-    # append the last value to the end so there are the same number of elements in the array
-    dt_sec = np.append(dt3,dt3[-1]).astype('float64') 
+    dt2 = np.roll(dt.copy(), 1)       # shift array values by one place
+    # subtract shifted values from original and convert to seconds
+    dt3 = np.delete((dt-dt2)/1e9, 0)
+    # append last value to end so same number of elements in the array
+    dt_sec = np.append(dt3, dt3[-1]).astype('float64') 
 
     horiz_mass_rate = (pm2_5 * depo_veloc['2_5']\
         + np.maximum(pm10 - pm2_5, 0.) * depo_veloc['10']) * dt_sec

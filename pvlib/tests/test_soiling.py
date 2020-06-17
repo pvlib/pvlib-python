@@ -60,12 +60,12 @@ def expected_output_3():
                        end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
     timedelta = [0,0,0,0,0,30,0,30,0,30,0,-30,-30,-30,0,0,0,0,0,0,0,0,0,0]
     dt_new = dt + pd.to_timedelta(timedelta,'m')
-    expected_output_3=pd.Series(
-        data = [0.96576705, 0.9387675 , 0.91437615, 0.89186852, 1.        ,
-                1.        , 0.95185738, 0.9387675 , 1.        , 1.        ,
-                1.        , 1.        , 0.96576705, 0.92630786, 0.90291005,
-                0.88122293, 0.86104089, 1.        , 1.        , 1.        ,
-                0.96576705, 0.9387675 , 0.91437615, 0.89186852],
+    expected_output_3 = pd.Series(
+        data=[0.96576705, 0.9387675 , 0.91437615, 0.89186852, 1.        ,
+              1.        , 0.95185738, 0.9387675 , 1.        , 1.        ,
+              1.        , 1.        , 0.96576705, 0.92630786, 0.90291005,
+              0.88122293, 0.86104089, 1.        , 1.        , 1.        ,
+              0.96576705, 0.9387675 , 0.91437615, 0.89186852],
         index=dt_new)
     return expected_output_3
 
@@ -129,6 +129,7 @@ def test_hsu_defaults(rainfall_input, expected_output_1):
         pm2_5=1.0e-2,pm10=2.0e-2)
     assert np.allclose(result.values, expected_output_1)
 
+
 @requires_scipy
 @needs_pandas_0_22
 def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
@@ -137,7 +138,7 @@ def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
     """
     depo_veloc = {'2_5': 1.0e-4, '10': 1.0e-4}
     rain = pd.DataFrame(data=rainfall_input)
-    #define time deltas in minutes
+    # define time deltas in minutes
     timedelta = [0,0,0,0,0,30,0,30,0,30,0,-30,-30,-30,0,0,0,0,0,0,0,0,0,0]
     rain['mins_added'] = pd.to_timedelta(timedelta,'m')
     rain['new_time'] = rain.index + rain['mins_added']

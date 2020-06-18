@@ -84,8 +84,9 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     # append last value to end so same number of elements in the array
     dt_sec = np.append(dt3, dt3[-1]).astype('float64')
 
-    horiz_mass_rate = (pm2_5 * depo_veloc['2_5']\
-        + np.maximum(pm10 - pm2_5, 0.) * depo_veloc['10']) * dt_sec
+    horiz_mass_rate = (
+        pm2_5 * depo_veloc['2_5'] + np.maximum(pm10 - pm2_5, 0.)
+        * depo_veloc['10']) * dt_sec
     tilted_mass_rate = horiz_mass_rate * cosd(tilt)  # assuming no rain
 
     # tms -> tilt_mass_rate

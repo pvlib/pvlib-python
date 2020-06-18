@@ -3,7 +3,6 @@ from datetime import datetime
 from pvlib.bifacial import pvfactors_timeseries
 from conftest import requires_pvfactors
 import pytest
-from pvlib._deprecation import pvlibDeprecationWarning
 
 
 @requires_pvfactors
@@ -100,4 +99,3 @@ def test_pvfactors_timeseries_pandas_inputs():
 
     pd.testing.assert_series_equal(ipoa_inc_front, expected_ipoa_front)
     pd.testing.assert_series_equal(ipoa_inc_back, expected_ipoa_back)
-

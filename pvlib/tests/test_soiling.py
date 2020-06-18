@@ -33,7 +33,7 @@ def expected_output_1():
         end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
     expected_output_1 = pd.Series(
         data=[0.98484972, 0.97277367, 0.96167471, 0.95119603, 1.,
-              0.98484972, 0.97277367, 0.96167471, 1.        , 1.,
+              0.98484972, 0.97277367, 0.96167471, 1., 1.,
               0.98484972, 0.97277367, 0.96167471, 0.95119603, 0.94118234,
               0.93154854, 0.922242, 0.91322759, 0.90448058, 0.89598283,
               0.88772062, 0.87968325, 0.8718622, 0.86425049],
@@ -58,7 +58,7 @@ def expected_output_2():
 def expected_output_3():
     dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
                        end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
-    timedelta = [0,0,0,0,0,30,0,30,0,30,0,-30,-30,-30,0,0,0,0,0,0,0,0,0,0]
+    timedelta = [0,0,0,0,0,30,0,30,0,30,0,-30,-30,-30,0,0,0,0,0,0,0,0,0,0]  # noqa: E231
     dt_new = dt + pd.to_timedelta(timedelta, 'm')
     expected_output_3 = pd.Series(
         data=[0.96576705, 0.9387675, 0.91437615, 0.89186852, 1.,
@@ -139,7 +139,7 @@ def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
     depo_veloc = {'2_5': 1.0e-4, '10': 1.0e-4}
     rain = pd.DataFrame(data=rainfall_input)
     # define time deltas in minutes
-    timedelta = [0,0,0,0,0,30,0,30,0,30,0,-30,-30,-30,0,0,0,0,0,0,0,0,0,0]
+    timedelta = [0,0,0,0,0,30,0,30,0,30,0,-30,-30,-30,0,0,0,0,0,0,0,0,0,0]  # noqa: E231
     rain['mins_added'] = pd.to_timedelta(timedelta, 'm')
     rain['new_time'] = rain.index + rain['mins_added']
     rain_var_times = rain.set_index('new_time').iloc[:, 0]

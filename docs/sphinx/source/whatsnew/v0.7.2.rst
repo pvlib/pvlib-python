@@ -10,7 +10,6 @@ API Changes
 * :py:func:`pvlib.iotools.read_tmy3` when coerced to a single year now returns
   indices that are monotonically increasing. Therefore, the last index will be
   January 1, 00:00 of the *next* year. (:pull:`910`)
-* Add deprecation warnings in :func:`~pvlib.bifacial.pvfactors_timeseries` for kwargs inputs related to parallel mode (:issue:`902`)(:pull:`934`)
 * Renamed ``pvlib.losses`` to :py:mod:`pvlib.soiling`. Additional loss
   models will go into code modules named for the loss or effect type.
   (:issue:`935`, :issue:`891`)
@@ -31,7 +30,6 @@ Enhancements
    :issue`935`)
 * Add :func:`~pvlib.iotools.read_pvgis_tmy` for files downloaded using the
   PVGIS tool. (:issue:`880`)
-* Update :func:`~pvlib.bifacial.pvfactors_timeseries` to run with ``pvfactors`` v1.4.1 (:issue:`902`)(:pull:`934`)
 * Add :py:func:`pvlib.temperature.sapm_cell_from_module` to convert back of
   module temperature to cell temperature (:issue:`927`)
 * Add new module :py:mod:`pvlib.snow` to contain models related to snow coverage and effects on a PV system. (:pull:`764`)
@@ -107,7 +105,6 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Karthikeyan Singaravelan (:ghuser:`tirkarthi`)
 * Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
-* Marc A. Anoma (:ghuser:`anomam`)
 * Eric Fitch (:ghuser:`ericf900`)
 * Joseph Palakapilly (:ghuser:`JPalakapilly`)
 * Auguste Colle(:ghuser:`augustecolle`)

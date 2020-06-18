@@ -5,9 +5,12 @@ v0.8.0 (Month day, year)
 
 API Changes
 ~~~~~~~~~~~
+* Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs`` 
+  from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`)(:pull:`934`)
 
 Enhancements
 ~~~~~~~~~~~~
+* Update :func:`~pvlib.bifacial.pvfactors_timeseries` to run with ``pvfactors`` v1.4.1 (:issue:`902`)(:pull:`934`)
 
 Bug fixes
 ~~~~~~~~~
@@ -16,6 +19,8 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` can now be
+  applied to functions that require args or kwargs. (:pull:`973`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -35,3 +40,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Joshua S. Stein (:ghuser:`jsstein`)
+* Marc A. Anoma (:ghuser:`anomam`)

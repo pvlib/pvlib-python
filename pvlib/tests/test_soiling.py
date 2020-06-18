@@ -53,7 +53,6 @@ def expected_output_2():
         index=dt)
     return expected_output_2
 
-
 @pytest.fixture
 def expected_output_3():
     dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),

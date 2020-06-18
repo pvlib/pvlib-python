@@ -33,7 +33,7 @@ def _temperature_model_params(model, parameter_set):
 def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
               irrad_ref=1000):
     r'''
-    Calculate cell temperature per the Sandia PV Array Performance Model.
+    Calculate cell temperature per the Sandia Array Performance Model.
 
     See [1]_ for details on the Sandia Array Performance Model.
 
@@ -107,6 +107,11 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
        Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
        NM.
 
+    See also
+    --------
+    sapm_cell_from_module
+    sapm_module
+
     Examples
     --------
     >>> from pvlib.temperature import sapm_cell, TEMPERATURE_MODEL_PARAMETERS
@@ -116,12 +121,13 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     '''
     module_temperature = sapm_module(poa_global, temp_air, wind_speed,
                                      a, b)
-    return module_temperature + (poa_global / irrad_ref) * deltaT
+    return sapm_cell_from_module(module_temperature, poa_global, deltaT,
+                                 irrad_ref)
 
 
 def sapm_module(poa_global, temp_air, wind_speed, a, b):
     r'''
-    Calculate module back surface temperature per the Sandia PV Array
+    Calculate module back surface temperature per the Sandia Array
     Performance Model.
 
     See [1]_ for details on the Sandia Array Performance Model.
@@ -182,8 +188,82 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
        Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
        NM.
 
+    See also
+    --------
+    sapm_cell
+    sapm_cell_from_module
     '''
     return poa_global * np.exp(a + b * wind_speed) + temp_air
+
+
+def sapm_cell_from_module(module_temperature, poa_global, deltaT,
+                          irrad_ref=1000):
+    r'''
+    Calculate cell temperature from module temperature using the Sandia Array
+    Performance Model.
+
+    See [1]_ for details on the Sandia Array Performance Model.
+
+    Parameters
+    ----------
+    module_temperature : numeric
+        Temperature of back of module surface [C].
+
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    deltaT : float
+        Parameter :math:`\Delta T` in :eq:`sapm2` [C].
+
+    irrad_ref : float, default 1000
+        Reference irradiance, parameter :math:`E_{0}` in
+        :eq:`sapm2` [W/m^2].
+
+    Returns
+    -------
+    numeric, values in degrees C.
+
+    Notes
+    -----
+    The model for cell temperature :math:`T_{C}` is given by Eq. 12 in [1]_.
+
+    .. math::
+       :label: sapm2
+
+       T_{C} = T_{m} + \frac{E}{E_{0}} \Delta T
+
+    The module back surface temperature :math:`T_{m}` is implemented in
+    :py:func:`~pvlib.temperature.sapm_module`.
+
+    Model parameters depend both on the module construction and its mounting.
+    Parameter sets are provided in [1]_ for representative modules and
+    mounting, and are coded for convenience in
+    ``pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS``.
+
+    +---------------+----------------+-------+---------+---------------------+
+    | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
+    +===============+================+=======+=========+=====================+
+    | glass/glass   | open rack      | -3.47 | -0.0594 | 3                   |
+    +---------------+----------------+-------+---------+---------------------+
+    | glass/glass   | close roof     | -2.98 | -0.0471 | 1                   |
+    +---------------+----------------+-------+---------+---------------------+
+    | glass/polymer | open rack      | -3.56 | -0.075  | 3                   |
+    +---------------+----------------+-------+---------+---------------------+
+    | glass/polymer | insulated back | -2.81 | -0.0455 | 0                   |
+    +---------------+----------------+-------+---------+---------------------+
+
+    References
+    ----------
+    .. [1] King, D. et al, 2004, "Sandia Photovoltaic Array Performance
+       Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
+       NM.
+
+    See also
+    --------
+    sapm_cell
+    sapm_module
+    '''
+    return module_temperature + (poa_global / irrad_ref) * deltaT
 
 
 def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
@@ -209,11 +289,13 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
         Combined heat loss factor coefficient. The default value is
         representative of freestanding modules with the rear surfaces exposed
         to open air (e.g., rack mounted). Parameter :math:`U_{c}` in
-        :eq:`pvsyst` [W/(m^2 C)].
+        :eq:`pvsyst`.
+        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
-        in :eq:`pvsyst` [(W/m^2 C)(m/s)].
+        in :eq:`pvsyst`.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     eta_m : numeric, default 0.1
         Module external efficiency as a fraction, i.e., DC power / poa_global.
@@ -276,7 +358,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
 
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
-    '''
+    r'''
     Calculate cell or module temperature using the Faiman model.  The Faiman
     model uses an empirical heat loss factor model [1]_ and is adopted in the
     IEC 61853 standards [2]_ and [3]_.
@@ -299,11 +381,13 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     u0 : numeric, default 25.0
         Combined heat loss factor coefficient. The default value is one
-        determined by Faiman for 7 silicon modules. [W/(m^2 C)].
+        determined by Faiman for 7 silicon modules.
+        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules. [(W/m^2 C)(m/s)].
+        determined by Faiman for 7 silicon modules.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     Returns
     -------

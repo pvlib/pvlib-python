@@ -61,8 +61,8 @@
 <tr>
   <td>Publications</td>
   <td>
-    <a href="https://doi.org/10.5281/zenodo.2554311">
-    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.2554311.svg" alt="zenodo reference" />
+    <a href="https://doi.org/10.5281/zenodo.3762635">
+    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3762635.svg" alt="zenodo reference">
     </a>
     <a href="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1">
     <img src="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg" alt="JOSS reference" />

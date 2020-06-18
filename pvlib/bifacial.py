@@ -14,8 +14,7 @@ def pvfactors_timeseries(
         axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width,
         albedo, n_pvrows=3, index_observed_pvrow=1,
         rho_front_pvrow=0.03, rho_back_pvrow=0.05,
-        horizon_band_angle=15., run_parallel_calculations=None,
-        n_workers_for_parallel_calcs=None):
+        horizon_band_angle=15.):
     """
     Calculate front and back surface plane-of-array irradiance on
     a fixed tilt or single-axis tracker PV array configuration, and using
@@ -63,10 +62,6 @@ def pvfactors_timeseries(
         Back surface reflectivity of PV rows
     horizon_band_angle: float, default 15
         Elevation angle of the sky dome's diffuse horizon band (deg)
-    run_parallel_calculations
-        Deprecated input, should be ``None``
-    n_workers_for_parallel_calcs
-        Deprecated input, should be ``None``
 
     Returns
     -------
@@ -89,18 +84,6 @@ def pvfactors_timeseries(
         Bifacial PV and Diffuse Shade on Single-Axis Trackers." 44th IEEE
         Photovoltaic Specialist Conference. 2017.
     """
-    # Raise warning message if deprecated inputs were passed
-    if run_parallel_calculations is not None:
-        warnings.warn('run_parallel_calculations input is deprecated and will '
-                      'be removed in v0.8 as pvfactors v1.4.1+ '
-                      'is fast without parallel mode',
-                      pvlibDeprecationWarning)
-    if n_workers_for_parallel_calcs is not None:
-        warnings.warn('n_workers_for_parallel_calcs input is deprecated and '
-                      'will be removed in v0.8 as pvfactors v1.4.1+ '
-                      'is fast without parallel mode',
-                      pvlibDeprecationWarning)
-
     # Convert pandas Series inputs (and some lists) to numpy arrays
     if isinstance(solar_azimuth, pd.Series):
         solar_azimuth = solar_azimuth.values

@@ -101,16 +101,3 @@ def test_pvfactors_timeseries_pandas_inputs():
     pd.testing.assert_series_equal(ipoa_inc_front, expected_ipoa_front)
     pd.testing.assert_series_equal(ipoa_inc_back, expected_ipoa_back)
 
-
-def test_pvfactors_input_deprecation(mocker):
-    """Test that correctly raising a deprecation warning for parallel mode
-    kwargs inputs"""
-    mocker.patch('pvfactors.run.run_timeseries_engine')
-    mocker.patch('pandas.DataFrame')
-    args = [None] * 12
-    # Check run_parallel_calculations
-    with pytest.warns(pvlibDeprecationWarning):
-        pvfactors_timeseries(*args, run_parallel_calculations=True)
-    # Check n_workers_for_parallel_calcs
-    with pytest.warns(pvlibDeprecationWarning):
-        pvfactors_timeseries(*args, n_workers_for_parallel_calcs=2)

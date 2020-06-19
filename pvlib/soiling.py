@@ -78,9 +78,9 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
 
     # determine the time intervals in seconds (dt_sec)
     dt = rainfall.index
-    dt2 = np.roll(dt.copy(),1)
+    dt2 = np.roll(dt.copy(), 1)
     # subtract shifted values from original and convert to seconds
-    dt3 = np.delete((dt-dt2),0).total_seconds()
+    dt3 = np.delete((dt-dt2), 0).total_seconds()
     # append last value to end so same number of elements in the array
     dt_sec = np.append(dt3[0], dt3).astype('float64')
 

@@ -77,12 +77,12 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     cleaning_times = accum_rain.index[accum_rain >= cleaning_threshold]
 
     # determine the time intervals in seconds (dt_sec)
-    dt = rainfall.index.values       # datetimes in nanoseconds
-    dt2 = np.roll(dt.copy(), 1)       # shift array values by one place
+    dt = rainfall.index
+    dt2 = np.roll(dt.copy(),1)
     # subtract shifted values from original and convert to seconds
-    dt3 = np.delete((dt-dt2)/1e9, 0)
+    dt3 = np.delete((dt-dt2),0).total_seconds()
     # append last value to end so same number of elements in the array
-    dt_sec = np.append(dt3, dt3[-1]).astype('float64')
+    dt_sec = np.append(dt3[0], dt3).astype('float64')
 
     horiz_mass_rate = (
         pm2_5 * depo_veloc['2_5'] + np.maximum(pm10 - pm2_5, 0.)

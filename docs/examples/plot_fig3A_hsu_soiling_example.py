@@ -22,6 +22,7 @@ Example of soiling using the Hsu model.
 
 import pathlib
 from matplotlib import pyplot as plt
+import matplotlib.image as mpimg
 from pvlib.soiling import hsu
 import pvlib
 import pandas as pd
@@ -60,3 +61,10 @@ ax2.set_ylim(-10,210)
 ax2.legend(loc='center right')
 fig.tight_layout()
 fig.show()
+
+#show the original plot for comparison
+fig2, ax = plt.subplots(figsize=(18,5))
+img = mpimg.imread(DATA_DIR / 'Coello_Boyle_2019_Fig3.png')
+ax.imshow(img, interpolation='nearest')
+fig2.tight_layout()
+fig2.show()

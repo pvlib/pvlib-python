@@ -12,10 +12,6 @@ coverage:
         if_ci_failed: failure
     project:
       default: false
-      tests:
-        target: 95%
-        paths:
-          - "pvlib/tests/.*"
       library:
         target: auto
         if_no_uploads: error
@@ -23,5 +19,9 @@ coverage:
         if_ci_failed: failure
         paths:
           - "pvlib/.*"
+      tests:
+        target: 95%
+        paths:
+          - "pvlib/tests/.*"
 
 comment: off

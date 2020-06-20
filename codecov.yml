@@ -22,6 +22,6 @@ coverage:
         if_not_found: success
         if_ci_failed: failure
         paths:
-          - "pvlib/(\w+/)?[^/]+\.py$"
+          - "pvlib/.*"
 
 comment: off

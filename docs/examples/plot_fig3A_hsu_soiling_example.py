@@ -60,7 +60,7 @@ daily_rain = rainfall.resample('d').sum()
 ax2 = ax1.twinx()
 ax2.plot(daily_rain.index, daily_rain, marker='.',
          c='c', label='daily rainfall')
-ax1.set_ylabel('Daily Rain (mm)')
+ax2.set_ylabel('Daily Rain (mm)')
 ax2.set_ylim(-10, 210)
 ax2.legend(loc='center right')
 fig.tight_layout()

@@ -341,6 +341,13 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['auto_examples'],  # location of generated output
     # sphinx-gallery only shows plots from plot_*.py files by default:
     # 'filename_pattern': '*.py',
+
+    # directory where function/class granular galleries are stored
+    'backreferences_dir': 'generated/gallery_backreferences',
+
+    # Modules for which function/class level galleries are created. In
+    # this case only pvlib, could include others though.  must be tuple of str
+    'doc_module': ('pvlib',),
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html

@@ -55,7 +55,7 @@ except ImportError as exc:
     sy_exp = NotImplemented
 
 
-def generate_numerical_precision():
+def generate_numerical_precision():  # pragma: no cover
     """
     Generate expected data with infinite numerical precision using SymPy.
     :return: dataframe of expected values

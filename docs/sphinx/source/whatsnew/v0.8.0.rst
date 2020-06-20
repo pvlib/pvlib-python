@@ -29,6 +29,7 @@ Documentation
 * Clarify units for heat loss factors in
   :py:func:`pvlib.temperature.pvsyst_cell` and
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
+* Added hsu soiling model example to the gallery.  (:pull:`XXX`)
 
 Requirements
 ~~~~~~~~~~~~

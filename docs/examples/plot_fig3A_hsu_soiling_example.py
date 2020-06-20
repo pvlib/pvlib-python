@@ -9,7 +9,7 @@ Example of soiling using the Hsu model.
 # This example shows basic usage of pvlib's Hsu Soiling model [1]_ with
 # :py:func:`pvlib.soiling.hsu`.
 #
-# Reference
+# References
 # -----------
 # .. [1] M. Coello and L. Boyle, "Simple Model For Predicting Time Series
 #    Soiling of Photovoltaic Panels," in IEEE Journal of Photovoltaics.
@@ -20,14 +20,7 @@ Example of soiling using the Hsu model.
 # Rainfall data comes from Imperial County, CA TMY3 file
 # PM2.5 and PM10 data come from the EPA.
 
-# References
-# ----------
-# .. [1] "The Effect of Soiling on Large Grid-Connected Photovoltaic Systems
-#    in California and the Southwest Region of the United States," Adrianne
-#    Kimber, et al., IEEE 4th World Conference on Photovoltaic Energy
-#    Conference, 2006, :doi:`10.1109/WCPEC.2006.279690`
-#
-# The Kimber Soiling model
+
 
 import pathlib
 from matplotlib import pyplot as plt

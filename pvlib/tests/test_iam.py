@@ -322,5 +322,10 @@ def test_marion_integrate_ground_flat():
 
 
 def test_marion_integrate_invalid():
+    # check for invalid region string.  this actually gets checked twice,
+    # with the difference being whether `num` is specified or not.
+    with pytest.raises(ValueError):
+        _iam.marion_integrate(_iam.ashrae, 0, 'bad')
+
     with pytest.raises(ValueError):
         _iam.marion_integrate(_iam.ashrae, 0, 'bad', 180)

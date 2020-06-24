@@ -530,7 +530,7 @@ def sapm(aoi, module, upper=None):
     return iam
 
 
-def marion_diffuse(model, surface_tilt, regions=None, **kwargs):
+def marion_diffuse(model, surface_tilt, **kwargs):
     """
     Determine diffuse irradiance incidence angle modifiers using Marion's
     method of integrating over solid angle.
@@ -538,7 +538,7 @@ def marion_diffuse(model, surface_tilt, regions=None, **kwargs):
     Parameters
     ----------
     model : str
-        The IAM function to evaluate across solid angle.  Must be one of
+        The IAM function to evaluate across solid angle. Must be one of
         `'ashrae', 'physical', 'martin_ruiz', 'sapm'`.
 
     surface_tilt : numeric
@@ -546,24 +546,20 @@ def marion_diffuse(model, surface_tilt, regions=None, **kwargs):
         The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
-    regions : list, default ['sky', 'horizon', 'ground']
-        The regions to integrate over.  Options are:
-
-            * 'sky': radiation from the sky dome (zenith <= 90)
-            * 'horizon': radiation from the region of the sky near the horizon
-              (89.5 <= zenith <= 90)
-            * 'ground': radiation reflected from the ground (zenith >= 90)
-
-        See [1]_ for a detailed description of each class.  If not specified,
-        IAM values for all three regions are calculated.
-
     **kwargs
         Extra parameters passed to the IAM function.
 
     Returns
     -------
     iam : dict
-        IAM values for each type of diffuse irradiance.
+        IAM values for each type of diffuse irradiance:
+
+            * 'sky': radiation from the sky dome (zenith <= 90)
+            * 'horizon': radiation from the region of the sky near the horizon
+              (89.5 <= zenith <= 90)
+            * 'ground': radiation reflected from the ground (zenith >= 90)
+
+        See [1]_ for a detailed description of each class.
 
     See Also
     --------
@@ -589,9 +585,6 @@ def marion_diffuse(model, surface_tilt, regions=None, **kwargs):
      'ground': array([0.77004435, 0.8522436 ])}
     """
 
-    if regions is None:
-        regions = ['sky', 'horizon', 'ground']
-
     models = {
         'physical': physical,
         'ashrae': ashrae,
@@ -601,29 +594,29 @@ def marion_diffuse(model, surface_tilt, regions=None, **kwargs):
 
     try:
         iam_model = models[model]
-        iam_function = functools.partial(iam_model, **kwargs)
     except KeyError:
         raise ValueError('model must be one of: ' + str(list(models.keys())))
 
+    iam_function = functools.partial(iam_model, **kwargs)
     iam = {}
-    for region in regions:
+    for region in ['sky', 'horizon', 'ground']:
         iam[region] = marion_integrate(iam_function, surface_tilt, region)
 
     return iam
 
 
-def marion_integrate(function, surface_tilt, region, N=None):
+def marion_integrate(function, surface_tilt, region, num=None):
     """
     Integrate an incidence angle modifier (IAM) function over solid angle
     to determine a diffuse irradiance correction factor using Marion's method.
 
-    Lower-level function to actually perform the IAM integration for the
+    This lower-level function actually performs the IAM integration for the
     specified solid angle region.
 
     Parameters
     ----------
-    function : callable func(aoi)
-        The IAM function to evaluate across solid angle.  The function must
+    function : callable(aoi)
+        The IAM function to evaluate across solid angle. The function must
         be vectorized and take only one parameter, the angle of incidence in
         degrees.
 
@@ -633,7 +626,7 @@ def marion_integrate(function, surface_tilt, region, N=None):
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     region : {'sky', 'horizon', 'ground'}
-        The region to integrate over.  Must be one of:
+        The region to integrate over. Must be one of:
 
             * 'sky': radiation from the sky dome (zenith <= 90)
             * 'horizon': radiation from the region of the sky near the horizon
@@ -642,16 +635,16 @@ def marion_integrate(function, surface_tilt, region, N=None):
 
         See [1]_ for a detailed description of each class.
 
-    N : int, optional
+    num : int, optional
         The number of increments in the zenith integration.
         If not specified, N will follow the values used in [1]_:
 
-            * 'sky' or 'ground': N=180
-            * 'horizon': N=1800
+            * 'sky' or 'ground': num = 180
+            * 'horizon': num = 1800
 
     Returns
     -------
-    Fd : numeric
+    iam : numeric
         AOI diffuse correction factor for the specified region.
 
     See Also
@@ -676,11 +669,11 @@ def marion_integrate(function, surface_tilt, region, N=None):
     array([0.96225034, 0.9653219 ])
     """
 
-    if N is None:
+    if num is None:
         if region in ['sky', 'ground']:
-            N = 180
+            num = 180
         elif region == 'horizon':
-            N = 1800
+            num = 1800
         else:
             raise ValueError('Invalid region: {}'.format(region))
 
@@ -688,10 +681,10 @@ def marion_integrate(function, surface_tilt, region, N=None):
     if isinstance(beta, pd.Series):
         # convert Series to np array for broadcasting later
         beta = beta.values
-    ai = np.pi/N  # angular increment
+    ai = np.pi/num  # angular increment
 
-    phi_range = np.linspace(0, np.pi, N, endpoint=False)
-    psi_range = np.linspace(0, 2*np.pi, 2*N, endpoint=False)
+    phi_range = np.linspace(0, np.pi, num, endpoint=False)
+    psi_range = np.linspace(0, 2*np.pi, 2*num, endpoint=False)
 
     # the pseudocode in [1] do these checks at the end, but it's
     # faster to do this criteria check up front instead of later.

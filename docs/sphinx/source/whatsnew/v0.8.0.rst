@@ -12,12 +12,18 @@ API Changes with Deprecations
    - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
 * ModelChain.ac_model now accepts `'sandia'`, `'pvwatts'` and `'adr'` for the
   inverter models.  (:pull:`886`)
+API Changes
+~~~~~~~~~~~
+* Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs`` 
+  from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`)(:pull:`934`)
 
 Enhancements
 ~~~~~~~~~~~~
+* Update :func:`~pvlib.bifacial.pvfactors_timeseries` to run with ``pvfactors`` v1.4.1 (:issue:`902`)(:pull:`934`)
 
 Bug fixes
 ~~~~~~~~~
+* Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`XXX`)
 
 Testing
 ~~~~~~~
@@ -45,3 +51,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Mark Mikofski (:ghuser:`mikofski`)
+* Joshua S. Stein (:ghuser:`jsstein`)
+* Marc A. Anoma (:ghuser:`anomam`)

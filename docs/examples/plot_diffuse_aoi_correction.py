@@ -9,9 +9,10 @@ loss for diffuse irradiance.
 # %%
 # The fraction of light reflected from the front of a module depends on the
 # angle of incidence (AOI) of the light compared to the panel surface.  The
-# greater the AOI, the larger the reflected fraction is.  The fraction of
-# transmitted light to incident light is called the incident angle modifier
-# (IAM).  Several models exist to calculate the IAM for a given incidence
+# greater the AOI, the larger the reflected fraction is.  The incident angle
+# modifier (IAM) is defined as the ratio of light transmitted at the given
+# AOI to transmitted light at normal incidence.
+# Several models exist to calculate the IAM for a given incidence
 # angle (e.g. :py:func:`pvlib.iam.ashrae`, :py:func:`pvlib.iam.martin_ruiz`,
 # :py:func:`pvlib.iam.sapm`, :py:func:`pvlib.iam.physical`).
 # However, evaluating the IAM for diffuse light is

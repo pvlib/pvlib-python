@@ -6,6 +6,8 @@ from numpy.testing import assert_allclose
 
 import os
 
+from pvlib.pvsystem import snlinverter
+
 
 def _fit_ps0(p_ac, p_dc, p_ac0, p_dc0):
     ''' Determine the ps0 parameter as the intercept at p_ac=0 of a line fit
@@ -277,9 +279,24 @@ def test_fit_sandia_datasheet():
                      'C0': 1e-6, 'C1': 1e-4, 'C2': 1e-2, 'C3': 1e-3, 'Pnt': 1}
     keys = ['Paco', 'Pdco', 'Vdco', 'Pso', 'C0', 'C1', 'C2', 'C3', 'Pnt']
     expected = np.array([expected_dict[k] for k in keys])
+    # recover known values within 0.5%
     result_dict = fit_sandia_datasheet(curves, 1000., dc_voltage_levels, 1.)
     result = np.array([result_dict[k] for k in keys])
-    assert_allclose(expected, result, rtol=1e-3)
+    assert_allclose(expected, result, rtol=5e-3)
+    # calculate efficiency from recovered parameters
+    calc_effic = {k: np.nan for k in dc_voltage_levels.keys()}
+    for vlev in dc_voltage_levels.keys():
+        pdc = curves[curves['dc_voltage_level']==vlev]['pdc']
+        calc_effic[vlev] = snlinverter(dc_voltage_levels[vlev], pdc,
+                                       result_dict) / pdc
+        assert_allclose(calc_effic[vlev],
+                        curves[curves['dc_voltage_level']==vlev]['efficiency'],
+                        rtol=1e-5)
     return expected, result
 
 exp, res = test_fit_sandia_datasheet()
+
+
+# calculate efficiency from recovered parameters
+
+

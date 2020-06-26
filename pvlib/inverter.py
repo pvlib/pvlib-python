@@ -144,9 +144,9 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
     Required model parameters are:
 
-    =======          ==========================================================
+    ================ ==========================================================
     Column           Description
-    =======          ==========================================================
+    ================ ==========================================================
     Pnom             Nominal DC power, typically the DC power needed to produce
                      maximum AC power output. [W]
     Vnom             Nominal DC input voltage. Typically the level at which the
@@ -167,7 +167,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     Pnt              AC power consumed by inverter at night (night tare) to
                      maintain circuitry required to sense the PV array
                      voltage. [W]
-    =======          ==========================================================
+    ================ ==========================================================
 
     AC power output is set to NaN where the input DC voltage exceeds a limit
     M = max(Vmax, Vdcmax, MPPTHi) x (1 + vtol), and where the input DC voltage
@@ -240,7 +240,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
     Implements NREL's PVWatts inverter model.
 
-    The PVWatts inverter model [1]_ calculates inverter efficiency :math:'\eta'
+    The PVWatts inverter model [1]_ calculates inverter efficiency :math:`\eta`
     as a function of input DC power
 
     .. math::

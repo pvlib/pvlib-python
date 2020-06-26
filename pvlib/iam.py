@@ -711,13 +711,20 @@ def marion_integrate(function, surface_tilt, region, num=None):
     phi_avg = phi_1 + 0.5*ai
     psi_avg = psi_1 + 0.5*ai
     term_1 = np.cos(beta) * np.cos(phi_avg)
-    # we are free to choose any gamma between zero and 2pi, so choose zero
-    # and omit it from the cos(psi_avg) term
+    # The AOI formula includes a term based on the difference between
+    # panel azimuth and the photon azimuth, but because we assume each class
+    # of diffuse irradiance is isotropic and we are integrating over all
+    # angles, it doesn't matter what panel azimuth we choose (i.e., the
+    # system is rotationally invariant).  So we choose gamma to be zero so
+    # that we can omit it from the cos(psi_avg) term.
+    # Marion's paper mentions this in the Section 3 pseudocode:
+    # "set gamma to pi (or any value between 0 and 2pi)"
     term_2 = np.sin(beta) * np.sin(phi_avg) * np.cos(psi_avg)
-    aoi = np.arccos(term_1 + term_2)
+    cosaoi = term_1 + term_2
+    aoi = np.arccos(cosaoi)
     # simplify Eq 8, (psi_2 - psi_1) is always ai
     dAs = ai * (np.cos(phi_1) - np.cos(phi_2))
-    cosaoi_dAs = np.cos(aoi) * dAs
+    cosaoi_dAs = cosaoi * dAs
     # apply the final AOI check, zeroing out non-passing points
     mask = aoi < np.pi/2
     cosaoi_dAs = np.where(mask, cosaoi_dAs, 0)

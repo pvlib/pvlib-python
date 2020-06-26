@@ -12,9 +12,10 @@ API Changes with Deprecations
    - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
 * ModelChain.ac_model now accepts `'sandia'`, `'pvwatts'` and `'adr'` for the
   inverter models.  (:pull:`886`)
+
 API Changes
 ~~~~~~~~~~~
-* Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs`` 
+* Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs``
   from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`)(:pull:`934`)
 
 Enhancements
@@ -29,7 +30,7 @@ Testing
 ~~~~~~~
 * Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` can now be
   applied to functions that require args or kwargs. (:pull:`973`)
-* Test added for :py:meth:`ModelChain.ac_model` to confirm ValueError when
+* Test added for :py:meth:`ModelChain` to confirm ValueError when
   ac_model is an invalid string. (:pull:`886`)
 
 Documentation

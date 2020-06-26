@@ -496,9 +496,9 @@ class ModelChain(object):
             # TODO in v0.9: remove 'snlinverter', 'adrinverter'
             if model in ['sandia', 'snlinverter']:
                 if model == 'snlinverter':
-                    warnings.warn('ac_model = ''snlinverter'' is deprecated'
+                    warnings.warn('ac_model = \'snlinverter\' is deprecated'
                                   ' and will be removed in v0.9; use'
-                                  ' ac_model = ''sandia'' instead.',
+                                  ' ac_model = \'sandia\' instead.',
                                   pvlibDeprecationWarning)
                 self._ac_model = self.snlinverter
             elif model in ['adr', 'adrinverter']:

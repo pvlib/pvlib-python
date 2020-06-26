@@ -135,7 +135,6 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
     Notes
     -----
-
     Determines the AC power output of an inverter given the DC voltage and DC
     power. Output AC power is bounded above by the parameter ``Pacmax``, to
     represent inverter "clipping". AC power is bounded below by ``-Pnt``
@@ -145,30 +144,34 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
     Required model parameters are:
 
-    =======   ============================================================
-    Column    Description
-    =======   ============================================================
-    Pnom      Nominal DC power, typically the DC power needed to produce
-              maximum AC power output. [W]
-    Vnom      Nominal DC input voltage. Typically the level at which the
-              highest efficiency is achieved. [V]
-    Vmax      Maximum DC input voltage. [V]
-    Vmin      Minimum DC input voltage. [V]
-    Vdcmax    . [V]
-    MPPTHi    Maximum DC voltage for MPPT range. [V]
-    MPPTLow   Minimum DC voltage for MPPT range. [V]
-    Pacmax    Maximum AC output power, used to clip the output power
-              if needed. [W]
+    =======          ==========================================================
+    Column           Description
+    =======          ==========================================================
+    Pnom             Nominal DC power, typically the DC power needed to produce
+                     maximum AC power output. [W]
+    Vnom             Nominal DC input voltage. Typically the level at which the
+                     highest efficiency is achieved. [V]
+    Vmax             Maximum DC input voltage. [V]
+    Vmin             Minimum DC input voltage. [V]
+    Vdcmax           Maximum voltage supplied from DC array. [V]
+    MPPTHi           Maximum DC voltage for MPPT range. [V]
+    MPPTLow          Minimum DC voltage for MPPT range. [V]
+    Pacmax           Maximum AC output power, used to clip the output power
+                     if needed. [W]
     ADRCoefficients  A list of 9 coefficients that capture the influence
-              of input voltage and power on inverter losses, and thereby
-              efficiency. Corresponds to terms from [1]_ (in order): :math:
-              `b_{0,0}, b_{1,0}, b_{2,0}, b_{0,1}, b_{1,1}, b_{2,1}, b_{0,2},
-               b_{1,2},  b_{1,2}`. See [1]_ for the use of each coefficient
-               and the associated unit.
-    Pnt       AC power consumed by inverter at night (night tare) to
-              maintain circuitry required to sense PV array voltage. [W]
+                     of input voltage and power on inverter losses, and thereby
+                     efficiency. Corresponds to terms from [1]_ (in order):
+                     :math: `b_{0,0}, b_{1,0}, b_{2,0}, b_{0,1}, b_{1,1},
+                     b_{2,1}, b_{0,2}, b_{1,2},  b_{2,2}`. See [1]_ for the
+                     use of each coefficient and its associated unit.
+    Pnt              AC power consumed by inverter at night (night tare) to
+                     maintain circuitry required to sense the PV array
+                     voltage. [W]
+    =======          ==========================================================
 
-    =======   ============================================================
+    AC power output is set to NaN where the input DC voltage exceeds a limit
+    M = max(Vmax, Vdcmax, MPPTHi) x (1 + vtol), and where the input DC voltage
+    is less than a limit m = max(Vmin, MPPTLow) x (1 - vtol)
 
     References
     ----------
@@ -235,24 +238,23 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
 def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Implements NREL's PVWatts inverter model [1]_.
+    Implements NREL's PVWatts inverter model.
+
+    The PVWatts inverter model [1]_ calculates inverter efficiency :math:'\eta'
+    as a function of input DC power
 
     .. math::
 
         \eta = \frac{\eta_{nom}}{\eta_{ref}} (-0.0162\zeta - \frac{0.0059}
         {\zeta} + 0.9858)
 
+    where :math:`\zeta=P_{dc}/P_{dc0}` and :math:`P_{dc0}=P_{ac0}/\eta_{nom}`.
+
+    Output AC power is then given by
+
     .. math::
 
         P_{ac} = \min(\eta P_{dc}, P_{ac0})
-
-    where :math:`\zeta=P_{dc}/P_{dc0}` and :math:`P_{dc0}=P_{ac0}/\eta_{nom}`.
-
-    Note that ``pdc0`` is also used as a symbol in
-    :py:func:`pvlib.pvsystem.pvwatts_dc`. ``pdc0`` in this function refers to
-    the DC power input limit of the inverter. ``pdc0`` in
-    :py:func:`pvlib.pvsystem.pvwatts_dc` refers to the DC power of the modules
-    at reference conditions.
 
     Parameters
     ----------
@@ -270,6 +272,14 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     -------
     power_ac: numeric
         AC power.  Same unit as ``pdc0``.
+
+    Notes
+    -----
+    Note that ``pdc0`` is also used as a symbol in
+    :py:func:`pvlib.pvsystem.pvwatts_dc`. ``pdc0`` in this function refers to
+    the DC power input limit of the inverter. ``pdc0`` in
+    :py:func:`pvlib.pvsystem.pvwatts_dc` refers to the DC power of the modules
+    at reference conditions.
 
     References
     ----------

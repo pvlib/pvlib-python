@@ -2441,10 +2441,11 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
 
         P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
 
-    Note that the pdc0 is also used as a symbol in :py:func:`pvwatts_ac`. pdc0
-    in this function refers to the DC power of the modules at reference
-    conditions. pdc0 in :py:func:`pvwatts_ac` refers to the DC power input
-    limit of the inverter.
+    Note that the pdc0 is also used as a symbol in
+    :py:func:`pvlib.inverter.pvwatts`. pdc0 in this function refers to the DC
+    power of the modules at reference conditions. pdc0 in
+    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
+    the inverter.
 
     Parameters
     ----------

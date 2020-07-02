@@ -40,7 +40,7 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
         Concentration of airborne particulate matter (PM) with
         aerodynamicdiameter less than 10 microns. [g/m^3]
 
-    depo_veloc : dict, default {'2_5': 0.4, '10': 0.09}
+    depo_veloc : dict, default {'2_5': 0.0009, '10': 0.004}
         Deposition or settling velocity of particulates. [m/s]
 
     rain_accum_period : Timedelta, default 1 hour
@@ -69,7 +69,7 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
 
     # never use mutable input arguments
     if depo_veloc is None:
-        depo_veloc = {'2_5': 0.004, '10': 0.0009}
+        depo_veloc = {'2_5': 0.0009, '10': 0.004}
 
     # accumulate rainfall into periods for comparison with threshold
     accum_rain = rainfall.rolling(rain_accum_period, closed='right').sum()
@@ -77,7 +77,7 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     cleaning_times = accum_rain.index[accum_rain >= cleaning_threshold]
 
     horiz_mass_rate = pm2_5 * depo_veloc['2_5']\
-        + np.maximum(pm10 - pm2_5, 0.) * depo_veloc['10']
+        + np.maximum(pm10 - pm2_5, 0.) * depo_veloc['10'] * 3600
     tilted_mass_rate = horiz_mass_rate * cosd(tilt)  # assuming no rain
 
     # tms -> tilt_mass_rate

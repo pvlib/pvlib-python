@@ -5,15 +5,24 @@ v0.8.0 (Month day, year)
 
 API Changes
 ~~~~~~~~~~~
+* Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs`` 
+  from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`)(:pull:`934`)
 
 Enhancements
 ~~~~~~~~~~~~
+* Update :func:`~pvlib.bifacial.pvfactors_timeseries` to run with ``pvfactors`` v1.4.1 (:issue:`902`)(:pull:`934`)
+* Add :py:func:`pvlib.iam.marion_diffuse` and 
+  :py:func:`pvlib.iam.marion_integrate` to calculate IAM values for
+  diffuse irradiance. (:pull:`984`)
 
 Bug fixes
 ~~~~~~~~~
+* Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`XXX`)
 
 Testing
 ~~~~~~~
+* Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` can now be
+  applied to functions that require args or kwargs. (:pull:`973`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -25,6 +34,8 @@ Documentation
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
 * Add make.bat so that docs can be built on Windows without ``make`` installed.
   (:issue:`978`, :pull:`981`)
+* Add a gallery example of calculating diffuse IAM using
+  :py:func:`pvlib.iam.marion_diffuse`. (:pull:`984`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -34,3 +45,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Mark Mikofski (:ghuser:`mikofski`)
+* Joshua S. Stein (:ghuser:`jsstein`)
+* Marc A. Anoma (:ghuser:`anomam`)

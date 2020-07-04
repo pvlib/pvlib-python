@@ -33,19 +33,20 @@ DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
 
 # get TMY3 dataset
 tmy, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
-# trim off the last row to make resampling easier
+# TMY3 datasets are right-labeled (AKA "end of interval") which means the last
+# interval of Dec 31, 23:00 to Jan 1 00:00 is labeled Jan 1 00:00. When rolling
+# up hourly irradiance to monthly insolation, a spurious January value is
+# calculated from that last row, so we'll just go ahead and drop it here:
 tmy = tmy.iloc[:-1, :]
 
-
 # create location object to store lat, lon, timezone
-location = location.Location(metadata['latitude'],
-                             metadata['longitude'],
-                             tz=tmy.index.tz)
+location = location.Location.from_tmy(metadata)
 
 # calculate the necessary variables to do transposition.  Note that solar
 # position doesn't depend on array orientation, so we just calculate it once.
-# Note also that TMY datasets are right-labeled.  We should calculate solar
-# position in the middle of the interval, so we subtract 30 minutes:
+# Note also that TMY datasets are right-labeled hourly intervals, e.g. the
+# 10AM to 11AM interval is labeled 11.  We should calculate solar position in
+# the middle of the interval (10:30), so we subtract 30 minutes:
 times = tmy.index - pd.Timedelta('30min')
 solar_position = location.get_solarposition(times)
 # but remember to shift the index back to line up with the TMY data:
@@ -63,7 +64,8 @@ def calculate_poa(tmy, solar_position, surface_tilt, surface_azimuth):
         ghi=tmy['GHI'],
         dhi=tmy['DHI'],
         solar_zenith=solar_position['apparent_zenith'],
-        solar_azimuth=solar_position['azimuth'])
+        solar_azimuth=solar_position['azimuth'],
+        model='isotropic')
     return poa['poa_global']  # just return the total in-plane irradiance
 
 
@@ -95,7 +97,8 @@ poa_irradiance = calculate_poa(tmy,
 df_monthly['SAT-0.4'] = poa_irradiance.resample('m').sum()
 
 # calculate the percent difference from GHI
-df_monthly = 100 * (df_monthly.divide(df_monthly['FT-0'], axis=0) - 1)
+ghi_monthly = tmy['GHI'].resample('m').sum()
+df_monthly = 100 * (df_monthly.divide(ghi_monthly, axis=0) - 1)
 
 df_monthly.plot()
 plt.xlabel('Month of Year')

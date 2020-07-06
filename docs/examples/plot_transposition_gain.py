@@ -8,8 +8,8 @@ Calculating the gain in insolation of a tilted module over a flat module.
 # %%
 # This example shows how to evaluate the transposition gain of a racking
 # strategy.  The transposition gain is the additional insolation collected
-# by orienting at a tilt instead of flat; using PV modeling lingo, it's the
-# increase in POA (plane of array) insolation over GHI (global horizontal
+# by orienting at a tilt instead of horizontal; using PV modeling lingo, it's
+# the increase in POA (plane of array) insolation over GHI (global horizontal
 # irradiance) insolation.
 #
 # This example uses a TMY dataset and the

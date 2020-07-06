@@ -257,9 +257,10 @@ Building the documentation locally is useful for testing out changes to the
 documentation's source code without having to repeatedly update a PR and have
 Read the Docs build it for you.  Building the docs locally requires installing
 pvlib python as an editable library (see :ref:`installation` for instructions).
-First, install the ``doc`` dependencies specified in the
-`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
-file. An easy way to do this is with::
+First, install the ``doc`` dependencies specified in the ``EXTRAS_REQUIRE``
+section of
+`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
+An easy way to do this is with::
 
     pip install pvlib[doc]
 

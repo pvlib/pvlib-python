@@ -32,6 +32,7 @@ Documentation
 * Clarify units for heat loss factors in
   :py:func:`pvlib.temperature.pvsyst_cell` and
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
+* Add a transposition gain example to the gallery.  (:pull:`979`)
 * Add a gallery example of calculating diffuse IAM using
   :py:func:`pvlib.iam.marion_diffuse`. (:pull:`984`)
 

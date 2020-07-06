@@ -496,19 +496,19 @@ class ModelChain(object):
             # TODO in v0.9: remove 'snlinverter', 'adrinverter'
             if model in ['sandia', 'snlinverter']:
                 if model == 'snlinverter':
-                    warnings.warn('ac_model = \'snlinverter\' is deprecated'
-                                  ' and will be removed in v0.9; use'
-                                  ' ac_model = \'sandia\' instead.',
+                    warnings.warn("ac_model = 'snlinverter' is deprecated and"
+                                  " will be removed in v0.9; use"
+                                  " ac_model = 'sandia' instead.",
                                   pvlibDeprecationWarning)
                 self._ac_model = self.snlinverter
             elif model in ['adr', 'adrinverter']:
                 if model == 'adrinverter':
-                    warnings.warn('ac_model = \'adrinverter\' is deprecated'
-                                  ' and will be removed in v0.9; use'
-                                  ' ac_model = \'adr\' instead.',
+                    warnings.warn("ac_model = 'adrinverter' is deprecated and"
+                                  " will be removed in v0.9; use"
+                                  " ac_model = 'adr' instead.",
                                   pvlibDeprecationWarning)
                 self._ac_model = self.adrinverter
-            elif model in ['pvwatts']:
+            elif model == 'pvwatts':
                 self._ac_model = self.pvwatts_inverter
             else:
                 raise ValueError(model + ' is not a valid AC power model')

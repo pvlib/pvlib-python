@@ -838,8 +838,8 @@ class PVSystem(object):
     def pvwatts_ac(self, pdc):
         """
         Calculates AC power according to the PVWatts model using
-        :py:func:`pvlib.inverter.pvwatts`, `self.module_parameters['pdc0']`,
-        and `eta_inv_nom=self.inverter_parameters['eta_inv_nom']`.
+        :py:func:`pvlib.inverter.pvwatts`, `self.module_parameters["pdc0"]`,
+        and `eta_inv_nom=self.inverter_parameters["eta_inv_nom"]`.
 
         See :py:func:`pvlib.inverter.pvwatts` for details.
         """

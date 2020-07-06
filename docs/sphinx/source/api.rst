@@ -300,7 +300,6 @@ Functions relevant for the Pvsyst model.
    pvsystem.singlediode
 
 Functions relevant for the PVWatts model
-----------------------------------------
 
 .. autosummary::
    :toctree: generated/

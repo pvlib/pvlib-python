@@ -478,6 +478,21 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
     assert mc.ac[1] < 1
 
 
+# TODO in v0.9: remove this test for a deprecation warning
+@pytest.mark.parametrize('ac_model', [
+    'snlinverter', pytest.param('adrinverter', marks=requires_scipy)])
+def test_ac_models_deprecated(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
+                              location, ac_model, weather):
+    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
+                  'adrinverter': cec_dc_adr_ac_system}
+    system = ac_systems[ac_model]
+    warn_txt = "ac_model = '" + ac_model + "' is deprecated and will be" +\
+               " removed in v0.9"
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        ModelChain(system, location, ac_model=ac_model,
+                   aoi_model='no_loss', spectral_model='no_loss')
+
+
 def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
                             mocker):
     m = mocker.spy(sys.modules[__name__], 'acdc')
@@ -696,6 +711,22 @@ def test_deprecated_08():
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
                    spectral_model='no_loss', ac_model='snlinverter',
                    temperature_model='pvsyst', temp_model='sapm')
+
+
+@fail_on_pvlib_version('0.9')
+@pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter'])
+def test_deprecated_09(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
+                       location, ac_model, weather):
+    # ModelChain.ac_model = 'snlinverter' or 'adrinverter' deprecated in v0.8,
+    # removed in v0.9
+    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
+                  'adrinverter': cec_dc_adr_ac_system}
+    system = ac_systems[ac_model]
+    warn_txt = "ac_model = '" + ac_model + "' is deprecated and will be" +\
+               " removed in v0.9"
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        ModelChain(system, location, ac_model=ac_model,
+                   aoi_model='no_loss', spectral_model='no_loss')
 
 
 @requires_scipy

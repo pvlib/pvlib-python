@@ -278,7 +278,8 @@ Inverter models (DC to AC conversion)
 PV System Models
 ----------------
 
-Functions relevant for the Sandia array performance model (SAPM).
+Sandia array performance model (SAPM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
@@ -290,7 +291,8 @@ Functions relevant for the Sandia array performance model (SAPM).
    inverter.sandia
    temperature.sapm_cell
 
-Functions relevant for the Pvsyst model.
+Pvsyst model
+^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
@@ -299,7 +301,8 @@ Functions relevant for the Pvsyst model.
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
 
-Functions relevant for the PVWatts model
+PVWatts model
+^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/

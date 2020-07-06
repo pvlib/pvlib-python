@@ -447,23 +447,15 @@ def acdc(mc):
     mc.ac = mc.dc
 
 
-# TODO in v0.9: remove 'snlinverter', 'adrinverter' since these values for
-# ModelChain.ac_model are superseded by 'sandia' and 'adr'
 @pytest.mark.parametrize('ac_model', [
-    'sandia', 'snlinverter', pytest.param('adrinverter', marks=requires_scipy),
-    pytest.param('adr', marks=requires_scipy),
-    'pvwatts'])
+    'sandia', pytest.param('adr', marks=requires_scipy), 'pvwatts'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    pvwatts_dc_pvwatts_ac_system, location, ac_model,
                    weather, mocker):
-    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
-                  'sandia': sapm_dc_snl_ac_system,
-                  'adrinverter': cec_dc_adr_ac_system,
+    ac_systems = {'sandia': sapm_dc_snl_ac_system,
                   'adr': cec_dc_adr_ac_system,
                   'pvwatts': pvwatts_dc_pvwatts_ac_system}
-    ac_method_name = {'snlinverter': 'snlinverter',
-                      'sandia': 'snlinverter',
-                      'adrinverter': 'adrinverter',
+    ac_method_name = {'sandia': 'snlinverter',
                       'adr': 'adrinverter',
                       'pvwatts': 'pvwatts_ac'}
     system = ac_systems[ac_model]
@@ -697,19 +689,19 @@ def test_deprecated_08():
     warn_txt = 'temp_model keyword argument is deprecated'
     with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='snlinverter',
+                   spectral_model='no_loss', ac_model='sandia',
                    temp_model='sapm')
     # provide both temp_model and temperature_model kwargs
     warn_txt = 'Provide only one of temperature_model'
     with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='snlinverter',
+                   spectral_model='no_loss', ac_model='sandia',
                    temperature_model='sapm', temp_model='sapm')
     # conflicting temp_model and temperature_model kwargs
     exc_text = 'Conflicting temperature_model'
     with pytest.raises(ValueError, match=exc_text):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='snlinverter',
+                   spectral_model='no_loss', ac_model='sandia',
                    temperature_model='pvsyst', temp_model='sapm')
 
 

@@ -56,8 +56,8 @@ def basic_chain(times, latitude, longitude,
         See temperature.sapm_cell for details.
 
     inverter_parameters : None, dict or Series
-        Inverter parameters as defined by the CEC. See inverter.sandia for
-        details.
+        Inverter parameters as defined by the CEC. See
+        :py:func:`inverter.sandia` for details.
 
     irradiance : None or DataFrame, default None
         If None, calculates clear sky data.

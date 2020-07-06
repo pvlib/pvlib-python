@@ -22,10 +22,7 @@ def sandia(v_dc, p_dc, inverter):
         DC power input to the inverter. [W]
 
     inverter : dict-like
-        Defines parameters for the inverter model in [1]_.  See Notes for
-        required model parameters. A copy of the parameter database from the
-        System Advisor Model (SAM) [2]_ is provided with pvlib and may be read
-        using :py:func:`pvlib.pvsystem.retrieve_sam`.
+        Defines parameters for the inverter model in [1]_.
 
     Returns
     -------
@@ -67,6 +64,10 @@ def sandia(v_dc, p_dc, inverter):
              DC voltage input. [1/V]
     Pnt      AC power consumed by the inverter at night (night tare). [W]
     ======   ============================================================
+
+    A copy of the parameter database from the System Advisor Model (SAM) [2]_
+    is provided with pvlib and may be read  using
+    :py:func:`pvlib.pvsystem.retrieve_sam`.
 
     References
     ----------

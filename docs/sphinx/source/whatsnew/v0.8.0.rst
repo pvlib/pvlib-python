@@ -46,6 +46,7 @@ Documentation
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
 * Corrected key names for :py:func:`pvlib.inverter.sandia`. (:issue:`976`,
   :pull:`886`)
+* Add a transposition gain example to the gallery.  (:pull:`979`)
 * Add a gallery example of calculating diffuse IAM using
   :py:func:`pvlib.iam.marion_diffuse`. (:pull:`984`)
 

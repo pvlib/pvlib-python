@@ -257,11 +257,12 @@ Building the documentation locally is useful for testing out changes to the
 documentation's source code without having to repeatedly update a PR and have
 Read the Docs build it for you.  Building the docs locally requires installing
 pvlib python as an editable library (see :ref:`installation` for instructions).
-First, install the ``doc`` dependencies specified in the ``EXTRAS_REQUIRE``
-section of
+First, install the ``optional`` and ``doc`` dependencies specified in the
+``EXTRAS_REQUIRE`` section of
 `setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
 An easy way to do this is with::
 
+    pip install pvlib[optional]
     pip install pvlib[doc]
 
 Once the ``doc`` dependencies are installed, navigate to ``/docs/sphinx`` and

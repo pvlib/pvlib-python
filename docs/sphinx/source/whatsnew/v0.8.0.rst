@@ -34,7 +34,7 @@ Testing
 * Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` can now be
   applied to functions that require args or kwargs. (:pull:`973`)
 * Test added for :py:class:`pvlib.modelchain.ModelChain` to confirm ValueError when
-  ac_model is an invalid string. (:pull:`886`)
+  ``ac_model`` is an invalid string. (:pull:`886`)
 
 Documentation
 ~~~~~~~~~~~~~

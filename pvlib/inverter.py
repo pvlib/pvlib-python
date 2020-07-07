@@ -109,7 +109,7 @@ def sandia(v_dc, p_dc, inverter):
 def adr(v_dc, p_dc, inverter, vtol=0.10):
     r'''
     Converts DC power and voltage to AC power using Anton Driesse's
-    Grid-Connected PV Inverter efficiency model
+    grid-connected inverter efficiency model.
 
     Parameters
     ----------

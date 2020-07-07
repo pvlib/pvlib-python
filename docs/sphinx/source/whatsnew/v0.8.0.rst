@@ -3,15 +3,25 @@
 v0.8.0 (Month day, year)
 -------------------------
 
+API Changes with Deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Moved functions related to inverters from ``pvsystem.py`` to ``inverter.py``.
+  Functions are renamed to follow a more consistent pattern, as follows (:pull:`886`):
+   - :py:func:`pvlib.pvsystem.snlinverter` is now :py:func:`pvlib.inverter.sandia`
+   - :py:func:`pvlib.pvsystem.pvwatts_ac` is now :py:func:`pvlib.inverter.pvwatts`
+   - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
+* Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
+  ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models.  (:pull:`886`)
+
 API Changes
 ~~~~~~~~~~~
-* Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs`` 
+* Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs``
   from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`)(:pull:`934`)
 
 Enhancements
 ~~~~~~~~~~~~
 * Update :func:`~pvlib.bifacial.pvfactors_timeseries` to run with ``pvfactors`` v1.4.1 (:issue:`902`)(:pull:`934`)
-* Add :py:func:`pvlib.iam.marion_diffuse` and 
+* Add :py:func:`pvlib.iam.marion_diffuse` and
   :py:func:`pvlib.iam.marion_integrate` to calculate IAM values for
   diffuse irradiance. (:pull:`984`)
 
@@ -23,6 +33,8 @@ Testing
 ~~~~~~~
 * Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` can now be
   applied to functions that require args or kwargs. (:pull:`973`)
+* Test added for :py:class:`pvlib.modelchain.ModelChain` to confirm ValueError when
+  ``ac_model`` is an invalid string. (:pull:`886`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -32,6 +44,8 @@ Documentation
 * Clarify units for heat loss factors in
   :py:func:`pvlib.temperature.pvsyst_cell` and
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
+* Corrected key names for :py:func:`pvlib.inverter.sandia`. (:issue:`976`,
+  :pull:`886`)
 * Add a transposition gain example to the gallery.  (:pull:`979`)
 * Add a gallery example of calculating diffuse IAM using
   :py:func:`pvlib.iam.marion_diffuse`. (:pull:`984`)

@@ -10,8 +10,8 @@ API Changes with Deprecations
    - :py:func:`pvlib.pvsystem.snlinverter` is now :py:func:`pvlib.inverter.sandia`
    - :py:func:`pvlib.pvsystem.pvwatts_ac` is now :py:func:`pvlib.inverter.pvwatts`
    - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
-* `modelchain.ModelChain.ac_model` now accepts ''sandia'', ''pvwatts'' and
-   ''adr'' for the inverter models.  (:pull:`886`)
+* `modelchain.ModelChain.ac_model` now accepts ``sandia``, ``pvwatts`` and
+   ``adr`` for the inverter models.  (:pull:`886`)
 
 API Changes
 ~~~~~~~~~~~

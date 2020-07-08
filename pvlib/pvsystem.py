@@ -848,6 +848,22 @@ class PVSystem(object):
 
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
+                                
+    def irradiance_loss_pvsyst(self, effective_irradiance,
+                               irradiance_shading_loss, irradiance_snow_loss,
+                               irradiance_soiling_loss):
+        """
+        Calculates plane of array irradiance losses using a model based on the
+        PVSyst methodology.  A wrapper for
+        :py:func:`pvlib.pvsystem.irradiance_loss_pvsyst`.
+
+        See :py:func:`pvlib.pvsystem.irradiance_loss_pvsyst` for details.
+        """
+        
+        return irradiance_loss_pvsyst(effective_irradiance,
+                                      irradiance_shading_loss,
+                                      irradiance_snow_loss,
+                                      irradiance_soiling_loss)
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
@@ -2535,6 +2551,73 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     losses = (1 - perf) * 100.
 
     return losses
+
+    
+def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
+                           irradiance_snow_loss, irradiance_soiling_loss):
+    """
+    Calculates plane of array irradiance losses using a model based on the
+    PVSyst methodology [1]_ of linearly reducing the effective irradiance on a
+    module.  This doesn't account for the electrical losses due to irregular
+    irradiance on different solar cell strings but rather reduces the
+    irradiance input to the single diode equation.
+    
+    The losses are compounded using the following equation:
+    .. math::
+
+        L_{total}(\%) = 100 [ 1 - \Pi_i ( 1 - \frac{L_i}{100} ) ]
+        
+    Note the parameters must each be a series with a DatetimeIndex.  The
+    index of the returned series will be the same as the effective_irradiance
+    index.  All other parameters will be resampled to match this index with
+    a "fill forward" method for filling holes.
+    
+    Parameters
+    ----------
+    effective_irradiance : Series
+            The irradiance (W/m2) that is to be reduced.  Plane-of-array
+            irradiance that already accounts for Angle of Incidence and
+            Spectral losses.
+    
+    irradiance_shading_loss : Series
+            The fraction of the solar panel that is shaded.
+            
+    irradiance_snow_loss : Series
+            The fraction of the solar panel that is covered with snow.
+    
+    irradiance_soiling_loss : Series
+            The fraction of the irradiance prevented from reaching the solar
+            cells due to soiling of the solar panel.
+    
+    Returns
+    -------
+    losses: Series
+            Irradiance (W/m2) reduction due to compounded losses.
+
+    References
+    ----------
+    .. [1] "Simulation process: Irradiances and PV-array"
+           https://www.pvsyst.com/help/simulation_process.htm
+           (2020).
+    
+    """
+    
+    fill_method = 'ffill'
+    
+    shading_loss = irradiance_shading_loss.reindex_like(effective_irradiance,
+                                                        method = fill_method)
+                                                        
+    snow_loss = irradiance_snow_loss.reindex_like(effective_irradiance,
+                                                  method = fill_method)
+                                                  
+    soiling_loss = irradiance_soiling_loss.reindex_like(effective_irradiance,
+                                                        method = fill_method)
+    
+    irradiance_losses = effective_irradiance * (1 - (1 - shading_loss) *
+                                                    (1 - snow_loss) * 
+                                                    (1 - soiling_loss))
+        
+    return irradiance_losses
 
 
 ashraeiam = deprecated('0.7', alternative='iam.ashrae', name='ashraeiam',

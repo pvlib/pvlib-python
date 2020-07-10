@@ -27,6 +27,7 @@ Enhancements
 * Add :py:func:`pvlib.pvsystem.irradiance_losses_pvsyst` and
   :py:meth:`pvlib.pvsystem.PVSystem.irradiance_losses_pvsyst` to calculate
   cumulative losses on the effective irradiance with a style similar to PVSyst.
+  Partialy addresses :issue:`988`. Contributed by Brock Taute :ghuser:`btaute`
 
 Bug fixes
 ~~~~~~~~~

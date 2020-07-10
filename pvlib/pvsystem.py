@@ -2555,7 +2555,7 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
 def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
                            irradiance_snow_loss, irradiance_soiling_loss):
-    """
+    r"""
     Calculates plane of array irradiance losses using a model based on the
     PVSyst methodology [1]_ of linearly reducing the effective irradiance on a
     module.  This doesn't account for the electrical losses due to irregular

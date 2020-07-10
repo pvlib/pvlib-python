@@ -1349,13 +1349,13 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
 
 def make_irradiance_loss_pvsyst_test_series():
     final_index = pd.date_range(start='1/1/1990 12:00', periods=365, freq='D')
-    effective_irradiance = pd.Series(1000, index = final_index)
-    shading = pd.Series(.1, index = final_index)
-    snow = pd.Series(.05, index = pd.date_range(start='1/1/1990 12:00',
-                                                periods=365*2, freq='D'))
-    soiling = pd.Series(.02, index = pd.date_range(start='1/1/1990',
-                                                   periods=12, freq='MS'))
-    expected = pd.Series(162.1, index = final_index)
+    effective_irradiance = pd.Series(1000, index=final_index)
+    shading = pd.Series(.1, index=final_index)
+    snow = pd.Series(.05, index=pd.date_range(start='1/1/1990 12:00',
+                                              periods=365*2, freq='D'))
+    soiling = pd.Series(.02, index=pd.date_range(start='1/1/1990',
+                                                 periods=12, freq='MS'))
+    expected = pd.Series(162.1, index=final_index)
 
     return {'effective_irradiance': effective_irradiance,
             'shading': shading, 'snow': snow,
@@ -1364,7 +1364,7 @@ def make_irradiance_loss_pvsyst_test_series():
 
 def test_irradiance_loss_pvsyst():
     params = make_irradiance_loss_pvsyst_test_series()
-    out = irradiance_loss_pvsyst(params['effective_irradiance'],
+    out = pvsystem.irradiance_loss_pvsyst(params['effective_irradiance'],
                                  params['shading'], params['snow'],
                                  params['soiling'])
     assert_series_equal(params['expected'], out)

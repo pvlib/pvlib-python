@@ -8,7 +8,7 @@ import pytest
 from pandas.util.testing import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
-from pvlib import pvsystem
+from pvlib import inverter, pvsystem
 from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib.location import Location
@@ -1101,60 +1101,6 @@ def test_PVSystem_scale_voltage_current_power(mocker):
     m.assert_called_once_with(data, voltage=2, current=3)
 
 
-def test_adrinverter(sam_data):
-    inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' \
-              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
-    vdcs = pd.Series([135, 154, 390, 420, 551])
-    pdcs = pd.Series([135, 1232, 1170, 420, 551])
-
-    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
-    assert_series_equal(pacs, pd.Series([np.nan, 1161.5745, 1116.4459,
-                                         382.6679, np.nan]))
-
-
-def test_adrinverter_vtol(sam_data):
-    inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' \
-              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
-    vdcs = pd.Series([135, 154, 390, 420, 551])
-    pdcs = pd.Series([135, 1232, 1170, 420, 551])
-
-    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv], vtol=0.20)
-    assert_series_equal(pacs, pd.Series([104.8223, 1161.5745, 1116.4459,
-                                         382.6679, 513.3385]))
-
-
-def test_adrinverter_float(sam_data):
-    inverters = sam_data['adrinverter']
-    testinv = 'Ablerex_Electronics_Co___Ltd___' \
-              'ES_2200_US_240__240_Vac__240V__CEC_2011_'
-    vdcs = 154.
-    pdcs = 1232.
-
-    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
-    assert_allclose(pacs, 1161.5745)
-
-
-def test_adrinverter_invalid_and_night(sam_data):
-    inverters = sam_data['adrinverter']
-    testinv = 'Zigor__Sunzet_3_TL_US_240V__CEC_2011_'
-    vdcs = np.array([39.873036, 0., np.nan, 420])
-    pdcs = np.array([188.09182, 0., 420, np.nan])
-
-    pacs = pvsystem.adrinverter(vdcs, pdcs, inverters[testinv])
-    assert_allclose(pacs, np.array([np.nan, -0.25, np.nan, np.nan]))
-
-
-def test_snlinverter(cec_inverter_parameters):
-    vdcs = pd.Series(np.linspace(0,50,3))
-    idcs = pd.Series(np.linspace(0,11,3))
-    pdcs = idcs * vdcs
-
-    pacs = pvsystem.snlinverter(vdcs, pdcs, cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
-
-
 def test_PVSystem_snlinverter(cec_inverter_parameters):
     system = pvsystem.PVSystem(
         inverter=cec_inverter_parameters['Name'],
@@ -1166,45 +1112,6 @@ def test_PVSystem_snlinverter(cec_inverter_parameters):
 
     pacs = system.snlinverter(vdcs, pdcs)
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
-
-
-def test_snlinverter_float(cec_inverter_parameters):
-    vdcs = 25.
-    idcs = 5.5
-    pdcs = idcs * vdcs
-
-    pacs = pvsystem.snlinverter(vdcs, pdcs, cec_inverter_parameters)
-    assert_allclose(pacs, 132.004278, 5)
-
-
-def test_snlinverter_Pnt_micro():
-    """
-    Test for issue #140, where some microinverters were giving a positive AC
-    power output when the DC power was 0.
-    """
-    inverter_parameters = {
-        'Name': 'Enphase Energy: M250-60-2LL-S2x (-ZC) (-NA) 208V [CEC 2013]',
-        'Vac': 208.0,
-        'Paco': 240.0,
-        'Pdco': 250.5311318,
-        'Vdco': 32.06160667,
-        'Pso': 1.12048857,
-        'C0': -5.76E-05,
-        'C1': -6.24E-04,
-        'C2': 8.09E-02,
-        'C3': -0.111781106,
-        'Pnt': 0.043,
-        'Vdcmax': 48.0,
-        'Idcmax': 9.8,
-        'Mppt_low': 27.0,
-        'Mppt_high': 39.0,
-    }
-    vdcs = pd.Series(np.linspace(0,50,3))
-    idcs = pd.Series(np.linspace(0,11,3))
-    pdcs = idcs * vdcs
-
-    pacs = pvsystem.snlinverter(vdcs, pdcs, inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.043, 132.545914746, 240.0]))
 
 
 def test_PVSystem_creation():
@@ -1348,44 +1255,6 @@ def test_pvwatts_dc_series():
     assert_series_equal(expected, out)
 
 
-def test_pvwatts_ac_scalars():
-    expected = 85.58556604752516
-    out = pvsystem.pvwatts_ac(90, 100, 0.95)
-    assert_allclose(out, expected)
-    # GH 675
-    expected = 0.
-    out = pvsystem.pvwatts_ac(0., 100)
-    assert_allclose(out, expected)
-
-
-def test_pvwatts_ac_possible_negative():
-    # pvwatts_ac could return a negative value for (pdc / pdc0) < 0.006
-    # unless it is clipped. see GH 541 for more
-    expected = 0
-    out = pvsystem.pvwatts_ac(0.001, 1)
-    assert_allclose(out, expected)
-
-
-@needs_numpy_1_10
-def test_pvwatts_ac_arrays():
-    pdc = np.array([[np.nan], [0], [50], [100]])
-    pdc0 = 100
-    expected = np.array([[nan],
-                         [0.],
-                         [47.60843624],
-                         [95.]])
-    out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
-    assert_allclose(out, expected, equal_nan=True)
-
-
-def test_pvwatts_ac_series():
-    pdc = pd.Series([np.nan, 0, 50, 100])
-    pdc0 = 100
-    expected = pd.Series(np.array([nan, 0., 47.608436, 95.]))
-    out = pvsystem.pvwatts_ac(pdc, pdc0, 0.95)
-    assert_series_equal(expected, out)
-
-
 def test_pvwatts_losses_default():
     expected = 14.075660688264469
     out = pvsystem.pvwatts_losses()
@@ -1459,22 +1328,22 @@ def test_PVSystem_pvwatts_losses(mocker):
 
 
 def test_PVSystem_pvwatts_ac(mocker):
-    mocker.spy(pvsystem, 'pvwatts_ac')
+    mocker.spy(inverter, 'pvwatts')
     system = make_pvwatts_system_defaults()
     pdc = 50
     out = system.pvwatts_ac(pdc)
-    pvsystem.pvwatts_ac.assert_called_once_with(pdc,
-                                                **system.inverter_parameters)
+    inverter.pvwatts.assert_called_once_with(pdc,
+                                             **system.inverter_parameters)
     assert out < pdc
 
 
 def test_PVSystem_pvwatts_ac_kwargs(mocker):
-    mocker.spy(pvsystem, 'pvwatts_ac')
+    mocker.spy(inverter, 'pvwatts')
     system = make_pvwatts_system_kwargs()
     pdc = 50
     out = system.pvwatts_ac(pdc)
-    pvsystem.pvwatts_ac.assert_called_once_with(pdc,
-                                                **system.inverter_parameters)
+    inverter.pvwatts.assert_called_once_with(pdc,
+                                             **system.inverter_parameters)
     assert out < pdc
 
 
@@ -1564,3 +1433,16 @@ def test__sapm_celltemp_translator():
                                                 [params['a'], params['b'],
                                                  params['deltaT']])
     assert_allclose(result, 43.509, 3)
+
+
+@fail_on_pvlib_version('0.9')
+def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
+    # deprecated function pvsystem.snlinverter
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.snlinverter(250, 40, cec_inverter_parameters)
+    # deprecated function pvsystem.adrinverter
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.adrinverter(1232, 154, adr_inverter_parameters)
+    # deprecated function pvsystem.spvwatts_ac
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.pvwatts_ac(90, 100, 0.95)

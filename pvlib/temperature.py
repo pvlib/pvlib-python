@@ -213,7 +213,7 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
         Total incident irradiance [W/m^2].
 
     deltaT : float
-        Parameter :math:`\Delta T` in :eq:`sapm2` [C].
+        Parameter :math:`\Delta T` in :eq:`sapm2_cell_from_mod` [C].
 
     irrad_ref : float, default 1000
         Reference irradiance, parameter :math:`E_{0}` in
@@ -228,7 +228,7 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
     The model for cell temperature :math:`T_{C}` is given by Eq. 12 in [1]_.
 
     .. math::
-       :label: sapm2
+       :label: sapm2_cell_from_mod
 
        T_{C} = T_{m} + \frac{E}{E_{0}} \Delta T
 

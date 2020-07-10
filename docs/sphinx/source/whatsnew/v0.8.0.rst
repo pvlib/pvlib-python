@@ -24,6 +24,9 @@ Enhancements
 * Add :py:func:`pvlib.iam.marion_diffuse` and
   :py:func:`pvlib.iam.marion_integrate` to calculate IAM values for
   diffuse irradiance. (:pull:`984`)
+* Add :py:func:`pvlib.pvsystem.irradiance_losses_pvsyst` and
+  :py:meth:`pvlib.pvsystem.PVSystem.irradiance_losses_pvsyst` to calculate
+  cumulative losses on the effective irradiance with a style similar to PVSyst.
 
 Bug fixes
 ~~~~~~~~~
@@ -35,6 +38,8 @@ Testing
   applied to functions that require args or kwargs. (:pull:`973`)
 * Test added for :py:class:`pvlib.modelchain.ModelChain` to confirm ValueError when
   ``ac_model`` is an invalid string. (:pull:`886`)
+* Tests added for :py:func:`pvlib.pvsystem.irradiance_losses_pvsyst` and
+  :py:meth:`pvlib.pvsystem.PVSystem.irradiance_losses_pvsyst`
 
 Documentation
 ~~~~~~~~~~~~~

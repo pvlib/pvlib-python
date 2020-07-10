@@ -2614,9 +2614,8 @@ def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
     soiling_loss = irradiance_soiling_loss.reindex_like(effective_irradiance,
                                                         method=fill_method)
 
-    irradiance_losses = effective_irradiance * (1 - (1 - shading_loss)
-                                                  * (1 - snow_loss)
-                                                  * (1 - soiling_loss))
+    irradiance_losses = effective_irradiance * (
+        1 - (1 - shading_loss) * (1 - snow_loss) * (1 - soiling_loss))
 
     return irradiance_losses
 

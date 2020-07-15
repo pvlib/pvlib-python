@@ -17,6 +17,8 @@ API Changes
 ~~~~~~~~~~~
 * Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs``
   from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`)(:pull:`934`)
+* :py:func:`pvlib.iotools.read_tmy3` can now only read local data files
+  (:issue:`996`)(:pull:`1003`)
 
 Enhancements
 ~~~~~~~~~~~~

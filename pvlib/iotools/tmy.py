@@ -3,9 +3,7 @@ Import functions for TMY2 and TMY3 data files.
 """
 
 import datetime
-import io
 import re
-from urllib.request import urlopen, Request
 import pandas as pd
 
 
@@ -15,7 +13,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
 
     Note that values contained in the metadata dictionary are unchanged
     from the TMY3 file (i.e. units are retained). In the case of any
-    discrepencies between this documentation and the TMY3 User's Manual
+    discrepancies between this documentation and the TMY3 User's Manual
     [1]_, the TMY3 User's Manual takes precedence.
 
     The TMY3 files were updated in Jan. 2015. This function requires the
@@ -25,7 +23,7 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     ----------
     filename : None or string, default None
         If None, attempts to use a Tkinter file browser. A string can be
-        a relative file path, absolute file path, or url.
+        a relative file path or absolute file path.
 
     coerce_year : None or int, default None
         If supplied, the year of the index will be set to `coerce_year`, except
@@ -171,21 +169,10 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
 
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    if str(filename).startswith('http'):
-        request = Request(filename, headers={'User-Agent': (
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) '
-            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 '
-            'Safari/537.36')})
-        response = urlopen(request)
-        csvdata = io.StringIO(response.read().decode(errors='ignore'))
-    else:
-        # assume it's accessible via the file system
-        csvdata = open(str(filename), 'r')
+    csvdata = open(str(filename), 'r')
 
     # read in file metadata, advance buffer to second line
     firstline = csvdata.readline()
-    if 'Request Rejected' in firstline:
-        raise IOError('Remote server rejected TMY file request')
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
 

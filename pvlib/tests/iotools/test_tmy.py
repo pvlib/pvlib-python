@@ -1,4 +1,4 @@
-from pandas.util.testing import network
+from pandas._testing import network
 import numpy as np
 import pandas as pd
 import pytest

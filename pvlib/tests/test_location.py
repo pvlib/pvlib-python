@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import numpy as np
 from numpy import nan
 import pandas as pd
-from pandas.util.testing import assert_frame_equal, assert_index_equal
+from pandas.testing import assert_frame_equal, assert_index_equal
 
 import pytest
 

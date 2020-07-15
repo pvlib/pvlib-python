@@ -1,5 +1,5 @@
 import pandas as pd
-from pandas.util.testing import network
+from pandas._testing import network
 import pytest
 import pytz
 

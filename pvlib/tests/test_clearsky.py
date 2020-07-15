@@ -7,7 +7,7 @@ import pytz
 
 import pytest
 from numpy.testing import assert_allclose
-from pandas.util.testing import assert_frame_equal, assert_series_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
 from pvlib import clearsky

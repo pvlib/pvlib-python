@@ -4,7 +4,7 @@
 import datetime
 import numpy as np
 import pandas as pd
-from pandas.util.testing import assert_series_equal
+from pandas.testing import assert_series_equal
 from pvlib.soiling import hsu, kimber
 from pvlib.iotools import read_tmy3
 from conftest import (

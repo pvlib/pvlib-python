@@ -1,6 +1,5 @@
 from numpy import isnan
 import pandas as pd
-from pandas._testing import network
 import pytest
 
 from pvlib.iotools import srml
@@ -13,7 +12,6 @@ def test_read_srml():
     srml.read_srml(srml_testfile)
 
 
-@network
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_srml_remote():
@@ -66,7 +64,6 @@ def test_map_columns(column, expected):
     assert srml.map_columns(column) == expected
 
 
-@network
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_srml_month_from_solardat():
@@ -76,7 +73,6 @@ def test_read_srml_month_from_solardat():
     assert file_data.equals(requested)
 
 
-@network
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_15_minute_dt_index():
@@ -90,7 +86,6 @@ def test_15_minute_dt_index():
     assert (data.index[3::4].minute == 45).all()
 
 
-@network
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_hourly_dt_index():

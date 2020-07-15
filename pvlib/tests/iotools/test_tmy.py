@@ -1,4 +1,3 @@
-from pandas._testing import network
 import numpy as np
 import pandas as pd
 import pytest
@@ -17,7 +16,6 @@ def test_read_tmy3():
     tmy.read_tmy3(TMY3_TESTFILE)
 
 
-@network
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_tmy3_remote():

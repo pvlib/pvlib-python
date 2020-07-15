@@ -1,4 +1,3 @@
-from pandas._testing import network
 import pytest
 
 from pvlib.iotools import epw
@@ -11,7 +10,6 @@ def test_read_epw():
     epw.read_epw(epw_testfile)
 
 
-@network
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_epw_remote():

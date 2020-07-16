@@ -160,7 +160,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
 
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    with open(filename, 'r') as csvdata:
+    with open(str(filename), 'r') as csvdata:
         # read in file metadata, advance buffer to second line
         firstline = csvdata.readline()
         meta = dict(zip(head, firstline.rstrip('\n').split(",")))

@@ -377,7 +377,7 @@ class ForecastModel(object):
                 continue
             squeezed = data[:].squeeze()
 
-            # If the data is big endian, swap the byte order to make it 
+            # If the data is big endian, swap the byte order to make it
             # little endian
             if squeezed.dtype.byteorder == '>':
                 squeezed = squeezed.byteswap().newbyteorder()

@@ -44,6 +44,7 @@ Documentation
 * Clarify units for heat loss factors in
   :py:func:`pvlib.temperature.pvsyst_cell` and
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
+* Add instructions to build the documentation. (:pull:`982`)
 * Corrected key names for :py:func:`pvlib.inverter.sandia`. (:issue:`976`,
   :pull:`886`)
 * Add a transposition gain example to the gallery.  (:pull:`979`)

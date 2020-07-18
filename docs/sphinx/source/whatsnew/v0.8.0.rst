@@ -35,6 +35,8 @@ Testing
   applied to functions that require args or kwargs. (:pull:`973`)
 * Test added for :py:class:`pvlib.modelchain.ModelChain` to confirm ValueError when
   ``ac_model`` is an invalid string. (:pull:`886`)
+* Add minimum requirements configuration to Azure Pipelines build.
+  (:pull:`1006`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -44,6 +46,9 @@ Documentation
 * Clarify units for heat loss factors in
   :py:func:`pvlib.temperature.pvsyst_cell` and
   :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
+* Add make.bat so that docs can be built on Windows without ``make`` installed.
+  (:issue:`978`, :pull:`981`)
+* Add instructions to build the documentation. (:pull:`982`)
 * Corrected key names for :py:func:`pvlib.inverter.sandia`. (:issue:`976`,
   :pull:`886`)
 * Add a transposition gain example to the gallery.  (:pull:`979`)
@@ -60,3 +65,4 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * Joshua S. Stein (:ghuser:`jsstein`)
 * Marc A. Anoma (:ghuser:`anomam`)
+* Will Holmgren (:ghuser:`wholmgren`)

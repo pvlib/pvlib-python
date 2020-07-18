@@ -163,13 +163,13 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     with open(str(filename), 'r') as csvdata:
         # read in file metadata, advance buffer to second line
         firstline = csvdata.readline()
-        meta = dict(zip(head, firstline.rstrip('\n').split(",")))
         # use pandas to read the csv file buffer
         # header is actually the second line, but tell pandas to look for
         # header information on the 1st line (0 indexing) because we've already
         # advanced past the true first line with the readline call above.
         data = pd.read_csv(csvdata, header=0)
 
+    meta = dict(zip(head, firstline.rstrip('\n').split(",")))
     # convert metadata strings to numeric types
     meta['altitude'] = float(meta['altitude'])
     meta['latitude'] = float(meta['latitude'])

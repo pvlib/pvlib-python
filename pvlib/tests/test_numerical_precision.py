@@ -118,7 +118,7 @@ def test_numerical_precision():
     assert np.allclose(expected['grad2p'], results[7])
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     expected = generate_numerical_precision()
     expected.to_csv(DATA_PATH)
     test_numerical_precision()

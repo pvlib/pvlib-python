@@ -22,6 +22,9 @@ API Changes
   fetching TMY data from NREL servers, :py:func:`pvlib.iotools.get_psm3` is
   now recommended to retrieve newer PSM3 data over the older TMY3 data.
   (:issue:`996`) (:pull:`1004`)
+* The tkinter-based file selection dialog has been removed from
+  :py:func:`pvlib.iotools.read_tmy2` and :py:func:`pvlib.iotools.read_tmy3`;
+  the filepath is now a required parameter. (:pull:`1004`)
 
 Enhancements
 ~~~~~~~~~~~~

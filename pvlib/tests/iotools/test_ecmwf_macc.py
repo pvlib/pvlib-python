@@ -76,7 +76,7 @@ def test_read_ecmwf_macc(expected_test_data):
 
 
 def _create_test_data(datafile=DATAFILE, testfile=TESTDATA, start=START,
-                      end=END, resize=RESIZE):
+                      end=END, resize=RESIZE):  # pragma: no cover
     """
     Create test data from downloaded data.
 

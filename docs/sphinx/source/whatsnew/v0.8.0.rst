@@ -54,6 +54,7 @@ Documentation
 * Add a transposition gain example to the gallery.  (:pull:`979`)
 * Add a gallery example of calculating diffuse IAM using
   :py:func:`pvlib.iam.marion_diffuse`. (:pull:`984`)
+* Add minigalleries to API reference pages. (:pull:`991`)
 
 Requirements
 ~~~~~~~~~~~~

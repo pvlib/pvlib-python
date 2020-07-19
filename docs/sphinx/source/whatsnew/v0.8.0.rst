@@ -57,6 +57,7 @@ Documentation
 
 Requirements
 ~~~~~~~~~~~~
+* Minimum pandas version increased to v0.22.0, released Dec 31, 2017. (:pull:`1003`)
 
 Contributors
 ~~~~~~~~~~~~

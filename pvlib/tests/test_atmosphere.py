@@ -4,7 +4,7 @@ import numpy as np
 from numpy import nan
 from numpy.testing import assert_allclose
 import pandas as pd
-from pandas.util.testing import assert_series_equal
+from pandas.testing import assert_series_equal
 import pytest
 
 from pvlib import atmosphere

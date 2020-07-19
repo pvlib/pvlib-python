@@ -37,6 +37,8 @@ Testing
   ``ac_model`` is an invalid string. (:pull:`886`)
 * Add minimum requirements configuration to Azure Pipelines build.
   (:pull:`1006`)
+* Update the `data/test_psm3_tmy-2017.csv` datafile to match the updated
+  NSRDB data. (:issue:`1005`, :pull:`1007`)
 
 Documentation
 ~~~~~~~~~~~~~

@@ -12,6 +12,11 @@ API Changes with Deprecations
    - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
 * Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
   ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models.  (:pull:`886`)
+* Removed ``systemdef`` function from ``pvsystem.py``. This function was not
+  used in pvlib and its output was not directly compatible with any pvlib
+  function. See :py:func:`pvlib.iotools.read_tmy2`,
+  :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.Location.from_tmy`, and
+  :py:class:`pvlib.pvsystem.LocalizedPVSystem` for alternatives. (:issue:`965`)
 
 API Changes
 ~~~~~~~~~~~

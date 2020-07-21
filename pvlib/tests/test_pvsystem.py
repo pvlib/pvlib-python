@@ -15,8 +15,7 @@ from pvlib.location import Location
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import (
-    needs_numpy_1_10, requires_scipy, fail_on_pvlib_version)
+from conftest import needs_numpy_1_10, requires_scipy, fail_on_pvlib_version
 
 
 @pytest.mark.parametrize('iam_model,model_params', [

@@ -15,7 +15,7 @@ API Changes with Deprecations
 * Removed ``systemdef`` function from ``pvsystem.py``. This function was not
   used in pvlib and its output was not directly compatible with any pvlib
   function. See :py:func:`pvlib.iotools.read_tmy2`,
-  :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.Location.from_tmy`, and
+  :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.location.Location.from_tmy`, and
   :py:class:`pvlib.pvsystem.LocalizedPVSystem` for alternatives. (:issue:`965`)
 
 API Changes

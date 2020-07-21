@@ -16,64 +16,7 @@ from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 
 from conftest import (
-    needs_numpy_1_10, requires_scipy, fail_on_pvlib_version, DATA_DIR)
-
-
-def test_systemdef_tmy3():
-    from pvlib.iotools import tmy
-    tmy3_testfile = DATA_DIR / '703165TY.csv'
-    tmy3_data, tmy3_metadata = tmy.read_tmy3(tmy3_testfile)
-    expected = {'tz': -9.0,
-                'albedo': 0.1,
-                'altitude': 7.0,
-                'latitude': 55.317,
-                'longitude': -160.517,
-                'name': '"SAND POINT"',
-                'strings_per_inverter': 5,
-                'modules_per_string': 5,
-                'surface_azimuth': 0,
-                'surface_tilt': 0}
-    assert expected == pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5)
-
-
-def test_systemdef_tmy2():
-    from pvlib.iotools import tmy
-    tmy2_testfile = DATA_DIR / '12839.tm2'
-    tmy2_data, tmy2_metadata = tmy.read_tmy2(tmy2_testfile)
-
-    expected = {'tz': -5,
-                'albedo': 0.1,
-                'altitude': 2.0,
-                'latitude': 25.8,
-                'longitude': -80.26666666666667,
-                'name': 'MIAMI',
-                'strings_per_inverter': 5,
-                'modules_per_string': 5,
-                'surface_azimuth': 0,
-                'surface_tilt': 0}
-    assert expected == pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5)
-
-
-def test_systemdef_dict():
-    meta = {'latitude': 37.8,
-            'longitude': -122.3,
-            'altitude': 10,
-            'Name': 'Oakland',
-            'State': 'CA',
-            'TZ': -8}
-
-    # Note that TZ is float, but Location sets tz as string
-    expected = {'tz': -8,
-                'albedo': 0.1,
-                'altitude': 10,
-                'latitude': 37.8,
-                'longitude': -122.3,
-                'name': 'Oakland',
-                'strings_per_inverter': 5,
-                'modules_per_string': 5,
-                'surface_azimuth': 0,
-                'surface_tilt': 5}
-    assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
+    needs_numpy_1_10, requires_scipy, fail_on_pvlib_version)
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -103,6 +46,7 @@ def test_PVSystem_get_iam_interp(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     with pytest.raises(ValueError):
         system.get_iam(45, iam_model='interp')
+
 
 def test__normalize_sam_product_names():
 

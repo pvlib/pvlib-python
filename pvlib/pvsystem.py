@@ -2562,7 +2562,7 @@ def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
     account for the effects of shading, snow and soiling. The separate
     loss factors are compounded to calculate a single loss factor.
 
-    The losses are compounded using the following equation:
+    The separate losses are compounded using the following equation:
 
     .. math::
 

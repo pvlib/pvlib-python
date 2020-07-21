@@ -12,11 +12,6 @@ API Changes with Deprecations
    - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
 * Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
   ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models.  (:pull:`886`)
-* Removed ``systemdef`` function from ``pvsystem.py``. This function was not
-  used in pvlib and its output was not directly compatible with any pvlib
-  function. See :py:func:`pvlib.iotools.read_tmy2`,
-  :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.location.Location.from_tmy`, and
-  :py:class:`pvlib.pvsystem.LocalizedPVSystem` for alternatives. (:issue:`965`)
 
 API Changes
 ~~~~~~~~~~~
@@ -30,6 +25,12 @@ API Changes
 * The tkinter-based file selection dialog has been removed from
   :py:func:`pvlib.iotools.read_tmy2` and :py:func:`pvlib.iotools.read_tmy3`;
   the filepath is now a required parameter. (:pull:`1004`)
+* Removed ``systemdef`` function from ``pvsystem.py``. This function was not
+  used in pvlib and its output was not directly compatible with any pvlib
+  function. See :py:func:`pvlib.iotools.read_tmy2`,
+  :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.location.Location.from_tmy`, and
+  :py:class:`pvlib.pvsystem.LocalizedPVSystem` for alternatives. (:issue:`965`)
+  (:pull:`1008`)
 
 Enhancements
 ~~~~~~~~~~~~

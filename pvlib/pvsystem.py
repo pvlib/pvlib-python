@@ -2557,9 +2557,9 @@ def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
                            irradiance_snow_loss, irradiance_soiling_loss):
     r"""
     Calculates irradiance losses using a model based on PVsyst.
-    
+
     The PVsyst method [1]_ linearly reduces the effective irradiance to
-    account for the effects of shading, snow and soiling. The separate
+    account for the effects of shading, snow, and soiling. The separate
     loss factors are compounded to calculate a single loss factor.
 
     The separate losses are compounded using the following equation:
@@ -2567,6 +2567,9 @@ def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
     .. math::
 
         L_{total}(\%) = 100 [ 1 - \Pi_i ( 1 - \frac{L_i}{100} ) ]
+
+    :math:L_{total} is the total irradiance loss resulting from the effects of
+    shading, snow, and soiling.
 
     Note the parameters must each be a series with a DatetimeIndex.  The
     index of the returned series will be the same as the effective_irradiance
@@ -2576,24 +2579,21 @@ def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
     Parameters
     ----------
     effective_irradiance : Series
-            The irradiance (W/m2) that is to be reduced.  Plane-of-array
-            irradiance that already accounts for Angle of Incidence and
-            Spectral losses.
+            The plane-of-array irradiance (W/m2) that is to be reduced.
 
     irradiance_shading_loss : Series
-            The fraction of the solar panel that is shaded.
+            The percent reduction in irradiance due to shading. [%]
 
     irradiance_snow_loss : Series
-            The fraction of the solar panel that is covered with snow.
+            The percent reduction in irradiance due to snow coverage. [%]
 
     irradiance_soiling_loss : Series
-            The fraction of the irradiance prevented from reaching the solar
-            cells due to soiling of the solar panel.
+            The percent reduction in irradiance due to soiling. [%]
 
     Returns
     -------
     losses: Series
-            Irradiance reduction due to compounded losses. [%]
+            The percent reduction in irradiance due to compounded losses. [%]
 
     References
     ----------
@@ -2614,8 +2614,8 @@ def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
     soiling_loss = irradiance_soiling_loss.reindex_like(effective_irradiance,
                                                         method=fill_method)
 
-    irradiance_losses = effective_irradiance * (
-        1 - (1 - shading_loss) * (1 - snow_loss) * (1 - soiling_loss))
+    irradiance_losses = 100 * (1 - (
+        (1 - shading_loss/100) * (1 - snow_loss/100) * (1 - soiling_loss/100)))
 
     return irradiance_losses
 

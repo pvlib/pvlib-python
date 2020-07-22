@@ -1351,12 +1351,12 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
 def irradiance_loss_pvsyst():
     final_index = pd.date_range(start='1/1/1990 12:00', periods=365, freq='D')
     effective_irradiance = pd.Series(1000, index=final_index)
-    shading = pd.Series(.1, index=final_index)
-    snow = pd.Series(.05, index=pd.date_range(start='1/1/1990 12:00',
+    shading = pd.Series(10, index=final_index)
+    snow = pd.Series(5, index=pd.date_range(start='1/1/1990 12:00',
                                               periods=365*2, freq='D'))
-    soiling = pd.Series(.02, index=pd.date_range(start='1/1/1990',
+    soiling = pd.Series(2, index=pd.date_range(start='1/1/1990',
                                                  periods=12, freq='MS'))
-    expected = pd.Series(162.1, index=final_index)
+    expected = pd.Series(16.21, index=final_index)
 
     return {'effective_irradiance': effective_irradiance,
             'shading': shading, 'snow': snow,
@@ -1365,18 +1365,19 @@ def irradiance_loss_pvsyst():
 
 def test_irradiance_loss_pvsyst(irradiance_loss_pvsyst):
     out = pvsystem.irradiance_loss_pvsyst(
-        irradiance_loss_pvsyst['effective_irradiance'], irradiance_loss_pvsyst['shading'],
-        irradiance_loss_pvsyst['snow'], irradiance_loss_pvsyst['soiling'])
+        irradiance_loss_pvsyst['effective_irradiance'],
+        irradiance_loss_pvsyst['shading'], irradiance_loss_pvsyst['snow'],
+        irradiance_loss_pvsyst['soiling'])
     assert_series_equal(irradiance_loss_pvsyst['expected'], out)
 
 
-def test_PVSystem_irradiance_loss_pvsyst():
+def test_PVSystem_irradiance_loss_pvsyst(irradiance_loss_pvsyst):
     system = pvsystem.PVSystem()
-    params = make_irradiance_loss_pvsyst_test_series()
-    out = system.irradiance_loss_pvsyst(params['effective_irradiance'],
-                                        params['shading'], params['snow'],
-                                        params['soiling'])
-    assert_series_equal(params['expected'], out)
+    out = system.irradiance_loss_pvsyst(
+        irradiance_loss_pvsyst['effective_irradiance'],
+        irradiance_loss_pvsyst['shading'], irradiance_loss_pvsyst['snow'],
+        irradiance_loss_pvsyst['soiling'])
+    assert_series_equal(irradiance_loss_pvsyst['expected'], out)
 
 
 @fail_on_pvlib_version('0.8')

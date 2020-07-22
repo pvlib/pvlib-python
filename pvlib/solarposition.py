@@ -1126,7 +1126,7 @@ def equation_of_time_pvcdrom(dayofyear):
 
     See Also
     --------
-    equation_of_time_Spencer71
+    equation_of_time_spencer71
     """
     # day angle relative to Vernal Equinox, typically March 22 (day number 81)
     bday = \
@@ -1380,7 +1380,7 @@ def hour_angle(times, longitude, equation_of_time):
 
     See Also
     --------
-    equation_of_time_Spencer71
+    equation_of_time_spencer71
     equation_of_time_pvcdrom
     """
     naive_times = times.tz_localize(None)  # naive but still localized

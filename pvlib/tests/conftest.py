@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from pkg_resources import parse_version
 import pytest
+from functools import wraps
 
 import pvlib
 
@@ -16,24 +17,23 @@ pvlib_base_version = \
 # decorator takes one argument: the base version for which it should fail
 # for example @fail_on_pvlib_version('0.7') will cause a test to fail
 # on pvlib versions 0.7a, 0.7b, 0.7rc1, etc.
-# test function may not take args, kwargs, or fixtures.
 def fail_on_pvlib_version(version):
     # second level of decorator takes the function under consideration
     def wrapper(func):
         # third level defers computation until the test is called
         # this allows the specific test to fail at test runtime,
         # rather than at decoration time (when the module is imported)
-        def inner():
+        @wraps(func)
+        def inner(*args, **kwargs):
             # fail if the version is too high
             if pvlib_base_version >= parse_version(version):
                 pytest.fail('the tested function is scheduled to be '
                             'removed in %s' % version)
             # otherwise return the function to be executed
             else:
-                return func()
+                return func(*args, **kwargs)
         return inner
     return wrapper
-
 
 # commonly used directories in the tests
 TEST_DIR = Path(__file__).parent
@@ -82,14 +82,6 @@ def numpy_1_10():
 
 needs_numpy_1_10 = pytest.mark.skipif(
     not numpy_1_10(), reason='requires numpy 1.10 or greater')
-
-
-def pandas_0_22():
-    return parse_version(pd.__version__) >= parse_version('0.22.0')
-
-
-needs_pandas_0_22 = pytest.mark.skipif(
-    not pandas_0_22(), reason='requires pandas 0.22 or greater')
 
 
 def has_spa_c():
@@ -156,6 +148,20 @@ except ImportError:
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 
 
+try:
+    import cftime  # noqa: F401
+
+    has_recent_cftime = parse_version(cftime.__version__) > parse_version(
+        "1.1.0"
+    )
+except ImportError:
+    has_recent_cftime = False
+
+requires_recent_cftime = pytest.mark.skipif(
+    not has_recent_cftime, reason="requires cftime > 1.1.0"
+)
+
+
 @pytest.fixture(scope="session")
 def sam_data():
     data = {}
@@ -187,6 +193,33 @@ def pvsyst_module_params():
         'R_sh_exp': 5.5,
         'cells_in_series': 60,
         'alpha_sc': 0.001,
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def adr_inverter_parameters():
+    """
+    Define some ADR inverter parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)'
+                '[CEC 2011]',
+        'Vac': 240.,
+        'Pacmax': 2110.,
+        'Pnom': 2200.,
+        'Vnom': 396.,
+        'Vmin': 155.,
+        'Vmax': 413.,
+        'Vdcmax': 500.,
+        'MPPTHi': 450.,
+        'MPPTLow': 150.,
+        'Pnt': 0.25,
+        'ADRCoefficients': [0.01385, 0.0152, 0.00794, 0.00286, -0.01872,
+                            -0.01305, 0.0, 0.0, 0.0]
     }
     return parameters
 

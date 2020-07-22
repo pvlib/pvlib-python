@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 import pytest
-from pandas.util.testing import assert_series_equal
+from pandas.testing import assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import temperature
@@ -24,6 +24,12 @@ def test_sapm_module(sapm_default):
     default = temperature.sapm_module(900, 20, 5, sapm_default['a'],
                                       sapm_default['b'])
     assert_allclose(default, 40.809, 3)
+
+
+def test_sapm_cell_from_module(sapm_default):
+    default = temperature.sapm_cell_from_module(50, 900,
+                                                sapm_default['deltaT'])
+    assert_allclose(default, 50 + 900 / 1000 * sapm_default['deltaT'])
 
 
 def test_sapm_ndarray(sapm_default):

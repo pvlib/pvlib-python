@@ -27,4 +27,4 @@ dependencies:
     - siphon  # conda-forge
     - pip:
         - nrel-pysam>=2.0
-        - pvfactors==1.0.1
+        - pvfactors==1.4.1

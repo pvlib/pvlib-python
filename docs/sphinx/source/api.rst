@@ -223,6 +223,8 @@ Incident angle modifiers
    iam.martin_ruiz_diffuse
    iam.sapm
    iam.interp
+   iam.marion_diffuse
+   iam.marion_integrate
 
 PV temperature models
 ---------------------
@@ -232,6 +234,7 @@ PV temperature models
 
    temperature.sapm_cell
    temperature.sapm_module
+   temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
 
@@ -262,10 +265,21 @@ Low-level functions for solving the single diode equation.
    singlediode.bishop88_v_from_i
    singlediode.bishop88_mpp
 
-SAPM model
-----------
+Inverter models (DC to AC conversion)
+-------------------------------------
 
-Functions relevant for the SAPM model.
+.. autosummary::
+   :toctree: generated/
+
+   inverter.sandia
+   inverter.adr
+   inverter.pvwatts
+
+PV System Models
+----------------
+
+Sandia array performance model (SAPM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
@@ -274,28 +288,27 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_effective_irradiance
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
-   pvsystem.snlinverter
-   pvsystem.adrinverter
+   inverter.sandia
    temperature.sapm_cell
 
 Pvsyst model
--------------
-
-Functions relevant for the Pvsyst model.
+^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
 
    temperature.pvsyst_cell
+   pvsystem.calcparams_pvsyst
+   pvsystem.singlediode
 
 PVWatts model
--------------
+^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
 
    pvsystem.pvwatts_dc
-   pvsystem.pvwatts_ac
+   inverter.pvwatts
    pvsystem.pvwatts_losses
 
 Functions for fitting diode models
@@ -308,16 +321,6 @@ Functions for fitting diode models
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
 
-Losses
-------
-
-.. autosummary::
-   :toctree: generated/
-
-   losses.soiling_hsu
-   losses.soiling_kimber
-
-
 Other
 -----
 
@@ -325,8 +328,25 @@ Other
    :toctree: generated/
 
    pvsystem.retrieve_sam
-   pvsystem.systemdef
    pvsystem.scale_voltage_current_power
+
+
+Effects on PV System Output
+===========================
+
+.. autosummary::
+   :toctree: generated/
+
+   snow.coverage_nrel
+   snow.fully_covered_nrel
+   snow.dc_loss_nrel
+
+.. autosummary::
+   :toctree: generated/
+
+   soiling.hsu
+   soiling.kimber
+
 
 
 Tracking

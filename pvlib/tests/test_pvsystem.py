@@ -1347,7 +1347,8 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     assert out < pdc
 
 
-def make_irradiance_loss_pvsyst_test_series():
+@pytest.fixture()
+def irradiance_loss_pvsyst():
     final_index = pd.date_range(start='1/1/1990 12:00', periods=365, freq='D')
     effective_irradiance = pd.Series(1000, index=final_index)
     shading = pd.Series(.1, index=final_index)

@@ -2593,7 +2593,7 @@ def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
     Returns
     -------
     losses: Series
-            Irradiance (W/m2) reduction due to compounded losses.
+            Irradiance reduction due to compounded losses. [%]
 
     References
     ----------

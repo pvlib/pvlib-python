@@ -1364,10 +1364,10 @@ def irradiance_loss_pvsyst():
 
 
 def test_irradiance_loss_pvsyst(irradiance_loss_pvsyst):
-    out = pvsystem.irradiance_loss_pvsyst(params['effective_irradiance'],
-                                          params['shading'], params['snow'],
-                                          params['soiling'])
-    assert_series_equal(params['expected'], out)
+    out = pvsystem.irradiance_loss_pvsyst(
+        irradiance_loss_pvsyst['effective_irradiance'], irradiance_loss_pvsyst['shading'],
+        irradiance_loss_pvsyst['snow'], irradiance_loss_pvsyst['soiling'])
+    assert_series_equal(irradiance_loss_pvsyst['expected'], out)
 
 
 def test_PVSystem_irradiance_loss_pvsyst():

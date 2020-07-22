@@ -1353,9 +1353,9 @@ def irradiance_loss_pvsyst():
     effective_irradiance = pd.Series(1000, index=final_index)
     shading = pd.Series(10, index=final_index)
     snow = pd.Series(5, index=pd.date_range(start='1/1/1990 12:00',
-                                              periods=365*2, freq='D'))
+                                            periods=365*2, freq='D'))
     soiling = pd.Series(2, index=pd.date_range(start='1/1/1990',
-                                                 periods=12, freq='MS'))
+                                               periods=12, freq='MS'))
     expected = pd.Series(16.21, index=final_index)
 
     return {'effective_irradiance': effective_irradiance,

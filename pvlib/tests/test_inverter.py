@@ -136,7 +136,7 @@ def test_pvwatts_series():
 
 
 INVERTER_TEST_MEAS = DATA_DIR / 'inverter_fit_snl_meas.csv'
-INVERTER_TEST_SIM = DATA_DIR / 'inverter_fit_snl_datasheet.csv'
+INVERTER_TEST_SIM = DATA_DIR / 'inverter_fit_snl_sim.csv'
 
 
 @pytest.mark.parametrize('infilen, expected', [

@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-This module contains functions for inverter modeling, primarily conversion of
-DC to AC power.
+This module contains functions for inverter modeling and for fitting inverter
+models to data.
+
+Inverter models calculate AC power output from DC input. Model parameters
+should be passed as a single dict.
+
+Functions for estimating parameters for inverter models should follow the
+naming pattern 'fit_<model name>', e.g., fit_sandia.
+
 """
 
 import numpy as np
@@ -306,3 +313,120 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     power_ac = np.maximum(0, power_ac)     # GH 541
 
     return power_ac
+
+
+def fit_sandia(curves, p_ac_0, p_nt):
+    r'''
+    Determine parameters for the Sandia inverter model from efficiency
+    curves.
+
+    Parameters
+    ----------
+    curves : DataFrame
+        Columns must be ``'fraction_of_rated_power'``, ``'dc_voltage_level'``,
+        ``'dc_voltage'``, ``'ac_power'``, ``'efficiency'``. See notes for the
+        definition and unit for each column.
+    p_ac_0 : numeric
+        Rated AC power of the inverter [W].
+    p_nt : numeric
+        Night tare, i.e., power consumed while inverter is not delivering
+        AC power. [W]
+
+    Returns
+    -------
+    dict with parameters for the Sandia inverter model. See
+    :py:func:`snl_inverter` for a description of entries in the returned dict.
+
+    See Also
+    --------
+    snlinverter
+
+    Notes
+    -----
+    An inverter efficiency curve comprises a series of pairs
+    ('fraction_of_rated_power', 'efficiency'), e.g. (0.1, 0.5), (0.2, 0.7),
+    etc. at a specified DC voltage level.The DataFrame `curves` should contain
+    multiple efficiency curves for each DC voltage level; at least five curves
+    at each level is recommended. Columns in `curves` must be the following:
+
+    ================           ========================================
+    Column name                Description
+    ================           ========================================
+    'fraction_of_rated_power'  Fraction of rated AC power `p_ac_0`. The
+                               CEC inverter test protocol specifies values
+                               of 0.1, 0.2, 0.3, 0.5, 0.75 and 1.0. [unitless]
+    'dc_voltage_level'         Must be 'Vmin', 'Vnom', or 'Vmax'. Curves must
+                               be provided for all three voltage levels. At
+                               least one curve must be provided for each
+                               combination of fraction_of_rated_power and
+                               dc_voltage_level.
+    'dc_voltage'               Measured DC input voltage. [V]
+    'ac_power'                 Measurd output AC power. [W]
+    'efficiency'               Ratio of measured AC output power to measured
+                               DC input power. [unitless]
+
+    References
+    ----------
+    .. [1] SAND2007-5036, "Performance Model for Grid-Connected
+       Photovoltaic Inverters by D. King, S. Gonzalez, G. Galbraith, W.
+       Boyson
+    .. [2] Sandia Inverter Model page, PV Performance Modeling Collaborative
+       https://pvpmc.sandia.gov/modeling-steps/dc-to-ac-conversion/sandia-inverter-model/  # noqa: E501
+    '''
+
+    voltage_levels = ['Vmin', 'Vnom', 'Vmax']
+
+    # average dc input voltage at each voltage level
+    v_d = np.array(
+        [curves['dc_voltage'][curves['dc_voltage_level']=='Vmin'].mean(),
+         curves['dc_voltage'][curves['dc_voltage_level']=='Vnom'].mean(),
+         curves['dc_voltage'][curves['dc_voltage_level']=='Vmax'].mean()])
+    v_nom = v_d[1]  # model parameter
+    # independent variable for regressions, x_d
+    x_d = v_d - v_nom
+
+    curves['dc_power'] = curves['ac_power'] / curves['efficiency']
+
+    # empty dataframe to contain intermediate variables
+    coeffs = pd.DataFrame(index=voltage_levels,
+                          columns=['a', 'b', 'c', 'p_dc', 'p_s0'], data=np.nan)
+
+    def solve_quad(a, b, c):
+        return (-b + (b**2 - 4 * a * c)**.5) / (2 * a)
+
+    # [2] STEP 3E, use np.polyfit to get betas
+    def extract_c(x_d, add):
+        test = np.polyfit(x_d, add, 1)
+        beta1, beta0 = test
+        c = beta1 / beta0
+        return beta0, beta1, c
+
+    for d in voltage_levels:
+        x = curves['dc_power'][curves['dc_voltage_level']==d]
+        y = curves['ac_power'][curves['dc_voltage_level']==d]
+        # [2] STEP 3B
+        # Get a,b,c values from polyfit
+        c, b, a = np.polyfit(x, y, 2)
+
+        # [2] STEP 3D, solve for p_dc and p_s0
+        p_dc = solve_quad(a, b, (c - p_ac_0))
+        p_s0 = solve_quad(a, b, c)
+
+        # Add values to dataframe at index d
+        coeffs['a'][d] = a
+        coeffs['b'][d] = b
+        coeffs['c'][d] = c
+        coeffs['p_dc'][d] = p_dc
+        coeffs['p_s0'][d] = p_s0
+
+    b_dc0, b_dc1, c1 = extract_c(x_d, coeffs['p_dc'])
+    b_s0, b_s1, c2 = extract_c(x_d, coeffs['p_s0'])
+    b_c0, b_c1, c3 = extract_c(x_d, coeffs['a'])
+
+    p_dc0 = b_dc0
+    p_s0 = b_s0
+    c0 = b_c0
+
+    # prepare dict and return
+    return {'Paco': p_ac_0, 'Pdco': p_dc0, 'Vdco': v_nom, 'Pso': p_s0,
+            'C0': c0, 'C1': c1, 'C2': c2, 'C3': c3, 'Pnt': p_nt}

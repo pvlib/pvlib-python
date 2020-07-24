@@ -6,8 +6,10 @@ import pandas as pd
 from pandas.testing import assert_series_equal
 from numpy.testing import assert_allclose
 
+from conftest import needs_numpy_1_10, DATA_DIR
+import pytest
+
 from pvlib import inverter
-from conftest import needs_numpy_1_10
 
 
 def test_adr(adr_inverter_parameters):
@@ -131,3 +133,25 @@ def test_pvwatts_series():
     expected = pd.Series(np.array([np.nan, 0., 47.608436, 95.]))
     out = inverter.pvwatts(pdc, pdc0, 0.95)
     assert_series_equal(expected, out)
+
+
+INVERTER_TEST_MEAS = DATA_DIR / 'inverter_fit_snl_meas.csv'
+INVERTER_TEST_SIM = DATA_DIR / 'inverter_fit_snl_datasheet.csv'
+
+@pytest.mark.parametrize('infilen, expected', [
+        (INVERTER_TEST_MEAS, {'Paco': 333000., 'Pdco': 343251., 'Vdco': 740.,
+                              'Pso': 1427.746, 'C0': -5.768e-08,
+                              'C1': 3.596e-05, 'C2': 1.038e-03,
+                              'C3': 2.978e-05, 'Pnt': 1.}),
+        (INVERTER_TEST_SIM,  {'Paco': 1000., 'Pdco': 1050., 'Vdco': 240.,
+                              'Pso': 10., 'C0': 1e-6, 'C1': 1e-4,
+                              'C2': 1e-2, 'C3': 1e-3, 'Pnt': 1.}),
+])
+def test_fit_sandia(infilen, expected):
+    curves = pd.read_csv(infilen)
+    keys = ['Paco', 'Pdco', 'Vdco', 'Pso', 'C0', 'C1', 'C2', 'C3', 'Pnt']
+    exp = {k: v for k, v in zip(keys, expected)}
+    result_dict = inverter.fit_sandia(curves, expected['Paco'],
+                                      expected['Pnt'])
+    result = np.array([result_dict[k] for k in keys])
+    assert_allclose(exp, result, rtol=1e-3)

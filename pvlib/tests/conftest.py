@@ -84,14 +84,6 @@ needs_numpy_1_10 = pytest.mark.skipif(
     not numpy_1_10(), reason='requires numpy 1.10 or greater')
 
 
-def pandas_0_22():
-    return parse_version(pd.__version__) >= parse_version('0.22.0')
-
-
-needs_pandas_0_22 = pytest.mark.skipif(
-    not pandas_0_22(), reason='requires pandas 0.22 or greater')
-
-
 def has_spa_c():
     try:
         from pvlib.spa_c_files.spa_py import spa_calc
@@ -201,6 +193,33 @@ def pvsyst_module_params():
         'R_sh_exp': 5.5,
         'cells_in_series': 60,
         'alpha_sc': 0.001,
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def adr_inverter_parameters():
+    """
+    Define some ADR inverter parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)'
+                '[CEC 2011]',
+        'Vac': 240.,
+        'Pacmax': 2110.,
+        'Pnom': 2200.,
+        'Vnom': 396.,
+        'Vmin': 155.,
+        'Vmax': 413.,
+        'Vdcmax': 500.,
+        'MPPTHi': 450.,
+        'MPPTLow': 150.,
+        'Pnt': 0.25,
+        'ADRCoefficients': [0.01385, 0.0152, 0.00794, 0.00286, -0.01872,
+                            -0.01305, 0.0, 0.0, 0.0]
     }
     return parameters
 

@@ -96,7 +96,7 @@ to accomplish our system modeling goal:
             total_irrad['poa_direct'], total_irrad['poa_diffuse'],
             am_abs, aoi, module)
         dc = pvlib.pvsystem.sapm(effective_irradiance, tcell, module)
-        ac = pvlib.pvsystem.snlinverter(dc['v_mp'], dc['p_mp'], inverter)
+        ac = pvlib.inverter.sandia(dc['v_mp'], dc['p_mp'], inverter)
         annual_energy = ac.sum()
         energies[name] = annual_energy
 

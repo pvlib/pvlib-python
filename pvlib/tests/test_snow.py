@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from pandas.util.testing import assert_series_equal
+from pandas.testing import assert_series_equal
 
 from pvlib import snow
 from pvlib.tools import sind

@@ -38,7 +38,7 @@ MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
 INSTALL_REQUIRES = ['numpy >= 1.12.0',
-                    'pandas >= 0.18.1',
+                    'pandas >= 0.22.0',
                     'pytz',
                     'requests']
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
@@ -47,7 +47,8 @@ EXTRAS_REQUIRE = {
     'optional': ['ephem', 'cython', 'netcdf4', 'nrel-pysam', 'numba',
                  'pvfactors', 'scipy', 'siphon', 'tables', 'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 1.8.5', 'sphinx_rtd_theme',
-            'sphinx-gallery', 'docutils == 0.15.2'],
+            'sphinx-gallery', 'docutils == 0.15.2', 'pillow', 'scipy',
+            'netcdf4', 'siphon', 'tables'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))

@@ -378,9 +378,9 @@ def fit_sandia(curves, p_ac_0, p_nt):
 
     # average dc input voltage at each voltage level
     v_d = np.array(
-        [curves['dc_voltage'][curves['dc_voltage_level']=='Vmin'].mean(),
-         curves['dc_voltage'][curves['dc_voltage_level']=='Vnom'].mean(),
-         curves['dc_voltage'][curves['dc_voltage_level']=='Vmax'].mean()])
+        [curves['dc_voltage'][curves['dc_voltage_level'] == 'Vmin'].mean(),
+         curves['dc_voltage'][curves['dc_voltage_level'] == 'Vnom'].mean(),
+         curves['dc_voltage'][curves['dc_voltage_level'] == 'Vmax'].mean()])
     v_nom = v_d[1]  # model parameter
     # independent variable for regressions, x_d
     x_d = v_d - v_nom
@@ -402,8 +402,8 @@ def fit_sandia(curves, p_ac_0, p_nt):
         return beta0, beta1, c
 
     for d in voltage_levels:
-        x = curves['dc_power'][curves['dc_voltage_level']==d]
-        y = curves['ac_power'][curves['dc_voltage_level']==d]
+        x = curves['dc_power'][curves['dc_voltage_level'] == d]
+        y = curves['ac_power'][curves['dc_voltage_level'] == d]
         # [2] STEP 3B
         # Get a,b,c values from polyfit
         c, b, a = np.polyfit(x, y, 2)

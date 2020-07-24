@@ -347,9 +347,10 @@ def fit_sandia(curves, p_ac_0, p_nt):
     -----
     An inverter efficiency curve comprises a series of pairs
     ('fraction_of_rated_power', 'efficiency'), e.g. (0.1, 0.5), (0.2, 0.7),
-    etc. at a specified DC voltage level.The DataFrame `curves` should contain
-    multiple efficiency curves for each DC voltage level; at least five curves
-    at each level is recommended. Columns in `curves` must be the following:
+    etc. at a specified DC voltage level and AC power level. The DataFrame
+    `curves` must contain at least one efficiency curve for each combination
+    of DC voltage level and AC power level. Columns in `curves` must be the
+    following:
 
     ================           ========================================
     Column name                Description
@@ -362,10 +363,12 @@ def fit_sandia(curves, p_ac_0, p_nt):
                                least one curve must be provided for each
                                combination of fraction_of_rated_power and
                                dc_voltage_level.
-    'dc_voltage'               Measured DC input voltage. [V]
-    'ac_power'                 Measurd output AC power. [W]
-    'efficiency'               Ratio of measured AC output power to measured
-                               DC input power. [unitless]
+    'dc_voltage'               DC input voltage. [V]
+    'ac_power'                 Output AC power. [W]
+    'efficiency'               Ratio of AC output power to DC input power.
+                               [unitless]
+
+    For each curve, DC input power is calculated from AC power and efficiency.
 
     References
     ----------

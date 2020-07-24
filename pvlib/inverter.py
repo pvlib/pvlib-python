@@ -14,6 +14,8 @@ naming pattern 'fit_<model name>', e.g., fit_sandia.
 import numpy as np
 import pandas as pd
 
+from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
+
 
 def sandia(v_dc, p_dc, inverter):
     r'''
@@ -394,10 +396,10 @@ def fit_sandia(curves, p_ac_0, p_nt):
     def solve_quad(a, b, c):
         return (-b + (b**2 - 4 * a * c)**.5) / (2 * a)
 
-    # [2] STEP 3E, use np.polyfit to get betas
+    # [2] STEP 3E, fit a line to (DC voltage, model_coefficient)
     def extract_c(x_d, add):
-        test = np.polyfit(x_d, add, 1)
-        beta1, beta0 = test
+        test = polyfit(x_d, add, 1)
+        beta0, beta1 = test
         c = beta1 / beta0
         return beta0, beta1, c
 
@@ -405,8 +407,8 @@ def fit_sandia(curves, p_ac_0, p_nt):
         x = curves['dc_power'][curves['dc_voltage_level'] == d]
         y = curves['ac_power'][curves['dc_voltage_level'] == d]
         # [2] STEP 3B
-        # Get a,b,c values from polyfit
-        c, b, a = np.polyfit(x, y, 2)
+        # fit a quadratic to (DC power, AC power)
+        c, b, a = polyfit(x, y, 2)
 
         # [2] STEP 3D, solve for p_dc and p_s0
         p_dc = solve_quad(a, b, (c - p_ac_0))

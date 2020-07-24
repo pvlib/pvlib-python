@@ -1,4 +1,4 @@
-﻿fraction_of_rated_power,dc_voltage_level,ac_power,dc_voltage,efficiency
+fraction_of_rated_power,dc_voltage_level,ac_power,dc_voltage,efficiency
 0.1,Vmin,32800,660.5,0.95814
 0.2,Vmin,73000,660.9,0.9755
 0.3,Vmin,107500,660.73,0.97787

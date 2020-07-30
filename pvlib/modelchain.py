@@ -840,13 +840,13 @@ class ModelChain(object):
 
         return self
 
-    def _prep_inputs_solar_pos(self, press_temp=None):
+    def _prep_inputs_solar_pos(self, **kwargs):
         """
         Assign solar position
         """
         self.solar_position = self.location.get_solarposition(
             self.weather.index, method=self.solar_position_method,
-            **press_temp)
+            **kwargs)
         return self
 
     def _prep_inputs_airmass(self):
@@ -995,10 +995,6 @@ class ModelChain(object):
         self._prep_inputs_solar_pos()
         self._prep_inputs_airmass()
 
-        # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
-        # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
-        # have different method signatures. Use partial to handle
-        # the differences.
         if isinstance(self.system, SingleAxisTracker):
             self._prep_inputs_tracking()
         else:

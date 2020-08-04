@@ -2562,7 +2562,7 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
     *losses : Series
         One or more Series of fractions to be compounded
 
-    fill_method : {'ffill'/'pad', 'backfill'/'bfill', 'nearest'}, default 'ffill'
+    fill_method : {'ffill', 'bfill', 'nearest'}, default 'ffill'
         Method to use for filling holes in reindexed DataFrame
 
     Returns

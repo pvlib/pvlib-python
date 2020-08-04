@@ -122,7 +122,7 @@ def passias_sky_diffuse(masking_angle):
     Returns
     -------
     derate : numeric
-        The fraction [0-1] of blocked plane-of-array diffuse irradiance.
+        The fraction [0-1] of blocked diffuse horizontal irradiance.
 
     See Also
     --------

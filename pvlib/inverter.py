@@ -346,9 +346,9 @@ def fit_sandia(curves, p_ac_0, p_nt):
 
     Notes
     -----
-    An inverter efficiency curve comprises a series of pairs
-    ('fraction_of_rated_power', 'efficiency'), e.g. (0.1, 0.5), (0.2, 0.7),
-    etc. at a specified DC voltage level and AC power level. The DataFrame
+    An inverter efficiency curve at a specified DC voltage level and AC power
+    level comprises a series of pairs ('fraction_of_rated_power',
+    'efficiency'), e.g. (0.1, 0.5), (0.2, 0.7), etc. . The DataFrame
     `curves` must contain at least one efficiency curve for each combination
     of DC voltage level and AC power level. Columns in `curves` must be the
     following:
@@ -413,8 +413,8 @@ def fit_sandia(curves, p_ac_0, p_nt):
         c, b, a = polyfit(x, y, 2)
 
         # [2] STEP 3D, solve for p_dc and p_s0
-        p_dc = np.roots([a, b, (c - p_ac_0)])
-        p_s0 = np.roots([a, b, c])
+        p_dc = np.max(np.roots([a, b, (c - p_ac_0)]))
+        p_s0 = np.max(np.roots([a, b, c]))  # right-side root of quadratic
 
         # Add values to dataframe at index d
         coeffs['a'][d] = a

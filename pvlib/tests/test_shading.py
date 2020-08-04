@@ -26,22 +26,26 @@ def shading_loss(surface_tilt):
 
 
 def test_passias_masking_angle_series(surface_tilt, masking_angle):
+    # pandas series inputs and outputs
     masking_angle_actual = shading.passias_masking_angle(surface_tilt, 0.5)
     assert_series_equal(masking_angle_actual, masking_angle)
 
 
 def test_passias_masking_angle_scalar(surface_tilt, masking_angle):
+    # scalar inputs and outputs, including zero
     for tilt, angle in zip(surface_tilt, masking_angle):
         masking_angle_actual = shading.passias_masking_angle(tilt, 0.5)
         assert np.isclose(masking_angle_actual, angle)
 
 
 def test_passias_sky_diffuse_series(masking_angle, shading_loss):
+    # pandas series inputs and outputs
     actual_loss = shading.passias_sky_diffuse(masking_angle)
     assert_series_equal(shading_loss, actual_loss)
 
 
 def test_passias_sky_diffuse_scalar(masking_angle, shading_loss):
+    # scalar inputs and outputs
     for angle, loss in zip(masking_angle, shading_loss):
         actual_loss = shading.passias_sky_diffuse(angle)
         assert np.isclose(loss, actual_loss)

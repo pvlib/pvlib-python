@@ -2547,8 +2547,8 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
 
         L_{total} = 1 - [ 1 - \Pi_i ( 1 - L_i ) ]
 
-    :math:L_{total} is the total loss returned
-    :math:L_i is each individual loss factor input
+    :math:`L_{total}` is the total loss returned
+    :math:`L_i` is each individual loss factor input
 
     Note the losses must each be a series with a DatetimeIndex.
     All losses will be resampled to match the index parameter using
@@ -2560,7 +2560,7 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
         The index of the returned loss factors
 
     *losses : Series
-        Each parameter is a series of fractions to be compounded
+        One or more Series of fractions to be compounded
 
     fill_method : {'ffill'/'pad', 'backfill'/'bfill', 'nearest'}, default 'ffill'
         Method to use for filling holes in reindexed DataFrame

@@ -2571,7 +2571,7 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
         Fractions resulting from the combination of each loss factor
     """
     combined_factor = 1
- 
+
     for loss in losses:
         loss = loss.reindex(index, method=fill_method)
         combined_factor *= (1 - loss)

@@ -1355,7 +1355,7 @@ def test_combine_loss_factors():
     loss_3 = pd.Series(.02, index=pd.date_range(start='1990/01/01',
                                                 periods=12, freq='MS'))
     expected = pd.Series(.1621, index=test_index)
-    out = pvsystem.combine_loss_factors(index, loss_1, loss_2, loss_3)
+    out = pvsystem.combine_loss_factors(test_index, loss_1, loss_2, loss_3)
     assert_series_equal(expected, out)
 
 

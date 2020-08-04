@@ -311,13 +311,6 @@ PVWatts model
    inverter.pvwatts
    pvsystem.pvwatts_losses
 
-Loss models
-^^^^^^^^^^^
-.. autosummary::
-   :toctree: generated/
-
-   pvsystem.combine_loss_factors
-
 Functions for fitting diode models
 ----------------------------------
 
@@ -341,6 +334,13 @@ Other
 
 Effects on PV System Output
 ===========================
+
+Loss models
+^^^^^^^^^^^
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.combine_loss_factors
 
 .. autosummary::
    :toctree: generated/

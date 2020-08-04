@@ -149,8 +149,6 @@ INVERTER_TEST_SIM = DATA_DIR / 'inverter_fit_snl_sim.csv'
 ])
 def test_fit_sandia(infilen, expected):
     curves = pd.read_csv(infilen)
-    result_dict = inverter.fit_sandia(curves, expected['Paco'],
+    result = inverter.fit_sandia(curves, expected['Paco'],
                                       expected['Pnt'])
-    exp = np.array([expected[k] for k in expected.keys()])
-    result = np.array([result_dict[k] for k in expected.keys()])
-    assert_allclose(exp, result, rtol=1e-3)
+    assert expected == pytest.approx(result, rtol=1e-3)

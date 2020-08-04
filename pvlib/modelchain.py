@@ -926,7 +926,7 @@ class ModelChain(object):
             press_temp = _build_kwargs(['pressure', 'temp_air'], weather)
             press_temp['temperature'] = press_temp.pop('temp_air')
         except KeyError:
-            press_temp = None
+            pass
 
         self._prep_inputs_solar_pos(press_temp)
         self._prep_inputs_airmass()

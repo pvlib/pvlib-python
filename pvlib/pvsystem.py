@@ -849,22 +849,6 @@ class PVSystem(object):
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
-    def irradiance_loss_pvsyst(self, effective_irradiance,
-                               irradiance_shading_loss, irradiance_snow_loss,
-                               irradiance_soiling_loss):
-        """
-        Calculates plane of array irradiance losses using a model based on the
-        PVSyst methodology.  A wrapper for
-        :py:func:`pvlib.pvsystem.irradiance_loss_pvsyst`.
-
-        See :py:func:`pvlib.pvsystem.irradiance_loss_pvsyst` for details.
-        """
-
-        return irradiance_loss_pvsyst(effective_irradiance,
-                                      irradiance_shading_loss,
-                                      irradiance_snow_loss,
-                                      irradiance_soiling_loss)
-
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
         """Creates a LocalizedPVSystem object using this object
@@ -2553,71 +2537,46 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     return losses
 
 
-def irradiance_loss_pvsyst(effective_irradiance, irradiance_shading_loss,
-                           irradiance_snow_loss, irradiance_soiling_loss):
+def combine_loss_factors(index, *losses, fill_method='ffill'):
     r"""
-    Calculates irradiance losses using a model based on PVsyst.
-
-    The PVsyst method [1]_ linearly reduces the effective irradiance to
-    account for the effects of shading, snow, and soiling. The separate
-    loss factors are compounded to calculate a single loss factor.
+    Combines Series loss fractions while setting a common index.
 
     The separate losses are compounded using the following equation:
 
     .. math::
 
-        L_{total}(\%) = 100 [ 1 - \Pi_i ( 1 - \frac{L_i}{100} ) ]
+        L_{total} = 1 - [ 1 - \Pi_i ( 1 - L_i ) ]
 
-    :math:L_{total} is the total irradiance loss resulting from the effects of
-    shading, snow, and soiling.
+    :math:L_{total} is the total loss returned
+    :math:L_i is each individual loss factor input
 
-    Note the parameters must each be a series with a DatetimeIndex.  The
-    index of the returned series will be the same as the effective_irradiance
-    index.  All other parameters will be resampled to match this index with
-    a "fill forward" method for filling holes.
+    Note the losses must each be a series with a DatetimeIndex.
+    All losses will be resampled to match the index parameter using
+    the fill method specified (defaults to "fill forward").
 
     Parameters
     ----------
-    effective_irradiance : Series
-            The plane-of-array irradiance (W/m2) that is to be reduced.
+    index : DatetimeIndex
+        The index of the returned loss factors
 
-    irradiance_shading_loss : Series
-            The percent reduction in irradiance due to shading. [%]
+    *losses : Series
+        Each parameter is a series of fractions to be compounded
 
-    irradiance_snow_loss : Series
-            The percent reduction in irradiance due to snow coverage. [%]
-
-    irradiance_soiling_loss : Series
-            The percent reduction in irradiance due to soiling. [%]
+    fill_method : {None, ‘backfill’/’bfill’, ‘pad’/’ffill’, ‘nearest’}
+        Method to use for filling holes in reindexed DataFrame
 
     Returns
     -------
-    losses: Series
-            The percent reduction in irradiance due to compounded losses. [%]
-
-    References
-    ----------
-    .. [1] "Simulation process: Irradiances and PV-array"
-           https://www.pvsyst.com/help/simulation_process.htm
-           (2020).
-
+    Series
+        Fractions resulting from the combination of each loss factor
     """
+  combined_factor = 1
+ 
+  for loss in losses:
+    loss = loss.reindex(index, method=fill_method)
+    combined_factor *= (1 - loss)
 
-    fill_method = 'ffill'
-
-    shading_loss = irradiance_shading_loss.reindex_like(effective_irradiance,
-                                                        method=fill_method)
-
-    snow_loss = irradiance_snow_loss.reindex_like(effective_irradiance,
-                                                  method=fill_method)
-
-    soiling_loss = irradiance_soiling_loss.reindex_like(effective_irradiance,
-                                                        method=fill_method)
-
-    irradiance_losses = 100 * (1 - (
-        (1 - shading_loss/100) * (1 - snow_loss/100) * (1 - soiling_loss/100)))
-
-    return irradiance_losses
+  return 1 - combined_factor
 
 
 ashraeiam = deprecated('0.7', alternative='iam.ashrae', name='ashraeiam',

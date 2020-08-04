@@ -1347,37 +1347,16 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     assert out < pdc
 
 
-@pytest.fixture()
-def irradiance_loss_pvsyst():
-    final_index = pd.date_range(start='1/1/1990 12:00', periods=365, freq='D')
-    effective_irradiance = pd.Series(1000, index=final_index)
-    shading = pd.Series(10, index=final_index)
-    snow = pd.Series(5, index=pd.date_range(start='1/1/1990 12:00',
+def test_combine_loss_factors():
+    index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
+    loss_1 = pd.Series(.10, index=final_index)
+    loss_2 = pd.Series(.05, index=pd.date_range(start='1990/01/01T12:00',
                                             periods=365*2, freq='D'))
-    soiling = pd.Series(2, index=pd.date_range(start='1/1/1990',
+    loss_3 = pd.Series(.02, index=pd.date_range(start='1990/01/01',
                                                periods=12, freq='MS'))
-    expected = pd.Series(16.21, index=final_index)
-
-    return {'effective_irradiance': effective_irradiance,
-            'shading': shading, 'snow': snow,
-            'soiling': soiling, 'expected': expected}
-
-
-def test_irradiance_loss_pvsyst(irradiance_loss_pvsyst):
-    out = pvsystem.irradiance_loss_pvsyst(
-        irradiance_loss_pvsyst['effective_irradiance'],
-        irradiance_loss_pvsyst['shading'], irradiance_loss_pvsyst['snow'],
-        irradiance_loss_pvsyst['soiling'])
-    assert_series_equal(irradiance_loss_pvsyst['expected'], out)
-
-
-def test_PVSystem_irradiance_loss_pvsyst(irradiance_loss_pvsyst):
-    system = pvsystem.PVSystem()
-    out = system.irradiance_loss_pvsyst(
-        irradiance_loss_pvsyst['effective_irradiance'],
-        irradiance_loss_pvsyst['shading'], irradiance_loss_pvsyst['snow'],
-        irradiance_loss_pvsyst['soiling'])
-    assert_series_equal(irradiance_loss_pvsyst['expected'], out)
+    expected = pd.Series(.1621, index=final_index)
+    out = combine_loss_factors(index, loss_1, loss_2, loss_3)
+    assert_series_equal(expected, out)
 
 
 @fail_on_pvlib_version('0.8')

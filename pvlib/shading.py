@@ -6,6 +6,7 @@ associated effects on PV module output
 import numpy as np
 import pandas as pd
 
+
 def passias_masking_angle(surface_tilt, gcr):
     r"""
     The average masking angle over the slant height of a row.

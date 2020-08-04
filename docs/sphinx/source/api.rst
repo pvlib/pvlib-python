@@ -291,8 +291,6 @@ Functions for fitting inverter models
 
    inverter.fit_sandia
 
-Functions for fitting inverter models
-
 
 PV System Models
 ----------------

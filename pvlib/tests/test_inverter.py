@@ -151,7 +151,6 @@ def test_fit_sandia(infilen, expected):
     curves = pd.read_csv(infilen)
     result_dict = inverter.fit_sandia(curves, expected['Paco'],
                                       expected['Pnt'])
-    keys = ['Paco', 'Pdco', 'Vdco', 'Pso', 'C0', 'C1', 'C2', 'C3', 'Pnt']
-    exp = np.array([expected[k] for k in keys])
-    result = np.array([result_dict[k] for k in keys])
+    exp = np.array([expected[k] for k in expected.keys()])
+    result = np.array([result_dict[k] for k in expected.keys()])
     assert_allclose(exp, result, rtol=1e-3)

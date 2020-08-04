@@ -336,12 +336,13 @@ def fit_sandia(curves, p_ac_0, p_nt):
 
     Returns
     -------
-    dict with parameters for the Sandia inverter model. See
-    :py:func:`snl_inverter` for a description of entries in the returned dict.
+    dict
+        A set of parameters for the Sandia inverter model [1]_. See
+        :py:func:`pvlib.inverter.sandia` for a description of keys and values.
 
     See Also
     --------
-    snlinverter
+    pvlib.inverter.sandia
 
     Notes
     -----
@@ -352,9 +353,9 @@ def fit_sandia(curves, p_ac_0, p_nt):
     of DC voltage level and AC power level. Columns in `curves` must be the
     following:
 
-    ================           ========================================
+    =========================  ===============================================
     Column name                Description
-    ================           ========================================
+    =========================  ===============================================
     'fraction_of_rated_power'  Fraction of rated AC power `p_ac_0`. The
                                CEC inverter test protocol specifies values
                                of 0.1, 0.2, 0.3, 0.5, 0.75 and 1.0. [unitless]
@@ -367,8 +368,10 @@ def fit_sandia(curves, p_ac_0, p_nt):
     'ac_power'                 Output AC power. [W]
     'efficiency'               Ratio of AC output power to DC input power.
                                [unitless]
+    =========================  ===============================================
 
     For each curve, DC input power is calculated from AC power and efficiency.
+    The fitting procedure is described at [2]_.
 
     References
     ----------
@@ -376,8 +379,8 @@ def fit_sandia(curves, p_ac_0, p_nt):
        Photovoltaic Inverters by D. King, S. Gonzalez, G. Galbraith, W.
        Boyson
     .. [2] Sandia Inverter Model page, PV Performance Modeling Collaborative
-       https://pvpmc.sandia.gov/modeling-steps/dc-to-ac-conversion/sandia-inverter-model/  # noqa: E501
-    '''
+       https://pvpmc.sandia.gov/modeling-steps/dc-to-ac-conversion/sandia-inverter-model/
+    '''  # noqa: E501
 
     voltage_levels = ['Vmin', 'Vnom', 'Vmax']
 
@@ -396,13 +399,9 @@ def fit_sandia(curves, p_ac_0, p_nt):
     coeffs = pd.DataFrame(index=voltage_levels,
                           columns=['a', 'b', 'c', 'p_dc', 'p_s0'], data=np.nan)
 
-    def solve_quad(a, b, c):
-        return (-b + (b**2 - 4 * a * c)**.5) / (2 * a)
-
     # [2] STEP 3E, fit a line to (DC voltage, model_coefficient)
     def extract_c(x_d, add):
-        test = polyfit(x_d, add, 1)
-        beta0, beta1 = test
+        beta0, beta1 = polyfit(x_d, add, 1)
         c = beta1 / beta0
         return beta0, beta1, c
 
@@ -414,13 +413,11 @@ def fit_sandia(curves, p_ac_0, p_nt):
         c, b, a = polyfit(x, y, 2)
 
         # [2] STEP 3D, solve for p_dc and p_s0
-        p_dc = solve_quad(a, b, (c - p_ac_0))
-        p_s0 = solve_quad(a, b, c)
+        p_dc = np.roots([a, b, (c - p_ac_0)])
+        p_s0 = np.roots([a, b, c])
 
         # Add values to dataframe at index d
         coeffs['a'][d] = a
-        coeffs['b'][d] = b
-        coeffs['c'][d] = c
         coeffs['p_dc'][d] = p_dc
         coeffs['p_s0'][d] = p_s0
 

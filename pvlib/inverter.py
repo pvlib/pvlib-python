@@ -399,6 +399,9 @@ def fit_sandia(curves, p_ac_0, p_nt):
     coeffs = pd.DataFrame(index=voltage_levels,
                           columns=['a', 'b', 'c', 'p_dc', 'p_s0'], data=np.nan)
 
+    def solve_quad(a, b, c):
+        return (-b + (b**2 - 4 * a * c)**.5) / (2 * a)
+
     # [2] STEP 3E, fit a line to (DC voltage, model_coefficient)
     def extract_c(x_d, add):
         beta0, beta1 = polyfit(x_d, add, 1)
@@ -413,8 +416,8 @@ def fit_sandia(curves, p_ac_0, p_nt):
         c, b, a = polyfit(x, y, 2)
 
         # [2] STEP 3D, solve for p_dc and p_s0
-        p_dc = np.max(np.roots([a, b, (c - p_ac_0)]))
-        p_s0 = np.max(np.roots([a, b, c]))  # right-side root of quadratic
+        p_dc = solve_quad(a, b, (c - p_ac_0))
+        p_s0 = solve_quad(a, b, c)
 
         # Add values to dataframe at index d
         coeffs['a'][d] = a

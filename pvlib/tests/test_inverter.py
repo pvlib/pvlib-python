@@ -151,4 +151,4 @@ def test_fit_sandia(infilen, expected):
     curves = pd.read_csv(infilen)
     result = inverter.fit_sandia(curves, expected['Paco'],
                                       expected['Pnt'])
-    assert expected == pytest.approx(result, rtol=1e-3)
+    assert expected == pytest.approx(result, rel=1e-3)

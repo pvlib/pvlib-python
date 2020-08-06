@@ -35,6 +35,29 @@ def fail_on_pvlib_version(version):
         return inner
     return wrapper
 
+
+# custom test function that handles the change in default
+# tolerances in pandas 1.1.0.  See pvlib GH #1018
+def assert_series_equal(left, right, **kwargs):
+    if parse_version(pd.__version__) >= parse_version('1.1.0'):
+        kwargs.pop('check_less_precise')
+    else:
+        kwargs.pop('rtol')
+        kwargs.pop('atol')
+    pd.testing.assert_series_equal(left, right, **kwargs)
+
+
+# custom test function that handles the change in default
+# tolerances in pandas 1.1.0.  See pvlib GH #1018
+def assert_frame_equal(left, right, **kwargs):
+    if parse_version(pd.__version__) >= parse_version('1.1.0'):
+        kwargs.pop('check_less_precise')
+    else:
+        kwargs.pop('rtol')
+        kwargs.pop('atol')
+    pd.testing.assert_frame_equal(left, right, **kwargs)
+
+
 # commonly used directories in the tests
 TEST_DIR = Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'

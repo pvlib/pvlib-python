@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from pvlib.bifacial import pvfactors_timeseries
-from conftest import requires_pvfactors
+from conftest import requires_pvfactors, assert_series_equal
 import pytest
 
 
@@ -49,8 +49,8 @@ def test_pvfactors_timeseries():
         rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
         horizon_band_angle=horizon_band_angle)
 
-    pd.testing.assert_series_equal(ipoa_inc_front, expected_ipoa_front)
-    pd.testing.assert_series_equal(ipoa_inc_back, expected_ipoa_back)
+    assert_series_equal(ipoa_inc_front, expected_ipoa_front)
+    assert_series_equal(ipoa_inc_back, expected_ipoa_back)
 
 
 @requires_pvfactors
@@ -97,5 +97,5 @@ def test_pvfactors_timeseries_pandas_inputs():
         rho_front_pvrow=rho_front_pvrow, rho_back_pvrow=rho_back_pvrow,
         horizon_band_angle=horizon_band_angle)
 
-    pd.testing.assert_series_equal(ipoa_inc_front, expected_ipoa_front)
-    pd.testing.assert_series_equal(ipoa_inc_back, expected_ipoa_back)
+    assert_series_equal(ipoa_inc_front, expected_ipoa_front)
+    assert_series_equal(ipoa_inc_back, expected_ipoa_back)

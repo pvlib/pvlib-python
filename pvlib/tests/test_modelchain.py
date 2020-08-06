@@ -10,7 +10,7 @@ from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from pandas.testing import assert_series_equal
+from conftest import assert_series_equal
 import pytest
 
 from conftest import fail_on_pvlib_version, requires_scipy, requires_tables

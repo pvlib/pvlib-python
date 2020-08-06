@@ -36,25 +36,25 @@ def fail_on_pvlib_version(version):
     return wrapper
 
 
-# custom test function that handles the change in default
+# custom test function that handles the change in API related to default
 # tolerances in pandas 1.1.0.  See pvlib GH #1018
 def assert_series_equal(left, right, **kwargs):
     if parse_version(pd.__version__) >= parse_version('1.1.0'):
-        kwargs.pop('check_less_precise')
+        kwargs.pop('check_less_precise', None)
     else:
-        kwargs.pop('rtol')
-        kwargs.pop('atol')
+        kwargs.pop('rtol', None)
+        kwargs.pop('atol', None)
     pd.testing.assert_series_equal(left, right, **kwargs)
 
 
-# custom test function that handles the change in default
+# custom test function that handles the change in API related to default
 # tolerances in pandas 1.1.0.  See pvlib GH #1018
 def assert_frame_equal(left, right, **kwargs):
     if parse_version(pd.__version__) >= parse_version('1.1.0'):
-        kwargs.pop('check_less_precise')
+        kwargs.pop('check_less_precise', None)
     else:
-        kwargs.pop('rtol')
-        kwargs.pop('atol')
+        kwargs.pop('rtol', None)
+        kwargs.pop('atol', None)
     pd.testing.assert_frame_equal(left, right, **kwargs)
 
 

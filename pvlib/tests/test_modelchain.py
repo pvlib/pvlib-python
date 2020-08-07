@@ -757,9 +757,9 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth)
 
-    expected = pd.Series(np.array([115.40352679, -2.00000000e-02]),
+    expected = pd.Series(np.array([111.621405, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
+    assert_series_equal(ac, expected)
 
 
 @requires_scipy
@@ -778,9 +778,9 @@ def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
         cec_inverter_parameters, orientation_strategy='south_at_latitude_tilt',
         altitude=altitude)
 
-    expected = pd.Series(np.array([183.522449305, -2.00000000e-02]),
+    expected = pd.Series(np.array([178.382754, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
+    assert_series_equal(ac, expected)
 
 
 @requires_scipy
@@ -803,9 +803,9 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                     surface_azimuth=surface_azimuth,
                                     pressure=93194)
 
-    expected = pd.Series(np.array([116.595664887, -2.00000000e-02]),
+    expected = pd.Series(np.array([113.190045, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
+    assert_series_equal(ac, expected)
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                     module_parameters, temp_model_params,
@@ -814,9 +814,9 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                     surface_azimuth=surface_azimuth,
                                     altitude=altitude)
 
-    expected = pd.Series(np.array([116.595664887, -2.00000000e-02]),
+    expected = pd.Series(np.array([113.189814, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
+    assert_series_equal(ac, expected)
 
 
 @pytest.mark.parametrize('strategy, strategy_str', [

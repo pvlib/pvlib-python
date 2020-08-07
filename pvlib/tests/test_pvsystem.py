@@ -5,7 +5,7 @@ from numpy import nan, array
 import pandas as pd
 
 import pytest
-from pandas.testing import assert_series_equal, assert_frame_equal
+from conftest import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
 from pvlib import inverter, pvsystem

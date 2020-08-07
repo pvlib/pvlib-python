@@ -53,6 +53,9 @@ Testing
   (:pull:`1006`)
 * Update the `data/test_psm3_tmy-2017.csv` datafile to match the updated
   NSRDB data. (:issue:`1005`, :pull:`1007`)
+* Add wrappers around the pandas assert_X_equal functions to accommodate the
+  changed API and default precision thresholds in pandas 1.1.0
+  (:issue:`1018`, :pull:`1021`)
 
 Documentation
 ~~~~~~~~~~~~~

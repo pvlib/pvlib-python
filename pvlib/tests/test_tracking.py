@@ -3,7 +3,7 @@ from numpy import nan
 import pandas as pd
 
 import pytest
-from pandas.testing import assert_frame_equal
+from conftest import assert_frame_equal
 from numpy.testing import assert_allclose
 
 from pvlib.location import Location

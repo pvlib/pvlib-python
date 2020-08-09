@@ -35,6 +35,38 @@ def fail_on_pvlib_version(version):
         return inner
     return wrapper
 
+
+def _check_pandas_assert_kwargs(kwargs):
+    # handles the change in API related to default
+    # tolerances in pandas 1.1.0.  See pvlib GH #1018
+    if parse_version(pd.__version__) >= parse_version('1.1.0'):
+        if kwargs.pop('check_less_precise', False):
+            kwargs['atol'] = 1e-3
+            kwargs['rtol'] = 1e-3
+        else:
+            kwargs['atol'] = 1e-5
+            kwargs['rtol'] = 1e-5
+    else:
+        kwargs.pop('rtol', None)
+        kwargs.pop('atol', None)
+    return kwargs
+
+
+def assert_index_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_index_equal(left, right, **kwargs)
+
+
+def assert_series_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_series_equal(left, right, **kwargs)
+
+
+def assert_frame_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_frame_equal(left, right, **kwargs)
+
+
 # commonly used directories in the tests
 TEST_DIR = Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'

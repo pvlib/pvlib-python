@@ -25,6 +25,11 @@ PVWATTS_CONFIG = dict(
     spectral_model='no_loss'
 )
 
+SAPM_CONFIG = dict(
+    dc_model='sapm', ac_model='sandia', losses_model='no_loss',
+    aoi_model='sapm', spectral_model='sapm'
+)
+
 
 def basic_chain(times, latitude, longitude,
                 module_parameters, temperature_model_parameters,
@@ -366,7 +371,7 @@ class ModelChain(object):
                            name=None,
                            **kwargs):
         """
-        PVWatts version of ModelChain.
+        ModelChain that follows the PVWatts methods.
 
         Parameters
         ----------
@@ -411,6 +416,19 @@ class ModelChain(object):
         ...     inverter_parameters=inverter_parameters)
         >>> location = Location(32.2, -110.9)
         >>> ModelChain.make_chain_pvwatts(system, location)
+        ModelChain:
+          name: None
+          orientation_strategy: None
+          clearsky_model: ineichen
+          transposition_model: perez
+          solar_position_method: nrel_numpy
+          airmass_model: kastenyoung1989
+          dc_model: pvwatts_dc
+          ac_model: pvwatts_inverter
+          aoi_model: physical_aoi_loss
+          spectral_model: no_spectral_loss
+          temperature_model: sapm_temp
+          losses_model: pvwatts_losses
         """
 
         kwargs.update(PVWATTS_CONFIG)
@@ -420,6 +438,92 @@ class ModelChain(object):
             clearsky_model=clearsky_model,
             airmass_model=airmass_model,
             temperature_model=temperature_model,
+            name=name,
+            **kwargs
+        )
+
+    @classmethod
+    def make_chain_sapm(cls, system, location,
+                        orientation_strategy=None,
+                        clearsky_model='ineichen',
+                        transposition_model='haydavies',
+                        solar_position_method='nrel_numpy',
+                        airmass_model='kastenyoung1989',
+                        name=None,
+                        **kwargs):
+        """
+        ModelChain that follows the Sandia Array Performance Model
+        (SAPM) methods.
+
+        Parameters
+        ----------
+        system : PVSystem
+            A :py:class:`~pvlib.pvsystem.PVSystem` object that represents
+            the connected set of modules, inverters, etc.
+
+        location : Location
+            A :py:class:`~pvlib.location.Location` object that represents
+            the physical location at which to evaluate the model.
+
+        orientation_strategy : None or str, default None
+            The strategy for aligning the modules. If not None, sets the
+            ``surface_azimuth`` and ``surface_tilt`` properties of the
+            ``system``. Allowed strategies include 'flat',
+            'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
+
+        clearsky_model : str, default 'ineichen'
+            Passed to location.get_clearsky.
+
+        transposition_model : str, default 'haydavies'
+            Passed to system.get_irradiance.
+
+        solar_position_method : str, default 'nrel_numpy'
+            Passed to location.get_solarposition.
+
+        airmass_model : str, default 'kastenyoung1989'
+            Passed to location.get_airmass.
+
+        name: None or str, default None
+            Name of ModelChain instance.
+
+        **kwargs
+            Arbitrary keyword arguments. Included for compatibility, but not
+            used.
+
+        Examples
+        --------
+        >>> mods = pvlib.pvsystem.retrieve_sam('sandiamod')
+        >>> invs = pvlib.pvsystem.retrieve_sam('cecinverter')
+        >>> module_parameters = mods['Canadian_Solar_CS5P_220M___2009_']
+        >>> inverter_parameters = invs['ABB__MICRO_0_25_I_OUTD_US_240__240V_']
+        >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
+        ...     module_parameters=module_parameters,
+        ...     inverter_parameters=inverter_parameters)
+        >>> location = Location(32.2, -110.9)
+        >>> ModelChain.make_chain_sapm(system, location)
+        ModelChain:
+          name: None
+          orientation_strategy: None
+          clearsky_model: ineichen
+          transposition_model: haydavies
+          solar_position_method: nrel_numpy
+          airmass_model: kastenyoung1989
+          dc_model: sapm
+          ac_model: snlinverter
+          aoi_model: sapm_aoi_loss
+          spectral_model: sapm_spectral_loss
+          temperature_model: sapm_temp
+          losses_model: no_extra_losses
+        """
+
+        kwargs.update(SAPM_CONFIG)
+        return ModelChain(
+            system, location,
+            orientation_strategy=orientation_strategy,
+            clearsky_model=clearsky_model,
+            transposition_model=transposition_model,
+            solar_position_method=solar_position_method,
+            airmass_model=airmass_model,
             name=name,
             **kwargs
         )

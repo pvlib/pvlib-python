@@ -18,7 +18,7 @@ def get_performance_ratio(poa_global, temp_air, wind_speed, pac, pdc0, a=-3.56,
     Calculate NREL Performance Ratio.
 
     See equation [5] in Weather-Corrected Performance Ratio for details on 
-    the weighted method.
+    the weighted method for Tref.
 
     Parameters
     ----------

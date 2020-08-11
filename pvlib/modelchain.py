@@ -978,3 +978,79 @@ class ModelChain(object):
         self.ac_model()
 
         return self
+
+
+PVWATTS_CONFIG = dict(
+    dc_model='pvwatts', ac_model='pvwatts', losses_model='pvwatts',
+    transposition_model='perez', aoi_model='physical',
+    spectral_model='no_loss'
+)
+
+
+class PVWatts(ModelChain):
+    """
+    PVWatts version of ModelChain.
+
+    Parameters
+    ----------
+    system : PVSystem
+        A :py:class:`~pvlib.pvsystem.PVSystem` object that represents
+        the connected set of modules, inverters, etc.
+
+    location : Location
+        A :py:class:`~pvlib.location.Location` object that represents
+        the physical location at which to evaluate the model.
+
+    orientation_strategy : None or str, default None
+        The strategy for aligning the modules. If not None, sets the
+        ``surface_azimuth`` and ``surface_tilt`` properties of the
+        ``system``. Allowed strategies include 'flat',
+        'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
+
+    clearsky_model : str, default 'ineichen'
+        Passed to location.get_clearsky.
+
+    airmass_model : str, default 'kastenyoung1989'
+        Passed to location.get_airmass.
+
+    temperature_model: None, str or function, default None
+        Valid strings are 'sapm', 'pvsyst', and 'faiman'. The ModelChain
+        instance will be passed as the first argument to a user-defined
+        function.
+
+    name: None or str, default None
+        Name of ModelChain instance.
+
+    **kwargs
+        Arbitrary keyword arguments. Included for compatibility, but not
+        used.
+
+    Examples
+    --------
+    >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=1)
+    >>> inverter_parameters = dict(pac0=1)
+    >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
+    ...     module_parameters=module_parameters,
+    ...     inverter_parameters=inverter_parameters)
+    >>> location = Location(32.2, -110.9)
+    >>> PVWatts(system, location)
+    """
+
+    def __init__(self, system, location,
+                 orientation_strategy=None,
+                 clearsky_model='ineichen',
+                 airmass_model='kastenyoung1989',
+                 temperature_model=None,
+                 name=None,
+                 **kwargs):
+
+        kwargs.update(PVWATTS_CONFIG)
+        super().__init__(
+            system, location,
+            orientation_strategy=orientation_strategy,
+            clearsky_model=clearsky_model,
+            airmass_model=airmass_model,
+            temperature_model=temperature_model,
+            name=name,
+            **kwargs
+        )

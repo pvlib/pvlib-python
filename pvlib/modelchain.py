@@ -363,13 +363,13 @@ class ModelChain(object):
         self.solar_position = None
 
     @classmethod
-    def make_chain_pvwatts(cls, system, location,
-                           orientation_strategy=None,
-                           clearsky_model='ineichen',
-                           airmass_model='kastenyoung1989',
-                           temperature_model=None,
-                           name=None,
-                           **kwargs):
+    def with_pvwatts(cls, system, location,
+                     orientation_strategy=None,
+                     clearsky_model='ineichen',
+                     airmass_model='kastenyoung1989',
+                     temperature_model=None,
+                     name=None,
+                     **kwargs):
         """
         ModelChain that follows the PVWatts methods.
 
@@ -415,7 +415,7 @@ class ModelChain(object):
         ...     module_parameters=module_parameters,
         ...     inverter_parameters=inverter_parameters)
         >>> location = Location(32.2, -110.9)
-        >>> ModelChain.make_chain_pvwatts(system, location)
+        >>> ModelChain.with_pvwatts(system, location)
         ModelChain:
           name: None
           orientation_strategy: None
@@ -443,14 +443,14 @@ class ModelChain(object):
         )
 
     @classmethod
-    def make_chain_sapm(cls, system, location,
-                        orientation_strategy=None,
-                        clearsky_model='ineichen',
-                        transposition_model='haydavies',
-                        solar_position_method='nrel_numpy',
-                        airmass_model='kastenyoung1989',
-                        name=None,
-                        **kwargs):
+    def with_sapm(cls, system, location,
+                  orientation_strategy=None,
+                  clearsky_model='ineichen',
+                  transposition_model='haydavies',
+                  solar_position_method='nrel_numpy',
+                  airmass_model='kastenyoung1989',
+                  name=None,
+                  **kwargs):
         """
         ModelChain that follows the Sandia Array Performance Model
         (SAPM) methods.
@@ -500,7 +500,7 @@ class ModelChain(object):
         ...     module_parameters=module_parameters,
         ...     inverter_parameters=inverter_parameters)
         >>> location = Location(32.2, -110.9)
-        >>> ModelChain.make_chain_sapm(system, location)
+        >>> ModelChain.with_sapm(system, location)
         ModelChain:
           name: None
           orientation_strategy: None
@@ -1159,6 +1159,7 @@ class ModelChain(object):
         return self
 
 
+# delete this if we agree factory methods are preferable
 class PVWatts(ModelChain):
     """
     PVWatts version of ModelChain.

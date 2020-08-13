@@ -185,7 +185,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
     References
     ----------
-    .. [1] Driesse, A. "Beyond the Curves: Modeling the Electrical Efficiency
+    .. [1] A. Driesse, "Beyond the Curves: Modeling the Electrical Efficiency
        of Photovoltaic Inverters", 33rd IEEE Photovoltaic Specialist
        Conference (PVSC), June 2008
 
@@ -294,8 +294,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     References
     ----------
     .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
-           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
-           (2014).
+       http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf (2014).
     """
 
     pac0 = eta_inv_nom * pdc0
@@ -317,20 +316,24 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     return power_ac
 
 
-def fit_sandia(curves, p_ac_0, p_nt):
+def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
     r'''
-    Determine parameters for the Sandia inverter model from efficiency
-    curves.
+    Determine parameters for the Sandia inverter model.
 
     Parameters
     ----------
-    curves : DataFrame
-        Columns must be ``'fraction_of_rated_power'``, ``'dc_voltage_level'``,
-        ``'dc_voltage'``, ``'ac_power'``, ``'efficiency'``. See notes for the
-        definition and unit for each column.
-    p_ac_0 : numeric
+    ac_power : Series
+        AC power output at each data point [W].
+    dc_power : Series
+        DC power input at each data point [W].
+    dc_voltage : Series
+        DC input voltage at each data point [V].
+    dc_voltage_level : Series
+        DC input voltage level at each data point. Values must be 'Vmin',
+        'Vnom' or 'Vmax'.
+    p_ac_0 : float
         Rated AC power of the inverter [W].
-    p_nt : numeric
+    p_nt : float
         Night tare, i.e., power consumed while inverter is not delivering
         AC power. [W]
 
@@ -346,54 +349,37 @@ def fit_sandia(curves, p_ac_0, p_nt):
 
     Notes
     -----
-    An inverter efficiency curve at a specified DC voltage level and AC power
-    level comprises a series of pairs ('fraction_of_rated_power',
-    'efficiency'), e.g. (0.1, 0.5), (0.2, 0.7), etc. . The DataFrame
-    `curves` must contain at least one efficiency curve for each combination
-    of DC voltage level and AC power level. Columns in `curves` must be the
-    following:
-
-    =========================  ===============================================
-    Column name                Description
-    =========================  ===============================================
-    'fraction_of_rated_power'  Fraction of rated AC power `p_ac_0`. The
-                               CEC inverter test protocol specifies values
-                               of 0.1, 0.2, 0.3, 0.5, 0.75 and 1.0. [unitless]
-    'dc_voltage_level'         Must be 'Vmin', 'Vnom', or 'Vmax'. Curves must
-                               be provided for all three voltage levels. At
-                               least one curve must be provided for each
-                               combination of fraction_of_rated_power and
-                               dc_voltage_level.
-    'dc_voltage'               DC input voltage. [V]
-    'ac_power'                 Output AC power. [W]
-    'efficiency'               Ratio of AC output power to DC input power.
-                               [unitless]
-    =========================  ===============================================
-
-    For each curve, DC input power is calculated from AC power and efficiency.
-    The fitting procedure is described at [2]_.
+    The fitting procedure to estimate parameters is described at [2]_.
+    A data point is a pair of values (dc_power, ac_power). Typically, inverter
+    performance is measured or described at three DC input voltage levels,
+    denoted 'Vmin', 'Vnom' and 'Vmax' and at each level, inverter efficiency
+    is determined at various output power levels. For example,
+    the CEC inverter test protocol [3]_ specifies measurement of input DC
+    power that delivers AC output power of 0.1, 0.2, 0.3, 0.5, 0.75 and 1.0 of
+    the inverter's AC power rating.
 
     References
     ----------
-    .. [1] SAND2007-5036, "Performance Model for Grid-Connected
-       Photovoltaic Inverters by D. King, S. Gonzalez, G. Galbraith, W.
-       Boyson
+    .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
+       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
+       National Laboratories.
     .. [2] Sandia Inverter Model page, PV Performance Modeling Collaborative
        https://pvpmc.sandia.gov/modeling-steps/dc-to-ac-conversion/sandia-inverter-model/
+    .. [3] W. Bower, et al., "Performance Test Protocol for Evaluating
+       Inverters Used in Grid-Connected Photovoltaic Systems", available at
+       https://www.energy.ca.gov/sites/default/files/2020-06/2004-11-22_Sandia_Test_Protocol_ada.pdf
     '''  # noqa: E501
 
     voltage_levels = ['Vmin', 'Vnom', 'Vmax']
 
     # average dc input voltage at each voltage level
     v_d = np.array(
-        [curves['dc_voltage'][curves['dc_voltage_level'] == 'Vmin'].mean(),
-         curves['dc_voltage'][curves['dc_voltage_level'] == 'Vnom'].mean(),
-         curves['dc_voltage'][curves['dc_voltage_level'] == 'Vmax'].mean()])
+        [dc_voltage[dc_voltage_level == 'Vmin'].mean(),
+         dc_voltage[dc_voltage_level == 'Vnom'].mean(),
+         dc_voltage[dc_voltage_level == 'Vmax'].mean()])
     v_nom = v_d[1]  # model parameter
     # independent variable for regressions, x_d
     x_d = v_d - v_nom
-
-    curves['dc_power'] = curves['ac_power'] / curves['efficiency']
 
     # empty dataframe to contain intermediate variables
     coeffs = pd.DataFrame(index=voltage_levels,
@@ -409,8 +395,8 @@ def fit_sandia(curves, p_ac_0, p_nt):
         return beta0, beta1, c
 
     for d in voltage_levels:
-        x = curves['dc_power'][curves['dc_voltage_level'] == d]
-        y = curves['ac_power'][curves['dc_voltage_level'] == d]
+        x = dc_power[dc_voltage_level == d]
+        y = ac_power[dc_voltage_level == d]
         # [2] STEP 3B
         # fit a quadratic to (DC power, AC power)
         c, b, a = polyfit(x, y, 2)

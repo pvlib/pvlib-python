@@ -38,8 +38,9 @@ Enhancements
 * Add :py:func:`pvlib.iam.marion_diffuse` and
   :py:func:`pvlib.iam.marion_integrate` to calculate IAM values for
   diffuse irradiance. (:pull:`984`)
-* Add :py:func:`pvlib.shading.passias_sky_diffuse` and
-  :py:func:`pvlib.shading.passias_masking_angle` to model diffuse shading loss.
+* Add :py:func:`pvlib.shading.sky_diffuse_passias`,
+  :py:func:`pvlib.shading.masking_angle_passias`, and
+  :py:func:`pvlib.shading.masking_angle` to model diffuse shading loss.
   (:pull:`1017`)
 
 Bug fixes

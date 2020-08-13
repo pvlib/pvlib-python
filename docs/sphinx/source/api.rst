@@ -350,8 +350,9 @@ Effects on PV System Output
 .. autosummary::
    :toctree: generated/
 
-   shading.passias_masking_angle
-   shading.passias_sky_diffuse
+   shading.masking_angle
+   shading.masking_angle_passias
+   shading.sky_diffuse_passias
 
 
 Tracking

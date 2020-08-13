@@ -5,9 +5,60 @@ associated effects on PV module output
 
 import numpy as np
 import pandas as pd
+from pvlib.tools import sind, cosd
 
 
-def passias_masking_angle(surface_tilt, gcr):
+def masking_angle(surface_tilt, gcr, height):
+    """
+    The elevation angle below which diffuse irradiance is blocked.
+
+    The ``height`` parameter determines how far up the module's surface to
+    evaluate the masking angle.  The lower the point, the steeper the masking
+    angle [1]_.  SAM uses a "worst-case" approach where the masking angle
+    is calculated for the bottom of the array (i.e. ``height=0``) [2]_.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Panel tilt from horizontal [degrees].
+
+    gcr : float
+        The ground coverage ratio of the array [unitless].
+
+    height : numeric
+        The distance up the module's slant height to evaluate the masking
+        angle, as a fraction [0-1] of the module height [unitless].
+
+    Returns
+    -------
+    mask_angle : numeric
+        Angle from horizontal where diffuse light is blocked by the
+        preceding row [degrees].
+
+    See Also
+    --------
+    masking_angle_passias
+    sky_diffuse_passias
+
+    References
+    ----------
+    .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
+       panels", Solar Cells, Volume 11, Pages 281-291.  1984.
+       DOI: 10.1016/0379-6787(84)90017-6
+    .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
+       Reference Update", NREL Technical Report NREL/TP-6A20-67399.
+       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
+    """
+    # The original equation (8 in [1]) requires pitch and collector width,
+    # but it's easy to non-dimensionalize it to make it a function of GCR
+    # by factoring out B from the argument to arctan.
+    numerator = (1 - height) * sind(surface_tilt)
+    denominator = 1/gcr - (1 - height) * cosd(surface_tilt)
+    phi = np.arctan(numerator / denominator)
+    return np.degrees(phi)
+
+
+def masking_angle_passias(surface_tilt, gcr):
     r"""
     The average masking angle over the slant height of a row.
 
@@ -32,7 +83,8 @@ def passias_masking_angle(surface_tilt, gcr):
 
     See Also
     --------
-    passias_sky_diffuse
+    masking_angle
+    sky_diffuse_passias
 
     Notes
     -----
@@ -98,7 +150,7 @@ def passias_masking_angle(surface_tilt, gcr):
     return np.degrees(psi_avg)
 
 
-def passias_sky_diffuse(masking_angle):
+def sky_diffuse_passias(masking_angle):
     r"""
     The diffuse irradiance loss caused by row-to-row sky diffuse shading.
 
@@ -126,7 +178,8 @@ def passias_sky_diffuse(masking_angle):
 
     See Also
     --------
-    passias_masking_angle
+    masking_angle
+    masking_angle_passias
 
     References
     ----------
@@ -137,4 +190,4 @@ def passias_sky_diffuse(masking_angle):
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
        DOI: 10.1016/0379-6787(84)90017-6
     """
-    return 1 - np.cos(np.radians(masking_angle)/2)**2
+    return 1 - cosd(masking_angle/2)**2

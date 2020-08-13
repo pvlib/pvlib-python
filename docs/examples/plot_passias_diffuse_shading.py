@@ -17,8 +17,8 @@ shading.
 #
 # This example uses the approach presented by Passias and Källbäck in [1]_
 # and recreates two figures from that paper using
-# :py:func:`pvlib.shading.passias_masking_angle` and
-# :py:func:`pvlib.shading.passias_sky_diffuse`.
+# :py:func:`pvlib.shading.masking_angle_passias` and
+# :py:func:`pvlib.shading.sky_diffuse_passias`.
 #
 # References
 # ----------
@@ -44,7 +44,7 @@ surface_tilt = np.arange(0, 90, 0.5)
 plt.figure()
 for k in [1, 1.5, 2, 2.5, 3, 4, 5, 7, 10]:
     gcr = 1/k
-    psi = shading.passias_masking_angle(surface_tilt, gcr)
+    psi = shading.masking_angle_passias(surface_tilt, gcr)
     plt.plot(surface_tilt, psi, label='k={}'.format(k))
 
 plt.xlabel('Inclination angle [degrees]')
@@ -61,14 +61,14 @@ plt.show()
 # horizontal irradiance. This means that the deviation from 100% is due to the
 # combination of self-shading and the fact that being at a tilt blocks off
 # the portion of the sky behind the row. The first effect is modeled with
-# :py:func:`pvlib.shading.passias_sky_diffuse` and the second with
+# :py:func:`pvlib.shading.sky_diffuse_passias` and the second with
 # :py:func:`pvlib.irradiance.isotropic`.
 
 plt.figure()
 for k in [1, 1.5, 2, 10]:
     gcr = 1/k
-    psi = shading.passias_masking_angle(surface_tilt, gcr)
-    shading_loss = shading.passias_sky_diffuse(psi)
+    psi = shading.masking_angle_passias(surface_tilt, gcr)
+    shading_loss = shading.sky_diffuse_passias(psi)
     transposition_ratio = irradiance.isotropic(surface_tilt, dhi=1.0)
     relative_diffuse = transposition_ratio * (1-shading_loss) * 100  # %
     plt.plot(surface_tilt, relative_diffuse, label='k={}'.format(k))

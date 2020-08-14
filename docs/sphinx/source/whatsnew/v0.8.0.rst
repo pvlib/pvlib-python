@@ -38,6 +38,8 @@ Enhancements
 * Add :py:func:`pvlib.iam.marion_diffuse` and
   :py:func:`pvlib.iam.marion_integrate` to calculate IAM values for
   diffuse irradiance. (:pull:`984`)
+* Add :py:func:`pvlib.inverter.fit_sandia` that fits the Sandia inverter model
+  to a set of inverter efficiency curves. (:pull:`1011`)
 
 Bug fixes
 ~~~~~~~~~

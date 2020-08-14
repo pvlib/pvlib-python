@@ -154,5 +154,5 @@ def test_fit_sandia(infilen, expected):
                                  dc_power=dc_power,
                                  dc_voltage=curves['dc_voltage'],
                                  dc_voltage_level=curves['dc_voltage_level'],
-                                 expected['Paco'], expected['Pnt'])
+                                 p_ac_0=expected['Paco'], p_nt=expected['Pnt'])
     assert expected == pytest.approx(result, rel=1e-3)

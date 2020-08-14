@@ -322,13 +322,13 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
 
     Parameters
     ----------
-    ac_power : Series
+    ac_power : array_like
         AC power output at each data point [W].
-    dc_power : Series
+    dc_power : array_like
         DC power input at each data point [W].
-    dc_voltage : Series
+    dc_voltage : array_like
         DC input voltage at each data point [V].
-    dc_voltage_level : Series
+    dc_voltage_level : array_like
         DC input voltage level at each data point. Values must be 'Vmin',
         'Vnom' or 'Vmax'.
     p_ac_0 : float

@@ -1,11 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-This module contains functions for inverter modeling, primarily conversion of
-DC to AC power.
+This module contains functions for inverter modeling and for fitting inverter
+models to data.
+
+Inverter models calculate AC power output from DC input. Model parameters
+should be passed as a single dict.
+
+Functions for estimating parameters for inverter models should follow the
+naming pattern 'fit_<model name>', e.g., fit_sandia.
+
 """
 
 import numpy as np
 import pandas as pd
+
+from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
 
 
 def sandia(v_dc, p_dc, inverter):
@@ -176,7 +185,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
     References
     ----------
-    .. [1] Driesse, A. "Beyond the Curves: Modeling the Electrical Efficiency
+    .. [1] A. Driesse, "Beyond the Curves: Modeling the Electrical Efficiency
        of Photovoltaic Inverters", 33rd IEEE Photovoltaic Specialist
        Conference (PVSC), June 2008
 
@@ -285,8 +294,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     References
     ----------
     .. [1] A. P. Dobos, "PVWatts Version 5 Manual,"
-           http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
-           (2014).
+       http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf (2014).
     """
 
     pac0 = eta_inv_nom * pdc0
@@ -306,3 +314,110 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     power_ac = np.maximum(0, power_ac)     # GH 541
 
     return power_ac
+
+
+def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
+    r'''
+    Determine parameters for the Sandia inverter model.
+
+    Parameters
+    ----------
+    ac_power : array_like
+        AC power output at each data point [W].
+    dc_power : array_like
+        DC power input at each data point [W].
+    dc_voltage : array_like
+        DC input voltage at each data point [V].
+    dc_voltage_level : array_like
+        DC input voltage level at each data point. Values must be 'Vmin',
+        'Vnom' or 'Vmax'.
+    p_ac_0 : float
+        Rated AC power of the inverter [W].
+    p_nt : float
+        Night tare, i.e., power consumed while inverter is not delivering
+        AC power. [W]
+
+    Returns
+    -------
+    dict
+        A set of parameters for the Sandia inverter model [1]_. See
+        :py:func:`pvlib.inverter.sandia` for a description of keys and values.
+
+    See Also
+    --------
+    pvlib.inverter.sandia
+
+    Notes
+    -----
+    The fitting procedure to estimate parameters is described at [2]_.
+    A data point is a pair of values (dc_power, ac_power). Typically, inverter
+    performance is measured or described at three DC input voltage levels,
+    denoted 'Vmin', 'Vnom' and 'Vmax' and at each level, inverter efficiency
+    is determined at various output power levels. For example,
+    the CEC inverter test protocol [3]_ specifies measurement of input DC
+    power that delivers AC output power of 0.1, 0.2, 0.3, 0.5, 0.75 and 1.0 of
+    the inverter's AC power rating.
+
+    References
+    ----------
+    .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
+       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
+       National Laboratories.
+    .. [2] Sandia Inverter Model page, PV Performance Modeling Collaborative
+       https://pvpmc.sandia.gov/modeling-steps/dc-to-ac-conversion/sandia-inverter-model/
+    .. [3] W. Bower, et al., "Performance Test Protocol for Evaluating
+       Inverters Used in Grid-Connected Photovoltaic Systems", available at
+       https://www.energy.ca.gov/sites/default/files/2020-06/2004-11-22_Sandia_Test_Protocol_ada.pdf
+    '''  # noqa: E501
+
+    voltage_levels = ['Vmin', 'Vnom', 'Vmax']
+
+    # average dc input voltage at each voltage level
+    v_d = np.array(
+        [dc_voltage[dc_voltage_level == 'Vmin'].mean(),
+         dc_voltage[dc_voltage_level == 'Vnom'].mean(),
+         dc_voltage[dc_voltage_level == 'Vmax'].mean()])
+    v_nom = v_d[1]  # model parameter
+    # independent variable for regressions, x_d
+    x_d = v_d - v_nom
+
+    # empty dataframe to contain intermediate variables
+    coeffs = pd.DataFrame(index=voltage_levels,
+                          columns=['a', 'b', 'c', 'p_dc', 'p_s0'], data=np.nan)
+
+    def solve_quad(a, b, c):
+        return (-b + (b**2 - 4 * a * c)**.5) / (2 * a)
+
+    # [2] STEP 3E, fit a line to (DC voltage, model_coefficient)
+    def extract_c(x_d, add):
+        beta0, beta1 = polyfit(x_d, add, 1)
+        c = beta1 / beta0
+        return beta0, beta1, c
+
+    for d in voltage_levels:
+        x = dc_power[dc_voltage_level == d]
+        y = ac_power[dc_voltage_level == d]
+        # [2] STEP 3B
+        # fit a quadratic to (DC power, AC power)
+        c, b, a = polyfit(x, y, 2)
+
+        # [2] STEP 3D, solve for p_dc and p_s0
+        p_dc = solve_quad(a, b, (c - p_ac_0))
+        p_s0 = solve_quad(a, b, c)
+
+        # Add values to dataframe at index d
+        coeffs['a'][d] = a
+        coeffs['p_dc'][d] = p_dc
+        coeffs['p_s0'][d] = p_s0
+
+    b_dc0, b_dc1, c1 = extract_c(x_d, coeffs['p_dc'])
+    b_s0, b_s1, c2 = extract_c(x_d, coeffs['p_s0'])
+    b_c0, b_c1, c3 = extract_c(x_d, coeffs['a'])
+
+    p_dc0 = b_dc0
+    p_s0 = b_s0
+    c0 = b_c0
+
+    # prepare dict and return
+    return {'Paco': p_ac_0, 'Pdco': p_dc0, 'Vdco': v_nom, 'Pso': p_s0,
+            'C0': c0, 'C1': c1, 'C2': c2, 'C3': c3, 'Pnt': p_nt}

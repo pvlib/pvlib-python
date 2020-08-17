@@ -265,6 +265,15 @@ Low-level functions for solving the single diode equation.
    singlediode.bishop88_v_from_i
    singlediode.bishop88_mpp
 
+Functions for fitting diode models
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.fit_sde_sandia
+    ivtools.fit_sdm_cec_sam
+    ivtools.fit_sdm_desoto
+
 Inverter models (DC to AC conversion)
 -------------------------------------
 
@@ -274,6 +283,14 @@ Inverter models (DC to AC conversion)
    inverter.sandia
    inverter.adr
    inverter.pvwatts
+
+Functions for fitting inverter models
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.fit_sandia
+
 
 PV System Models
 ----------------
@@ -310,16 +327,6 @@ PVWatts model
    pvsystem.pvwatts_dc
    inverter.pvwatts
    pvsystem.pvwatts_losses
-
-Functions for fitting diode models
-----------------------------------
-
-.. autosummary::
-   :toctree: generated/
-
-    ivtools.fit_sde_sandia
-    ivtools.fit_sdm_cec_sam
-    ivtools.fit_sdm_desoto
 
 Other
 -----

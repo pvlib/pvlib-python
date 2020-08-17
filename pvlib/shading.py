@@ -8,14 +8,14 @@ import pandas as pd
 from pvlib.tools import sind, cosd
 
 
-def masking_angle(surface_tilt, gcr, height):
+def masking_angle(surface_tilt, gcr, slant_height):
     """
     The elevation angle below which diffuse irradiance is blocked.
 
     The ``height`` parameter determines how far up the module's surface to
     evaluate the masking angle.  The lower the point, the steeper the masking
     angle [1]_.  SAM uses a "worst-case" approach where the masking angle
-    is calculated for the bottom of the array (i.e. ``height=0``) [2]_.
+    is calculated for the bottom of the array (i.e. ``slant_height=0``) [2]_.
 
     Parameters
     ----------
@@ -25,9 +25,9 @@ def masking_angle(surface_tilt, gcr, height):
     gcr : float
         The ground coverage ratio of the array [unitless].
 
-    height : numeric
+    slant_height : numeric
         The distance up the module's slant height to evaluate the masking
-        angle, as a fraction [0-1] of the module height [unitless].
+        angle, as a fraction [0-1] of the module slant height [unitless].
 
     Returns
     -------
@@ -52,8 +52,8 @@ def masking_angle(surface_tilt, gcr, height):
     # The original equation (8 in [1]) requires pitch and collector width,
     # but it's easy to non-dimensionalize it to make it a function of GCR
     # by factoring out B from the argument to arctan.
-    numerator = (1 - height) * sind(surface_tilt)
-    denominator = 1/gcr - (1 - height) * cosd(surface_tilt)
+    numerator = (1 - slant_height) * sind(surface_tilt)
+    denominator = 1/gcr - (1 - slant_height) * cosd(surface_tilt)
     phi = np.arctan(numerator / denominator)
     return np.degrees(phi)
 
@@ -158,11 +158,11 @@ def sky_diffuse_passias(masking_angle):
     be partially blocked by the row in front. This causes a reduction in the
     diffuse irradiance incident on the module. The reduction depends on the
     masking angle, the elevation angle from a point on the shaded module to
-    the top of the shading row.  SAM assumes the "worst-case" loss where the
-    masking angle is calculated for the bottom of the array [1]_. In [2]_
-    the masking angle is calculated as the average across the module height.
+    the top of the shading row. In [1]_ the masking angle is calculated as
+    the average across the module height. SAM assumes the "worst-case" loss
+    where the masking angle is calculated for the bottom of the array [2]_.
 
-    This function, as in [2]_, makes the assumption that sky diffuse
+    This function, as in [1]_, makes the assumption that sky diffuse
     irradiance is isotropic.
 
     Parameters
@@ -183,11 +183,11 @@ def sky_diffuse_passias(masking_angle):
 
     References
     ----------
-    .. [1] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
-       Reference Update", NREL Technical Report NREL/TP-6A20-67399.
-       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
-    .. [2] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
+    .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
        DOI: 10.1016/0379-6787(84)90017-6
+    .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
+       Reference Update", NREL Technical Report NREL/TP-6A20-67399.
+       Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     """
     return 1 - cosd(masking_angle/2)**2

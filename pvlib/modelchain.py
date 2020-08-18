@@ -34,7 +34,7 @@ SAPM_CONFIG = dict(
 )
 # update when full pvsyst models are known
 PVSYST_CONFIG = dict(
-    dc_model='pvsyst'
+    dc_model='pvsyst', spectral_model='no_loss'
 )
 
 
@@ -411,8 +411,9 @@ class ModelChain(object):
             Name of ModelChain instance.
 
         **kwargs
-            Arbitrary keyword arguments. Included for compatibility, but not
-            used.
+            Parameters supplied here are passed to the ModelChain
+            constructor and take precedence over the default
+            configuration.
 
         Examples
         --------
@@ -437,8 +438,8 @@ class ModelChain(object):
           temperature_model: sapm_temp
           losses_model: pvwatts_losses
         """
-
-        kwargs.update(PVWATTS_CONFIG)
+        config = PVWATTS_CONFIG.copy()
+        config.update(kwargs)
         return ModelChain(
             system, location,
             orientation_strategy=orientation_strategy,
@@ -446,7 +447,7 @@ class ModelChain(object):
             airmass_model=airmass_model,
             temperature_model=temperature_model,
             name=name,
-            **kwargs
+            **config
         )
 
     @classmethod
@@ -494,8 +495,9 @@ class ModelChain(object):
             Name of ModelChain instance.
 
         **kwargs
-            Arbitrary keyword arguments. Included for compatibility, but not
-            used.
+            Parameters supplied here are passed to the ModelChain
+            constructor and take precedence over the default
+            configuration.
 
         Examples
         --------
@@ -522,8 +524,8 @@ class ModelChain(object):
           temperature_model: sapm_temp
           losses_model: no_extra_losses
         """
-
-        kwargs.update(SAPM_CONFIG)
+        config = SAPM_CONFIG.copy()
+        config.update(kwargs)
         return ModelChain(
             system, location,
             orientation_strategy=orientation_strategy,
@@ -532,7 +534,7 @@ class ModelChain(object):
             solar_position_method=solar_position_method,
             airmass_model=airmass_model,
             name=name,
-            **kwargs
+            **config
         )
 
     # update when full pvsyst models are known
@@ -581,8 +583,9 @@ class ModelChain(object):
             Name of ModelChain instance.
 
         **kwargs
-            Arbitrary keyword arguments. Included for compatibility, but not
-            used.
+            Parameters supplied here are passed to the ModelChain
+            constructor and take precedence over the default
+            configuration.
 
         Examples
         --------
@@ -609,8 +612,8 @@ class ModelChain(object):
           temperature_model: sapm_temp
           losses_model: no_extra_losses
         """
-
-        kwargs.update(PVSYST_CONFIG)
+        config = PVSYST_CONFIG.copy()
+        config.update(kwargs)
         return ModelChain(
             system, location,
             orientation_strategy=orientation_strategy,
@@ -619,7 +622,7 @@ class ModelChain(object):
             solar_position_method=solar_position_method,
             airmass_model=airmass_model,
             name=name,
-            **kwargs
+            **config
         )
 
     def __repr__(self):

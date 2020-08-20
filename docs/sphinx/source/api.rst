@@ -354,6 +354,12 @@ Effects on PV System Output
    soiling.hsu
    soiling.kimber
 
+.. autosummary::
+   :toctree: generated/
+
+   shading.masking_angle
+   shading.masking_angle_passias
+   shading.sky_diffuse_passias
 
 
 Tracking

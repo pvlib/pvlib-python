@@ -17,6 +17,7 @@ def columns():
         'relative_humidity_flag', 'SOIL_MOISTURE_5', 'SOIL_TEMPERATURE_5',
         'WETNESS', 'WET_FLAG', 'wind_speed', 'wind_speed_flag']
 
+
 @pytest.fixture
 def dtypes():
     return [

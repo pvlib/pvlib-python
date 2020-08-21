@@ -63,6 +63,7 @@ def test_read_crn(testfile, columns, dtypes):
 
 
 def test_read_crn_problems(testfile_problems, columns, dtypes):
+    # GH1025
     index = pd.DatetimeIndex(['2020-07-06 12:00:00',
                               '2020-07-06 13:10:00'],
                              freq=None).tz_localize('UTC')

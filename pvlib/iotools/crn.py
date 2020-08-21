@@ -33,7 +33,7 @@ WIDTHS[-1] -= 1
 
 # specify dtypes for potentially problematic values
 DTYPES = [
-    'int64', 'int64', 'int64', 'int64', 'int64', 'int64', 'float64', 'float64',
+    'int64', 'int64', 'int64', 'int64', 'int64', 'str', 'float64', 'float64',
     'float64', 'float64', 'float64', 'int64', 'float64', 'O', 'int64',
     'float64', 'int64', 'float64', 'float64', 'int64', 'int64', 'float64',
     'int64'
@@ -78,9 +78,13 @@ def read_crn(filename):
        Amer. Meteor. Soc., 94, 489-498. :doi:`10.1175/BAMS-D-12-00170.1`
     """
 
-    # read in data
+    # read in data. set fields with NUL characters to NaN
     data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '),
-                       widths=WIDTHS)
+                       widths=WIDTHS, na_values=['\x00\x00\x00\x00\x00\x00'])
+    # at this point we only have NaNs from NUL characters, not -999 etc.
+    # these bad rows need to be removed so that dtypes can be set.
+    # NaNs require float dtype so we run into errors if we don't do this.
+    data = data.dropna(axis=0)
     # loop here because dtype kwarg not supported in read_fwf until 0.20
     for (col, _dtype) in zip(data.columns, DTYPES):
         data[col] = data[col].astype(_dtype)
@@ -98,7 +102,7 @@ def read_crn(filename):
     except TypeError:
         pass
 
-    # set nans
+    # now we can set nans
     for val in [-99, -999, -9999]:
         data = data.where(data != val, np.nan)
 

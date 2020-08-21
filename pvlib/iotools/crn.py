@@ -109,8 +109,11 @@ def read_crn(filename):
     except TypeError:
         pass
 
-    # now we can set nans
+    # Now we can set nans. This could be done a per column basis to be
+    # safer, since in principle a real -99 value could occur in a -9999
+    # column. Very unlikely to see that in the real world.
     for val in [-99, -999, -9999]:
+        # consider replacing with .replace([-99, -999, -9999])
         data = data.where(data != val, np.nan)
 
     data = data.rename(columns=VARIABLE_MAP)

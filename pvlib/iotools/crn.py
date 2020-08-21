@@ -67,6 +67,13 @@ def read_crn(filename):
     e.g. `SOLAR_RADIATION` becomes `ghi`. See the
     `pvlib.iotools.crn.VARIABLE_MAP` dict for the complete mapping.
 
+    CRN files occasionally have a set of null characters on a line
+    instead of valid data. This function drops those lines. Sometimes
+    these null characters appear on a line of their own and sometimes
+    they occur on the same line as valid data. In the latter case, the
+    valid data will not be returned. Users may manually remove the null
+    characters and reparse the file if they need that line.
+
     References
     ----------
     .. [1] U.S. Climate Reference Network

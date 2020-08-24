@@ -18,6 +18,16 @@ from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
 
+WEATHER_KEYS = set(['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
+                    'precipitable_water'])
+
+POA_DATA_KEYS = set(['poa_global', 'poa_direct', 'poa_diffuse'])
+
+TEMPERATURE_KEYS = set(['module_temperature', 'cell_temperature'])
+
+DATA_KEYS = WEATHER_KEYS | POA_DATA_KEYS | TEMPERATURE_KEYS
+
+
 def basic_chain(times, latitude, longitude,
                 module_parameters, temperature_model_parameters,
                 inverter_parameters,
@@ -895,17 +905,23 @@ class ModelChain(object):
         """
         if not set(req) <= set(data.columns):
             raise ValueError(
-                "Incomplete weather or irradiance data.\n"
-                "Data set needs to contain {0}.\n"
-                "Detected data: {1}".format(req, list(data.columns)))
+                "Incomplete input data.\n"
+                "Data needs to contain {0}.\n"
+                "Detected data contains: {1}".format(req, list(data.columns)))
         return
 
-    def _assign_weather(self, weather):
-        self.weather = weather
+    def _assign_weather(self, data):
+        key_list = [k for k in WEATHER_KEYS if k in data]
+        self.weather = data[key_list].copy()
         if self.weather.get('wind_speed') is None:
             self.weather['wind_speed'] = 0
         if self.weather.get('temp_air') is None:
             self.weather['temp_air'] = 20
+        return self
+
+    def _assign_total_irrad(self, data):
+        key_list = [k for k in POA_DATA_KEYS if k in data]
+        self.total_irrad = data[key_list].copy()
         return self
 
     def prepare_inputs(self, weather, times=None):
@@ -916,10 +932,10 @@ class ModelChain(object):
         Parameters
         ----------
         weather : DataFrame
-            Irradiance column names must include ``'dni'``, ``'ghi'``, and
-            ``'dhi'``. Optional column names include ``'temp_air'`` and
+            Column names must include ``'dni'``, ``'ghi'``, and ``'dhi'``.
+            Optional column names include ``'temp_air'`` and
             ``'wind_speed'``; if not provided, air temperature of 20 C and wind
-            speed of 0 m/s are added to the DataFrame.
+            speed of 0 m/s are assumed.
         times : None, deprecated
             Deprecated argument included for API compatibility, but not
             used internally. The index of the weather DataFrame is used
@@ -982,7 +998,7 @@ class ModelChain(object):
 
         return self
 
-    def prepare_inputs_from_poa(self, data, weather):
+    def prepare_inputs_from_poa(self, data):
         """
         Prepare the solar position, irradiance, and irradiance inputs to
         the model, starting with plane-of-array irradiance.
@@ -992,27 +1008,25 @@ class ModelChain(object):
         data : DataFrame
             Contains plane-of-array irradiance data. Required column names
             include ``'poa_global'``, ``'poa_direct'`` and ``'poa_diffuse'``.
-        weather : DataFrame
-            Contains temperature and other weather data. Assigned to the
-            ``weather`` attribute.  If column names ``'temp_air'`` and
+            Columns with weather-related data are ssigned to the
+            ``weather`` attribute.  If columns for ``'temp_air'`` and
             ``'wind_speed'`` are not provided, air temperature of 20 C and wind
-            speed of 0 m/s are added to the DataFrame.
+            speed of 0 m/s are assumed.
 
         Notes
         -----
         Assigns attributes: ``weather``, ``total_irrad``, ``solar_position``,
-        ``airmass``, ``aoi``
+        ``airmass``, ``aoi``, ``temperature``.
 
         See also
         --------
         pvlib.modelchain.ModelChain.prepare_inputs
         """
 
-        self._assign_weather(weather)
+        self._assign_weather(data)
 
         self._verify_df(data, req=['poa_global', 'poa_direct', 'poa_diffuse'])
-
-        self.total_irrad = data[['poa_global', 'poa_direct', 'poa_diffuse']]
+        self._assign_total_irrad(data)
 
         self._prep_inputs_solar_pos()
         self._prep_inputs_airmass()
@@ -1024,6 +1038,68 @@ class ModelChain(object):
 
         return self
 
+    def prepare_temperature(self, data=None):
+        """
+        Sets cell_temperature using inputs in data and the specified
+        temperature model.
+
+        If 'data' contains 'cell_temperature', these values are assigned to
+        attribute ``cell_temperature``. If 'data' contains 'module_temperature`
+        and `temperature_model' is 'sapm', cell temperature is calculated using
+        :py:func:`pvlib.temperature.sapm_celL_from_module`. Otherwise, cell
+        temperature is calculated by 'temperature_model'.
+
+        Parameters
+        ----------
+        data : DataFrame, default None
+            May contain columns ``'cell_temperature'`` or
+            ``'module_temperaure'``.
+
+        Returns
+        -------
+        self
+
+        Assigns attribute ``cell_temperature``.
+
+        """
+        try:
+            self.cell_temperature = data['cell_temperature']
+            if self.temperature_model is not None:
+                warnings.warn('using ''cell_temperature'' provided in input',
+                              ' rather than specified temperature model: {0}'
+                              .format(self.temperature_model.__name__))
+            return self
+        except:
+            pass
+
+        # cell_temperature is not in input. Calculate cell_temperature using
+        # a temperature_model.
+        # If module_temperature is in input data we can use the SAPM cell
+        # temperature model.
+        if ('module_temperature' in data) and \
+            (self.temperature_model.__name__ == 'sapm'):
+            # use SAPM cell temperature model only
+            self.cell_temperature = pvlib.temperature.sapm_cell_from_module(
+                module_temperature=data['module_temperature'],
+                poa_global=self.total_irrad['poa_global'],
+                deltaT=self.temperature_model_parameters['deltaT'])
+            return self
+
+        # Calculate cell temperature from weather data. Cell temperature models
+        # expect total_irrad['poa_global']. If not found, substitute
+        # self.effective_irradiance.
+        if 'poa_global' not in self.total_irrad:
+            try:
+                self.total_irrad['poa_global'] = self.effective_irradiance
+            except AttributeError:
+                # poa_global nor effective_irradiance is found.
+                raise ValueError(
+                    "Incomplete irradiance data for cell temperature model."
+                    " Provide total_irrad['poa_global'] (preferred) or"
+                    " attribute effective_irradiance.")
+        self.cell_temperature = self.temperature_model()
+        return self
+
     def run_model(self, weather, times=None):
         """
         Run the model chain starting with broadband global, diffuse and/or
@@ -1033,9 +1109,12 @@ class ModelChain(object):
         ----------
         weather : DataFrame
             Irradiance column names must include ``'dni'``, ``'ghi'``, and
-            ``'dhi'``. Optional column names include ``'temp_air'`` and
-            ``'wind_speed'``; if not provided, air temperature of 20 C and wind
-            speed of 0 m/s are added to the DataFrame.
+            ``'dhi'``. If optional columns ``'temp_air'`` and ``'wind_speed'``
+            are not provided, air temperature of 20 C and wind speed of 0 m/s
+            are added to the DataFrame. If optional column
+            ``'cell_temperature'`` is provided, these values are used instead
+            of `temperature_model`. If optional column `module_temperature`
+            is provided, `temperature_model` must be ``'sapm'``.
         times : None, deprecated
             Deprecated argument included for API compatibility, but not
             used internally. The index of the weather DataFrame is used
@@ -1045,11 +1124,12 @@ class ModelChain(object):
         -------
         self
 
-        Assigns attributes: ``solar_position``, ``airmass``, ``irradiance``,
-        ``total_irrad``, ``effective_irradiance``, ``weather``,
-        ``cell_temperature``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
-        ``dc``, ``ac``, ``losses``,
-        ``diode_params`` (if dc_model is a single diode model)
+        Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
+        ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
+        and ``effective_irradiance``.
+        Calls method `run_model_from_effective_irradiance`
+        to assign ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode model).
         """
         if times is not None:
             warnings.warn('times keyword argument is deprecated and will be '
@@ -1061,7 +1141,7 @@ class ModelChain(object):
         self.spectral_model()
         self.effective_irradiance_model()
 
-        self.run_model_from_effective_irradiance()
+        self.run_model_from_effective_irradiance(weather)
 
         return self
 
@@ -1073,9 +1153,6 @@ class ModelChain(object):
         plane of array. Reflections and spectral adjustments are made to
         calculate effective irradiance (W/m2).
 
-        Data can include columns ``'temp_air'`` and ``'wind_speed'``; if not
-        provided, air temperature of 20 C and wind speed of 0 m/s are assumed.
-
         This method calculates:
             * effective irradiance
             * cell temperature
@@ -1086,15 +1163,23 @@ class ModelChain(object):
         ----------
         data : DataFrame
             Required column names must include ``'poa_global'``,
-            ``'poa_direct'`` and ``'poa_diffuse'``.
+            ``'poa_direct'`` and ``'poa_diffuse'``. If optional columns
+            ``'temp_air'`` and ``'wind_speed'`` are not provided, air
+            temperature of 20 C and wind speed of 0 m/s are assumed.
+            If optional column ``'cell_temperature'`` is provided, these values
+            are used instead of `temperature_model`. If optional column
+            `module_temperature` is provided, `temperature_model` must be
+            ``'sapm'``.
 
         Returns
         -------
         self
 
-        Assigns attributes: ``weather``, ``effective_irradiance``,
-        ``cell_temperature``, ``dc``, ``ac``, ``losses``, ``diode_params``
-        (if dc_model is a single diode model)
+        Assigns attributes: ``weather``, ``total_irrad``, ``solar_position``,
+        ``airmass``, ``aoi`` and ``effective_irradiance``.
+        Calls `run_model_from_effective_irradiance`
+        to assign ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode model)
         """
 
         self.prepare_inputs_from_poa(data)
@@ -1103,24 +1188,18 @@ class ModelChain(object):
         self.spectral_model()
         self.effective_irradiance_model()
 
-        self.run_model_from_effective_irradiance()
+        self.run_model_from_effective_irradiance(data)
 
         return self
 
-    def run_model_from_effective_irradiance(self):
+    def run_model_from_effective_irradiance(self, data=None):
         """
         Run the model starting with effective irradiance in the plane of array.
 
+        Effective irradiance is irradiance in the plane-of-array after any
+        adjustments for soiling, reflections and spectrum.
+
         Attribute `ModelChain.effective_irradiance` is required.
-
-        Plane-of-array irradiance is broadband irradiance (W/m2) in the plane
-        of array without accounting for soiling or reflections. Effective
-        irradiance (W/m2) takes into account soiling, reflections and spectrum
-        adjustments.
-
-        Attribute `ModelChain.weather` (DataFrame) can include columns
-        ``'wind_speed'`` and ``'temp_air'``; if not, air temperature of 20 C
-        and wind speed of 0 m/s are assumed.
 
         This method calculates:
             * cell temperature
@@ -1129,28 +1208,20 @@ class ModelChain(object):
 
         Parameters
         ----------
+        data : DataFrame, default None
+            May contain columns ``'cell_temperature'`` or
+            ``'module_temperaure'``.
 
         Returns
         -------
         self
 
-        Assigns attributes: ``cell_temperature``, ``dc``, ``ac``,
-        ``losses``, ``diode_params`` (if dc_model is a single diode model)
+        Assigns attributes: ``effective_irradiance``, ``cell_temperature``,
+        ``dc``, ``ac``, ``losses``, ``diode_params`` (if dc_model is a single
+        diode model).
         """
 
-        # assign poa_global column for the temperature model
-        if 'poa_global' not in self.total_irrad.columns:
-            try:
-                self.total_irrad['poa_global'] = \
-                    self.effective_irradiance
-            except KeyError:
-                # both missing
-                raise ValueError(
-                    "Incomplete irradiance data. Weather must include "
-                    "'effective_irradiance'.\n"
-                    "Detected data: {0}".format(list(self.weather.columns)))
-
-        self.temperature_model()
+        self.prepare_temperature(data)
         self.dc_model()
         self.losses_model()
         self.ac_model()

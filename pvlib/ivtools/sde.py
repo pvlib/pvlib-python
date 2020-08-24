@@ -261,7 +261,7 @@ def _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
 
 def _calc_I0(iph, current, voltage, gsh, rs, nNsVth):
     return (iph - current - gsh * (voltage + rs * current)) / \
-        np.exp1m((voltage + rs * current) / nNsVth)
+        np.expm1((voltage + rs * current) / nNsVth)
 
 
 def _fit_sandia_cocontent(voltage, current, nsvth):

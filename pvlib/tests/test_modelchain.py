@@ -170,11 +170,6 @@ def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     ModelChain(sapm_dc_snl_ac_system, location)
 
 
-def test_with_pvsyst(pvsyst_dc_snl_ac_system, location):
-    mc = ModelChain.with_pvsyst(pvsyst_dc_snl_ac_system, location)
-    assert mc.dc_model == mc.pvsyst
-
-
 def test_with_sapm(sapm_dc_snl_ac_system, location):
     mc = ModelChain.with_sapm(sapm_dc_snl_ac_system, location)
     assert mc.dc_model == mc.sapm

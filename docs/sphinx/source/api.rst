@@ -223,6 +223,8 @@ Incident angle modifiers
    iam.martin_ruiz_diffuse
    iam.sapm
    iam.interp
+   iam.marion_diffuse
+   iam.marion_integrate
 
 PV temperature models
 ---------------------
@@ -263,10 +265,38 @@ Low-level functions for solving the single diode equation.
    singlediode.bishop88_v_from_i
    singlediode.bishop88_mpp
 
-SAPM model
-----------
+Functions for fitting diode models
 
-Functions relevant for the SAPM model.
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.fit_sde_sandia
+    ivtools.fit_sdm_cec_sam
+    ivtools.fit_sdm_desoto
+
+Inverter models (DC to AC conversion)
+-------------------------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.sandia
+   inverter.adr
+   inverter.pvwatts
+
+Functions for fitting inverter models
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.fit_sandia
+
+
+PV System Models
+----------------
+
+Sandia array performance model (SAPM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
@@ -275,28 +305,27 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_effective_irradiance
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
-   pvsystem.snlinverter
-   pvsystem.adrinverter
+   inverter.sandia
    temperature.sapm_cell
 
-PVSyst model
--------------
-
-Functions relevant for the PVSyst model.
+Pvsyst model
+^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
    pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
+   pvsystem.calcparams_pvsyst
+   pvsystem.singlediode
 
 PVWatts model
--------------
+^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
 
    pvsystem.pvwatts_dc
-   pvsystem.pvwatts_ac
+   inverter.pvwatts
    pvsystem.pvwatts_losses
 
 Estimating PV model parameters
@@ -334,7 +363,6 @@ Other
    :toctree: generated/
 
    pvsystem.retrieve_sam
-   pvsystem.systemdef
    pvsystem.scale_voltage_current_power
 
 
@@ -354,6 +382,12 @@ Effects on PV System Output
    soiling.hsu
    soiling.kimber
 
+.. autosummary::
+   :toctree: generated/
+
+   shading.masking_angle
+   shading.masking_angle_passias
+   shading.sky_diffuse_passias
 
 
 Tracking

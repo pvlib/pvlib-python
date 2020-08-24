@@ -3,19 +3,17 @@ Import functions for TMY2 and TMY3 data files.
 """
 
 import datetime
-import io
 import re
-from urllib.request import urlopen, Request
 import pandas as pd
 
 
-def read_tmy3(filename=None, coerce_year=None, recolumn=True):
+def read_tmy3(filename, coerce_year=None, recolumn=True):
     '''
     Read a TMY3 file in to a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
     from the TMY3 file (i.e. units are retained). In the case of any
-    discrepencies between this documentation and the TMY3 User's Manual
+    discrepancies between this documentation and the TMY3 User's Manual
     [1]_, the TMY3 User's Manual takes precedence.
 
     The TMY3 files were updated in Jan. 2015. This function requires the
@@ -23,9 +21,8 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
 
     Parameters
     ----------
-    filename : None or string, default None
-        If None, attempts to use a Tkinter file browser. A string can be
-        a relative file path, absolute file path, or url.
+    filename : str
+        A relative file path or absolute file path.
 
     coerce_year : None or int, default None
         If supplied, the year of the index will be set to `coerce_year`, except
@@ -161,34 +158,18 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
        Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
     '''
 
-    if filename is None:
-        try:
-            filename = _interactive_load()
-        except ImportError:
-            raise ImportError('Interactive load failed. tkinter not supported '
-                              'on this system. Try installing X-Quartz and '
-                              'reloading')
-
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    if str(filename).startswith('http'):
-        request = Request(filename, headers={'User-Agent': (
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) '
-            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 '
-            'Safari/537.36')})
-        response = urlopen(request)
-        csvdata = io.StringIO(response.read().decode(errors='ignore'))
-    else:
-        # assume it's accessible via the file system
-        csvdata = open(str(filename), 'r')
-
-    # read in file metadata, advance buffer to second line
-    firstline = csvdata.readline()
-    if 'Request Rejected' in firstline:
-        raise IOError('Remote server rejected TMY file request')
+    with open(str(filename), 'r') as csvdata:
+        # read in file metadata, advance buffer to second line
+        firstline = csvdata.readline()
+        # use pandas to read the csv file buffer
+        # header is actually the second line, but tell pandas to look for
+        # header information on the 1st line (0 indexing) because we've already
+        # advanced past the true first line with the readline call above.
+        data = pd.read_csv(csvdata, header=0)
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
-
     # convert metadata strings to numeric types
     meta['altitude'] = float(meta['altitude'])
     meta['latitude'] = float(meta['latitude'])
@@ -196,11 +177,6 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     meta['TZ'] = float(meta['TZ'])
     meta['USAF'] = int(meta['USAF'])
 
-    # use pandas to read the csv file/stringio buffer
-    # header is actually the second line in file, but tell pandas to look for
-    # header information on the 1st line (0 indexing) because we've already
-    # advanced past the true first line with the readline call above.
-    data = pd.read_csv(csvdata, header=0)
     # get the date column as a pd.Series of numpy datetime64
     data_ymd = pd.to_datetime(data['Date (MM/DD/YYYY)'], format='%m/%d/%Y')
     # shift the time column so that midnite is 00:00 instead of 24:00
@@ -229,13 +205,6 @@ def read_tmy3(filename=None, coerce_year=None, recolumn=True):
     data = data.tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
-
-
-def _interactive_load():
-    import tkinter
-    from tkinter.filedialog import askopenfilename
-    tkinter.Tk().withdraw()  # Start interactive file input
-    return askopenfilename()
 
 
 def _recolumn(tmy3_dataframe):
@@ -295,9 +264,8 @@ def read_tmy2(filename):
 
     Parameters
     ----------
-    filename : None or string
-        If None, attempts to use a Tkinter file browser. A string can be
-        a relative file path, absolute file path, or url.
+    filename : str
+        A relative or absolute file path.
 
     Returns
     -------
@@ -411,14 +379,6 @@ def read_tmy2(filename):
     .. [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
        for TMY2s". NREL 1995.
     '''
-
-    if filename is None:
-        try:
-            filename = _interactive_load()
-        except ImportError:
-            raise ImportError('Interactive load failed. tkinter not supported '
-                              'on this system. Try installing X-Quartz and '
-                              'reloading')
 
     # paste in the column info as one long line
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'  # noqa: E501

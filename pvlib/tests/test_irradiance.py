@@ -9,12 +9,11 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_almost_equal, assert_allclose
 
-from pandas.util.testing import assert_frame_equal, assert_series_equal
+from conftest import assert_frame_equal, assert_series_equal
 
 from pvlib import irradiance
 
-from conftest import (needs_numpy_1_10, pandas_0_22,
-                      requires_ephem, requires_numba)
+from conftest import (needs_numpy_1_10, requires_ephem, requires_numba)
 
 
 # fixtures create realistic test input data
@@ -237,11 +236,8 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
         columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
         index=irrad_data.index
     )
-    if pandas_0_22():
-        expected_for_sum = expected['sky_diffuse'].copy()
-        expected_for_sum.iloc[2] = 0
-    else:
-        expected_for_sum = expected['sky_diffuse']
+    expected_for_sum = expected['sky_diffuse'].copy()
+    expected_for_sum.iloc[2] = 0
     sum_components = out.iloc[:, 1:].sum(axis=1)
     sum_components.name = 'sky_diffuse'
 

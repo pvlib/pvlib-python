@@ -241,26 +241,27 @@ def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
 def _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     # Used by fit_sandia_simple.
     nNsVth = 1.0 / beta3
-    Rs = beta4 / beta3
-    Gp = beta1 / (1.0 - Rs * beta1)
-    Rsh = 1.0 / Gp
-    IL = (1 + Gp * Rs) * beta0
+    rs = beta4 / beta3
+    gsh = beta1 / (1.0 - rs * beta1)
+    rsh = 1.0 / gsh
+    iph = (1 + gsh * rs) * beta0
     # calculate I0
-    I0_vmp = _calc_I0(IL, i_mp, v_mp, Gp, Rs, nNsVth)
-    I0_voc = _calc_I0(IL, 0, v_oc, Gp, Rs, nNsVth)
-    if any(np.isnan([I0_vmp, I0_voc])) or ((I0_vmp <= 0) and (I0_voc <= 0)):
+    io_vmp = _calc_I0(v_mp, i_mp, iph, gsh, rs, nNsVth)
+    io_voc = _calc_I0(iph, 0, v_oc, gsh, rs, nNsVth)
+    if any(np.isnan([io_vmp, io_voc])) or ((io_vmp <= 0) and (io_voc <= 0)):
         raise RuntimeError("Parameter extraction failed: I0 is undetermined.")
-    elif (I0_vmp > 0) and (I0_voc > 0):
-        I0 = 0.5 * (I0_vmp + I0_voc)
-    elif (I0_vmp > 0):
-        I0 = I0_vmp
-    else:  # I0_voc > 0
-        I0 = I0_voc
-    return IL, I0, Rs, Rsh, nNsVth
+    elif (io_vmp > 0) and (io_voc > 0):
+        io = 0.5 * (io_vmp + io_voc)
+    elif (io_vmp > 0):
+        io = io_vmp
+    else:  # io_voc > 0
+        io = io_voc
+    return iph, io, rs, rsh, nNsVth
 
 
-def _calc_I0(IL, I, V, Gp, Rs, nNsVth):
-    return (IL - I - Gp * V - Gp * Rs * I) / np.exp((V + Rs * I) / nNsVth)
+def _calc_I0(iph, current, voltage, gsh, rs, nNsVth):
+    return (iph - current - gsh * (voltage + rs * current)) / \
+        np.exp1m((voltage + rs * current) / nNsVth)
 
 
 def _fit_sandia_cocontent(voltage, current, nsvth):

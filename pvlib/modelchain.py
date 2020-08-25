@@ -23,14 +23,22 @@ from pvlib.tools import _build_kwargs
 # established modeling sequences. They can be used in combination with
 # basic_chain and ModelChain. They are used by the ModelChain methods
 # ModelChain.with_pvwatts, ModelChain.with_sapm, etc.
+
+# pvwatts documentation states that it uses the following reference for
+# a temperature model: Fuentes, M. K. (1987). A Simplified Thermal Model
+# for Flat-Plate Photovoltaic Arrays. SAND85-0330. Albuquerque, NM:
+# Sandia National Laboratories. Accessed September 3, 2013:
+# http://prod.sandia.gov/techlib/access-control.cgi/1985/850330.pdf
+# pvlib python does not implement that model, so use the SAPM instead.
 PVWATTS_CONFIG = dict(
     dc_model='pvwatts', ac_model='pvwatts', losses_model='pvwatts',
     transposition_model='perez', aoi_model='physical',
-    spectral_model='no_loss'
+    spectral_model='no_loss', temperature_model='sapm'
 )
+
 SAPM_CONFIG = dict(
     dc_model='sapm', ac_model='sandia', losses_model='no_loss',
-    aoi_model='sapm', spectral_model='sapm'
+    aoi_model='sapm', spectral_model='sapm', temperature_model='sapm'
 )
 
 
@@ -370,7 +378,6 @@ class ModelChain(object):
                      orientation_strategy=None,
                      clearsky_model='ineichen',
                      airmass_model='kastenyoung1989',
-                     temperature_model=None,
                      name=None,
                      **kwargs):
         """
@@ -398,11 +405,6 @@ class ModelChain(object):
         airmass_model : str, default 'kastenyoung1989'
             Passed to location.get_airmass.
 
-        temperature_model: None, str or function, default None
-            Valid strings are 'sapm', 'pvsyst', and 'faiman'. The ModelChain
-            instance will be passed as the first argument to a user-defined
-            function.
-
         name: None or str, default None
             Name of ModelChain instance.
 
@@ -413,11 +415,12 @@ class ModelChain(object):
 
         Examples
         --------
-        >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=1)
-        >>> inverter_parameters = dict(pac0=1)
+        >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=4500)
+        >>> inverter_parameters = dict(pac0=4000)
         >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
         ...     module_parameters=module_parameters,
-        ...     inverter_parameters=inverter_parameters)
+        ...     inverter_parameters=inverter_parameters,
+        ...     temperature_parameters='open_rack_glass_glass')
         >>> location = Location(32.2, -110.9)
         >>> ModelChain.with_pvwatts(system, location)
         ModelChain:
@@ -441,7 +444,6 @@ class ModelChain(object):
             orientation_strategy=orientation_strategy,
             clearsky_model=clearsky_model,
             airmass_model=airmass_model,
-            temperature_model=temperature_model,
             name=name,
             **config
         )
@@ -503,7 +505,8 @@ class ModelChain(object):
         >>> inverter_parameters = invs['ABB__MICRO_0_25_I_OUTD_US_240__240V_']
         >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
         ...     module_parameters=module_parameters,
-        ...     inverter_parameters=inverter_parameters)
+        ...     inverter_parameters=inverter_parameters,
+        ...     temperature_parameters='open_rack_glass_glass')
         >>> location = Location(32.2, -110.9)
         >>> ModelChain.with_sapm(system, location)
         ModelChain:

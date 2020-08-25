@@ -237,8 +237,9 @@ class PVSystem(object):
         self.name = name
 
     def __repr__(self):
-        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
-                 'inverter', 'albedo', 'racking_model']
+        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module_type',
+                 'module', 'inverter', 'albedo', 'racking_model',
+                 'temperature_model_parameters']
         return ('PVSystem: \n  ' + '\n  '.join(
             ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 

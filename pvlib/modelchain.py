@@ -417,10 +417,11 @@ class ModelChain(object):
         --------
         >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=4500)
         >>> inverter_parameters = dict(pac0=4000)
+        >>> tparams = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
         >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
         ...     module_parameters=module_parameters,
         ...     inverter_parameters=inverter_parameters,
-        ...     temperature_parameters='open_rack_glass_glass')
+        ...     temperature_model_parameters=tparams)
         >>> location = Location(32.2, -110.9)
         >>> ModelChain.with_pvwatts(system, location)
         ModelChain:
@@ -436,7 +437,7 @@ class ModelChain(object):
           spectral_model: no_spectral_loss
           temperature_model: sapm_temp
           losses_model: pvwatts_losses
-        """
+        """  # noqa: E501
         config = PVWATTS_CONFIG.copy()
         config.update(kwargs)
         return ModelChain(
@@ -503,10 +504,11 @@ class ModelChain(object):
         >>> invs = pvlib.pvsystem.retrieve_sam('cecinverter')
         >>> module_parameters = mods['Canadian_Solar_CS5P_220M___2009_']
         >>> inverter_parameters = invs['ABB__MICRO_0_25_I_OUTD_US_240__240V_']
+        >>> tparams = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
         >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
         ...     module_parameters=module_parameters,
         ...     inverter_parameters=inverter_parameters,
-        ...     temperature_parameters='open_rack_glass_glass')
+        ...     temperature_model_parameters=tparams)
         >>> location = Location(32.2, -110.9)
         >>> ModelChain.with_sapm(system, location)
         ModelChain:
@@ -522,7 +524,7 @@ class ModelChain(object):
           spectral_model: sapm_spectral_loss
           temperature_model: sapm_temp
           losses_model: no_extra_losses
-        """
+        """  # noqa: E501
         config = SAPM_CONFIG.copy()
         config.update(kwargs)
         return ModelChain(

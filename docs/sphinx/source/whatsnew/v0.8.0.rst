@@ -48,6 +48,8 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`XXX`)
+* Handle NUL characters and fix version column dtype in
+  :py:func:`~pvlib.iotools.crn.read_crn`. (:issue:`1025`)
 
 Testing
 ~~~~~~~

@@ -1119,23 +1119,43 @@ def test_PVSystem_localize_with_latlon():
 
 
 def test_PVSystem___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
+    system = pvsystem.PVSystem(
+        module='blah', inverter='blarg', name='pv ftw',
+        temperature_model_parameters={'a': -3.56})
 
-    expected = ('PVSystem: \n  name: pv ftw\n  surface_tilt: 0\n  '
-                'surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  '
-                'albedo: 0.25\n  racking_model: open_rack')
-
+    expected = """PVSystem:
+  name: pv ftw
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: open_rack
+  module_type: glass_polymer
+  temperature_model_parameters: {'a': -3.56}"""
     assert system.__repr__() == expected
 
 
 def test_PVSystem_localize___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
+    system = pvsystem.PVSystem(
+        module='blah', inverter='blarg', name='pv ftw',
+        temperature_model_parameters={'a': -3.56})
     localized_system = system.localize(latitude=32, longitude=-111)
-
-    expected = ('LocalizedPVSystem: \n  name: None\n  latitude: 32\n  '
-                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
-                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
-                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
+    # apparently name is not preserved when creating a system using localize
+    expected = """LocalizedPVSystem:
+  name: None
+  latitude: 32
+  longitude: -111
+  altitude: 0
+  tz: UTC
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: open_rack
+  module_type: glass_polymer
+  temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
 
@@ -1158,16 +1178,24 @@ def test_LocalizedPVSystem_creation():
 
 
 def test_LocalizedPVSystem___repr__():
-    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
-                                                  longitude=-111,
-                                                  module='blah',
-                                                  inverter='blarg',
-                                                  name='my name')
+    localized_system = pvsystem.LocalizedPVSystem(
+        latitude=32, longitude=-111, module='blah', inverter='blarg',
+        name='my name', temperature_model_parameters={'a': -3.56})
 
-    expected = ('LocalizedPVSystem: \n  name: my name\n  latitude: 32\n  '
-                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
-                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
-                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
+    expected = """LocalizedPVSystem:
+  name: my name
+  latitude: 32
+  longitude: -111
+  altitude: 0
+  tz: UTC
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: open_rack
+  module_type: glass_polymer
+  temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
 

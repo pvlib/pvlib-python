@@ -358,26 +358,6 @@ class PVSystem(object):
         else:
             raise ValueError(model + ' is not a valid IAM model')
 
-    def ashraeiam(self, aoi):
-        """
-        Deprecated. Use ``PVSystem.get_iam`` instead.
-        """
-        import warnings
-        warnings.warn('PVSystem.ashraeiam is deprecated and will be removed in'
-                      'v0.8, use PVSystem.get_iam instead',
-                      pvlibDeprecationWarning)
-        return PVSystem.get_iam(self, aoi, iam_model='ashrae')
-
-    def physicaliam(self, aoi):
-        """
-        Deprecated. Use ``PVSystem.get_iam`` instead.
-        """
-        import warnings
-        warnings.warn('PVSystem.physicaliam is deprecated and will be removed'
-                      ' in v0.8, use PVSystem.get_iam instead',
-                      pvlibDeprecationWarning)
-        return PVSystem.get_iam(self, aoi, iam_model='physical')
-
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
@@ -542,16 +522,6 @@ class PVSystem(object):
             The SAPM spectral loss coefficient.
         """
         return sapm_spectral_loss(airmass_absolute, self.module_parameters)
-
-    def sapm_aoi_loss(self, aoi):
-        """
-        Deprecated. Use ``PVSystem.get_iam`` instead.
-        """
-        import warnings
-        warnings.warn('PVSystem.sapm_aoi_loss is deprecated and will be'
-                      ' removed in v0.8, use PVSystem.get_iam instead',
-                      pvlibDeprecationWarning)
-        return PVSystem.get_iam(self, aoi, iam_model='sapm')
 
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
@@ -1695,85 +1665,6 @@ def sapm(effective_irradiance, temp_cell, module):
     return out
 
 
-def _sapm_celltemp_translator(*args, **kwargs):
-    # TODO: remove this function after deprecation period for sapm_celltemp
-    new_kwargs = {}
-    # convert position arguments to kwargs
-    old_arg_list = ['poa_global', 'wind_speed', 'temp_air', 'model']
-    for pos in range(len(args)):
-        new_kwargs[old_arg_list[pos]] = args[pos]
-    # determine value for new kwarg 'model'
-    try:
-        param_set = new_kwargs['model']
-        new_kwargs.pop('model')  # model is not a new kwarg
-    except KeyError:
-        # 'model' not in positional arguments, check kwargs
-        try:
-            param_set = kwargs['model']
-            kwargs.pop('model')
-        except KeyError:
-            # 'model' not in kwargs, use old default value
-            param_set = 'open_rack_glass_glass'
-    if type(param_set) is list:
-        new_kwargs.update({'a': param_set[0],
-                           'b': param_set[1],
-                           'deltaT': param_set[2]})
-    elif type(param_set) is dict:
-        new_kwargs.update(param_set)
-    else:  # string
-        params = temperature._temperature_model_params('sapm', param_set)
-        new_kwargs.update(params)
-    new_kwargs.update(kwargs)  # kwargs with unchanged names
-    new_kwargs['irrad_ref'] = 1000  # default for new kwarg
-    # convert old positional arguments to named kwargs
-    return temperature.sapm_cell(**new_kwargs)
-
-
-sapm_celltemp = deprecated('0.7', alternative='temperature.sapm_cell',
-                           name='sapm_celltemp', removal='0.8',
-                           addendum='Note that the arguments and argument '
-                           'order for temperature.sapm_cell are different '
-                           'than for sapm_celltemp')(_sapm_celltemp_translator)
-
-
-def _pvsyst_celltemp_translator(*args, **kwargs):
-    # TODO: remove this function after deprecation period for pvsyst_celltemp
-    new_kwargs = {}
-    # convert position arguments to kwargs
-    old_arg_list = ['poa_global', 'temp_air', 'wind_speed', 'eta_m',
-                    'alpha_absorption', 'model_params']
-    for pos in range(len(args)):
-        new_kwargs[old_arg_list[pos]] = args[pos]
-    # determine value for new kwarg 'model'
-    try:
-        param_set = new_kwargs['model_params']
-        new_kwargs.pop('model_params')  # model_params is not a new kwarg
-    except KeyError:
-        # 'model_params' not in positional arguments, check kwargs
-        try:
-            param_set = kwargs['model_params']
-            kwargs.pop('model_params')
-        except KeyError:
-            # 'model_params' not in kwargs, use old default value
-            param_set = 'freestanding'
-    if type(param_set) in (list, tuple):
-        new_kwargs.update({'u_c': param_set[0],
-                           'u_v': param_set[1]})
-    else:  # string
-        params = temperature._temperature_model_params('pvsyst', param_set)
-        new_kwargs.update(params)
-    new_kwargs.update(kwargs)  # kwargs with unchanged names
-    # convert old positional arguments to named kwargs
-    return temperature.pvsyst_cell(**new_kwargs)
-
-
-pvsyst_celltemp = deprecated(
-    '0.7', alternative='temperature.pvsyst_cell', name='pvsyst_celltemp',
-    removal='0.8', addendum='Note that the argument names for '
-    'temperature.pvsyst_cell are different than '
-    'for pvsyst_celltemp')(_pvsyst_celltemp_translator)
-
-
 def sapm_spectral_loss(airmass_absolute, module):
     """
     Calculates the SAPM spectral loss coefficient, F1.
@@ -2450,18 +2341,6 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     losses = (1 - perf) * 100.
 
     return losses
-
-
-ashraeiam = deprecated('0.7', alternative='iam.ashrae', name='ashraeiam',
-                       removal='0.8')(iam.ashrae)
-
-
-physicaliam = deprecated('0.7', alternative='iam.physical', name='physicaliam',
-                         removal='0.8')(iam.physical)
-
-
-sapm_aoi_loss = deprecated('0.7', alternative='iam.sapm', name='sapm_aoi_loss',
-                           removal='0.8')(iam.sapm)
 
 
 snlinverter = deprecated('0.8', alternative='inverter.sandia',

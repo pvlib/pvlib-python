@@ -1318,14 +1318,17 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     assert out < pdc
 
 
-@fail_on_pvlib_version('0.8')
-def test_deprecated_08():
-    # deprecated function pvsystem.sapm_celltemp
+@fail_on_pvlib_version('0.9')
+def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
+    # deprecated function pvsystem.snlinverter
     with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_celltemp(1000, 25, 1)
-    # deprecated function pvsystem.pvsyst_celltemp
+        pvsystem.snlinverter(250, 40, cec_inverter_parameters)
+    # deprecated function pvsystem.adrinverter
     with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.pvsyst_celltemp(1000, 25)
+        pvsystem.adrinverter(1232, 154, adr_inverter_parameters)
+    # deprecated function pvsystem.spvwatts_ac
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.pvwatts_ac(90, 100, 0.95)
     module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
                          'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1,
                          'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
@@ -1338,82 +1341,3 @@ def test_deprecated_08():
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.PVSystem(module_parameters=module_parameters,
                           racking_model='open', module_type='glass_glass')
-    pv = pvsystem.PVSystem(module_parameters=module_parameters,
-                           temperature_model_parameters=temp_model_params,
-                           racking_model='open', module_type='glass_glass')
-    # deprecated method PVSystem.ashraeiam
-    with pytest.warns(pvlibDeprecationWarning):
-        pv.ashraeiam(45)
-    # deprecated function ashraeiam
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.ashraeiam(45)
-    # deprecated method PVSystem.physicaliam
-    with pytest.warns(pvlibDeprecationWarning):
-        pv.physicaliam(45)
-    # deprecated function physicaliam
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.physicaliam(45)
-    # deprecated method PVSystem.sapm_aoi_loss
-    with pytest.warns(pvlibDeprecationWarning):
-        pv.sapm_aoi_loss(45)
-    # deprecated function sapm_aoi_loss
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_aoi_loss(45, {'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
-                                    'B1': 0.0, 'B0': 1.0})
-
-
-@fail_on_pvlib_version('0.8')
-def test__pvsyst_celltemp_translator():
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, 5)
-    assert_allclose(result, 45.137, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, 5, 0.1, 0.9,
-                                                  [29.0, 0.0])
-    assert_allclose(result, 45.137, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(poa_global=900, temp_air=20,
-                                                  wind_speed=5)
-    assert_allclose(result, 45.137, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5)
-    assert_allclose(result, 45.137, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
-                                                  u_c=23.5, u_v=6.25,
-                                                  eta_m=0.1)
-    assert_allclose(result, 33.315, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
-                                                  eta_m=0.1,
-                                                  model_params=[23.5, 6.25])
-    assert_allclose(result, 33.315, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
-                                                  eta_m=0.1,
-                                                  model_params=(23.5, 6.25))
-    assert_allclose(result, 33.315, 0.001)
-
-
-@fail_on_pvlib_version('0.8')
-def test__sapm_celltemp_translator():
-    result = pvsystem._sapm_celltemp_translator(900, 5, 20,
-                                                'open_rack_glass_glass')
-    assert_allclose(result, 43.509, 3)
-    result = pvsystem._sapm_celltemp_translator(900, 5, temp_air=20,
-                                                model='open_rack_glass_glass')
-    assert_allclose(result, 43.509, 3)
-    params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
-        'open_rack_glass_glass']
-    result = pvsystem._sapm_celltemp_translator(900, 5, 20, params)
-    assert_allclose(result, 43.509, 3)
-    result = pvsystem._sapm_celltemp_translator(900, 5, 20,
-                                                [params['a'], params['b'],
-                                                 params['deltaT']])
-    assert_allclose(result, 43.509, 3)
-
-
-@fail_on_pvlib_version('0.9')
-def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
-    # deprecated function pvsystem.snlinverter
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.snlinverter(250, 40, cec_inverter_parameters)
-    # deprecated function pvsystem.adrinverter
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.adrinverter(1232, 154, adr_inverter_parameters)
-    # deprecated function pvsystem.spvwatts_ac
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.pvwatts_ac(90, 100, 0.95)

@@ -44,6 +44,9 @@ Enhancements
   (:pull:`1017`)
 * Add :py:func:`pvlib.inverter.fit_sandia` that fits the Sandia inverter model
   to a set of inverter efficiency curves. (:pull:`1011`)
+* Added *racking_model*, *module_type*, and *temperature_model_parameters* to
+  PVSystem, LocalizedPVSystem, SingleAxisTracker, and
+  LocalizedSingleAxisTracker repr methods. (:issue:`1027`)
 
 Bug fixes
 ~~~~~~~~~

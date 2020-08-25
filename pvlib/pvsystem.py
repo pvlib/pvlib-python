@@ -237,10 +237,10 @@ class PVSystem(object):
         self.name = name
 
     def __repr__(self):
-        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module_type',
-                 'module', 'inverter', 'albedo', 'racking_model',
+        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
+                 'inverter', 'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters']
-        return ('PVSystem: \n  ' + '\n  '.join(
+        return ('PVSystem:\n  ' + '\n  '.join(
             ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
     def get_aoi(self, solar_zenith, solar_azimuth):
@@ -899,8 +899,9 @@ class LocalizedPVSystem(PVSystem, Location):
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz',
                  'surface_tilt', 'surface_azimuth', 'module', 'inverter',
-                 'albedo', 'racking_model']
-        return ('LocalizedPVSystem: \n  ' + '\n  '.join(
+                 'albedo', 'racking_model', 'module_type',
+                 'temperature_model_parameters']
+        return ('LocalizedPVSystem:\n  ' + '\n  '.join(
             ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
 
 

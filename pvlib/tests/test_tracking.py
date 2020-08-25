@@ -440,11 +440,21 @@ def test_get_irradiance():
 def test_SingleAxisTracker___repr__():
     system = tracking.SingleAxisTracker(max_angle=45, gcr=.25,
                                         module='blah', inverter='blarg')
-    expected = ('SingleAxisTracker: \n  axis_tilt: 0\n  axis_azimuth: 0\n  '
-                'max_angle: 45\n  backtrack: True\n  gcr: 0.25\n  '
-                'name: None\n  surface_tilt: None\n  surface_azimuth: None\n  '
-                'module: blah\n  inverter: blarg\n  albedo: 0.25\n  '
-                'racking_model: open_rack')
+    expected = """SingleAxisTracker:
+  axis_tilt: 0
+  axis_azimuth: 0
+  max_angle: 45
+  backtrack: True
+  gcr: 0.25
+  name: None
+  surface_tilt: None
+  surface_azimuth: None
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: open_rack
+  module_type: glass_polymer
+  temperature_model_parameters: {'a': -3.56, 'b': -0.075, 'deltaT': 3}"""
     assert system.__repr__() == expected
 
 
@@ -454,12 +464,26 @@ def test_LocalizedSingleAxisTracker___repr__():
                                                            module='blah',
                                                            inverter='blarg',
                                                            gcr=0.25)
-
-    expected = ('LocalizedSingleAxisTracker: \n  axis_tilt: 0\n  '
-                'axis_azimuth: 0\n  max_angle: 90\n  backtrack: True\n  '
-                'gcr: 0.25\n  name: None\n  surface_tilt: None\n  '
-                'surface_azimuth: None\n  module: blah\n  inverter: blarg\n  '
-                'albedo: 0.25\n  racking_model: open_rack\n  '
-                'latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC')
+    # apparently the repr order is different for LocalizedSingleAxisTracker
+    # than for LocalizedPVSystem. maybe a MRO thing.
+    expected = """LocalizedSingleAxisTracker:
+  axis_tilt: 0
+  axis_azimuth: 0
+  max_angle: 90
+  backtrack: True
+  gcr: 0.25
+  name: None
+  surface_tilt: None
+  surface_azimuth: None
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: open_rack
+  module_type: glass_polymer
+  temperature_model_parameters: {'a': -3.56, 'b': -0.075, 'deltaT': 3}
+  latitude: 32
+  longitude: -111
+  altitude: 0
+  tz: UTC"""
 
     assert localized_system.__repr__() == expected

@@ -247,7 +247,7 @@ def _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     iph = (1 + gsh * rs) * beta0
     # calculate I0
     io_vmp = _calc_I0(v_mp, i_mp, iph, gsh, rs, nNsVth)
-    io_voc = _calc_I0(iph, 0, v_oc, gsh, rs, nNsVth)
+    io_voc = _calc_I0(v_oc, 0, iph, gsh, rs, nNsVth)
     if any(np.isnan([io_vmp, io_voc])) or ((io_vmp <= 0) and (io_voc <= 0)):
         raise RuntimeError("Parameter extraction failed: I0 is undetermined.")
     elif (io_vmp > 0) and (io_voc > 0):
@@ -259,7 +259,7 @@ def _sandia_simple_params(beta0, beta1, beta3, beta4, v_mp, i_mp, v_oc):
     return iph, io, rs, rsh, nNsVth
 
 
-def _calc_I0(iph, current, voltage, gsh, rs, nNsVth):
+def _calc_I0(voltage, current, iph, gsh, rs, nNsVth):
     return (iph - current - gsh * (voltage + rs * current)) / \
         np.expm1((voltage + rs * current) / nNsVth)
 

@@ -46,7 +46,7 @@ def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
     # bad IV curves for coverage of if/then in sde._sandia_simple_params
     v1, i1, v2, i2 = get_bad_iv_curves
     result = sde.fit_sandia_simple(voltage=v1, current=i1)
-    assert np.allclose(result, (-2.4322856072799985, 8.854688976836396,
+    assert np.allclose(result, (-2.4322856072799985, 8.826830831727355,
                                 111.18558915546389, -63.56227601452038,
                                 -137.9965046659527))
     result = sde.fit_sandia_simple(voltage=v2, current=i2)

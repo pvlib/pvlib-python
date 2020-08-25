@@ -72,7 +72,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Notes
     -----
-    The estimation method [1]_ minimizes a system of six equations.
+    The CEC model and estimation method  are described in [1]_.
     Inputs ``v_mp``, ``i_mp``, ``v_oc`` and ``i_sc`` are assumed to be from a
     single IV curve at constant irradiance and cell temperature. Irradiance is
     not explicitly used by the fitting procedure. The irradiance level at which
@@ -111,10 +111,9 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
                EgRef=1.121, dEgdT=-0.0002677, temp_ref=25, irrad_ref=1000,
                root_kwargs={}):
     """
-    Calculates the parameters for the De Soto single diode model using the
-    procedure described in [1]_.
+    Calculates the parameters for the De Soto single diode model.
 
-    This procedure has the advantage of
+    This procedure (described in [1]_) has the advantage of
     using common specifications given by manufacturers in the
     datasheets of PV modules.
 
@@ -262,7 +261,7 @@ def _system_of_equations_desoto(params, specs):
 
     Returns
     -------
-    system of equations to solve with scipy.optimize.root().
+    value of the system of equations to solve with scipy.optimize.root().
     """
 
     # six input known variables

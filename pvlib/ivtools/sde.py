@@ -147,8 +147,8 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     ----------
     .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
        0 86758 909 4
-    .. [2] C. B. Jones, C. W. Hansen, Single Diode Parameter Extraction from
-       In-Field Photovoltaic I-V Curves on a Single Board Computer, 46th IEEE
+    .. [2] C. B. Jones, C. W. Hansen, "Single Diode Parameter Extraction from
+       In-Field Photovoltaic I-V Curves on a Single Board Computer", 46th IEEE
        Photovoltaic Specialist Conference, Chicago, IL, 2019
     """
 
@@ -317,8 +317,8 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
     References
     ----------
     .. [1] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
-    .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
-       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+    .. [2] C. Hansen, "Parameter Estimation for Single Diode Models of
+       Photovoltaic Modules", Sandia National Laboratories Report SAND2015-2065
     .. [3] A. Ortiz-Conde, F. Garci'a Sa'nchez, J. Murci, "New method to
        extract the model parameters of solar cells from the explicit analytic
        solutions of their illuminated I-V characteristics", Solar Energy

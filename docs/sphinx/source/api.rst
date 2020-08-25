@@ -313,6 +313,7 @@ Pvsyst model
 
 .. autosummary::
    :toctree: generated/
+
    pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
@@ -339,6 +340,7 @@ Functions for fitting single diode models
     ivtools.sdm.fit_cec_sam
     ivtools.sdm.fit_desoto
     ivtools.sdm.fit_pvsyst_sandia
+    ivtools.sdm.fit_desoto_sandia
 
 Functions for fitting the single diode equation
 

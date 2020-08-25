@@ -6,7 +6,6 @@ dependencies:
     - coveralls
     - cython
     - ephem
-    - matplotlib
     - netcdf4
     - nose
     - numba

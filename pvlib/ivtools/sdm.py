@@ -7,7 +7,6 @@ Function names should follow the pattern "fit_" + name of model + "_" +
 """
 
 import numpy as np
-from collections import OrderedDict
 
 from pvlib.pvsystem import singlediode, v_from_i
 
@@ -128,8 +127,8 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     in A/K and V/K here.
 
     The parameters returned by this function can be used by
-    pvsystem.calcparams_desoto to calculate the values at different
-    irradiance and cell temperature.
+    :py:func:`pvlib.pvsystem.calcparams_desoto` to calculate the values at
+    different irradiance and cell temperature.
 
     Parameters
     ----------
@@ -310,38 +309,40 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     Parameters
     ----------
     ivcurves : dict
-        i[j] : array
-            current for jth IV curve (same length as v[j]) [A]
-        v[j] : array
-            voltage for the jth IV curve (same length as i[j]) [V]
-        ee[j] - float
-            effective irradiance, i.e., POA broadband irradiance adjusted by
-            solar spectrum modifier [W / m^2]
-        tc[j] - float
-            cell temperature [C]
-        i_sc[j] - float
-            short circuit current of IV curve [A]
-        v_oc[j] - float
-            open circuit voltage of IV curve [V]
-        i_mp[j] - float
-            current at max power point of IV curve [A]
-        v_mp[j] - float
-            voltage at max power point of IV curve [V]
+        i : array
+            One array element for each IV curve. The jth element is itself an
+            array of current for jth IV curve (same length as v[j]) [A]
+        v : array
+            One array element for each IV curve. The jth element is itself an
+            array of voltage for jth IV curve  (same length as i[j]) [V]
+        ee : array
+            effective irradiance for each IV curve, i.e., POA broadband
+            irradiance adjusted by solar spectrum modifier [W / m^2]
+        tc : array
+            cell temperature for each IV curve [C]
+        i_sc : array
+            short circuit current for each IV curve [A]
+        v_oc : array
+            open circuit voltage for each IV curve [V]
+        i_mp : array
+            current at max power point for each IV curve [A]
+        v_mp : array
+            voltage at max power point for each IV curve [V]
 
     specs : dict
-        cells_in_series - int
+        cells_in_series : int
             number of cells in series
-        alpha_sc - float
+        alpha_sc : float
             temperature coefficient of isc [A/C]
 
-    const : OrderedDict
-        E0 - float
+    const : dict
+        E0 : float
             effective irradiance at STC, default 1000 [W/m^2]
-        T0 - float
+        T0 : float
             cell temperature at STC, default 25 [C]
-        k - float
+        k : float
             1.38066E-23 J/K (Boltzmann's constant)
-        q - float
+        q : float
             1.60218E-19 Coulomb (elementary charge)
 
     maxiter : int, default 5
@@ -356,7 +357,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
 
     Returns
     -------
-    OrderedDict
+    dict
         I_L_ref : float
             light current at STC [A]
         I_o_ref : float
@@ -452,28 +453,26 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             "Failed to estimate the diode (ideality) factor parameter;"
             " aborting parameter estimation.")
 
-    else:
+    gamma = gamma_ref + mu_gamma * (tc - const['T0'])
+    nnsvth = gamma * (vth * specs['cells_in_series'])
 
-        gamma = gamma_ref + mu_gamma * (tc - const['T0'])
-        nnsvth = gamma * (vth * specs['cells_in_series'])
+    # For each IV curve, sequentially determine initial values for Io, Rs,
+    # and Iph [5] Step 3a; [6] Step 3
+    iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh,
+                                        nnsvth)
 
-        # For each IV curve, sequentially determine initial values for Io, Rs,
-        # and Iph [5] Step 3a; [6] Step 3
-        iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh,
-                                            nnsvth)
+    # Update values for each IV curve to converge at vmp, imp, voc and isc
+    iph, io, rs, rsh, u = _update_iv_params(voc, isc, vmp, imp, ee,
+                                            iph, io, rs, rsh, nnsvth, u,
+                                            maxiter, eps1)
 
-        # Update values for each IV curve to converge at vmp, imp, voc and isc
-        iph, io, rs, rsh, u = _update_iv_params(voc, isc, vmp, imp, ee,
-                                                iph, io, rs, rsh, nnsvth, u,
-                                                maxiter, eps1)
-
-        # get single diode models from converged values for each IV curve
-        pvsyst = _extract_sdm_params(ee, tc, iph, io, rs, rsh, gamma, u,
-                                     specs, const, model='pvsyst')
-        # Add parameters estimated in this function
-        pvsyst['gamma_ref'] = gamma_ref
-        pvsyst['mu_gamma'] = mu_gamma
-        pvsyst['cells_in_series'] = specs['cells_in_series']
+    # get single diode models from converged values for each IV curve
+    pvsyst = _extract_sdm_params(ee, tc, iph, io, rs, rsh, gamma, u,
+                                 specs, const, model='pvsyst')
+    # Add parameters estimated in this function
+    pvsyst['gamma_ref'] = gamma_ref
+    pvsyst['mu_gamma'] = mu_gamma
+    pvsyst['cells_in_series'] = specs['cells_in_series']
 
     return pvsyst
 
@@ -485,23 +484,25 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     Parameters
     ----------
     ivcurves : dict
-        i[j] : array
-            current for jth IV curve (same length as v[j]) [A]
-        v[j] : array
-            voltage for the jth IV curve (same length as i[j]) [V]
-        ee[j] - float
-            effective irradiance, i.e., POA broadband irradiance adjusted by
-            solar spectrum modifier [W / m^2]
-        tc[j] - float
-            cell temperature [C]
-        i_sc[j] - float
-            short circuit current of IV curve [A]
-        v_oc[j] - float
-            open circuit voltage of IV curve [V]
-        i_mp[j] - float
-            current at max power point of IV curve [A]
-        v_mp[j] - float
-            voltage at max power point of IV curve [V]
+        i : array
+            One array element for each IV curve. The jth element is itself an
+            array of current for jth IV curve (same length as v[j]) [A]
+        v : array
+            One array element for each IV curve. The jth element is itself an
+            array of voltage for jth IV curve  (same length as i[j]) [V]
+        ee : array
+            effective irradiance for each IV curve, i.e., POA broadband
+            irradiance adjusted by solar spectrum modifier [W / m^2]
+        tc : array
+            cell temperature for each IV curve [C]
+        i_sc : array
+            short circuit current for each IV curve [A]
+        v_oc : array
+            open circuit voltage for each IV curve [V]
+        i_mp : array
+            current at max power point for each IV curve [A]
+        v_mp : array
+            voltage at max power point for each IV curve [V]
 
     specs : dict
         cells_in_series : int
@@ -511,14 +512,14 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         beta_voc : float
             temperature coefficient of Voc [V/C]
 
-    const : OrderedDict
-        E0 - float
+    const : dict
+        E0 : float
             effective irradiance at STC, default 1000 [W/m^2]
-        T0 - float
+        T0 : float
             cell temperature at STC, default 25 [C]
-        k - float
+        k : float
             1.38066E-23 J/K (Boltzmann's constant)
-        q - float
+        q : float
             1.60218E-19 Coulomb (elementary charge)
 
     maxiter : int, default 5
@@ -533,7 +534,7 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
 
     Returns
     -------
-    OrderedDict
+    dict
         I_L_ref : float
             light current at STC [A]
         I_o_ref : float
@@ -609,27 +610,25 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
             "Failed to estimate the diode (ideality) factor parameter;"
             " aborting parameter estimation.")
 
-    else:
+    nnsvth = n0 * specs['cells_in_series'] * vth
 
-        nnsvth = n0 * specs['cells_in_series'] * vth
+    # For each IV curve, sequentially determine initial values for Io, Rs,
+    # and Iph [5] Step 3a; [6] Step 3
+    iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh,
+                                        nnsvth)
 
-        # For each IV curve, sequentially determine initial values for Io, Rs,
-        # and Iph [5] Step 3a; [6] Step 3
-        iph, io, rs, u = _initial_iv_params(ivcurves, ee, voc, isc, rsh,
-                                            nnsvth)
+    # Update values for each IV curve to converge at vmp, imp, voc and isc
+    iph, io, rs, rsh, u = _update_iv_params(voc, isc, vmp, imp, ee,
+                                            iph, io, rs, rsh, nnsvth, u,
+                                            maxiter, eps1)
 
-        # Update values for each IV curve to converge at vmp, imp, voc and isc
-        iph, io, rs, rsh, u = _update_iv_params(voc, isc, vmp, imp, ee,
-                                                iph, io, rs, rsh, nnsvth, u,
-                                                maxiter, eps1)
-
-        # get single diode models from converged values for each IV curve
-        desoto = _extract_sdm_params(ee, tc, iph, io, rs, rsh, n0, u,
-                                     specs, const, model='desoto')
-        # Add parameters estimated in this function
-        desoto['a_ref'] = n0 * specs['cells_in_series'] * const['k'] / \
-            const['q'] * (const['T0'] + 273.15)
-        desoto['cells_in_series'] = specs['cells_in_series']
+    # get single diode models from converged values for each IV curve
+    desoto = _extract_sdm_params(ee, tc, iph, io, rs, rsh, n0, u,
+                                 specs, const, model='desoto')
+    # Add parameters estimated in this function
+    desoto['a_ref'] = n0 * specs['cells_in_series'] * const['k'] / \
+        const['q'] * (const['T0'] + 273.15)
+    desoto['cells_in_series'] = specs['cells_in_series']
 
     return desoto
 
@@ -735,7 +734,7 @@ def _update_iv_params(voc, isc, vmp, imp, ee, iph, io, rs, rsh, nnsvth, u,
     # Helper function for fit_<model>_sandia.
     counter = 1.  # counter variable for parameter updating while loop,
     # counts iterations
-    prevconvergeparams = OrderedDict()
+    prevconvergeparams = {}
     prevconvergeparams['state'] = 0.0
 
     not_converged = np.array([True])
@@ -802,7 +801,7 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
     tck = tc + 273.15
     tok = const['T0'] + 273.15  # convert to to K
 
-    params = OrderedDict()
+    params = {}
 
     if model == 'pvsyst':
         # Estimate I_o_ref and EgRef
@@ -1010,7 +1009,7 @@ def _check_converge(prevparams, result, vmp, imp, i):
 
     Returns
     -------
-    convergeparam: OrderedDict containing the following for Imp, Vmp and Pmp:
+    convergeparam: dict containing the following for Imp, Vmp and Pmp:
         - maximum percent difference between measured and modeled values
         - minimum percent difference between measured and modeled values
         - maximum absolute percent difference between measured and modeled
@@ -1026,7 +1025,7 @@ def _check_converge(prevparams, result, vmp, imp, i):
           deviation of percent difference (measured vs. modeled)
     """
 
-    convergeparam = OrderedDict()
+    convergeparam = {}
 
     imperror = (result['i_mp'] - imp) / imp * 100.
     vmperror = (result['v_mp'] - vmp) / vmp * 100.

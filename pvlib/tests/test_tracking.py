@@ -438,8 +438,9 @@ def test_get_irradiance():
 
 
 def test_SingleAxisTracker___repr__():
-    system = tracking.SingleAxisTracker(max_angle=45, gcr=.25,
-                                        module='blah', inverter='blarg')
+    system = tracking.SingleAxisTracker(
+        max_angle=45, gcr=.25, module='blah', inverter='blarg',
+        temperature_model_parameters={'a': -3.56})
     expected = """SingleAxisTracker:
   axis_tilt: 0
   axis_azimuth: 0
@@ -454,16 +455,14 @@ def test_SingleAxisTracker___repr__():
   albedo: 0.25
   racking_model: open_rack
   module_type: glass_polymer
-  temperature_model_parameters: {'a': -3.56, 'b': -0.075, 'deltaT': 3}"""
+  temperature_model_parameters: {'a': -3.56}"""
     assert system.__repr__() == expected
 
 
 def test_LocalizedSingleAxisTracker___repr__():
-    localized_system = tracking.LocalizedSingleAxisTracker(latitude=32,
-                                                           longitude=-111,
-                                                           module='blah',
-                                                           inverter='blarg',
-                                                           gcr=0.25)
+    localized_system = tracking.LocalizedSingleAxisTracker(
+        latitude=32, longitude=-111, module='blah', inverter='blarg',
+        gcr=0.25, temperature_model_parameters={'a': -3.56})
     # apparently the repr order is different for LocalizedSingleAxisTracker
     # than for LocalizedPVSystem. maybe a MRO thing.
     expected = """LocalizedSingleAxisTracker:
@@ -480,7 +479,7 @@ def test_LocalizedSingleAxisTracker___repr__():
   albedo: 0.25
   racking_model: open_rack
   module_type: glass_polymer
-  temperature_model_parameters: {'a': -3.56, 'b': -0.075, 'deltaT': 3}
+  temperature_model_parameters: {'a': -3.56}
   latitude: 32
   longitude: -111
   altitude: 0

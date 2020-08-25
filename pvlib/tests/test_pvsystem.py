@@ -1119,7 +1119,9 @@ def test_PVSystem_localize_with_latlon():
 
 
 def test_PVSystem___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
+    system = pvsystem.PVSystem(
+        module='blah', inverter='blarg', name='pv ftw',
+        temperature_model_parameters={'a': -3.56})
 
     expected = """PVSystem:
   name: pv ftw
@@ -1130,12 +1132,14 @@ def test_PVSystem___repr__():
   albedo: 0.25
   racking_model: open_rack
   module_type: glass_polymer
-  temperature_model_parameters: {'a': -3.56, 'b': -0.075, 'deltaT': 3}"""
+  temperature_model_parameters: {'a': -3.56}"""
     assert system.__repr__() == expected
 
 
 def test_PVSystem_localize___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
+    system = pvsystem.PVSystem(
+        module='blah', inverter='blarg', name='pv ftw',
+        temperature_model_parameters={'a': -3.56})
     localized_system = system.localize(latitude=32, longitude=-111)
     # apparently name is not preserved when creating a system using localize
     expected = """LocalizedPVSystem:
@@ -1151,7 +1155,7 @@ def test_PVSystem_localize___repr__():
   albedo: 0.25
   racking_model: open_rack
   module_type: glass_polymer
-  temperature_model_parameters: {'a': -3.56, 'b': -0.075, 'deltaT': 3}"""
+  temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
 
@@ -1174,11 +1178,9 @@ def test_LocalizedPVSystem_creation():
 
 
 def test_LocalizedPVSystem___repr__():
-    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
-                                                  longitude=-111,
-                                                  module='blah',
-                                                  inverter='blarg',
-                                                  name='my name')
+    localized_system = pvsystem.LocalizedPVSystem(
+        latitude=32, longitude=-111, module='blah', inverter='blarg',
+        name='my name', temperature_model_parameters={'a': -3.56})
 
     expected = """LocalizedPVSystem:
   name: my name
@@ -1193,7 +1195,7 @@ def test_LocalizedPVSystem___repr__():
   albedo: 0.25
   racking_model: open_rack
   module_type: glass_polymer
-  temperature_model_parameters: {'a': -3.56, 'b': -0.075, 'deltaT': 3}"""
+  temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
 

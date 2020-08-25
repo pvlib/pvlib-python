@@ -18,6 +18,30 @@ from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
 
+
+# these dictionaries contain the default configuration for following
+# established modeling sequences. They can be used in combination with
+# basic_chain and ModelChain. They are used by the ModelChain methods
+# ModelChain.with_pvwatts, ModelChain.with_sapm, etc.
+
+# pvwatts documentation states that it uses the following reference for
+# a temperature model: Fuentes, M. K. (1987). A Simplified Thermal Model
+# for Flat-Plate Photovoltaic Arrays. SAND85-0330. Albuquerque, NM:
+# Sandia National Laboratories. Accessed September 3, 2013:
+# http://prod.sandia.gov/techlib/access-control.cgi/1985/850330.pdf
+# pvlib python does not implement that model, so use the SAPM instead.
+PVWATTS_CONFIG = dict(
+    dc_model='pvwatts', ac_model='pvwatts', losses_model='pvwatts',
+    transposition_model='perez', aoi_model='physical',
+    spectral_model='no_loss', temperature_model='sapm'
+)
+
+SAPM_CONFIG = dict(
+    dc_model='sapm', ac_model='sandia', losses_model='no_loss',
+    aoi_model='sapm', spectral_model='sapm', temperature_model='sapm'
+)
+
+
 def basic_chain(times, latitude, longitude,
                 module_parameters, temperature_model_parameters,
                 inverter_parameters,
@@ -348,6 +372,171 @@ class ModelChain(object):
         self.weather = None
         self.times = None
         self.solar_position = None
+
+    @classmethod
+    def with_pvwatts(cls, system, location,
+                     orientation_strategy=None,
+                     clearsky_model='ineichen',
+                     airmass_model='kastenyoung1989',
+                     name=None,
+                     **kwargs):
+        """
+        ModelChain that follows the PVWatts methods.
+
+        Parameters
+        ----------
+        system : PVSystem
+            A :py:class:`~pvlib.pvsystem.PVSystem` object that represents
+            the connected set of modules, inverters, etc.
+
+        location : Location
+            A :py:class:`~pvlib.location.Location` object that represents
+            the physical location at which to evaluate the model.
+
+        orientation_strategy : None or str, default None
+            The strategy for aligning the modules. If not None, sets the
+            ``surface_azimuth`` and ``surface_tilt`` properties of the
+            ``system``. Allowed strategies include 'flat',
+            'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
+
+        clearsky_model : str, default 'ineichen'
+            Passed to location.get_clearsky.
+
+        airmass_model : str, default 'kastenyoung1989'
+            Passed to location.get_airmass.
+
+        name: None or str, default None
+            Name of ModelChain instance.
+
+        **kwargs
+            Parameters supplied here are passed to the ModelChain
+            constructor and take precedence over the default
+            configuration.
+
+        Examples
+        --------
+        >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=4500)
+        >>> inverter_parameters = dict(pac0=4000)
+        >>> tparams = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+        >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
+        ...     module_parameters=module_parameters,
+        ...     inverter_parameters=inverter_parameters,
+        ...     temperature_model_parameters=tparams)
+        >>> location = Location(32.2, -110.9)
+        >>> ModelChain.with_pvwatts(system, location)
+        ModelChain:
+          name: None
+          orientation_strategy: None
+          clearsky_model: ineichen
+          transposition_model: perez
+          solar_position_method: nrel_numpy
+          airmass_model: kastenyoung1989
+          dc_model: pvwatts_dc
+          ac_model: pvwatts_inverter
+          aoi_model: physical_aoi_loss
+          spectral_model: no_spectral_loss
+          temperature_model: sapm_temp
+          losses_model: pvwatts_losses
+        """  # noqa: E501
+        config = PVWATTS_CONFIG.copy()
+        config.update(kwargs)
+        return ModelChain(
+            system, location,
+            orientation_strategy=orientation_strategy,
+            clearsky_model=clearsky_model,
+            airmass_model=airmass_model,
+            name=name,
+            **config
+        )
+
+    @classmethod
+    def with_sapm(cls, system, location,
+                  orientation_strategy=None,
+                  clearsky_model='ineichen',
+                  transposition_model='haydavies',
+                  solar_position_method='nrel_numpy',
+                  airmass_model='kastenyoung1989',
+                  name=None,
+                  **kwargs):
+        """
+        ModelChain that follows the Sandia Array Performance Model
+        (SAPM) methods.
+
+        Parameters
+        ----------
+        system : PVSystem
+            A :py:class:`~pvlib.pvsystem.PVSystem` object that represents
+            the connected set of modules, inverters, etc.
+
+        location : Location
+            A :py:class:`~pvlib.location.Location` object that represents
+            the physical location at which to evaluate the model.
+
+        orientation_strategy : None or str, default None
+            The strategy for aligning the modules. If not None, sets the
+            ``surface_azimuth`` and ``surface_tilt`` properties of the
+            ``system``. Allowed strategies include 'flat',
+            'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
+
+        clearsky_model : str, default 'ineichen'
+            Passed to location.get_clearsky.
+
+        transposition_model : str, default 'haydavies'
+            Passed to system.get_irradiance.
+
+        solar_position_method : str, default 'nrel_numpy'
+            Passed to location.get_solarposition.
+
+        airmass_model : str, default 'kastenyoung1989'
+            Passed to location.get_airmass.
+
+        name: None or str, default None
+            Name of ModelChain instance.
+
+        **kwargs
+            Parameters supplied here are passed to the ModelChain
+            constructor and take precedence over the default
+            configuration.
+
+        Examples
+        --------
+        >>> mods = pvlib.pvsystem.retrieve_sam('sandiamod')
+        >>> invs = pvlib.pvsystem.retrieve_sam('cecinverter')
+        >>> module_parameters = mods['Canadian_Solar_CS5P_220M___2009_']
+        >>> inverter_parameters = invs['ABB__MICRO_0_25_I_OUTD_US_240__240V_']
+        >>> tparams = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+        >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
+        ...     module_parameters=module_parameters,
+        ...     inverter_parameters=inverter_parameters,
+        ...     temperature_model_parameters=tparams)
+        >>> location = Location(32.2, -110.9)
+        >>> ModelChain.with_sapm(system, location)
+        ModelChain:
+          name: None
+          orientation_strategy: None
+          clearsky_model: ineichen
+          transposition_model: haydavies
+          solar_position_method: nrel_numpy
+          airmass_model: kastenyoung1989
+          dc_model: sapm
+          ac_model: snlinverter
+          aoi_model: sapm_aoi_loss
+          spectral_model: sapm_spectral_loss
+          temperature_model: sapm_temp
+          losses_model: no_extra_losses
+        """  # noqa: E501
+        config = SAPM_CONFIG.copy()
+        config.update(kwargs)
+        return ModelChain(
+            system, location,
+            orientation_strategy=orientation_strategy,
+            clearsky_model=clearsky_model,
+            transposition_model=transposition_model,
+            solar_position_method=solar_position_method,
+            airmass_model=airmass_model,
+            name=name,
+            **config
+        )
 
     def __repr__(self):
         attrs = [

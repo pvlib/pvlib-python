@@ -44,6 +44,11 @@ Enhancements
   (:pull:`1017`)
 * Add :py:func:`pvlib.inverter.fit_sandia` that fits the Sandia inverter model
   to a set of inverter efficiency curves. (:pull:`1011`)
+* Add factory methods :py:meth:`~pvlib.modelchain.ModelChain.with_pvwatts`
+  :py:meth:`~pvlib.modelchain.ModelChain.with_sapm` to create ``ModelChain``
+  objects configured for the respective modeling paradigms. The
+  configurations are defined in ``modelchain.PVWATTS_CONFIG``, and
+  ``modelchain.SAPM_CONFIG``. (:issue:`1013`, :pull:`1022`)
 * Added *racking_model*, *module_type*, and *temperature_model_parameters* to
   PVSystem, LocalizedPVSystem, SingleAxisTracker, and
   LocalizedSingleAxisTracker repr methods. (:issue:`1027`)

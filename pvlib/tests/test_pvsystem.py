@@ -386,14 +386,6 @@ def test__infer_temperature_model_params():
     assert expected == system._infer_temperature_model_params()
 
 
-def test__infer_temperature_model_params_deprec_warning():
-    warn_txt = "Reverting to deprecated default"
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
-        pvsystem.PVSystem(module_parameters={},
-                          racking_model='not_a_rack_model',
-                          module_type='glass_polymer')
-
-
 def test_calcparams_desoto(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
@@ -1130,8 +1122,8 @@ def test_PVSystem___repr__():
   module: blah
   inverter: blarg
   albedo: 0.25
-  racking_model: open_rack
-  module_type: glass_polymer
+  racking_model: None
+  module_type: None
   temperature_model_parameters: {'a': -3.56}"""
     assert system.__repr__() == expected
 
@@ -1153,8 +1145,8 @@ def test_PVSystem_localize___repr__():
   module: blah
   inverter: blarg
   albedo: 0.25
-  racking_model: open_rack
-  module_type: glass_polymer
+  racking_model: None
+  module_type: None
   temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
@@ -1193,8 +1185,8 @@ def test_LocalizedPVSystem___repr__():
   module: blah
   inverter: blarg
   albedo: 0.25
-  racking_model: open_rack
-  module_type: glass_polymer
+  racking_model: None
+  module_type: None
   temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
@@ -1329,15 +1321,7 @@ def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
     # deprecated function pvsystem.spvwatts_ac
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvwatts_ac(90, 100, 0.95)
-    module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
-                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1,
-                         'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
-                         'B1': 0.0, 'B0': 1.0,
-                         'b': 0.05, 'K': 4, 'L': 0.002, 'n': 1.526,
-                         'a_r': 0.16}
-    temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
-        'open_rack_glass_glass']
     # for missing temperature_model_parameters
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.PVSystem(module_parameters=module_parameters,
-                          racking_model='open', module_type='glass_glass')
+    warn_txt = "Reverting to deprecated default: SAPM cell temperature"
+    with pytest.warns(pvlibDeprecationWarning, warn_txt=warn_txt):
+        pvsystem.PVSystem()

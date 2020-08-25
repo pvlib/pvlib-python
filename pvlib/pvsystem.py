@@ -170,12 +170,12 @@ class PVSystem(object):
     def __init__(self,
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
-                 module=None, module_type='glass_polymer',
+                 module=None, module_type=None,
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
-                 racking_model='open_rack', losses_parameters=None, name=None,
+                 racking_model=None, losses_parameters=None, name=None,
                  **kwargs):
 
         self.surface_tilt = surface_tilt
@@ -201,20 +201,21 @@ class PVSystem(object):
         if temperature_model_parameters is None:
             self.temperature_model_parameters = \
                 self._infer_temperature_model_params()
-            # TODO: in v0.8 check if an empty dict is returned and raise error
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
-        # TODO: deprecated behavior if PVSystem.temperature_model_parameters
-        # are not specified. Remove in v0.8
-        if not any(self.temperature_model_parameters):
+        # warn user about change in default behavior in 0.9.
+        if all(x is None for x in
+               (temperature_model_parameters, module_type, racking_model)):
             warnings.warn(
-                'Required temperature_model_parameters is not specified '
-                'and parameters are not inferred from racking_model and '
-                'module_type. Reverting to deprecated default: SAPM cell '
-                'temperature model parameters for a glass/glass module in '
-                'open racking. In the future '
-                'PVSystem.temperature_model_parameters will be required',
+                'temperature_model_parameters, racking_model, and module_type '
+                'are not specified. Reverting to deprecated default: SAPM '
+                'cell temperature model parameters for a glass/glass module '
+                'in open racking. In v0.9 '
+                'PVSystem.temperature_model_parameters will be empty dict '
+                'unless set by temperature_model_parameters or valid '
+                'combination of racking_model and module_type. Pass non-None '
+                'value to any of these parameters to silence this warning.',
                 pvlibDeprecationWarning)
             params = temperature._temperature_model_params(
                 'sapm', 'open_rack_glass_glass')
@@ -494,7 +495,7 @@ class PVSystem(object):
     def _infer_temperature_model_params(self):
         # try to infer temperature model parameters from from racking_model
         # and module_type
-        param_set = self.racking_model + '_' + self.module_type
+        param_set = '{}_{}'.format(self.racking_model, self.module_type)
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
             return temperature._temperature_model_params('sapm', param_set)
         elif 'freestanding' in param_set:

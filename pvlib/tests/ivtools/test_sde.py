@@ -50,7 +50,7 @@ def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
                                 111.18558915546389, -63.56227601452038,
                                 -137.9965046659527))
     result = sde.fit_sandia_simple(voltage=v2, current=i2)
-    assert np.allclose(result, (2.62405311949227, 1.8657963912925288,
+    assert np.allclose(result, (2.62405311949227, 5.075520636620032,
                                 -65.652554411442, 110.35202827739991,
                                 174.49362093001415))
 

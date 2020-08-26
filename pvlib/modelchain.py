@@ -862,8 +862,8 @@ class ModelChain(object):
         params = set(self.system.temperature_model_parameters.keys())
         # remove or statement in v0.9
         if set(['a', 'b', 'deltaT']) <= params or (
-                not params and self.system.racking_model is None and
-                self.system.module_type is None):
+                not params and self.system.racking_model is None
+                and self.system.module_type is None):
             return self.sapm_temp
         elif set(['u_c', 'u_v']) <= params:
             return self.pvsyst_temp

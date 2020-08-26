@@ -39,7 +39,7 @@ API Changes
     * ``pvsystem.ashraeiam``. Use :py:func:`pvlib.iam.ashrae`.
     * ``pvsystem.physicaliam``. Use :py:func:`pvlib.iam.physical`.
     * ``pvsystem.sapm_aoi_loss``. Use :py:func:`pvlib.iam.sapm`.
-    * ``pvsystem.sapm_celltemp``. Use :py:func:`pvlib.temperature.sapm`.
+    * ``pvsystem.sapm_celltemp``. Use :py:func:`pvlib.temperature.sapm_cell`.
     * ``pvsystem.pvsyst_celltemp``. Use :py:func:`pvlib.temperature.pvsyst`.
 
 Enhancements

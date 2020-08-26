@@ -198,17 +198,6 @@ def test_sapm(sapm_module_params):
                   pd.Series(sapm_module_params))
 
 
-def test_pvsystem_sapm_warning(sapm_module_params):
-    # deprecation warning for change in effective_irradiance units in
-    # pvsystem.sapm
-    # TODO: remove after deprecation period (v0.8)
-    effective_irradiance = np.array([0.1, 0.2, 1.3])
-    temp_cell = np.array([25, 25, 50])
-    warn_txt = 'effective_irradiance inputs appear to be in suns'
-    with pytest.warns(RuntimeWarning, match=warn_txt):
-        pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
-
-
 def test_PVSystem_sapm(sapm_module_params, mocker):
     mocker.spy(pvsystem, 'sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)

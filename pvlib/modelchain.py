@@ -179,7 +179,7 @@ def basic_chain(times, latitude, longitude,
             linke_turbidity,
             altitude=altitude,
             dni_extra=dni_extra
-            )
+        )
 
     total_irrad = pvlib.irradiance.get_total_irradiance(
         surface_tilt,
@@ -526,7 +526,7 @@ class ModelChain(object):
             'transposition_model', 'solar_position_method',
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
             'spectral_model', 'temperature_model', 'losses_model'
-            ]
+        ]
 
         def getmcattr(self, attr):
             """needed to avoid recursion in property lookups"""
@@ -570,8 +570,8 @@ class ModelChain(object):
             model = model.lower()
             if model in _DC_MODEL_PARAMS.keys():
                 # validate module parameters
-                missing_params = _DC_MODEL_PARAMS[model] - \
-                                 set(self.system.module_parameters.keys())
+                missing_params = (_DC_MODEL_PARAMS[model]
+                                  - set(self.system.module_parameters.keys()))
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
                                      'one or more required parameters are '
@@ -816,8 +816,8 @@ class ModelChain(object):
 
     def first_solar_spectral_loss(self):
         self.spectral_modifier = self.system.first_solar_spectral_loss(
-                                        self.weather['precipitable_water'],
-                                        self.airmass['airmass_absolute'])
+            self.weather['precipitable_water'],
+            self.airmass['airmass_absolute'])
         return self
 
     def sapm_spectral_loss(self):

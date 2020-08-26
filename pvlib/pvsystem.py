@@ -640,7 +640,7 @@ class PVSystem(object):
         if 'first_solar_spectral_coefficients' in \
                 self.module_parameters.keys():
             coefficients = \
-                   self.module_parameters['first_solar_spectral_coefficients']
+                self.module_parameters['first_solar_spectral_coefficients']
             module_type = None
         else:
             module_type = self._infer_cell_type()
@@ -1910,8 +1910,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         # calculate the IV curve if requested using bishop88
         if ivcurve_pnts:
             vd = v_oc * (
-                    (11.0 - np.logspace(np.log10(11.0), 0.0,
-                                        ivcurve_pnts)) / 10.0
+                (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
             )
             ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
 

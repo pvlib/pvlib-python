@@ -31,6 +31,16 @@ API Changes
   :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.location.Location.from_tmy`, and
   :py:class:`pvlib.pvsystem.LocalizedPVSystem` for alternatives. (:issue:`965`)
   (:pull:`1008`)
+* The following functions and methods were deprecated in a previous release
+  and have now been removed:
+    * ``pvsystem.PVSystem.ashraeiam``. Use :py:meth:`~pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.physicaliam``. Use :py:meth:`~pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.sapm_aoi_loss``. Use :py:meth:`~pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.ashraeiam``. Use :py:func:`pvlib.iam.ashrae`.
+    * ``pvsystem.physicaliam``. Use :py:func:`pvlib.iam.physical`.
+    * ``pvsystem.sapm_aoi_loss``. Use :py:func:`pvlib.iam.sapm`.
+    * ``pvsystem.sapm_celltemp``. Use :py:func:`pvlib.temperature.sapm`.
+    * ``pvsystem.pvsyst_celltemp``. Use :py:func:`pvlib.temperature.pvsyst`.
 
 Enhancements
 ~~~~~~~~~~~~

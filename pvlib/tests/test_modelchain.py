@@ -170,6 +170,19 @@ def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     ModelChain(sapm_dc_snl_ac_system, location)
 
 
+def test_with_sapm(sapm_dc_snl_ac_system, location, weather):
+    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system, location)
+    assert mc.dc_model == mc.sapm
+    mc.run_model(weather)
+
+
+def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
+    mc = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location)
+    assert mc.dc_model == mc.pvwatts_dc
+    assert mc.temperature_model == mc.sapm_temp
+    mc.run_model(weather)
+
+
 @pytest.mark.parametrize('strategy, expected', [
     (None, (32.2, 180)), ('None', (32.2, 180)), ('flat', (0, 180)),
     ('south_at_latitude_tilt', (32.2, 180))

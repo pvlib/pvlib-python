@@ -86,6 +86,19 @@ def test__fit_sandia_cocontent(i, v, nsvth, expected):
     np.testing.assert_allclose(n, np.array([expected[4]]), atol=.0001)
 
 
+def test__fit_sandia_cocontent_fail():
+    # tests for ValueError
+    exc_text = 'voltage and current should have the same length'
+    with pytest.raises(RuntimeError, match=exc_text):
+        sde._git_sandia_cocontent(np.array([0., 1., 2.]), np.array([4., 3.]),
+                                  2.)
+    exc_text = 'at least 6 voltage points are required; ~50 are recommended'
+    with pytest.raises(RuntimeError, match=exc_text):
+        sde._git_sandia_cocontent(np.array([0., 1., 2., 3., 4.]),
+                                  np.array([4., 3.9, 3.4, 2., 0.]),
+                                  2.)
+
+
 @pytest.fixture
 def get_bad_iv_curves():
     # v1, i1 produces a bad value for I0_voc

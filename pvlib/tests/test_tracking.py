@@ -453,8 +453,8 @@ def test_SingleAxisTracker___repr__():
   module: blah
   inverter: blarg
   albedo: 0.25
-  racking_model: open_rack
-  module_type: glass_polymer
+  racking_model: None
+  module_type: None
   temperature_model_parameters: {'a': -3.56}"""
     assert system.__repr__() == expected
 
@@ -477,8 +477,8 @@ def test_LocalizedSingleAxisTracker___repr__():
   module: blah
   inverter: blarg
   albedo: 0.25
-  racking_model: open_rack
-  module_type: glass_polymer
+  racking_model: None
+  module_type: None
   temperature_model_parameters: {'a': -3.56}
   latitude: 32
   longitude: -111

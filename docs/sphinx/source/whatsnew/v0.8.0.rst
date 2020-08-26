@@ -15,7 +15,8 @@ API Changes with Deprecations
 * :py:class:`pvlib.pvsystem.PVSystem` ``module_type`` and ``racking_model`` now
   default to ``None``. This continues a deprecation of assuming SAPM values
   for cell temperature modeling. In this v0.8 release series, calling
-  :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` will cause
+  :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` without setting ``PVSystem.temperature model parameters``,
+  or a valid combination of ``PVsystem.module_type`` and ``PVsystem.racking_model``, will cause
   ``PVSystem.temperature_model_parameters`` to be set to SAPM values for a
   glass/glass module in open racking and emit a warning. In v0.9, users must
   provide ``temperature_model_parameters`` or a valid combination of

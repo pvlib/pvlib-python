@@ -1311,6 +1311,6 @@ def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvwatts_ac(90, 100, 0.95)
     # for missing temperature_model_parameters
-    warn_txt = "Reverting to deprecated default: SAPM cell temperature"
-    with pytest.warns(pvlibDeprecationWarning, warn_txt=warn_txt):
+    match = "Reverting to deprecated default: SAPM cell temperature"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
         pvsystem.PVSystem()

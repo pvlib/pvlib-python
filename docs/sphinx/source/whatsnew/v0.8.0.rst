@@ -41,14 +41,14 @@ API Changes
   (:pull:`1008`)
 * The following functions, methods, and arguments were deprecated in a previous
   release and have now been removed (:issue:`966`, :pull:`1033`):
-    * ``pvsystem.PVSystem.ashraeiam``. Use :py:meth:`~pvlib.pvsystem.PVSystem.get_iam`.
-    * ``pvsystem.PVSystem.physicaliam``. Use :py:meth:`~pvlib.pvsystem.PVSystem.get_iam`.
-    * ``pvsystem.PVSystem.sapm_aoi_loss``. Use :py:meth:`~pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.ashraeiam``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.physicaliam``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.sapm_aoi_loss``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
     * ``pvsystem.ashraeiam``. Use :py:func:`pvlib.iam.ashrae`.
     * ``pvsystem.physicaliam``. Use :py:func:`pvlib.iam.physical`.
     * ``pvsystem.sapm_aoi_loss``. Use :py:func:`pvlib.iam.sapm`.
     * ``pvsystem.sapm_celltemp``. Use :py:func:`pvlib.temperature.sapm_cell`.
-    * ``pvsystem.pvsyst_celltemp``. Use :py:func:`pvlib.temperature.pvsyst`.
+    * ``pvsystem.pvsyst_celltemp``. Use :py:func:`pvlib.temperature.pvsyst_cell`.
     * ``times`` keyword argument of
       :py:meth:`pvlib.modelchain.ModelChain.run_model`,
       :py:meth:`pvlib.modelchain.ModelChain.complete_irradiance`, and

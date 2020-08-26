@@ -154,6 +154,18 @@ def system_no_aoi(cec_module_cs5p_220m, sapm_temperature_cs5p_220m,
 
 
 @pytest.fixture
+def system_no_temp(cec_module_cs5p_220m, cec_inverter_parameters):
+    module_parameters = cec_module_cs5p_220m.copy()
+    module_parameters['EgRef'] = 1.121
+    module_parameters['dEgdT'] = -0.0002677
+    inverter_parameters = cec_inverter_parameters.copy()
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
+                      inverter_parameters=inverter_parameters)
+    return system
+
+
+@pytest.fixture
 def location():
     return Location(32.2, -111, altitude=700)
 
@@ -250,8 +262,6 @@ def test_run_model_with_weather_sapm_temp(sapm_dc_snl_ac_system, location,
     # test with sapm cell temperature model
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
-    sapm_dc_snl_ac_system.racking_model = 'open_rack'
-    sapm_dc_snl_ac_system.module_type = 'glass_glass'
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'sapm'
     m_sapm = mocker.spy(sapm_dc_snl_ac_system, 'sapm_celltemp')
@@ -408,6 +418,17 @@ def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
         ModelChain(sapm_dc_snl_ac_system, location,
                    orientation_strategy='None', aoi_model='physical',
                    spectral_model='no_loss')
+
+
+# ModelChain.infer_temperature_model. remove or statement in v0.9
+@requires_scipy
+@fail_on_pvlib_version('0.9')
+def test_infer_temp_model_no_params(location, system_no_temp, weather):
+    mc = ModelChain(system_no_temp, location, aoi_model='physical',
+                    spectral_model='no_loss')
+    match = "Reverting to deprecated default: SAPM cell temperature"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        mc.run_model(weather)
 
 
 @requires_scipy

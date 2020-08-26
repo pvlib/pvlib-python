@@ -204,23 +204,6 @@ class PVSystem(object):
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
-        # warn user about change in default behavior in 0.9.
-        if all(x is None for x in
-               (temperature_model_parameters, module_type, racking_model)):
-            warnings.warn(
-                'temperature_model_parameters, racking_model, and module_type '
-                'are not specified. Reverting to deprecated default: SAPM '
-                'cell temperature model parameters for a glass/glass module '
-                'in open racking. In v0.9 '
-                'PVSystem.temperature_model_parameters will be empty dict '
-                'unless set by temperature_model_parameters or valid '
-                'combination of racking_model and module_type. Pass non-None '
-                'value to any of these parameters to silence this warning.',
-                pvlibDeprecationWarning)
-            params = temperature._temperature_model_params(
-                'sapm', 'open_rack_glass_glass')
-            self.temperature_model_parameters = params
-
         self.modules_per_string = modules_per_string
         self.strings_per_inverter = strings_per_inverter
 
@@ -487,6 +470,23 @@ class PVSystem(object):
         -------
         numeric, values in degrees C.
         """
+        # warn user about change in default behavior in 0.9.
+        if (
+                self.temperature_model_parameters == {} and
+                self.module_type is None and self.racking_model is None
+                ):
+            warnings.warn(
+                'temperature_model_parameters, racking_model, and module_type '
+                'are not specified. Reverting to deprecated default: SAPM '
+                'cell temperature model parameters for a glass/glass module '
+                'in open racking. In v0.9, temperature_model_parameters or a '
+                'valid combination of racking_model and module_type will be '
+                'required.',
+                pvlibDeprecationWarning)
+            params = temperature._temperature_model_params(
+                'sapm', 'open_rack_glass_glass')
+            self.temperature_model_parameters = params
+
         kwargs = _build_kwargs(['a', 'b', 'deltaT'],
                                self.temperature_model_parameters)
         return temperature.sapm_cell(poa_global, temp_air, wind_speed,

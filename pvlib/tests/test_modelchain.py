@@ -661,36 +661,6 @@ def test_bad_get_orientation():
         modelchain.get_orientation('bad value')
 
 
-@fail_on_pvlib_version('0.8')
-def test_deprecated_08():
-    # explicit system creation call because fail_on_pvlib_version
-    # does not support decorators.
-    # does not matter what the parameters are, just fake it until we make it
-    module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
-                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1}
-    # do not assign PVSystem.temperature_model_parameters
-    # leave out PVSystem.racking_model and PVSystem.module_type
-    system = PVSystem(module_parameters=module_parameters)
-    # deprecated temp_model kwarg
-    warn_txt = 'temp_model keyword argument is deprecated'
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
-        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='sandia',
-                   temp_model='sapm')
-    # provide both temp_model and temperature_model kwargs
-    warn_txt = 'Provide only one of temperature_model'
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
-        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='sandia',
-                   temperature_model='sapm', temp_model='sapm')
-    # conflicting temp_model and temperature_model kwargs
-    exc_text = 'Conflicting temperature_model'
-    with pytest.raises(ValueError, match=exc_text):
-        ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='sandia',
-                   temperature_model='pvsyst', temp_model='sapm')
-
-
 @fail_on_pvlib_version('0.9')
 @pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter'])
 def test_deprecated_09(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,

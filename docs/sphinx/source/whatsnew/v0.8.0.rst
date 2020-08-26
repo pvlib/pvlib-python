@@ -41,9 +41,13 @@ API Changes
     * ``pvsystem.sapm_aoi_loss``. Use :py:func:`pvlib.iam.sapm`.
     * ``pvsystem.sapm_celltemp``. Use :py:func:`pvlib.temperature.sapm_cell`.
     * ``pvsystem.pvsyst_celltemp``. Use :py:func:`pvlib.temperature.pvsyst`.
-    * ``times`` keyword argument of ``ModelChain.run_model``,
-      ``ModelChain.complete_irradiance``, and ``ModelChain.prepare_inputs``.
+    * ``times`` keyword argument of
+      :py:meth:`pvlib.modelchain.ModelChain.run_model`,
+      :py:meth:`pvlib.modelchain.ModelChain.complete_irradiance`, and
+      :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`.
       The index of the input DataFrame is used instead.
+    * ``temp_model`` keyword argument of
+      :py:meth:`pvlib.modelchain.ModelChain`. Use ``temperature_model`` instead.
 
 Enhancements
 ~~~~~~~~~~~~

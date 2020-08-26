@@ -346,24 +346,6 @@ class ModelChain(object):
         self.ac_model = ac_model
         self.aoi_model = aoi_model
         self.spectral_model = spectral_model
-
-        # TODO: deprecated kwarg temp_model. Remove use of temp_model in v0.8
-        temp_model = kwargs.pop('temp_model', None)
-        if temp_model is not None:
-            if temperature_model is None:
-                warnings.warn('The temp_model keyword argument is deprecated.'
-                              ' Use temperature_model instead',
-                              pvlibDeprecationWarning)
-                temperature_model = temp_model
-            elif temp_model == temperature_model:
-                warnings.warn('Provide only one of temperature_model or '
-                              'temp_model (deprecated).',
-                              pvlibDeprecationWarning)
-            else:
-                raise ValueError(
-                    'Conflicting temperature_model {} and temp_model {}. '
-                    'temp_model is deprecated. Specify only temperature_model.'
-                    .format(temperature_model, temp_model))
         self.temperature_model = temperature_model
 
         self.losses_model = losses_model

@@ -471,10 +471,8 @@ class PVSystem(object):
         numeric, values in degrees C.
         """
         # warn user about change in default behavior in 0.9.
-        if (
-                self.temperature_model_parameters == {} and
-                self.module_type is None and self.racking_model is None
-                ):
+        if (self.temperature_model_parameters == {} and self.module_type
+                is None and self.racking_model is None):
             warnings.warn(
                 'temperature_model_parameters, racking_model, and module_type '
                 'are not specified. Reverting to deprecated default: SAPM '
@@ -2162,17 +2160,17 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # equation for the diode voltage V_d then backing out voltage
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        I = _singlediode.bishop88_i_from_v(*args, method=method.lower())
+        current = _singlediode.bishop88_i_from_v(*args, method=method.lower())
         # find the right size and shape for returns
         size, shape = _singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
-                I = np.tile(I, shape)
-        if np.isnan(I).any() and size <= 1:
-            I = np.repeat(I, size)
+                current = np.tile(current, shape)
+        if np.isnan(current).any() and size <= 1:
+            current = np.repeat(current, size)
             if shape is not None:
-                I = I.reshape(shape)
-        return I
+                current = current.reshape(shape)
+        return current
 
 
 def scale_voltage_current_power(data, voltage=1, current=1):
@@ -2251,7 +2249,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
            http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
            (2014).
-    """
+    """  # noqa: E501
 
     pdc = (g_poa_effective * 0.001 * pdc0 *
            (1 + gamma_pdc * (temp_cell - temp_ref)))

@@ -945,7 +945,7 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def complete_irradiance(self, weather, times=None):
+    def complete_irradiance(self, weather):
         """
         Determine the missing irradiation columns. Only two of the
         following data columns (dni, ghi, dhi) are needed to calculate
@@ -962,10 +962,6 @@ class ModelChain(object):
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
-        times : None, deprecated
-            Deprecated argument included for API compatibility, but not
-            used internally. The index of the weather DataFrame is used
-            for times.
 
         Returns
         -------
@@ -993,11 +989,6 @@ class ModelChain(object):
         >>> mc.run_model(my_weather)  # doctest: +SKIP
         """
         self.weather = weather
-
-        if times is not None:
-            warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. The index of the weather DataFrame '
-                          'is used for times.', pvlibDeprecationWarning)
 
         self.solar_position = self.location.get_solarposition(
             self.weather.index, method=self.solar_position_method)
@@ -1029,7 +1020,7 @@ class ModelChain(object):
 
         return self
 
-    def prepare_inputs(self, weather, times=None):
+    def prepare_inputs(self, weather):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
@@ -1041,10 +1032,6 @@ class ModelChain(object):
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
-        times : None, deprecated
-            Deprecated argument included for API compatibility, but not
-            used internally. The index of the weather DataFrame is used
-            for times.
 
         Notes
         -----
@@ -1063,11 +1050,6 @@ class ModelChain(object):
                 "Detected data: {0}".format(list(weather.columns)))
 
         self.weather = weather
-
-        if times is not None:
-            warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. The index of the weather DataFrame '
-                          'is used for times.', pvlibDeprecationWarning)
 
         self.times = self.weather.index
         try:
@@ -1126,7 +1108,7 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, weather, times=None):
+    def run_model(self, weather):
         """
         Run the model.
 
@@ -1137,10 +1119,6 @@ class ModelChain(object):
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
-        times : None, deprecated
-            Deprecated argument included for API compatibility, but not
-            used internally. The index of the weather DataFrame is used
-            for times.
 
         Returns
         -------
@@ -1152,11 +1130,6 @@ class ModelChain(object):
         ``dc``, ``ac``, ``losses``,
         ``diode_params`` (if dc_model is a single diode model)
         """
-        if times is not None:
-            warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. The index of the weather DataFrame '
-                          'is used for times.', pvlibDeprecationWarning)
-
         self.prepare_inputs(weather)
         self.aoi_model()
         self.spectral_model()

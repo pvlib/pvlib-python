@@ -211,38 +211,11 @@ def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
     assert_series_equal(ac, expected)
 
 
-def test_run_model_times(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
-                              index=times)
-    with pytest.warns(pvlibDeprecationWarning):
-        mc.run_model(irradiance, times=times)
-
-
-def test_prepare_inputs_times(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
-                              index=times)
-    with pytest.warns(pvlibDeprecationWarning):
-        mc.prepare_inputs(irradiance, times=times)
-
-
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     weather = pd.DataFrame()
     with pytest.raises(ValueError):
         mc.prepare_inputs(weather)
-
-
-@requires_tables
-def test_complete_irradiance_times(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
-    irradiance = pd.DataFrame({'ghi': 600., 'dhi': 150.}, index=times)
-    with pytest.warns(pvlibDeprecationWarning):
-        mc.complete_irradiance(irradiance, times=times)
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):

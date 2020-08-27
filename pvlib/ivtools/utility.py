@@ -6,18 +6,13 @@ equations to IV curve data.
 
 import numpy as np
 import pandas as pd
-from collections import OrderedDict
 
 
 # A small number used to decide when a slope is equivalent to zero
 EPS = np.finfo('float').eps**(1/3)
 
 
-constants = OrderedDict()
-constants['E0'] = 1000.0
-constants['T0'] = 25.0
-constants['k'] = 1.38066e-23
-constants['q'] = 1.60218e-19
+constants = {'E0': 1000.0, 'T0': 25.0, 'k': 1.38066e-23, 'q': 1.60218e-19}
 
 
 def numdiff(x, f):
@@ -166,9 +161,6 @@ def rectify_iv_curve(voltage, current, decimals=None):
           equal to the average of current at duplicated voltages.
     """
 
-    if len(voltage) != len(current):
-        raise ValueError('voltage and current must have the same length')
-
     df = pd.DataFrame(data=np.vstack((voltage, current)).T, columns=['v', 'i'])
     # restrict to first quadrant
     df.dropna(inplace=True)
@@ -240,7 +232,6 @@ def schumaker_qspline(x, y):
     y = y.flatten()
 
     n = x.size
-    assert n == y.size
 
     # compute various values used by the algorithm: differences, length of line
     # segments between data points, and ratios of differences.
@@ -313,12 +304,12 @@ def schumaker_qspline(x, y):
 
     # MATLAB differs from NumPy, boolean indices must be same size as
     # array
-    xk[:(n-1)][u] = tmpx[u]
-    yk[:(n-1)][u] = tmpy[u]
+    xk[:(n - 1)][u] = tmpx[u]
+    yk[:(n - 1)][u] = tmpy[u]
     # constant term for each polynomial for intervals without knots
-    a[:(n-1), 2][u] = tmpy[u]
-    a[:(n-1), 1][u] = s[:-1][u]
-    a[:(n-1), 0][u] = 0.5 * diffs[u] / delx[u]  # leading coefficients
+    a[:(n - 1), 2][u] = tmpy[u]
+    a[:(n - 1), 1][u] = s[:-1][u]
+    a[:(n - 1), 0][u] = 0.5 * diffs[u] / delx[u]  # leading coefficients
 
     # [2], Algorithm 4.1 subpart 2 of Step 5
     # original x values that are left points of intervals with internal knots
@@ -355,7 +346,7 @@ def schumaker_qspline(x, y):
         uu[(n + q - 1):(n + q + r - 1), :] = np.array([tmpx[w], tmpx2[w],
                                                        tmpy[w], tmps[w],
                                                        tmps2[w], delta[w]]).T
-        xi[:(n-1)][w] = xk[(n + q - 1):(n + q + r - 1)]
+        xi[:(n - 1)][w] = xk[(n + q - 1):(n + q + r - 1)]
 
     z = np.logical_and(~u, ~v)  # last 'else' in Algorithm 4.1 Step 5
     z = np.logical_and(z, ~w)
@@ -372,13 +363,13 @@ def schumaker_qspline(x, y):
     # define polynomial coefficients for intervals with added knots
     ff = ~u
     sbar[:(n-1)][ff] = (
-        (2 * uu[:(n-1), 5][ff] - uu[:(n-1), 4][ff])
-        + (uu[:(n-1), 4][ff] - uu[:(n-1), 3][ff])
-        * (xi[:(n-1)][ff] - uu[:(n-1), 0][ff])
-        / (uu[:(n-1), 1][ff] - uu[:(n-1), 0][ff]))
+        (2 * uu[:(n - 1), 5][ff] - uu[:(n-1), 4][ff])
+        + (uu[:(n - 1), 4][ff] - uu[:(n-1), 3][ff])
+        * (xi[:(n - 1)][ff] - uu[:(n-1), 0][ff])
+        / (uu[:(n - 1), 1][ff] - uu[:(n-1), 0][ff]))
     eta[:(n-1)][ff] = (
-        (sbar[:(n-1)][ff] - uu[:(n-1), 3][ff])
-        / (xi[:(n-1)][ff] - uu[:(n-1), 0][ff]))
+        (sbar[:(n - 1)][ff] - uu[:(n-1), 3][ff])
+        / (xi[:(n - 1)][ff] - uu[:(n-1), 0][ff]))
 
     sbar[(n - 1):(n + q + r + ss - 1)] = \
         (2 * uu[(n - 1):(n + q + r + ss - 1), 5] -
@@ -396,9 +387,9 @@ def schumaker_qspline(x, y):
          uu[(n - 1):(n + q + r + ss - 1), 0])
 
     # constant term for polynomial for intervals with internal knots
-    a[:(n-1), 2][~u] = uu[:(n-1), 2][~u]
-    a[:(n-1), 1][~u] = uu[:(n-1), 3][~u]
-    a[:(n-1), 0][~u] = 0.5 * eta[:(n-1)][~u]  # leading coefficient
+    a[:(n - 1), 2][~u] = uu[:(n - 1), 2][~u]
+    a[:(n - 1), 1][~u] = uu[:(n - 1), 3][~u]
+    a[:(n - 1), 0][~u] = 0.5 * eta[:(n - 1)][~u]  # leading coefficient
 
     a[(n - 1):(n + q + r + ss - 1), 2] = \
         uu[(n - 1):(n + q + r + ss - 1), 2] + \

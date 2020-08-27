@@ -217,14 +217,14 @@ def test_fit_pvsyst_sandia(npts=3000):
 
     pvsyst.update(zip(varlist, [Iph, Io, Rs, Rsh, u]))
 
-    expected = sdm.fit_pvsyst_sandia(ivcurves, iv_specs)
+    modeled = sdm.fit_pvsyst_sandia(ivcurves, iv_specs)
     param_res = pvsystem.calcparams_pvsyst(
         effective_irradiance=ivcurves['ee'], temp_cell=ivcurves['tc'],
-        alpha_sc=iv_specs['alpha_sc'], gamma_ref=expected['gamma_ref'],
-        mu_gamma=expected['mu_gamma'], I_L_ref=expected['I_L_ref'],
-        I_o_ref=expected['I_o_ref'], R_sh_ref=expected['R_sh_ref'],
-        R_sh_0=expected['R_sh_0'], R_s=expected['R_s'],
-        cells_in_series=iv_specs['cells_in_series'], EgRef=expected['EgRef'])
+        alpha_sc=iv_specs['alpha_sc'], gamma_ref=modeled['gamma_ref'],
+        mu_gamma=modeled['mu_gamma'], I_L_ref=modeled['I_L_ref'],
+        I_o_ref=modeled['I_o_ref'], R_sh_ref=modeled['R_sh_ref'],
+        R_sh_0=modeled['R_sh_0'], R_s=modeled['R_s'],
+        cells_in_series=iv_specs['cells_in_series'], EgRef=modeled['EgRef'])
     iv_res = pvsystem.singlediode(*param_res)
 
     ivcurves['p_mp'] = ivcurves['v_mp'] * ivcurves['i_mp']  # power
@@ -244,35 +244,35 @@ def test_fit_pvsyst_sandia(npts=3000):
     assert all((iv_specs[spec] == pvsyst_specs[spec]) for spec in spec_list)
     # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,
     # mu_gamma
-    assert np.isclose(expected['I_L_ref'], pvsyst['I_L_ref'], rtol=6.5e-5)
-    assert np.isclose(expected['I_o_ref'], pvsyst['I_o_ref'], rtol=0.15)
-    assert np.isclose(expected['R_s'], pvsyst['R_s'], rtol=0.0035)
-    assert np.isclose(expected['R_sh_ref'], pvsyst['R_sh_ref'], rtol=0.091)
-    assert np.isclose(expected['R_sh_0'], pvsyst['R_sh_0'], rtol=0.013)
-    assert np.isclose(expected['EgRef'], pvsyst['EgRef'], rtol=0.037)
-    assert np.isclose(expected['gamma_ref'], pvsyst['gamma_ref'], rtol=0.0045)
-    assert np.isclose(expected['mu_gamma'], pvsyst['mu_gamma'], rtol=0.064)
+    assert np.isclose(modeled['I_L_ref'], pvsyst['I_L_ref'], rtol=6.5e-5)
+    assert np.isclose(modeled['I_o_ref'], pvsyst['I_o_ref'], rtol=0.15)
+    assert np.isclose(modeled['R_s'], pvsyst['R_s'], rtol=0.0035)
+    assert np.isclose(modeled['R_sh_ref'], pvsyst['R_sh_ref'], rtol=0.091)
+    assert np.isclose(modeled['R_sh_0'], pvsyst['R_sh_0'], rtol=0.013)
+    assert np.isclose(modeled['EgRef'], pvsyst['EgRef'], rtol=0.037)
+    assert np.isclose(modeled['gamma_ref'], pvsyst['gamma_ref'], rtol=0.0045)
+    assert np.isclose(modeled['mu_gamma'], pvsyst['mu_gamma'], rtol=0.064)
 
     # Iph, Io, Rsh, Rs, u
-    mask = np.ones(expected['u'].shape, dtype=bool)
+    mask = np.ones(modeled['u'].shape, dtype=bool)
     # exclude one curve with different convergence
     umask = mask.copy()
     umask[2540] = False
-    assert all(expected['u'][umask] == pvsyst['u'][:npts][umask])
+    assert all(modeled['u'][umask] == pvsyst['u'][:npts][umask])
     assert np.allclose(
-        expected['iph'][expected['u']], pvsyst['iph'][:npts][expected['u']],
+        modeled['iph'][modeled['u']], pvsyst['iph'][:npts][modeled['u']],
         equal_nan=True, rtol=0.0009)
     assert np.allclose(
-        expected['io'][expected['u']], pvsyst['io'][:npts][expected['u']],
+        modeled['io'][modeled['u']], pvsyst['io'][:npts][modeled['u']],
         equal_nan=True, rtol=0.096)
     assert np.allclose(
-        expected['rs'][expected['u']], pvsyst['rs'][:npts][expected['u']],
+        modeled['rs'][modeled['u']], pvsyst['rs'][:npts][modeled['u']],
         equal_nan=True, rtol=0.035)
     # exclude one curve with Rsh outside 63% tolerance
-    rshmask = expected['u'].copy()
+    rshmask = modeled['u'].copy()
     rshmask[2545] = False
     assert np.allclose(
-        expected['rsh'][rshmask], pvsyst['rsh'][:npts][rshmask],
+        modeled['rsh'][rshmask], pvsyst['rsh'][:npts][rshmask],
         equal_nan=True, rtol=0.63)
 
 

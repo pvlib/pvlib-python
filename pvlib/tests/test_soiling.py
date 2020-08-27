@@ -7,8 +7,7 @@ import pandas as pd
 from pandas.util.testing import assert_series_equal
 from pvlib.soiling import hsu, kimber
 from pvlib.iotools import read_tmy3
-from conftest import (
-    requires_scipy, needs_pandas_0_22, DATA_DIR)
+from conftest import requires_scipy, DATA_DIR
 import pytest
 
 
@@ -30,7 +29,7 @@ def expected_output():
 @pytest.fixture
 def expected_output_1():
     dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
-        end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
+                       end=pd.Timestamp(2019, 1, 1, 23, 59, 0), freq='1h')
     expected_output_1 = pd.Series(
         data=[0.98484972, 0.97277367, 0.96167471, 0.95119603, 1.,
               0.98484972, 0.97277367, 0.96167471, 1., 1.,
@@ -82,7 +81,6 @@ def rainfall_input():
 
 
 @requires_scipy
-@needs_pandas_0_22
 def test_hsu_no_cleaning(rainfall_input, expected_output):
     """Test Soiling HSU function"""
 
@@ -100,7 +98,6 @@ def test_hsu_no_cleaning(rainfall_input, expected_output):
 
 
 @requires_scipy
-@needs_pandas_0_22
 def test_hsu(rainfall_input, expected_output_2):
     """Test Soiling HSU function with cleanings"""
 
@@ -119,20 +116,17 @@ def test_hsu(rainfall_input, expected_output_2):
 
 
 @requires_scipy
-@needs_pandas_0_22
 def test_hsu_defaults(rainfall_input, expected_output_1):
     """
     Test Soiling HSU function with default deposition velocity and default rain
     accumulation period.
     """
-    result = hsu(
-        rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0,
-        pm2_5=1.0e-2,pm10=2.0e-2)
+    result = hsu(rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0,
+                 pm2_5=1.0e-2,pm10=2.0e-2)
     assert np.allclose(result.values, expected_output_1)
 
 
 @requires_scipy
-@needs_pandas_0_22
 def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
     """
     Test Soiling HSU function with variable time intervals.
@@ -165,7 +159,6 @@ def expected_kimber_nowash():
         parse_dates=True, index_col='timestamp')
 
 
-@needs_pandas_0_22
 def test_kimber_nowash(greensboro_rain, expected_kimber_nowash):
     """Test Kimber soiling model with no manual washes"""
     # Greensboro typical expected annual rainfall is 8345mm
@@ -183,7 +176,6 @@ def expected_kimber_manwash():
         parse_dates=True, index_col='timestamp')
 
 
-@needs_pandas_0_22
 def test_kimber_manwash(greensboro_rain, expected_kimber_manwash):
     """Test Kimber soiling model with a manual wash"""
     # a manual wash date
@@ -207,7 +199,6 @@ def expected_kimber_norain():
     return np.where(norain > max_loss_rate, max_loss_rate, norain)
 
 
-@needs_pandas_0_22
 def test_kimber_norain(greensboro_rain, expected_kimber_norain):
     """Test Kimber soiling model with no rain"""
     # a year with no rain
@@ -229,7 +220,6 @@ def expected_kimber_initial_soil():
     return np.where(norain > max_loss_rate, max_loss_rate, norain)
 
 
-@needs_pandas_0_22
 def test_kimber_initial_soil(greensboro_rain, expected_kimber_initial_soil):
     """Test Kimber soiling model with initial soiling"""
     # a year with no rain

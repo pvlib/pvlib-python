@@ -316,10 +316,6 @@ class ModelChain(object):
 
     name: None or str, default None
         Name of ModelChain instance.
-
-    **kwargs
-        Arbitrary keyword arguments. Included for compatibility, but not
-        used.
     """
 
     def __init__(self, system, location,
@@ -330,7 +326,7 @@ class ModelChain(object):
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temperature_model=None,
-                 losses_model='no_loss', name=None, **kwargs):
+                 losses_model='no_loss', name=None):
 
         self.name = name
         self.system = system

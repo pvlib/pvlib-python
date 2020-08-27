@@ -48,17 +48,12 @@ class Location(object):
     name : None or string, default None.
         Sets the name attribute of the Location object.
 
-    **kwargs
-        Arbitrary keyword arguments.
-        Included for compatibility, but not used.
-
     See also
     --------
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz='UTC', altitude=0,
-                 name=None, **kwargs):
+    def __init__(self, latitude, longitude, tz='UTC', altitude=0, name=None):
 
         self.latitude = latitude
         self.longitude = longitude

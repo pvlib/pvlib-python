@@ -45,25 +45,35 @@ _DC_MODEL_PARAMS = {
 }
 
 
-def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
+def _parse_localized_attributes(pvsystem=None, tracker=False, location=None,
+                                **kwargs):
     """
-    Get and combine attributes from the pvsystem and/or location
+    Get and parse attributes from the pvsystem and/or location
     with the rest of the kwargs.
     """
-    if pvsystem is not None:
-        pv_dict = pvsystem.__dict__
+    pvsystem_kwargs = [
+        'surface_tilt', 'surface_azimuth', 'surface_type', 'albedo', 'module',
+        'module_parameters', 'module_type', 'racking_model',
+        'temperature_model_parameters', 'modules_per_string',
+        'strings_per_inverter', 'inverter', 'inverter_parameters',
+        'losses_parameters', 'name'
+    ]
+    if tracker:
+        pvsystem_kwargs += [
+            'axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr'
+        ]
+    if pvsystem is None:
+        pv_dict = {k: kwargs[k] for k in pvsystem_kwargs if k in kwargs}
     else:
-        pv_dict = {}
+        pv_dict = {attr: getattr(pvsystem, attr) for attr in pvsystem_kwargs}
 
-    if location is not None:
-        loc_dict = location.__dict__
+    location_kwargs = ['latitude', 'longitude', 'tz', 'altitude', 'name']
+    if location is None:
+        loc_dict = {k: kwargs[k] for k in location_kwargs if k in kwargs}
     else:
-        loc_dict = {}
+        loc_dict = {attr: getattr(location, attr) for attr in location_kwargs}
 
-    new_kwargs = dict(
-        list(pv_dict.items()) + list(loc_dict.items()) + list(kwargs.items())
-    )
-    return new_kwargs
+    return pv_dict, loc_dict
 
 
 # not sure if this belongs in the pvsystem module.
@@ -156,10 +166,6 @@ class PVSystem(object):
 
     name : None or string, default None
 
-    **kwargs
-        Arbitrary keyword arguments.
-        Included for compatibility, but not used.
-
     See also
     --------
     pvlib.location.Location
@@ -175,8 +181,7 @@ class PVSystem(object):
                  temperature_model_parameters=None,
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
-                 racking_model=None, losses_parameters=None, name=None,
-                 **kwargs):
+                 racking_model=None, losses_parameters=None, name=None):
 
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
@@ -856,14 +861,14 @@ class LocalizedPVSystem(PVSystem, Location):
     """
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
-        new_kwargs = _combine_localized_attributes(
+        pv_dict, loc_dict = _parse_localized_attributes(
             pvsystem=pvsystem,
             location=location,
-            **kwargs,
+            **kwargs
         )
 
-        PVSystem.__init__(self, **new_kwargs)
-        Location.__init__(self, **new_kwargs)
+        PVSystem.__init__(self, **pv_dict)
+        Location.__init__(self, **loc_dict)
 
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz',

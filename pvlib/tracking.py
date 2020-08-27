@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind
-from pvlib.pvsystem import _combine_localized_attributes
+from pvlib.pvsystem import _parse_localized_attributes
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
@@ -43,6 +43,8 @@ class SingleAxisTracker(PVSystem):
         between the tracking axes has a gcr of 2/6=0.333. If gcr is not
         provided, a gcr of 2/7 is default. gcr must be <=1.
 
+    **kwargs
+        Passed to PVSystem
     """
 
     def __init__(self, axis_tilt=0, axis_azimuth=0,
@@ -228,14 +230,15 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
 
     def __init__(self, pvsystem=None, location=None, **kwargs):
 
-        new_kwargs = _combine_localized_attributes(
+        pv_dict, loc_dict = _parse_localized_attributes(
             pvsystem=pvsystem,
+            tracker=True,
             location=location,
             **kwargs,
         )
 
-        SingleAxisTracker.__init__(self, **new_kwargs)
-        Location.__init__(self, **new_kwargs)
+        SingleAxisTracker.__init__(self, **pv_dict)
+        Location.__init__(self, **loc_dict)
 
     def __repr__(self):
         attrs = ['latitude', 'longitude', 'altitude', 'tz']

@@ -57,6 +57,9 @@ API Changes
       The index of the input DataFrame is used instead.
     * ``temp_model`` keyword argument of
       :py:meth:`pvlib.modelchain.ModelChain`. Use ``temperature_model`` instead.
+* Objects :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
+  :py:class:`pvlib.tracking.SingleAxisTracker`, :py:class:`pvlib.modelchain.ModelChain`,
+  and subclasses no longer accept arbitrary keyword arguments. (:issue:`1029`)
 
 Enhancements
 ~~~~~~~~~~~~

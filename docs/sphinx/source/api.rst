@@ -223,6 +223,8 @@ Incident angle modifiers
    iam.martin_ruiz_diffuse
    iam.sapm
    iam.interp
+   iam.marion_diffuse
+   iam.marion_integrate
 
 PV temperature models
 ---------------------
@@ -263,44 +265,7 @@ Low-level functions for solving the single diode equation.
    singlediode.bishop88_v_from_i
    singlediode.bishop88_mpp
 
-SAPM model
-----------
-
-Functions relevant for the SAPM model.
-
-.. autosummary::
-   :toctree: generated/
-
-   pvsystem.sapm
-   pvsystem.sapm_effective_irradiance
-   pvsystem.sapm_spectral_loss
-   pvsystem.sapm_aoi_loss
-   pvsystem.snlinverter
-   pvsystem.adrinverter
-   temperature.sapm_cell
-
-Pvsyst model
--------------
-
-Functions relevant for the Pvsyst model.
-
-.. autosummary::
-   :toctree: generated/
-
-   temperature.pvsyst_cell
-
-PVWatts model
--------------
-
-.. autosummary::
-   :toctree: generated/
-
-   pvsystem.pvwatts_dc
-   pvsystem.pvwatts_ac
-   pvsystem.pvwatts_losses
-
 Functions for fitting diode models
-----------------------------------
 
 .. autosummary::
    :toctree: generated/
@@ -309,6 +274,60 @@ Functions for fitting diode models
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
 
+Inverter models (DC to AC conversion)
+-------------------------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.sandia
+   inverter.adr
+   inverter.pvwatts
+
+Functions for fitting inverter models
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.fit_sandia
+
+
+PV System Models
+----------------
+
+Sandia array performance model (SAPM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.sapm
+   pvsystem.sapm_effective_irradiance
+   pvsystem.sapm_spectral_loss
+   pvsystem.sapm_aoi_loss
+   inverter.sandia
+   temperature.sapm_cell
+
+Pvsyst model
+^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   temperature.pvsyst_cell
+   pvsystem.calcparams_pvsyst
+   pvsystem.singlediode
+
+PVWatts model
+^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.pvwatts_dc
+   inverter.pvwatts
+   pvsystem.pvwatts_losses
+
 Other
 -----
 
@@ -316,7 +335,6 @@ Other
    :toctree: generated/
 
    pvsystem.retrieve_sam
-   pvsystem.systemdef
    pvsystem.scale_voltage_current_power
 
 
@@ -336,6 +354,12 @@ Effects on PV System Output
    soiling.hsu
    soiling.kimber
 
+.. autosummary::
+   :toctree: generated/
+
+   shading.masking_angle
+   shading.masking_angle_passias
+   shading.sky_diffuse_passias
 
 
 Tracking
@@ -471,6 +495,8 @@ Creating a ModelChain object.
    :toctree: generated/
 
    modelchain.ModelChain
+   modelchain.ModelChain.with_pvwatts
+   modelchain.ModelChain.with_sapm
 
 Running
 -------

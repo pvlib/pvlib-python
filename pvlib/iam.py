@@ -10,6 +10,7 @@ irradiance to the module's surface.
 
 import numpy as np
 import pandas as pd
+import functools
 from pvlib.tools import cosd, sind, tand, asind
 
 # a dict of required parameter names for each IAM model
@@ -527,3 +528,221 @@ def sapm(aoi, module, upper=None):
         iam = pd.Series(iam, aoi.index)
 
     return iam
+
+
+def marion_diffuse(model, surface_tilt, **kwargs):
+    """
+    Determine diffuse irradiance incidence angle modifiers using Marion's
+    method of integrating over solid angle.
+
+    Parameters
+    ----------
+    model : str
+        The IAM function to evaluate across solid angle. Must be one of
+        `'ashrae', 'physical', 'martin_ruiz', 'sapm'`.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    **kwargs
+        Extra parameters passed to the IAM function.
+
+    Returns
+    -------
+    iam : dict
+        IAM values for each type of diffuse irradiance:
+
+            * 'sky': radiation from the sky dome (zenith <= 90)
+            * 'horizon': radiation from the region of the sky near the horizon
+              (89.5 <= zenith <= 90)
+            * 'ground': radiation reflected from the ground (zenith >= 90)
+
+        See [1]_ for a detailed description of each class.
+
+    See Also
+    --------
+    pvlib.iam.marion_integrate
+
+    References
+    ----------
+    .. [1] B. Marion "Numerical method for angle-of-incidence correction
+       factors for diffuse radiation incident photovoltaic modules",
+       Solar Energy, Volume 147, Pages 344-348. 2017.
+       DOI: 10.1016/j.solener.2017.03.027
+
+    Examples
+    --------
+    >>> marion_diffuse('physical', surface_tilt=20)
+    {'sky': 0.9539178294437575,
+     'horizon': 0.7652650139134007,
+     'ground': 0.6387140117795903}
+
+    >>> marion_diffuse('ashrae', [20, 30], b=0.04)
+    {'sky': array([0.96748999, 0.96938408]),
+     'horizon': array([0.86478428, 0.91825792]),
+     'ground': array([0.77004435, 0.8522436 ])}
+    """
+
+    models = {
+        'physical': physical,
+        'ashrae': ashrae,
+        'sapm': sapm,
+        'martin_ruiz': martin_ruiz,
+    }
+
+    try:
+        iam_model = models[model]
+    except KeyError:
+        raise ValueError('model must be one of: ' + str(list(models.keys())))
+
+    iam_function = functools.partial(iam_model, **kwargs)
+    iam = {}
+    for region in ['sky', 'horizon', 'ground']:
+        iam[region] = marion_integrate(iam_function, surface_tilt, region)
+
+    return iam
+
+
+def marion_integrate(function, surface_tilt, region, num=None):
+    """
+    Integrate an incidence angle modifier (IAM) function over solid angle
+    to determine a diffuse irradiance correction factor using Marion's method.
+
+    This lower-level function actually performs the IAM integration for the
+    specified solid angle region.
+
+    Parameters
+    ----------
+    function : callable(aoi)
+        The IAM function to evaluate across solid angle. The function must
+        be vectorized and take only one parameter, the angle of incidence in
+        degrees.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    region : {'sky', 'horizon', 'ground'}
+        The region to integrate over. Must be one of:
+
+            * 'sky': radiation from the sky dome (zenith <= 90)
+            * 'horizon': radiation from the region of the sky near the horizon
+              (89.5 <= zenith <= 90)
+            * 'ground': radiation reflected from the ground (zenith >= 90)
+
+        See [1]_ for a detailed description of each class.
+
+    num : int, optional
+        The number of increments in the zenith integration.
+        If not specified, N will follow the values used in [1]_:
+
+            * 'sky' or 'ground': num = 180
+            * 'horizon': num = 1800
+
+    Returns
+    -------
+    iam : numeric
+        AOI diffuse correction factor for the specified region.
+
+    See Also
+    --------
+    pvlib.iam.marion_diffuse
+
+    References
+    ----------
+    .. [1] B. Marion "Numerical method for angle-of-incidence correction
+       factors for diffuse radiation incident photovoltaic modules",
+       Solar Energy, Volume 147, Pages 344-348. 2017.
+       DOI: 10.1016/j.solener.2017.03.027
+
+    Examples
+    --------
+    >>> marion_integrate(pvlib.iam.ashrae, 20, 'sky')
+    0.9596085829811408
+
+    >>> from functools import partial
+    >>> f = partial(pvlib.iam.physical, n=1.3)
+    >>> marion_integrate(f, [20, 30], 'sky')
+    array([0.96225034, 0.9653219 ])
+    """
+
+    if num is None:
+        if region in ['sky', 'ground']:
+            num = 180
+        elif region == 'horizon':
+            num = 1800
+        else:
+            raise ValueError('Invalid region: {}'.format(region))
+
+    beta = np.radians(surface_tilt)
+    if isinstance(beta, pd.Series):
+        # convert Series to np array for broadcasting later
+        beta = beta.values
+    ai = np.pi/num  # angular increment
+
+    phi_range = np.linspace(0, np.pi, num, endpoint=False)
+    psi_range = np.linspace(0, 2*np.pi, 2*num, endpoint=False)
+
+    # the pseudocode in [1] do these checks at the end, but it's
+    # faster to do this criteria check up front instead of later.
+    if region == 'sky':
+        mask = phi_range + ai <= np.pi/2
+    elif region == 'horizon':
+        lo = 89.5 * np.pi/180
+        hi = np.pi/2
+        mask = (lo <= phi_range) & (phi_range + ai <= hi)
+    elif region == 'ground':
+        mask = (phi_range >= np.pi/2)
+    else:
+        raise ValueError('Invalid region: {}'.format(region))
+    phi_range = phi_range[mask]
+
+    # fast Cartesian product of phi and psi
+    angles = np.array(np.meshgrid(phi_range, psi_range)).T.reshape(-1, 2)
+    # index with single-element lists to maintain 2nd dimension so that
+    # these angle arrays broadcast across the beta array
+    phi_1 = angles[:, [0]]
+    psi_1 = angles[:, [1]]
+    phi_2 = phi_1 + ai
+    # psi_2 = psi_1 + ai  # not needed
+    phi_avg = phi_1 + 0.5*ai
+    psi_avg = psi_1 + 0.5*ai
+    term_1 = np.cos(beta) * np.cos(phi_avg)
+    # The AOI formula includes a term based on the difference between
+    # panel azimuth and the photon azimuth, but because we assume each class
+    # of diffuse irradiance is isotropic and we are integrating over all
+    # angles, it doesn't matter what panel azimuth we choose (i.e., the
+    # system is rotationally invariant).  So we choose gamma to be zero so
+    # that we can omit it from the cos(psi_avg) term.
+    # Marion's paper mentions this in the Section 3 pseudocode:
+    # "set gamma to pi (or any value between 0 and 2pi)"
+    term_2 = np.sin(beta) * np.sin(phi_avg) * np.cos(psi_avg)
+    cosaoi = term_1 + term_2
+    aoi = np.arccos(cosaoi)
+    # simplify Eq 8, (psi_2 - psi_1) is always ai
+    dAs = ai * (np.cos(phi_1) - np.cos(phi_2))
+    cosaoi_dAs = cosaoi * dAs
+    # apply the final AOI check, zeroing out non-passing points
+    mask = aoi < np.pi/2
+    cosaoi_dAs = np.where(mask, cosaoi_dAs, 0)
+    numerator = np.sum(function(np.degrees(aoi)) * cosaoi_dAs, axis=0)
+    denominator = np.sum(cosaoi_dAs, axis=0)
+
+    with np.errstate(invalid='ignore'):
+        # in some cases, no points pass the criteria
+        # (e.g. region='ground', surface_tilt=0), so we override the division
+        # by zero to set Fd=0.  Also, preserve nans in beta.
+        Fd = np.where((denominator != 0) | ~np.isfinite(beta),
+                      numerator / denominator,
+                      0)
+
+    # preserve input type
+    if np.isscalar(surface_tilt):
+        Fd = Fd.item()
+    elif isinstance(surface_tilt, pd.Series):
+        Fd = pd.Series(Fd, surface_tilt.index)
+
+    return Fd

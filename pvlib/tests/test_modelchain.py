@@ -10,7 +10,7 @@ from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from pandas.util.testing import assert_series_equal
+from conftest import assert_series_equal
 import pytest
 
 from conftest import fail_on_pvlib_version, requires_scipy, requires_tables
@@ -168,6 +168,19 @@ def weather():
 
 def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     ModelChain(sapm_dc_snl_ac_system, location)
+
+
+def test_with_sapm(sapm_dc_snl_ac_system, location, weather):
+    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system, location)
+    assert mc.dc_model == mc.sapm
+    mc.run_model(weather)
+
+
+def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
+    mc = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location)
+    assert mc.dc_model == mc.pvwatts_dc
+    assert mc.temperature_model == mc.sapm_temp
+    mc.run_model(weather)
 
 
 @pytest.mark.parametrize('strategy, expected', [
@@ -448,26 +461,41 @@ def acdc(mc):
 
 
 @pytest.mark.parametrize('ac_model', [
-    'snlinverter', pytest.param('adrinverter', marks=requires_scipy),
-    'pvwatts'])
+    'sandia', pytest.param('adr', marks=requires_scipy), 'pvwatts'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    pvwatts_dc_pvwatts_ac_system, location, ac_model,
                    weather, mocker):
-    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
-                  'adrinverter': cec_dc_adr_ac_system,
+    ac_systems = {'sandia': sapm_dc_snl_ac_system,
+                  'adr': cec_dc_adr_ac_system,
                   'pvwatts': pvwatts_dc_pvwatts_ac_system}
+    ac_method_name = {'sandia': 'snlinverter',
+                      'adr': 'adrinverter',
+                      'pvwatts': 'pvwatts_ac'}
     system = ac_systems[ac_model]
 
     mc = ModelChain(system, location, ac_model=ac_model,
                     aoi_model='no_loss', spectral_model='no_loss')
-    if ac_model == 'pvwatts':
-        ac_model += '_ac'
-    m = mocker.spy(system, ac_model)
+    m = mocker.spy(system, ac_method_name[ac_model])
     mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.ac, pd.Series)
     assert not mc.ac.empty
     assert mc.ac[1] < 1
+
+
+# TODO in v0.9: remove this test for a deprecation warning
+@pytest.mark.parametrize('ac_model', [
+    'snlinverter', pytest.param('adrinverter', marks=requires_scipy)])
+def test_ac_models_deprecated(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
+                              location, ac_model, weather):
+    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
+                  'adrinverter': cec_dc_adr_ac_system}
+    system = ac_systems[ac_model]
+    warn_txt = "ac_model = '" + ac_model + "' is deprecated and will be" +\
+               " removed in v0.9"
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        ModelChain(system, location, ac_model=ac_model,
+                   aoi_model='no_loss', spectral_model='no_loss')
 
 
 def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -479,6 +507,14 @@ def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
     assert m.call_count == 1
     assert_series_equal(mc.ac, mc.dc)
     assert not mc.ac.empty
+
+
+def test_ac_model_not_a_model(pvwatts_dc_pvwatts_ac_system, location, weather):
+    exc_text = 'not a valid AC power model'
+    with pytest.raises(ValueError, match=exc_text):
+        ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                   ac_model='not_a_model', aoi_model='no_loss',
+                   spectral_model='no_loss')
 
 
 def constant_aoi_loss(mc):
@@ -666,20 +702,36 @@ def test_deprecated_08():
     warn_txt = 'temp_model keyword argument is deprecated'
     with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='snlinverter',
+                   spectral_model='no_loss', ac_model='sandia',
                    temp_model='sapm')
     # provide both temp_model and temperature_model kwargs
     warn_txt = 'Provide only one of temperature_model'
     with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='snlinverter',
+                   spectral_model='no_loss', ac_model='sandia',
                    temperature_model='sapm', temp_model='sapm')
     # conflicting temp_model and temperature_model kwargs
     exc_text = 'Conflicting temperature_model'
     with pytest.raises(ValueError, match=exc_text):
         ModelChain(system, location, dc_model='desoto', aoi_model='no_loss',
-                   spectral_model='no_loss', ac_model='snlinverter',
+                   spectral_model='no_loss', ac_model='sandia',
                    temperature_model='pvsyst', temp_model='sapm')
+
+
+@fail_on_pvlib_version('0.9')
+@pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter'])
+def test_deprecated_09(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
+                       location, ac_model, weather):
+    # ModelChain.ac_model = 'snlinverter' or 'adrinverter' deprecated in v0.8,
+    # removed in v0.9
+    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
+                  'adrinverter': cec_dc_adr_ac_system}
+    system = ac_systems[ac_model]
+    warn_txt = "ac_model = '" + ac_model + "' is deprecated and will be" +\
+               " removed in v0.9"
+    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
+        ModelChain(system, location, ac_model=ac_model,
+                   aoi_model='no_loss', spectral_model='no_loss')
 
 
 @requires_scipy
@@ -718,9 +770,9 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                                     surface_tilt=surface_tilt,
                                     surface_azimuth=surface_azimuth)
 
-    expected = pd.Series(np.array([115.40352679, -2.00000000e-02]),
+    expected = pd.Series(np.array([111.621405, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
+    assert_series_equal(ac, expected)
 
 
 @requires_scipy
@@ -739,9 +791,9 @@ def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
         cec_inverter_parameters, orientation_strategy='south_at_latitude_tilt',
         altitude=altitude)
 
-    expected = pd.Series(np.array([183.522449305, -2.00000000e-02]),
+    expected = pd.Series(np.array([178.382754, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
+    assert_series_equal(ac, expected)
 
 
 @requires_scipy
@@ -764,9 +816,9 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                     surface_azimuth=surface_azimuth,
                                     pressure=93194)
 
-    expected = pd.Series(np.array([116.595664887, -2.00000000e-02]),
+    expected = pd.Series(np.array([113.190045, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
+    assert_series_equal(ac, expected)
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                     module_parameters, temp_model_params,
@@ -775,9 +827,9 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                     surface_azimuth=surface_azimuth,
                                     altitude=altitude)
 
-    expected = pd.Series(np.array([116.595664887, -2.00000000e-02]),
+    expected = pd.Series(np.array([113.189814, -2.00000000e-02]),
                          index=times)
-    assert_series_equal(ac, expected, check_less_precise=1)
+    assert_series_equal(ac, expected)
 
 
 @pytest.mark.parametrize('strategy, strategy_str', [

@@ -35,6 +35,38 @@ def fail_on_pvlib_version(version):
         return inner
     return wrapper
 
+
+def _check_pandas_assert_kwargs(kwargs):
+    # handles the change in API related to default
+    # tolerances in pandas 1.1.0.  See pvlib GH #1018
+    if parse_version(pd.__version__) >= parse_version('1.1.0'):
+        if kwargs.pop('check_less_precise', False):
+            kwargs['atol'] = 1e-3
+            kwargs['rtol'] = 1e-3
+        else:
+            kwargs['atol'] = 1e-5
+            kwargs['rtol'] = 1e-5
+    else:
+        kwargs.pop('rtol', None)
+        kwargs.pop('atol', None)
+    return kwargs
+
+
+def assert_index_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_index_equal(left, right, **kwargs)
+
+
+def assert_series_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_series_equal(left, right, **kwargs)
+
+
+def assert_frame_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_frame_equal(left, right, **kwargs)
+
+
 # commonly used directories in the tests
 TEST_DIR = Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -82,14 +114,6 @@ def numpy_1_10():
 
 needs_numpy_1_10 = pytest.mark.skipif(
     not numpy_1_10(), reason='requires numpy 1.10 or greater')
-
-
-def pandas_0_22():
-    return parse_version(pd.__version__) >= parse_version('0.22.0')
-
-
-needs_pandas_0_22 = pytest.mark.skipif(
-    not pandas_0_22(), reason='requires pandas 0.22 or greater')
 
 
 def has_spa_c():
@@ -201,6 +225,33 @@ def pvsyst_module_params():
         'R_sh_exp': 5.5,
         'cells_in_series': 60,
         'alpha_sc': 0.001,
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def adr_inverter_parameters():
+    """
+    Define some ADR inverter parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)'
+                '[CEC 2011]',
+        'Vac': 240.,
+        'Pacmax': 2110.,
+        'Pnom': 2200.,
+        'Vnom': 396.,
+        'Vmin': 155.,
+        'Vmax': 413.,
+        'Vdcmax': 500.,
+        'MPPTHi': 450.,
+        'MPPTLow': 150.,
+        'Pnt': 0.25,
+        'ADRCoefficients': [0.01385, 0.0152, 0.00794, 0.00286, -0.01872,
+                            -0.01305, 0.0, 0.0, 0.0]
     }
     return parameters
 

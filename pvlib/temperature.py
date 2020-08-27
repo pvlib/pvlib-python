@@ -16,6 +16,21 @@ TEMPERATURE_MODEL_PARAMETERS = {
     'pvsyst': {'freestanding': {'u_c': 29.0, 'u_v': 0},
                'insulated': {'u_c': 15.0, 'u_v': 0}}
 }
+"""Dictionary of temperature parameters organized by model.
+
+There are keys for each model at the top level. Currently there are two models,
+``'sapm'`` for the Sandia Array Performance Model, and ``'pvsyst'``. Each model
+has a dictionary of configurations with a dictionary of the model parameters
+associated with it. Retrieve parameters by indexing the model and
+configuration by name. Note: the keys are lower-cased and case sensitive.
+
+Example
+-------
+Retrieve the open rack glass-polymer configuration for SAPM::
+
+    from pvlib.temperature import TEMPERATURE_MODEL_PARAMS
+    temp_params = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_polymer']
+"""
 
 
 def _temperature_model_params(model, parameter_set):
@@ -87,7 +102,7 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
     ambient air temperature :math:`T_{a}` (C). Model parameters depend both on
     the module construction and its mounting. Parameter sets are provided in
     [1]_ for representative modules and mounting, and are coded for convenience
-    in ``pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS``.
+    in :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`.
 
     +---------------+----------------+-------+---------+---------------------+
     | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
@@ -168,7 +183,7 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
     :math:`T_{C}`. Model parameters depend both on the module construction and
     its mounting. Parameter sets are provided in [1]_ for representative
     modules and mounting, and are coded for convenience in
-    ``temperature.TEMPERATURE_MODEL_PARAMETERS``.
+    :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`.
 
     +---------------+----------------+-------+---------+---------------------+
     | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
@@ -238,7 +253,7 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
     Model parameters depend both on the module construction and its mounting.
     Parameter sets are provided in [1]_ for representative modules and
     mounting, and are coded for convenience in
-    ``pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS``.
+    :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`.
 
     +---------------+----------------+-------+---------+---------------------+
     | Module        | Mounting       | a     | b       | :math:`\Delta T [C]`|
@@ -323,8 +338,8 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     the module construction and its mounting. Parameters are provided in
     [1]_ for open (freestanding) and close (insulated) mounting configurations,
     , and are coded for convenience in
-    ``temperature.TEMPERATURE_MODEL_PARAMETERS``. The heat loss factors
-    provided represent the combined effect of convection, radiation and
+    :data:`~pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS`. The heat loss
+    factors provided represent the combined effect of convection, radiation and
     conduction, and their values are experimentally determined.
 
     +--------------+---------------+---------------+

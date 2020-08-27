@@ -238,6 +238,14 @@ PV temperature models
    temperature.pvsyst_cell
    temperature.faiman
 
+Temperature Model Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. currentmodule:: pvlib.temperature
+.. autodata:: TEMPERATURE_MODEL_PARAMETERS
+   :annotation:
+
+.. currentmodule:: pvlib
+
 Single diode models
 -------------------
 

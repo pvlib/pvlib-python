@@ -4,11 +4,10 @@
 import datetime
 import numpy as np
 import pandas as pd
-from pandas.util.testing import assert_series_equal
+from conftest import assert_series_equal
 from pvlib.soiling import hsu, kimber
 from pvlib.iotools import read_tmy3
-from conftest import (
-    requires_scipy, needs_pandas_0_22, DATA_DIR)
+from conftest import requires_scipy, DATA_DIR
 import pytest
 
 
@@ -66,7 +65,6 @@ def rainfall_input():
 
 
 @requires_scipy
-@needs_pandas_0_22
 def test_hsu_no_cleaning(rainfall_input, expected_output):
     """Test Soiling HSU function"""
 
@@ -84,7 +82,6 @@ def test_hsu_no_cleaning(rainfall_input, expected_output):
 
 
 @requires_scipy
-@needs_pandas_0_22
 def test_hsu(rainfall_input, expected_output_2):
     """Test Soiling HSU function with cleanings"""
 
@@ -103,7 +100,6 @@ def test_hsu(rainfall_input, expected_output_2):
 
 
 @requires_scipy
-@needs_pandas_0_22
 def test_hsu_defaults(rainfall_input, expected_output_1):
     """
     Test Soiling HSU function with default deposition velocity and default rain
@@ -129,7 +125,6 @@ def expected_kimber_nowash():
         parse_dates=True, index_col='timestamp')
 
 
-@needs_pandas_0_22
 def test_kimber_nowash(greensboro_rain, expected_kimber_nowash):
     """Test Kimber soiling model with no manual washes"""
     # Greensboro typical expected annual rainfall is 8345mm
@@ -147,7 +142,6 @@ def expected_kimber_manwash():
         parse_dates=True, index_col='timestamp')
 
 
-@needs_pandas_0_22
 def test_kimber_manwash(greensboro_rain, expected_kimber_manwash):
     """Test Kimber soiling model with a manual wash"""
     # a manual wash date
@@ -171,7 +165,6 @@ def expected_kimber_norain():
     return np.where(norain > max_loss_rate, max_loss_rate, norain)
 
 
-@needs_pandas_0_22
 def test_kimber_norain(greensboro_rain, expected_kimber_norain):
     """Test Kimber soiling model with no rain"""
     # a year with no rain
@@ -193,7 +186,6 @@ def expected_kimber_initial_soil():
     return np.where(norain > max_loss_rate, max_loss_rate, norain)
 
 
-@needs_pandas_0_22
 def test_kimber_initial_soil(greensboro_rain, expected_kimber_initial_soil):
     """Test Kimber soiling model with initial soiling"""
     # a year with no rain

@@ -15,6 +15,7 @@ import pvlib
 from pvlib.location import Location
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
+from test_solarposition import expected_solpos, golden, golden_mst
 from conftest import requires_ephem
 
 

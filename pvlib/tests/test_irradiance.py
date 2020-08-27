@@ -679,7 +679,6 @@ def test_erbs_all_scalar():
         assert_allclose(v, expected[k], 5)
 
 
-@needs_numpy_1_10
 def test_dirindex(times):
     ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
     ghi_clearsky = pd.Series(

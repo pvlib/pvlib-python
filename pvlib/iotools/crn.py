@@ -33,7 +33,7 @@ WIDTHS[-1] -= 1
 
 # specify dtypes for potentially problematic values
 DTYPES = [
-    'int64', 'int64', 'int64', 'int64', 'int64', 'int64', 'float64', 'float64',
+    'int64', 'int64', 'int64', 'int64', 'int64', 'str', 'float64', 'float64',
     'float64', 'float64', 'float64', 'int64', 'float64', 'O', 'int64',
     'float64', 'int64', 'float64', 'float64', 'int64', 'int64', 'float64',
     'int64'
@@ -42,11 +42,12 @@ DTYPES = [
 
 def read_crn(filename):
     """
-    Read NOAA USCRN [1]_ [2]_ fixed-width file into pandas dataframe.
+    Read a NOAA USCRN fixed-width file into pandas dataframe.  The CRN is
+    described in [1]_ and [2]_.
 
     Parameters
     ----------
-    filename: str
+    filename: str, path object, or file-like
         filepath or url to read for the fixed-width file.
 
     Returns
@@ -66,6 +67,13 @@ def read_crn(filename):
     e.g. `SOLAR_RADIATION` becomes `ghi`. See the
     `pvlib.iotools.crn.VARIABLE_MAP` dict for the complete mapping.
 
+    CRN files occasionally have a set of null characters on a line
+    instead of valid data. This function drops those lines. Sometimes
+    these null characters appear on a line of their own and sometimes
+    they occur on the same line as valid data. In the latter case, the
+    valid data will not be returned. Users may manually remove the null
+    characters and reparse the file if they need that line.
+
     References
     ----------
     .. [1] U.S. Climate Reference Network
@@ -77,9 +85,13 @@ def read_crn(filename):
        Amer. Meteor. Soc., 94, 489-498. :doi:`10.1175/BAMS-D-12-00170.1`
     """
 
-    # read in data
+    # read in data. set fields with NUL characters to NaN
     data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '),
-                       widths=WIDTHS)
+                       widths=WIDTHS, na_values=['\x00\x00\x00\x00\x00\x00'])
+    # at this point we only have NaNs from NUL characters, not -999 etc.
+    # these bad rows need to be removed so that dtypes can be set.
+    # NaNs require float dtype so we run into errors if we don't do this.
+    data = data.dropna(axis=0)
     # loop here because dtype kwarg not supported in read_fwf until 0.20
     for (col, _dtype) in zip(data.columns, DTYPES):
         data[col] = data[col].astype(_dtype)
@@ -97,8 +109,11 @@ def read_crn(filename):
     except TypeError:
         pass
 
-    # set nans
+    # Now we can set nans. This could be done a per column basis to be
+    # safer, since in principle a real -99 value could occur in a -9999
+    # column. Very unlikely to see that in the real world.
     for val in [-99, -999, -9999]:
+        # consider replacing with .replace([-99, -999, -9999])
         data = data.where(data != val, np.nan)
 
     data = data.rename(columns=VARIABLE_MAP)

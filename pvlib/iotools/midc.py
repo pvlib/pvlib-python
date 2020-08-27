@@ -154,7 +154,7 @@ def format_index_raw(data):
 
 def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     """Read in National Renewable Energy Laboratory Measurement and
-    Instrumentation Data Center [1]_ weather data.
+    Instrumentation Data Center weather data.  The MIDC is described in [1]_.
 
     Parameters
     ----------
@@ -180,9 +180,9 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     The `variable_map` argument should map fields from MIDC data to pvlib
     names.
 
-        e.g. If a MIDC file contains the variable 'Global Horizontal [W/m^2]',
-             passing the dictionary below will rename the column to 'ghi' in
-             the returned Dataframe.
+    E.g. if a MIDC file contains the variable 'Global Horizontal [W/m^2]',
+    passing the dictionary below will rename the column to 'ghi' in
+    the returned Dataframe.
 
              {'Global Horizontal [W/m^2]': 'ghi'}
 
@@ -249,12 +249,12 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
     args = {'site': site,
             'begin': start.strftime('%Y%m%d'),
             'end': end.strftime('%Y%m%d')}
-    endpoint = 'https://midcdmz.nrel.gov/apps/data_api.pl?'
-    url = endpoint + '&'.join(['{}={}'.format(k, v) for k, v in args.items()])
+    url = 'https://midcdmz.nrel.gov/apps/data_api.pl'
+    # NOTE: just use requests.get(url, params=args) to build querystring
     # number of header columns and data columns do not always match,
     # so first parse the header to determine the number of data columns
     # to parse
-    csv_request = requests.get(url, timeout=timeout)
+    csv_request = requests.get(url, timeout=timeout, params=args)
     csv_request.raise_for_status()
     raw_csv = io.StringIO(csv_request.text)
     first_row = pd.read_csv(raw_csv, nrows=0)

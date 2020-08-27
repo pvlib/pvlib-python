@@ -247,12 +247,76 @@ Parameters that specify a specific type require that specific input type.
 
 Read the Docs will automatically build the documentation for each pull
 request. Please confirm the documentation renders correctly by following
-the ``continuous-documentation/read-the-docs`` link within the checks
+the ``docs/readthedocs.org:pvlib-python`` link within the checks
 status box at the bottom of the pull request.
 
-To build the docs locally, install the ``doc`` dependencies specified in the
-`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
-file. See :ref:`installation` instructions for more information.
+Building the documentation
+--------------------------
+
+Building the documentation locally is useful for testing out changes to the
+documentation's source code without having to repeatedly update a PR and have
+Read the Docs build it for you.  Building the docs locally requires installing
+pvlib python as an editable library (see :ref:`installation` for instructions).
+First, install the ``doc`` dependencies specified in the
+``EXTRAS_REQUIRE`` section of
+`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
+An easy way to do this is with::
+
+    pip install pvlib[doc]
+
+Note: Anaconda users may have trouble using the above command to update an
+older version of docutils. If that happens, you can update it with ``conda``
+(e.g. ``conda install docutils=0.15.2``) and run the above command again.
+
+Once the ``doc`` dependencies are installed, navigate to ``/docs/sphinx`` and
+execute::
+
+    make html
+
+Be sure to skim through the output of this command because Sphinx might emit
+helpful warnings about problems with the documentation source code.
+If the build succeeds, it will make a new directory ``docs/sphinx/build``
+with the documentation's homepage located at ``build/html/index.html``.
+This file can be opened with a web browser to view the local version
+like any other website. Other output formats are available; run ``make help``
+for more information.
+
+Note that Windows users need not have the ``make`` utility installed as pvlib
+includes a ``make.bat`` batch file that emulates its interface.
+
+Example Gallery
+---------------
+
+The example gallery uses `sphinx-gallery <https://sphinx-gallery.github.io/>`_
+and is generated from script files in the
+`docs/examples <https://github.com/pvlib/pvlib-python/tree/master/docs/examples>`_
+directory.  sphinx-gallery will execute example files that start with
+``plot_`` and capture the output.
+
+Here is a starter template for new examples:
+
+.. code-block:: python
+
+    """
+    Page Title
+    ==========
+
+    A sentence describing the example.
+    """
+
+    # %%
+    # Explanatory text about the example, what it does, why it does it, etc.
+    # Text in the comment block before the first line of code `import pvlib`
+    # will be printed to the example's webpage.
+
+    import pvlib
+    import matplotlib.pyplot as plt
+
+    plt.scatter([1, 2, 3], [4, 5, 6])
+    plt.show()
+
+For more details, see the sphinx-gallery
+`docs <https://sphinx-gallery.github.io/stable/syntax.html#embedding-rst>`_.
 
 .. _testing:
 
@@ -262,7 +326,7 @@ Testing
 Developers **must** include comprehensive tests for any additions or
 modifications to pvlib. New unit test code should be placed in the
 corresponding test module in the
-`pvlib/test <https://github.com/pvlib/pvlib-python/tree/master/pvlib/test>`_
+`pvlib/tests <https://github.com/pvlib/pvlib-python/tree/master/pvlib/tests>`_
 directory.
 
 A pull request will automatically run the tests for you on a variety of
@@ -275,28 +339,36 @@ To run the tests locally, install the ``test`` dependencies specified in the
 file. See :ref:`installation` instructions for more information.
 
 pvlib's unit tests can easily be run by executing ``pytest`` on the
-pvlib directory:
+pvlib directory::
 
-``pytest pvlib``
+    pytest pvlib
 
-or, for a single module:
+or, for a single module::
 
-``pytest pvlib/test/test_clearsky.py``
+    pytest pvlib/test/test_clearsky.py
 
-or, for a single test:
+or, for a single test::
 
-``pytest pvlib/test/test_clearsky.py::test_ineichen_nans``
+    pytest pvlib/test/test_clearsky.py::test_ineichen_nans
 
 We suggest using pytest's ``--pdb`` flag to debug test failures rather
-than using ``print`` or ``logging`` calls. For example:
+than using ``print`` or ``logging`` calls. For example::
 
-``pytest pvlib --pdb``
+    pytest pvlib --pdb
 
 will drop you into the
 `pdb debugger <https://docs.python.org/3/library/pdb.html>`_ at the
 location of a test failure. As described in :ref:`code-style`, pvlib
 code does not use ``print`` or ``logging`` calls, and this also applies
 to the test suite (with rare exceptions).
+
+To include all network-dependent tests, include the ``--remote-data`` flag to
+your ``pytest`` call::
+
+    pytest pvlib --remote-data
+
+And consider adding ``@pytest.mark.remote_data`` to any network dependent test
+you submit for a PR.
 
 pvlib-python contains 3 "layers" of code: functions, PVSystem/Location,
 and ModelChain. Contributors will need to add tests that correspond to
@@ -418,3 +490,8 @@ If this documentation is unclear, help us improve it! Consider looking
 at the `pandas
 documentation <http://pandas.pydata.org/pandas-docs/stable/
 contributing.html>`_ for inspiration.
+
+Code of Conduct
+~~~~~~~~~~~~~~~
+All contributors are expected to adhere to the `Contributor Code of Conduct
+<https://github.com/pvlib/pvlib-python/blob/master/CODE_OF_CONDUCT.md#contributor-covenant-code-of-conduct>`_.

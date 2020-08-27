@@ -1,14 +1,14 @@
 ﻿.. _whatsnew_0700:
 
-v0.7.0 (MONTH DAY, YEAR)
-------------------------
+v0.7.0 (December 18, 2019)
+--------------------------
 
 This is a major release that drops support for Python 2 and Python 3.4. We
 recommend all users of v0.6.3 upgrade to this release after checking API
 compatibility notes.
 
 **Python 2.7 support ended on June 1, 2019.** (:issue:`501`)
-**Minimum numpy version is now 1.10.4. Minimum pandas version is now 0.18.1.**
+**Minimum numpy version is now 1.12.0. Minimum pandas version is now 0.18.1.** (:issue:`830`, :issue:`748`)
 
 API Breaking Changes
 ~~~~~~~~~~~~~~~~~~~~
@@ -17,6 +17,17 @@ API Breaking Changes
   warning is raised if all `effective_irradiance < 2.0`.
 * The output of :py:func:`pvsystem.sapm_effective_irradiance` is now in units
   of W/m2 rather than suns.
+* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
+  an exception instead of displaying a dialog.
+* The `modelchain.ModelChain.diode_params` attribute is now formatted in
+  a pandas.DataFrame with `DatetimeIndex`, rather than in a tuple.
+* ``PVSystem.pvwatts_ac`` now uses inverter DC input limit
+  ``PVSystem.inverter_parameters['pdc0']`` instead of module nameplate
+  capacity ``PVSystem.module_parameters['pdc0']``. (:issue:`734`)
+* ``ModelChain.infer_ac_model`` now uses the presence of the key ``'pdc0'``
+  ``PVSystem.inverter_parameters`` to determine if the `pvwatts_ac`
+  inverter model should be used. The inference method previously looked
+  for the key in ``PVSystem.module_parameters``. (:issue:`734`)
 
 API Changes with Deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,9 +37,9 @@ API Changes with Deprecations
       - Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp`
         to `temperature.sapm_cell` and `temperature.pvsyst_cell`.
       - `temperature.sapm_cell` returns only the cell temperature, whereas the
-         old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
+        old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
       - Created `temperature.sapm_module` to return module temperature using the SAPM temperature model.
-      - Changed the order of arguments for`pvsystem.sapm_celltemp`,
+      - Changed the order of arguments for `pvsystem.sapm_celltemp`,
         `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` to be consistent
         among cell temperature model functions.
       - Removed `model` as a kwarg from `temperature.sapm_cell` and
@@ -67,7 +78,7 @@ API Changes with Deprecations
       - `ModelChain.temperature_model_parameters` now defaults to `None`. The temperature
         model can be inferred from `PVSystem.temperature_model_parameters`.
       - `ModelChain.temps` attribute renamed to `ModelChain.cell_temperature`,
-         and its datatype is now `numeric` rather than `DataFrame`.
+        and its datatype is now `numeric` rather than `DataFrame`.
       - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain`
         defaults to old behavior, using the SAPM temperature model with parameter
         set `open_rack_glass_glass`. This behavior is deprecated, and will be
@@ -95,9 +106,6 @@ API Changes with Deprecations
       - Added the argument `pw_min` and `pw_max`, default values 0.1 and 8 resp.,
 	to `atmosphere.first_solar_spectral_correction`. This function now returns NaN
 	if pw value higher than `pw_max`.
-
-* Calling :py:func:`pvlib.pvsystem.retrieve_sam` with no parameters will raise
-  an exception instead of displaying a dialog.
 * The `times` keyword argument has been deprecated in the
   :py:meth:`pvlib.modelchain.ModelChain.run_model`,
   :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`, and
@@ -109,14 +117,23 @@ API Changes with Deprecations
   argument for capability during the deprecation period.
 * Parameter `pvsystem.DC_MODEL_PARAMS` is renamed to `pvsystem._DC_MODEL_PARAMS`.
   Users should not rely on this dictionary's existence or structure.
+
+Other API Changes
+~~~~~~~~~~~~~~~~~
 * :py:func:`pvlib.iotools.midc.read_midc` now passes additional keyword
   arguments to `pandas.read_csv`
 * Add `timeout` argument to :py:func:`pvlib.iotools.midc.read_midc_raw_data_from_nrel`
+* :py:mod:`pvlib.bifacial` is now imported when ``pvlib`` is imported.
+  (:issue:`766`)
 
 Enhancements
 ~~~~~~~~~~~~
+* Created one new temperature model function:
+  :py:func:`pvlib.temperature.faiman`. (:issue:`750`)
 * Created two new incidence angle modifier (IAM) functions:
   :py:func:`pvlib.iam.martin_ruiz` and :py:func:`pvlib.iam.interp`. (:issue:`751`)
+* Created one new incidence angle modifier (IAM) function for diffuse irradiance:
+  :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
 * Add the `martin_ruiz` IAM function as an option for `ModelChain.aoi_model`.
 * Updated the file for module parameters for the CEC model, from the SAM file
   dated 2017-6-5 to the SAM file dated 2019-03-05. (:issue:`761`)
@@ -132,8 +149,10 @@ Enhancements
 * Add :py:func:`~pvlib.ivtools.fit_sdm_desoto`, a method to fit the De Soto single
   diode model to the typical specifications given in manufacturers datasheets.
 * Add `timeout` to :py:func:`pvlib.iotools.get_psm3`.
-* Created one new incidence angle modifier (IAM) function for diffuse irradiance:
-  :py:func:`pvlib.iam.martin_ruiz_diffuse`. (:issue:`751`)
+* Add :py:func:`~pvlib.scaling.wvm`, a port of the wavelet variability model for
+  computing reductions in variability due to a spatially distributed plant.
+* Add :py:meth:`~pvlib.location.Location.from_epw`, a method to create a Location
+  object from epw metadata, typically coming from `pvlib.iotools.epw.read_epw`.
 
 Bug fixes
 ~~~~~~~~~
@@ -146,6 +165,11 @@ Bug fixes
   (:issue:`754`)
 * Fix reading raw MIDC CSV files from NREL where the number of header
   columns does not match the number of data columns.
+* Fix installation issue due to missing ``requests`` dependency.
+  (:issue:`725`)
+* ``PVSystem.pvwatts_ac`` now uses inverter DC input limit
+  ``PVSystem.inverter_parameters['pdc0']`` instead of module nameplate
+  capacity ``PVSystem.module_parameters['pdc0']``. (:issue:`734`)
 
 Testing
 ~~~~~~~
@@ -167,6 +191,11 @@ Documentation
   used. (:issue:`785`)
 * Note warning about _TMY3.epw files retrieved from energyplus.net in docstring
   of `epw.read_epw`
+* Improved sphinx rendering of API reference entries for `clearsky.ineichen`,
+  `clearsky.haurwitz`, `tracking.singleaxis`, `iotools.read_midc`,
+  `Location.from_tmy`, `ModelChain.run_model`, `ModelChain.complete_irradiance`,
+  and `ModelChain.prepare_inputs`
+* Removed duplicate `pvwatts_losses` entry in `api.rst`
 
 Removal of prior version deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,6 +211,11 @@ Removal of prior version deprecations
 * Removed `ModelChain.prepare_inputs` clearsky assumption when no irradiance
   data was provided.
 
+Requirements
+~~~~~~~~~~~~
+* numpy minimum increased to v1.12.0, released in 2017. (:issue:`830`)
+* pandas minimum increased to v1.18.1, released in 2016. (:issue:`748`)
+
 Contributors
 ~~~~~~~~~~~~
 * Mark Campanellli (:ghuser:`markcampanelli`)
@@ -193,4 +227,17 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Tanguy Lunel (:ghuser:`tylunel`)
 * Veronica Guo (:ghuser:`veronicaguo`)
+* Joseph Ranalli (:ghuser:`jranalli`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
+* Todd Karin (:ghuser:`toddkarin`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Kevin Anderson (:ghuser:`kevinsa5`)
+* Cameron Stark (:ghuser:`camerontstark`)
+* Janine Freeman (:ghuser:`janinefreeman`)
+* Roel Loonen (:ghuser:`roelloonen`)
+* Birgit Schachler (:ghuser:`birgits`)
+* Hamilton Kibbe (:ghuser:`hamiltonkibbe`)
+* Adam Peretti (:ghuser:`aperetti`)
+* Cedric Leroy (:ghuser:`cedricleroy`)
+* Joseph Palakapilly (:ghuser:`JPalakapillyKWH`)
+* (:ghuser:`shall-resurety`)

@@ -6,169 +6,28 @@ trigger:
 
 jobs:
 
-- job: 'Test_bare_linux'
-
-  pool:
-    vmImage: 'ubuntu-16.04'
-  strategy:
-    matrix:
-      Python35:
-        python.version: '3.5'
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-
-  - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
-      pip install -e .
-      pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
-    displayName: 'Test with pytest'
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFiles: '**/test-*.xml'
-      testRunTitle: 'Publish test results for Python $(python.version)'
-
-  - task: PublishCodeCoverageResults@1
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-      reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+- template: ci/azure/posix.yml
+  parameters:
+    name: Test_bare_Linux
+    vmImage: ubuntu-16.04
 
 
-- job: 'Test_conda_linux'
-
-  pool:
-    vmImage: 'ubuntu-16.04'
-
-  strategy:
-    matrix:
-      Python35:
-        python.version: '35'
-      Python36:
-        python.version: '36'
-        coverage: true
-      Python37:
-        python.version: '37'
-
-  steps:
-  - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
-    displayName: Add conda to PATH
-  - script: conda env create --quiet --file ci/requirements-py$(python.version).yml
-    displayName: Create Anaconda environment
-  - script: |
-      source activate test_env
-      pip install pytest-azurepipelines
-      pip install -e .
-    displayName: 'pip dependencies'
-  - script: |
-      source activate test_env
-      conda list
-    displayName: 'List installed dependencies'
-  - script: |
-      source activate test_env
-      pytest pvlib --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
-    displayName: 'pytest'
-  # - script: |
-  #     source activate test_env
-  #     flake8 pvlib
-  #   displayName: 'flake8'
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFiles: '**/test-results.xml'
-      testRunTitle: 'Linux $(python.version)'
-  - task: PublishCodeCoverageResults@1
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-      reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
-    condition: eq(variables['coverage'], true)
-  - script: |
-      bash <(curl https://codecov.io/bash) -t bbc2bdbe-5e67-4fef-9cb7-f52fe0b703a8 -f coverage.xml -F adder -F subtractor -F conda
-    displayName: 'codecov'
-    condition: eq(variables['coverage'], true)
+- template: ci/azure/posix.yml
+  parameters:
+    name: Test_bare_macOS
+    vmImage: macOS-10.14
 
 
-- job: 'Test_conda_windows'
-
-  pool:
-    vmImage: 'vs2017-win2016'
-
-  strategy:
-    matrix:
-      Python35-windows:
-        python.version: '35'
-      Python36-windows:
-        python.version: '36'
-      Python37-windows:
-        python.version: '37'
-
-  steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-  - script: conda env create --quiet --file ci/requirements-py$(python.version).yml
-    displayName: Create Anaconda environment
-  - script: |
-      call activate test_env
-      pip install pytest-azurepipelines
-      pip install -e .
-    displayName: 'pip dependencies'
-  - script: |
-      call activate test_env
-      conda list
-    displayName: 'List installed dependencies'
-  - script: |
-      call activate test_env
-      pytest pvlib --junitxml=junit/test-results.xml
-    displayName: 'pytest'
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFiles: '**/test-results.xml'
-      testRunTitle: 'Windows $(python.version)'
+- template: ci/azure/conda_linux.yml
+  parameters:
+    name: Test_conda_linux
+    vmImage: ubuntu-16.04
 
 
-- job: 'Test_bare_macOS_Mojave'
-
-  pool:
-    vmImage: 'macOS-10.14'
-  strategy:
-    matrix:
-      Python35:
-        python.version: '3.5'
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-
-  - script: |
-      pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines
-      pip install -e .
-      pytest pvlib/test --junitxml=junit/test-results.xml --cov=pvlib --cov-report=xml --cov-report=html
-    displayName: 'Test with pytest'
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFiles: '**/test-*.xml'
-      testRunTitle: 'Publish test results for Python $(python.version)'
-
-  - task: PublishCodeCoverageResults@1
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-      reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+- template: ci/azure/conda_windows.yml
+  parameters:
+    name: Test_conda_windows
+    vmImage: vs2017-win2016
 
 
 - job: 'Publish'

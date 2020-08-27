@@ -54,7 +54,7 @@ class Location(object):
 
     See also
     --------
-    pvsystem.PVSystem
+    pvlib.pvsystem.PVSystem
     """
 
     def __init__(self, latitude, longitude, tz='UTC', altitude=0,
@@ -66,6 +66,9 @@ class Location(object):
         if isinstance(tz, str):
             self.tz = tz
             self.pytz = pytz.timezone(tz)
+        elif isinstance(tz, datetime.timezone):
+            self.tz = 'UTC'
+            self.pytz = pytz.UTC
         elif isinstance(tz, datetime.tzinfo):
             self.tz = tz.zone
             self.pytz = tz
@@ -99,8 +102,7 @@ class Location(object):
 
         Returns
         -------
-        Location object (or the child class of Location that you
-        called this method from).
+        Location
         """
         # not complete, but hopefully you get the idea.
         # might need code to handle the difference between tmy2 and tmy3
@@ -125,6 +127,42 @@ class Location(object):
         # not sure if this should be assigned regardless of input.
         if tmy_data is not None:
             new_object.tmy_data = tmy_data
+            new_object.weather = tmy_data
+
+        return new_object
+
+    @classmethod
+    def from_epw(cls, metadata, data=None, **kwargs):
+        """
+        Create a Location object based on a metadata
+        dictionary from epw data readers.
+
+        Parameters
+        ----------
+        metadata : dict
+            Returned from epw.read_epw
+        data : None or DataFrame, default None
+            Optionally attach the epw data to this object.
+
+        Returns
+        -------
+        Location object (or the child class of Location that you
+        called this method from).
+        """
+
+        latitude = metadata['latitude']
+        longitude = metadata['longitude']
+
+        name = metadata['city']
+
+        tz = metadata['TZ']
+        altitude = metadata['altitude']
+
+        new_object = cls(latitude, longitude, tz=tz, altitude=altitude,
+                         name=name, **kwargs)
+
+        if data is not None:
+            new_object.weather = data
 
         return new_object
 
@@ -136,7 +174,8 @@ class Location(object):
 
         Parameters
         ----------
-        times : DatetimeIndex
+        times : pandas.DatetimeIndex
+            Must be localized or UTC will be assumed.
         pressure : None, float, or array-like, default None
             If None, pressure will be calculated using
             :py:func:`atmosphere.alt2pres` and ``self.altitude``.
@@ -249,12 +288,18 @@ class Location(object):
         solar_position : None or DataFrame, default None
             DataFrame with with columns 'apparent_zenith', 'zenith'.
         model : str, default 'kastenyoung1989'
-            Relative airmass model
+            Relative airmass model. See
+            :py:func:`pvlib.atmosphere.get_relative_airmass`
+            for a list of available models.
 
         Returns
         -------
         airmass : DataFrame
             Columns are 'airmass_relative', 'airmass_absolute'
+
+        See also
+        --------
+        pvlib.atmosphere.get_relative_airmass
         """
 
         if solar_position is None:

@@ -61,7 +61,7 @@ class SingleAxisTracker(PVSystem):
 
     def __repr__(self):
         attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr']
-        sat_repr = ('SingleAxisTracker: \n  ' + '\n  '.join(
+        sat_repr = ('SingleAxisTracker:\n  ' + '\n  '.join(
             ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
         # get the parent PVSystem info
         pvsystem_repr = super(SingleAxisTracker, self).__repr__()
@@ -186,7 +186,7 @@ class SingleAxisTracker(PVSystem):
             Irradiance model.
 
         **kwargs
-            Passed to :func:`irradiance.total_irrad`.
+            Passed to :func:`irradiance.get_total_irradiance`.
 
         Returns
         -------
@@ -249,9 +249,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
                backtrack=True, gcr=2.0/7.0):
     """
-    Determine the rotation angle of a single axis tracker using the
-    equations in [1] when given a particular sun zenith and azimuth
-    angle. backtracking may be specified, and if so, a ground coverage
+    Determine the rotation angle of a single axis tracker when given a
+    particular sun zenith and azimuth angle. See [1]_ for details about
+    the equations.
+    Backtracking may be specified, and if so, a ground coverage
     ratio is required.
 
     Rotation angle is determined in a panel-oriented coordinate system.
@@ -305,22 +306,21 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     Returns
     -------
     dict or DataFrame with the following columns:
-
-    * tracker_theta: The rotation angle of the tracker.
-        tracker_theta = 0 is horizontal, and positive rotation angles are
-        clockwise.
-    * aoi: The angle-of-incidence of direct irradiance onto the
-        rotated panel surface.
-    * surface_tilt: The angle between the panel surface and the earth
-        surface, accounting for panel rotation.
-    * surface_azimuth: The azimuth of the rotated panel, determined by
-        projecting the vector normal to the panel's surface to the earth's
-        surface.
+        * `tracker_theta`: The rotation angle of the tracker.
+          tracker_theta = 0 is horizontal, and positive rotation angles are
+          clockwise.
+        * `aoi`: The angle-of-incidence of direct irradiance onto the
+          rotated panel surface.
+        * `surface_tilt`: The angle between the panel surface and the earth
+          surface, accounting for panel rotation.
+        * `surface_azimuth`: The azimuth of the rotated panel, determined by
+          projecting the vector normal to the panel's surface to the earth's
+          surface.
 
     References
     ----------
-    [1] Lorenzo, E et al., 2011, "Tracking and back-tracking", Prog. in
-    Photovoltaics: Research and Applications, v. 19, pp. 747-753.
+    .. [1] Lorenzo, E et al., 2011, "Tracking and back-tracking", Prog. in
+       Photovoltaics: Research and Applications, v. 19, pp. 747-753.
     """
 
     # MATLAB to Python conversion by

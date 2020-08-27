@@ -1,0 +1,27 @@
+codecov:
+  notify:
+    require_ci_to_pass: no
+
+coverage:
+  status:
+    patch:
+      default:
+        target: 100%
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: failure
+    project:
+      default: false
+      library:
+        target: auto
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: failure
+        paths:
+          - "pvlib/.*"
+      tests:
+        target: 95%
+        paths:
+          - "pvlib/tests/.*"
+
+comment: off

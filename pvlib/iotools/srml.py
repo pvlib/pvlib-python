@@ -26,7 +26,8 @@ VARIABLE_MAP = {
 
 def read_srml(filename):
     """
-    Read University of Oregon SRML[1] 1min .tsv file into pandas dataframe.
+    Read University of Oregon SRML 1min .tsv file into pandas dataframe.  The
+    SRML is described in [1]_.
 
     Parameters
     ----------
@@ -55,8 +56,8 @@ def read_srml(filename):
 
     References
     ----------
-    [1] University of Oregon Solar Radiation Monitoring Laboratory
-        `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
+    .. [1] University of Oregon Solar Radiation Monitoring Laboratory
+       `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
     """
     tsv_data = pd.read_csv(filename, delimiter='\t')
     data = format_index(tsv_data)
@@ -166,8 +167,8 @@ def format_index(df):
 
 
 def read_srml_month_from_solardat(station, year, month, filetype='PO'):
-    """Request a month of SRML[1] data from solardat and read it into
-    a Dataframe.
+    """Request a month of SRML data from solardat and read it into
+    a Dataframe.  The SRML is described in [1]_.
 
     Parameters
     ----------
@@ -204,8 +205,8 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO'):
 
     References
     ----------
-    [1] University of Oregon Solar Radiation Measurement Laboratory
-        `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
+    .. [1] University of Oregon Solar Radiation Measurement Laboratory
+       `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
     """
     file_name = "{station}{filetype}{year:02d}{month:02d}.txt".format(
         station=station,

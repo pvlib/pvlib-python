@@ -12,7 +12,7 @@ interoperable, and benchmark implementations of PV system models.
 There are at least as many opinions about how to model PV systems as
 there are modelers of PV systems, so pvlib-python provides several
 modeling paradigms: functions, the Location/PVSystem classes, and the
-ModelChain class. Read more about this in the :ref:`introexamples`
+ModelChain class. Read more about this in the :ref:`introtutorial`
 section.
 
 

@@ -64,23 +64,23 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     References
     ----------
-    [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
-        the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157,
-        2002.
+    .. [1] P. Ineichen and R. Perez, "A New airmass independent formulation for
+       the Linke turbidity coefficient", Solar Energy, vol 73, pp. 151-157,
+       2002.
 
-    [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
-        Irradiances: Description and Validation", Solar Energy, vol 73, pp.
-        307-317, 2002.
+    .. [2] R. Perez et. al., "A New Operational Model for Satellite-Derived
+       Irradiances: Description and Validation", Solar Energy, vol 73, pp.
+       307-317, 2002.
 
-    [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-        Sky Models: Implementation and Analysis", Sandia National
-        Laboratories, SAND2012-2389, 2012.
+    .. [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
+       Laboratories, SAND2012-2389, 2012.
 
-    [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
-        July 17, 2012).
+    .. [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
+       July 17, 2012).
 
-    [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
-        ISES Solar World Congress, June 2003. Goteborg, Sweden.
+    .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
+       ISES Solar World Congress, June 2003. Goteborg, Sweden.
     '''
 
     # ghi is calculated using either the equations in [1] by setting
@@ -377,15 +377,15 @@ def haurwitz(apparent_zenith):
     References
     ----------
 
-    [1] B. Haurwitz, "Insolation in Relation to Cloudiness and Cloud
-     Density," Journal of Meteorology, vol. 2, pp. 154-166, 1945.
+    .. [1] B. Haurwitz, "Insolation in Relation to Cloudiness and Cloud
+       Density," Journal of Meteorology, vol. 2, pp. 154-166, 1945.
 
-    [2] B. Haurwitz, "Insolation in Relation to Cloud Type," Journal of
-     Meteorology, vol. 3, pp. 123-124, 1946.
+    .. [2] B. Haurwitz, "Insolation in Relation to Cloud Type," Journal of
+       Meteorology, vol. 3, pp. 123-124, 1946.
 
-    [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance Clear
-     Sky Models: Implementation and Analysis", Sandia National
-     Laboratories, SAND2012-2389, 2012.
+    .. [3] M. Reno, C. Hansen, and J. Stein, "Global Horizontal Irradiance
+       Clear Sky Models: Implementation and Analysis", Sandia National
+       Laboratories, SAND2012-2389, 2012.
     '''
 
     cos_zenith = tools.cosd(apparent_zenith.values)
@@ -405,7 +405,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
                      pressure=101325., dni_extra=1364.):
     """
     Calculate the clear sky GHI, DNI, and DHI according to the
-    simplified Solis model [1]_.
+    simplified Solis model.
 
     Reference [1]_ describes the accuracy of the model as being 15, 20,
     and 18 W/m^2 for the beam, global, and diffuse components. Reference
@@ -604,7 +604,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                     return_components=False):
     """
     Detects clear sky times according to the algorithm developed by Reno
-    and Hansen for GHI measurements [1]. The algorithm was designed and
+    and Hansen for GHI measurements. The algorithm [1]_ was designed and
     validated for analyzing GHI time series only. Users may attempt to
     apply it to other types of time series data using different filter
     settings, but should be skeptical of the results.
@@ -673,9 +673,9 @@ def detect_clearsky(measured, clearsky, times, window_length,
 
     References
     ----------
-    [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
-    sky irradiance in time series of GHI measurements" Renewable Energy,
-    v90, p. 520-531, 2016.
+    .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+       sky irradiance in time series of GHI measurements" Renewable Energy,
+       v90, p. 520-531, 2016.
 
     Notes
     -----
@@ -711,6 +711,12 @@ def detect_clearsky(measured, clearsky, times, window_length,
     from scipy.linalg import hankel
     H = hankel(np.arange(intervals_per_window),                   # noqa: N806
                np.arange(intervals_per_window - 1, len(times)))
+
+    # convert pandas input to numpy array, but save knowledge of input state
+    # so we can return a series if that's what was originally provided
+    ispandas = isinstance(measured, pd.Series)
+    measured = np.asarray(measured)
+    clearsky = np.asarray(clearsky)
 
     # calculate measurement statistics
     meas_mean = np.mean(measured[H], axis=0)
@@ -771,7 +777,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
-    if isinstance(measured, pd.Series):
+    if ispandas:
         clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:
@@ -849,22 +855,26 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     See also
     --------
     pvlib.atmosphere.bird_hulstrom80_aod_bb
-    pvlib.atmosphere.relativeairmass
+    pvlib.atmosphere.get_relative_airmass
 
     References
     ----------
-    [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for Direct
-    and Diffuse Insolation on Horizontal Surfaces" SERI Technical Report
-    SERI/TR-642-761, Feb 1981. Solar Energy Research Institute, Golden, CO.
+    .. [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for
+       Direct and Diffuse Insolation on Horizontal Surfaces" SERI Technical
+       Report SERI/TR-642-761, Feb 1981. Solar Energy Research Institute,
+       Golden, CO.
 
-    [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
-    Energy Applications", pp. 46-51 CRC Press (2013)
+    .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+       Energy Applications", pp. 46-51 CRC Press (2013)
 
-    `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/clearsky/>`_
+    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
+       clearsky/>`_
 
-    `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/tr-642-761.pdf>`_
+    .. [4] `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/
+       tr-642-761.pdf>`_
 
-    `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/error_reports.html>`_
+    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
+       error_reports.html>`_
     """
     etr = dni_extra  # extraradiation
     ze_rad = np.deg2rad(zenith)  # zenith in radians

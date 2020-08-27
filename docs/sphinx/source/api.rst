@@ -224,6 +224,8 @@ Incident angle modifiers
    iam.martin_ruiz_diffuse
    iam.sapm
    iam.interp
+   iam.marion_diffuse
+   iam.marion_integrate
 
 PV temperature models
 ---------------------
@@ -233,7 +235,9 @@ PV temperature models
 
    temperature.sapm_cell
    temperature.sapm_module
+   temperature.sapm_cell_from_module
    temperature.pvsyst_cell
+   temperature.faiman
 
 Single diode models
 -------------------
@@ -262,10 +266,38 @@ Low-level functions for solving the single diode equation.
    singlediode.bishop88_v_from_i
    singlediode.bishop88_mpp
 
-SAPM model
-----------
+Functions for fitting diode models
 
-Functions relevant for the SAPM model.
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.fit_sde_sandia
+    ivtools.fit_sdm_cec_sam
+    ivtools.fit_sdm_desoto
+
+Inverter models (DC to AC conversion)
+-------------------------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.sandia
+   inverter.adr
+   inverter.pvwatts
+
+Functions for fitting inverter models
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.fit_sandia
+
+
+PV System Models
+----------------
+
+Sandia array performance model (SAPM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
@@ -274,38 +306,28 @@ Functions relevant for the SAPM model.
    pvsystem.sapm_effective_irradiance
    pvsystem.sapm_spectral_loss
    pvsystem.sapm_aoi_loss
-   pvsystem.snlinverter
+   inverter.sandia
    temperature.sapm_cell
 
 Pvsyst model
--------------
-
-Functions relevant for the Pvsyst model.
+^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
 
    temperature.pvsyst_cell
+   pvsystem.calcparams_pvsyst
+   pvsystem.singlediode
 
 PVWatts model
--------------
+^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated/
 
    pvsystem.pvwatts_dc
-   pvsystem.pvwatts_ac
+   inverter.pvwatts
    pvsystem.pvwatts_losses
-   pvsystem.pvwatts_losses
-
-Functions for fitting PV models
--------------------------------
-.. autosummary::
-   :toctree: generated/
-
-    ivtools.fit_sde_sandia
-    ivtools.fit_sdm_cec_sam
-    ivtools.fit_sdm_desoto
 
 Other
 -----
@@ -314,8 +336,31 @@ Other
    :toctree: generated/
 
    pvsystem.retrieve_sam
-   pvsystem.systemdef
    pvsystem.scale_voltage_current_power
+
+
+Effects on PV System Output
+===========================
+
+.. autosummary::
+   :toctree: generated/
+
+   snow.coverage_nrel
+   snow.fully_covered_nrel
+   snow.dc_loss_nrel
+
+.. autosummary::
+   :toctree: generated/
+
+   soiling.hsu
+   soiling.kimber
+
+.. autosummary::
+   :toctree: generated/
+
+   shading.masking_angle
+   shading.masking_angle_passias
+   shading.sky_diffuse_passias
 
 
 Tracking
@@ -359,6 +404,7 @@ relevant to solar energy modeling.
    iotools.read_tmy2
    iotools.read_tmy3
    iotools.read_epw
+   iotools.parse_epw
    iotools.read_srml
    iotools.read_srml_month_from_solardat
    iotools.read_surfrad
@@ -369,6 +415,10 @@ relevant to solar energy modeling.
    iotools.read_crn
    iotools.read_solrad
    iotools.get_psm3
+   iotools.read_psm3
+   iotools.parse_psm3
+   iotools.get_pvgis_tmy
+   iotools.read_pvgis_tmy
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.
@@ -377,24 +427,7 @@ in some files.
    :toctree: generated/
 
    location.Location.from_tmy
-
-
-TMY
-===
-
-.. warning::
-
-    The :py:mod:`pvlib.tmy` module is deprecated; it will be removed
-    in pvlib 0.7. Please see the :ref:`pvlib.iotools <iotools>` package.
-
-Methods and functions for reading data from TMY files.
-
-.. autosummary::
-   :toctree: generated/
-
-   location.Location.from_tmy
-   tmy.readtmy2
-   tmy.readtmy3
+   location.Location.from_epw
 
 
 Forecasting
@@ -463,6 +496,8 @@ Creating a ModelChain object.
    :toctree: generated/
 
    modelchain.ModelChain
+   modelchain.ModelChain.with_pvwatts
+   modelchain.ModelChain.with_sapm
 
 Running
 -------
@@ -526,6 +561,7 @@ ModelChain model definitions.
    modelchain.ModelChain.no_spectral_loss
    modelchain.ModelChain.sapm_temp
    modelchain.ModelChain.pvsyst_temp
+   modelchain.ModelChain.faiman_temp
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 
@@ -561,7 +597,6 @@ Bifacial
 ========
 
 Methods for calculating back surface irradiance
------------------------------------------------
 
 .. autosummary::
    :toctree: generated/
@@ -605,3 +640,14 @@ Class Methods
 
    infinite_sheds.InfiniteSheds
    infinite_sheds.InfiniteSheds.get_irradiance
+
+
+Scaling
+=======
+
+Methods for manipulating irradiance for temporal or spatial considerations
+
+.. autosummary::
+   :toctree: generated/
+
+   scaling.wvm

@@ -1,10 +1,9 @@
 import pandas as pd
-from pandas.util.testing import network
 import pytest
 import pytz
 
 from pvlib.iotools import midc
-from conftest import DATA_DIR
+from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 
 @pytest.fixture
@@ -64,7 +63,8 @@ def test_read_midc_var_mapping_as_arg(test_mapping):
     assert 'temp_air' in data.columns
 
 
-@network
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_midc_raw_data_from_nrel():
     start_ts = pd.Timestamp('20181018')
     end_ts = pd.Timestamp('20181019')

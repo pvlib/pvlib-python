@@ -61,7 +61,7 @@ class SingleAxisTracker(PVSystem):
 
     def __repr__(self):
         attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr']
-        sat_repr = ('SingleAxisTracker: \n  ' + '\n  '.join(
+        sat_repr = ('SingleAxisTracker:\n  ' + '\n  '.join(
             ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
         # get the parent PVSystem info
         pvsystem_repr = super(SingleAxisTracker, self).__repr__()
@@ -249,9 +249,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
                backtrack=True, gcr=2.0/7.0, side_slope=0):
     """
-    Determine the rotation angle of a single axis tracker using the
-    equations in [1]_ when given a particular sun zenith and azimuth
-    angle. backtracking may be specified, and if so, a ground coverage
+    Determine the rotation angle of a single axis tracker when given a
+    particular sun zenith and azimuth angle. See [1]_ for details about
+    the equations.
+    Backtracking may be specified, and if so, a ground coverage
     ratio is required.
 
     Rotation angle is determined in a panel-oriented coordinate system.

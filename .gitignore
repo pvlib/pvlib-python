@@ -78,15 +78,17 @@ coverage.xml
 *.h5
 
 
-#Datafiles
+# Datafiles
 *.csv
+# Ignore some csv 
+!pvlib/data/*.csv 
 
 # vi
 *.swp
 
-#Ignore some notebooks
+# Ignore some notebooks
 *.ipynb
 !docs/tutorials/*.ipynb
 
-#Ignore Mac DS_store files
+# Ignore Mac DS_store files
 *.DS_Store

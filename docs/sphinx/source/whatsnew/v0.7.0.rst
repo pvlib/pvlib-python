@@ -21,6 +21,13 @@ API Breaking Changes
   an exception instead of displaying a dialog.
 * The `modelchain.ModelChain.diode_params` attribute is now formatted in
   a pandas.DataFrame with `DatetimeIndex`, rather than in a tuple.
+* ``PVSystem.pvwatts_ac`` now uses inverter DC input limit
+  ``PVSystem.inverter_parameters['pdc0']`` instead of module nameplate
+  capacity ``PVSystem.module_parameters['pdc0']``. (:issue:`734`)
+* ``ModelChain.infer_ac_model`` now uses the presence of the key ``'pdc0'``
+  ``PVSystem.inverter_parameters`` to determine if the `pvwatts_ac`
+  inverter model should be used. The inference method previously looked
+  for the key in ``PVSystem.module_parameters``. (:issue:`734`)
 
 API Changes with Deprecations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,7 +37,7 @@ API Changes with Deprecations
       - Renamed `pvsystem.sapm_celltemp` and `pvsystem.pvsyst_celltemp`
         to `temperature.sapm_cell` and `temperature.pvsyst_cell`.
       - `temperature.sapm_cell` returns only the cell temperature, whereas the
-         old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
+        old `pvsystem.sapm_celltemp` returned a `DataFrame` with both cell and module temperatures.
       - Created `temperature.sapm_module` to return module temperature using the SAPM temperature model.
       - Changed the order of arguments for `pvsystem.sapm_celltemp`,
         `pvsystem.pvsyst_celltemp` and `PVSystem.sapm_celltemp` to be consistent
@@ -71,7 +78,7 @@ API Changes with Deprecations
       - `ModelChain.temperature_model_parameters` now defaults to `None`. The temperature
         model can be inferred from `PVSystem.temperature_model_parameters`.
       - `ModelChain.temps` attribute renamed to `ModelChain.cell_temperature`,
-         and its datatype is now `numeric` rather than `DataFrame`.
+        and its datatype is now `numeric` rather than `DataFrame`.
       - If `PVSystem.temperature_model_parameters` is not specified, `ModelChain`
         defaults to old behavior, using the SAPM temperature model with parameter
         set `open_rack_glass_glass`. This behavior is deprecated, and will be
@@ -158,6 +165,11 @@ Bug fixes
   (:issue:`754`)
 * Fix reading raw MIDC CSV files from NREL where the number of header
   columns does not match the number of data columns.
+* Fix installation issue due to missing ``requests`` dependency.
+  (:issue:`725`)
+* ``PVSystem.pvwatts_ac`` now uses inverter DC input limit
+  ``PVSystem.inverter_parameters['pdc0']`` instead of module nameplate
+  capacity ``PVSystem.module_parameters['pdc0']``. (:issue:`734`)
 
 Testing
 ~~~~~~~

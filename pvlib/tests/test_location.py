@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import numpy as np
 from numpy import nan
 import pandas as pd
-from pandas.util.testing import assert_frame_equal, assert_index_equal
+from conftest import assert_frame_equal, assert_index_equal
 
 import pytest
 
@@ -29,6 +29,7 @@ def test_location_all():
 
 @pytest.mark.parametrize('tz', [
     pytz.timezone('US/Arizona'), 'America/Phoenix',  -7, -7.0,
+    datetime.timezone.utc
 ])
 def test_location_tz(tz):
     Location(32.2, -111, tz)

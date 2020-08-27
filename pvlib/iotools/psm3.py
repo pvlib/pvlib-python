@@ -24,8 +24,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
              leap_day=False, full_name=PVLIB_PYTHON, affiliation=PVLIB_PYTHON,
              timeout=30):
     """
-    Retrieve NSRDB [1]_ PSM3 timeseries weather data from the PSM3 API [2]_
-    [3]_.
+    Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API.  The NSRDB
+    is described in [1]_ and the PSM3 API is described in [2]_ and [3]_.
 
     Parameters
     ----------
@@ -147,7 +147,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
 def parse_psm3(fbuf):
     """
-    Parse an NSRDB [1]_ PSM3 weather file (formatted as SAM CSV [2]_).
+    Parse an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
+    is described in [1]_ and the SAM CSV format is described in [2]_.
 
     Parameters
     ----------
@@ -269,7 +270,8 @@ def parse_psm3(fbuf):
 
 def read_psm3(filename):
     """
-    Read an NSRDB [1]_ PSM3 weather file (formatted as SAM CSV [2]_).
+    Read an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
+    is described in [1]_ and the SAM CSV format is described in [2]_.
 
     Parameters
     ----------

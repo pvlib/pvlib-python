@@ -185,3 +185,103 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
 
     vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method)
     assert np.isclose(vsc_88, 0.0, *tol)
+
+
+@requires_scipy
+@pytest.mark.parametrize(
+    'brk_params, recomb_params, poa, temp_cell, expected, tol', [
+        # reference conditions without breakdown model
+        (
+            (0., -5.5, 3.28),
+            (get_pvsyst_fs_495()['d2mutau'],
+             VOLTAGE_BUILTIN * get_pvsyst_fs_495()['cells_in_series']),
+            get_pvsyst_fs_495()['irrad_ref'],
+            get_pvsyst_fs_495()['temp_ref'],
+            {
+                'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *  # noqa: W504
+                        get_pvsyst_fs_495()['V_mp_ref']),
+                'isc': get_pvsyst_fs_495()['I_sc_ref'],
+                'voc': get_pvsyst_fs_495()['V_oc_ref']
+            },
+            (5e-4, 0.04)
+        ),
+        # other conditions with breakdown model on and recombination model off
+        (
+            (1.e-4, -5.5, 3.28),
+            (0., np.Inf),
+            POA,
+            TCELL,
+            {
+                'pmp': 79.723,
+                'isc': 1.4071,
+                'voc': 79.646
+            },
+            (1e-4, 1e-4)
+        )
+    ]
+)
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
+                          expected, tol):
+    """test PVSyst recombination loss"""
+    pvsyst_fs_495 = get_pvsyst_fs_495()
+    # first evaluate PVSyst model with thin-film recombination loss current
+    # at reference conditions
+    x = pvsystem.calcparams_pvsyst(
+        effective_irradiance=poa, temp_cell=temp_cell,
+        alpha_sc=pvsyst_fs_495['alpha_sc'],
+        gamma_ref=pvsyst_fs_495['gamma_ref'],
+        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
+        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
+        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
+        R_s=pvsyst_fs_495['R_s'],
+        cells_in_series=pvsyst_fs_495['cells_in_series'],
+        EgRef=pvsyst_fs_495['EgRef']
+    )
+    il_pvsyst, io_pvsyst, rs_pvsyst, rsh_pvsyst, nnsvt_pvsyst = x
+
+    d2mutau, NsVbi = recomb_params
+    breakdown_factor, breakdown_voltage, breakdown_exp = brk_params
+
+    voc_est_pvsyst = estimate_voc(photocurrent=il_pvsyst,
+                                  saturation_current=io_pvsyst,
+                                  nNsVth=nnsvt_pvsyst)
+    vd_pvsyst = np.linspace(0, voc_est_pvsyst, 1000)
+    pvsyst = bishop88(
+        diode_voltage=vd_pvsyst, photocurrent=il_pvsyst,
+        saturation_current=io_pvsyst, resistance_series=rs_pvsyst,
+        resistance_shunt=rsh_pvsyst, nNsVth=nnsvt_pvsyst,
+        d2mutau=d2mutau, NsVbi=NsVbi,
+        breakdown_factor=breakdown_factor, breakdown_voltage=breakdown_voltage,
+        breakdown_exp=breakdown_exp
+    )
+    # test max power
+    assert np.isclose(max(pvsyst[2]), expected['pmp'], *tol)
+
+    # test short circuit current
+    isc_pvsyst = np.interp(0, pvsyst[1], pvsyst[0])
+    assert np.isclose(isc_pvsyst, expected['isc'], *tol)
+
+    # test open circuit voltage
+    voc_pvsyst = np.interp(0, pvsyst[0][::-1], pvsyst[1][::-1])
+    assert np.isclose(voc_pvsyst, expected['voc'], *tol)
+
+    # repeat tests as above with specialized bishop88 functions
+    y = {'d2mutau': recomb_params[0], 'NsVbi': recomb_params[1],
+         'breakdown_factor': brk_params[0], 'breakdown_voltage': brk_params[1],
+         'breakdown_exp': brk_params[2]}
+
+    mpp_88 = bishop88_mpp(*x, **y, method=method)
+    assert np.isclose(mpp_88[2], expected['pmp'], *tol)
+
+    isc_88 = bishop88_i_from_v(0, *x, **y, method=method)
+    assert np.isclose(isc_88, expected['isc'], *tol)
+
+    voc_88 = bishop88_v_from_i(0, *x, **y, method=method)
+    assert np.isclose(voc_88, expected['voc'], *tol)
+
+    ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method)
+    assert np.isclose(ioc_88, 0.0, *tol)
+
+    vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method)
+    assert np.isclose(vsc_88, 0.0, *tol)

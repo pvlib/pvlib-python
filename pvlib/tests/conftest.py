@@ -1,10 +1,12 @@
 from pathlib import Path
 import platform
+import warnings
 
 import numpy as np
 import pandas as pd
 from pkg_resources import parse_version
 import pytest
+from functools import wraps
 
 import pvlib
 
@@ -15,28 +17,64 @@ pvlib_base_version = \
 # decorator takes one argument: the base version for which it should fail
 # for example @fail_on_pvlib_version('0.7') will cause a test to fail
 # on pvlib versions 0.7a, 0.7b, 0.7rc1, etc.
-# test function may not take args, kwargs, or fixtures.
 def fail_on_pvlib_version(version):
     # second level of decorator takes the function under consideration
     def wrapper(func):
         # third level defers computation until the test is called
         # this allows the specific test to fail at test runtime,
         # rather than at decoration time (when the module is imported)
-        def inner():
+        @wraps(func)
+        def inner(*args, **kwargs):
             # fail if the version is too high
             if pvlib_base_version >= parse_version(version):
                 pytest.fail('the tested function is scheduled to be '
                             'removed in %s' % version)
             # otherwise return the function to be executed
             else:
-                return func()
+                return func(*args, **kwargs)
         return inner
     return wrapper
+
+
+def _check_pandas_assert_kwargs(kwargs):
+    # handles the change in API related to default
+    # tolerances in pandas 1.1.0.  See pvlib GH #1018
+    if parse_version(pd.__version__) >= parse_version('1.1.0'):
+        if kwargs.pop('check_less_precise', False):
+            kwargs['atol'] = 1e-3
+            kwargs['rtol'] = 1e-3
+        else:
+            kwargs['atol'] = 1e-5
+            kwargs['rtol'] = 1e-5
+    else:
+        kwargs.pop('rtol', None)
+        kwargs.pop('atol', None)
+    return kwargs
+
+
+def assert_index_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_index_equal(left, right, **kwargs)
+
+
+def assert_series_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_series_equal(left, right, **kwargs)
+
+
+def assert_frame_equal(left, right, **kwargs):
+    kwargs = _check_pandas_assert_kwargs(kwargs)
+    pd.testing.assert_frame_equal(left, right, **kwargs)
 
 
 # commonly used directories in the tests
 TEST_DIR = Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
+
+
+# pytest-rerunfailures variables
+RERUNS = 5
+RERUNS_DELAY = 2
 
 
 platform_is_windows = platform.system() == 'Windows'
@@ -70,28 +108,12 @@ except ImportError:
 requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
 
 
-def pandas_0_17():
-    return parse_version(pd.__version__) >= parse_version('0.17.0')
-
-
-needs_pandas_0_17 = pytest.mark.skipif(
-    not pandas_0_17(), reason='requires pandas 0.17 or greater')
-
-
 def numpy_1_10():
     return parse_version(np.__version__) >= parse_version('1.10.0')
 
 
 needs_numpy_1_10 = pytest.mark.skipif(
     not numpy_1_10(), reason='requires numpy 1.10 or greater')
-
-
-def pandas_0_22():
-    return parse_version(pd.__version__) >= parse_version('0.22.0')
-
-
-needs_pandas_0_22 = pytest.mark.skipif(
-    not pandas_0_22(), reason='requires pandas 0.22 or greater')
 
 
 def has_spa_c():
@@ -158,11 +180,28 @@ except ImportError:
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 
 
+try:
+    import cftime  # noqa: F401
+
+    has_recent_cftime = parse_version(cftime.__version__) > parse_version(
+        "1.1.0"
+    )
+except ImportError:
+    has_recent_cftime = False
+
+requires_recent_cftime = pytest.mark.skipif(
+    not has_recent_cftime, reason="requires cftime > 1.1.0"
+)
+
+
 @pytest.fixture(scope="session")
 def sam_data():
     data = {}
-    data['sandiamod'] = pvlib.pvsystem.retrieve_sam('sandiamod')
-    data['adrinverter'] = pvlib.pvsystem.retrieve_sam('adrinverter')
+    with warnings.catch_warnings():
+        # ignore messages about duplicate entries in the databases.
+        warnings.simplefilter("ignore", UserWarning)
+        data['sandiamod'] = pvlib.pvsystem.retrieve_sam('sandiamod')
+        data['adrinverter'] = pvlib.pvsystem.retrieve_sam('adrinverter')
     return data
 
 
@@ -186,6 +225,33 @@ def pvsyst_module_params():
         'R_sh_exp': 5.5,
         'cells_in_series': 60,
         'alpha_sc': 0.001,
+    }
+    return parameters
+
+
+@pytest.fixture(scope='function')
+def adr_inverter_parameters():
+    """
+    Define some ADR inverter parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        'Name': 'Ablerex Electronics Co., Ltd.: ES 2200-US-240 (240Vac)'
+                '[CEC 2011]',
+        'Vac': 240.,
+        'Pacmax': 2110.,
+        'Pnom': 2200.,
+        'Vnom': 396.,
+        'Vmin': 155.,
+        'Vmax': 413.,
+        'Vdcmax': 500.,
+        'MPPTHi': 450.,
+        'MPPTLow': 150.,
+        'Pnt': 0.25,
+        'ADRCoefficients': [0.01385, 0.0152, 0.00794, 0.00286, -0.01872,
+                            -0.01305, 0.0, 0.0, 0.0]
     }
     return parameters
 

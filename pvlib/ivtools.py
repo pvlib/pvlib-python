@@ -264,8 +264,8 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
                    cells_in_series, EgRef=1.121, dEgdT=-0.0002677,
                    temp_ref=25, irrad_ref=1000, root_kwargs={}):
     """
-    Calculates the parameters for the De Soto single diode model using the
-    procedure described in [1]_. This procedure has the advantage of
+    Calculates the parameters for the De Soto single diode model.
+    This procedure (described in [1]_) has the advantage of
     using common specifications given by manufacturers in the
     datasheets of PV modules.
 

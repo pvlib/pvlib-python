@@ -49,7 +49,8 @@ MADISON_DTYPES = [
 
 def read_solrad(filename):
     """
-    Read NOAA SOLRAD [1]_ [2]_ fixed-width file into pandas dataframe.
+    Read NOAA SOLRAD fixed-width file into pandas dataframe.  The SOLRAD
+    network is described in [1]_ and [2]_.
 
     Parameters
     ----------

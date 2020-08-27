@@ -405,7 +405,7 @@ def simplified_solis(apparent_elevation, aod700=0.1, precipitable_water=1.,
                      pressure=101325., dni_extra=1364.):
     """
     Calculate the clear sky GHI, DNI, and DHI according to the
-    simplified Solis model [1]_.
+    simplified Solis model.
 
     Reference [1]_ describes the accuracy of the model as being 15, 20,
     and 18 W/m^2 for the beam, global, and diffuse components. Reference
@@ -604,7 +604,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                     return_components=False):
     """
     Detects clear sky times according to the algorithm developed by Reno
-    and Hansen for GHI measurements [1]. The algorithm was designed and
+    and Hansen for GHI measurements. The algorithm [1]_ was designed and
     validated for analyzing GHI time series only. Users may attempt to
     apply it to other types of time series data using different filter
     settings, but should be skeptical of the results.
@@ -712,6 +712,12 @@ def detect_clearsky(measured, clearsky, times, window_length,
     H = hankel(np.arange(intervals_per_window),                   # noqa: N806
                np.arange(intervals_per_window - 1, len(times)))
 
+    # convert pandas input to numpy array, but save knowledge of input state
+    # so we can return a series if that's what was originally provided
+    ispandas = isinstance(measured, pd.Series)
+    measured = np.asarray(measured)
+    clearsky = np.asarray(clearsky)
+
     # calculate measurement statistics
     meas_mean = np.mean(measured[H], axis=0)
     meas_max = np.max(measured[H], axis=0)
@@ -771,7 +777,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
-    if isinstance(measured, pd.Series):
+    if ispandas:
         clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:
@@ -849,7 +855,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     See also
     --------
     pvlib.atmosphere.bird_hulstrom80_aod_bb
-    pvlib.atmosphere.relativeairmass
+    pvlib.atmosphere.get_relative_airmass
 
     References
     ----------

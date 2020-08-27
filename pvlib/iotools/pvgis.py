@@ -15,9 +15,11 @@ More detailed information about the API for TMY and hourly radiation are here:
   <https://ec.europa.eu/jrc/en/PVGIS/tools/monthly-radiation>`_
 """
 import io
+import json
+from pathlib import Path
 import requests
 import pandas as pd
-from pvlib.iotools import parse_epw
+from pvlib.iotools import read_epw, parse_epw
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
@@ -26,7 +28,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   timeout=30):
     """
-    Get TMY data from PVGIS [1]_. For more information see the PVGIS TMY tool
+    Get TMY data from PVGIS. For more information see the PVGIS [1]_ TMY tool
     documentation [2]_.
 
     Parameters
@@ -71,6 +73,10 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         if the request response status is ``HTTP/1.1 400 BAD REQUEST``, then
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
+
+    See also
+    --------
+    read_pvgis_tmy
 
     References
     ----------
@@ -174,3 +180,99 @@ def _parse_pvgis_tmy_basic(src):
         data['time(UTC)'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time(UTC)', axis=1)
     return data, None, None, None
+
+
+def read_pvgis_tmy(filename, pvgis_format=None):
+    """
+    Read a file downloaded from PVGIS.
+
+    Parameters
+    ----------
+    filename : str, pathlib.Path, or file-like buffer
+        Name, path, or buffer of file downloaded from PVGIS.
+    pvgis_format : str, default None
+        Format of PVGIS file or buffer. Equivalent to the ``outputformat``
+        parameter in the PVGIS TMY API. If `filename` is a file and
+        `pvgis_format` is ``None`` then the file extension will be used to
+        determine the PVGIS format to parse. For PVGIS files from the API with
+        ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
+        `filename` is a buffer, then `pvgis_format` is required and must be in
+        ``['csv', 'epw', 'json', 'basic']``.
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        the weather data
+    months_selected : list
+        TMY year for each month, ``None`` for basic and EPW
+    inputs : dict
+        the inputs, ``None`` for basic and EPW
+    meta : list or dict
+        meta data, ``None`` for basic
+
+    Raises
+    ------
+    ValueError
+        if `pvgis_format` is ``None`` and the file extension is neither
+        ``.csv``, ``.json``, nor ``.epw``, or if `pvgis_format` is provided as
+        input but isn't in ``['csv', 'epw', 'json', 'basic']``
+    TypeError
+        if `pvgis_format` is ``None`` and `filename` is a buffer
+
+    See also
+    --------
+    get_pvgis_tmy
+    """
+    # get the PVGIS outputformat
+    if pvgis_format is None:
+        # get the file extension from suffix, but remove the dot and make sure
+        # it's lower case to compare with epw, csv, or json
+        # NOTE: raises TypeError if filename is a buffer
+        outputformat = Path(filename).suffix[1:].lower()
+    else:
+        outputformat = pvgis_format
+
+    # parse the pvgis file based on the output format, either 'epw', 'json',
+    # 'csv', or 'basic'
+
+    # EPW: use the EPW parser from the pvlib.iotools epw.py module
+    if outputformat == 'epw':
+        try:
+            data, meta = parse_epw(filename)
+        except AttributeError:  # str/path has no .read() attribute
+            data, meta = read_epw(filename)
+        return data, None, None, meta
+
+    # NOTE: json, csv, and basic output formats have parsers defined as private
+    # functions in this module
+
+    # JSON: use Python built-in json module to convert file contents to a
+    # Python dictionary, and pass the dictionary to the _parse_pvgis_tmy_json()
+    # function from this module
+    if outputformat == 'json':
+        try:
+            src = json.load(filename)
+        except AttributeError:  # str/path has no .read() attribute
+            with open(str(filename), 'r') as fbuf:
+                src = json.load(fbuf)
+        return _parse_pvgis_tmy_json(src)
+
+    # CSV or basic: use the correct parser from this module
+    # eg: _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
+    if outputformat in ['csv', 'basic']:
+        # get the correct parser function for this output format from globals()
+        pvgis_parser = globals()['_parse_pvgis_tmy_{:s}'.format(outputformat)]
+        # NOTE: pvgis_parse() is a pvgis parser function from this module,
+        # either _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
+        try:
+            pvgis_data = pvgis_parser(filename)
+        except AttributeError:  # str/path has no .read() attribute
+            with open(str(filename), 'rb') as fbuf:
+                pvgis_data = pvgis_parser(fbuf)
+        return pvgis_data
+
+    # raise exception if pvgis format isn't in ['csv', 'basic', 'epw', 'json']
+    err_msg = (
+        "pvgis format '{:s}' was unknown, must be either 'epw', 'json', 'csv'"
+        ", or 'basic'").format(outputformat)
+    raise ValueError(err_msg)

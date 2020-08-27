@@ -12,6 +12,15 @@ API Changes with Deprecations
    - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
 * Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
   ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models.  (:pull:`886`)
+* :py:class:`pvlib.pvsystem.PVSystem` ``module_type`` and ``racking_model`` now
+  default to ``None``. This continues a deprecation of assuming SAPM values
+  for cell temperature modeling. In this v0.8 release series, calling
+  :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` without setting ``PVSystem.temperature model parameters``,
+  or a valid combination of ``PVsystem.module_type`` and ``PVsystem.racking_model``, will cause
+  ``PVSystem.temperature_model_parameters`` to be set to SAPM values for a
+  glass/glass module in open racking and emit a warning. In v0.9, users must
+  provide ``temperature_model_parameters`` or a valid combination of
+  ``module_type`` and ``racking_model``. (:issue:`1030`, :pull:`1033`)
 
 API Changes
 ~~~~~~~~~~~
@@ -31,6 +40,23 @@ API Changes
   :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.location.Location.from_tmy`, and
   :py:class:`pvlib.pvsystem.LocalizedPVSystem` for alternatives. (:issue:`965`)
   (:pull:`1008`)
+* The following functions, methods, and arguments were deprecated in a previous
+  release and have now been removed (:issue:`966`, :pull:`1033`):
+    * ``pvsystem.PVSystem.ashraeiam``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.physicaliam``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.sapm_aoi_loss``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.ashraeiam``. Use :py:func:`pvlib.iam.ashrae`.
+    * ``pvsystem.physicaliam``. Use :py:func:`pvlib.iam.physical`.
+    * ``pvsystem.sapm_aoi_loss``. Use :py:func:`pvlib.iam.sapm`.
+    * ``pvsystem.sapm_celltemp``. Use :py:func:`pvlib.temperature.sapm_cell`.
+    * ``pvsystem.pvsyst_celltemp``. Use :py:func:`pvlib.temperature.pvsyst_cell`.
+    * ``times`` keyword argument of
+      :py:meth:`pvlib.modelchain.ModelChain.run_model`,
+      :py:meth:`pvlib.modelchain.ModelChain.complete_irradiance`, and
+      :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`.
+      The index of the input DataFrame is used instead.
+    * ``temp_model`` keyword argument of
+      :py:meth:`pvlib.modelchain.ModelChain`. Use ``temperature_model`` instead.
 
 Enhancements
 ~~~~~~~~~~~~

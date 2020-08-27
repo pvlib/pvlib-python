@@ -170,12 +170,12 @@ class PVSystem(object):
     def __init__(self,
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
-                 module=None, module_type='glass_polymer',
+                 module=None, module_type=None,
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
-                 racking_model='open_rack', losses_parameters=None, name=None,
+                 racking_model=None, losses_parameters=None, name=None,
                  **kwargs):
 
         self.surface_tilt = surface_tilt
@@ -201,24 +201,8 @@ class PVSystem(object):
         if temperature_model_parameters is None:
             self.temperature_model_parameters = \
                 self._infer_temperature_model_params()
-            # TODO: in v0.8 check if an empty dict is returned and raise error
         else:
             self.temperature_model_parameters = temperature_model_parameters
-
-        # TODO: deprecated behavior if PVSystem.temperature_model_parameters
-        # are not specified. Remove in v0.8
-        if not any(self.temperature_model_parameters):
-            warnings.warn(
-                'Required temperature_model_parameters is not specified '
-                'and parameters are not inferred from racking_model and '
-                'module_type. Reverting to deprecated default: SAPM cell '
-                'temperature model parameters for a glass/glass module in '
-                'open racking. In the future '
-                'PVSystem.temperature_model_parameters will be required',
-                pvlibDeprecationWarning)
-            params = temperature._temperature_model_params(
-                'sapm', 'open_rack_glass_glass')
-            self.temperature_model_parameters = params
 
         self.modules_per_string = modules_per_string
         self.strings_per_inverter = strings_per_inverter
@@ -358,26 +342,6 @@ class PVSystem(object):
         else:
             raise ValueError(model + ' is not a valid IAM model')
 
-    def ashraeiam(self, aoi):
-        """
-        Deprecated. Use ``PVSystem.get_iam`` instead.
-        """
-        import warnings
-        warnings.warn('PVSystem.ashraeiam is deprecated and will be removed in'
-                      'v0.8, use PVSystem.get_iam instead',
-                      pvlibDeprecationWarning)
-        return PVSystem.get_iam(self, aoi, iam_model='ashrae')
-
-    def physicaliam(self, aoi):
-        """
-        Deprecated. Use ``PVSystem.get_iam`` instead.
-        """
-        import warnings
-        warnings.warn('PVSystem.physicaliam is deprecated and will be removed'
-                      ' in v0.8, use PVSystem.get_iam instead',
-                      pvlibDeprecationWarning)
-        return PVSystem.get_iam(self, aoi, iam_model='physical')
-
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
@@ -506,6 +470,21 @@ class PVSystem(object):
         -------
         numeric, values in degrees C.
         """
+        # warn user about change in default behavior in 0.9.
+        if (self.temperature_model_parameters == {} and self.module_type
+                is None and self.racking_model is None):
+            warnings.warn(
+                'temperature_model_parameters, racking_model, and module_type '
+                'are not specified. Reverting to deprecated default: SAPM '
+                'cell temperature model parameters for a glass/glass module '
+                'in open racking. In v0.9, temperature_model_parameters or a '
+                'valid combination of racking_model and module_type will be '
+                'required.',
+                pvlibDeprecationWarning)
+            params = temperature._temperature_model_params(
+                'sapm', 'open_rack_glass_glass')
+            self.temperature_model_parameters = params
+
         kwargs = _build_kwargs(['a', 'b', 'deltaT'],
                                self.temperature_model_parameters)
         return temperature.sapm_cell(poa_global, temp_air, wind_speed,
@@ -514,7 +493,7 @@ class PVSystem(object):
     def _infer_temperature_model_params(self):
         # try to infer temperature model parameters from from racking_model
         # and module_type
-        param_set = self.racking_model + '_' + self.module_type
+        param_set = '{}_{}'.format(self.racking_model, self.module_type)
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
             return temperature._temperature_model_params('sapm', param_set)
         elif 'freestanding' in param_set:
@@ -542,16 +521,6 @@ class PVSystem(object):
             The SAPM spectral loss coefficient.
         """
         return sapm_spectral_loss(airmass_absolute, self.module_parameters)
-
-    def sapm_aoi_loss(self, aoi):
-        """
-        Deprecated. Use ``PVSystem.get_iam`` instead.
-        """
-        import warnings
-        warnings.warn('PVSystem.sapm_aoi_loss is deprecated and will be'
-                      ' removed in v0.8, use PVSystem.get_iam instead',
-                      pvlibDeprecationWarning)
-        return PVSystem.get_iam(self, aoi, iam_model='sapm')
 
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
@@ -671,7 +640,7 @@ class PVSystem(object):
         if 'first_solar_spectral_coefficients' in \
                 self.module_parameters.keys():
             coefficients = \
-                   self.module_parameters['first_solar_spectral_coefficients']
+                self.module_parameters['first_solar_spectral_coefficients']
             module_type = None
         else:
             module_type = self._infer_cell_type()
@@ -1070,27 +1039,6 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
          Source: [4]
     '''
-
-    # test for use of function pre-v0.6.0 API change
-    if isinstance(a_ref, dict) or \
-       (isinstance(a_ref, pd.Series) and ('a_ref' in a_ref.keys())):
-        import warnings
-        warnings.warn('module_parameters detected as fourth positional'
-                      + ' argument of calcparams_desoto. calcparams_desoto'
-                      + ' will require one argument for each module model'
-                      + ' parameter in v0.7.0 and later', DeprecationWarning)
-        try:
-            module_parameters = a_ref
-            a_ref = module_parameters['a_ref']
-            I_L_ref = module_parameters['I_L_ref']
-            I_o_ref = module_parameters['I_o_ref']
-            R_sh_ref = module_parameters['R_sh_ref']
-            R_s = module_parameters['R_s']
-        except Exception as e:
-            raise e('Module parameters could not be extracted from fourth'
-                    + ' positional argument of calcparams_desoto. Check that'
-                    + ' parameters are from the CEC database and/or update'
-                    + ' your code for the new API for calcparams_desoto')
 
     # Boltzmann constant in eV/K
     k = 8.617332478e-05
@@ -1624,16 +1572,6 @@ def sapm(effective_irradiance, temp_cell, module):
     # reference_irradiance and expose
     temp_ref = 25
     irrad_ref = 1000
-    # TODO: remove this warning in v0.8 after deprecation period for change in
-    # effective irradiance units, made in v0.7
-    with np.errstate(invalid='ignore'):  # turn off warning for NaN
-        ee = np.asarray(effective_irradiance)
-        ee_gt0 = ee[ee > 0.0]
-        if ee_gt0.size > 0 and np.all(ee_gt0 < 2.0):
-            import warnings
-            msg = 'effective_irradiance inputs appear to be in suns. Units ' \
-                  'changed in v0.7 from suns to W/m2'
-            warnings.warn(msg, RuntimeWarning)
 
     q = 1.60218e-19  # Elementary charge in units of coulombs
     kb = 1.38066e-23  # Boltzmann's constant in units of J/K
@@ -1693,85 +1631,6 @@ def sapm(effective_irradiance, temp_cell, module):
         out = pd.DataFrame(out)
 
     return out
-
-
-def _sapm_celltemp_translator(*args, **kwargs):
-    # TODO: remove this function after deprecation period for sapm_celltemp
-    new_kwargs = {}
-    # convert position arguments to kwargs
-    old_arg_list = ['poa_global', 'wind_speed', 'temp_air', 'model']
-    for pos in range(len(args)):
-        new_kwargs[old_arg_list[pos]] = args[pos]
-    # determine value for new kwarg 'model'
-    try:
-        param_set = new_kwargs['model']
-        new_kwargs.pop('model')  # model is not a new kwarg
-    except KeyError:
-        # 'model' not in positional arguments, check kwargs
-        try:
-            param_set = kwargs['model']
-            kwargs.pop('model')
-        except KeyError:
-            # 'model' not in kwargs, use old default value
-            param_set = 'open_rack_glass_glass'
-    if type(param_set) is list:
-        new_kwargs.update({'a': param_set[0],
-                           'b': param_set[1],
-                           'deltaT': param_set[2]})
-    elif type(param_set) is dict:
-        new_kwargs.update(param_set)
-    else:  # string
-        params = temperature._temperature_model_params('sapm', param_set)
-        new_kwargs.update(params)
-    new_kwargs.update(kwargs)  # kwargs with unchanged names
-    new_kwargs['irrad_ref'] = 1000  # default for new kwarg
-    # convert old positional arguments to named kwargs
-    return temperature.sapm_cell(**new_kwargs)
-
-
-sapm_celltemp = deprecated('0.7', alternative='temperature.sapm_cell',
-                           name='sapm_celltemp', removal='0.8',
-                           addendum='Note that the arguments and argument '
-                           'order for temperature.sapm_cell are different '
-                           'than for sapm_celltemp')(_sapm_celltemp_translator)
-
-
-def _pvsyst_celltemp_translator(*args, **kwargs):
-    # TODO: remove this function after deprecation period for pvsyst_celltemp
-    new_kwargs = {}
-    # convert position arguments to kwargs
-    old_arg_list = ['poa_global', 'temp_air', 'wind_speed', 'eta_m',
-                    'alpha_absorption', 'model_params']
-    for pos in range(len(args)):
-        new_kwargs[old_arg_list[pos]] = args[pos]
-    # determine value for new kwarg 'model'
-    try:
-        param_set = new_kwargs['model_params']
-        new_kwargs.pop('model_params')  # model_params is not a new kwarg
-    except KeyError:
-        # 'model_params' not in positional arguments, check kwargs
-        try:
-            param_set = kwargs['model_params']
-            kwargs.pop('model_params')
-        except KeyError:
-            # 'model_params' not in kwargs, use old default value
-            param_set = 'freestanding'
-    if type(param_set) in (list, tuple):
-        new_kwargs.update({'u_c': param_set[0],
-                           'u_v': param_set[1]})
-    else:  # string
-        params = temperature._temperature_model_params('pvsyst', param_set)
-        new_kwargs.update(params)
-    new_kwargs.update(kwargs)  # kwargs with unchanged names
-    # convert old positional arguments to named kwargs
-    return temperature.pvsyst_cell(**new_kwargs)
-
-
-pvsyst_celltemp = deprecated(
-    '0.7', alternative='temperature.pvsyst_cell', name='pvsyst_celltemp',
-    removal='0.8', addendum='Note that the argument names for '
-    'temperature.pvsyst_cell are different than '
-    'for pvsyst_celltemp')(_pvsyst_celltemp_translator)
 
 
 def sapm_spectral_loss(airmass_absolute, module):
@@ -2051,8 +1910,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         # calculate the IV curve if requested using bishop88
         if ivcurve_pnts:
             vd = v_oc * (
-                    (11.0 - np.logspace(np.log10(11.0), 0.0,
-                                        ivcurve_pnts)) / 10.0
+                (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
             )
             ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
 
@@ -2301,17 +2159,17 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         # equation for the diode voltage V_d then backing out voltage
         args = (voltage, photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth)
-        I = _singlediode.bishop88_i_from_v(*args, method=method.lower())
+        current = _singlediode.bishop88_i_from_v(*args, method=method.lower())
         # find the right size and shape for returns
         size, shape = _singlediode._get_size_and_shape(args)
         if size <= 1:
             if shape is not None:
-                I = np.tile(I, shape)
-        if np.isnan(I).any() and size <= 1:
-            I = np.repeat(I, size)
+                current = np.tile(current, shape)
+        if np.isnan(current).any() and size <= 1:
+            current = np.repeat(current, size)
             if shape is not None:
-                I = I.reshape(shape)
-        return I
+                current = current.reshape(shape)
+        return current
 
 
 def scale_voltage_current_power(data, voltage=1, current=1):
@@ -2390,7 +2248,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     .. [1] A. P. Dobos, "PVWatts Version 5 Manual"
            http://pvwatts.nrel.gov/downloads/pvwattsv5.pdf
            (2014).
-    """
+    """  # noqa: E501
 
     pdc = (g_poa_effective * 0.001 * pdc0 *
            (1 + gamma_pdc * (temp_cell - temp_ref)))
@@ -2450,18 +2308,6 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     losses = (1 - perf) * 100.
 
     return losses
-
-
-ashraeiam = deprecated('0.7', alternative='iam.ashrae', name='ashraeiam',
-                       removal='0.8')(iam.ashrae)
-
-
-physicaliam = deprecated('0.7', alternative='iam.physical', name='physicaliam',
-                         removal='0.8')(iam.physical)
-
-
-sapm_aoi_loss = deprecated('0.7', alternative='iam.sapm', name='sapm_aoi_loss',
-                           removal='0.8')(iam.sapm)
 
 
 snlinverter = deprecated('0.8', alternative='inverter.sandia',

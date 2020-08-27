@@ -179,7 +179,7 @@ def basic_chain(times, latitude, longitude,
             linke_turbidity,
             altitude=altitude,
             dni_extra=dni_extra
-            )
+        )
 
     total_irrad = pvlib.irradiance.get_total_irradiance(
         surface_tilt,
@@ -346,24 +346,6 @@ class ModelChain(object):
         self.ac_model = ac_model
         self.aoi_model = aoi_model
         self.spectral_model = spectral_model
-
-        # TODO: deprecated kwarg temp_model. Remove use of temp_model in v0.8
-        temp_model = kwargs.pop('temp_model', None)
-        if temp_model is not None:
-            if temperature_model is None:
-                warnings.warn('The temp_model keyword argument is deprecated.'
-                              ' Use temperature_model instead',
-                              pvlibDeprecationWarning)
-                temperature_model = temp_model
-            elif temp_model == temperature_model:
-                warnings.warn('Provide only one of temperature_model or '
-                              'temp_model (deprecated).',
-                              pvlibDeprecationWarning)
-            else:
-                raise ValueError(
-                    'Conflicting temperature_model {} and temp_model {}. '
-                    'temp_model is deprecated. Specify only temperature_model.'
-                    .format(temperature_model, temp_model))
         self.temperature_model = temperature_model
 
         self.losses_model = losses_model
@@ -544,7 +526,7 @@ class ModelChain(object):
             'transposition_model', 'solar_position_method',
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
             'spectral_model', 'temperature_model', 'losses_model'
-            ]
+        ]
 
         def getmcattr(self, attr):
             """needed to avoid recursion in property lookups"""
@@ -588,8 +570,8 @@ class ModelChain(object):
             model = model.lower()
             if model in _DC_MODEL_PARAMS.keys():
                 # validate module parameters
-                missing_params = _DC_MODEL_PARAMS[model] - \
-                                 set(self.system.module_parameters.keys())
+                missing_params = (_DC_MODEL_PARAMS[model]
+                                  - set(self.system.module_parameters.keys()))
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
                                      'one or more required parameters are '
@@ -834,8 +816,8 @@ class ModelChain(object):
 
     def first_solar_spectral_loss(self):
         self.spectral_modifier = self.system.first_solar_spectral_loss(
-                                        self.weather['precipitable_water'],
-                                        self.airmass['airmass_absolute'])
+            self.weather['precipitable_water'],
+            self.airmass['airmass_absolute'])
         return self
 
     def sapm_spectral_loss(self):
@@ -878,7 +860,10 @@ class ModelChain(object):
 
     def infer_temperature_model(self):
         params = set(self.system.temperature_model_parameters.keys())
-        if set(['a', 'b', 'deltaT']) <= params:
+        # remove or statement in v0.9
+        if set(['a', 'b', 'deltaT']) <= params or (
+                not params and self.system.racking_model is None
+                and self.system.module_type is None):
             return self.sapm_temp
         elif set(['u_c', 'u_v']) <= params:
             return self.pvsyst_temp
@@ -945,7 +930,7 @@ class ModelChain(object):
             fd*self.total_irrad['poa_diffuse'])
         return self
 
-    def complete_irradiance(self, weather, times=None):
+    def complete_irradiance(self, weather):
         """
         Determine the missing irradiation columns. Only two of the
         following data columns (dni, ghi, dhi) are needed to calculate
@@ -962,10 +947,6 @@ class ModelChain(object):
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
-        times : None, deprecated
-            Deprecated argument included for API compatibility, but not
-            used internally. The index of the weather DataFrame is used
-            for times.
 
         Returns
         -------
@@ -993,11 +974,6 @@ class ModelChain(object):
         >>> mc.run_model(my_weather)  # doctest: +SKIP
         """
         self.weather = weather
-
-        if times is not None:
-            warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. The index of the weather DataFrame '
-                          'is used for times.', pvlibDeprecationWarning)
 
         self.solar_position = self.location.get_solarposition(
             self.weather.index, method=self.solar_position_method)
@@ -1029,7 +1005,7 @@ class ModelChain(object):
 
         return self
 
-    def prepare_inputs(self, weather, times=None):
+    def prepare_inputs(self, weather):
         """
         Prepare the solar position, irradiance, and weather inputs to
         the model.
@@ -1041,10 +1017,6 @@ class ModelChain(object):
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
-        times : None, deprecated
-            Deprecated argument included for API compatibility, but not
-            used internally. The index of the weather DataFrame is used
-            for times.
 
         Notes
         -----
@@ -1063,11 +1035,6 @@ class ModelChain(object):
                 "Detected data: {0}".format(list(weather.columns)))
 
         self.weather = weather
-
-        if times is not None:
-            warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. The index of the weather DataFrame '
-                          'is used for times.', pvlibDeprecationWarning)
 
         self.times = self.weather.index
         try:
@@ -1126,7 +1093,7 @@ class ModelChain(object):
             self.weather['temp_air'] = 20
         return self
 
-    def run_model(self, weather, times=None):
+    def run_model(self, weather):
         """
         Run the model.
 
@@ -1137,10 +1104,6 @@ class ModelChain(object):
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
-        times : None, deprecated
-            Deprecated argument included for API compatibility, but not
-            used internally. The index of the weather DataFrame is used
-            for times.
 
         Returns
         -------
@@ -1152,11 +1115,6 @@ class ModelChain(object):
         ``dc``, ``ac``, ``losses``,
         ``diode_params`` (if dc_model is a single diode model)
         """
-        if times is not None:
-            warnings.warn('times keyword argument is deprecated and will be '
-                          'removed in 0.8. The index of the weather DataFrame '
-                          'is used for times.', pvlibDeprecationWarning)
-
         self.prepare_inputs(weather)
         self.aoi_model()
         self.spectral_model()

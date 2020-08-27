@@ -7,13 +7,11 @@ from pvlib import pvsystem
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
 import pytest
-from conftest import requires_scipy
 
 POA = 888
 TCELL = 55
 
 
-@requires_scipy
 @pytest.mark.parametrize('method', ['brentq', 'newton'])
 def test_method_spr_e20_327(method, cec_module_spr_e20_327):
     """test pvsystem.singlediode with different methods on SPR-E20-327"""
@@ -42,7 +40,6 @@ def test_method_spr_e20_327(method, cec_module_spr_e20_327):
     assert np.isclose(pvs_ixx, ixx)
 
 
-@requires_scipy
 @pytest.mark.parametrize('method', ['brentq', 'newton'])
 def test_newton_fs_495(method, cec_module_fs_495):
     """test pvsystem.singlediode with different methods on FS495"""
@@ -99,7 +96,6 @@ def get_pvsyst_fs_495():
 # DeSoto @(888[W/m**2], 55[degC]) = {Pmp: 72.71, Isc: 1.402, Voc: 75.42)
 
 
-@requires_scipy
 @pytest.mark.parametrize(
     'poa, temp_cell, expected, tol', [
         # reference conditions
@@ -187,7 +183,6 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
     assert np.isclose(vsc_88, 0.0, *tol)
 
 
-@requires_scipy
 @pytest.mark.parametrize(
     'brk_params, recomb_params, poa, temp_cell, expected, tol', [
         # reference conditions without breakdown model

@@ -7,7 +7,7 @@ import pandas as pd
 from conftest import assert_series_equal
 from pvlib.soiling import hsu, kimber
 from pvlib.iotools import read_tmy3
-from conftest import requires_scipy, DATA_DIR
+from conftest import DATA_DIR
 import pytest
 
 
@@ -64,7 +64,6 @@ def rainfall_input():
     return rainfall
 
 
-@requires_scipy
 def test_hsu_no_cleaning(rainfall_input, expected_output):
     """Test Soiling HSU function"""
 
@@ -81,7 +80,6 @@ def test_hsu_no_cleaning(rainfall_input, expected_output):
     assert_series_equal(result, expected_no_cleaning)
 
 
-@requires_scipy
 def test_hsu(rainfall_input, expected_output_2):
     """Test Soiling HSU function with cleanings"""
 
@@ -99,7 +97,6 @@ def test_hsu(rainfall_input, expected_output_2):
     assert_series_equal(result, expected_output_2)
 
 
-@requires_scipy
 def test_hsu_defaults(rainfall_input, expected_output_1):
     """
     Test Soiling HSU function with default deposition velocity and default rain

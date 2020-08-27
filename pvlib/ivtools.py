@@ -351,11 +351,8 @@ def fit_sdm_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
        Processes", Wiley, 2013
     """
 
-    try:
-        from scipy.optimize import root
-        from scipy import constants
-    except ImportError:
-        raise ImportError("The fit_sdm_desoto function requires scipy.")
+    from scipy.optimize import root
+    from scipy import constants
 
     # Constants
     k = constants.value('Boltzmann constant in eV/K')

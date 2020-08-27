@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from pvlib import pvsystem
 from pvlib import ivtools
-from conftest import requires_scipy, requires_pysam
+from conftest import requires_pysam
 
 
 @pytest.fixture
@@ -28,7 +28,6 @@ def get_cec_params_cansol_cs5p_220p():
                        'R_sh_ref': 837.51, 'R_s': 1.004, 'Adjust': 2.3}}
 
 
-@requires_scipy
 def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
     test_params = get_test_iv_params
     testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],
@@ -59,7 +58,6 @@ def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
     assert np.allclose(result, expected, rtol=5e-5)
 
 
-@requires_scipy
 def test_fit_sde_sandia_bad_iv(get_bad_iv_curves):
     # bad IV curves for coverage of if/then in _calculate_sde_parameters
     v1, i1, v2, i2 = get_bad_iv_curves
@@ -102,7 +100,6 @@ def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
                 cells_in_series=1, temp_ref=25)
 
 
-@requires_scipy
 def test_fit_sdm_desoto():
     result, _ = ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3,
                                        i_sc=9.43, alpha_sc=0.005658,
@@ -122,7 +119,6 @@ def test_fit_sdm_desoto():
                        rtol=1e-4)
 
 
-@requires_scipy
 def test_fit_sdm_desoto_failure():
     with pytest.raises(RuntimeError) as exc:
         ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,

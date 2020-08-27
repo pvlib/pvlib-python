@@ -59,11 +59,8 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
 
-    try:
-        import scipy.optimize
-        from scipy.spatial.distance import pdist
-    except ImportError:
-        raise ImportError("The WVM function requires scipy.")
+    import scipy.optimize
+    from scipy.spatial.distance import pdist
 
     pos = np.array(positions)
     dist = pdist(pos, 'euclidean')

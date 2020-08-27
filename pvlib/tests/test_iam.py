@@ -13,10 +13,8 @@ from conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import iam as _iam
-from conftest import needs_numpy_1_10, requires_scipy
 
 
-@needs_numpy_1_10
 def test_ashrae():
     thetas = np.array([-90., -67.5, -45., -22.5, 0., 22.5, 45., 67.5, 89., 90.,
                        np.nan])
@@ -28,7 +26,6 @@ def test_ashrae():
     assert_series_equal(iam_series, pd.Series(expected))
 
 
-@needs_numpy_1_10
 def test_ashrae_scalar():
     thetas = -45.
     iam = _iam.ashrae(thetas, .05)
@@ -40,7 +37,6 @@ def test_ashrae_scalar():
     assert_allclose(iam, expected, equal_nan=True)
 
 
-@needs_numpy_1_10
 def test_physical():
     aoi = np.array([-90., -67.5, -45., -22.5, 0., 22.5, 45., 67.5, 90.,
                     np.nan])
@@ -56,7 +52,6 @@ def test_physical():
     assert_series_equal(iam, expected)
 
 
-@needs_numpy_1_10
 def test_physical_scalar():
     aoi = -45.
     iam = _iam.physical(aoi, 1.526, 0.002, 4)
@@ -147,7 +142,6 @@ def test_martin_ruiz_diffuse():
     assert_series_equal(iam[1], expected_gnd)
 
 
-@requires_scipy
 def test_iam_interp():
 
     aoi_meas = [0.0, 45.0, 65.0, 75.0]

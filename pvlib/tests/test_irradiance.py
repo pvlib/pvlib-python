@@ -13,7 +13,7 @@ from conftest import assert_frame_equal, assert_series_equal
 
 from pvlib import irradiance
 
-from conftest import (needs_numpy_1_10, requires_ephem, requires_numba)
+from conftest import requires_ephem, requires_numba
 
 
 # fixtures create realistic test input data
@@ -245,7 +245,6 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 
-@needs_numpy_1_10
 def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan

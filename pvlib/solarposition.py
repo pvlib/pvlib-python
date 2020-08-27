@@ -911,11 +911,7 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         If the given attribute is not an attribute of a
         PyEphem.Sun object.
     """
-
-    try:
-        import scipy.optimize as so
-    except ImportError:
-        raise ImportError('The calc_time function requires scipy')
+    import scipy.optimize as so
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)

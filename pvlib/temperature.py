@@ -20,8 +20,8 @@ TEMPERATURE_MODEL_PARAMETERS = {
 
 There are keys for each model at the top level. Currently there are two models,
 ``'sapm'`` for the Sandia Array Performance Model, and ``'pvsyst'``. Each model
-has a dictionary of configurations with a dictionary of the model parameters
-associated with it. Retrieve parameters by indexing the model and
+has a dictionary of configurations; a value is itself a dictionary containing model
+parameters. Retrieve parameters by indexing the model and
 configuration by name. Note: the keys are lower-cased and case sensitive.
 
 Example

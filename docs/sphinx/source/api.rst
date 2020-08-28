@@ -314,6 +314,7 @@ Pvsyst model
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
@@ -327,6 +328,33 @@ PVWatts model
    pvsystem.pvwatts_dc
    inverter.pvwatts
    pvsystem.pvwatts_losses
+
+Estimating PV model parameters
+------------------------------
+
+Functions for fitting single diode models
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
+    ivtools.sdm.fit_pvsyst_sandia
+    ivtools.sdm.fit_desoto_sandia
+
+Functions for fitting the single diode equation
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sde.fit_sandia_simple
+
+Utilities for working with IV curve data
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.utility.rectify_iv_curve
 
 Other
 -----

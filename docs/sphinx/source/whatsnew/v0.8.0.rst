@@ -78,10 +78,11 @@ Enhancements
 * Added *racking_model*, *module_type*, and *temperature_model_parameters* to
   PVSystem, LocalizedPVSystem, SingleAxisTracker, and
   LocalizedSingleAxisTracker repr methods. (:issue:`1027`)
+* Added ability for :py:func:`pvlib.soiling.hsu` to accept arbitrary time intervals. (:pull:`980`)
 
 Bug fixes
 ~~~~~~~~~
-* Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`XXX`)
+* Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`977`, :pull:`980`)
 * Handle NUL characters and fix version column dtype in
   :py:func:`~pvlib.iotools.crn.read_crn`. (:issue:`1025`)
 

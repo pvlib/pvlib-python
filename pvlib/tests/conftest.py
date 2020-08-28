@@ -91,7 +91,7 @@ requires_scipy = pytest.mark.skipif(not has_scipy, reason='requires scipy')
 
 
 try:
-    import statsmodels.api as sm  # noqa: F401
+    import statsmodels  # noqa: F401
     has_statsmodels = True
 except ImportError:
     has_statsmodels = False

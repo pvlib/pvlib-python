@@ -7,7 +7,7 @@ Function names should follow the pattern "fit_" + fitting method.
 
 import numpy as np
 
-from pvlib.ivtools.utility import schumaker_qspline
+from pvlib.ivtools.utility import _schumaker_qspline
 
 
 # set constant for numpy.linalg.lstsq parameter rcond
@@ -337,7 +337,7 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
     # Fit quadratic spline to IV curve in order to compute the co-content
     # (i.e., integral of Isc - I over V) more accurately
 
-    [t, c, yhat, kflag] = schumaker_qspline(voltage, current)
+    [t, c, yhat, kflag] = _schumaker_qspline(voltage, current)
 
     # Calculate co-content integral
     cci = _cocontent(t, c, isc, kflag)

@@ -10,7 +10,7 @@ import numpy as np
 
 from pvlib.pvsystem import singlediode, v_from_i
 
-from pvlib.ivtools.utility import constants, rectify_iv_curve, numdiff
+from pvlib.ivtools.utility import constants, rectify_iv_curve, _numdiff
 from pvlib.ivtools.sde import _fit_sandia_cocontent
 
 
@@ -687,7 +687,7 @@ def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):
 
             # initial estimate of rs from dI/dV near Voc
             # [5] Step 3a; [6] Step 3c
-            [didv, d2id2v] = numdiff(volt, curr)
+            [didv, d2id2v] = _numdiff(volt, curr)
             t3 = volt > .5 * voc[j]
             t4 = volt < .9 * voc[j]
             tmp = -rsh[j] * didv - 1.

@@ -1,15 +1,10 @@
-import os
 import numpy as np
 import pandas as pd
 import pytest
-from pvlib.ivtools.utility import numdiff, rectify_iv_curve, schumaker_qspline
+from pvlib.ivtools.utility import _numdiff, rectify_iv_curve,
+    _schumaker_qspline
 
-
-BASEDIR = os.path.dirname(__file__)
-TESTDIR = os.path.dirname(BASEDIR)
-PROJDIR = os.path.dirname(TESTDIR)
-DATADIR = os.path.join(PROJDIR, 'data')
-TESTDATA = os.path.join(DATADIR, 'ivtools_numdiff.dat')
+from conftest import DATA_DIR
 
 
 @pytest.fixture
@@ -21,10 +16,10 @@ def ivcurve():
     return voltage, current
 
 
-def test_numdiff():
-    iv = pd.read_csv(
-        TESTDATA, names=['I', 'V', 'dIdV', 'd2IdV2'], dtype=float)
-    df, d2f = numdiff(iv.V, iv.I)
+def test__numdiff():
+    iv = pd.read_csv(DATA_DIR / 'ivtools_numdiff.csv',
+                     names=['I', 'V', 'dIdV', 'd2IdV2'], dtype=float)
+    df, d2f = _numdiff(iv.V, iv.I)
     assert np.allclose(iv.dIdV, df, equal_nan=True)
     assert np.allclose(iv.d2IdV2, d2f, equal_nan=True)
 
@@ -75,8 +70,8 @@ def test_rectify_iv_curve(ivcurve):
       np.array([-.5, -.1, -.05, 0., .1, .2, .3]),
       np.array([-5., -1., -.297, .2, .3485, .5, 2.]),
       np.array([0., 0., 1., 0., 1., 0., 0.])))])
-def test_schmumaker_qspline(x, y, expected):
-    [t, c, yhat, kflag] = schumaker_qspline(x, y)
+def test__schmumaker_qspline(x, y, expected):
+    [t, c, yhat, kflag] = _schumaker_qspline(x, y)
     np.testing.assert_allclose(c, expected[0], atol=0.0001)
     np.testing.assert_allclose(t, expected[1], atol=0.0001)
     np.testing.assert_allclose(yhat, expected[2], atol=0.0001)

@@ -1,7 +1,5 @@
-import os
 import numpy as np
 import pandas as pd
-from collections import OrderedDict
 
 import pytest
 
@@ -11,11 +9,7 @@ from pvlib import pvsystem
 from pvlib.tests.conftest import requires_scipy, requires_pysam
 from pvlib.tests.conftest import requires_statsmodels
 
-BASEDIR = os.path.dirname(__file__)
-TESTDIR = os.path.dirname(BASEDIR)
-PROJDIR = os.path.dirname(TESTDIR)
-DATADIR = os.path.join(PROJDIR, 'data')
-TESTDATA = os.path.join(DATADIR, 'ivtools_numdiff.dat')
+from conftest import DATA_DIR
 
 
 @pytest.fixture
@@ -127,15 +121,12 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
                        expected[params.keys()].values, rtol=5e-2)
 
 
-@requires_scipy
-@requires_statsmodels
-def test_fit_pvsyst_sandia(npts=3000):
-    spec_list = ['cells_in_series', 'alpha_sc', 'beta_voc', 'descr']
-    iv_specs = dict.fromkeys(spec_list)
-    keylist = ['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc', 'ee']
-    ivcurves = dict.fromkeys(keylist)
+def _read_iv_curves_for_test(datafile, npts):
+    """ read constants and npts IV curves from datafile """
+    iv_specs = dict(keys=['cells_in_series', 'alpha_sc', 'beta_voc', 'descr'])
+    ivcurves = dict(keys=['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc', 'ee'])
 
-    with open(os.path.join(BASEDIR, 'PVsyst_demo.txt'), 'r') as f:
+    with open(DATA_DIR / datafile, 'r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 
@@ -180,16 +171,25 @@ def test_fit_pvsyst_sandia(npts=3000):
     ivcurves['tc'] = tc[:npts]
     ivcurves['v'] = v[:npts]
     ivcurves['i'] = i[:npts]
+    ivcurves['p_mp'] = ivcurves['v_mp'] * ivcurves['i_mp']  # power
 
-    pvsyst_specs = dict.fromkeys(spec_list)
+    return iv_specs, ivcurves
+
+
+def _read_pvsyst_expected(datafile):
+    """ Read Pvsyst model parameters and diode equation values for each
+    IV curve
+    """
+    pvsyst_specs = dict(keys=['cells_in_series', 'alpha_sc', 'beta_voc',
+                              'descr'])
     # order required to match file being read
     paramlist = [
         'I_L_ref', 'I_o_ref', 'EgRef', 'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s',
         'gamma_ref', 'mu_gamma']
     varlist = ['iph', 'io', 'rs', 'rsh', 'u']
-    pvsyst = OrderedDict(key=(paramlist + varlist))
+    pvsyst = dict(key=(paramlist + varlist))
 
-    with open(os.path.join(BASEDIR, 'PVsyst_demo_model.txt'), 'r') as f:
+    with open(DATA_DIR / datafile, 'r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 
@@ -217,7 +217,22 @@ def test_fit_pvsyst_sandia(npts=3000):
 
     pvsyst.update(zip(varlist, [Iph, Io, Rs, Rsh, u]))
 
+
+@requires_scipy
+@requires_statsmodels
+def test_fit_pvsyst_sandia(npts=3000):
+
+    # get IV curve data
+    iv_specs, ivcurves = _read_iv_curves_for_test('PVsyst_demo.csv', npts)
+
+    # get known Pvsyst model parameters and five parameters from each fitted
+    # IV curve
+    pvsyst_specs, pvsyst = _read_pvsyst_expected('PVsyst_demo_model.csv')
+
     modeled = sdm.fit_pvsyst_sandia(ivcurves, iv_specs)
+
+    # calculate IV curves using the fitted model, for comparison with input
+    # IV curves
     param_res = pvsystem.calcparams_pvsyst(
         effective_irradiance=ivcurves['ee'], temp_cell=ivcurves['tc'],
         alpha_sc=iv_specs['alpha_sc'], gamma_ref=modeled['gamma_ref'],
@@ -226,8 +241,6 @@ def test_fit_pvsyst_sandia(npts=3000):
         R_sh_0=modeled['R_sh_0'], R_s=modeled['R_s'],
         cells_in_series=iv_specs['cells_in_series'], EgRef=modeled['EgRef'])
     iv_res = pvsystem.singlediode(*param_res)
-
-    ivcurves['p_mp'] = ivcurves['v_mp'] * ivcurves['i_mp']  # power
 
     # assertions
     assert np.allclose(
@@ -241,7 +254,7 @@ def test_fit_pvsyst_sandia(npts=3000):
     assert np.allclose(
         ivcurves['v_oc'], iv_res['v_oc'], equal_nan=True, rtol=0.019)
     # cells_in_series, alpha_sc, beta_voc, descr
-    assert all((iv_specs[spec] == pvsyst_specs[spec]) for spec in spec_list)
+    assert all((iv_specs[k] == pvsyst_specs[k]) for k in iv_specs.keys)
     # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,
     # mu_gamma
     assert np.isclose(modeled['I_L_ref'], pvsyst['I_L_ref'], rtol=6.5e-5)

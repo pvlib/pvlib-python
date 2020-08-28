@@ -1,6 +1,6 @@
 """
-The ``pvlib.ivtools.utility.py`` module contains utility functions for fitting
-equations to IV curve data.
+The ``pvlib.ivtools.utility.py`` module contains utility functions related to
+working with IV curves, or fitting equations to IV curve data.
 
 """
 
@@ -15,7 +15,7 @@ EPS = np.finfo('float').eps**(1/3)
 constants = {'E0': 1000.0, 'T0': 25.0, 'k': 1.38066e-23, 'q': 1.60218e-19}
 
 
-def numdiff(x, f):
+def _numdiff(x, f):
     """
     Compute first and second order derivative using possibly unequally
     spaced data.
@@ -181,7 +181,7 @@ def rectify_iv_curve(voltage, current, decimals=None):
     return tmp[0, ], tmp[1, ]
 
 
-def schumaker_qspline(x, y):
+def _schumaker_qspline(x, y):
     """
     Fit a quadratic spline which preserves monotonicity and
     convexity in the data.

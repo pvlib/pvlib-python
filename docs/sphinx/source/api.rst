@@ -354,9 +354,7 @@ Utilities for working with IV curve data
 .. autosummary::
    :toctree: generated/
 
-    ivtools.utility.numdiff
     ivtools.utility.rectify_iv_curve
-    ivtools.utility.schumaker_qspline
 
 Other
 -----

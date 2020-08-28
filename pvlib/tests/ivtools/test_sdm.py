@@ -260,7 +260,7 @@ def test_fit_pvsyst_sandia(npts=3000):
     assert np.allclose(
         ivcurves['v_oc'], iv_res['v_oc'], equal_nan=True, rtol=0.019)
     # cells_in_series, alpha_sc, beta_voc, descr
-    assert all((iv_specs[k] == pvsyst_specs[k]) for k in iv_specs.keys)
+    assert all((iv_specs[k] == pvsyst_specs[k]) for k in iv_specs.keys())
     # I_L_ref, I_o_ref, EgRef, R_sh_ref, R_sh_0, R_sh_exp, R_s, gamma_ref,
     # mu_gamma
     assert np.isclose(modeled['I_L_ref'], pvsyst['I_L_ref'], rtol=6.5e-5)

@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pvlib.ivtools.utility import _numdiff, rectify_iv_curve,
-    _schumaker_qspline
+from pvlib.ivtools.utility import _numdiff, rectify_iv_curve
+from pvlib.ivtools.utility import _schumaker_qspline
 
 from conftest import DATA_DIR
 

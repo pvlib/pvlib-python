@@ -127,7 +127,7 @@ def _read_iv_curves_for_test(datafile, npts):
     ivcurves = dict(keys=['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc', 'ee'])
 
     infilen = DATA_DIR / datafile
-    with datafile.open(mode='r') as f:
+    with infilen.open(mode='r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 

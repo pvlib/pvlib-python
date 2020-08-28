@@ -126,7 +126,8 @@ def _read_iv_curves_for_test(datafile, npts):
     iv_specs = dict(keys=['cells_in_series', 'alpha_sc', 'beta_voc', 'descr'])
     ivcurves = dict(keys=['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc', 'ee'])
 
-    with open(DATA_DIR / datafile, 'r') as f:
+    infilen = DATA_DIR / datafile
+    with datafile.open(mode='r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 
@@ -189,7 +190,8 @@ def _read_pvsyst_expected(datafile):
     varlist = ['iph', 'io', 'rs', 'rsh', 'u']
     pvsyst = dict(key=(paramlist + varlist))
 
-    with open(DATA_DIR / datafile, 'r') as f:
+    infilen = DATA_DIR / datafile
+    with infilen.open(mode='r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 

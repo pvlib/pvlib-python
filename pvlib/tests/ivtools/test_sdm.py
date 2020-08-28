@@ -123,8 +123,10 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
 
 def _read_iv_curves_for_test(datafile, npts):
     """ read constants and npts IV curves from datafile """
-    iv_specs = dict(keys=['cells_in_series', 'alpha_sc', 'beta_voc', 'descr'])
-    ivcurves = dict(keys=['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc', 'ee'])
+    iv_specs = dict.fromkeys(['cells_in_series', 'alpha_sc', 'beta_voc',
+                              'descr'])
+    ivcurves = dict.fromkeys(['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc',
+                              'ee'])
 
     infilen = DATA_DIR / datafile
     with infilen.open(mode='r') as f:
@@ -181,14 +183,14 @@ def _read_pvsyst_expected(datafile):
     """ Read Pvsyst model parameters and diode equation values for each
     IV curve
     """
-    pvsyst_specs = dict(keys=['cells_in_series', 'alpha_sc', 'beta_voc',
-                              'descr'])
+    pvsyst_specs = dict.fromkeys(['cells_in_series', 'alpha_sc', 'beta_voc',
+                                  'descr'])
     # order required to match file being read
     paramlist = [
         'I_L_ref', 'I_o_ref', 'EgRef', 'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s',
         'gamma_ref', 'mu_gamma']
     varlist = ['iph', 'io', 'rs', 'rsh', 'u']
-    pvsyst = dict(key=(paramlist + varlist))
+    pvsyst = dict.fromkeys(paramlist + varlist)
 
     infilen = DATA_DIR / datafile
     with infilen.open(mode='r') as f:

@@ -523,6 +523,8 @@ Creating a ModelChain object.
    :toctree: generated/
 
    modelchain.ModelChain
+   modelchain.ModelChain.with_pvwatts
+   modelchain.ModelChain.with_sapm
 
 Running
 -------

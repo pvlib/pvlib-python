@@ -219,6 +219,8 @@ def _read_pvsyst_expected(datafile):
 
     pvsyst.update(zip(varlist, [Iph, Io, Rs, Rsh, u]))
 
+    return pvsyst_specs, pvsyst
+
 
 @requires_scipy
 @requires_statsmodels

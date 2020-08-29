@@ -92,6 +92,7 @@ Enhancements
   PVSystem, LocalizedPVSystem, SingleAxisTracker, and
   LocalizedSingleAxisTracker repr methods. (:issue:`1027`)
 * Added ability for :py:func:`pvlib.soiling.hsu` to accept arbitrary time intervals. (:pull:`980`)
+* Added :py:func:`pvlib.temperature.fuentes` for cell temperature modeling. (:pull:`1037`)
 
 Bug fixes
 ~~~~~~~~~

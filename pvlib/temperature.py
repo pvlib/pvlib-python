@@ -521,10 +521,7 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
         - hconv * (tinoct - 293.15)
     ) / ((hground + hconv) * (tinoct - 293.15))
     tground = (tinoct**4 - backrat * (tinoct**4 - 293.15**4))**0.25
-    if tground > tinoct:
-        tground = tinoct
-    if tground < 293.15:
-        tground = 293.15
+    tground = np.clip(tground, 293.15, tinoct)
 
     tgrat = (tground - 293.15) / (tinoct - 293.15)
     convrat = (absorp * 800 - emiss * boltz * (

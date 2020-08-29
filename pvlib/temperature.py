@@ -423,3 +423,172 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     heat_input = poa_global
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference
+
+
+def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, check_reynold):
+    # Calculate the convective coefficient as in Fuentes 1987
+    densair = 0.003484 * 101325.0 / tave
+    visair = 0.24237e-6 * tave**0.76 / densair
+    condair = 2.1695e-4 * tave**0.84
+    reynold = windmod * xlen / visair
+    if check_reynold and reynold > 1.2e5:
+        hforce = 0.0282 / reynold**0.2 * densair * windmod * 1007 / 0.71**0.4
+    else:
+        hforce = 0.8600 / reynold**0.5 * densair * windmod * 1007 / 0.71**0.67
+
+    grashof = 9.8 / tave * temp_delta * xlen**3 / visair**2 * 0.5
+    hfree = 0.21 * (grashof * 0.71)**0.32 * condair / xlen
+    hconv = (hfree**3 + hforce**3)**(1/3)
+    return hconv
+
+
+def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
+            wind_height=9.144, emissivity=0.84, absorption=0.83,
+            hydraulic_diameter=0.5):
+    """
+    Calculate cell or module temperature using the Fuentes model.
+
+    The Fuentes model is a first-principles heat transfer energy balance
+    model [1]_ that is used in PVWatts for cell temperature modeling [2]_.
+
+    Parameters
+    ----------
+    poa_global : pandas Series
+        Total incident irradiance [W/m^2]
+
+    temp_air : pandas Series
+        Ambient dry bulb temperature [C]
+
+    wind_speed : pandas Series
+        Wind speed [m/s]
+
+    inoct : float
+        The "installed" nominal operating cell temperature as defined in [1]_.
+        PVWatts assumes this value to be 45 C for rack-mounted arrays and
+        49 C for roof mount systems with restricted air flow around the
+        module.  [C]
+
+    module_height : float, default 5.0
+        The height above ground of the module above the ground. The PVWatts
+        default is 5.0 [m]
+
+    wind_height : float, default 9.144
+        The height above ground at which ``wind_speed`` is measured. The
+        PVWatts defauls is 9.144 [m]
+
+    emissivity : float, default 0.84
+
+    absorption : float, default 0.83
+
+    hydraulic_diameter : float, default 0.5
+        The hydraulic diameter of the module. The default value of 0.5 is
+        provided in [1]_ for a module with dimensions 0.3m x 1.2m.  [m]
+
+    Returns
+    -------
+    temperature_cell : pandas Series
+        The modeled cell temperature [C]
+
+    References
+    ----------
+    .. [1] Fuentes, M. K. A Simplifed Thermal Model for Flat-Plate
+           Photovoltaic Arrays. SAND85-0330. 1987.
+           http://prod.sandia.gov/techlib/access-control.cgi/1985/850330.pdf
+    .. [2] Dobos, A. P. PVWatts Version 5 Manual. NREL/TP-6A20-62641. 2014.
+           doi:10.2172/1158421.
+    """
+    # ported from the FORTRAN77 code provided in Appendix A of Fuentes 1987
+
+    boltz = 5.669e-8
+    emiss = emissivity
+    absorp = absorption
+    xlen = hydraulic_diameter
+    cap0 = 11000
+    tinoct = inoct + 273.15
+
+    # convective coefficient at NOCT
+    windmod = 1.0
+    tave = (tinoct + 293.15) / 2
+    hconv = _fuentes_hconv(tave, windmod, tinoct, tinoct - 293.15, xlen, False)
+
+    # determine the ground temperature ratio and the ratio of the total
+    # convection to the top side convection
+    hground = emiss * boltz * (tinoct**2 + 293.15**2) * (tinoct + 293.15)
+    backrat = (
+        absorp * 800.0
+        - emiss * boltz * (tinoct**4 - 282.21**4)
+        - hconv * (tinoct - 293.15)
+    ) / ((hground + hconv) * (tinoct - 293.15))
+    tground = (tinoct**4 - backrat * (tinoct**4 - 293.15**4))**0.25
+    if tground > tinoct:
+        tground = tinoct
+    if tground < 293.15:
+        tground = 293.15
+
+    tgrat = (tground - 293.15) / (tinoct - 293.15)
+    convrat = (absorp * 800 - emiss * boltz * (
+        2 * tinoct**4 - 282.21**4 - tground**4)) / (hconv * (tinoct - 293.15))
+
+    # adjust the capacitance of the module based on the INOCT
+    cap = cap0
+    if tinoct > 321.15:
+        cap = cap * (1 + (tinoct - 321.15) / 12)
+
+    # iterate through timeseries inputs
+    sun0 = 0
+    tmod0 = 293.15
+
+    # n.b. the way Fuentes calculates the first timedelta makes it seem like
+    # the value doesn't matter -- rather than recreate it here, just assume
+    # it's the same as the second timedelta:
+    timedelta_hours = np.diff(poa_global.index).astype(float) / 1e9 / 60 / 60
+    timedelta_hours = np.append([timedelta_hours[0]], timedelta_hours)
+
+    df = pd.DataFrame({
+        'tamb': temp_air + 273.15,
+        'sun': poa_global * absorp,
+        'wind_speed': wind_speed,
+        'dtime': timedelta_hours,
+    })
+
+    # sky temperature
+    df['tsky'] = 0.68 * (0.0552 * df['tamb']**1.5) + 0.32 * df['tamb']
+
+    # wind speed at module height
+    df['windmod'] = df['wind_speed'] * (module_height/wind_height)**0.2 + 1e-4
+
+    tmod0 = 293.15
+
+    for idx, row in df.iterrows():
+
+        tamb = row['tamb']
+        sun = row['sun']
+        windmod = row['windmod']
+        tsky = row['tsky']
+        dtime = row['dtime']
+
+        tmod = tmod0
+        for j in range(10):
+            # overall convective coefficient
+            tave = (tmod + tamb) / 2
+            hconv = convrat * _fuentes_hconv(tave, windmod, tinoct, 
+                                             abs(tmod-tamb), xlen, True)
+            # solve the heat transfer equation
+            hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)
+            tground = tamb + tgrat * (tmod - tamb)
+            hground = emiss * boltz * (tmod**2 + tground**2) * (tmod + tground)
+            eigen = - (hconv + hsky + hground) / cap * dtime * 3600
+            if eigen > -10:
+                ex = np.exp(eigen)
+            else:
+                ex = 0
+            tmod = tmod0*ex + ((1 - ex) * (
+                hconv*tamb + hsky * tsky + hground * tground + sun0
+                + (sun - sun0) / eigen) + sun - sun0
+            ) / (hconv + hsky + hground)
+
+        df.loc[idx, 'tmod'] = tmod
+        tmod0 = tmod
+        sun0 = sun
+
+    return df['tmod'] - 273.15

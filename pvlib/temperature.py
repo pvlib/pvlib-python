@@ -4,6 +4,7 @@ PV modules and cells.
 """
 
 import numpy as np
+import pandas as pd
 
 
 TEMPERATURE_MODEL_PARAMETERS = {
@@ -571,7 +572,7 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
         for j in range(10):
             # overall convective coefficient
             tave = (tmod + tamb) / 2
-            hconv = convrat * _fuentes_hconv(tave, windmod, tinoct, 
+            hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
                                              abs(tmod-tamb), xlen, True)
             # solve the heat transfer equation
             hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)

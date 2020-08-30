@@ -427,18 +427,26 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
 
 def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, check_reynold):
-    # Calculate the convective coefficient as in Fuentes 1987
-    densair = 0.003484 * 101325.0 / tave
-    visair = 0.24237e-6 * tave**0.76 / densair
-    condair = 2.1695e-4 * tave**0.84
+    # Calculate the convective coefficient as in Fuentes 1987 -- a mixture of
+    # free, laminar, and turbulent convection.
+    densair = 0.003484 * 101325.0 / tave  # density
+    visair = 0.24237e-6 * tave**0.76 / densair  # kinematic viscosity
+    condair = 2.1695e-4 * tave**0.84  # thermal conductivity
     reynold = windmod * xlen / visair
+    # the boundary between laminar and turbulent is modeled as an abrupt
+    # change at Re = 1.2e5:
     if check_reynold and reynold > 1.2e5:
+        # turbulent convection
         hforce = 0.0282 / reynold**0.2 * densair * windmod * 1007 / 0.71**0.4
     else:
+        # laminar convection
         hforce = 0.8600 / reynold**0.5 * densair * windmod * 1007 / 0.71**0.67
-
+    # free convection via Grashof number
+    # NB: the 0.5 factor is from assuming tilt=30; should tilt be a parameter?
     grashof = 9.8 / tave * temp_delta * xlen**3 / visair**2 * 0.5
+    # product of Nusselt number and (k/l)
     hfree = 0.21 * (grashof * 0.71)**0.32 * condair / xlen
+    # combine free and forced components
     hconv = (hfree**3 + hforce**3)**(1/3)
     return hconv
 
@@ -478,8 +486,11 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
         PVWatts defauls is 9.144 [m]
 
     emissivity : float, default 0.84
+        The effectiveness of the module at radiating thermal energy. [unitless]
 
     absorption : float, default 0.83
+        The fraction of incident irradiance that is converted to thermal
+        energy in the module. [unitless]
 
     hydraulic_diameter : float, default 0.5
         The hydraulic diameter of the module. The default value of 0.5 is
@@ -498,7 +509,8 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
     .. [2] Dobos, A. P. PVWatts Version 5 Manual. NREL/TP-6A20-62641. 2014.
            doi:10.2172/1158421.
     """
-    # ported from the FORTRAN77 code provided in Appendix A of Fuentes 1987
+    # ported from the FORTRAN77 code provided in Appendix A of Fuentes 1987;
+    # nearly all variable names are kept the same for ease of comparison.
 
     boltz = 5.669e-8
     emiss = emissivity
@@ -507,7 +519,7 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
     cap0 = 11000
     tinoct = inoct + 273.15
 
-    # convective coefficient at NOCT
+    # convective coefficient of top surface of module at NOCT
     windmod = 1.0
     tave = (tinoct + 293.15) / 2
     hconv = _fuentes_hconv(tave, windmod, tinoct, tinoct - 293.15, xlen, False)
@@ -527,7 +539,10 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
     convrat = (absorp * 800 - emiss * boltz * (
         2 * tinoct**4 - 282.21**4 - tground**4)) / (hconv * (tinoct - 293.15))
 
-    # adjust the capacitance of the module based on the INOCT
+    # adjust the capacitance (thermal mass) of the module based on the INOCT.
+    # It is a function of INOCT because high INOCT implies thermal coupling
+    # with the racking (e.g. roofmount), so the thermal mass is increased.
+    # `cap` has units J/(m^2 C) -- see Table 3, Equations 26 & 27
     cap = cap0
     if tinoct > 321.15:
         cap = cap * (1 + (tinoct - 321.15) / 12)
@@ -549,10 +564,12 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
         'dtime': timedelta_hours,
     })
 
-    # sky temperature
+    # Two of the calculations are easily vectorized, so precalculate them:
+    # sky temperature -- Equation 24
     df['tsky'] = 0.68 * (0.0552 * df['tamb']**1.5) + 0.32 * df['tamb']
-
-    # wind speed at module height
+    # wind speed at module height -- Equation 22
+    # not sure why the 1e-4 factor is included -- maybe the equations don't
+    # behave well if wind == 0?
     df['windmod'] = df['wind_speed'] * (module_height/wind_height)**0.2 + 1e-4
 
     tmod0 = 293.15
@@ -565,24 +582,37 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
         tsky = row['tsky']
         dtime = row['dtime']
 
+        # solve the heat transfer equation, iterating because the heat loss
+        # terms depend on tmod. NB Fuentes doesn't show that 10 iterations is
+        # sufficient for convergence.
         tmod = tmod0
         for j in range(10):
             # overall convective coefficient
             tave = (tmod + tamb) / 2
             hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
                                              abs(tmod-tamb), xlen, True)
-            # solve the heat transfer equation
+            # sky radiation coefficient (Equation 3)
             hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)
+            # ground radiation coeffieicient (Equation 4)
             tground = tamb + tgrat * (tmod - tamb)
             hground = emiss * boltz * (tmod**2 + tground**2) * (tmod + tground)
+            # thermal lag -- Equation 8
             eigen = - (hconv + hsky + hground) / cap * dtime * 3600
+            # not sure why this check is done, maybe as a speed optimization?
             if eigen > -10:
                 ex = np.exp(eigen)
             else:
                 ex = 0
-            tmod = tmod0*ex + ((1 - ex) * (
-                hconv*tamb + hsky * tsky + hground * tground + sun0
-                + (sun - sun0) / eigen) + sun - sun0
+            # Equation 7 -- note that `sun` and `sun0` already account for
+            # absorption (alpha)
+            tmod = tmod0 * ex + (
+                (1 - ex) * (
+                    hconv * tamb
+                    + hsky * tsky
+                    + hground * tground
+                    + sun0
+                    + (sun - sun0) / eigen
+                ) + sun - sun0
             ) / (hconv + hsky + hground)
 
         df.loc[idx, 'tmod'] = tmod

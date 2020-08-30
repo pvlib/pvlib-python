@@ -501,6 +501,13 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
     temperature_cell : pandas Series
         The modeled cell temperature [C]
 
+    Notes
+    -----
+    This function returns slightly different values from PVWatts at night
+    and just after dawn. This is because the SAM SSC assumes that module
+    temperature equals ambient temperature when irradiance is zero so it can
+    skip the heat balance calculation at night.
+
     References
     ----------
     .. [1] Fuentes, M. K. A Simplifed Thermal Model for Flat-Plate

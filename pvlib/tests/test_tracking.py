@@ -493,7 +493,7 @@ def test_LocalizedSingleAxisTracker___repr__():
 def test_calc_axis_tilt():
     # expected values
     expected_axis_tilt = 2.239  # [degrees]
-    expected_side_slope = -9.86649274360294  # [degrees]
+    expected_side_slope = 9.86649274360294  # [degrees]
     expected = DATA_DIR / 'singleaxis_tracker_wslope.dat'
     expected = pd.read_csv(expected, index_col='timestamp', parse_dates=True)
     # solar positions
@@ -507,7 +507,7 @@ def test_calc_axis_tilt():
     axis_azimuth = 0.0
     max_angle = 75.0
     # Note: GCR is relative to horizontal distance between rows
-    gcr = 0.33292759  # GCR = length / horizontal_pitch = 1.64 / 5 / cos(-9.86)
+    gcr = 0.33292759  # GCR = length / horizontal_pitch = 1.64 / 5 / cos(9.86)
     # calculate tracker axis zenith
     axis_tilt = tracking.calc_tracker_axis_tilt(
         *system_plane, axis_azimuth=axis_azimuth)
@@ -527,3 +527,41 @@ def test_calc_axis_tilt():
         sat['surface_azimuth'], expected['surface_azimuth'], equal_nan=True)
     assert np.allclose(
         sat['surface_tilt'], expected['surface_tilt'], equal_nan=True)
+
+
+def test_slope_aware_backtracking():
+    """
+    Test validation data set from https://www.nrel.gov/docs/fy20osti/76626.pdf
+    """
+    expected_data = np.array(
+        [('2019-01-01T08:00-0500',  2.404287, 122.79177 , -84.440, -10.899),
+         ('2019-01-01T09:00-0500', 11.263058, 133.288729, -72.604, -25.747),
+         ('2019-01-01T10:00-0500', 18.733558, 145.285552, -59.861, -59.861),
+         ('2019-01-01T11:00-0500', 24.109076, 158.939435, -45.578, -45.578),
+         ('2019-01-01T12:00-0500', 26.810735, 173.931802, -28.764, -28.764),
+         ('2019-01-01T13:00-0500', 26.482495, 189.371536, -8.475, -8.475),
+         ('2019-01-01T14:00-0500', 23.170447, 204.13681 , 15.120, 15.120),
+         ('2019-01-01T15:00-0500', 17.296785, 217.446538, 39.562, 39.562),
+         ('2019-01-01T16:00-0500',  9.461862, 229.102218, 61.587, 32.339),
+         ('2019-01-01T17:00-0500',  0.524817, 239.330401, 79.530, 5.490)],
+        dtype=[
+            ('Time', '<M8[h]'), ('ApparentElevation', '<f8'),
+            ('SolarAzimuth', '<f8'), ('TrueTracking', '<f8'),
+            ('Backtracking', '<f8')])
+    expected_axis_tilt = 9.666
+    expected_slope_angle = -2.576
+    system_azimuth, system_zenith = 180.0, 10.0
+    axis_azimuth = 195.0
+    axis_tilt = tracking.calc_tracker_axis_tilt(
+        system_azimuth, system_zenith, axis_azimuth)
+    assert np.isclose(axis_tilt, expected_axis_tilt, rtol=1e-3, atol=1e-3)
+    side_slope, _ = tracking.calc_system_tracker_side_slope(
+        axis_azimuth, axis_tilt, system_azimuth, system_zenith)
+    assert np.isclose(side_slope, expected_slope_angle, rtol=1e-3, atol=1e-3)
+    sat = tracking.singleaxis(
+        90.0-expected_data['ApparentElevation'], expected_data['SolarAzimuth'],
+        axis_tilt, axis_azimuth, max_angle=90.0, backtrack=True, gcr=0.5,
+        side_slope=side_slope)
+    np.testing.assert_allclose(
+        sat['tracker_theta'], expected_data['Backtracking'],
+        rtol=1e-3, atol=1e-3)

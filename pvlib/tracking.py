@@ -250,10 +250,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
                backtrack=True, gcr=2.0/7.0, side_slope=0):
     """
     Determine the rotation angle of a single axis tracker when given a
-    particular sun zenith and azimuth angle. See [1]_ for details about
-    the equations.
-    Backtracking may be specified, and if so, a ground coverage
-    ratio is required.
+    particular sun zenith and azimuth angle.
+    
+    See [1]_, [2]_ for details about the equations. Backtracking may be
+    specified, and if so, a ground coverage ratio is required.
 
     Rotation angle is determined in a panel-oriented coordinate system.
     The tracker azimuth axis_azimuth defines the positive y-axis; the
@@ -329,6 +329,9 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     ----------
     .. [1] Lorenzo, E et al., 2011, "Tracking and back-tracking", Prog. in
        Photovoltaics: Research and Applications, v. 19, pp. 747-753.
+    .. [2] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
+       Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
+       https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
 
     # MATLAB to Python conversion by
@@ -439,7 +442,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         # distance between rows in terms of rack lengths relative to side slope
         axes_distance = 1/gcr/cosd(side_slope)
         # clip needed for low angles. GH 656
-        temp = np.clip(axes_distance*cosd(wid + side_slope), -1, 1)
+        temp = np.clip(axes_distance*cosd(wid - side_slope), -1, 1)
 
         # backtrack angle
         # (always positive b/c acosd returns values between 0 and 180)
@@ -750,5 +753,5 @@ def calc_system_tracker_side_slope(
     # tracker use arctan2
     sys_tr_z_rot = _get_rotation_matrix(tr_rel_rot, axis=2)
     tr_norm_sys_tr = np.dot(sys_tr_z_rot, tr_norm_sys)
-    side_slope = np.arctan2(tr_norm_sys_tr[0, 0], tr_norm_sys_tr[2, 0])
+    side_slope = -np.arctan2(tr_norm_sys_tr[0, 0], tr_norm_sys_tr[2, 0])
     return np.degrees(side_slope), np.degrees(tr_rel_rot)

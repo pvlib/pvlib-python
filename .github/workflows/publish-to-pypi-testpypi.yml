@@ -9,8 +9,7 @@ jobs:
     steps:
     # fetch all commits and tags so versioneer works
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      run: git fetch --prune --unshallow --tags
 
     - name: Set up Python
       uses: actions/setup-python@v2

@@ -7,14 +7,10 @@ jobs:
     name: Build and publish distributions to PyPI (releases only) and TestPyPI (all commits)
     runs-on: ubuntu-latest
     steps:
-    # fetch enough commits to be reasonably sure to capture tags in the next step
-    # but don't waste time by trying get all commits with unshallow
+    # fetch all commits and tags so versioneer works
     - uses: actions/checkout@v2
       with:
-          fetch-depth: 150
-
-    - name: Get tags
-      run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v2

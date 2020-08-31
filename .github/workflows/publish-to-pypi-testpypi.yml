@@ -9,7 +9,10 @@ jobs:
     steps:
     # fetch all commits and tags so versioneer works
     - uses: actions/checkout@v2
-    - run: git fetch --prune --unshallow --tags
+    - run: |
+        git fetch --prune --unshallow --tags
+        echo exit code $?
+        git tag --list
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -22,7 +25,7 @@ jobs:
         python -m pip install --upgrade setuptools wheel
 
     - name: Install pvlib without dependencies for versioning only
-      run: pip install . --no-deps
+      run: pip install -e . --no-deps
 
     - name: Build packages
       run: python setup.py sdist bdist_wheel

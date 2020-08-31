@@ -5,6 +5,7 @@ on: push
 jobs:
   build-n-publish:
     name: Build and publish distributions to PyPI (releases only) and TestPyPI (all commits)
+    if: github.repository == 'pvlib/pvlib-python'
     runs-on: ubuntu-latest
     steps:
     # fetch all commits and tags so versioneer works

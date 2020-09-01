@@ -471,7 +471,7 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
     wind_speed : pandas Series
         Wind speed [m/s]
 
-    inoct : float
+    noct_installed : float
         The "installed" nominal operating cell temperature as defined in [1]_.
         PVWatts assumes this value to be 45 C for rack-mounted arrays and
         49 C for roof mount systems with restricted air flow around the
@@ -510,10 +510,12 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
 
     References
     ----------
-    .. [1] Fuentes, M. K. A Simplifed Thermal Model for Flat-Plate
-           Photovoltaic Arrays. SAND85-0330. 1987.
+    .. [1] Fuentes, M. K., 1987, "A Simplifed Thermal Model for Flat-Plate
+           Photovoltaic Arrays", SAND85-0330, Sandia National Laboratories,
+           Albuquerque NM.
            http://prod.sandia.gov/techlib/access-control.cgi/1985/850330.pdf
-    .. [2] Dobos, A. P. PVWatts Version 5 Manual. NREL/TP-6A20-62641. 2014.
+    .. [2] Dobos, A. P., 2014, "PVWatts Version 5 Manual", NREL/TP-6A20-62641,
+           National Renewable Energy Laboratory, Golden CO.
            doi:10.2172/1158421.
     """
     # ported from the FORTRAN77 code provided in Appendix A of Fuentes 1987;
@@ -577,7 +579,7 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
 
     tmod0 = 293.15
     tmod_array = np.zeros_like(poa_global)
-    
+
     iterator = zip(tamb_array, sun_array, windmod_array, tsky_array,
                    timedelta_hours)
     for i, (tamb, sun, windmod, tsky, dtime) in enumerate(iterator):

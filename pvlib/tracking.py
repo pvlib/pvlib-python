@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from pvlib.tools import cosd, sind
+from pvlib.tools import cosd, sind, tand
 from pvlib.pvsystem import _combine_localized_attributes
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
@@ -588,39 +588,6 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     return out
 
 
-def _get_rotation_matrix(angle, axis=0):
-    """
-    Return a rotation matrix that when multiplied by a column vector returns
-    a new column vector that is rotated clockwise around the given axis by the
-    given angle.
-
-    Parameters
-    ----------
-    angle : float
-        Angle of rotation [radians]
-    axis : int, default 0
-        Axis of rotation, 0=x, 1=y, 2=z
-
-    Returns
-    -------
-    rotation matrix
-
-    References:
-       `Rotation Matrix
-       <https://en.wikipedia.org/wiki/Rotation_matrix#Basic_rotations>`_
-
-    """
-    r11 = r22 = np.cos(angle)
-    r21 = np.sin(angle)
-    r12 = -r21
-    rot = np.array([
-        [1, 0, 0],
-        [0, r11, r12],
-        [0, r21, r22]])
-    rot = np.roll(rot, (axis, axis), (1, 0))
-    return rot
-
-
 def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
     """
     Calculate tracker axis tilt in the global reference frame when on a sloped
@@ -650,12 +617,63 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
-    system_azimuth_rad = np.radians(system_azimuth)
-    axis_azimuth_rad = np.radians(axis_azimuth)
-    system_zenith_rad = np.radians(system_zenith)
-    sys_az_rel_to_tr_az = axis_azimuth_rad - system_azimuth_rad
-    tan_tr_ze = np.cos(sys_az_rel_to_tr_az) * np.tan(system_zenith_rad)
-    return np.degrees(np.arctan(tan_tr_ze))
+    delta_gamma = axis_azimuth - system_azimuth
+    # equation 18-19
+    tan_axis_tilt = cosd(delta_gamma) * tand(system_zenith)
+    return np.degrees(np.arctan(tan_axis_tilt))
+
+
+def _calc_tracker_norm(ba, bg, dg):
+    """
+    Calculate tracker normal, v, cross product of tracker axis and unit normal,
+    N, to the system slope plane.
+
+    Parameters
+    ----------
+    ba : float
+        axis tilt [degrees]
+    bg : float
+        ground tilt [degrees]
+    dg : float
+        delta gamma, difference between axis and ground azimuths [degrees]
+
+    Returns
+    -------
+    vector : tuple
+        vx, vy, vz
+    """
+    cos_ba = cosd(ba)
+    cos_bg = cosd(bg)
+    sin_bg = sind(bg)
+    sin_dg = sind(dg)
+    vx = sin_dg * cos_ba * cos_bg
+    vy = sind(ba)*sin_bg + cosd(dg)*cos_ba*cos_bg
+    vz = -sin_dg*sin_bg*cos_ba
+    return vx, vy, vz
+
+
+def _calc_beta_c(v, dg, ba):
+    """
+    Calculate the side slope angle.
+
+    Parameters
+    ----------
+    v : tuple
+        tracker normal
+    dg : float
+        delta gamma, difference between axis and ground azimuths [degrees]
+    ba : float
+        axis tilt [degrees]
+
+    Returns
+    -------
+    beta_c : float
+        side slope angle [radians]
+    """
+    vnorm = np.sqrt(np.dot(v, v))
+    beta_c = np.arcsin(
+        ((v[0]*cosd(dg) - v[1]*sind(dg)) * sind(ba) + v[2]*cosd(ba)) / vnorm)
+    return beta_c
 
 
 def calc_system_tracker_side_slope(
@@ -683,49 +701,21 @@ def calc_system_tracker_side_slope(
     side_slope : float
         cross-axis slope angle from horizontal & perpendicular to tracker axes
         in the cross-axis direction [degrees]
-    rotation : float
-        rotation relative to system plane [degrees]
+
+    Notes
+    -----
+    See [1]_ for derivation of equations.
+
+    References
+    ----------
+    .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
+       Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
+       https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
-    # convert to radians
-    system_azimuth_rad = np.radians(system_azimuth)
-    system_zenith_rad = np.radians(system_zenith)
-    axis_azimuth_rad = np.radians(axis_azimuth)
-    axis_tilt_rad = np.radians(axis_tilt)
-    sin_axis_tilt = np.sin(axis_tilt_rad)  # sin(-x) = -sin(x)
-    # find the relative rotation of the trackers in the system plane
-    # 1. tracker axis vector
-    cos_tr_ze = np.cos(-axis_tilt_rad)
-    sin_tr_az = np.sin(axis_azimuth_rad)
-    cos_tr_az = np.cos(axis_azimuth_rad)
-    tr_ax = np.array([
-        [cos_tr_ze*sin_tr_az],
-        [cos_tr_ze*cos_tr_az],
-        [-sin_axis_tilt]])
-    # 2. rotate tracker axis vector from global to system reference frame
-    sys_z_rot = _get_rotation_matrix(system_azimuth_rad, axis=2)
-    # first around the z-axis
-    tr_ax_sys_z_rot = np.dot(sys_z_rot, tr_ax)
-    # then around x-axis so that xy-plane is the plane with slope and trackers
-    sys_x_rot = _get_rotation_matrix(system_zenith_rad)
-    tr_ax_sys = np.dot(sys_x_rot, tr_ax_sys_z_rot)
-    # now that tracker axis is in coordinate system of slope, the relative
-    # rotation is the angle from the y axis
-    tr_rel_rot = np.arctan2(tr_ax_sys[0, 0], tr_ax_sys[1, 0])
-    # find side slope
-    # 1. tracker normal vector
-    sin_tr_ze = sin_axis_tilt
-    tr_norm = np.array([
-        [sin_tr_ze*sin_tr_az],
-        [sin_tr_ze*cos_tr_az],
-        [cos_tr_ze]])  # note: cos(-x) = cos(x)
-    # 2. rotate tracker normal vector from global to system reference frame
-    tr_norm_sys_z_rot = np.dot(sys_z_rot, tr_norm)
-    tr_norm_sys = np.dot(sys_x_rot, tr_norm_sys_z_rot)
-    # 3. side slope is angle between tracker normal and system plane normal
-    # np.arccos(tr_norm_sys[2])
-    # 4. but we need to know which way the slope is facing, so rotate to
-    # tracker use arctan2
-    sys_tr_z_rot = _get_rotation_matrix(tr_rel_rot, axis=2)
-    tr_norm_sys_tr = np.dot(sys_tr_z_rot, tr_norm_sys)
-    side_slope = -np.arctan2(tr_norm_sys_tr[0, 0], tr_norm_sys_tr[2, 0])
-    return np.degrees(side_slope), np.degrees(tr_rel_rot)
+    # delta-gamma, difference between axis and slope azimuths
+    delta_gamma = axis_azimuth - system_azimuth
+    # equation 22
+    v = _calc_tracker_norm(axis_tilt, system_zenith, delta_gamma)
+    # equation 26
+    beta_c = _calc_beta_c(v, delta_gamma, axis_tilt)
+    return np.degrees(beta_c)

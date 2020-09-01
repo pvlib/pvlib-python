@@ -494,7 +494,7 @@ def test_calc_axis_tilt():
     # expected values
     expected_axis_tilt = 2.239  # [degrees]
     expected_side_slope = 9.86649274360294  # [degrees]
-    expected = DATA_DIR / 'singleaxis_tracker_wslope.dat'
+    expected = DATA_DIR / 'singleaxis_tracker_wslope.csv'
     expected = pd.read_csv(expected, index_col='timestamp', parse_dates=True)
     # solar positions
     starttime = '2017-01-01T00:30:00-0300'
@@ -513,9 +513,8 @@ def test_calc_axis_tilt():
         *system_plane, axis_azimuth=axis_azimuth)
     assert np.isclose(axis_tilt, expected_axis_tilt)
     # calculate side slope and relative rotation
-    side_slope, rel_rot = tracking.calc_system_tracker_side_slope(
+    side_slope = tracking.calc_system_tracker_side_slope(
         axis_azimuth, axis_tilt, *system_plane)
-    assert np.isclose(rel_rot, -77.14671562495475)  # relative rotation
     assert np.isclose(side_slope, expected_side_slope)
     sat = tracking.singleaxis(
         solpos.apparent_zenith, solpos.azimuth, axis_tilt, axis_azimuth,
@@ -555,7 +554,7 @@ def test_slope_aware_backtracking():
     axis_tilt = tracking.calc_tracker_axis_tilt(
         system_azimuth, system_zenith, axis_azimuth)
     assert np.isclose(axis_tilt, expected_axis_tilt, rtol=1e-3, atol=1e-3)
-    side_slope, _ = tracking.calc_system_tracker_side_slope(
+    side_slope = tracking.calc_system_tracker_side_slope(
         axis_azimuth, axis_tilt, system_azimuth, system_zenith)
     assert np.isclose(side_slope, expected_slope_angle, rtol=1e-3, atol=1e-3)
     sat = tracking.singleaxis(

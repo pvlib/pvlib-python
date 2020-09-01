@@ -451,7 +451,7 @@ def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, check_reynold):
     return hconv
 
 
-def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
+def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
             wind_height=9.144, emissivity=0.84, absorption=0.83,
             hydraulic_diameter=0.5):
     """

@@ -642,52 +642,20 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
 
     Notes
     -----
-    Solving for the tracker tilt on a slope is derived in the following steps:
+    See [1]_ for derivation of equations.
 
-    1. the trackers axes are in the system plane, so the ``z-coord = 0``
-
-    2. rotate the trackers ``[x_tr_sys, y_tr_sys, 0]`` back to the global, but
-       rotated by the tracker global azimuth if there is one, so that the
-       tracker axis is constrained to y-z plane so that ``x-coord = 0`` ::
-
-        Rx_sys = [[1,           0,            0],
-                  [0, cos(sys_ze), -sin(sys_ze)],
-                  [0, sin(sys_ze),  cos(sys_ze)]]
-
-        Rz_sys = [[cos(sys_az-tr_az), -sin(sys_az-tr_az), 0],
-                  [sin(sys_az-tr_az),  cos(sys_az-tr_az), 0],
-                  [                0,                  0, 1]]
-
-        tr_rot_glo = Rz_sys.T * (Rx_sys.T * [x_tr_sys, y_tr_sys, 0])
-
-        tr_rot_glo = [
-          [ x_tr_sys*cos(sys_az-tr_az)+y_tr_sys*sin(sys_az-tr_az)*cos(sys_ze)],
-          [-x_tr_sys*sin(sys_az-tr_az)+y_tr_sys*cos(sys_az-tr_az)*cos(sys_ze)],
-          [                                             -y_tr_sys*sin(sys_ze)]]
-
-    3. solve for ``x_tr_sys`` ::
-
-        x_tr_sys*cos(sys_az-tr_az)+y_tr_sys*sin(sys_az-tr_az)*cos(sys_ze) = 0
-        x_tr_sys = -y_tr_sys*tan(sys_az-tr_az)*cos(sys_ze)
-
-    4. so tracker axis tilt, ``tr_ze = arctan2(tr_rot_glo_z, tr_rot_glo_y)`` ::
-
-        tr_rot_glo_y = y_tr_sys*cos(sys_ze)*(
-          tan(sys_az-tr_az)*sin(sys_az-tr_az) + cos(sys_az-tr_az))
-
-        tan(tr_ze) = -y_tr_sys*sin(sys_ze) / tr_rot_glo_y
-
-    The trick is multiply top and bottom by cos(sys_az-tr_az) and remember that
-    ``sin^2 + cos^2 = 1`` (or just use sympy.simplify) ::
-
-        tan(tr_ze) = -tan(sys_ze)*cos(sys_az-tr_az)
+    References
+    ----------
+    .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
+       Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
+       https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
     system_azimuth_rad = np.radians(system_azimuth)
     axis_azimuth_rad = np.radians(axis_azimuth)
     system_zenith_rad = np.radians(system_zenith)
-    sys_az_rel_to_tr_az = system_azimuth_rad - axis_azimuth_rad
-    tan_tr_ze = -np.cos(sys_az_rel_to_tr_az) * np.tan(system_zenith_rad)
-    return -np.degrees(np.arctan(tan_tr_ze))
+    sys_az_rel_to_tr_az = axis_azimuth_rad - system_azimuth_rad
+    tan_tr_ze = np.cos(sys_az_rel_to_tr_az) * np.tan(system_zenith_rad)
+    return np.degrees(np.arctan(tan_tr_ze))
 
 
 def calc_system_tracker_side_slope(
